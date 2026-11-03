@@ -7779,6 +7779,18 @@ const outdoorPos=()=>{if(SCENE&&SCENE.room&&SCENE.room.region)return[P.x,P.y];if
    L.push([(h.y+1)*16+1,4,()=>{const cx=h.x*16+8,y=(h.y+1)*16-27;g.save();g.font='700 6px '+PF;const tw=Math.ceil(g.measureText(nm).width)+6,X=Math.round(cx-tw/2);
     g.fillStyle='#3a2414';g.fillRect(X-1,y-1,tw+2,10);g.fillStyle='#f4e8c8';g.fillRect(X,y,tw,8);g.fillStyle='#d8c098';g.fillRect(X,y+7,tw,1);
     g.fillStyle='#3a2414';g.textAlign='center';g.textBaseline='middle';g.fillText(nm,cx,y+4.5);g.restore()}])}}}
+// ---- World map: where everyone online is ----
+// Dots on every island for players online (friends in green with their name), and a list under the map:
+// friends first, with the island they're on.
+{const _dw=drawWorld52;drawWorld52=function(){_dw();if(!MP.on)return;const c=document.getElementById('wmc');if(!c)return;const x=c.getContext('2d');
+  for(const[u,r]of MP.players){if(!live(r)||!WORLD_REGIONS[r.ar]||typeof r.ax!=='number'||!isFinite(r.ax))continue;const D=WORLD_REGIONS[r.ar],R=wmRect(r.ar),fr=MP.friends&&MP.friends[u];
+   const px=Math.round(R.x+(r.ax/16)/D.width*R.w),py=Math.round(R.y+(r.ay/16)/D.height*R.h);x.fillStyle='#101018';x.fillRect(px-2,py-2,5,5);x.fillStyle=fr?'#60e860':'#60c0ff';x.fillRect(px-1,py-1,3,3);
+   if(fr){x.font='700 8px '+PF;x.textAlign='center';x.textBaseline='bottom';x.lineWidth=3;x.strokeStyle='#101018';x.strokeText(r.n,px,py-3);x.fillStyle='#e8ffe8';x.fillText(r.n,px,py-3)}}}}
+{const _wh=worldHTML52;worldHTML52=function(){let h=_wh();if(!MP.on)return h;const rows=[...MP.players].filter(([u,r])=>live(r)).sort((a,b)=>(+!!(MP.friends&&MP.friends[b[0]]))-(+!!(MP.friends&&MP.friends[a[0]]))||String(a[1].n).localeCompare(String(b[1].n)));
+  let t='<div class="qc"><b>Players online ('+(rows.length+1)+')</b><small>';if(!rows.length)t+='<br>Nobody else is online right now.';
+  for(const[u,r]of rows){const fr=MP.friends&&MP.friends[u],where=r.ar&&WORLD_REGIONS[r.ar]?WORLD_REGIONS[r.ar].name:'At sea';t+='<br><span style="color:'+(fr?'#28a048':'#3070c0')+'">&#9632;</span> '+esc(r.n||'?')+(fr?' (friend)':'')+' · '+esc(where)}
+  return h+t+'</small></div>'}}
+{const _lg=worldHTML52;worldHTML52=function(){const h=_lg();return MP.on?h.replace('<span><i style="background:#f8f8f8"></i>Landmark</span></div>','<span><i style="background:#f8f8f8"></i>Landmark</span><span><i style="background:#60e860"></i>Friend</span><span><i style="background:#60c0ff"></i>Player</span></div>'):h}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
