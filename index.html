@@ -93,6 +93,7 @@ var FOOD_RATE=.25;
    58. Gen 3 sprites: every remaining HD sprite (enemies, bosses, stations, landmarks, rooms) pixelated to 1 texel with hard edges; slimes on whole pixels; crisp item icons; pixel harbor flags
    59. Gen 3 UI: stepped pixel frames for the HUD, bars, text box and every menu; octagon touch buttons; pixel sailing card
    60. Gen 3 polish: whole-pixel grid in the world, pixel circles, de-speckled rooms, darker-skin eyes, ranger hood side view
+   63. Mouse and touch aiming for bows and wands: cursor aim + right-click, BOW / CAST touch button (tap = nearest enemy, drag = aim)
    62. Controller pass: visible highlight in every menu, sticks wake the controller, text boxes let go of the keyboard
    61. Multiplayer (hosted copy only): Google sign-in, account saves in Firebase, other players with names overhead, Gen 3 chat,
        OG crowns, Emerald-style title screen (PRESS START, Continue / New Game, sign-in, Options)
@@ -7432,6 +7433,60 @@ window.SQMP=MP;
  const _pp62=pollPad;pollPad=function(dt){if(!GPON){try{const all=navigator.getGamepads?navigator.getGamepads():[];for(const g2 of all){if(!g2||!g2.connected)continue;
    if(g2.axes.some(v=>Math.abs(v)>.6)||g2.buttons.some(b=>b&&(b.pressed||b.value>.5))){GPI=g2.index;gpActivate(true);break}}}catch(e){}}_pp62(dt)};
  const _sf62=setFocus;setFocus=function(el){const a=document.activeElement;if(a&&a!==el&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&a.blur)a.blur();_sf62(el)}}
+// ---------------------------------------------------------------- 63. Aiming the bow and wand with a mouse or a touch screen
+// Mouse: with a bow or a wand in your off-hand, the cursor aims (a crosshair shows where). Right-click shoots or casts
+// (hold to keep firing). Left-click turns you toward the cursor and hits, like Space.
+// Touch: a BOW / CAST button appears above HIT. Tap it to fire at the nearest enemy in range (any direction);
+// press and drag it to aim yourself (a crosshair shows), release to fire; keep holding to keep firing.
+// Keyboard and controller play are unchanged (Space / HIT still auto-shoots at an enemy in front of you).
+{const AIMX={T:null,mouse:null,mIn:false,rHeld:false,rT:0,touch:null,tHeld:0,lastFire:0};
+ const offhand=()=>!!(WAND||TL.bow);
+ const _pP63=pP;pP=function(tm){AIMX.T=g.getTransform();return _pP63(tm)};
+ const toWorld=(cx,cy)=>{if(!AIMX.T)return null;try{const p=AIMX.T.inverse().transformPoint({x:cx*D,y:cy*D});return p}catch(e){return null}};
+ const canFire=()=>!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&!(typeof GPON!=='undefined'&&GPON);
+ function aimAt(wx,wy){const dx=wx-P.x,dy=(wy)-(P.y-4),l=Math.hypot(dx,dy);if(l<4)return false;AIM.v=[dx/l,dy/l];AIM.t=performance.now();return true}
+ function nearestFoe(){const R=WAND?160:bowRange();let best=null,bd=1e9;for(const n of en){if(n.dead)continue;const dx=n.x-P.x,dy=(n.y-4)-(P.y-2),l=Math.hypot(dx,dy);if(l<8||l>R)continue;
+  const fwd=(dx*face[0]+dy*face[1])/l,score=l*(1.35-fwd*.35);if(score<bd){bd=score;best=n}}return best}
+ function fire(first){if(!canFire()||swing>0)return;AIMX.lastFire=performance.now();shootAim(first)}
+ // --- mouse ---
+ cv.addEventListener('mousemove',e=>{AIMX.mouse=[e.clientX,e.clientY];AIMX.mIn=true});
+ cv.addEventListener('mouseleave',()=>{AIMX.mIn=false;AIMX.rHeld=false});
+ cv.addEventListener('mousedown',e=>{if(!isPC||typeof GPON!=='undefined'&&GPON)return;AIMX.mouse=[e.clientX,e.clientY];AIMX.mIn=true;
+  const w=toWorld(e.clientX,e.clientY);
+  if(e.button===2){e.preventDefault();if(!offhand()){if(canFire()){say('Put a bow or a wand in your off-hand to shoot with right-click.');sfx('swish')}return}
+   if(w)aimAt(w.x,w.y);AIMX.rHeld=true;AIMX.rT=0;fire(true);return}
+  if(e.button===0&&w&&canFire()&&!dead){const dx=w.x-P.x,dy=w.y-(P.y-4);if(Math.hypot(dx,dy)>6)face=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)];
+   if(offhand())aimAt(w.x,w.y);attack()}});
+ addEventListener('mouseup',e=>{if(e.button===2)AIMX.rHeld=false});
+ // --- touch: the BOW / CAST button ---
+ const tb=document.createElement('div');tb.className='b';tb.id='aimb';tb.textContent='BOW';tb.style.cssText='position:fixed;display:none;touch-action:none;z-index:11';document.body.appendChild(tb);
+ const st=document.createElement('style');st.textContent='#aimb{width:64px!important;height:64px!important;font-size:14px!important}#aimb.on{filter:brightness(.9)}';document.head.appendChild(st);
+ function placeBtn(){const hit=document.getElementById('a');const show=!isPC&&offhand()&&!(typeof GPON!=='undefined'&&GPON)&&!menuOpen&&!pnOpen&&!dead&&hit&&hit.getBoundingClientRect().width>0&&getComputedStyle(hit).display!=='none'&&!(SCENE&&!SCENE.room.cave&&!SCENE.room.region);
+  tb.style.display=show?'flex':'none';if(!show)return;tb.textContent=WAND?'CAST':'BOW';const r=hit.getBoundingClientRect();
+  tb.style.left=Math.round(r.left+r.width/2-32)+'px';tb.style.top=Math.round(r.top-64-10)+'px'}
+ setInterval(placeBtn,300);
+ tb.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();const t=e.changedTouches[0];AIMX.touch={id:t.identifier,x:t.clientX,y:t.clientY,drag:false};AIMX.tHeld=0;tb.classList.add('on')},{passive:false});
+ tb.addEventListener('touchmove',e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;for(const t of e.changedTouches){if(t.identifier!==T.id)continue;
+  const dx=t.clientX-T.x,dy=t.clientY-T.y;if(Math.hypot(dx,dy)>14){T.drag=true;const l=Math.hypot(dx,dy);AIM.v=[dx/l,dy/l];AIM.t=performance.now()}}},{passive:false});
+ const tEnd=e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;tb.classList.remove('on');AIMX.touch=null;
+  if(!T.drag){const n=nearestFoe();if(n)aimAt(n.x,n.y);else AIM.t=-1e9}fire(true)};
+ tb.addEventListener('touchend',tEnd,{passive:false});tb.addEventListener('touchcancel',e=>{AIMX.touch=null;tb.classList.remove('on')});
+ // --- every frame: keep the aim on the cursor, repeat while held ---
+ const _u63=upd;upd=function(dt){_u63(dt);if(typeof GPON!=='undefined'&&GPON)return;
+  if(isPC&&AIMX.mIn&&AIMX.mouse&&offhand()){const w=toWorld(AIMX.mouse[0],AIMX.mouse[1]);if(w)aimAt(w.x,w.y)}
+  if(AIMX.rHeld){AIMX.rT+=dt;if(AIMX.rT>.35&&swing<=0)fire(false)}
+  if(AIMX.touch){AIMX.tHeld+=dt;if(AIMX.touch.drag){AIM.t=performance.now();if(AIMX.tHeld>.5&&swing<=0&&performance.now()-AIMX.lastFire>420)fire(false)}}};
+ // cursor: a crosshair over the game while a bow or wand is ready
+ setInterval(()=>{cv.style.cursor=isPC&&offhand()&&!(typeof GPON!=='undefined'&&GPON)?'crosshair':''},500);
+ // crosshair for mouse and touch aiming (the controller draws its own)
+ function cross(tm){if(typeof GPON!=='undefined'&&GPON)return;if(!offhand()||!aimLive()||dead||ROLLT>0||menuOpen||pnOpen)return;if(SCENE&&!SCENE.room.cave&&!SCENE.room.region)return;
+  if(!(AIMX.touch&&AIMX.touch.drag)&&!(isPC&&AIMX.mIn))return;
+  let dx,dy,tgt;if(TL.bow&&!WAND){[dx,dy,tgt]=aimDir()}else{dx=AIM.v[0];dy=AIM.v[1];tgt=null}
+  const r=34,x=Math.round(P.x+dx*r),y=Math.round(P.y-4+dy*r),pu=Math.floor(tm*4)%2,c=tgt?'#f84030':(WAND?'#c8a8ff':'#f8f8f8'),k=tgt?3:4+pu;
+  for(const[a,b,w,hh]of[[-k-2,-1,3,3],[k,-1,3,3],[-1,-k-2,3,3],[-1,k,3,3]])Rg(x+a-1,y+b-1,w+2,hh+2,O);
+  Rg(x-k-2,y,3,1,c);Rg(x+k,y,3,1,c);Rg(x,y-k-2,1,3,c);Rg(x,y+k,1,3,c);Rg(x,y,1,1,c)}
+ const _dh63=drawHUD;drawHUD=function(){if(AIMX.T){g.save();g.setTransform(AIMX.T);try{cross(performance.now()/1000)}catch(e){}g.restore()}_dh63()};
+ window.SQAIM=AIMX}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
