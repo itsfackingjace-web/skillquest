@@ -7179,6 +7179,41 @@ const crownURL=crownCv.toDataURL();
 const isOG=uid=>!!(uid&&MP.og[uid]);
 function ogRank(uid){const t=MP.og[uid];if(!t)return 0;let n=1;for(const k in MP.og){const v=MP.og[k];if(v<t||(v===t&&k<uid))n++}return n}
 const crownImg=()=>{const i=document.createElement('img');i.src=crownURL;i.alt='OG';i.title='OG';i.className='ogc';return i};
+// ---- Linking this device's save to your account ----
+// This device remembers which account its save belongs to (sq_acct). The first time a device meets an account that already
+// has a different save, the player chooses which one to keep, and the other is backed up on this device (sq_bak_*).
+// Once linked, the cross-device rule from section 8 applies (newest save wins, another device's newer save is adopted).
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+function mpBackup(tag,S){try{const keys=Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort();while(keys.length>=4)localStorage.removeItem(keys.shift());
+ localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){}}
+const lvFromXp=x=>{let l=1;while(l<99&&(+x||0)>=XT[l])l++;return l};
+function saveInfo(S){const xp=Array.isArray(S.xp)?S.xp:[];let tl=0;for(let i=0;i<SKN.length;i++)tl+=lvFromXp(xp[i]);
+ const qi=Math.max(0,+(S.q&&S.q.i)||0);return{name:String(S.name||'?').slice(0,10),tl,q:Math.min(qi,QS.length),gold:Math.max(0,+S.gold||0),at:+S.savedAt||0,
+  inv:S.inv?Object.values(S.inv).reduce((a,v)=>a+(+v||0),0):0}}
+const ago=t=>{if(!t)return'unknown';const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
+const localHasProgress=()=>!!(hadLocal||oldPlayer||PNAME&&!menuOpen);
+async function mpLinkSave(uid,adapter){const r=await adapter.get(),linked=lsGet('sq_acct')===uid;
+ const done=()=>{lsSet('sq_acct',uid);cloud=adapter;if(TS&&TS.open)TS.mh=''};
+ if(!r.exists){done();if(localHasProgress())saveCloud(true);return}
+ const S=JSON.parse(JSON.stringify(r.data()));if(S.v!=1){done();return}
+ if(!localHasProgress()){applySave(S);hideCreator();say('Progress loaded from your account');saveLocal(true);lastCloud=keyOf(snap());done();return}
+ const L=snap();L.savedAt=LOCAL_AT;
+ if(keyOf(L)===keyOf(S)){done();return}
+ if(linked){ // same account as before: newest wins (another device's newer progress is adopted)
+  if((+S.savedAt||0)>LOCAL_AT+2000){mpBackup('device',L);applySave(S);hideCreator();say('Synced progress from your account');saveLocal(true);lastCloud=keyOf(snap())}else{lastWid=wOf(S);saveCloud(true)}done();return}
+ // first time this device meets this account and both have different progress: ask
+ mpChooseSave(L,S,pick=>{if(pick==='account'){mpBackup('device',L);applySave(S);hideCreator();say('Loaded your account save. This device\'s old save is backed up.');saveLocal(true);lastCloud=keyOf(snap())}
+  else{mpBackup('account',S);LOCAL_AT=Date.now();lastWid=wOf(S);done();saveCloud(true);say('Kept this device\'s save. It is now your account save.');return}done()})}
+function mpChooseSave(L,S,cb){const a=saveInfo(L),b=saveInfo(S);const box=el('div','mpsave','g3');
+ const card=(k,t,i)=>'<button class="sv" data-k="'+k+'"><b>'+t+'</b><span>Player</span><span>'+esc(i.name)+'</span><span>Total level</span><span>'+i.tl+'</span><span>Quest</span><span>'+i.q+' / '+QS.length+'</span><span>Gold</span><span>'+i.gold+'</span><span>Saved</span><span>'+ago(i.at)+'</span></button>';
+ box.innerHTML='<div class="h">WHICH SAVE DO YOU WANT?</div><p>This device and your account have different progress. Pick the one to keep. The other is backed up on this device.</p>'+card('device','THIS DEVICE',a)+card('account','YOUR ACCOUNT',b);
+ document.body.appendChild(box);for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])box.addEventListener(ev,stop);
+ MP.choose=box;box.onclick=e=>{const c=e.target.closest('.sv');if(!c)return;box.remove();MP.choose=null;setFocus(null);cb(c.dataset.k)}}
+{const st=document.createElement('style');st.textContent=`#mpsave{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:96;max-width:520px;margin:0 auto;background:#f8f8f8;color:#404040;font:500 14px ${PF};padding:14px;box-sizing:border-box;max-height:calc(100vh - 16px);overflow-y:auto}
+#mpsave .h{font-weight:700;font-size:17px;letter-spacing:1px;text-align:center}#mpsave p{line-height:1.4;margin:8px 0 12px}
+#mpsave .sv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;width:100%;text-align:left;margin-top:10px;padding:12px 14px;background:#fff;border:3px solid #485870;font:500 14px ${PF};color:#404040;cursor:pointer}
+#mpsave .sv b{grid-column:1/-1;font-size:15px;letter-spacing:1px;margin-bottom:4px;color:#3058c8}#mpsave .sv span:nth-of-type(2n){text-align:right;font-weight:700}
+#mpsave .sv.gpf,#mpsave .sv:hover{box-shadow:inset 0 0 0 3px #f8a020}`;document.head.appendChild(st)}
 // ---- Firebase ----
 async function mpLoad(){const b='https://www.gstatic.com/firebasejs/'+FBV+'/';
  const[app,auth,db]=await Promise.all([import(b+'firebase-app.js'),import(b+'firebase-auth.js'),import(b+'firebase-database.js')]);
@@ -7192,9 +7227,7 @@ async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=
  const sref=d.ref(D,'saves/'+uid);
  const adapter={async get(){const s=await d.get(sref);if(!s.exists())return{exists:false,data:()=>null};let v=null;try{v=JSON.parse(s.val().json)}catch(e){}return{exists:!!v,data:()=>v}},
   async set(s){await d.set(sref,{json:JSON.stringify(s),savedAt:+s.savedAt||Date.now()})}};
- MP.adapter=adapter;try{const r=await adapter.get();cloud=adapter;
-  if(r.exists){const S=JSON.parse(JSON.stringify(r.data()));if(S.v==1&&(+S.savedAt||0)>LOCAL_AT+2000){applySave(S);hideCreator();say('Progress loaded from your account');saveLocal(true);lastCloud=keyOf(snap())}else saveCloud(true)}
-  else if(hadLocal||!menuOpen)saveCloud(true)}catch(e){mpErr(e)}
+ MP.adapter=adapter;try{await mpLinkSave(uid,adapter)}catch(e){mpErr(e)}
  // presence
  MP.pref=d.ref(D,'presence/'+uid);MP.last='';MP.lastCh='';MP.lastN='';
  MP.unsub.push(d.onValue(d.ref(D,'.info/serverTimeOffset'),s=>{MP.off=+s.val()||0}));
@@ -7277,7 +7310,7 @@ addEventListener('keydown',e=>{if(e.key!=='Escape'||e.target===inp)return;
 const _oc61b=mpOpenChat;mpOpenChat=function(){if(GPON){if(!MP.on){sg.style.display='block';return}MP.open=true;MP.unread=0;pc.style.display='block';mpRList();mpClearKeys();setFocus(null);return}_oc61b()};
 // ---- Title screen (Emerald-style): logo, PRESS START, then Continue / New Game, Google sign-in, Options ----
 // Shown once per launch. While it is up the world is frozen and the game ignores input.
-const TS={open:true,stage:0,cl:[]};
+const TS={open:true,stage:0,cl:[]};window.SQTS=TS;
 {const st=document.createElement('style');st.textContent=`
 #sqts{position:fixed;inset:0;z-index:90;overflow:hidden;background:linear-gradient(#051e15,#0b3624 40%,#17573a 72%,#2a7a4a);color:#f8f8f8;font-family:${PF};display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-user-select:none;touch-action:manipulation;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px);box-sizing:border-box}
 #sqts .tsc{position:absolute;left:0;right:0;background-repeat:repeat-x;background-size:auto 100%;image-rendering:pixelated;pointer-events:none}
@@ -7357,11 +7390,13 @@ addEventListener('keyup',e=>{if(TS.open)e.stopImmediatePropagation()},true);
 // controller: the title is the screen being navigated
 const _nr62=navRoot;navRoot=function(){if(TS.open)return TS.stage?tsMn:tsEl;return _nr62()};
 // the world is frozen while the title is up
-const _u62=upd;upd=function(dt){if(TS.open)return;_u62(dt)};
+const _u62=upd;upd=function(dt){if(TS.open){try{pollPad(dt)}catch(e){}return}_u62(dt)}; // the controller still drives the title
 let tsLast=0;(function tsLoop(t){if(!TS.open)return;const s=t/1000;TS.cl.forEach((e,i)=>e.style.backgroundPositionX=Math.round(-s*[6,14,24][i])+'px');
  if(menuOpen)menuOpen=false; // the creator waits behind the title (restored on close)
  if(t-tsLast>700){tsLast=t;tsDrawHero();tsFoot();if(TS.stage)tsMenu()}requestAnimationFrame(tsLoop)})(0);
 setTimeout(()=>{tsDrawHero();tsFoot()},0);
+// the save chooser sits above everything, the title included
+const _nr63=navRoot;navRoot=function(){if(MP.choose)return MP.choose;return _nr63()};
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
