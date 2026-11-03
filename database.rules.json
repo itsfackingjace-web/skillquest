@@ -11,10 +11,18 @@
       ".read": "auth != null",
       "$uid": {
         ".write": "auth != null && auth.uid === $uid",
-        "n": { ".validate": "newData.isString() && newData.val().length <= 12" },
-        "loc": { ".validate": "newData.isString() && newData.val().length <= 40" },
-        "x": { ".validate": "newData.isNumber()" },
-        "y": { ".validate": "newData.isNumber()" }
+        "n": {
+          ".validate": "newData.isString() && newData.val().length <= 12"
+        },
+        "loc": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "x": {
+          ".validate": "newData.isNumber()"
+        },
+        "y": {
+          ".validate": "newData.isNumber()"
+        }
       }
     },
     "chat": {
@@ -22,11 +30,28 @@
       "$id": {
         ".write": "auth != null && !data.exists() && newData.child('u').val() === auth.uid",
         ".validate": "newData.hasChildren(['u', 'n', 'm', 't'])",
-        "u": { ".validate": "newData.isString()" },
-        "n": { ".validate": "newData.isString() && newData.val().length <= 12" },
-        "m": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80" },
-        "t": { ".validate": "newData.val() === now" },
-        "$other": { ".validate": false }
+        "u": {
+          ".validate": "newData.isString()"
+        },
+        "n": {
+          ".validate": "newData.isString() && newData.val().length <= 12"
+        },
+        "m": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+        },
+        "t": {
+          ".validate": "newData.val() === now"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "og": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid && !data.exists() && now < 1796277600000",
+        ".validate": "newData.val() === now"
       }
     }
   }
