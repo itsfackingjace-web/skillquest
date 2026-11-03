@@ -7313,7 +7313,9 @@ const _opt61=optionsHTML;optionsHTML=function(){const h=_opt61(),k=h.indexOf('<d
 const _oc61=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mpo');if(b){MP.selfName=!MP.selfName;try{localStorage.setItem('sq_myname',MP.selfName?'1':'0')}catch(_){}rPn();return}_oc61(e)};
 // ---- controller: START menu entry, highlight navigation in the chat and sign-in boxes, ○ / Options closes them ----
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'online',l:()=>MP.on?'Chat':'Play online'});
-const _ss61=showScreen;showScreen=function(id){if(id!=='online')return _ss61(id);mpOpenChat()};
+const _ss61=showScreen;showScreen=function(id){if(id!=='online')return _ss61(id);releaseMenu();mpOpenChat()};
+// the START menu leaves pnOpen set for the screen it opens; our own boxes aren't that screen, so let go of it
+function releaseMenu(){if(pn.style.display==='none'){pnOpen=false;fromMenu=false}jx=jy=0}
 const _nr61=navRoot;navRoot=function(){if(sg.style.display==='block')return sg;if(MP.open)return pc;return _nr61()};
 // ○ / Options arrive as an Escape key press; close our boxes first (the chat input handles its own Escape)
 addEventListener('keydown',e=>{if(e.key!=='Escape'||e.target===inp)return;
@@ -7637,7 +7639,7 @@ setInterval(()=>{bugBtn.style.display=(pnOpen||menuOpen||chessOpen||TS.open||bug
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);try{bugFlush()}catch(e){}}}
 // also in the START menu, the title screen and Options
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'bug',l:()=>'Report a bug'});
-{const _ss=showScreen;showScreen=function(id){if(id!=='bug')return _ss(id);bugOpen()}}
+{const _ss=showScreen;showScreen=function(id){if(id!=='bug')return _ss(id);releaseMenu();bugOpen()}}
 {const _opt=optionsHTML;optionsHTML=function(){const h=_opt(),k=h.indexOf('<div class="tl" style="margin-top:22px');const add='<button class="sb mpbg" data-o="bug">Report a bug</button>';return k<0?h+add:h.slice(0,k)+add+h.slice(k)}}
 {const _oc=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('.mpbg')){closePanel();bugOpen();return}_oc(e)}}
 {const _tm=tsMenu;tsMenu=function(){_tm();if(!tsMn.querySelector('[data-a="bug"]')){const b=document.createElement('button');b.dataset.a='bug';b.textContent='REPORT A BUG';const st=tsMn.querySelector('.tsst');tsMn.insertBefore(b,st)}}}
@@ -7686,7 +7688,7 @@ function tsReopen(){try{saveLocal(true);saveCloud(true)}catch(e){}closePanel();i
  TS.open=true;TS.mh='';tsEl.style.display='flex';tsStage(0);tsDrawHero();tsFoot();requestAnimationFrame(tsLoop);say('Game saved.')}
 SMI.splice(SMI.findIndex(x=>x.id==='online')+1,0,{id:'friends',l:()=>'Friends'});
 SMI.splice(SMI.findIndex(x=>x.id==='exit'),0,{id:'title',l:()=>'Save & quit to title'});
-{const _ss=showScreen;showScreen=function(id){if(id==='friends'){if(!MP.on){sg.style.display='block';return}MP.tab='fr';mpOpenChat();return}if(id==='title'){tsReopen();return}return _ss(id)}}
+{const _ss=showScreen;showScreen=function(id){if(id==='friends'){releaseMenu();if(!MP.on){sg.style.display='block';return}MP.tab='fr';mpOpenChat();return}if(id==='title'){releaseMenu();tsReopen();return}return _ss(id)}}
 // ---- Other players' farms, built things and boats; nobody can damage what isn't theirs ----
 // build/<uid>: your farm plots (crop, growth, water) and the things you built outside (fences, walls, chests, stations...;
 // chest contents stay private). Other players' plots and builds appear on your island (marked _foreign, never saved).
@@ -7726,6 +7728,10 @@ function buildTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now()
 {const _dp=mpDrawPeer;mpDrawPeer=function(r,tm){if(!r.sl)return _dp(r,tm);const px=P.x,py=P.y,f=face;P.x=r.x;P.y=r.y;face=r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1];
   try{drawBoat26(tm);const bob=Math.round(Math.sin(tm*2.6)),x=Math.round(r.x),y=Math.round(r.y)+bob;if(face[0]!==0){Rg(x-14,y,28,1,'#d8a060');Rg(x-15,y-1,30,1,O)}else{Rg(x-8,y-4,16,1,'#d8a060');Rg(x-9,y-5,18,1,O)}}
   finally{P.x=px;P.y=py;face=f}MP.T=g.getTransform();MP.Tat=performance.now()}}
+// safety net: if the game thinks a screen is open but nothing is showing, let the player move again
+{let stuck=0;setInterval(()=>{const hidden=pn.style.display==='none'&&!(typeof smOpen!=='undefined'&&smOpen)&&!chessOpen&&!TS.open;
+  if(pnOpen&&hidden){if(++stuck>=2){pnOpen=false;fromMenu=false;stuck=0}}else stuck=0;
+  if(menuOpen&&cm.style.display==='none'&&!TS.open&&!(typeof chessOpen!=='undefined'&&chessOpen)){menuOpen=false}},250)}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
