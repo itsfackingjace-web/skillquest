@@ -81,6 +81,39 @@
           ".validate": "newData.hasChildren(['id', 'd']) && newData.child('d').isNumber() && newData.child('d').val() <= 50 && newData.child('id').isString()"
         }
       }
+    },
+    "profiles": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['n', 'nl']) && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('nl').isString()"
+      }
+    },
+    "friends": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid",
+        "$f": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "pm": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$id": {
+          ".write": "auth != null && ((!data.exists() && newData.child('f').val() === auth.uid) || (auth.uid === $uid && !newData.exists()))",
+          ".validate": "newData.hasChildren(['f', 'n', 'm', 't']) && newData.child('m').isString() && newData.child('m').val().length > 0 && newData.child('m').val().length <= 80 && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('t').val() === now"
+        }
+      }
+    },
+    "fires": {
+      ".read": "auth != null",
+      "$loc": {
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      }
     }
   }
 }

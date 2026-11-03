@@ -7155,7 +7155,7 @@ $('mpgo').onclick=()=>{sg.style.display='none';mpSignIn()};
 $('mpso').onclick=async()=>{mpCloseChat();await mpStop(true);try{await FB.auth.signOut(FB.A)}catch(e){}say('Signed out. Playing offline.')};
 pc.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{MP.tab=b.dataset.t;mpRList()});
 // the game's keyboard handlers (capture phase on document) would swallow Enter, so the chat box gets the key first
-addEventListener('keydown',e=>{if(e.target!==inp)return;e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();mpCloseChat()}else if(e.key==='Enter'&&!e.isComposing){e.preventDefault();mpSend(inp.value);inp.value=''}},true);
+addEventListener('keydown',e=>{if(e.target!==inp){const t=e.target;if(t&&t.tagName==='INPUT'&&t.closest&&t.closest('#mpchat')){e.stopImmediatePropagation();if(e.key==='Enter'&&!e.isComposing){e.preventDefault();const f=t.closest('form');if(f)f.requestSubmit()}else if(e.key==='Escape'){e.preventDefault();mpCloseChat()}}return}e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();mpCloseChat()}else if(e.key==='Enter'&&!e.isComposing){e.preventDefault();mpSend(inp.value);inp.value=''}},true);
 addEventListener('keyup',e=>{if(e.target===inp)e.stopImmediatePropagation()},true);
 inp.addEventListener('focus',mpClearKeys);
 $('mpf').onsubmit=e=>{e.preventDefault();mpSend(inp.value);inp.value=''};
@@ -7286,10 +7286,10 @@ function mpLabel(txt,X,Y,sz,col){g.font='700 '+sz+'px '+PF;g.textAlign='center';
 const _dh61=drawHUD;drawHUD=function(){_dh61();if(!MP.on||!MP.T||performance.now()-MP.Tat>120||pnOpen||menuOpen)return;
  const u=Math.max(2,Math.round(Math.min(W,H)/160)),sz=Math.round(5*u),now=performance.now(),T=MP.T;g.save();g.setTransform(1,0,0,1,0,0);
  const cs=Math.max(1,Math.round(u*.7));
- const one=(x,y,name,said,og)=>{const p=T.transformPoint({x,y:y-27});let Y=p.y;if(name){mpLabel(name,p.x,Y,sz,'#f8f8f8');
+ const one=(x,y,name,said,og,fr)=>{const p=T.transformPoint({x,y:y-27});let Y=p.y;if(name){mpLabel(name,p.x,Y,sz,fr?'#88f088':'#f8f8f8');
    if(og){g.font='700 '+sz+'px '+PF;const tw=g.measureText(name).width;g.imageSmoothingEnabled=false;g.drawImage(crownCv,Math.round(p.x-tw/2-9*cs-u),Math.round(Y-sz*.75),9*cs,7*cs)}Y-=sz+u}
   if(said&&now-said.at<5000)mpLabel(said.m.length>42?said.m.slice(0,41)+'…':said.m,p.x,Y,sz,'#f8f048')};
- for(const r of mpVis())one(r.x,r.y,r.n,r.said,isOG(r.uid));
+ for(const r of mpVis())one(r.x,r.y,r.n,r.said,isOG(r.uid),MP.friends&&MP.friends[r.uid]);
  if(mpLoc()||SCENE){const me=MP.selfName&&!dead;one(P.x,P.y,me?myName():'',MP.selfSaid,me&&MP.user&&isOG(MP.user.uid))}
  g.restore()};
 // ---- chat ----
@@ -7410,12 +7410,12 @@ const _nr63=navRoot;navRoot=function(){if(MP.choose)return MP.choose;return _nr6
 // every 5 s it picks a new spot near home from a hash of (NPC, time slot) and walks there at the usual pace.
 {const SEG=5,h01=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233)*43758.5453;return v-Math.floor(v)};
  const feetOK=(x,y)=>!(solid(x-5,y+2)||solid(x+5,y+2)||solid(x-5,y+6)||solid(x+5,y+6));
- function spot(n,i,k){if(!n._sp)n._sp=new Map();let v=n._sp.get(k);if(v)return v;const a=h01(i+1,k)*6.283,r=6+h01(k,i+7)*26;let x=n.H[0]+Math.cos(a)*r,y=n.H[1]+Math.sin(a)*r;
+ function npcSpot(n,i,k){if(!n._sp)n._sp=new Map();let v=n._sp.get(k);if(v)return v;const a=h01(i+1,k)*6.283,r=6+h01(k,i+7)*26;let x=n.H[0]+Math.cos(a)*r,y=n.H[1]+Math.sin(a)*r;
   if(!feetOK(x,y)||!feetOK((x+n.H[0])/2,(y+n.H[1])/2)){x=n.H[0];y=n.H[1]}v=[x,y];n._sp.set(k,v);if(n._sp.size>8)n._sp.delete(n._sp.keys().next().value);return v}
  const _roam62=roamNPCs;roamNPCs=function(dt){_roam62(dt);if(SCENE)return;const T=mpNow()/1000,k=Math.floor(T/SEG),u=T-k*SEG;
   NPCS.forEach((n,i)=>{if(n.scene||n.hx==null)return;if(!n.H)n.H=[n.hx,n.hy];
    if(Math.abs(n.hx-n.H[0])>1||Math.abs(n.hy-n.H[1])>1)return; // on a routine (going home at night etc.): the routine moves it
-   const a=spot(n,i,k-1),b=spot(n,i,k),dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy),w=Math.min(d,u*20),mv=w<d-.5&&d>1;
+   const a=npcSpot(n,i,k-1),b=npcSpot(n,i,k),dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy),w=Math.min(d,u*20),mv=w<d-.5&&d>1;
    n.x=a[0]+(d?dx/d*w:0);n.y=a[1]+(d?dy/d*w:0);n.tx=n.x;n.ty=n.y;
    if(mv){n.st=[1,0,2,0][Math.floor(T*6)%4];if(Math.abs(dx)>Math.abs(dy)){n.dir=2;n.fl=dx<0}else{n.dir=dy<0?1:0;n.fl=false}}
    else{n.st=0;const px=P.x-n.x,py=P.y-n.y;if(!dead&&Math.hypot(px,py)<36){if(Math.abs(px)>Math.abs(py)){n.dir=2;n.fl=px<0}else{n.dir=py<0?1:0;n.fl=false}}}})}}
@@ -7490,11 +7490,98 @@ function mobPost(dt){if(!MP.on||!FB)return;mobSubscribe();if(!MOB.loc)return;mob
 function mobInbox(){if(MOB.inbox||!MP.user)return;const d=FB.db,ref=d.ref(FB.D,'hits/'+MP.user.uid);
  MOB.inbox=d.onChildAdded(ref,s=>{const v=s.val()||{};d.remove(d.ref(FB.D,'hits/'+MP.user.uid+'/'+s.key)).catch(()=>{});const n=en.find(e=>e._mid===v.id&&!e.dead);if(!n||typeof v.d!=='number')return;
   n.hp-=Math.max(0,Math.min(50,v.d));n.kx=(n.kx||0)*.5;if(n.hp<=0){n.dead=1;n.dropped=1}});MP.unsub.push(()=>{if(MOB.inbox)MOB.inbox();MOB.inbox=null})}
+// ---- shared campfires: anyone in the same place sees your fire and can cook or warm up at it ----
+const FIRE={prox:new Map(),loc:null,unsub:null,pubAt:0,pubbed:false};
+function fireTick(){if(!MP.on||!FB||!MP.user)return;const l=mpLoc(),key=l?locKey(l):null,d=FB.db;
+ for(const f of fires)if(!f._rp&&f._loc===undefined)f._loc=l;
+ if(key!==FIRE.loc){if(FIRE.unsub){FIRE.unsub();FIRE.unsub=null}if(FIRE.pubbed&&FIRE.loc)d.remove(d.ref(FB.D,'fires/'+FIRE.loc+'/'+MP.user.uid)).catch(()=>{});FIRE.pubbed=false;
+  for(const p of FIRE.prox.values()){const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}FIRE.prox.clear();FIRE.loc=key;
+  if(key)FIRE.unsub=d.onValue(d.ref(FB.D,'fires/'+key),s=>{if(FIRE.loc!==key)return;const all=s.val()||{},seen=new Set(),cut=mpNow()-8000;
+   for(const o in all){if(o===MP.user.uid)continue;const rec=all[o];if(!rec||!(rec.t>cut)||!Array.isArray(rec.f))continue;
+    rec.f.forEach((v,i)=>{if(!v||typeof v.x!=='number')return;const id=o+'_'+i;seen.add(id);let p=FIRE.prox.get(id);if(!p){p={x:v.x,y:v.y,life:v.life,_rp:1};FIRE.prox.set(id,p);fires.push(p)}else{p.x=v.x;p.y=v.y;p.life=v.life}})}
+   for(const[id,p]of FIRE.prox)if(!seen.has(id)){FIRE.prox.delete(id);const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}})}
+ if(!key)return;for(const p of FIRE.prox.values())if(p.life>0&&fires.indexOf(p)<0)fires.push(p);
+ const now=performance.now();if(now-FIRE.pubAt<2000)return;FIRE.pubAt=now;const ref=d.ref(FB.D,'fires/'+key+'/'+MP.user.uid);
+ const mine=fires.filter(f=>!f._rp&&f._loc===l&&f.life>0).slice(0,8).map(f=>({x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)}));
+ if(!othersHere()||!mine.length){if(FIRE.pubbed){d.remove(ref).catch(()=>{});FIRE.pubbed=false}return}
+ d.set(ref,{t:d.serverTimestamp(),f:mine}).catch(()=>{});if(!FIRE.pubbed)d.onDisconnect(ref).remove().catch(()=>{});FIRE.pubbed=true}
+{const _sn64=snap;snap=function(){const s=_sn64();s.fires=fires.filter(f=>!f._rp).map(f=>({x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)}));return s}}
 // the frame: shared clock first, then the game, then sharing
-{const _u64=upd;upd=function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick()}catch(e){console.warn(e)}}}}
+{const _u64=upd;upd=function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick();fireTick()}catch(e){console.warn(e)}}}}
 // signing out: drop other players' monsters and stop sharing
-function mobStop(){for(const p of MOB.prox.values()){const j=en.indexOf(p);if(j>=0)en.splice(j,1)}MOB.prox.clear();if(MOB.unsub){MOB.unsub();MOB.unsub=null}MOB.loc=null;MOB.pubbed=false;
+function mobStop(){for(const p of FIRE.prox.values()){const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}FIRE.prox.clear();if(FIRE.unsub){FIRE.unsub();FIRE.unsub=null}FIRE.loc=null;FIRE.pubbed=false;for(const p of MOB.prox.values()){const j=en.indexOf(p);if(j>=0)en.splice(j,1)}MOB.prox.clear();if(MOB.unsub){MOB.unsub();MOB.unsub=null}MOB.loc=null;MOB.pubbed=false;
  if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.rloc=null;RES.h={};RES.r={}}
+// ---- Friends list and private messages ----
+// - profiles/<uid>: your name (so friends can find you), friends/<uid>/<friend uid>: your friends list,
+//   pm/<uid>/<id>: private messages to you.
+// - Chat gets two more tabs: Private (From / To lines) and Friends (who's online and where, Message, Remove, Add by name).
+// - Tap a name in chat to add that player. Type "/w name message" to whisper from any tab.
+// - Friends' names show in green over their heads.
+MP.friends={};MP.prof={};MP.pmTo=null;
+{const st=document.createElement('style');st.textContent=`#mpchat .hd{flex-wrap:wrap}#mpchat .tb{padding:6px 8px}#mpchat .pmf b,#mpchat .pmt b{color:#1888a0!important}#mpchat .pmf,#mpchat .pmt{color:#1888a0}
+#mpo .pmf,#mpo .pmt{color:#1888a0}#mpo .pmf b{color:#1888a0}#mpl b.nm{cursor:pointer}
+#mpl .fr{display:flex;align-items:center;gap:6px;padding:6px 4px;border-bottom:1px solid #e0e8f0}#mpl .fr .fn{flex:1;min-width:0}#mpl .fr small{display:block;color:#707070;font-size:11px}
+#mpl .fr .on{color:#28a048}#mpl .fr button,#mpl .fa button{font:700 12px ${PF};padding:5px 8px;border:2px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}
+#mpl .fa{display:flex;gap:6px;margin-bottom:8px}#mpl .fa input{background:#fff!important;color:#404040!important;flex:1;min-width:0;font:500 15px ${PF};padding:5px 7px;border:2px solid #485870}#mpl .fh{font-size:12px;color:#707070;margin:6px 0}`;document.head.appendChild(st)}
+// two more tabs
+{const g2=pc.querySelector('.tb[data-t="game"]');const mk=(t,l)=>{const b=document.createElement('button');b.className='tb';b.dataset.t=t;b.textContent=l;b.onclick=()=>{MP.tab=t;mpRList()};g2.before(b)};mk('pm','Private');mk('fr','Friends')}
+const LOCN=l=>{if(!l)return'Somewhere private';if(l==='hollow')return'Hollow Island';if(l.startsWith('r:')){const R=WORLD_REGIONS[l.slice(2)];return R?R.name:'Overseas'}if(l.startsWith('in:dun')||l.startsWith('in:cave')||l.startsWith('in:tomb'))return'In a dungeon';if(l.startsWith('in:'))return'Indoors';if(l.startsWith('h:'))return'At a house';return'Online'};
+const fname=u=>{const r=MP.players.get(u);return(r&&r.n)||(MP.prof[u]&&MP.prof[u].n)||'Someone'};
+const isFriend=u=>!!(u&&MP.friends[u]);
+// chat lines: names are tappable; private messages read "From X:" / "To X:"
+mpLine=function(m){const d=document.createElement('div');if(m.k==='game'){d.className='gm';d.textContent=m.m;return d}
+ if(m.k==='pm'){d.className=m.dir==='to'?'pmt':'pmf';const b=document.createElement('b');b.className='nm';b.dataset.u=m.uid;b.textContent=(m.dir==='to'?'To ':'From ')+m.n+': ';if(isOG(m.uid))d.append(crownImg());d.append(b,document.createTextNode(m.m));return d}
+ if(m.me)d.className='me';const b=document.createElement('b');b.className='nm';b.dataset.u=m.uid||'';b.textContent=m.n+': ';if(isOG(m.uid))d.append(crownImg());d.append(b,document.createTextNode(m.m));return d};
+function friendsView(){lst.textContent='';const fa=document.createElement('form');fa.className='fa';fa.innerHTML='<input id="mpfa" maxlength="12" placeholder="Add a friend by name" aria-label="Friend name"><button type="submit">ADD</button>';
+ fa.onsubmit=e=>{e.preventDefault();addFriendByName(fa.querySelector('input').value)};lst.appendChild(fa);if(MP.addHint){const h=document.createElement('div');h.className='fh';h.append(...MP.addHint);lst.appendChild(h)}
+ const ids=Object.keys(MP.friends);if(!ids.length){const h=document.createElement('div');h.className='fh';h.textContent='No friends yet. Add someone by name, or tap a name in chat.';lst.appendChild(h);return}
+ ids.sort((a,b)=>(+!!liveP(b))-(+!!liveP(a))||fname(a).localeCompare(fname(b)));
+ for(const u of ids){const r=liveP(u),row=document.createElement('div');row.className='fr';const nm=document.createElement('div');nm.className='fn';const b=document.createElement('b');b.textContent=fname(u);if(isOG(u))nm.append(crownImg());nm.append(b);
+  const s=document.createElement('small');if(r){s.className='on';s.textContent='● Online · '+LOCN(r.loc)}else s.textContent='○ Offline';nm.append(s);
+  const msg=document.createElement('button');msg.textContent='MESSAGE';msg.onclick=()=>{MP.pmTo=u;MP.tab='pm';mpRList();inp.placeholder='To '+fname(u)+'...';setTimeout(()=>inp.focus(),20)};
+  const rm=document.createElement('button');rm.textContent='REMOVE';rm.onclick=()=>{if(rm.dataset.sure){FB.db.remove(FB.db.ref(FB.D,'friends/'+MP.user.uid+'/'+u)).catch(mpErr)}else{rm.dataset.sure=1;rm.textContent='SURE?'}};
+  row.append(nm,msg,rm);lst.appendChild(row)}}
+const liveP=u=>{const r=MP.players.get(u);return r&&live(r)?r:null};
+mpRList=function(){pc.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on',b.dataset.t===MP.tab));
+ inp.placeholder=MP.tab==='pm'?(MP.pmTo?'To '+fname(MP.pmTo)+'...':'Pick a friend in Friends, or type /w name message'):'Say something...';
+ if(MP.tab==='fr'){friendsView();mpRBtn();return}lst.textContent='';
+ for(const m of MP.log)if(MP.tab==='all'||m.k===MP.tab)lst.appendChild(mpLine(m));lst.scrollTop=lst.scrollHeight;mpRBtn()};
+lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;const u=b.dataset.u;
+ if(isFriend(u)){MP.pmTo=u;MP.tab='pm';mpRList();setTimeout(()=>inp.focus(),20)}else{MP.tab='fr';MP.addHint=null;mpRList();const i=$('mpfa');if(i){i.value=fname(u);MP.addUid=u}}});
+function addFriend(u){if(!MP.on||!u||u===MP.user.uid)return;FB.db.set(FB.db.ref(FB.D,'friends/'+MP.user.uid+'/'+u),true).then(()=>{mpLog('game',fname(u)+' is now on your friends list.');MP.addHint=null;if(MP.tab==='fr')mpRList()}).catch(mpErr)}
+function addFriendByName(name){name=String(name||'').trim();if(!name||!MP.on)return;const nl=name.toLowerCase();
+ if(MP.addUid&&fname(MP.addUid).toLowerCase()===nl){const u=MP.addUid;MP.addUid=null;addFriend(u);return}
+ const hits=new Set();for(const u in MP.prof)if(u!==MP.user.uid&&MP.prof[u]&&MP.prof[u].nl===nl)hits.add(u);for(const[u,r]of MP.players)if(r.n&&r.n.toLowerCase()===nl)hits.add(u);
+ const list=[...hits].filter(u=>!isFriend(u));
+ if(!list.length){MP.addHint=[document.createTextNode(hits.size?'Already on your list.':'No player named "'+name+'" has played online yet.')];mpRList();return}
+ if(list.length===1){addFriend(list[0]);return}
+ const parts=[document.createTextNode('Several players are called '+name+'. Pick one: ')];list.forEach((u,i)=>{const b=document.createElement('button');b.textContent=fname(u)+(liveP(u)?' (online)':'')+(isOG(u)?' (OG)':' #'+(i+1));b.style.marginRight='6px';b.onclick=()=>addFriend(u);parts.push(b)});
+ MP.addHint=parts;mpRList()}
+// sending: Private tab or "/w name message"
+mpSend=function(t){t=String(t||'').replace(/\s+/g,' ').trim();if(!t)return;if(!MP.on){mpOpenChat();return}
+ let to=null,msg=t;const w=t.match(/^\/(?:w|msg|pm)\s+(\S+)\s+(.+)$/i);
+ if(w){const nl=w[1].toLowerCase();to=Object.keys(MP.friends).find(u=>fname(u).toLowerCase()===nl)||[...MP.players.keys()].find(u=>(MP.players.get(u).n||'').toLowerCase()===nl);msg=w[2];if(!to){mpLog('game','No friend or nearby player called '+w[1]+'.');return}}
+ else if(MP.tab==='pm'){to=MP.pmTo;if(!to){mpLog('game','Pick a friend in the Friends tab to message.');return}}
+ msg=msg.slice(0,80);const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;const d=FB.db;
+ if(to){d.push(d.ref(FB.D,'pm/'+to),{f:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).then(()=>{mpLog('pm',msg,{dir:'to',n:fname(to),uid:to});MP.pmTo=to}).catch(e=>{mpLog('game','Could not send that message.');mpErr(e)});return}
+ d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).catch(mpErr)};
+// the overlay shows private messages to you too
+mpROv=function(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||chessOpen,recent=MP.log.filter(m=>(m.k==='pub'||m.k==='pm'&&m.dir==='from')&&now-m.at<12000).slice(-3);
+ ov.style.display=hide||TS.open?'none':'flex';btn.style.display=(pnOpen||menuOpen||chessOpen||TS.open)?'none':'block';
+ const key=recent.map(m=>m.id).join(',');if(key!==ov.dataset.k){ov.dataset.k=key;ov.textContent='';for(const m of recent){const d=mpLine(m);d.dataset.at=m.at;ov.appendChild(d)}}
+ for(const d of ov.children){const a=now-(+d.dataset.at);d.style.opacity=a>10000?'0':'1'}};
+// listeners, started with the rest of the online features
+function friendsStart(){const d=FB.db,D=FB.D,uid=MP.user.uid;
+ const pub=()=>d.set(d.ref(D,'profiles/'+uid),{n:myName().slice(0,12),nl:myName().slice(0,12).toLowerCase(),at:d.serverTimestamp()}).catch(()=>{});pub();MP.profN=myName();
+ MP.unsub.push(d.onValue(d.ref(D,'friends/'+uid),s=>{MP.friends=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()}));
+ MP.unsub.push(d.onValue(d.ref(D,'profiles'),s=>{MP.prof=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()}));
+ MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'pm/'+uid),d.limitToLast(30)),s=>{const v=s.val();if(!v||typeof v.m!=='string'||MP.seen.has('pm'+s.key))return;MP.seen.add('pm'+s.key);
+  const fresh=typeof v.t==='number'&&mpNow()-v.t<15000;mpLog('pm',v.m.slice(0,80),{dir:'from',n:String(v.n||'?').slice(0,12),uid:v.f});const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
+  else{MP.pmTo=MP.pmTo||v.f;if(!MP.open){MP.unread++;mpRBtn()}try{sfx('talk')}catch(e){}}}));
+ MP.unsub.push(()=>{MP.friends={};MP.prof={};MP.pmTo=null});MP.pubProf=pub}
+setInterval(()=>{if(MP.on&&MP.user&&MP.pubProf&&MP.profN!==myName()){MP.profN=myName();MP.pubProf()}},5000);
+{const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&MP.user&&!MP.frOn){MP.frOn=MP.user.uid;try{friendsStart()}catch(e){mpErr(e)}}}}
+{const _st=mpStop;mpStop=async function(m){MP.frOn=null;return _st(m)}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
@@ -7523,14 +7610,14 @@ window.SQMP=MP;
  function aimAt(wx,wy){const dx=wx-P.x,dy=(wy)-(P.y-4),l=Math.hypot(dx,dy);if(l<4)return false;AIM.v=[dx/l,dy/l];AIM.t=performance.now();return true}
  function nearestFoe(){const R=WAND?160:bowRange();let best=null,bd=1e9;for(const n of en){if(n.dead)continue;const dx=n.x-P.x,dy=(n.y-4)-(P.y-2),l=Math.hypot(dx,dy);if(l<8||l>R)continue;
   const fwd=(dx*face[0]+dy*face[1])/l,score=l*(1.35-fwd*.35);if(score<bd){bd=score;best=n}}return best}
- function fire(first){if(!canFire()||swing>0)return;AIMX.lastFire=performance.now();shootAim(first)}
+ function aimFire(first){if(!canFire()||swing>0)return;AIMX.lastFire=performance.now();shootAim(first)}
  // --- mouse ---
  cv.addEventListener('mousemove',e=>{AIMX.mouse=[e.clientX,e.clientY];AIMX.mIn=true});
  cv.addEventListener('mouseleave',()=>{AIMX.mIn=false;AIMX.rHeld=false});
  cv.addEventListener('mousedown',e=>{if(!isPC||typeof GPON!=='undefined'&&GPON)return;AIMX.mouse=[e.clientX,e.clientY];AIMX.mIn=true;
   const w=toWorld(e.clientX,e.clientY);
   if(e.button===2){e.preventDefault();if(!offhand()){if(canFire()){say('Put a bow or a wand in your off-hand to shoot with right-click.');sfx('swish')}return}
-   if(w)aimAt(w.x,w.y);AIMX.rHeld=true;AIMX.rT=0;fire(true);return}
+   if(w)aimAt(w.x,w.y);AIMX.rHeld=true;AIMX.rT=0;aimFire(true);return}
   if(e.button===0&&w&&canFire()&&!dead){const dx=w.x-P.x,dy=w.y-(P.y-4);if(Math.hypot(dx,dy)>6)face=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)];
    if(offhand())aimAt(w.x,w.y);attack()}});
  addEventListener('mouseup',e=>{if(e.button===2)AIMX.rHeld=false});
@@ -7545,23 +7632,23 @@ window.SQMP=MP;
  tb.addEventListener('touchmove',e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;for(const t of e.changedTouches){if(t.identifier!==T.id)continue;
   const dx=t.clientX-T.x,dy=t.clientY-T.y;if(Math.hypot(dx,dy)>14){T.drag=true;const l=Math.hypot(dx,dy);AIM.v=[dx/l,dy/l];AIM.t=performance.now()}}},{passive:false});
  const tEnd=e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;tb.classList.remove('on');AIMX.touch=null;
-  if(!T.drag){const n=nearestFoe();if(n)aimAt(n.x,n.y);else AIM.t=-1e9}fire(true)};
+  if(!T.drag){const n=nearestFoe();if(n)aimAt(n.x,n.y);else AIM.t=-1e9}aimFire(true)};
  tb.addEventListener('touchend',tEnd,{passive:false});tb.addEventListener('touchcancel',e=>{AIMX.touch=null;tb.classList.remove('on')});
  // --- every frame: keep the aim on the cursor, repeat while held ---
  const _u63=upd;upd=function(dt){_u63(dt);if(typeof GPON!=='undefined'&&GPON)return;
   if(isPC&&AIMX.mIn&&AIMX.mouse&&offhand()){const w=toWorld(AIMX.mouse[0],AIMX.mouse[1]);if(w)aimAt(w.x,w.y)}
-  if(AIMX.rHeld){AIMX.rT+=dt;if(AIMX.rT>.35&&swing<=0)fire(false)}
-  if(AIMX.touch){AIMX.tHeld+=dt;if(AIMX.touch.drag){AIM.t=performance.now();if(AIMX.tHeld>.5&&swing<=0&&performance.now()-AIMX.lastFire>420)fire(false)}}};
+  if(AIMX.rHeld){AIMX.rT+=dt;if(AIMX.rT>.35&&swing<=0)aimFire(false)}
+  if(AIMX.touch){AIMX.tHeld+=dt;if(AIMX.touch.drag){AIM.t=performance.now();if(AIMX.tHeld>.5&&swing<=0&&performance.now()-AIMX.lastFire>420)aimFire(false)}}};
  // cursor: a crosshair over the game while a bow or wand is ready
  setInterval(()=>{cv.style.cursor=isPC&&offhand()&&!(typeof GPON!=='undefined'&&GPON)?'crosshair':''},500);
  // crosshair for mouse and touch aiming (the controller draws its own)
- function cross(tm){if(typeof GPON!=='undefined'&&GPON)return;if(!offhand()||!aimLive()||dead||ROLLT>0||menuOpen||pnOpen)return;if(SCENE&&!SCENE.room.cave&&!SCENE.room.region)return;
+ function aimCross(tm){if(typeof GPON!=='undefined'&&GPON)return;if(!offhand()||!aimLive()||dead||ROLLT>0||menuOpen||pnOpen)return;if(SCENE&&!SCENE.room.cave&&!SCENE.room.region)return;
   if(!(AIMX.touch&&AIMX.touch.drag)&&!(isPC&&AIMX.mIn))return;
   let dx,dy,tgt;if(TL.bow&&!WAND){[dx,dy,tgt]=aimDir()}else{dx=AIM.v[0];dy=AIM.v[1];tgt=null}
   const r=34,x=Math.round(P.x+dx*r),y=Math.round(P.y-4+dy*r),pu=Math.floor(tm*4)%2,c=tgt?'#f84030':(WAND?'#c8a8ff':'#f8f8f8'),k=tgt?3:4+pu;
   for(const[a,b,w,hh]of[[-k-2,-1,3,3],[k,-1,3,3],[-1,-k-2,3,3],[-1,k,3,3]])Rg(x+a-1,y+b-1,w+2,hh+2,O);
   Rg(x-k-2,y,3,1,c);Rg(x+k,y,3,1,c);Rg(x,y-k-2,1,3,c);Rg(x,y+k,1,3,c);Rg(x,y,1,1,c)}
- const _dh63=drawHUD;drawHUD=function(){if(AIMX.T){g.save();g.setTransform(AIMX.T);try{cross(performance.now()/1000)}catch(e){}g.restore()}_dh63()};
+ const _dh63=drawHUD;drawHUD=function(){if(AIMX.T){g.save();g.setTransform(AIMX.T);try{aimCross(performance.now()/1000)}catch(e){}g.restore()}_dh63()};
  window.SQAIM=AIMX}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
