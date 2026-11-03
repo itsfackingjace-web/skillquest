@@ -93,6 +93,7 @@ var FOOD_RATE=.25;
    58. Gen 3 sprites: every remaining HD sprite (enemies, bosses, stations, landmarks, rooms) pixelated to 1 texel with hard edges; slimes on whole pixels; crisp item icons; pixel harbor flags
    59. Gen 3 UI: stepped pixel frames for the HUD, bars, text box and every menu; octagon touch buttons; pixel sailing card
    60. Gen 3 polish: whole-pixel grid in the world, pixel circles, de-speckled rooms, darker-skin eyes, ranger hood side view
+   65. Mithril and adamant swords and armor (anvil); stats in every weapon, armor, tool and food description
    64. Fewer trees; Oak/Willow/Maple/Yew trees and Gold/Mithril/Adamant ores (+ bars); mining in dungeons; campfires on every island
    63. Mouse and touch aiming for bows and wands: cursor aim + right-click, BOW / CAST touch button (tap = nearest enemy, drag = aim)
    62. Controller pass: visible highlight in every menu, sticks wake the controller, text boxes let go of the keyboard
@@ -7400,9 +7401,9 @@ addEventListener('keyup',e=>{if(TS.open&&!(e.target&&e.target.closest&&e.target.
 const _nr62=navRoot;navRoot=function(){if(TS.open)return TS.stage?tsMn:tsEl;return _nr62()};
 // the world is frozen while the title is up
 const _u62=upd;upd=function(dt){if(TS.open){try{pollPad(dt)}catch(e){}return}_u62(dt)}; // the controller still drives the title
-let tsLast=0;(function tsLoop(t){if(!TS.open)return;const s=t/1000;TS.cl.forEach((e,i)=>e.style.backgroundPositionX=Math.round(-s*[6,14,24][i])+'px');
+let tsLast=0;const tsLoop=function(t){if(!TS.open)return;const s=t/1000;TS.cl.forEach((e,i)=>e.style.backgroundPositionX=Math.round(-s*[6,14,24][i])+'px');
  if(menuOpen)menuOpen=false; // the creator waits behind the title (restored on close)
- if(t-tsLast>700){tsLast=t;tsDrawHero();tsFoot();if(TS.stage)tsMenu()}requestAnimationFrame(tsLoop)})(0);
+ if(t-tsLast>700){tsLast=t;tsDrawHero();tsFoot();if(TS.stage)tsMenu()}requestAnimationFrame(tsLoop)};tsLoop(0);
 setTimeout(()=>{tsDrawHero();tsFoot()},0);
 // the save chooser sits above everything, the title included
 const _nr63=navRoot;navRoot=function(){if(MP.choose)return MP.choose;return _nr63()};
@@ -7665,6 +7666,12 @@ function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now(
 // inside someone else's house: look, don't touch
 {const _uf=useFurn;useFurn=function(it){const h=SCENE&&SCENE.house;if(h&&h._foreign){say(it&&it.use==='chest'?'That chest belongs to '+fname(h._owner)+'.':it&&it.use==='bed'?'That\'s '+fname(h._owner)+'\'s bed.':'Better ask '+fname(h._owner)+' first.');sfx('swish');return}return _uf(it)}}
 {const _sb=startBuild;startBuild=function(k){const h=SCENE&&SCENE.house;if(h&&h._foreign){say('You can only decorate your own house.');closePanel();return}return _sb(k)}}
+// ---- START menu: Friends, and Save & quit to title ----
+function tsReopen(){try{saveLocal(true);saveCloud(true)}catch(e){}closePanel();if(typeof closeSM==='function'&&typeof smOpen!=='undefined'&&smOpen)closeSM();if(MP.open)mpCloseChat();
+ TS.open=true;TS.mh='';tsEl.style.display='flex';tsStage(0);tsDrawHero();tsFoot();requestAnimationFrame(tsLoop);say('Game saved.')}
+SMI.splice(SMI.findIndex(x=>x.id==='online')+1,0,{id:'friends',l:()=>'Friends'});
+SMI.splice(SMI.findIndex(x=>x.id==='exit'),0,{id:'title',l:()=>'Save & quit to title'});
+{const _ss=showScreen;showScreen=function(id){if(id==='friends'){if(!MP.on){sg.style.display='block';return}MP.tab='fr';mpOpenChat();return}if(id==='title'){tsReopen();return}return _ss(id)}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
@@ -7817,6 +7824,59 @@ window.SQMP=MP;
   inv.wood-=3;inv.stone--;const life=(150+lvOf(5)*3)*(1+(typeof fDur==='function'?fDur():0));fires.push({x:fx,y:fy,life,mx:life});say('Campfire built');addXp(5,40);sfx('fire');saveLocal()};
  const _rn64=rgNear;rgNear=function(R,...a){const out=_rn64(R,...a);if(SCENE&&SCENE.room===R)for(const f of fires)out.push({t:'_fire',f,x:f.x/16,y:(f.y+3)/16-1});return out};
  const _df64=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_fire'){pF(it.f,tm);return}return _df64(it,tm)}}
+// ---------------------------------------------------------------- 65. Mithril and adamant gear; stats on every item
+// - Anvil recipes from the new bars: Mithril sword / helmet / legs / chestplate (Smithing 50-56, wear at Defence 30,
+//   wield at Attack 30) and Adamant (Smithing 65-72, Defence 40, Attack 40). Swords are tiers 6 and 7, armor tiers 4 and 5.
+// - Every weapon, armor piece, tool and food shows its stats in its description (damage, block, range, mana, healing,
+//   set bonuses, requirements) and how it compares with what you have equipped.
+{const MITH=['#5868c8','#a8b8f8'],ADAM=['#3a8a50','#98e0a8'];
+ TIER_N.push('Crystal','Mithril','Adamant');TCOL[5]=TCOL[5]||'#68d8f8';TCOL.push('#7888e0','#48b060');AT.push('Mithril','Adamant');AC3.push(MITH[0],ADAM[0]);
+ const add=(k,e,d)=>{EQ[k]=e;EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=e.v;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase();IDESC[k]=d};
+ add('eq_sword6',{slot:'main',kind:'sword',tier:6,n:'Mithril sword',ic:'sword',col:'#7888e0',v:320,atk:30},'A light, razor-sharp blade.');
+ add('eq_sword7',{slot:'main',kind:'sword',tier:7,n:'Adamant sword',ic:'sword',col:'#48b060',v:640,atk:40},'A heavy blade that cuts through anything.');
+ for(const[s,nm]of[['helm','helmet'],['body','chestplate'],['legs','legs']]){
+  add('eq_'+s+'4',{slot:s,arm:4,n:'Mithril '+nm,ic:s,col:MITH[0],v:{helm:180,body:360,legs:270}[s]},'Mithril armor.');
+  add('eq_'+s+'5',{slot:s,arm:5,n:'Adamant '+nm,ic:s,col:ADAM[0],v:{helm:360,body:720,legs:540}[s]},'Adamant armor.')}
+ SM.push({k:'eq_sword6',n:'Mithril sword',c:{mbar:2},lv:50,xp:240},{k:'eq_helm4',n:'Mithril helmet',c:{mbar:2},lv:50,xp:220,def:30},{k:'eq_legs4',n:'Mithril legs',c:{mbar:3},lv:53,xp:320,def:30},{k:'eq_body4',n:'Mithril chestplate',c:{mbar:4},lv:56,xp:420,def:30},
+  {k:'eq_sword7',n:'Adamant sword',c:{abar:2},lv:65,xp:380},{k:'eq_helm5',n:'Adamant helmet',c:{abar:2},lv:65,xp:360,def:40},{k:'eq_legs5',n:'Adamant legs',c:{abar:3},lv:68,xp:500,def:40},{k:'eq_body5',n:'Adamant chestplate',c:{abar:4},lv:72,xp:640,def:40});
+ // requirements to wear and wield
+ const DEFREQ={4:30,5:40},needs=e=>e.arm>=4?['Defence',8,DEFREQ[e.arm]]:e.atk?['Attack',0,e.atk]:null;
+ const _eq65=equipItem;equipItem=function(k){const e=EQ[k];const n=e&&needs(e);if(n&&lvOf(n[1])<n[2]){say('You need '+n[0]+' '+n[2]+' to use the '+e.n.toLowerCase()+'.');sfx('swish');return}return _eq65(k)};
+ // how they look on you
+ const _gc65=gearCH;gearCH=function(){const c=_gc65();if(ARM.helm>=4){c.ht=2;c.hcol=HB+5+ARM.helm-4}if(ARM.body>=4)c.sh=SB+5+ARM.body-4;if(ARM.legs>=4)c.pn=PB+5+ARM.legs-4;return c};
+ const _kl65=kitLook;kitLook=function(ch){const o=_kl65(ch),tc=i=>i===0?MITH:ADAM,sh=ch.sh|0,pn=ch.pn|0,hc=ch.hcol|0;
+  if(!ch.mr&&(sh===SB+5||sh===SB+6)){const t=tc(sh-SB-5);o.body='plate';o.bc=t[0];o.ba=t[1]}
+  if(pn===PB+5||pn===PB+6){const t=tc(pn-PB-5);o.legs='greaves';o.lc=t[0];o.la=t[1]}
+  if(!ch.mh&&ch.ht===2&&(hc===HB+5||hc===HB+6)){const t=tc(hc-HB-5);o.head='helm';o.hc=t[0];o.ha=t[1]}return o};
+ if(typeof KITC!=='undefined')KITC.clear();
+ // saves: keep tiers above the old caps
+ const _ap65=applySave;applySave=function(S){_ap65(S);if(S.arm)for(const s of['helm','body','legs']){const v=+S.arm[s]|0;if(v>=4&&v<=5)ARM[s]=v}
+  if(S.rare&&(+S.rare.sword===6||+S.rare.sword===7))TL.sword=+S.rare.sword;if(typeof snapEq==='function')snapEq()};
+ // ---- stats ----
+ const withTemp=(o,k,v,f)=>{const old=o[k];o[k]=v;try{return f()}finally{o[k]=old}};
+ const meleeOf=t=>1+t+Math.floor(lvOf(0)/15)+(typeof meleeFlat==='function'?meleeFlat():0);
+ const pct=x=>Math.round(x*100)+'%';
+ function eqStats(k){const e=EQ[k];if(!e)return'';const L=[];const cur=occ(e.slot),same=cur===k;
+  if(e.kind==='sword'){const d=meleeOf(e.tier),c=meleeOf(TL.sword);L.push('Damage '+d+' per hit');if(!same)L.push(cur?(d>c?'+'+(d-c)+' vs your '+EQ[cur].n.toLowerCase():d<c?(d-c)+' vs your '+EQ[cur].n.toLowerCase():'same as your '+EQ[cur].n.toLowerCase()):'+'+(d-meleeOf(0))+' vs bare hands')}
+  else if(e.kind==='bow'){const d=withTemp(TL,'bow',e.tier,()=>arrowDmg()),r=withTemp(TL,'bow',e.tier,()=>bowRange());L.push('Arrow damage '+d,'Range '+r);
+   if(!same&&TL.bow){const cd=arrowDmg();if(d!==cd)L.push((d>cd?'+':'')+(d-cd)+' damage vs your bow')}}
+  else if(e.kind==='wand'){const W2=WSP[e.el];L.push((e.el[0].toUpperCase()+e.el.slice(1))+' spells','Damage '+spellDmg(e.el),'Costs '+W2.cost+' mana',e.el==='fire'?'Sets enemies on fire':e.el==='ice'?'Slows enemies':'Strikes hard');if(e.lv>1)L.push('Needs Magic '+e.lv)}
+  else if(e.arm){const b=e.arm*.05,cb=ARM[e.slot]*.05;L.push('Block +'+pct(b));if(!same&&cur&&EQ[cur].arm!==undefined&&b!==cb)L.push((b>cb?'+':'')+pct(b-cb)+' vs your '+EQ[cur].n.toLowerCase());
+   L.push('Your block chance now: '+pct(blockCh()));const req=e.arm>=4?DEFREQ[e.arm]:[0,0,10,20][e.arm];if(req)L.push('Needs Defence '+req)}
+  else if(e.cls==='r')L.push('Ranger set: +range per piece','2 pieces: +1 arrow damage','3 pieces: +2 arrow damage');
+  else if(e.cls==='m'){L.push('Mage set: faster mana per piece','2 pieces: +1 spell damage','3 pieces: +2 spell damage');if(e.lv)L.push('Needs Magic '+e.lv)}
+  else if(e.slot==='axe'||e.slot==='pick'){L.push((e.slot==='axe'?'Chop':'Mine')+' power '+(e.slot==='axe'?1+e.tier:e.tier));const t=TL[e.slot];if(!same&&t&&t!==e.tier)L.push((e.tier>t?'Stronger':'Weaker')+' than yours')}
+  if(e.kind==='sword'&&e.atk)L.push('Needs Attack '+e.atk);
+  return L.join(' · ')}
+ function foodStats(k){const f=FOODS.find(q=>q.k===k);if(!f)return'';const L=[];if(f.heal)L.push('Heals '+f.heal+' HP');if(f.hun)L.push('Food +'+f.hun);return L.join(' · ')}
+ // every description shows its stats first
+ const BASE={};for(const k in IDESC)BASE[k]=IDESC[k];
+ const statsFor=k=>EQ[k]?eqStats(k):isFood(k)?foodStats(k):'';
+ const wrapDesc=k=>{if(Object.getOwnPropertyDescriptor(IDESC,k)&&Object.getOwnPropertyDescriptor(IDESC,k).get)return;if(!(k in BASE))BASE[k]=IDESC[k];
+  Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){let s='';try{s=statsFor(k)}catch(e){}return(s?s+'. ':'')+(BASE[k]||'')},set(v){BASE[k]=v}})};
+ for(const k of new Set([...EQK,...FOODS.map(f=>f.k)]))wrapDesc(k);
+ IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns.';
+ window.SQSTATS=statsFor}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
