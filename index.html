@@ -93,6 +93,7 @@ var FOOD_RATE=.25;
    58. Gen 3 sprites: every remaining HD sprite (enemies, bosses, stations, landmarks, rooms) pixelated to 1 texel with hard edges; slimes on whole pixels; crisp item icons; pixel harbor flags
    59. Gen 3 UI: stepped pixel frames for the HUD, bars, text box and every menu; octagon touch buttons; pixel sailing card
    60. Gen 3 polish: whole-pixel grid in the world, pixel circles, de-speckled rooms, darker-skin eyes, ranger hood side view
+   62. Controller pass: visible highlight in every menu, sticks wake the controller, text boxes let go of the keyboard
    61. Multiplayer (hosted copy only): Google sign-in, account saves in Firebase, other players with names overhead, Gen 3 chat,
        OG crowns, Emerald-style title screen (PRESS START, Continue / New Game, sign-in, Options)
    BOOT LOAD (end of file) - applies this device's save once, after every section is set up
@@ -7115,7 +7116,9 @@ const myName=()=>PNAME||((MP.user&&MP.user.displayName)||'').split(' ')[0].repla
 const mpErr=e=>{console.warn('[online]',e);const c=(e&&(e.code||e.message))||'';mpLog('game','Online: '+String(c).replace(/^auth\//,'').slice(0,60))};
 const mpNow=()=>Date.now()+MP.off;
 // ---- where am I (only outdoors is shared) ----
-function mpLoc(){if(dead||(typeof TRAVEL49!=='undefined'&&TRAVEL49))return'';if(!SCENE)return'hollow';const R=SCENE.room;return R&&R.region?'r:'+R.region:''}
+// outdoors (Hollow or a region) and public buildings (shops, inns, forges...) are shared; your own house, caves and dungeons are private
+function mpLoc(){if(dead||(typeof TRAVEL49!=='undefined'&&TRAVEL49))return'';if(!SCENE)return'hollow';const R=SCENE.room;if(!R)return'';if(R.region)return'r:'+R.region;
+ if(SCENE.house||SCENE.id==='home'||R.cave||R.dun||R.tomb||!ROOMS[SCENE.id])return'';return'in:'+SCENE.id}
 // ---- UI ----
 const css=document.createElement('style');css.textContent=`
 #mpb{position:fixed;left:8px;top:52%;z-index:30;min-width:72px;height:40px;padding:0 10px;background:#f8f8f8;color:#404040;border:3px solid #485870;box-shadow:inset 0 0 0 2px #a8c0e0;font:700 14px ${PF};letter-spacing:1px;cursor:pointer;touch-action:manipulation;
@@ -7270,6 +7273,10 @@ function mpDrawPeer(r,tm){const x=Math.round(r.x),y=Math.round(r.y),st=r.mv?[1,0
 const _lh61=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{if(_lh61)_lh61(L,x0,y0,x1,y1,tm);mpStepAll();for(const r of mpVis())L.push([r.y+6,4,t=>mpDrawPeer(r,t)])};
 // regions: ride along as room items
 const _rn61=rgNear;rgNear=function(R,...a){const out=_rn61(R,...a);if(SCENE&&SCENE.room===R){mpStepAll();for(const r of mpVis())out.push({t:'_mp',r,x:r.x/16,y:(r.y+6)/16-1})}return out};
+// public buildings: other players join the room's y-sorted list as room items
+const _drr61=drawRoom;drawRoom=function(tm){const R=SCENE&&SCENE.room;if(!R||R.region||!MP.on||!mpLoc().startsWith('in:'))return _drr61(tm);
+ mpStepAll();const add=mpVis().map(r=>({t:'_mp',r,x:r.x/16,y:(r.y+6)/16-1}));if(!add.length)return _drr61(tm);
+ const all=R.items;R.items=all.concat(add);try{_drr61(tm)}finally{R.items=all}};
 const _df61=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_mp'){mpDrawPeer(it.r,tm);return}return _df61(it,tm)};
 // remember the world transform every frame (the player is always drawn in world space)
 const _pP61=pP;pP=function(tm){MP.T=g.getTransform();MP.Tat=performance.now();return _pP61(tm)};
@@ -7397,11 +7404,34 @@ let tsLast=0;(function tsLoop(t){if(!TS.open)return;const s=t/1000;TS.cl.forEach
 setTimeout(()=>{tsDrawHero();tsFoot()},0);
 // the save chooser sits above everything, the title included
 const _nr63=navRoot;navRoot=function(){if(MP.choose)return MP.choose;return _nr63()};
+// ---- Shared NPCs: villagers wander on a schedule from the shared clock, so every player sees them in the same spot ----
+// While an NPC is at home (not heading somewhere for a routine), its position is a pure function of the time:
+// every 5 s it picks a new spot near home from a hash of (NPC, time slot) and walks there at the usual pace.
+{const SEG=5,h01=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233)*43758.5453;return v-Math.floor(v)};
+ const feetOK=(x,y)=>!(solid(x-5,y+2)||solid(x+5,y+2)||solid(x-5,y+6)||solid(x+5,y+6));
+ function spot(n,i,k){if(!n._sp)n._sp=new Map();let v=n._sp.get(k);if(v)return v;const a=h01(i+1,k)*6.283,r=6+h01(k,i+7)*26;let x=n.H[0]+Math.cos(a)*r,y=n.H[1]+Math.sin(a)*r;
+  if(!feetOK(x,y)||!feetOK((x+n.H[0])/2,(y+n.H[1])/2)){x=n.H[0];y=n.H[1]}v=[x,y];n._sp.set(k,v);if(n._sp.size>8)n._sp.delete(n._sp.keys().next().value);return v}
+ const _roam62=roamNPCs;roamNPCs=function(dt){_roam62(dt);if(SCENE)return;const T=mpNow()/1000,k=Math.floor(T/SEG),u=T-k*SEG;
+  NPCS.forEach((n,i)=>{if(n.scene||n.hx==null)return;if(!n.H)n.H=[n.hx,n.hy];
+   if(Math.abs(n.hx-n.H[0])>1||Math.abs(n.hy-n.H[1])>1)return; // on a routine (going home at night etc.): the routine moves it
+   const a=spot(n,i,k-1),b=spot(n,i,k),dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy),w=Math.min(d,u*20),mv=w<d-.5&&d>1;
+   n.x=a[0]+(d?dx/d*w:0);n.y=a[1]+(d?dy/d*w:0);n.tx=n.x;n.ty=n.y;
+   if(mv){n.st=[1,0,2,0][Math.floor(T*6)%4];if(Math.abs(dx)>Math.abs(dy)){n.dir=2;n.fl=dx<0}else{n.dir=dy<0?1:0;n.fl=false}}
+   else{n.st=0;const px=P.x-n.x,py=P.y-n.y;if(!dead&&Math.hypot(px,py)<36){if(Math.abs(px)>Math.abs(py)){n.dir=2;n.fl=px<0}else{n.dir=py<0?1:0;n.fl=false}}}})}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
 window.SQMP=MP;
 }
+// ---------------------------------------------------------------- 62. Controller pass
+// - The highlight is drawn inside each button (an inset ring), because the Gen 3 pixel frames clip anything drawn outside.
+// - Moving either stick or the D-pad wakes the controller up, not just a button press.
+// - Moving the highlight off a text box closes the phone keyboard.
+{const st=document.createElement('style');st.textContent='.gpf.gpf.gpf{outline:none!important;box-shadow:inset 0 0 0 3px #f8a020,inset 0 0 0 6px rgba(248,160,32,.35)!important;filter:brightness(1.04)}'+
+  'input.gpf.gpf.gpf{box-shadow:inset 0 0 0 3px #f8a020!important}';document.head.appendChild(st);
+ const _pp62=pollPad;pollPad=function(dt){if(!GPON){try{const all=navigator.getGamepads?navigator.getGamepads():[];for(const g2 of all){if(!g2||!g2.connected)continue;
+   if(g2.axes.some(v=>Math.abs(v)>.6)||g2.buttons.some(b=>b&&(b.pressed||b.value>.5))){GPI=g2.index;gpActivate(true);break}}}catch(e){}}_pp62(dt)};
+ const _sf62=setFocus;setFocus=function(el){const a=document.activeElement;if(a&&a!==el&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&a.blur)a.blur();_sf62(el)}}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
