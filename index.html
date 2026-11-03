@@ -7390,12 +7390,12 @@ tsEl.addEventListener('click',e=>{if(TS.stage===0&&e.target!==tsPs)tsPs.click()}
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
  if(a==='go')tsClose();else if(a==='in'){mpSignIn();}else if(a==='opt')tsClose(()=>{fromMenu=false;showScreen('options')})});
 // keyboard: any key starts; arrows / Enter / Esc in the menu; the game never sees these keys while the title is up
-addEventListener('keydown',e=>{if(!TS.open)return;e.stopImmediatePropagation();const k=e.key;
+addEventListener('keydown',e=>{if(!TS.open||(e.target&&e.target.closest&&e.target.closest('#mpbugf,#mpsave')))return;e.stopImmediatePropagation();const k=e.key;
  if(TS.stage===0){if(e.isTrusted)TS.kb=true;if(k!=='Shift'){e.preventDefault();tsPs.click()}return}
  if(k==='Escape'){e.preventDefault();tsStage(0);return}
  if(!e.isTrusted)return; // controller keys are handled by the menu highlight
  TS.kb=true;if(k==='ArrowDown'||k==='s'){e.preventDefault();navMove(0,1)}else if(k==='ArrowUp'||k==='w'){e.preventDefault();navMove(0,-1)}else if(k==='Enter'||k===' '||k==='z'){e.preventDefault();navPress()}},true);
-addEventListener('keyup',e=>{if(TS.open)e.stopImmediatePropagation()},true);
+addEventListener('keyup',e=>{if(TS.open&&!(e.target&&e.target.closest&&e.target.closest('#mpbugf')))e.stopImmediatePropagation()},true);
 // controller: the title is the screen being navigated
 const _nr62=navRoot;navRoot=function(){if(TS.open)return TS.stage?tsMn:tsEl;return _nr62()};
 // the world is frozen while the title is up
@@ -7583,6 +7583,52 @@ function friendsStart(){const d=FB.db,D=FB.D,uid=MP.user.uid;
 setInterval(()=>{if(MP.on&&MP.user&&MP.pubProf&&MP.profN!==myName()){MP.profN=myName();MP.pubProf()}},5000);
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&MP.user&&!MP.frOn){MP.frOn=MP.user.uid;try{friendsStart()}catch(e){mpErr(e)}}}}
 {const _st=mpStop;mpStop=async function(m){MP.frOn=null;return _st(m)}}
+// ---- Bug reports (beta): a BUG button under CHAT, in the START menu, on the title screen and in Options ----
+// The report form asks what happened (and optionally what you expected), attaches a small screenshot and the game's
+// state (where you are, device, screen, version), and saves it to bugs/<id> in the database (Realtime Database > bugs).
+// Not signed in: the report waits on this device and is sent the next time you sign in.
+const BUGV='2026-11-03';
+{const st=document.createElement('style');st.textContent=`#mpbug{position:fixed;left:8px;top:calc(52% + 48px);z-index:30;min-width:72px;height:34px;padding:0 10px;background:#f8f0e8;color:#b03828;border:3px solid #485870;box-shadow:inset 0 0 0 2px #e8b8a8;font:700 13px ${PF};letter-spacing:1px;cursor:pointer;touch-action:manipulation;
+ clip-path:polygon(2px 0,calc(100% - 2px) 0,100% 2px,100% calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,0 calc(100% - 2px),0 2px)}
+#mpbugf{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:97;max-width:520px;margin:0 auto;background:#f8f8f8;color:#404040;font:500 14px ${PF};padding:14px;box-sizing:border-box;display:none;max-height:calc(100vh - 16px);overflow-y:auto}
+#mpbugf .h{font-weight:700;font-size:17px;letter-spacing:1px}#mpbugf label{display:block;margin:10px 0 4px;font-weight:700}#mpbugf textarea{width:100%;box-sizing:border-box;min-height:84px;font:500 16px ${PF};padding:8px;border:2px solid #485870;background:#fff;color:#404040;border-radius:0}
+#mpbugf .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}#mpbugf button{font:700 14px ${PF};padding:9px 14px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#mpbugf .pri{background:#485870;color:#f8f8f8}
+#mpbugf .shot{display:flex;align-items:center;gap:8px;margin-top:8px}#mpbugf img{width:84px!important;max-width:84px!important;height:auto!important;border:2px solid #a8c0e0;image-rendering:auto!important}#mpbugf .st{margin-top:8px;font-size:13px;color:#707070;min-height:16px}`;document.head.appendChild(st)}
+const bugBtn=el('button','mpbug','','BUG'),bugF=el('div','mpbugf','g3','<div class="h">REPORT A BUG</div><p style="margin:6px 0 0;line-height:1.4">Thanks for testing! Tell us what went wrong. A screenshot and your game details are attached.</p>'+
+ '<label for="bgw">What happened?</label><textarea id="bgw" maxlength="1500" placeholder="e.g. I fell through the bridge near Saltmere"></textarea>'+
+ '<label for="bge">What did you expect? (optional)</label><textarea id="bge" maxlength="600" style="min-height:52px"></textarea>'+
+ '<div class="shot"><input type="checkbox" id="bgs" checked><label for="bgs" style="margin:0;font-weight:500">Attach a screenshot</label><img id="bgi" alt="Screenshot preview"></div>'+
+ '<div class="row"><button class="pri" id="bgsend">SEND REPORT</button><button id="bgno">CANCEL</button></div><div class="st" id="bgst"></div>');
+document.body.append(bugBtn,bugF);for(const e of[bugBtn,bugF])for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])e.addEventListener(ev,stop);
+let bugShot='';
+function bugOpen(){try{const c=document.getElementById('c'),w=480,h=Math.round(c.height*w/c.width),t=document.createElement('canvas');t.width=w;t.height=h;t.getContext('2d').drawImage(c,0,0,w,h);bugShot=t.toDataURL('image/jpeg',.6)}catch(e){bugShot=''}
+ $('bgi').src=bugShot||'';$('bgi').style.display=bugShot?'block':'none';$('bgst').textContent=MP.on?'':'You are offline: the report is kept on this device and sent when you sign in.';
+ bugF.style.display='block';mpClearKeys();if(!GPON)setTimeout(()=>$('bgw').focus(),30)}
+function bugClose(){bugF.style.display='none';setFocus(null)}
+function bugInfo(){const R=SCENE&&SCENE.room;return{where:mpLoc()||(SCENE?'private:'+SCENE.id:'hollow'),x:Math.round(P.x),y:Math.round(P.y),region:curRegion(),day:Math.floor(time/DAYLEN)+1,
+ hp:P.hp,quest:Q.i,dead:!!dead,pad:!!GPON,pc:!!isPC,ua:navigator.userAgent.slice(0,200),scr:innerWidth+'x'+innerHeight+'@'+(window.devicePixelRatio||1),standalone:!!(navigator.standalone||matchMedia('(display-mode: standalone)').matches),v:BUGV,last:(MP.log.slice(-6).map(m=>m.m).join(' | ')).slice(0,400)}}
+function bugSendNow(r){const d=FB.db;return d.push(d.ref(FB.D,'bugs'),Object.assign(r,{u:MP.user.uid,n:myName().slice(0,12),t:d.serverTimestamp()}))}
+function bugFlush(){if(!MP.on)return;let q=[];try{q=JSON.parse(lsGet('sq_bugq')||'[]')}catch(e){}if(!q.length)return;lsSet('sq_bugq','[]');for(const r of q)bugSendNow(r).catch(()=>{})}
+$('bgsend').onclick=async()=>{const w=$('bgw').value.trim();if(w.length<3){$('bgst').textContent='Please describe what happened.';return}
+ const r={what:w.slice(0,1500),exp:$('bge').value.trim().slice(0,600),info:bugInfo(),shot:$('bgs').checked?bugShot:''};
+ if(!MP.on){let q=[];try{q=JSON.parse(lsGet('sq_bugq')||'[]')}catch(e){}q.push(r);while(q.length>5)q.shift();lsSet('sq_bugq',JSON.stringify(q));$('bgw').value='';$('bge').value='';bugClose();say('Bug report saved. It will be sent when you sign in.');return}
+ $('bgst').textContent='Sending...';try{await bugSendNow(r);$('bgw').value='';$('bge').value='';bugClose();say('Bug report sent. Thank you!')}catch(e){$('bgst').textContent='Could not send. Try again in a moment.';mpErr(e)}};
+$('bgno').onclick=bugClose;bugBtn.onclick=bugOpen;
+// typing in the form never moves your character
+addEventListener('keydown',e=>{const t=e.target;if(!t||!bugF.contains(t))return;e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();bugClose()}},true);
+addEventListener('keyup',e=>{if(e.target&&bugF.contains(e.target))e.stopImmediatePropagation()},true);
+setInterval(()=>{bugBtn.style.display=(pnOpen||menuOpen||chessOpen||TS.open||bugF.style.display==='block')?'none':'block'},250);
+{const _ms=mpStart;mpStart=async function(u){await _ms(u);try{bugFlush()}catch(e){}}}
+// also in the START menu, the title screen and Options
+SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'bug',l:()=>'Report a bug'});
+{const _ss=showScreen;showScreen=function(id){if(id!=='bug')return _ss(id);bugOpen()}}
+{const _opt=optionsHTML;optionsHTML=function(){const h=_opt(),k=h.indexOf('<div class="tl" style="margin-top:22px');const add='<button class="sb mpbg" data-o="bug">Report a bug</button>';return k<0?h+add:h.slice(0,k)+add+h.slice(k)}}
+{const _oc=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('.mpbg')){closePanel();bugOpen();return}_oc(e)}}
+{const _tm=tsMenu;tsMenu=function(){_tm();if(!tsMn.querySelector('[data-a="bug"]')){const b=document.createElement('button');b.dataset.a='bug';b.textContent='REPORT A BUG';const st=tsMn.querySelector('.tsst');tsMn.insertBefore(b,st)}}}
+tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='bug'){bugOpen()}});
+// controller: the form is navigable, ○ closes it
+{const _nr=navRoot;navRoot=function(){if(bugF.style.display==='block')return bugF;return _nr()}}
+addEventListener('keydown',e=>{if(e.key==='Escape'&&bugF.style.display==='block'&&!e.isTrusted){bugClose();e.stopImmediatePropagation()}},true);
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();

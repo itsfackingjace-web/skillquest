@@ -114,6 +114,12 @@
           ".write": "auth != null && auth.uid === $uid"
         }
       }
+    },
+    "bugs": {
+      "$id": {
+        ".write": "auth != null && !data.exists() && newData.child('u').val() === auth.uid",
+        ".validate": "newData.hasChildren(['u', 'what', 't']) && newData.child('what').isString() && newData.child('what').val().length <= 1500 && newData.child('t').val() === now && (!newData.child('shot').exists() || (newData.child('shot').isString() && newData.child('shot').val().length < 400000))"
+      }
     }
   }
 }
