@@ -7264,6 +7264,16 @@ const _opt61=optionsHTML;optionsHTML=function(){const h=_opt61(),k=h.indexOf('<d
  const add='<div class="tl" style="margin-top:16px">ONLINE</div><button class="sb mpo" data-o="myname">Show my name overhead: '+(MP.selfName?'ON':'OFF')+'</button>';
  return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
 const _oc61=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mpo');if(b){MP.selfName=!MP.selfName;try{localStorage.setItem('sq_myname',MP.selfName?'1':'0')}catch(_){}rPn();return}_oc61(e)};
+// ---- controller: START menu entry, highlight navigation in the chat and sign-in boxes, ○ / Options closes them ----
+SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'online',l:()=>MP.on?'Chat':'Play online'});
+const _ss61=showScreen;showScreen=function(id){if(id!=='online')return _ss61(id);mpOpenChat()};
+const _nr61=navRoot;navRoot=function(){if(sg.style.display==='block')return sg;if(MP.open)return pc;return _nr61()};
+// ○ / Options arrive as an Escape key press; close our boxes first (the chat input handles its own Escape)
+addEventListener('keydown',e=>{if(e.key!=='Escape'||e.target===inp)return;
+ if(sg.style.display==='block'){sg.style.display='none';e.stopImmediatePropagation();e.preventDefault()}
+ else if(MP.open){mpCloseChat();e.stopImmediatePropagation();e.preventDefault()}},true);
+// opening the chat from the controller: highlight the message box instead of popping up the phone keyboard
+const _oc61b=mpOpenChat;mpOpenChat=function(){if(GPON){if(!MP.on){sg.style.display='block';return}MP.open=true;MP.unread=0;pc.style.display='block';mpRList();mpClearKeys();setFocus(null);return}_oc61b()};
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
