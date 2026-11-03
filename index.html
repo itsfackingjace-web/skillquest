@@ -93,7 +93,8 @@ var FOOD_RATE=.25;
    58. Gen 3 sprites: every remaining HD sprite (enemies, bosses, stations, landmarks, rooms) pixelated to 1 texel with hard edges; slimes on whole pixels; crisp item icons; pixel harbor flags
    59. Gen 3 UI: stepped pixel frames for the HUD, bars, text box and every menu; octagon touch buttons; pixel sailing card
    60. Gen 3 polish: whole-pixel grid in the world, pixel circles, de-speckled rooms, darker-skin eyes, ranger hood side view
-   61. Multiplayer (hosted copy only): Google sign-in, account saves in Firebase, other players with names overhead, Gen 3 chat
+   61. Multiplayer (hosted copy only): Google sign-in, account saves in Firebase, other players with names overhead, Gen 3 chat,
+       OG crowns, Emerald-style title screen (PRESS START, Continue / New Game, sign-in, Options)
    BOOT LOAD (end of file) - applies this device's save once, after every section is set up
 
    HOW IT FITS TOGETHER
@@ -7162,7 +7163,7 @@ function mpLine(m){const d=document.createElement('div');if(m.k==='game'){d.clas
 function mpRList(){pc.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on',b.dataset.t===MP.tab));lst.textContent='';
  for(const m of MP.log)if(MP.tab==='all'||m.k===MP.tab)lst.appendChild(mpLine(m));lst.scrollTop=lst.scrollHeight;mpRBtn()}
 function mpROv(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||chessOpen,recent=MP.log.filter(m=>m.k==='pub'&&now-m.at<12000).slice(-3);
- ov.style.display=hide?'none':'flex';btn.style.display=(pnOpen||menuOpen||chessOpen)?'none':'block';
+ ov.style.display=hide||TS.open?'none':'flex';btn.style.display=(pnOpen||menuOpen||chessOpen||TS.open)?'none':'block';
  const key=recent.map(m=>m.id).join(',');if(key!==ov.dataset.k){ov.dataset.k=key;ov.textContent='';for(const m of recent){const d=mpLine(m);d.dataset.at=m.at;ov.appendChild(d)}}
  for(const d of ov.children){const a=now-(+d.dataset.at);d.style.opacity=a>10000?'0':'1'}}
 function mpLog(k,m,extra){const e=Object.assign({k,m,at:performance.now(),id:Math.random().toString(36).slice(2)},extra||{});MP.log.push(e);if(MP.log.length>120)MP.log.shift();
@@ -7274,6 +7275,93 @@ addEventListener('keydown',e=>{if(e.key!=='Escape'||e.target===inp)return;
  else if(MP.open){mpCloseChat();e.stopImmediatePropagation();e.preventDefault()}},true);
 // opening the chat from the controller: highlight the message box instead of popping up the phone keyboard
 const _oc61b=mpOpenChat;mpOpenChat=function(){if(GPON){if(!MP.on){sg.style.display='block';return}MP.open=true;MP.unread=0;pc.style.display='block';mpRList();mpClearKeys();setFocus(null);return}_oc61b()};
+// ---- Title screen (Emerald-style): logo, PRESS START, then Continue / New Game, Google sign-in, Options ----
+// Shown once per launch. While it is up the world is frozen and the game ignores input.
+const TS={open:true,stage:0,cl:[]};
+{const st=document.createElement('style');st.textContent=`
+#sqts{position:fixed;inset:0;z-index:90;overflow:hidden;background:linear-gradient(#051e15,#0b3624 40%,#17573a 72%,#2a7a4a);color:#f8f8f8;font-family:${PF};display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-user-select:none;touch-action:manipulation;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px);box-sizing:border-box}
+#sqts .tsc{position:absolute;left:0;right:0;background-repeat:repeat-x;background-size:auto 100%;image-rendering:pixelated;pointer-events:none}
+#sqts .tsc.c1{top:6%;height:18vh;opacity:.45}#sqts .tsc.c2{bottom:10%;height:26vh;opacity:.75}#sqts .tsc.c3{bottom:-2%;height:20vh;opacity:1}
+#sqts .tssp{position:absolute;width:4px;height:4px;background:#d8f8c8;pointer-events:none;animation:tstw 2.4s steps(2) infinite}
+@keyframes tstw{50%{opacity:0}}
+#sqts .tslg{position:relative;margin-top:max(7vh,20px);text-align:center;z-index:2}
+#sqts .tsl1{font-weight:700;font-size:clamp(42px,12.5vw,96px);letter-spacing:.05em;line-height:1;
+ background:linear-gradient(100deg,transparent 42%,rgba(255,255,255,.95) 50%,transparent 58%) no-repeat,linear-gradient(#fffbd8,#f8d048 38%,#5cc454 60%,#1d7038);
+ background-size:260% 100%,100% 100%;background-position:160% 0,0 0;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+ filter:drop-shadow(3px 0 0 #0a2214) drop-shadow(-3px 0 0 #0a2214) drop-shadow(0 3px 0 #0a2214) drop-shadow(0 -3px 0 #0a2214) drop-shadow(0 7px 0 rgba(0,0,0,.35));animation:tssh 5s ease-in-out infinite}
+@keyframes tssh{0%,55%{background-position:160% 0,0 0}100%{background-position:-70% 0,0 0}}
+#sqts .tsl2{display:inline-block;margin-top:14px;padding:4px 16px;font-weight:700;font-size:clamp(14px,3.6vw,20px);letter-spacing:.5em;text-indent:.5em;color:#f8e080;background:#0c3a24;border:3px solid #f8d048;box-shadow:0 0 0 3px #0a2214}
+#sqts .tshero{position:relative;z-index:2;margin-top:auto;display:flex;flex-direction:column;align-items:center}
+#sqts .tshero canvas{position:static!important;inset:auto!important;display:block;width:80px!important;height:160px!important;image-rendering:pixelated;animation:tsbob 1.2s steps(2) infinite}
+#sqts .tshero i{display:block;width:56px;height:10px;margin-top:-14px;background:rgba(0,0,0,.35);border-radius:50%}
+@keyframes tsbob{50%{transform:translateY(-4px)}}
+#sqts .tsps{position:relative;z-index:2;margin:5vh 0 0;background:none;border:0;color:#f8f8f8;font:700 clamp(20px,5.5vw,30px) ${PF};letter-spacing:.2em;padding:10px 18px;cursor:pointer;text-shadow:3px 3px 0 #0a2214;animation:tsbl 1.1s steps(1) infinite}
+@keyframes tsbl{50%{opacity:0}}
+#sqts .tsmn{position:relative;z-index:3;margin-top:4vh;width:min(100%,460px);display:none;flex-direction:column;gap:8px}
+#sqts .tsmn button{display:block;width:100%;text-align:left;background:#f8f8f8;color:#404040;border:4px solid #485870;box-shadow:inset 0 0 0 3px #a8c0e0;padding:12px 16px 12px 34px;font:700 18px ${PF};letter-spacing:.06em;cursor:pointer;position:relative;
+ clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px)}
+#sqts .tsmn button::before{content:'';position:absolute;left:14px;top:19px;border:7px solid transparent;border-left:9px solid #404040;border-right:0;opacity:0}
+#sqts .tsmn button:hover::before,#sqts .tsmn button.gpf::before,#sqts .tsmn button:focus-visible::before{opacity:1}
+#sqts .tsmn button.gpf{outline:none!important;box-shadow:inset 0 0 0 3px #f8a020!important}
+#sqts .tsci{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;margin-top:8px;font-weight:500;font-size:15px;color:#3058c8}
+#sqts .tsci span:nth-child(2n){color:#404040;text-align:right}#sqts .tsci img{width:18px;height:14px;image-rendering:pixelated;vertical-align:-1px;margin-right:5px}
+#sqts .tsmn .tsst{font-size:13px;color:#e8f8e0;text-align:center;text-shadow:2px 2px 0 #0a2214;min-height:16px}
+#sqts .tsft{position:relative;z-index:2;margin-top:auto;width:100%;max-width:640px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:12px 2px;font-size:12px;letter-spacing:.08em;color:#c8e8c8;text-shadow:2px 2px 0 #0a2214}
+#sqts .tsft b{color:#78e078}`;document.head.appendChild(st)}
+const tsEl=el('div','sqts','',
+ '<div class="tsc c1"></div><div class="tsc c2"></div><div class="tsc c3"></div>'+
+ '<div class="tslg"><div class="tsl1">SKILLQUEST</div><div class="tsl2">MMO</div></div>'+
+ '<div class="tshero"><canvas width="16" height="32" aria-hidden="true"></canvas><i></i></div>'+
+ '<button class="tsps" id="tsps">PRESS START</button>'+
+ '<div class="tsmn" id="tsmn"></div>'+
+ '<div class="tsft"><span>&copy; 2026 SKILLQUEST</span><span id="tsft"></span></div>');
+document.body.appendChild(tsEl);
+for(const ev of['touchstart','pointerdown','mousedown'])tsEl.addEventListener(ev,stop);
+// pixel clouds: three layers of soft blobs on a 2px grid
+{const mk=(w,h,col,hi,seed,base=true)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');let r=seed;const rnd=()=>(r=(r*16807)%2147483647)/2147483647;
+  const blobs=[];for(let i=0;i<9;i++)blobs.push([rnd()*w,h*(.45+rnd()*.4),6+rnd()*14]);
+  for(let y=0;y<h;y+=2)for(let X=0;X<w;X+=2){let v=0;for(const[bx,by,br]of blobs)for(const o of[-w,0,w]){const d=Math.hypot(X+o-bx,(y-by)*1.6);if(d<br)v=Math.max(v,1-d/br)}
+   if(base&&y>h*.78)v=1;if(v>0){x.fillStyle=v>.55&&y<h*.7?hi:col;x.fillRect(X,y,2,2)}}return c.toDataURL()};
+ const L=[['1',mk(256,40,'#1f5c3c','#2f7a4e',7,false)],['2',mk(256,48,'#2a7048','#46965e',19)],['3',mk(256,40,'#2f7a4a','#58a868',31)]];
+ for(const[k,u]of L){const e=tsEl.querySelector('.tsc.c'+k);e.style.backgroundImage='url('+u+')';TS.cl.push(e)}
+ for(let i=0;i<14;i++){const s=document.createElement('i');s.className='tssp';s.style.left=(4+Math.random()*92)+'%';s.style.top=(3+Math.random()*45)+'%';s.style.animationDelay=(-Math.random()*2.4)+'s';tsEl.appendChild(s)}}
+const tsHero=tsEl.querySelector('.tshero canvas'),tsMn=$('tsmn'),tsPs=$('tsps');
+function tsDrawHero(){try{const x=tsHero.getContext('2d');x.clearRect(0,0,16,32);x.drawImage(kitSprite(gearCH(),0,0,false),0,0)}catch(e){}}
+const hasSave=()=>!(cm.style.display!=='none'&&!PNAME);
+const fmtT=s=>{s=Math.max(0,Math.floor(+s||0));const h=Math.floor(s/3600),m=Math.floor(s/60)%60;return h+':'+String(m).padStart(2,'0')};
+function tsTotal(){let t=0;for(let i=0;i<XPS.length;i++)t+=lvOf(i);return t}
+function tsMenu(){let h='';const btn=(a,html)=>{h+='<button data-a="'+a+'">'+html+'</button>'};
+ if(hasSave()){const og=MP.user&&isOG(MP.user.uid);btn('go','CONTINUE<div class="tsci"><span>PLAYER</span><span>'+(og?'<img src="'+crownURL+'" alt="OG">':'')+esc(pname())+'</span><span>TIME</span><span>'+fmtT(CLK)+'</span><span>TOTAL LV</span><span>'+tsTotal()+'</span><span>GOLD</span><span>'+GLD+'</span></div>')}
+ else btn('go','NEW GAME');
+ if(MP_OK&&!MP.on)btn('in','SIGN IN WITH GOOGLE');
+ btn('opt','OPTIONS');
+ const st=MP.on?'Online as '+myName()+(MP.user&&isOG(MP.user.uid)?' · OG #'+ogRank(MP.user.uid):''):MP_OK?(FB?'Sign in to play with others and keep your progress on any device.':'Connecting...'):'';
+ h+='<div class="tsst">'+esc(st)+'</div>';if(h===TS.mh)return;TS.mh=h;
+ const keep=GPF&&tsMn.contains(GPF)?GPF.dataset.a:null;tsMn.innerHTML=h;
+ if(keep){const k=tsMn.querySelector('[data-a="'+keep+'"]')||tsMn.querySelector('button');if(k)setFocus(k)}}
+function tsFoot(){const f=$('tsft');if(!f)return;const parts=[];if(MP.on){const n=[...MP.players.values()].filter(live).length+1;parts.push('<b>&#9679;</b> '+n+' ONLINE')}
+ const left=OG_CUTOFF-mpNow();if(left>0){const d=Math.ceil(left/864e5);parts.push('OG CROWNS: '+d+' DAY'+(d===1?'':'S')+' LEFT')}f.innerHTML=parts.join(' &middot; ')}
+function tsStage(n){TS.stage=n;TS.mh='';tsPs.style.display=n?'none':'block';tsMn.style.display=n?'flex':'none';setFocus(null);if(n){tsMenu();const f=tsMn.querySelector('button');if(f&&(GPON||TS.kb))setFocus(f)}}
+function tsClose(then){TS.open=false;tsEl.style.display='none';setFocus(null);menuOpen=cm.style.display!=='none';try{sfx('door')}catch(e){}if(then)then()}
+tsPs.onclick=()=>{try{sfx('talk')}catch(e){}tsStage(1)};
+tsEl.addEventListener('click',e=>{if(TS.stage===0&&e.target!==tsPs)tsPs.click()});
+tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+ if(a==='go')tsClose();else if(a==='in'){mpSignIn();}else if(a==='opt')tsClose(()=>{fromMenu=false;showScreen('options')})});
+// keyboard: any key starts; arrows / Enter / Esc in the menu; the game never sees these keys while the title is up
+addEventListener('keydown',e=>{if(!TS.open)return;e.stopImmediatePropagation();const k=e.key;
+ if(TS.stage===0){if(e.isTrusted)TS.kb=true;if(k!=='Shift'){e.preventDefault();tsPs.click()}return}
+ if(k==='Escape'){e.preventDefault();tsStage(0);return}
+ if(!e.isTrusted)return; // controller keys are handled by the menu highlight
+ TS.kb=true;if(k==='ArrowDown'||k==='s'){e.preventDefault();navMove(0,1)}else if(k==='ArrowUp'||k==='w'){e.preventDefault();navMove(0,-1)}else if(k==='Enter'||k===' '||k==='z'){e.preventDefault();navPress()}},true);
+addEventListener('keyup',e=>{if(TS.open)e.stopImmediatePropagation()},true);
+// controller: the title is the screen being navigated
+const _nr62=navRoot;navRoot=function(){if(TS.open)return TS.stage?tsMn:tsEl;return _nr62()};
+// the world is frozen while the title is up
+const _u62=upd;upd=function(dt){if(TS.open)return;_u62(dt)};
+let tsLast=0;(function tsLoop(t){if(!TS.open)return;const s=t/1000;TS.cl.forEach((e,i)=>e.style.backgroundPositionX=Math.round(-s*[6,14,24][i])+'px');
+ if(menuOpen)menuOpen=false; // the creator waits behind the title (restored on close)
+ if(t-tsLast>700){tsLast=t;tsDrawHero();tsFoot();if(TS.stage)tsMenu()}requestAnimationFrame(tsLoop)})(0);
+setTimeout(()=>{tsDrawHero();tsFoot()},0);
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
