@@ -53,6 +53,34 @@
         ".write": "auth != null && auth.uid === $uid && !data.exists() && now < 1796277600000",
         ".validate": "newData.val() === now"
       }
+    },
+    "world": {
+      "res": {
+        ".read": "auth != null",
+        "$loc": {
+          "$cell": {
+            ".write": "auth != null && ((!data.exists() && newData.child('at').val() === now) || (data.exists() && !newData.exists() && data.child('at').val() < now - 230000))",
+            ".validate": "newData.hasChildren(['t', 'at']) && newData.child('t').isString() && newData.child('t').val().length < 16"
+          }
+        }
+      }
+    },
+    "mobs": {
+      ".read": "auth != null",
+      "$loc": {
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      }
+    },
+    "hits": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$id": {
+          ".write": "auth != null && (!data.exists() || auth.uid === $uid)",
+          ".validate": "newData.hasChildren(['id', 'd']) && newData.child('d').isNumber() && newData.child('d').val() <= 50 && newData.child('id').isString()"
+        }
+      }
     }
   }
 }

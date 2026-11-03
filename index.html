@@ -7117,9 +7117,9 @@ const myName=()=>PNAME||((MP.user&&MP.user.displayName)||'').split(' ')[0].repla
 const mpErr=e=>{console.warn('[online]',e);const c=(e&&(e.code||e.message))||'';mpLog('game','Online: '+String(c).replace(/^auth\//,'').slice(0,60))};
 const mpNow=()=>Date.now()+MP.off;
 // ---- where am I (only outdoors is shared) ----
-// outdoors (Hollow or a region) and public buildings (shops, inns, forges...) are shared; your own house, caves and dungeons are private
+// outdoors (Hollow or a region), public buildings (shops, inns, forges...), caves and dungeon floors are shared; your own house is private
 function mpLoc(){if(dead||(typeof TRAVEL49!=='undefined'&&TRAVEL49))return'';if(!SCENE)return'hollow';const R=SCENE.room;if(!R)return'';if(R.region)return'r:'+R.region;
- if(SCENE.house||SCENE.id==='home'||R.cave||R.dun||R.tomb||!ROOMS[SCENE.id])return'';return'in:'+SCENE.id}
+ if(SCENE.house||SCENE.id==='home'||!ROOMS[SCENE.id])return'';return'in:'+SCENE.id}
 // ---- UI ----
 const css=document.createElement('style');css.textContent=`
 #mpb{position:fixed;left:8px;top:52%;z-index:30;min-width:72px;height:40px;padding:0 10px;background:#f8f8f8;color:#404040;border:3px solid #485870;box-shadow:inset 0 0 0 2px #a8c0e0;font:700 14px ${PF};letter-spacing:1px;cursor:pointer;touch-action:manipulation;
@@ -7248,7 +7248,7 @@ async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=
  MP.on=true;mpRBtn();say('Online as '+myName()+'!')}
 async function mpStop(manual){const was=MP.on;MP.on=false;for(const f of MP.unsub)try{f()}catch(e){}MP.unsub=[];
  if(manual&&MP.pref)try{await FB.db.remove(MP.pref)}catch(e){}
- MP.players.clear();MP.pref=null;MP.user=null;if(cloud&&cloud===MP.adapter)cloud=null;if(was)mpCloseChat();mpRBtn()}
+ MP.players.clear();try{mobStop()}catch(e){}MP.pref=null;MP.user=null;if(cloud&&cloud===MP.adapter)cloud=null;if(was)mpCloseChat();mpRBtn()}
 // ---- other players ----
 const live=r=>performance.now()-r.seen<20000;
 const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v=c[k];if(typeof v==='number'&&isFinite(v))o[k]=Math.max(0,Math.min(99,v|0))}return o};
@@ -7419,6 +7419,82 @@ const _nr63=navRoot;navRoot=function(){if(MP.choose)return MP.choose;return _nr6
    n.x=a[0]+(d?dx/d*w:0);n.y=a[1]+(d?dy/d*w:0);n.tx=n.x;n.ty=n.y;
    if(mv){n.st=[1,0,2,0][Math.floor(T*6)%4];if(Math.abs(dx)>Math.abs(dy)){n.dir=2;n.fl=dx<0}else{n.dir=dy<0?1:0;n.fl=false}}
    else{n.st=0;const px=P.x-n.x,py=P.y-n.y;if(!dead&&Math.hypot(px,py)<36){if(Math.abs(px)>Math.abs(py)){n.dir=2;n.fl=px<0}else{n.dir=py<0?1:0;n.fl=false}}}})}}
+// ---- Shared world (online): one clock, shared trees / rocks / berries, shared monsters, dungeons together ----
+// - Time of day and the day number come from the server clock, so everyone has the same day, night and daily dungeons.
+//   (Sleeping still heals you, but the night passes for everyone together.)
+// - A tree, rock, ore vein, bush or cactus you use up is gone for everyone (world/res/<place>/<cell>) and grows back for
+//   everyone 4 minutes later.
+// - Monsters: each player's game still runs the monsters around them, and shares them with anyone in the same place
+//   (mobs/<place>/<uid>). You see everyone's monsters and can fight them: your hits are sent to the player whose game
+//   runs that monster (hits/<uid>), and if your hit kills it you get the reward. They can hurt you too.
+// - Dungeons and caves are shared: if someone is already on a floor when you arrive, you join their monsters instead of
+//   getting your own copy. Chests stay your own.
+const WT0=1793689200; // the shared clock starts at day 1 on launch night
+const globalTime=()=>Math.max(1,mpNow()/1000-WT0);
+const othersHere=()=>{const l=mpLoc();if(!l)return false;for(const r of MP.players.values())if(r.loc===l&&live(r))return true;return false};
+const locKey=l=>String(l).replace(/[.#$\[\]\/:]/g,'_');
+// sleeping: the night is shared, so the message changes
+{const _say64=say;say=function(s){if(MP.on&&typeof s==='string'&&/Good morning!/.test(s))s=s.replace(/ ?Good morning!/,'')+' Nights pass for everyone together online, but you feel rested.';return _say64(s)}}
+// ---- shared resources ----
+const RES={h:{},r:{},rloc:null,unsubH:null,unsubR:null,stash:{}};
+function resSubHollow(){if(RES.unsubH)return;const d=FB.db,ref=d.ref(FB.D,'world/res/hollow');
+ const add=s=>{const i=+s.key,v=s.val();if(!v||!(i>=0&&i<N*N))return;RES.h[i]=v;if(obj[i]&&obj[i].t===v.t)obj[i]=null;for(let j=REM.length-1;j>=0;j--)if(REM[j].i===i)REM.splice(j,1)};
+ const u1=d.onChildAdded(ref,add),u2=d.onChildChanged(ref,add),u3=d.onChildRemoved(ref,s=>{const i=+s.key,v=s.val()||RES.h[i];delete RES.h[i];if(v&&!obj[i]&&OHP[v.t])obj[i]={t:v.t,hp:OHP[v.t]}});
+ RES.unsubH=()=>{u1();u2();u3()};MP.unsub.push(()=>{if(RES.unsubH){RES.unsubH();RES.unsubH=null}})}
+function resSubRegion(){const R=SCENE&&SCENE.room,loc=R&&R.region?'r_'+R.region:null;if(loc===RES.rloc)return;if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.r={};RES.rloc=loc;if(!loc||!MP.on)return;
+ const d=FB.db,ref=d.ref(FB.D,'world/res/'+loc);
+ const add=s=>{const R2=SCENE&&SCENE.room;if(!R2||'r_'+R2.region!==loc)return;const idx=+s.key,v=s.val();if(!v)return;RES.r[idx]=v;const x=idx%R2.w,y=Math.floor(idx/R2.w),it=rgObjAt(R2,x,y);
+  if(it&&it.o&&it.o.t===v.t){it.gone=true;rgCellDel(R2,it);R2.solid.delete(idx);RES.stash[loc+':'+idx]=it}for(let j=R2.gone.length-1;j>=0;j--){const g2=R2.gone[j].it;if(g2.y*R2.w+g2.x===idx){RES.stash[loc+':'+idx]=g2;R2.gone.splice(j,1)}}};
+ const u1=d.onChildAdded(ref,add),u2=d.onChildChanged(ref,add),u3=d.onChildRemoved(ref,s=>{const idx=+s.key;delete RES.r[idx];const it=RES.stash[loc+':'+idx],R2=SCENE&&SCENE.room;delete RES.stash[loc+':'+idx];
+  if(it&&R2&&'r_'+R2.region===loc&&it.gone){it.gone=false;it.o.hp=OHP[it.o.t]||3;rgCellAdd(R2,it);R2.solid.add(idx)}});
+ RES.unsubR=()=>{u1();u2();u3()}}
+let resSweepAt=0;
+function resTick(){if(!MP.on||!FB)return;const d=FB.db;resSubHollow();resSubRegion();
+ // anything you used up goes to the shared list (and stops growing back on its own timer)
+ for(let j=REM.length-1;j>=0;j--){const r=REM[j];if(r._s)continue;r._s=1;if(RES.h[r.i])continue;d.set(d.ref(FB.D,'world/res/hollow/'+r.i),{t:r.t,at:d.serverTimestamp()}).catch(()=>{})}
+ for(let j=REM.length-1;j>=0;j--)if(REM[j]._s&&RES.h[REM[j].i])REM.splice(j,1);
+ const R=SCENE&&SCENE.room;if(R&&R.region&&R.gone&&RES.rloc){for(let j=R.gone.length-1;j>=0;j--){const g2=R.gone[j];if(g2._s)continue;g2._s=1;const idx=g2.it.y*R.w+g2.it.x;
+   RES.stash[RES.rloc+':'+idx]=g2.it;if(!RES.r[idx])d.set(d.ref(FB.D,'world/res/'+RES.rloc+'/'+idx),{t:g2.it.o.t,at:d.serverTimestamp()}).catch(()=>{});R.gone.splice(j,1)}}
+ // growing back: anyone online clears entries older than 4 minutes
+ const now=performance.now();if(now-resSweepAt<5000)return;resSweepAt=now;const cut=mpNow()-240000;
+ for(const i in RES.h){const v=RES.h[i];if(typeof v.at==='number'&&v.at<cut)d.remove(d.ref(FB.D,'world/res/hollow/'+i)).catch(()=>{})}
+ if(RES.rloc)for(const i in RES.r){const v=RES.r[i];if(typeof v.at==='number'&&v.at<cut)d.remove(d.ref(FB.D,'world/res/'+RES.rloc+'/'+i)).catch(()=>{})}}
+// ---- shared monsters ----
+const MOB={n:0,prox:new Map(),loc:null,unsub:null,pubAt:0,pubbed:false,arrAt:0,inbox:null};window.SQMOB=MOB;
+const mid=n=>n._mid||(n._mid=MP.user.uid.slice(0,8)+'_'+(++MOB.n));
+function mobPack(n){const o={};for(const k in n){if(k[0]==='_')continue;const v=n[k],t=typeof v;if(t==='number'){if(isFinite(v))o[k]=Math.round(v*10)/10}else if(t==='string'&&v.length<24)o[k]=v;else if(t==='boolean')o[k]=v}return o}
+function mobSubscribe(){const l=mpLoc(),key=l?locKey(l):null;if(key===MOB.loc)return;
+ if(MOB.unsub){MOB.unsub();MOB.unsub=null}if(MOB.pubbed&&MOB.loc&&MP.user){FB.db.remove(FB.db.ref(FB.D,'mobs/'+MOB.loc+'/'+MP.user.uid)).catch(()=>{});MOB.pubbed=false}
+ for(const p of MOB.prox.values()){const j=en.indexOf(p);if(j>=0)en.splice(j,1)}MOB.prox.clear();MOB.loc=key;MOB.arrAt=performance.now();if(!key)return;
+ const d=FB.db;MOB.unsub=d.onValue(d.ref(FB.D,'mobs/'+key),s=>{if(MOB.loc!==key)return;const all=s.val()||{},seen=new Set(),cut=mpNow()-6000;
+  for(const owner in all){if(!MP.user||owner===MP.user.uid)continue;const rec=all[owner];if(!rec||!(rec.t>cut)||!rec.m)continue;
+   for(const id in rec.m){const pk=rec.m[id];if(!pk||typeof pk.x!=='number')continue;seen.add(id);let p=MOB.prox.get(id);
+    if(!p){p=Object.assign({kx:0,ky:0},pk);p._rp=1;p._owner=owner;p._id=id;p._ref=pk.hp;p.tx=pk.x;p.ty=pk.y;MOB.prox.set(id,p);en.push(p)}
+    else{if(p.dead&&p._deadAt&&performance.now()-p._deadAt>3000){p.dead=0;p._deadAt=0;p.hp=pk.hp;p._ref=pk.hp} // our kill didn't land: it's still alive for its owner
+     for(const k in pk)if(k!=='x'&&k!=='y'&&k!=='hp'&&k!=='dead')p[k]=pk[k];p.tx=pk.x;p.ty=pk.y;if(!p.dead&&typeof pk.hp==='number'){p.hp=pk.hp;p._ref=pk.hp}}}}
+  for(const[id,p]of MOB.prox)if(!seen.has(id)){MOB.prox.delete(id);const j=en.indexOf(p);if(j>=0)en.splice(j,1)}})}
+function mobHitsCheck(){if(!MP.user)return;for(const p of MOB.prox.values()){if(typeof p.hp!=='number'||typeof p._ref!=='number')continue;if(p.hp<p._ref){const dmg=Math.min(50,Math.round((p._ref-p.hp)*10)/10);p._ref=p.hp;if(dmg<.5)continue; // slow drains (sunlight, burning) are simulated by the owner
+  FB.db.push(FB.db.ref(FB.D,'hits/'+p._owner),{id:p._id,d:dmg}).catch(()=>{})}}}
+function mobPre(){if(!MP.on||!MOB.loc)return;mobHitsCheck();for(const p of MOB.prox.values()){if(p.dead&&!p._deadAt)p._deadAt=performance.now();if(!p.dead&&en.indexOf(p)<0)en.push(p);p._px=p.x;p._py=p.y}}
+function mobPost(dt){if(!MP.on||!FB)return;mobSubscribe();if(!MOB.loc)return;mobHitsCheck();const k=Math.min(1,dt*10);
+ for(const p of MOB.prox.values()){if(p.dead)continue;const bx=p._px==null?p.x:p._px,by=p._py==null?p.y:p._py;p.x=bx+(p.tx-bx)*k;p.y=by+(p.ty-by)*k;p.kx=0;p.ky=0}
+ // arriving on a floor someone is already fighting on: use their monsters, not a second copy
+ const now=performance.now();if(now-MOB.arrAt<2500&&othersHere()&&SCENE&&SCENE.room&&SCENE.room.cave)en=en.filter(n=>n._rp)
+ // share mine (only when someone else is here)
+ if(now-MOB.pubAt<250)return;MOB.pubAt=now;const d=FB.db,ref=d.ref(FB.D,'mobs/'+MOB.loc+'/'+MP.user.uid);
+ if(!othersHere()){if(MOB.pubbed){d.remove(ref).catch(()=>{});MOB.pubbed=false}return}
+ const m={};let c=0;for(const n of en){if(n._rp||n.dead||c>=24)continue;m[mid(n)]=mobPack(n);c++}
+ d.set(ref,{t:d.serverTimestamp(),m}).catch(()=>{});MOB.pubbed=true;
+ if(!MOB.odc||MOB.odc!==MOB.loc){MOB.odc=MOB.loc;d.onDisconnect(ref).remove().catch(()=>{})}}
+// hits other players land on your monsters
+function mobInbox(){if(MOB.inbox||!MP.user)return;const d=FB.db,ref=d.ref(FB.D,'hits/'+MP.user.uid);
+ MOB.inbox=d.onChildAdded(ref,s=>{const v=s.val()||{};d.remove(d.ref(FB.D,'hits/'+MP.user.uid+'/'+s.key)).catch(()=>{});const n=en.find(e=>e._mid===v.id&&!e.dead);if(!n||typeof v.d!=='number')return;
+  n.hp-=Math.max(0,Math.min(50,v.d));n.kx=(n.kx||0)*.5;if(n.hp<=0){n.dead=1;n.dropped=1}});MP.unsub.push(()=>{if(MOB.inbox)MOB.inbox();MOB.inbox=null})}
+// the frame: shared clock first, then the game, then sharing
+{const _u64=upd;upd=function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick()}catch(e){console.warn(e)}}}}
+// signing out: drop other players' monsters and stop sharing
+function mobStop(){for(const p of MOB.prox.values()){const j=en.indexOf(p);if(j>=0)en.splice(j,1)}MOB.prox.clear();if(MOB.unsub){MOB.unsub();MOB.unsub=null}MOB.loc=null;MOB.pubbed=false;
+ if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.rloc=null;RES.h={};RES.r={}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
