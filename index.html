@@ -7248,7 +7248,7 @@ const _dh61=drawHUD;drawHUD=function(){_dh61();if(!MP.on||!MP.T||performance.now
    if(og){g.font='700 '+sz+'px '+PF;const tw=g.measureText(name).width;g.imageSmoothingEnabled=false;g.drawImage(crownCv,Math.round(p.x-tw/2-9*cs-u),Math.round(Y-sz*.75),9*cs,7*cs)}Y-=sz+u}
   if(said&&now-said.at<5000)mpLabel(said.m.length>42?said.m.slice(0,41)+'…':said.m,p.x,Y,sz,'#f8f048')};
  for(const r of mpVis())one(r.x,r.y,r.n,r.said,isOG(r.uid));
- if(mpLoc()||SCENE)one(P.x,P.y,'',MP.selfSaid);
+ if(mpLoc()||SCENE){const me=MP.selfName&&!dead;one(P.x,P.y,me?myName():'',MP.selfSaid,me&&MP.user&&isOG(MP.user.uid))}
  g.restore()};
 // ---- chat ----
 function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.seen.add(id);const mine=MP.user&&v.u===MP.user.uid,fresh=typeof v.t==='number'&&mpNow()-v.t<15000;
@@ -7258,6 +7258,12 @@ function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.se
 function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)return;if(!MP.on){mpOpenChat();return}
  const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;
  const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}
+// ---- Options: show your own name (and crown) over your head ----
+MP.selfName=false;try{MP.selfName=localStorage.getItem('sq_myname')==='1'}catch(e){}
+const _opt61=optionsHTML;optionsHTML=function(){const h=_opt61(),k=h.indexOf('<div class="tl" style="margin-top:22px');
+ const add='<div class="tl" style="margin-top:16px">ONLINE</div><button class="sb mpo" data-o="myname">Show my name overhead: '+(MP.selfName?'ON':'OFF')+'</button>';
+ return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
+const _oc61=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mpo');if(b){MP.selfName=!MP.selfName;try{localStorage.setItem('sq_myname',MP.selfName?'1':'0')}catch(_){}rPn();return}_oc61(e)};
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
