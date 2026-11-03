@@ -7120,7 +7120,7 @@ const mpNow=()=>Date.now()+MP.off;
 // ---- where am I (only outdoors is shared) ----
 // outdoors (Hollow or a region), public buildings (shops, inns, forges...), caves and dungeon floors are shared; your own house is private
 function mpLoc(){if(dead||(typeof TRAVEL49!=='undefined'&&TRAVEL49))return'';if(!SCENE)return'hollow';const R=SCENE.room;if(!R)return'';if(R.region)return'r:'+R.region;
- if(SCENE.house||SCENE.id==='home'||!ROOMS[SCENE.id])return'';return'in:'+SCENE.id}
+ if(SCENE.house)return houseLocOf(SCENE.house);if(SCENE.id==='home'||!ROOMS[SCENE.id])return'';return'in:'+SCENE.id}
 // ---- UI ----
 const css=document.createElement('style');css.textContent=`
 #mpb{position:fixed;left:8px;top:52%;z-index:30;min-width:72px;height:40px;padding:0 10px;background:#f8f8f8;color:#404040;border:3px solid #485870;box-shadow:inset 0 0 0 2px #a8c0e0;font:700 14px ${PF};letter-spacing:1px;cursor:pointer;touch-action:manipulation;
@@ -7276,7 +7276,7 @@ const _lh61=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{if(_lh61)_lh61(L,x0,y0,x1,y1,tm);mp
 // regions: ride along as room items
 const _rn61=rgNear;rgNear=function(R,...a){const out=_rn61(R,...a);if(SCENE&&SCENE.room===R){mpStepAll();for(const r of mpVis())out.push({t:'_mp',r,x:r.x/16,y:(r.y+6)/16-1})}return out};
 // public buildings: other players join the room's y-sorted list as room items
-const _drr61=drawRoom;drawRoom=function(tm){const R=SCENE&&SCENE.room;if(!R||R.region||!MP.on||!mpLoc().startsWith('in:'))return _drr61(tm);
+const _drr61=drawRoom;drawRoom=function(tm){const R=SCENE&&SCENE.room;if(!R||R.region||!MP.on||!/^(in|h):/.test(mpLoc()))return _drr61(tm);
  mpStepAll();const add=mpVis().map(r=>({t:'_mp',r,x:r.x/16,y:(r.y+6)/16-1}));if(!add.length)return _drr61(tm);
  const all=R.items;R.items=all.concat(add);try{_drr61(tm)}finally{R.items=all}};
 const _df61=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_mp'){mpDrawPeer(it.r,tm);return}return _df61(it,tm)};
@@ -7508,7 +7508,7 @@ function fireTick(){if(!MP.on||!FB||!MP.user)return;const l=mpLoc(),key=l?locKey
  d.set(ref,{t:d.serverTimestamp(),f:mine}).catch(()=>{});if(!FIRE.pubbed)d.onDisconnect(ref).remove().catch(()=>{});FIRE.pubbed=true}
 {const _sn64=snap;snap=function(){const s=_sn64();s.fires=fires.filter(f=>!f._rp).map(f=>({x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)}));return s}}
 // the frame: shared clock first, then the game, then sharing
-{const _u64=upd;upd=function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick();fireTick()}catch(e){console.warn(e)}}}}
+{const _u64=upd;upd=function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick();fireTick();housesTick()}catch(e){console.warn(e)}}}}
 // signing out: drop other players' monsters and stop sharing
 function mobStop(){for(const p of FIRE.prox.values()){const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}FIRE.prox.clear();if(FIRE.unsub){FIRE.unsub();FIRE.unsub=null}FIRE.loc=null;FIRE.pubbed=false;for(const p of MOB.prox.values()){const j=en.indexOf(p);if(j>=0)en.splice(j,1)}MOB.prox.clear();if(MOB.unsub){MOB.unsub();MOB.unsub=null}MOB.loc=null;MOB.pubbed=false;
  if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.rloc=null;RES.h={};RES.r={}}
@@ -7588,7 +7588,7 @@ setInterval(()=>{if(MP.on&&MP.user&&MP.pubProf&&MP.profN!==myName()){MP.profN=my
 // state (where you are, device, screen, version), and saves it to bugs/<id> in the database (Realtime Database > bugs).
 // Not signed in: the report waits on this device and is sent the next time you sign in.
 const BUGV='2026-11-03';
-{const st=document.createElement('style');st.textContent=`#mpbug{position:fixed;left:8px;top:calc(52% + 48px);z-index:30;min-width:72px;height:34px;padding:0 10px;background:#f8f0e8;color:#b03828;border:3px solid #485870;box-shadow:inset 0 0 0 2px #e8b8a8;font:700 13px ${PF};letter-spacing:1px;cursor:pointer;touch-action:manipulation;
+{const st=document.createElement('style');st.textContent=`#mpbug{position:fixed;left:92px;top:52%;z-index:30;min-width:56px;height:40px;padding:0 10px;background:#f8f0e8;color:#b03828;border:3px solid #485870;box-shadow:inset 0 0 0 2px #e8b8a8;font:700 13px ${PF};letter-spacing:1px;cursor:pointer;touch-action:manipulation;
  clip-path:polygon(2px 0,calc(100% - 2px) 0,100% 2px,100% calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,0 calc(100% - 2px),0 2px)}
 #mpbugf{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:97;max-width:520px;margin:0 auto;background:#f8f8f8;color:#404040;font:500 14px ${PF};padding:14px;box-sizing:border-box;display:none;max-height:calc(100vh - 16px);overflow-y:auto}
 #mpbugf .h{font-weight:700;font-size:17px;letter-spacing:1px}#mpbugf label{display:block;margin:10px 0 4px;font-weight:700}#mpbugf textarea{width:100%;box-sizing:border-box;min-height:84px;font:500 16px ${PF};padding:8px;border:2px solid #485870;background:#fff;color:#404040;border-radius:0}
@@ -7629,6 +7629,42 @@ tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dat
 // controller: the form is navigable, ○ closes it
 {const _nr=navRoot;navRoot=function(){if(bugF.style.display==='block')return bugF;return _nr()}}
 addEventListener('keydown',e=>{if(e.key==='Escape'&&bugF.style.display==='block'&&!e.isTrusted){bugClose();e.stopImmediatePropagation()}},true);
+// ---- Houses in the shared world: everyone's houses stand on the island; friends can go inside ----
+// houses/<uid>: your houses (where they stand and their furniture; chest contents stay private).
+// Other players' houses are added to the island (marked _foreign, never saved into your game). You can walk into a
+// house if its owner has you on their friends list; inside you see their furniture and anyone else visiting.
+// You can't open their chests, sleep in their bed, use their stations or redecorate.
+const HS={pubKey:'',pubAt:0,data:{},fr:{},frUnsub:{},unsub:null,msgAt:0};
+const isForeign=h=>!!(h&&h._foreign);
+function houseLocOf(h){if(!h||!MP.user)return'';return'h:'+(h._owner||MP.user.uid)+':'+(h._oid||h.id)}
+function myHousesData(){return HOUSES.filter(h=>!h._foreign).map(h=>({id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>[i,f.t])}))}
+function canEnter(h){return!!(HS.fr[h._owner]&&MP.user&&HS.fr[h._owner][MP.user.uid])}
+function buildForeign(owner,e){const RW=14,RH=10,h={id:owner.slice(0,6)+'_'+String(e.id).slice(0,12),_oid:String(e.id).slice(0,12),_owner:owner,_foreign:true,x:e.x|0,y:e.y|0,w:e.w===7?7:5,furn:new Map(),hp:12};
+ const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):null);const fl=arr(e.f);if(fl)for(const q0 of fl){const q=arr(q0);if(!q)continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RH||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?{t,items:{}}:{t})}return h}
+function overlapsMine(h){const hw=((h.w||5)-1)/2;for(const o of HOUSES){if(o===h||o._foreign&&o._owner===h._owner&&o._oid===h._oid)continue;const ow=((o.w||5)-1)/2;if(Math.abs(o.x-h.x)<=hw+ow+1&&Math.abs(o.y-h.y)<=2)return true}
+ for(let dy=-1;dy<=0;dy++)for(let dx=-hw;dx<=hw;dx++){const i=(h.y+dy)*N+h.x+dx;if(STR.has(i))return true}return false}
+function housesSync(){if(!MP.on)return;const want=new Map();
+ for(const owner in HS.data){if(MP.user&&owner===MP.user.uid)continue;const list=HS.data[owner];if(!Array.isArray(list))continue;for(const e of list){if(!e||!isFinite(e.x)||!isFinite(e.y))continue;want.set(owner+'|'+e.id,{owner,e})}}
+ for(let j=HOUSES.length-1;j>=0;j--){const h=HOUSES[j];if(!h._foreign)continue;const k=h._owner+'|'+h._oid,w=want.get(k);
+  if(!w){if(SCENE&&SCENE.house===h){leaveScene();say('That house is gone.')}for(const i of houseTiles(h))BS.delete(i);HOUSES.splice(j,1);continue}
+  const fresh=buildForeign(w.owner,w.e);if(fresh.x!==h.x||fresh.y!==h.y){for(const i of houseTiles(h))BS.delete(i);HOUSES.splice(j,1);continue}h.furn=fresh.furn;want.delete(k)}
+ for(const{owner,e}of want.values()){const h=buildForeign(owner,e);if(h.x<4||h.y<3||h.x>N-5||h.y>N-3||overlapsMine(h))continue;HOUSES.push(h);addHouseBS(h);
+  if(!HS.frUnsub[owner]){HS.frUnsub[owner]=FB.db.onValue(FB.db.ref(FB.D,'friends/'+owner),s=>{HS.fr[owner]=s.val()||{}})}}}
+function housesStart(){const d=FB.db;HS.unsub=d.onValue(d.ref(FB.D,'houses'),s=>{HS.data=s.val()||{};for(const k in HS.data){const v=HS.data[k];if(v&&!Array.isArray(v)&&typeof v==='object')HS.data[k]=Object.values(v)}housesSync()});
+ MP.unsub.push(()=>{if(HS.unsub)HS.unsub();HS.unsub=null;for(const k in HS.frUnsub)try{HS.frUnsub[k]()}catch(e){}HS.frUnsub={};HS.fr={};HS.data={};HS.pubKey='';
+  if(SCENE&&SCENE.house&&SCENE.house._foreign)leaveScene();for(let j=HOUSES.length-1;j>=0;j--)if(HOUSES[j]._foreign){for(const i of houseTiles(HOUSES[j]))BS.delete(i);HOUSES.splice(j,1)}})}
+function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now();if(now-HS.pubAt<3000)return;HS.pubAt=now;
+ const mine=myHousesData(),k=JSON.stringify(mine);if(k!==HS.pubKey){HS.pubKey=k;FB.db.set(FB.db.ref(FB.D,'houses/'+MP.user.uid),mine.length?mine:null).catch(()=>{HS.pubKey=''})}
+ if(!HOUSES.some(h=>h._foreign)&&Object.keys(HS.data).some(o=>o!==MP.user.uid))housesSync()} // e.g. after a save was loaded
+{const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!HS.unsub)try{housesStart()}catch(e){mpErr(e)}}}
+// never save other people's houses into your game
+{const _sn=snap;snap=function(){const s=_sn();if(Array.isArray(s.houses)){const fids=new Set(HOUSES.filter(h=>h._foreign).map(h=>h.id));s.houses=s.houses.filter(h=>!fids.has(h.id))}if(s.home&&HOUSES.some(h=>h._foreign&&h.id===s.home))s.home=null;return s}}
+// the door: friends only
+{const _es=enterScene;enterScene=function(id,house,ret){if(house&&house._foreign&&!canEnter(house)){const now=performance.now();if(now-HS.msgAt>2500){HS.msgAt=now;const nm=fname(house._owner);say('This is '+nm+'\'s house. Only '+nm+'\'s friends can go in.');sfx('swish')}P.y+=6;return}
+ _es(id,house,ret);if(house&&house._foreign)say('You visit '+fname(house._owner)+'\'s house.')}}
+// inside someone else's house: look, don't touch
+{const _uf=useFurn;useFurn=function(it){const h=SCENE&&SCENE.house;if(h&&h._foreign){say(it&&it.use==='chest'?'That chest belongs to '+fname(h._owner)+'.':it&&it.use==='bed'?'That\'s '+fname(h._owner)+'\'s bed.':'Better ask '+fname(h._owner)+' first.');sfx('swish');return}return _uf(it)}}
+{const _sb=startBuild;startBuild=function(k){const h=SCENE&&SCENE.house;if(h&&h._foreign){say('You can only decorate your own house.');closePanel();return}return _sb(k)}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();

@@ -4,12 +4,14 @@ An open-world survival RPG in a GBA art style, with OSRS-style skills.
 
 Play: https://skillquestmmo.com
 
-## Online play
-Tap **ONLINE** in the game and sign in with Google to:
-- keep your progress in your account (any device),
-- see other players in Hollow and the regions, with names over their heads,
-- chat (All / Public / Game tabs; messages also float over the speaker's head).
+## Online play (sign in with Google)
+- One shared world: the same day and night, trees/rocks/berries, monsters, campfires and villagers for everyone.
+- Dungeons and caves together; public buildings (shops, inns) are shared; friends can visit each other's houses.
+- Chat (All / Public / Private / Friends / Game), friends list, private messages (`/w name message`).
+- Your skills, quests and items are always your own, saved to your account.
+- OG crown for everyone who signed in before Dec 3, 2026.
+- BUG button for beta testers (reports land in Realtime Database > `bugs`).
 
-Your skills, quests and items are always your own. Indoors and dungeons are private.
-
-`database.rules.json` holds the Firebase Realtime Database security rules (paste them into Realtime Database > Rules).
+## Setup notes
+`database.rules.json` holds the Firebase Realtime Database security rules. After changing it, paste the whole file into
+Firebase console > Realtime Database > Rules and click Publish.
