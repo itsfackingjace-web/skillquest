@@ -93,6 +93,7 @@ var FOOD_RATE=.25;
    58. Gen 3 sprites: every remaining HD sprite (enemies, bosses, stations, landmarks, rooms) pixelated to 1 texel with hard edges; slimes on whole pixels; crisp item icons; pixel harbor flags
    59. Gen 3 UI: stepped pixel frames for the HUD, bars, text box and every menu; octagon touch buttons; pixel sailing card
    60. Gen 3 polish: whole-pixel grid in the world, pixel circles, de-speckled rooms, darker-skin eyes, ranger hood side view
+   66. Marlo's Emporium (Hollow Village): pets, capes, dyes, fine furniture, potions; Style screen in the START menu
    65. Mithril and adamant swords and armor (anvil); stats in every weapon, armor, tool and food description
    64. Fewer trees; Oak/Willow/Maple/Yew trees and Gold/Mithril/Adamant ores (+ bars); mining in dungeons; campfires on every island
    63. Mouse and touch aiming for bows and wands: cursor aim + right-click, BOW / CAST touch button (tap = nearest enemy, drag = aim)
@@ -7260,10 +7261,10 @@ const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v
 function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='number'||typeof v.y!=='number')return;let r=MP.players.get(k);
  if(!r){r={uid:k,x:v.x,y:v.y,w:0,said:null};MP.players.set(k,r)}
  if(r.loc!==v.loc||Math.hypot(r.x-v.x,r.y-v.y)>200){r.x=v.x;r.y=v.y}
- r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;r.sl=!!v.sl;r.ar=typeof v.ar==='string'?v.ar:'';r.ax=+v.ax;r.ay=+v.ay;
+ r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;r.sl=!!v.sl;r.ar=typeof v.ar==='string'?v.ar:'';r.pet=typeof v.pet==='string'?v.pet.slice(0,12):'';r.ax=+v.ax;r.ay=+v.ay;
  r.n=String(v.n||'Adventurer').replace(/[<>]/g,'').slice(0,12);r.ch=cleanCh(v.ch);r.seen=performance.now();mpRBtn()}
 function mpTick(){if(!MP.on||!MP.pref)return;const d=FB.db,now=performance.now(),loc=mpLoc(),fx=face[0],fy=face[1];
- const op=outdoorPos(),st={loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:(typeof SAILING!=='undefined'&&SAILING&&!SCENE)?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1])},k=JSON.stringify(st);
+ const op=outdoorPos(),st={loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:(typeof SAILING!=='undefined'&&SAILING&&!SCENE)?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():''},k=JSON.stringify(st);
  let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){}const nm=myName();
  if(chk!==MP.lastCh||nm!==MP.lastN){MP.lastCh=chk;MP.lastN=nm;MP.last='';d.update(MP.pref,{ch:JSON.parse(chk),n:nm}).catch(()=>{MP.lastCh=''})}
  if(k!==MP.last||now-MP.beat>5000){MP.last=k;MP.beat=now;d.update(MP.pref,Object.assign(st,{t:d.serverTimestamp()})).catch(()=>{MP.last=''})}}
@@ -7791,6 +7792,7 @@ const outdoorPos=()=>{if(SCENE&&SCENE.room&&SCENE.room.region)return[P.x,P.y];if
   for(const[u,r]of rows){const fr=MP.friends&&MP.friends[u],where=r.ar&&WORLD_REGIONS[r.ar]?WORLD_REGIONS[r.ar].name:'At sea';t+='<br><span style="color:'+(fr?'#28a048':'#3070c0')+'">&#9632;</span> '+esc(r.n||'?')+(fr?' (friend)':'')+' · '+esc(where)}
   return h+t+'</small></div>'}}
 {const _lg=worldHTML52;worldHTML52=function(){const h=_lg();return MP.on?h.replace('<span><i style="background:#f8f8f8"></i>Landmark</span></div>','<span><i style="background:#f8f8f8"></i>Landmark</span><span><i style="background:#60e860"></i>Friend</span><span><i style="background:#60c0ff"></i>Player</span></div>'):h}}
+{const _dpp=mpDrawPeer;mpDrawPeer=function(r,tm){try{if(window.LUX&&LUX.drawPeerPet)LUX.drawPeerPet(r,tm)}catch(e){}return _dpp(r,tm)}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
@@ -8008,6 +8010,121 @@ window.SQMP=MP;
  for(const k of new Set([...EQK,...FOODS.map(f=>f.k)]))wrapDesc(k);
  IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns.';
  window.SQSTATS=statsFor}
+// ---------------------------------------------------------------- 66. Marlo's Emporium: pets, capes, dyes, fine furniture, potions
+// A shopkeeper in Hollow Village sells things worth saving up for:
+// - Pets (Cat, Dog, Slime, Fox) that follow you around. Capes (six colors) and outfit dyes (ten colors for your top,
+//   legs and hat or helmet). Pets, capes and dyes are yours to keep: choose them any time on the Style screen
+//   (START menu > Style). Other players see them.
+// - Fine furniture for your house (Painting, Grandfather clock, Aquarium, Fireplace, Slime King trophy, Golden statue).
+// - Potions: Healing (full HP), Strength (+2 melee damage), Iron skin (+15% block), Swiftness (run without spending
+//   extra food) - the buffs last 2 minutes. Use them from the Bag. EAT never drinks your potions.
+var LUX={};
+{const PETS=[{k:'cat',n:'Cat',v:5000,c:['#e89048','#b86020','#f8d8b0']},{k:'dog',n:'Dog',v:5000,c:['#a87048','#704020','#e8d0b0']},{k:'slime',n:'Slime',v:8000,c:['#58b8f8','#2878c8','#d0f0ff']},{k:'fox',n:'Fox',v:12000,c:['#f07028','#b04010','#f8f8f0']}];
+ const CAPES=[{n:'Red',c:'#c83040',v:2000},{n:'Blue',c:'#3858c8',v:2000},{n:'Green',c:'#3a8a3a',v:2000},{n:'Purple',c:'#7848c0',v:4000},{n:'Black',c:'#303038',v:4000},{n:'Gold',c:'#e8b830',v:15000}];
+ const DYES=[{n:'Crimson',c:'#c83040'},{n:'Orange',c:'#e07030'},{n:'Gold',c:'#e8b830'},{n:'Forest',c:'#3a8a3a'},{n:'Teal',c:'#2aa098'},{n:'Royal',c:'#3858c8'},{n:'Violet',c:'#7848c0'},{n:'Pink',c:'#e070a8'},{n:'Black',c:'#303038'},{n:'White',c:'#e8e8f0'}],DYEV=800;
+ const FURN2=[{k:'fpaint',n:'Painting',v:3000,d:'A landscape of Hollow Island in a gilded frame.'},{k:'fclock',n:'Grandfather clock',v:4000,d:'Tick, tock. Keeps the island\'s time.'},{k:'ffire',n:'Fireplace',v:6000,d:'A stone fireplace with a cozy fire.'},
+  {k:'faqua',n:'Aquarium',v:8000,d:'Little fish swim in circles.'},{k:'ftroph',n:'Slime King trophy',v:10000,d:'The crown of a defeated Slime King, mounted on a plinth.'},{k:'fstatue',n:'Golden statue',v:25000,d:'A solid gold statue. Of you, obviously.'}];
+ const POTS=[{k:'pot_heal',n:'Healing potion',v:150,d:'Restores all your HP.',heal:6},{k:'pot_str',n:'Strength potion',v:300,d:'+2 melee damage for 2 minutes.',buff:'str'},
+  {k:'pot_iron',n:'Iron skin potion',v:300,d:'+15% block chance for 2 minutes.',buff:'iron'},{k:'pot_swift',n:'Swiftness potion',v:250,d:'Sprint without spending extra food for 2 minutes.',buff:'swift'}];
+ const COS={pets:[],capes:[],dyes:[],pet:null,cape:0,db:0,dl:0,dh:0};LUX.COS=COS;
+ // ---- items ----
+ for(const f of FURN2){BK.push(f.k);BHP[f.k]=1;INVK.push(f.k);INAME[f.k]=f.n;IDESC[f.k]=f.d+' Furniture for your house.';SELLP[f.k]=Math.round(f.v/4);SN[f.k]=f.n+'s';if(typeof SHORT!=='undefined')SHORT[f.k]=f.n.toLowerCase();FURN_ONLY.add(f.k)}
+ for(const p of POTS){INVK.push(p.k);INAME[p.k]=p.n;IDESC[p.k]=p.d;SELLP[p.k]=Math.round(p.v/3);SN[p.k]=p.n+'s';if(typeof SHORT!=='undefined')SHORT[p.k]=p.n.toLowerCase();FOODS.push({k:p.k,n:p.n.toLowerCase(),heal:p.heal||0,hun:0,pot:1})}
+ if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push(...FURN2.map(f=>f.k),...POTS.map(p=>p.k));
+ // ---- potions: buffs ----
+ const BUFF={};LUX.BUFF=BUFF;const bOn=k=>BUFF[k]&&BUFF[k]>performance.now();
+ const _uf=useFood;useFood=function(k){const p=POTS.find(q=>q.k===k);if(!p)return _uf(k);if((inv[k]|0)<1)return;inv[k]--;
+  if(p.heal){P.hp=6;say('You drink the healing potion. Fully healed!')}else{BUFF[p.buff]=performance.now()+120000;say('You drink the '+p.n.toLowerCase()+'. '+p.d.replace(' for 2 minutes','')+' (2 min)')}
+  try{sfx('quest')}catch(e){}saveLocal(true);if(pnOpen)rPn()};
+ const _mf=meleeFlat;meleeFlat=function(){return _mf()+(bOn('str')?2:0)};
+ const _bb=blockBonus;blockBonus=function(){return _bb()+(bOn('iron')?.15:0)};
+ const _bc=blockCap;blockCap=function(){return _bc()+(bOn('iron')?.1:0)};
+ const _sp=isSprint;isSprint=function(){if(bOn('swift')&&!(swing>0)&&!dead&&!pnOpen&&!menuOpen&&!FISH){const m=Math.hypot(jx,jy)>.1||K.w||K.a||K.s||K.d||K.arrowup||K.arrowdown||K.arrowleft||K.arrowright;if(m)return true}return _sp()};
+ {const _u=upd;upd=function(dt){const h0=hunger;_u(dt);if(bOn('swift')&&hunger<h0){const passive=dt*.9*FOOD_RATE;if(h0-hunger>passive)hunger=Math.min(100,h0-passive)}}}
+ // EAT never drinks potions
+ const _eat=eat;eat=function(){const keep={};for(const p of POTS){keep[p.k]=inv[p.k]|0;inv[p.k]=0}try{_eat()}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}};
+ // buff timers on screen
+ const bx=document.createElement('div');bx.id='luxbuff';bx.style.cssText='position:fixed;left:8px;top:calc(52% + 48px);z-index:29;display:flex;flex-direction:column;gap:3px;pointer-events:none;font:700 12px '+PF;document.body.appendChild(bx);
+ setInterval(()=>{const now=performance.now(),L=[['str','STRENGTH','#c83040'],['iron','IRON SKIN','#6878a8'],['swift','SWIFTNESS','#2aa098']].filter(([k])=>BUFF[k]>now);
+  bx.style.display=(pnOpen||menuOpen)?'none':'flex';bx.innerHTML=L.map(([k,n,c])=>{const s=Math.ceil((BUFF[k]-now)/1000);return'<span style="background:#f8f8f8;border:2px solid #485870;padding:2px 6px;color:'+c+'">'+n+' '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+'</span>'}).join('');
+  for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength potion wore off.',iron:'Your iron skin potion wore off.',swift:'Your swiftness potion wore off.'}[k]||'')}},500);
+ // ---- saves ----
+ const _sn=snap;snap=function(){const s=_sn();s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};return s};
+ const _ap=applySave;applySave=function(S){_ap(S);const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);
+  COS.pet=COS.pets.includes(c.pet)?c.pet:null;COS.cape=COS.capes.includes(+c.cape)?+c.cape:0;for(const k of['db','dl','dh'])COS[k]=COS.dyes.includes(+c[k])?+c[k]:0;KITC.clear()};
+ // ---- looks: capes and dyes are part of the character sprite, so other players see them too ----
+ const _gc=gearCH;gearCH=function(){const c=_gc();if(COS.cape)c.cape=COS.cape;if(COS.db)c.dyb=COS.db;if(COS.dl)c.dyl=COS.dl;if(COS.dh)c.dyh=COS.dh;return c};
+ const _kl=kitLook;kitLook=function(ch){const o=_kl(ch),d=i=>DYES[(i|0)-1];if(d(ch.dyb)&&o.body)o.bc=d(ch.dyb).c;if(d(ch.dyl)&&o.legs)o.lc=d(ch.dyl).c;if(d(ch.dyh)&&o.head)o.hc=d(ch.dyh).c;return o};
+ const shade=(hex,f)=>'#'+[1,3,5].map(i=>Math.max(0,Math.min(255,Math.round(parseInt(hex.slice(i,i+2),16)*f))).toString(16).padStart(2,'0')).join('');
+ const _kb=kitBuild;kitBuild=function(ch,dir,st){const base=_kb(ch,dir,st),cp=CAPES[(ch.cape|0)-1];if(!cp)return base;const c=document.createElement('canvas');c.width=16;c.height=32;const x=c.getContext('2d'),C=cp.c,Dk=shade(C,.7),Lt=shade(C,1.2),K='#181018';
+  const px=(a,b,col)=>{x.fillStyle=col;x.fillRect(a,b,1,1)};
+  if(dir===1){x.drawImage(base,0,0);for(let y=21;y<=29;y++){const w=Math.min(6,2+((y-21)>>1)),a=7-w,b=8+w;px(a-1,y,K);px(b+1,y,K);for(let X=a;X<=b;X++)px(X,y,X===a||X===b?Dk:(X===7||X===8)&&y>23?Lt:C)}for(let X=1;X<=14;X++)if(X>=7-6-1&&X<=8+6+1)px(X,30,K)}
+  else if(dir===0){for(let y=22;y<=30;y++)for(const X of[0,1,14,15])if(y>23||X===1||X===14)px(X,y,X===0||X===15?K:Dk);x.drawImage(base,0,0);px(3,22,Lt);px(12,22,Lt)}
+  else{for(let y=21;y<=30;y++){const w=y<24?1:y<27?2:3;for(let k=0;k<w;k++)px(11+k,y,k===w-1?Dk:C);px(11+w,y,K)}x.drawImage(base,0,0)}
+  return c};
+ // ---- pets: follow you around (and other players' pets follow them) ----
+ const PETSPR={};function petSprite(k,f){const key=k+f;if(PETSPR[key])return PETSPR[key];const P2=PETS.find(p=>p.k===k);if(!P2)return null;const c=document.createElement('canvas');c.width=12;c.height=12;const x=c.getContext('2d'),[A,B,Cc]=P2.c,K='#181018';
+  const r=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
+  if(k==='slime'){r(2,4,8,7,K);r(1,6,10,5,K);r(3,5,6,5,A);r(2,7,8,3,A);r(3,9,6,1,B);r(4,5,2,1,Cc);r(4,7,1,1,K);r(7,7,1,1,K)}
+  else{const ears=k==='dog'?[[2,2,2,3],[8,2,2,3]]:[[2,1,2,3],[8,1,2,3]];for(const e of ears)r(e[0],e[1],e[2],e[3],K);r(2,3,8,5,K);r(1,7,10,4,K);
+   r(3,4,6,3,A);r(2,8,8,2,A);for(const e of ears)r(e[0]+(k==='dog'?0:0),e[1]+1,1,1,k==='dog'?B:A);r(4,5,1,1,K);r(7,5,1,1,K);r(5,6,2,1,k==='fox'?Cc:B);
+   if(k==='fox'||k==='cat')r(10,6,2,3,K),r(10,7,1,1,k==='fox'?Cc:A);if(k==='fox')r(3,8,6,2,Cc);const leg=f?1:0;r(2,10,2,1,K);r(8-leg,10,2,1,K)}
+  return PETSPR[key]=c}
+ const petState=new Map();
+ function petStep(id,ox,oy,fc){let s=petState.get(id);if(!s){s={x:ox-14,y:oy+4,t:0};petState.set(id,s)}const tx=ox-(fc&&fc[0]?fc[0]*16:10),ty=oy+(fc&&fc[1]?-fc[1]*10:4)+2,dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy),now=performance.now();
+  const dt=Math.min(.1,(now-(s.lt||now))/1000);s.lt=now;if(d>160){s.x=tx;s.y=ty}else if(d>6){const sp=Math.min(d,(d>40?110:60)*dt);s.x+=dx/d*sp;s.y+=dy/d*sp;s.t+=dt*8;s.fl=dx<0}return s}
+ function drawPet(k,s){const sp=petSprite(k,Math.floor(s.t)%2);if(!sp)return;const x=Math.round(s.x),y=Math.round(s.y);shd(x,y+5,9);g.save();if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.imageSmoothingEnabled=false;g.drawImage(sp,x-6,y-6);g.restore()}
+ const _pP=pP;pP=function(tm){if(COS.pet&&!(typeof SAILING!=='undefined'&&SAILING)){const s=petStep('me',P.x,P.y,face);drawPet(COS.pet,s)}return _pP(tm)};
+ LUX.drawPeerPet=(r,tm)=>{if(!r.pet||!PETS.some(p=>p.k===r.pet)||r.sl)return;const s=petStep(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]);drawPet(r.pet,s)};
+ LUX.pet=()=>COS.pet||'';
+ // ---- fine furniture art ----
+ const _dpc=drawPiece;drawPiece=function(t,x,y,f,ghost,tm){const x0=x*16,y0=y*16,R2=(a,b,w,h,c)=>Rg(x0+a,y0+b,w,h,c);if(!FURN2.some(q=>q.k===t))return _dpc(t,x,y,f,ghost,tm);
+  if(t==='fpaint'){R2(1,-10,14,13,O);R2(2,-9,12,11,'#e8b830');R2(3,-8,10,9,'#78b8f0');R2(3,-3,10,4,'#58a848');R2(6,-6,3,3,'#f8f8f0');R2(7,3,2,12,O);R2(4,13,8,2,O)}
+  else if(t==='fclock'){shd(x0+8,y0+15,10);R2(3,-14,10,29,O);R2(4,-13,8,27,'#8a5428');R2(5,-12,6,6,'#f4ecd8');R2(7,-11,1,3,O);R2(8,-9,2,1,O);R2(6,-4,4,10,'#5a3418');const sw=Math.round(Math.sin((tm||0)*3)*1.5);R2(7+sw,-2,2,6,'#e8b830')}
+  else if(t==='ffire'){R2(0,-8,16,24,O);R2(1,-7,14,22,'#9a9aa8');for(const[a,b]of[[1,-7],[8,-3],[1,1],[8,5],[1,9]])R2(a,b,7,3,'#b8b8c8');R2(3,3,10,12,'#201818');const fl=Math.floor((tm||0)*8)%2;R2(5,9-fl,6,6,'#f08830');R2(6,11-fl,4,4,'#f8d848');R2(0,-9,16,2,'#7a5a40')}
+  else if(t==='faqua'){shd(x0+8,y0+15,12);R2(0,-4,16,19,O);R2(1,-3,14,13,'#5898e0');R2(1,-3,14,2,'#a8d8f8');R2(1,10,14,4,'#6a4a30');const fx=Math.round(5+Math.sin((tm||0)*1.5)*4);R2(fx,2,3,2,'#f08830');R2(fx+3,2,1,1,'#f08830');R2(11-Math.round(Math.sin((tm||0))*3),6,2,1,'#f8d848');R2(3,7,1,3,'#48a838')}
+  else if(t==='ftroph'){shd(x0+8,y0+15,12);R2(2,3,12,12,O);R2(3,4,10,10,'#8a8a98');R2(3,4,10,2,'#b0b0c0');R2(2,-6,12,10,O);R2(3,-5,10,8,'#58b8f8');R2(4,-4,3,2,'#d0f0ff');R2(5,-9,6,4,O);R2(6,-8,1,2,'#e8b830');R2(8,-8,1,2,'#e8b830');R2(10,-8,1,2,'#e8b830');R2(6,-7,5,2,'#e8b830')}
+  else if(t==='fstatue'){shd(x0+8,y0+15,12);R2(2,9,12,6,O);R2(3,10,10,4,'#9a9aa8');R2(4,-14,8,24,O);R2(5,-13,6,6,'#e8b830');R2(5,-7,6,9,'#d8a020');R2(4,-5,1,6,'#e8b830');R2(11,-5,1,6,'#e8b830');R2(6,2,2,7,'#d8a020');R2(8,2,2,7,'#c89018');R2(6,-12,1,1,'#fff8c0')}
+  if(ghost){}};
+ // ---- the shopkeeper ----
+ {let sx=VX+5,sy=VY+3;const free=(x,y)=>!BS.has(y*N+x)&&!obj[y*N+x]&&tile[y*N+x]!==0&&!solid(x*16+8,y*16+8);for(let r=0;r<8&&!free(sx,sy);r++)for(let dy=-r;dy<=r&&!free(sx,sy);dy++)for(let dx=-r;dx<=r;dx++)if(free(VX+5+dx,VY+3+dy)){sx=VX+5+dx;sy=VY+3+dy;break}
+  NPCS.push({kind:'emporium',name:'Marlo',x:sx*16+8,y:sy*16+8,ch:{sk:2,hs:3,hc:2,sh:6,pn:1,ht:1,hcol:5,so:2}})}
+ let EMT='pets';
+ const coin=v=>v.toLocaleString('en-US')+' gold';
+ const row=(icon,name,desc,price,state,data)=>'<div class="gr" style="align-items:center"><div class="gi" style="flex:1;min-width:0"><b>'+name+'</b><br><small>'+desc+'</small></div>'+
+  (state==='owned'?'<span style="font-size:12px;color:#28a048;font-weight:700;min-width:70px;text-align:center">OWNED</span>':'<button class="gc emb" '+data+(GLD<price?' style="opacity:.5"':'')+'>'+coin(price)+'</button>')+'</div>';
+ function emporiumHTML(){const tab=(k,l)=>'<button class="sb emt'+(EMT===k?' on':'')+'" data-t="'+k+'" style="display:inline-block;width:auto;margin:3px;padding:8px 10px'+(EMT===k?';background:#485870;color:#f8f8f8':'')+'">'+l+'</button>';
+  let h='<div class="tl">Gold: '+GLD.toLocaleString('en-US')+'</div><div style="text-align:center">'+tab('pets','Pets')+tab('capes','Capes')+tab('dyes','Dyes')+tab('furn','Furniture')+tab('pots','Potions')+'</div>';
+  if(EMT==='pets')for(const p of PETS)h+=row('',p.n,'Follows you everywhere. Other players see it too.',p.v,COS.pets.includes(p.k)?'owned':'','data-c="pet" data-k="'+p.k+'"');
+  if(EMT==='capes')CAPES.forEach((c,i)=>{h+=row('','<span style="color:'+c.c+'">&#9632;</span> '+c.n+' cape','Wear it on the Style screen.',c.v,COS.capes.includes(i+1)?'owned':'','data-c="cape" data-k="'+(i+1)+'"')});
+  if(EMT==='dyes')DYES.forEach((c,i)=>{h+=row('','<span style="color:'+c.c+'">&#9632;</span> '+c.n+' dye','Recolor your top, legs or hat on the Style screen. Works on armor too.',DYEV,COS.dyes.includes(i+1)?'owned':'','data-c="dye" data-k="'+(i+1)+'"')});
+  if(EMT==='furn')for(const f of FURN2)h+=row('',f.n+((inv[f.k]|0)?' <small>(have '+(inv[f.k]|0)+')</small>':''),f.d,f.v,'','data-c="furn" data-k="'+f.k+'"');
+  if(EMT==='pots')for(const p of POTS)h+=row('',p.n+((inv[p.k]|0)?' <small>(have '+(inv[p.k]|0)+')</small>':''),p.d,p.v,'','data-c="pot" data-k="'+p.k+'"');
+  return h+'<div class="tl" style="font-size:12px;font-weight:400;opacity:.75;margin-top:10px">Pets, capes and dyes: START menu &gt; Style.</div>'}
+ function luxBuy(c,k){let price=0,ok=false,name='';
+  if(c==='pet'){const p=PETS.find(q=>q.k===k);if(!p||COS.pets.includes(k))return;price=p.v;name=p.n.toLowerCase()}
+  else if(c==='cape'){const i=+k,cp=CAPES[i-1];if(!cp||COS.capes.includes(i))return;price=cp.v;name=cp.n.toLowerCase()+' cape'}
+  else if(c==='dye'){const i=+k;if(!DYES[i-1]||COS.dyes.includes(i))return;price=DYEV;name=DYES[i-1].n.toLowerCase()+' dye'}
+  else if(c==='furn'){const f=FURN2.find(q=>q.k===k);if(!f)return;price=f.v;name=f.n.toLowerCase()}
+  else if(c==='pot'){const p=POTS.find(q=>q.k===k);if(!p)return;price=p.v;name=p.n.toLowerCase()}
+  if(GLD<price){say('Not enough gold. That costs '+coin(price)+'.');sfx('swish');return}GLD-=price;
+  if(c==='pet'){COS.pets.push(k);COS.pet=k;say('Your new '+name+' follows you now!')}else if(c==='cape'){COS.capes.push(+k);COS.cape=+k;KITC.clear();say('You put on the '+name+'.')}
+  else if(c==='dye'){COS.dyes.push(+k);say('Bought the '+name+'. Use it on the Style screen.')}else{inv[k]=(inv[k]|0)+1;say('Bought a '+name+'.')}
+  try{sfx('coin')}catch(e){try{sfx('pickup')}catch(e2){}}if(typeof svg==='function')svg();saveLocal(true);try{saveCloud(true)}catch(e){}rPn()}
+ // ---- the Style screen ----
+ const STAB=31;function styleHTML(){const pick=(lab,on,data)=>'<button class="gc sty'+(on?' on':'')+'" '+data+' style="margin:3px;'+(on?'background:#485870;color:#f8f8f8':'')+'">'+lab+'</button>';
+  let h='<div class="tl">STYLE</div><div class="qc"><b>Pet</b><div>'+pick('None',!COS.pet,'data-s="pet" data-v=""');for(const k of COS.pets)h+=pick(PETS.find(p=>p.k===k).n,COS.pet===k,'data-s="pet" data-v="'+k+'"');
+  h+='</div></div><div class="qc"><b>Cape</b><div>'+pick('None',!COS.cape,'data-s="cape" data-v="0"');for(const i of COS.capes)h+=pick('<span style="color:'+CAPES[i-1].c+'">&#9632;</span> '+CAPES[i-1].n,COS.cape===i,'data-s="cape" data-v="'+i+'"');
+  for(const[slot,lab]of[['db','Top / chestplate dye'],['dl','Legs dye'],['dh','Hat / helmet dye']]){h+='</div></div><div class="qc"><b>'+lab+'</b><div>'+pick('Original',!COS[slot],'data-s="'+slot+'" data-v="0"');for(const i of COS.dyes)h+=pick('<span style="color:'+DYES[i-1].c+'">&#9632;</span> '+DYES[i-1].n,COS[slot]===i,'data-s="'+slot+'" data-v="'+i+'"')}
+  h+='</div></div>';if(!COS.pets.length&&!COS.capes.length&&!COS.dyes.length)h+='<div class="tl" style="font-size:13px;font-weight:400">Nothing here yet. Visit Marlo\'s Emporium in Hollow Village.</div>';return h}
+ SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'style',l:()=>'Style'});
+ const _ss=showScreen;showScreen=function(id){if(id!=='style')return _ss(id);pnOpen=true;ptab=STAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
+ const _r=rPn;rPn=function(){if(ptab===STAB){panelChrome('');pbd.innerHTML=styleHTML();return}if(ptab===2&&shop==='emporium'){panelChrome("Marlo's Emporium");pbd.innerHTML=emporiumHTML();return}_r()};
+ const _oc=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
+  if((b=t.closest('.emt'))){EMT=b.dataset.t;rPn();return}if((b=t.closest('.emb'))){luxBuy(b.dataset.c,b.dataset.k);return}
+  if((b=t.closest('.sty'))){const s=b.dataset.s,v=b.dataset.v;if(s==='pet')COS.pet=v||null;else COS[s]=+v||0;KITC.clear();saveLocal(true);rPn();return}_oc(e)};
+ // talking to Marlo
+ if(typeof LINES!=='undefined')LINES.marlo={d:['Finest goods on the island! Pets, capes, dyes, furniture, potions.','Gold burning a hole in your pocket? I can help with that.']}}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
