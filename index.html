@@ -93,6 +93,7 @@ var FOOD_RATE=.25;
    58. Gen 3 sprites: every remaining HD sprite (enemies, bosses, stations, landmarks, rooms) pixelated to 1 texel with hard edges; slimes on whole pixels; crisp item icons; pixel harbor flags
    59. Gen 3 UI: stepped pixel frames for the HUD, bars, text box and every menu; octagon touch buttons; pixel sailing card
    60. Gen 3 polish: whole-pixel grid in the world, pixel circles, de-speckled rooms, darker-skin eyes, ranger hood side view
+   61. Multiplayer (hosted copy only): Google sign-in, account saves in Firebase, other players with names overhead, Gen 3 chat
    BOOT LOAD (end of file) - applies this device's save once, after every section is set up
 
    HOW IT FITS TOGETHER
@@ -7093,6 +7094,159 @@ img,canvas,.slot img,#pn img{image-rendering:pixelated;image-rendering:crisp-edg
 {const hs=KIT.head.hood.side;for(let k=hs.length-1;k>=0;k--)if(hs[k][0]===14&&hs[k][1]===12)hs.splice(k,1);
  const _kb60=kitBuild;kitBuild=function(ch,dir,st){const c=_kb60(ch,dir,st);if((ch.sk|0)<3||dir===1)return c;const x=c.getContext('2d');x.fillStyle='#e8e0d8';
   if(dir===2)x.fillRect(4,18,1,1);else{x.fillRect(5,18,1,1);x.fillRect(10,18,1,1)}return c};KITC.clear()}
+// ---------------------------------------------------------------- 61. Multiplayer (Firebase): Google sign-in, account saves, other players, chat
+// Only runs on the hosted copy (GitHub Pages), never inside the Claude artifact (that copy keeps its own account save).
+// - Sign in with Google (ONLINE button). Your save goes to saves/<uid> as one JSON string; the cross-device rules from
+//   section 8 apply unchanged (newest save wins, never overwrite another device's newer progress).
+// - Everyone online shares one world: presence/<uid> holds where you are (Hollow or a region; indoors and dungeons are
+//   private), your look and your name. Other players are drawn y-sorted with everything else, their names float
+//   over their heads, and chat messages appear over the speaker's head in yellow.
+// - Chat: chat/<id>, RuneScape-style box with All / Public / Game tabs; Game repeats the game's own messages.
+// - Your skills, quests, items and world progress stay yours: nothing here changes what anyone else has.
+{
+const MP={on:false,user:null,players:new Map(),log:[],tab:'all',seen:new Set(),unsub:[],off:0,T:null,Tat:0,selfSaid:null,lastSend:0,unread:0,open:false};
+const FBV='10.12.2',FBC={apiKey:"AIzaSyDqKBIszPeg7y-cto-YRDzgPUfENSVXPjk",authDomain:"skillquest-913e2.firebaseapp.com",
+ databaseURL:"https://skillquest-913e2-default-rtdb.firebaseio.com",projectId:"skillquest-913e2",storageBucket:"skillquest-913e2.firebasestorage.app",
+ messagingSenderId:"711983472658",appId:"1:711983472658:web:43c695d15a29386c1ef8cb"};
+const MP_OK=/^https?:$/.test(location.protocol)&&!(window.claude&&window.claude.use);
+let FB=null;
+const myName=()=>PNAME||((MP.user&&MP.user.displayName)||'').split(' ')[0].replace(/[<>]/g,'').slice(0,10)||'Adventurer';
+const mpErr=e=>{console.warn('[online]',e);const c=(e&&(e.code||e.message))||'';mpLog('game','Online: '+String(c).replace(/^auth\//,'').slice(0,60))};
+const mpNow=()=>Date.now()+MP.off;
+// ---- where am I (only outdoors is shared) ----
+function mpLoc(){if(dead||(typeof TRAVEL49!=='undefined'&&TRAVEL49))return'';if(!SCENE)return'hollow';const R=SCENE.room;return R&&R.region?'r:'+R.region:''}
+// ---- UI ----
+const css=document.createElement('style');css.textContent=`
+#mpb{position:fixed;left:8px;top:52%;z-index:30;min-width:72px;height:40px;padding:0 10px;background:#f8f8f8;color:#404040;border:3px solid #485870;box-shadow:inset 0 0 0 2px #a8c0e0;font:700 14px ${PF};letter-spacing:1px;cursor:pointer;touch-action:manipulation;
+ clip-path:polygon(2px 0,calc(100% - 2px) 0,100% 2px,100% calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,0 calc(100% - 2px),0 2px)}
+#mpb i{font-style:normal;color:#3058c8;margin-left:6px}#mpb.unr::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;background:#e04838}
+#mpo{position:fixed;left:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 22%);z-index:29;max-width:min(62vw,420px);pointer-events:none;display:flex;flex-direction:column;gap:3px}
+#mpo div{background:rgba(248,248,248,.88);border:2px solid #485870;padding:3px 7px;font:500 13px ${PF};color:#404040;transition:opacity .6s;overflow-wrap:anywhere}
+#mpo b,#mpl b{color:#3058c8;font-weight:700}#mpl .me b{color:#c04838}#mpl .gm{color:#707070}
+#mpchat,#mps{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:60;max-width:520px;margin:0 auto;background:#f8f8f8;color:#404040;font:500 14px ${PF};padding:10px;box-sizing:border-box;display:none}
+#mpchat .hd{display:flex;align-items:center;gap:6px;margin-bottom:6px}#mpchat .hd .sp{flex:1;font-size:12px;color:#707070;text-align:right}
+#mpchat button,#mps button{font:700 13px ${PF};color:#404040;background:#f8f8f8;border:2px solid #485870;padding:6px 10px;cursor:pointer;touch-action:manipulation}
+#mpchat .tb.on{background:#485870;color:#f8f8f8}#mpchat .x{padding:6px 11px}
+#mpl{height:min(34vh,260px);overflow-y:auto;border:2px solid #a8c0e0;padding:6px;background:#fff;display:flex;flex-direction:column;gap:3px;overflow-wrap:anywhere}
+#mpf{display:flex;gap:6px;margin-top:8px}#mpi{flex:1;min-width:0;font:500 16px ${PF};padding:6px 8px;border:2px solid #485870;background:#fff;color:#404040;border-radius:0}
+#mps{text-align:center}#mps p{margin:8px 0 12px;line-height:1.4}#mps .bt{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}#mps .pri{background:#485870;color:#f8f8f8}
+#mpchat .so{font-size:11px;padding:4px 7px}`;document.head.appendChild(css);
+const el=(t,id,cls,html)=>{const e=document.createElement(t);if(id)e.id=id;if(cls)e.className=cls;if(html)e.innerHTML=html;return e};
+const btn=el('button','mpb','',''),ov=el('div','mpo'),pc=el('div','mpchat','g3',
+ '<div class="hd"><button class="tb" data-t="all">All</button><button class="tb" data-t="pub">Public</button><button class="tb" data-t="game">Game</button><span class="sp" id="mpn"></span><button class="x" id="mpx" aria-label="Close chat">X</button></div>'+
+ '<div id="mpl"></div><form id="mpf" autocomplete="off"><input id="mpi" maxlength="80" placeholder="Say something..." enterkeyhint="send" aria-label="Chat message"><button type="submit">SEND</button></form>'+
+ '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px;color:#707070"><span id="mpu"></span><button type="button" class="so" id="mpso">Sign out</button></div>'),
+ sg=el('div','mps','g3','<div style="font-weight:700;font-size:17px;letter-spacing:2px">PLAY ONLINE</div><p>Sign in with Google to see other players, chat, and keep your progress in your account on any device.</p><div class="bt"><button class="pri" id="mpgo">SIGN IN WITH GOOGLE</button><button id="mpno">NOT NOW</button></div>');
+for(const e of[btn,ov,pc,sg])document.body.appendChild(e);
+const stop=e=>e.stopPropagation();
+for(const e of[btn,pc,sg])for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])e.addEventListener(ev,stop);
+const $=id=>document.getElementById(id),lst=$('mpl'),inp=$('mpi');
+function mpClearKeys(){try{for(const k in K)K[k]=0}catch(e){}}
+function mpOpenChat(){if(!MP.on){sg.style.display='block';return}MP.open=true;MP.unread=0;pc.style.display='block';mpRList();mpClearKeys();setTimeout(()=>inp.focus(),30)}
+function mpCloseChat(){MP.open=false;pc.style.display='none';inp.blur()}
+btn.onclick=()=>MP.open?mpCloseChat():mpOpenChat();
+$('mpx').onclick=mpCloseChat;$('mpno').onclick=()=>{sg.style.display='none'};
+$('mpgo').onclick=()=>{sg.style.display='none';mpSignIn()};
+$('mpso').onclick=async()=>{mpCloseChat();await mpStop(true);try{await FB.auth.signOut(FB.A)}catch(e){}say('Signed out. Playing offline.')};
+pc.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{MP.tab=b.dataset.t;mpRList()});
+// the game's keyboard handlers (capture phase on document) would swallow Enter, so the chat box gets the key first
+addEventListener('keydown',e=>{if(e.target!==inp)return;e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();mpCloseChat()}else if(e.key==='Enter'&&!e.isComposing){e.preventDefault();mpSend(inp.value);inp.value=''}},true);
+addEventListener('keyup',e=>{if(e.target===inp)e.stopImmediatePropagation()},true);
+inp.addEventListener('focus',mpClearKeys);
+$('mpf').onsubmit=e=>{e.preventDefault();mpSend(inp.value);inp.value=''};
+// PC: Enter opens the chat
+document.addEventListener('keydown',e=>{if(e.key!=='Enter'||MP.open||!MP.on)return;const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'))return;if(pnOpen||menuOpen||chessOpen)return;e.preventDefault();mpOpenChat()});
+function mpRBtn(){const n=[...MP.players.values()].filter(live).length+1;btn.innerHTML=MP.on?'CHAT<i>'+n+'</i>':'ONLINE';btn.classList.toggle('unr',MP.on&&MP.unread>0&&!MP.open);
+ const nn=$('mpn');if(nn)nn.textContent=MP.on?n+' online':'';const u=$('mpu');if(u)u.textContent=MP.user?'Signed in as '+myName():''}
+function mpLine(m){const d=document.createElement('div');if(m.k==='game'){d.className='gm';d.textContent=m.m}else{if(m.me)d.className='me';const b=document.createElement('b');b.textContent=m.n+': ';d.append(b,document.createTextNode(m.m))}return d}
+function mpRList(){pc.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on',b.dataset.t===MP.tab));lst.textContent='';
+ for(const m of MP.log)if(MP.tab==='all'||m.k===MP.tab)lst.appendChild(mpLine(m));lst.scrollTop=lst.scrollHeight;mpRBtn()}
+function mpROv(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||chessOpen,recent=MP.log.filter(m=>m.k==='pub'&&now-m.at<12000).slice(-3);
+ ov.style.display=hide?'none':'flex';btn.style.display=(pnOpen||menuOpen||chessOpen)?'none':'block';
+ const key=recent.map(m=>m.id).join(',');if(key!==ov.dataset.k){ov.dataset.k=key;ov.textContent='';for(const m of recent){const d=mpLine(m);d.dataset.at=m.at;ov.appendChild(d)}}
+ for(const d of ov.children){const a=now-(+d.dataset.at);d.style.opacity=a>10000?'0':'1'}}
+function mpLog(k,m,extra){const e=Object.assign({k,m,at:performance.now(),id:Math.random().toString(36).slice(2)},extra||{});MP.log.push(e);if(MP.log.length>120)MP.log.shift();
+ if(MP.open&&(MP.tab==='all'||MP.tab===k)){lst.appendChild(mpLine(e));while(lst.children.length>120)lst.firstChild.remove();lst.scrollTop=lst.scrollHeight}}
+// the game's own messages go to the Game tab
+const _say61=say;let lastGame='',lastGameAt=0;say=function(s){_say61(s);const t=String(s||'');const n=performance.now();if(t&&(t!==lastGame||n-lastGameAt>4000)){lastGame=t;lastGameAt=n;mpLog('game',t)}};
+// ---- Firebase ----
+async function mpLoad(){const b='https://www.gstatic.com/firebasejs/'+FBV+'/';
+ const[app,auth,db]=await Promise.all([import(b+'firebase-app.js'),import(b+'firebase-auth.js'),import(b+'firebase-database.js')]);
+ const a=app.initializeApp(FBC);FB={auth,db,A:auth.getAuth(a),D:db.getDatabase(a)};
+ try{await auth.getRedirectResult(FB.A)}catch(e){mpErr(e)}
+ auth.onAuthStateChanged(FB.A,u=>{if(u)mpStart(u).catch(mpErr);else mpStop(false)})}
+function mpSignIn(){if(!FB){say('Still connecting to the server... try again in a moment.');return}const A=FB.auth,p=new A.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
+ A.signInWithPopup(FB.A,p).catch(e=>{const c=e&&e.code||'';if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment')A.signInWithRedirect(FB.A,p).catch(mpErr);else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request')mpErr(e)})}
+async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=u;const d=FB.db,D=FB.D,uid=u.uid;
+ // account save: one JSON string per player
+ const sref=d.ref(D,'saves/'+uid);
+ const adapter={async get(){const s=await d.get(sref);if(!s.exists())return{exists:false,data:()=>null};let v=null;try{v=JSON.parse(s.val().json)}catch(e){}return{exists:!!v,data:()=>v}},
+  async set(s){await d.set(sref,{json:JSON.stringify(s),savedAt:+s.savedAt||Date.now()})}};
+ MP.adapter=adapter;try{const r=await adapter.get();cloud=adapter;
+  if(r.exists){const S=JSON.parse(JSON.stringify(r.data()));if(S.v==1&&(+S.savedAt||0)>LOCAL_AT+2000){applySave(S);hideCreator();say('Progress loaded from your account');saveLocal(true);lastCloud=keyOf(snap())}else saveCloud(true)}
+  else if(hadLocal||!menuOpen)saveCloud(true)}catch(e){mpErr(e)}
+ // presence
+ MP.pref=d.ref(D,'presence/'+uid);MP.last='';MP.lastCh='';MP.lastN='';
+ MP.unsub.push(d.onValue(d.ref(D,'.info/serverTimeOffset'),s=>{MP.off=+s.val()||0}));
+ MP.unsub.push(d.onValue(d.ref(D,'.info/connected'),s=>{if(s.val()===true&&MP.on){d.onDisconnect(MP.pref).remove().catch(()=>{});MP.last='';MP.lastCh=''}}));
+ const pr=d.ref(D,'presence');
+ MP.unsub.push(d.onChildAdded(pr,s=>mpPeer(s.key,s.val())),d.onChildChanged(pr,s=>mpPeer(s.key,s.val())),d.onChildRemoved(pr,s=>{MP.players.delete(s.key);mpRBtn()}));
+ // chat (the last 25 messages, then live)
+ MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'chat'),d.limitToLast(25)),s=>mpChat(s.key,s.val())));
+ MP.on=true;mpRBtn();say('Online as '+myName()+'!')}
+async function mpStop(manual){const was=MP.on;MP.on=false;for(const f of MP.unsub)try{f()}catch(e){}MP.unsub=[];
+ if(manual&&MP.pref)try{await FB.db.remove(MP.pref)}catch(e){}
+ MP.players.clear();MP.pref=null;MP.user=null;if(cloud&&cloud===MP.adapter)cloud=null;if(was)mpCloseChat();mpRBtn()}
+// ---- other players ----
+const live=r=>performance.now()-r.seen<20000;
+const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v=c[k];if(typeof v==='number'&&isFinite(v))o[k]=Math.max(0,Math.min(99,v|0))}return o};
+function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='number'||typeof v.y!=='number')return;let r=MP.players.get(k);
+ if(!r){r={x:v.x,y:v.y,w:0,said:null};MP.players.set(k,r)}
+ if(r.loc!==v.loc||Math.hypot(r.x-v.x,r.y-v.y)>200){r.x=v.x;r.y=v.y}
+ r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;
+ r.n=String(v.n||'Adventurer').replace(/[<>]/g,'').slice(0,12);r.ch=cleanCh(v.ch);r.seen=performance.now();mpRBtn()}
+function mpTick(){if(!MP.on||!MP.pref)return;const d=FB.db,now=performance.now(),loc=mpLoc(),fx=face[0],fy=face[1];
+ const st={loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0},k=JSON.stringify(st);
+ let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){}const nm=myName();
+ if(chk!==MP.lastCh||nm!==MP.lastN){MP.lastCh=chk;MP.lastN=nm;MP.last='';d.update(MP.pref,{ch:JSON.parse(chk),n:nm}).catch(()=>{MP.lastCh=''})}
+ if(k!==MP.last||now-MP.beat>5000){MP.last=k;MP.beat=now;d.update(MP.pref,Object.assign(st,{t:d.serverTimestamp()})).catch(()=>{MP.last=''})}}
+setInterval(()=>{mpTick();mpROv()},200);
+let mpLastF=performance.now();
+function mpStepAll(){const n=performance.now(),dt=Math.min(.1,(n-mpLastF)/1000);mpLastF=n;
+ for(const r of MP.players.values()){const dx=r.tx-r.x,dy=r.ty-r.y,dd=Math.hypot(dx,dy),k=Math.min(1,dt*9);r.x+=dx*k;r.y+=dy*k;r.mv=dd>.6||r.m;r.w=r.mv?r.w+dt*15:0}}
+function mpVis(){if(!MP.on)return[];const loc=mpLoc();if(!loc)return[];const out=[];const rx=W/Z+48,ry=H/Z+64;
+ for(const r of MP.players.values())if(r.loc===loc&&live(r)&&Math.abs(r.x-P.x)<rx&&Math.abs(r.y-P.y)<ry)out.push(r);return out}
+function mpDrawPeer(r,tm){const x=Math.round(r.x),y=Math.round(r.y),st=r.mv?[1,0,2,0][Math.floor(r.w)%4]:0;GC=g;shd(x,y+6,12);
+ try{cP(r.ch,r.d,st,x,y,r.fl)}catch(e){}MP.T=g.getTransform();MP.Tat=performance.now()}
+// Hollow: join the y-sorted list
+const _lh61=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{if(_lh61)_lh61(L,x0,y0,x1,y1,tm);mpStepAll();for(const r of mpVis())L.push([r.y+6,4,t=>mpDrawPeer(r,t)])};
+// regions: ride along as room items
+const _rn61=rgNear;rgNear=function(R,...a){const out=_rn61(R,...a);if(SCENE&&SCENE.room===R){mpStepAll();for(const r of mpVis())out.push({t:'_mp',r,x:r.x/16,y:(r.y+6)/16-1})}return out};
+const _df61=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_mp'){mpDrawPeer(it.r,tm);return}return _df61(it,tm)};
+// remember the world transform every frame (the player is always drawn in world space)
+const _pP61=pP;pP=function(tm){MP.T=g.getTransform();MP.Tat=performance.now();return _pP61(tm)};
+// names and chat bubbles go over everything, in screen pixels
+function mpLabel(txt,X,Y,sz,col){g.font='700 '+sz+'px '+PF;g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';g.lineWidth=Math.max(2,sz/4);g.strokeStyle='#202020';g.strokeText(txt,X,Y);g.fillStyle=col;g.fillText(txt,X,Y)}
+const _dh61=drawHUD;drawHUD=function(){_dh61();if(!MP.on||!MP.T||performance.now()-MP.Tat>120||pnOpen||menuOpen)return;
+ const u=Math.max(2,Math.round(Math.min(W,H)/160)),sz=Math.round(5*u),now=performance.now(),T=MP.T;g.save();g.setTransform(1,0,0,1,0,0);
+ const one=(x,y,name,said)=>{const p=T.transformPoint({x,y:y-27});let Y=p.y;if(name){mpLabel(name,p.x,Y,sz,'#f8f8f8');Y-=sz+u}
+  if(said&&now-said.at<5000)mpLabel(said.m.length>42?said.m.slice(0,41)+'…':said.m,p.x,Y,sz,'#f8f048')};
+ for(const r of mpVis())one(r.x,r.y,r.n,r.said);
+ if(mpLoc()||SCENE)one(P.x,P.y,'',MP.selfSaid);
+ g.restore()};
+// ---- chat ----
+function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.seen.add(id);const mine=MP.user&&v.u===MP.user.uid,fresh=typeof v.t==='number'&&mpNow()-v.t<15000;
+ const m=v.m.slice(0,80),n=String(v.n||'?').replace(/[<>]/g,'').slice(0,12);
+ const e={me:mine,n,uid:v.u};mpLog('pub',m,e);const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
+ if(fresh){if(mine)MP.selfSaid={m,at:performance.now()};else{const r=MP.players.get(v.u);if(r)r.said={m,at:performance.now()}}if(!MP.open&&!mine){MP.unread++;mpRBtn()}}}
+function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)return;if(!MP.on){mpOpenChat();return}
+ const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;
+ const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}
+// ---- go ----
+mpRBtn();
+if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
+window.SQMP=MP;
+}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).

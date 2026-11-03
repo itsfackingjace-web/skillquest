@@ -1,10 +1,11 @@
-// Firebase connection info for SkillQuest multiplayer (not wired into the game yet).
+// Firebase connection info for SkillQuest multiplayer (reference copy; the game has its own copy in index.html, section 61).
 // These values are meant to be public; data is protected by Firebase security rules.
 // Transcribed from a screenshot of the Firebase console — if the connection fails,
 // re-copy the apiKey from Project settings > General > Your apps.
 export const firebaseConfig = {
   apiKey: "AIzaSyDqKBIszPeg7y-cto-YRDzgPUfENSVXPjk",
   authDomain: "skillquest-913e2.firebaseapp.com",
+  databaseURL: "https://skillquest-913e2-default-rtdb.firebaseio.com",
   projectId: "skillquest-913e2",
   storageBucket: "skillquest-913e2.firebasestorage.app",
   messagingSenderId: "711983472658",
