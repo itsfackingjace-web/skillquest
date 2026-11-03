@@ -7116,7 +7116,10 @@ const FBV='10.12.2',FBC={apiKey:"AIzaSyDqKBIszPeg7y-cto-YRDzgPUfENSVXPjk",authDo
 const MP_OK=/^https?:$/.test(location.protocol)&&!(window.claude&&window.claude.use);
 let FB=null;
 const myName=()=>PNAME||((MP.user&&MP.user.displayName)||'').split(' ')[0].replace(/[<>]/g,'').slice(0,10)||'Adventurer';
-const mpErr=e=>{console.warn('[online]',e);const c=(e&&(e.code||e.message))||'';mpLog('game','Online: '+String(c).replace(/^auth\//,'').slice(0,60))};
+let mpErrAt=0,mpErrLast='';
+const mpErr=e=>{console.warn('[online]',e);const c=String((e&&(e.code||e.message))||'');const denied=/permission/i.test(c);
+ const txt=denied?'The online server refused that. The game\'s database rules need updating (Firebase > Realtime Database > Rules).':'Online: '+c.replace(/^auth\//,'').slice(0,60);
+ const n=performance.now();if(txt===mpErrLast&&n-mpErrAt<30000)return;mpErrAt=n;mpErrLast=txt;mpLog('game',txt);if(denied)say(txt)};
 const mpNow=()=>Date.now()+MP.off;
 // ---- where am I (only outdoors is shared) ----
 // outdoors (Hollow or a region), public buildings (shops, inns, forges...), caves and dungeon floors are shared; your own house is private
@@ -7536,6 +7539,10 @@ mpLine=function(m){const d=document.createElement('div');if(m.k==='game'){d.clas
  if(m.me)d.className='me';const b=document.createElement('b');b.className='nm';b.dataset.u=m.uid||'';b.textContent=m.n+': ';if(isOG(m.uid))d.append(crownImg());d.append(b,document.createTextNode(m.m));return d};
 function friendsView(){lst.textContent='';const fa=document.createElement('form');fa.className='fa';fa.innerHTML='<input id="mpfa" maxlength="12" placeholder="Add a friend by name" aria-label="Friend name"><button type="submit">ADD</button>';
  fa.onsubmit=e=>{e.preventDefault();addFriendByName(fa.querySelector('input').value)};lst.appendChild(fa);if(MP.addHint){const h=document.createElement('div');h.className='fh';h.append(...MP.addHint);lst.appendChild(h)}
+ const rq=Object.keys(MP.req||{}).filter(u=>!isFriend(u));if(rq.length){const h=document.createElement('div');h.className='fh';h.textContent='FRIEND REQUESTS';lst.appendChild(h);
+  for(const u of rq){const row=document.createElement('div');row.className='fr';const nm=document.createElement('div');nm.className='fn';const b=document.createElement('b');b.textContent=String(MP.req[u].n||fname(u));nm.append(b);
+   const s=document.createElement('small');s.textContent='added you as a friend';nm.append(s);const ok=document.createElement('button');ok.textContent='ADD BACK';ok.onclick=()=>addFriend(u);
+   const no=document.createElement('button');no.textContent='DISMISS';no.onclick=()=>{FB.db.remove(FB.db.ref(FB.D,'freq/'+MP.user.uid+'/'+u)).catch(()=>{})};row.append(nm,ok,no);lst.appendChild(row)}}
  const ids=Object.keys(MP.friends);if(!ids.length){const h=document.createElement('div');h.className='fh';h.textContent='No friends yet. Add someone by name, or tap a name in chat.';lst.appendChild(h);return}
  ids.sort((a,b)=>(+!!liveP(b))-(+!!liveP(a))||fname(a).localeCompare(fname(b)));
  for(const u of ids){const r=liveP(u),row=document.createElement('div');row.className='fr';const nm=document.createElement('div');nm.className='fn';const b=document.createElement('b');b.textContent=fname(u);if(isOG(u))nm.append(crownImg());nm.append(b);
@@ -7550,7 +7557,12 @@ mpRList=function(){pc.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on'
  for(const m of MP.log)if(MP.tab==='all'||m.k===MP.tab)lst.appendChild(mpLine(m));lst.scrollTop=lst.scrollHeight;mpRBtn()};
 lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;const u=b.dataset.u;
  if(isFriend(u)){MP.pmTo=u;MP.tab='pm';mpRList();setTimeout(()=>inp.focus(),20)}else{MP.tab='fr';MP.addHint=null;mpRList();const i=$('mpfa');if(i){i.value=fname(u);MP.addUid=u}}});
-function addFriend(u){if(!MP.on||!u||u===MP.user.uid)return;FB.db.set(FB.db.ref(FB.D,'friends/'+MP.user.uid+'/'+u),true).then(()=>{mpLog('game',fname(u)+' is now on your friends list.');MP.addHint=null;if(MP.tab==='fr')mpRList()}).catch(mpErr)}
+function addFriend(u){if(!MP.on||!u||u===MP.user.uid)return;const d=FB.db;
+ d.set(d.ref(FB.D,'friends/'+MP.user.uid+'/'+u),true).then(()=>{mpLog('game',fname(u)+' is now on your friends list.');MP.addHint=null;
+   if(MP.req&&MP.req[u])d.remove(d.ref(FB.D,'freq/'+MP.user.uid+'/'+u)).catch(()=>{});
+   // let them know (they can add you back with one tap)
+   d.set(d.ref(FB.D,'freq/'+u+'/'+MP.user.uid),{n:myName().slice(0,12),t:d.serverTimestamp()}).catch(()=>{});
+   if(MP.tab==='fr')mpRList()}).catch(e=>{MP.addHint=[document.createTextNode('Could not add '+fname(u)+'. '+(/permission/i.test(String(e&&(e.code||e.message)))?'The database rules need updating.':'Try again in a moment.'))];if(MP.tab==='fr')mpRList();mpErr(e)})}
 function addFriendByName(name){name=String(name||'').trim();if(!name||!MP.on)return;const nl=name.toLowerCase();
  if(MP.addUid&&fname(MP.addUid).toLowerCase()===nl){const u=MP.addUid;MP.addUid=null;addFriend(u);return}
  const hits=new Set();for(const u in MP.prof)if(u!==MP.user.uid&&MP.prof[u]&&MP.prof[u].nl===nl)hits.add(u);for(const[u,r]of MP.players)if(r.n&&r.n.toLowerCase()===nl)hits.add(u);
@@ -7580,7 +7592,10 @@ function friendsStart(){const d=FB.db,D=FB.D,uid=MP.user.uid;
  MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'pm/'+uid),d.limitToLast(30)),s=>{const v=s.val();if(!v||typeof v.m!=='string'||MP.seen.has('pm'+s.key))return;MP.seen.add('pm'+s.key);
   const fresh=typeof v.t==='number'&&mpNow()-v.t<15000;mpLog('pm',v.m.slice(0,80),{dir:'from',n:String(v.n||'?').slice(0,12),uid:v.f});const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
   else{MP.pmTo=MP.pmTo||v.f;if(!MP.open){MP.unread++;mpRBtn()}try{sfx('talk')}catch(e){}}}));
- MP.unsub.push(()=>{MP.friends={};MP.prof={};MP.pmTo=null});MP.pubProf=pub}
+ MP.req={};MP.unsub.push(d.onValue(d.ref(D,'freq/'+uid),s=>{const v=s.val()||{},old=MP.req||{};MP.req={};for(const k in v)if(v[k]&&typeof v[k]==='object')MP.req[k]=v[k];
+  for(const k in MP.req)if(!old[k]&&!isFriend(k)){mpLog('game',String(MP.req[k].n||'Someone')+' added you as a friend. Open Chat > Friends to add them back.');if(!MP.open){MP.unread++;mpRBtn()}}
+  if(MP.open&&MP.tab==='fr')mpRList()}));
+ MP.unsub.push(()=>{MP.friends={};MP.prof={};MP.pmTo=null;MP.req={}});MP.pubProf=pub}
 setInterval(()=>{if(MP.on&&MP.user&&MP.pubProf&&MP.profN!==myName()){MP.profN=myName();MP.pubProf()}},5000);
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&MP.user&&!MP.frOn){MP.frOn=MP.user.uid;try{friendsStart()}catch(e){mpErr(e)}}}}
 {const _st=mpStop;mpStop=async function(m){MP.frOn=null;return _st(m)}}
