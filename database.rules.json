@@ -184,6 +184,19 @@
           }
         }
       }
+    },
+    "graves": {
+      ".read": "auth != null",
+      "$gid": {
+        ".write": "auth != null && ((!data.exists() && newData.child('u').val() === auth.uid && newData.child('at').val() === now) || (data.exists() && !newData.exists() && (data.child('u').val() === auth.uid || !data.child('i').exists() || data.child('at').val() < now - 900000)))",
+        ".validate": "newData.hasChildren(['u', 'n', 'loc', 'x', 'y', 'at']) && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('loc').isString() && newData.child('loc').val().length <= 40 && newData.child('x').isNumber() && newData.child('y').isNumber()",
+        "i": {
+          "$k": {
+            ".write": "auth != null && data.exists() && (!newData.exists() || (newData.isNumber() && newData.val() < data.val()))",
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 1000000 && $k.length < 24"
+          }
+        }
+      }
     }
   }
 }
