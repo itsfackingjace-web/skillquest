@@ -7713,7 +7713,7 @@ function buildStart(){const d=FB.db;BLDS.unsub=d.onValue(d.ref(FB.D,'build'),s=>
  MP.unsub.push(()=>{if(BLDS.unsub)BLDS.unsub();BLDS.unsub=null;BLDS.data={};BLDS.pubKey='';for(const[i,s]of[...STR])if(s._foreign)STR.delete(i);for(const[i,p]of[...FARM])if(p._foreign)FARM.delete(i)})}
 function buildTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now();if(now-BLDS.pubAt<3000)return;BLDS.pubAt=now;
  const s=[...STR].filter(([i,v])=>!v._foreign).map(([i,v])=>[i,v.t]),f=[...FARM].filter(([i,p])=>!p._foreign).map(([i,p])=>[i,p.c||'',Math.round(p.g),Math.round(p.w)]);
- const k=JSON.stringify([s,f.map(q=>[q[0],q[1],Math.round(q[2]/5)])]);if(k!==BLDS.pubKey){BLDS.pubKey=k;FB.db.set(FB.db.ref(FB.D,'build/'+MP.user.uid),s.length||f.length?{s,f}:null).catch(()=>{BLDS.pubKey=''})}
+ const r=rbPub(),k=JSON.stringify([s,f.map(q=>[q[0],q[1],Math.round(q[2]/5)]),r]);if(k!==BLDS.pubKey){BLDS.pubKey=k;FB.db.set(FB.db.ref(FB.D,'build/'+MP.user.uid),s.length||f.length||r?Object.assign({s,f},r?{r}:{}):null).catch(()=>{BLDS.pubKey=''})}
  if(BLDS.data&&Object.keys(BLDS.data).length&&![...STR.values()].some(v=>v._foreign)&&![...FARM.values()].some(p=>p._foreign))buildSync()}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!BLDS.unsub)try{buildStart()}catch(e){mpErr(e)}}}
 // never save other people's things
@@ -8124,6 +8124,78 @@ setInterval(()=>{if(pnOpen&&ptab===PTAB&&PV.on&&PV.fight)rPn()},1000);
 const pvB=el('div','pvb','g3','');document.body.appendChild(pvB);
 setInterval(()=>{const show=PV.on&&MP.on&&!dead&&!pnOpen&&!menuOpen&&!TS.open;pvB.style.display=show?'block':'none';if(show){const l=pvLock();pvB.textContent='☠ PvP ON'+(pvMeSafe()?' · safe zone':PV.fight&&l>0?' · in a fight '+Math.ceil(l/1000)+'s':'')}},250);
 window.SQPVP=PV;
+// ---------------------------------------------------------------- 70. Building and cooking on the other islands
+// Fences, walls, gates, chests, beds and stations (furnace, anvil, stove, bench, planter, dummy...) can be built on
+// every island, not just Hollow. Each island keeps its own builds (saved with your game), other players see them
+// (build/<uid>.r) and can't touch them. Houses, furniture and farm plots stay on Hollow Island. Gates don't block the
+// way on other islands, and beds there are for show (you always wake up on Hollow).
+// Campfires on other islands now cook food too.
+const RB={},RBQ={draw:null};
+const rbR=()=>{const R=SCENE&&SCENE.room;return R&&R.region?R:null};
+const rbMap=id=>RB[id]||(RB[id]=new Map());
+const rbK=(x,y)=>x+','+y,rbXY=k=>k.split(',').map(Number);
+const rbIdx=(R,x,y)=>1e7+(Object.keys(WORLD_REGIONS).indexOf(R.region)+1)*1e5+y*R.w+x;   // a station's id (for daily berries and pick-up)
+function rbForeign(id){const out=[];for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const rec=BLDS.data[o],r=rec&&rec.r&&rec.r[id];if(!r)continue;
+  const arr=Array.isArray(r)?r:Object.values(r);for(const e0 of arr){const e=Array.isArray(e0)?e0:Object.values(e0||{});const x=e[0]|0,y=e[1]|0,t=e[2];if(BK.includes(t)&&t!=='house')out.push({x,y,t,owner:o})}}return out}
+const rbForeignAt=(id,x,y)=>rbForeign(id).find(f=>f.x===x&&f.y===y)||null;
+function rbOpen(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y*R.w+x;if(R.solid.has(i)||solid(x*16+8,y*16+8))return false;if(rgObjAt(R,x,y))return false;
+ if(rbMap(R.region).has(rbK(x,y))||rbForeignAt(R.region,x,y))return false;
+ for(const p of[R.spawn,R.dock])if(p&&Math.hypot(x-p[0],y-p[1])<4)return false;
+ if(Math.floor(P.x/16)===x&&Math.floor(P.y/16)===y)return false;return true}
+// walls block the way (gates don't); kept in step with your builds and other players'
+function rbSolidSync(){const R=rbR();if(!R)return;const want=new Set(),had=R._rbS||new Set(),add=(x,y,t)=>{if(t==='door')return;const i=y*R.w+x;if(had.has(i)||!R.solid.has(i))want.add(i)};
+ for(const[k,s]of rbMap(R.region)){const[x,y]=rbXY(k);add(x,y,s.t)}for(const f of rbForeign(R.region))add(f.x,f.y,f.t);
+ for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rbS=want}
+setInterval(rbSolidSync,500);
+// ---- building ----
+{const _sb=startBuild;startBuild=function(k){const R=rbR();if(!R)return _sb(k);if((inv[k]|0)<1)return;
+  if(k==='house'){say('Houses can only be built on Hollow Island.');closePanel();return}
+  if(FURN_ONLY.has(k)){say('Furniture goes inside your house on Hollow Island.');closePanel();return}
+  if(typeof isSeed==='function'&&isSeed(k)){say('Farm plots are on Hollow Island.');closePanel();return}
+  BUILD={k};closePanel();setActionLabels();say('Build mode: face an empty spot and press PLACE. Press DONE to stop.')}}
+{const _pb=placeBuild;placeBuild=function(){const R=rbR();if(!R||!BUILD)return _pb();const k=BUILD.k;if((inv[k]|0)<1){endBuild('You have no more '+INAME[k].toLowerCase()+'s.');return}
+  const[x,y]=frontTile();if(!rbOpen(R,x,y)){say('You can\'t build there.');sfx('swish');return}
+  inv[k]--;const s={t:k,hp:BHP[k]||4};if(k==='chest')s.items={};rbMap(R.region).set(rbK(x,y),s);rbSolidSync();sfx(k==='swall'?'mine':'chop');saveLocal(true);saveCloud();
+  if((inv[k]|0)<1)endBuild('Placed your last '+INAME[k].toLowerCase()+'.')}}
+function rbPick(R,x,y){const m=rbMap(R.region),s=m.get(rbK(x,y));if(!s)return;m.delete(rbK(x,y));rbSolidSync();inv[s.t]=(inv[s.t]|0)+1;let extra='';
+ if(s.items){for(const k in s.items)inv[k]=(inv[k]|0)+s.items[k];if(Object.values(s.items).some(v=>v>0))extra=' and everything inside'}
+ say('Picked up the '+INAME[s.t].toLowerCase()+extra+'.');setTimeout(()=>sfx('pickup'),90);saveLocal(true);saveCloud()}
+function rbHit(R,x,y,s){const wood=s.t!=='swall';s.hp-=1+(wood?TL.axe:TL.pick);s.shake=.15;sfx(wood?'chop':'mine');if(s.hp<=0)rbPick(R,x,y)}
+function rbOpenStation(R,x,y,s){openStation({t:s.t,inside:false,i:rbIdx(R,x,y),f:s})}
+// picking up a station from its screen
+{const _ps=pickStruct;pickStruct=function(i){if(i<1e7)return _ps(i);const R=rbR();if(!R)return;const j=i-1e7-(Object.keys(WORLD_REGIONS).indexOf(R.region)+1)*1e5;rbPick(R,j%R.w,Math.floor(j/R.w))}}
+// HIT: hit what you built (stations open, the dummy wobbles); TALK: open chests and stations
+const rbFront=R=>{const[x,y]=frontTile();return{x,y,s:rbMap(R.region).get(rbK(x,y))}};
+{const _a=attack;attack=function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const{x,y,s}=rbFront(R);
+   if(s){swing=.25;if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}return}
+    if(STN.has(s.t)){rbOpenStation(R,x,y,s);return}rbHit(R,x,y,s);return}
+   const f=rbForeignAt(R.region,x,y);if(f){notYours(f.owner);return}}return _a()}}
+{const _t=talk;talk=function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!nearNpc()){let hit=null;
+   for(const[dx,dy]of[[0,0],[face[0],face[1]],[0,1],[0,-1],[1,0],[-1,0]]){const x=Math.floor(P.x/16)+dx,y=Math.floor((P.y+(face[1]>0?4:0))/16)+dy,s=rbMap(R.region).get(rbK(x,y));if(s&&(s.t==='chest'||s.t==='bed'||STN.has(s.t))){hit={x,y,s};break}}
+   if(!hit){const{x,y,s}=rbFront(R);if(s)hit={x,y,s}}
+   if(hit){const{x,y,s}=hit;if(s.t==='chest'){CHEST_H=s;CHEST_AT=-1;fromMenu=false;pnOpen=true;ptab=7;jx=jy=0;pn.style.display='block';rPn();sfx('talk');return}
+    if(s.t==='bed'){say('A comfy bed. You always wake up on Hollow Island, though.');return}if(STN.has(s.t)){rbOpenStation(R,x,y,s);return}}}return _t()}}
+// ---- drawing ----
+{const _fn=fenceNb;fenceNb=function(x,y){const D=RBQ.draw;if(!D)return _fn(x,y);const rx=x-1+D.x,ry=y-1+D.y,s=rbMap(D.R.region).get(rbK(rx,ry));if(s)return WALLISH.has(s.t);const f=rbForeignAt(D.R.region,rx,ry);return!!f&&WALLISH.has(f.t)}}
+function rbDraw(R,x,y,s,tm){if(STN.has(s.t)){if(s.t==='planter')s.ready=PLANTD[plantKey(false,rbIdx(R,x,y))]!==today();drawStation(s.t,x,y,s,tm);return}
+ RBQ.draw={R,x,y};g.save();g.translate((x-1)*16,(y-1)*16);try{if(WALLISH.has(s.t))drawFence(N+1,s,false);else drawStruct(N+1,s,false)}finally{g.restore();RBQ.draw=null}}
+{const _rn=rgNear;rgNear=function(R,x0,y0,x1,y1){const out=_rn(R,x0,y0,x1,y1);if(!R||!R.region||!(SCENE&&SCENE.room===R))return out;const inV=(x,y)=>x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2;
+  for(const[k,s]of rbMap(R.region)){const[x,y]=rbXY(k);if(inV(x,y))out.push({t:'_rb',s,tx:x,ty:y,x:x+.5,y:y})}
+  for(const f of rbForeign(R.region))if(inV(f.x,f.y))out.push({t:'_rb',s:{t:f.t,hp:9,_foreign:f.owner},tx:f.x,ty:f.y,x:f.x+.5,y:f.y});return out}}
+{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rb'){const R=rbR();if(R)try{rbDraw(R,it.tx,it.ty,it.s,tm)}catch(e){}return}return _df(it,tm)}}
+{const _u=upd;upd=function(dt){_u(dt);const R=rbR();if(R)for(const s of rbMap(R.region).values())if(s.shake>0)s.shake-=dt}}
+// ---- saving ----
+{const _sn=snap;snap=function(){const s=_sn();const o={};for(const id in RB){const a=[];for(const[k,v]of RB[id]){const[x,y]=rbXY(k);a.push(v.items?[x,y,v.t,v.items]:[x,y,v.t])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rb=o;return s}}
+{const _ap=applySave;applySave=function(S){_ap(S);for(const id in RB)delete RB[id];const o=S&&S.rb;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id])continue;const m=rbMap(id);
+   for(const e of (Array.isArray(o[id])?o[id]:[])){if(!Array.isArray(e)||!BK.includes(e[2]))continue;const s={t:e[2],hp:BHP[e[2]]||4};if(e[2]==='chest')s.items=(e[3]&&typeof e[3]==='object')?{...e[3]}:{};m.set(rbK(e[0]|0,e[1]|0),s)}}
+  try{rbSolidSync()}catch(e){}}}
+{const _ng=newGame;newGame=function(){for(const id in RB)delete RB[id];_ng()}}
+// shared with other players alongside your Hollow builds
+function rbPub(){const o={};for(const id in RB){const a=[];for(const[k,v]of RB[id]){const[x,y]=rbXY(k);a.push([x,y,v.t])}if(a.length)o[id]=a}return Object.keys(o).length?o:null}
+// cooking: a campfire on another island is a real fire
+{const _nf=nearFire;nearFire=function(x,y,r){if(curRegion()==='hollow')return _nf(x,y,r);const rr=r===50&&typeof NF50!=='undefined'?NF50:r===70&&typeof NF70!=='undefined'?NF70:r;
+  return fires.some(f=>(f.life===undefined||f.life>0)&&Math.hypot(f.x-x,f.y-y)<rr)}}
+window.SQRB=RB;
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
@@ -8456,6 +8528,63 @@ var LUX={};
   if((b=t.closest('.sty'))){const s=b.dataset.s,v=b.dataset.v;if(s==='pet')COS.pet=v||null;else COS[s]=+v||0;KITC.clear();saveLocal(true);rPn();return}_oc(e)};
  // talking to Marlo
  if(typeof LINES!=='undefined')LINES.marlo={d:['Finest goods on the island! Pets, capes, dyes, furniture, potions.','Gold burning a hole in your pocket? I can help with that.']}}
+// ---------------------------------------------------------------- 71. Jewelry: gold rings and amulets with gems
+// Made at any furnace with gold bars (and a gem) using Crafting. Wear one ring and one amulet: from the Bag (WEAR),
+// take them off on the equipment screen. Worn jewelry is safe when you fall, like the rest of your gear.
+// Also: every item that exists now always shows in the bag (and chests), which fixes gold ore and bars, the new logs
+// and the mithril/adamant ores and bars not showing up.
+{const JWL=[
+  {k:'jr_gold',n:'Gold ring',s:'ring',g:'',b:1,lv:8,xp:40,v:150,d:'+3% block chance.'},
+  {k:'jr_sapphire',n:'Sapphire ring',s:'ring',g:'sapphire',b:1,lv:18,xp:70,v:400,d:'Mana comes back 50% faster.'},
+  {k:'jr_emerald',n:'Emerald ring',s:'ring',g:'emerald',b:1,lv:28,xp:100,v:700,d:'+10% XP in Woodcutting, Mining, Foraging, Fishing and Farming.'},
+  {k:'jr_ruby',n:'Ruby ring',s:'ring',g:'ruby',b:1,lv:38,xp:140,v:1100,d:'+1 melee damage.'},
+  {k:'jr_diamond',n:'Diamond ring',s:'ring',g:'diamond',b:1,lv:52,xp:200,v:2000,d:'+1 melee damage and +5% block chance.'},
+  {k:'ja_gold',n:'Gold amulet',s:'neck',g:'',b:2,lv:12,xp:60,v:300,d:'+5% XP in every skill.'},
+  {k:'ja_sapphire',n:'Sapphire amulet',s:'neck',g:'sapphire',b:2,lv:22,xp:90,v:600,d:'+1 spell damage.'},
+  {k:'ja_emerald',n:'Emerald amulet',s:'neck',g:'emerald',b:2,lv:32,xp:120,v:900,d:'+1 arrow damage.'},
+  {k:'ja_ruby',n:'Ruby amulet',s:'neck',g:'ruby',b:2,lv:42,xp:160,v:1400,d:'+6% block chance.'},
+  {k:'ja_diamond',n:'Diamond amulet',s:'neck',g:'diamond',b:2,lv:58,xp:240,v:2600,d:'+1 damage with sword, bow and wand.'}];
+ const JK={},GEMC={'':['#f8d848','#a87818'],sapphire:['#5888f8','#2848a8'],emerald:['#58d878','#208840'],ruby:['#f85868','#a82030'],diamond:['#f0fcff','#98c8e0']};
+ for(const j of JWL){JK[j.k]=j;INVK.push(j.k);EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]=(j.s==='ring'?'Ring':'Amulet')+': '+j.d+' Wear it from the Bag.';SELLP[j.k]=Math.round(j.v/3);SN[j.k]=j.n+'s';if(typeof SHORT!=='undefined')SHORT[j.k]=j.n.toLowerCase();inv[j.k]=inv[j.k]|0}
+ const JW={ring:null,neck:null};const has=k=>JW.ring===k||JW.neck===k;
+ const GATHER=new Set(['Woodcutting','Mining','Foraging','Fishing','Farming'].map(n=>SKN.indexOf(n)).filter(i=>i>=0));
+ // ---- effects ----
+ const _bb=blockBonus;blockBonus=function(){return _bb()+(has('jr_gold')?.03:0)+(has('jr_diamond')?.05:0)+(has('ja_ruby')?.06:0)};
+ const _mf=meleeFlat;meleeFlat=function(){return _mf()+(has('jr_ruby')?1:0)+(has('jr_diamond')?1:0)+(has('ja_diamond')?1:0)};
+ const _ad=arrowDmg;arrowDmg=function(){return _ad()+(has('ja_emerald')?1:0)+(has('ja_diamond')?1:0)};
+ const _sd=spellDmg;spellDmg=function(el){return _sd(el)+(has('ja_sapphire')?1:0)+(has('ja_diamond')?1:0)};
+ const _ax=addXp;addXp=function(i,x){if(x>0){const m=1+(has('ja_gold')?.05:0)+(has('jr_emerald')&&GATHER.has(i)?.1:0);if(m>1)x=Math.max(x+1,Math.round(x*m))}return _ax(i,x)};
+ const _u=upd;upd=function(dt){_u(dt);if(!menuOpen&&!pnOpen&&!dead&&has('jr_sapphire')&&typeof MANA!=='undefined')MANA=Math.min(maxMP(),MANA+dt*.25)};
+ // ---- wearing ----
+ function jwWear(k){const j=JK[k];if(!j||(inv[k]|0)<1)return;const old=JW[j.s];if(old)inv[old]=(inv[old]|0)+1;inv[k]--;JW[j.s]=k;say('You put on the '+j.n.toLowerCase()+'. '+j.d);sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){}rPn()}
+ function jwOff(s){const k=JW[s];if(!k)return;inv[k]=(inv[k]|0)+1;JW[s]=null;say('You take off the '+JK[k].n.toLowerCase()+'.');sfx('talk');saveLocal(true);rPn()}
+ const _bg=bagGridHTML;bagGridHTML=function(){const h=_bg();const k=invSel;if(!k||!JK[k]||(inv[k]|0)<1)return h;return h.replace('<div class="bd">','<div class="bd"><button class="use" data-jw="wear" data-k="'+k+'">WEAR</button>')};
+ const _eh=equipHTML;equipHTML=function(){const row=(s,lab)=>{const k=JW[s];return'<div class="tc-r"><span>'+lab+'</span><b>'+(k?esc(JK[k].n)+' <button class="gc" data-jw="off" data-s="'+s+'" style="margin-left:6px;padding:4px 8px">Take off</button>':'None')+'</b></div>'+(k?'<div style="font-size:11px;opacity:.75;margin:-2px 0 6px">'+esc(JK[k].d)+'</div>':'')};
+  return _eh()+'<div class="qc" style="margin-top:10px"><b>Jewelry</b>'+row('ring','Ring')+row('neck','Amulet')+'</div>'};
+ // ---- making it at a furnace ----
+ function jwRows(){let h='<div class="tl" style="margin-top:14px">Jewelry</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75;margin-top:-6px">Crafting level '+lvOf(6)+' · Gold bars: '+(inv.gbar|0)+'</div>';
+  for(const j of JWL){const need=[[ 'gbar',j.b]].concat(j.g?[[j.g,1]]:[]),can=lvOf(6)>=j.lv&&need.every(([a,b])=>(inv[a]|0)>=b);
+   h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(j.k)+'"><div class="gi"><b>'+j.n+'</b> <small>(have '+(inv[j.k]|0)+')</small><br><small>'+need.map(([a,b])=>b+' '+(INAME[a]||a).toLowerCase()).join(', ')+' · Crafting '+j.lv+' · '+j.xp+' xp<br>'+j.d+'</small></div><button class="fg" data-jw="make" data-k="'+j.k+'">Make</button></div>'}return h}
+ function jwMake(k){const j=JK[k];if(!j)return;if(lvOf(6)<j.lv){say('You need Crafting '+j.lv+' to make that.');sfx('swish');return}
+  if((inv.gbar|0)<j.b||(j.g&&(inv[j.g]|0)<1)){say('You need '+j.b+' gold bar'+(j.b>1?'s':'')+(j.g?' and a '+INAME[j.g].toLowerCase():'')+'.');sfx('swish');return}
+  inv.gbar-=j.b;if(j.g)inv[j.g]--;inv[k]=(inv[k]|0)+1;addXp(6,j.xp);say('You made a '+j.n.toLowerCase()+'!');try{sfx('smelt')}catch(e){}saveLocal(true);rPn()}
+ const _sh=stationHTML;stationHTML=function(o){const h=_sh(o);if(!o||o.t!=='furnace')return h;const i=h.lastIndexOf('<button class="ng stb"');return i<0?h+jwRows():h.slice(0,i)+jwRows()+h.slice(i)};
+ if(typeof forgeHTML==='function'){const _fh=forgeHTML;forgeHTML=function(...a){return _fh(...a)+jwRows()}}
+ const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-jw]');if(b){const a=b.dataset.jw;if(a==='wear')jwWear(b.dataset.k);else if(a==='off')jwOff(b.dataset.s);else if(a==='make')jwMake(b.dataset.k);return}_oc(e)};
+ // ---- icons ----
+ const _ic=iconURL;iconURL=function(k,col){const j=JK[k];if(!j)return _ic(k,col);const key='g71'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+  const G='#f8d848',GD2='#a87818',O2='#302010',[gc,gd]=GEMC[j.g];
+  if(j.s==='ring'){for(let yy=0;yy<14;yy++)for(let xx=0;xx<14;xx++){const d=Math.hypot(xx+.5-7,yy+.5-8.5);if(d>2.2&&d<5)r(xx,yy,1,1,d>4.1||d<2.9?O2:(yy<8?G:GD2))}if(j.g){r(5,1,4,4,O2);r(6,2,2,2,gc);r(6,2,1,1,'#fff')}else{r(6,3,2,1,'#fff8c0')}}
+  else{for(const[a,b]of[[2,1],[3,2],[3,3],[4,4],[5,5],[11,1],[10,2],[10,3],[9,4],[8,5]])r(a,b,1,1,GD2);r(4,6,6,7,O2);r(5,7,4,5,G);r(6,8,2,3,gc);r(6,8,1,1,'#fff');r(8,10,1,1,gd)}
+  return ICONC[key]=c.toDataURL()};
+ // ---- saving ----
+ const _sn=snap;snap=function(){const s=_sn();if(JW.ring||JW.neck)s.jw={ring:JW.ring,neck:JW.neck};return s};
+ const _ap=applySave;applySave=function(S){_ap(S);JW.ring=JW.neck=null;const w=S&&S.jw;if(w){if(JK[w.ring]&&JK[w.ring].s==='ring')JW.ring=w.ring;if(JK[w.neck]&&JK[w.neck].s==='neck')JW.neck=w.neck}};
+ const _ng=newGame;newGame=function(){JW.ring=JW.neck=null;_ng()};
+ window.SQJW=JW}
+// every item shows in the bag and in chests
+{const seen=new Set(BAG_ORDER());const order=['oaklog','willowlog','maplelog','yewlog','goldore','mithore','adamore','gbar','mbar','abar'];
+ for(const k of order.concat([...INVK]))if(INAME[k]&&!seen.has(k)){seen.add(k);EXTRA_BAG.push(k)}}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
