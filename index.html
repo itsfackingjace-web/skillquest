@@ -3729,7 +3729,7 @@ const _dh35=drawHUD;drawHUD=function(){_dh35();const R=SCENE&&SCENE.room;if(!R||
 // you choose one of two perks. Magic is the first skill with a full tree; the others show "coming soon".
 // Choices are kept in PERKS[skill][level] = 'a' | 'b'; they can be reset for gold at any time.
 let PERKS={},SKVIEW=-1,AVCNT=0,PHX_DAY=-1,ULTBOOST=false;
-const perk=(sk,id)=>{const P2=PERKS[sk];if(!P2)return false;const T=TREES[sk];if(!T)return false;for(const lv in P2){const c=T.choices[lv];if(c&&c[P2[lv]==='b'?1:0].id===id&&lvOf(sk)>=+lv)return true}return false};
+const perk=(sk,id)=>{const P2=PERKS[sk];if(!P2)return false;const T=TREES[sk];if(!T)return false;for(const lv in P2){const c=T.choices[lv];if(c&&(c[{a:0,b:1,c:2}[P2[lv]]]||{}).id===id&&lvOf(sk)>=+lv)return true}return false};
 const TREES={};
 TREES[ML]={
  every:l=>l===1?null:'+1% mana regeneration',
@@ -3781,7 +3781,7 @@ const _u36=upd;upd=function(dt){const hp0=P.hp,was=dead,t0=time,m0=MANA;_u36(dt)
 const _ax36=addXp;addXp=function(i,x){const b=lvOf(i);_ax36(i,x);const a=lvOf(i);if(a>b&&TREES[i]&&TREES[i].choices[a]&&!(PERKS[i]&&PERKS[i][a])){say(SKN[i]+' '+a+': a new perk to choose! Open Skills and tap '+SKN[i]+'.');msgT=5}};
 // --- saving ---
 const _sn36=snap;snap=function(){const s=_sn36();s.perks=PERKS;s.phx=PHX_DAY;return s};
-const _ap36=applySave;applySave=function(S){_ap36(S);PERKS={};if(S.perks&&typeof S.perks==='object')for(const k in S.perks){const o=S.perks[k];if(!o||typeof o!=='object')continue;PERKS[k]={};for(const lv in o)if(o[lv]==='a'||o[lv]==='b')PERKS[k][lv]=o[lv]}PHX_DAY=isFinite(S.phx)?+S.phx:-1};
+const _ap36=applySave;applySave=function(S){_ap36(S);PERKS={};if(S.perks&&typeof S.perks==='object')for(const k in S.perks){const o=S.perks[k];if(!o||typeof o!=='object')continue;PERKS[k]={};for(const lv in o)if(o[lv]==='a'||o[lv]==='b'||o[lv]==='c')PERKS[k][lv]=o[lv]}PHX_DAY=isFinite(S.phx)?+S.phx:-1};
 // --- the tree screen ---
 const trst=document.createElement('style');trst.textContent=`
 #pn .trh{display:flex;align-items:center;gap:8px;margin:2px 0 8px}#pn .trh img{width:28px;height:28px;image-rendering:pixelated}#pn .trh .tn{font-weight:700;font-size:17px}
@@ -3790,7 +3790,7 @@ const trst=document.createElement('style');trst.textContent=`
 #pn .trl{margin-top:8px;border-top:2px solid #e2e6ee}
 #pn .trr{display:flex;gap:8px;padding:5px 4px;border-bottom:1px solid #eceff5;font-size:12px;color:#404040;align-items:flex-start}
 #pn .trr .lv{flex:none;width:34px;font-weight:700;color:#8890a0}#pn .trr.got .lv{color:#2a8a3a}#pn .trr.cur{background:#fff6d8}#pn .trr.lock{opacity:.5}
-#pn .trc{padding:8px 4px;border-bottom:2px solid #e2e6ee;background:#f6f3ff}#pn .trc.lock{opacity:.55}#pn .trc .ch{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+#pn .trc{padding:8px 4px;border-bottom:2px solid #e2e6ee;background:#f6f3ff}#pn .trc.lock{opacity:.55}#pn .trc .ch{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}#pn .trc .ch.c3{grid-template-columns:1fr}
 #pn .trc button{display:block;text-align:left;border:2px solid #c8c0e8;background:#fff;color:#404040;border-radius:8px;padding:7px;font:12px var(--pf);cursor:pointer;min-height:64px}
 #pn .trc button b{display:block;font-size:13px;margin-bottom:2px}#pn .trc button.pick{border-color:#7a58d8;background:#ece4ff;box-shadow:0 0 0 2px #b8a0f8}#pn .trc button.no{opacity:.45}
 #pn .trc .tt{font-weight:700;font-size:13px;color:#6a48c8}#pn .skc .bang{float:right;background:#e84848;color:#fff;border-radius:8px;padding:0 5px;font-size:10px;margin-left:4px}`;document.head.appendChild(trst);
@@ -3800,8 +3800,8 @@ function treeHTML(sk){const T=TREES[sk],l=lvOf(sk),x=Math.floor(XPS[sk]),b=XT[l-
  if(!T)return h+'<div class="qc" style="margin-top:12px"><p>The '+SKN[sk]+' skill tree is coming soon. For now it works as before: training it makes you better at it.</p></div>';
  const pend=pendingChoices(sk);if(pend)h+='<div class="qc" style="margin-top:10px;background:#fff0f0"><p><b>'+pend+' perk'+(pend>1?'s':'')+' to choose!</b> Pick one of the two at each highlighted level.</p></div>';
  h+='<div class="trl">';for(let lv=1;lv<=99;lv++){const g2=treeGains(sk,lv),got=l>=lv,cur=l===lv,C=T.choices[lv];
-  if(C){const pk=PERKS[sk]&&PERKS[sk][lv];h+='<div class="trc'+(got?'':' lock')+'" data-lvl="'+lv+'"><span class="tt">Level '+lv+' · choose one</span>'+(g2.length?'<div style="font-size:12px;color:#606878;margin-top:2px">Also: '+g2.join(' · ')+'</div>':'')+'<div class="ch">';
-   C.forEach((c,j)=>{const ab=j?'b':'a';h+='<button data-perk="'+sk+':'+lv+':'+ab+'" class="'+(pk===ab?'pick':pk?'no':'')+'"'+(got?'':' disabled')+'><b>'+(pk===ab?'✓ ':'')+c.n+'</b>'+c.d+'</button>'});h+='</div></div>'}
+  if(C){const pk=PERKS[sk]&&PERKS[sk][lv];h+='<div class="trc'+(got?'':' lock')+'" data-lvl="'+lv+'"><span class="tt">Level '+lv+' · choose one</span>'+(g2.length?'<div style="font-size:12px;color:#606878;margin-top:2px">Also: '+g2.join(' · ')+'</div>':'')+'<div class="ch'+(C.length>2?' c3':'')+'">';
+   C.forEach((c,j)=>{const ab='abc'[j];h+='<button data-perk="'+sk+':'+lv+':'+ab+'" class="'+(pk===ab?'pick':pk?'no':'')+'"'+(got?'':' disabled')+'><b>'+(pk===ab?'✓ ':'')+c.n+'</b>'+c.d+'</button>'});h+='</div></div>'}
   else h+='<div class="trr'+(got?' got':' lock')+(cur?' cur':'')+'" data-lvl="'+lv+'"><span class="lv">'+lv+'</span><span>'+(g2.length?g2.join(' · '):'—')+'</span></div>'}
  h+='</div>';const any=PERKS[sk]&&Object.keys(PERKS[sk]).length;if(any)h+='<button class="ng" data-tr="reset" style="margin-top:12px">Reset '+SKN[sk]+' perks ('+respecCost(sk)+' gold)</button>';return h}
 const respecCost=sk=>50*Object.keys(PERKS[sk]||{}).length;
@@ -3814,7 +3814,7 @@ const _oc36=pbd.onclick;pbd.onclick=e=>{const sk=e.target.closest('.skc');if(sk&
  const tb=e.target.closest('[data-tr]');if(tb&&SKVIEW>=0){if(tb.dataset.tr==='back'){SKVIEW=-1;if(typeof RKEY!=='undefined')RKEY=null;rPn();pn.scrollTop=0;return}
   if(tb.dataset.tr==='reset'){const c=respecCost(SKVIEW);if(GLD<c){say('You need '+c+' gold to reset these perks.');return}GLD-=c;PERKS[SKVIEW]={};say(SKN[SKVIEW]+' perks reset. Choose again!');sfx('quest');saveNow();rPn();return}}
  const pb=e.target.closest('[data-perk]');if(pb&&!pb.disabled){const[s2,lv,ab]=pb.dataset.perk.split(':');if(lvOf(+s2)<+lv)return;PERKS[s2]=PERKS[s2]||{};if(PERKS[s2][lv]&&PERKS[s2][lv]!==ab){say('Already chosen. Reset your perks (bottom of this page) to change it.');return}
-  if(PERKS[s2][lv]===ab)return;PERKS[s2][lv]=ab;const c=TREES[s2].choices[lv][ab==='b'?1:0];say('Learned '+c.n+'!');sfx('quest');saveNow();rPn();return}
+  if(PERKS[s2][lv]===ab)return;PERKS[s2][lv]=ab;const c=TREES[s2].choices[lv][{a:0,b:1,c:2}[ab]];if(!c)return;say('Learned '+c.n+'!');sfx('quest');saveNow();rPn();return}
  _oc36(e)};
 const _bs36=backScreen;backScreen=function(){if(SKVIEW>=0&&ptab===0){SKVIEW=-1;if(typeof RKEY!=='undefined')RKEY=null;rPn();pn.scrollTop=0;return}_bs36()};
 const _cp36=closePanel;closePanel=function(){SKVIEW=-1;_cp36()};
@@ -8462,7 +8462,7 @@ window.SQMP=MP;
     else if(R&&R.dun){const it=R.items.find(q=>q.dmine&&q.x===tx&&q.y===ty);if(it){tierHit(it.o,()=>{const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx)});return}}}}
   _atk64()};
  // campfires on the other islands: each island keeps its own fires
- const fireStash={};let fireReg=curRegion();
+ const fireStash={};window.FIRESTASH=fireStash;let fireReg=curRegion();
  const _u64c=upd;upd=function(dt){const r=curRegion();if(r!==fireReg){fireStash[fireReg]=fires.filter(f=>!f._rp);fires=(fireStash[r]||[]).filter(f=>f.life>0);fireReg=r}_u64c(dt)};
  const _fi64=fire;fire=function(){const R=SCENE&&SCENE.room;if(!R||!R.region)return _fi64();if(dead||(typeof SAILING!=='undefined'&&SAILING))return;
   if(!((inv.wood|0)>=3&&(inv.stone|0)>=1)){say('Need 3 wood + 1 stone');return}const[fx,fy]=front(16);if(solid(fx,fy)){say('No room there');return}
@@ -8694,6 +8694,25 @@ var LUX={};
 // every item shows in the bag and in chests
 {const seen=new Set(BAG_ORDER());const order=['oaklog','willowlog','maplelog','yewlog','goldore','mithore','adamore','gbar','mbar','abar'];
  for(const k of order.concat([...INVK]))if(INAME[k]&&!seen.has(k)){seen.add(k);EXTRA_BAG.push(k)}}
+// ---------------------------------------------------------------- 74. Two more Firemaking perks (a third choice at 20 and 40)
+// Level 20, Lone Bonfire: your campfires burn for 30 minutes, but only one can be lit at a time (a new one puts the
+// old one out, on any island). Level 40, Hearthkeeper: while you stand near a campfire, your FOOD doesn't drain.
+{TREES[5].choices[20].push({id:'fi_lone',n:'Lone Bonfire',d:'Your campfires burn for 30 minutes, but only one can be lit at a time: building a new one puts out the old one.'});
+ TREES[5].choices[40].push({id:'fi_hearth',n:'Hearthkeeper',d:'While you stand near a campfire, your FOOD doesn\'t drain.'});
+ const LONE=30*60;
+ const _f=fire;fire=function(){const mine=fires.filter(f=>!f._rp),n0=fires.length;_f();if(fires.length<=n0||!perk(5,'fi_lone'))return;const nf=fires[fires.length-1];
+  nf.life=LONE;nf.mx=LONE;let out=0;for(const f of mine){const j=fires.indexOf(f);if(j>=0){fires.splice(j,1);out++}}
+  const st=window.FIRESTASH;if(st)for(const k in st)if(Array.isArray(st[k])){const b=st[k].length;st[k]=st[k].filter(f=>f._rp);out+=b-st[k].length}
+  if(out)say('Your old campfire goes out. The new one will burn for 30 minutes.');saveLocal(true)};
+ const _u=upd;upd=function(dt){const h0=hunger;_u(dt);if(!dead&&hunger<h0&&perk(5,'fi_hearth')&&nearFire(P.x,P.y,50))hunger=h0}
+ // Level 30, Flame Aura: while one of your campfires is burning, you glow and light up everything around you at night
+ // (light only: it doesn't keep monsters away, heal you, or stop hunger)
+ TREES[5].choices[30].push({id:'fi_aura',n:'Flame Aura',d:'While one of your campfires is burning, you light up everything around you at night. Light only: no healing, warmth or monster repelling.'});
+ const myFire=()=>{if(fires.some(f=>!f._rp&&f.life>0))return true;const st=window.FIRESTASH;if(st)for(const k in st)if(Array.isArray(st[k])&&st[k].some(f=>!f._rp&&f.life>0))return true;return false};
+ const _dh=drawHUD;drawHUD=function(){try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
+   if(dk>.05&&!dead&&perk(5,'fi_aura')&&myFire()){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2),sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=120*Z,fl=1+Math.sin(performance.now()/180)*.03;
+    g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(sx,sy,0,sx,sy,r*fl);gr.addColorStop(0,'rgba(255,215,150,'+(.4*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.2*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
+    g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){}_dh()}}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
