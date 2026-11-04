@@ -197,6 +197,22 @@
           }
         }
       }
+    },
+    "fx": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['s', 'k', 'loc', 't']) && newData.child('k').isString() && newData.child('k').val().length <= 4 && newData.child('loc').isString() && newData.child('loc').val().length <= 40 && newData.child('t').val() === now"
+      }
+    },
+    "pvp": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$id": {
+          ".write": "auth != null && ((!data.exists() && newData.child('f').val() === auth.uid) || (auth.uid === $uid && !newData.exists()))",
+          ".validate": "newData.hasChildren(['f', 'n', 'd', 'k', 't']) && newData.child('d').isNumber() && newData.child('d').val() >= 0 && newData.child('d').val() <= 2 && newData.child('k').isString() && newData.child('k').val().length <= 4 && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('t').val() === now"
+        }
+      }
     }
   }
 }
