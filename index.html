@@ -8007,7 +8007,7 @@ function grvDraw(g,tm){const x=Math.round(g.x),y=Math.round(g.y),S='#7a8496',L='
  if(mine){const b=Math.round(Math.sin(tm*4)*1.5);Rg(x-1,y-17+b,3,3,'#f8d848');Rg(x,y-14+b,1,1,'#f8d848')}}
 {const _pP=pP;pP=function(tm){try{for(const gv of grvHere())grvDraw(gv,tm)}catch(e){}return _pP(tm)}}
 // the hint when you're close, and your own grave's countdown
-{const st=document.createElement('style');st.textContent=`#grvh{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 120px);z-index:9;display:none;padding:6px 10px;font:600 13px ${PF};pointer-events:none;text-align:center;max-width:calc(100vw - 24px);box-sizing:border-box}
+{const st=document.createElement('style');st.textContent=`#grvh{position:fixed;left:50%;transform:translateX(-50%);top:58%;z-index:9;display:none;padding:6px 10px;font:600 13px ${PF};pointer-events:none;text-align:center;max-width:calc(100vw - 24px);box-sizing:border-box}
 #grvt{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0px) + 202px);z-index:9;display:none;padding:5px 9px;font:600 12px ${PF};pointer-events:none;color:#b03828;max-width:calc(100vw - 150px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}
 .grl{display:flex;align-items:center;gap:6px;padding:6px;border-bottom:1px solid #d8e0f0;font-size:14px}.grl span{flex:1}.grl button,.gra button{font:700 13px ${PF};padding:7px 10px;border:2px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}.gra{display:flex;gap:8px;margin-top:10px}.gra button{flex:1;padding:11px}.gra .y{background:#38a828;color:#fff;border-color:#206818}`;document.head.appendChild(st)}
 const grvH=el('div','grvh','g3',''),grvT=el('div','grvt','g3','');document.body.append(grvH,grvT);
