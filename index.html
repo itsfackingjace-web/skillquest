@@ -7553,7 +7553,7 @@ mpLine=function(m){const d=document.createElement('div');if(m.k==='game'){d.clas
 {const st=document.createElement('style');st.textContent='#mpl .ts{opacity:.5;font-size:.82em;font-weight:500;margin-right:2px}#mpo .ts{display:none}';document.head.appendChild(st)}
 function friendsView(){lst.textContent='';const fa=document.createElement('form');fa.className='fa';fa.innerHTML='<input id="mpfa" maxlength="12" placeholder="Add a friend by name" aria-label="Friend name"><button type="submit">ADD</button>';
  fa.onsubmit=e=>{e.preventDefault();addFriendByName(fa.querySelector('input').value)};lst.appendChild(fa);if(MP.addHint){const h=document.createElement('div');h.className='fh';h.append(...MP.addHint);lst.appendChild(h)}
- const rq=Object.keys(MP.req||{}).filter(u=>!isFriend(u));if(rq.length){const h=document.createElement('div');h.className='fh';h.textContent='FRIEND REQUESTS';lst.appendChild(h);
+ const rq=Object.keys(MP.req||{}).filter(u=>!isFriend(u)&&!ignored(u));if(rq.length){const h=document.createElement('div');h.className='fh';h.textContent='FRIEND REQUESTS';lst.appendChild(h);
   for(const u of rq){const row=document.createElement('div');row.className='fr';const nm=document.createElement('div');nm.className='fn';const b=document.createElement('b');b.textContent=String(MP.req[u].n||fname(u));nm.append(b);
    const s=document.createElement('small');s.textContent='added you as a friend';nm.append(s);const ok=document.createElement('button');ok.textContent='ADD BACK';ok.onclick=()=>addFriend(u);
    const no=document.createElement('button');no.textContent='DISMISS';no.onclick=()=>{FB.db.remove(FB.db.ref(FB.D,'freq/'+MP.user.uid+'/'+u)).catch(()=>{})};row.append(nm,ok,no);lst.appendChild(row)}}
@@ -7603,11 +7603,11 @@ function friendsStart(){const d=FB.db,D=FB.D,uid=MP.user.uid;
  const pub=()=>d.update(d.ref(D,'profiles/'+uid),{n:myName().slice(0,12),nl:myName().slice(0,12).toLowerCase(),at:d.serverTimestamp()}).catch(()=>{});pub();MP.profN=myName();
  MP.unsub.push(d.onValue(d.ref(D,'friends/'+uid),s=>{MP.friends=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()}));
  MP.unsub.push(d.onValue(d.ref(D,'profiles'),s=>{MP.prof=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()}));
- MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'pm/'+uid),d.limitToLast(30)),s=>{const v=s.val();if(!v||typeof v.m!=='string'||MP.seen.has('pm'+s.key))return;MP.seen.add('pm'+s.key);
+ MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'pm/'+uid),d.limitToLast(30)),s=>{const v=s.val();if(!v||typeof v.m!=='string'||MP.seen.has('pm'+s.key))return;MP.seen.add('pm'+s.key);if(ignored(v.f)){FB.db.remove(FB.db.ref(FB.D,'pm/'+uid+'/'+s.key)).catch(()=>{});return}
   const fresh=typeof v.t==='number'&&mpNow()-v.t<15000;mpLog('pm',v.m.slice(0,80),{dir:'from',n:String(v.n||'?').slice(0,12),uid:v.f,t:typeof v.t==='number'?v.t:0});const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
   else{MP.pmTo=MP.pmTo||v.f;if(!MP.open){MP.unread++;mpRBtn()}try{sfx('talk')}catch(e){}}}));
  MP.req={};MP.unsub.push(d.onValue(d.ref(D,'freq/'+uid),s=>{const v=s.val()||{},old=MP.req||{};MP.req={};for(const k in v)if(v[k]&&typeof v[k]==='object')MP.req[k]=v[k];
-  for(const k in MP.req)if(!old[k]&&!isFriend(k)){mpLog('game',String(MP.req[k].n||'Someone')+' added you as a friend. Open Chat > Friends to add them back.');if(!MP.open){MP.unread++;mpRBtn()}}
+  for(const k in MP.req)if(!old[k]&&!isFriend(k)&&!ignored(k)){mpLog('game',String(MP.req[k].n||'Someone')+' added you as a friend. Open Chat > Friends to add them back.');if(!MP.open){MP.unread++;mpRBtn()}}
   if(MP.open&&MP.tab==='fr')mpRList()}));
  MP.unsub.push(()=>{MP.friends={};MP.prof={};MP.pmTo=null;MP.req={}});MP.pubProf=pub}
 setInterval(()=>{if(MP.on&&MP.user&&MP.pubProf&&MP.profN!==myName()){MP.profN=myName();MP.pubProf()}},5000);
@@ -7942,7 +7942,7 @@ setInterval(()=>{if(TR.st==='idle')return;if(!MP.on){trEnd('You went offline, so
 function trStart(){const d=FB.db,uid=MP.user.uid;TR.inbox={};
  TR.reqUnsub=d.onValue(trRef('treq/'+uid),s=>{const v=s.val()||{},now=mpNow(),old=TR.inbox;TR.inbox={};
   for(const u in v){const q=v[u];if(!q||typeof q!=='object')continue;if(typeof q.t==='number'&&now-q.t>60000){d.remove(trRef('treq/'+uid+'/'+u)).catch(()=>{});continue}TR.inbox[u]={n:String(q.n||'').slice(0,12),t:q.t}}
-  for(const u in TR.inbox)if(!old[u]){if(TR.sent[u]&&TR.st==='idle'){trAnswer(u,true);continue} // you asked each other
+  for(const u in TR.inbox)if(ignored(u)){delete TR.inbox[u];d.remove(trRef('treq/'+uid+'/'+u)).catch(()=>{})}else if(!old[u]){if(TR.sent[u]&&TR.st==='idle'){trAnswer(u,true);continue} // you asked each other
    mpLog('game',trName(u)+' wants to trade with you. Tap TRADE, or open START > Trade.');if(TR.st==='idle')trPopShow(u);try{sfx('talk')}catch(e){}}
   if(TR.popU&&!TR.inbox[TR.popU])trPopHide();if(pnOpen&&ptab===TTAB&&TR.st==='idle')rPn()});
 }
@@ -7955,7 +7955,7 @@ function trStart(){const d=FB.db,uid=MP.user.uid;TR.inbox={};
 // a TRADE button next to friends who are standing near you
 {const _fv=friendsView;friendsView=function(){_fv();for(const row of lst.querySelectorAll('.fr')){const msg=[...row.querySelectorAll('button')].find(b=>b.textContent==='MESSAGE');if(!msg)continue;
   const nm=row.querySelector('.fn b');const u=Object.keys(MP.friends).find(k=>fname(k)===(nm&&nm.textContent));if(!u||!trNear(u))continue;const b=document.createElement('button');b.textContent='TRADE';
-  b.onclick=()=>{if(typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){}trRequest(u)};row.insertBefore(b,msg)}}}
+  b.onclick=()=>{if(typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){}trRequest(u)};msg.after(b)}}}
 window.SQTRADE=TR;
 // ---------------------------------------------------------------- 68. Gravestones
 // When you fall, everything you'd normally lose (what's in your bag except gear) goes into a gravestone where you
@@ -8434,6 +8434,62 @@ tk.addEventListener('touchstart',e=>{if(pnOpen||!rsR()||nearNpc())return;if(rsCa
 {const _es=enterScene;enterScene=function(...a){rsStop();return _es(...a)}}
 // a save made at sea puts you back where you set sail
 {const _sn=snap;snap=function(){const s=_sn();if(RSAIL.on&&s.region&&s.region.id!=='hollow'){s.region.x=Math.floor(RSAIL.lx/16);s.region.y=Math.floor(RSAIL.ly/16)}return s}}
+// ---------------------------------------------------------------- 77. Ignore and report players
+// Tap a name in chat for a player menu: Message / Add friend, Trade (when they're close), Ignore and Report.
+// Ignoring someone hides their public chat (and the speech over their head), and drops their private messages,
+// friend requests and trade requests. The list travels with your account; Chat > Friends shows it with UNIGNORE.
+// /ignore name and /unignore name work in chat too. Reports go to the bug reports (Realtime Database > bugs) marked
+// PLAYER REPORT, with their last few messages attached.
+const IGN={m:new Map(),pm:null,rep:null};
+const ignored=u=>!!u&&IGN.m.has(u);
+function ignSet(u,on){if(!u||!MP.user||u===MP.user.uid)return;const nm=trName(u);if(on){IGN.m.set(u,nm);mpLog('game','You ignore '+nm+'. You won\'t see their messages or requests.');
+  for(const r of[MP.players.get(u)])if(r)r.said=null;if(TR.inbox[u]){delete TR.inbox[u];trPopHide(u);FB.db.remove(FB.db.ref(FB.D,'treq/'+MP.user.uid+'/'+u)).catch(()=>{})}
+  if(MP.req&&MP.req[u])FB.db.remove(FB.db.ref(FB.D,'freq/'+MP.user.uid+'/'+u)).catch(()=>{})}
+ else{IGN.m.delete(u);mpLog('game','You no longer ignore '+nm+'.')}
+ try{saveLocal(true);saveCloud(true)}catch(e){}if(MP.open)mpRList()}
+// what gets hidden
+{const _c=mpChat;mpChat=function(id,v){if(v&&ignored(v.u)){MP.seen.add(id);return}return _c(id,v)}}
+{const _s=snap;snap=function(){const s=_s();if(IGN.m.size)s.ign=[...IGN.m].map(([u,n])=>[u,String(n).slice(0,12)]);return s}}
+{const _a=applySave;applySave=function(S){_a(S);IGN.m.clear();if(S&&Array.isArray(S.ign))for(const e of S.ign)if(Array.isArray(e)&&typeof e[0]==='string')IGN.m.set(e[0].slice(0,64),String(e[1]||'Someone').slice(0,12))}}
+// ---- the player menu ----
+{const st=document.createElement('style');st.textContent=`#mppm{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);z-index:70;width:min(320px,calc(100vw - 24px));display:none;flex-direction:column;gap:6px;padding:12px;box-sizing:border-box;font:500 14px ${PF}}
+#mppm .h{font-weight:700;font-size:17px;letter-spacing:.04em;margin-bottom:2px;display:flex;align-items:center;gap:6px}#mppm .h small{font-weight:500;font-size:12px;color:#707070}
+#mppm button{font:700 14px ${PF};padding:9px 12px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer;text-align:left}#mppm button.dg{color:#b03828}#mppm button.gpf{box-shadow:inset 0 0 0 3px #f8a020}
+#mppm .rs{display:flex;flex-wrap:wrap;gap:6px}#mppm .rs button{flex:1 1 40%;text-align:center;padding:7px 6px}#mppm .rs button.on{background:#485870;color:#f8f8f8}
+#mppm textarea{width:100%;box-sizing:border-box;min-height:60px;font:500 15px ${PF};padding:6px;border:2px solid #485870;border-radius:0}#mppm .st{font-size:12px;color:#707070;min-height:14px}`;document.head.appendChild(st)}
+const pmEl=el('div','mppm','g3','');document.body.appendChild(pmEl);for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])pmEl.addEventListener(ev,stop);
+function pmOpen(u){if(!MP.on||!MP.user||!u||u===MP.user.uid)return;IGN.pm=u;IGN.rep=null;pmDraw();pmEl.style.display='flex';setTimeout(()=>{const b=pmEl.querySelector('button');if(b&&GPON)setFocus(b)},20)}
+function pmClose(){pmEl.style.display='none';IGN.pm=null;IGN.rep=null;setFocus(null)}
+function pmDraw(){const u=IGN.pm,nm=esc(trName(u));if(IGN.rep){const R=IGN.rep;
+  pmEl.innerHTML='<div class="h">REPORT '+nm.toUpperCase()+'</div><div class="rs">'+['Harassment','Spam','Cheating','Bad name','Other'].map(r=>'<button data-pm="why" data-v="'+r+'" class="'+(R.why===r?'on':'')+'">'+r+'</button>').join('')+'</div>'+
+   '<textarea id="pmtx" maxlength="600" placeholder="What happened? (optional)">'+esc(R.txt||'')+'</textarea><label style="font-size:13px"><input type="checkbox" id="pmig" '+(ignored(u)?'checked disabled':'checked')+'> Also ignore them</label>'+
+   '<button data-pm="send" style="background:#485870;color:#f8f8f8">SEND REPORT</button><button data-pm="back">BACK</button><div class="st" id="pmst"></div>';return}
+ const fr=isFriend(u),near=typeof trNear==='function'&&trNear(u),ig=ignored(u);let h='<div class="h">'+(isOG(u)?'<img src="'+crownURL+'" alt="OG" style="width:18px;height:14px;image-rendering:pixelated">':'')+nm+(fr?' <small>friend</small>':'')+'</div>';
+ if(fr)h+='<button data-pm="msg">MESSAGE</button>';else if(!ig)h+='<button data-pm="add">ADD FRIEND</button>';
+ if(near&&!ig)h+='<button data-pm="trade">TRADE</button>';
+ h+='<button data-pm="ign" class="dg">'+(ig?'UNIGNORE':'IGNORE')+'</button><button data-pm="rep" class="dg">REPORT</button><button data-pm="x">CANCEL</button>';pmEl.innerHTML=h}
+pmEl.addEventListener('click',async e=>{const b=e.target.closest('[data-pm]');if(!b)return;const a=b.dataset.pm,u=IGN.pm;if(!u)return;
+ if(a==='x'){pmClose();return}if(a==='msg'){pmClose();MP.pmTo=u;MP.tab='pm';mpOpenChat();mpRList();setTimeout(()=>inp.focus(),20);return}
+ if(a==='add'){pmClose();addFriend(u);return}if(a==='trade'){pmClose();if(MP.open)mpCloseChat();trRequest(u);return}
+ if(a==='ign'){ignSet(u,!ignored(u));pmClose();return}if(a==='rep'){IGN.rep={why:'',txt:''};pmDraw();return}if(a==='back'){IGN.rep=null;pmDraw();return}
+ if(a==='why'){IGN.rep.txt=($('pmtx')||{}).value||'';IGN.rep.why=b.dataset.v;pmDraw();return}
+ if(a==='send'){const R=IGN.rep;R.txt=($('pmtx')||{}).value||'';if(!R.why){$('pmst').textContent='Pick a reason first.';return}const also=$('pmig')&&$('pmig').checked;
+  const msgs=MP.log.filter(m=>m.uid===u&&(m.k==='pub'||m.k==='pm')).slice(-10).map(m=>m.m).join(' | ').slice(0,800);
+  const r={what:('PLAYER REPORT: '+trName(u)+' ('+u+') · '+R.why+(R.txt?' · '+R.txt:'')).slice(0,1500),exp:('Their recent messages: '+(msgs||'(none seen)')).slice(0,600),info:Object.assign(bugInfo(),{reported:u,reportedName:trName(u)}),shot:''};
+  $('pmst').textContent='Sending...';try{await bugSendNow(r);if(also&&!ignored(u))ignSet(u,true);pmClose();say('Report sent. Thank you for keeping SkillQuest friendly.');mpLog('game','You reported '+trName(u)+'.')}
+  catch(err){$('pmst').textContent='Could not send. Try again in a moment.';mpErr(err)}}});
+// tapping a name in chat opens the menu (instead of jumping straight to messages)
+lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;e.stopImmediatePropagation();pmOpen(b.dataset.u)},true);
+{const _nr=navRoot;navRoot=function(){if(pmEl.style.display==='flex')return pmEl;return _nr()}}
+// Friends tab: the ignore list
+{const _fv=friendsView;friendsView=function(){_fv();if(!IGN.m.size)return;const h=document.createElement('div');h.className='fh';h.textContent='IGNORED';lst.appendChild(h);
+  for(const[u,n]of IGN.m){const row=document.createElement('div');row.className='fr';const nm=document.createElement('div');nm.className='fn';const b=document.createElement('b');b.textContent=n;nm.append(b);
+   const un=document.createElement('button');un.textContent='UNIGNORE';un.onclick=()=>ignSet(u,false);row.append(nm,un);lst.appendChild(row)}}}
+// /ignore name, /unignore name
+{const _s=mpSend;mpSend=function(t){const m=String(t||'').trim().match(/^\/(ignore|unignore|block|unblock)\s+(\S+)\s*$/i);if(!m)return _s(t);const nl=m[2].toLowerCase(),on=/^(ignore|block)$/i.test(m[1]);
+  let u=[...MP.players.keys()].find(k=>(MP.players.get(k).n||'').toLowerCase()===nl)||Object.keys(MP.prof||{}).find(k=>MP.prof[k]&&MP.prof[k].nl===nl)||[...IGN.m].find(([k,n])=>n.toLowerCase()===nl)?.[0];
+  if(!u){mpLog('game','No player called '+m[2]+'.');return}ignSet(u,on)}}
+window.SQIGN=IGN;
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
