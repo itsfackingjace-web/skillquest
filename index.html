@@ -5679,7 +5679,7 @@ function rgUpd(R,dt){rgTick(R,dt);const cap=(REGION_SPAWNS[R.region]||{maxEnemie
 // --- outdoor light and music inside a region ---
 const _dk49=dark;dark=function(){const R=SCENE&&SCENE.room;if(R&&R.region){const s=SCENE;SCENE=null;try{return _dk49()}finally{SCENE=s}}return _dk49()};
 const _ws49=wantSong;wantSong=function(){const R=SCENE&&SCENE.room;if(R&&R.region)return dark()>.4?'night':'day';return _ws49()};
-const _drw49=draw;draw=function(){const R=SCENE&&SCENE.room;if(R&&R.region){const f=fires;fires=rgGlows(R);try{_drw49()}finally{fires=f}}else _drw49()};   // lava glows at night like campfires
+const _drw49=draw;draw=function(){const R=SCENE&&SCENE.room;if(R&&R.region){const f=fires;fires=rgGlows(R).map(o=>Object.assign({},o,{_glow:1})).concat(f);try{_drw49()}finally{fires=f}}else _drw49()};   // (your campfires glow too)   // lava glows at night like campfires
 
 // --- drawing the region: baked terrain chunks (same painter as Hollow), culled objects ---
 // the same chunk painter Hollow uses, with the tile lookup passed in
@@ -8590,7 +8590,7 @@ window.SQMP=MP;
  const _fi64=fire;fire=function(){const R=SCENE&&SCENE.room;if(!R||!R.region)return _fi64();if(dead||(typeof SAILING!=='undefined'&&SAILING))return;
   if(!((inv.wood|0)>=3&&(inv.stone|0)>=1)){say('Need 3 wood + 1 stone');return}const[fx,fy]=front(16);if(solid(fx,fy)){say('No room there');return}
   inv.wood-=3;inv.stone--;const life=(150+lvOf(5)*3)*(1+(typeof fDur==='function'?fDur():0));fires.push({x:fx,y:fy,life,mx:life});say('Campfire built');addXp(5,40);sfx('fire');saveLocal()};
- const _rn64=rgNear;rgNear=function(R,...a){const out=_rn64(R,...a);if(SCENE&&SCENE.room===R)for(const f of fires)out.push({t:'_fire',f,x:f.x/16,y:(f.y+3)/16-1});return out};
+ const _rn64=rgNear;rgNear=function(R,...a){const out=_rn64(R,...a);if(SCENE&&SCENE.room===R)for(const f of fires)if(!f._glow)out.push({t:'_fire',f,x:f.x/16,y:(f.y+3)/16-1});return out};
  const _df64=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_fire'){pF(it.f,tm);return}return _df64(it,tm)}}
 // ---------------------------------------------------------------- 65. Mithril and adamant gear; stats on every item
 // - Anvil recipes from the new bars: Mithril sword / helmet / legs / chestplate (Smithing 50-56, wear at Defence 30,
@@ -8827,7 +8827,9 @@ var LUX={};
   nf.life=LONE;nf.mx=LONE;let out=0;for(const f of mine){const j=fires.indexOf(f);if(j>=0){fires.splice(j,1);out++}}
   const st=window.FIRESTASH;if(st)for(const k in st)if(Array.isArray(st[k])){const b=st[k].length;st[k]=st[k].filter(f=>f._rp);out+=b-st[k].length}
   if(out)say('Your old campfire goes out. The new one will burn for 30 minutes.');saveLocal(true)};
- const _u=upd;upd=function(dt){const h0=hunger;_u(dt);if(!dead&&hunger<h0&&perk(5,'fi_hearth')&&nearFire(P.x,P.y,50))hunger=h0}
+ const _u=upd;upd=function(dt){const h0=hunger;_u(dt);if(!dead&&hunger<h0&&perk(5,'fi_hearth')&&nearFire(P.x,P.y,50))hunger=h0;
+  // campfires on other islands burn down too (the Hollow loop doesn't run there)
+  const R=SCENE&&SCENE.room;if(R&&R.region&&!menuOpen&&!pnOpen){for(const f of fires)if(!f._rp)f.life-=dt;fires=fires.filter(f=>f._rp||f.life>0)}}
  // Level 30, Flame Aura: while one of your campfires is burning, you glow and light up everything around you at night
  // (light only: it doesn't keep monsters away, heal you, or stop hunger)
  TREES[5].choices[30].push({id:'fi_aura',n:'Flame Aura',d:'While one of your campfires is burning, you light up everything around you at night. Light only: no healing, warmth or monster repelling.'});
