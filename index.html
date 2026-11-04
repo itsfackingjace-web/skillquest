@@ -7176,7 +7176,9 @@ function mpROv(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||che
  ov.style.display=hide||TS.open?'none':'flex';btn.style.display=(pnOpen||menuOpen||chessOpen||TS.open)?'none':'block';
  const key=recent.map(m=>m.id).join(',');if(key!==ov.dataset.k){ov.dataset.k=key;ov.textContent='';for(const m of recent){const d=mpLine(m);d.dataset.at=m.at;ov.appendChild(d)}}
  for(const d of ov.children){const a=now-(+d.dataset.at);d.style.opacity=a>10000?'0':'1'}}
-function mpLog(k,m,extra){const e=Object.assign({k,m,at:performance.now(),id:Math.random().toString(36).slice(2)},extra||{});MP.log.push(e);if(MP.log.length>120)MP.log.shift();
+function mpLog(k,m,extra){const e=Object.assign({k,m,at:performance.now(),id:Math.random().toString(36).slice(2)},extra||{});MP.log.push(e);
+ // each tab keeps its own last 100 lines (game messages used to push public chat out of the history)
+ {let n=0;for(let i=MP.log.length-1;i>=0;i--)if(MP.log[i].k===k&&++n>100){MP.log.splice(i,1);break}}if(MP.log.length>450)MP.log.shift();
  if(MP.open&&(MP.tab==='all'||MP.tab===k)){lst.appendChild(mpLine(e));while(lst.children.length>120)lst.firstChild.remove();lst.scrollTop=lst.scrollHeight}}
 // the game's own messages go to the Game tab
 const _say61=say;let lastGame='',lastGameAt=0;say=function(s){_say61(s);const t=String(s||'');const n=performance.now();if(t&&(t!==lastGame||n-lastGameAt>4000)){lastGame=t;lastGameAt=n;mpLog('game',t)}};
@@ -7245,7 +7247,7 @@ async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=
  const pr=d.ref(D,'presence');
  MP.unsub.push(d.onChildAdded(pr,s=>mpPeer(s.key,s.val())),d.onChildChanged(pr,s=>mpPeer(s.key,s.val())),d.onChildRemoved(pr,s=>{MP.players.delete(s.key);mpRBtn()}));
  // chat (the last 25 messages, then live)
- MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'chat'),d.limitToLast(25)),s=>mpChat(s.key,s.val())));
+ MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'chat'),d.limitToLast(50)),s=>mpChat(s.key,s.val())));
  // OG list: everyone who first signed in before the cutoff (written once, by the server's clock; nobody can change it)
  MP.unsub.push(d.onValue(d.ref(D,'og'),s=>{const v=s.val()||{};MP.og={};for(const k in v)if(typeof v[k]==='number')MP.og[k]=v[k];
   if(isOG(uid)&&!MP.ogTold){MP.ogTold=true;mpLog('game','You are OG #'+ogRank(uid)+'! Your crown is permanent.')}
@@ -7300,9 +7302,11 @@ const _dh61=drawHUD;drawHUD=function(){_dh61();if(!MP.on||!MP.T||performance.now
  if(mpLoc()||SCENE){const me=MP.selfName&&!dead;one(P.x,P.y,me?myName():'',MP.selfSaid,me&&MP.user&&isOG(MP.user.uid),false,window.SQPVP&&SQPVP.on&&!dead)}
  g.restore()};
 // ---- chat ----
-function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.seen.add(id);const mine=MP.user&&v.u===MP.user.uid,fresh=typeof v.t==='number'&&mpNow()-v.t<15000;
+const CHAT_KEEP=24*3600*1000;
+function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.seen.add(id);if(typeof v.t==='number'&&mpNow()-v.t>CHAT_KEEP)return; // older than a day: not shown
+ const mine=MP.user&&v.u===MP.user.uid,fresh=typeof v.t==='number'&&mpNow()-v.t<15000;
  const m=v.m.slice(0,80),n=String(v.n||'?').replace(/[<>]/g,'').slice(0,12);
- const e={me:mine,n,uid:v.u};mpLog('pub',m,e);const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
+ const e={me:mine,n,uid:v.u,t:typeof v.t==='number'?v.t:0};mpLog('pub',m,e);const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
  if(fresh){if(mine)MP.selfSaid={m,at:performance.now()};else{const r=MP.players.get(v.u);if(r)r.said={m,at:performance.now()}}if(!MP.open&&!mine){MP.unread++;mpRBtn()}}}
 function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)return;if(!MP.on){mpOpenChat();return}
  const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;
@@ -7541,6 +7545,10 @@ const isFriend=u=>!!(u&&MP.friends[u]);
 mpLine=function(m){const d=document.createElement('div');if(m.k==='game'){d.className='gm';d.textContent=m.m;return d}
  if(m.k==='pm'){d.className=m.dir==='to'?'pmt':'pmf';const b=document.createElement('b');b.className='nm';b.dataset.u=m.uid;b.textContent=(m.dir==='to'?'To ':'From ')+m.n+': ';if(isOG(m.uid))d.append(crownImg());d.append(b,document.createTextNode(m.m));return d}
  if(m.me)d.className='me';const b=document.createElement('b');b.className='nm';b.dataset.u=m.uid||'';b.textContent=m.n+': ';if(isOG(m.uid))d.append(crownImg());d.append(b,document.createTextNode(m.m));return d};
+// time sent, on chat and private messages (the chat list only, not the overlay)
+{const _ml=mpLine;mpLine=function(m){const d=_ml(m);if(m&&m.t&&(m.k==='pub'||m.k==='pm')){const sp=document.createElement('span');sp.className='ts';
+  try{sp.textContent=new Date(m.t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+' '}catch(e){sp.textContent=''}d.prepend(sp)}return d}}
+{const st=document.createElement('style');st.textContent='#mpl .ts{opacity:.5;font-size:.82em;font-weight:500;margin-right:2px}#mpo .ts{display:none}';document.head.appendChild(st)}
 function friendsView(){lst.textContent='';const fa=document.createElement('form');fa.className='fa';fa.innerHTML='<input id="mpfa" maxlength="12" placeholder="Add a friend by name" aria-label="Friend name"><button type="submit">ADD</button>';
  fa.onsubmit=e=>{e.preventDefault();addFriendByName(fa.querySelector('input').value)};lst.appendChild(fa);if(MP.addHint){const h=document.createElement('div');h.className='fh';h.append(...MP.addHint);lst.appendChild(h)}
  const rq=Object.keys(MP.req||{}).filter(u=>!isFriend(u));if(rq.length){const h=document.createElement('div');h.className='fh';h.textContent='FRIEND REQUESTS';lst.appendChild(h);
@@ -7581,7 +7589,7 @@ mpSend=function(t){t=String(t||'').replace(/\s+/g,' ').trim();if(!t)return;if(!M
  if(w){const nl=w[1].toLowerCase();to=Object.keys(MP.friends).find(u=>fname(u).toLowerCase()===nl)||[...MP.players.keys()].find(u=>(MP.players.get(u).n||'').toLowerCase()===nl);msg=w[2];if(!to){mpLog('game','No friend or nearby player called '+w[1]+'.');return}}
  else if(MP.tab==='pm'){to=MP.pmTo;if(!to){mpLog('game','Pick a friend in the Friends tab to message.');return}}
  msg=msg.slice(0,80);const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;const d=FB.db;
- if(to){d.push(d.ref(FB.D,'pm/'+to),{f:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).then(()=>{mpLog('pm',msg,{dir:'to',n:fname(to),uid:to});MP.pmTo=to}).catch(e=>{mpLog('game','Could not send that message.');mpErr(e)});return}
+ if(to){d.push(d.ref(FB.D,'pm/'+to),{f:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).then(()=>{mpLog('pm',msg,{dir:'to',n:fname(to),uid:to,t:mpNow()});MP.pmTo=to}).catch(e=>{mpLog('game','Could not send that message.');mpErr(e)});return}
  d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).catch(mpErr)};
 // the overlay shows private messages to you too
 mpROv=function(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||chessOpen,recent=MP.log.filter(m=>(m.k==='pub'||m.k==='pm'&&m.dir==='from')&&now-m.at<12000).slice(-3);
@@ -7594,7 +7602,7 @@ function friendsStart(){const d=FB.db,D=FB.D,uid=MP.user.uid;
  MP.unsub.push(d.onValue(d.ref(D,'friends/'+uid),s=>{MP.friends=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()}));
  MP.unsub.push(d.onValue(d.ref(D,'profiles'),s=>{MP.prof=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()}));
  MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'pm/'+uid),d.limitToLast(30)),s=>{const v=s.val();if(!v||typeof v.m!=='string'||MP.seen.has('pm'+s.key))return;MP.seen.add('pm'+s.key);
-  const fresh=typeof v.t==='number'&&mpNow()-v.t<15000;mpLog('pm',v.m.slice(0,80),{dir:'from',n:String(v.n||'?').slice(0,12),uid:v.f});const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
+  const fresh=typeof v.t==='number'&&mpNow()-v.t<15000;mpLog('pm',v.m.slice(0,80),{dir:'from',n:String(v.n||'?').slice(0,12),uid:v.f,t:typeof v.t==='number'?v.t:0});const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
   else{MP.pmTo=MP.pmTo||v.f;if(!MP.open){MP.unread++;mpRBtn()}try{sfx('talk')}catch(e){}}}));
  MP.req={};MP.unsub.push(d.onValue(d.ref(D,'freq/'+uid),s=>{const v=s.val()||{},old=MP.req||{};MP.req={};for(const k in v)if(v[k]&&typeof v[k]==='object')MP.req[k]=v[k];
   for(const k in MP.req)if(!old[k]&&!isFriend(k)){mpLog('game',String(MP.req[k].n||'Someone')+' added you as a friend. Open Chat > Friends to add them back.');if(!MP.open){MP.unread++;mpRBtn()}}
@@ -7689,6 +7697,8 @@ function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now(
 function tsReopen(){try{saveLocal(true);saveCloud(true)}catch(e){}closePanel();if(typeof closeSM==='function'&&typeof smOpen!=='undefined'&&smOpen)closeSM();if(MP.open)mpCloseChat();
  TS.open=true;TS.mh='';tsEl.style.display='flex';tsStage(0);tsDrawHero();tsFoot();requestAnimationFrame(tsLoop);say('Game saved.')}
 SMI.splice(SMI.findIndex(x=>x.id==='online')+1,0,{id:'friends',l:()=>'Friends'});
+// Craft straight from the START menu (it used to hide behind Skills > Craft)
+if(!SMI.some(x=>x.id==='craft'))SMI.splice(SMI.findIndex(x=>x.id==='skills')+1,0,{id:'craft',l:()=>'Craft'});
 SMI.splice(SMI.findIndex(x=>x.id==='exit'),0,{id:'title',l:()=>'Save & quit to title'});
 {const _ss=showScreen;showScreen=function(id){if(id==='friends'){releaseMenu();if(!MP.on){sg.style.display='block';return}MP.tab='fr';mpOpenChat();return}if(id==='title'){releaseMenu();tsReopen();return}return _ss(id)}}
 // ---- Other players' farms, built things and boats; nobody can damage what isn't theirs ----
@@ -8235,8 +8245,12 @@ const pvFront=(maxAl,minAl,wide)=>{let best=null,bd=1e9;for(const r of MP.player
 const RH=[];   // {id, rg, x, y, w, furn, hp}
 const rhTiles=h=>{const a=[];for(let dy=-1;dy<=0;dy++)for(let dx=-3;dx<=3;dx++)if(dx||dy)a.push([h.x+dx,h.y+dy]);return a};
 const rhHere=()=>{const R=rbR();return R?RH.filter(h=>h.rg===R.region):[]};
+const RHF={};   // other players' island houses, kept as the same objects so a visit isn't interrupted
 function rhForeign(id){const out=[];for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const rec=BLDS.data[o],L=rec&&rec.r&&rec.r._h;if(!L)continue;
-  for(const e0 of (Array.isArray(L)?L:Object.values(L))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(e[0]===id&&isFinite(e[1])&&isFinite(e[2]))out.push({rg:id,x:e[1]|0,y:e[2]|0,w:7,_owner:o})}}return out}
+  for(const e0 of (Array.isArray(L)?L:Object.values(L))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(e[0]!==id||!isFinite(e[1])||!isFinite(e[2]))continue;
+   const oid=String(e[3]||(e[1]+'_'+e[2])).slice(0,12),key=o+'|'+oid,fresh=buildForeign(o,{id:oid,x:e[1],y:e[2],w:7,f:e[4]});let h=RHF[key];
+   if(!h||h.x!==fresh.x||h.y!==fresh.y){h=RHF[key]=fresh;h.rg=id}else h.furn=fresh.furn;out.push(h);
+   if(!HS.frUnsub[o])HS.frUnsub[o]=FB.db.onValue(FB.db.ref(FB.D,'friends/'+o),s=>{HS.fr[o]=s.val()||{}})}}return out}
 const rhAt=(list,x,y)=>list.find(h=>x>=h.x-3&&x<=h.x+3&&y>=h.y-1&&y<=h.y)||null;
 function rhFits(R,x,y){for(let dy=-2;dy<=1;dy++)for(let dx=-3;dx<=3;dx++){const tx=x+dx,ty=y+dy;if(dy===1&&dx)continue;if(tx<1||ty<1||tx>=R.w-1||ty>=R.h-1)return false;
   if(R.solid.has(ty*R.w+tx)||solid(tx*16+8,ty*16+8)||rgObjAt(R,tx,ty)||rbMap(R.region).has(rbK(tx,ty))||rbForeignAt(R.region,tx,ty))return false;
@@ -8266,14 +8280,16 @@ function rhPack(h){const j=RH.indexOf(h);if(j<0)return;RH.splice(j,1);rhSolidSyn
 {const _ls=leaveScene;leaveScene=function(){const S=SCENE;if(!S||!S.prev)return _ls();if(typeof BUILD!=='undefined'&&BUILD)endBuild();const r=S.ret;SCENE=S.prev;P.x=r.x;P.y=r.y;face=[0,1];FADE_AT=performance.now();sfx('door');rhSolidSync()}}
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen||dead)return;const R=rbR();if(!R||face[1]>=0)return;
   for(const h of rhHere()){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+6&&P.y>h.y*16-4){enterScene('home',h,{x:cx,y:(h.y+1)*16+7});return}}
-  for(const h of rhForeign(R.region)){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+2&&P.y>h.y*16-4){const n=performance.now();if(!PV.doorAt||n-PV.doorAt>2000){PV.doorAt=n;say('That\'s '+fname(h._owner)+'\'s house.')}}}}}
+  for(const h of rhForeign(R.region)){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+6&&P.y>h.y*16-4){enterScene('home',h,{x:cx,y:(h.y+1)*16+7});return}}}}
 // waking up in a house on another island
 {const _rs=reset;reset=function(){_rs();const h=RH.find(o=>o.id===HOMESP);if(!h||dead)return;try{SCENE=null;const ok=loadRegion(h.rg,[h.x,h.y+1],{x:P.x,y:P.y});if(!ok)return;
   enterScene('home',h,{x:h.x*16+8,y:(h.y+1)*16+7});P.x=2*16+10;P.y=3*16+8;face=[0,1];say('You wake up at home on '+WORLD_REGIONS[h.rg].name+'.')}catch(e){console.warn(e)}}}
 // ---- drawing ----
 {const _rn=rgNear;rgNear=function(R,x0,y0,x1,y1){const out=_rn(R,x0,y0,x1,y1);if(!R||!R.region||!(SCENE&&SCENE.room===R))return out;
-  for(const h of rhHere().concat(rhForeign(R.region)))if(h.x>=x0-5&&h.x<=x1+5&&h.y>=y0-3&&h.y<=y1+4)out.push({t:'_rh',h,x:h.x+.5,y:h.y});return out}}
-{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rh'){try{drBld({...HOUSE_STYLE,w:7,tx:it.h.x-3,ty:it.h.y-1},tm)}catch(e){}return}return _df(it,tm)}}
+  for(const h of rhHere().concat(rhForeign(R.region)))if(h.x>=x0-5&&h.x<=x1+5&&h.y>=y0-3&&h.y<=y1+4)out.push({t:'_rh',h,x:h.x+.5,y:h.y},{t:'_rhs',h,x:h.x+.5,y:h.y+.02});return out}}
+function rhSign(h){const nm=h._foreign?fname(h._owner):(MP.on?myName():pname());if(!nm)return;const cx=h.x*16+8,y=(h.y+1)*16-27;g.save();g.font='700 6px '+PF;const tw=Math.ceil(g.measureText(nm).width)+6,X=Math.round(cx-tw/2);
+ g.fillStyle='#3a2414';g.fillRect(X-1,y-1,tw+2,10);g.fillStyle='#f4e8c8';g.fillRect(X,y,tw,8);g.fillStyle='#d8c098';g.fillRect(X,y+7,tw,1);g.fillStyle='#3a2414';g.textAlign='center';g.textBaseline='middle';g.fillText(nm,cx,y+4.5);g.restore()}
+{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rhs'){try{rhSign(it.h)}catch(e){}return}if(it&&it.t==='_rh'){try{drBld({...HOUSE_STYLE,w:7,tx:it.h.x-3,ty:it.h.y-1},tm)}catch(e){}return}return _df(it,tm)}}
 // where it would go, while placing
 {const _dh=drawHUD;drawHUD=function(){const R=rbR();if(R&&BUILD&&BUILD.k==='house'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=rhFits(R,x,y),cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drBld({...HOUSE_STYLE,w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}_dh()}}
@@ -8287,7 +8303,7 @@ function rhPack(h){const j=RH.indexOf(h);if(j<0)return;RH.splice(j,1);rhSolidSyn
   if(keepHome&&RH.some(h=>h.id===keepHome))HOMESP=keepHome;try{rhSolidSync()}catch(e){}}}
 {const _ng=newGame;newGame=function(){RH.length=0;_ng()}}
 // shared: other players see where your island houses are
-{const _rp=rbPub;rbPub=function(){const o=_rp()||{};if(RH.length)o._h=RH.map(h=>[h.rg,h.x,h.y]);return Object.keys(o).length?o:null}}
+{const _rp=rbPub;rbPub=function(){const o=_rp()||{};if(RH.length)o._h=RH.map(h=>[h.rg,h.x,h.y,h.id,[...h.furn].map(([i,f])=>[i,f.t])]);return Object.keys(o).length?o:null}}
 window.SQRH=RH;
 // ---- go ----
 mpRBtn();
