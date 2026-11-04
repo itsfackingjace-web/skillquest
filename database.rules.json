@@ -148,6 +148,42 @@
         ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid) || (data.val() === auth.uid && !newData.exists()))",
         ".validate": "newData.isString() && newData.val() === auth.uid"
       }
+    },
+    "treq": {
+      "$to": {
+        ".read": "auth != null && auth.uid === $to",
+        "$from": {
+          ".read": "auth != null && auth.uid === $from",
+          ".write": "auth != null && (auth.uid === $from || auth.uid === $to) && (!newData.exists() || auth.uid === $from)",
+          ".validate": "newData.hasChildren(['n', 't']) && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('t').val() === now"
+        }
+      }
+    },
+    "trades": {
+      "$tid": {
+        ".read": "auth != null && ($tid.beginsWith(auth.uid + '_') || $tid.endsWith('_' + auth.uid))",
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid && ($tid.beginsWith(auth.uid + '_') || $tid.endsWith('_' + auth.uid))",
+          ".validate": "newData.hasChildren(['g', 't']) && newData.child('g').isNumber() && newData.child('g').val() >= 0 && newData.child('t').val() === now",
+          "i": {
+            "$k": {
+              ".validate": "newData.isNumber() && newData.val() > 0"
+            }
+          },
+          "a": {
+            ".validate": "newData.isString() && newData.val().length < 4000"
+          },
+          "c": {
+            ".validate": "newData.isString() && newData.val().length < 4000"
+          },
+          "d": {
+            ".validate": "newData.isString() && newData.val().length < 4000"
+          },
+          "$other": {
+            ".validate": "$other === 'g' || $other === 't'"
+          }
+        }
+      }
     }
   }
 }
