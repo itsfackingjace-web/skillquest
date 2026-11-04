@@ -8379,6 +8379,9 @@ function lbRender(){const cats=lbCats(),C=cats.find(c=>c.k===LB.cat)||cats[0],me
  const top=rows.slice(3,50);for(let i=0;i<top.length;i++){const r=top[i];h+='<div class="row'+(r.u===me?' me':'')+'"><span class="rk">#'+(i+4)+'</span><span class="nm">'+nm(r)+'</span><span class="vl">'+esc(val(r))+(r.s?'<small>'+esc(r.s)+'</small>':'')+'</span></div>'}
  const mi=me?rows.findIndex(r=>r.u===me):-1;if(mi>=50){const r=rows[mi];h+='<div class="gap">· · ·</div><div class="row me"><span class="rk">#'+(mi+1)+'</span><span class="nm">'+nm(r)+'</span><span class="vl">'+esc(val(r))+(r.s?'<small>'+esc(r.s)+'</small>':'')+'</span></div>'}
  else if(me&&mi<0&&MP.on)h+='<div class="emp" style="padding:14px">You\'re not on this board yet.</div>';else if(!MP.on)h+='<div class="emp" style="padding:14px">Sign in to get on the boards.</div>';
+ // everyone else who has played online, until their game posts their stats
+ const wait=Object.keys(MP.prof||{}).filter(u=>!LB.data[u]&&MP.prof[u]&&MP.prof[u].n).map(u=>String(MP.prof[u].n).replace(/[<>]/g,'').slice(0,12));
+ if(wait.length)h+='<div class="emp" style="padding:16px 10px 6px;text-align:left"><b style="color:#485870">Not ranked yet</b><br>'+wait.map(esc).join(' · ')+'<br><small>They show up here automatically the next time they play.</small></div>';
  B.innerHTML=h}
 lbEl.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.lb==='x'){lbClose();return}
  if(b.dataset.lbc){LB.cat=b.dataset.lbc;try{sfx('talk')}catch(e2){}lbRender();const nb=lbEl.querySelector('[data-lbc="'+LB.cat+'"]');if(nb){nb.scrollIntoView({block:'nearest',inline:'center'});if(GPF)setFocus(nb)}$('lbb').scrollTop=0}});
