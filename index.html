@@ -8013,7 +8013,7 @@ function grvDraw(g,tm){const x=Math.round(g.x),y=Math.round(g.y),S='#7a8496',L='
 const grvH=el('div','grvh','g3',''),grvT=el('div','grvt','g3','');document.body.append(grvH,grvT);
 const mmss=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 setInterval(()=>{const busy=dead||pnOpen||menuOpen||TS.open;const g=busy?null:grvNear();
- if(g){const mine=g.local||(MP.user&&g.u===MP.user.uid);grvH.textContent=(mine?'Your grave':g.n+'\'s grave')+' · crumbles in '+mmss(grvLeft(g))+' · '+(GPON?'✕':isPC?'T':'TALK')+' to loot';grvH.style.display='block'}else grvH.style.display='none';
+ if(g){const mine=g.local||(MP.user&&g.u===MP.user.uid);grvH.textContent=(mine?'Your grave':g.n+'\'s grave')+' · crumbles in '+mmss(grvLeft(g))+' · '+(GPON?'✕ to loot':isPC?'T to loot':'tap LOOT');grvH.style.display='block'}else grvH.style.display='none';
  const m=busy?[]:grvMine().sort((a,b)=>grvLeft(a)-grvLeft(b));if(m.length){const a=m[0];grvT.textContent='Your grave '+mmss(grvLeft(a))+' · '+LOCN(a.loc)+(m.length>1?' (+'+(m.length-1)+')':'');grvT.style.display='block'}else grvT.style.display='none'},250);
 // ---- looting ----
 {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const g=grvNear();if(g){GRV.open=g;pnOpen=true;ptab=GTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');return}}return _t()}}
@@ -8038,6 +8038,9 @@ async function grvTake(keys){const g0=GRV.open;if(!g0||GRV.busy)return;if(Math.h
   grvTake(b.dataset.gr==='all'?Object.keys(grvItems(g)):[b.dataset.k]);return}_oc(e)}}
 GRV.lostPreview=()=>GRV.fell?GRV.fellN:0;
 window.SQGRV=GRV;
+// touch: the TALK button (shown as LOOT) opens the grave
+window.SQGRVNEAR=()=>{try{return!dead&&!pnOpen&&!menuOpen&&!TS.open&&!!grvNear()}catch(e){return false}};
+tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead||nearNpc())return;if(grvNear()){e.preventDefault();e.stopImmediatePropagation();talk()}},{passive:false,capture:true});
 // ---------------------------------------------------------------- 69. Seeing other players fight, and opt-in PvP
 // Everyone near you sees your sword swings, arrows and spells (and you see theirs): each attack is sent as a small
 // event to fx/<uid>, and the other players draw it (the arrows and spells fly, stop at walls and monsters, and do no
@@ -8840,6 +8843,10 @@ var LUX={};
     g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){}_dh()}}
 // the leaderboards take the controller / keyboard while they're open (title screen)
 {const _n=navRoot;navRoot=function(){const lb=document.getElementById('sqlb');if(lb&&lb.style.display==='flex')return lb;return _n()}}
+// a LOOT button when you stand at a grave (phones had no button to press)
+{let on=false;const _u=upd;upd=function(dt){_u(dt);const n=window.SQGRVNEAR&&SQGRVNEAR()&&!(typeof nearNpc==='function'&&nearNpc());
+  if(n){tk.style.display='flex';if(!tk.innerHTML.startsWith('LOOT'))tk.innerHTML='LOOT'+(isPC?'<small>T</small>':'');on=true}
+  else if(on){on=false;if(tk.innerHTML.startsWith('LOOT')){tk.innerHTML='TALK'+(isPC?'<small>T</small>':'');tk.style.display='none';if(typeof tkLab!=='undefined')tkLab=''}}}}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
