@@ -7346,7 +7346,7 @@ const _oc61b=mpOpenChat;mpOpenChat=function(){if(GPON){if(!MP.on){sg.style.displ
 // Shown once per launch. While it is up the world is frozen and the game ignores input.
 const TS={open:true,stage:0,cl:[]};window.SQTS=TS;
 {const st=document.createElement('style');st.textContent=`
-#sqts{position:fixed;inset:0;z-index:90;overflow:hidden;background:linear-gradient(#051e15,#0b3624 40%,#17573a 72%,#2a7a4a);color:#f8f8f8;font-family:${PF};display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-user-select:none;touch-action:manipulation;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px);box-sizing:border-box}
+#sqts{position:fixed;inset:0;z-index:90;overflow-x:hidden;overflow-y:auto;background:linear-gradient(#051e15,#0b3624 40%,#17573a 72%,#2a7a4a);color:#f8f8f8;font-family:${PF};display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-user-select:none;touch-action:manipulation;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px);box-sizing:border-box}
 #sqts .tsc{position:absolute;left:0;right:0;background-repeat:repeat-x;background-size:auto 100%;image-rendering:pixelated;pointer-events:none}
 #sqts .tsc.c1{top:6%;height:18vh;opacity:.45}#sqts .tsc.c2{bottom:10%;height:26vh;opacity:.75}#sqts .tsc.c3{bottom:-2%;height:20vh;opacity:1}
 #sqts .tssp{position:absolute;width:4px;height:4px;background:#d8f8c8;pointer-events:none;animation:tstw 2.4s steps(2) infinite}
@@ -7370,6 +7370,10 @@ const TS={open:true,stage:0,cl:[]};window.SQTS=TS;
 #sqts .tsmn button::before{content:'';position:absolute;left:14px;top:19px;border:7px solid transparent;border-left:9px solid #404040;border-right:0;opacity:0}
 #sqts .tsmn button:hover::before,#sqts .tsmn button.gpf::before,#sqts .tsmn button:focus-visible::before{opacity:1}
 #sqts .tsmn button.gpf{outline:none!important;box-shadow:inset 0 0 0 3px #f8a020!important}
+#sqts .tsmn{flex-direction:row!important;flex-wrap:wrap}#sqts .tsmn .tsst{width:100%}
+#sqts .tsmn button:not([data-a="go"]):not([data-a="in"]){width:calc(50% - 4px);padding:12px 6px 12px 20px;font-size:clamp(11px,3vw,17px);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sqts .tsmn button:not([data-a="go"]):not([data-a="in"])::before{left:6px}
+@media (max-height:820px){#sqts .tshero canvas{width:60px!important;height:120px!important}#sqts .tsmn{margin-top:2vh}#sqts .tslg{margin-top:max(4vh,14px)}}
 #sqts .tsci{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;margin-top:8px;font-weight:500;font-size:15px;color:#3058c8}
 #sqts .tsci span:nth-child(2n){color:#404040;text-align:right}#sqts .tsci img{width:18px;height:14px;image-rendering:pixelated;vertical-align:-1px;margin-right:5px}
 #sqts .tsmn .tsst{font-size:13px;color:#e8f8e0;text-align:center;text-shadow:2px 2px 0 #0a2214;min-height:16px}
@@ -9092,6 +9096,7 @@ window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-7',d:'Nov 5, 2026',t:'Fixes',n:['Fixed: turning off Hide helmet could switch itself back on. It\'s now a button on the Equipment screen.','The title screen fits on phones again: Leaderboards, Wiki, Options and Report a bug sit two to a row, and the screen scrolls if it ever needs to.']},
  {v:'2026.11.05-6',d:'Nov 5, 2026',t:'Flame Crown fix',n:['Fixed: with the Lone Bonfire perk, lighting a new campfire made your flame wisp vanish instead of moving to the new fire.']},
  {v:'2026.11.05-5',d:'Nov 5, 2026',t:'A bigger Wiki',n:['Skills: pick a skill to see just that one: how to train it, its perks and what it unlocks.','New wiki pages: Guides (getting a boat, unlocking the islands, making gold, world bosses, building a home, playing with friends), an XP table with a calculator, every Shop with prices, People (who\'s who and where), and Maps of every island with numbered landmarks.','Monsters and dungeon bosses now have pictures.']},
  {v:'2026.11.05-4',d:'Nov 5, 2026',t:'Patch notes',n:['Patch notes are now in the Wiki. The WIKI button shows NEW when there\'s an update you haven\'t read.']},
@@ -9767,11 +9772,11 @@ var LUX={};
  // ---- hide helmet: your helmet / hood / wizard hat still counts (defence, class bonuses), it just isn't drawn,
  // for you or for anyone else. A checkbox on the Equipment screen; remembered with your save.
  {const _g=gearCH;gearCH=function(){const c=_g();if(HIDEH){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.dyh}return c};
-  const _eh2=equipHTML;equipHTML=function(){const h=_eh2();const row='<label class="tc-r" style="cursor:pointer;margin:8px 0 2px"><span>Hide helmet</span><input type="checkbox" data-hideh="1" '+(HIDEH?'checked':'')+' style="width:20px;height:20px;cursor:pointer"></label>';
+  const _eh2=equipHTML;equipHTML=function(){const h=_eh2();const row='<button class="sb" data-hideh="1" style="margin:8px 0 2px">Hide helmet: '+(HIDEH?'ON':'OFF')+'</button>';
    const k='<div class="qc" style="margin-top:12px">',i=h.indexOf(k);return i<0?h+row:h.slice(0,i)+row+h.slice(i)};
-  pbd.addEventListener('change',e=>{const b=e.target.closest('[data-hideh]');if(!b)return;HIDEH=!!b.checked;say(HIDEH?'Your helmet is hidden. It still protects you.':'Your helmet is showing again.');
-   try{saveLocal(true);saveCloud(true)}catch(err){}try{rPn()}catch(err){}try{if(typeof mpPres==='function')mpPres(true)}catch(err){}});
-  const _sn=snap;snap=function(){const o=_sn();if(HIDEH)o.hh=1;return o};
+  pbd.addEventListener('click',e=>{const b=e.target.closest('[data-hideh]');if(!b)return;e.stopPropagation();e.preventDefault();HIDEH=!HIDEH;say(HIDEH?'Your helmet is hidden. It still protects you.':'Your helmet is showing again.');
+   try{saveLocal(true);saveCloud(true)}catch(err){}try{rPn()}catch(err){}},true);
+  const _sn=snap;snap=function(){const o=_sn();o.hh=HIDEH?1:0;return o};
   const _ap=applySave;applySave=function(S){_ap(S);HIDEH=!!(S&&S.hh)};
   const _ng=newGame;newGame=function(){HIDEH=false;_ng()}}
  // ---- Dragonsoul amulet (a rare drop from the Dragon world boss) ----
