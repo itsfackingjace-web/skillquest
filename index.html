@@ -7264,9 +7264,9 @@ function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='nu
  if(!r){r={uid:k,x:v.x,y:v.y,w:0,said:null};MP.players.set(k,r)}
  if(r.loc!==v.loc||Math.hypot(r.x-v.x,r.y-v.y)>200){r.x=v.x;r.y=v.y}
  r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;r.sl=!!v.sl;r.ar=typeof v.ar==='string'?v.ar:'';r.pet=typeof v.pet==='string'?v.pet.slice(0,12):'';r.pk=!!v.pk;r.au=!!v.au;r.ax=+v.ax;r.ay=+v.ay;
- r.n=String(v.n||'Adventurer').replace(/[<>]/g,'').slice(0,12);r.ch=cleanCh(v.ch);r.seen=performance.now();mpRBtn()}
+ r.n=String(v.n||r.n||(MP.prof&&MP.prof[k]&&MP.prof[k].n)||'Adventurer').replace(/[<>]/g,'').slice(0,12);r.ch=cleanCh(v.ch);r.seen=performance.now();mpRBtn()}
 function mpTick(){if(!MP.on||!MP.pref)return;const d=FB.db,now=performance.now(),loc=mpLoc(),fx=face[0],fy=face[1];
- const op=outdoorPos(),st={loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0},k=JSON.stringify(st);
+ const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0},k=JSON.stringify(st);
  let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){}const nm=myName();
  if(chk!==MP.lastCh||nm!==MP.lastN){MP.lastCh=chk;MP.lastN=nm;MP.last='';d.update(MP.pref,{ch:JSON.parse(chk),n:nm}).catch(()=>{MP.lastCh=''})}
  if(k!==MP.last||now-MP.beat>5000){MP.last=k;MP.beat=now;d.update(MP.pref,Object.assign(st,{t:d.serverTimestamp()})).catch(()=>{MP.last=''})}}
@@ -7638,7 +7638,7 @@ const bugBtn=el('button','mpbug','','BUG'),bugF=el('div','mpbugf','g3','<div cla
  '<div class="row"><button class="pri" id="bgsend">SEND REPORT</button><button id="bgno">CANCEL</button></div><div class="st" id="bgst"></div>');
 document.body.append(bugBtn,bugF);for(const e of[bugBtn,bugF])for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])e.addEventListener(ev,stop);
 let bugShot='';
-function bugOpen(){try{const c=document.getElementById('c'),w=480,h=Math.round(c.height*w/c.width),t=document.createElement('canvas');t.width=w;t.height=h;t.getContext('2d').drawImage(c,0,0,w,h);bugShot=t.toDataURL('image/jpeg',.6)}catch(e){bugShot=''}
+function bugOpen(){try{const c=document.getElementById('c');bugShot='';for(const[w,q]of[[420,.6],[340,.5],[260,.45],[200,.4]]){const h=Math.round(Math.min(c.height*w/c.width,w*2.2)),t=document.createElement('canvas');t.width=w;t.height=h;t.getContext('2d').drawImage(c,0,0,w,h);const u=t.toDataURL('image/jpeg',q);if(u.length<300000){bugShot=u;break}}}catch(e){bugShot=''}
  $('bgi').src=bugShot||'';$('bgi').style.display=bugShot?'block':'none';$('bgst').textContent=MP.on?'':'You are offline: the report is kept on this device and sent when you sign in.';
  bugF.style.display='block';mpClearKeys();if(!GPON)setTimeout(()=>$('bgw').focus(),30)}
 function bugClose(){bugF.style.display='none';setFocus(null)}
@@ -9131,6 +9131,25 @@ var LUX={};
   if(k==='eq_bow1')return MADE[k]=bow(9,3,'#c08048','#f0d090');if(k==='eq_bow2')return MADE[k]=bow(12,4,'#8a5020','#d8b070');if(k==='eq_bow3')return MADE[k]=bow(12,5,'#ece4cc','#ffffff','#a89878');return null};
  const _ic=iconURL;iconURL=function(k,col){return icon(k)||_ic(k,col)};
  if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return icon(k)||_ei(k)}}}
+// ---------------------------------------------------------------- 81. Monsters keep a little distance; dungeon exits
+// Monsters no longer pile on top of you: they stop about half a tile away (still close enough to hurt you), and if
+// one is right next to you when you swing, you turn to face it, so you can always hit what's hitting you.
+{const MIND=9;
+ const _u=upd;upd=function(dt){_u(dt);if(dead||menuOpen||pnOpen)return;for(const n of en){if(n.dead||n._rp||n._wb||n.big||n.type==='boss'||n.type==='bonelord')continue;
+   const dx=n.x-P.x,dy=n.y-P.y,d=Math.hypot(dx,dy);if(d>=MIND)continue;const ux=d>.01?dx/d:-face[0]||1,uy=d>.01?dy/d:-face[1]||0,nx=P.x+ux*MIND,ny=P.y+uy*MIND;
+   if(!solid(nx,ny+4)){n.x=nx;n.y=ny}}};
+ const _a=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0&&!BUILD&&!FISH){const[fx,fy]=front(13);if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){let best=null,bd=18;
+    for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}if(best){const dx=best.x-P.x,dy=best.y-P.y;face=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx)||1,0]:[0,Math.sign(dy)||1]}}}return _a()}}
+// Every dungeon's last floor has an exit door near the boss's lair: step on it to climb straight back outside.
+{const _da=dArrive;dArrive=function(R,from){_da(R,from);const D=R.dun;if(!D||R.items.some(it=>it.t==='stairs')||R.items.some(it=>it.t==='dexit'))return;
+  const b=D.boss||[Math.floor(R.w/2),Math.floor(R.h/2)],W=R.w,ok=(x,y)=>x>0&&y>2&&x<W-1&&y<R.h-1&&!R.solid.has(y*W+x)&&!R.solid.has((y-1)*W+x)&&!R.items.some(it=>it.x===x&&it.y===y);
+  for(let r=4;r<12;r++){let done=false;for(let a=0;a<16&&!done;a++){const x=Math.round(b[0]+Math.cos(-Math.PI/2+a*Math.PI/8)*r),y=Math.round(b[1]+Math.sin(-Math.PI/2+a*Math.PI/8)*r*.8);if(ok(x,y)){R.items.push({t:'dexit',x,y});done=true}}if(done)break}}
+ const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='dexit'){const x0=it.x*16,y0=it.y*16,p=.5+.5*Math.sin(tm*3);
+   g.fillStyle='rgba(255,230,150,'+(.18+.18*p)+')';g.beginPath();g.arc(x0+8,y0,16,0,6.283);g.fill();
+   Rg(x0-1,y0-17,18,33,O);Rg(x0,y0-16,16,31,'#8a6a48');Rg(x0+2,y0-14,12,27,'#f8e8b0');Rg(x0+3,y0-13,10,25,'#fff8d8');Rg(x0+2,y0-14,12,3,'#c8a060');
+   for(let k=0;k<3;k++)Rg(x0+4+k*3,y0+4+Math.round(Math.sin(tm*4+k)*2),2,2,'#ffffff');Rg(x0-2,y0+14,20,3,'#5a4630');return}return _df(it,tm)};
+ const _u=upd;upd=function(dt){_u(dt);const R=SCENE&&SCENE.room;if(!R||!R.dun||dead||menuOpen||pnOpen)return;const ex=R.items.find(it=>it.t==='dexit');
+  if(ex&&Math.hypot(P.x-(ex.x*16+8),P.y-(ex.y*16+4))<8){const f0=R.dun.f;R.dun.f=1;try{leaveScene()}finally{R.dun.f=f0}say('You climb out of the '+((DKIND[R.dun.kind]||{}).name||'dungeon')+' into the open air.')}}}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
