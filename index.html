@@ -366,6 +366,8 @@ function fire(){if(dead)return;if(inv.wood>=3&&inv.stone>=1){const[fx,fy]=front(
 for(const id of['a','e','f']){const o=document.getElementById(id),n=o.cloneNode(true);o.replaceWith(n);n.addEventListener('touchstart',e=>{e.preventDefault();if(!dead&&!pnOpen&&!menuOpen)({a:attack,e:eat,f:fire})[id]()},{passive:false})}
 // recipes
 const REC=[];for(let t=1;t<=3;t++)['axe','pick','sword'].forEach((k,i)=>REC.push({k,t,name:TIT[t]+' '+['axe','pickaxe','sword'][i],c:t==1?{wood:[3,4,3][i]}:t==2?{wood:[2,2,1][i],stone:[3,3,2][i]}:{wood:2,iron:[3,3,2][i]},req:[1,5,15][t-1],xp:[40,80,150][t-1]}));
+// farming tools are craftable too (one of each; the general store still sells them)
+REC.push({k:'hoe',t:1,name:'Hoe',c:{wood:3,stone:2},req:1,xp:40},{k:'can',t:1,name:'Watering can',c:{wood:2,stone:3},req:1,xp:40});
 const canC=r=>lvOf(6)>=r.req&&Object.entries(r.c).every(([a,b])=>(inv[a]||0)>=b);
 function craft(r){if(!canC(r)){say(lvOf(6)<r.req?'Need Crafting '+r.req:'Missing materials');return}for(const a in r.c)inv[a]-=r.c[a];TL[r.k]=r.t;say('Crafted '+r.name);addXp(6,r.xp);rPn()}
 // panel
@@ -377,6 +379,7 @@ function rPn(){document.getElementById('t0').className=ptab?'':'on';document.get
  if(!ptab){let tot=0,s='';for(let i=0;i<SKN.length;i++){const l=lvOf(i);tot+=l;const b=XT[l-1],n=l<99?XT[l]:b+1,p=l<99?Math.min(100,(XPS[i]-b)/(n-b)*100):100;s+='<div class="sk"><div style="color:'+SKC[i]+'">'+SKN[i]+'</div><b>'+l+'<small>/99</small></b><div class="br"><i style="width:'+p+'%;background:'+SKC[i]+'"></i></div><small>'+Math.floor(XPS[i])+' xp</small></div>'}h='<div class="tl">Total level: '+tot+'</div><div class="sg">'+s+'</div>'}
  else{h='<div class="tl">Wood '+inv.wood+' · Stone '+inv.stone+' · Iron '+(inv.iron||0)+'</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.8">Axe: '+TIT[TL.axe]+' · Pickaxe: '+TIT[TL.pick]+' · Sword: '+TIT[TL.sword]+'<br>Crafting level '+lvOf(6)+'</div>';
   for(const k of['axe','pick','sword']){const t=TL[k]+1;if(t>3)continue;const i=REC.findIndex(x=>x.k==k&&x.t==t),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+'</small></button>'}
+  for(const k of['hoe','can']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · for farming</small></button>'}
   h+='<div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:14px">Better tools hit harder. Rocks need a pickaxe; iron ore needs Mining 15 + a stone pickaxe.</div>'}
  pbd.innerHTML=h}
 pbd.onclick=e=>{const b=e.target.closest('.rc');if(b)craft(REC[+b.dataset.i])};
@@ -1582,7 +1585,7 @@ const TILL_LIFE=600,nowS=()=>Math.floor(Date.now()/1000);   // empty tilled soil
 function farmFromSave(a){FARM.clear();if(!Array.isArray(a))return;for(const e of a){if(!Array.isArray(e))continue;const i=e[0]|0;if(i<0||i>=N*N||tile[i]===0)continue;FARM.set(i,{c:CROPS[e[1]]?e[1]:null,g:Math.max(0,+e[2]||0),w:+e[3]||0,e:+e[4]||nowS()});obj[i]=null}}
 const _sn16=snap;snap=function(){const s=_sn16();s.farm=[...FARM].map(([i,p])=>[i,p.c,Math.round(p.g),Math.round(p.w),p.e|0]);s.qv=5;return s};
 const _ap16=applySave;applySave=function(S){_ap16(S);farmFromSave(S.farm);TL.hoe=S.tl&&S.tl.hoe?1:0;TL.can=S.tl&&S.tl.can?1:0;if((S.qv||0)<5&&S.q&&Q.i>=13)Q.i=Math.min(QS.length,Q.i+1)};
-QS.splice(13,0,{n:'Green Thumb',d:'Buy a hoe and seeds at the general store, then grow and harvest 5 crops.',type:'harvest',amt:5,r:{g:120,xp:[11,500]}});
+QS.splice(13,0,{n:'Green Thumb',d:'Get a hoe (craft one, or buy it at the general store) and seeds from the general store, then grow and harvest 5 crops.',type:'harvest',amt:5,r:{g:120,xp:[11,500]}});
 const _qv16=qVal;qVal=function(q){return q.type==='harvest'?Q.k:_qv16(q)};
 
 const stageOf=p=>p.c?Math.min(CROPS[p.c].max,Math.floor(p.g/CROPS[p.c].st)):0,ripe=p=>p.c&&stageOf(p)>=CROPS[p.c].max,wet=p=>CLK<p.w;
@@ -1607,7 +1610,7 @@ const _cpl16=canPlace;canPlace=function(x,y){if(BUILD&&isSeed(BUILD.k)){const p=
 const _sb16=startBuild;startBuild=function(k){if(!isSeed(k))return _sb16(k);if((inv[k]|0)<1)return;if(SCENE){say('Plant seeds outside on tilled soil.');closePanel();return}
  const C=CROPS[SEED2CROP[k]];if(lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');closePanel();return}BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')};
 const _pb16=placeBuild;placeBuild=function(){if(!BUILD||!isSeed(BUILD.k))return _pb16();const k=BUILD.k,[x,y]=frontTile(),p=FARM.get(y*N+x);
- if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'You need tilled soil. Buy a hoe at the general store.');sfx('swish');return}
+ if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'You need tilled soil. Craft a hoe (Craft menu) or buy one at the general store.');sfx('swish');return}
  if(p.c){say('Something is already growing there.');sfx('swish');return}inv[k]--;p.c=SEED2CROP[k];p.g=0;addXp(11,5);sfx('rustle');saveLocal(true);if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')};
 const _sal16=setActionLabels;setActionLabels=function(){_sal16();if(BUILD&&isSeed(BUILD.k)){const a=document.getElementById('a');if(a)a.innerHTML='PLANT'+(isPC?'<small>Space</small>':'')}};
 const _bag16=bagGridHTML;bagGridHTML=function(){let h=_bag16();if(invSel&&isSeed(invSel)&&(inv[invSel]|0)>0)h=h.replace('<div class="bd">','<div class="bd"><button class="use plc" data-k="'+invSel+'">PLANT</button>');return h};
@@ -1841,7 +1844,7 @@ const _roam20=roamNPCs;roamNPCs=function(dt){const night=nightNow();
  _roam20(dt)};
 // --- dialogue ---
 const LINES={
- bea:{m:['Up with the sun! Crops don\'t water themselves.','Morning! Dew on the wheat means a good harvest.'],d:['If you till soil, water it every day. Plants grow only while the ground is wet.','A hoe and a watering can from the general store are all you need to start a farm.'],e:['The light\'s going. Time to check the fields one last time.','Supper soon. Fresh bread, if I\'m lucky.'],x:['Pumpkins take a skilled hand. Farming 15, if you ask me.']},
+ bea:{m:['Up with the sun! Crops don\'t water themselves.','Morning! Dew on the wheat means a good harvest.'],d:['If you till soil, water it every day. Plants grow only while the ground is wet.','A hoe and a watering can are all you need to start a farm. Make them yourself, or buy them at the general store.'],e:['The light\'s going. Time to check the fields one last time.','Supper soon. Fresh bread, if I\'m lucky.'],x:['Pumpkins take a skilled hand. Farming 15, if you ask me.']},
  finn:{m:['Morning! I\'m trying to be a woodcutter like my dad.','Did you know an iron axe chops trees much faster?'],d:['The road to Saltmere is new. The Elder had it built so we could trade with the port.','I tried to fish off the big bridge once. Caught my own boot.'],e:['Wolves come out at night in the snow up north. I stay home.','Campfires keep slimes away. That\'s what Mom says.'],x:['Someone says there\'s a cave in the northern mountains with a giant slime in it!']},
  marina:{m:['Fish bite best early. Or late. Or whenever, honestly.','Morning! The tide is in.'],d:['Out on the pier you can fish both sides. Bait from Gil\'s shop makes them bite faster.','Trout show up once you reach Fishing 10, salmon at 20. Swordfish? Only the best.'],e:['The sea turns gold in the evening. Prettiest thing there is.','Heading home soon. Nets don\'t mend themselves.'],x:['Gil pays more for fish than anyone in Hollow Village.']},
  tom:{m:['Arr, morning. These old bones creak like a ship\'s deck.','Sailed every sea there is, once. Now I sail this bench.'],d:['Brann at the forge makes steel tools. Bring steel bars and coin.','Rosa\'s fish stew at the inn will put meat back on your bones.'],e:['Red sky at night, sailor\'s delight.','The gulls are heading in. So am I.'],x:['Back in my day the Slime King was just a Slime Prince.']},
@@ -9092,7 +9095,7 @@ function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y
 {const _sb=startBuild;startBuild=function(k){const R=rbR();if(!R||!isSeed(k))return _sb(k);if((inv[k]|0)<1)return;const C=CROPS[SEED2CROP[k]];
   if(lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');closePanel();return}BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')}}
 {const _pb=placeBuild;placeBuild=function(){const R=rbR();if(!R||!BUILD||!isSeed(BUILD.k))return _pb();const k=BUILD.k,[x,y]=frontTile(),p=rfMap(R.region).get(rbK(x,y));
-  if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'You need tilled soil. Buy a hoe at the general store.');sfx('swish');return}
+  if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'You need tilled soil. Craft a hoe (Craft menu) or buy one at the general store.');sfx('swish');return}
   if(p.c){say('Something is already growing there.');sfx('swish');return}inv[k]--;p.c=SEED2CROP[k];p.g=0;addXp(11,5);sfx('rustle');saveLocal(true);if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
 // growing (every island's plots grow while you play, like Hollow's)
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen)return;for(const id in RF)for(const p of RF[id].values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}}
@@ -9161,6 +9164,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-18',d:'Nov 5, 2026',t:'Craft your own hoe',n:['You can now craft a hoe (3 wood, 2 stone) and a watering can (2 wood, 3 stone) in the Craft menu, under the tools. Both need Crafting 1. The general store still sells them too.']},
  {v:'2026.11.05-17',d:'Nov 5, 2026',t:'Controller landing fix, part 2',n:['Fixed: landing with ✕ on a controller on Briarwood, Ashfall, Ironcrest or the Shattered Expanse left you standing in the water next to the shore, unable to move. ✕ now puts you on land properly.','Landing is easier on rocky, jagged coasts and in narrow inlets: if there\'s land right beside the boat, you can go ashore there.']},
  {v:'2026.11.05-16',d:'Nov 5, 2026',t:'Controller landing fix',n:['Fixed: with a controller, pressing ✕ at the shore of Briarwood, Ashfall, Ironcrest or the Shattered Expanse swung your weapon instead of landing the boat, so you got stuck at the edge of the island. ✕ now lands and sets sail on every island.','✕ on a controller now also opens graves.']},
  {v:'2026.11.05-15',d:'Nov 5, 2026',t:'Find your grave',n:['When you fall, your grave now shows on your minimap and on the map (HERE and WORLD) as a little blinking tombstone, along with how long it has before it crumbles.','When your grave is on the same island as you, an arrow at the edge of the screen points the way and shows how far it is.','If you fell inside a building or a dungeon, the grave is marked at the door you went in by.']},
