@@ -9090,8 +9090,23 @@ window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
 // A guide to everything in the game: skills and perks, every item (what it's for, where it's made, what it sells
 // for), crafting recipes, monsters, bosses, dungeons, quests, islands, towns and pets. Most of it is read straight
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
+// ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
+const PATCH_NOTES=[
+ {v:'2026.11.05-4',d:'Nov 5, 2026',t:'Patch notes',n:['Patch notes are now in the Wiki. The WIKI button shows NEW when there\'s an update you haven\'t read.']},
+ {v:'2026.11.05-3',d:'Nov 5, 2026',t:'The Wiki',n:['New: a Wiki on the title screen and in the START menu, with skills, items, crafting, monsters, bosses, dungeons, quests, islands and pets, plus search.','The Flame Crown now has proper side and back views.']},
+ {v:'2026.11.05-2',d:'Nov 5, 2026',t:'Flame Crown',n:['New rare drop from the Flame Wisp: the Flame Crown. Wear it and your campfires call a little flame wisp that roams the fire\'s light and throws fireballs at monsters.']},
+ {v:'2026.11.05-1',d:'Nov 5, 2026',t:'Imp pet',n:['New rare drop from the Demon: an Imp pet with a poison dagger. It attacks whatever hurts you and comes back a minute after it falls.']},
+ {v:'2026.11.04-4',d:'Nov 4, 2026',t:'One game per account',n:['Opening the game on a second device or tab now pauses the older one. Fixes players flickering and jumping around, trades failing, and two copies saving over each other.']},
+ {v:'2026.11.04-3',d:'Nov 4, 2026',t:'Trusted friends',n:['Mark friends as TRUSTED (Chat > Friends) to let them use your stations, chests and beds, in your houses and at things you build outside. Chests are shared safely.','Visitors can no longer pick up (and copy) furniture in your house.','The game version is shown at the bottom of Options.']},
+ {v:'2026.11.04-2',d:'Nov 4, 2026',t:'Dragonsoul & more',n:['New rare drop from the Ancient Dragon: the Dragonsoul Amulet. Your ultimate becomes Dragon Form: hold attack to breathe fire for 2 minutes.','PS4 controllers work in more browsers, and the Share button is named properly.','Options: a Fullscreen button (on iPhone, use Add to Home Screen).','Equipment: a Hide helmet option.']},
+ {v:'2026.11.04-1',d:'Nov 4, 2026',t:'World bosses',n:['World bosses: the Flame Wisp, Stone Giant, Demon and Ancient Dragon appear every 30 minutes. Fight them together, dodge their telegraphed attacks and earn loot by damage rank.','All bosses redrawn in chunky pixel art, and they turn to face you.','Houses on any island; friends can visit them.','Leaderboards on the title screen. Sail around the other islands.','Firemaking perks: Lone Bonfire, Flame Aura and Hearthkeeper.','Ignore and report players from chat. Mithril and adamant bows and wands.','Fixes: bug reports with screenshots, names turning into "Adventurer", monsters standing on top of you, invisible campfires on other islands, and exit doors at the end of every dungeon.']},
+ {v:'2026.11.03',d:'Nov 3, 2026',t:'Playing together',n:['Trading, public gravestones (your items wait 15 minutes where you fell), and opt-in PvP with safe zones.','See other players\' swings, arrows, spells and ultimates.','Build and cook on every island. Gold jewelry with gems. Marlo\'s Emporium: pets, capes, dyes, fine furniture and potions.','A shared world: one clock, shared trees, rocks, monsters, dungeons and campfires. Friends, private messages and friend requests.','Visit friends\' houses; see each other\'s farms, builds and boats.','A title screen, controller support, mouse and touch aiming, and a bug report button.']},
+ {v:'2026.11.02',d:'Nov 2, 2026',t:'Online!',n:['SkillQuest goes online: Google sign-in, saves on your account, other players and chat.','OG crowns for everyone who signs in before Dec 3, 2026.']}];
+window.SQPATCH=PATCH_NOTES;
 const WK={open:false,tab:'start',q:''},wk$=id=>document.getElementById(id);
-const WK_TABS=[['start','Start','#58a848'],['skills','Skills','#5878b8'],['items','Items','#c89020'],['craft','Crafting','#a06a34'],['mobs','Monsters','#a83838'],['bosses','Bosses','#7a2aa0'],
+const wkSeen=()=>{try{return localStorage.getItem('sq_seenv')||''}catch(e){return''}},wkNew=()=>wkSeen()!==PATCH_NOTES[0].v;
+function wkMarkSeen(){try{localStorage.setItem('sq_seenv',PATCH_NOTES[0].v)}catch(e){}const b=document.querySelector('#tsmn [data-a="wk"]');if(b)b.textContent='WIKI'}
+const WK_TABS=[['patch','Patch notes','#d84848'],['start','Start','#58a848'],['skills','Skills','#5878b8'],['items','Items','#c89020'],['craft','Crafting','#a06a34'],['mobs','Monsters','#a83838'],['bosses','Bosses','#7a2aa0'],
  ['dungeons','Dungeons','#485870'],['quests','Quests','#c86020'],['world','Islands & Towns','#3888a8'],['pets','Pets & Rares','#d84888']];
 const WK_SKILL={Attack:'Fight with swords and fists. Higher levels hit harder and unlock better swords.',Woodcutting:'Chop trees for logs: plain, oak, maple and yew.',Mining:'Mine rocks for stone and ores: iron, gold, mithril, adamant and gems.',
  Foraging:'Pick berries, herbs and other wild things.',Cooking:'Cook meat and fish at a campfire or stove so they heal more and fill you up.',Firemaking:'Build campfires: they keep monsters away, cook food and light the night.',
@@ -9162,7 +9177,8 @@ function wkRecipes(){const R=[];
  if(window.SQJWL)for(const j of SQJWL)R.push({out:j.k,n:j.n,sk:'Crafting',lv:j.lv,xp:j.xp,c:Object.assign({gbar:j.b},j.g?{[j.g]:1}:{}),at:'Furnace (Jewelry)'});
  return R}
 function wkCards(tab){const out=[];const card=(t,ic,tx,big)=>out.push({t,h:'<div class="c">'+(ic?ic.startsWith('<')?ic:'<img alt="" src="'+ic+'"'+(big?' class="big"':'')+'>':'')+'<div class="tx">'+tx+'</div></div>'}),head=t=>out.push({t:'',h:'<h3>'+wkE(t)+'</h3>',head:1});
- if(tab==='start'){
+ if(tab==='patch'){for(const p of PATCH_NOTES)card(p.t+' '+p.v+' '+p.n.join(' '),'','<b>'+wkE(p.t)+'</b> <span class="tag">'+wkE(p.d)+'</span><small> version '+wkE(p.v)+'</small><ul style="margin:6px 0 0;padding-left:18px">'+p.n.map(x=>'<li style="margin:3px 0">'+wkE(x)+'</li>').join('')+'</ul>');wkMarkSeen()}
+ else if(tab==='start'){
   out.push({t:'start',h:'<h3>Welcome to SkillQuest</h3><p>Explore Hollow Island and the islands beyond, train 15 skills, fight monsters and bosses, build a home and play with friends.</p>'+
    '<table><tr><th>Do this</th><th>PC</th><th>Phone</th><th>Controller</th></tr><tr><td>Move</td><td>WASD / arrows</td><td>Drag anywhere</td><td>Left stick</td></tr><tr><td>Hit, chop, mine, fish</td><td>Space / left-click</td><td>HIT</td><td>R2</td></tr>'+
    '<tr><td>Talk, use, read</td><td>T / Enter</td><td>TALK</td><td>✕</td></tr><tr><td>Bow or wand</td><td>Right-click</td><td>HIT (auto-aims)</td><td>R1</td></tr><tr><td>Ultimate</td><td>V</td><td>ULT</td><td>L1 + R1</td></tr><tr><td>Dodge roll</td><td>R</td><td>ROLL</td><td>○</td></tr>'+
@@ -9209,10 +9225,10 @@ function wkCards(tab){const out=[];const card=(t,ic,tx,big)=>out.push({t,h:'<div
 function wkRender(){const t=wk$('wkt'),b=wk$('wkb'),q=WK.q.trim().toLowerCase();
  t.innerHTML=WK_TABS.map(([k,n])=>'<button data-wkt="'+k+'" class="'+(k===WK.tab&&!q?'on':'')+'">'+wkE(n)+'</button>').join('');
  let h='';if(!q){const cs=wkCards(WK.tab);h=cs.map(c=>c.h).join('')}
- else{for(const[k,n]of WK_TABS){if(k==='start')continue;const cs=wkCards(k).filter(c=>!c.head&&(c.t+' '+c.h.replace(/<[^>]+>/g,' ')).toLowerCase().includes(q));if(cs.length)h+='<h3>'+wkE(n)+' ('+cs.length+')</h3>'+cs.slice(0,40).map(c=>c.h).join('')}
+ else{for(const[k,n]of WK_TABS){if(k==='start'||k==='patch')continue;const cs=wkCards(k).filter(c=>!c.head&&(c.t+' '+c.h.replace(/<[^>]+>/g,' ')).toLowerCase().includes(q));if(cs.length)h+='<h3>'+wkE(n)+' ('+cs.length+')</h3>'+cs.slice(0,40).map(c=>c.h).join('')}
   if(!h)h='<div class="emp">Nothing matches "'+wkE(WK.q)+'".</div>'}
  b.innerHTML=h||'<div class="emp">Nothing here yet.</div>'}
-function wkOpen(tab,q){WK.open=true;if(tab)WK.tab=tab;WK.q=q||'';wk$('wkq').value=WK.q;wkEl.style.display='flex';wkRender();wk$('wkb').scrollTop=0;try{sfx('talk')}catch(e){}
+function wkOpen(tab,q){WK.open=true;if(tab)WK.tab=tab;else if(wkNew())WK.tab='patch';WK.q=q||'';wk$('wkq').value=WK.q;wkEl.style.display='flex';wkRender();wk$('wkb').scrollTop=0;try{sfx('talk')}catch(e){}
  setTimeout(()=>{const f=wkEl.querySelector('.wt button.on');if(f&&typeof GPON!=='undefined'&&(GPON||TS.kb))setFocus(f)},30)}
 function wkClose(){WK.open=false;wkEl.style.display='none';try{setFocus(null)}catch(e){}try{sfx('talk')}catch(e){}if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="wk"]');if(b&&(GPON||TS.kb))setFocus(b)}}
 wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt],[data-wki]');if(!b)return;if(b.dataset.wk==='x'){wkClose();return}
@@ -9221,9 +9237,9 @@ wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt]
 wk$('wkq').addEventListener('input',()=>{WK.q=wk$('wkq').value;wkRender();wk$('wkb').scrollTop=0});
 {const _nr=navRoot;navRoot=function(){if(WK.open)return wkEl;return _nr()}}
 // on the title menu (next to the leaderboards) and in the START menu
-{const _m=tsMenu;tsMenu=function(){_m();if(tsMn.querySelector('[data-a="wk"]'))return;const o=tsMn.querySelector('[data-a="opt"]');if(!o)return;const b=document.createElement('button');b.dataset.a='wk';b.textContent='WIKI';o.before(b)}}
+{const _m=tsMenu;tsMenu=function(){_m();if(tsMn.querySelector('[data-a="wk"]'))return;const o=tsMn.querySelector('[data-a="opt"]');if(!o)return;const b=document.createElement('button');b.dataset.a='wk';b.textContent=wkNew()?'WIKI · NEW!':'WIKI';o.before(b)}}
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='wk')wkOpen()});
-SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'wiki',l:()=>'Wiki'});
+SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'wiki',l:()=>wkNew()?'Wiki · NEW!':'Wiki'});
 {const _ss=showScreen;showScreen=function(id){if(id==='wiki'){try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){}wkOpen();return}return _ss(id)}}
 window.SQWK={open:wkOpen,close:wkClose,cards:wkCards};
 addEventListener('keydown',e=>{if(WK.open&&e.key==='Escape'&&!TS.open){e.preventDefault();e.stopImmediatePropagation();wkClose()}},true);
@@ -9891,7 +9907,7 @@ function fwDraw(x,y,tm,glow){const c=fwCan(Math.floor(tm/.09)%4);if(!c)return;co
     for(const p of peers)fwDraw(p[0],p[1],tm,true);g.restore()}}_dh()}}
 window.SQFW={state:FWP,live:fwLive,pres:()=>fwLive()?[Math.round(FWP.x),Math.round(FWP.y)]:0};
 var HIDEH=false;   // Equipment > Hide helmet
-const SQ_VERSION='2026.11.05-3';
+const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
