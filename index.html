@@ -8904,7 +8904,13 @@ window.SQWB=WB;
 // game keeps that copy in step with your real chests (changes either side are merged, never overwritten), and a
 // trusted friend's take/put is a transaction, so the same items can't be taken twice.
 const TRU={mine:{},of:{},subs:{},sub:null};
-function trustedBy(o){if(!MP.on||!MP.user||!o||o===MP.user.uid)return false;if(!TRU.subs[o])TRU.subs[o]=FB.db.onValue(FB.db.ref(FB.D,'trust/'+o),s=>{TRU.of[o]=s.val()||{}});return!!(TRU.of[o]&&TRU.of[o][MP.user.uid]===true)}
+function trustSub(o){if(!MP.on||!MP.user||!o||o===MP.user.uid||TRU.subs[o])return;TRU.subs[o]=FB.db.onValue(FB.db.ref(FB.D,'trust/'+o),s=>{TRU.of[o]=s.val()||{}},()=>{TRU.of[o]=TRU.of[o]||{}})}
+function trustedBy(o){if(!MP.on||!MP.user||!o||o===MP.user.uid)return false;trustSub(o);return!!(TRU.of[o]&&TRU.of[o][MP.user.uid]===true)}
+// the first time you touch something of theirs their trust list may not have arrived yet: wait for it, then act
+function trustThen(o,fn){if(!MP.on||!MP.user)return noTrust(o);trustSub(o);if(TRU.of[o]){if(TRU.of[o][MP.user.uid]===true)fn();else noTrust(o);return}
+ swing=.25;FB.db.get(FB.db.ref(FB.D,'trust/'+o)).then(s=>{TRU.of[o]=s.val()||{};if(TRU.of[o][MP.user.uid]===true)fn();else noTrust(o)}).catch(()=>noTrust(o))}
+// keep the trust lists of everyone whose houses or builds are here up to date
+setInterval(()=>{if(!MP.on||!MP.user)return;try{for(const o of Object.keys(HS.data||{}).concat(Object.keys(BLDS.data||{})))trustSub(o);for(const o in (MP.friends||{}))trustSub(o)}catch(e){}},2000);
 const iTrust=u=>!!TRU.mine[u];
 function trustSet(u,on){if(!MP.user||!u)return;FB.db.set(FB.db.ref(FB.D,'trust/'+MP.user.uid+'/'+u),on?true:null).then(()=>{mpLog('game',on?fname(u)+' is now a trusted friend. They can use your stations, chests and beds.':fname(u)+' is no longer a trusted friend.')}).catch(mpErr)}
 function noTrust(o){const n=performance.now();if(n-BLDS.msgAt>1500){BLDS.msgAt=n;const nm=fname(o);say('Only '+nm+'\'s trusted friends can use that. Ask '+nm+' to trust you (Friends list).');sfx('swish')}swing=.25}
@@ -8963,19 +8969,19 @@ const inForeignHouse=()=>SCENE&&SCENE.house&&SCENE.house._foreign?SCENE.house:nu
 {const _ps=pickStruct;pickStruct=function(i){const s=STR.get(i);if(s&&s._foreign){notYours(s._foreign);return}return _ps(i)}}
 // chests and beds
 {const _uf=useFurn;useFurn=function(o){const h=inForeignHouse();if(!h)return _uf(o);const t=o&&(o.f?o.f.t:o.use);if(t!=='chest'&&t!=='bed')return _uf(o);
-  if(!trustedBy(h._owner)){noTrust(h._owner);return}
+  trustThen(h._owner,()=>{
   if(t==='chest'){if(!o.f||o.i==null){say('That chest belongs to '+fname(h._owner)+'.');return}chOpenShared(h._owner,'h_'+h._oid+'_'+o.i);return}
   if(dark()<.3){say('A comfy bed. Rest here at night to sleep through it.');sfx('talk');return}
-  time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept at '+fname(h._owner)+'\'s. Good morning!');sfx('quest');saveLocal(true)}}
+  time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept at '+fname(h._owner)+'\'s. Good morning!');sfx('quest');saveLocal(true)})}}
 // crafting stations inside their houses
-{const _os=openStation;openStation=function(o){const h=inForeignHouse();if(o&&h&&o.inside){if(!trustedBy(h._owner)){noTrust(h._owner);return}o._foreign=h._owner}return _os(o)}}
+{const _os=openStation;openStation=function(o){const h=inForeignHouse();if(o&&h&&o.inside&&!o._ok){trustThen(h._owner,()=>{o._foreign=h._owner;o._ok=1;_os(o)});return}return _os(o)}}
 // outside on Hollow: their chests and stations
-function trUseForeignStr(i){const s=STR.get(i);if(!s||!s._foreign)return false;if(s.t!=='chest'&&!STN.has(s.t))return false;if(!trustedBy(s._foreign)){noTrust(s._foreign);return true}
- swing=.25;if(s.t==='chest')chOpenShared(s._foreign,'s_'+i);else if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}}else openStation({t:s.t,inside:false,i,f:s,_foreign:s._foreign});return true}
+function trUseForeignStr(i){const s=STR.get(i);if(!s||!s._foreign)return false;if(s.t!=='chest'&&!STN.has(s.t))return false;swing=.25;trustThen(s._foreign,()=>trUseForeignStr2(i,s));return true}
+function trUseForeignStr2(i,s){if(s.t==='chest')chOpenShared(s._foreign,'s_'+i);else if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}}else openStation({t:s.t,inside:false,i,f:s,_foreign:s._foreign})}
 {const _a=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!(typeof facingNpc==='function'&&facingNpc())){
   if(!SCENE){const[x,y]=frontTile();if(x>=0&&y>=0&&x<N&&y<N&&trUseForeignStr(y*N+x))return}
-  else{const R=rbR();if(R){const[x,y]=frontTile();const f=rbForeignAt(R.region,x,y);if(f&&(f.t==='chest'||STN.has(f.t))){if(!trustedBy(f.owner)){noTrust(f.owner);return}swing=.25;
-     if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner});return}}}}
+  else{const R=rbR();if(R){const[x,y]=frontTile();const f=rbForeignAt(R.region,x,y);if(f&&(f.t==='chest'||STN.has(f.t))){swing=.25;
+     trustThen(f.owner,()=>{if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner})});return}}}}
   return _a()}}
 {const _us=useStructure;useStructure=function(i){if(trUseForeignStr(i))return;return _us(i)}}
 window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
@@ -9583,6 +9589,8 @@ var LUX={};
  const _u=upd;upd=function(dt){_u(dt);const R=SCENE&&SCENE.room;if(!R||!R.dun||dead||menuOpen||pnOpen)return;const ex=R.items.find(it=>it.t==='dexit');
   if(ex&&Math.hypot(P.x-(ex.x*16+8),P.y-(ex.y*16+4))<8){const f0=R.dun.f;R.dun.f=1;try{leaveScene()}finally{R.dun.f=f0}say('You climb out of the '+((DKIND[R.dun.kind]||{}).name||'dungeon')+' into the open air.')}}}
 var HIDEH=false;   // Equipment > Hide helmet
+const SQ_VERSION='2026.11.04-3';
+{const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
