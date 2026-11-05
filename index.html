@@ -9096,6 +9096,7 @@ window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-8',d:'Nov 5, 2026',t:'Flame Crown fix',n:['Fixed: the flame wisp could be drawn far away from your campfire (often off-screen), so it looked like it never showed up. It now always appears at your fire.']},
  {v:'2026.11.05-7',d:'Nov 5, 2026',t:'Fixes',n:['Fixed: turning off Hide helmet could switch itself back on. It\'s now a button on the Equipment screen.','The title screen fits on phones again: Leaderboards, Wiki, Options and Report a bug sit two to a row, and the screen scrolls if it ever needs to.']},
  {v:'2026.11.05-6',d:'Nov 5, 2026',t:'Flame Crown fix',n:['Fixed: with the Lone Bonfire perk, lighting a new campfire made your flame wisp vanish instead of moving to the new fire.']},
  {v:'2026.11.05-5',d:'Nov 5, 2026',t:'A bigger Wiki',n:['Skills: pick a skill to see just that one: how to train it, its perks and what it unlocks.','New wiki pages: Guides (getting a boat, unlocking the islands, making gold, world bosses, building a home, playing with friends), an XP table with a calculator, every Shop with prices, People (who\'s who and where), and Maps of every island with numbered landmarks.','Monsters and dungeon bosses now have pictures.']},
@@ -10010,10 +10011,10 @@ const FWC={};const fwCan=fr=>FWC[fr]||(window.SQWBART&&(FWC[fr]=SQWBART.wisp(fr,
 function fwDraw(x,y,tm,glow){const c=fwCan(Math.floor(tm/.09)%4);if(!c)return;const bob=Math.round(Math.sin(tm*3+x*.1)*1.5),wx=Math.round(x),wy=Math.round(y+bob);
  if(glow){const gl=g.createRadialGradient(wx,wy,1,wx,wy,16);gl.addColorStop(0,'rgba(255,190,80,.4)');gl.addColorStop(1,'rgba(255,120,30,0)');g.fillStyle=gl;g.fillRect(wx-16,wy-16,32,32)}
  g.save();g.imageSmoothingEnabled=false;g.drawImage(c,wx-8,wy-10,16,19.6);g.restore()}
-{const _dh=drawHUD;drawHUD=function(){if(!menuOpen){const live=fwLive(),peers=[];try{if(window.SQFWPEERS)for(const p of SQFWPEERS())peers.push(p)}catch(e){}
-   if(live||peers.length){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2),tm=performance.now()/1000;g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);
-    if(live){fwDraw(FWP.x,FWP.y,tm,true);for(const b of FWP.balls){Rg(Math.round(b.x)-2,Math.round(b.y)-2,4,4,'#f86020');Rg(Math.round(b.x)-1,Math.round(b.y)-1,2,2,'#fff0a0')}}
-    for(const p of peers)fwDraw(p[0],p[1],tm,true);g.restore()}}_dh()}}
+// drawn with the world (right after you), so it always sits where the fire is
+{const _pp=pP;pP=function(tm){_pp(tm);try{const live=fwLive(),peers=window.SQFWPEERS?SQFWPEERS():[];if(!live&&!peers.length)return;const t=performance.now()/1000;
+   if(live){fwDraw(FWP.x,FWP.y,t,true);for(const b of FWP.balls){Rg(Math.round(b.x)-2,Math.round(b.y)-2,4,4,'#f86020');Rg(Math.round(b.x)-1,Math.round(b.y)-1,2,2,'#fff0a0')}}
+   for(const q of peers)fwDraw(q[0],q[1],t,true)}catch(e){}}}
 window.SQFW={state:FWP,live:fwLive,pres:()=>fwLive()?[Math.round(FWP.x),Math.round(FWP.y)]:0};
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
