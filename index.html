@@ -8667,44 +8667,78 @@ window.SQWB=WB;
   for(let k=0;k<T.length;k++){pts.push(T[k]);if(k<T.length-1){const m=[(T[k][0]+T[k+1][0])/2,(T[k][1]+T[k+1][1])/2];pts.push([m[0]+(sx-m[0])*.32,m[1]+(sy-m[1])*.32])}}
   pts.push([sx+(T[T.length-1][0]-sx)*.35,sy+6]);poly(p,pts,pal,.75,.45,.1);for(const t of T)limb(p,sx,sy,t[0],t[1],3.2,1.1,boneP,.1);p.ell(sx,sy,5,5,boneP,.2)}
  // front-facing and upright: a big horned head, angry eyes, cream belly, stubby claws, wings spread behind
- // chunky pixel art: a 48x48 sprite (2 world pixels per pixel), cel-shaded with bold black outlines, rearing up on
- // its hind legs, facing left with its mouth open, wings raised, tail curling round on the ground
- function dragonSp(fr){const GW=48,GH=52,OY=3,G=new Array(GW*GH).fill(null),PT=new Array(GW*GH).fill(-1);let pid=0;
-  const C={sk:['#7e1a14','#c0321e','#e85a3a'],wg:['#4e100c','#82201a','#ae3a28'],bl:['#b86a1c','#e8a038','#f8d070'],hn:['#8a7a60','#c8b898','#f4ecd8'],K:'#1a0a0a'};
+ // chunky pixel art: a 48x52 sprite (2 world pixels per pixel), cel-shaded with bold black outlines. Three views:
+ // 'w' side-on facing left (east is the same picture mirrored), 's' facing you, 'n' seen from behind
+ function dragonSp(fr,dir){dir=dir||'w';const GW=48,GH=52,OY=3,G=new Array(GW*GH).fill(null),PT=new Array(GW*GH).fill(-1);let pid=0;
+  const C={sk:['#7e1a14','#c0321e','#e85a3a'],wg:['#4e100c','#82201a','#ae3a28'],bl:['#b86a1c','#e8a038','#f8d070'],hn:['#8a7a60','#c8b898','#f4ecd8'],mo:['#3a0808','#3a0808','#3a0808'],K:'#1a0a0a'};
   const inPolyG=(x,y,pts)=>inPoly(x+.5,y+.5,pts),LN={sk:'#4a0c08',wg:'#300806',bl:'#7a4010',hn:'#5a4a38'};
   function part(test,pal,opts){const id=pid++,M=new Set(),ln=pal===C.sk?LN.sk:pal===C.wg?LN.wg:pal===C.bl?LN.bl:pal===C.hn?LN.hn:C.K;for(let y=0;y<GH;y++)for(let x=0;x<GW;x++)if(test(x,y-OY))M.add(y*GW+x);
    for(const i of M){const x=i%GW,y=(i/GW)|0;const up=!M.has(i-GW),dn=!M.has(i+GW)||!M.has(i+1);let c=up||(!M.has(i-1)&&!(opts&&opts.noL))?pal[2]:dn?pal[0]:pal[1];
     if(opts&&opts.seg!=null&&y%3===opts.seg&&!up)c=pal[0];G[i]=c;PT[i]=id}
+   if(opts&&opts.noLine)return;
    // a dark line where this part meets something drawn earlier (behind it)
    for(const i of M){const x=i%GW;for(const d of[-1,1,-GW,GW]){const k=i+d;if(d===-1&&x===0||d===1&&x===GW-1)continue;if(k>=0&&k<G.length&&!M.has(k)&&PT[k]>=0&&PT[k]!==id){G[i]=ln;break}}}}
   const poly2=(pts,pal,o)=>part((x,y)=>inPolyG(x,y,pts),pal,o),ell2=(cx,cy,rx,ry,pal,o)=>part((x,y)=>((x+.5-cx)/rx)**2+((y+.5-cy)/ry)**2<=1,pal,o);
-  const wf=[0,-1,-2,-1][fr],hb=fr%2,tt=[0,1,1,0][fr];
-  // far wing, tail, body, belly
-  poly2([[24,19],[25,7+wf],[29,1+wf],[36,1+wf],[33,5+wf],[36,7+wf],[32,9+wf],[32,14],[29,19]],C.wg);
-  {const cl=[];for(let k=0;k<=16;k++){const t=k/16;cl.push([27+t*17,41-Math.sin(t*2.8)*7-t*t*(3+tt),4.6*(1-t*.78)])}
-   part((x,y)=>cl.some(([cx,cy,r])=>Math.hypot(x+.5-cx,y+.5-cy)<=r),C.sk);const[tx,ty]=cl[16];poly2([[tx-2,ty+1],[tx+1,ty-4],[tx+3,ty+1],[tx,ty+2]],C.hn)}
-  ell2(23,31+hb*.3,9,10,C.sk);
-  poly2([[13,22],[19,21],[21,37],[18,40],[14,36]],C.bl,{seg:0,noL:1});
-  // neck and its pale front, back spikes
-  poly2([[13,14],[20,11],[25,22],[17,25]],C.sk);poly2([[12,15],[15,14],[18,25],[15,25]],C.bl,{seg:1,noL:1});
-  for(const[x,y]of[[21,13],[24,17],[28,22]])poly2([[x,y],[x+2,y-3],[x+3,y+1]],C.hn);
-  // near wing, raised behind the neck
-  poly2([[26,22],[28,9+wf],[32,3+wf],[40,2+wf],[46,7+wf],[42,9+wf],[44,13+wf],[39,13+wf],[40,18],[35,17],[33,22]],C.wg);
-  {const bone=(x0,y0,x1,y1)=>{const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(let k=0;k<=n;k++){const X=Math.round(x0+(x1-x0)*k/n),Y=Math.round(y0+(y1-y0)*k/n)+OY,i=Y*GW+X;if(G[i]&&G[i]!==C.K&&G[i]!==LN.wg)G[i]=k<2?C.sk[1]:C.sk[k%5?1:2]}};
-   bone(29,20,32,4+wf);bone(29,20,40,3+wf);bone(30,20,45,8+wf);bone(30,20,43,13+wf)}
-  // hind leg and foot, arm
-  ell2(26,37,6.5,5,C.sk);poly2([[17,42],[31,41],[32,45],[16,46]],C.sk);for(const x of[16,20,24])poly2([[x,44],[x-2,47],[x+1,46]],C.hn);
-  poly2([[16,24],[19,25],[14,30],[11,30],[11,28]],C.sk);for(const y of[29,31])poly2([[11,y-1],[8,y],[11,y+1]],C.hn);
-  // head: skull, snout, open jaw, mouth, horns, frill
-  for(const[a,c,d,e]of[[17,6,26,0],[16,4,22,-1]])poly2([[a,c],[a+2,c-1],[d,e],[a+3,c+2]],C.hn);
-  ell2(15,10+hb*.3,7,6,C.sk);poly2([[2,9+hb],[12,6+hb],[15,13+hb],[3,13+hb]],C.sk);
-  poly2([[4,16+hb],[14,14+hb],[15,18+hb],[7,19+hb]],C.sk);
-  poly2([[3,13+hb],[14,13+hb],[14,16+hb],[5,16+hb]],['#2a0606','#4a0808','#4a0808']);
-  for(const[x,y]of[[5,14],[6,14],[7,15],[8,15]])G[(y+hb+OY)*GW+x]='#e8506a';
-  for(const[x,y]of[[5,13],[9,13],[12,13],[7,16],[11,16]])G[(y+hb+OY)*GW+x]='#f8f4e8';
-  poly2([[19,8+hb],[23,6+hb],[21,11+hb]],C.sk);poly2([[19,12+hb],[23,12+hb],[20,15+hb]],C.sk);
-  // eye and nostril
-  for(const[x,y,c]of[[10,8,'#ffffff'],[11,8,'#ffffff'],[10,9,'#f8d040'],[11,9,C.K],[9,7,C.K],[10,7,C.K],[11,7,C.K],[12,7,C.K],[4,10,C.K]])G[(y+hb+OY)*GW+x]=c;
+  const px=(x,y,c)=>{const Y=Math.round(y)+OY;if(x>=0&&x<GW&&Y>=0&&Y<GH)G[Y*GW+x]=c};
+  const mir=pts=>pts.map(([x,y])=>[47-x,y]);   // left-right mirror for the symmetric front and back views
+  const bone=(x0,y0,x1,y1)=>{const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(let k=0;k<=n;k++){const X=Math.round(x0+(x1-x0)*k/n),Y=Math.round(y0+(y1-y0)*k/n)+OY,i=Y*GW+X;if(X>=0&&X<GW&&G[i]&&G[i]!==C.K&&G[i]!==LN.wg)G[i]=k<2?C.sk[1]:C.sk[k%5?1:2]}};
+  const tail=(pts,spadeDir)=>{part((x,y)=>pts.some(([cx,cy,r])=>Math.hypot(x+.5-cx,y+.5-cy)<=r),C.sk);const[tx,ty]=pts[pts.length-1],s=spadeDir;poly2([[tx-2*s,ty+1],[tx+s,ty-4],[tx+3*s,ty+1],[tx,ty+2]],C.hn)};
+  const wf=[0,-1,-2,-1][fr],hb=fr%2,tt=[0,1,1,0][fr],h=hb;
+  if(dir==='w'){
+   poly2([[24,19],[25,7+wf],[29,1+wf],[36,1+wf],[33,5+wf],[36,7+wf],[32,9+wf],[32,14],[29,19]],C.wg);
+   {const cl=[];for(let k=0;k<=16;k++){const t=k/16;cl.push([27+t*17,41-Math.sin(t*2.8)*7-t*t*(3+tt),4.6*(1-t*.78)])}tail(cl,1)}
+   ell2(23,31+hb*.3,9,10,C.sk);
+   poly2([[13,22],[19,21],[21,37],[18,40],[14,36]],C.bl,{seg:0,noL:1});
+   poly2([[13,14],[20,11],[25,22],[17,25]],C.sk);poly2([[12,15],[15,14],[18,25],[15,25]],C.bl,{seg:1,noL:1});
+   for(const[x,y]of[[21,13],[24,17],[28,22]])poly2([[x,y],[x+2,y-3],[x+3,y+1]],C.hn);
+   poly2([[26,22],[28,9+wf],[32,3+wf],[40,2+wf],[46,7+wf],[42,9+wf],[44,13+wf],[39,13+wf],[40,18],[35,17],[33,22]],C.wg);
+   bone(29,20,32,4+wf);bone(29,20,40,3+wf);bone(30,20,45,8+wf);bone(30,20,43,13+wf);
+   ell2(26,37,6.5,5,C.sk);poly2([[17,42],[31,41],[32,45],[16,46]],C.sk);for(const x of[16,20,24])poly2([[x,44],[x-2,47],[x+1,46]],C.hn);
+   poly2([[16,24],[19,25],[14,30],[11,30],[11,28]],C.sk);for(const y of[29,31])poly2([[11,y-1],[8,y],[11,y+1]],C.hn);
+   // head: horns, skull, a wide-open mouth (dark inside, fangs, tongue) between the snout and the lower jaw
+   for(const[a,c,d,e]of[[17,6,26,0],[16,4,22,-1]])poly2([[a,c+h],[a+2,c-1+h],[d,e+h],[a+3,c+2+h]],C.hn);
+   ell2(15,10+h*.3,7,6,C.sk);
+   poly2([[4,12+h],[15,11+h],[15,16+h],[6,17+h]],C.mo,{noLine:1});
+   poly2([[1,8+h],[11,6+h],[16,9+h],[15,12+h],[2,12+h]],C.sk);
+   poly2([[5,17+h],[15,15+h],[17,18+h],[9,20+h]],C.sk);
+   for(const[x,y]of[[9,16],[10,16],[11,15],[12,15],[13,15]])px(x,y+h,'#e8506a');px(10,15+h,'#f888a0');px(11,14+h,'#f888a0');
+   for(const[x,y]of[[4,12],[4,13],[5,14],[8,12],[12,12]])px(x,y+h,'#f8f4e8');px(7,16+h,'#f8f4e8');px(7,15+h,'#f8f4e8');
+   poly2([[19,8+h],[23,6+h],[21,11+h]],C.sk);poly2([[19,12+h],[23,12+h],[20,15+h]],C.sk);
+   for(const[x,y,c]of[[10,8,'#ffffff'],[11,8,'#ffffff'],[10,9,'#f8d040'],[11,9,C.K],[9,7,C.K],[10,7,C.K],[11,7,C.K],[12,7,C.K],[3,9,C.K]])px(x,y+h,c)}
+  else{const S=dir==='s';
+   // wings out to both sides, behind the body
+   const wing=[[19,22],[15,8+wf],[9,2+wf],[1,4+wf],[4,8+wf],[0,12+wf],[5,14+wf],[3,19+wf],[9,19],[13,25]];
+   for(const w of[wing,mir(wing)])poly2(w,C.wg);
+   for(const s of[0,1]){const f=s?x=>47-x:x=>x;bone(f(17),21,f(10),3+wf);bone(f(17),21,f(2),5+wf);bone(f(17),22,f(1),12+wf);bone(f(17),22,f(4),18+wf)}
+   // tail: from the front it curls out behind to one side; from behind it trails down towards you
+   if(S){const cl=[];for(let k=0;k<=14;k++){const t=k/14;cl.push([30+t*14,42-Math.sin(t*2.6)*5-t*t*(5+tt),4*(1-t*.75)])}tail(cl,1)}
+   // legs and feet, body
+   for(const s of[0,1]){const f=s?x=>47-x:x=>x;ell2(f(17)+(s?1:0),39,5.5,5,C.sk);
+    poly2(s?mir([[10,44],[22,44],[22,47],[10,47]]):[[10,44],[22,44],[22,47],[10,47]],C.sk);
+    if(S)for(const x of[11,15,19])poly2(s?mir([[x,46],[x+1,49],[x+2,46]]):[[x,46],[x+1,49],[x+2,46]],C.hn)}
+   ell2(24,32+hb*.3,10.5,11,C.sk);
+   if(S)poly2([[19,23],[29,23],[28,41],[20,41]],C.bl,{seg:0});
+   // neck
+   poly2([[19,14+h],[29,14+h],[30,25],[18,25]],C.sk);
+   if(S)poly2([[21,16+h],[27,16+h],[27,24],[21,24]],C.bl,{seg:1});
+   else for(const y of[18,23,28,33])poly2([[22,y+(y<25?h:0)],[24,y-4+(y<25?h:0)],[26,y+(y<25?h:0)]],C.hn,{noLine:1});
+   // arms
+   for(const s of[0,1]){const a=[[17,26],[20,27],[16,33],[12,33],[13,31]];poly2(s?mir(a):a,C.sk);
+    if(S)for(const y of[33,35])poly2(s?mir([[12,y-1],[11,y+2],[14,y]]):[[12,y-1],[11,y+2],[14,y]],C.hn)}
+   // head: horns, skull, frills
+   for(const s of[0,1]){const hn=[[19,6+h],[17,4+h],[12,-2+h],[14,3+h],[18,8+h]];poly2(s?mir(hn):hn,C.hn);
+    const fr2=[[17,10+h],[12,9+h],[16,13+h]];poly2(s?mir(fr2):fr2,C.sk)}
+   ell2(24,10+h,9,7.5,C.sk);
+   if(S){// snout with the mouth open towards you
+    poly2([[20,18+h],[28,18+h],[27,21+h],[21,21+h]],C.sk);
+    ell2(24,16.5+h,4.5,2.6,C.mo,{noLine:1});
+    for(const x of[22,23,24,25,26])px(x,18+h,'#e8506a');px(23,17+h,'#f888a0');px(24,17+h,'#f888a0');
+    for(const[x,y]of[[21,15],[21,16],[27,15],[27,16]])px(x,y+h,'#f8f4e8');
+    px(22,13+h,C.K);px(26,13+h,C.K);
+    for(const s of[0,1]){const f=s?x=>47-x:x=>x;for(const[x,y,c]of[[19,8,'#ffffff'],[20,8,'#ffffff'],[19,9,'#f8d040'],[20,9,C.K],[18,7,C.K],[19,7,C.K],[20,7,C.K],[21,8,C.K]])px(f(x),y+h,c)}}
+   else{// back of the head: a ridge of spines down the middle
+    for(const y of[5,10,14])poly2([[22,y+2+h],[24,y-3+h],[26,y+2+h]],C.hn,{noLine:1})}
+   if(!S){const cl=[];for(let k=0;k<=14;k++){const t=k/14;cl.push([26+t*18,40+Math.sin(t*2.2)*5-t*t*(7+tt),4.4*(1-t*.75)])}tail(cl,1)}}
   // the outline around everything
   const out=G.slice();for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const i=y*GW+x;if(G[i])continue;if((x>0&&G[i-1])||(x<GW-1&&G[i+1])||(y>0&&G[i-GW])||(y<GH-1&&G[i+GW]))out[i]=C.K}
   const c=document.createElement('canvas');c.width=GW;c.height=GH;const x=c.getContext('2d');for(let i=0;i<out.length;i++)if(out[i]){x.fillStyle=out[i];x.fillRect(i%GW,(i/GW)|0,1,1)}return c}
@@ -8760,15 +8794,21 @@ window.SQWB=WB;
  // scale to the world: each sprite's canvas is 2 texels per world pixel
  const SC={dragon:4,demon:1,giant:1,wisp:1.25};
  const DRC=[];   // the dragon is already outlined pixel art, so it skips the soft HD outline pass
- drawWB=function(n,tm){const x=Math.round(n.x),y=Math.round(n.y),t=n._wb,per={dragon:.18,demon:.16,giant:.22,wisp:.09}[t],fr=Math.floor(tm/per)%4,hit=WB.hitAt&&performance.now()-WB.hitAt<110,c=t==='dragon'?(DRC[fr]||(DRC[fr]=dragonSp(fr))):hdEn('wb'+t+fr,()=>MAKE[t](fr)),K=SC[t];
-  const w=c.width/2*K,hh=c.height/2*K,ox={dragon:11,demon:55,giant:48,wisp:37.5}[t]*K,oy={dragon:26.5,demon:95,giant:120,wisp:90}[t]*K;
+ // its four facings: west is drawn, east is west mirrored, plus front (south) and back (north) views
+ const drSp=(fr,d)=>{const k=d+fr;if(DRC[k])return DRC[k];if(d!=='e')return DRC[k]=dragonSp(fr,d);const src=drSp(fr,'w'),c=document.createElement('canvas');c.width=src.width;c.height=src.height;const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(src,0,0);return DRC[k]=c};
+ // it turns to face the nearest player (you or anyone else here), with a little stickiness so it doesn't flicker
+ function wbFace(n,x,y){let bx=P.x-x,by=P.y-y,bd=Math.hypot(bx,by);try{const l=mpLoc();if(l)for(const r of MP.players.values()){if(r.loc!==l||!live(r))continue;const d=Math.hypot(r.x-x,r.y-y);if(d<bd){bd=d;bx=r.x-x;by=r.y-y}}}catch(e){}
+  let f=n._fd||'s';const ax=Math.abs(bx),ay=Math.abs(by),want=ax>ay?(bx<0?'w':'e'):(by<0?'n':'s');
+  if(want!==f){const horiz=f==='w'||f==='e',wh=want==='w'||want==='e';if(horiz===wh||(wh?ax>ay*1.25:ay>ax*1.25))f=want}return n._fd=f}
+ drawWB=function(n,tm){const x=Math.round(n.x),y=Math.round(n.y),t=n._wb,per={dragon:.18,demon:.16,giant:.22,wisp:.09}[t],fr=Math.floor(tm/per)%4,hit=WB.hitAt&&performance.now()-WB.hitAt<110,fd=t==='dragon'?wbFace(n,x,y):'w',c=t==='dragon'?drSp(fr,fd):hdEn('wb'+t+fr,()=>MAKE[t](fr)),K=SC[t];
+  const w=c.width/2*K,hh=c.height/2*K,ox={dragon:{w:11,e:13,s:12,n:12}[fd],demon:55,giant:48,wisp:37.5}[t]*K,oy={dragon:26.5,demon:95,giant:120,wisp:90}[t]*K;
   if(t==='wisp'){const gl=g.createRadialGradient(x,y-26,2,x,y-26,46);gl.addColorStop(0,'rgba(255,190,80,.45)');gl.addColorStop(1,'rgba(255,120,30,0)');g.fillStyle=gl;g.fillRect(x-50,y-76,100,100);shd(x,y+8,26)}
   else shd(x,y+6,t==='dragon'?70:t==='giant'?52:44);
   const bob=t==='wisp'?Math.round(Math.sin(tm*3)*2):0;g.drawImage(c,x-ox,y-oy+bob+2,w,hh);
   if(hit){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.35;g.drawImage(c,x-ox,y-oy+bob+2,w,hh);g.restore()}
   if(t==='wisp')for(let k=0;k<6;k++){const a=tm*1.8+k*1.047,ex=Math.round(x+Math.cos(a)*30),ey=Math.round(y-30+Math.sin(a)*14+bob);g.fillStyle='rgba(255,200,90,.35)';g.fillRect(ex-3,ey-3,6,6);Rg(ex-1,ey-1,3,3,k%2?'#fff0a0':'#f88830')}
   if(t==='demon'){for(const s of[-1,1]){const hx=x+s*25,hy=y-24+bob;for(let k=0;k<5;k++){const fl=Math.sin(tm*12+k*2+s)*1.5;Rg(Math.round(hx-2+k%3+fl),Math.round(hy-6-k*2),2,3,k%2?'#f8d040':'#f86020')}}}
-  if(t==='dragon'&&Math.floor(tm*1.5)%4===0){for(let k=0;k<8;k++){const a=Math.PI+(Math.random()-.5)*.6,d=4+Math.random()*22;Rg(Math.round(x-36-Math.abs(Math.cos(a))*d),Math.round(y-63+Math.sin(a)*d*.5),2,2,k%2?'#f8e060':'#f86020')}}}
+  if(t==='dragon'&&Math.floor(tm*1.5)%4===0){for(let k=0;k<8;k++){const a=Math.PI+(Math.random()-.5)*.6,d=4+Math.random()*22;{const fd=n._fd||'w';if(fd==='n')break;const q=(Math.random()-.5)*d*.5;Rg(Math.round(fd==='w'?x-36-d:fd==='e'?x+36+d:x+q),Math.round(fd==='s'?y-60+d*.7:y-63+q),2,2,k%2?'#f8e060':'#f86020')}}}}
  window.SQWBART=MAKE}
 // ---- go ----
 mpRBtn();
