@@ -7415,7 +7415,9 @@ tsEl.addEventListener('click',e=>{if(TS.stage===0&&e.target!==tsPs)tsPs.click()}
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
  if(a==='go')tsClose();else if(a==='in'){mpSignIn();}else if(a==='opt')tsClose(()=>{fromMenu=false;showScreen('options')})});
 // keyboard: any key starts; arrows / Enter / Esc in the menu; the game never sees these keys while the title is up
-addEventListener('keydown',e=>{if(!TS.open||(e.target&&e.target.closest&&e.target.closest('#mpbugf,#mpsave')))return;e.stopImmediatePropagation();const k=e.key;
+addEventListener('keydown',e=>{if(!TS.open||(e.target&&e.target.closest&&e.target.closest('#mpbugf,#mpsave,#sqwk')))return;e.stopImmediatePropagation();const k=e.key;
+ if(typeof WK!=='undefined'&&WK.open){e.preventDefault();if(k==='Escape'||k==='Backspace'){wkClose();return}if(!e.isTrusted)return;TS.kb=true;
+  if(k==='ArrowRight'||k==='d')navMove(1,0);else if(k==='ArrowLeft'||k==='a')navMove(-1,0);else if(k==='ArrowDown'||k==='s')navMove(0,1);else if(k==='ArrowUp'||k==='w')navMove(0,-1);else if(k==='Enter'||k===' '||k==='z')navPress();return}
  if(LB.open){e.preventDefault();if(k==='Escape'||k==='Backspace'){lbClose();return}if(!e.isTrusted)return;TS.kb=true;
   if(k==='ArrowRight'||k==='d')navMove(1,0);else if(k==='ArrowLeft'||k==='a')navMove(-1,0);else if(k==='ArrowDown'||k==='s')navMove(0,1);else if(k==='ArrowUp'||k==='w')navMove(0,-1);else if(k==='Enter'||k===' '||k==='z')navPress();return}
  if(TS.stage===0){if(e.isTrusted)TS.kb=true;if(k!=='Shift'){e.preventDefault();tsPs.click()}return}
@@ -8531,7 +8533,7 @@ const WBT={
  giant:{n:'Stone Giant',ic:'⛰',hp:1600,per:7000,dmg:2,col:'#a08060',c2:'#d8c8a8',where:['ironcrest'],pats:['ring','rocks','ring'],gold:[300,600]},
  demon:{n:'Demon',ic:'😈',hp:2300,per:6500,dmg:2,col:'#a040e0',c2:'#f070f8',where:['shattered'],pats:['beams','pools','ring'],gold:[500,900]},
  dragon:{n:'Ancient Dragon',ic:'🐉',hp:3200,per:6000,dmg:2,col:'#f05020',c2:'#f8c040',where:['ashfall'],pats:['meteors','breath','ring'],gold:[800,1500]}};
-const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+window.SQWBT=WBT;const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 function wbFor(slot){const r=rng(slot*7919+17),p=r();let type=p<.35?'wisp':p<.6?'giant':p<.8?'demon':'dragon';const F=window.SQWBFORCE;if(F&&F.type)type=F.type;const T=WBT[type];let where=T.where[Math.floor(r()*T.where.length)];if(F&&F.where)where=F.where;
  if(F&&F.dev)return{slot,type,T,where,start:F.start,end:F.start+WB_LIFE,mhp:F.hp||T.hp,dev:1};
  return{slot,type,T,where,start:slot*WB_SLOT,end:slot*WB_SLOT+(F?WB_SLOT:WB_LIFE),mhp:F&&F.hp?F.hp:T.hp}}
@@ -9084,6 +9086,147 @@ window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
  const _s=mpSend;mpSend=function(t){const m=String(t||'').trim().match(/^\/(\w+)\s*(.*)$/);if(m&&devOK){const c=m[1].toLowerCase(),a=m[2].trim()?m[2].trim().split(/\s+/):[];
    if(['dev','devhelp','give','find','gold','xp','heal','boss'].includes(c)){try{dev(c,a)}catch(e){out('Dev command failed: '+e.message)}return}}return _s(t)};
  window.SQDEV=()=>devOK}
+// ---------------------------------------------------------------- 84. The SkillQuest Wiki (title screen and START menu)
+// A guide to everything in the game: skills and perks, every item (what it's for, where it's made, what it sells
+// for), crafting recipes, monsters, bosses, dungeons, quests, islands, towns and pets. Most of it is read straight
+// from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
+const WK={open:false,tab:'start',q:''},wk$=id=>document.getElementById(id);
+const WK_TABS=[['start','Start','#58a848'],['skills','Skills','#5878b8'],['items','Items','#c89020'],['craft','Crafting','#a06a34'],['mobs','Monsters','#a83838'],['bosses','Bosses','#7a2aa0'],
+ ['dungeons','Dungeons','#485870'],['quests','Quests','#c86020'],['world','Islands & Towns','#3888a8'],['pets','Pets & Rares','#d84888']];
+const WK_SKILL={Attack:'Fight with swords and fists. Higher levels hit harder and unlock better swords.',Woodcutting:'Chop trees for logs: plain, oak, maple and yew.',Mining:'Mine rocks for stone and ores: iron, gold, mithril, adamant and gems.',
+ Foraging:'Pick berries, herbs and other wild things.',Cooking:'Cook meat and fish at a campfire or stove so they heal more and fill you up.',Firemaking:'Build campfires: they keep monsters away, cook food and light the night.',
+ Crafting:'Make goods, building pieces, furniture, stations and gold jewelry.',Tactics:'Earned alongside combat. Unlocks tactical perks.',Defence:'Block hits and wear heavier armor.',Fishing:'Catch fish with a rod, from shrimp up to the rarest catches.',
+ Smithing:'Smelt ore into bars at a furnace and forge weapons, armor, bows and wands at an anvil.',Farming:'Till soil, plant seeds, water and harvest crops.',Archery:'Shoot bows and make arrows (fletching).',Magic:'Cast fire, ice and storm spells with wands, and their ultimates.',
+ Chess:'Play chess against the village club. Win to climb the ranks.'};
+// monsters, by where you meet them (regional ones are listed from the islands' own spawn tables)
+const WK_MOBS=[
+ {n:'Slime',hp:3,w:'Hollow Island, at night',d:'Hops toward you in the dark. Campfires keep them away.',drop:'Gold, sometimes raw meat'},
+ {n:'Wolf',hp:5,w:'The Sunken Tomb and the wilds',d:'Fast and comes in packs.',drop:'Wolf pelt (70%), gold'},
+ {n:'Skeleton',hp:6,w:'The Sunken Tomb',d:'Throws bones from a distance. Block or dodge roll.',drop:'Gold'},
+ {n:'Magma slime',hp:'9+',w:'Slime Caverns, floor 2 and deeper',d:'A tougher, burning slime from deep in the caverns.',drop:'Gold'},
+ {n:'Snow wolf',hp:7,w:'Around Frosthollow and Frostfang Den',d:'A wolf of the snowy peaks.',drop:'Wolf pelt, gold'},
+ {n:'Frost slime',hp:8,w:'Frostfang Den and the snow',d:'A chilly slime.',drop:'Gold'},
+ {n:'Bat',hp:5,w:'Dungeons; islands at night',d:'Flutters in circles and swoops at you.',drop:'Gold'},
+ {n:'Scorpion',hp:9,w:'Around Dusthaven and Scorpion Hollow',d:'Scuttles about, then lunges.',drop:'Gold'},
+ {n:'Dust skeleton',hp:10,w:'The desert and Scorpion Hollow',d:'A sand-worn skeleton that throws bones.',drop:'Gold'},
+ {n:'Beetle',hp:12,w:'The desert and Scorpion Hollow',d:'Armored and slow, but hits hard.',drop:'Gold'},
+ {n:'Tide slime',hp:8,w:'Around Tidewatch and the Drowned Grotto',d:'Chases you in bursts.',drop:'Gold'},
+ {n:'Crawler',hp:10,w:'The Drowned Grotto and the coast',d:'A crab that scuttles sideways.',drop:'Gold'},
+ {n:'Guardian',hp:14,w:'Old ruins',d:'An ancient stone sentry.',drop:'Gold'}];
+const WK_RGN={'wolf:briar':'Briar wolf','slime:moss':'Moss slime',bat:'Bat',scorp:'Scorpion','beetle:cinder':'Cinder beetle','skel:ember':'Ember skeleton','skel:dust':'Dust skeleton','wolf:snow':'Snow wolf','slime:frost':'Frost slime','skel:rime':'Rime skeleton',crab:'Crawler',guard:'Guardian','wolf:void':'Void wolf','slime:tide':'Tide slime'};
+const WK_DUN=[
+ {n:'Slime Caverns',w:'The northern mountains of Hollow Island',boss:'The Slime King',bhp:30,d:'Winding caves full of slimes, with magma slimes deeper down. The Slime King waits at the bottom.',loot:'120 gold and 3 iron ore (once a day)'},
+ {n:'Sunken Tomb',w:'Buried in the southern desert of Hollow Island',boss:'The Bone Lord',bhp:45,d:'A tomb of skeletons. The Bone Lord throws bones and summons more skeletons. Bring arrows and dodge roll.',loot:'250 gold, 3 steel bars and 10 iron arrows (once a day)'},
+ {n:'Frostfang Den',w:'Near Frosthollow in the snowy north',boss:'The Frostfang Alpha',bhp:38,d:'Three floors of snow wolves, frost slimes and bats. The Alpha circles you and calls its pack.',loot:'180 gold, 2 iron bars and a golden chest (once a day)'},
+ {n:'Scorpion Hollow',w:'Near Dusthaven in the desert',boss:'The Sandclaw Matriarch',bhp:55,d:'Three floors of scorpions, dust skeletons and beetles. The Matriarch stalks you through the sand.',loot:'300 gold, 3 steel bars and a golden chest (once a day)'},
+ {n:'Drowned Grotto',w:'Near Tidewatch on the coast',boss:'The Tidekeeper',bhp:48,d:'Three flooded floors of tide slimes and crawlers. The Tidekeeper rises from the water.',loot:'250 gold, 5 cooked salmon and a golden chest (once a day)'}];
+const WK_RARE=[['Dragonsoul amulet','ja_dsoul','Ancient Dragon','Your ultimate becomes Dragon Form: turn into a small dragon for 2 minutes and hold attack to breathe fire. 1 minute cooldown.'],
+ ['Imp (pet)',null,'Demon','A pet imp with a poison dagger. It attacks whatever hurts you and comes back a minute after it falls.'],
+ ['Flame crown','eq_fcrown','Flame Wisp','A helmet. While you wear it, your campfires call a little flame wisp that roams the light and throws fireballs at monsters.']];
+const WK_PAT={rain:'Fire rain: burning circles fall around it',ring:'Shockwave: a ring that spreads out from it (jump through by rolling)',rocks:'Falling rocks',meteors:'Meteors crash down all around',beams:'Beams of dark fire sweep out',pools:'Pools of fire on the ground',breath:'Breathes a cone of fire'};
+{const st=document.createElement('style');st.textContent=`#sqwk{position:fixed;inset:0;z-index:96;display:none;flex-direction:column;align-items:center;background:rgba(10,20,40,.86);padding:calc(env(safe-area-inset-top,0px) + 10px) 10px calc(env(safe-area-inset-bottom,0px) + 10px);box-sizing:border-box;font-family:${PF}}
+#sqwk .ww{width:100%;max-width:820px;height:100%;display:flex;flex-direction:column;background:#f8f8f8;color:#404040;border:4px solid #485870;box-shadow:inset 0 0 0 3px #a8c0e0,0 6px 0 rgba(0,0,0,.35);box-sizing:border-box;overflow:hidden}
+#sqwk .wh{display:flex;align-items:center;gap:10px;padding:10px 12px 8px;background:linear-gradient(#5878b8,#3c5898);color:#f8f8f8;border-bottom:4px solid #283c68;flex:none}
+#sqwk .wh b{font-size:clamp(17px,4.4vw,23px);letter-spacing:.12em;text-shadow:2px 2px 0 #1c2848;white-space:nowrap}
+#sqwk .wh input{flex:1;min-width:0;font:500 15px ${PF};padding:6px 8px;border:3px solid #283c68;border-radius:0;background:#fff;color:#303030}
+#sqwk .wh button{font:700 14px ${PF};padding:6px 10px;border:3px solid #f8f8f8;background:#283c68;color:#f8f8f8;cursor:pointer}
+#sqwk .wt{display:flex;gap:6px;overflow-x:auto;padding:8px 10px;border-bottom:3px solid #d8e0f0;flex:none;scrollbar-width:thin}
+#sqwk .wt button{flex:none;font:700 13px ${PF};padding:6px 10px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer;white-space:nowrap}
+#sqwk .wt button.on{background:#485870;color:#fff}#sqwk .wt button.gpf,#sqwk .wh button.gpf{box-shadow:inset 0 0 0 3px #f8a020}
+#sqwk .wb{flex:1;overflow-y:auto;padding:10px 12px;line-height:1.45}
+#sqwk h3{margin:14px 0 6px;font-size:16px;letter-spacing:.06em;color:#3c5898;border-bottom:2px solid #d8e0f0;padding-bottom:3px}#sqwk h3:first-child{margin-top:2px}
+#sqwk .c{display:flex;gap:10px;align-items:flex-start;padding:8px;border:2px solid #e0e6f0;background:#fff;margin:6px 0}
+#sqwk .c img,#sqwk .c canvas{width:32px;height:32px;image-rendering:pixelated;flex:none;background:#eef2f8;border:2px solid #d0d8e8}
+#sqwk .c .big{width:64px;height:auto;min-height:64px;background:#2a3048}
+#sqwk .c .tx{flex:1;min-width:0;font-size:14px}#sqwk .c .tx b{font-size:15px;color:#283c68}#sqwk .c .tx small{color:#707888}
+#sqwk .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;margin:2px 4px 0 0;border:2px solid #485870;color:#485870;background:#f0f4fa}
+#sqwk table{width:100%;border-collapse:collapse;font-size:13px;margin:4px 0 8px}#sqwk td,#sqwk th{padding:4px 6px;border-bottom:1px solid #e2e6ee;text-align:left;vertical-align:top}#sqwk th{background:#eef2f8;color:#485870}
+#sqwk .lk{color:#3c5898;text-decoration:underline;cursor:pointer}#sqwk .emp{text-align:center;color:#707888;padding:30px 10px}
+#sqwk p{margin:6px 0}#sqwk .wf{padding:6px 12px;font-size:11px;color:#808898;border-top:3px solid #d8e0f0;flex:none}`;document.head.appendChild(st)}
+const wkEl=document.createElement('div');wkEl.id='sqwk';wkEl.innerHTML='<div class="ww"><div class="wh"><b>WIKI</b><input id="wkq" type="search" placeholder="Search everything..." aria-label="Search the wiki" autocomplete="off"><button data-wk="x">CLOSE</button></div><div class="wt" id="wkt"></div><div class="wb" id="wkb"></div><div class="wf">Item, recipe, skill, quest and boss details are read from the game itself, so they stay up to date.</div></div>';
+document.body.appendChild(wkEl);for(const ev of['touchstart','pointerdown','mousedown'])wkEl.addEventListener(ev,e=>e.stopPropagation());
+wkEl.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();wkClose()}});wkEl.addEventListener('keyup',e=>e.stopPropagation());
+const wkE=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const wkName=k=>INAME[k]||(typeof IN!=='undefined'&&IN[k])||k;
+const wkIcon=k=>{try{return EQ[k]&&typeof eqIcon==='function'?eqIcon(k):iconURL(k)}catch(e){return''}};
+const wkLink=k=>'<span class="lk" data-wki="'+wkE(k)+'">'+wkE(wkName(k))+'</span>';
+const wkCost=c=>Object.entries(c||{}).map(([a,b])=>b+' × '+wkLink(a)).join(', ');
+const sk=n=>SKN.indexOf(n);
+// every recipe in the game, in one shape: {out, n, sk, lv, xp, c, at}
+function wkRecipes(){const R=[];
+ for(const r of SM){const out=r.k||(r.arm?'eq_'+r.arm[0]+r.arm[1]:null);R.push({out,n:r.n,sk:'Smithing',lv:r.lv,xp:r.xp,c:r.c,at:r.smelt?'Furnace':'Anvil'})}
+ for(const r of GOODS)R.push({out:r.k,n:r.n,sk:'Crafting',lv:r.req,xp:r.xp,c:r.c,at:'Crafting bench / Craft menu'});
+ for(const r of BREC)R.push({out:r.k,n:r.n,sk:'Crafting',lv:r.req,xp:r.xp,c:r.c,at:'Craft menu (Building)'});
+ for(const r of FREC){if(r.hide&&r.hide())continue;R.push({out:r.k,n:r.n,sk:'Archery',lv:r.lv,xp:r.xp,c:r.c,at:'Craft menu (Fletching)'})}
+ for(const r of COOKS)R.push({out:r.ck,n:'Cooked '+r.n,sk:'Cooking',lv:r.lv,xp:r.xp,c:{[r.raw]:1},at:'Campfire or stove'});
+ if(window.SQJWL)for(const j of SQJWL)R.push({out:j.k,n:j.n,sk:'Crafting',lv:j.lv,xp:j.xp,c:Object.assign({gbar:j.b},j.g?{[j.g]:1}:{}),at:'Furnace (Jewelry)'});
+ return R}
+function wkCards(tab){const out=[];const card=(t,ic,tx,big)=>out.push({t,h:'<div class="c">'+(ic?ic.startsWith('<')?ic:'<img alt="" src="'+ic+'"'+(big?' class="big"':'')+'>':'')+'<div class="tx">'+tx+'</div></div>'}),head=t=>out.push({t:'',h:'<h3>'+wkE(t)+'</h3>',head:1});
+ if(tab==='start'){
+  out.push({t:'start',h:'<h3>Welcome to SkillQuest</h3><p>Explore Hollow Island and the islands beyond, train 15 skills, fight monsters and bosses, build a home and play with friends.</p>'+
+   '<table><tr><th>Do this</th><th>PC</th><th>Phone</th><th>Controller</th></tr><tr><td>Move</td><td>WASD / arrows</td><td>Drag anywhere</td><td>Left stick</td></tr><tr><td>Hit, chop, mine, fish</td><td>Space / left-click</td><td>HIT</td><td>R2</td></tr>'+
+   '<tr><td>Talk, use, read</td><td>T / Enter</td><td>TALK</td><td>✕</td></tr><tr><td>Bow or wand</td><td>Right-click</td><td>HIT (auto-aims)</td><td>R1</td></tr><tr><td>Ultimate</td><td>V</td><td>ULT</td><td>L1 + R1</td></tr><tr><td>Dodge roll</td><td>R</td><td>ROLL</td><td>○</td></tr>'+
+   '<tr><td>Eat</td><td>E</td><td>EAT</td><td>□</td></tr><tr><td>Campfire</td><td>F</td><td>FIRE</td><td>△</td></tr><tr><td>Menu</td><td>Esc</td><td>MENU</td><td>Options</td></tr></table>'+
+   '<h3>Tips</h3><p>• Night brings monsters. A campfire keeps them away and cooks your food.</p><p>• Food keeps your hunger up; cooked food heals more.</p><p>• Talk to Elder Rowan in Hollow Village for your first quests, and to townsfolk for daily jobs.</p><p>• Buy a boat to sail to the small islands; upgrade it to reach Briarwood, Ashfall, Ironcrest and the Shattered Expanse.</p><p>• Sign in to play online: chat, trade, visit friends\' houses, fight world bosses together and climb the leaderboards.</p>'})}
+ else if(tab==='skills'){for(let i=0;i<SKN.length;i++){const n=SKN[i],T=typeof TREES!=='undefined'&&TREES[i];let h='<b>'+wkE(n)+'</b><br>'+wkE(WK_SKILL[n]||'');
+   if(T&&T.choices){h+='<br><small>Perks (pick one at each level):</small><table>';for(const lv of Object.keys(T.choices).sort((a,b)=>a-b)){const ch=T.choices[lv];h+='<tr><td><b>'+lv+'</b></td><td>'+ch.map(p=>'<b>'+wkE(p.n)+'</b>: '+wkE(p.d)).join('<br>')+'</td></tr>'}h+='</table>'}
+   if(T&&T.extra){const ex=Object.entries(T.extra);if(ex.length)h+='<small>Unlocks: '+ex.map(([l,t])=>'Lv '+l+' '+wkE(t)).join(' · ')+'</small>'}
+   card(n,'',h)}}
+ else if(tab==='items'){const R=wkRecipes(),made={},used={};for(const r of R){if(r.out)(made[r.out]=made[r.out]||[]).push(r);for(const k in r.c)(used[k]=used[k]||new Set()).add(r.out)}
+  const keys=Object.keys(INAME).filter(k=>INAME[k]&&!/^_/.test(k)).sort((a,b)=>String(INAME[a]).localeCompare(String(INAME[b])));
+  for(const k of keys){let d='';try{d=IDESC[k]||''}catch(e){}const sp=typeof SELLP!=='undefined'&&SELLP[k];
+   let h='<b>'+wkE(INAME[k])+'</b>'+(sp?' <small>· sells for '+sp+' gold</small>':'')+'<br>'+wkE(d);
+   if(made[k])h+='<br><small>Made: '+made[k].map(r=>r.at+' · '+r.sk+' '+r.lv+' · '+wkCost(r.c)).join(' | ')+'</small>';
+   if(used[k]){const u=[...used[k]].filter(Boolean);if(u.length)h+='<br><small>Used to make: '+u.slice(0,12).map(wkLink).join(', ')+(u.length>12?' and more':'')+'</small>'}
+   card(INAME[k]+' '+k+' '+d,wkIcon(k),h)}}
+ else if(tab==='craft'){const R=wkRecipes(),by={};for(const r of R)(by[r.at]=by[r.at]||[]).push(r);
+  for(const at in by){head(at);let h='<table><tr><th>Makes</th><th>Level</th><th>Needs</th><th>XP</th></tr>';for(const r of by[at].sort((a,b)=>a.lv-b.lv))h+='<tr><td>'+(r.out&&INAME[r.out]?wkLink(r.out):wkE(r.n))+'</td><td>'+wkE(r.sk)+' '+r.lv+'</td><td>'+wkCost(r.c)+'</td><td>'+r.xp+'</td></tr>';
+   out.push({t:at+' '+by[at].map(r=>r.n).join(' '),h:h+'</table>'})}
+  head('Farming');let h='<table><tr><th>Crop</th><th>Level</th><th>Seed</th><th>XP</th></tr>';for(const k in CROPS){const c=CROPS[k];h+='<tr><td>'+wkE(c.n)+'</td><td>Farming '+c.lv+'</td><td>'+(INAME[c.seed]?wkLink(c.seed):wkE(c.seed))+'</td><td>'+c.xp+'</td></tr>'}out.push({t:'farming crops '+Object.values(CROPS).map(c=>c.n).join(' '),h:h+'</table>'});
+  head('Fishing');h='<table><tr><th>Fish</th><th>Level</th><th>XP</th><th>Cooked heals</th></tr>';for(const f of FISH_T)h+='<tr><td>'+(INAME[f.k]?wkLink(f.k):wkE(f.n))+'</td><td>Fishing '+f.lv+'</td><td>'+f.xp+'</td><td>'+(f.heal||0)+' heart'+(f.heal===1?'':'s')+'</td></tr>';out.push({t:'fishing fish '+FISH_T.map(f=>f.n).join(' '),h:h+'</table>'})}
+ else if(tab==='mobs'){head('Hollow Island & its dungeons');for(const m of WK_MOBS)card(m.n+' '+m.w,'','<b>'+wkE(m.n)+'</b> <span class="tag">'+m.hp+' HP</span><br>'+wkE(m.d)+'<br><small>Where: '+wkE(m.w)+' · Drops: '+wkE(m.drop)+'</small>');
+  if(typeof RG_FAUNA!=='undefined')for(const id in RG_FAUNA){const F=RG_FAUNA[id],R=WORLD_REGIONS[id];head((R?R.name:id)+(R&&R.lv?' (level '+R.lv+')':''));const seen={};
+   for(const[when,L]of[['Day',F.day],['Night',F.night]])for(const e of L){const k=e[0];const s=seen[k]||(seen[k]={hp:e[1],when:[]});s.when.push(when)}
+   for(const k in seen){const nm=WK_RGN[k]||k;card(nm+' '+(R?R.name:id),'','<b>'+wkE(nm)+'</b> <span class="tag">'+seen[k].hp+' HP</span>'+(F.pack&&F.pack[k]?' <span class="tag">packs of '+F.pack[k]+'</span>':'')+'<br><small>'+seen[k].when.join(' and ')+' · stronger than on Hollow; more gold and XP</small>')}}}
+ else if(tab==='bosses'){head('World bosses');out.push({t:'',h:'<p>A world boss appears every 30 minutes somewhere in the world and stays for 20. Everyone fights it together; the top three damage dealers get extra loot. Online only.</p>'});
+  const T=window.SQWBT||{};for(const k in T){const b=T[k];let pic='';try{const c=SQWBART[k](0,'s'),u=c.toDataURL();pic=u}catch(e){}
+   const rare=WK_RARE.find(r=>r[2]===b.n||(k==='dragon'&&r[2]==='Ancient Dragon'));
+   card(b.n+' '+k,pic,'<b>'+wkE(b.n)+'</b> <span class="tag">'+b.hp+' HP</span><br><small>Appears on: '+b.where.map(w=>w==='hollow'?'Hollow Island':(WORLD_REGIONS[w]?WORLD_REGIONS[w].name:w)).join(', ')+' · Gold: '+b.gold[0]+'–'+b.gold[1]+'</small><br>Attacks: '+[...new Set(b.pats)].map(p=>wkE(WK_PAT[p]||p)).join('; ')+'.'+
+    (rare?'<br><span class="tag">RARE DROP</span> '+(rare[1]?wkLink(rare[1]):wkE(rare[0]))+' (5%, 8% for the top three)':''),true)}
+  head('Dungeon bosses');for(const d of WK_DUN)card(d.boss+' '+d.n,'','<b>'+wkE(d.boss)+'</b> <span class="tag">'+d.bhp+' HP</span><br><small>In '+wkE(d.n)+' · '+wkE(d.loot)+'</small>')}
+ else if(tab==='dungeons'){out.push({t:'',h:'<p>Dungeons are deep, dark places with treasure chests, tougher monsters and a boss at the bottom. Each boss can be beaten once a day. The last floor has an exit door that takes you back outside.</p>'});
+  for(const d of WK_DUN)card(d.n+' '+d.w+' '+d.boss,'','<b>'+wkE(d.n)+'</b><br>'+wkE(d.d)+'<br><small>Where: '+wkE(d.w)+'<br>Boss: '+wkE(d.boss)+' ('+d.bhp+' HP) · Reward: '+wkE(d.loot)+'</small>')}
+ else if(tab==='quests'){head('Elder Rowan (Hollow Village)');QS.forEach((q,i)=>card(q.n+' '+q.d,'','<b>'+(i+1)+'. '+wkE(q.n)+'</b><br>'+wkE(q.d)+'<br><small>Reward: '+wkE(typeof rewardTxt==='function'?rewardTxt(q):'')+'</small>'));
+  if(typeof SIDE_QS!=='undefined')for(const t in SIDE_QS){const L=SIDE_QS[t];if(!L.length)continue;head((typeof SQTOWN!=='undefined'&&SQTOWN[t]||t)+' side quests');
+   L.forEach((q,i)=>card(q.n+' '+q.d,'','<b>'+(i+1)+'. '+wkE(q.n)+'</b><br>'+wkE(q.d)+(q.note?' '+wkE(q.note):'')+'<br><small>Given by '+wkE(typeof sqGiverName==='function'?sqGiverName(q.giver):q.giver)+' · Reward: '+wkE(typeof sqReward==='function'?sqReward(q):'')+(q.req?' · Needs '+SKN[q.req[0]]+' '+q.req[1]:'')+'</small>'))}
+  out.push({t:'daily jobs',h:'<h3>Daily jobs</h3><p>Townsfolk in Hollow Village and Saltmere ask for a small favor every day. Bring them what they need for gold and XP.</p>'})}
+ else if(tab==='world'){head('Islands');for(const id in WORLD_REGIONS){const R=WORLD_REGIONS[id];card(R.name+' '+R.biome,'','<b>'+wkE(R.name)+'</b>'+(R.lv?' <span class="tag">level '+wkE(R.lv)+'</span>':'')+'<br>'+wkE(R.biome)+(R.hint?'<br><small>How to get there: '+wkE(R.hint)+'</small>':''))}
+  if(typeof ISLES!=='undefined'){head('Small islands (by boat from Hollow)');card('small islands '+ISLES.map(i=>i.name).join(' '),'','<b>'+ISLES.map(i=>wkE(i.name)).join(' · ')+'</b><br><small>Sail out from the Hollow Island docks once you own a boat.</small>')}
+  if(typeof TOWN_REG!=='undefined'){head('Towns');for(const t of TOWN_REG){const R=WORLD_REGIONS[t.regionId];card(t.name,'','<b>'+wkE(t.name)+'</b><br><small>'+wkE(R?R.name:'')+'</small>')}}}
+ else if(tab==='pets'){head('Rare drops');for(const r of WK_RARE)card(r[0]+' '+r[2],r[1]?wkIcon(r[1]):'','<b>'+wkE(r[0])+'</b> <span class="tag">'+wkE(r[2])+'</span><br>'+wkE(r[3])+'<br><small>5% from the '+wkE(r[2])+' (8% if you\'re in the top three).</small>');
+  head('Pets from Marlo\'s Emporium');const P=window.LUX&&LUX.PETS||[];for(const p of P)if(!p.rare)card(p.n+' pet','','<b>'+wkE(p.n)+'</b> <span class="tag">'+p.v.toLocaleString('en-US')+' gold</span><br><small>Follows you everywhere. Other players see it too. Pick your pet in START → Style.</small>')}
+ return out}
+function wkRender(){const t=wk$('wkt'),b=wk$('wkb'),q=WK.q.trim().toLowerCase();
+ t.innerHTML=WK_TABS.map(([k,n])=>'<button data-wkt="'+k+'" class="'+(k===WK.tab&&!q?'on':'')+'">'+wkE(n)+'</button>').join('');
+ let h='';if(!q){const cs=wkCards(WK.tab);h=cs.map(c=>c.h).join('')}
+ else{for(const[k,n]of WK_TABS){if(k==='start')continue;const cs=wkCards(k).filter(c=>!c.head&&(c.t+' '+c.h.replace(/<[^>]+>/g,' ')).toLowerCase().includes(q));if(cs.length)h+='<h3>'+wkE(n)+' ('+cs.length+')</h3>'+cs.slice(0,40).map(c=>c.h).join('')}
+  if(!h)h='<div class="emp">Nothing matches "'+wkE(WK.q)+'".</div>'}
+ b.innerHTML=h||'<div class="emp">Nothing here yet.</div>'}
+function wkOpen(tab,q){WK.open=true;if(tab)WK.tab=tab;WK.q=q||'';wk$('wkq').value=WK.q;wkEl.style.display='flex';wkRender();wk$('wkb').scrollTop=0;try{sfx('talk')}catch(e){}
+ setTimeout(()=>{const f=wkEl.querySelector('.wt button.on');if(f&&typeof GPON!=='undefined'&&(GPON||TS.kb))setFocus(f)},30)}
+function wkClose(){WK.open=false;wkEl.style.display='none';try{setFocus(null)}catch(e){}try{sfx('talk')}catch(e){}if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="wk"]');if(b&&(GPON||TS.kb))setFocus(b)}}
+wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt],[data-wki]');if(!b)return;if(b.dataset.wk==='x'){wkClose();return}
+ if(b.dataset.wkt){WK.tab=b.dataset.wkt;WK.q='';wk$('wkq').value='';wkRender();wk$('wkb').scrollTop=0;b.scrollIntoView({block:'nearest',inline:'center'});return}
+ if(b.dataset.wki){const k=b.dataset.wki;WK.q=String(INAME[k]||k);wk$('wkq').value=WK.q;wkRender();wk$('wkb').scrollTop=0}});
+wk$('wkq').addEventListener('input',()=>{WK.q=wk$('wkq').value;wkRender();wk$('wkb').scrollTop=0});
+{const _nr=navRoot;navRoot=function(){if(WK.open)return wkEl;return _nr()}}
+// on the title menu (next to the leaderboards) and in the START menu
+{const _m=tsMenu;tsMenu=function(){_m();if(tsMn.querySelector('[data-a="wk"]'))return;const o=tsMn.querySelector('[data-a="opt"]');if(!o)return;const b=document.createElement('button');b.dataset.a='wk';b.textContent='WIKI';o.before(b)}}
+tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='wk')wkOpen()});
+SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'wiki',l:()=>'Wiki'});
+{const _ss=showScreen;showScreen=function(id){if(id==='wiki'){try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){}wkOpen();return}return _ss(id)}}
+window.SQWK={open:wkOpen,close:wkClose,cards:wkCards};
+addEventListener('keydown',e=>{if(WK.open&&e.key==='Escape'&&!TS.open){e.preventDefault();e.stopImmediatePropagation();wkClose()}},true);
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
@@ -9367,7 +9510,7 @@ var LUX={};
  function drawPet(k,s){const sp=petSprite(k,Math.floor(s.t)%2);if(!sp)return;const x=Math.round(s.x),y=Math.round(s.y);shd(x,y+5,9);g.save();if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.imageSmoothingEnabled=false;g.drawImage(sp,x-6,y-6);g.restore()}
  const _pP=pP;pP=function(tm){if(COS.pet==='imp'){if(impOn()&&IMP.dead<=0)impDraw(IMP.x,IMP.y,IMP.dir,Math.floor(IMP.t)%4,IMP.stab>0,IMP.hp,IMP.max)}else if(COS.pet&&!(typeof SAILING!=='undefined'&&SAILING)){const s=petStep('me',P.x,P.y,face);drawPet(COS.pet,s)}return _pP(tm)};
  LUX.drawPeerPet=(r,tm)=>{if(r.pet==='imp'){if(!r.sl)impDrawPeer(r,tm);return}if(!r.pet||!PETS.some(p=>p.k===r.pet)||r.sl)return;const s=petStep(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]);drawPet(r.pet,s)};
- LUX.pet=()=>COS.pet||'';
+ LUX.pet=()=>COS.pet||'';LUX.PETS=PETS;
  // ---- The Imp (a rare pet from the Demon world boss) ----
  // It follows you like any pet, but when something hurts you it runs at it and stabs with its poison dagger
  // (poison deals a little damage every second for a few seconds). Monsters can hurt it back; if it falls it comes
@@ -9474,7 +9617,7 @@ var LUX={};
   {k:'ja_emerald',n:'Emerald amulet',s:'neck',g:'emerald',b:2,lv:32,xp:120,v:900,d:'+1 arrow damage.'},
   {k:'ja_ruby',n:'Ruby amulet',s:'neck',g:'ruby',b:2,lv:42,xp:160,v:1400,d:'+6% block chance.'},
   {k:'ja_diamond',n:'Diamond amulet',s:'neck',g:'diamond',b:2,lv:58,xp:240,v:2600,d:'+1 damage with sword, bow and wand.'}];
- const JK={},GEMC={'':['#f8d848','#a87818'],sapphire:['#5888f8','#2848a8'],emerald:['#58d878','#208840'],ruby:['#f85868','#a82030'],diamond:['#f0fcff','#98c8e0']};
+ window.SQJWL=JWL;const JK={},GEMC={'':['#f8d848','#a87818'],sapphire:['#5888f8','#2848a8'],emerald:['#58d878','#208840'],ruby:['#f85868','#a82030'],diamond:['#f0fcff','#98c8e0']};
  for(const j of JWL){JK[j.k]=j;INVK.push(j.k);EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]=(j.s==='ring'?'Ring':'Amulet')+': '+j.d+' Wear it from the Bag.';SELLP[j.k]=Math.round(j.v/3);SN[j.k]=j.n+'s';if(typeof SHORT!=='undefined')SHORT[j.k]=j.n.toLowerCase();inv[j.k]=inv[j.k]|0}
  const JW={ring:null,neck:null};const has=k=>JW.ring===k||JW.neck===k;
  const GATHER=new Set(['Woodcutting','Mining','Foraging','Fishing','Farming'].map(n=>SKN.indexOf(n)).filter(i=>i>=0));
@@ -9698,8 +9841,11 @@ var CROWN=false;
  add('eq_fcrown',{slot:'helm',n:'Flame crown',ic:'helm',col:'#f8c830',v:3000},'A rare crown from the Flame Wisp. Defence like a steel helmet. While you wear it, your campfires call a little flame wisp that guards the fire.');
  // the crown picture (also its icon)
  const CR=['....y..y..y.','...yry.yr.yr','...oy..oy..o','.G..G..G..G.','.GG.GG.GG.GG','GgGGGRRGGGgG','GGGGGrRGGGGG','DDDDDDDDDDDD'],PAL={y:'#fff070',r:'#ff9020',o:'#f05010',G:'#f8c830',g:'#fff4a0',R:'#e82838',D:'#a87010'};
- const crownCan=(()=>{const c=document.createElement('canvas');c.width=12;c.height=8;const x=c.getContext('2d');CR.forEach((row,j)=>{for(let i=0;i<12;i++){const ch=row[i];if(PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(i,j,1,1)}}});
-  const o=document.createElement('canvas');o.width=14;o.height=10;const ox=o.getContext('2d'),d=x.getImageData(0,0,12,8).data;ox.fillStyle='#3a1a08';for(let j=0;j<8;j++)for(let i=0;i<12;i++)if(d[(j*12+i)*4+3])for(const[a,b]of[[0,1],[2,1],[1,0],[1,2]])ox.fillRect(i+a,j+b,1,1);ox.drawImage(c,1,1);return o})();
+ // front, side (facing right; mirrored for left) and back
+ const CRS=['..y...y..y','.yr..yr.yr','..o...o..o','..G...G..G','.GG..GG.GG','GGgGGGGGRG','GGGGGGGGrG','DDDDDDDDDD'],CRB=CR.map(r=>r.replace(/[Rr]/g,'G'));
+ const crownMake=(rows,flip)=>{const w=rows[0].length,c=document.createElement('canvas');c.width=w;c.height=8;const x=c.getContext('2d');rows.forEach((row,j)=>{for(let i=0;i<w;i++){const ch=row[flip?w-1-i:i];if(PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(i,j,1,1)}}});
+  const o=document.createElement('canvas');o.width=w+2;o.height=10;const ox=o.getContext('2d'),d=x.getImageData(0,0,w,8).data;ox.fillStyle='#3a1a08';for(let j=0;j<8;j++)for(let i=0;i<w;i++)if(d[(j*w+i)*4+3])for(const[a,b]of[[0,1],[2,1],[1,0],[1,2]])ox.fillRect(i+a,j+b,1,1);ox.drawImage(c,1,1);return o};
+ const crownCan=crownMake(CR),crownBack=crownMake(CRB),crownR=crownMake(CRS),crownL=crownMake(CRS,true);
  let ICON=null;const _ic=iconURL;iconURL=function(k,col){if(k!=='eq_fcrown')return _ic(k,col);if(!ICON){const c=document.createElement('canvas');c.width=14;c.height=14;c.getContext('2d').drawImage(crownCan,0,2);ICON=c.toDataURL()}return ICON};
  if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return k==='eq_fcrown'?iconURL(k):_ei(k)}}
  // wearing it: a tier-3 helmet as far as the game's stats are concerned
@@ -9713,7 +9859,10 @@ var CROWN=false;
  const _gc=gearCH;gearCH=function(){const c=_gc();if(CROWN&&!(typeof HIDEH!=='undefined'&&HIDEH)){c.ht=0;delete c.mh;delete c.dyh;c.fc=1}return c};
  const FCC=new Map();const _ks=kitSprite;kitSprite=function(ch,dir,st,fl){const c=_ks(ch,dir,st,fl);if(!ch||!ch.fc)return c;const key=JSON.stringify(ch)+'|'+dir+'|'+st+'|'+(fl?1:0);let o=FCC.get(key);if(o)return o;
   const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let top=0;find:for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(d[(y*c.width+x)*4+3]>0){top=y;break find}
-  o=document.createElement('canvas');o.width=c.width;o.height=c.height;const x=o.getContext('2d');x.drawImage(c,0,0);x.drawImage(crownCan,1,Math.max(0,top-6));if(FCC.size>300)FCC.clear();FCC.set(key,o);return o};
+  // centre the crown on the head (the widest part of the top few rows)
+  let mn=99,mx=-1;for(let y=top;y<Math.min(c.height,top+6);y++)for(let x=0;x<c.width;x++)if(d[(y*c.width+x)*4+3]>0){if(x<mn)mn=x;if(x>mx)mx=x}
+  const cw=dir===1?crownBack:dir===2?(fl?crownL:crownR):crownCan,cx=Math.round((mn+mx+1)/2-cw.width/2);
+  o=document.createElement('canvas');o.width=c.width;o.height=c.height;const x=o.getContext('2d');x.drawImage(c,0,0);x.drawImage(cw,Math.max(0,Math.min(c.width-cw.width,cx)),Math.max(0,top-6));if(FCC.size>300)FCC.clear();FCC.set(key,o);return o};
  window.SQCROWN=()=>CROWN}
 // ---- the little flame wisp ----
 const FWP={f:null,x:0,y:0,tx:0,ty:0,rt:0,cd:0,balls:[],t:0};const FW_R=64;
@@ -9742,7 +9891,7 @@ function fwDraw(x,y,tm,glow){const c=fwCan(Math.floor(tm/.09)%4);if(!c)return;co
     for(const p of peers)fwDraw(p[0],p[1],tm,true);g.restore()}}_dh()}}
 window.SQFW={state:FWP,live:fwLive,pres:()=>fwLive()?[Math.round(FWP.x),Math.round(FWP.y)]:0};
 var HIDEH=false;   // Equipment > Hide helmet
-const SQ_VERSION='2026.11.05-2';
+const SQ_VERSION='2026.11.05-3';
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
