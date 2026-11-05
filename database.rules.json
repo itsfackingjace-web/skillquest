@@ -231,6 +231,35 @@
           }
         }
       }
+    },
+    "trust": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        "$f": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "chests": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('trust/'+$uid+'/'+auth.uid).val() === true)",
+        "$cid": {
+          ".write": "auth != null && (auth.uid === $uid || root.child('trust/'+$uid+'/'+auth.uid).val() === true)",
+          ".validate": "newData.hasChildren(['v']) && newData.child('v').isNumber()",
+          "i": {
+            "$k": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000"
+            }
+          },
+          "v": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
     }
   }
 }

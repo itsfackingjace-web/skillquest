@@ -8896,6 +8896,89 @@ window.SQWB=WB;
   if(r.br&&!menuOpen&&!pnOpen){const n=performance.now();if(!r.brAt||n-r.brAt>45){r.brAt=n;SQDF.flames(r.x,r.y,d)}}}}
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen||!window.SQDF||!SQDF.br||!PV.on)return;const d=SQDF.dir(),[mx,my,fx,fy]=SQDF.mouth(P.x,P.y,d);
   for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-mx,dy=r.y-6-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);if(al>-4&&al<64&&pe<8+al*.45)pvHit(r,'sp','fire')}}}
+// ---- Trusted friends ----
+// Friends can walk into your houses and look around. Friends you mark TRUSTED (Chat > Friends > TRUST) can also use
+// your crafting stations, open your chests and rest in your beds, in your houses on every island and at the things
+// you've built outside. trust/<uid>/<friend> = true (only you can write your list).
+// Chests are shared through chests/<owner>/<chest id> = {i: {item: count}, v}: while you have a trusted friend, your
+// game keeps that copy in step with your real chests (changes either side are merged, never overwritten), and a
+// trusted friend's take/put is a transaction, so the same items can't be taken twice.
+const TRU={mine:{},of:{},subs:{},sub:null};
+function trustedBy(o){if(!MP.on||!MP.user||!o||o===MP.user.uid)return false;if(!TRU.subs[o])TRU.subs[o]=FB.db.onValue(FB.db.ref(FB.D,'trust/'+o),s=>{TRU.of[o]=s.val()||{}});return!!(TRU.of[o]&&TRU.of[o][MP.user.uid]===true)}
+const iTrust=u=>!!TRU.mine[u];
+function trustSet(u,on){if(!MP.user||!u)return;FB.db.set(FB.db.ref(FB.D,'trust/'+MP.user.uid+'/'+u),on?true:null).then(()=>{mpLog('game',on?fname(u)+' is now a trusted friend. They can use your stations, chests and beds.':fname(u)+' is no longer a trusted friend.')}).catch(mpErr)}
+function noTrust(o){const n=performance.now();if(n-BLDS.msgAt>1500){BLDS.msgAt=n;const nm=fname(o);say('Only '+nm+'\'s trusted friends can use that. Ask '+nm+' to trust you (Friends list).');sfx('swish')}swing=.25}
+{const _ms=mpStart;mpStart=async function(u){await _ms(u);if(!MP.on||TRU.sub)return;try{
+  TRU.sub=FB.db.onValue(FB.db.ref(FB.D,'trust/'+MP.user.uid),s=>{TRU.mine=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()});
+  CHS.sub=FB.db.onValue(FB.db.ref(FB.D,'chests/'+MP.user.uid),s=>{CHS.db=s.val()||{};CHS.got=true});
+  MP.unsub.push(()=>{try{TRU.sub&&TRU.sub();CHS.sub&&CHS.sub()}catch(e){}TRU.sub=CHS.sub=null;CHS.got=false;for(const k in TRU.subs)try{TRU.subs[k]()}catch(e){}TRU.subs={};TRU.of={};TRU.mine={};CHS.db={}})}catch(e){mpErr(e)}}}
+// trust goes when the friendship does
+setInterval(()=>{if(!MP.on||!MP.user||!MP.friends)return;for(const u in TRU.mine)if(TRU.mine[u]&&!MP.friends[u])trustSet(u,false)},4000);
+// Friends list: a TRUST button on each friend, and what it means
+{const _fv=friendsView;friendsView=function(){_fv();if(!MP.user)return;let any=false;
+  for(const row of lst.querySelectorAll('.fr')){const msg=[...row.querySelectorAll('button')].find(b=>b.textContent==='MESSAGE');if(!msg)continue;const nm=row.querySelector('.fn b');
+   const u=Object.keys(MP.friends).find(k=>fname(k)===(nm&&nm.textContent));if(!u)continue;any=true;const on=iTrust(u),b=document.createElement('button');b.textContent=on?'TRUSTED ✓':'TRUST';
+   b.title=on?'Tap to stop trusting':'Let them use your stations, chests and beds';if(on)b.style.cssText='background:#3a8a48;color:#fff;border-color:#2a6a38';b.onclick=()=>trustSet(u,!on);
+   const rm=[...row.querySelectorAll('button')].find(x=>x.textContent==='REMOVE'||x.textContent==='SURE?');if(rm)rm.before(b);else row.append(b)}
+  if(any){const h=document.createElement('div');h.className='fh';h.style.cssText='font-size:11px;font-weight:400;letter-spacing:0;text-transform:none';h.textContent='Friends can visit your houses. TRUSTED friends can also use your stations, chests and beds.';
+   const first=lst.querySelector('.fr');if(first)first.before(h)}}}
+// ---- shared chests ----
+const CHS={db:{},base:{},busy:{},sub:null,got:false,open:null,ever:new Set()};
+const chClean=o=>{const r={};if(o&&typeof o==='object')for(const k in o){const n=Math.floor(+o[k]||0);if(n>0&&INVK.includes(k))r[k]=n}return r};
+const chEq=(a,b)=>{const ka=Object.keys(a),kb=Object.keys(b);return ka.length===kb.length&&ka.every(k=>a[k]===b[k])};
+const chSet=(o,ni)=>{const it=o.items||(o.items={});for(const k of Object.keys(it))delete it[k];Object.assign(it,ni)};
+function chOwn(){const out=[];for(const h of HOUSES.concat(typeof RH!=='undefined'?RH:[])){if(h._foreign)continue;for(const[i,f]of h.furn)if(f.t==='chest')out.push(['h_'+h.id+'_'+i,f])}
+ for(const[i,s]of STR)if(s.t==='chest'&&!s._foreign)out.push(['s_'+i,s]);
+ if(typeof RB!=='undefined')for(const id in RB)for(const[k,s]of RB[id])if(s.t==='chest')out.push(['r_'+id+'_'+k.replace(',','_'),s]);return out}
+function chSync(){if(!MP.on||!MP.user||!CHS.got||!Object.values(TRU.mine).some(Boolean))return;const me=MP.user.uid,seen=new Set();let changed=false;
+ for(const[cid,o]of chOwn()){seen.add(cid);if(CHS.busy[cid])continue;CHS.ever.add(cid);const db=CHS.db[cid],loc=chClean(o.items),base=db?(CHS.base[cid]||{}):{},delta={};let dz=true;
+  for(const k of new Set([...Object.keys(loc),...Object.keys(base)])){const d=(loc[k]|0)-(base[k]|0);if(d){delta[k]=d;dz=false}}
+  if(!dz){CHS.busy[cid]=1;FB.db.runTransaction(FB.db.ref(FB.D,'chests/'+me+'/'+cid),cur=>{const i=chClean(cur&&cur.i);for(const k in delta){const n=Math.max(0,(i[k]|0)+delta[k]);if(n)i[k]=n;else delete i[k]}return{i,v:((cur&&+cur.v)|0)+1}})
+    .then(r=>{if(!r||!r.committed)return;const v=r.snapshot.val();CHS.db[cid]=v;const ni=chClean(v&&v.i),now=chClean(o.items);for(const k in now){const e=now[k]-(loc[k]|0);if(e)ni[k]=Math.max(0,(ni[k]|0)+e)}for(const k in loc)if(!(k in now)&&ni[k])ni[k]=Math.max(0,ni[k]-loc[k]);
+     for(const k in ni)if(!ni[k])delete ni[k];CHS.base[cid]=chClean(v&&v.i);chSet(o,ni);if(pnOpen&&ptab===7)rPn()}).catch(mpErr).finally(()=>{delete CHS.busy[cid]});continue}
+  const di=chClean(db.i);if(!chEq(di,base)){CHS.base[cid]=di;chSet(o,di);changed=true}}
+ for(const cid in CHS.db)if(!seen.has(cid)&&CHS.ever.has(cid)&&!CHS.busy[cid]){FB.db.remove(FB.db.ref(FB.D,'chests/'+me+'/'+cid)).catch(()=>{});delete CHS.base[cid]}
+ if(changed){if(pnOpen&&ptab===7)rPn();try{saveLocal(true)}catch(e){}}}
+setInterval(()=>{try{chSync()}catch(e){console.warn(e)}},1000);
+{const _sn=snap;snap=function(){const s=_sn();if(Object.keys(CHS.base).length)s.chb=CHS.base;return s}}
+{const _ap=applySave;applySave=function(S){_ap(S);CHS.base={};if(S&&S.chb&&typeof S.chb==='object')for(const k in S.chb)CHS.base[String(k).slice(0,60)]=chClean(S.chb[k])}}
+// a trusted friend opening one of your chests
+function chOpenShared(owner,cid){if(CHS.open)try{CHS.open()}catch(e){}const box={t:'chest',items:{},_sh:{o:owner,cid}};CHEST_H=box;CHEST_AT=-1;CHEST_IDX=-1;
+ CHS.open=FB.db.onValue(FB.db.ref(FB.D,'chests/'+owner+'/'+cid),s=>{const v=s.val();box.items=chClean(v&&v.i);box.ok=true;if(pnOpen&&ptab===7&&CHEST_H===box)rPn()},()=>{box.err=true;if(pnOpen&&ptab===7)rPn()});
+ fromMenu=false;pnOpen=true;ptab=7;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}
+{const _cp=closePanel;closePanel=function(){_cp();if(CHS.open&&!(pnOpen&&ptab===7)){try{CHS.open()}catch(e){}CHS.open=null;if(CHEST_H&&CHEST_H._sh)CHEST_H=null}}}
+{const _cm=chestMove;chestMove=function(k,a){const s=CHEST_H;if(!s||!s._sh)return _cm(k,a);const{o,cid}=s._sh,ref=FB.db.ref(FB.D,'chests/'+o+'/'+cid);
+  if(a==='d'){const n=inv[k]|0;if(n<1)return;inv[k]=0;s.items[k]=(s.items[k]|0)+n;sfx('pickup');rPn();
+   FB.db.runTransaction(ref,cur=>{const i=chClean(cur&&cur.i);i[k]=(i[k]|0)+n;return{i,v:((cur&&+cur.v)|0)+1}}).then(r=>{if(!r||!r.committed)throw new Error('no')}).then(()=>{saveLocal(true);try{saveCloud(true)}catch(e){}})
+    .catch(()=>{inv[k]=(inv[k]|0)+n;say('Could not put that in the chest. Try again.');rPn()})}
+  else{let got=0;if(!(s.items[k]>0))return;FB.db.runTransaction(ref,cur=>{got=0;if(!cur)return cur;const i=chClean(cur.i);got=i[k]|0;if(!got)return;delete i[k];return{i,v:(+cur.v|0)+1}})
+    .then(r=>{if(r&&r.committed&&got>0){inv[k]=(inv[k]|0)+got;sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){}}else say('Someone else got to that first.');rPn()}).catch(()=>{say('Could not take that. Try again.')})}}}
+{const _r=rPn;rPn=function(){_r();if(!pnOpen)return;if(ptab===7&&CHEST_H&&CHEST_H._sh){const b=document.getElementById('chpk');if(b)b.remove();
+   pbd.insertAdjacentHTML('afterbegin','<div class="tl" style="font-size:12px;font-weight:400;opacity:.8;margin-bottom:6px">'+esc(fname(CHEST_H._sh.o))+'\'s chest'+(CHEST_H.err?' · could not open it (are you still trusted?)':CHEST_H.ok?'':' · loading...')+'</div>')}
+  if((ptab===2&&typeof STATION!=='undefined'&&STATION&&STATION._foreign)||(ptab===1&&typeof BENCH!=='undefined'&&BENCH&&BENCH._foreign))for(const b of pbd.querySelectorAll('[data-a="pickup"]'))b.remove()}}
+// ---- what a visitor can do ----
+const inForeignHouse=()=>SCENE&&SCENE.house&&SCENE.house._foreign?SCENE.house:null;
+// furniture: never pick up someone else's (this used to hand out free copies)
+{const _pf=pickFurn;pickFurn=function(i){const h=inForeignHouse();if(h){notYours(h._owner);return}return _pf(i)}}
+{const _ps=pickStruct;pickStruct=function(i){const s=STR.get(i);if(s&&s._foreign){notYours(s._foreign);return}return _ps(i)}}
+// chests and beds
+{const _uf=useFurn;useFurn=function(o){const h=inForeignHouse();if(!h)return _uf(o);const t=o&&(o.f?o.f.t:o.use);if(t!=='chest'&&t!=='bed')return _uf(o);
+  if(!trustedBy(h._owner)){noTrust(h._owner);return}
+  if(t==='chest'){if(!o.f||o.i==null){say('That chest belongs to '+fname(h._owner)+'.');return}chOpenShared(h._owner,'h_'+h._oid+'_'+o.i);return}
+  if(dark()<.3){say('A comfy bed. Rest here at night to sleep through it.');sfx('talk');return}
+  time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept at '+fname(h._owner)+'\'s. Good morning!');sfx('quest');saveLocal(true)}}
+// crafting stations inside their houses
+{const _os=openStation;openStation=function(o){const h=inForeignHouse();if(o&&h&&o.inside){if(!trustedBy(h._owner)){noTrust(h._owner);return}o._foreign=h._owner}return _os(o)}}
+// outside on Hollow: their chests and stations
+function trUseForeignStr(i){const s=STR.get(i);if(!s||!s._foreign)return false;if(s.t!=='chest'&&!STN.has(s.t))return false;if(!trustedBy(s._foreign)){noTrust(s._foreign);return true}
+ swing=.25;if(s.t==='chest')chOpenShared(s._foreign,'s_'+i);else if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}}else openStation({t:s.t,inside:false,i,f:s,_foreign:s._foreign});return true}
+{const _a=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!(typeof facingNpc==='function'&&facingNpc())){
+  if(!SCENE){const[x,y]=frontTile();if(x>=0&&y>=0&&x<N&&y<N&&trUseForeignStr(y*N+x))return}
+  else{const R=rbR();if(R){const[x,y]=frontTile();const f=rbForeignAt(R.region,x,y);if(f&&(f.t==='chest'||STN.has(f.t))){if(!trustedBy(f.owner)){noTrust(f.owner);return}swing=.25;
+     if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner});return}}}}
+  return _a()}}
+{const _us=useStructure;useStructure=function(i){if(trUseForeignStr(i))return;return _us(i)}}
+window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
 // ---- Developer commands (only for the game's owner account; checked by a hash of the signed-in email) ----
 // Type in chat: /dev for the list. /give <item> [n], /find <text>, /gold <n>, /xp <skill> <n>, /heal,
 // /boss <dragon|demon|giant|wisp> [hp] spawns a private world boss right next to you (only you see it; full loot),
