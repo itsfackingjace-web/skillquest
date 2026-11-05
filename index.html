@@ -1060,7 +1060,7 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
   g.globalAlpha=1;MSGBOX={x:tx/D,y:ty/D,w:tw/D,h:th/D,more,done}}
  g.restore()}
 function drawDead(){const U=uiS();g.save();g.fillStyle='rgba(0,0,0,.6)';g.fillRect(0,0,W,H);const bw=Math.min(W-24*U,360*U),bh=118*U,x=(W-bw)/2,y=H*.34;g3box(x,y,bw,bh,U);
- g3text('You fell!',x+bw/2,y+26*U,22,U,'#d05030','center',700);{const gl=window.SQGRV&&SQGRV.lostPreview?SQGRV.lostPreview():0;g3text(gl?'Your things are in a grave where you fell.':'You weren\'t carrying anything.',x+bw/2,y+52*U,13,U,'#404040','center',500);g3text(gl?'Anyone can loot it! Gold and gear are safe.':'Skills, gold and gear are safe.',x+bw/2,y+70*U,13,U,'#404040','center',500)}
+ g3text('You fell!',x+bw/2,y+26*U,22,U,'#d05030','center',700);{const gl=window.SQGRV&&SQGRV.lostPreview?SQGRV.lostPreview():0;g3text(gl?'Your things are in a grave where you fell. It\'s on your map.':'You weren\'t carrying anything.',x+bw/2,y+52*U,13,U,'#404040','center',500);g3text(gl?'Anyone can loot it! Gold and gear are safe.':'Skills, gold and gear are safe.',x+bw/2,y+70*U,13,U,'#404040','center',500)}
  if(time>1.5)g3text((isPC?'Click or press Space':'Tap')+' to try again',x+bw/2,y+96*U,14,U,'#5878b8','center',700);g.restore()}
 // ---------------------------------------------------------------- 11. Building, inventory grid, equipment
 // Craft walls, doors, chests and beds, place them in the world, store items in chests and sleep in beds.
@@ -8006,9 +8006,12 @@ const grvAll=()=>{const a=[];for(const id in GRV.list)a.push(GRV.list[id]);for(c
 const grvMine=()=>grvAll().filter(g=>(g.local||(MP.user&&g.u===MP.user.uid))&&grvLeft(g)>0&&Object.keys(grvItems(g)).length);
 // offline graves live on this device
 try{const s=JSON.parse(localStorage.getItem('sq_graves')||'{}');for(const id in s){const g=s[id];if(g&&g.at+GRAVE_LIFE>Date.now()){g.local=true;g.id=id;GRV.local[id]=g}}}catch(e){}
-const grvSaveLocal=()=>{try{const o={};for(const id in GRV.local){const g=GRV.local[id];if(Object.keys(grvItems(g)).length&&grvLeft(g)>0)o[id]={u:g.u,n:g.n,loc:g.loc,x:g.x,y:g.y,at:g.at,i:g.i}}localStorage.setItem('sq_graves',JSON.stringify(o))}catch(e){}};
+const grvSaveLocal=()=>{try{const o={};for(const id in GRV.local){const g=GRV.local[id];if(Object.keys(grvItems(g)).length&&grvLeft(g)>0)o[id]={u:g.u,n:g.n,loc:g.loc,x:g.x,y:g.y,ar:g.ar,ax:g.ax,ay:g.ay,at:g.at,i:g.i}}localStorage.setItem('sq_graves',JSON.stringify(o))}catch(e){}};
 // remember where you last stood on solid ground (mpLoc is blank once you've fallen)
-setInterval(()=>{if(dead||typeof SAILING!=='undefined'&&SAILING&&!SCENE||window.SQRSAIL&&SQRSAIL.on)return;const L=mpLoc();if(L)GRV.lastSpot={loc:L,x:Math.round(P.x),y:Math.round(P.y)}},250);
+setInterval(()=>{if(dead||typeof SAILING!=='undefined'&&SAILING&&!SCENE||window.SQRSAIL&&SQRSAIL.on)return;const L=mpLoc();
+ // the outdoor area and spot (inside a building or dungeon: its door), so the grave can go on the map
+ const R=SCENE&&SCENE.room;if(!SCENE||R&&R.region)GRV.lastOut=curRegion();const op=SCENE&&!(R&&R.region)&&SCENE.ret?[SCENE.ret.x,SCENE.ret.y]:[P.x,P.y];
+ if(L)GRV.lastSpot={loc:L,x:Math.round(P.x),y:Math.round(P.y),ar:GRV.lastOut||'hollow',ax:Math.round(op[0]),ay:Math.round(op[1])}},250);
 // the moment you get up again: fill a grave with what you were carrying
 // it happens the moment you fall (not when you get up), and the game saves right away, so closing the game
 // while you're down doesn't bring your things back
@@ -8016,14 +8019,14 @@ GRV.fell=false;GRV.fellN=0;
 setInterval(()=>{if(!dead){GRV.fell=false;return}if(GRV.fell||NEWG)return;GRV.fell=true;const spot=GRV.lastSpot;if(!spot||typeof inv!=='object'){GRV.fellN=0;return}
  const lost={};for(const k in inv){const n=inv[k]|0;if(n>0&&!EQK.includes(k)&&INAME[k]){lost[k]=n;inv[k]=0}}GRV.fellN=Object.keys(lost).length;if(!GRV.fellN)return;
  grvMake(lost,spot);const hp0=P.hp;dead=false;P.hp=Math.max(1,hp0);try{saveLocal(true);saveCloud(true)}catch(e){}finally{dead=true;P.hp=hp0}},100);
-function grvMake(items,spot){const g={u:MP.user?MP.user.uid:'me',n:myName().slice(0,12),loc:spot.loc,x:spot.x,y:spot.y,i:items};
+function grvMake(items,spot){const g={u:MP.user?MP.user.uid:'me',n:myName().slice(0,12),loc:spot.loc,x:spot.x,y:spot.y,i:items},mk=spot.ar&&isFinite(spot.ax)&&isFinite(spot.ay)?{ar:spot.ar,ax:spot.ax,ay:spot.ay}:{};Object.assign(g,mk);
  const local=()=>{const id='L'+Date.now().toString(36);g.at=Date.now();g.local=true;g.id=id;GRV.local[id]=g;grvSaveLocal()};
  const n=Object.values(items).reduce((a,b)=>a+b,0);mpLog('game','You fell! '+n+' item'+(n>1?'s are':' is')+' in your grave ('+LOCN(spot.loc)+'). Anyone can loot it, and it crumbles in 15 minutes.');
  if(!MP.on||!MP.user){local();return}const d=FB.db;const id='g'+MP.user.uid.slice(0,8)+Date.now().toString(36);
- d.set(d.ref(FB.D,'graves/'+id),{u:g.u,n:g.n,loc:g.loc,x:g.x,y:g.y,i:items,at:d.serverTimestamp()}).then(()=>{if(!GRV.list[id])GRV.list[id]={...g,id,at:mpNow()}}).catch(e=>{mpErr(e);local()})}
+ d.set(d.ref(FB.D,'graves/'+id),{u:g.u,n:g.n,loc:g.loc,x:g.x,y:g.y,...mk,i:items,at:d.serverTimestamp()}).then(()=>{if(!GRV.list[id])GRV.list[id]={...g,id,at:mpNow()}}).catch(e=>{mpErr(e);local()})}
 // ---- shared graves ----
 function grvStart(){const d=FB.db;GRV.unsub=d.onValue(d.ref(FB.D,'graves'),s=>{const v=s.val()||{},L={};for(const id in v){const g=v[id];if(!g||typeof g!=='object'||typeof g.x!=='number'||typeof g.y!=='number')continue;
-   L[id]={id,u:String(g.u||''),n:String(g.n||'Someone').replace(/[<>]/g,'').slice(0,12),loc:String(g.loc||''),x:g.x,y:g.y,at:+g.at||0,i:g.i||{}}}GRV.list=L;
+   L[id]={id,u:String(g.u||''),n:String(g.n||'Someone').replace(/[<>]/g,'').slice(0,12),loc:String(g.loc||''),x:g.x,y:g.y,ar:typeof g.ar==='string'?g.ar.slice(0,20):'',ax:+g.ax,ay:+g.ay,at:+g.at||0,i:g.i||{}}}GRV.list=L;
   if(GRV.open&&!GRV.open.local&&!L[GRV.open.id]&&pnOpen&&ptab===GTAB){GRV.open=null;closePanel();say('The grave is empty now.')}else if(pnOpen&&ptab===GTAB)rPn()});
  MP.unsub.push(()=>{if(GRV.unsub)GRV.unsub();GRV.unsub=null;GRV.list={}})}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&MP.user&&!GRV.unsub)try{grvStart()}catch(e){mpErr(e)}}}
@@ -9155,6 +9158,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-15',d:'Nov 5, 2026',t:'Find your grave',n:['When you fall, your grave now shows on your minimap and on the map (HERE and WORLD) as a little blinking tombstone, along with how long it has before it crumbles.','When your grave is on the same island as you, an arrow at the edge of the screen points the way and shows how far it is.','If you fell inside a building or a dungeon, the grave is marked at the door you went in by.']},
  {v:'2026.11.05-14',d:'Nov 5, 2026',t:'Open seas & new boats',n:['The sea now stretches on past the edge of the map. No more black void at the edge of Hollow Island.','Brand-new sailboats: a striped hull, a mainsail and a jib, and a little pennant that flaps in the wind. You now sit in the boat with your upper body showing, facing whichever way you sail.','You can now see other players sitting in their boats, with their names shown.','Boats tied up at the docks have their sails rolled up.']},
  {v:'2026.11.05-13',d:'Nov 5, 2026',t:'Farming tweak & Flame Aura',n:['Tilled soil with nothing planted in it turns back into grass after 10 minutes, on every island. Plant something to keep it.','Flame Aura (Firemaking 30) now really lights up the night around you while one of your campfires is burning, instead of just a faint orange tint.']},
  {v:'2026.11.05-12',d:'Nov 5, 2026',t:'Farming everywhere',n:['Farming now works on every island: till with your hoe, plant seeds from the Bag, water and harvest, just like on Hollow Island. Your crops on each island keep growing while you play, and other players can see your fields.']},
@@ -9418,6 +9422,42 @@ WK2.skills=()=>{const i=Math.min(SKN.length-1,WK.sk|0),n=SKN[i],T=typeof TREES!=
  return[{t:SKN.join(' '),h:h+'</div></div>'}]};
 window.SQWK={open:wkOpen,close:wkClose,cards:wkCards};
 addEventListener('keydown',e=>{if(WK.open&&e.key==='Escape'&&!TS.open){e.preventDefault();e.stopImmediatePropagation();wkClose()}},true);
+// ---------------------------------------------------------------- 86. Your grave on the map
+// While one of your graves still has things in it, it shows on the HUD minimap, the map (HERE and WORLD) with how long
+// it has left, and an arrow at the side of the screen points to it when it's in the same area as you.
+// Graves inside buildings or dungeons show at the door you went in by.
+{const grvWhere=gr=>{if(gr.ar&&WORLD_REGIONS[gr.ar]&&isFinite(gr.ax)&&isFinite(gr.ay))return{ar:gr.ar,x:+gr.ax,y:+gr.ay};
+   if(gr.loc==='hollow')return{ar:'hollow',x:gr.x,y:gr.y};if(gr.loc&&gr.loc.startsWith('r:')&&WORLD_REGIONS[gr.loc.slice(2)])return{ar:gr.loc.slice(2),x:gr.x,y:gr.y};return null};
+ const mine=()=>{try{return grvMine().map(g=>({g,w:grvWhere(g)})).filter(o=>o.w)}catch(e){return[]}};
+ const areaSize=a=>a==='hollow'?[N,N]:[WORLD_REGIONS[a].width,WORLD_REGIONS[a].height];
+ // a little tombstone, s screen pixels per texel, centred on (cx,cy)
+ const tomb=(x,cx,cy,s,hi)=>{const X=Math.round(cx-3.5*s),Y=Math.round(cy-4*s),F=(a,b,w,h,c)=>{x.fillStyle=c;x.fillRect(X+a*s,Y+b*s,w*s,h*s)};
+  F(2,0,3,1,'#181018');F(1,1,5,1,'#181018');F(0,2,7,6,'#181018');F(2,1,3,1,hi?'#ffffff':'#d8d8e8');F(1,2,5,5,hi?'#ffffff':'#b8b8cc');F(3,2,1,4,'#585870');F(2,3,3,1,'#585870')};
+ const blink=()=>(performance.now()/400|0)%2;
+ window.SQGRVMAP={grvWhere,mine};
+ // HUD minimap
+ {const _dm=drawMini52;drawMini52=function(){_dm();const t=miniTarget();if(!t)return;const area=t.k==='region'?t.R.region:'hollow',M=mine().filter(o=>o.w.ar===area);if(!M.length)return;
+   const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
+   for(const o of M)tomb(g,x0+(o.w.x/16)/t.w*w,y0+(o.w.y/16)/t.h*hh,Math.max(1,Math.round(U*.9)),blink());g.restore()}}
+ // the map: HERE (1 pixel per tile) and WORLD
+ {const _dm=drawMap;drawMap=function(){_dm();if(MAPVIEW==='world')return;const c=document.getElementById('mpc');if(!c)return;const R=SCENE&&SCENE.room,area=R&&R.region?R.region:'hollow',[aw]=areaSize(area);if(c.width!==aw)return;
+   const x=c.getContext('2d'),s=Math.max(1,Math.round(aw/90));for(const o of mine())if(o.w.ar===area)tomb(x,o.w.x/16,o.w.y/16,s,blink())}}
+ {const _dw=drawWorld52;drawWorld52=function(){_dw();const c=document.getElementById('wmc');if(!c)return;const x=c.getContext('2d');
+   for(const o of mine()){const r=wmRect(o.w.ar),[aw,ah]=areaSize(o.w.ar);tomb(x,r.x+(o.w.x/16)/aw*r.w,r.y+(o.w.y/16)/ah*r.h,1,blink())}}}
+ {const _mh=mapHTML;mapHTML=function(){let h=_mh();const M=mine();if(!M.length)return h;
+   h=h.replace(/(<div class="lg">)/,'$1<span><i style="background:#c8c8dc;outline:1px solid #181018"></i>Your grave</span>');
+   const rows=M.map(o=>{const left=Math.max(1,Math.ceil(grvLeft(o.g)/60000)),nm=o.w.ar==='hollow'?'Hollow Island':WORLD_REGIONS[o.w.ar].name,inside=o.g.loc&&(o.g.loc.startsWith('in:')||o.g.loc.startsWith('h:'));
+    return '<br>'+esc(nm)+(inside?' (inside, by the door)':'')+' · crumbles in '+left+' min'}).join('');
+   return h+'<div class="qc" style="margin-top:8px"><b>Your grave'+(M.length>1?'s':'')+'</b><small>'+rows+'</small></div>'}}
+ // an arrow at the side of the screen pointing to your grave (same area, not on screen)
+ {const _dh=drawHUD;drawHUD=function(){_dh();if(dead||menuOpen||pnOpen||window.SQTS&&SQTS.open)return;const R=SCENE&&SCENE.room;if(SCENE&&!(R&&R.region))return;const area=curRegion();
+   for(const o of mine()){if(o.w.ar!==area)continue;const dx=o.w.x-P.x,dy=o.w.y-P.y;if(Math.abs(dx)*Z<W/2-20&&Math.abs(dy)*Z<H/2-20)continue;
+    const a=Math.atan2(dy,dx),rx=Math.min(W,H)*.38,cx=W/2+Math.cos(a)*rx,cy=H/2+Math.sin(a)*rx*.85,u=Math.max(2,Math.round(Math.min(W,H)/200)),d=Math.hypot(dx,dy)/16;
+    g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=.92;g.translate(Math.round(cx),Math.round(cy));
+    g.save();g.rotate(a);g.fillStyle='#181018';g.beginPath();g.moveTo(14*u,0);g.lineTo(7*u,-5*u);g.lineTo(7*u,5*u);g.fill();g.fillStyle='#f8f8f8';g.beginPath();g.moveTo(12.5*u,0);g.lineTo(8*u,-3.5*u);g.lineTo(8*u,3.5*u);g.fill();g.restore();
+    tomb(g,0,0,u,blink());g.font='700 '+(5*u)+'px '+PF;g.textAlign='center';g.textBaseline='top';g.lineWidth=u;g.strokeStyle='#181018';const txt=Math.round(d)+'m';g.strokeText(txt,0,5*u);g.fillStyle='#ffffff';g.fillText(txt,0,5*u);
+    g.restore()}}}}
+window.SQGRV2=GRV;
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
