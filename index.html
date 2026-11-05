@@ -2370,7 +2370,7 @@ function pollPad(dt){let gp=null;try{const all=navigator.getGamepads?navigator.g
    // R2: hit (hold to keep swinging, chopping or shooting)
    if(pr(PADB.R2)){gpTap(' ');GPAX.r2=0}else if(btn(PADB.R2)){GPAX.r2=(GPAX.r2||0)+dt;if(GPAX.r2>.35&&swing<=0&&!FISH&&!pnOpen&&!BUILD&&!menuOpen)gpTap(' ')}
    // ✕: the A button - talk, use, read; hits when there's nothing to use
-   if(pr(PADB.X)){if(BUILD)gpTap(' ');else{const use=!!facingNpc()||(SCENE?!!nearFurn():nearStruct()!==null)||(typeof canBoard==='function'&&(nearWreck()||canLand()||canBoard()));gpTap(use?'t':' ')}}  // signs are read by the hit
+   if(pr(PADB.X)){if(BUILD)gpTap(' ');else{const use=!!facingNpc()||(SCENE?!!nearFurn():nearStruct()!==null)||(typeof canBoard==='function'&&(nearWreck()||canLand()||canBoard()))||!!(window.SQPADUSE&&SQPADUSE());gpTap(use?'t':' ')}}  // signs are read by the hit
    if(pr(PADB.O)){if(BUILD)gpTap('Escape');else roll()}
    if(pr(PADB.L1))GPAX.l1u=false;
    if((btn(PADB.L1)&&pr(PADB.R1))||(btn(PADB.R1)&&pr(PADB.L1))){GPAX.l1u=true;GPAX.r1=-9;if(typeof castUlt==='function')castUlt()}
@@ -9158,6 +9158,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-16',d:'Nov 5, 2026',t:'Controller landing fix',n:['Fixed: with a controller, pressing ✕ at the shore of Briarwood, Ashfall, Ironcrest or the Shattered Expanse swung your weapon instead of landing the boat, so you got stuck at the edge of the island. ✕ now lands and sets sail on every island.','✕ on a controller now also opens graves.']},
  {v:'2026.11.05-15',d:'Nov 5, 2026',t:'Find your grave',n:['When you fall, your grave now shows on your minimap and on the map (HERE and WORLD) as a little blinking tombstone, along with how long it has before it crumbles.','When your grave is on the same island as you, an arrow at the edge of the screen points the way and shows how far it is.','If you fell inside a building or a dungeon, the grave is marked at the door you went in by.']},
  {v:'2026.11.05-14',d:'Nov 5, 2026',t:'Open seas & new boats',n:['The sea now stretches on past the edge of the map. No more black void at the edge of Hollow Island.','Brand-new sailboats: a striped hull, a mainsail and a jib, and a little pennant that flaps in the wind. You now sit in the boat with your upper body showing, facing whichever way you sail.','You can now see other players sitting in their boats, with their names shown.','Boats tied up at the docks have their sails rolled up.']},
  {v:'2026.11.05-13',d:'Nov 5, 2026',t:'Farming tweak & Flame Aura',n:['Tilled soil with nothing planted in it turns back into grass after 10 minutes, on every island. Plant something to keep it.','Flame Aura (Firemaking 30) now really lights up the night around you while one of your campfires is burning, instead of just a faint orange tint.']},
@@ -9458,6 +9459,7 @@ addEventListener('keydown',e=>{if(WK.open&&e.key==='Escape'&&!TS.open){e.prevent
     tomb(g,0,0,u,blink());g.font='700 '+(5*u)+'px '+PF;g.textAlign='center';g.textBaseline='top';g.lineWidth=u;g.strokeStyle='#181018';const txt=Math.round(d)+'m';g.strokeText(txt,0,5*u);g.fillStyle='#ffffff';g.fillText(txt,0,5*u);
     g.restore()}}}}
 window.SQGRV2=GRV;
+window.SQPADUSE=()=>{try{return rsCanLand()||rsCanBoard()||!!grvNear()}catch(e){return false}};   // ✕ on a controller: LAND / SAIL on every island, open a grave
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
