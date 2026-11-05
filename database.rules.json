@@ -220,6 +220,17 @@
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.hasChildren(['n', 't']) && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('t').val() === now"
       }
+    },
+    "wb": {
+      ".read": "auth != null",
+      "$slot": {
+        "d": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 200000"
+          }
+        }
+      }
     }
   }
 }
