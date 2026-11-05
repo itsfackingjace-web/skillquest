@@ -8667,38 +8667,47 @@ window.SQWB=WB;
   for(let k=0;k<T.length;k++){pts.push(T[k]);if(k<T.length-1){const m=[(T[k][0]+T[k+1][0])/2,(T[k][1]+T[k+1][1])/2];pts.push([m[0]+(sx-m[0])*.32,m[1]+(sy-m[1])*.32])}}
   pts.push([sx+(T[T.length-1][0]-sx)*.35,sy+6]);poly(p,pts,pal,.75,.45,.1);for(const t of T)limb(p,sx,sy,t[0],t[1],3.2,1.1,boneP,.1);p.ell(sx,sy,5,5,boneP,.2)}
  // front-facing and upright: a big horned head, angry eyes, cream belly, stubby claws, wings spread behind
- function dragonSp(fr){const b=hdBuf(210,240),p=hdPainter(b,105,226,true),w=[0,-6,-10,-4][fr],br=fr%2?1:0,ts=[0,2,3,1][fr];
-  const SKIN=P5(['#2a0608','#4a0c10','#741418','#9e2220','#c43a2c','#e0624a']),HI=P5(['#741418','#9e2220','#c43a2c','#e0624a','#f08a6a']),BEL=P5(['#8a6a40','#bc9a68','#e0c898','#f6eac8']),
-   MEM=P5(['#2a0608','#460c12','#681a1e','#8a2a28']),HORN=P5(['#4a4236','#7e7460','#b4a888','#e4dcc4']),BONE=P5(['#2a0608','#4a0c10','#741418']);
-  // wings: upright behind the shoulders
-  for(const s of[-1,1]){const sx=s*20,sy=-104+br,T=[[s*44,-186+w],[s*70,-168+w*.8],[s*80,-130+w*.5],[s*72,-98]];const pts=[[sx,sy]];
-   for(let k=0;k<T.length;k++){pts.push(T[k]);if(k<T.length-1){const m=[(T[k][0]+T[k+1][0])/2,(T[k][1]+T[k+1][1])/2];pts.push([m[0]+(sx-m[0])*.28,m[1]+(sy-m[1])*.28])}}pts.push([s*32,-80]);
-   poly(p,pts,MEM,.9,.5,s<0?-.15:.15);for(const t of T)limb(p,sx,sy,t[0],t[1],3.6,1.3,BONE,.15);poly(p,[[s*42,-184+w],[s*44,-196+w],[s*48,-184+w]],HORN,.9,.4)}
-  // tail: one smooth tapering curve (not a string of balls), a pale underside, spikes along the top and a spade tip
-  {const C=[],n=24;for(let k=0;k<=n;k++){const t=k/n;C.push([12+t*72+ts*t*t-t*t*t*10,-10+Math.sin(t*Math.PI)*7-t*t*48,14*(1-t*.72)])}
-   const up=[],dn=[];for(let k=0;k<=n;k++){const a2=C[Math.max(0,k-1)],c2=C[Math.min(n,k+1)],dx=c2[0]-a2[0],dy=c2[1]-a2[1],l=Math.hypot(dx,dy)||1,nx=dy/l,ny=-dx/l,[x,y,r]=C[k];up.push([x+nx*r,y+ny*r]);dn.push([x-nx*r,y-ny*r])}
-   poly(p,up.concat(dn.reverse()),SKIN,.85,.55,.1);
-   const und=[];for(let k=0;k<=n;k++){const a2=C[Math.max(0,k-1)],c2=C[Math.min(n,k+1)],dx=c2[0]-a2[0],dy=c2[1]-a2[1],l=Math.hypot(dx,dy)||1,nx=dy/l,ny=-dx/l,[x,y,r]=C[k];und.push([x-nx*r*.15,y-ny*r*.15])}
-   poly(p,und.concat(dn.slice()),BEL,.8,.3);
-   for(let k=4;k<n-3;k+=4){const a2=C[k-1],c2=C[k+1],dx=c2[0]-a2[0],dy=c2[1]-a2[1],l=Math.hypot(dx,dy)||1,nx=dy/l,ny=-dx/l,[x,y,r]=C[k],bx=x+nx*r,by=y+ny*r,h=5*(1-k/n)+2;
-    poly(p,[[bx-dx/l*3,by-dy/l*3],[bx+nx*h,by+ny*h],[bx+dx/l*3,by+dy/l*3]],BEL,.95,.5)}
-   const[tx,ty]=C[n],a2=C[n-2],dx=tx-a2[0],dy=ty-a2[1],l=Math.hypot(dx,dy)||1,ux=dx/l,uy=dy/l,nx=uy,ny=-ux;
-   poly(p,[[tx-nx*9-ux*2,ty-ny*9-uy*2],[tx+ux*18,ty+uy*18],[tx+nx*9-ux*2,ty+ny*9-uy*2],[tx+ux*4,ty+uy*4]],HORN,.9,.5)}
-  for(const s of[-1,1]){p.ell(s*22,-28,16,18,SKIN,.06);p.ell(s*25,-8,17,8,SKIN,.02);for(const k of[-1,0,1])poly(p,[[s*25+k*7-3,-4],[s*25+k*7,5],[s*25+k*7+3,-4]],HORN,.85,.5)}
-  p.ell(0,-64+br,34,40,SKIN,.08);p.ell(0,-56+br,22,30,BEL,.15);for(let k=0;k<5;k++){const yy=-76+k*8+br,hw=Math.round(Math.sqrt(Math.max(0,1-((yy+56-br)/30)**2))*21);for(let x=-hw+2;x<hw-1;x++)dot(p,x,yy,BEL[0])}
-  for(const s of[-1,1]){limb(p,s*28,-90+br,s*38,-66+br,9,7,SKIN,.1);p.ell(s*39,-60+br,8,7,SKIN,.14);for(const k of[-1,0,1])poly(p,[[s*39+k*4-2,-55+br],[s*39+k*4,-49+br],[s*39+k*4+2,-55+br]],HORN,.85,.4)}
-  const hy=-134+br;
-  // horns: thick, sweeping out and back
-  for(const s of[-1,1]){for(let k=0;k<=18;k++){const t=k/18,r=7.5*(1-t*.82);p.ell(s*(16+t*30-t*t*4),hy-20-t*50+t*t*16,r,r,HORN,.22)}}
-  for(const s of[-1,1])poly(p,[[s*32,hy-2],[s*54,hy-8],[s*46,hy+6],[s*34,hy+10]],SKIN,.7,.3,s<0?0:.2);
-  p.ell(0,hy,38,32,SKIN,.12);for(const k of[-1,0,1])poly(p,[[k*9-4,hy-29],[k*9,hy-38-(k?0:6)],[k*9+4,hy-27]],BEL,.95,.5);
-  // snout: wide, lighter, with nostrils; a mouth with fangs
-  p.ell(0,hy+15,26,14,HI,.15);for(const s of[-1,1])poly(p,[[s*5,hy+8],[s*10,hy+7],[s*9,hy+11],[s*5,hy+11]],P5(['#200404']),.5,0);
-  poly(p,[[-20,hy+24],[20,hy+24],[14,hy+29],[-14,hy+29]],P5(['#200404','#3a0808']),.5,0);for(const s of[-1,1])poly(p,[[s*13-2,hy+24],[s*12,hy+32],[s*13+2,hy+24]],P5(['#e8e0d0','#ffffff']),.9,.3);
-  // fierce eyes: yellow with red slit pupils, a heavy brow slanting down towards the middle
-  for(const s of[-1,1]){const ex=s*14;p.ell(ex,hy-3,8,6,P5(['#d0a020','#f8d040','#fff6a0']),.2);dot(p,ex-1,hy-7,'#c81010',2,8);
-   poly(p,[[ex+s*12,hy-14],[ex-s*10,hy-7],[ex-s*10,hy-2],[ex+s*12,hy-9]],P5(['#2a0608','#4a0c10']),.7,0)}
-  hdOutline(b,{1:hdC('#140304')});return hdCan(b)}
+ // chunky pixel art: a 48x48 sprite (2 world pixels per pixel), cel-shaded with bold black outlines, rearing up on
+ // its hind legs, facing left with its mouth open, wings raised, tail curling round on the ground
+ function dragonSp(fr){const GW=48,GH=52,OY=3,G=new Array(GW*GH).fill(null),PT=new Array(GW*GH).fill(-1);let pid=0;
+  const C={sk:['#7e1a14','#c0321e','#e85a3a'],wg:['#4e100c','#82201a','#ae3a28'],bl:['#b86a1c','#e8a038','#f8d070'],hn:['#8a7a60','#c8b898','#f4ecd8'],K:'#1a0a0a'};
+  const inPolyG=(x,y,pts)=>inPoly(x+.5,y+.5,pts),LN={sk:'#4a0c08',wg:'#300806',bl:'#7a4010',hn:'#5a4a38'};
+  function part(test,pal,opts){const id=pid++,M=new Set(),ln=pal===C.sk?LN.sk:pal===C.wg?LN.wg:pal===C.bl?LN.bl:pal===C.hn?LN.hn:C.K;for(let y=0;y<GH;y++)for(let x=0;x<GW;x++)if(test(x,y-OY))M.add(y*GW+x);
+   for(const i of M){const x=i%GW,y=(i/GW)|0;const up=!M.has(i-GW),dn=!M.has(i+GW)||!M.has(i+1);let c=up||(!M.has(i-1)&&!(opts&&opts.noL))?pal[2]:dn?pal[0]:pal[1];
+    if(opts&&opts.seg!=null&&y%3===opts.seg&&!up)c=pal[0];G[i]=c;PT[i]=id}
+   // a dark line where this part meets something drawn earlier (behind it)
+   for(const i of M){const x=i%GW;for(const d of[-1,1,-GW,GW]){const k=i+d;if(d===-1&&x===0||d===1&&x===GW-1)continue;if(k>=0&&k<G.length&&!M.has(k)&&PT[k]>=0&&PT[k]!==id){G[i]=ln;break}}}}
+  const poly2=(pts,pal,o)=>part((x,y)=>inPolyG(x,y,pts),pal,o),ell2=(cx,cy,rx,ry,pal,o)=>part((x,y)=>((x+.5-cx)/rx)**2+((y+.5-cy)/ry)**2<=1,pal,o);
+  const wf=[0,-1,-2,-1][fr],hb=fr%2,tt=[0,1,1,0][fr];
+  // far wing, tail, body, belly
+  poly2([[24,19],[25,7+wf],[29,1+wf],[36,1+wf],[33,5+wf],[36,7+wf],[32,9+wf],[32,14],[29,19]],C.wg);
+  {const cl=[];for(let k=0;k<=16;k++){const t=k/16;cl.push([27+t*17,41-Math.sin(t*2.8)*7-t*t*(3+tt),4.6*(1-t*.78)])}
+   part((x,y)=>cl.some(([cx,cy,r])=>Math.hypot(x+.5-cx,y+.5-cy)<=r),C.sk);const[tx,ty]=cl[16];poly2([[tx-2,ty+1],[tx+1,ty-4],[tx+3,ty+1],[tx,ty+2]],C.hn)}
+  ell2(23,31+hb*.3,9,10,C.sk);
+  poly2([[13,22],[19,21],[21,37],[18,40],[14,36]],C.bl,{seg:0,noL:1});
+  // neck and its pale front, back spikes
+  poly2([[13,14],[20,11],[25,22],[17,25]],C.sk);poly2([[12,15],[15,14],[18,25],[15,25]],C.bl,{seg:1,noL:1});
+  for(const[x,y]of[[21,13],[24,17],[28,22]])poly2([[x,y],[x+2,y-3],[x+3,y+1]],C.hn);
+  // near wing, raised behind the neck
+  poly2([[26,22],[28,9+wf],[32,3+wf],[40,2+wf],[46,7+wf],[42,9+wf],[44,13+wf],[39,13+wf],[40,18],[35,17],[33,22]],C.wg);
+  {const bone=(x0,y0,x1,y1)=>{const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(let k=0;k<=n;k++){const X=Math.round(x0+(x1-x0)*k/n),Y=Math.round(y0+(y1-y0)*k/n)+OY,i=Y*GW+X;if(G[i]&&G[i]!==C.K&&G[i]!==LN.wg)G[i]=k<2?C.sk[1]:C.sk[k%5?1:2]}};
+   bone(29,20,32,4+wf);bone(29,20,40,3+wf);bone(30,20,45,8+wf);bone(30,20,43,13+wf)}
+  // hind leg and foot, arm
+  ell2(26,37,6.5,5,C.sk);poly2([[17,42],[31,41],[32,45],[16,46]],C.sk);for(const x of[16,20,24])poly2([[x,44],[x-2,47],[x+1,46]],C.hn);
+  poly2([[16,24],[19,25],[14,30],[11,30],[11,28]],C.sk);for(const y of[29,31])poly2([[11,y-1],[8,y],[11,y+1]],C.hn);
+  // head: skull, snout, open jaw, mouth, horns, frill
+  for(const[a,c,d,e]of[[17,6,26,0],[16,4,22,-1]])poly2([[a,c],[a+2,c-1],[d,e],[a+3,c+2]],C.hn);
+  ell2(15,10+hb*.3,7,6,C.sk);poly2([[2,9+hb],[12,6+hb],[15,13+hb],[3,13+hb]],C.sk);
+  poly2([[4,16+hb],[14,14+hb],[15,18+hb],[7,19+hb]],C.sk);
+  poly2([[3,13+hb],[14,13+hb],[14,16+hb],[5,16+hb]],['#2a0606','#4a0808','#4a0808']);
+  for(const[x,y]of[[5,14],[6,14],[7,15],[8,15]])G[(y+hb+OY)*GW+x]='#e8506a';
+  for(const[x,y]of[[5,13],[9,13],[12,13],[7,16],[11,16]])G[(y+hb+OY)*GW+x]='#f8f4e8';
+  poly2([[19,8+hb],[23,6+hb],[21,11+hb]],C.sk);poly2([[19,12+hb],[23,12+hb],[20,15+hb]],C.sk);
+  // eye and nostril
+  for(const[x,y,c]of[[10,8,'#ffffff'],[11,8,'#ffffff'],[10,9,'#f8d040'],[11,9,C.K],[9,7,C.K],[10,7,C.K],[11,7,C.K],[12,7,C.K],[4,10,C.K]])G[(y+hb+OY)*GW+x]=c;
+  // the outline around everything
+  const out=G.slice();for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const i=y*GW+x;if(G[i])continue;if((x>0&&G[i-1])||(x<GW-1&&G[i+1])||(y>0&&G[i-GW])||(y<GH-1&&G[i+GW]))out[i]=C.K}
+  const c=document.createElement('canvas');c.width=GW;c.height=GH;const x=c.getContext('2d');for(let i=0;i<out.length;i++)if(out[i]){x.fillStyle=out[i];x.fillRect(i%GW,(i/GW)|0,1,1)}return c}
  // ---------- Demon ----------
  const DM={sk:P5(['#2a0608','#4e0e12','#7a1a1c','#a42a26','#cc4a38','#e8785a']),wing:P5(['#160608','#2a0c10','#401418','#5a1e20']),horn:P5(['#3a3430','#6e6658','#a89c84','#e0d6bc']),
   dark:P5(['#140406','#280a0e','#3e1216']),hoof:P5(['#0c0808','#241a18','#40302c']),claw:P5(['#3a3430','#8a8274','#d8d0c0'])};
@@ -8749,16 +8758,17 @@ window.SQWB=WB;
   hdOutline(b,{1:hdC('#9a2206')});return hdCan(b)}
  const MAKE={dragon:dragonSp,demon:demonSp,giant:giantSp,wisp:wispSp};
  // scale to the world: each sprite's canvas is 2 texels per world pixel
- const SC={dragon:1.15,demon:1,giant:1,wisp:1.25};
- drawWB=function(n,tm){const x=Math.round(n.x),y=Math.round(n.y),t=n._wb,per={dragon:.18,demon:.16,giant:.22,wisp:.09}[t],fr=Math.floor(tm/per)%4,hit=WB.hitAt&&performance.now()-WB.hitAt<110,c=hdEn('wb'+t+fr,()=>MAKE[t](fr)),K=SC[t];
-  const w=c.width/2*K,hh=c.height/2*K,ox={dragon:52.5,demon:55,giant:48,wisp:37.5}[t]*K,oy={dragon:113,demon:95,giant:120,wisp:90}[t]*K;
+ const SC={dragon:4,demon:1,giant:1,wisp:1.25};
+ const DRC=[];   // the dragon is already outlined pixel art, so it skips the soft HD outline pass
+ drawWB=function(n,tm){const x=Math.round(n.x),y=Math.round(n.y),t=n._wb,per={dragon:.18,demon:.16,giant:.22,wisp:.09}[t],fr=Math.floor(tm/per)%4,hit=WB.hitAt&&performance.now()-WB.hitAt<110,c=t==='dragon'?(DRC[fr]||(DRC[fr]=dragonSp(fr))):hdEn('wb'+t+fr,()=>MAKE[t](fr)),K=SC[t];
+  const w=c.width/2*K,hh=c.height/2*K,ox={dragon:11,demon:55,giant:48,wisp:37.5}[t]*K,oy={dragon:26.5,demon:95,giant:120,wisp:90}[t]*K;
   if(t==='wisp'){const gl=g.createRadialGradient(x,y-26,2,x,y-26,46);gl.addColorStop(0,'rgba(255,190,80,.45)');gl.addColorStop(1,'rgba(255,120,30,0)');g.fillStyle=gl;g.fillRect(x-50,y-76,100,100);shd(x,y+8,26)}
   else shd(x,y+6,t==='dragon'?70:t==='giant'?52:44);
   const bob=t==='wisp'?Math.round(Math.sin(tm*3)*2):0;g.drawImage(c,x-ox,y-oy+bob+2,w,hh);
   if(hit){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.35;g.drawImage(c,x-ox,y-oy+bob+2,w,hh);g.restore()}
   if(t==='wisp')for(let k=0;k<6;k++){const a=tm*1.8+k*1.047,ex=Math.round(x+Math.cos(a)*30),ey=Math.round(y-30+Math.sin(a)*14+bob);g.fillStyle='rgba(255,200,90,.35)';g.fillRect(ex-3,ey-3,6,6);Rg(ex-1,ey-1,3,3,k%2?'#fff0a0':'#f88830')}
   if(t==='demon'){for(const s of[-1,1]){const hx=x+s*25,hy=y-24+bob;for(let k=0;k<5;k++){const fl=Math.sin(tm*12+k*2+s)*1.5;Rg(Math.round(hx-2+k%3+fl),Math.round(hy-6-k*2),2,3,k%2?'#f8d040':'#f86020')}}}
-  if(t==='dragon'&&Math.floor(tm*1.5)%4===0){for(let k=0;k<8;k++){const a=Math.PI+(Math.random()-.5)*.6,d=4+Math.random()*22;Rg(Math.round(x+Math.cos(a+Math.PI/2)*d*.4),Math.round(y-46+Math.abs(Math.sin(a))*d*.6),2,2,k%2?'#f8e060':'#f86020')}}}
+  if(t==='dragon'&&Math.floor(tm*1.5)%4===0){for(let k=0;k<8;k++){const a=Math.PI+(Math.random()-.5)*.6,d=4+Math.random()*22;Rg(Math.round(x-36-Math.abs(Math.cos(a))*d),Math.round(y-63+Math.sin(a)*d*.5),2,2,k%2?'#f8e060':'#f86020')}}}
  window.SQWBART=MAKE}
 // ---- go ----
 mpRBtn();
