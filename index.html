@@ -2307,12 +2307,24 @@ function gpLabels(on){const L=on?{a:'R2',e:BUILD?'○':'□',f:'△',tk:'✕',rl
 const _sal23=setActionLabels;setActionLabels=function(){_sal23();if(GPON)gpLabels(true)};
 const HELP_PAD='<b>Controller</b><br>Left stick / D-pad: move · L3: sprint on/off<br>R2: sword, chop, mine, fish (hold to repeat)<br>Right stick: aim · R1: bow or wand in your off-hand<br>L1 + R1: wand ultimate (10 mana)<br>✕: talk, use, read (hits if nothing is there)<br>○: dodge roll · □: eat · △: campfire · L2: quests<br>Options: menu · Create: map (PC) · Touchpad or R3: bag<br>Building: R2 or ✕ place · ○ done<br>Menus: D-pad moves, ✕ picks, ○ back, L1 / R1 switch screens';
 let helpWas='';
-function gpActivate(on){if(on===GPON)return;GPON=on;gpLabels(on);if(on){helpWas=hp.innerHTML;hp.innerHTML=HELP_PAD;say('Controller connected! ✕ is A, ○ is B. Press Options for the menu.')}else{if(helpWas)hp.innerHTML=helpWas;setFocus(null);gpc.style.display='none'}}
+function gpActivate(on){if(on===GPON)return;GPON=on;gpLabels(on);if(on){helpWas=hp.innerHTML;let ds4=false;try{ds4=isDS4([...navigator.getGamepads()].find(x=>x&&x.connected))}catch(e){}hp.innerHTML=ds4?HELP_PAD.replace(/Create/g,'Share'):HELP_PAD;if(typeof PADBN!=='undefined')PADBN[8]=ds4?'Share':'Create';say('Controller connected! ✕ is A, ○ is B. Press Options for the menu.')}else{if(helpWas)hp.innerHTML=helpWas;setFocus(null);gpc.style.display='none'}}
 addEventListener('gamepadconnected',e=>{GPI=e.gamepad.index;gpActivate(true)});
 addEventListener('gamepaddisconnected',e=>{if(GPI===e.gamepad.index){GPI=null;gpActivate(false);for(const k in GPKEYS)gpKey(k,false);jx=jy=0;GPSPR=false;say('Controller disconnected.');if(!pnOpen&&!menuOpen&&!dead&&!chessOpen&&typeof openSM==='function')openSM()}});
 // keyboard or touch input hands control back
 addEventListener('keydown',e=>{if(e.isTrusted&&GPON&&!navRoot())setFocus(null)});
 // --- rumble when you get hurt ---
+// PS4 (DualShock 4): most browsers report it with the standard layout, which the controls above already use. Some
+// (Firefox, older Edge, some Bluetooth drivers) report its raw layout instead; this turns that into the standard one,
+// d-pad hat included. PS4 controllers also call the Create button "Share".
+const isDS4=gp=>!!gp&&/054c/i.test(gp.id)&&/05c4|09cc|0ba0/i.test(gp.id)||!!gp&&/wireless controller/i.test(gp.id)&&!/0ce6|0df2|dualsense/i.test(gp.id);
+(function(){if(!navigator.getGamepads)return;const raw=navigator.getGamepads.bind(navigator),B=(v)=>({pressed:v>.5,touched:v>.5,value:v});
+ function norm(gp){if(!gp||gp.mapping==='standard'||!isDS4(gp)||gp.buttons.length<13)return gp;const b=gp.buttons,ax=gp.axes,v=i=>b[i]?b[i].value||(b[i].pressed?1:0):0;
+  let up=0,dn=0,lf=0,rt=0;const h=ax[9];if(typeof h==='number'&&h>=-1.05&&h<=1.05){const k=Math.round((h+1)/(2/7));up=k===0||k===1||k===7;rt=k>=1&&k<=3;dn=k>=3&&k<=5;lf=k>=5&&k<=7}
+  else if(b.length>=18){up=v(14);dn=v(15);lf=v(16);rt=v(17)}else if(ax.length>=8){up=ax[7]<-.5;dn=ax[7]>.5;lf=ax[6]<-.5;rt=ax[6]>.5}
+  const l2=ax.length>3?Math.max(v(6),(ax[3]+1)/2):v(6),r2=ax.length>4?Math.max(v(7),(ax[4]+1)/2):v(7);
+  const btn=[v(1),v(2),v(0),v(3),v(4),v(5),l2,r2,v(8),v(9),v(10),v(11),+up,+dn,+lf,+rt,v(12),v(13)].map(B);
+  return{id:gp.id,index:gp.index,connected:gp.connected,timestamp:gp.timestamp,mapping:'standard',buttons:btn,axes:[ax[0]||0,ax[1]||0,ax[2]||0,ax.length>5?ax[5]:(ax[3]||0)],vibrationActuator:gp.vibrationActuator}}
+ try{navigator.getGamepads=function(){const a=raw();return Array.from(a,norm)}}catch(e){}})();
 function rumble(ms,s,w){try{const g2=navigator.getGamepads()[GPI];const a=g2&&g2.vibrationActuator;if(a&&a.playEffect)a.playEffect('dual-rumble',{duration:ms,strongMagnitude:s,weakMagnitude:w})}catch(e){}}
 // --- polling ---
 const PADB={X:0,O:1,SQ:2,TRI:3,L1:4,R1:5,L2:6,R2:7,CREATE:8,OPT:9,L3:10,R3:11,UP:12,DOWN:13,LEFT:14,RIGHT:15,PS:16,PAD:17};
@@ -8521,11 +8533,12 @@ const WBT={
  dragon:{n:'Ancient Dragon',ic:'🐉',hp:3200,per:6000,dmg:2,col:'#f05020',c2:'#f8c040',where:['ashfall'],pats:['meteors','breath','ring'],gold:[800,1500]}};
 const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 function wbFor(slot){const r=rng(slot*7919+17),p=r();let type=p<.35?'wisp':p<.6?'giant':p<.8?'demon':'dragon';const F=window.SQWBFORCE;if(F&&F.type)type=F.type;const T=WBT[type];let where=T.where[Math.floor(r()*T.where.length)];if(F&&F.where)where=F.where;
+ if(F&&F.dev)return{slot,type,T,where,start:F.start,end:F.start+WB_LIFE,mhp:F.hp||T.hp,dev:1};
  return{slot,type,T,where,start:slot*WB_SLOT,end:slot*WB_SLOT+(F?WB_SLOT:WB_LIFE),mhp:F&&F.hp?F.hp:T.hp}}
 const wbLoc=b=>b.where==='hollow'?'hollow':'r:'+b.where;
 const wbWhere=b=>b.where==='hollow'?'Hollow Island':(WORLD_REGIONS[b.where]?WORLD_REGIONS[b.where].name:b.where);
 // the lair: a big open patch of land, found the same way in every game (terrain only)
-function wbLair(b){const key=b.slot+':'+b.where;if(WB.lairKey===key)return WB.lair;let found=null;
+function wbLair(b){const key=b.slot+':'+b.where;if(WB.lairKey===key)return WB.lair;let found=null;if(b.dev&&window.SQWBFORCE&&SQWBFORCE.at){if(curRegion()!==b.where)return null;WB.lair=SQWBFORCE.at;WB.lairKey=key;return WB.lair}
  if(b.where==='hollow'){if(SCENE)return null;const r=rng(b.slot*31+5);for(let k=0;k<500&&!found;k++){const x=14+Math.floor(r()*(N-28)),y=14+Math.floor(r()*(N-28));
    if(Math.hypot(x-VX,y-VY)<26)continue;let ok=true;for(let dy=-5;dy<=4&&ok;dy++)for(let dx=-5;dx<=5;dx++){const i=(y+dy)*N+x+dx;if(tile[i]===0||inVillage(x+dx,y+dy)||(typeof PROT!=='undefined'&&PROT.has(i))||BS.has(i)){ok=false;break}}if(ok)found={x:x*16+8,y:y*16+8}}}
  else{const R=SCENE&&SCENE.room;if(!R||R.region!==b.where)return null;const r=rng(b.slot*31+9),sp=R.spawn||[R.w/2,R.h/2];
@@ -8542,7 +8555,7 @@ function wbAttacks(b,L,t){const T=b.T,per=T.per,c=Math.floor((t-b.start)/per),ou
   else if(pat==='beams'||pat==='breath'){const n=pat==='beams'?6:3,a0=r()*6.283,spread=pat==='beams'?6.283/n:.55;for(let i=0;i<n;i++)out.push({k:'b',x:bp.x,y:bp.y-10,a:a0+i*spread,len:pat==='beams'?170:190,w:pat==='beams'?16:30,t0,hit,id:cc+'b'+i,pat})}}
  return out}
 // ---- which boss is up ----
-function wbTick(){if(!MP.on||!FB||!MP.user)return;const now=wbNow(),slot=Math.floor(now/WB_SLOT),b=wbFor(slot);
+function wbTick(){if(!MP.on||!FB||!MP.user)return;const now=wbNow(),F=window.SQWBFORCE,slot=F&&F.dev?F.slot:Math.floor(now/WB_SLOT),b=wbFor(slot);
  if(slot!==WB.slot){WB.slot=slot;WB.dmg=0;WB.pub=0;WB.all={};WB.lair=null;WB.lairKey='';if(WB.unsub){WB.unsub();WB.unsub=null}
   WB.unsub=FB.db.onValue(FB.db.ref(FB.D,'wb/'+slot+'/d'),s=>{WB.all=s.val()||{};if(MP.user&&typeof WB.all[MP.user.uid]==='number')WB.dmg=Math.max(WB.dmg,WB.all[MP.user.uid])})}
  WB.b=now<b.end?b:null;const B=WB.b;
@@ -8562,7 +8575,7 @@ function wbLoot(b){const me=MP.user&&MP.user.uid,mine=WB.dmg;mpLog('game','The '
   // the rare one: 5% for everyone who fought, 8% for the top three
   if(r()<(top?.08:.05)||window.SQDSOULDROP){add('ja_dsoul',1);setTimeout(()=>{say('A DRAGONSOUL AMULET! The dragon\'s spirit is yours.');try{sfx('level')}catch(e){}},400)}}
  if(top)add(['ruby','sapphire','emerald','diamond'][Math.min(3,Math.floor(r()*4))],1);
- GLD+=g;WB.kills++;const list=Object.keys(got).map(k=>got[k]+' × '+INAME[k].toLowerCase()).concat([g+' gold']).join(', ');
+ GLD+=g;if(!b.dev)WB.kills++;const list=Object.keys(got).map(k=>got[k]+' × '+INAME[k].toLowerCase()).concat([g+' gold']).join(', ');
  say((top?'#'+rank+' damage! ':'')+'Boss loot: '+list+'.');msgT=6;mpLog('game','Your share'+(top?' (#'+rank+' damage)':'')+': '+list+'.');try{sfx('quest');setTimeout(()=>sfx('coin'),200)}catch(e){}
  try{saveLocal(true);saveCloud(true)}catch(e){}}
 setInterval(()=>{try{wbTick()}catch(e){console.warn(e)}},500);
@@ -8883,6 +8896,47 @@ window.SQWB=WB;
   if(r.br&&!menuOpen&&!pnOpen){const n=performance.now();if(!r.brAt||n-r.brAt>45){r.brAt=n;SQDF.flames(r.x,r.y,d)}}}}
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen||!window.SQDF||!SQDF.br||!PV.on)return;const d=SQDF.dir(),[mx,my,fx,fy]=SQDF.mouth(P.x,P.y,d);
   for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-mx,dy=r.y-6-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);if(al>-4&&al<64&&pe<8+al*.45)pvHit(r,'sp','fire')}}}
+// ---- Developer commands (only for the game's owner account; checked by a hash of the signed-in email) ----
+// Type in chat: /dev for the list. /give <item> [n], /find <text>, /gold <n>, /xp <skill> <n>, /heal,
+// /boss <dragon|demon|giant|wisp> [hp] spawns a private world boss right next to you (only you see it; full loot),
+// /boss off removes it.
+{const DEVH='aff058455fade890eb657f9ab77ae1fcb2aa28ff218bb6c17bb37427a999d121';let devOK=false,devFor='';
+ async function devCheck(){const u=MP.user;if(!u||!u.email){devOK=false;return}if(devFor===u.uid+u.email)return;devFor=u.uid+u.email;try{devOK=sha256hex(u.email.toLowerCase())===DEVH}catch(e){devOK=false}}
+ // a small SHA-256 (works on any page, secure or not)
+ function sha256hex(str){const b=new TextEncoder().encode(str),K=[],H=[];let n=2,c=0;const fr=x=>(x-Math.floor(x))*4294967296|0;
+  while(c<64){let p=true;for(let f=2;f*f<=n;f++)if(n%f===0){p=false;break}if(p){if(c<8)H[c]=fr(Math.pow(n,1/2));K[c++]=fr(Math.pow(n,1/3))}n++}
+  const L=b.length,m=new Uint8Array(((L+9+63)>>6)<<6);m.set(b);m[L]=0x80;const bits=L*8;for(let i=0;i<4;i++)m[m.length-1-i]=bits>>>(8*i)&255;
+  const w=new Int32Array(64),r=(x,k)=>x>>>k|x<<(32-k);
+  for(let o=0;o<m.length;o+=64){for(let i=0;i<16;i++)w[i]=m[o+4*i]<<24|m[o+4*i+1]<<16|m[o+4*i+2]<<8|m[o+4*i+3];
+   for(let i=16;i<64;i++){const a=w[i-15],d=w[i-2];w[i]=(r(a,7)^r(a,18)^a>>>3)+w[i-7]+(r(d,17)^r(d,19)^d>>>10)+w[i-16]|0}
+   let[a,bb,cc,d,e,f,g,h]=H;for(let i=0;i<64;i++){const t1=h+(r(e,6)^r(e,11)^r(e,25))+(e&f^~e&g)+K[i]+w[i]|0,t2=(r(a,2)^r(a,13)^r(a,22))+(a&bb^a&cc^bb&cc)|0;h=g;g=f;f=e;e=d+t1|0;d=cc;cc=bb;bb=a;a=t1+t2|0}
+   H[0]=H[0]+a|0;H[1]=H[1]+bb|0;H[2]=H[2]+cc|0;H[3]=H[3]+d|0;H[4]=H[4]+e|0;H[5]=H[5]+f|0;H[6]=H[6]+g|0;H[7]=H[7]+h|0}
+  return H.map(x=>(x>>>0).toString(16).padStart(8,'0')).join('')}
+ setInterval(devCheck,2000);
+ const out=t=>mpLog('game',t);
+ const norm=t=>String(t).toLowerCase().replace(/[^a-z0-9]/g,'');
+ function findItems(q){const nq=norm(q),keys=Object.keys(INAME).filter(k=>INAME[k]);const ex=keys.find(k=>k.toLowerCase()===q.toLowerCase())||keys.find(k=>norm(INAME[k])===nq);if(ex)return[ex];
+  return keys.filter(k=>norm(INAME[k]).includes(nq)||norm(k).includes(nq))}
+ const skillIdx=q=>{const nq=norm(q);let i=SKN.findIndex(n=>norm(n)===nq);if(i<0)i=SKN.findIndex(n=>norm(n).startsWith(nq));return i};
+ function dev(cmd,args){
+  if(cmd==='dev'||cmd==='devhelp'){out('Dev: /give item [n] · /find text · /gold n · /xp skill n · /heal · /boss dragon|demon|giant|wisp [hp] · /boss off');return}
+  if(cmd==='find'){const q=args.join(' ');if(!q){out('Usage: /find text');return}const r=findItems(q);out(r.length?r.slice(0,12).map(k=>k+' = '+INAME[k]).join(' · ')+(r.length>12?' · (+'+(r.length-12)+' more)':''):'No items match "'+q+'".');return}
+  if(cmd==='give'){let n=1;if(args.length>1&&/^\d+$/.test(args[args.length-1]))n=Math.min(100000,+args.pop());const q=args.join(' ');if(!q){out('Usage: /give item [n]');return}
+   const r=findItems(q);if(r.length!==1){out(r.length?'Which one? '+r.slice(0,10).map(k=>k+' = '+INAME[k]).join(' · '):'No items match "'+q+'". Try /find.');return}
+   const k=r[0];inv[k]=(inv[k]|0)+n;out('Gave you '+n+' × '+INAME[k]+'.');saveLocal(true);if(pnOpen)rPn();return}
+  if(cmd==='gold'){const n=Math.min(1e7,Math.max(0,parseInt(args[0])||0));GLD+=n;out('Gave you '+n+' gold.');saveLocal(true);return}
+  if(cmd==='xp'){const n=parseInt(args[args.length-1]);const i=skillIdx(args.slice(0,-1).join(' '));if(i<0||!(n>0)){out('Usage: /xp skill amount   (skills: '+SKN.join(', ')+')');return}addXp(i,Math.min(5e7,n));out('Gave '+n+' '+SKN[i]+' XP.');return}
+  if(cmd==='heal'){P.hp=6;hunger=100;try{MANA=maxMP()}catch(e){}out('Healed.');return}
+  if(cmd==='boss'){const t=(args[0]||'').toLowerCase();
+   if(t==='off'||t==='end'||t==='stop'){if(window.SQWBFORCE&&SQWBFORCE.dev){window.SQWBFORCE=null;out('Dev boss removed.')}else out('No dev boss is up.');return}
+   if(!WBT[t]){out('Usage: /boss dragon|demon|giant|wisp [hp]  ·  /boss off');return}if(SCENE&&!SCENE.room.region){out('Go outside first.');return}
+   const hp=Math.max(1,Math.min(200000,parseInt(args[1])||WBT[t].hp));
+   window.SQWBFORCE={dev:1,type:t,where:curRegion(),slot:900000000+Math.floor(Math.random()*90000000),start:wbNow()-1,hp,at:{x:Math.round(P.x+face[0]*70),y:Math.round(P.y+face[1]*70+(face[0]?0:10))}};
+   WB.told=-1;out('Spawned a '+WBT[t].n+' ('+hp+' HP) just in front of you. Only you can see it. /boss off to remove it.');return}
+  return false}
+ const _s=mpSend;mpSend=function(t){const m=String(t||'').trim().match(/^\/(\w+)\s*(.*)$/);if(m&&devOK){const c=m[1].toLowerCase(),a=m[2].trim()?m[2].trim().split(/\s+/):[];
+   if(['dev','devhelp','give','find','gold','xp','heal','boss'].includes(c)){try{dev(c,a)}catch(e){out('Dev command failed: '+e.message)}return}}return _s(t)};
+ window.SQDEV=()=>devOK}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
