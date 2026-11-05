@@ -9092,6 +9092,7 @@ window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-6',d:'Nov 5, 2026',t:'Flame Crown fix',n:['Fixed: with the Lone Bonfire perk, lighting a new campfire made your flame wisp vanish instead of moving to the new fire.']},
  {v:'2026.11.05-5',d:'Nov 5, 2026',t:'A bigger Wiki',n:['Skills: pick a skill to see just that one: how to train it, its perks and what it unlocks.','New wiki pages: Guides (getting a boat, unlocking the islands, making gold, world bosses, building a home, playing with friends), an XP table with a calculator, every Shop with prices, People (who\'s who and where), and Maps of every island with numbered landmarks.','Monsters and dungeon bosses now have pictures.']},
  {v:'2026.11.05-4',d:'Nov 5, 2026',t:'Patch notes',n:['Patch notes are now in the Wiki. The WIKI button shows NEW when there\'s an update you haven\'t read.']},
  {v:'2026.11.05-3',d:'Nov 5, 2026',t:'The Wiki',n:['New: a Wiki on the title screen and in the START menu, with skills, items, crafting, monsters, bosses, dungeons, quests, islands and pets, plus search.','The Flame Crown now has proper side and back views.']},
@@ -9986,7 +9987,7 @@ var CROWN=false;
 // ---- the little flame wisp ----
 const FWP={f:null,x:0,y:0,tx:0,ty:0,rt:0,cd:0,balls:[],t:0};const FW_R=64;
 const fwDmg=()=>2+Math.floor(lvOf(5)/20);
-{const _f=fire;fire=function(){const n0=fires.length;_f();if(fires.length>n0&&CROWN){const f=fires[fires.length-1];const had=FWP.f&&fires.includes(FWP.f);FWP.f=f;FWP.x=f.x+14;FWP.y=f.y-12;FWP.rt=0;FWP.balls.length=0;
+{const _f=fire;fire=function(){const before=new Set(fires),had=!!(FWP.f&&fires.includes(FWP.f)&&FWP.f.life>0);_f();const f=fires.find(x=>!before.has(x)&&!x._rp&&!x._glow);if(f&&CROWN){FWP.f=f;FWP.x=f.x+14;FWP.y=f.y-12;FWP.rt=0;FWP.balls.length=0;
    for(let k=0;k<16;k++){const a=k/16*6.283;part(f.x,f.y-6,Math.cos(a)*60,Math.sin(a)*40-30,.5,k%2?'#f8e060':'#f88830',-20,2)}say(had?'Your flame wisp moves to the new fire.':'A little flame wisp answers your crown!')}}}
 const fwLive=()=>!!(FWP.f&&fires.includes(FWP.f)&&FWP.f.life>0);
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen)return;if(!fwLive()){if(FWP.f&&!fires.includes(FWP.f)&&FWP.f.life<=0)FWP.f=null;FWP.balls.length=0;return}
