@@ -1648,7 +1648,7 @@ function drawFence(i,s,ghost){const x=i%N,y=(i/N)|0,px=x*16+(s.shake>0?Math.roun
  Rg(px+5,py-4,6,19,O);Rg(px+6,py-3,4,17,WD.md);Rg(px+6,py-3,4,2,WD.hi);Rg(px+9,py-1,1,15,WD.dk);Rg(px+6,py+2,1,1,WD.dk)}
 const _ds18=drawStruct;drawStruct=function(i,s,ghost){if(!SCENE&&WALLISH.has(s.t))return drawFence(i,s,ghost);return _ds18(i,s,ghost)};
 // --- farm fields: neighboring plots merge into one field with a rim ---
-function drawPlot(i,p,tm){const x=i%N,y=(i/N)|0,px=x*16,py=y*16,w=wet(p),has=(dx,dy)=>FARM.has((y+dy)*N+x+dx);
+function drawPlot(i,p,tm,X,Y,hasF){const x=X!=null?X:i%N,y=Y!=null?Y:(i/N)|0,px=x*16,py=y*16,w=wet(p),has=hasF||((dx,dy)=>FARM.has((y+dy)*N+x+dx));
  const base=w?'#6a4428':'#9a6a3c',fur=w?'#4e3018':'#7e5430',lt=w?'#7c5636':'#b8844e',rim='#3a2410';
  Rg(px,py,16,16,base);for(const yy of[3,8,13])Rg(px,py+yy,16,1,fur);for(let k=0;k<3;k++)Rg(px+((x*7+k*5)%14)+1,py+((y*3+k*7)%12)+1,1,1,lt);
  if(!has(-1,0)){Rg(px,py,1,16,rim);Rg(px+1,py,1,16,fur)}if(!has(1,0)){Rg(px+15,py,1,16,rim);Rg(px+14,py,1,16,lt)}
@@ -3566,7 +3566,7 @@ function hdCropS(c,s,ripe){return hdK('cp'+c+s+(ripe?1:0),0,-8,16,24,p=>{const G
  else if(c==='carrot'){for(const x of[8,22]){p.box(x-4,14,x+4,22,hdShadeOf('#f08830',4),3,.1);for(let k=0;k<3;k++)p.F(x-3,16+k*2,x-1,17+k*2,hdC('#c86018'));
    for(let k=0;k<4;k++){const a=-.9+k*.6;for(let j=0;j<10;j++)p.put(Math.round(x+Math.sin(a)*j*.8),14-j,LEAFP[2+(j>5?1:0)])}}}
  else{p.ell(16,18,14,11,hdShadeOf('#e87820',5),.08);for(const x of[9,16,23])for(let y=9;y<28;y++)if(((x-16)/14)**2+((y-18)/11)**2<.85)p.put(x,y,hdC('#c85810'));p.box(14,3,18,9,hdShadeOf('#5a8a28',4),1);p.ell(24,6,4,3,LEAFP,.1)}},ripe?'#2a1a08':'#14301a')}
-drawPlot=function(i,p,tm){const x=i%N,y=(i/N)|0,px=x*16,py=y*16,has=(dx,dy)=>FARM.has((y+dy)*N+x+dx),m=(has(-1,0)?1:0)|(has(1,0)?2:0)|(has(0,-1)?4:0)|(has(0,1)?8:0);
+drawPlot=function(i,p,tm,X,Y,hasF){const x=X!=null?X:i%N,y=Y!=null?Y:(i/N)|0,px=x*16,py=y*16,has=hasF||((dx,dy)=>FARM.has((y+dy)*N+x+dx)),m=(has(-1,0)?1:0)|(has(1,0)?2:0)|(has(0,-1)?4:0)|(has(0,1)?8:0);
  hdPut(hdSoil(m,wet(p)),px,py);if(!p.c)return;const s=stageOf(p),rp=ripe(p);hdPut(hdCropS(p.c,rp?9:Math.min(s,2),rp),px,py,rp&&p.c==='wheat'?Math.round(Math.sin(tm*1.5+x)*1)/2:0);
  if(rp&&Math.sin(tm*3+i)>.9){g.fillStyle='#fff8c0';g.fillRect(px+3+(i%9),py+1+(i%5),1,1)}};
 // --- item icons: every icon is smoothed (EPX) to 2x, given a thin dark outline and a soft top-left highlight ---
@@ -9052,6 +9052,53 @@ function trUseForeignStr2(i,s){if(s.t==='chest')chOpenShared(s._foreign,'s_'+i);
   return _a()}}
 {const _us=useStructure;useStructure=function(i){if(trUseForeignStr(i))return;return _us(i)}}
 window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
+// ---- Farming on every island ----
+// Same as on Hollow: HIT grass with a hoe to till it, plant seeds from the Bag (PLANT), water with the watering can,
+// HIT ripe crops to harvest. Plots on each island are kept per island (saved as rfarm) and grow while you play.
+// Other players see your island plots (build/<uid>.r._f) and can't till over them.
+const RF={};const rfMap=id=>RF[id]||(RF[id]=new Map());
+const RF_OK=new Set([2,4,6,7,10,13,14,15]);   // grass, snow, dirt, forest floor, ash, crystal ground... (not sand, rock, lava, floors, ice or water)
+function rfForeign(id){const out=new Map();for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const r=BLDS.data[o]&&BLDS.data[o].r,f=r&&r._f&&r._f[id];if(!f)continue;
+  for(const e0 of(Array.isArray(f)?f:Object.values(f))){const e=Array.isArray(e0)?e0:Object.values(e0||{});out.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,s:e[3]|0,w:!!e[4],_foreign:o})}}return out}
+function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y*R.w+x;if(!RF_OK.has(R.tiles[i])||R.solid.has(i)||rgObjAt(R,x,y))return false;const k=rbK(x,y);
+ if(rfMap(R.region).has(k)||rfForeign(R.region).has(k)||rbMap(R.region).has(k)||rbForeignAt(R.region,x,y))return false;
+ for(const p of[R.spawn,R.dock])if(p&&Math.hypot(x-p[0],y-p[1])<4)return false;
+ if(typeof rhAt==='function'&&(rhAt(rhHere(),x,y)||rhAt(rhForeign(R.region),x,y)))return false;
+ return!fires.some(f=>Math.abs(f.x-(x*16+8))<12&&Math.abs(f.y-(y*16+8))<12)}
+// HIT: harvest, water, check, or till
+{const _a=attack;attack=function(){const R=rbR();if(!R||dead||menuOpen||pnOpen||BUILD||swing>0||FISH||facingNpc())return _a();
+  const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),k=rbK(tx,ty);if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _a();
+  const p=rfMap(R.region).get(k);
+  if(p){swing=.25;if(ripe(p)){harvest(-1,p);return}
+   if(p.c&&!wet(p)){if(!TL.can){say('Buy a watering can at the general store to water crops.');sfx('swish');return}p.w=CLK+WATER_FOR;addXp(11,3);say('Watered the '+CROPS[p.c].n.toLowerCase()+'.');sfx('splash');saveLocal();return}
+   if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');sfx('swish');return}
+   const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');sfx('swish');return}
+  const fo=rfForeign(R.region).get(k);if(fo){notYours(fo._foreign);return}
+  if(TL.hoe&&!rbMap(R.region).has(k)&&rfCanTill(R,tx,ty)){swing=.25;rfMap(R.region).set(k,{c:null,g:0,w:0});addXp(11,4);sfx('chop');saveLocal(true);say('Tilled! Plant seeds from your Bag.');return}
+  return _a()}}
+// planting
+{const _sb=startBuild;startBuild=function(k){const R=rbR();if(!R||!isSeed(k))return _sb(k);if((inv[k]|0)<1)return;const C=CROPS[SEED2CROP[k]];
+  if(lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');closePanel();return}BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')}}
+{const _pb=placeBuild;placeBuild=function(){const R=rbR();if(!R||!BUILD||!isSeed(BUILD.k))return _pb();const k=BUILD.k,[x,y]=frontTile(),p=rfMap(R.region).get(rbK(x,y));
+  if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'You need tilled soil. Buy a hoe at the general store.');sfx('swish');return}
+  if(p.c){say('Something is already growing there.');sfx('swish');return}inv[k]--;p.c=SEED2CROP[k];p.g=0;addXp(11,5);sfx('rustle');saveLocal(true);if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
+// growing (every island's plots grow while you play, like Hollow's)
+{const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen)return;for(const id in RF)for(const p of RF[id].values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}}
+// drawing: plots lie flat on the ground
+{const _rn=rgNear;rgNear=function(R,x0,y0,x1,y1){const out=_rn(R,x0,y0,x1,y1);if(!R||!R.region||!(SCENE&&SCENE.room===R))return out;const M=rfMap(R.region),F=rfForeign(R.region);
+  for(const[k,p]of M){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2)out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}
+  for(const[k,f]of F){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2){const p={c:f.c,g:f.c?f.s*CROPS[f.c].st:0,w:f.w?CLK+60:0};out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}}return out}}
+{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rf'){const{M,F,tx,ty}=it;try{GC=g;drawPlot(-1,it.p,tm,tx,ty,(dx,dy)=>M.has(rbK(tx+dx,ty+dy))||F.has(rbK(tx+dx,ty+dy)))}catch(e){}return}return _df(it,tm)}}
+// saving
+{const _sn=snap;snap=function(){const s=_sn();const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w)])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;return s}}
+{const _ap=applySave;applySave=function(S){_ap(S);for(const id in RF)delete RF[id];const o=S&&S.rfarm;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id]||!Array.isArray(o[id]))continue;const M=rfMap(id);
+   for(const e of o[id])if(Array.isArray(e)&&isFinite(e[0])&&isFinite(e[1]))M.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,g:Math.max(0,+e[3]||0),w:+e[4]||0})}}}
+{const _ng=newGame;newGame=function(){for(const id in RF)delete RF[id];_ng()}}
+// others see them
+{const _rp=rbPub;rbPub=function(){const o=_rp()||{};const f={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',p.c?stageOf(p):0,wet(p)?1:0])}if(a.length)f[id]=a}if(Object.keys(f).length)o._f=f;return Object.keys(o).length?o:null}}
+// region builds can't go on a plot
+{const _ro=rbOpen;rbOpen=function(R,x,y){if(rfMap(R.region).has(rbK(x,y))||rfForeign(R.region).has(rbK(x,y)))return false;return _ro(R,x,y)}}
+window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // ---- Developer commands (only for the game's owner account; checked by a hash of the signed-in email) ----
 // Type in chat: /dev for the list. /give <item> [n], /find <text>, /gold <n>, /xp <skill> <n>, /heal,
 // /boss <dragon|demon|giant|wisp> [hp] spawns a private world boss right next to you (only you see it; full loot),
@@ -9099,6 +9146,7 @@ window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-12',d:'Nov 5, 2026',t:'Farming everywhere',n:['Farming now works on every island: till with your hoe, plant seeds from the Bag, water and harvest, just like on Hollow Island. Your crops on each island keep growing while you play, and other players can see your fields.']},
  {v:'2026.11.05-11',d:'Nov 5, 2026',t:'New app icon',n:['The app icon is now your hero wearing the Flame Crown. On iPhone, remove the home screen icon and add it again (Share > Add to Home Screen) to see it.']},
  {v:'2026.11.05-10',d:'Nov 5, 2026',t:'New app icon',n:['SkillQuest has a proper pixel-art icon: a crossed sword and pickaxe under a gold crown. On iPhone, remove the old home screen icon and add it again (Share > Add to Home Screen) to get it.']},
  {v:'2026.11.05-9',d:'Nov 5, 2026',t:'Fixes',n:['The Flame Crown\'s wisp is drawn on top, so fences and trees no longer hide it.','On phones, the world boss banner sits under your health and quest boxes instead of covering them.']},
