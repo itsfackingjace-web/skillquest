@@ -197,7 +197,10 @@ function draw(){
  const tm=performance.now()/1000;NEWDRAW(cx,cy,x0,y0,x1,y1,vw,vh,tm);
  // darkness
  g.setTransform(1,0,0,1,0,0);const dk=dark();
- if(dk>0){g.globalCompositeOperation='multiply';g.fillStyle='rgba(60,70,160,'+(dk*.7)+')';g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';g.fillStyle='rgba(6,8,30,'+(dk*.2)+')';g.fillRect(0,0,W,H);
+ if(dk>0){// the night: darker everywhere except around you when your Flame Aura is lit
+  const AU=window.SQAURALIT&&SQAURALIT(),nightFill=(rgb,a)=>{if(!AU){g.fillStyle='rgba('+rgb+','+a+')';return}const sx=(P.x-Math.round(cx))*Z,sy=(P.y-4-Math.round(cy))*Z,r=AU*Z,gr=g.createRadialGradient(sx,sy,r*.35,sx,sy,r);
+   gr.addColorStop(0,'rgba('+rgb+','+(a*.08)+')');gr.addColorStop(.6,'rgba('+rgb+','+(a*.45)+')');gr.addColorStop(1,'rgba('+rgb+','+a+')');g.fillStyle=gr};
+  g.globalCompositeOperation='multiply';nightFill('60,70,160',dk*.7);g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';nightFill('6,8,30',dk*.2);g.fillRect(0,0,W,H);
   g.globalCompositeOperation='lighter';for(const f of fires){const sx=(f.x-Math.round(cx))*Z,sy=(f.y-Math.round(cy))*Z,r=48*(typeof fireLR==='function'?fireLR():1)*Z,gr=g.createRadialGradient(sx,sy,0,sx,sy,r);gr.addColorStop(0,'rgba(255,150,40,'+(.45*dk)+')');gr.addColorStop(1,'rgba(255,150,40,0)');g.fillStyle=gr;g.fillRect(sx-r,sy-r,r*2,r*2)}
   g.globalCompositeOperation='source-over'}
  {const vg=g.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=vg;g.fillRect(0,0,W,H);if(dk>0&&dk<.55){g.fillStyle='rgba(255,130,50,'+(.14*(1-dk/.55))+')';g.fillRect(0,0,W,H)}}
@@ -1575,8 +1578,9 @@ GEN.push({n:'Hoe',c:12,f:()=>{TL.hoe=1;say('Got a hoe! Face grass and press HIT 
  {n:'3 pumpkin seeds',c:25,f:()=>{inv.pumpkinseed=(inv.pumpkinseed|0)+3},hide:()=>lvOf(11)<15});
 // --- plots: tile index -> {c: crop or null, g: growth seconds, w: watered until (play clock)} ---
 const FARM=new Map();
-function farmFromSave(a){FARM.clear();if(!Array.isArray(a))return;for(const e of a){if(!Array.isArray(e))continue;const i=e[0]|0;if(i<0||i>=N*N||tile[i]===0)continue;FARM.set(i,{c:CROPS[e[1]]?e[1]:null,g:Math.max(0,+e[2]||0),w:+e[3]||0});obj[i]=null}}
-const _sn16=snap;snap=function(){const s=_sn16();s.farm=[...FARM].map(([i,p])=>[i,p.c,Math.round(p.g),Math.round(p.w)]);s.qv=5;return s};
+const TILL_LIFE=600,nowS=()=>Math.floor(Date.now()/1000);   // empty tilled soil turns back into grass after 10 minutes
+function farmFromSave(a){FARM.clear();if(!Array.isArray(a))return;for(const e of a){if(!Array.isArray(e))continue;const i=e[0]|0;if(i<0||i>=N*N||tile[i]===0)continue;FARM.set(i,{c:CROPS[e[1]]?e[1]:null,g:Math.max(0,+e[2]||0),w:+e[3]||0,e:+e[4]||nowS()});obj[i]=null}}
+const _sn16=snap;snap=function(){const s=_sn16();s.farm=[...FARM].map(([i,p])=>[i,p.c,Math.round(p.g),Math.round(p.w),p.e|0]);s.qv=5;return s};
 const _ap16=applySave;applySave=function(S){_ap16(S);farmFromSave(S.farm);TL.hoe=S.tl&&S.tl.hoe?1:0;TL.can=S.tl&&S.tl.can?1:0;if((S.qv||0)<5&&S.q&&Q.i>=13)Q.i=Math.min(QS.length,Q.i+1)};
 QS.splice(13,0,{n:'Green Thumb',d:'Buy a hoe and seeds at the general store, then grow and harvest 5 crops.',type:'harvest',amt:5,r:{g:120,xp:[11,500]}});
 const _qv16=qVal;qVal=function(q){return q.type==='harvest'?Q.k:_qv16(q)};
@@ -1585,7 +1589,7 @@ const stageOf=p=>p.c?Math.min(CROPS[p.c].max,Math.floor(p.g/CROPS[p.c].st)):0,ri
 function canTill(x,y){if(x<1||y<1||x>=N-1||y>=N-1)return false;const i=y*N+x;return tile[i]===2&&!obj[i]&&!STR.has(i)&&!BS.has(i)&&!houseAt(x,y)&&!FARM.has(i)&&!inVillage(x,y)&&!fires.some(f=>Math.abs(f.x-(x*16+8))<12&&Math.abs(f.y-(y*16+8))<12)}
 function harvest(i,p){const C=CROPS[p.c],L=lvOf(11);let n=C.yield[0]+(Math.random()<.35+L*.01?C.yield[1]-C.yield[0]:0);inv[p.c]=(inv[p.c]|0)+n;let extra='';
  if(Math.random()<.45+L*.005){inv[C.seed]=(inv[C.seed]|0)+1;extra=' and a seed'}addXp(11,C.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='harvest')Q.k++;
- say('Harvested '+n+' '+C.n.toLowerCase()+(n>1&&p.c!=='wheat'?'s':'')+extra+'!');p.c=null;p.g=0;sfx('pickup');setTimeout(()=>sfx('coin'),120);saveLocal(true)}
+ say('Harvested '+n+' '+C.n.toLowerCase()+(n>1&&p.c!=='wheat'?'s':'')+extra+'!');p.c=null;p.g=0;p.e=nowS();sfx('pickup');setTimeout(()=>sfx('coin'),120);saveLocal(true)}
 // HIT on the farm: till, water, harvest
 const _atk16=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH)return _atk16();if(facingNpc())return _atk16();
  const[fx,fy]=front(13),tx=Math.floor(fx/T),ty=Math.floor(fy/T),i=ty*N+tx;if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _atk16();
@@ -1594,7 +1598,7 @@ const _atk16=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||s
   if(p.c&&!wet(p)){if(!TL.can){say('Buy a watering can at the general store to water crops.');sfx('swish');return}p.w=CLK+WATER_FOR;addXp(11,3);say('Watered the '+CROPS[p.c].n.toLowerCase()+'.');sfx('splash');saveLocal();return}
   if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');sfx('swish');return}
   const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');sfx('swish');return}
- if(TL.hoe&&canTill(tx,ty)){swing=.25;FARM.set(i,{c:null,g:0,w:0});addXp(11,4);sfx('chop');saveLocal(true);if(!farmTip){farmTip=true;say('Tilled! Plant seeds from your Bag.')}return}
+ if(TL.hoe&&canTill(tx,ty)){swing=.25;FARM.set(i,{c:null,g:0,w:0,e:nowS()});addXp(11,4);sfx('chop');saveLocal(true);if(!farmTip){farmTip=true;say('Tilled! Plant seeds from your Bag.')}return}
  _atk16()};
 let farmTip=false;
 // planting uses the Bag's PLANT button (plant mode works like build mode)
@@ -7740,7 +7744,7 @@ function notYours(owner){const n=performance.now();if(n-BLDS.msgAt>1500){BLDS.ms
 function buildSync(){if(!MP.on)return;const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);const wantS=new Map(),wantF=new Map();
  for(const owner in BLDS.data){if(MP.user&&owner===MP.user.uid)continue;const rec=BLDS.data[owner];if(!rec)continue;
   for(const e0 of arr(rec.s)){const e=arr(e0);const i=e[0]|0,t=e[1];if(i<0||i>=N*N||!BK.includes(t)||t==='house'||tile[i]===0)continue;if(!wantS.has(i))wantS.set(i,{owner,t})}
-  for(const e0 of arr(rec.f)){const e=arr(e0);const i=e[0]|0;if(i<0||i>=N*N||tile[i]===0)continue;if(!wantF.has(i))wantF.set(i,{owner,c:CROPS[e[1]]?e[1]:null,g:+e[2]||0,w:+e[3]||0})}}
+  for(const e0 of arr(rec.f)){const e=arr(e0);const i=e[0]|0;if(i<0||i>=N*N||tile[i]===0)continue;if(!e[1]&&+e[4]&&nowS()-e[4]>TILL_LIFE)continue;if(!wantF.has(i))wantF.set(i,{owner,c:CROPS[e[1]]?e[1]:null,g:+e[2]||0,w:+e[3]||0})}}
  // structures
  for(const[i,s]of[...STR])if(s._foreign){const w=wantS.get(i);if(!w||w.owner!==s._foreign||w.t!==s.t)STR.delete(i);else wantS.delete(i)}
  for(const[i,w]of wantS){if(STR.has(i)||FARM.has(i)||BS.has(i))continue;STR.set(i,{t:w.t,hp:BHP[w.t]||4,_foreign:w.owner,items:w.t==='chest'?{}:undefined});obj[i]=null}
@@ -7750,7 +7754,7 @@ function buildSync(){if(!MP.on)return;const arr=v=>Array.isArray(v)?v:(v&&typeof
 function buildStart(){const d=FB.db;BLDS.unsub=d.onValue(d.ref(FB.D,'build'),s=>{BLDS.data=s.val()||{};buildSync()});
  MP.unsub.push(()=>{if(BLDS.unsub)BLDS.unsub();BLDS.unsub=null;BLDS.data={};BLDS.pubKey='';for(const[i,s]of[...STR])if(s._foreign)STR.delete(i);for(const[i,p]of[...FARM])if(p._foreign)FARM.delete(i)})}
 function buildTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now();if(now-BLDS.pubAt<3000)return;BLDS.pubAt=now;
- const s=[...STR].filter(([i,v])=>!v._foreign).map(([i,v])=>[i,v.t]),f=[...FARM].filter(([i,p])=>!p._foreign).map(([i,p])=>[i,p.c||'',Math.round(p.g),Math.round(p.w)]);
+ const s=[...STR].filter(([i,v])=>!v._foreign).map(([i,v])=>[i,v.t]),f=[...FARM].filter(([i,p])=>!p._foreign).map(([i,p])=>[i,p.c||'',Math.round(p.g),Math.round(p.w),p.e|0]);
  const r=rbPub(),k=JSON.stringify([s,f.map(q=>[q[0],q[1],Math.round(q[2]/5)]),r]);if(k!==BLDS.pubKey){BLDS.pubKey=k;FB.db.set(FB.db.ref(FB.D,'build/'+MP.user.uid),s.length||f.length||r?Object.assign({s,f},r?{r}:{}):null).catch(()=>{BLDS.pubKey=''})}
  if(BLDS.data&&Object.keys(BLDS.data).length&&![...STR.values()].some(v=>v._foreign)&&![...FARM.values()].some(p=>p._foreign))buildSync()}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!BLDS.unsub)try{buildStart()}catch(e){mpErr(e)}}}
@@ -9059,7 +9063,7 @@ window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
 const RF={};const rfMap=id=>RF[id]||(RF[id]=new Map());
 const RF_OK=new Set([2,4,6,7,10,13,14,15]);   // grass, snow, dirt, forest floor, ash, crystal ground... (not sand, rock, lava, floors, ice or water)
 function rfForeign(id){const out=new Map();for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const r=BLDS.data[o]&&BLDS.data[o].r,f=r&&r._f&&r._f[id];if(!f)continue;
-  for(const e0 of(Array.isArray(f)?f:Object.values(f))){const e=Array.isArray(e0)?e0:Object.values(e0||{});out.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,s:e[3]|0,w:!!e[4],_foreign:o})}}return out}
+  for(const e0 of(Array.isArray(f)?f:Object.values(f))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(!e[2]&&+e[5]&&nowS()-e[5]>TILL_LIFE)continue;out.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,s:e[3]|0,w:!!e[4],_foreign:o})}}return out}
 function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y*R.w+x;if(!RF_OK.has(R.tiles[i])||R.solid.has(i)||rgObjAt(R,x,y))return false;const k=rbK(x,y);
  if(rfMap(R.region).has(k)||rfForeign(R.region).has(k)||rbMap(R.region).has(k)||rbForeignAt(R.region,x,y))return false;
  for(const p of[R.spawn,R.dock])if(p&&Math.hypot(x-p[0],y-p[1])<4)return false;
@@ -9074,7 +9078,7 @@ function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y
    if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');sfx('swish');return}
    const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');sfx('swish');return}
   const fo=rfForeign(R.region).get(k);if(fo){notYours(fo._foreign);return}
-  if(TL.hoe&&!rbMap(R.region).has(k)&&rfCanTill(R,tx,ty)){swing=.25;rfMap(R.region).set(k,{c:null,g:0,w:0});addXp(11,4);sfx('chop');saveLocal(true);say('Tilled! Plant seeds from your Bag.');return}
+  if(TL.hoe&&!rbMap(R.region).has(k)&&rfCanTill(R,tx,ty)){swing=.25;rfMap(R.region).set(k,{c:null,g:0,w:0,e:nowS()});addXp(11,4);sfx('chop');saveLocal(true);say('Tilled! Plant seeds from your Bag.');return}
   return _a()}}
 // planting
 {const _sb=startBuild;startBuild=function(k){const R=rbR();if(!R||!isSeed(k))return _sb(k);if((inv[k]|0)<1)return;const C=CROPS[SEED2CROP[k]];
@@ -9084,18 +9088,21 @@ function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y
   if(p.c){say('Something is already growing there.');sfx('swish');return}inv[k]--;p.c=SEED2CROP[k];p.g=0;addXp(11,5);sfx('rustle');saveLocal(true);if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
 // growing (every island's plots grow while you play, like Hollow's)
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen)return;for(const id in RF)for(const p of RF[id].values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}}
+// empty tilled soil turns back into grass after a while (so nobody can cover the world in dirt)
+setInterval(()=>{const t=nowS();let n=0;for(const[i,p]of[...FARM]){if(p._foreign||p.c)continue;if(!p.e){p.e=t;continue}if(t-p.e>TILL_LIFE){FARM.delete(i);n++}}
+ for(const id in RF)for(const[k,p]of[...RF[id]]){if(p.c)continue;if(!p.e){p.e=t;continue}if(t-p.e>TILL_LIFE){RF[id].delete(k);n++}}if(n)try{saveLocal(true)}catch(e){}},5000);
 // drawing: plots lie flat on the ground
 {const _rn=rgNear;rgNear=function(R,x0,y0,x1,y1){const out=_rn(R,x0,y0,x1,y1);if(!R||!R.region||!(SCENE&&SCENE.room===R))return out;const M=rfMap(R.region),F=rfForeign(R.region);
   for(const[k,p]of M){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2)out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}
   for(const[k,f]of F){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2){const p={c:f.c,g:f.c?f.s*CROPS[f.c].st:0,w:f.w?CLK+60:0};out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}}return out}}
 {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rf'){const{M,F,tx,ty}=it;try{GC=g;drawPlot(-1,it.p,tm,tx,ty,(dx,dy)=>M.has(rbK(tx+dx,ty+dy))||F.has(rbK(tx+dx,ty+dy)))}catch(e){}return}return _df(it,tm)}}
 // saving
-{const _sn=snap;snap=function(){const s=_sn();const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w)])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;return s}}
+{const _sn=snap;snap=function(){const s=_sn();const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w),p.e|0])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;return s}}
 {const _ap=applySave;applySave=function(S){_ap(S);for(const id in RF)delete RF[id];const o=S&&S.rfarm;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id]||!Array.isArray(o[id]))continue;const M=rfMap(id);
-   for(const e of o[id])if(Array.isArray(e)&&isFinite(e[0])&&isFinite(e[1]))M.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,g:Math.max(0,+e[3]||0),w:+e[4]||0})}}}
+   for(const e of o[id])if(Array.isArray(e)&&isFinite(e[0])&&isFinite(e[1]))M.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,g:Math.max(0,+e[3]||0),w:+e[4]||0,e:+e[5]||nowS()})}}}
 {const _ng=newGame;newGame=function(){for(const id in RF)delete RF[id];_ng()}}
 // others see them
-{const _rp=rbPub;rbPub=function(){const o=_rp()||{};const f={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',p.c?stageOf(p):0,wet(p)?1:0])}if(a.length)f[id]=a}if(Object.keys(f).length)o._f=f;return Object.keys(o).length?o:null}}
+{const _rp=rbPub;rbPub=function(){const o=_rp()||{};const f={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',p.c?stageOf(p):0,wet(p)?1:0,p.e|0])}if(a.length)f[id]=a}if(Object.keys(f).length)o._f=f;return Object.keys(o).length?o:null}}
 // region builds can't go on a plot
 {const _ro=rbOpen;rbOpen=function(R,x,y){if(rfMap(R.region).has(rbK(x,y))||rfForeign(R.region).has(rbK(x,y)))return false;return _ro(R,x,y)}}
 window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
@@ -9146,6 +9153,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-13',d:'Nov 5, 2026',t:'Farming tweak & Flame Aura',n:['Tilled soil with nothing planted in it turns back into grass after 10 minutes, on every island. Plant something to keep it.','Flame Aura (Firemaking 30) now really lights up the night around you while one of your campfires is burning, instead of just a faint orange tint.']},
  {v:'2026.11.05-12',d:'Nov 5, 2026',t:'Farming everywhere',n:['Farming now works on every island: till with your hoe, plant seeds from the Bag, water and harvest, just like on Hollow Island. Your crops on each island keep growing while you play, and other players can see your fields.']},
  {v:'2026.11.05-11',d:'Nov 5, 2026',t:'New app icon',n:['The app icon is now your hero wearing the Flame Crown. On iPhone, remove the home screen icon and add it again (Share > Add to Home Screen) to see it.']},
  {v:'2026.11.05-10',d:'Nov 5, 2026',t:'New app icon',n:['SkillQuest has a proper pixel-art icon: a crossed sword and pickaxe under a gold crown. On iPhone, remove the old home screen icon and add it again (Share > Add to Home Screen) to get it.']},
@@ -9913,10 +9921,11 @@ var LUX={};
  // (light only: it doesn't keep monsters away, heal you, or stop hunger)
  TREES[5].choices[30].push({id:'fi_aura',n:'Flame Aura',d:'While one of your campfires is burning, you light up everything around you at night. Light only: no healing, warmth or monster repelling.'});
  window.SQAURA=()=>{try{return perk(5,'fi_aura')&&myFire()}catch(e){return false}};
+ window.SQAURALIT=()=>{try{return!dead&&perk(5,'fi_aura')&&myFire()?150:0}catch(e){return 0}};
  const myFire=()=>{if(fires.some(f=>!f._rp&&f.life>0))return true;const st=window.FIRESTASH;if(st)for(const k in st)if(Array.isArray(st[k])&&st[k].some(f=>!f._rp&&f.life>0))return true;return false};
  const _dh=drawHUD;drawHUD=function(){try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
    if(dk>.05&&!dead&&perk(5,'fi_aura')&&myFire()){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2),sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=120*Z,fl=1+Math.sin(performance.now()/180)*.03;
-    g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(sx,sy,0,sx,sy,r*fl);gr.addColorStop(0,'rgba(255,215,150,'+(.4*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.2*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
+    g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(sx,sy,0,sx,sy,r*fl);gr.addColorStop(0,'rgba(255,215,150,'+(.22*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.1*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
     g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){}_dh()}}
 // the leaderboards take the controller / keyboard while they're open (title screen)
 {const _n=navRoot;navRoot=function(){const lb=document.getElementById('sqlb');if(lb&&lb.style.display==='flex')return lb;return _n()}}
