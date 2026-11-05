@@ -8674,8 +8674,16 @@ window.SQWB=WB;
   for(const s of[-1,1]){const sx=s*20,sy=-104+br,T=[[s*44,-186+w],[s*70,-168+w*.8],[s*80,-130+w*.5],[s*72,-98]];const pts=[[sx,sy]];
    for(let k=0;k<T.length;k++){pts.push(T[k]);if(k<T.length-1){const m=[(T[k][0]+T[k+1][0])/2,(T[k][1]+T[k+1][1])/2];pts.push([m[0]+(sx-m[0])*.28,m[1]+(sy-m[1])*.28])}}pts.push([s*32,-80]);
    poly(p,pts,MEM,.9,.5,s<0?-.15:.15);for(const t of T)limb(p,sx,sy,t[0],t[1],3.6,1.3,BONE,.15);poly(p,[[s*42,-184+w],[s*44,-196+w],[s*48,-184+w]],HORN,.9,.4)}
-  const tl=[[18,-16,12],[34,-12,11],[50,-11,10],[64,-14,8.5],[74,-21,7],[80,-31,6],[82,-41,5]];for(const[x,y,r]of tl)p.ell(x+(y<-20?ts:0),y,r,r*.8,SKIN,.06);
-  for(const[x,y,r]of tl.slice(0,5))poly(p,[[x-3,y-r+1],[x,y-r-5],[x+3,y-r+1]],BEL,.9,.4);poly(p,[[78+ts,-45],[84+ts,-61],[92+ts,-45],[84+ts,-39]],HORN,.9,.5);
+  // tail: one smooth tapering curve (not a string of balls), a pale underside, spikes along the top and a spade tip
+  {const C=[],n=24;for(let k=0;k<=n;k++){const t=k/n;C.push([12+t*72+ts*t*t-t*t*t*10,-10+Math.sin(t*Math.PI)*7-t*t*48,14*(1-t*.72)])}
+   const up=[],dn=[];for(let k=0;k<=n;k++){const a2=C[Math.max(0,k-1)],c2=C[Math.min(n,k+1)],dx=c2[0]-a2[0],dy=c2[1]-a2[1],l=Math.hypot(dx,dy)||1,nx=dy/l,ny=-dx/l,[x,y,r]=C[k];up.push([x+nx*r,y+ny*r]);dn.push([x-nx*r,y-ny*r])}
+   poly(p,up.concat(dn.reverse()),SKIN,.85,.55,.1);
+   const und=[];for(let k=0;k<=n;k++){const a2=C[Math.max(0,k-1)],c2=C[Math.min(n,k+1)],dx=c2[0]-a2[0],dy=c2[1]-a2[1],l=Math.hypot(dx,dy)||1,nx=dy/l,ny=-dx/l,[x,y,r]=C[k];und.push([x-nx*r*.15,y-ny*r*.15])}
+   poly(p,und.concat(dn.slice()),BEL,.8,.3);
+   for(let k=4;k<n-3;k+=4){const a2=C[k-1],c2=C[k+1],dx=c2[0]-a2[0],dy=c2[1]-a2[1],l=Math.hypot(dx,dy)||1,nx=dy/l,ny=-dx/l,[x,y,r]=C[k],bx=x+nx*r,by=y+ny*r,h=5*(1-k/n)+2;
+    poly(p,[[bx-dx/l*3,by-dy/l*3],[bx+nx*h,by+ny*h],[bx+dx/l*3,by+dy/l*3]],BEL,.95,.5)}
+   const[tx,ty]=C[n],a2=C[n-2],dx=tx-a2[0],dy=ty-a2[1],l=Math.hypot(dx,dy)||1,ux=dx/l,uy=dy/l,nx=uy,ny=-ux;
+   poly(p,[[tx-nx*9-ux*2,ty-ny*9-uy*2],[tx+ux*18,ty+uy*18],[tx+nx*9-ux*2,ty+ny*9-uy*2],[tx+ux*4,ty+uy*4]],HORN,.9,.5)}
   for(const s of[-1,1]){p.ell(s*22,-28,16,18,SKIN,.06);p.ell(s*25,-8,17,8,SKIN,.02);for(const k of[-1,0,1])poly(p,[[s*25+k*7-3,-4],[s*25+k*7,5],[s*25+k*7+3,-4]],HORN,.85,.5)}
   p.ell(0,-64+br,34,40,SKIN,.08);p.ell(0,-56+br,22,30,BEL,.15);for(let k=0;k<5;k++){const yy=-76+k*8+br,hw=Math.round(Math.sqrt(Math.max(0,1-((yy+56-br)/30)**2))*21);for(let x=-hw+2;x<hw-1;x++)dot(p,x,yy,BEL[0])}
   for(const s of[-1,1]){limb(p,s*28,-90+br,s*38,-66+br,9,7,SKIN,.1);p.ell(s*39,-60+br,8,7,SKIN,.14);for(const k of[-1,0,1])poly(p,[[s*39+k*4-2,-55+br],[s*39+k*4,-49+br],[s*39+k*4+2,-55+br]],HORN,.85,.4)}
