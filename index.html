@@ -8742,73 +8742,137 @@ window.SQWB=WB;
   // the outline around everything
   const out=G.slice();for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const i=y*GW+x;if(G[i])continue;if((x>0&&G[i-1])||(x<GW-1&&G[i+1])||(y>0&&G[i-GW])||(y<GH-1&&G[i+GW]))out[i]=C.K}
   const c=document.createElement('canvas');c.width=GW;c.height=GH;const x=c.getContext('2d');for(let i=0;i<out.length;i++)if(out[i]){x.fillStyle=out[i];x.fillRect(i%GW,(i/GW)|0,1,1)}return c}
- // ---------- Demon ----------
- const DM={sk:P5(['#2a0608','#4e0e12','#7a1a1c','#a42a26','#cc4a38','#e8785a']),wing:P5(['#160608','#2a0c10','#401418','#5a1e20']),horn:P5(['#3a3430','#6e6658','#a89c84','#e0d6bc']),
-  dark:P5(['#140406','#280a0e','#3e1216']),hoof:P5(['#0c0808','#241a18','#40302c']),claw:P5(['#3a3430','#8a8274','#d8d0c0'])};
- function demonSp(fr){const b=hdBuf(220,200),p=hdPainter(b,110,190,true),w=[0,-6,-10,-4][fr],br=fr%2;
-  for(const s of[-1,1]){const sx=s*18,sy=-120,T=[[s*48,-162+w],[s*86,-176+w],[s*104,-140+w*.6],[s*100,-108]];const pts=[[sx,sy]];for(let k=0;k<T.length;k++){pts.push(T[k]);if(k<T.length-1){const m=[(T[k][0]+T[k+1][0])/2,(T[k][1]+T[k+1][1])/2];pts.push([m[0]+(sx-m[0])*.3,m[1]+(sy-m[1])*.3])}}pts.push([s*30,-96]);
-   poly(p,pts,DM.wing,.8,.4,s<0?-.1:.1);for(const t of T)limb(p,sx,sy,t[0],t[1],2.8,1,DM.dark,.2)}
-  for(let k=0;k<11;k++)p.ell(-18-k*5,-44+Math.sin(k*.7+fr)*5-k*.5,5.5-k*.33,5.5-k*.33,DM.sk,0);poly(p,[[-74,-56],[-90,-48],[-76,-38],[-72,-46]],DM.dark,.7,.4);
-  for(const s of[-1,1]){p.ell(s*15,-58,12,14,DM.sk,.02);limb(p,s*17,-48,s*24,-28,10,7,DM.sk,0);limb(p,s*24,-28,s*18,-10,7,6,DM.sk,-.05);p.box(s*18-8,-11,s*18+8,0,DM.hoof,2)}
-  poly(p,[[-20,-66],[20,-66],[14,-48],[-14,-48]],DM.dark,.6,.3);
-  // V-shaped torso: broad chest and shoulders, narrow waist
-  p.ell(0,-74+br,20,14,DM.sk,0);p.ell(0,-96+br,32,22,DM.sk,.06);for(const s of[-1,1]){p.ell(s*30,-106+br,14,12,DM.sk,.15);p.ell(s*12,-100+br,13,10,DM.sk,.2)}
-  for(let k=0;k<3;k++)for(const s of[-1,1])p.ell(s*6,-84+k*6+br,5.5,3.2,DM.sk,.12-k*.04);
-  for(const s of[-1,1]){limb(p,s*36,-104+br,s*48,-80+br,11,9,DM.sk,.05);limb(p,s*48,-80+br,s*50,-58+br,9,8,DM.sk,0);p.ell(s*50,-52+br,9,8,DM.sk,.12);for(const k of[0,1,2])poly(p,[[s*50-5+k*4,-46+br],[s*50-4+k*4,-41+br],[s*50-2+k*4,-46+br]],DM.claw,.8,.4)}
-  p.ell(0,-128+br,15,14,DM.sk,.14);poly(p,[[-12,-121+br],[12,-121+br],[7,-110+br],[-7,-110+br]],DM.sk,.6,.3);
-  for(const s of[-1,1]){for(let k=0;k<=11;k++){const t=k/11;p.ell(s*(10+t*20+t*t*8),-134-t*26+t*t*14+br,4.6-k*.36,4.6-k*.36,DM.horn,.12)}}
-  poly(p,[[-13,-133+br],[0,-126+br],[13,-133+br],[11,-128+br],[-11,-128+br]],DM.dark,.7,0);
-  for(const s of[-1,1]){dot(p,s*6-(s<0?4:0),-129+br,'#fff060',5,3);dot(p,s*6-(s<0?3:-1),-128+br,'#ff8010',3,2)}
-  dot(p,-6,-116+br,'#180406',12,3);for(const k of[0,1,2,3,4])dot(p,-5+k*2.4|0,-116+br,'#f0e8e0',1,2);
-  hdOutline(b,{1:hdC('#0a0204')});return hdCan(b)}
- // ---------- Stone Giant ----------
- const SG={st:P5(['#2e2a26','#4a443c','#6a6254','#8c8270','#aea28a','#cec2a6']),dk:P5(['#221e1a','#38322c','#4e463c']),moss:P5(['#1e4a1e','#2e6a28','#4a8a34','#6aa848']),
-  wood:P5(['#3a2410','#5a3a1c','#7e5428','#a07038']),rope:P5(['#6a5430','#9a7e48','#c4a868'])};
- function giantSp(fr){const b=hdBuf(220,250),p=hdPainter(b,96,240,true),br=fr%2,sw=[0,2,4,2][fr];
-  for(const s of[-1,1]){p.ell(s*20,-52,17,14,SG.st,0);p.ell(s*22,-32,15,13,SG.st,0);p.ell(s*23,-12,17,11,SG.st,-.04);p.box(s*23-16,-8,s*23+16,0,SG.dk,4)}
-  p.ell(0,-62,30,16,SG.st,.02);
-  p.ell(0,-98+br,48,42,SG.st,.04);p.ell(-8,-108+br,30,24,SG.st,.2);p.ell(14,-80+br,18,12,SG.st,-.05);
-  for(const[pts]of[[[[-24,-118],[-18,-108],[-22,-98],[-14,-88]]],[[[18,-90],[22,-80],[16,-72]]],[[[4,-130],[8,-122],[4,-114]]]]){for(let q=0;q<pts.length-1;q++){const[a,c]=pts[q],[d,e]=pts[q+1],n=Math.ceil(Math.hypot(d-a,e-c));for(let k=0;k<=n;k++)dot(p,Math.round(a+(d-a)*k/n),Math.round(c+(e-c)*k/n)+br,SG.dk[0])}}
-  for(const[x,y,r]of[[-34,-130,11],[-20,-136,10],[28,-128,10],[38,-120,8],[-40,-96,6]])p.ell(x,y+br,r,r*.5,SG.moss,.12);
-  limb(p,-42,-118+br,-58,-80+br,15,13,SG.st,.06);limb(p,-58,-80+br,-60,-60+br,13,12,SG.st,.02);p.ell(-61,-54+br,15,13,SG.st,.1);for(const k of[0,1,2])dot(p,-70+k*6,-47+br,SG.dk[1],3,2);
-  // club: a thick log with a lashed boulder on top, raised high
-  limb(p,44,-120+br,60,-138-sw+br,14,12,SG.st,.08);p.ell(62,-142-sw+br,13,12,SG.st,.12);
-  limb(p,64,-130-sw,70,-182-sw*2,7,6,SG.wood,.12);for(let k=0;k<3;k++)dot(p,62,-172-sw*2+k*4,SG.rope[1],14,2);
-  p.ell(72,-194-sw*2,20,17,SG.st,.12);p.ell(66,-200-sw*2,10,7,SG.st,.32);for(const[x,y]of[[60,-190],[78,-186],[74,-200]])dot(p,x,y-sw*2,SG.dk[1],3,2);
-  p.ell(0,-150+br,22,19,SG.st,.14);p.box(-14,-140+br,14,-130+br,SG.st,4,-.05);poly(p,[[-20,-158+br],[20,-158+br],[16,-148+br],[-16,-148+br]],SG.dk,.95,.3);
-  for(const s of[-1,1]){dot(p,s*9-3,-152+br,'#fff0a0',7,4);dot(p,s*9-2,-151+br,'#ffa818',4,3)}dot(p,-8,-138+br,SG.dk[0],16,2);for(const[x,y,r]of[[-12,-166,8],[6,-168,7]])p.ell(x,y+br,r,r*.5,SG.moss,.12);
-  hdOutline(b,{1:hdC('#14100c')});return hdCan(b)}
- // ---------- Flame Wisp ----------
- const FW2={fire:P5(['#7a1404','#b02808','#e04c10','#f88020','#f8b830','#fce070','#fffad0'])};
- function wispSp(fr){const b=hdBuf(150,200),p=hdPainter(b,75,180,true);
-  const tongue=(k,n,base,lenA,lenB,wid,spread,pal,v)=>{const a=(k-(n-1)/2)*spread,len=lenA+((k*37+fr*23)%5)*lenB,cx=Math.sin(a)*32,sway=Math.sin(fr*1.6+k*1.3)*8;
-   poly(p,[[cx-wid,base+12],[cx-wid*.7+sway*.3,base-len*.35],[cx+sway*.7,base-len*.75],[cx+sway,base-len],[cx+wid*.4+sway*.6,base-len*.55],[cx+wid,base+12]],pal,v,.25,0)};
-  for(let k=0;k<9;k++)tongue(k,9,-74,46,10,13,.34,FW2.fire.slice(1,6),.95);
-  for(let k=0;k<7;k++)tongue(k,7,-78,30,7,9,.3,FW2.fire.slice(3),.95);
-  p.ell(0,-62,36,34,FW2.fire.slice(1,5),.2);p.ell(0,-58,27,26,FW2.fire.slice(3,6),.25);p.ell(-4,-56,15,15,FW2.fire.slice(5),.4);
-  for(const s of[-1,1]){const ex=s*11;poly(p,[[ex-7,-70],[ex+7,-70],[ex+5,-60],[ex-5,-60]],P5(['#3a0602','#5a1004']),.8,.2);dot(p,ex-(s<0?4:0)+(s<0?1:-1),-67,'#fff8c0',3,3);
-   poly(p,[[ex-9,-74-(s<0?4:0)],[ex+9,-74-(s<0?0:4)],[ex+9,-72-(s<0?0:4)],[ex-9,-72-(s<0?4:0)]],P5(['#3a0602']),.5,0)}
-  poly(p,[[-14,-50],[14,-50],[10,-40],[-10,-40]],P5(['#3a0602','#5a1004']),.7,.2);for(let k=0;k<5;k++)poly(p,[[-10+k*5,-50],[-8+k*5,-45],[-6+k*5,-50]],P5(['#fff4c0']),.5,0);
-  hdOutline(b,{1:hdC('#9a2206')});return hdCan(b)}
+ // ---------- chunky pixel-art kit (shared by the demon, giant and wisp) ----------
+ // Parts are painted back to front with flat 3-tone shading (light top/left, dark bottom/right), a darker seam where a
+ // part overlaps one behind it, and a solid outline round the whole figure. 1 sprite pixel = 2 world pixels.
+ function chunkKit(GW,GH,OY,outline){const G=new Array(GW*GH).fill(null),PT=new Array(GW*GH).fill(-1);let pid=0;
+  const inPolyG=(x,y,pts)=>inPoly(x+.5,y+.5,pts);
+  function part(test,pal,o){o=o||{};const id=pid++,M=new Set(),ln=o.ln||pal[3]||outline;for(let y=0;y<GH;y++)for(let x=0;x<GW;x++)if(test(x,y-OY))M.add(y*GW+x);
+   for(const i of M){const x=i%GW,y=(i/GW)|0;const up=!M.has(i-GW),dn=!M.has(i+GW)||!M.has(i+1);let c=o.flat?pal[1]:up||(!M.has(i-1)&&!o.noL)?pal[2]:dn?pal[0]:pal[1];
+    if(o.seg!=null&&y%3===o.seg&&!up)c=pal[0];G[i]=c;PT[i]=id}
+   if(o.noLine)return;
+   for(const i of M){const x=i%GW;for(const d of[-1,1,-GW,GW]){const k=i+d;if(d===-1&&x===0||d===1&&x===GW-1)continue;if(k>=0&&k<G.length&&!M.has(k)&&PT[k]>=0&&PT[k]!==id){G[i]=ln;break}}}}
+  const K={G,
+   poly:(pts,pal,o)=>part((x,y)=>inPolyG(x,y,pts),pal,o),
+   ell:(cx,cy,rx,ry,pal,o)=>part((x,y)=>((x+.5-cx)/rx)**2+((y+.5-cy)/ry)**2<=1,pal,o),
+   chain:(pts,pal,o)=>part((x,y)=>pts.some(([cx,cy,r])=>Math.hypot(x+.5-cx,y+.5-cy)<=r),pal,o),   // a tapering tube through [x,y,radius] points
+   px:(x,y,c)=>{x=Math.round(x);const Y=Math.round(y)+OY;if(x>=0&&x<GW&&Y>=0&&Y<GH)G[Y*GW+x]=c},
+   mir:pts=>pts.map(([x,y])=>[GW-1-x,y]),
+   line:(x0,y0,x1,y1,c)=>{const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0),1);for(let k=0;k<=n;k++)K.px(x0+(x1-x0)*k/n,y0+(y1-y0)*k/n,c)},
+   // wing ribs: only repaint pixels already covered (never the outline)
+   rib:(x0,y0,x1,y1,c)=>{const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0),1);for(let k=0;k<=n;k++){const X=Math.round(x0+(x1-x0)*k/n),Y=Math.round(y0+(y1-y0)*k/n)+OY,i=Y*GW+X;if(X>=0&&X<GW&&Y>=0&&Y<GH&&G[i])G[i]=c}},
+   curve:(x0,y0,x1,y1,bend,r0,r1,n)=>{const o=[];n=n||12;for(let k=0;k<=n;k++){const t=k/n,mx=(x0+x1)/2-(y1-y0)*bend,my=(y0+y1)/2+(x1-x0)*bend;o.push([(1-t)*(1-t)*x0+2*t*(1-t)*mx+t*t*x1,(1-t)*(1-t)*y0+2*t*(1-t)*my+t*t*y1,r0+(r1-r0)*t])}return o},
+   done:()=>{const out=G.slice();for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const i=y*GW+x;if(G[i])continue;if((x>0&&G[i-1])||(x<GW-1&&G[i+1])||(y>0&&G[i-GW])||(y<GH-1&&G[i+GW]))out[i]=outline}
+    const c=document.createElement('canvas');c.width=GW;c.height=GH;const x=c.getContext('2d');for(let i=0;i<out.length;i++)if(out[i]){x.fillStyle=out[i];x.fillRect(i%GW,(i/GW)|0,1,1)}return c}};
+  return K}
+ const flipCan=src=>{const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(src,0,0);return c};
+
+ // ---------- Demon: 48x50, crimson, curling horns, bat wings, fists wreathed in fire ----------
+ function demonSp(fr,dir){dir=dir||'s';const k=chunkKit(48,52,2,'#140406'),{poly,ell,chain,px,mir,rib,curve}=k;
+  const sk=['#5a1014','#982420','#cc4434','#3a080a'],dk=['#1e080a','#3a1216','#5a2026','#100406'],hn=['#7a7060','#b0a48a','#e8dec4','#4a4238'],hf=['#140c0a','#2e221e','#4a3a32','#0a0606'],wg=['#2a0a0e','#4a141a','#6a2028','#160406'];
+  const w=[0,-1,-2,-1][fr],b=fr%2,EY='#fff060',EO='#ff9010',FA='#f8f0e0';
+  const side=dir==='w',front=dir==='s',back=dir==='n';
+  if(!side){
+   const wing=[[18,16+b],[12,4+w],[5,0+w],[0,6+w],[3,9+w],[0,15+w],[5,15+w],[4,21+w],[9,19+w],[11,25],[16,22+b]];
+   const tl=curve(26,36,6,40,-.5,3,1.2,14);
+   if(front){for(const p of[wing,mir(wing)])poly(p,wg);for(const s of[0,1]){const f=s?x=>47-x:x=>x;for(const[a,c]of[[5,0],[0,6],[0,15],[4,21]])rib(f(16),18+b,f(a),c+w,wg[0])}
+    chain(tl,sk);const[tx,ty]=tl[tl.length-1];poly([[tx-3,ty+1],[tx,ty-4],[tx+2,ty+1],[tx,ty+2]],sk)}
+   // legs and hooves
+   for(const s of[0,1]){const M=s?mir:p=>p;ell(s?29.5:18.5,37,5,5,sk);poly(M([[15,39],[21,39],[21,46],[16,46]]),sk);poly(M([[14,46],[22,46],[22,49],[14,49]]),hf)}
+   poly([[17,32+b],[31,32+b],[30,40],[24,42],[18,40]],dk);
+   // V-shaped torso, shoulders, abs
+   poly([[12,15+b],[36,15+b],[33,23+b],[29,33+b],[19,33+b],[15,23+b]],sk);
+   if(front){poly([[20,25+b],[28,25+b],[27,33+b],[21,33+b]],sk,{seg:1,noL:1});k.line(17,22+b,23,23+b,sk[0]);k.line(25,23+b,31,22+b,sk[0]);px(24,19+b,sk[0]);px(24,20+b,sk[0]);px(24,21+b,sk[0])}
+   else{k.line(24,17+b,24,31+b,sk[0]);for(const s of[0,1]){const f=s?x=>47-x:x=>x;k.line(f(17),20+b,f(21),25+b,sk[0])}}
+   for(const s of[0,1]){const M=s?mir:p=>p;ell(s?35:12,18+b,5.5,4.5,sk);poly(M([[7,19+b],[13,20+b],[13,28+b],[8,28+b]]),sk);poly(M([[8,27+b],[13,27+b],[13,33+b],[8,33+b]]),sk);
+    ell(s?36.5:10.5,35+b,3.6,3,sk);if(front)for(const x of[8,10,12])px(s?47-x:x,38+b,hn[2])}
+   // head
+   for(const s of[0,1]){const f=s?x=>47-x:x=>x;chain(curve(f(20),6+b,f(12),-2+b,s?-.35:.35,2.3,1,10),hn,{noLine:1})}
+   ell(24,10+b,6.5,7,sk);
+   if(front){poly([[19,12+b],[29,12+b],[27,17+b],[21,17+b]],sk);k.line(19,8+b,22,9+b,dk[3]);k.line(25,9+b,28,8+b,dk[3]);
+    for(const x of[20,21])px(x,10+b,EY),px(x,11+b,EO);for(const x of[26,27])px(x,10+b,EY),px(x,11+b,EO);
+    k.line(21,14+b,27,14+b,'#200406');px(22,15+b,FA);px(26,15+b,FA);px(24,14+b,FA)}
+   if(back){for(const s of[0,1]){poly(s?mir(wing):wing,wg)}for(const s of[0,1]){const f=s?x=>47-x:x=>x;for(const[a,c]of[[5,0],[0,6],[0,15],[4,21]])rib(f(16),18+b,f(a),c+w,wg[0])}
+    const t2=curve(24,36,38,46,.45,3,1.2,14);chain(t2,sk);const[tx,ty]=t2[t2.length-1];poly([[tx-2,ty-1],[tx+4,ty-3],[tx+2,ty+2],[tx,ty+2]],sk)}}
+  else{// side, facing left
+   poly([[25,15+b],[30,3+w],[37,-1+w],[44,2+w],[41,6+w],[46,11+w],[40,12+w],[42,18+w],[36,17+w],[33,23]],wg);
+   for(const[a,c]of[[37,-1],[44,2],[46,11],[42,18]])rib(28,16+b,a,c+w,wg[0]);
+   {const tl=curve(26,34,44,38,.5,3,1.2,14);chain(tl,sk);const[tx,ty]=tl[tl.length-1];poly([[tx-1,ty-4],[tx+3,ty],[tx,ty+2],[tx-2,ty]],sk)}
+   ell(30,34+b,3,2.6,dk);poly([[29,22+b],[33,22+b],[33,32+b],[29,32+b]],dk);   // far arm, in shadow
+   ell(26,37,5.5,5,sk);poly([[24,39],[29,39],[30,46],[25,46]],sk);poly([[22,46],[31,46],[31,49],[22,49]],hf);
+   ell(20,37,5.5,5,sk);poly([[17,39],[23,39],[22,46],[17,46]],sk);poly([[13,46],[22,46],[22,49],[13,49]],hf);
+   poly([[18,32+b],[29,32+b],[28,40],[19,41]],dk);
+   poly([[16,15+b],[29,14+b],[30,22+b],[27,33+b],[19,33+b],[16,24+b]],sk);k.line(17,23+b,22,24+b,sk[0]);for(const y of[26,29])k.line(18,y+b,21,y+b,sk[0]);
+   ell(22,18+b,6,5,sk);poly([[17,19+b],[23,20+b],[21,28+b],[16,27+b]],sk);poly([[15,26+b],[20,27+b],[17,33+b],[12,32+b]],sk);ell(13.5,34+b,3.6,3,sk);for(const y of[33,35])px(9,y+b,hn[2]);
+   chain(curve(24,5+b,33,-1+b,-.4,2.4,1,10),hn,{noLine:1});
+   ell(21,10+b,6,6.5,sk);poly([[13,10+b],[21,10+b],[22,16+b],[16,16+b]],sk);
+   k.line(14,7+b,19,8+b,dk[3]);px(16,9+b,EY);px(17,9+b,EY);px(16,10+b,EO);k.line(14,13+b,19,13+b,'#200406');px(15,14+b,FA);px(18,14+b,FA);px(13,10+b,'#200406')}
+  return k.done()}
+
+ // ---------- Stone Giant: 56x88 (tall to fit the raised club), grey stone with moss, glowing eyes, a boulder club ----------
+ function giantSp(fr,dir){dir=dir||'s';const k=chunkKit(56,88,30,'#14100c'),{poly,ell,chain,px,mir,curve}=k;
+  const st=['#4a443c','#7a7060','#a89c84','#2e2a24'],dk=['#2e2a24','#4a443c','#6a6254','#1a1612'],ms=['#2e6a28','#4a8a34','#72b048','#1e4a1e'],wd=['#4a2c12','#7a4c22','#a06a34','#2e1a0a'],rp=['#8a6c38','#c4a868','#e0cc90','#5a4422'];
+  const b=fr%2,sw=[0,-1,-2,-1][fr],E1='#fff0a0',E2='#ffa818';
+  const moss=(x,y,r)=>ell(x,y,r,r*.55,ms,{noLine:1});
+  const club=(cx,cy)=>{poly([[cx-2,cy+16],[cx+1,cy+16],[cx+2,cy],[cx-1,cy]],wd);for(const y of[cy+3,cy+5])k.line(cx-2,y,cx+2,y,rp[1]);ell(cx+1,cy-5,8,7,st);moss(cx-2,cy-10,3);px(cx+4,cy-4,dk[1]);px(cx-2,cy-2,dk[1])};
+  if(dir==='w'){
+   // the far arm holds the club up behind; the near arm hangs in front
+   ell(33,20+b,6,5.5,st);poly([[30,18+b],[37,18+b],[38,6+b+sw],[33,6+b+sw]],st);ell(35.5,6+b+sw,4.5,4,st);club(35,-10+sw*2);ell(35.5,6+b+sw,4.5,4,st);
+   for(const x of[32,24]){ell(x,42,6,5,st);poly([[x-5,43],[x+5,43],[x+5,53],[x-5,53]],st);poly([[x-7,52],[x+5,52],[x+5,56],[x-7,56]],dk)}
+   ell(28,30+b,15,14,st);ell(31,23+b,11,8,st);moss(30,16+b,6);moss(39,23+b,4);moss(34,34+b,3);k.line(36,28+b,40,33+b,dk[1]);
+   ell(14,17+b,7.5,7,st);poly([[7,18+b],[15,17+b],[16,23+b],[9,23+b]],st);px(9,16+b,E1);px(10,16+b,E1);px(9,17+b,E2);k.line(7,14+b,12,14+b,dk[3]);k.line(9,21+b,13,21+b,dk[3]);moss(15,11+b,4);
+   ell(22,25+b,7,6,st);poly([[16,26+b],[23,26+b],[21,37+b],[15,37+b]],st);ell(17.5,39+b,5,4.5,st);for(const x of[13,16,19])px(x,43+b,dk[1])}
+  else{const front=dir==='s',CX=front?0:-40;   // seen from behind, the club is on the other side
+   const clubArm=()=>{const X=v=>front?v:57-v;ell(X(44),18+b,7,6,st);poly([[X(43),14+b],[X(50),14+b],[X(50),4+b+sw],[X(45),4+b+sw]],st);ell(X(48)+(front?0:0),4+b+sw,4.5,4,st);club(X(48),-12+sw*2);ell(X(48),4+b+sw,4.5,4,st)};
+   if(!front)clubArm();
+   for(const s of[0,1]){const M=s?mir:p=>p,x=s?36:19;ell(x,42,6.5,5,st);poly(M([[14,43],[24,43],[24,53],[14,53]]),st);poly(M([[12,52],[25,52],[25,56],[12,56]]),dk)}
+   ell(28,29+b,18,15,st);
+   if(front){k.line(20,26+b,26,28+b,dk[1]);k.line(36,26+b,30,28+b,dk[1]);k.line(22,34+b,26,36+b,dk[1]);k.line(26,36+b,25,39+b,dk[1]);k.line(33,33+b,35,37+b,dk[1]);moss(16,20+b,5);moss(39,19+b,4);moss(24,38+b,3)}
+   else{moss(22,22+b,7);moss(35,25+b,6);moss(28,34+b,4);k.line(28,18+b,28,30+b,dk[1]);px(20,30+b,dk[1]);px(37,31+b,dk[1])}
+   // the free arm hangs down
+   {const X=v=>front?v:55-v,M=front?p=>p:mir;ell(X(11),22+b,7,6,st);poly(M([[6,24+b],[13,24+b],[13,36+b],[7,36+b]]),st);ell(X(9.5),38+b,5,4.5,st);if(front)for(const x of[6,9,12])px(x,42+b,dk[1])}
+   ell(28,13+b,8,7.5,st);
+   if(front){poly([[22,15+b],[34,15+b],[32,20+b],[24,20+b]],st);k.line(22,11+b,26,12+b,dk[3]);k.line(30,12+b,34,11+b,dk[3]);for(const x of[24,25])px(x,13+b,E1),px(x,14+b,E2);for(const x of[31,32])px(x,13+b,E1),px(x,14+b,E2);k.line(25,18+b,31,18+b,dk[3]);moss(27,6+b,4)}
+   else{moss(28,8+b,6);moss(24,14+b,3)}
+   if(front)clubArm()}
+  return k.done()}
+
+ // ---------- Flame Wisp: 40x46, a living flame with a face ----------
+ function wispSp(fr,dir){dir=dir||'s';const k=chunkKit(40,49,3,'#6a1404'),{poly,ell,px}=k;
+  const f0=['#c02808','#e85010','#f88020','#8a1c06'],f1=['#f08020','#f8a830','#fcd060','#c84810'],f2=['#f8c840','#fce070','#fff4c0','#f09030'];
+  const lean=dir==='w'?3:0,ex=dir==='w'?-4:0;   // side-on, the flame trails back and the face sits to the front
+  const tongue=(cx,base,len,wid,pal,ph)=>{const sw=Math.round(Math.sin(fr*1.57+ph)*1.6)+lean;poly([[cx-wid,base],[cx-wid*.6+sw*.4,base-len*.5],[cx+sw,base-len],[cx+wid*.5+sw*.6,base-len*.45],[cx+wid,base]],pal,{noLine:1})};
+  const L=[[8,13,4],[13,20,4],[20,26,4.5],[27,19,4],[32,12,3.5]],ph=[0,2,4,1,3];
+  L.forEach(([x,l,w],i)=>tongue(x,26,l+((i+fr)%3),w,f0,ph[i]));
+  ell(20,31,13.5,11.5,f0,{noLine:1});poly([[13,38],[20,45],[27,38]],f0,{noLine:1});
+  [[12,13,3],[20,19,3.5],[27,13,3]].forEach(([x,l,w],i)=>tongue(x,24,l+((i+fr)%2),w,f1,ph[i]+1));
+  ell(20+ex*.5,31,10.5,10,f1,{noLine:1});ell(19+ex*.7,33,6,6,f2,{noLine:1});
+  if(dir!=='n'){const cx=20+ex;
+   for(const s of dir==='w'?[-1]:[-1,1]){const x=cx+s*4;poly([[x-2,27],[x+2,27],[x+2,31],[x-2,31]],['#3a0602','#3a0602','#3a0602','#3a0602'],{noLine:1});px(x-(s<0?1:0)-(dir==='w'?1:0),28,'#fff8c0');k.line(x-3,26-(s<0?1:0),x+2,26-(s<0?0:1),'#3a0602')}
+   if(dir==='w'){const x=cx+3;poly([[x-1,27],[x+2,27],[x+2,31],[x-1,31]],['#3a0602','#3a0602','#3a0602','#3a0602'],{noLine:1})}
+   poly([[cx-5,34],[cx+5,34],[cx+3,38],[cx-3,38]],['#3a0602','#3a0602','#3a0602','#3a0602'],{noLine:1});for(let i=0;i<4;i++)px(cx-4+i*2.6,34,'#fff4c0')}
+  return k.done()}
  const MAKE={dragon:dragonSp,demon:demonSp,giant:giantSp,wisp:wispSp};
- // scale to the world: each sprite's canvas is 2 texels per world pixel
- const SC={dragon:4,demon:1,giant:1,wisp:1.25};
- const DRC=[];   // the dragon is already outlined pixel art, so it skips the soft HD outline pass
- // its four facings: west is drawn, east is west mirrored, plus front (south) and back (north) views
- const drSp=(fr,d)=>{const k=d+fr;if(DRC[k])return DRC[k];if(d!=='e')return DRC[k]=dragonSp(fr,d);const src=drSp(fr,'w'),c=document.createElement('canvas');c.width=src.width;c.height=src.height;const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(src,0,0);return DRC[k]=c};
+ // every boss is drawn at 2 world pixels per sprite pixel
+ const SC={dragon:4,demon:4,giant:4,wisp:4};
+ // their four facings: west is drawn, east is west mirrored, plus front (south) and back (north) views
+ const BSC={};const bsSp=(t,fr,d)=>{const k=t+d+fr;if(BSC[k])return BSC[k];return BSC[k]=d==='e'?flipCan(bsSp(t,fr,'w')):MAKE[t](fr,d)};
+ // where each picture's feet sit, in sprite pixels / 2
+ const BOX={dragon:{w:11,e:13,s:12,n:12,y:26.5},demon:{w:11,e:13,s:12,n:12,y:26},giant:{w:13,e:15,s:14,n:14,y:43},wisp:{w:10,e:10,s:10,n:10,y:25}};
  // it turns to face the nearest player (you or anyone else here), with a little stickiness so it doesn't flicker
  function wbFace(n,x,y){let bx=P.x-x,by=P.y-y,bd=Math.hypot(bx,by);try{const l=mpLoc();if(l)for(const r of MP.players.values()){if(r.loc!==l||!live(r))continue;const d=Math.hypot(r.x-x,r.y-y);if(d<bd){bd=d;bx=r.x-x;by=r.y-y}}}catch(e){}
   let f=n._fd||'s';const ax=Math.abs(bx),ay=Math.abs(by),want=ax>ay?(bx<0?'w':'e'):(by<0?'n':'s');
   if(want!==f){const horiz=f==='w'||f==='e',wh=want==='w'||want==='e';if(horiz===wh||(wh?ax>ay*1.25:ay>ax*1.25))f=want}return n._fd=f}
- drawWB=function(n,tm){const x=Math.round(n.x),y=Math.round(n.y),t=n._wb,per={dragon:.18,demon:.16,giant:.22,wisp:.09}[t],fr=Math.floor(tm/per)%4,hit=WB.hitAt&&performance.now()-WB.hitAt<110,fd=t==='dragon'?wbFace(n,x,y):'w',c=t==='dragon'?drSp(fr,fd):hdEn('wb'+t+fr,()=>MAKE[t](fr)),K=SC[t];
-  const w=c.width/2*K,hh=c.height/2*K,ox={dragon:{w:11,e:13,s:12,n:12}[fd],demon:55,giant:48,wisp:37.5}[t]*K,oy={dragon:26.5,demon:95,giant:120,wisp:90}[t]*K;
-  if(t==='wisp'){const gl=g.createRadialGradient(x,y-26,2,x,y-26,46);gl.addColorStop(0,'rgba(255,190,80,.45)');gl.addColorStop(1,'rgba(255,120,30,0)');g.fillStyle=gl;g.fillRect(x-50,y-76,100,100);shd(x,y+8,26)}
-  else shd(x,y+6,t==='dragon'?70:t==='giant'?52:44);
+ drawWB=function(n,tm){const x=Math.round(n.x),y=Math.round(n.y),t=n._wb,per={dragon:.18,demon:.16,giant:.22,wisp:.09}[t],fr=Math.floor(tm/per)%4,hit=WB.hitAt&&performance.now()-WB.hitAt<110,fd=wbFace(n,x,y),c=bsSp(t,fr,fd),K=SC[t];
+  const w=c.width/2*K,hh=c.height/2*K,ox=BOX[t][fd]*K,oy=BOX[t].y*K;
+  if(t==='wisp'){const gl=g.createRadialGradient(x,y-32,2,x,y-32,50);gl.addColorStop(0,'rgba(255,190,80,.45)');gl.addColorStop(1,'rgba(255,120,30,0)');g.fillStyle=gl;g.fillRect(x-54,y-86,108,108);shd(x,y+8,26)}
+  else shd(x,y+6,t==='dragon'?70:t==='giant'?56:44);
   const bob=t==='wisp'?Math.round(Math.sin(tm*3)*2):0;g.drawImage(c,x-ox,y-oy+bob+2,w,hh);
   if(hit){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.35;g.drawImage(c,x-ox,y-oy+bob+2,w,hh);g.restore()}
-  if(t==='wisp')for(let k=0;k<6;k++){const a=tm*1.8+k*1.047,ex=Math.round(x+Math.cos(a)*30),ey=Math.round(y-30+Math.sin(a)*14+bob);g.fillStyle='rgba(255,200,90,.35)';g.fillRect(ex-3,ey-3,6,6);Rg(ex-1,ey-1,3,3,k%2?'#fff0a0':'#f88830')}
-  if(t==='demon'){for(const s of[-1,1]){const hx=x+s*25,hy=y-24+bob;for(let k=0;k<5;k++){const fl=Math.sin(tm*12+k*2+s)*1.5;Rg(Math.round(hx-2+k%3+fl),Math.round(hy-6-k*2),2,3,k%2?'#f8d040':'#f86020')}}}
-  if(t==='dragon'&&Math.floor(tm*1.5)%4===0){for(let k=0;k<8;k++){const a=Math.PI+(Math.random()-.5)*.6,d=4+Math.random()*22;{const fd=n._fd||'w';if(fd==='n')break;const q=(Math.random()-.5)*d*.5;Rg(Math.round(fd==='w'?x-36-d:fd==='e'?x+36+d:x+q),Math.round(fd==='s'?y-60+d*.7:y-63+q),2,2,k%2?'#f8e060':'#f86020')}}}}
+  if(t==='wisp')for(let k=0;k<6;k++){const a=tm*1.8+k*1.047,ex=Math.round(x+Math.cos(a)*32),ey=Math.round(y-32+Math.sin(a)*14+bob);g.fillStyle='rgba(255,200,90,.35)';g.fillRect(ex-3,ey-3,6,6);Rg(ex-1,ey-1,3,3,k%2?'#fff0a0':'#f88830')}
+  // the demon's fists burn (one fist in view side-on)
+  if(t==='demon'){const fb=fr%2*2,F=fd==='w'?[[-17,-32]]:fd==='e'?[[17,-32]]:[[-27,-30],[27,-30]];for(const[fx,fy]of F){const hx=x+fx,hy=y+fy+fb;for(let k=0;k<5;k++){const fl=Math.sin(tm*12+k*2+fx)*1.5;Rg(Math.round(hx-2+k%3+fl),Math.round(hy-6-k*2),2,3,k%2?'#f8d040':'#f86020')}}}
+  if(t==='dragon'&&Math.floor(tm*1.5)%4===0&&fd!=='n'){for(let k=0;k<8;k++){const d=4+Math.random()*22,q=(Math.random()-.5)*d*.5;Rg(Math.round(fd==='w'?x-36-d:fd==='e'?x+36+d:x+q),Math.round(fd==='s'?y-60+d*.7:y-63+q),2,2,k%2?'#f8e060':'#f86020')}}}
  window.SQWBART=MAKE}
 // ---- go ----
 mpRBtn();
