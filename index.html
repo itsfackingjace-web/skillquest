@@ -2794,7 +2794,7 @@ function wizOverlay(ox,oy,dir,st,fl){const C=GC;if(!C)return;const R=(a,b,w,hh,c
   else{R(-6,-6+by,12,12-by,O);R(-5,-5+by,10,10-by,P1);R(-5,-5+by,2,10-by,P3);R(3,-5+by,2,10-by,P2);R(-5,4,10,1,GDc);R(-5,-1+by,10,1,GDc);
    if(dir===0){R(-1,-5+by,2,9-by,GDc);R(-1,-1+by,2,1,'#f8f0a0')}R(-6+sw,5,12,1,O);
    const sk=OPT.skin[CH.sk][0];R(-8,-3+by,3,4,O);R(5,-3+by,3,4,O);R(-7,-2+by,2,2,sk);R(5,-2+by,2,2,sk);R(-7,-4+by,2,2,P2);R(5,-4+by,2,2,P2)}}
- if(CLS.helm==='m'){const t=dir===2?-1:dir===1?1:0;
+ if(CLS.helm==='m'&&!(typeof HIDEH!=='undefined'&&HIDEH)){const t=dir===2?-1:dir===1?1:0;
   R(-8,-15+by,16,3,O);R(-7,-14+by,14,1,P1);R(-7,-13+by,14,1,P2);
   const rows=[[-5,10],[-4,8],[-3,6],[-2,5],[-2,4],[-1,3],[-1,2]];rows.forEach(([a,w],i)=>{const y=-16-i+by,xo=Math.round(i*i*t/14);R(a+xo-1,y,w+2,1,O)});
   rows.forEach(([a,w],i)=>{const y=-16-i+by,xo=Math.round(i*i*t/14);R(a+xo,y,w,1,i===1?GDc:P1);if(w>3)R(a+xo,y,1,1,P3)});
@@ -9249,6 +9249,16 @@ var LUX={};
  const _sh=stationHTML;stationHTML=function(o){const h=_sh(o);if(!o||o.t!=='furnace')return h;const i=h.lastIndexOf('<button class="ng stb"');return i<0?h+jwRows():h.slice(0,i)+jwRows()+h.slice(i)};
  if(typeof forgeHTML==='function'){const _fh=forgeHTML;forgeHTML=function(...a){return _fh(...a)+jwRows()}}
  const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-jw]');if(b){const a=b.dataset.jw;if(a==='wear')jwWear(b.dataset.k);else if(a==='off')jwOff(b.dataset.s);else if(a==='make')jwMake(b.dataset.k);return}_oc(e)};
+ // ---- hide helmet: your helmet / hood / wizard hat still counts (defence, class bonuses), it just isn't drawn,
+ // for you or for anyone else. A checkbox on the Equipment screen; remembered with your save.
+ {const _g=gearCH;gearCH=function(){const c=_g();if(HIDEH){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.dyh}return c};
+  const _eh2=equipHTML;equipHTML=function(){const h=_eh2();const row='<label class="tc-r" style="cursor:pointer;margin:8px 0 2px"><span>Hide helmet</span><input type="checkbox" data-hideh="1" '+(HIDEH?'checked':'')+' style="width:20px;height:20px;cursor:pointer"></label>';
+   const k='<div class="qc" style="margin-top:12px">',i=h.indexOf(k);return i<0?h+row:h.slice(0,i)+row+h.slice(i)};
+  pbd.addEventListener('change',e=>{const b=e.target.closest('[data-hideh]');if(!b)return;HIDEH=!!b.checked;say(HIDEH?'Your helmet is hidden. It still protects you.':'Your helmet is showing again.');
+   try{saveLocal(true);saveCloud(true)}catch(err){}try{rPn()}catch(err){}try{if(typeof mpPres==='function')mpPres(true)}catch(err){}});
+  const _sn=snap;snap=function(){const o=_sn();if(HIDEH)o.hh=1;return o};
+  const _ap=applySave;applySave=function(S){_ap(S);HIDEH=!!(S&&S.hh)};
+  const _ng=newGame;newGame=function(){HIDEH=false;_ng()}}
  // ---- icons ----
  const _ic=iconURL;iconURL=function(k,col){const j=JK[k];if(!j)return _ic(k,col);const key='g71'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
   const G='#f8d848',GD2='#a87818',O2='#302010',[gc,gd]=GEMC[j.g];
@@ -9378,6 +9388,7 @@ var LUX={};
    for(let k=0;k<3;k++)Rg(x0+4+k*3,y0+4+Math.round(Math.sin(tm*4+k)*2),2,2,'#ffffff');Rg(x0-2,y0+14,20,3,'#5a4630');return}return _df(it,tm)};
  const _u=upd;upd=function(dt){_u(dt);const R=SCENE&&SCENE.room;if(!R||!R.dun||dead||menuOpen||pnOpen)return;const ex=R.items.find(it=>it.t==='dexit');
   if(ex&&Math.hypot(P.x-(ex.x*16+8),P.y-(ex.y*16+4))<8){const f0=R.dun.f;R.dun.f=1;try{leaveScene()}finally{R.dun.f=f0}say('You climb out of the '+((DKIND[R.dun.kind]||{}).name||'dungeon')+' into the open air.')}}}
+var HIDEH=false;   // Equipment > Hide helmet
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
