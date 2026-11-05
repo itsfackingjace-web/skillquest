@@ -2477,11 +2477,14 @@ TL.boat=0;let SAILING=false,sailTip=false,WRECK_DAY=-1,wakeT=0;
 const isWaterT=(tx,ty)=>tx>=0&&ty>=0&&tx<N&&ty<N&&(tile[ty*N+tx]===0||BRIDGE.has(ty*N+tx));
 const boatOK=(x,y)=>[[-6,-1],[6,-1],[-6,6],[6,6]].every(([a,b])=>isWaterT(Math.floor((x+a)/16),Math.floor((y+b)/16)));
 function frontT(){const[fx,fy]=front(16);return[Math.floor(fx/16),Math.floor(fy/16)]}
+// where to go ashore: the tile in front, or (on a jagged shore or in a narrow inlet) the nearest landable tile beside it or just past it
+function landPick(ok){const[tx,ty]=frontT(),fx=face[0],fy=face[1],qx=fy?1:0,qy=fx?1:0;let best=null,bd=1e9;
+ for(const[a,b]of[[0,0],[qx,qy],[-qx,-qy],[fx,fy],[fx+qx,fy+qy],[fx-qx,fy-qy]]){const x=tx+a,y=ty+b,d=Math.hypot(x*16+8-P.x,y*16+8-P.y)+(a||b?.5:0);if(d>36||d>=bd||!ok(x,y))continue;best=[x,y];bd=d}return best}
 function canBoard(){if(SAILING||!TL.boat||SCENE||dead||BUILD||FISH)return false;const[tx,ty]=frontT();return tile[ty*N+tx]===0&&!BRIDGE.has(ty*N+tx)&&boatOK(tx*16+8,ty*16+8)}
-function canLand(){if(!SAILING||dead)return false;const[tx,ty]=frontT();if(tx<0||ty<0||tx>=N||ty>=N||tile[ty*N+tx]===0)return false;const cx=tx*16+8,cy=ty*16+8;return!(solid(cx-5,cy-3)||solid(cx+5,cy-3)||solid(cx-5,cy+6)||solid(cx+5,cy+6))}
+function canLand(){if(!SAILING||dead)return null;return landPick((tx,ty)=>{if(tx<0||ty<0||tx>=N||ty>=N||tile[ty*N+tx]===0)return false;const cx=tx*16+8,cy=ty*16+8;return!(solid(cx-5,cy-3)||solid(cx+5,cy-3)||solid(cx-5,cy+6)||solid(cx+5,cy+6))})}
 function sailToggle(){const[tx,ty]=frontT();
  if(canBoard()){SAILING=true;P.x=tx*16+8;P.y=ty*16+6;sfx('splash');FISH=null;if(!sailTip){sailTip=true;say('You set sail! Face land and press USE to go ashore. You can fish from the boat.')}else say('You set sail.');saveLocal(true);return true}
- if(canLand()){SAILING=false;P.x=tx*16+8;P.y=ty*16+8;sfx('door');say('You go ashore.');saveLocal(true);return true}return false}
+ const L=canLand();if(L){SAILING=false;P.x=L[0]*16+8;P.y=L[1]*16+8;sfx('door');say('You go ashore.');saveLocal(true);return true}return false}
 // wreck: loot once a day
 const nearWreck=()=>!SAILING&&!SCENE&&Math.hypot(P.x-(WRK.x*16+8),P.y-(WRK.y*16))<34;
 function lootWreck(){const d=Math.floor(time/DAYLEN);if(WRECK_DAY===d){say('You\'ve searched the wreck today. The tide brings more tomorrow.');sfx('swish');return}
@@ -8434,19 +8437,19 @@ const rsR=()=>{const R=SCENE&&SCENE.room;return R&&R.region?R:null};
 const rsWater=(R,tx,ty)=>tx>=0&&ty>=0&&tx<R.w&&ty<R.h&&R.tiles[ty*R.w+tx]===0;
 const rsBoatOK=(R,x,y)=>[[-6,-1],[6,-1],[-6,6],[6,6]].every(([a,b])=>rsWater(R,Math.floor((x+a)/16),Math.floor((y+b)/16)));
 function rsCanBoard(){const R=rsR();if(!R||RSAIL.on||!TL.boat||dead||BUILD||FISH)return false;if(R.dock&&Math.hypot(P.x/16-R.dock[0]-.5,P.y/16-R.dock[1]-.5)<2.5)return false;const[tx,ty]=frontT();return rsWater(R,tx,ty)&&rsBoatOK(R,tx*16+8,ty*16+8)}
-function rsCanLand(){const R=rsR();if(!R||!RSAIL.on||dead)return false;const[tx,ty]=frontT();if(tx<0||ty<0||tx>=R.w||ty>=R.h||rsWater(R,tx,ty))return false;const cx=tx*16+8,cy=ty*16+8;
- const sv=RSAIL.on;RSAIL.on=false;try{return!(solid(cx-5,cy-3)||solid(cx+5,cy-3)||solid(cx-5,cy+6)||solid(cx+5,cy+6))}finally{RSAIL.on=sv}}
+function rsCanLand(){const R=rsR();if(!R||!RSAIL.on||dead)return null;const sv=RSAIL.on;RSAIL.on=false;
+ try{return landPick((tx,ty)=>{if(tx<0||ty<0||tx>=R.w||ty>=R.h||rsWater(R,tx,ty))return false;const cx=tx*16+8,cy=ty*16+8;return!(solid(cx-5,cy-3)||solid(cx+5,cy-3)||solid(cx-5,cy+6)||solid(cx+5,cy+6))})}finally{RSAIL.on=sv}}
 function rsToggle(){const[tx,ty]=frontT();
  if(rsCanBoard()){RSAIL.on=true;RSAIL.lx=P.x;RSAIL.ly=P.y;P.x=tx*16+8;P.y=ty*16+6;FISH=null;sfx('splash');say('You set sail! Face land and press '+(isPC?'T':'USE')+' to go ashore.');return true}
- if(rsCanLand()){RSAIL.on=false;P.x=tx*16+8;P.y=ty*16+8;sfx('door');say('You go ashore.');saveLocal(true);return true}return false}
+ const L=rsCanLand();if(L){RSAIL.on=false;P.x=L[0]*16+8;P.y=L[1]*16+8;sfx('door');say('You go ashore.');saveLocal(true);return true}return false}
 const rsStop=()=>{RSAIL.on=false};
 {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead&&rsR()&&!nearNpc()){if(RSAIL.on?rsCanLand():rsCanBoard()){rsToggle();return}if(RSAIL.on)return}return _t()}}
 tk.addEventListener('touchstart',e=>{if(pnOpen||!rsR()||nearNpc())return;if(rsCanBoard()||rsCanLand()){e.preventDefault();e.stopImmediatePropagation();rsToggle()}},{passive:false,capture:true});
 // the boat glides over water; you can't walk off it
 {const _u=upd;upd=function(dt){const paused=menuOpen||pnOpen;if(RSAIL.on&&(!rsR()||dead))RSAIL.on=false;
   if(RSAIL.on&&!paused){const R=rsR(),px=P.x,py=P.y;let ix=jx+(K.d||K.arrowright?1:0)-(K.a||K.arrowleft?1:0),iy=jy+(K.s||K.arrowdown?1:0)-(K.w||K.arrowup?1:0);const l=Math.hypot(ix,iy);
-   _u(dt);P.x=px;P.y=py;
-   if(l>.05&&!dead){const nx=ix/Math.max(1,l),ny=iy/Math.max(1,l),sp=78*(K.shift?1.35:1)*dt;if(Math.abs(nx)>Math.abs(ny))face=[Math.sign(nx),0];else face=[0,Math.sign(ny)];
+   _u(dt);if(RSAIL.on){P.x=px;P.y=py}   // a controller ✕ can land you during the update: then keep the spot it put you on
+   if(RSAIL.on&&l>.05&&!dead){const nx=ix/Math.max(1,l),ny=iy/Math.max(1,l),sp=78*(K.shift?1.35:1)*dt;if(Math.abs(nx)>Math.abs(ny))face=[Math.sign(nx),0];else face=[0,Math.sign(ny)];
     if(FISH)FISH=null;if(rsBoatOK(R,P.x+nx*sp,P.y))P.x+=nx*sp;if(rsBoatOK(R,P.x,P.y+ny*sp))P.y+=ny*sp;
     if((RSAIL.wake-=dt)<=0){RSAIL.wake=.08;DUST.push({x:P.x-face[0]*12+(Math.random()*4-2),y:P.y+5-face[1]*8,t:0,c:'#e8f8ff',sc:curScene()})}}
    en=en.filter(n=>!rsWater(R,Math.floor(n.x/16),Math.floor(n.y/16)))}
@@ -9158,6 +9161,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-17',d:'Nov 5, 2026',t:'Controller landing fix, part 2',n:['Fixed: landing with ✕ on a controller on Briarwood, Ashfall, Ironcrest or the Shattered Expanse left you standing in the water next to the shore, unable to move. ✕ now puts you on land properly.','Landing is easier on rocky, jagged coasts and in narrow inlets: if there\'s land right beside the boat, you can go ashore there.']},
  {v:'2026.11.05-16',d:'Nov 5, 2026',t:'Controller landing fix',n:['Fixed: with a controller, pressing ✕ at the shore of Briarwood, Ashfall, Ironcrest or the Shattered Expanse swung your weapon instead of landing the boat, so you got stuck at the edge of the island. ✕ now lands and sets sail on every island.','✕ on a controller now also opens graves.']},
  {v:'2026.11.05-15',d:'Nov 5, 2026',t:'Find your grave',n:['When you fall, your grave now shows on your minimap and on the map (HERE and WORLD) as a little blinking tombstone, along with how long it has before it crumbles.','When your grave is on the same island as you, an arrow at the edge of the screen points the way and shows how far it is.','If you fell inside a building or a dungeon, the grave is marked at the door you went in by.']},
  {v:'2026.11.05-14',d:'Nov 5, 2026',t:'Open seas & new boats',n:['The sea now stretches on past the edge of the map. No more black void at the edge of Hollow Island.','Brand-new sailboats: a striped hull, a mainsail and a jib, and a little pennant that flaps in the wind. You now sit in the boat with your upper body showing, facing whichever way you sail.','You can now see other players sitting in their boats, with their names shown.','Boats tied up at the docks have their sails rolled up.']},
