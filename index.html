@@ -7278,8 +7278,8 @@ function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='nu
  if(r.loc!==v.loc||Math.hypot(r.x-v.x,r.y-v.y)>200){r.x=v.x;r.y=v.y}
  r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;r.sl=!!v.sl;r.ar=typeof v.ar==='string'?v.ar:'';r.pet=typeof v.pet==='string'?v.pet.slice(0,12):'';r.pk=!!v.pk;r.au=!!v.au;r.dg=!!v.dg;r.br=!!v.br;r.ax=+v.ax;r.ay=+v.ay;
  r.n=String(v.n||r.n||(MP.prof&&MP.prof[k]&&MP.prof[k].n)||'Adventurer').replace(/[<>]/g,'').slice(0,12);r.ch=cleanCh(v.ch);r.seen=performance.now();mpRBtn()}
-function mpTick(){if(!MP.on||!MP.pref)return;const d=FB.db,now=performance.now(),loc=mpLoc(),fx=face[0],fy=face[1];
- const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0,dg:(window.SQDF&&SQDF.on&&!dead)?1:0,br:(window.SQDF&&SQDF.br)?1:0},k=JSON.stringify(st);
+function mpTick(){if(!MP.on||!MP.pref||MP.passive)return;const d=FB.db,now=performance.now(),loc=mpLoc(),fx=face[0],fy=face[1];
+ const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0,dg:(window.SQDF&&SQDF.on&&!dead)?1:0,br:(window.SQDF&&SQDF.br)?1:0,sid:MP.sid,s0:MP.s0},k=JSON.stringify(st);
  let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){}const nm=myName();
  if(chk!==MP.lastCh||nm!==MP.lastN){MP.lastCh=chk;MP.lastN=nm;MP.last='';d.update(MP.pref,{ch:JSON.parse(chk),n:nm}).catch(()=>{MP.lastCh=''})}
  if(k!==MP.last||now-MP.beat>5000){MP.last=k;MP.beat=now;d.update(MP.pref,Object.assign(st,{t:d.serverTimestamp()})).catch(()=>{MP.last=''})}}
@@ -8896,6 +8896,23 @@ window.SQWB=WB;
   if(r.br&&!menuOpen&&!pnOpen){const n=performance.now();if(!r.brAt||n-r.brAt>45){r.brAt=n;SQDF.flames(r.x,r.y,d)}}}}
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen||!window.SQDF||!SQDF.br||!PV.on)return;const d=SQDF.dir(),[mx,my,fx,fy]=SQDF.mouth(P.x,P.y,d);
   for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-mx,dy=r.y-6-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);if(al>-4&&al<64&&pe<8+al*.45)pvHit(r,'sp','fire')}}}
+// ---- One game per account at a time ----
+// With SkillQuest open on two devices (or two tabs) on the same account, both used to post your position in turn,
+// so other players saw you jump between two spots and blink in and out, and trades with you fell through (and the
+// two copies saved over each other). Now the game you opened last is the live one; the other pauses with a
+// PLAY HERE button (which reloads it with your latest save).
+MP.sid=Math.random().toString(36).slice(2,10);MP.s0=Date.now();MP.passive=false;
+const sessEl=el('div','sqsess','g3','');sessEl.style.cssText='position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(20,24,40,.82)';
+sessEl.innerHTML='<div class="g3" style="max-width:320px;padding:18px;text-align:center;font:500 15px '+PF+';background:#f8f8f8;border:3px solid #485870"><b style="font-size:18px">Playing somewhere else</b><br><br>SkillQuest was opened on another device or tab with your account, so this one is paused.<br><br><button id="sqsessgo" style="font:700 16px '+PF+';padding:10px 18px;border:3px solid #485870;background:#485870;color:#fff;cursor:pointer">PLAY HERE</button></div>';
+document.body.appendChild(sessEl);for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])sessEl.addEventListener(ev,e=>e.stopPropagation());
+$('sqsessgo').onclick=()=>{try{location.reload()}catch(e){}};
+function sessPassive(){if(MP.passive)return;MP.passive=true;try{FB.db.onDisconnect(MP.pref).cancel().catch(()=>{})}catch(e){}sessEl.style.display='flex';try{if(TR&&TR.st!=='idle'&&typeof trCancel==='function')trCancel()}catch(e){}}
+{const _ms=mpStart;mpStart=async function(u){await _ms(u);if(!MP.on||!MP.pref)return;MP.unsub.push(FB.db.onValue(MP.pref,s=>{const v=s.val();if(MP.passive)return;
+   // the copy opened later wins (both sides compare the same numbers, so they always agree)
+   if(v&&v.sid&&v.sid!==MP.sid&&(+v.s0>MP.s0||(+v.s0===MP.s0&&v.sid>MP.sid)))sessPassive();else if(!v)MP.last=''}))}}
+// a paused game doesn't save (the live one has the newer progress)
+{const _sc=saveCloud;saveCloud=function(f){if(MP.passive)return;return _sc(f)}}
+{const _sl=saveLocal;saveLocal=function(f){if(MP.passive)return;return _sl(f)}}
 // ---- Trusted friends ----
 // Friends can walk into your houses and look around. Friends you mark TRUSTED (Chat > Friends > TRUST) can also use
 // your crafting stations, open your chests and rest in your beds, in your houses on every island and at the things
@@ -9589,7 +9606,7 @@ var LUX={};
  const _u=upd;upd=function(dt){_u(dt);const R=SCENE&&SCENE.room;if(!R||!R.dun||dead||menuOpen||pnOpen)return;const ex=R.items.find(it=>it.t==='dexit');
   if(ex&&Math.hypot(P.x-(ex.x*16+8),P.y-(ex.y*16+4))<8){const f0=R.dun.f;R.dun.f=1;try{leaveScene()}finally{R.dun.f=f0}say('You climb out of the '+((DKIND[R.dun.kind]||{}).name||'dungeon')+' into the open air.')}}}
 var HIDEH=false;   // Equipment > Hide helmet
-const SQ_VERSION='2026.11.04-3';
+const SQ_VERSION='2026.11.04-4';
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
