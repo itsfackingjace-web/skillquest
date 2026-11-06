@@ -861,7 +861,8 @@ const st10=document.createElement('style');st10.textContent=`
 :root{--pf:${PF}}
 .g3,#sm,#pn .pc,#cm .cc,#chs .cw{background:#f8f8f8;color:#404040;border:3px solid #485870;border-radius:10px;box-shadow:inset 0 0 0 2px #a8c0e0,0 4px 0 rgba(0,0,0,.3);text-shadow:1px 1px 0 #d8d8d0;font-family:var(--pf)}
 #sm{position:fixed;z-index:30;display:none;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);min-width:180px;padding:10px 6px}
-#sm button{display:block;width:100%;background:none;border:0;padding:8px 14px 8px 32px;text-align:left;font:500 22px var(--pf);color:#404040;text-shadow:1px 1px 0 #d8d8d0;position:relative;cursor:pointer}
+#sm{width:min(400px,calc(100vw - 20px))}#sm button{font-size:20px!important}@media(max-width:430px){#sm button{font-size:17px!important;padding-left:26px!important}#sm button.on::before{left:9px}}
+#sm button{display:inline-block;vertical-align:top;width:50%;background:none;border:0;padding:8px 8px 8px 30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font:500 22px var(--pf);color:#404040;text-shadow:1px 1px 0 #d8d8d0;position:relative;cursor:pointer}
 #sm button.on::before,.bi.on::before{content:'';position:absolute;left:12px;top:50%;margin-top:-7px;border-style:solid;border-width:7px 0 7px 10px;border-color:transparent transparent transparent #404040}
 #pn{background:rgba(16,24,40,.55)!important;color:#404040!important;font-family:var(--pf)}
 #pn .pc{max-width:420px;padding:12px 14px 16px;margin:0 auto}
@@ -1000,7 +1001,8 @@ pbd.addEventListener('change',e=>{if(e.target.id==='nmi')saveCloud(true)});
 document.addEventListener('keydown',e=>{const tg=e.target;
  if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA')){e.stopPropagation();if(e.key==='Enter'){tg.blur();if(menuOpen&&tg.id==='cni')document.getElementById('cgo').click()}return}
  if(chessOpen||menuOpen)return;const k=(e.key||'').toLowerCase(),stop=()=>{e.preventDefault();e.stopPropagation()};
- if(smOpen){if(k==='arrowdown'||k==='s'){smSel=(smSel+1)%SMI.length;rSM()}else if(k==='arrowup'||k==='w'){smSel=(smSel+SMI.length-1)%SMI.length;rSM()}
+ if(smOpen){const n2=SMI.length;if(k==='arrowdown'||k==='s'){smSel=smSel+2<n2?smSel+2:smSel%2===0&&smSel+1<n2&&smSel+1>=n2-1?smSel+1:smSel%2;rSM()}else if(k==='arrowup'||k==='w'){smSel=smSel-2>=0?smSel-2:(Math.ceil(n2/2)-1)*2+smSel%2<n2?(Math.ceil(n2/2)-1)*2+smSel%2:(Math.ceil(n2/2)-1)*2;rSM()}
+  else if(k==='arrowright'||k==='d'){smSel=(smSel+1)%n2;rSM()}else if(k==='arrowleft'||k==='a'){smSel=(smSel+n2-1)%n2;rSM()}
   else if(k==='enter'||k===' '||k==='e'){pickSM(smSel)}else if(k==='escape'||k==='x'||k==='backspace'){closeSM()}else return;stop();return}
  const HK={b:'bag',m:'map',q:'quests',k:'skills',c:'craft',p:'card'};
  if(pnOpen){if(k==='escape'||k==='backspace'){backScreen();stop();return}
@@ -2351,7 +2353,7 @@ function pollPad(dt){let gp=null;try{const all=navigator.getGamepads?navigator.g
   if(navTick){CHC.c=Math.max(0,Math.min(7,CHC.c+ndx));CHC.r=Math.max(0,Math.min(7,CHC.r+ndy));sfx('talk')}
   if(pr(PADB.X))chessClick();if((pr(PADB.SQ)||pr(PADB.OPT))&&GPF)navPress();if(pr(PADB.TRI)&&root)navMove(1,0);if(pr(PADB.O)){const l=document.getElementById('chl');if(l)l.click()}drawChessCursor()}
  if(!chessOpen)GPAX.chess=0;
- if(chessOpen){}else if(typeof smOpen!=='undefined'&&smOpen){gpKey('Shift',false);jx=jy=0;if(navTick&&ndy)gpTap(ndy>0?'ArrowDown':'ArrowUp');if(pr(PADB.X))gpTap('Enter');if(pr(PADB.O)||pr(PADB.OPT))gpTap('Escape')}
+ if(chessOpen){}else if(typeof smOpen!=='undefined'&&smOpen){gpKey('Shift',false);jx=jy=0;if(navTick&&ndy)gpTap(ndy>0?'ArrowDown':'ArrowUp');else if(navTick&&ndx)gpTap(ndx>0?'ArrowRight':'ArrowLeft');if(pr(PADB.X))gpTap('Enter');if(pr(PADB.O)||pr(PADB.OPT))gpTap('Escape')}
  else if(root){gpKey('Shift',false);jx=jy=0;for(const k of['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'])gpKey(k,false);
   if(!GPF||!navItems(root).includes(GPF)){const it=navItems(root);const pick=gpRefind(root)||it.find(e=>e.classList.contains('on'))||it.find(e=>!/^[×✕x]$/i.test((e.textContent||'').trim()))||it[0];if(pick)setFocus(pick)}
   if(navTick)navMove(ndx,ndy);if(pr(PADB.X))navPress();
@@ -7768,7 +7770,7 @@ function tsReopen(){try{saveLocal(true);saveCloud(true)}catch(e){}closePanel();i
 SMI.splice(SMI.findIndex(x=>x.id==='online')+1,0,{id:'friends',l:()=>'Friends'});
 // Craft straight from the START menu (it used to hide behind Skills > Craft)
 if(!SMI.some(x=>x.id==='craft'))SMI.splice(SMI.findIndex(x=>x.id==='skills')+1,0,{id:'craft',l:()=>'Craft'});
-SMI.splice(SMI.findIndex(x=>x.id==='exit'),0,{id:'title',l:()=>'Save & quit to title'});
+SMI.splice(SMI.findIndex(x=>x.id==='exit'),0,{id:'title',l:()=>'Save & quit'});
 {const _ss=showScreen;showScreen=function(id){if(id==='friends'){releaseMenu();if(!MP.on){sg.style.display='block';return}MP.tab='fr';mpOpenChat();return}if(id==='title'){releaseMenu();tsReopen();return}return _ss(id)}}
 // ---- Other players' farms, built things and boats; nobody can damage what isn't theirs ----
 // build/<uid>: your farm plots (crop, growth, water) and the things you built outside (fences, walls, chests, stations...;
@@ -9201,6 +9203,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.06-13',d:'Nov 6, 2026',t:'Two-column menu',n:['The menu is laid out in two columns, so it\'s half as tall and everything fits on a phone screen without scrolling.','Keyboard and controller: up/down move between rows, left/right between the two columns.','"Save & quit to title" is now just "Save & quit" (it still saves and takes you to the title screen).']},
  {v:'2026.11.06-12',d:'Nov 6, 2026',t:'Pets are items now',n:['There\'s a new PET slot on the equipment screen (P). The pet in it follows you; every other pet you own is an item in your bag.','Swap pets from your Bag (tap a pet, then Equip) or tap the PET slot on the equipment screen. Put away (unequip) sends your pet back to the bag.','Don\'t want a pet any more? Sell it at a shop, trade it at the World Market, or tap Release in your bag (tap twice).','New pets (bought from Marlo, or rare drops) go straight into your PET slot, and the pet they replace goes into your bag.','All the pets you already own are now in your bag, and the one following you stays in your PET slot.']},
  {v:'2026.11.06-11',d:'Nov 6, 2026',t:'Sign out fixed',n:['The Sign out and Switch Google account buttons in Options now work: they sign you out straight away and the screen updates to show you\'re signed out (Switch then opens Google\'s account picker).']},
  {v:'2026.11.06-10',d:'Nov 6, 2026',t:'Switch accounts from Options',n:['Options now shows which Google account you\'re signed in as, with Sign out and Switch Google account buttons. Handy if several people play on one device: each Google account has its own character and save.','Not signed in? Options has a Sign in with Google button too.','Signing in to a different Google account on the same device now loads that account\'s own save (or starts a new character if it has none), instead of offering the other person\'s progress. The previous account\'s progress is saved to its account first.']},
