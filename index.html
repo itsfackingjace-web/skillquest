@@ -9211,6 +9211,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.06-15',d:'Nov 6, 2026',t:'Tap the minimap',n:['Tap (or click) the minimap in the corner to open the full map. Works on Hollow Island, every island, and in the deep dungeons.']},
  {v:'2026.11.06-14',d:'Nov 6, 2026',t:'SkillQuest for Windows',n:['SkillQuest is coming to Windows as its own app. On a Windows PC, Options has a Get the Windows app button.','The app plays the same online game as the website: same accounts, same saves, same players. It always runs the newest version, and works offline too.','To sign in from the app, it opens your web browser for Google sign-in, then puts you back in the game.','Press F11 in the app for full screen.','The title screen and character creator no longer show a scrollbar on Windows.']},
  {v:'2026.11.06-13',d:'Nov 6, 2026',t:'Two-column menu',n:['The menu is laid out in two columns, so it\'s half as tall and everything fits on a phone screen without scrolling.','Keyboard and controller: up/down move between rows, left/right between the two columns.','"Save & quit to title" is now just "Save & quit" (it still saves and takes you to the title screen).']},
  {v:'2026.11.06-12',d:'Nov 6, 2026',t:'Pets are items now',n:['There\'s a new PET slot on the equipment screen (P). The pet in it follows you; every other pet you own is an item in your bag.','Swap pets from your Bag (tap a pet, then Equip) or tap the PET slot on the equipment screen. Put away (unequip) sends your pet back to the bag.','Don\'t want a pet any more? Sell it at a shop, trade it at the World Market, or tap Release in your bag (tap twice).','New pets (bought from Marlo, or rare drops) go straight into your PET slot, and the pet they replace goes into your bag.','All the pets you already own are now in your bag, and the one following you stays in your PET slot.']},
@@ -12313,6 +12314,17 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   if(relArm!==k){relArm=k;setTimeout(()=>{if(relArm===k){relArm=null;try{rPn()}catch(e){}}},3500);rPn();return}
   relArm=null;if((inv[k]|0)>0){inv[k]--;sync();say('You let the '+EQ[k].n.toLowerCase()+' go. It wanders off happily.');sfx('talk');saveLocal(true)}rPn()},true);
 }
+// ---- 104. Tap or click the minimap to open the map ----
+{let MINIBOX=null;const R2=()=>W/innerWidth;
+ const _dh=drawHUD;drawHUD=function(){MINIBOX=null;_dh()};
+ const keep=(x,y,w,h)=>{const r=R2();MINIBOX={x:x/r,y:y/r,w:w/r,h:h/r}};
+ const _m52=drawMini52;drawMini52=function(){_m52();const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w;keep(L.dx-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+6*U)};
+ const _u=upd;upd=function(dt){_u(dt);const R=SCENE&&SCENE.room;if(R&&R.dun&&!menuOpen&&!dead){const L=HUDL||hudLayout(),U=L.U,w=L.dw,hh=w*R.h/R.w;keep(L.dx-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+16*U)}};
+ const hit=(x,y)=>{const b=MINIBOX;return b&&!pnOpen&&!menuOpen&&!dead&&x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h};
+ const open=()=>{fromMenu=false;showScreen('map')};
+ cv.addEventListener('touchstart',e=>{const t=e.changedTouches[0];if(t&&hit(t.clientX,t.clientY)){e.preventDefault();e.stopImmediatePropagation();open()}},{capture:true,passive:false});
+ cv.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'&&hit(e.clientX,e.clientY)){e.stopImmediatePropagation();e.preventDefault();open()}},{capture:true});
+ cv.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const h=hit(e.clientX,e.clientY);if(h!==(cv.style.cursor==='pointer'))cv.style.cursor=h?'pointer':''})}
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
