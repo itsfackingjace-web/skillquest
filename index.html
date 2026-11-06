@@ -7234,6 +7234,12 @@ const ago=t=>{if(!t)return'unknown';const m=Math.round((Date.now()-t)/60000);ret
 const localHasProgress=()=>!!(hadLocal||oldPlayer||PNAME&&!menuOpen);
 async function mpLinkSave(uid,adapter){const r=await adapter.get(),linked=lsGet('sq_acct')===uid;
  const done=()=>{lsSet('sq_acct',uid);cloud=adapter;if(TS&&TS.open)TS.mh=''};
+ // switching to a different Google account on this device: this device's save belongs to the other account (it's in
+ // that account's cloud save, and backed up here), so load this account's own save, or start it fresh
+ const prev=lsGet('sq_acct');if(prev&&prev!==uid&&localHasProgress()){const L=snap();L.savedAt=LOCAL_AT;try{mpBackup('device',L)}catch(e){}
+  let S=null;if(r.exists){try{S=JSON.parse(JSON.stringify(r.data()))}catch(e){}}
+  if(S&&S.v==1){applySave(S);hideCreator();say('Switched account: loaded this account\'s save.');saveLocal(true);lastCloud=keyOf(snap());done();return}
+  newGame();done();say('Switched account: this account has no save yet, so make a new character.');return}
  if(!r.exists){done();if(localHasProgress())saveCloud(true);return}
  const S=JSON.parse(JSON.stringify(r.data()));if(S.v!=1){done();return}
  if(!localHasProgress()){applySave(S);hideCreator();say('Progress loaded from your account');saveLocal(true);lastCloud=keyOf(snap());done();return}
@@ -9195,6 +9201,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.06-10',d:'Nov 6, 2026',t:'Switch accounts from Options',n:['Options now shows which Google account you\'re signed in as, with Sign out and Switch Google account buttons. Handy if several people play on one device: each Google account has its own character and save.','Not signed in? Options has a Sign in with Google button too.','Signing in to a different Google account on the same device now loads that account\'s own save (or starts a new character if it has none), instead of offering the other person\'s progress. The previous account\'s progress is saved to its account first.']},
  {v:'2026.11.06-9',d:'Nov 6, 2026',t:'New quest log and quest tracking',n:['The Quests screen (Q) has been rebuilt. Every quest is in one place, from Elder Rowan, every village and island town, and the harbor voyages, under three tabs: Active, Available and Done. Tap a quest to see what it\'s about and its reward.','Track a quest: open it and tap Track this quest. New quests are tracked automatically when you start them.','The box under your health shows the tracked quest and its next step, like "Bring Elder Rowan 15 stone (6/15)", and tells you when it\'s on another island or inside a building.','A golden arrow next to your character points the way, with the distance: to the person to talk to, the nearest tree, rock or monster you need, the buoy to sail to or the harbor post to report to. When the spot is on screen, a marker bounces over it.','The map (M) circles the tracked spot too.']},
  {v:'2026.11.06-8',d:'Nov 6, 2026',t:'Plateaus, take two',n:['Plateau tops are much roomier: you can now walk right up to the cliff edges instead of being kept a full step back, so the narrow ridges in Ironcrest and No Man\'s Land are easy to get around.','Stairways are wider and run all the way down the cliff face to the ground, and there are more of them (Ironcrest, No Man\'s Land and Ashfall each have 40+).','Fewer trees and rocks clutter the tops, and they never block the way.']},
  {v:'2026.11.06-7',d:'Nov 6, 2026',t:'Paths up the plateaus',n:['You can now climb the big rock plateaus on Ironcrest, No Man\'s Land and Ashfall. Look for stone stairways cut into the cliffs, often right beside a trail.','The flat tops are yours to explore: Ironcrest\'s mountain spine has ore, rocks and pines up top, and the mesas of No Man\'s Land have rocks, ore and cacti. Rattlesnake Mesa can finally be climbed.','The cliff edges still block you, so take the stairs back down.']},
@@ -12240,6 +12247,14 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   if((b=t.closest('[data-qx]'))){const id=b.dataset.qx;QOPEN=QOPEN===id?'':id;sfx('talk');rPn();return}});
  // new quests jump to the front of the tracker when you start them
  let lastAct=null;setInterval(()=>{try{const ids=qAll().filter(e=>e.st==='active').map(e=>e.id);if(lastAct){const nw=ids.find(i=>!lastAct.includes(i));if(nw){TRK=nw;try{localStorage.setItem('sq_trk',TRK)}catch(e){}TGT_AT=0}}lastAct=ids}catch(e){}},1500)}
+// ---- 102. Account in Options: who you're signed in as, Sign out, Switch account ----
+{const _o=optionsHTML;optionsHTML=function(){const h=_o(),k=h.indexOf('data-o="myname"');const u=MP.user,E=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+  const add=u?'<div class="qc" style="font-size:14px;line-height:1.4;padding:10px 12px;margin:8px 0">Signed in as <b style="color:#3058c8">'+E(u.displayName||myName())+'</b>'+(u.email?'<br><small style="opacity:.75">'+E(u.email)+'</small>':'')+'</div><button class="sb mpacct" data-a="out">Sign out</button><button class="sb mpacct" data-a="switch">Switch Google account</button>'
+   :'<button class="sb mpacct" data-a="in">Sign in with Google (play online)</button><div class="qc" style="font-size:13px;line-height:1.4;padding:8px 12px;margin:6px 0">Each Google account has its own character and save.</div>';
+  if(k<0)return h+'<div class="tl" style="margin-top:16px">ONLINE</div>'+add;const e=h.indexOf('</button>',k)+9;return h.slice(0,e)+add+h.slice(e)};
+ const out=async()=>{try{if(typeof saveCloud==='function')await saveCloud(true)}catch(e){}try{mpCloseChat()}catch(e){}try{await mpStop(true)}catch(e){}try{await FB.auth.signOut(FB.A)}catch(e){}};
+ pbd.addEventListener('click',async ev=>{const b=ev.target.closest('.mpacct');if(!b)return;ev.stopPropagation();const a=b.dataset.a;
+  if(a==='in'){mpSignIn();return}await out();if(a==='switch'){say('Signed out. Pick the account to play on.');mpSignIn()}else{say('Signed out. Playing offline.');try{rPn()}catch(e){}}},true)}
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
