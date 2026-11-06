@@ -9201,6 +9201,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.06-12',d:'Nov 6, 2026',t:'Pets are items now',n:['There\'s a new PET slot on the equipment screen (P). The pet in it follows you; every other pet you own is an item in your bag.','Swap pets from your Bag (tap a pet, then Equip) or tap the PET slot on the equipment screen. Put away (unequip) sends your pet back to the bag.','Don\'t want a pet any more? Sell it at a shop, trade it at the World Market, or tap Release in your bag (tap twice).','New pets (bought from Marlo, or rare drops) go straight into your PET slot, and the pet they replace goes into your bag.','All the pets you already own are now in your bag, and the one following you stays in your PET slot.']},
  {v:'2026.11.06-11',d:'Nov 6, 2026',t:'Sign out fixed',n:['The Sign out and Switch Google account buttons in Options now work: they sign you out straight away and the screen updates to show you\'re signed out (Switch then opens Google\'s account picker).']},
  {v:'2026.11.06-10',d:'Nov 6, 2026',t:'Switch accounts from Options',n:['Options now shows which Google account you\'re signed in as, with Sign out and Switch Google account buttons. Handy if several people play on one device: each Google account has its own character and save.','Not signed in? Options has a Sign in with Google button too.','Signing in to a different Google account on the same device now loads that account\'s own save (or starts a new character if it has none), instead of offering the other person\'s progress. The previous account\'s progress is saved to its account first.']},
  {v:'2026.11.06-9',d:'Nov 6, 2026',t:'New quest log and quest tracking',n:['The Quests screen (Q) has been rebuilt. Every quest is in one place, from Elder Rowan, every village and island town, and the harbor voyages, under three tabs: Active, Available and Done. Tap a quest to see what it\'s about and its reward.','Track a quest: open it and tap Track this quest. New quests are tracked automatically when you start them.','The box under your health shows the tracked quest and its next step, like "Bring Elder Rowan 15 stone (6/15)", and tells you when it\'s on another island or inside a building.','A golden arrow next to your character points the way, with the distance: to the person to talk to, the nearest tree, rock or monster you need, the buoy to sail to or the harbor post to report to. When the spot is on screen, a marker bounces over it.','The map (M) circles the tracked spot too.']},
@@ -9363,7 +9364,7 @@ function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab](
   if(typeof ISLES!=='undefined'){head('Small islands (by boat from Hollow)');card('small islands '+ISLES.map(i=>i.name).join(' '),'','<b>'+ISLES.map(i=>wkE(i.name)).join(' · ')+'</b><br><small>Sail out from the Hollow Island docks once you own a boat.</small>')}
   if(typeof TOWN_REG!=='undefined'){head('Towns');for(const t of TOWN_REG){const R=WORLD_REGIONS[t.regionId];card(t.name,'','<b>'+wkE(t.name)+'</b><br><small>'+wkE(R?R.name:'')+'</small>')}}}
  else if(tab==='pets'){head('Rare drops');for(const r of WK_RARE)card(r[0]+' '+r[2],r[1]?wkIcon(r[1]):'','<b>'+wkE(r[0])+'</b> <span class="tag">'+wkE(r[2])+'</span><br>'+wkE(r[3])+'<br><small>'+(r[4]||('5% from the '+wkE(r[2])+' (8% if you\'re in the top three).'))+'</small>');
-  head('Pets from Marlo\'s Emporium');const P=window.LUX&&LUX.PETS||[];for(const p of P)if(!p.rare)card(p.n+' pet','','<b>'+wkE(p.n)+'</b> <span class="tag">'+p.v.toLocaleString('en-US')+' gold</span><br><small>Follows you everywhere. Other players see it too. Pick your pet in START → Style.</small>')}
+  head('Pets from Marlo\'s Emporium');const P=window.LUX&&LUX.PETS||[];for(const p of P)if(!p.rare)card(p.n+' pet','','<b>'+wkE(p.n)+'</b> <span class="tag">'+p.v.toLocaleString('en-US')+' gold</span><br><small>Follows you everywhere. Other players see it too. It\'s an item: put it in your PET slot from your Bag or the equipment screen.</small>')}
  return out}
 function wkRender(){const t=wk$('wkt'),b=wk$('wkb'),q=WK.q.trim().toLowerCase();
  t.innerHTML=WK_TABS.map(([k,n])=>'<button data-wkt="'+k+'" class="'+(k===WK.tab&&!q?'on':'')+'">'+wkE(n)+'</button>').join('');
@@ -9858,12 +9859,13 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
    g.restore();const o=document.createElement('canvas');o.width=o.height=px;const ox=o.getContext('2d');ox.drawImage(cv,0,0,px,px,0,0,px,px);const d=ox.getImageData(0,0,px,px).data;let x0=px,y0=px,x1=-1,y1=-1;
    for(let y=0;y<px;y++)for(let x=0;x<px;x++)if(d[(y*px+x)*4+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}if(x1<0)return PPIC[k]='';
    const sz=Math.max(x1-x0,y1-y0)+8,c2=document.createElement('canvas');c2.width=c2.height=sz;c2.getContext('2d').drawImage(o,x0-Math.round((sz-(x1-x0))/2),y0-Math.round((sz-(y1-y0))/2),sz,sz,0,0,sz,sz);return PPIC[k]=c2.toDataURL()}catch(e){try{g.restore()}catch(_){}return PPIC[k]=''}}
+ window.SQPETPIC=wkPetPic;
  const petKey=name=>{const n=name.replace(/ \(pet\)$/,'').toLowerCase();if(n==='pet wolf')return'pwolf';if(n==='imp')return'imp';const N=window.SQNPET||{};for(const k in N)if((N[k].n||'').toLowerCase()===n)return k;return null};
  const _wc=wkCards;wkCards=function(tab,srch){if(tab==='pets'){const out=[];const card=(t,ic,tx)=>out.push({t,h:'<div class="c">'+(ic?'<img alt="" src="'+ic+'" class="mob">':'')+'<div class="tx">'+tx+'</div></div>'}),head=t=>out.push({t:'',h:'<h3>'+wkE(t)+'</h3>',head:1});
    const isPet=r=>/\(pet\)$|^Pet wolf$/.test(r[0]);
    head('Rare pets');for(const r of WK_RARE.filter(isPet)){const k=r[5]||petKey(r[0]);card(r[0]+' '+r[2]+' pet',k?wkPetPic(k):'','<b>'+wkE(r[0])+'</b> <span class="tag">'+wkE(r[2])+'</span><br>'+wkE(r[3])+'<br><small>'+(r[4]||('5% from the '+wkE(r[2])+' (8% if you\'re in the top three).'))+'</small>')}
    head('Rare items');for(const r of WK_RARE.filter(r=>!isPet(r)))card(r[0]+' '+r[2],r[1]?wkIcon(r[1]):'','<b>'+wkE(r[0])+'</b> <span class="tag">'+wkE(r[2])+'</span><br>'+wkE(r[3])+'<br><small>'+(r[4]||('5% from the '+wkE(r[2])+' (8% if you\'re in the top three).'))+'</small>');
-   head('Pets from Marlo\'s Emporium');const P=window.LUX&&LUX.PETS||[];for(const p of P)if(!p.rare)card(p.n+' pet',wkPetPic(p.k),'<b>'+wkE(p.n)+'</b> <span class="tag">'+p.v.toLocaleString('en-US')+' gold</span><br><small>Follows you everywhere. Other players see it too. Pick your pet in START → Style.</small>');
+   head('Pets from Marlo\'s Emporium');const P=window.LUX&&LUX.PETS||[];for(const p of P)if(!p.rare)card(p.n+' pet',wkPetPic(p.k),'<b>'+wkE(p.n)+'</b> <span class="tag">'+p.v.toLocaleString('en-US')+' gold</span><br><small>Follows you everywhere. Other players see it too. It\'s an item: put it in your PET slot from your Bag or the equipment screen.</small>');
    return out}
   const out=_wc(tab,srch);
   if(window.SQIBWIKI)try{SQIBWIKI(tab,out,(t,ic,tx)=>out.push({t,h:'<div class="c">'+(ic?'<img alt="" src="'+ic+'" class="mob">':'')+'<div class="tx">'+tx+'</div></div>'}),t=>out.push({t:'',h:'<h3>'+wkE(t)+'</h3>',head:1}),(k,mk)=>wkPic(k,mk,100))}catch(e){console.warn(e)}
@@ -12259,6 +12261,45 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  pbd.addEventListener('click',async ev=>{const b=ev.target.closest('.mpacct');if(!b)return;ev.stopPropagation();const a=b.dataset.a;
   if(a==='in'){mpSignIn();return}b.disabled=true;b.textContent='Signing out...';await out();try{rPn()}catch(e){}
   if(a==='switch'){say('Signed out. Pick the account to play on.');mpSignIn()}},true)}
+// ---- 103. Pets are items: a PET equipment slot ----
+// Every pet is now a real item. The one in your PET slot follows you; the rest wait in your bag, where you can equip,
+// sell, trade (World Market) or release them. New pets (bought, dropped, given) go straight into the PET slot, and the
+// pet they replace goes into your bag. Old saves: every pet you owned is put in your bag (your current one stays out).
+{const C=()=>LUX.COS,PL=()=>LUX.PETS||[],PK=[];
+ for(const p of PL()){const k='pet_'+p.k;PK.push(k);EQ[k]={slot:'pet',n:p.n,ic:'pet:'+p.k,v:p.rare?250:Math.floor(p.v/4),pet:p.k};EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);
+  INAME[k]=p.n+' (pet)';SN[k]=p.n+' pets';SHORT[k]=p.n.toLowerCase()+' pet';SELLP[k]=EQ[k].v;
+  IDESC[k]=(p.rare?'A rare pet. ':'A pet from Marlo\'s Emporium. ')+'Put it in your PET slot (Equip) and it follows you everywhere; other players see it too.'+(['psquir','pgiron','pggold','pgmith','pgadam'].includes(p.k)?' It brings you things it finds.':'')+' You can sell it, trade it at the World Market, or release it.'}
+ SLOTS.push(['pet','PET']);
+ const _occ=occ;occ=function(s){if(s==='pet'){const c=C();return c&&c.pet&&EQ['pet_'+c.pet]?'pet_'+c.pet:null}return _occ(s)};
+ let lastE=null,lastOwn=null,MIG=true;
+ const _ss=setSlot;setSlot=function(s,k){if(s==='pet'){const c=C();c.pet=k?EQ[k].pet:null;lastE=c.pet;try{KITC.clear()}catch(e){}return}return _ss(s,k)};
+ const _us=unequipSlot;unequipSlot=function(s){if(s!=='pet')return _us(s);const old=occ('pet');if(!old)return;inv[old]=(inv[old]|0)+1;setSlot('pet',null);say('Your '+EQ[old].n.toLowerCase()+' waits in your bag.');sfx('talk');saveLocal(true)};
+ // keep pet items, the PET slot and the old owned-pets list in step, whichever way a pet arrives or leaves
+ function sync(){const c=C();if(!c)return;const own=k=>(inv['pet_'+k]|0)>0||c.pet===k;
+  if(!MIG){MIG=true;for(const k of c.pets)if(k!==c.pet&&!own(k))inv['pet_'+k]=1;lastE=c.pet;lastOwn=new Set(c.pets.filter(own));return}
+  if(lastOwn==null){lastOwn=new Set(c.pets.filter(own));lastE=c.pet}
+  for(const k of c.pets)if(!lastOwn.has(k)&&!own(k))inv['pet_'+k]=1;// a new pet that isn't anywhere yet
+  if(c.pet!==lastE){// switched some other way (bought, dropped, Style screen): the old one goes to the bag, the new one comes out of it
+   if(lastE&&lastOwn.has(lastE))inv['pet_'+lastE]=(inv['pet_'+lastE]|0)+1;if(c.pet&&(inv['pet_'+c.pet]|0)>0)inv['pet_'+c.pet]--;lastE=c.pet}
+  c.pets=PL().map(p=>p.k).filter(own);lastOwn=new Set(c.pets)}
+ window.SQPETSYNC=sync;
+ const _ap=applySave;applySave=function(S){_ap(S);MIG=!!(S&&S.petItems);lastOwn=null;lastE=null;sync()};
+ const _sn=snap;snap=function(){try{sync()}catch(e){}const s=_sn();s.petItems=1;return s};
+ const _ng=newGame;newGame=function(){_ng();MIG=true;lastOwn=null;lastE=null};
+ let st=0;const _u=upd;upd=function(dt){_u(dt);st+=dt;if(st>.4){st=0;try{sync()}catch(e){}}};
+ const _eq=equipItem;equipItem=function(k){_eq(k);if(EQ[k]&&EQ[k].slot==='pet'){try{sync()}catch(e){}}};
+ // icons: the pet itself
+ const _ic=iconURL;iconURL=function(k,col){if(typeof k==='string'&&k.startsWith('pet:')){const key='ip'+k;if(ICONC[key])return ICONC[key];let u='';try{u=window.SQPETPIC?SQPETPIC(k.slice(4)):''}catch(e){}if(u)return ICONC[key]=u;k='pet'}
+  if(k==='pet'){const key='ipaw';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+   r(4,7,6,5,'#7a5a3a');r(5,8,4,3,'#a07850');for(const[a,b]of[[2,4],[5,2],[8,2],[11,4]]){r(a,b,2,3,'#7a5a3a');r(a,b+1,1,1,'#a07850')}return ICONC[key]=c.toDataURL()}
+  return _ic(k,col)};
+ // bag: release a pet you don't want (tap twice)
+ let relArm=null;const _bg=bagGridHTML;bagGridHTML=function(){const h=_bg(),k=invSel;if(!k||!EQ[k]||EQ[k].slot!=='pet'||(inv[k]|0)<1)return h;
+  return h.replace('<div class="bd">','<div class="bd"><button class="use petrel" data-k="'+k+'" style="background:#c85050">'+(relArm===k?'TAP AGAIN':'RELEASE')+'</button>')};
+ pbd.addEventListener('click',ev=>{const b=ev.target.closest('.petrel');if(!b)return;ev.stopPropagation();const k=b.dataset.k;
+  if(relArm!==k){relArm=k;setTimeout(()=>{if(relArm===k){relArm=null;try{rPn()}catch(e){}}},3500);rPn();return}
+  relArm=null;if((inv[k]|0)>0){inv[k]--;sync();say('You let the '+EQ[k].n.toLowerCase()+' go. It wanders off happily.');sfx('talk');saveLocal(true)}rPn()},true);
+}
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
