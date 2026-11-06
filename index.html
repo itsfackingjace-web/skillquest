@@ -121,22 +121,22 @@ const cv=document.getElementById('c'),g=cv.getContext('2d');
 let W,H,Z,D=1;
 function rs(){D=window.devicePixelRatio||1;W=cv.width=innerWidth*D;H=cv.height=innerHeight*D;Z=Math.max(2,2*Math.round(D*Math.min(innerWidth,innerHeight)/300));g.imageSmoothingEnabled=false}
 addEventListener('resize',rs);rs();
-const N=110,T=16,SEED=421.7,DAYLEN=720,DAYLIGHT=480; // a day lasts 12 minutes: 8 of daylight, 4 of night
+const HSC=2,N=110*HSC,T=16,SEED=421.7,DAYLEN=720,DAYLIGHT=480; // a day lasts 12 minutes: 8 of daylight, 4 of night
 const h=(x,y)=>{const n=Math.sin(x*127.1+y*311.7+SEED)*43758.5453;return n-Math.floor(n)};
 const vn=(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);return(h(xi,yi)*(1-u)+h(xi+1,yi)*u)*(1-v)+(h(xi,yi+1)*(1-u)+h(xi+1,yi+1)*u)*v};
 const tile=new Uint8Array(N*N),obj=new Array(N*N);
 for(let y=0;y<N;y++)for(let x=0;x<N;x++){
  const dx=(x-N/2)/(N/2),dy=(y-N/2)/(N/2);
- let e=vn(x/14,y/14)*.7+vn(x/5,y/5)*.3-(dx*dx+dy*dy)*.35;
+ let e=vn(x/(14*HSC),y/(14*HSC))*.7+vn(x/(5*HSC),y/(5*HSC))*.3+(vn(x/4,y/4)-.5)*.06-(dx*dx+dy*dy)*.35;
  let t=e<.28?0:e<.33?1:e<.62?2:3;tile[y*N+x]=t;
- const m=vn(x/8+50,y/8),r=h(x*3.1,y*7.3);
+ const m=vn(x/(8*HSC)+50,y/(8*HSC)),r=h(x*3.1,y*7.3);
  if(t==2){if(r<(m>.55?.28:.03))obj[y*N+x]={t:'tree',hp:3};else if(r>.975)obj[y*N+x]={t:'bush',hp:1};else if(r>.965)obj[y*N+x]={t:'rock',hp:4}}
  if(t==3&&r<.1)obj[y*N+x]={t:'rock',hp:4};
 }
 // biomes: snowy north, desert south, iron veins in the mountains
 for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x,t=tile[i];if(!t)continue;const r=h(x*5.3,y*2.9);
- if(y<34+vn(x/9,7)*8){if(t===1||t===2)tile[i]=4;const o=obj[i];if(o&&o.t==='tree')obj[i]={t:'pine',hp:3};else if(o&&o.t==='bush')obj[i]=null;if(t===2&&!obj[i]&&r<.04)obj[i]={t:'pine',hp:3}}
- else if(y>76-vn(x/9,3)*8){if(t===1||t===2)tile[i]=5;const o=obj[i];if(o&&o.t==='tree')obj[i]=r<.35?{t:'cactus',hp:2}:null;else if(o&&o.t==='bush')obj[i]=null;if(t===2&&!obj[i]&&r>.985)obj[i]={t:'cactus',hp:2}}
+ if(y<(34+vn(x/(9*HSC),7)*8)*HSC){if(t===1||t===2)tile[i]=4;const o=obj[i];if(o&&o.t==='tree')obj[i]={t:'pine',hp:3};else if(o&&o.t==='bush')obj[i]=null;if(t===2&&!obj[i]&&r<.04)obj[i]={t:'pine',hp:3}}
+ else if(y>(76-vn(x/(9*HSC),3)*8)*HSC){if(t===1||t===2)tile[i]=5;const o=obj[i];if(o&&o.t==='tree')obj[i]=r<.35?{t:'cactus',hp:2}:null;else if(o&&o.t==='bush')obj[i]=null;if(t===2&&!obj[i]&&r>.985)obj[i]={t:'cactus',hp:2}}
  const o2=obj[i];if(tile[i]===3){if(o2&&o2.t==='rock'&&r<.5)obj[i]={t:'ore',hp:5};else if(!o2&&r>.93)obj[i]={t:'ore',hp:5}}else if(o2&&o2.t==='rock'&&r<.3)obj[i]={t:'ore',hp:5}}
 let solid=(px,py)=>{const x=Math.floor(px/T),y=Math.floor(py/T);if(x<0||y<0||x>=N||y>=N)return true;return tile[y*N+x]==0||!!obj[y*N+x]};
 let P,en,fires,inv,time,dead,swing,hurt,msg,msgT,face,hunger,kills;
@@ -1487,7 +1487,7 @@ const _df14=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
 const _dr14=drawRoom;drawRoom=function(tm){_dr14(tm);if(!SCENE||!SCENE.room.cave||SCENE.room.region)return;for(const n of en)if(!n.dead)pS(n,tm);if(!dead)pP(tm);
  const gr=g.createRadialGradient(P.x,P.y-4,28,P.x,P.y-4,118);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(6,4,12,.88)');g.fillStyle=gr;g.fillRect(P.x-500,P.y-500,1000,1000)};
 // --- the desert trader ---
-let TRADER=null;{const cx=N>>1;outer:for(let y=N-8;y>N/2;y--)for(let dx=0;dx<30;dx++)for(const x of[cx+dx,cx-dx]){let ok=true;for(let a=-1;a<=2;a++)for(let b=-1;b<=1;b++){const i=(y+b)*N+x+a;if(tile[i]!==5||obj[i]||BS.has(i))ok=false}if(ok){TRADER={x,y};break outer}}}
+let TRADER=null;{const cx=N>>1;outer:for(let y=N-8;y>N/2;y--)for(let dx=0;dx<30*HSC;dx++)for(const x of[cx+dx,cx-dx]){let ok=true;for(let a=-1;a<=2;a++)for(let b=-1;b<=1;b++){const i=(y+b)*N+x+a;if(tile[i]!==5||obj[i]||BS.has(i))ok=false}if(ok){TRADER={x,y};break outer}}}
 if(TRADER){BS.add(TRADER.y*N+TRADER.x+1);NPCS.push({kind:'trader',x:TRADER.x*16+8,y:(TRADER.y+1)*16+4,ch:{sk:2,hs:0,hc:0,sh:4,pn:2,ht:1,hcol:5,so:3}})}
 const _nd14=NEWDRAW;NEWDRAW=function(...a){_nd14(...a);if(SCENE)return;const tm=a[8];
  if(TRADER){const x0=(TRADER.x+1)*16,y0=TRADER.y*16;shd(x0+8,y0+14,18);Rg(x0-1,y0+5,18,10,O);Rg(x0,y0+6,16,8,'#a87850');for(let i=0;i<4;i++)Rg(x0+2+i*4,y0+7,3,3,['#e88838','#f0ece0','#8890a0','#48a838'][i]);
@@ -1742,7 +1742,7 @@ const _atk19=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||s
 // a tackle shop, an inn, a master forge (steel tools), a fishing pier and townsfolk.
 // Villagers in both towns have names, things to say that change with the time of day, a small
 // request each day, and they go home to bed at night.
-const TX=92,TY=54,TOWN_NAME='Saltmere';
+const TX=92*HSC,TY=54*HSC,TOWN_NAME='Saltmere';
 const TOWNZ=new Set(),ROADS=new Set(),BRIDGE=new Set(),PROT=new Set(),SIGNS=new Map(),LAMPS=[],BOATS=[[TX-1,TY-10],[TX-5,TY-9]];
 const WELL=[TX+9,TY+3];
 const inTownBox=(x,y)=>x>=TX-13&&x<=TX+12&&y>=TY-12&&y<=TY+8;
@@ -2059,8 +2059,8 @@ function killEnemy(n,how){if(n.dead)return;n.dead=1;n.dropped=1;kills++;GLD+=2+M
  if(n.type!=='boss'&&n.type!=='bonelord'&&Math.random()<.6)inv.meat=(inv.meat|0)+1;enemyDrop(n)}
 // --- the Bone Lord's tomb ---
 let TOMB=null,TOMB_DAY=-1;
-{let best=null,bd=1e9;for(let y=72;y<N-6;y++)for(let x=8;x<70;x++){let ok=true;for(let dy=-3;dy<=2&&ok;dy++)for(let dx=-3;dx<=3;dx++){const i=(y+dy)*N+x+dx;if(tile[i]!==5||obj[i]||BS.has(i)||PROT.has(i)){ok=false;break}}
-  if(!ok||(TRADER&&Math.hypot(TRADER.x-x,TRADER.y-y)<12))continue;const d=Math.hypot(x-36,y-86);if(d<bd){bd=d;best={x,y}}}TOMB=best}
+{let best=null,bd=1e9;for(let y=72*HSC;y<N-6;y++)for(let x=8;x<70*HSC;x++){let ok=true;for(let dy=-3;dy<=2&&ok;dy++)for(let dx=-3;dx<=3;dx++){const i=(y+dy)*N+x+dx;if(tile[i]!==5||obj[i]||BS.has(i)||PROT.has(i)){ok=false;break}}
+  if(!ok||(TRADER&&Math.hypot(TRADER.x-x,TRADER.y-y)<12*HSC))continue;const d=Math.hypot(x-36*HSC,y-86*HSC);if(d<bd){bd=d;best={x,y}}}TOMB=best}
 if(TOMB){for(const[dx,dy]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1],[-1,-2],[0,-2],[1,-2]]){const i=(TOMB.y+dy)*N+TOMB.x+dx;BS.add(i);PROT.add(i);obj[i]=null}PROT.add(TOMB.y*N+TOMB.x);PROT.add((TOMB.y+1)*N+TOMB.x)}
 ROOMS.tomb={w:18,h:12,ex:9,cave:1,tomb:1,floor:['#c8a870','#bc9c64'],wall:'#9a7848',trim:'#5a4020',items:[[3,3,'pillar'],[14,3,'pillar'],[3,8,'pillar'],[14,8,'pillar'],[8,2,'urn'],[9,2,'urn'],[1,10,'urn'],[16,10,'urn'],[6,5,'bones'],[12,7,'bones']].map(([x,y,t])=>({t,x,y,solid:t!=='bones'}))};
 ROOMS.tomb.solid=new Set(ROOMS.tomb.items.filter(it=>it.solid).map(it=>it.y*18+it.x));
@@ -2461,7 +2461,7 @@ const _oc25=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.skc');if(b){S
 // Captain Ida sells a sailboat. Face water and press USE / ✕ to set sail; face land and press it again to
 // go ashore. Out at sea: Gull Rock (rainbow fish bite there), Wreck Isle (a shipwreck to loot once a day)
 // and Hermit's Isle (an old hermit with his own requests, and the "Castaway" quest).
-const ISLES=[{id:'gull',name:'Gull Rock',x:97,y:13,r:3.5},{id:'wreck',name:'Wreck Isle',x:96,y:98,r:4.4},{id:'hermit',name:'Hermit\'s Isle',x:9,y:84,r:4.4}];
+const ISLES=[{id:'gull',name:'Gull Rock',x:97*HSC,y:13*HSC,r:3.5},{id:'wreck',name:'Wreck Isle',x:96*HSC,y:98*HSC,r:4.4},{id:'hermit',name:'Hermit\'s Isle',x:9*HSC,y:84*HSC,r:4.4}];
 for(const s of ISLES)for(let dy=-6;dy<=6;dy++)for(let dx=-6;dx<=6;dx++){const d=Math.hypot(dx*.92,dy*1.12)+((dx*7+dy*13)%3===0?.35:0),x=s.x+dx,y=s.y+dy,i=y*N+x;if(d>s.r)continue;tile[i]=d<=s.r-1.6?2:1;obj[i]=null;PROT.add(i);TG.delete(i)}
 const GULL=ISLES[0],WRK=ISLES[1],HRM=ISLES[2];
 obj[GULL.y*N+GULL.x+1]={t:'rock',hp:4};obj[(GULL.y-1)*N+GULL.x-1]={t:'rock',hp:4};
@@ -4338,14 +4338,14 @@ function saveHide(){if(dead)return;saveLocal(true);cloudFlush();try{localStorage
 // Northwind Workshop (crafting supplies), the Ranger's Cabin and four cottages around a frozen pond. A stone trail
 // leads north from Hollow Village. Placement follows the town registry: try the preferred anchor, then the closest
 // valid spot within 12 tiles (all snow, no water/mountain, away from other towns, dungeons and protected tiles).
-const EXTRA_TOWNS=[{id:'frosthollow',name:'Frosthollow',x:43,y:19,rx:8,ry:6,biome:'snow',fw:12,fh:7}];
+const EXTRA_TOWNS=[{id:'frosthollow',name:'Frosthollow',x:43*HSC,y:19*HSC,rx:8,ry:6,biome:'snow',fw:12,fh:7}];
 // fw/fh: the half-width/height the layout actually needs (8 buildings + pond + lanes don't fit in 8x6)
 function canPlaceTown(cx,cy,rx,ry,biomeTile){for(let dy=-ry-2;dy<=ry+2;dy++)for(let dx=-rx-2;dx<=rx+2;dx++){if((dx/(rx+1.5))**2+(dy/(ry+1.5))**2>1)continue;
   const x=cx+dx,y=cy+dy;if(x<3||y<3||x>N-4||y>N-4)return false;const i=y*N+x;
   if(PROT.has(i)||BS.has(i)||TOWNZ.has(i)||inVillage(x,y)||tile[i]===0||tile[i]===3||(biomeTile!=null&&tile[i]!==biomeTile))return false}
  for(const d of[CAVE,TOMB,TRADER])if(d&&Math.abs(cx-d.x)<rx+6&&Math.abs(cy-d.y)<ry+6)return false;
  if(Math.abs(cx-TX)<rx+16&&Math.abs(cy-TY)<ry+12)return false;return true}
-function findTownSpot(t,bt){for(let r=0;r<=30;r++){let best=null,bd=1e9;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;
+function findTownSpot(t,bt){for(let r=0;r<=30*HSC;r++){let best=null,bd=1e9;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;
    const d=Math.hypot(dx,dy);if(d<bd&&canPlaceTown(t.x+dx,t.y+dy,t.fw,t.fh,bt)){bd=d;best=[t.x+dx,t.y+dy]}}if(best)return best}return null}
 const FHT=EXTRA_TOWNS[0],FHSPOT=findTownSpot(FHT,4);
 const FX=FHSPOT?FHSPOT[0]:-99,FY=FHSPOT?FHSPOT[1]:-99,FHON=!!FHSPOT;
@@ -4396,7 +4396,7 @@ if(FHON){
  {const st=FHTRAIL.find(i=>{const y=(i/N)|0;return y<=VY-10});if(st!=null){const x=st%N,y=(st/N)|0;for(const dx of[-1,1]){const i=y*N+x+dx;if(tile[i]!==0&&!FHPATH.has(i)&&!ROADS.has(i)&&!BS.has(i)){SIGNS.set(i,'North: Frosthollow, a lumber village in the snow. Follow the stone trail.');break}}}}
  // the Frostfang Den: a cave in an icy outcrop north of the village (preferred ~ (46,12), else the nearest clear spot north)
  const denOk=(x,y)=>{if(y>FY-FHT.fh-5||x<4||y<4||x>N-5)return false;for(let dy=-2;dy<=2;dy++)for(let dx=-3;dx<=3;dx++){const i=(y+dy)*N+x+dx;if(tile[i]===0||PROT.has(i)||BS.has(i)||inFH(x+dx,y+dy))return false}return true};
- let best=null,bd=1e9;for(let y=4;y<FY;y++)for(let x=4;x<N-4;x++){if(!denOk(x,y))continue;const d=Math.hypot(x-46,y-12)+Math.abs(x-(FX+6))*.4;if(d<bd){bd=d;best=[x,y]}}
+ let best=null,bd=1e9;for(let y=4;y<FY;y++)for(let x=4;x<N-4;x++){if(!denOk(x,y))continue;const d=Math.hypot(x-46*HSC,y-12*HSC)+Math.abs(x-(FX+6))*.4;if(d<bd){bd=d;best=[x,y]}}
  if(best){const[x,y]=best;FHDEN={x,y};
   for(let dy=-2;dy<=0;dy++)for(let dx=-2;dx<=2;dx++){if(Math.abs(dx)===2&&dy===0)continue;const i=(y+dy)*N+x+dx;tile[i]=3;obj[i]=null;PROT.add(i)}
   for(const[dx,dy]of[[0,1],[-1,1],[1,1],[0,2]]){const i=(y+dy)*N+x+dx;tile[i]=4;obj[i]=null;PROT.add(i)}
@@ -4771,14 +4771,14 @@ const _ng43=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_D
 // four cottages, a watchtower, palms and an irrigation channel. A desert trail runs south from Hollow Village.
 // Placement: the spec's anchor (64,91) is the water's edge, so the registry looks for the closest spot within 10 tiles
 // that is desert, keeps clear of the tomb, the trader's camp and the coast, and may flatten a small rock outcrop.
-EXTRA_TOWNS.push({id:'dusthaven',name:'Dusthaven',x:64,y:91,rx:9,ry:6,biome:'desert',fw:9,fh:7});
+EXTRA_TOWNS.push({id:'dusthaven',name:'Dusthaven',x:64*HSC,y:91*HSC,rx:9,ry:6,biome:'desert',fw:9,fh:7});
 const DHT=EXTRA_TOWNS[1];
 function canPlaceDesert(cx,cy,rx,ry){let mtn=0;for(let dy=-ry-2;dy<=ry+2;dy++)for(let dx=-rx-2;dx<=rx+2;dx++){if((dx/(rx+.5))**2+(dy/(ry+.5))**2>1)continue;
   const x=cx+dx,y=cy+dy,i=y*N+x;if(x<3||y<3||x>N-4||y>N-4)return false;if(PROT.has(i)||BS.has(i)||TOWNZ.has(i)||FHZ.has(i)||inVillage(x,y)||tile[i]===0)return false;
   if(tile[i]===3){mtn++;continue}if(tile[i]!==5&&tile[i]!==1)return false}
  if(mtn>6)return false;for(const d of[CAVE,TOMB,TRADER])if(d&&Math.abs(cx-d.x)<rx+6&&Math.abs(cy-d.y)<ry+6)return false;return true}
-const DHSPOT=(()=>{for(let r=0;r<=10;r++){let best=null,bd=1e9;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const d=Math.hypot(dx,dy);
-  if(d<=10&&d<bd&&canPlaceDesert(DHT.x+dx,DHT.y+dy,DHT.fw,DHT.fh)){bd=d;best=[DHT.x+dx,DHT.y+dy]}}if(best)return best}return null})();
+const DHSPOT=(()=>{for(let r=0;r<=10*HSC;r++){let best=null,bd=1e9;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const d=Math.hypot(dx,dy);
+  if(d<=10*HSC&&d<bd&&canPlaceDesert(DHT.x+dx,DHT.y+dy,DHT.fw,DHT.fh)){bd=d;best=[DHT.x+dx,DHT.y+dy]}}if(best)return best}return null})();
 const DX=DHSPOT?DHSPOT[0]:-99,DY=DHSPOT?DHSPOT[1]:-99,DHON=!!DHSPOT;
 var DHZ=new Set(),DHPATH=new Set();const DHPOOL=new Set(),DHCH=new Set(),DHB=[],DHPALM=[],DHYARD=[];let DHTOWER=null,DHRUIN=null;
 const inDH=(x,y)=>DHON&&((x-DX)/(DHT.fw+.5))**2+((y-DY)/(DHT.fh+.5))**2<=1;
@@ -4815,8 +4815,8 @@ if(DHON){
  {const st=DHTRAIL.find(i=>((i/N)|0)>=VY+10);if(st!=null){const x=st%N,y=(st/N)|0;for(const dx of[-1,1]){const i=y*N+x+dx;if(tile[i]!==0&&!DHPATH.has(i)&&!FHPATH.has(i)&&!ROADS.has(i)&&!BS.has(i)){SIGNS.set(i,'South: Dusthaven, a mining village in the desert. Skeletons roam at night.');break}}}}
  // the ruins: preferred near (76,95) (that's sea), else the closest clear patch of desert south-east of the village
  const ok=(x,y)=>{if(x<5||y<5||x>N-6||y>N-6)return false;for(let dy=-2;dy<=2;dy++)for(let dx=-3;dx<=3;dx++){const i=(y+dy)*N+x+dx;if(tile[i]===0||tile[i]===3||PROT.has(i)||BS.has(i)||inDH(x+dx,y+dy)||DHZ.has(i))return false}
-  for(const d of[TOMB,TRADER])if(d&&Math.abs(x-d.x)<8&&Math.abs(y-d.y)<8)return false;return Math.hypot(x-DX,y-DY)<28&&tile[y*N+x]===5};
- let best=null,bd=1e9;for(let y=5;y<N-5;y++)for(let x=5;x<N-5;x++){if(!ok(x,y))continue;const d=Math.hypot(x-76,y-95);if(d<bd){bd=d;best=[x,y]}}
+  for(const d of[TOMB,TRADER])if(d&&Math.abs(x-d.x)<8&&Math.abs(y-d.y)<8)return false;return Math.hypot(x-DX,y-DY)<28*HSC&&tile[y*N+x]===5};
+ let best=null,bd=1e9;for(let y=5;y<N-5;y++)for(let x=5;x<N-5;x++){if(!ok(x,y))continue;const d=Math.hypot(x-76*HSC,y-95*HSC);if(d<bd){bd=d;best=[x,y]}}
  if(best){const[x,y]=best;DHRUIN={x,y};for(let dy=-1;dy<=0;dy++)for(let dx=-2;dx<=2;dx++){const i=(y+dy)*N+x+dx;tile[i]=5;obj[i]=null;BS.add(i);PROT.add(i)}
   for(const[dx,dy]of[[0,1],[-1,1],[1,1],[0,2],[-2,1],[2,1]]){const i=(y+dy)*N+x+dx;tile[i]=5;obj[i]=null;PROT.add(i)}
   RUINTRAIL=trailPath(DX+4,DY+DHT.fh+1,x,y+1,()=>false);layTrail(RUINTRAIL);
@@ -5143,14 +5143,14 @@ const _ng45=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_D
 // drying nets, a fishing pier with a boat dock, and a lighthouse on the shore. A road runs west from Hollow Village.
 // Placement: the anchor (15,56) is inland grass; the registry takes the closest spot with land for the whole village and
 // a 4+ tile shoreline just south of it (2 tiles away), flattening a small rocky knoll.
-EXTRA_TOWNS.push({id:'tidewatch',name:'Tidewatch',x:15,y:56,rx:7,ry:7,biome:'coast',fw:9,fh:7});
+EXTRA_TOWNS.push({id:'tidewatch',name:'Tidewatch',x:15*HSC,y:56*HSC,rx:7,ry:7,biome:'coast',fw:9,fh:7});
 const TWT=EXTRA_TOWNS[2];
 function canPlaceCoast(cx,cy,rx,ry){let mtn=0;for(let dy=-ry-2;dy<=ry+2;dy++)for(let dx=-rx-2;dx<=rx+2;dx++){if((dx/(rx+.5))**2+(dy/(ry+.5))**2>1)continue;const x=cx+dx,y=cy+dy,i=y*N+x;if(x<3||y<3||x>N-4||y>N-4)return null;
   if(PROT.has(i)||BS.has(i)||TOWNZ.has(i)||FHZ.has(i)||DHZ.has(i)||inVillage(x,y)||tile[i]===0)return null;if(tile[i]===3){mtn++;continue}if(tile[i]!==2&&tile[i]!==1)return null}
  if(mtn>10)return null;for(const d of[CAVE,TOMB,TRADER])if(d&&Math.abs(cx-d.x)<rx+6&&Math.abs(cy-d.y)<ry+6)return null;
  for(let y=cy+ry+1;y<=cy+ry+4;y++){let run=0;for(let x=cx-7;x<=cx+7;x++){run=tile[y*N+x]===0?run+1:0;if(run>=4)return{px:x-1,py:y}}}return null}
 let TWPIER=null;
-const TWSPOT=(()=>{let best=null,bd=1e9;for(let y=30;y<85;y++)for(let x=3;x<60;x++){const d=Math.hypot(x-TWT.x,y-TWT.y);if(d>=bd||d>14)continue;const s=canPlaceCoast(x,y,TWT.fw,TWT.fh);if(s){bd=d;best=[x,y,s]}}if(best)TWPIER=best[2];return best})();
+const TWSPOT=(()=>{let best=null,bd=1e9;for(let y=30*HSC;y<85*HSC;y++)for(let x=3;x<60*HSC;x++){const d=Math.hypot(x-TWT.x,y-TWT.y);if(d>=bd||d>14*HSC)continue;const s=canPlaceCoast(x,y,TWT.fw,TWT.fh);if(s){bd=d;best=[x,y,s]}}if(best)TWPIER=best[2];return best})();
 const WX=TWSPOT?TWSPOT[0]:-99,WY=TWSPOT?TWSPOT[1]:-99,TWON=!!TWSPOT;
 var TWZ=new Set(),TWPATH=new Set();const TWB=[],TWNET=[];let TWLIGHT=null,TWDOCK=[];
 const inTW=(x,y)=>TWON&&((x-WX)/(TWT.fw+.5))**2+((y-WY)/(TWT.fh+.5))**2<=1;
@@ -5302,7 +5302,7 @@ var GRDEN=null;let GROTTO_BOAT=false;
 // the islet: rock all round, cave mouth facing south onto open water, nearest the spec's spot
 {const okW=(x,y)=>{for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const xx=x+dx,yy=y+dy;if(xx<3||yy<3||xx>N-4||yy>N-4)return false;const i=yy*N+xx;if(tile[i]!==0||PROT.has(i)||BS.has(i)||BRIDGE.has(i))return false}
   for(let yy=y+4;yy<=y+5;yy++)for(let xx=x-1;xx<=x+1;xx++)if(tile[yy*N+xx]!==0)return false;return true};
- let best=null,bd=1e9;for(let y=4;y<N-6;y++)for(let x=4;x<N-4;x++){const d=Math.hypot(x-7,y-61);if(d<bd&&d<30&&okW(x,y)){bd=d;best=[x,y]}}
+ let best=null,bd=1e9;for(let y=4;y<N-6;y++)for(let x=4;x<N-4;x++){const d=Math.hypot(x-7*HSC,y-61*HSC);if(d<bd&&d<30*HSC&&okW(x,y)){bd=d;best=[x,y]}}
  if(best){const[x,y]=best;GRDEN={x,y};for(let dy=-1;dy<=0;dy++)for(let dx=-1;dx<=1;dx++){const i=(y+dy)*N+x+dx;tile[i]=3;obj[i]=null;PROT.add(i)}
   for(const[dx,dy]of[[-2,0],[2,0],[0,-2]]){const i=(y+dy)*N+x+dx;tile[i]=3;PROT.add(i)}}}
 function drawGrottoMouth(tm){if(!GRDEN)return;const x0=GRDEN.x*16,y0=GRDEN.y*16;
@@ -6197,7 +6197,7 @@ const HARBOR_POSTS=[];if(RG_POST)HARBOR_POSTS.push({id:'tidewatch',name:'Tidewat
 if(FHON){const s=shorePost(FX,FY,18);if(s)HARBOR_POSTS.push({id:'frosthollow',name:'Frosthollow',x:s.x,y:s.y})}
 const BUOYS=(()=>{const tw=HARBOR_POSTS.find(p=>p.id==='tidewatch'),sm=HARBOR_POSTS.find(p=>p.id==='saltmere'),A=tw?boatWater(tw.x,tw.y):new Uint8Array(N*N),B=sm?boatWater(sm.x,sm.y):A;
  return{west:buoySpot(A,0,tw?tw.y+2:WY),east:buoySpot(B,N-1,sm?sm.y-4:TY-12),south:buoySpot(A,tw?tw.x+6:N>>1,N-1)}})();
-let CAIRN=null;if(FHON){const reach=hReach(FX,FY,20000);let bd=1e9;for(let y=2;y<FY-6;y++)for(let x=FX-14;x<=FX+14;x++){if(!hwalk(x,y)||!reach[y*N+x]||PROT.has(y*N+x))continue;
+let CAIRN=null;if(FHON){const reach=hReach(FX,FY,20000*HSC*HSC);let bd=1e9;for(let y=2;y<FY-6;y++)for(let x=FX-14;x<=FX+14;x++){if(!hwalk(x,y)||!reach[y*N+x]||PROT.has(y*N+x))continue;
   if(FHDEN&&Math.hypot(x-FHDEN.x,y-FHDEN.y)<6)continue;const d=Math.hypot(x-(FX+6),y-3);if(d<bd){bd=d;CAIRN={x,y}}}}
 function postHere(){if(SCENE){const R=SCENE.room;return R&&R.region?{id:'pier',name:WORLD_REGIONS[R.region].name,region:R.region}:null}for(const p of HARBOR_POSTS)if(Math.hypot(P.x-(p.x*16+8),P.y-(p.y*16+8))<14)return p;return null}
 
@@ -7486,7 +7486,7 @@ const locKey=l=>String(l).replace(/[.#$\[\]\/:]/g,'_');
 {const _say64=say;say=function(s){if(MP.on&&typeof s==='string'&&/Good morning!/.test(s))s=s.replace(/ ?Good morning!/,'')+' Nights pass for everyone together online, but you feel rested.';return _say64(s)}}
 // ---- shared resources ----
 const RES={h:{},r:{},rloc:null,unsubH:null,unsubR:null,stash:{}};
-function resSubHollow(){if(RES.unsubH)return;const d=FB.db,ref=d.ref(FB.D,'world/res/hollow');
+function resSubHollow(){if(RES.unsubH)return;const d=FB.db,ref=d.ref(FB.D,'world/res/hollow2');
  const add=s=>{const i=+s.key,v=s.val();if(!v||!(i>=0&&i<N*N))return;RES.h[i]=v;if(obj[i]&&obj[i].t===v.t)obj[i]=null;for(let j=REM.length-1;j>=0;j--)if(REM[j].i===i)REM.splice(j,1)};
  const u1=d.onChildAdded(ref,add),u2=d.onChildChanged(ref,add),u3=d.onChildRemoved(ref,s=>{const i=+s.key,v=s.val()||RES.h[i];delete RES.h[i];if(v&&!obj[i]&&OHP[v.t])obj[i]={t:v.t,hp:OHP[v.t]}});
  RES.unsubH=()=>{u1();u2();u3()};MP.unsub.push(()=>{if(RES.unsubH){RES.unsubH();RES.unsubH=null}})}
@@ -7500,13 +7500,13 @@ function resSubRegion(){const R=SCENE&&SCENE.room,loc=R&&R.region?'r_'+R.region:
 let resSweepAt=0;
 function resTick(){if(!MP.on||!FB)return;const d=FB.db;resSubHollow();resSubRegion();
  // anything you used up goes to the shared list (and stops growing back on its own timer)
- for(let j=REM.length-1;j>=0;j--){const r=REM[j];if(r._s)continue;r._s=1;if(RES.h[r.i])continue;d.set(d.ref(FB.D,'world/res/hollow/'+r.i),{t:r.t,at:d.serverTimestamp()}).catch(()=>{})}
+ for(let j=REM.length-1;j>=0;j--){const r=REM[j];if(r._s)continue;r._s=1;if(RES.h[r.i])continue;d.set(d.ref(FB.D,'world/res/hollow2/'+r.i),{t:r.t,at:d.serverTimestamp()}).catch(()=>{})}
  for(let j=REM.length-1;j>=0;j--)if(REM[j]._s&&RES.h[REM[j].i])REM.splice(j,1);
  const R=SCENE&&SCENE.room;if(R&&R.region&&R.gone&&RES.rloc){for(let j=R.gone.length-1;j>=0;j--){const g2=R.gone[j];if(g2._s)continue;g2._s=1;const idx=g2.it.y*R.w+g2.it.x;
    RES.stash[RES.rloc+':'+idx]=g2.it;if(!RES.r[idx])d.set(d.ref(FB.D,'world/res/'+RES.rloc+'/'+idx),{t:g2.it.o.t,at:d.serverTimestamp()}).catch(()=>{});R.gone.splice(j,1)}}
  // growing back: anyone online clears entries older than 4 minutes
  const now=performance.now();if(now-resSweepAt<5000)return;resSweepAt=now;const cut=mpNow()-240000;
- for(const i in RES.h){const v=RES.h[i];if(typeof v.at==='number'&&v.at<cut)d.remove(d.ref(FB.D,'world/res/hollow/'+i)).catch(()=>{})}
+ for(const i in RES.h){const v=RES.h[i];if(typeof v.at==='number'&&v.at<cut)d.remove(d.ref(FB.D,'world/res/hollow2/'+i)).catch(()=>{})}
  if(RES.rloc)for(const i in RES.r){const v=RES.r[i];if(typeof v.at==='number'&&v.at<cut)d.remove(d.ref(FB.D,'world/res/'+RES.rloc+'/'+i)).catch(()=>{})}}
 // ---- shared monsters ----
 const MOB={n:0,prox:new Map(),limbo:[],loc:null,unsub:null,pubAt:0,pubbed:false,arrAt:0,inbox:null};window.SQMOB=MOB;
@@ -7707,7 +7707,7 @@ addEventListener('keydown',e=>{if(e.key==='Escape'&&bugF.style.display==='block'
 const HS={pubKey:'',pubAt:0,data:{},fr:{},frUnsub:{},unsub:null,msgAt:0};
 const isForeign=h=>!!(h&&h._foreign);
 function houseLocOf(h){if(!h||!MP.user)return'';return'h:'+(h._owner||MP.user.uid)+':'+(h._oid||h.id)}
-function myHousesData(){return HOUSES.filter(h=>!h._foreign).map(h=>({id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>[i,f.t])}))}
+function myHousesData(){return HOUSES.filter(h=>!h._foreign).map(h=>({s2:1,id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>[i,f.t])}))}
 function canEnter(h){return!!(HS.fr[h._owner]&&MP.user&&HS.fr[h._owner][MP.user.uid])}
 function buildForeign(owner,e){const RW=14,RH=10,h={id:owner.slice(0,6)+'_'+String(e.id).slice(0,12),_oid:String(e.id).slice(0,12),_owner:owner,_foreign:true,x:e.x|0,y:e.y|0,w:e.w===7?7:5,furn:new Map(),hp:12};
  const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):null);const fl=arr(e.f);if(fl)for(const q0 of fl){const q=arr(q0);if(!q)continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RH||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?{t,items:{}}:{t})}return h}
@@ -7765,7 +7765,7 @@ function buildStart(){const d=FB.db;BLDS.unsub=d.onValue(d.ref(FB.D,'build'),s=>
  MP.unsub.push(()=>{if(BLDS.unsub)BLDS.unsub();BLDS.unsub=null;BLDS.data={};BLDS.pubKey='';for(const[i,s]of[...STR])if(s._foreign)STR.delete(i);for(const[i,p]of[...FARM])if(p._foreign)FARM.delete(i)})}
 function buildTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now();if(now-BLDS.pubAt<3000)return;BLDS.pubAt=now;
  const s=[...STR].filter(([i,v])=>!v._foreign).map(([i,v])=>[i,v.t]),f=[];
- const r=rbPub(),k=JSON.stringify([s,f.map(q=>[q[0],q[1],Math.round(q[2]/5)]),r]);if(k!==BLDS.pubKey){BLDS.pubKey=k;FB.db.set(FB.db.ref(FB.D,'build/'+MP.user.uid),s.length||f.length||r?Object.assign({s,f},r?{r}:{}):null).catch(()=>{BLDS.pubKey=''})}
+ const r=rbPub(),k=JSON.stringify([s,f.map(q=>[q[0],q[1],Math.round(q[2]/5)]),r]);if(k!==BLDS.pubKey){BLDS.pubKey=k;FB.db.set(FB.db.ref(FB.D,'build/'+MP.user.uid),s.length||f.length||r?Object.assign({s,f,h:2},r?{r}:{}):null).catch(()=>{BLDS.pubKey=''})}
  if(BLDS.data&&Object.keys(BLDS.data).length&&![...STR.values()].some(v=>v._foreign)&&![...FARM.values()].some(p=>p._foreign))buildSync()}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!BLDS.unsub)try{buildStart()}catch(e){mpErr(e)}}}
 // never save other people's things
@@ -9172,6 +9172,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-23',d:'Nov 5, 2026',t:'Hollow Island is twice as big',n:['Hollow Island has doubled in size. Hollow Village, Saltmere, Frosthollow, Dusthaven and Tidewatch are much farther apart, with more forest, snowfield and desert between them, and the roads stretch to match.','Your builds moved with the map: houses, castles, walls, chests, stations, beds, berry planters and farm plots are at the matching spot on the bigger island. Anything that would have landed in the water or on rock was packed into your bag, along with whatever was inside it.','The dungeons, the islets out at sea (Gull Rock, Wreck Isle, Hermit\'s Isle) and the Drowned Grotto moved out too.','Map markers stay easy to see on the bigger map.']},
  {v:'2026.11.05-22',d:'Nov 5, 2026',t:'Emberwatch, Cinderdeep & the Stone Sledgehammer',n:['Ashfall Coast has a forge camp: Emberwatch. Warden Kesh, Forgemaster Brann and Old Pell have four quests for you, Brann sells potions, iron arrows, bait and iron bars and buys anything, and monsters stay out of the camp.','New dungeon: Cinderdeep, six floors of ash and lava in Ashfall\'s north-east hills. Don\'t stand in the lava pools. At the bottom the Emberlord wakes once a day: it sets the ground under you on fire (watch the orange rings and roll out), throws fans of fireballs, and calls magma slimes at half health.','Rare drop from the Emberlord: the Ember ring. Your melee hits set monsters on fire.','New rare drop from the Stone Giant: the Stone Sledgehammer. Equip it in your main hand: it hits like an iron sword, and your ultimate (V, L1+R1, or the SLAM button) becomes a GROUND SLAM that hits everything around you. 18 second cooldown, no wand needed.','Boulders! Big boulders now sit on every island, and caves have them too. Break one with the Stone Sledgehammer for 35 to 50 stone. Ore boulders glint with iron, gold, mithril or adamant and give a big pile of ore (Mining 15 / 30 / 45 / 60).','Treelings for every tree: oak, willow, maple, yew, pine, Void Tree and dead-tree treelings, each 1 in 5,000 from chopping that kind of tree.','The purple-leaved trees of the Shattered Expanse are now called Void Trees.','You can walk into Thornbrook\'s Ranger Lodge and the Sleepy Fern inn (rest in a bed there to heal), and into Emberwatch\'s Forge and Warden\'s Hall.','Fixed: moss slimes looked like blue slimes. They\'re green now.','Fixed: killing briar wolves on Briarwood didn\'t count toward Ranger Wren\'s quest.']},
  {v:'2026.11.05-21',d:'Nov 5, 2026',t:'Thornbrook & Thornroot Hollow',n:['Briarwood Isle has a village: Thornbrook, with a ranger lodge, the Sleepy Fern inn and a market. Ranger Wren, Hazel the trader and Old Moss have four quests for you (see the Quests screen), Hazel sells potions, arrows, bait and seeds and buys anything, and monsters stay out of the village.','New dungeon: Thornroot Hollow, six floors under Briarwood\'s south-west roots. At the bottom waits the Thornheart, a huge walking tree that wakes once a day. Watch for the green rings: roots burst out of them. At half health it calls briar wolves.','Rare drop from the Thornheart: the Thorn amulet. Anything that hurts you takes 4 damage back.','Ironcrest\'s mines and caves are now six floors deep.','New furniture: the Trash can (Craft menu, Building). Put it in your house, then face it and press HIT to throw away things you don\'t want.','The cat, dog and fox pets have been redrawn to fit the game, and the anvil has a brand-new look.','Gates now keep monsters out. Only players can walk through them, on every island.','Trusted friends can now use your wardrobe.','Fixed: if a tree or rock grew back right where you were standing, you got stuck inside it. Now you\'re moved to the nearest open spot.']},
  {v:'2026.11.05-20',d:'Nov 5, 2026',t:'Dev tools',n:['Behind-the-scenes testing tools for the new castle and pets. Nothing changes for players.']},
@@ -9501,7 +9502,7 @@ function sfGrowth(r,now){if(!r||!r.c||!CROPS[r.c])return 0;const C=CROPS[r.c],ma
 function sfView(r,now){return{c:CROPS[r.c]?r.c:null,g:sfGrowth(r,now),w:CLK+Math.max(0,((+r.w||0)-now)/1000),e:Math.floor((+r.e||now)/1000)}}
 const sfClean=r=>({c:String(r.c||'').slice(0,10),g:Math.round((+r.g||0)*10)/10,t:Math.round(+r.t||0),w:Math.round(+r.w||0),e:Math.round(+r.e||0)});
 function sfWrite(area,k,r){const S=sfStore();if(!S[area])S[area]={};if(r)S[area][k]=sfClean(r);else delete S[area][k];
- if(sfOnline()){const ref=FB.db.ref(FB.D,'farm/'+area+'/'+k);(r?FB.db.set(ref,sfClean(r)):FB.db.remove(ref)).catch(e=>{try{mpErr(e)}catch(_){}})}else try{saveLocal(true)}catch(e){}}
+ if(sfOnline()){const ref=FB.db.ref(FB.D,'farm/'+(area==='hollow'?'hollow2':area)+'/'+k);(r?FB.db.set(ref,sfClean(r)):FB.db.remove(ref)).catch(e=>{try{mpErr(e)}catch(_){}})}else try{saveLocal(true)}catch(e){}}
 // views: FARM (Hollow, by tile index) and rfMap(region) (by 'x,y') are rebuilt from the shared plots every frame,
 // so all the existing farming, drawing and map code keeps working unchanged
 function sfRebuild(){const now=sfNow(),S=sfStore();FARM.clear();const H=S.hollow||{};
@@ -9529,7 +9530,7 @@ setInterval(()=>{const now=sfNow(),S=sfStore();
  const area=sfArea();if(!area||!rainingNow()||dark()>.95)return;let bm='grass';try{bm=biomeHere()}catch(e){}if(bm==='desert'||bm==='in')return;
  const A=S[area]||{};for(const k in A){const r=A[k];if(r.c&&(+r.w||0)-now<60000)sfWrite(area,k,{c:r.c,g:sfGrowth(r,now),t:now,w:now+WATER_FOR*1000,e:0})}},5000);
 // online: the shared fields, plus moving your old plots in
-function sfStart(){const d=FB.db;SF.unsub=d.onValue(d.ref(FB.D,'farm'),s=>{const v=s.val()||{};SF.data={};for(const a in v){if(!WORLD_REGIONS[a]||!v[a]||typeof v[a]!=='object')continue;SF.data[a]={};
+function sfStart(){const d=FB.db;SF.unsub=d.onValue(d.ref(FB.D,'farm'),s=>{const v=Object.assign({},s.val()||{});const oldH=v.hollow;v.hollow=v.hollow2||{};delete v.hollow2;try{sfMigrateHollow(oldH,v.hollow)}catch(e){console.warn(e)}SF.data={};for(const a in v){if(!WORLD_REGIONS[a]||!v[a]||typeof v[a]!=='object')continue;SF.data[a]={};
    for(const k in v[a]){const r=v[a][k];if(r&&typeof r==='object'&&/^\d+_\d+$/.test(k))SF.data[a][k]=r}}
   const first=!SF.ready;SF.ready=true;
   if(first){let moved=0;for(const a in SF.local)for(const k in SF.local[a]){if(SF.data[a]&&SF.data[a][k])continue;sfWrite(a,k,SF.local[a][k]);moved++}SF.local={};if(moved)try{saveLocal(true)}catch(e){}}});
@@ -9658,6 +9659,16 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
 {const _wl=wbLoot;wbLoot=function(b){const me=MP.user&&MP.user.uid,ok=b&&b.type==='giant'&&WB.dmg>=1&&!WB.claimed[b.slot];let top=false;
   if(ok){const rank=Object.entries(Object.assign({},WB.all,{[me]:WB.dmg})).sort((a,c)=>c[1]-a[1]).findIndex(e=>e[0]===me)+1;top=rank>0&&rank<=3}
   _wl(b);if(ok&&(Math.random()<(top?.08:.05)||window.SQSLEDGEDROP)){inv.eq_sledge=(inv.eq_sledge|0)+1;setTimeout(()=>{say('A STONE SLEDGEHAMMER! Wield it: your ultimate becomes a Ground Slam, and it breaks boulders.');msgT=6;try{sfx('level')}catch(e){}},900);try{saveLocal(true);saveCloud(true)}catch(e){}}}}
+// ---- Hollow Island is twice as big: other players' houses and builds published before the change are scaled up ----
+{const sc=i=>{const x=i%110,y=(i/110)|0;return(y*HSC)*N+x*HSC};
+ const _hs=housesSync;housesSync=function(){try{for(const o in HS.data){const L=HS.data[o];if(Array.isArray(L))for(const e of L)if(e&&!e.s2&&!e._t2&&isFinite(e.x)&&isFinite(e.y)){e.x*=HSC;e.y*=HSC;e._t2=1}}}catch(e){}return _hs()};
+ const _bs=buildSync;buildSync=function(){try{for(const o in BLDS.data){const r=BLDS.data[o];if(!r||r.h===2||r._t2||!r.s)continue;r._t2=1;for(const e of(Array.isArray(r.s)?r.s:Object.values(r.s)))if(e&&e[0]!=null)e[0]=sc(e[0]|0)}}catch(e){}return _bs()};
+ // old public plots (farm/hollow) move once to farm/hollow2, by whoever gets there first
+ let tried=false;window.sfMigrateHollow=function(old,cur){if(tried||!old||typeof old!=='object'||!Object.keys(old).length||!MP.on||!FB.db.runTransaction)return;tried=true;
+  const d=FB.db;d.runTransaction(d.ref(FB.D,'farm/_meta/hollow2'),c=>c?undefined:{c:'moved',t:Date.now()}).then(r=>{if(!r||!r.committed)return;
+   for(const k in old){const m=/^(\d+)_(\d+)$/.exec(k);if(!m)continue;const x=+m[1]*HSC,y=+m[2]*HSC,i=y*N+x,nk=x+'_'+y;
+    if(x>0&&y>0&&x<N-1&&y<N-1&&tile[i]!==0&&tile[i]!==3&&!PROT.has(i)&&!BS.has(i)&&!(cur&&cur[nk])){const r0=old[k];if(r0&&typeof r0==='object')d.set(d.ref(FB.D,'farm/hollow2/'+nk),sfClean(r0)).catch(()=>{})}
+    d.remove(d.ref(FB.D,'farm/hollow/'+k)).catch(()=>{})}}).catch(e=>console.warn(e))}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
@@ -11184,6 +11195,39 @@ const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note
   let k=h.indexOf('<div class="tl" style="margin-top:16px">CONTROLLER</div>');if(k<0)k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
  const _c=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('.fsb')){fsToggle();setTimeout(()=>{try{rPn()}catch(err){}},150);return}_c(e)};
  window.SQFS=fsToggle}
+// ---------------------------------------------------------------- 93. Hollow Island doubled (220 x 220): old saves move with the map
+// Saves from before the change (no "hsc" field) are scaled up as they load: your position, houses and castles, the
+// things you built outside, berry planters, beds and farm plots all move to the matching spot on the bigger island.
+// Anything that lands in the water, on rock, or inside a town is packed into your bag instead (with what was in it).
+{const OLD=110,sc=i=>{const x=i%OLD,y=(i/OLD)|0;return(y*HSC)*N+x*HSC};
+ let OWN=new Set();const bad=i=>i<0||i>=N*N||tile[i]===0||tile[i]===3||PROT.has(i)||(BS.has(i)&&!OWN.has(i))||TOWNZ.has(i)||inVillage(i%N,(i/N)|0);
+ const addInv=(S,k,n)=>{if(!S.inv||typeof S.inv!=='object')S.inv={};S.inv[k]=(+S.inv[k]||0)+n};
+ const addItems=(S,o)=>{if(o&&typeof o==='object')for(const k in o){const n=Math.max(0,+o[k]||0);if(n)addInv(S,k,n)}};
+ function hMigrate(S){const packed=[];OWN=new Set(STR.keys());for(const h of HOUSES){try{for(const i of houseTiles(h))OWN.add(i)}catch(e){}}const inH=!S.region||!S.region.id||S.region.id==='hollow';
+  if(S.p&&typeof S.p==='object'&&inH&&isFinite(S.p.x)&&isFinite(S.p.y)){S.p.x=S.p.x*HSC-8;S.p.y=S.p.y*HSC-8}
+  S.fires=[];S.rm=[];
+  if(Array.isArray(S.str)){const keep=[];for(const e of S.str){if(!Array.isArray(e))continue;const ni=sc(e[0]|0);if(bad(ni)){addInv(S,e[1],1);addItems(S,e[2]);packed.push(INAME[e[1]]||e[1]);if(+S.bsp===(e[0]|0))S.bsp=-1;continue}if(+S.bsp===(e[0]|0))S.bsp=ni;e[0]=ni;keep.push(e)}S.str=keep}
+  if(S.plant&&typeof S.plant==='object'){const o={};for(const k in S.plant)o[/^o\d+$/.test(k)?'o'+sc(+k.slice(1)):k]=S.plant[k];S.plant=o}
+  if(Array.isArray(S.houses)){const keep=[];for(const h of S.houses){if(!h||!isFinite(h.x)||!isFinite(h.y)){continue}const x=h.x*HSC,y=h.y*HSC,w=h.w||5,hw=(w-1)/2;let ok=x>4&&y>3&&x<N-5&&y<N-3;
+    for(let dy=-1;dy<=0&&ok;dy++)for(let dx=-hw;dx<=hw;dx++)if(bad((y+dy)*N+x+dx)){ok=false;break}if(ok&&tile[(y+1)*N+x]===0)ok=false;
+    if(ok){h.x=x;h.y=y;keep.push(h);continue}
+    addInv(S,h.c?'castle':'house',1);packed.push(h.c?'Castle':'House');if(Array.isArray(h.f))for(const q of h.f)if(Array.isArray(q)&&q[1]){addInv(S,q[1],1);addItems(S,q[2])}if(S.home===h.id)S.home=null}S.houses=keep}
+  if(Array.isArray(S.farm))S.farm=S.farm.filter(e=>Array.isArray(e)).map(e=>{e[0]=sc(e[0]|0);return e}).filter(e=>!bad(e[0]));
+  if(S.sf&&S.sf.hollow&&typeof S.sf.hollow==='object'){const o={};for(const k in S.sf.hollow){const m=/^(\d+)_(\d+)$/.exec(k);if(!m)continue;const x=+m[1]*HSC,y=+m[2]*HSC;if(!bad(y*N+x))o[x+'_'+y]=S.sf.hollow[k]}S.sf.hollow=o}
+  return packed}
+ const _ap=applySave;applySave=function(S){let packed=null;if(S&&typeof S==='object'&&S.hsc!==HSC){try{packed=hMigrate(S)}catch(e){console.warn('hollow migrate',e)}}_ap(S);
+  if(packed){S.hsc=HSC;try{if(!SCENE&&(solid(P.x-5,P.y-3)||solid(P.x+5,P.y+6))){const tx=Math.floor(P.x/16),ty=Math.floor(P.y/16);let done=false;for(let r=1;r<14&&!done;r++)for(let dy=-r;dy<=r&&!done;dy++)for(let dx=-r;dx<=r&&!done;dx++){const x=(tx+dx)*16+8,y=(ty+dy)*16+8;if(!solid(x-5,y-3)&&!solid(x+5,y+6)&&!solid(x,y)){P.x=x;P.y=y;done=true}}if(!done){P.x=SPX;P.y=SPY}}}catch(e){}
+   setTimeout(()=>{try{say('Hollow Island has grown! It\'s twice as big now'+(packed.length?'. Some of your builds landed in water or on rock, so they\'re in your bag: '+[...new Set(packed)].join(', ')+'.':', and your builds moved with it.'));msgT=8;saveLocal(true);saveCloud(true)}catch(e){}},1500)}};
+ const _sn=snap;snap=function(){const s=_sn();s.hsc=HSC;return s};
+ try{KNOWN49.add('hsc')}catch(e){}
+ // the island map: markers keep their size on the bigger island (each 3x3 marker and its centre dot are drawn HSC times as big)
+ {const _dm=drawMap;drawMap=function(){const c=document.getElementById('mpc'),R=SCENE&&SCENE.room;if(!c||(R&&R.region)||c.width!==N)return _dm();const x=c.getContext('2d'),fr=x.fillRect;let last=null;
+   x.fillRect=function(X,Y,w,h){if(w>=3&&h>=3&&w<=7&&h<=7){const cx=X+w/2,cy=Y+h/2;last=[X,Y];return fr.call(this,cx-w*HSC/2,cy-h*HSC/2,w*HSC,h*HSC)}
+    if(w===1&&h===1&&last&&X===last[0]+1&&Y===last[1]+1){last=null;return fr.call(this,X+.5-HSC/2+.5,Y+.5-HSC/2+.5,HSC,HSC)}last=null;return fr.call(this,X,Y,w,h)};
+   try{return _dm()}finally{x.fillRect=fr}}}
+ // nothing grows under a build (the bigger island has new trees where old builds now stand)
+ let chk=0;const _u=upd;upd=function(dt){_u(dt);if((chk-=dt)>0)return;chk=1.5;for(const i of STR.keys())if(obj[i])obj[i]=null;for(const i of FARM.keys())if(obj[i])obj[i]=null;
+  for(const h of HOUSES){try{for(const i of houseTiles(h))if(obj[i])obj[i]=null}catch(e){}}}}
 // ---------------------------------------------------------------- BOOT LOAD
 // Every section has registered its part of applySave by now, so one call restores the whole game
 // (the same path a save from your account takes).
