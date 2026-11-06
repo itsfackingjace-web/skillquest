@@ -8815,6 +8815,7 @@ window.SQWB=WB;
    done:()=>{const out=G.slice();for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const i=y*GW+x;if(G[i])continue;if((x>0&&G[i-1])||(x<GW-1&&G[i+1])||(y>0&&G[i-GW])||(y<GH-1&&G[i+GW]))out[i]=outline}
     const c=document.createElement('canvas');c.width=GW;c.height=GH;const x=c.getContext('2d');for(let i=0;i<out.length;i++)if(out[i]){x.fillStyle=out[i];x.fillRect(i%GW,(i/GW)|0,1,1)}return c}};
   return K}
+ window.SQKIT=chunkKit;
  const flipCan=src=>{const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(src,0,0);return c};
 
  // ---------- Demon: 48x50, crimson, curling horns, bat wings, fists wreathed in fire ----------
@@ -9174,6 +9175,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.06-3',d:'Nov 6, 2026',t:'New island boss art',n:['All five island bosses have been redrawn in the same style as the world bosses: the Briar Queen is a thorn-backed spider with a rose on her back, the Iron Warlord wears horned armour and a red cape, the Frost Wyrm rises from its coils, the Void Herald floats with a crown of shards, and Black Jack wears a long duster coat.']},
  {v:'2026.11.06-2',d:'Nov 6, 2026',t:'Island bosses',n:['The great sealed doors on every island now open, and each one hides an Island Boss: the Briar Queen (Whispering Ruins, Briarwood), the Iron Warlord (the Fallen Bastion, Ashfall), the Frost Wyrm (the Giant\'s Stair, Ironcrest), the Void Herald (the Fractured Temple, Shattered Expanse) and Black Jack, the Outlaw King (the Old Silver Mine, No Man\'s Land).','To open a door you need five sigil shards from that island. Its monsters drop them (about 1 in 25). The door glows once you have enough. Look at it to go in. Each fight uses five shards.','Island bosses fight with warning circles, shockwave rings, projectile fans, charges, leaps and summoned helpers, and they get faster at half health. Their health bar shows at the top of the screen.','Rare drops (5%): the Webling pet (Briar Queen), the Warlord\'s blade, the strongest sword in the game (Iron Warlord), the Frostbite ring, whose hits can freeze monsters (Frost Wyrm), the Voidling pet (Void Herald) and the Outlaw\'s hat (Black Jack). Every fight also pays out gold, bars and gems.','The wiki has an Island bosses section with pictures.']},
  {v:'2026.11.06-1',d:'Nov 6, 2026',t:'Sailing and world map fixes',n:['Fixed: sailing straight between islands (Briarwood, No Man\'s Land and the Shattered Expanse) left your boat stuck at the edge of the map, in the wrong spot. You now arrive at the matching spot on the edge you sailed in from, and can sail away normally in both directions.','Fixed: the world map took a long time to draw the islands (especially on phones). The islands are now drawn in the background while you play, and much faster while the map is open.','The red buoy for the Lawless Waters voyage sits a little farther from the corner of the map, so you won\'t sail off the edge by accident while looking for it.']},
  {v:'2026.11.05-24',d:'Nov 5, 2026',t:'The World Market, No Man\'s Land & new pets',n:['The World Market has opened just outside Hollow Village. Talk to the Market clerk (or hit the stalls) to put up offers to buy or sell anything with every player. Offers match automatically, even while you\'re offline, and what you get waits in your collection box at the market. Cancel any time to get back what hasn\'t traded. You need to be signed in.','New island: No Man\'s Land, a lawless desert south of Briarwood and west of the Shattered Expanse. PvP is always on there, for everyone. Look out for desert bandits (a "!" means they\'re aiming: roll!), Cacticus that pretend to be cacti, and giant scorpions. Explore Dustwater ghost town, Boot Hill, Rattlesnake Mesa and more.','To get there, take the new Lawless Waters voyage at the Tidewatch harbor post (after Into Briarwood). Once it\'s charted you can also sail off Briarwood\'s south edge or the Shattered Expanse\'s west edge.','You can now see your sword when you swing it: wooden, stone, iron, steel, the Crystal blade, mithril and adamant all look different, and other players see yours too.','More Foraging: mushroom patches grow beside trees (Foraging 5) and hazel bushes carry nuts (Foraging 10). Cacti now give real cactus fruit. Eat mushrooms and nuts raw, or roast them at a campfire.','New rare pet: the Squirrel (1 in 1,000 from berry bushes). It forages for you, bringing berries, nuts, mushrooms, cactus fruit, coins and sometimes a healing potion.','New rare pets: ore golems (1 in 2,000 from mining iron, gold, mithril or adamant ore). They stand around blinking, curl up and roll to keep up with you, and dig up their own ore for you.','The wiki is up to date: every dungeon (Thornroot Hollow, the Ironcrest mines and caves, Cinderdeep), boss and island monster, with pictures of the newer bosses and every pet, new guides, and the island towns.','Fixed: some rare drops and dungeons were missing from the wiki.']},
@@ -11669,6 +11671,118 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  // ---- wiki ----
  try{WK_RGN&&Object.assign(WK_RGN,{bandit:'Desert bandit',cacti:'Cacticus',gscorp:'Giant scorpion'})}catch(e){}
 }
+// ---- island boss art, drawn with the world bosses' toolkit (shaded, outlined, 4 frames each) ----
+{const KIT=()=>window.SQKIT,CACHE={};
+ const WHITE=p=>['#c8c8d0','#e4e4ea','#ffffff','#9090a0'];
+ function art(id,fr,hit){const key=id+fr+(hit?1:0);if(CACHE[key])return CACHE[key];const f=ART[id];return CACHE[key]=f(fr,hit?WHITE:(p=>p))}
+ const ART={
+ // ---------- The Briar Queen: a thorn-backed spider with a rose on her back ----------
+ briarwood:(fr,P)=>{const k=KIT()(56,44,0,'#0e1408'),{poly,ell,chain,px,curve,mir}=k;
+  const BD=P(['#26401a','#3e6428','#62903e','#121e0a']),LG=P(['#24160c','#3e2814','#5e4024','#100804']),TH=P(['#9a8450','#d0bc84','#f4ecc4','#40341a']),RS=P(['#7a1430','#c0304e','#f07090','#3a0614']),LF=P(['#1e4a1c','#2e6e2a','#4e9a3e','#0e240c']);
+  const lift=k2=>(k2%2===fr%2)?2:0;
+  // eight legs, back to front
+  const LEGS=[[[9,26],[16,31],[19,42]],[[11,22],[21,22],[25,34]],[[11,17],[22,12],[27,23]],[[9,12],[19,3],[25,11]]];
+  for(let k2=3;k2>=0;k2--)for(const s of[-1,1]){const l=lift(k2+(s>0?1:0)),[[rx,ry],[kx0,ky0],[fx0,fy0]]=LEGS[k2],x0=28+s*rx,y0=ry,kx=28+s*kx0,ky=ky0-l,fx=28+s*fx0,fy=fy0-l*.5;
+   chain(curve(x0,y0,kx,ky,s*.1,1.3,1,9),LG);chain(curve(kx,ky,fx,fy,-s*.06,1,.55,9),P(['#2e1c0e','#4a3018','#6e4a28','#140a04']));px(kx,ky-1,LG[2]);px(fx,fy,'#100804')}
+  // abdomen with thorns and moss stripes
+  ell(28,15,13,11,BD);for(const[x,y,h]of[[19,9,5],[37,9,5],[16,16,5],[40,16,5],[22,5,4],[34,5,4],[17,22,4],[39,22,4]])poly([[x-2,y+1],[x+(x<28?-1:1)*1.5,y-h],[x+2,y+1]],TH);
+  for(const[x,y,r]of[[23,14,2.5],[33,14,2.5],[28,19,2]])ell(x,y,r,r*.6,LF,{noLine:1});
+  // the rose
+  ell(23,4.5,3.5,2,LF);ell(33,4.5,3.5,2,LF);ell(28,4,4.5,4,RS);ell(27.5,3,2.4,2,P(['#a02040','#e04a6a','#ff9ab0','#5a0a20']),{noLine:1});px(28,2,'#ffd0dc');
+  // thorax and head
+  ell(28,28,9,6.5,BD);ell(28,34,7,5,P(['#1e3214','#34542a','#527a40','#0e1608']));
+  for(const[x,y]of[[25,32],[31,32],[26,34],[30,34],[24,35],[32,35]])px(x,y,'#ff3838');px(25,31,'#ffd0d0');px(31,31,'#ffd0d0');
+  // fangs
+  const o=fr%2;poly([[25,37],[27,37],[26,41+o]],TH);poly(mir([[25,37],[27,37],[26,41+o]]).map(([x,y])=>[x+1,y]),TH);
+  return k.done()},
+ // ---------- The Iron Warlord: armour, a red cape and a greatsword ----------
+ ashfall:(fr,P)=>{const k=KIT()(48,60,0,'#0c0c10'),{poly,ell,chain,px,mir}=k;
+  const ST=P(['#40424e','#6c7080','#a4aabc','#1a1b22']),DK=P(['#24262e','#3a3e4c','#565a6c','#0e0e14']),CP=P(['#4a0e0e','#7a1a16','#a83020','#220606']),GD=P(['#7a5414','#b88a28','#ecc862','#3a2606']),BL=P(['#7a808a','#bcc2cc','#f2f6fc','#30343c']),EM=P(['#a83010','#f06020','#ffb050','#4a1004']);
+  const b=fr%2,sw=[0,-1,-2,-1][fr];
+  // cape behind
+  poly([[13,18+b],[35,18+b],[39,52],[33,50],[28,53],[22,50],[16,53],[9,51]],CP);
+  // legs and boots
+  for(const s of[0,1]){const M=s?mir:p=>p;poly(M([[16,38],[23,38],[22,52],[16,52]]),ST);ell(s?28:19.5,44,3.6,2.4,DK,{noLine:1});poly(M([[14,51],[23,51],[23,56],[13,56]]),DK)}
+  // torso: breastplate with ember vents, belt
+  poly([[14,17+b],[34,17+b],[31,39],[17,39]],ST);poly([[22,19+b],[26,19+b],[25,36],[23,36]],DK);for(const[x,y]of[[18,24],[29,24],[18,30],[29,30]])poly([[x,y+b],[x+2,y+b],[x+2,y+1+b],[x,y+1+b]],EM,{noLine:1});
+  poly([[16,36],[32,36],[32,39],[16,39]],DK);poly([[22,36],[26,36],[26,39],[22,39]],GD);
+  // arms; the sword arm on the right
+  ell(12,20+b,5.5,4.5,ST);poly([[8,22+b],[14,22+b],[13,34+b],[8,34+b]],ST);ell(10.5,36+b,3.2,3,DK);
+  ell(36,20+b,5.5,4.5,ST);poly([[34,22+b],[40,22+b],[40,32+b+sw],[35,32+b+sw]],ST);ell(37.5,34+b+sw,3.2,3,DK);
+  // greatsword held point-down
+  const gx=38,gy=34+b+sw;poly([[gx-1.5,gy-26],[gx+1.5,gy-26],[gx+1.5,gy+18],[gx,gy+21],[gx-1.5,gy+18]],BL);poly([[gx-5,gy-1],[gx+5,gy-1],[gx+5,gy+1],[gx-5,gy+1]],GD);poly([[gx-1,gy-6],[gx+1,gy-6],[gx+1,gy-1],[gx-1,gy-1]],P(['#3a1a0a','#5a3018','#7a4822','#1a0a04']));ell(gx,gy-7,1.6,1.6,GD);
+  // helmet with a glowing visor and horns
+  poly([[16,8],[12,2],[14,9]],P(['#7a7060','#b0a48a','#e8dec4','#3a342a']));poly(mir([[16,8],[12,2],[14,9]]),P(['#7a7060','#b0a48a','#e8dec4','#3a342a']));
+  ell(24,10+b,7.5,7.5,ST);poly([[17,10+b],[31,10+b],[30,17+b],[18,17+b]],ST);poly([[18,11+b],[30,11+b],[30,13+b],[18,13+b]],DK,{noLine:1});for(let x=19;x<=29;x++)px(x,12+b,x%3?'#ff8030':'#ffd070');
+  return k.done()},
+ // ---------- The Frost Wyrm: an ice serpent rising from its coils ----------
+ ironcrest:(fr,P)=>{const k=KIT()(60,64,0,'#0a1420'),{poly,ell,chain,px,curve,mir}=k;
+  const SC=P(['#3e6a98','#6ea4d8','#bce4ff','#16283e']),BE=P(['#8aaac8','#c4dcf0','#f4fbff','#3a5470']),HN=P(['#7a8ea4','#bccadc','#ffffff','#34404e']),IC=P(['#78b8e8','#b8e4ff','#ffffff','#2a4a6a']);
+  const sw=[0,1,2,1][fr];
+  // the coils (back ring, then front ring)
+  const SD=P(['#30587e','#5a8cbc','#9ccaf0','#16283e']);chain(curve(16,50,44,50,-.55,4.5,4.5,16),SD);chain(curve(10,56,50,56,-.35,5.5,5.5,18),SC);for(let x=14;x<48;x+=3)px(x,59,BE[1]);chain(curve(44,54,28,56,.2,5,4.5,8),SD);
+  // the body rising: from the coil up to the neck
+  const body=curve(26,54,30+sw,22,.25,6.5,4.5,18);chain(body,SC);
+  // belly scales down the front of the body
+  for(let i=2;i<body.length-1;i++){const[x,y]=body[i];px(x-1,y,BE[1]);px(x,y,BE[2]);if(i%2)px(x+1,y,BE[1])}
+  // back spikes
+  for(let i=3;i<body.length-1;i+=3){const[x,y,r]=body[i];poly([[x+r-1,y-1],[x+r+4,y-3],[x+r-1,y+2]],IC)}
+  for(const[x,y]of[[18,46],[30,45],[42,46]])poly([[x-2,y],[x,y-5],[x+2,y]],IC);
+  // head: skull, snout, open jaw, horns, frill
+  const hx=30+sw,hy=16;poly([[hx-7,hy-2],[hx-14,hy-12],[hx-6,hy-6]],HN);poly([[hx+7,hy-2],[hx+14,hy-12],[hx+6,hy-6]],HN);
+  for(const s of[-1,1])poly([[hx+s*7,hy+2],[hx+s*12,hy-1],[hx+s*11,hy+4],[hx+s*13,hy+6],[hx+s*7,hy+6]],IC);
+  ell(hx,hy,8,7,SC);poly([[hx-6,hy+2],[hx+6,hy+2],[hx+4,hy+10],[hx-4,hy+10]],SC);
+  const o=fr===2?2:fr===1||fr===3?1:0;poly([[hx-5,hy+9],[hx+5,hy+9],[hx+3,hy+13+o],[hx-3,hy+13+o]],BE);
+  for(const s of[-1,1]){px(hx+s*3,hy+10,'#ffffff');px(hx+s*1,hy+10,'#ffffff')}
+  for(const s of[-1,1]){px(hx+s*4,hy-1,'#0a1830');px(hx+s*4,hy,'#40e0ff');px(hx+s*3,hy,'#a0f4ff');px(hx+s*4,hy-2,'#0a1830')}
+  px(hx-2,hy+5,'#16283e');px(hx+2,hy+5,'#16283e');
+  return k.done()},
+ // ---------- The Void Herald: a floating robed figure with one eye and two orbs ----------
+ shattered:(fr,P)=>{const k=KIT()(52,62,0,'#06040c'),{poly,ell,chain,px,mir}=k;
+  const RB=P(['#1c1230','#33255a','#54438a','#0a0614']),TR=P(['#5a3a90','#8a68c8','#c8b0ff','#22143a']),VD=P(['#050308','#0c0814','#16102a','#020104']),OR=P(['#6a3ac0','#a070f0','#e8d4ff','#2a1050']),GD=P(['#5a4a1a','#9a8432','#e0cc72','#2a2208']);
+  const w=[0,1,2,1][fr];
+  // robe with a tattered hem
+  const hem=[];for(let i=0;i<=10;i++){const x=12+i*2.8;hem.push([x,56+((i+w)%2?0:3)])}
+  poly([[20,18],[32,18],[39,40]].concat(hem.slice().reverse()).concat([[13,40]]),RB);
+  poly([[24,22],[28,22],[29,54],[23,54]],TR,{noLine:1});for(let y=26;y<52;y+=6)px(26,y,GD[2]);
+  // sleeves reaching out to the orbs
+  for(const s of[0,1]){const M=s?mir:p=>p;poly(M([[19,20],[23,24],[12,32+w],[8,30+w]]),RB);ell(s?44:8,31+w,4.5,4.5,OR);px(s?43:7,29+w,'#ffffff')}
+  // hood and the void inside
+  poly([[26,1],[34,14],[33,22],[19,22],[18,14]],RB);ell(26,15,6,6,VD,{noLine:1});
+  const blink=fr===3;px(25,15,blink?'#3a2a5a':'#e0b8ff');px(26,15,blink?'#3a2a5a':'#ffffff');px(27,15,blink?'#3a2a5a':'#e0b8ff');px(26,14,blink?'#3a2a5a':'#c090ff');px(26,16,blink?'#3a2a5a':'#c090ff');
+  // a crown of floating shards
+  for(const[x,y,h]of[[18,2,4],[22,-1,5],[30,-1,5],[34,2,4]])poly([[x-1,y+h],[x,y-h+4-w*.5],[x+1,y+h]],GD);
+  return k.done()},
+ // ---------- Black Jack, the Outlaw King ----------
+ nomans:(fr,P)=>{const k=KIT()(40,52,0,'#0a0806'),{poly,ell,chain,px,mir}=k;
+  const CT=P(['#3a2414','#5a3a20','#7e5634','#1a0e06']),PN=P(['#1a1a22','#2c2c38','#444452','#0a0a0e']),SK=P(['#9a6440','#c88c5c','#ecb888','#4a2814']),HT=P(['#121216','#22222a','#383844','#060608']),SV=P(['#7a7a88','#c0c0d0','#ffffff','#30303a']),BN=P(['#5a0c0c','#a01c1c','#d84040','#2a0404']),SH=P(['#6a5a48','#9a8a70','#c8b898','#2a2218']),GN=P(['#3a3a44','#6a6a78','#a0a0b0','#16161c']);
+  const b=fr%2,st=[0,1,0,-1][fr];
+  // legs and boots
+  for(const s of[0,1]){const M=s?mir:p=>p;poly(M([[14,34],[19,34],[19+(s?-st:st)*.5,45],[14,45]]),PN);poly(M([[12,44],[20,44],[20,48],[11,48]]),P(['#2a1a0e','#4a2e18','#6a4426','#120a04']))}
+  // the long duster coat, open at the front over a shirt and vest
+  poly([[11,16+b],[29,16+b],[33,42],[27,44],[22,36],[18,36],[13,44],[7,42]],CT);poly([[16,17+b],[24,17+b],[23,34],[17,34]],SH);poly([[16,22+b],[19,22+b],[19,34],[16,34]],P(['#2a1a0e','#3e2814','#5a3a20','#140a04']),{noLine:1});poly(mir([[16,22+b],[19,22+b],[19,34],[16,34]]).map(([x,y])=>[x,y]),P(['#2a1a0e','#3e2814','#5a3a20','#140a04']),{noLine:1});
+  poly([[13,31],[27,31],[27,33],[13,33]],P(['#1a0e06','#2e1c0e','#46301a','#0a0402']));poly([[18,31],[22,31],[22,33],[18,33]],SV);
+  // arms out with a revolver in each hand
+  for(const s of[0,1]){const M=s?mir:p=>p,X=v=>s?39-v:v;poly(M([[11,17+b],[15,19+b],[9,28+b],[6,27+b]]),CT);ell(X(7),29+b,2.2,2,SK);poly(M([[1,27+b],[8,27+b],[8,29+b],[1,29+b]]),GN);poly(M([[6,29+b],[8,29+b],[8,32+b],[6,32+b]]),P(['#4a2a14','#6a4020','#8a5830','#20100a']))}
+  // head: face, bandana over the mouth, eyes, wide black hat with a silver band
+  ell(20,11+b,5,5.5,SK);poly([[15,12+b],[25,12+b],[24,17+b],[16,17+b]],BN);px(18,10+b,'#100808');px(22,10+b,'#100808');px(18,9+b,'#2a1810');px(22,9+b,'#2a1810');
+  poly([[5,6+b],[35,6+b],[33,9+b],[7,9+b]],HT);poly([[3,4+b],[7,6+b],[5,7+b]],HT);poly(mir([[3,4+b],[7,6+b],[5,7+b]]),HT);poly([[13,-1+b],[27,-1+b],[28,6+b],[12,6+b]],HT);poly([[12,4+b],[28,4+b],[28,6+b],[12,6+b]],SV,{noLine:1});px(20,0+b,'#060608');
+  return k.done()}};
+ // world size: sprite pixels are drawn this many world pixels wide
+ const SCALE={briarwood:2,ashfall:1.7,ironcrest:1.7,shattered:1.6,nomans:1.6},PER={briarwood:.14,ashfall:.22,ironcrest:.24,shattered:.2,nomans:.2};
+ window.SQIBART=function(id,b,tm){const KK=KIT();if(!KK)return false;const fr=Math.floor((tm+(b.t||0)*0)/PER[id])%4,hit=Math.abs(b.kx)+Math.abs(b.ky)>.3,c=art(id,fr,false),S=SCALE[id],w=c.width*S,hh=c.height*S,x=Math.round(b.x),y=Math.round(b.y-(b.jump||0));
+  shd(b.x,b.y+6,w*.55);const flip=(id==='nomans'||id==='ashfall')&&b.face<0,bob=id==='shattered'?Math.round(Math.sin(tm*2)*3)-10:0;g.save();g.imageSmoothingEnabled=false;
+  if(id==='shattered'){g.fillStyle='rgba(150,100,240,'+(.12+.08*Math.sin(tm*3))+')';g.beginPath();g.arc(x,y-hh*.55+bob,w*.6,0,6.283);g.fill()}
+  if(flip){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,Math.round(x-w/2),Math.round(y+6-hh+bob),Math.round(w),Math.round(hh));
+  if(hit){g.globalCompositeOperation='lighter';g.globalAlpha=.4;g.drawImage(c,Math.round(x-w/2),Math.round(y+6-hh+bob),Math.round(w),Math.round(hh))}g.restore();
+  // living touches: the warlord's helmet flames, the wyrm's frost breath, the herald's orbiting motes, Black Jack's muzzle flash
+  if(id==='ashfall')for(let k=0;k<4;k++){const ph=(tm*2+k*.25)%1,fx=x-4+k*3,fy=y+6-hh+2*S-ph*12;Rg(Math.round(fx),Math.round(fy),2,3,ph<.5?'#f8b030':'#f05020')}
+  if(id==='ironcrest')for(let k=0;k<4;k++){const ph=(tm*.9+k*.25)%1;g.fillStyle='rgba(230,248,255,'+(.55*(1-ph))+')';g.fillRect(x-6+k*4+[0,1,2,1][Math.floor(tm/.24)%4]*S,y+6-hh+30*S+ph*18,2,2)}
+  if(id==='shattered')for(let k=0;k<6;k++){const q=tm*1.4+k/6*6.283;Rg(Math.round(x+Math.cos(q)*w*.5),Math.round(y-hh*.5+bob+Math.sin(q)*10),2,2,k%2?'#c8a0ff':'#8a60e0')}
+  return true};
+ // the wiki and the island-boss pictures come from the same art
+ window.SQIBARTCAN=(id,fr)=>art(id,fr||0,false);
+}
 // ---------------------------------------------------------------- 99. Island bosses: the sealed doors open
 // Every island's great sealed landmark hides an Island Boss. Five sigil shards (dropped by that island's monsters,
 // about 1 in 25) open the door for one fight. Inside is a round arena; the boss fights with a set of telegraphed
@@ -11822,8 +11936,8 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  function drawSpiderling(n,tm){const x=Math.round(n.x),y=Math.round(n.y),h=hitW(n),B=h?'#fff':'#3e5a2a';shd(x,y+5,10);for(const s of[-1,1])for(let k=0;k<3;k++){const ph=Math.round(Math.sin(tm*12+k)*1);R4(x+s*(4+k*2),y-3+k*2+ph,3,1,K)}
   R4(x-5,y-8,10,8,K);R4(x-4,y-7,8,6,B);R4(x-2,y-5,1,1,'#f04040');R4(x+1,y-5,1,1,'#f04040')}
  const DRAW={briarwood:drawQueen,ashfall:drawWarlord,ironcrest:drawWyrm,shattered:drawHerald,nomans:drawJack};
- window.SQIBDRAW=(id,b,tm)=>DRAW[id](b,tm);
- {const _ps=pS;pS=function(n,tm){if(n&&n.type==='ib'){hzDraw(n,tm);DRAW[n.ib](n,tm);return}if(n&&n.type==='spiderling')return drawSpiderling(n,tm);return _ps(n,tm)}}
+ window.SQIBDRAW=(id,b,tm)=>{if(!(window.SQIBART&&SQIBART(id,b,tm)))DRAW[id](b,tm)};
+ {const _ps=pS;pS=function(n,tm){if(n&&n.type==='ib'){hzDraw(n,tm);SQIBDRAW(n.ib,n,tm);return}if(n&&n.type==='spiderling')return drawSpiderling(n,tm);return _ps(n,tm)}}
 
  // ---- the rare drops ----
  // Webling and Voidling (pets)
