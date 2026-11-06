@@ -1,0 +1,46 @@
+# Builds the SkillQuest Windows app (desktop/) and publishes it as a GitHub release.
+# Runs when anything in desktop/ changes, or by hand from the Actions tab ("Run workflow").
+name: Windows app
+on:
+  push:
+    branches: [main]
+    paths: ['desktop/**', '.github/workflows/windows-app.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Bundle the offline copy of the game
+        shell: bash
+        run: |
+          mkdir -p desktop/offline
+          cp index.html firebase-config.js manifest.json icon-192.png icon-512.png favicon-32.png apple-touch-icon.png desktop/offline/
+      - name: Install
+        working-directory: desktop
+        run: npm install --no-audit --no-fund
+      - name: Build the installer
+        working-directory: desktop
+        run: npx electron-builder --win nsis portable --x64 --publish never
+      - name: Version
+        id: v
+        shell: bash
+        run: echo "version=$(node -p "require('./desktop/package.json').version")" >> $GITHUB_OUTPUT
+      - name: Publish the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: windows-v${{ steps.v.outputs.version }}
+          name: SkillQuest for Windows ${{ steps.v.outputs.version }}
+          make_latest: true
+          body: |
+            SkillQuest for Windows.
+            **SkillQuest-Setup.exe** installs the game with Start menu and desktop shortcuts. **SkillQuest-Portable.exe** runs without installing.
+            Windows may say "Windows protected your PC" the first time, because the app isn't signed yet: click **More info**, then **Run anyway**.
+          files: |
+            desktop/dist/SkillQuest-Setup.exe
+            desktop/dist/SkillQuest-Portable.exe

@@ -7282,13 +7282,21 @@ function gsiNote(e){const c=String((e&&(e.code||e.message))||e||'');if(/popup-cl
 const gsiRand=()=>{const a=new Uint8Array(16);crypto.getRandomValues(a);return[...a].map(b=>b.toString(16).padStart(2,'0')).join('')};
 function gsiGo(){const st=gsiRand(),no=gsiRand();try{localStorage.setItem('sq_gsi',JSON.stringify({st,no,t:Date.now()}))}catch(e){}
  location.href='https://accounts.google.com/o/oauth2/v2/auth?'+new URLSearchParams({client_id:GSI.id,redirect_uri:location.origin+'/',response_type:'id_token',scope:'openid email profile',nonce:no,state:st,prompt:'select_account'})}
-async function gsiReturn(){const h=location.hash;if(!/[#&](id_token|error)=/.test(h))return;const q=new URLSearchParams(h.slice(1));try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+// the Windows app signs in through your browser: it opens skillquestmmo.com/?desktop=PORT&st=CODE, we sign in with Google
+// here, then hand the sign-in to the app on this PC (http://127.0.0.1:PORT) instead of signing this browser in
+function gsiDeskStart(){const sp=new URLSearchParams(location.search),dp=sp.get('desktop'),dst=sp.get('st')||'';if(!dp)return false;try{history.replaceState(null,'',location.pathname)}catch(e){}
+ if(!/^\d{2,5}$/.test(dp)||!/^[0-9a-f]{32}$/.test(dst)||!GSI.on())return false;try{localStorage.setItem('sq_desk',JSON.stringify({p:dp,st:dst,t:Date.now()}))}catch(e){return false}gsiGo();return true}
+function gsiDeskEnd(q){let d=null;try{d=JSON.parse(localStorage.getItem('sq_desk')||'null');localStorage.removeItem('sq_desk')}catch(e){}if(!d||Date.now()-d.t>600000||!/^\d{2,5}$/.test(d.p))return false;
+ const o={st:d.st};if(q.get('id_token'))o.id_token=q.get('id_token');else o.error=q.get('error')||'failed';location.replace('http://127.0.0.1:'+d.p+'/cb#'+new URLSearchParams(o));return true}
+async function gsiReturn(){if(gsiDeskStart())return;const h=location.hash;if(!/[#&](id_token|error)=/.test(h))return;const q=new URLSearchParams(h.slice(1));try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
  let saved=null;try{saved=JSON.parse(localStorage.getItem('sq_gsi')||'null');localStorage.removeItem('sq_gsi')}catch(e){}
- if(q.get('error')){if(q.get('error')!=='access_denied')gsiNote(q.get('error'));return}
+ if(localStorage.getItem('sq_desk')&&gsiDeskEnd(q))return;if(q.get('error')){if(q.get('error')!=='access_denied')gsiNote(q.get('error'));return}
  if(saved&&q.get('state')!==saved.st)throw new Error('sign-in check failed');
  await FB.auth.signInWithCredential(FB.A,FB.auth.GoogleAuthProvider.credential(q.get('id_token')))}
 window.SQGSI=GSI;
-function mpSignIn(){if(!FB){say('Still connecting to the server... try again in a moment.');return}if(GSI.on())return gsiGo();const A=FB.auth,p=new A.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
+function mpSignIn(){if(!FB){say('Still connecting to the server... try again in a moment.');return}
+ // in the Windows app: sign in through your browser, then come back here
+ if(window.sqDesktop&&sqDesktop.signIn){say('Finish signing in with Google in your web browser, then come back here.');sqDesktop.signIn().then(r=>{if(r&&r.idToken)return FB.auth.signInWithCredential(FB.A,FB.auth.GoogleAuthProvider.credential(r.idToken));if(r&&r.error&&r.error!=='cancelled')gsiNote(r.error)}).catch(e=>{mpErr(e);gsiNote(e)});return}if(GSI.on())return gsiGo();const A=FB.auth,p=new A.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
  A.signInWithPopup(FB.A,p).catch(e=>{const c=e&&e.code||'';if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'){if(GSI.on())gsiGo();else A.signInWithRedirect(FB.A,p).catch(e=>{mpErr(e);gsiNote(e)})}else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){mpErr(e);gsiNote(e)}})}
 async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=u;const d=FB.db,D=FB.D,uid=u.uid;
  // account save: one JSON string per player
@@ -9203,6 +9211,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.06-14',d:'Nov 6, 2026',t:'SkillQuest for Windows',n:['SkillQuest is coming to Windows as its own app. On a Windows PC, Options has a Get the Windows app button.','The app plays the same online game as the website: same accounts, same saves, same players. It always runs the newest version, and works offline too.','To sign in from the app, it opens your web browser for Google sign-in, then puts you back in the game.','Press F11 in the app for full screen.']},
  {v:'2026.11.06-13',d:'Nov 6, 2026',t:'Two-column menu',n:['The menu is laid out in two columns, so it\'s half as tall and everything fits on a phone screen without scrolling.','Keyboard and controller: up/down move between rows, left/right between the two columns.','"Save & quit to title" is now just "Save & quit" (it still saves and takes you to the title screen).']},
  {v:'2026.11.06-12',d:'Nov 6, 2026',t:'Pets are items now',n:['There\'s a new PET slot on the equipment screen (P). The pet in it follows you; every other pet you own is an item in your bag.','Swap pets from your Bag (tap a pet, then Equip) or tap the PET slot on the equipment screen. Put away (unequip) sends your pet back to the bag.','Don\'t want a pet any more? Sell it at a shop, trade it at the World Market, or tap Release in your bag (tap twice).','New pets (bought from Marlo, or rare drops) go straight into your PET slot, and the pet they replace goes into your bag.','All the pets you already own are now in your bag, and the one following you stays in your PET slot.']},
  {v:'2026.11.06-11',d:'Nov 6, 2026',t:'Sign out fixed',n:['The Sign out and Switch Google account buttons in Options now work: they sign you out straight away and the screen updates to show you\'re signed out (Switch then opens Google\'s account picker).']},
@@ -12257,7 +12266,8 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
 {const _o=optionsHTML;optionsHTML=function(){const h=_o(),k=h.indexOf('data-o="myname"');const u=MP.user,E=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   const add=u?'<div class="qc" style="font-size:14px;line-height:1.4;padding:10px 12px;margin:8px 0">Signed in as <b style="color:#3058c8">'+E(u.displayName||myName())+'</b>'+(u.email?'<br><small style="opacity:.75">'+E(u.email)+'</small>':'')+'</div><button class="sb mpacct" data-a="out">Sign out</button><button class="sb mpacct" data-a="switch">Switch Google account</button>'
    :'<button class="sb mpacct" data-a="in">Sign in with Google (play online)</button><div class="qc" style="font-size:13px;line-height:1.4;padding:8px 12px;margin:6px 0">Each Google account has its own character and save.</div>';
-  if(k<0)return h+'<div class="tl" style="margin-top:16px">ONLINE</div>'+add;const e=h.indexOf('</button>',k)+9;return h.slice(0,e)+add+h.slice(e)};
+  const winApp=!window.sqDesktop&&/Windows/.test(navigator.userAgent)?'<a class="sb" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="https://github.com/itsfackingjace-web/skillquest/releases/latest/download/SkillQuest-Setup.exe">Get the Windows app</a>':'';
+  if(k<0)return h+'<div class="tl" style="margin-top:16px">ONLINE</div>'+add+winApp;const e=h.indexOf('</button>',k)+9;return h.slice(0,e)+add+winApp+h.slice(e)};
  // sign out exactly the way the chat window's Sign out button does (its code lives with the online code), then wait for it
  const out=async()=>{try{if(typeof saveCloud==='function')await saveCloud(true)}catch(e){}const so=document.getElementById('mpso');if(so)so.click();
   for(let k=0;k<40&&MP.user;k++)await new Promise(r=>setTimeout(r,75))};
