@@ -5607,7 +5607,7 @@ function rgReach(R){const W=R.w,H=R.h,seen=new Uint8Array(W*H),s=R.spawn[1]*W+R.
 function rgPrepare(id){if(RG_CACHE[id])return rgApplyState(RG_CACHE[id]);const D=WORLD_REGIONS[id];if(!D)throw new Error('unknown region '+id);const gen=RG_GEN[id];if(!gen)throw new Error(D.name+' has not been charted yet');
  const G=RG_PRE[id]||gen(D),W=D.width,H=D.height;delete RG_PRE[id];if(!G||!G.tiles||G.tiles.length!==W*H)throw new Error('bad terrain for '+id);
  const R={key:'reg_'+id,region:id,gv:D.generationVersion,w:W,h:H,ex:-99,cave:1,tiles:G.tiles,items:G.items,solid:G.solid,spawn:G.spawn,dock:G.dock,pier:G.pier||[],pierH:!!G.pierH,
-  lms:G.lms||[],reserved:G.reserved||[],bridges:G.bridges||[],stairs:G.stairs||[],lava:G.lava||[],platSt:G.platSt||[],gone:[],floor:['#58b848','#50a840'],wall:'#2662b8',trim:'#2662b8'};
+  lms:G.lms||[],reserved:G.reserved||[],bridges:G.bridges||[],stairs:G.stairs||[],lava:G.lava||[],platSt:G.platSt||[],plat:G.plat||null,gone:[],floor:['#58b848','#50a840'],wall:'#2662b8',trim:'#2662b8'};
  rgIndex(R);R.reach=rgReach(R);if(!R.reach[R.spawn[1]*W+R.spawn[0]])throw new Error('blocked arrival point in '+id);
  RG_CACHE[id]=R;rgTouch(id);return rgApplyState(R)}
 function rgTouch(id){const j=RG_ORDER.indexOf(id);if(j>=0)RG_ORDER.splice(j,1);RG_ORDER.push(id);const cur=curRegion();
@@ -9195,6 +9195,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.06-8',d:'Nov 6, 2026',t:'Plateaus, take two',n:['Plateau tops are much roomier: you can now walk right up to the cliff edges instead of being kept a full step back, so the narrow ridges in Ironcrest and No Man\'s Land are easy to get around.','Stairways are wider and run all the way down the cliff face to the ground, and there are more of them (Ironcrest, No Man\'s Land and Ashfall each have 40+).','Fewer trees and rocks clutter the tops, and they never block the way.']},
  {v:'2026.11.06-7',d:'Nov 6, 2026',t:'Paths up the plateaus',n:['You can now climb the big rock plateaus on Ironcrest, No Man\'s Land and Ashfall. Look for stone stairways cut into the cliffs, often right beside a trail.','The flat tops are yours to explore: Ironcrest\'s mountain spine has ore, rocks and pines up top, and the mesas of No Man\'s Land have rocks, ore and cacti. Rattlesnake Mesa can finally be climbed.','The cliff edges still block you, so take the stairs back down.']},
  {v:'2026.11.06-6',d:'Nov 6, 2026',t:'Sign-in fixes',n:['Fixed Google sign-in on phones, tablets and the Home Screen app: picking your account sometimes just dropped you back on the title screen. Sign-in now takes you to Google and straight back into the game, signed in, on every device.','If Google sign-in doesn\'t finish, the title screen now tells you why instead of quietly doing nothing.']},
  {v:'2026.11.06-5',d:'Nov 6, 2026',t:'Island bosses in the wiki',n:['The wiki\'s Bosses tab now lists all five island bosses (they were missing before), with their new pictures, where to find them, the shards that open their door and their rewards.','Each entry explains how the boss fights and what to watch for before each attack.','Every island boss has a 5% rare drop, listed in the wiki: the Webling pet (Briar Queen), the Warlord\'s blade (Iron Warlord), the Frostbite ring (Frost Wyrm), the Voidling pet (Void Herald) and the Outlaw\'s hat (Black Jack). They also appear under Pets and rare items.']},
@@ -12069,46 +12070,59 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
     for(const id of ISL){const B=IB[id];card(B.n+' '+B.lm+' '+WORLD_REGIONS[id].name,ibPic(id)||pic('ib_'+id,mk(id)),'<b>'+wkE(B.n)+'</b> <span class="tag">'+B.hp+' HP</span><br><small>Behind '+wkE(B.lm)+' on '+wkE(WORLD_REGIONS[id].name)+' · Key: 5 '+wkE(B.shard.toLowerCase())+'s<br>Reward: '+B.gold[0]+'–'+B.gold[1]+' gold, '+B.loot.map(([k,n])=>n+' '+wkE((n>1?(SN[k]||INAME[k]):INAME[k])||k).toLowerCase()).join(', ')+'<br><b>How it fights:</b> '+wkE(HOW[id])+'</small><br><span class="tag">RARE DROP</span> <b>'+wkE(B.rare[1])+'</b> (5%): '+wkE(B.rare[2]))}}}}
 }
 // ---- 100. Paths up the plateaus ----
-// Big rock plateaus (Ironcrest's mountain spine, No Man's Land's mesas, and the rest) used to be solid walls. Now the
-// flat top of every big plateau is walkable, ringed by its cliff edge, and a few rough stone stairways climb up through
-// the cliff (often where a trail passes by). The tops get their own ore, rocks and the odd tree or cactus.
-{const _rf=rgFinish;rgFinish=function(C){try{plateaus(C)}catch(e){console.warn('plateaus',e)}const G=_rf(C);if(C.plat)for(const i of C.plat)if(!C.O[i]&&!C.lmSolid[i])G.solid.delete(i);G.plat=C.plat||[];G.platSt=C.platSt||[];return G};
- const PICK={ironcrest:r=>r<.045?'ore':r<.065?'rock':r<.1?'pine':null,nomans:r=>r<.03?'rock':r<.045?'ore':r<.06?'cactus':r<.068?'tree:dead':null,
-  ashfall:r=>r<.035?'ore':r<.055?'rock':null,briarwood:r=>r<.03?'ore':r<.05?'rock':r<.08?'pine':null,shattered:r=>r<.04?'ore':r<.06?'rock':null};
- function plateaus(C){const{W,H,T,O}=C,N=W*H,rock=i=>T[i]===3&&!C.lmSolid[i]&&!O[i],id=C.D&&C.D.id||C.id||'';
-  const inner=new Uint8Array(N);for(let y=2;y<H-2;y++)for(let x=2;x<W-2;x++){const i=y*W+x;if(!rock(i))continue;let ok=1;for(let b=-1;b<=1&&ok;b++)for(let a=-1;a<=1;a++)if(T[i+b*W+a]!==3){ok=0;break}if(ok)inner[i]=1}
-  const open=i=>RG_WALK[T[i]]&&!O[i]&&!C.lmSolid[i],plat=[],st=[],seen=new Uint8Array(N),D4=[[0,1],[0,-1],[1,0],[-1,0]];
-  for(let s=0;s<N;s++){if(!inner[s]||seen[s])continue;const grp=[s];seen[s]=1;for(let k=0;k<grp.length;k++){const j=grp[k];for(const[a,b]of D4){const n=j+b*W+a;if(inner[n]&&!seen[n]){seen[n]=1;grp.push(n)}}}
-   if(grp.length<16)continue;
-   // stairway spots: outside ground -> one cliff tile -> plateau top, in a straight line
-   const cand=[];for(const g of grp)for(const[a,b]of D4){const r=g-b*W-a,o=r-b*W-a;if(T[r]!==3||inner[r]||C.lmSolid[r]||O[r]||!open(o))continue;
-    // the ramp needs room either side of its foot, and ground that leads somewhere
-    let room=0;for(const[c,d]of D4)if(open(o+d*W+c))room++;if(room<2)continue;
-    const sc=(b<0?3:b>0?1.5:1)+(T[o]===14?3:0)+C.rnd()*2;cand.push({g,r,o,a,b,sc})}
-   cand.sort((p,q)=>q.sc-p.sc);const want=Math.min(4,1+Math.floor(grp.length/180)),got=[];
-   for(const c of cand){if(got.length>=want)break;const cx=c.r%W,cy=(c.r/W)|0;if(got.some(q=>Math.abs(q.r%W-cx)+Math.abs(((q.r/W)|0)-cy)<22))continue;got.push(c)}
-   for(const c of got){const vert=c.b!==0,side=vert?1:W,two=[c.r,c.r+side].filter(r=>T[r]===3&&!inner[r]&&!C.lmSolid[r]&&!O[r]&&open(r-c.b*W-c.a)&&inner[r+c.b*W+c.a]);
-    for(const r of two.length?two:[c.r]){O[r]=null;C.keep[r]=1;plat.push(r);st.push([r,c.a,c.b])}}
-   if(!got.length)continue;
-   for(const g of grp){plat.push(g);if(C.keep[g])continue;const x=g%W,y=(g/W)|0;
-    // keep the tiles near each stairway clear
-    if(got.some(q=>Math.abs(q.r%W-x)+Math.abs(((q.r/W)|0)-y)<4))continue;const p=(PICK[id]||PICK.ashfall)(C.rnd());if(p){const[t,v]=p.split(':');O[g]={t,hp:OHP[t]||3,v:v||undefined}}}
-   // make sure nothing on top walls off part of the plateau from its stairs
-   const inG=new Set(grp);for(let pass=0;pass<30;pass++){const re=new Set(),q=got.map(c=>c.g).filter(g=>!O[g]);for(const g of q)re.add(g);
+// Big rock plateaus (Ironcrest's mountain spine, No Man's Land's mesas, Ashfall's ridges) used to be solid walls. Now
+// the whole top of every big plateau is walkable, right up to its edges. A thin strip along each edge stops you
+// walking off (the cliff face on the south side), and wide stone stairways climb the cliff faces from the ground.
+// The ground is still rock, so the plateaus keep their look. The tops get some ore, rocks and the odd tree or cactus.
+{const _rf=rgFinish;rgFinish=function(C){try{plateaus(C)}catch(e){console.warn('plateaus',e)}const G=_rf(C);
+  if(C.plat)for(let i=0;i<C.N2;i++)if(C.plat[i]&&!C.O[i]&&!C.lmSolid[i])G.solid.delete(i);G.plat=C.plat||null;G.platSt=C.platSt||[];return G};
+ const PICK={ironcrest:r=>r<.022?'ore':r<.032?'rock':r<.05?'pine':null,nomans:r=>r<.016?'rock':r<.028?'ore':r<.038?'cactus':r<.043?'tree:dead':null,
+  ashfall:r=>r<.022?'ore':r<.032?'rock':null,briarwood:r=>r<.02?'ore':r<.03?'rock':r<.05?'pine':null,shattered:r=>r<.024?'ore':r<.034?'rock':null};
+ const D4=[[0,1],[0,-1],[1,0],[-1,0]];
+ function plateaus(C){const{W,H,T,O}=C,N=W*H,id=C.D&&C.D.id||'',rock=i=>T[i]===3&&!C.lmSolid[i]&&!O[i],open=i=>RG_WALK[T[i]]&&!O[i]&&!C.lmSolid[i];
+  const plat=new Uint8Array(N),st=[],seen=new Uint8Array(N);
+  for(let s=0;s<N;s++){if(!rock(s)||seen[s])continue;const x0=s%W,y0=(s/W)|0;if(x0<2||y0<3||x0>W-3||y0>H-3)continue;const grp=[s];seen[s]=1;
+   for(let k=0;k<grp.length;k++){const j=grp[k],x=j%W,y=(j/W)|0;for(const[a,b]of D4){const n=j+b*W+a;if(x+a<2||x+a>W-3||y+b<3||y+b>H-3)continue;if(rock(n)&&!seen[n]){seen[n]=1;grp.push(n)}}}
+   const inG=new Set(grp);let inner=0;for(const g of grp)if(D4.every(([a,b])=>inG.has(g+b*W+a)))inner++;if(grp.length<30||inner<10)continue;
+   // stairways climb a cliff face (a rock tile with open ground right below it and plateau above it)
+   const face=r=>inG.has(r)&&open(r+W)&&inG.has(r-W)&&inG.has(r-2*W);
+   const cand=[];for(const r of grp){if(!face(r))continue;const o=r+W;let room=0;for(const[c,d]of D4)if(open(o+d*W+c))room++;if(room<3)continue;
+    const two=face(r+1)?r+1:face(r-1)?r-1:null;cand.push({r,two,sc:(two!=null?3:0)+(T[o]===14||T[o+W]===14?3:0)+(open(o+W)&&open(o+2*W)?1:0)+C.rnd()*2})}
+   let side=[];if(!cand.length){// no cliff face to climb: a ramp up one of the other edges instead
+    for(const r of grp)for(const[a,b]of[[1,0],[-1,0],[0,-1]]){const o=r+b*W+a;if(!open(o)||!inG.has(r-b*W-a))continue;side.push({r,a,b,sc:C.rnd()})}side.sort((p,q)=>q.sc-p.sc);side=side.slice(0,1)}
+   cand.sort((p,q)=>q.sc-p.sc);const want=Math.min(9,1+Math.floor(grp.length/90)),got=[];
+   for(const c of cand){if(got.length>=want)break;const cx=c.r%W,cy=(c.r/W)|0;if(got.some(q=>Math.abs(q.r%W-cx)+Math.abs(((q.r/W)|0)-cy)<13))continue;got.push(c)}
+   if(!got.length&&!side.length)continue;
+   for(const g of grp)plat[g]=1;
+   for(const c of got)for(const r of c.two!=null?[c.r,c.two]:[c.r]){st.push([r,0,-1]);C.keep[r]=1;C.keep[r+W]=1;C.O[r+W]=null}
+   for(const c of side){st.push([c.r,c.a,c.b]);C.keep[c.r]=1}
+   // scatter a little on the open tops, away from the edges and the stairways
+   const near=(g,d)=>st.some(q=>Math.abs(q[0]%W-g%W)+Math.abs(((q[0]/W)|0)-((g/W)|0))<d);
+   for(const g of grp){if(C.keep[g])continue;let all=1;for(let b=-1;b<=1&&all;b++)for(let a=-1;a<=1;a++)if(!inG.has(g+b*W+a)){all=0;break}if(!all||near(g,4))continue;
+    const p=(PICK[id]||PICK.ashfall)(C.rnd());if(p){const[t,v]=p.split(':');O[g]={t,hp:OHP[t]||3,v:v||undefined}}}
+   // nothing on top may wall off part of the plateau from its stairs
+   const starts=st.filter(q=>inG.has(q[0])).map(q=>q[0]);for(let pass=0;pass<30;pass++){const re=new Set(starts),q=[...starts];
     for(let k=0;k<q.length;k++){const j=q[k];for(const[a,b]of D4){const n=j+b*W+a;if(inG.has(n)&&!O[n]&&!re.has(n)){re.add(n);q.push(n)}}}
-    const cut=new Set();for(const g of grp){if(O[g]||re.has(g))continue;for(const[a,b]of D4){const n=g+b*W+a;if(O[n]&&inG.has(n)){for(const[c,d]of D4)if(re.has(n+d*W+c)){cut.add(n);break}}}}
+    const cut=new Set();for(const g of grp){if(O[g]||re.has(g))continue;for(const[a,b]of D4){const n=g+b*W+a;if(O[n]&&inG.has(n)&&D4.some(([c,d])=>re.has(n+d*W+c))){cut.add(n)}}}
     if(!cut.size)break;for(const n of cut)O[n]=null}}
   C.plat=plat;C.platSt=st}
  window.SQPLAT=plateaus;
- // the stairways: stone treads cut into the cliff
- const _ro=rgOverlay;rgOverlay=function(R,v){_ro(R,v);const S=R.platSt;if(!S||!S.length)return;const W=R.w,x0=v.x0-16,x1=v.x1+16,y0=v.y0-16,y1=v.y1+16,has=R._pss||(R._pss=new Set(S.map(q=>q[0])));
-  for(const[i,a,b]of S){const X=(i%W)*16,Y=((i/W)|0)*16;if(X<x0||X>x1||Y<y0||Y>y1)continue;
-   if(a===0){const ext=b<0?3:0;Rg(X,Y-ext,16,16+ext,'#6e6658');for(let k=0;k<5;k++){const ty=Y-ext+k*Math.round((16+ext)/5);Rg(X,ty,16,1,'#b0a690');Rg(X,ty+1,16,1,'#8e8472');Rg(X,ty+3,16,1,'#4e463a')}
-    if(!has.has(i-1)){Rg(X,Y-ext,2,16+ext,'#3a342c');Rg(X+2,Y-ext,1,16+ext,'#5a5246')}if(!has.has(i+1)){Rg(X+14,Y-ext,2,16+ext,'#3a342c');Rg(X+13,Y-ext,1,16+ext,'#5a5246')}
-    if(b<0)Rg(X,Y+16,16,2,'rgba(0,0,0,.22)')}
-   else{Rg(X,Y,16,16,'#6e6658');for(let k=0;k<5;k++){const tx=a>0?X+k*3:X+15-k*3;Rg(tx,Y,1,16,'#b0a690');Rg(tx+(a>0?1:-1),Y,1,16,'#8e8472')}
-    if(!has.has(i-W)){Rg(X,Y,16,2,'#3a342c');Rg(X,Y+2,16,1,'#5a5246')}if(!has.has(i+W)){Rg(X,Y+13,16,1,'#5a5246');Rg(X,Y+14,16,2,'#3a342c');Rg(X,Y+16,16,2,'rgba(0,0,0,.22)')}}}}}
-
+ // edges: which sides of each plateau tile drop to lower ground (1 N, 2 S, 4 W, 8 E). Stair tiles are open on the stair side.
+ function edges(R){if(R._pe!==undefined)return R._pe;const P=R.plat;if(!P)return R._pe=null;const W=R.w,E=new Uint8Array(W*R.h),sd=new Map(R.platSt.map(q=>[q[0],q]));
+  for(let i=0;i<W*R.h;i++){if(!P[i])continue;let m=0;if(!P[i-W])m|=1;if(!P[i+W])m|=2;if(!P[i-1])m|=4;if(!P[i+1])m|=8;const q=sd.get(i);if(q){if(q[2]<0)m&=~2;else if(q[2]>0)m&=~1;else if(q[1]>0)m&=~4;else m&=~8}E[i]=m}return R._pe=E}
+ const _so=solid;solid=function(px,py){if(_so(px,py))return true;const R=SCENE&&SCENE.room;if(!R||!R.plat)return false;const x=Math.floor(px/16),y=Math.floor(py/16),i=y*R.w+x,E=edges(R);if(!E)return false;
+  const P=R.plat;if(!P[i])return false;const m=E[i];if(!m)return false;const lx=px-x*16,ly=py-y*16;return(m&1&&ly<5)||(m&2&&ly>=7)||(m&4&&lx<5)||(m&8&&lx>=11)};
+ // the stairways: stone steps from the plateau top down the cliff face to the ground
+ const _ro=rgOverlay;rgOverlay=function(R,v){_ro(R,v);const S=R.platSt;if(!S||!S.length)return;const W=R.w,has=R._pss||(R._pss=new Set(S.map(q=>q[0])));
+  const ST=R.region==='nomans'?['#5a4434','#7e6450','#a48a70','#c8ae90','#3a2a1e']:R.region==='ashfall'?['#3a3430','#56504a','#7a726a','#9a928a','#221e1a']:['#4e4a46','#6e6a64','#928c84','#b4aea4','#2e2a26'];
+  for(const[i,a,b]of S){const X=(i%W)*16,Y=((i/W)|0)*16;if(X<v.x0-32||X>v.x1+16||Y<v.y0-32||Y>v.y1+32)continue;
+   if(b<0){// down the face: from 2px into the top, past the cliff, onto the ground below
+    const y0=Y+2,y1=Y+16+5,L=!has.has(i-1),Rt=!has.has(i+1);Rg(X,y0,16,y1-y0,ST[1]);
+    for(let k=0;k<5;k++){const ty=y0+k*4;Rg(X,ty,16,1,ST[3]);Rg(X,ty+1,16,2,ST[2]);Rg(X,ty+3,16,1,ST[0])}
+    Rg(X,y1,16,1,'rgba(0,0,0,.25)');Rg(X,y1+1,16,1,'rgba(0,0,0,.12)');
+    if(L){Rg(X,y0,2,y1-y0,ST[4]);Rg(X+2,y0,1,y1-y0,ST[0])}if(Rt){Rg(X+14,y0,2,y1-y0,ST[4]);Rg(X+13,y0,1,y1-y0,ST[0])}}
+   else{// a ramp over a side or the back edge
+    const vert=b!==0;Rg(X,Y,16,16,ST[1]);for(let k=0;k<4;k++){if(vert){Rg(X,Y+k*4,16,1,ST[3]);Rg(X,Y+k*4+3,16,1,ST[0])}else{const tx=a>0?X+k*4:X+15-k*4;Rg(tx,Y,1,16,ST[3]);Rg(tx+(a>0?3:-3),Y,1,16,ST[0])}}}}}}
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
