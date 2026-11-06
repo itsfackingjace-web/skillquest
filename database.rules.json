@@ -260,6 +260,15 @@
           }
         }
       }
+    },
+    "farm": {
+      ".read": "auth != null",
+      "$area": {
+        "$cell": {
+          ".write": "auth != null",
+          ".validate": "$area.length < 16 && $cell.length < 12 && newData.hasChildren(['c','t']) && newData.child('c').isString() && newData.child('c').val().length < 12 && newData.child('t').isNumber() && (!newData.child('g').exists() || newData.child('g').isNumber()) && (!newData.child('w').exists() || newData.child('w').isNumber()) && (!newData.child('e').exists() || newData.child('e').isNumber())"
+        }
+      }
     }
   }
 }
