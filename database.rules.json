@@ -269,6 +269,31 @@
           ".validate": "$area.length < 16 && $cell.length < 12 && newData.hasChildren(['c','t']) && newData.child('c').isString() && newData.child('c').val().length < 12 && newData.child('t').isNumber() && (!newData.child('g').exists() || newData.child('g').isNumber()) && (!newData.child('w').exists() || newData.child('w').isNumber()) && (!newData.child('e').exists() || newData.child('e').isNumber())"
         }
       }
+    },
+    "market": {
+      "offers": {
+        ".read": "auth != null",
+        "$id": {
+          ".write": "auth != null && ((!data.exists() && newData.child('u').val() === auth.uid) || (data.exists() && data.child('u').val() === auth.uid) || (data.exists() && newData.exists() && newData.child('u').val() === data.child('u').val() && newData.child('k').val() === data.child('k').val() && newData.child('s').val() === data.child('s').val() && newData.child('p').val() === data.child('p').val() && newData.child('q').val() === data.child('q').val() && newData.child('f').val() > data.child('f').val()))",
+          ".validate": "newData.hasChildren(['u','k','s','p','q','f']) && newData.child('k').isString() && newData.child('k').val().length < 24 && (newData.child('s').val() === 'b' || newData.child('s').val() === 's') && newData.child('p').isNumber() && newData.child('p').val() >= 1 && newData.child('p').val() <= 10000000 && newData.child('q').isNumber() && newData.child('q').val() >= 1 && newData.child('q').val() <= 100000 && newData.child('f').isNumber() && newData.child('f').val() >= 0 && newData.child('f').val() <= newData.child('q').val()"
+        }
+      },
+      "box": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$id": {
+            ".write": "auth != null && (!data.exists() || auth.uid === $uid)",
+            ".validate": "newData.hasChildren(['k','n']) && newData.child('k').isString() && newData.child('k').val().length < 24 && newData.child('n').isNumber() && newData.child('n').val() > 0"
+          }
+        }
+      },
+      "last": {
+        ".read": "auth != null",
+        "$k": {
+          ".write": "auth != null",
+          ".validate": "newData.hasChildren(['p','t']) && newData.child('p').isNumber()"
+        }
+      }
     }
   }
 }

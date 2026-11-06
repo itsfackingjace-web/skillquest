@@ -1440,7 +1440,7 @@ function hitSpecial(i,o){
  if(o.t==='ore'){if(TL.pick<2){say('This iron vein needs a stone pickaxe or better.');sfx('swish');return}if(lvOf(2)<5){say('You need Mining 5 to mine iron.');sfx('swish');return}
   o.hp-=TL.pick;o.shake=.15;sfx('mine');if(o.hp>0)return;obj[i]=null;REM.push({i,t:'ore',at:CLK});const n=1+(Math.random()<lvOf(2)*.008?1:0);inv.iron=(inv.iron|0)+n;say('+'+n+' iron ore');addXp(2,40);setTimeout(()=>sfx('pickup'),90)}
  else{o.hp-=1+TL.axe;o.shake=.15;sfx(o.t==='pine'?'chop':'rustle');if(o.hp>0)return;obj[i]=null;REM.push({i,t:o.t,at:CLK});
-  if(o.t==='pine'){const n=2+(Math.random()<lvOf(1)*.01?1:0);inv.wood+=n;say('+'+n+' wood');addXp(1,28)}else{inv.berry=(inv.berry|0)+2;inv.wood+=1;say('+2 cactus fruit and +1 wood');addXp(3,14)}setTimeout(()=>sfx('pickup'),90)}
+  if(o.t==='pine'){const n=2+(Math.random()<lvOf(1)*.01?1:0);inv.wood+=n;say('+'+n+' wood');addXp(1,28)}else{inv.cfruit=(inv.cfruit|0)+2;inv.wood+=1;say('+2 cactus fruit and +1 wood');addXp(3,14)}setTimeout(()=>sfx('pickup'),90)}
  saveLocal()}
 // --- enemies: wolves in the snow, skeletons in the desert ---
 function enemyDrop(n){if(n.type==='wolf'&&Math.random()<.7){inv.pelt=(inv.pelt|0)+1;say('+1 wolf pelt')}
@@ -6130,7 +6130,7 @@ function rgGather(R,it){const o=it.o,t=o.t,sk=SKOF[t];if(!sk){swing=.25;return}
  if(t==='tree'||t==='pine'){const n=2+(Math.random()<lvOf(1)*.01?1:0);add('wood',n);say('+'+n+' wood');addXp(1,t==='pine'?28:25)}
  else if(t==='rock'){if(lvOf(2)>=15&&TL.pick>=2&&Math.random()<.3){add('iron',1);say('+1 iron ore');addXp(2,35)}else{const n=2+(Math.random()<lvOf(2)*.01?1:0);add('stone',n);say('+'+n+' stone');addXp(2,18)}}
  else if(t==='ore'){const n=1+(Math.random()<lvOf(2)*.008?1:0);add('iron',n);addXp(2,40);if(o.v==='crystal'&&Math.random()<.12){const gk=Math.random()<.5?'sapphire':'emerald';inv[gk]=(inv[gk]|0)+1;say('+'+n+' iron ore and a '+iname(gk)+'!')}else say('+'+n+' iron ore')}
- else if(t==='cactus'){add('berry',2);add('wood',1);say('+2 cactus fruit and +1 wood');addXp(3,14)}
+ else if(t==='cactus'){add('cfruit',2);add('wood',1);say('+2 cactus fruit and +1 wood');addXp(3,14)}
  else{const n=2+(Math.random()<lvOf(3)*.01?1:0);add('berry',n);say('+'+n+' berries');addXp(3,10)}
  const x=it.x*16+8,y=it.y*16;gBoost(sk,gains,x,y);
  if(sk===1){if(P_(1,'wc_bark')&&Math.random()<.1){if(Math.random()<.5){inv.berry=(inv.berry|0)+2;gTxt(x,y-38,'+2 berries','#f05878')}else{inv.wheatseed=(inv.wheatseed|0)+1;gTxt(x,y-38,'+1 wheat seed','#c8a060')}}
@@ -6230,9 +6230,10 @@ function routeReq(id){const U=TRAVEL_UNLOCKS,r=[];
  if(id==='ashfall')r.push({t:'Into Briarwood',ok:vDone('briar')},{t:'Reinforced Hull',ok:!!U.reinforcedHull},{t:'Eastern Waters (from Saltmere)',ok:!!U.ashfallRoute});
  if(id==='ironcrest')r.push({t:'The High Pass (from Frosthollow)',ok:vDone('pass')},{t:'Mountain Passage Chart',ok:!!U.mountainPassage});
  if(id==='shattered')r.push({t:'Charting the Isles',ok:vDone('isles')},{t:'Deepwater Sail',ok:!!U.deepwaterSail},{t:'The Southern Route',ok:!!U.shatteredRoute});
+ if(id==='nomans')r.push({t:'Into Briarwood',ok:vDone('briar')},{t:'Lawless Waters (from Tidewatch)',ok:!!U.nomansRoute});
  return r}
 routeOpen=function(id){const D=WORLD_REGIONS[id];if(!D)return false;if(id==='hollow')return true;if(!RG_GEN[id])return false;if(!ROUTE_GATES51)return true;
- const U=TRAVEL_UNLOCKS,flags={briarwood:U.briarwoodRoute,ashfall:U.ashfallRoute&&U.reinforcedHull,ironcrest:U.mountainPassage,shattered:U.shatteredRoute&&U.deepwaterSail};
+ const U=TRAVEL_UNLOCKS,flags={briarwood:U.briarwoodRoute,ashfall:U.ashfallRoute&&U.reinforcedHull,ironcrest:U.mountainPassage,shattered:U.shatteredRoute&&U.deepwaterSail,nomans:U.nomansRoute};
  return!!flags[id]};   // only the permanent travelUnlocks flags open a route (regions visited before v63 keep their map, not their access)
 // --- progress: buoys, the cairn, landmark checks ---
 function vAdvance(q,msgTxt){const V=VQ();V[q.id]=(V[q.id]||1)+1;say(msgTxt||('Quest updated: '+q.name+' - '+q.steps[V[q.id]-1]));msgT=5;sfx('quest');saveLocal(true);saveCloud(true)}
@@ -8109,11 +8110,11 @@ const r2=v=>Math.round(v*100)/100;
 {const _c=castSpell;castSpell=function(first){const n0=SPELLS.length;const r=_c(first);const a=SPELLS.slice(n0).map(s=>[Math.round(s.x),Math.round(s.y),Math.round(s.vx),Math.round(s.vy),r2(s.life),s.el]);if(a.length)pvSend({k:'sp',a});return r}}
 {const _a=attack;attack=function(){const s0=swing,p0=PROJ.length,c0=SPELLS.length;_a();
   const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
-  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH){pvSend({k:'sw',d:[face[0],face[1]]});pvMelee()}}}
+  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH){pvSend({k:'sw',d:[face[0],face[1]],w:(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}}}
 // ---- what the others do ----
 function pvFx(u,v){if(!v||typeof v!=='object'||!MP.user||u===MP.user.uid)return;const s=+v.s||0;if(PV.seen[u]&&s<=PV.seen[u])return;PV.seen[u]=s;
  if(typeof v.t==='number'&&mpNow()-v.t>2500)return;if(v.loc!==mpLoc())return;const AR=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]):null);v.d=AR(v.d);v.a=AR(v.a);const r=MP.players.get(u);if(!r)return;const sc=curScene();
- if(v.k==='sw'&&Array.isArray(v.d)){r.swAt=performance.now();r.swD=[Math.sign(+v.d[0]||0),Math.sign(+v.d[1]||0)];try{sfx('swish')}catch(e){}}
+ if(v.k==='sw'&&Array.isArray(v.d)){r.swAt=performance.now();r.swD=[Math.sign(+v.d[0]||0),Math.sign(+v.d[1]||0)];r.swW=v.w==null?3:(+v.w|0);try{sfx('swish')}catch(e){}}
  else if((v.k==='ar'||v.k==='sp')&&Array.isArray(v.a))for(const q0 of v.a.slice(0,8)){const q=AR(q0);if(!q)continue;const[x,y,vx,vy,life,ex]=q;if(![x,y,vx,vy].every(isFinite))continue;
    const gp={k:v.k==='ar'?'arrow':'spell',x:+x,y:+y,vx:+vx,vy:+vy,t:0,life:Math.min(3,+life||1),sc,f:u,ghost:1};if(v.k==='ar')gp.iron=!!ex;else{if(!WSP[ex])continue;gp.el=ex}PV.ghosts.push(gp);
    if(v.k==='ar'){r.bowAt=performance.now();try{sfx('bow')}catch(e){}}else{r.castAt=performance.now();r.castEl=gp.el;try{sfx(WSP[gp.el].sfx)}catch(e){}}}}
@@ -8129,7 +8130,8 @@ function pvGhostStep(dt){const sc=curScene();for(const p of PV.ghosts){if(p.sc!=
 {const _d=drawSpells;drawSpells=function(tm){const add=PV.ghosts.filter(p=>p.k==='spell');const n0=SPELLS.length;for(const p of add)SPELLS.push(p);try{_d(tm)}finally{SPELLS.splice(n0,add.length)}}}
 // their sword swing (the same arc as yours), their bow and wand
 {const _dp=mpDrawPeer;mpDrawPeer=function(r,tm){_dp(r,tm);const now=performance.now(),x=Math.round(r.x),y=Math.round(r.y);
-  if(r.swAt&&now-r.swAt<250){const[fx,fy]=r.swD,a=Math.atan2(fy,fx),pr=(now-r.swAt)/250,f=Math.min(2,Math.floor(pr*3)),an=a+(f-1)*1.15,hx=x+fx*5,hy=y-4+fy*5;
+  if(r.swAt&&now-r.swAt<250&&window.SQSWING){SQSWING(x,y,r.swD[0],r.swD[1],(now-r.swAt)/250,r.swW,tm)}
+  else if(r.swAt&&now-r.swAt<250){const[fx,fy]=r.swD,a=Math.atan2(fy,fx),pr=(now-r.swAt)/250,f=Math.min(2,Math.floor(pr*3)),an=a+(f-1)*1.15,hx=x+fx*5,hy=y-4+fy*5;
    for(let i=2;i<=12;i++)Rg(hx+Math.cos(an)*i-1,hy+Math.sin(an)*i-1,4,4,O);for(let i=2;i<=12;i++)Rg(hx+Math.cos(an)*i,hy+Math.sin(an)*i,2,2,i<=3?GD:SV);
    for(let k=0;k<=f;k++){const q=a+(k-1)*1.15;for(let j=-2;j<=2;j++){const w2=q+j*.18;Rg(hx+Math.cos(w2)*15,hy+Math.sin(w2)*15,2,2,'#fff');Rg(hx+Math.cos(w2)*12,hy+Math.sin(w2)*12,1,1,'#c8e8ff')}}}
   if(r.castAt&&now-r.castAt<350&&WSP[r.castEl]){const dx=r.d===2?(r.fl?-1:1):0,dy=r.d===2?0:r.d===1?-1:1,hx=x+dx*6,hy=y-5+dy*5,W2=WSP[r.castEl];for(let i=0;i<9;i++)Rg(Math.round(hx+dx*i)-1,Math.round(hy+dy*i)-1,3,3,O);
@@ -8182,7 +8184,7 @@ setInterval(()=>{if(pnOpen&&ptab===PTAB&&PV.on&&PV.fight)rPn()},1000);
 {const st=document.createElement('style');st.textContent=`#pvb{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0px) + 236px);z-index:9;display:none;padding:4px 9px;font:700 12px ${PF};pointer-events:none;color:#f8f8f8;background:#b03828!important;border-color:#702018!important;box-shadow:inset 0 0 0 2px #e87060!important}`;document.head.appendChild(st)}
 const pvB=el('div','pvb','g3','');document.body.appendChild(pvB);
 setInterval(()=>{const show=PV.on&&MP.on&&!dead&&!pnOpen&&!menuOpen&&!TS.open;pvB.style.display=show?'block':'none';if(show){const l=pvLock();pvB.textContent='☠ PvP ON'+(pvMeSafe()?' · safe zone':PV.fight&&l>0?' · in a fight '+Math.ceil(l/1000)+'s':'')}},250);
-window.SQPVP=PV;
+window.SQPVP=PV;window.SQMPON=()=>!!(MP.on&&MP.user);
 // ---------------------------------------------------------------- 70. Building and cooking on the other islands
 // Fences, walls, gates, chests, beds and stations (furnace, anvil, stove, bench, planter, dummy...) can be built on
 // every island, not just Hollow. Each island keeps its own builds (saved with your game), other players see them
@@ -9172,6 +9174,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-24',d:'Nov 5, 2026',t:'The World Market, No Man\'s Land & new pets',n:['The World Market has opened just outside Hollow Village. Talk to the Market clerk (or hit the stalls) to put up offers to buy or sell anything with every player. Offers match automatically, even while you\'re offline, and what you get waits in your collection box at the market. Cancel any time to get back what hasn\'t traded. You need to be signed in.','New island: No Man\'s Land, a lawless desert south of Briarwood and west of the Shattered Expanse. PvP is always on there, for everyone. Look out for desert bandits (a "!" means they\'re aiming: roll!), Cacticus that pretend to be cacti, and giant scorpions. Explore Dustwater ghost town, Boot Hill, Rattlesnake Mesa and more.','To get there, take the new Lawless Waters voyage at the Tidewatch harbor post (after Into Briarwood). Once it\'s charted you can also sail off Briarwood\'s south edge or the Shattered Expanse\'s west edge.','You can now see your sword when you swing it: wooden, stone, iron, steel, the Crystal blade, mithril and adamant all look different, and other players see yours too.','More Foraging: mushroom patches grow beside trees (Foraging 5) and hazel bushes carry nuts (Foraging 10). Cacti now give real cactus fruit. Eat mushrooms and nuts raw, or roast them at a campfire.','New rare pet: the Squirrel (1 in 1,000 from berry bushes). It forages for you, bringing berries, nuts, mushrooms, cactus fruit, coins and sometimes a healing potion.','New rare pets: ore golems (1 in 2,000 from mining iron, gold, mithril or adamant ore). They stand around blinking, curl up and roll to keep up with you, and dig up their own ore for you.','The wiki is up to date: every dungeon (Thornroot Hollow, the Ironcrest mines and caves, Cinderdeep), boss and island monster, with pictures of the newer bosses and every pet, new guides, and the island towns.','Fixed: some rare drops and dungeons were missing from the wiki.']},
  {v:'2026.11.05-23',d:'Nov 5, 2026',t:'Hollow Island is twice as big',n:['Hollow Island has doubled in size. Hollow Village, Saltmere, Frosthollow, Dusthaven and Tidewatch are much farther apart, with more forest, snowfield and desert between them, and the roads stretch to match.','Your builds moved with the map: houses, castles, walls, chests, stations, beds, berry planters and farm plots are at the matching spot on the bigger island. Anything that would have landed in the water or on rock was packed into your bag, along with whatever was inside it.','The dungeons, the islets out at sea (Gull Rock, Wreck Isle, Hermit\'s Isle) and the Drowned Grotto moved out too.','Map markers stay easy to see on the bigger map.']},
  {v:'2026.11.05-22',d:'Nov 5, 2026',t:'Emberwatch, Cinderdeep & the Stone Sledgehammer',n:['Ashfall Coast has a forge camp: Emberwatch. Warden Kesh, Forgemaster Brann and Old Pell have four quests for you, Brann sells potions, iron arrows, bait and iron bars and buys anything, and monsters stay out of the camp.','New dungeon: Cinderdeep, six floors of ash and lava in Ashfall\'s north-east hills. Don\'t stand in the lava pools. At the bottom the Emberlord wakes once a day: it sets the ground under you on fire (watch the orange rings and roll out), throws fans of fireballs, and calls magma slimes at half health.','Rare drop from the Emberlord: the Ember ring. Your melee hits set monsters on fire.','New rare drop from the Stone Giant: the Stone Sledgehammer. Equip it in your main hand: it hits like an iron sword, and your ultimate (V, L1+R1, or the SLAM button) becomes a GROUND SLAM that hits everything around you. 18 second cooldown, no wand needed.','Boulders! Big boulders now sit on every island, and caves have them too. Break one with the Stone Sledgehammer for 35 to 50 stone. Ore boulders glint with iron, gold, mithril or adamant and give a big pile of ore (Mining 15 / 30 / 45 / 60).','Treelings for every tree: oak, willow, maple, yew, pine, Void Tree and dead-tree treelings, each 1 in 5,000 from chopping that kind of tree.','The purple-leaved trees of the Shattered Expanse are now called Void Trees.','You can walk into Thornbrook\'s Ranger Lodge and the Sleepy Fern inn (rest in a bed there to heal), and into Emberwatch\'s Forge and Warden\'s Hall.','Fixed: moss slimes looked like blue slimes. They\'re green now.','Fixed: killing briar wolves on Briarwood didn\'t count toward Ranger Wren\'s quest.']},
  {v:'2026.11.05-21',d:'Nov 5, 2026',t:'Thornbrook & Thornroot Hollow',n:['Briarwood Isle has a village: Thornbrook, with a ranger lodge, the Sleepy Fern inn and a market. Ranger Wren, Hazel the trader and Old Moss have four quests for you (see the Quests screen), Hazel sells potions, arrows, bait and seeds and buys anything, and monsters stay out of the village.','New dungeon: Thornroot Hollow, six floors under Briarwood\'s south-west roots. At the bottom waits the Thornheart, a huge walking tree that wakes once a day. Watch for the green rings: roots burst out of them. At half health it calls briar wolves.','Rare drop from the Thornheart: the Thorn amulet. Anything that hurts you takes 4 damage back.','Ironcrest\'s mines and caves are now six floors deep.','New furniture: the Trash can (Craft menu, Building). Put it in your house, then face it and press HIT to throw away things you don\'t want.','The cat, dog and fox pets have been redrawn to fit the game, and the anvil has a brand-new look.','Gates now keep monsters out. Only players can walk through them, on every island.','Trusted friends can now use your wardrobe.','Fixed: if a tree or rock grew back right where you were standing, you got stuck inside it. Now you\'re moved to the nearest open spot.']},
@@ -9308,12 +9311,12 @@ function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab](
    for(const k in seen){const nm=WK_RGN[k]||k;card(nm+' '+(R?R.name:id),wkPic('rg_'+k,()=>rgMake(k,seen[k].hp,0,0)),'<b>'+wkE(nm)+'</b> <span class="tag">'+seen[k].hp+' HP</span>'+(F.pack&&F.pack[k]?' <span class="tag">packs of '+F.pack[k]+'</span>':'')+'<br><small>'+seen[k].when.join(' and ')+' · stronger than on Hollow; more gold and XP</small>','mob')}}}
  else if(tab==='bosses'){head('World bosses');out.push({t:'',h:'<p>A world boss appears every 30 minutes somewhere in the world and stays for 20. Everyone fights it together; the top three damage dealers get extra loot. Online only.</p>'});
   const T=window.SQWBT||{};for(const k in T){const b=T[k];let pic='';try{const c=SQWBART[k](0,'s'),u=c.toDataURL();pic=u}catch(e){}
-   const rare=WK_RARE.find(r=>r[2]===b.n||(k==='dragon'&&r[2]==='Ancient Dragon'));
+   const rare=WK_RARE.filter(r=>r[2]===b.n||(k==='dragon'&&r[2]==='Ancient Dragon'));
    card(b.n+' '+k,pic,'<b>'+wkE(b.n)+'</b> <span class="tag">'+b.hp+' HP</span><br><small>Appears on: '+b.where.map(w=>w==='hollow'?'Hollow Island':(WORLD_REGIONS[w]?WORLD_REGIONS[w].name:w)).join(', ')+' · Gold: '+b.gold[0]+'–'+b.gold[1]+'</small><br>Attacks: '+[...new Set(b.pats)].map(p=>wkE(WK_PAT[p]||p)).join('; ')+'.'+
-    (rare?'<br><span class="tag">RARE DROP</span> '+(rare[1]?wkLink(rare[1]):wkE(rare[0]))+' (5%, 8% for the top three)':''),true)}
+    (rare.length?'<br><span class="tag">RARE DROP'+(rare.length>1?'S':'')+'</span> '+rare.map(r=>r[1]?wkLink(r[1]):wkE(r[0])).join(', ')+' ('+(rare.length>1?'each ':'')+'5%, 8% for the top three)':''),true)}
   head('Dungeon bosses');for(const d of WK_DUN)card(d.boss+' '+d.n,WK_BOSSMK[d.boss]?wkPic(d.boss,WK_BOSSMK[d.boss],64):'','<b>'+wkE(d.boss)+'</b> <span class="tag">'+d.bhp+' HP</span><br><small>In '+wkE(d.n)+' · '+wkE(d.loot)+'</small>','mob')}
  else if(tab==='dungeons'){out.push({t:'',h:'<p>Dungeons are deep, dark places with treasure chests, tougher monsters and a boss at the bottom. Each boss can be beaten once a day. The last floor has an exit door that takes you back outside.</p>'});
-  for(const d of WK_DUN)card(d.n+' '+d.w+' '+d.boss,WK_BOSSMK[d.boss]?wkPic(d.boss,WK_BOSSMK[d.boss],64):'','<b>'+wkE(d.n)+'</b><br>'+wkE(d.d)+'<br><small>Where: '+wkE(d.w)+'<br>Boss: '+wkE(d.boss)+' ('+d.bhp+' HP) · Reward: '+wkE(d.loot)+'</small>','mob')}
+  for(const d of WK_DUN)card(d.n+' '+d.w+' '+d.boss,WK_BOSSMK[d.boss]?wkPic(d.boss,WK_BOSSMK[d.boss],64):'','<b>'+wkE(d.n)+'</b><br>'+wkE(d.d)+'<br><small>Where: '+wkE(d.w)+(d.bhp?'<br>Boss: '+wkE(d.boss)+' ('+d.bhp+' HP) · Reward: ':'<br>No boss · Reward: ')+wkE(d.loot)+'</small>','mob')}
  else if(tab==='quests'){head('Elder Rowan (Hollow Village)');QS.forEach((q,i)=>card(q.n+' '+q.d,'','<b>'+(i+1)+'. '+wkE(q.n)+'</b><br>'+wkE(q.d)+'<br><small>Reward: '+wkE(typeof rewardTxt==='function'?rewardTxt(q):'')+'</small>'));
   if(typeof SIDE_QS!=='undefined')for(const t in SIDE_QS){const L=SIDE_QS[t];if(!L.length)continue;head((typeof SQTOWN!=='undefined'&&SQTOWN[t]||t)+' side quests');
    L.forEach((q,i)=>card(q.n+' '+q.d,'','<b>'+(i+1)+'. '+wkE(q.n)+'</b><br>'+wkE(q.d)+(q.note?' '+wkE(q.note):'')+'<br><small>Given by '+wkE(typeof sqGiverName==='function'?sqGiverName(q.giver):q.giver)+' · Reward: '+wkE(typeof sqReward==='function'?sqReward(q):'')+(q.req?' · Needs '+SKN[q.req[0]]+' '+q.req[1]:'')+'</small>'))}
@@ -9561,7 +9564,10 @@ function edgeGo(to,side,frac){if(TRAVEL49||dead)return;TRAVEL49={t:0,dur:1.3,to,
   if(!SCENE&&SAILING){const side=edgePush(N,N);if(!side)return;const id=edgeRegion(side);if(!id)return;
    if(!routeOpen(id)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[id].name+', but the route isn\'t charted yet. Ask at a harbor post.');return}
    edgeGo(id,side,side==='west'||side==='east'?P.y/(N*16):P.x/(N*16));return}
-  const R=rbR();if(R&&RSAIL.on){const side=edgePush(R.w,R.h);if(!side)return;const home=OPP[WORLD_REGIONS[R.region].dir];
+  const R=rbR();if(R&&RSAIL.on){const side=edgePush(R.w,R.h);if(!side)return;const nb=window.SQNEIGH&&SQNEIGH[R.region]&&SQNEIGH[R.region][side];
+   if(nb){if(!routeOpen(nb)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[nb].name+', but the route isn\'t charted yet.');return}edgeGo(nb,side,side==='west'||side==='east'?P.y/(R.h*16):P.x/(R.w*16));return}
+   if(R.region==='nomans'){edgeMsg('Open sea. Briarwood Isle lies north, the Shattered Expanse east. Hollow Island is a long way north-east: sail from the pier.');return}
+   const home=OPP[WORLD_REGIONS[R.region].dir];
    if(side!==home){edgeMsg('Open sea. Hollow Island lies to the '+home+'.');return}
    edgeGo('hollow',WORLD_REGIONS[R.region].dir,side==='west'||side==='east'?P.y/(R.h*16):P.x/(R.w*16))}}}
 // find open water along an edge, as close as possible to where you crossed
@@ -9669,6 +9675,175 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
    for(const k in old){const m=/^(\d+)_(\d+)$/.exec(k);if(!m)continue;const x=+m[1]*HSC,y=+m[2]*HSC,i=y*N+x,nk=x+'_'+y;
     if(x>0&&y>0&&x<N-1&&y<N-1&&tile[i]!==0&&tile[i]!==3&&!PROT.has(i)&&!BS.has(i)&&!(cur&&cur[nk])){const r0=old[k];if(r0&&typeof r0==='object')d.set(d.ref(FB.D,'farm/hollow2/'+nk),sfClean(r0)).catch(()=>{})}
     d.remove(d.ref(FB.D,'farm/hollow/'+k)).catch(()=>{})}}).catch(e=>console.warn(e))}}
+// ---- 97. The World Market (Hollow Village): buy and sell with every player, like a grand exchange ----
+// Put up an offer to sell (your items are held by the market) or to buy (your gold is held). Offers match
+// automatically with other players' offers for the same item at a matching price, even while they're offline,
+// and the trade happens at the price of the offer that was there first. What you get from a trade waits in your
+// collection box at the market. Cancel an offer any time to get back what hasn't traded. Up to 8 offers at once.
+// Data: market/offers/<id> {u,n,k,s:'b'|'s',p,q,f,t}, market/box/<uid>/<id> {k,n} (k 'gold' for coins), market/last/<k> {p,t}.
+{const K='#181018',WMK={offers:{},box:{},last:{},unsub:[],busy:false,tab:'mine',form:null,seenBox:new Set(),spot:null,clerk:null,filter:''};window.SQWMK=WMK;
+ const MAXO=8,me=()=>MP.user&&MP.user.uid,online=()=>MP.on&&!!me();
+ // ---- where it stands: a market hall beside Hollow Village ----
+ {const free=i=>{const x=i%N,y=(i/N)|0;return(tile[i]===2||tile[i]===1)&&!BS.has(i)&&!PROT.has(i)&&!BRIDGE.has(i)&&!STR.has(i)&&!(typeof inTownTiles==='function'&&inTownTiles(x,y))};
+  let best=null,bd=1e9;for(let y=VY-26;y<VY+26;y++)for(let x=VX-26;x<VX+26;x++){const d=Math.hypot(x+4-VX,y-VY);if(d<11||d>26)continue;let ok=true;
+   for(let b=-1;b<=3&&ok;b++)for(let a=-2;a<=10;a++){const i=(y+b)*N+x+a;if(!free(i)&&!(b===3&&ROADS.has(i))){ok=false;break}}if(!ok)continue;let road=false;for(let a=0;a<9&&!road;a++)for(let b=2;b<=4;b++)if(ROADS.has((y+b)*N+x+a)){road=true;break}
+   const sc=d+(road?-8:0);if(sc<bd){bd=sc;best=[x,y]}}
+  if(best){const[x,y]=best;WMK.spot={tx:x,ty:y,w:9};for(let b=-1;b<=3;b++)for(let a=-2;a<=10;a++){const i=(y+b)*N+x+a;obj[i]=null;PROT.add(i);if(b>=0&&b<=1&&a>=0&&a<9)BS.add(i)}for(let b=4;b<=5;b++)for(let a=-1;a<=9;a++){const i=(y+b)*N+x+a;if(obj[i]&&obj[i].t!=='rock')obj[i]=null}
+   WMK.clerk={x:(x+4)*16+8,y:(y+2)*16+10}}}
+ const sp=WMK.spot;
+ function drawMarket(tm){const s=WMK.spot,X0=s.tx*16,w=s.w*16,base=(s.ty+2)*16,R=(a,b,c,d,e)=>Rg(a,b,c,d,e);shd(X0+w/2,base-2,w*.95);
+  // stone hall with a tiled roof
+  R(X0,base-34,w,34,K);R(X0+1,base-33,w-2,32,'#c8b898');for(let yy=base-29;yy<base;yy+=6)R(X0+1,yy,w-2,1,'#a89878');for(let xx=X0+12;xx<X0+w;xx+=16)R(xx,base-33,1,32,'#b0a080');
+  R(X0-4,base-48,w+8,16,K);R(X0-3,base-47,w+6,14,'#3a5a9a');for(let xx=X0-3;xx<X0+w+3;xx+=6)R(xx,base-47,3,14,'#4a6ab0');R(X0-3,base-34,w+6,1,'#2a3a6a');
+  // three stalls with striped awnings and goods
+  for(let k=0;k<3;k++){const sx=X0+6+k*46,c1=['#d83830','#38a838','#e8a020'][k];R(sx-1,base-27,38,9,K);for(let j=0;j<6;j++)R(sx+j*6,base-26,6,7,j%2?'#f0f0f0':c1);for(let j=0;j<6;j++)R(sx+j*6+1,base-19,4,2,j%2?'#f0f0f0':c1);
+   R(sx,base-12,36,12,K);R(sx+1,base-11,34,10,'#8a5a30');R(sx+1,base-11,34,2,'#a87040');
+   const goods=[['#e04040','#f0c040','#40a0e0'],['#7ab060','#c88838','#b0b0c0'],['#f8d048','#9a7ad8','#e8e8e8']][k];for(let j=0;j<5;j++){R(sx+3+j*7,base-15,5,4,K);R(sx+4+j*7,base-14,3,2,goods[j%3])}}
+  // sign
+  const tw=74,sx=X0+w/2-tw/2;R(sx-1,base-60,tw+2,13,K);R(sx,base-59,tw,11,'#f0d890');R(sx,base-59,tw,1,'#fff0c0');g.save();g.font='700 7px '+PF;g.fillStyle='#4a2a10';g.textAlign='center';g.textBaseline='middle';g.fillText('WORLD MARKET',X0+w/2,base-53.5);g.restore();
+  // flags
+  for(const fx of[X0-2,X0+w-1]){R(fx,base-70,2,24,'#5a4a3a');const wv=Math.round(Math.sin(tm*4+fx)*1.5);R(fx+2,base-70,9,6+wv,'#d83830');R(fx+2,base-70,9,2,'#f05040')}}
+ function drawClerk(tm){const c=WMK.clerk,near=Math.hypot(c.x-P.x,c.y-P.y)<60,dir=near?(Math.abs(P.x-c.x)>Math.abs(P.y-c.y)?2:P.y<c.y?1:0):0;shd(c.x,c.y+6,12);GC=g;
+  try{cP({sk:1,hs:0,hc:2,sh:1,pn:1,ht:1,hcol:5,so:2},dir,0,Math.round(c.x),Math.round(c.y),near&&P.x<c.x)}catch(e){}
+  g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.strokeStyle=K;g.strokeText('Market clerk',c.x,c.y-22);g.fillStyle='#ffe8b0';g.fillText('Market clerk',c.x,c.y-22);g.restore();
+  if(Object.keys(WMK.box).length&&Math.floor(tm*3)%2){Rg(c.x-2,c.y-36,4,8,K);Rg(c.x-1,c.y-35,2,5,'#f8d048');Rg(c.x-1,c.y-29,2,1,'#f8d048')}}
+ if(sp){const _lh=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh(L,x0,y0,x1,y1,tm);const s=WMK.spot;if(s.tx+s.w<x0-3||s.tx>x1+3||s.ty>y1+5||s.ty+3<y0-4)return;L.push([(s.ty+2)*16,4,()=>drawMarket(tm)]);L.push([WMK.clerk.y+6,4,()=>drawClerk(tm)])};
+  const _dm=drawMap;drawMap=function(){_dm();const c=document.getElementById('mpc'),R=SCENE&&SCENE.room;if(!c||R&&R.region||MAPVIEW==='world')return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(sp.tx+2,sp.ty-2,6,6);x.fillStyle='#f8d048';x.fillRect(sp.tx+3,sp.ty-1,4,4)}}
+ const nearClerk=()=>sp&&!SCENE&&Math.hypot(WMK.clerk.x-P.x,WMK.clerk.y-P.y)<26;
+ const atMarket=()=>sp&&!SCENE&&Math.hypot(WMK.clerk.x-P.x,WMK.clerk.y-P.y)<70;
+ // ---- data ----
+ function wmStart(){if(WMK.unsub.length||!online())return;const d=FB.db;
+  WMK.unsub.push(d.onValue(d.ref(FB.D,'market/offers'),s=>{const v=s.val()||{};WMK.offers=v;for(const id in v){const o=v[id];if(o&&o.u===me()&&o.f>=o.q)d.remove(d.ref(FB.D,'market/offers/'+id)).catch(()=>{})}if(pnOpen&&shop==='wmkt')rPn()},e=>mpErr(e)));
+  WMK.unsub.push(d.onValue(d.ref(FB.D,'market/box/'+me()),s=>{const v=s.val()||{};const fresh=Object.keys(v).filter(k=>!WMK.seenBox.has(k));WMK.box=v;for(const k of fresh)WMK.seenBox.add(k);
+   if(fresh.length&&WMK.ready){say('World Market: one of your offers traded! Collect it at the World Market in Hollow Village.');msgT=5;try{sfx('coin')}catch(e){}}WMK.ready=true;if(pnOpen&&shop==='wmkt')rPn()},e=>mpErr(e)));
+  WMK.unsub.push(d.onValue(d.ref(FB.D,'market/last'),s=>{WMK.last=s.val()||{}},e=>{}))}
+ {const _ms=mpStart;mpStart=async function(u){await _ms(u);try{wmStart()}catch(e){mpErr(e)}if(MP.on)MP.unsub.push(()=>{for(const f of WMK.unsub)try{f()}catch(e){}WMK.unsub.length=0;WMK.offers={};WMK.box={};WMK.ready=false})}}
+ const mine=()=>Object.entries(WMK.offers).filter(([,o])=>o&&o.u===me());
+ const tradeable=k=>!!(INAME[k]&&SELLP[k]&&k!=='gold'&&!/^ja_?$/.test(k));
+ const nm=(k,n)=>n===1?(INAME[k]||k):(SN[k]||INAME[k]||k);
+ const fmt=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e4?(n/1e3).toFixed(n%1e3?1:0)+'k':String(n);
+ // ---- placing an offer, then matching it ----
+ async function place(side,k,q,p){if(!online()){say('The World Market needs you to be signed in.');return}if(WMK.busy)return;q=Math.floor(q);p=Math.floor(p);
+  if(!tradeable(k)||!(q>=1)||!(p>=1)||p>1e7||q>1e5){say('That offer doesn\'t work.');return}
+  if(mine().length>=MAXO){say('You already have '+MAXO+' offers. Cancel one first.');sfx('swish');return}
+  if(side==='s'){if((inv[k]|0)<q){say('You don\'t have '+q+' '+nm(k,q).toLowerCase()+'.');sfx('swish');return}inv[k]-=q}
+  else{if(GLD<q*p){say('You need '+(q*p)+' gold for that offer.');sfx('swish');return}GLD-=q*p}
+  saveNow();WMK.busy=true;const d=FB.db,id=me()+'_'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
+  try{await d.set(d.ref(FB.D,'market/offers/'+id),{u:me(),n:myName().slice(0,12),k,s:side,p,q,f:0,t:Date.now()});WMK.offers[id]={u:me(),k,s:side,p,q,f:0,t:Date.now()};
+   say((side==='s'?'Selling ':'Buying ')+q+' '+nm(k,q).toLowerCase()+' at '+p+' gold each.');sfx('coin');await match(id)}
+  catch(e){mpErr(e);if(side==='s')inv[k]=(inv[k]|0)+q;else GLD+=q*p;say('The market couldn\'t take that offer. Try again.');saveNow()}
+  finally{WMK.busy=false;try{svg()}catch(e){}if(pnOpen&&shop==='wmkt'){WMK.tab='mine';WMK.form=null;rPn()}}}
+ async function match(id){const d=FB.db,o=WMK.offers[id];if(!o)return;let traded=0,got=0,spent=0;
+  const others=Object.entries(WMK.offers).filter(([oid,c])=>oid!==id&&c&&c.k===o.k&&c.s!==o.s&&c.u!==o.u&&c.f<c.q&&(o.s==='s'?c.p>=o.p:c.p<=o.p))
+   .sort((a,b)=>o.s==='s'?(b[1].p-a[1].p||a[1].t-b[1].t):(a[1].p-b[1].p||a[1].t-b[1].t));
+  for(const[cid,c]of others){// 1. reserve on my own offer
+   let want=0;const r1=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{want=0;if(!cur)return;want=Math.max(0,cur.q-cur.f);if(!want)return;cur.f+=want;return cur});if(!r1||!r1.committed||!want)break;
+   // 2. take what the other offer still has
+   let m=0,price=c.p,owner=c.u;const r2=await d.runTransaction(d.ref(FB.D,'market/offers/'+cid),cur=>{m=0;if(!cur||cur.f>=cur.q)return;m=Math.min(want,cur.q-cur.f);price=cur.p;owner=cur.u;cur.f+=m;return cur});
+   if(!r2||!r2.committed)m=0;
+   // 3. give back the part of my reservation that didn't trade
+   if(m<want)await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{if(!cur)return;cur.f=Math.max(0,cur.f-(want-m));return cur});
+   if(!m)continue;traded+=m;
+   const bid='b'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);
+   if(o.s==='s'){GLD+=m*price;got+=m*price;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:o.k,n:m}).catch(e=>mpErr(e))}
+   else{inv[o.k]=(inv[o.k]|0)+m;GLD+=(o.p-price)*m;spent+=m*price;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:'gold',n:m*price}).catch(e=>mpErr(e))}
+   d.set(d.ref(FB.D,'market/last/'+o.k),{p:price,t:Date.now()}).catch(()=>{});saveNow()}
+  if(traded){say(o.s==='s'?'Sold '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+got+' gold!':'Bought '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+spent+' gold!');msgT=5;try{sfx('quest')}catch(e){}}}
+ async function cancel(id){const d=FB.db;let last=null;const r=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{last=cur;if(!cur||cur.u!==me())return;return null}).catch(e=>{mpErr(e);return null});
+  if(!r||!r.committed||!last)return;const left=Math.max(0,last.q-last.f);if(last.s==='s')inv[last.k]=(inv[last.k]|0)+left;else GLD+=left*last.p;delete WMK.offers[id];
+  say('Offer cancelled.'+(left?' Back to you: '+(last.s==='s'?left+' '+nm(last.k,left).toLowerCase():left*last.p+' gold')+'.':''));sfx('coin');saveNow();try{svg()}catch(e){}}
+ async function collect(){const d=FB.db;let items=0,gold=0;for(const bid of Object.keys(WMK.box)){let got=null;const r=await d.runTransaction(d.ref(FB.D,'market/box/'+me()+'/'+bid),cur=>{got=cur;if(!cur)return;return null}).catch(()=>null);
+   if(!r||!r.committed||!got||!(got.n>0))continue;if(got.k==='gold'){GLD+=got.n;gold+=got.n}else if(INAME[got.k]){inv[got.k]=(inv[got.k]|0)+got.n;items+=got.n}}
+  if(items||gold){say('Collected'+(gold?' '+gold+' gold':'')+(gold&&items?' and':'')+(items?' '+items+' item'+(items>1?'s':''):'')+' from the market.');sfx('coin');saveNow();try{svg()}catch(e){}}}
+ // ---- the panel ----
+ function open(){if(!online()){say('The World Market needs you to be signed in (Menu > Online).');sfx('swish');return}wmStart();shop='wmkt';WMK.tab='mine';WMK.form=null;pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');
+  if(Object.keys(WMK.box).length)collect().then(()=>{if(pnOpen&&shop==='wmkt')rPn()})}
+ window.SQWMOPEN=open;
+ const ic=k=>{try{return'<img src="'+iconURL(k)+'" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:-2px;margin-right:4px">'}catch(e){return''}};
+ function book(k){let bs=null,bb=null,qs=0,qb=0;for(const o of Object.values(WMK.offers)){if(!o||o.k!==k||o.f>=o.q)continue;const r=o.q-o.f;if(o.s==='s'){qs+=r;if(bs==null||o.p<bs)bs=o.p}else{qb+=r;if(bb==null||o.p>bb)bb=o.p}}return{bs,bb,qs,qb}}
+ const guide=k=>{const L=WMK.last[k];return L&&L.p?L.p:Math.max(1,Math.round((SELLP[k]||1)*1.3))};
+ function formHTML(){const F=WMK.form,k=F.k,B=book(k),side=F.s;
+  let h='<div class="qc"><b>'+ic(k)+esc(INAME[k]||k)+'</b><small><br>Shop value '+(SELLP[k]||0)+' · last trade '+(WMK.last[k]?WMK.last[k].p:'none')+(B.bs!=null?'<br>Cheapest for sale: '+B.bs+' ('+B.qs+' left)':'')+(B.bb!=null?'<br>Best buy offer: '+B.bb+' ('+B.qb+' wanted)':'')+(side==='s'?'<br>In your bag: '+(inv[k]|0):'<br>Your gold: '+GLD)+'</small></div>';
+  h+='<div class="tl" style="margin-top:8px">How many</div><div style="display:flex;gap:4px;align-items:center;justify-content:center"><button class="sb" data-w="q:-10">-10</button><button class="sb" data-w="q:-1">-1</button><input id="wmq" type="number" min="1" value="'+F.q+'" style="width:70px;font:600 15px '+PF+';text-align:center"><button class="sb" data-w="q:1">+1</button><button class="sb" data-w="q:10">+10</button>'+(side==='s'?'<button class="sb" data-w="q:all">All</button>':'')+'</div>';
+  h+='<div class="tl" style="margin-top:8px">Price each (gold)</div><div style="display:flex;gap:4px;align-items:center;justify-content:center"><button class="sb" data-w="p:-10%">-10%</button><button class="sb" data-w="p:-1">-1</button><input id="wmp" type="number" min="1" value="'+F.p+'" style="width:80px;font:600 15px '+PF+';text-align:center"><button class="sb" data-w="p:1">+1</button><button class="sb" data-w="p:10%">+10%</button></div>';
+  if(side==='b'&&B.bs!=null)h+='<div style="text-align:center"><button class="sb" data-w="p:match">Match the cheapest ('+B.bs+')</button></div>';if(side==='s'&&B.bb!=null)h+='<div style="text-align:center"><button class="sb" data-w="p:match">Match the best buyer ('+B.bb+')</button></div>';
+  const tot=F.q*F.p,ok=side==='s'?(inv[k]|0)>=F.q:GLD>=tot;h+='<button class="sb" data-w="go" style="width:100%;margin-top:10px;opacity:'+(ok?1:.45)+'"><b>'+(side==='s'?'SELL ':'BUY ')+F.q+' for '+fmt(tot)+' gold</b><br><small>'+(side==='s'?'Your items wait at the market until someone buys them.':'Your gold waits at the market until someone sells.')+'</small></button>';
+  h+='<button class="sb" data-w="back" style="width:100%">Back</button>';return h}
+ function wmHTML(){if(WMK.form)return'<div class="tl">WORLD MARKET</div>'+formHTML();
+  const tabs=[['mine','My offers'],['browse','Browse'],['sell','Sell'],['buy','Buy']];let h='<div class="tl">WORLD MARKET</div><div style="display:flex;gap:4px;margin:4px 0">'+tabs.map(([t,l])=>'<button class="sb" data-w="tab:'+t+'" style="flex:1;opacity:'+(WMK.tab===t?1:.55)+'">'+l+'</button>').join('')+'</div>';
+  const bx=Object.values(WMK.box);if(bx.length)h+='<button class="sb" data-w="collect" style="width:100%;background:#f8e8b0"><b>COLLECT</b> ('+bx.length+' waiting)</button>';
+  if(WMK.tab==='mine'){const L=mine().sort((a,b)=>b[1].t-a[1].t);h+='<div class="qc"><small>Offers trade with other players automatically, even while you\'re away. Up to '+MAXO+' at once.</small></div>';
+   if(!L.length)h+='<div class="tl" style="font-weight:400;opacity:.6">No offers yet. Use Sell or Buy.</div>';
+   for(const[id,o]of L){const pr=Math.round(o.f/o.q*100);h+='<div class="qc" style="display:flex;align-items:center;gap:6px;text-align:left"><div style="flex:1;min-width:0"><b>'+(o.s==='s'?'Selling':'Buying')+'</b> '+ic(o.k)+o.q+' '+esc(nm(o.k,o.q))+' @ '+fmt(o.p)+'<br><small>'+o.f+' / '+o.q+' done</small><div style="height:5px;background:#ccc;margin-top:2px"><div style="height:5px;width:'+pr+'%;background:'+(o.s==='s'?'#d8a020':'#38a838')+'"></div></div></div><button class="sb" data-w="x:'+id+'" style="flex:0 0 auto;width:auto;min-width:0;padding:6px 10px">Cancel</button></div>'}}
+  else if(WMK.tab==='browse'){const ks=[...new Set(Object.values(WMK.offers).filter(o=>o&&o.f<o.q).map(o=>o.k))].filter(tradeable).sort((a,b)=>(INAME[a]||a).localeCompare(INAME[b]||b));
+   if(!ks.length)h+='<div class="tl" style="font-weight:400;opacity:.6">Nobody is trading anything right now. Be the first!</div>';
+   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:b:'+k+'" style="width:100%;text-align:left">'+ic(k)+'<b>'+esc(INAME[k])+'</b><br><small>'+(B.bs!=null?'For sale: '+B.qs+' from '+fmt(B.bs):'None for sale')+' · '+(B.bb!=null?'Wanted: '+B.qb+' up to '+fmt(B.bb):'Nobody buying')+'</small></button>'}}
+  else if(WMK.tab==='sell'){const ks=INVK.filter(k=>(inv[k]|0)>0&&tradeable(k));h+='<div class="qc"><small>Pick something from your bag to sell.</small></div>';if(!ks.length)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing in your bag can be sold.</div>';
+   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:s:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+' ('+inv[k]+')<br><small>'+(B.bb!=null?'buyers up to '+fmt(B.bb):'last '+(WMK.last[k]?fmt(WMK.last[k].p):'-'))+'</small></button>'}}
+  else{h+='<input id="wmf" placeholder="Search for an item..." value="'+esc(WMK.filter)+'" style="width:100%;box-sizing:border-box;font:500 14px '+PF+';padding:6px;margin:4px 0">';const f=WMK.filter.toLowerCase();
+   const ks=Object.keys(INAME).filter(k=>tradeable(k)&&(!f||(INAME[k]||'').toLowerCase().includes(f))).sort((a,b)=>{const A=book(a).bs!=null,Bb=book(b).bs!=null;return(Bb-A)||(INAME[a]||'').localeCompare(INAME[b]||'')}).slice(0,60);
+   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:b:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+'<br><small>'+(B.bs!=null?B.qs+' for sale from '+fmt(B.bs):'none for sale')+'</small></button>'}}
+  return h}
+ {const _r=rPn;rPn=function(){if(ptab===2&&shop==='wmkt'){try{panelChrome('')}catch(e){}const fo=document.activeElement&&document.activeElement.id==='wmf';pbd.innerHTML=wmHTML();
+   const fi=document.getElementById('wmf');if(fi){fi.oninput=()=>{WMK.filter=fi.value;const pos=fi.selectionStart;rPn();const f2=document.getElementById('wmf');if(f2){f2.focus();try{f2.setSelectionRange(pos,pos)}catch(e){}}};if(fo){fi.focus()}}
+   for(const id of['wmq','wmp']){const el=document.getElementById(id);if(el)el.onchange=()=>{const v=Math.max(1,Math.floor(+el.value||1));if(id==='wmq')WMK.form.q=v;else WMK.form.p=Math.min(1e7,v);rPn()}}return}_r()}}
+ {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='wmkt'){const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w,F=WMK.form;
+   if(a.startsWith('tab:')){WMK.tab=a.slice(4)}
+   else if(a==='collect'){collect().then(()=>rPn());return}
+   else if(a.startsWith('x:')){cancel(a.slice(2)).then(()=>rPn());return}
+   else if(a.startsWith('pick:')){const[,s,k]=a.split(':');const B=book(k);WMK.form={s,k,q:s==='s'?Math.max(1,inv[k]|0):1,p:s==='s'?(B.bb!=null?B.bb:guide(k)):(B.bs!=null?B.bs:guide(k))}}
+   else if(a==='back'){WMK.form=null}
+   else if(F&&a.startsWith('q:')){const v=a.slice(2);F.q=v==='all'?Math.max(1,inv[F.k]|0):Math.max(1,F.q+(+v))}
+   else if(F&&a.startsWith('p:')){const v=a.slice(2),B=book(F.k);if(v==='match')F.p=F.s==='s'?B.bb:B.bs;else if(v.endsWith('%'))F.p=Math.max(1,Math.round(F.p*(1+(+v.slice(0,-1))/100))+(+v.slice(0,-1)>0?0:0));else F.p=Math.max(1,F.p+(+v));F.p=Math.min(1e7,F.p)}
+   else if(F&&a==='go'){const q=document.getElementById('wmq'),p=document.getElementById('wmp');if(q)F.q=Math.max(1,Math.floor(+q.value||1));if(p)F.p=Math.max(1,Math.floor(+p.value||1));place(F.s,F.k,F.q,F.p);return}
+   rPn();return}return _oc(e)}}
+ {const _cp=closePanel;closePanel=function(){if(shop==='wmkt'){shop=null;WMK.form=null}return _cp()}}
+ // talking to the clerk (T / TALK / ✕) or hitting the stalls opens it
+ {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead&&nearClerk()){open();return}return _t()}}
+ tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead||!nearClerk())return;e.preventDefault();e.stopImmediatePropagation();open()},{passive:false,capture:true});
+ {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!nearClerk()||!!(_pu&&_pu())}
+ {let mineTk=false;const _u=upd;upd=function(dt){_u(dt);const n=!pnOpen&&!menuOpen&&!dead&&nearClerk();
+   if(n){tk.style.display='flex';const lab='TRADE'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mineTk=true}else if(mineTk){mineTk=false;if(!pnOpen)tk.style.display='none'}
+   if(sp&&!SCENE)for(const m of en)if(!m.dead&&!m.big&&Math.hypot(m.x-WMK.clerk.x,m.y-WMK.clerk.y)<90){m.dead=1;m.dropped=1}}}
+ {const _a=attack;attack=function(){if(!sp||SCENE||dead||menuOpen||pnOpen||BUILD||swing>0)return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),s=WMK.spot;
+   if(tx>=s.tx&&tx<s.tx+s.w&&ty>=s.ty&&ty<=s.ty+1&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){open();return}return _a()}}
+ try{WK_PLACES&&WK_PLACES.push&&WK_PLACES.push({n:'World Market',w:'Hollow Village',d:'Trade with every player: put up offers to buy or sell anything, and they match automatically.'})}catch(e){}
+}
+// ---- 98. The wiki catches up: every dungeon, boss, monster, pet and place, with pictures ----
+// The wiki's tables live in this block, so the later sections (Thornbrook, Emberwatch, the pets...) couldn't add to
+// them. They're shared now, and the wiki draws pictures for the newer bosses and for every pet.
+{window.WK_DUN=WK_DUN;window.WK_RARE=WK_RARE;window.WK_SKILL=WK_SKILL;window.WK_RGN=WK_RGN;window.WK_MOBS=WK_MOBS;window.WK_MK=WK_MK;window.WK_BOSSMK=WK_BOSSMK;
+ Object.assign(WK_BOSSMK,{'The Thornheart':()=>({hp:180,mhp:180,kx:0,ky:0,type:'thorn',big:1,roots:[],t:0}),'The Emberlord':()=>({hp:320,mhp:320,kx:0,ky:0,type:'emberl',big:1,pools:[],balls:[],t:0})});
+ // pets: drawn the same way they're drawn in the game, then cropped
+ const PPIC={};function wkPetPic(k){if(PPIC[k]!=null)return PPIC[k];try{const S=4,B=36,px=B*S,X=3000,Y=3000;g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,px,px);g.setTransform(S,0,0,S,-(X-B/2)*S,-(Y-B*.6)*S);GC=g;
+   const s={x:X,y:Y,mv:0,t:0,fl:false};if(k==='imp'&&window.SQIMPDRAW)SQIMPDRAW(X,Y);else if(window.SQDRAWNPET&&(window.SQNPET&&SQNPET[k]||['cat','dog','fox'].includes(k)))SQDRAWNPET(k,s,.4);else if(window.LUX&&LUX.drawPeerPet)LUX.drawPeerPet({pet:k,uid:'wkpic_'+k,x:X,y:Y,d:0,fl:0,sl:0,loc:''},.4);
+   g.restore();const o=document.createElement('canvas');o.width=o.height=px;const ox=o.getContext('2d');ox.drawImage(cv,0,0,px,px,0,0,px,px);const d=ox.getImageData(0,0,px,px).data;let x0=px,y0=px,x1=-1,y1=-1;
+   for(let y=0;y<px;y++)for(let x=0;x<px;x++)if(d[(y*px+x)*4+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}if(x1<0)return PPIC[k]='';
+   const sz=Math.max(x1-x0,y1-y0)+8,c2=document.createElement('canvas');c2.width=c2.height=sz;c2.getContext('2d').drawImage(o,x0-Math.round((sz-(x1-x0))/2),y0-Math.round((sz-(y1-y0))/2),sz,sz,0,0,sz,sz);return PPIC[k]=c2.toDataURL()}catch(e){try{g.restore()}catch(_){}return PPIC[k]=''}}
+ const petKey=name=>{const n=name.replace(/ \(pet\)$/,'').toLowerCase();if(n==='pet wolf')return'pwolf';if(n==='imp')return'imp';const N=window.SQNPET||{};for(const k in N)if((N[k].n||'').toLowerCase()===n)return k;return null};
+ const _wc=wkCards;wkCards=function(tab,srch){if(tab==='pets'){const out=[];const card=(t,ic,tx)=>out.push({t,h:'<div class="c">'+(ic?'<img alt="" src="'+ic+'" class="mob">':'')+'<div class="tx">'+tx+'</div></div>'}),head=t=>out.push({t:'',h:'<h3>'+wkE(t)+'</h3>',head:1});
+   const isPet=r=>/\(pet\)$|^Pet wolf$/.test(r[0]);
+   head('Rare pets');for(const r of WK_RARE.filter(isPet)){const k=r[5]||petKey(r[0]);card(r[0]+' '+r[2]+' pet',k?wkPetPic(k):'','<b>'+wkE(r[0])+'</b> <span class="tag">'+wkE(r[2])+'</span><br>'+wkE(r[3])+'<br><small>'+(r[4]||('5% from the '+wkE(r[2])+' (8% if you\'re in the top three).'))+'</small>')}
+   head('Rare items');for(const r of WK_RARE.filter(r=>!isPet(r)))card(r[0]+' '+r[2],r[1]?wkIcon(r[1]):'','<b>'+wkE(r[0])+'</b> <span class="tag">'+wkE(r[2])+'</span><br>'+wkE(r[3])+'<br><small>'+(r[4]||('5% from the '+wkE(r[2])+' (8% if you\'re in the top three).'))+'</small>');
+   head('Pets from Marlo\'s Emporium');const P=window.LUX&&LUX.PETS||[];for(const p of P)if(!p.rare)card(p.n+' pet',wkPetPic(p.k),'<b>'+wkE(p.n)+'</b> <span class="tag">'+p.v.toLocaleString('en-US')+' gold</span><br><small>Follows you everywhere. Other players see it too. Pick your pet in START → Style.</small>');
+   return out}
+  const out=_wc(tab,srch);
+  if(tab==='bosses'){// boss-less dungeons (the Ironcrest mines) don't belong in the boss list
+   for(let i=out.length-1;i>=0;i--)if(/^None /.test(out[i].t||''))out.splice(i,1)}
+  if(tab==='world'){const add=(t,h)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,' '),h:'<div class="c"><div class="tx">'+h+'</div></div>'});
+   out.push({t:'',h:'<h3>Island towns and places</h3>',head:1});
+   add('Thornbrook','<b>Thornbrook</b> <span class="tag">Briarwood Isle</span><br><small>Ranger Wren, Hazel the trader and Old Moss. Ranger Lodge and the Sleepy Fern inn (rest to heal). Thornroot Hollow lies south-west.</small>');
+   add('Emberwatch','<b>Emberwatch</b> <span class="tag">Ashfall Coast</span><br><small>A forge camp: Warden Kesh, Forgemaster Brann (shop) and Old Pell. The Forge and the Warden\'s Hall. Cinderdeep lies north-east.</small>');
+   add('Dustwater','<b>Dustwater (ghost town)</b> <span class="tag">No Man\'s Land</span><br><small>The Last Chance Saloon and an abandoned sheriff\'s office. No Man\'s Land has no law: PvP is always on there, and bandits, Cacticus and giant scorpions roam the desert.</small>');
+   add('World Market','<b>World Market</b> <span class="tag">Hollow Village</span><br><small>Trade with every player. Talk to the Market clerk (or hit the stalls) to put up offers to buy or sell anything; they match automatically, even while you\'re away.</small>')}
+  return out};
+ const _gd=WK2.guides;WK2.guides=()=>{const out=_gd();const G=(t,h)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,' '),h:'<div class="c"><div class="tx"><b>'+wkE(t)+'</b>'+h+'</div></div>'});
+  G('The World Market','<p>The World Market stands just outside Hollow Village. Talk to the Market clerk to trade with every player:</p><p>• <b>Sell</b>: pick something from your bag, how many, and the price each. The market holds your items until someone buys them.<br>• <b>Buy</b>: search for an item, set how many and the most you\'ll pay each. The market holds your gold.<br>• Offers match automatically with other players\' offers, even while you\'re offline. A trade happens at the price of the offer that was there first, so if you offer more than the cheapest seller asks, you get the difference back.<br>• What you get waits in your <b>collection box</b>: collect it at the market. Cancel an offer any time to get back what hasn\'t traded. Up to 8 offers at once. You need to be signed in.</p>');
+  G('No Man\'s Land','<p>A lawless desert south of Briarwood and west of the Shattered Expanse. Unlock it with the <b>Lawless Waters</b> voyage at the Tidewatch harbor post (after Into Briarwood), or sail off Briarwood\'s south edge / the Shattered Expanse\'s west edge once it\'s charted.</p><p><b>PvP is always on there</b>, for everyone, and you can\'t turn it off until you leave. Bandits keep their distance and shoot (a "!" over their head means they\'re aiming: roll!), Cacticus pretend to be cacti until you walk past, and giant scorpions sting hard.</p>');
+  G('Boulders and the Stone Sledgehammer','<p>Big boulders sit on every island and in caves. Only the Stone Sledgehammer (a rare drop from the Stone Giant) can break them: 35-50 stone each. Ore boulders glint with iron, gold, mithril or adamant and give a big pile of ore (Mining 15 / 30 / 45 / 60). Holding the hammer also turns your ultimate into a Ground Slam.</p>');
+  G('Foraging','<p>Pick berries from bushes, mushrooms from the patches that grow beside trees (Foraging 5), nuts from hazel bushes (Foraging 10) and fruit from cacti. Roast mushrooms and nuts at a campfire. Berry bushes can drop a squirrel pet (1 in 1,000) that forages for you.</p>');
+  G('Pets that work for you','<p>The squirrel (from berry bushes, 1 in 1,000) brings you berries, nuts, mushrooms, cactus fruit, coins and sometimes a healing potion. Ore golems (1 in 2,000 from mining iron, gold, mithril or adamant ore) dig up their own ore for you every couple of minutes. Each kind of tree has its own treeling (1 in 5,000).</p>');
+  return out}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
@@ -9961,6 +10136,7 @@ var LUX={};
  const impOn=()=>COS.pet==='imp'&&!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on);
  const impDmg=()=>1+Math.floor(lvOf(0)/25),IMP_POIS=4;
  const IMPC={};function impCan(fr,d,a){const k=d+fr+(a?'a':'');if(IMPC[k])return IMPC[k];const f=window.SQIMPSP;return f?(IMPC[k]=f(fr,d,a)):null}
+ window.SQIMPDRAW=(x,y)=>impDraw(x,y,0,0,false,10,10);
  function impDraw(x,y,d,fr,a,hp,max){const c=impCan(fr,d,a);if(!c)return;GC=g;shd(x,y+5,10);g.save();g.imageSmoothingEnabled=false;g.drawImage(c,Math.round(x-12),Math.round(y+5-27));g.restore();
   if(hp!=null&&hp<max){Rg(Math.round(x-7),Math.round(y-25),14,3,'#181018');Rg(Math.round(x-6),Math.round(y-24),Math.max(0,Math.round(12*hp/max)),1,'#58e070')}}
  const dirOf=(dx,dy,old)=>Math.abs(dx)<1&&Math.abs(dy)<1?old:Math.abs(dx)>=Math.abs(dy)?(dx<0?'w':'e'):(dy<0?'n':'s');
@@ -10580,7 +10756,7 @@ function drawNPet(k,s,tm){if(window.SQDRAWTL&&k!=='ptree'&&SQDRAWTL(k,s,tm))retu
 {const _p=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!(NPET[k]||SIDEMAP[k]))return _p(tm);
   if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on))drawNPet(k,petFollow('me',P.x,P.y,face),tm);C.pet=null;try{return _p(tm)}finally{C.pet=k}}}
 if(window.LUX){const _dp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&(NPET[r.pet]||SIDEMAP[r.pet])){if(r.sl)return;drawNPet(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]),tm);return}return _dp&&_dp(r,tm)}}
-window.SQNPET=NPET;
+window.SQNPET=NPET;window.SQDRAWNPET=(k,s2,tm)=>drawNPet(k,s2,tm);
 
 // ---- Sharks in the Shattered Expanse ----
 // A few sharks (never more than three around you) cruise the deep water. They leave healthy players alone, but if
@@ -11176,6 +11352,314 @@ try{WK_RARE.push(['Ember ring','ja_ember','Emberlord','A ring: your melee hits s
  const tr=WK_RARE.find(r=>r[0]==='Treeling (pet)');if(tr)tr[4]='1 in 5,000 from plain trees you chop down. Every other kind of tree has its own treeling.'}catch(e){}
 try{WK_SKILL.Woodcutting+=' On the Shattered Expanse, the purple-leaved trees are Void Trees.';WK_SKILL.Mining+=' With the Stone sledgehammer (from the Stone Giant) you can break boulders and ore boulders.'}catch(e){}
 try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
+}
+// ---------------------------------------------------------------- 94. Your sword in your hand
+// Every swing shows the sword you actually hold: wooden, stone, iron, steel, the Crystal blade, mithril or adamant
+// (blade colour, length, width, guard and grip all differ). No sword: a quick punch. Other players see your sword too.
+{const K='#181018';
+ // blade light, blade dark, edge, guard, grip, pommel, length, width, glow
+ const SW={1:['#d8b078','#9a6a38','#f0d8a8','#7a4a20','#5a3418','#7a4a20',10,2,null],2:['#b8b8c0','#7a7a84','#e0e0e8','#6a6a72','#5a3a20','#6a6a72',11,3,null],
+  3:['#e0e6ec','#9aa2ac','#ffffff','#5a6068','#4a2c18','#5a6068',12,2,null],4:['#c8d8f0','#7a90b8','#f4f8ff','#e0b030','#3a2a5a','#e0b030',13,2,null],
+  5:['#b8f4ff','#48b8e0','#ffffff','#68d8f8','#2a4a6a','#a8f0ff',14,2,'120,220,255'],6:['#b8c4ff','#5868d0','#e8ecff','#3a48a8','#2a2a4a','#8898f0',13,2,'130,150,255'],
+  7:['#98e8b0','#38905a','#d8ffe0','#2a6a40','#3a2418','#48b060',14,3,'90,210,130']};
+ // the sword is drawn upright once, then turned in 32 steps on the pixel grid (nearest pixel), then outlined
+ const BC={};
+ function bladeSprite(t,step){const key=t+'_'+step;if(BC[key])return BC[key];const S=SW[t]||SW[3],[L,D,E,G,H,Pm,len,wd]=S;
+  const src=new Map(),put=(x,y,c)=>src.set(x+','+y,c);
+  put(0,0,Pm);for(let x=1;x<=3;x++)put(x,0,H);for(let y=-2;y<=2;y++)put(4,y,G);
+  for(let x=5;x<=len+1;x++){const tip=x>len-1;if(wd===3&&!tip){put(x,-1,E);put(x,0,L);put(x,1,D)}else if(!tip){put(x,0,E);put(x,1,D)}else put(x,0,x===len+1?E:L)}
+  const R=len+4,W=2*R+1,c=document.createElement('canvas');c.width=W;c.height=W;const x=c.getContext('2d'),an=step/32*6.2832,co=Math.cos(an),si=Math.sin(an),on=new Uint8Array(W*W);
+  for(let v=0;v<W;v++)for(let u=0;u<W;u++){const dx=u-R,dy=v-R,sx=Math.round(dx*co+dy*si),sy=Math.round(-dx*si+dy*co),col=src.get(sx+','+sy);if(col){x.fillStyle=col;x.fillRect(u,v,1,1);on[v*W+u]=1}}
+  x.fillStyle=K;for(let v=0;v<W;v++)for(let u=0;u<W;u++){if(on[v*W+u])continue;if((u>0&&on[v*W+u-1])||(u<W-1&&on[v*W+u+1])||(v>0&&on[(v-1)*W+u])||(v<W-1&&on[(v+1)*W+u]))x.fillRect(u,v,1,1)}
+  return BC[key]={c,R}}
+ function blade(hx,hy,an,t){const st=((Math.round(an/6.2832*32))%32+32)%32,b=bladeSprite(t,st);g.drawImage(b.c,Math.round(hx)-b.R,Math.round(hy)-b.R)}
+ function hammer(hx,hy,an){const c=Math.cos(an),s=Math.sin(an);for(let i=2;i<=11;i++)Rg(hx+c*i-1,hy+s*i-1,3,3,K);for(let i=2;i<=11;i++)Rg(hx+c*i,hy+s*i,1,1,'#a87038');
+  const ex=Math.round(hx+c*13),ey=Math.round(hy+s*13);Rg(ex-5,ey-4,10,8,K);Rg(ex-4,ey-3,8,6,'#9a9284');Rg(ex-4,ey-3,8,1,'#c8c0b0');Rg(ex-4,ey+2,8,1,'#6a645c');Rg(ex-1,ey-1,2,1,'#5a8a3a')}
+ // one swing: pr goes 0 -> 1. The blade sweeps from one side of where you face to the other.
+ window.SQSWING=function(x,y,fx,fy,pr,t,tm){x=Math.round(x);y=Math.round(y);pr=Math.max(0,Math.min(1,pr));const a=Math.atan2(fy,fx),an=a+(pr-.5)*2.3,hx=x+fx*5,hy=y-4+fy*5;
+  if(!t){// a punch: a fist and a little burst
+   const d=3+Math.round(Math.sin(pr*Math.PI)*6),px=Math.round(hx+fx*d),py=Math.round(hy+fy*d);Rg(px-2,py-2,5,5,K);Rg(px-1,py-1,3,3,'#f0c8a0');if(pr>.3&&pr<.8)for(const[a2,b2]of[[3,0],[-3,0],[0,3],[0,-3]])Rg(px+fx*3+a2,py+fy*3+b2,1,1,'#ffffff');return}
+  const S=SW[t];if(S&&S[8]&&dark()>.25){g.fillStyle='rgba('+S[8]+','+(.18+.12*Math.sin((tm||0)*8))+')';g.beginPath();g.arc(hx+Math.cos(an)*9,hy+Math.sin(an)*9,9,0,6.283);g.fill()}
+  if(t===9)hammer(hx,hy,an);else blade(hx,hy,an,t);
+  // the swoosh trail behind the blade
+  const tc=S&&S[8]?'rgba('+S[8]+',.9)':'#ffffff',reach=(S?S[6]:12)+3;for(let k=1;k<=4;k++){const q=an-k*.22*(pr<.98?1:0);if(q<a-1.2)break;const tx=hx+Math.cos(q)*reach,ty=hy+Math.sin(q)*reach;Rg(Math.round(tx),Math.round(ty),k<3?2:1,k<3?2:1,k<2?tc:'#c8e8ff')}};
+ {const _pp=pP;pP=function(tm){const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
+   if(!(swing>0)||dead||tool||CASTT>0||BOWT>0||(window.SQDF&&SQDF.on)||(typeof SAILING!=='undefined'&&SAILING)||(window.SQRSAIL&&SQRSAIL.on))return _pp(tm);
+   const sw=swing;if(!pP._d0)pP._d0=sw;swing=0;try{_pp(tm)}finally{swing=sw}if(hurt>0&&Math.floor(tm*20)%2)return;
+   const t=(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0);SQSWING(P.x,P.y,face[0],face[1],1-sw/.25,t,tm)}}}
+// ---------------------------------------------------------------- 95. More Foraging: nuts, mushrooms, cactus fruit; the squirrel and the ore golems
+// - Mushroom patches grow by trees (Foraging 5) and hazel bushes carry nuts (Foraging 10). Cacti give real cactus
+//   fruit now. Mushrooms and nuts can be eaten raw or cooked (roasted mushrooms, roasted nuts) at a campfire or stove.
+// - Squirrel pet: 1 in 1,000 from berry bushes. It forages for you: every so often it brings berries, nuts, mushrooms,
+//   cactus fruit, a few coins, or (rarely) a healing potion.
+// - Ore golems: 1 in 2,000 from mining iron, gold, mithril or adamant ore. Each stands idle with a little bob, curls up and
+//   rolls to keep up with you, and now and then digs up its own ore for you.
+{const K='#181018',h95=(a,b)=>{const v=Math.sin(a*41.31+b*17.77+9.3)*43758.5453;return v-Math.floor(v)};
+ // ---- the items ----
+ const IT={cfruit:['Cactus fruit','Sweet, prickly fruit from a cactus. Eat it raw, or sell it.',4],nuts:['Nuts','Hazelnuts from a hazel bush. A handful fills you up; roast them at a campfire.',5],
+  shroom:['Mushrooms','Wild mushrooms from the forest floor. Better cooked.',6],cshroom:['Roasted mushrooms','Mushrooms roasted over a fire. Heals 2 hearts.',14],rnuts:['Roasted nuts','Toasty and filling. Heals 1 heart.',11]};
+ for(const k in IT){if(!INVK.includes(k))INVK.push(k);EXTRA_BAG.push(k);INAME[k]=IT[k][0];IDESC[k]=IT[k][1];SELLP[k]=IT[k][2];SN[k]=IT[k][0];SHORT[k]=IT[k][0].toLowerCase();inv[k]=inv[k]|0}
+ COOKS.push({raw:'shroom',ck:'cshroom',n:'mushrooms',lv:5,xp:35},{raw:'nuts',ck:'rnuts',n:'nuts',lv:3,xp:25});
+ FOODS.push({k:'cshroom',n:'roasted mushrooms',heal:2,hun:35},{k:'rnuts',n:'roasted nuts',heal:1,hun:35},{k:'cfruit',n:'cactus fruit',heal:1,hun:22},{k:'nuts',n:'nuts',heal:0,hun:16},{k:'shroom',n:'raw mushrooms',heal:0,hun:10});
+ FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);try{CKSET.add('cshroom');CKSET.add('rnuts')}catch(e){}
+ {const ART={cfruit:[['..GG..','.GRRG.','GRRRRG','RRYRRR','RRRRYR','.RRRR.'],{G:'#58a838',R:'#e04870',Y:'#f8e070'}],nuts:[['.BB.BB','BLLBLL','BLLBLL','.BB.BB','..BB..','.BLLB.','.BLLB.','..BB..'],{B:'#6a4020',L:'#b07838'}],
+   shroom:[['.RRRR.','RRWRRR','RRRRWR','..SS..','..SS..','.SSSS.'],{R:'#c83830',W:'#f8f0e0',S:'#e8dcc0'}],cshroom:[['.BBBB.','BBYBBB','BBBBYB','..SS..','..SS..','.SSSS.'],{B:'#8a4a28',Y:'#e0a060',S:'#c8a878'}],
+   rnuts:[['.DD.DD','DLLDLL','DLLDLL','.DD.DD','..DD..','.DLLD.','.DLLD.','..DD..'],{D:'#4a2810',L:'#d0904a'}]};
+  const _ic=iconURL;iconURL=function(k,col){const A=ART[k];if(!A)return _ic(k,col);const key='g95'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),[rows,P]=A,w=rows[0].length*2,hh=rows.length*2,ox=Math.floor((14-w)/2),oy=Math.floor((14-hh)/2);
+   rows.forEach((row,j)=>{for(let i=0;i<row.length;i++){const cl=P[row[i]];if(cl){x.fillStyle=cl;x.fillRect(ox+i*2,oy+j*2,2,2)}}});
+   const d=x.getImageData(0,0,14,14).data,o=document.createElement('canvas');o.width=14;o.height=14;const ox2=o.getContext('2d');ox2.fillStyle='#1e1820';for(let j=0;j<14;j++)for(let i=0;i<14;i++){if(d[(j*14+i)*4+3])continue;for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=i+a,Y=j+b;if(X>=0&&Y>=0&&X<14&&Y<14&&d[(Y*14+X)*4+3]){ox2.fillRect(i,j,1,1);break}}}ox2.drawImage(c,0,0);return ICONC[key]=o.toDataURL()}}
+ // ---- the plants: a mushroom patch and a hazel bush ----
+ const FOR={shroom:{n:'mushroom patch',lv:5,xp:22,give:()=>[['shroom',1+(Math.random()<.4?1:0)]],hp:1},nutbush:{n:'hazel bush',lv:10,xp:32,give:()=>[['nuts',2+(Math.random()<.35?1:0)]],hp:2}};
+ for(const k in FOR){OHP[k]=FOR[k].hp}
+ Object.assign(RG_OBJCOL,{shroom:'#c84838',nutbush:'#7a6a38'});
+ const SPC={};
+ function plantSprite(k,v){const key=k+v;if(SPC[key])return SPC[key];const c=document.createElement('canvas');c.width=20;c.height=18;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+  if(k==='shroom'){const cap=v===2?['#8a50d8','#b888f8','#e0c8ff']:v===1?['#b06a2a','#d89048','#f0c890']:['#b82828','#e04a3a','#f8f0e0'];
+   const one=(cx,by,s)=>{r(cx-1,by-3*s,2,3*s,'#e8dcc0');r(cx-1,by-3*s,1,3*s,'#c8bca0');const w=3+2*s;r(cx-w,by-3*s-3,w*2,3,cap[1]);r(cx-w+1,by-3*s-4,w*2-2,1,cap[1]);r(cx-w+1,by-3*s-3,w*2-2,1,cap[0]===cap[0]?cap[1]:cap[1]);r(cx-w,by-3*s-1,w*2,1,cap[0]);
+    if(v===0){r(cx-w+2,by-3*s-3,1,1,cap[2]);r(cx+1,by-3*s-4,1,1,cap[2])}else r(cx-w+1,by-3*s-4,2,1,cap[2])};
+   one(7,16,2);one(13,16,1);one(4,16,1)}
+  else{const L=['#4a6a28','#6a8a38','#8aaa48'];for(const[cx,cy,rx,ry]of[[10,9,8,6],[6,11,5,4],[14,11,5,4]])for(let j=-ry;j<=ry;j++)for(let i=-rx;i<=rx;i++)if((i/rx)**2+(j/ry)**2<=1)r(cx+i,cy+j,1,1,j<-ry/3?L[2]:j<ry/3?L[1]:L[0]);
+   for(const[a,b]of[[5,8],[9,6],[13,9],[8,11],[15,7],[11,12]]){r(a,b,2,2,'#8a5a28');r(a,b,1,1,'#c08848')}r(9,15,2,3,'#5a3a1e')}
+  // outline
+  const d=x.getImageData(0,0,20,18).data;const o=document.createElement('canvas');o.width=20;o.height=18;const ox=o.getContext('2d');ox.fillStyle=K;for(let j=0;j<18;j++)for(let i=0;i<20;i++){if(d[(j*20+i)*4+3])continue;for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=i+a,Y=j+b;if(X>=0&&Y>=0&&X<20&&Y<18&&d[(Y*20+X)*4+3]){ox.fillRect(i,j,1,1);break}}}ox.drawImage(c,0,0);return SPC[key]=o}
+ {const _o=OBJHD;OBJHD=(o,x,y,bx,by,s,tm)=>{if(o&&FOR[o.t]){const v=o.v==='void'?2:o.v==='brown'?1:0,sp=plantSprite(o.t,v);shd(bx,by-1,o.t==='shroom'?12:18);g.drawImage(sp,Math.round(bx-10+(s||0)),Math.round(by-17));
+   if(v===2&&dark()>.15){g.fillStyle='rgba(170,110,255,.18)';g.beginPath();g.arc(bx,by-6,12,0,6.283);g.fill()}return true}return _o?_o(o,x,y,bx,by,s,tm):false}}
+ // where they grow (same for every player): mushrooms in the shade of trees, hazel bushes in open meadows
+ const isTree=t=>t==='tree'||t==='pine'||t==='oak'||t==='willow'||t==='maple'||t==='yew';
+ const near8=(f)=>{for(let b=-1;b<=1;b++)for(let a=-1;a<=1;a++)if((a||b)&&f(a,b))return true;return false};
+ window.SQHOLLOWFORAGE=function(){let ns=0,nn=0;for(let y=4;y<N-4;y++)for(let x=4;x<N-4;x++){const i=y*N+x,t=tile[i];if(t!==2&&t!==4)continue;if(obj[i]||PROT.has(i)||BS.has(i)||STR.has(i)||TOWNZ.has(i)||(typeof BRIDGE!=='undefined'&&BRIDGE.has(i))||inVillage(x,y)||inTownTiles(x,y))continue;
+   const r=h95(x,y);if(near8((a,b)=>{const o=obj[(y+b)*N+x+a];return o&&isTree(o.t)})){if(r<(t===4?.012:.03)){obj[i]={t:'shroom',hp:1,v:t===4?'brown':undefined};ns++}continue}
+   if(t===2&&r>.994&&!near8((a,b)=>!!obj[(y+b)*N+x+a]||PROT.has((y+b)*N+x+a))){obj[i]={t:'nutbush',hp:2};nn++}}return[ns,nn]};
+ try{SQHOLLOWFORAGE()}catch(e){console.warn('forage',e)}
+ const RGF={briarwood:[.03,.006,null],ironcrest:[.008,.002,'brown'],shattered:[.015,0,'void'],ashfall:[.002,0,'brown']};
+ function rgForage(R){if(!R||!R.region||R._for||!RGF[R.region])return;R._for=1;const[ps,pn,v]=RGF[R.region],W=R.w,H=R.h,seed=R.region.length*77.1+R.h;
+  for(let y=3;y<H-3;y++)for(let x=3;x<W-3;x++){const i=y*W+x;if(!RG_WALK[R.tiles[i]]||R.tiles[i]===14||R.solid.has(i)||rgObjAt(R,x,y))continue;if(R.reach&&!R.reach[i])continue;
+   const res=R.reserved||[];if(res.some(q=>x>=q.x-1&&y>=q.y-1&&x<q.x+q.w+1&&y<q.y+q.h+1))continue;try{if(typeof rfMap==='function'&&rfMap(R.region).has(x+','+y))continue}catch(e){}
+   const r=h95(x+seed,y),byTree=near8((a,b)=>{const it=rgObjAt(R,x+a,y+b);return it&&isTree(it.o.t)});let k=null;
+   if(byTree&&r<ps)k='shroom';else if(!byTree&&pn&&r>1-pn&&R.tiles[i]===2)k='nutbush';if(!k)continue;
+   const it={t:'_obj',o:{t:k,hp:OHP[k],v:k==='shroom'?v||undefined:undefined},x,y,solid:true};R.items.push(it);R.solid.add(i);try{rgCellAdd(R,it)}catch(e){}}}
+ {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)rgForage(R)}catch(e){console.warn(e)}return ok}}
+ // picking them (HIT, like a berry bush)
+ function forageHit(o,x,y,done){const F=FOR[o.t];if(!F)return false;if(lvOf(3)<F.lv){swing=.25;say('You need Foraging '+F.lv+' to pick from a '+F.n+'.');sfx('swish');return true}
+  swing=.25;o.shake=.15;sfx('rustle');ACTW[3]=10;o.hp=(o.hp==null?F.hp:o.hp)-1;if(o.hp>0)return true;
+  const got=F.give(),txt=[];for(const[k,n]of got){inv[k]=(inv[k]|0)+n;txt.push('+'+n+' '+INAME[k].toLowerCase())}addXp(3,F.xp);
+  if(o.t==='shroom'&&o.v==='void'&&Math.random()<.08){inv.sapphire=(inv.sapphire|0)+1;txt.push('and a sapphire hidden in the moss!')}
+  say(txt.join(' '));try{gTxt(x*16+8,y*16-20,txt[0],'#e060a0');setTimeout(()=>sfx('pickup'),90)}catch(e){}done();saveLocal();return true}
+ {const _a=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
+   if(en.some(n=>!n.dead&&!n._pet&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16)))return _a();const R=SCENE&&SCENE.room;
+   if(!SCENE){if(tx<0||ty<0||tx>=N||ty>=N)return _a();const i=ty*N+tx,o=obj[i];if(o&&FOR[o.t]&&forageHit(o,tx,ty,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})}))return;return _a()}
+   if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&FOR[it.o.t]&&forageHit(it.o,tx,ty,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(ty*R.w+tx);R.gone.push({it,at:CLK})}))return}return _a()}}
+
+ // ---- pets that bring you things ----
+ const PETS={psquir:{n:'Squirrel',src:'picking berry bushes (1 in 1,000)',every:80,bring(){const r=Math.random();
+    if(r<.03)return[['pot_heal',1]];if(r<.15)return[['$',5+Math.floor(Math.random()*21)]];if(r<.45)return[['berry',2+Math.floor(Math.random()*3)]];if(r<.65)return[['nuts',1+Math.floor(Math.random()*3)]];if(r<.82)return[['shroom',1+Math.floor(Math.random()*2)]];return[['cfruit',1+Math.floor(Math.random()*2)]]}},
+  pgiron:{n:'Iron golem',src:'mining iron ore (1 in 2,000)',every:110,ore:'iron',bring:()=>[['iron',1+Math.floor(Math.random()*2)]]},
+  pggold:{n:'Gold golem',src:'mining gold ore (1 in 2,000)',every:130,ore:'goldore',bring:()=>[['goldore',1+(Math.random()<.3?1:0)]]},
+  pgmith:{n:'Mithril golem',src:'mining mithril ore (1 in 2,000)',every:150,ore:'mithore',bring:()=>[['mithore',1]]},
+  pgadam:{n:'Adamant golem',src:'mining adamant ore (1 in 2,000)',every:170,ore:'adamore',bring:()=>[['adamore',1]]}};
+ for(const k in PETS){window.SQNPET[k]={n:PETS[k].n,src:PETS[k].src};if(window.LUX&&LUX.PETS&&!LUX.PETS.some(p=>p.k===k))LUX.PETS.push({k,n:PETS[k].n,v:0,rare:1,c:['#888','#666','#aaa']})}
+ window.SQFETCH=PETS;
+ let fetchT=null,fetchK=null;
+ {const _u=upd;upd=function(dt){_u(dt);const k=window.LUX&&LUX.COS&&LUX.COS.pet,P2=PETS[k];if(!P2||dead||menuOpen||pnOpen){return}if(k!==fetchK){fetchK=k;fetchT=P2.every*.6}
+   if(SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave)))return;fetchT-=dt;if(fetchT>0)return;fetchT=P2.every*(.8+Math.random()*.4);
+   const got=P2.bring(),txt=[];for(const[it,n]of got){if(it==='$'){GLD+=n;try{svg()}catch(e){}txt.push(n+' gold')}else{inv[it]=(inv[it]|0)+n;txt.push(n+' '+(n>1?(SN[it]||INAME[it]):INAME[it]).toLowerCase())}}
+   say('Your '+P2.n.toLowerCase()+' brings you '+txt.join(' and ')+'!');try{const s=PST&&PST.get&&PST.get('me');gTxt(s?s.x:P.x,(s?s.y:P.y)-18,'+'+txt[0],'#f8d048');sfx('pickup')}catch(e){}saveLocal()}}
+ // the drops: berry bushes give the squirrel, ores give their golem
+ {const _a=attack;attack=function(){let ft=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);ft=it&&it.o.t}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];ft=o&&o.t}}catch(e){}
+   const b0=inv.berry|0,o0={};for(const k in PETS)if(PETS[k].ore)o0[k]=inv[PETS[k].ore]|0;_a();
+   if(ft==='bush'&&(inv.berry|0)>b0&&(Math.random()<1/1000||window.SQSQUIRDROP))SQGIVEPET('psquir');
+   for(const k in o0)if((inv[PETS[k].ore]|0)>o0[k]&&(Math.random()<1/2000||window.SQGOLEMDROP===k))SQGIVEPET(k)}}
+ // ---- how they look ----
+ // the squirrel: side view, big curled tail, two hopping frames
+ const SQM=[["..........RR..","........RRrrR.","...K....RrrrR.","..KRK...RrrR..","..RRRK..RrR...",".RERRRK.RR....","RRRRRRRRR.....",".RCRRRRRR.....","..CCRRRRK.....","..RRK.RRK....."],["..........RR..","........RRrrR.","...K...RRrrrR.","..KRK..RrrrR..","..RRRK.RrrR...",".RERRRKRRR....","RRRRRRRRR.....",".RCRRRRRR.....","..CCRRRRK.....",".RRK...RRK...."]];
+ const SQP={R:'#b8682a',r:'#e0904a',K:'#6a3a14',E:'#181018',C:'#f0d0a0'},SQC={};
+ function squirSp(f){if(SQC[f])return SQC[f];const rows=SQM[f],w=rows[0].length,h=rows.length,c=document.createElement('canvas');c.width=w+2;c.height=h+2;const x=c.getContext('2d'),on=new Set();
+  rows.forEach((row,j)=>{for(let i=0;i<w;i++){const cl=SQP[row[i]];if(cl){x.fillStyle=cl;x.fillRect(i+1,j+1,1,1);on.add((i+1)+','+(j+1))}}});x.fillStyle=K;
+  for(let j=0;j<h+2;j++)for(let i=0;i<w+2;i++){if(on.has(i+','+j))continue;if(on.has((i+1)+','+j)||on.has((i-1)+','+j)||on.has(i+','+(j+1))||on.has(i+','+(j-1)))x.fillRect(i,j,1,1)}return SQC[f]=c}
+ // the golems: a round stone body with ore glinting in it. Idle: standing on stubby legs, bobbing and blinking.
+ // Walking: curled up into a ball, rolling (the ore spots turn with it).
+ const GOL={pgiron:['#8a7e74','#6a5e56','#b0a498','#d8945a'],pggold:['#8a8478','#686258','#b0a898','#f8d048'],pgmith:['#7c8090','#5c6070','#a4a8b8','#6880f0'],pgadam:['#7c8a80','#5c6a60','#a4b0a6','#48c070']},GC2={};
+ function golemSp(k,mode,f){const key=k+mode+f;if(GC2[key])return GC2[key];const[S,Sd,Sl,O]=GOL[k],c=document.createElement('canvas');c.width=20;c.height=18;const x=c.getContext('2d'),on=new Uint8Array(20*18),px=(i,j,cl)=>{if(i<0||j<0||i>19||j>17)return;x.fillStyle=cl;x.fillRect(i,j,1,1);on[j*20+i]=1};
+  if(mode==='idle'){const by=f?0:1,blink=f===1&&(Math.floor(performance.now()/1700)%3===0);
+   const M=['.......SSSSSS.......','.....SSLLLLSSSS.....','....SLLLLSSSSSSS....','...SLLSSSSSOOSSSS...','...SLSSSSSSOoSSSS...','...SSEESSSSEESSSd...','...SSKKSSSSKKSSdd...',
+    '.AAKSSSSSSSSSSSdKAA.','.AAKSSOOSSSSSSddKAA.','.AAKSSOoSSSSSdddKAA.','.aa.dSSSSSSSdddd.aa.','.....dddddddddd.....'];
+   const C={S,L:Sl,d:Sd,O,o:'#ffffff',A:S,a:Sd,E:blink?Sd:'#ffffff',K:blink&&false?Sd:K};M.forEach((row,j)=>{for(let i=0;i<20;i++){const cl=C[row[i]];if(cl)px(i,j+1+by,cl)}});
+   for(const lx of[6,7,12,13])for(let j=13;j<=15;j++)px(lx,j,Sd);if(!by)for(const lx of[6,7,12,13])px(lx,12,Sd)}
+  else{for(let j=0;j<12;j++)for(let i=0;i<12;i++){const nx=(i-5.5)/6,ny=(j-5.5)/6;if(nx*nx+ny*ny>1)continue;px(i+4,j+4,ny<-.3&&nx<.1?Sl:ny>.45?Sd:S)}
+   const a=f*Math.PI/2;for(const[r0,a0]of[[3.5,0],[3.5,2.1],[2,4.2],[0,0]]){const ox=Math.round(Math.cos(a0+a)*r0),oy=Math.round(Math.sin(a0+a)*r0);px(9+ox,9+oy,O);px(10+ox,9+oy,O)}
+   const cx=Math.round(Math.cos(a+1)*4),cy=Math.round(Math.sin(a+1)*4);px(9+cx,9+cy,Sd)}
+  x.fillStyle=K;for(let j=0;j<18;j++)for(let i=0;i<20;i++){if(on[j*20+i])continue;if((i>0&&on[j*20+i-1])||(i<19&&on[j*20+i+1])||(j>0&&on[(j-1)*20+i])||(j<17&&on[(j+1)*20+i]))x.fillRect(i,j,1,1)}
+  return GC2[key]=c}
+ window.SQPETDRAW=window.SQPETDRAW||{};
+ SQPETDRAW.psquir=(k,s,tm)=>{const x=Math.round(s.x),y=Math.round(s.y),mv=s.mv>0,f=mv?Math.floor(s.t)%2:0,hop=mv&&f?2:0,sp=squirSp(f);shd(x,y+6,10);g.save();g.imageSmoothingEnabled=false;
+  if(!s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(sp,x-8,y+7-sp.height-hop);g.restore();if(!mv&&Math.floor(tm*1.3+x)%4===0)Rg(x-4,y-4,1,1,'#ffffff')};
+ for(const k in GOL)SQPETDRAW[k]=(k2,s,tm)=>{const x=Math.round(s.x),y=Math.round(s.y),mv=s.mv>0,f=mv?Math.floor(s.t*1.5)%4:Math.floor(tm*1.6)%2,sp=golemSp(k2,mv?'roll':'idle',f);shd(x,y+6,12);
+  g.save();g.imageSmoothingEnabled=false;if(mv&&s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(sp,x-10,y+7-17);g.restore()};
+ // hook into the pet drawing (SQDRAWTL is asked first for every pet)
+ {const _d=window.SQDRAWTL;window.SQDRAWTL=function(k,s,tm){const f=SQPETDRAW[k];if(f){f(k,s,tm);return true}return _d?_d(k,s,tm):false}}
+ // the cactus gives cactus fruit (it used to say so and hand you berries)
+ // ---- wiki ----
+ try{WK_RARE.push(['Squirrel (pet)',null,'Berry bushes','A squirrel that forages for you: every so often it brings berries, nuts, mushrooms, cactus fruit, a few coins, or (rarely) a healing potion.','1 in 1,000 from picking berry bushes.']);
+  for(const k of['pgiron','pggold','pgmith','pgadam'])WK_RARE.push([PETS[k].n+' (pet)',null,'Mining','A little rock golem that rolls along behind you and now and then digs up '+INAME[PETS[k].ore].toLowerCase()+' for you.','1 in 2,000 from '+PETS[k].src.replace(/ \(1 in 2,000\)/,'')+'.'])}catch(e){}
+ try{WK_SKILL.Foraging='Pick berries from bushes, mushrooms from the patches that grow by trees (Foraging 5), nuts from hazel bushes (Foraging 10) and fruit from cacti. Roast mushrooms and nuts at a campfire.'}catch(e){}
+}
+// ---------------------------------------------------------------- 96. No Man's Land: the lawless desert island (PvP everywhere)
+// South of Briarwood and west of the Shattered Expanse. Mesas, cracked earth, cactus flats, a ghost town (Dustwater),
+// Boot Hill, an old silver mine and an oasis. Giant scorpions, Cacticus (cactus monsters that pretend to be cacti)
+// and desert bandits (they keep their distance and shoot; watch for the "!" and roll). PvP is always on here.
+// Getting there: the "Lawless Waters" voyage at the Tidewatch harbor post (after Into Briarwood), or sail off
+// Briarwood's south edge / the Shattered Expanse's west edge once the route is charted.
+{const K='#181018',ID='nomans';
+ WORLD_REGIONS[ID]={id:ID,name:'No Man\'s Land',width:170,height:150,seed:2291.3,generationVersion:1,biome:'Lawless desert: mesas, cactus flats and a ghost town. PvP is always on',lv:'45–75',dir:'south-west',unlock:'nomansRoute',hint:'Chart the Lawless Waters from Tidewatch.'};
+ ROUTE_ORDER.push(ID);REGION_SPAWNS[ID]={maxEnemies:26};RG_LMCOUNT[ID]=6;TRAVEL_KEYS.push('nomansRoute');if(TRAVEL_UNLOCKS.nomansRoute==null)TRAVEL_UNLOCKS.nomansRoute=false;
+ WM.W=WM.H=360;Object.assign(WM_POS,{hollow:[180,180],briarwood:[62,170],ashfall:[302,176],ironcrest:[180,58],shattered:[196,302],nomans:[64,300]});
+ WM_ROUTE[ID]={from:'Tidewatch',post:'tidewatch'};
+ Object.assign(LM_NAMES,{deadmans_gulch:'Deadman\'s Gulch',rattlesnake_mesa:'Rattlesnake Mesa',silver_mine:'The Old Silver Mine',boot_hill:'Boot Hill',dustwater:'Dustwater (ghost town)',oasis:'Coyote Springs'});
+ // ---- the voyage that charts it ----
+ try{const tw=HARBOR_POSTS.find(p=>p.id==='tidewatch');if(tw)BUOYS.sw=buoySpot(boatWater(tw.x,tw.y),0,N-1)}catch(e){}
+ VOYS.push({id:'lawless',name:'Lawless Waters',post:'tidewatch',needs:['briar'],buoy:'sw',gold:150,unlock:['nomansRoute'],
+  d:'Nobody charts the south-western lane: it leads to No Man\'s Land, where there is no law and everyone fights everyone. Find the lane anyway, if you dare.',steps:['Sail your boat to the red buoy far south-west of Hollow Island','Report at the Tidewatch harbor post']});
+
+ // ---- the land ----
+ RG_GENS[ID]=function*(D){const C=rgCtx(D),{W,H,T}=C;
+  rgLand(C,[[W*.5,H*.52,W*.42,H*.4],[W*.26,H*.3,W*.17,H*.15],[W*.74,H*.76,W*.2,H*.13]],.8,26);rgKeep(C,400);yield;
+  const dw=rgDist(C,i=>T[i]===0);
+  for(let i=0;i<C.N2;i++)if(T[i]){const x=i%W,y=(i/W)|0;let t=dw[i]<=2?1:5;
+   if(t===5&&C.fbm(x,y,14,3)>.6)t=10;                                                   // cracked earth
+   if(dw[i]>=3&&dw[i]<=5&&C.fbm(x,y,9,6)>.6)t=2;                                        // scrub by the shore
+   if(dw[i]>8&&1-Math.abs(2*C.fbm(x,y,22,11)-1)>.9)t=3;                                 // mesa ridges
+   T[i]=t}
+  rgDock(C,'e',8);yield;
+  // Rattlesnake Mesa: a great flat-topped rock
+  const ms=rgSite(C,.3,.62,18,14,{mtn:true});const[mx,my]=rgCenter(ms);for(let k=0;k<5;k++)rgBlob(C,mx+(C.rnd()-.5)*8,my-2+(C.rnd()-.5)*6,3+C.rnd()*2,3,t=>t!==0);
+  rgSign(C,mx-1,ms.y+ms.h-2,'Rattlesnake Mesa','Rattlesnake Mesa. Climbers say there\'s silver up top. Climbers say a lot of things, before the rattlers get them.');rgMark(C,'rattlesnake_mesa','Rattlesnake Mesa',mx,my);
+  // Coyote Springs: an oasis
+  const oa=rgSite(C,.62,.3,12,10);const[ox,oy]=rgCenter(oa);rgFlat(C,oa,(x,y)=>Math.hypot(x-ox,y-oy)<3.2?0:2);rgMark(C,'oasis','Coyote Springs',ox,oy+4);
+  rgSign(C,oa.x+1,oa.y+oa.h-1,'Coyote Springs','Coyote Springs. The only sweet water for miles. Everybody drinks here, so everybody fights here.');
+  // Dustwater, the ghost town
+  const tn=rgSite(C,.5,.56,22,14);rgFlat(C,tn,(x,y)=>y===tn.y+7||y===tn.y+8?14:5);const[tx,ty]=rgCenter(tn);
+  rgLm(C,'nmsaloon',tn.x+2,tn.y+4,6,3,{use:'look',name:'The Last Chance Saloon',text:'The Last Chance Saloon. The doors still swing. A sign behind the bar reads: "NO LAW. NO CREDIT. NO REFUNDS."'});
+  rgLm(C,'nmshack',tn.x+10,tn.y+5,4,2,{use:'look',name:'Sheriff\'s office',text:'The sheriff\'s office. The star on the door is riddled with bullet holes. Nobody has worn it in years.'});
+  rgLm(C,'nmshack',tn.x+15,tn.y+5,4,2,{v:1});rgLm(C,'nmwater',tn.x+19,tn.y+3,2,2);rgLm(C,'nmshack',tn.x+3,tn.y+10,4,2,{v:1});rgLm(C,'nmshack',tn.x+13,tn.y+10,4,2);
+  rgLm(C,'cart',tn.x+9,tn.y+11,1,1);rgLm(C,'crates',tn.x+18,tn.y+11,1,1);rgSign(C,tn.x+1,tn.y+7,'Dustwater','DUSTWATER. Population: nobody you\'d want to meet.');rgMark(C,'dustwater','Dustwater',tx,ty);
+  // Boot Hill
+  const bh=rgSite(C,.78,.55,10,8);rgFlat(C,bh,10);const[bx,by]=rgCenter(bh);for(let k=0;k<9;k++)rgLm(C,'nmgrave',bh.x+1+(k%5)*2,bh.y+1+Math.floor(k/5)*3,1,1);
+  rgSign(C,bh.x,bh.y+bh.h-1,'Boot Hill','Boot Hill. Here lie the ones who drew second.');rgMark(C,'boot_hill','Boot Hill',bx,by);
+  // the Old Silver Mine
+  const sm=rgSite(C,.22,.26,12,9,{mtn:true});rgFlat(C,sm,10);const[sx,sy]=rgCenter(sm);rgLm(C,'nmmine',sx-1,sm.y+1,3,2,{use:'look',name:'The Old Silver Mine',text:'The Old Silver Mine. The tunnel has caved in a few steps past the timbers. The rails still lead in.'});
+  rgLm(C,'cart',sm.x+2,sm.y+5,1,1);rgLm(C,'crates',sm.x+8,sm.y+5,1,1);rgMark(C,'silver_mine','The Old Silver Mine',sx,sy);
+  // Deadman's Gulch
+  const dg=rgSite(C,.42,.82,14,9);rgFlat(C,dg,10);const[gx,gy]=rgCenter(dg);rgLm(C,'bones',gx-1,gy,2,1);rgLm(C,'tent',dg.x+2,dg.y+2,2,1);rgLm(C,'firepit',dg.x+9,dg.y+3,1,1);
+  rgSign(C,dg.x+1,dg.y+dg.h-1,'Deadman\'s Gulch','Deadman\'s Gulch. The bandits camp here. The bones are a warning. Most people don\'t read it.');rgMark(C,'deadmans_gulch','Deadman\'s Gulch',gx,gy);
+  const d1=rgSite(C,.84,.24,8,8);rgFlat(C,d1,10);rgRes(C,'nm_dun1','dungeon',d1);
+  const st={trail:14,pass:14,wide:1};for(const q of[ms,oa,tn,bh,sm,dg,d1]){rgTrail(C,C.spawn,rgSouth(q),st);yield}
+  yield;rgScatter(C,(t,x,y,z,r)=>t===5?(r<.022?'cactus':r<.03?'rock':r<.033?'tree:dead':null):t===10?(r<.035?'rock':r<.041?'ore':r<.05?'tree:dead':null):t===2?(r<.05?'bush':r<.08?'tree':null):t===1?(r<.008?'rock':null):null);
+  yield;rgConnect(C,t=>'rock');return rgFinish(C)};
+ RG_GEN[ID]=D=>rgRunSync(RG_GENS[ID](D));
+
+ // ---- landmarks: the saloon, shacks, water tower, mine and graves ----
+ {const _dl=rgDrawLm;rgDrawLm=function(it,tm){if(!it.k||it.k.slice(0,2)!=='nm')return _dl(it,tm);const x0=it.x*16,y0=it.y*16,w=(it.w||1)*16,base=y0+(it.h||1)*16,R=(a,b,c,d,e)=>Rg(Math.round(a),Math.round(b),c,d,e);
+   if(it.k==='nmgrave'){shd(x0+8,base-2,10);R(x0+6,base-17,4,15,K);R(x0+2,base-13,12,4,K);R(x0+7,base-16,2,13,'#8a6a44');R(x0+3,base-12,10,2,'#8a6a44');R(x0+5,base-3,6,2,'#6a5a48');return}
+   shd(x0+w/2,base-2,w*.9);
+   if(it.k==='nmwater'){for(const lx of[x0+3,x0+w-6])R(lx,base-26,3,26,K),R(lx+1,base-25,1,25,'#7a5a38');R(x0,base-46,w,22,K);R(x0+1,base-45,w-2,20,'#9a7048');for(let k=0;k<4;k++)R(x0+1,base-41+k*5,w-2,1,'#6a4a2a');R(x0-2,base-48,w+4,4,K);R(x0-1,base-47,w+2,2,'#7a5a38');return}
+   if(it.k==='nmmine'){R(x0,base-30,w,30,K);R(x0+1,base-29,w-2,29,'#5a4a3a');R(x0+8,base-24,w-16,24,'#0c0808');R(x0+4,base-28,6,28,'#8a6a44');R(x0+w-10,base-28,6,28,'#8a6a44');R(x0+2,base-31,w-4,6,'#9a7a50');R(x0+2,base-31,w-4,1,'#c0a070');
+    for(let k=0;k<3;k++)R(x0+w/2-6,base-2-k*6,12,1,'#6a6058');R(x0+w/2-7,base-20,2,20,'#4a4038');R(x0+w/2+5,base-20,2,20,'#4a4038');return}
+   const wall=it.v?'#8a7056':'#a88a62',dk=it.v?'#6a5240':'#86683e',tall=it.k==='nmsaloon'?44:30;
+   // plank walls with a false front
+   R(x0,base-tall,w,tall,K);R(x0+1,base-tall+1,w-2,tall-1,wall);for(let yy=base-tall+5;yy<base;yy+=5)R(x0+1,yy,w-2,1,dk);
+   if(it.k==='nmsaloon'){R(x0-2,base-tall-2,w+4,4,K);R(x0-1,base-tall-1,w+2,2,'#6a4a2a');
+    // sign
+    R(x0+w/2-26,base-tall+4,52,11,K);R(x0+w/2-25,base-tall+5,50,9,'#e8d0a0');g.save();g.font='700 7px '+PF;g.fillStyle='#5a2a14';g.textAlign='center';g.textBaseline='middle';g.fillText('SALOON',x0+w/2,base-tall+10);g.restore();
+    // porch roof, posts, windows, swinging doors
+    R(x0-3,base-22,w+6,4,K);R(x0-2,base-21,w+4,2,'#7a5a38');for(const px of[x0,x0+w-3,x0+w/2-14,x0+w/2+11])R(px,base-19,3,19,'#6a4a2a');
+    for(const wx of[x0+8,x0+w-22]){R(wx,base-17,14,10,K);R(wx+1,base-16,12,8,'#f8d880');R(wx+6,base-16,1,8,K)}
+    const sw=Math.round(Math.sin(tm*1.4)*1.5);R(x0+w/2-8,base-16,16,14,'#20140c');R(x0+w/2-7+sw,base-13,6,8,'#a07040');R(x0+w/2+1-sw,base-13,6,8,'#a07040');return}
+   // a shack: roof, a door and a window
+   R(x0-2,base-tall-3,w+4,5,K);R(x0-1,base-tall-2,w+2,3,'#6a4a2a');R(x0+w/2-5,base-15,10,15,K);R(x0+w/2-4,base-14,8,14,'#5a3a20');R(x0+w/2+2,base-8,1,1,'#e0c080');
+   R(x0+5,base-22,10,8,K);R(x0+6,base-21,8,6,it.v?'#3a3030':'#f0d090');if(it.v){R(x0+6,base-21,8,1,'#8a6a44');R(x0+9,base-19,1,4,'#8a6a44')}}}
+
+ // ---- the creatures ----
+ RG_FAUNA[ID]={tier:3,cap:{day:5,night:8},xp:2.2,day:[['bandit',44,.35],['cacti',36,.7],['gscorp',60,1]],night:[['bandit',44,.4],['gscorp',60,.72],['skel:dust',30,1]],pack:{bandit:2}};
+ {const _mk=rgMake;rgMake=function(key,hp,x,y){if(key==='gscorp'){const n=mkScorp(x,y);n.type='gscorp';n.big=1;n.hp=n.mhp=hp;n.rk=key;return n}
+   if(key==='cacti')return{x,y,hp,mhp:hp,kx:0,ky:0,type:'cacti',st:'sleep',cd:2+Math.random(),rk:key};
+   if(key==='bandit')return{x,y,hp,mhp:hp,kx:0,ky:0,type:'bandit',cd:1.5+Math.random(),aim:0,side:Math.random()<.5?1:-1,swap:2+Math.random()*2,look:Math.floor(Math.random()*3),rk:key};
+   return _mk(key,hp,x,y)}}
+ const NMP=[];window.SQNMP=NMP;
+ const nmR=()=>{const R=SCENE&&SCENE.room;return R&&R.region===ID?R:null};
+ const roll=()=>typeof ROLLT!=='undefined'&&ROLLT>0;
+ function gscorpAI(n,ox,oy,dt){if(n.frozen>0){n.x=ox;n.y=oy;return}const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;n.x=ox+n.kx*.3;n.y=oy+n.ky*.3;
+  if(n.ss==='walk'){if(d>30&&d<190)stepTo(n,dx/d*34*dt,dy/d*34*dt);if((n.st2-=dt)<=0&&d<46){n.ss='wind';n.st2=.65;n.ax=dx/d;n.ay=dy/d}}
+  else if(n.ss==='wind'){if((n.st2-=dt)<=0){n.ss='strike';n.st2=.18;EMERGE45.push({x:n.x+n.ax*30,y:n.y+n.ay*30-4,t:0,c:'#ff9050',r:14});if(inArc(n,n.x,n.y,48,n.ax,n.ay,.5))hurtP(2,'The giant scorpion\'s stinger slams into you!');sfx('swish')}}
+  else if(n.ss==='strike'){if((n.st2-=dt)<=0){n.ss='rest';n.st2=.9}}else if(n.ss==='rest'){if((n.st2-=dt)<=0){n.ss='walk';n.st2=.5+Math.random()*.8}}}
+ function cactiAI(n,ox,oy,dt){const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;
+  if(n.st==='sleep'){n.x=ox;n.y=oy;n.kx=n.ky=0;if(d<56||n.hp<n.mhp){n.st='wake';n.wt=.5;sfx('rustle')}return}
+  if(n.st==='wake'){n.x=ox;n.y=oy;if((n.wt-=dt)<=0)n.st='walk';return}
+  n.x=ox+n.kx*.4;n.y=oy+n.ky*.4;if(n.frozen>0)return;if(d>12&&d<200)stepTo(n,dx/d*22*dt,dy/d*22*dt);
+  if((n.cd-=dt)<=0&&d<150){n.cd=2.8+Math.random()*.8;n.puff=.25;for(let k=0;k<8;k++){const a=k/8*6.283+(n.t2=(n.t2||0)+.2);NMP.push({x:n.x,y:n.y-10,vx:Math.cos(a)*95,vy:Math.sin(a)*95,t:1.6,k:'needle'})}sfx('swish')}}
+ function banditAI(n,ox,oy,dt){const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;n.x=ox+n.kx*.4;n.y=oy+n.ky*.4;if(n.frozen>0)return;n.fl=dx<0;n.mv=0;
+  if(n.aim>0){n.aim-=dt;if(n.aim<=0){const a=Math.atan2(dy+4,dx)+(Math.random()-.5)*.12;NMP.push({x:n.x+Math.cos(a)*10,y:n.y-8+Math.sin(a)*6,vx:Math.cos(a)*165,vy:Math.sin(a)*165,t:1.4,k:'bullet'});n.flash=.08;sfx('swish')}return}
+  if((n.swap-=dt)<=0){n.swap=1.5+Math.random()*2;n.side=-n.side}
+  let mx=0,my=0;if(d>130){mx=dx/d;my=dy/d}else if(d<72){mx=-dx/d;my=-dy/d}mx+=-dy/d*.7*n.side;my+=dx/d*.7*n.side;const l=Math.hypot(mx,my)||1;stepTo(n,mx/l*36*dt,my/l*36*dt);n.mv=1;
+  if((n.cd-=dt)<=0&&d<175){n.cd=1.7+Math.random()*.7;n.aim=.4}}
+ {const _u=upd;upd=function(dt){const R=nmR(),paused=menuOpen||pnOpen||dead;const pos=R&&!paused?en.map(n=>[n,n.x,n.y]):null;_u(dt);if(!R||paused)return;
+   for(const[n,ox,oy]of pos){if(n.dead)continue;n.t=(n.t||0)+dt;if(n.flash>0)n.flash-=dt;if(n.puff>0)n.puff-=dt;
+    if(n.type==='gscorp')gscorpAI(n,ox,oy,dt);else if(n.type==='cacti')cactiAI(n,ox,oy,dt);else if(n.type==='bandit')banditAI(n,ox,oy,dt)}
+   for(const b of NMP){b.t-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(solid(b.x,b.y+4)){b.t=0;continue}
+    if(Math.hypot(P.x-b.x,P.y-6-b.y)<8&&!roll()&&!dead){b.t=0;hurtP(1,b.k==='bullet'?'A bandit\'s bullet hits you!':'Cactus needles!')}}
+   for(let i=NMP.length-1;i>=0;i--)if(NMP[i].t<=0)NMP.splice(i,1)}}
+ {const _lr=leaveRegion;leaveRegion=function(...a){NMP.length=0;return _lr(...a)}}
+ // ---- how they look ----
+ function drawCacti(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs(n.kx)+Math.abs(n.ky)>.8,G=hit?'#ffffff':'#3c9a38',Gd=hit?'#e0e0e0':'#2a7028',Gl=hit?'#ffffff':'#6cc858',awake=n.st!=='sleep',
+   w=awake&&n.st==='walk'?Math.floor(n.t*5)%2:0,R=(a,b,c,d,e)=>Rg(a,b,c,d,e);shd(x,y+6,14);
+  // feet
+  if(awake){R(x-6,y+2+(w?-1:0),5,5,K);R(x+1,y+2+(w?0:-1),5,5,K);R(x-5,y+3+(w?-1:0),3,3,Gd);R(x+2,y+3+(w?0:-1),3,3,Gd)}
+  // trunk and arms (a saguaro)
+  R(x-6,y-24,12,29,K);R(x-5,y-23,10,27,G);R(x-5,y-23,3,27,Gl);R(x+3,y-23,2,27,Gd);
+  const au=awake?Math.round(Math.sin(n.t*6)*2):0;R(x-13,y-16+au,8,5,K);R(x-13,y-24+au,5,12,K);R(x-12,y-15+au,7,3,G);R(x-12,y-23+au,3,10,G);
+  R(x+5,y-12-au,8,5,K);R(x+8,y-20-au,5,12,K);R(x+5,y-11-au,7,3,G);R(x+9,y-19-au,3,10,G);
+  for(const[a,b]of[[-3,-18],[2,-12],[-2,-6],[3,-2],[-11,-20],[10,-16]])R(x+a,y+b,1,1,'#f0f0d0');
+  // flower and face
+  R(x-3,y-28,6,5,K);R(x-2,y-27,4,3,'#f070a0');R(x-1,y-27,2,2,'#f8e060');
+  if(awake){R(x-4,y-17,3,3,K);R(x+1,y-17,3,3,K);R(x-3,y-16,1,1,'#f8e060');R(x+2,y-16,1,1,'#f8e060');R(x-3,y-11,6,2,K);if(n.puff>0)R(x-2,y-11,4,1,'#f04040')}
+  if(n.st==='wake'){R(x-1,y-38,2,6,K);R(x-1,y-30,2,2,K)}
+  nmBar(n,x,y-34)}
+ const BLOOK=[{sk:2,hs:0,hc:0,sh:7,pn:2,ht:0,hcol:4,so:3},{sk:1,hs:1,hc:1,sh:4,pn:1,ht:0,hcol:4,so:3},{sk:3,hs:0,hc:0,sh:0,pn:2,ht:0,hcol:4,so:2}];
+ function drawBandit(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs(n.kx)+Math.abs(n.ky)>.8,st=n.mv?[1,0,2,0][Math.floor(n.t*7)%4]:0,fl=!!n.fl,dir=2;shd(x,y+6,12);GC=g;
+  if(hit){g.save();g.globalAlpha=.6}try{cP(BLOOK[n.look||0],dir,st,x,y,fl)}catch(e){}if(hit)g.restore();
+  const s=fl?-1:1,R=(a,b,c,d,e)=>Rg(a,b,c,d,e);
+  // a bandana over the face and a wide cowboy hat
+  R(x-4+(fl?-1:1),y-7,8,3,'#c03028');R(x-4+(fl?-1:1),y-7,8,1,'#e05048');
+  R(x-8,y-16,16,3,K);R(x-7,y-15,14,1,'#6a4424');R(x-5,y-21,10,6,K);R(x-4,y-20,8,5,'#7a5230');R(x-4,y-16,8,1,'#3a2414');
+  // the revolver
+  const gx=x+s*5,gy=y-4;R(Math.min(gx,gx+s*7),gy-1,8,4,K);R(Math.min(gx,gx+s*6),gy,7,2,'#8a8a98');R(gx,gy+1,2,3,'#5a3a20');
+  if(n.flash>0){R(gx+s*8-2,gy-2,5,5,'#fff0a0');R(gx+s*8-1,gy-1,3,3,'#ffffff')}
+  if(n.aim>0&&Math.floor(tm*16)%2){R(x-1,y-38,3,7,K);R(x,y-37,1,4,'#f8d048');R(x-1,y-30,3,3,K);R(x,y-29,1,1,'#f8d048')}
+  nmBar(n,x,y-32)}
+ function drawGScorp(n,tm){const x=n.x,y=n.y;g.save();g.translate(x,y);g.scale(1.8,1.8);g.translate(-x,-y);try{drawScorp(n,tm)}finally{g.restore()}nmBar(n,Math.round(x),Math.round(y)-34)}
+ function nmBar(n,x,y){if(!(n.hp<n.mhp))return;const w=24,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-1,w+2,4,K);Rg(x-w/2,y,Math.round(w*f),2,'#e04848')}
+ {const _ps=pS;pS=function(n,tm){if(n){if(n.type==='cacti')return drawCacti(n,tm);if(n.type==='bandit')return drawBandit(n,tm);if(n.type==='gscorp')return drawGScorp(n,tm)}return _ps(n,tm)}}
+ {const _pp=pP;pP=function(tm){_pp(tm);if(!nmR())return;for(const b of NMP){if(b.k==='bullet'){Rg(b.x-2,b.y-2,4,4,K);Rg(b.x-1,b.y-1,2,2,'#f8e070')}else{const a=Math.atan2(b.vy,b.vx);for(let i=0;i<5;i++)Rg(Math.round(b.x-Math.cos(a)*i),Math.round(b.y-Math.sin(a)*i),1,1,i?'#e8e0b0':'#ffffff')}}}}
+ // what they drop
+ {const _ed=enemyDrop;enemyDrop=function(n){if(!n||!(n.type==='bandit'||n.type==='cacti'||n.type==='gscorp'))return _ed(n);const got=[];
+   if(n.type==='bandit'){const gd=20+Math.floor(Math.random()*41);GLD+=gd;got.push(gd+' gold');if(Math.random()<.25){inv.iarrow=(inv.iarrow|0)+5;got.push('5 iron arrows')}if(Math.random()<.06){inv.pot_heal=(inv.pot_heal|0)+1;got.push('a healing potion')}try{sqEvent('kill','bandit')}catch(e){}}
+   if(n.type==='cacti'){const c=1+Math.floor(Math.random()*3);inv.cfruit=(inv.cfruit|0)+c;got.push(c+' cactus fruit')}
+   if(n.type==='gscorp'){const gd=15+Math.floor(Math.random()*16);GLD+=gd;got.push(gd+' gold');if(Math.random()<.12){inv.sbar=(inv.sbar|0)+1;got.push('a steel bar')}}
+   say('+'+got.join(', '));try{svg()}catch(e){}}}
+
+ // ---- PvP is always on here ----
+ let forced=false,was=false,warnAt=0;
+ {const _u=upd;upd=function(dt){_u(dt);const PV=window.SQPVP;if(!PV)return;const here=curRegion()===ID||(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region===ID);
+   if(here&&window.SQMPON&&SQMPON()){if(!PV.on){if(!forced){was=false;forced=true;const n=performance.now();if(n-warnAt>4000){warnAt=n;say('No Man\'s Land: there is no law here. PvP is ON for everyone.');msgT=5;try{sfx('quest')}catch(e){}}}else if(forced&&performance.now()-warnAt>2500){warnAt=performance.now();say('You can\'t turn PvP off in No Man\'s Land.')}PV.on=true}else if(!forced){forced=true;was=true}}
+   else if(forced){forced=false;if(!was&&!(PV.fight&&performance.now()-PV.fight<30000)){PV.on=false;say('You leave No Man\'s Land. PvP is off again.')}}}}
+
+ // a desert: no rain, the odd dust storm
+ {const _b=biomeHere;biomeHere=function(){const R=SCENE&&SCENE.room;if(R&&R.region===ID)return'desert';return _b()}}
+ // ---- sailing between neighbours: Briarwood (north) and the Shattered Expanse (east) ----
+ window.SQNEIGH={nomans:{north:'briarwood',east:'shattered'},briarwood:{south:'nomans'},shattered:{west:'nomans'}};
+ {const _tc=travelCommit;travelCommit=function(T){_tc(T);if(T&&T.to===ID){NMP.length=0;setTimeout(()=>{try{say('No Man\'s Land. There is no law here: PvP is always on.');msgT=6}catch(e){}},400)}}}
+
+ // ---- wiki ----
+ try{WK_RGN&&Object.assign(WK_RGN,{bandit:'Desert bandit',cacti:'Cacticus',gscorp:'Giant scorpion'})}catch(e){}
 }
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
