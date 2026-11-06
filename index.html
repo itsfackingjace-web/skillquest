@@ -3620,11 +3620,11 @@ function genTomb(W,H,rnd){const G=new Uint8Array(W*H).fill(1),ex=W>>1,rooms=[{x:
  for(const r of rest){let b=con[0],bd=1e9;for(const c of con){const d=Math.abs(cx(c)-cx(r))+Math.abs(cy(c)-cy(r));if(d<bd){bd=d;b=c}}
   const x0=cx(r),y0=cy(r),x1=cx(b),y1=cy(b);if(rnd()<.5){carve(Math.min(x0,x1),y0,Math.max(x0,x1)+2,y0+2);carve(x1,Math.min(y0,y1),x1+2,Math.max(y0,y1)+2)}else{carve(x0,Math.min(y0,y1),x0+2,Math.max(y0,y1)+2);carve(Math.min(x0,x1),y1,Math.max(x0,x1)+2,y1+2)}con.push(r)}
  G[(H-1)*W+ex]=0;G[(H-2)*W+ex]=0;return{G,ex,rooms}}
-function buildFloor(kind,f){const K=DKIND[kind],W=K.W,H=K.H,rnd=dRng(today()*7919+f*104729+(kind==='tomb'?17:kind==='cave'?3:kind.length*31+kind.charCodeAt(kind.length-1))),Gn=(kind==='cave'||kind==='icave'||kind==='icave2')?genCave(W,H,rnd):genTomb(W,H,rnd),G=Gn.G,ex=Gn.ex;
+function buildFloor(kind,f){const K=DKIND[kind],W=K.W,H=K.H,rnd=dRng(today()*7919+f*104729+(kind==='tomb'?17:kind==='cave'?3:kind.length*31+kind.charCodeAt(kind.length-1))),Gn=(kind==='cave'||(DKIND[kind]&&DKIND[kind].cavey))?genCave(W,H,rnd):genTomb(W,H,rnd),G=Gn.G,ex=Gn.ex;
  const R={w:W,h:H,ex,cave:1,tomb:kind==='tomb'?1:0,floor:K.floor,wall:K.wall,trim:K.trim,items:[],solid:new Set(),mobs:[],dun:{kind,f,G,seen:new Uint8Array(W*H),mm:null}};
  let dist=dBfs(G,W,H,ex,H-1).d;const cells=[];for(let i=0;i<W*H;i++)if(!G[i]&&dist[i]>=0)cells.push(i);
  const far=cells.reduce((a,b)=>dist[b]>dist[a]?b:a,cells[0]),fx=far%W,fy=(far/W)|0;
- if(f<3)R.items.push({t:'stairs',x:fx,y:fy});
+ if(f<(DKIND[kind].floors||3))R.items.push({t:'stairs',x:fx,y:fy});
  else{for(let y=fy-4;y<=fy+4;y++)for(let x=fx-5;x<=fx+5;x++)if(x>0&&y>1&&x<W-1&&y<H-1&&((x-fx)/5.5)**2+((y-fy)/4.5)**2<=1)G[y*W+x]=0;R.dun.boss=[fx,fy];dist=dBfs(G,W,H,ex,H-1).d;cells.length=0;for(let i=0;i<W*H;i++)if(!G[i]&&dist[i]>=0)cells.push(i)}
  const used=new Set([far]),near=(i,r)=>{const x=i%W,y=(i/W)|0;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(used.has((y+dy)*W+x+dx))return true;return false},
   open8=i=>{for(const j of[i-1,i+1,i-W,i+W,i-W-1,i-W+1,i+W-1,i+W+1])if(G[j])return false;return true},
@@ -3633,7 +3633,7 @@ function buildFloor(kind,f){const K=DKIND[kind],W=K.W,H=K.H,rnd=dRng(today()*791
  // treasure chests, far from the entrance
  for(let k=0;k<3+f;k++)add('dchest',pick(14,open8),{solid:1,use:'dchest',id:kind+f+'_'+k});
  // decor
- if(kind==='cave'||kind==='icave'||kind==='icave2'){for(let k=0;k<9;k++)add('crystal',pick(4,open8),{solid:1});for(let k=0;k<7;k++)add('boulder',pick(4,open8),{solid:1});for(let k=0;k<7;k++)add('bones',pick(4))}
+ if(kind==='cave'||(DKIND[kind]&&DKIND[kind].cavey)){for(let k=0;k<9;k++)add('crystal',pick(4,open8),{solid:1});for(let k=0;k<7;k++)add('boulder',pick(4,open8),{solid:1});for(let k=0;k<7;k++)add('bones',pick(4))}
  else{for(const r of Gn.rooms.slice(1))if(r.w>=9&&r.h>=7)for(const[x,y]of[[r.x+2,r.y+2],[r.x+r.w-3,r.y+2],[r.x+2,r.y+r.h-3],[r.x+r.w-3,r.y+r.h-3]]){const i=y*W+x;if(!G[i]&&dist[i]>=0&&!used.has(i)&&open8(i)){used.add(i);add('pillar',i,{solid:1})}}
   for(let k=0;k<10;k++)add('urn',pick(4,i=>G[i-W]&&!G[i+W]&&!G[i-1]&&!G[i+1]&&!G[i+W-1]&&!G[i+W+1]),{solid:1});for(let k=0;k<8;k++)add('bones',pick(4))}
  // monsters, asleep until you come near
@@ -3648,7 +3648,7 @@ function dArrive(R,from){en=[];const D=R.dun,W=R.w;
  if(D.f===3&&D.boss&&!D.bossSpawned){const alive=D.kind==='cave'?CAVE_DAY!==today():TOMB_DAY!==today();if(alive){const[bx,by]=D.boss;
   R.mobs.push(D.kind==='cave'?{x:bx*16+8,y:by*16+8,hp:30,kx:0,ky:0,type:'boss'}:{x:bx*16+8,y:by*16+8,hp:45,kx:0,ky:0,type:'bonelord',tcd:2,scd:7});D.bossSpawned=1}}}
 function dGo(kind,f,from){const ret=SCENE.ret,R=dFloor(kind,f);enterScene(dKey(kind,f),null,ret);dArrive(R,from);
- say(DKIND[kind].name+' - floor '+f+' of 3'+(f===3?(R.dun.bossDone||(kind==='cave'?CAVE_DAY===today():TOMB_DAY===today())?'. The lair is quiet today.':'. Something big lurks here...'):''));if(f===3&&!R.dun.bossDone)setTimeout(()=>sfx('roar'),300)}
+ say(DKIND[kind].name+' - floor '+f+' of '+(DKIND[kind].floors||3)+(f===(DKIND[kind].floors||3)&&!DKIND[kind].noboss?(R.dun.bossDone||(kind==='cave'?CAVE_DAY===today():TOMB_DAY===today())?'. The lair is quiet today.':'. Something big lurks here...'):''));if(f===(DKIND[kind].floors||3)&&!R.dun.bossDone&&!DKIND[kind].noboss)setTimeout(()=>sfx('roar'),300)}
 const _es35=enterScene;enterScene=function(id,house,ret){if(id==='cave'||id==='tomb'){const R=dFloor(id,1);_es35(dKey(id,1),null,ret);dArrive(R,null);
   say('You enter the '+DKIND[id].name+'. Three floors deep - find the stairs down. Chests hold rare loot!');return}_es35(id,house,ret)};
 const _ls35=leaveScene;leaveScene=function(){const R=SCENE&&SCENE.room;if(R&&R.dun&&R.dun.f>1){dGo(R.dun.kind,R.dun.f-1,'below');return}_ls35()};
@@ -7733,7 +7733,7 @@ function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now(
 {const _es=enterScene;enterScene=function(id,house,ret){if(house&&house._foreign&&!canEnter(house)){const now=performance.now();if(now-HS.msgAt>2500){HS.msgAt=now;const nm=fname(house._owner);say('This is '+nm+'\'s house. Only '+nm+'\'s friends can go in.');sfx('swish')}P.y+=6;return}
  _es(id,house,ret);if(house&&house._foreign)say('You visit '+fname(house._owner)+'\'s house.')}}
 // inside someone else's house: look, don't touch
-{const _uf=useFurn;useFurn=function(it){const h=SCENE&&SCENE.house;if(h&&h._foreign){say(it&&it.use==='chest'?'That chest belongs to '+fname(h._owner)+'.':it&&it.use==='bed'?'That\'s '+fname(h._owner)+'\'s bed.':'Better ask '+fname(h._owner)+' first.');sfx('swish');return}return _uf(it)}}
+{const _uf=useFurn;useFurn=function(it){const h=SCENE&&SCENE.house;if(h&&h._foreign){const st=it&&(it.f?it.f.t:it.t);if(st&&typeof STN!=='undefined'&&STN.has(st)&&window.SQTRUTHEN){SQTRUTHEN(h._owner,()=>openStation({t:st,inside:true,i:it.i,f:it.f||{t:st},_foreign:h._owner,_ok:1}));return}say(it&&it.use==='chest'?'That chest belongs to '+fname(h._owner)+'.':it&&it.use==='bed'?'That\'s '+fname(h._owner)+'\'s bed.':'Better ask '+fname(h._owner)+' first.');sfx('swish');return}return _uf(it)}}
 {const _sb=startBuild;startBuild=function(k){const h=SCENE&&SCENE.house;if(h&&h._foreign){say('You can only decorate your own house.');closePanel();return}return _sb(k)}}
 // ---- START menu: Friends, and Save & quit to title ----
 function tsReopen(){try{saveLocal(true);saveCloud(true)}catch(e){}closePanel();if(typeof closeSM==='function'&&typeof smOpen!=='undefined'&&smOpen)closeSM();if(MP.open)mpCloseChat();
@@ -9070,7 +9070,7 @@ function trUseForeignStr2(i,s){if(s.t==='chest')chOpenShared(s._foreign,'s_'+i);
      trustThen(f.owner,()=>{if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner})});return}}}}
   return _a()}}
 {const _us=useStructure;useStructure=function(i){if(trUseForeignStr(i))return;return _us(i)}}
-window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};
+window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};window.SQTRUTHEN=trustThen;
 // ---- Farming on every island ----
 // Same as on Hollow: HIT grass with a hoe to till it, plant seeds from the Bag (PLANT), water with the watering can,
 // HIT ripe crops to harvest. Plots on each island are kept per island (saved as rfarm) and grow while you play.
@@ -9172,6 +9172,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-21',d:'Nov 5, 2026',t:'Thornbrook & Thornroot Hollow',n:['Briarwood Isle has a village: Thornbrook, with a ranger lodge, the Sleepy Fern inn and a market. Ranger Wren, Hazel the trader and Old Moss have four quests for you (see the Quests screen), Hazel sells potions, arrows, bait and seeds and buys anything, and monsters stay out of the village.','New dungeon: Thornroot Hollow, six floors under Briarwood\'s south-west roots. At the bottom waits the Thornheart, a huge walking tree that wakes once a day. Watch for the green rings: roots burst out of them. At half health it calls briar wolves.','Rare drop from the Thornheart: the Thorn amulet. Anything that hurts you takes 4 damage back.','Ironcrest\'s mines and caves are now six floors deep.','New furniture: the Trash can (Craft menu, Building). Put it in your house, then face it and press HIT to throw away things you don\'t want.','The cat, dog and fox pets have been redrawn to fit the game, and the anvil has a brand-new look.','Gates now keep monsters out. Only players can walk through them, on every island.','Trusted friends can now use your wardrobe.','Fixed: if a tree or rock grew back right where you were standing, you got stuck inside it. Now you\'re moved to the nearest open spot.']},
  {v:'2026.11.05-20',d:'Nov 5, 2026',t:'Dev tools',n:['Behind-the-scenes testing tools for the new castle and pets. Nothing changes for players.']},
  {v:'2026.11.05-19',d:'Nov 5, 2026',t:'The islands update',n:['Fishing now works on every island, from the shore and from your boat, and each island has its own fish: pike and golden carp (Briarwood), ember eels and lava snappers (Ashfall), ice cod and glacier char (Ironcrest), void rays and crystal anglers (Shattered Expanse).','Farming is public: every tilled plot and crop belongs to everyone. Anyone can till, plant, water and harvest any plot on any island, and everybody sees the same fields growing.','Sail off the edge of the map! Once you have charted a route, sail into Hollow Island\'s west edge to reach Briarwood, east for Ashfall, north for Ironcrest and south for the Shattered Expanse. Sail back off the island\'s edge facing Hollow to come home.','Ironcrest Highlands has two mines and two caves (by the mining camps and in the cliffs). Three floors each, full of ore, and campfires work inside.','Far fewer monsters, and calmer ones: they only come for you when you get close or hit them, chase more slowly, and you get a little longer between hits.','Rain and snow now fall on the other islands too (ash haze on Ashfall), and rain waters crops there.','Every island\'s pier has a trader who buys what you gather.','Crystal veins now show the ore inside (gold, blue mithril, green adamant, lavender iron), and scorched or dark trees show what wood they give.','Rare pets: a wolf with a red collar (1 in 1,000 from each kind of wolf) and a little Treeling (1 in 5,000 trees chopped).','Sharks prowl the Shattered Expanse. They leave you alone, unless you\'re hurt and near the water.','New rare drop from the Stone Giant: a Castle. It works like a house, with a great hall inside, and its torches keep monsters away and heal you.','Fixed: ✕ on a controller now opens chests on the other islands.']},
  {v:'2026.11.05-18',d:'Nov 5, 2026',t:'Craft your own hoe',n:['You can now craft a hoe (3 wood, 2 stone) and a watering can (2 wood, 3 stone) in the Craft menu, under the tools. Both need Crafting 1. The general store still sells them too.']},
@@ -9637,6 +9638,21 @@ function castlesHere(){try{return castleIn().filter(h=>h.castle)}catch(e){return
 {const _nf=nearFire;nearFire=function(x,y,r){if(_nf(x,y,r))return true;if(SCENE&&!rbR())return false;for(const h of castlesHere()){const cx=h.x*16+8,cy=h.y*16;if(Math.hypot(cx-x,cy-y)<r*CASTLE_R)return true}return false}}
 window.SQCASTLE={castlesHere,ROOM:ROOMS.castle};
 
+// ---------------------------------------------------------------- 89. Gates hold monsters back; never stuck in a tree
+// A gate opens only for players walking through it: monsters (and anything else that isn't a player stepping through)
+// find it shut, on Hollow and on every island. And if a tree or rock ever grows back right where you're standing
+// (another player's chopped tree returning, for instance), you're gently moved to the nearest open spot.
+const gateAt=(px,py)=>{const x=Math.floor(px/16),y=Math.floor(py/16),R=rbR();
+ if(R){const s=rbMap(R.region).get(rbK(x,y));if(s)return s.t==='door';const f=rbForeignAt(R.region,x,y);return!!(f&&f.t==='door')}
+ if(SCENE)return false;if(x<0||y<0||x>=N||y>=N)return false;const s=STR.get(y*N+x);return!!(s&&s.t==='door')};
+const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the corners of your own step
+{const _s=solid;solid=function(px,py){if(gateAt(px,py))return!playerProbe(px,py)||dead;return _s(px,py)}}
+{const okAt=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));let chk=0;
+ const _u=upd;upd=function(dt){_u(dt);if(dead||menuOpen||pnOpen||TRAVEL49||(chk-=dt)>0)return;chk=.25;const R=SCENE&&SCENE.room;if(SCENE&&!(R&&R.region))return;
+  if(SAILING||RSAIL.on)return;if(okAt(P.x,P.y))return;
+  // only rescue from things that grow back (trees, rocks, ores, bushes)
+  const tx=Math.floor(P.x/16),ty=Math.floor((P.y+2)/16);let grown=false;for(let b=-1;b<=1&&!grown;b++)for(let a=-1;a<=1;a++){const o=R?rgObjAt(R,tx+a,ty+b):obj[(ty+b)*N+tx+a];if(o){grown=true;break}}if(!grown)return;
+  for(let r=4;r<=48;r+=2)for(let k=0;k<16;k++){const an=k/16*6.283,x=P.x+Math.cos(an)*r,y=P.y+Math.sin(an)*r;if(okAt(x,y)){P.x=x;P.y=y;say('You squeeze out from under the branches.');return}}}}
 // ---- go ----
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
@@ -10122,7 +10138,7 @@ var LUX={};
  const _sn=snap;snap=function(){const s=_sn();if(JW.ring||JW.neck)s.jw={ring:JW.ring,neck:JW.neck};return s};
  const _ap=applySave;applySave=function(S){_ap(S);JW.ring=JW.neck=null;const w=S&&S.jw;if(w){if(JK[w.ring]&&JK[w.ring].s==='ring')JW.ring=w.ring;if(JK[w.neck]&&JK[w.neck].s==='neck')JW.neck=w.neck}};
  const _ng=newGame;newGame=function(){JW.ring=JW.neck=null;_ng()};
- window.SQJW=JW}
+ window.SQJW=JW;window.SQJK=JK;window.SQGEMC=GEMC}
 // every item shows in the bag and in chests
 {const seen=new Set(BAG_ORDER());const order=['oaklog','willowlog','maplelog','yewlog','goldore','mithore','adamore','gbar','mbar','abar'];
  for(const k of order.concat([...INVK]))if(INAME[k]&&!seen.has(k)){seen.add(k);EXTRA_BAG.push(k)}}
@@ -10434,10 +10450,12 @@ for(const id in RG_FAUNA){const F=RG_FAUNA[id];F.cap={day:Math.max(2,Math.round(
 // rebuilt every day, with ore veins (gold, mithril and adamant deeper down), chests and Ironcrest's creatures.
 // Campfires work inside them: build one to cook, heal and keep the monsters back. Walk out (or take the exit door at
 // the bottom) to come back out on Ironcrest.
-const ICV={icmine:{name:'Old Ironcrest Mine',floor:['#6e5c48','#665440'],wall:'#4e4034',trim:'#2e2620',W:56,H:40,mine:1,at:'mcamp0'},
- icmine2:{name:'Deepvein Mine',floor:['#605448','#584c40'],wall:'#463c32',trim:'#28221c',W:58,H:42,mine:1,at:'mcamp1'},
- icave:{name:'Frostvein Cave',floor:['#7c8ea0','#748698'],wall:'#506478',trim:'#2c3848',W:60,H:44,at:'dungeon0'},
- icave2:{name:'Howling Cavern',floor:['#6c7a88','#647280'],wall:'#46525e',trim:'#262e38',W:62,H:44,at:'dungeon1'}};
+const ICMOB=[['wolf:snow',.35],['skel:rime',.6],['slime:frost',.85],['bat',1]],BWMOB=[['slime:moss',.3],['wolf:briar',.6],['bat',.8],['skel',1]];
+const ICV={icmine:{name:'Old Ironcrest Mine',floor:['#6e5c48','#665440'],wall:'#4e4034',trim:'#2e2620',W:56,H:40,mine:1,at:'mcamp0',rg:'ironcrest',floors:6,noboss:1,mob:ICMOB},
+ icmine2:{name:'Deepvein Mine',floor:['#605448','#584c40'],wall:'#463c32',trim:'#28221c',W:58,H:42,mine:1,at:'mcamp1',rg:'ironcrest',floors:6,noboss:1,mob:ICMOB},
+ icave:{name:'Frostvein Cave',floor:['#7c8ea0','#748698'],wall:'#506478',trim:'#2c3848',W:60,H:44,at:'dungeon0',rg:'ironcrest',floors:6,noboss:1,cavey:1,mob:ICMOB},
+ icave2:{name:'Howling Cavern',floor:['#6c7a88','#647280'],wall:'#46525e',trim:'#262e38',W:62,H:44,at:'dungeon1',rg:'ironcrest',floors:6,noboss:1,cavey:1,mob:ICMOB},
+ bwroot:{name:'Thornroot Hollow',floor:['#4e5e3a','#465632'],wall:'#2e3a24',trim:'#18200f',W:60,H:44,at:'dungeon0',rg:'briarwood',floors:6,cavey:1,mob:BWMOB,ore:4}};
 for(const k in ICV)DKIND[k]=ICV[k];
 const isIcv=k=>!!ICV[k];
 window.fireKey64=()=>SCENE&&SCENE.room&&SCENE.room.icv?'icv:'+SCENE.id:curRegion();
@@ -10447,33 +10465,33 @@ window.fireKey64=()=>SCENE&&SCENE.room&&SCENE.room.icv?'icv:'+SCENE.id:curRegion
   // mines: wooden supports instead of tomb pillars, carts instead of urns
   for(const it of R.items){if(ICV[kind].mine){if(it.t==='pillar')it.t='ic_beam';else if(it.t==='urn')it.t='ic_cart'}}
   // ore veins (a lot in the mines)
-  const nOre=ICV[kind].mine?12+4*f:6+2*f;let placed=0;
+  const nOre=ICV[kind].ore!=null?ICV[kind].ore+f:ICV[kind].mine?12+3*f:6+2*f;let placed=0;
   for(let t=0;t<800&&placed<nOre;t++){const i=cells[Math.floor(rnd()*cells.length)];if(i===undefined||!free(i))continue;const r=rnd(),deep=f/3;
    const ty=r<.25?'rock':r<.5?'ore':r<.5+.22*(1-deep*.5)?'gold':r<.88?'mith':'adam';R.items.push({t:'_obj',o:{t:ty,hp:OHP[ty]||4},x:i%W,y:(i/W)|0,solid:true,dmine:1});R.solid.add(i);used.add(i);placed++}
   // Ironcrest's creatures (fewer than a tomb's)
-  R.mobs.length=0;const nm=5+3*f;for(let t=0;t<600&&R.mobs.length<nm;t++){const i=cells[Math.floor(rnd()*cells.length)];if(i===undefined||used.has(i))continue;const x=(i%W)*16+8,y=((i/W)|0)*16+8;
-   if(Math.hypot(x-R.ex*16,y-R.h*16)<200)continue;const r=rnd(),hp=14+6*f;
-   const m=r<.35?rgMake('wolf:snow',hp,x,y):r<.6?rgMake('skel:rime',hp+4,x,y):r<.85?rgMake('slime:frost',hp-2,x,y):rgMake('bat',Math.round(hp*.7),x,y);m.icv=1;R.mobs.push(m)}
+  R.mobs.length=0;const nm=5+2*f,MT=ICV[kind].mob||ICMOB;for(let t=0;t<600&&R.mobs.length<nm;t++){const i=cells[Math.floor(rnd()*cells.length)];if(i===undefined||used.has(i))continue;const x=(i%W)*16+8,y=((i/W)|0)*16+8;
+   if(Math.hypot(x-R.ex*16,y-R.h*16)<200)continue;const r=rnd(),hp=(ICV[kind].rg==='briarwood'?8:12)+5*f,e=MT.find(q=>r<q[1])||MT[MT.length-1];
+   const m=rgMake(e[0],e[0]==='bat'?Math.round(hp*.7):hp,x,y);m.icv=1;R.mobs.push(m)}
   return R}}
 // going in (and every floor keeps the way back out to Ironcrest)
 {const _es=enterScene;enterScene=function(id,house,ret){const carry=SCENE&&SCENE.prev&&SCENE.room&&SCENE.room.icv?SCENE.prev:null;_es(id,house,ret);if(carry&&SCENE&&!SCENE.prev&&SCENE.room&&SCENE.room.icv)SCENE.prev=carry}}
 {const _ls=leaveScene;leaveScene=function(){const R=SCENE&&SCENE.room;if(R&&R.icv&&R.dun&&R.dun.f>1){dGo(R.dun.kind,R.dun.f-1,'below');return}return _ls()}}
 function icvEnter(it){if(dead||TRAVEL49)return;const kind=it.kind,R=dFloor(kind,1);enterScene(dKey(kind,1),null,{x:it.x*16+8,y:(it.y+1)*16+8});dArrive(R,null);
- say('You enter '+ICV[kind].name+'. Three floors deep, rich in ore. Campfires work down here.');msgT=5}
+ say('You enter '+ICV[kind].name+'. Six floors deep'+(ICV[kind].noboss?', rich in ore':', and something old waits at the bottom')+'. Campfires work down here.');msgT=5}
 // the entrances on Ironcrest
-function icvPlace(R){if(R._icv||R.region!=='ironcrest')return;R._icv=1;const W=R.w,walk=(x,y)=>x>1&&y>1&&x<W-2&&y<R.h-2&&RG_WALK[R.tiles[y*W+x]]&&!R.solid.has(y*W+x);
+function icvPlace(R){if(R._icv||!R.region)return;R._icv=1;const W=R.w,walk=(x,y)=>x>1&&y>1&&x<W-2&&y<R.h-2&&RG_WALK[R.tiles[y*W+x]]&&!R.solid.has(y*W+x);
  const fit=(x,y)=>{for(let dy=-1;dy<=2;dy++)for(let dx=-1;dx<=1;dx++)if(!walk(x+dx,y+dy))return false;return true};
  const clear=(x,y)=>{for(let dy=-1;dy<=2;dy++)for(let dx=-1;dx<=1;dx++){const it=rgObjAt(R,x+dx,y+dy);if(it){it.gone=true;rgCellDel(R,it);R.solid.delete((y+dy)*W+x+dx)}}};
  const near=(cx,cy)=>{for(let r=0;r<14;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const x=cx+dx,y=cy+dy;if(!(x>1&&y>1&&x<W-2&&y<R.h-3))continue;
    let ok=true;for(let b=-1;b<=2&&ok;b++)for(let a=-1;a<=1;a++){const i=(y+b)*W+x+a;if(!RG_WALK[R.tiles[i]]){ok=false;break}}if(ok&&(R.reach?R.reach[(y+2)*W+x]:1))return[x,y]}return null};
  const dun=R.reserved.filter(q=>(q.kind||q.t||q.id)==='dungeon'&&q.w>=6);
- for(const k in ICV){let spot=null;const at=ICV[k].at;
+ for(const k in ICV){if(ICV[k].rg!==R.region)continue;let spot=null;const at=ICV[k].at;
   if(at.startsWith('mcamp')){const l=R.lms.find(q=>q.id===at);if(l)spot=near(l.x+4,l.y+2)}else{const q=dun[+at.slice(-1)];if(q)spot=near(q.x+Math.floor(q.w/2),q.y+Math.floor(q.h/2))}
   if(!spot)continue;const[x,y]=spot;clear(x,y);const it={t:'icvdoor',kind:k,x,y,name:ICV[k].name,use:'icv',w:1,h:1};R.items.push(it);R.useItems.push(it);try{rgCellAdd(R,it)}catch(e){}
   for(const[a,b]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1]])R.solid.add((y+b)*W+x+a)}}
-{const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region==='ironcrest')icvPlace(R)}catch(e){console.warn(e)}return ok}}
+{const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)icvPlace(R)}catch(e){console.warn(e)}return ok}}
 {const _uf=useFurn;useFurn=function(it){if(it&&it.use==='icv'){icvEnter(it);return}return _uf(it)}}
-{const _u=upd;upd=function(dt){_u(dt);if(dead||menuOpen||pnOpen||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||R.region!=='ironcrest'||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;
+{const _u=upd;upd=function(dt){_u(dt);if(dead||menuOpen||pnOpen||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;
   for(const it of R.useItems)if(it.use==='icv'&&Math.abs(P.x-(it.x*16+8))<8&&P.y<(it.y+1)*16+2&&P.y>it.y*16){icvEnter(it);return}}}
 // campfires in the caves: lit, drawn, cooking and keeping monsters away like outside
 {const _p=pP;pP=function(tm){const R=SCENE&&SCENE.room;if(R&&R.icv)for(const f of fires)if(!f._glow)try{pF(f,tm)}catch(e){}return _p(tm)}}
@@ -10514,6 +10532,12 @@ if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a)
    if(R&&R.region){const it=rgObjAt(R,tx,ty);tt=it&&it.o.t}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];tt=o&&o.t}}catch(e){}
   const w0=inv.wood|0;_a();if(tt&&tt!=='cactus'&&(inv.wood|0)>w0&&(Math.random()<1/5000||window.SQTREEDROP))givePet('ptree')}}
 // drawing them
+const SIDEPAL={K:'#181018',W:'#f4f0e8',E:'#181018',N:'#e07080',R:'#3870d8'},SIDECOL={cat:{A:'#e88a38',B:'#b85e20',C:'#f8b868',T:'#c06a24',L:'#b85e20'},dog:{A:'#b07848',B:'#7c4e2c',C:'#d8a878',T:'#8a5a34',L:'#7c4e2c'},fox:{A:'#e86a20',B:'#a8440e',C:'#f89848',T:'#a8440e',L:'#3a2418'}};
+const SIDEMAP={cat:[["............K...K.","..K........KAK.KAK",".KAK.......KAAKAAK",".KAK.......KAAAAAK","..KAK......KAEAEAK","...KAKKKKKKKAAANAK","....KAACCCAAKCCCK.","....KAATAAATAAAKK.","....KAAAAAAAAAAK..","....KBAATAAATABK..","....KBBBBBBBBBBK.."],["....KLK.KK..KLK...","....KK..KLK..KK...","....KLK.KK..KLK...","....KK...KK.KK...."]],
+ dog:[["..............KK..",".............KBBK.","............KBAAAK","............KAAEAAKK",".K..........KAAAAANK","KAK.........KBAAACK.",".KAK.KKKKKKKKRRRKK..","..KKAAAACCCAAAAK....","...KAAAAAAAAAAAK....","...KAAAAAAAAAABK....","...KBBBBBBBBBBBK...."],["...KLK.KK..KLK.KK...","...KK..KLK..KK.KLK..","...KLK.KK..KLK.KK...","...KK..KLK..KK.KLK.."]],
+ fox:[["..............K.K.",".............KAKAK","............KAAAAK","..KKK.......KAEAAKK",".KCAAK......KAAAAACK","KWCAAAK.....KWAACCKK","KWAAAAKKKKKKKWWWKK..",".KWAAAAAAAAAAAAWK...","..KKAAAAAAAAAAAWK...","....KAAAAAAAAAABK...","....KBBBBBBBBBBBK..."],["....KLK.KK..KLK.KK..","....KK..KLK..KK.KLK.","....KLK.KK..KLK.KK..","....KK..KLK..KK.KLK."]]};
+const SIDEC={};function sideSprite(k,f){const key=k+f;if(SIDEC[key])return SIDEC[key];const[rows,legs]=SIDEMAP[k],all=rows.concat([legs[f*2],legs[f*2+1]]),w=Math.max(...all.map(r=>r.length)),c=document.createElement('canvas');c.width=w;c.height=all.length;
+ const x=c.getContext('2d'),P2=Object.assign({},SIDEPAL,SIDECOL[k]);all.forEach((r,y)=>{for(let i=0;i<r.length;i++){const col=P2[r[i]];if(col){x.fillStyle=col;x.fillRect(i,y,1,1)}}});return SIDEC[key]=c}
 const PST=new Map();
 function petFollow(id,ox,oy,fc){let s=PST.get(id);const now=performance.now();if(!s){s={x:ox-16,y:oy+4,t:0,lt:now,fl:false};PST.set(id,s)}const dt=Math.min(.1,(now-s.lt)/1000);s.lt=now;
  const tx=ox-(fc&&fc[0]?fc[0]*18:12),ty=oy+(fc&&fc[1]?-fc[1]*12:4)+2,dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy);
@@ -10530,15 +10554,16 @@ function treeSprite(f){if(TREEPET[f])return TREEPET[f];const c=document.createEl
  if(f){r(4,16,3,2,K);r(5,16,1,1,'#7a4c24');r(9,16,3,3,K);r(10,16,1,2,'#7a4c24')}else{r(4,16,3,3,K);r(5,16,1,2,'#7a4c24');r(9,16,3,2,K);r(10,16,1,1,'#7a4c24')}
  return TREEPET[f]=c}
 function drawNPet(k,s,tm){const x=Math.round(s.x),y=Math.round(s.y);
+ if(SIDEMAP[k]){const sp=sideSprite(k,s.mv>0?Math.floor(s.t)%2:0);shd(x,y+6,12);g.save();g.imageSmoothingEnabled=false;if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(sp,x-Math.round(sp.width/2),y+7-sp.height);g.restore();return}
  if(k==='ptree'){const sp=treeSprite(s.mv>0?Math.floor(s.t)%2:0),bob=s.mv>0?(Math.floor(s.t)%2):0;shd(x,y+6,10);g.save();g.imageSmoothingEnabled=false;if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(sp,x-8,y-13-bob);g.restore();return}
  const n=Object.assign({x,y,kx:0,ky:0,type:'wolf',hp:5,_pet:1},NPET[k].v);const px=P.x,py=P.y;
  // a wolf faces the way it walks (the wolf sprite faces the player, so look from just ahead of it)
  P.x=x+(s.fl?-40:40);P.y=y;try{pS(n,tm)}catch(e){}finally{P.x=px;P.y=py}
  // the red collar
  const L=s.fl?x-7:x+3;g.fillStyle='#181018';g.fillRect(L,y-6,4,6);g.fillStyle='#d82828';g.fillRect(L+1,y-6,2,5);g.fillStyle='#ff6050';g.fillRect(L+1,y-6,1,2);g.fillStyle='#f8d048';g.fillRect(L+(s.fl?1:2),y-1,1,1)}
-{const _p=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!NPET[k])return _p(tm);
+{const _p=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!(NPET[k]||SIDEMAP[k]))return _p(tm);
   if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on))drawNPet(k,petFollow('me',P.x,P.y,face),tm);C.pet=null;try{return _p(tm)}finally{C.pet=k}}}
-if(window.LUX){const _dp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&NPET[r.pet]){if(r.sl)return;drawNPet(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]),tm);return}return _dp&&_dp(r,tm)}}
+if(window.LUX){const _dp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&(NPET[r.pet]||SIDEMAP[r.pet])){if(r.sl)return;drawNPet(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]),tm);return}return _dp&&_dp(r,tm)}}
 window.SQNPET=NPET;
 
 // ---- Sharks in the Shattered Expanse ----
@@ -10617,12 +10642,183 @@ function drawCastle(b,tm){const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,S=['#5a5650
    Rg(x-1,y-10,18,26,K);Rg(x,y-9,16,25,'#0c0a10');
    if(mine){Rg(x-3,y-13,22,4,'#8a5a30');Rg(x-3,y-13,22,1,'#c08848');Rg(x-3,y-10,4,26,'#8a5a30');Rg(x+15,y-10,4,26,'#8a5a30');Rg(x+3,y+4,2,12,'#6a6a76');Rg(x+11,y+4,2,12,'#6a6a76');for(let k=0;k<3;k++)Rg(x+2,y+6+k*4,12,1,'#5a3a20');
     const f=Math.sin(tm*8)*.5;Rg(x+18,y-8,3,5,K);Rg(x+19,y-7,1,3,'#f8c860');g.fillStyle='rgba(255,200,90,'+(.18+.05*f)+')';g.beginPath();g.arc(x+19,y-6,9,0,6.283);g.fill()}
+   else if(I.rg==='briarwood'){for(const[a,b,w2]of[[-2,-12,20],[0,-10,3],[13,-10,3],[4,-11,2],[9,-11,2]])Rg(x+a,y+b,w2,2,'#5a3a1e');Rg(x-6,y-18,28,4,'#3a7a2a');Rg(x-4,y-19,6,2,'#58a040');Rg(x+12,y-19,8,2,'#58a040')}
    else{Rg(x+1,y-9,14,2,'#c8e0f0');Rg(x+3,y-7,2,3,'#c8e0f0');Rg(x+10,y-7,2,4,'#c8e0f0')}
    return}
   return _df(it,tm)}}
 window.SQSHARKTEST=()=>SHK.list.length;
 }
 
+
+// ---------------------------------------------------------------- 90. A new anvil, and the trash can
+// The anvil (your own and the blacksmith's) is redrawn: a steel anvil with a horn on a wooden stump.
+// The trash can is furniture for your house (Craft menu, Building): face it and press HIT to get rid of things
+// you don't want any more, one at a time or all at once (you're asked twice before a whole stack goes).
+{const ANV=["..KKKKKKKKKKKKK.",".KCCCCCCCCCCCCCK","KAAAAAAAAAAAAAAK",".KKAAAAAAAAAAABK","...KKKBAAAABKKK.",".....KBAAABK....",".....KBAAABK....","....KBAAAAABK...","...KKKKKKKKKKK..","...KWWwWWwWWWK..","...KWwWWWwWWwK..","...KwwwwwwwwwK..","...KKKKKKKKKKK.."];
+ const TRS=["....KKKKKKKK....","...KCCCCCCCCK...","..KKKKKKKKKKKK..","..KCAAAAAAAABK..","...KAABAABABK...","...KAABAABABK...","...KAABAABABK...","...KAABAABABK...","...KAABAABABK...","...KAAAAAAABK...","...KKKKKKKKKK..."];
+ const pal={K:'#181018',A:'#6a7284',B:'#464c5c',C:'#c8d0e0',W:'#a06a38',w:'#7a4a24'},tpal={K:'#181018',A:'#7a8a7a',B:'#56645a',C:'#a8b8a8'};
+ const paint=(rows,P2)=>{const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const x=c.getContext('2d');rows.forEach((r,y)=>{for(let i=0;i<r.length;i++){const col=P2[r[i]];if(col){x.fillStyle=col;x.fillRect(i,y,1,1)}}});return c};
+ let AC=null,TC=null;const anv=()=>AC||(AC=paint(ANV,pal)),trs=()=>TC||(TC=paint(TRS,tpal));
+ const drawAnvil=(x0,y0)=>{shd(x0+8,y0+15,14);g.drawImage(anv(),x0,y0+3)},drawTrash=(x0,y0,st)=>{shd(x0+8,y0+15,12);g.drawImage(trs(),x0,y0+(st&&st.bump>0?3:4))};
+ {const _ds=drawStation;drawStation=function(t,x,y,st,tm){if(t==='anvil')return drawAnvil(x*16,y*16);if(t==='trash')return drawTrash(x*16,y*16,st);return _ds(t,x,y,st,tm)}}
+ {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='anvil')return drawAnvil(it.x*16,it.y*16);return _df(it,tm)}}
+ // the trash can
+ STNS.push({k:'trash',n:'Trash can',c:{stone:6,wood:2},req:2,xp:15,hp:2,d:'Get rid of things you don\'t want.'});STN.add('trash');
+ BREC.push({k:'trash',n:'Trash can',c:{stone:6,wood:2},req:2,xp:15,hp:2});BK.push('trash');BHP.trash=2;INVK.push('trash');INAME.trash='Trash can';SELLP.trash=3;SN.trash='Trash cans';if(typeof SHORT!=='undefined')SHORT.trash='trash can';
+ IDESC.trash='Furniture for your house. Face it and press HIT to throw away items you don\'t want.';FURN_ONLY.add('trash');if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push('trash');
+ {const _ic=iconURL;iconURL=function(k,col){if(k!=='trash')return _ic(k,col);const key='trash14';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(trs(),-1,2);return ICONC[key]=c.toDataURL()}}
+ let SURE=null;
+ {const _sh=stationHTML;stationHTML=function(o){const h=_sh(o);if(o.t!=='trash')return h;const keys=Object.keys(inv).filter(k=>(inv[k]|0)>0&&INAME[k]).sort((a,b)=>INAME[a].localeCompare(INAME[b]));
+   let L='<div class="qc"><p>Throw away anything you don\'t want. It\'s gone for good.</p></div>';if(!keys.length)L+='<div class="tl" style="font-weight:400;opacity:.6">Your bag is empty.</div>';
+   for(const k of keys){const n=inv[k]|0;L+='<div class="gr"><img class="gimg" alt="" src="'+iconURL(k)+'"><div class="gi"><b>'+esc(INAME[k])+'</b> <small>×'+n+'</small></div><button class="gc stb" data-a="tr1_'+k+'">1</button>'+
+    (n>1?'<button class="gc stb" data-a="'+(SURE===k?'try_':'tra_')+k+'" style="'+(SURE===k?'background:#c83040;color:#fff':'')+'">'+(SURE===k?'Sure?':'All')+'</button>':'')+'</div>'}
+   const i=h.lastIndexOf('<button class="ng stb" data-a="pickup"');return i>=0?h.slice(0,i)+L+h.slice(i):h+L}}
+ {const _sa=stationAct;stationAct=function(a){if(typeof a!=='string'||!/^tr[1ay]_/.test(a))return _sa(a);const k=a.slice(4),n=inv[k]|0;if(n<=0){rPn();return}
+   if(a.startsWith('tra_')){SURE=k;rPn();return}const m=a.startsWith('tr1_')?1:n;inv[k]=n-m;SURE=null;
+   if(STATION&&STATION.f)STATION.f.bump=.2;say('Threw away '+m+' × '+INAME[k].toLowerCase()+'.');try{sfx('swish')}catch(e){}saveLocal(true);rPn()}}
+ {const _cp=closePanel;closePanel=function(){SURE=null;return _cp()}}
+}
+// ---------------------------------------------------------------- 91. Briarwood: the village of Thornbrook and Thornroot Hollow
+// Thornbrook stands on Briarwood's old town site: a ranger lodge, an inn, Hazel's market stall and a well. Ranger Wren,
+// Hazel the trader and Old Moss give Briarwood's quests (in the Quests screen with the other villages), Hazel sells
+// supplies and buys anything, and monsters keep out of the village. Thornroot Hollow, a six-floor root-choked cave in the
+// south-west, ends at the lair of the Thornheart, a huge walking tree that wakes once a day. It throws roots up from the
+// ground (watch the green rings) and calls briar wolves when it's hurt. Its rare drop is the Thorn amulet: anything that
+// hits you gets hurt back.
+{
+const BW={town:null,npcs:[],sure:null,bossDay:-1};window.SQBW=BW;
+// ---- quests (the village quest system) ----
+SQ_SIDE.briarwood={index:0,on:false,k:0,completed:false};SQTOWN.briarwood='Thornbrook';
+SIDE_QS.briarwood=[
+ {n:'Oak for the Stalls',d:'Bring Hazel 10 oak logs for new market stalls.',type:'give',item:'oaklog',amt:10,r:{g:220,xp:[1,500]},giver:'Hazel',start:'My stall\'s falling apart and the oaks here are the best wood on the sea.',finish:'Beautiful grain. These will last for years!',req:[1,15]},
+ {n:'Briar Wolves',d:'Defeat 8 briar wolves on Briarwood Isle.',type:'kill',item:'briarwolf',amt:8,r:{g:320,xp:[0,700]},giver:'Wren',start:'The briar wolves hunt in pairs and they\'re getting bold. Thin them out.',finish:'The trails are quieter already. Good work.'},
+ {n:'Pike for Supper',d:'Bring Old Moss 5 raw pike from Briarwood\'s waters.',type:'give',item:'pike',amt:5,r:{g:260,xp:[9,600]},giver:'Old Moss',start:'Nothing like fresh pike from Thornwater. My old knees won\'t take me there any more.',finish:'Ahh, that smell! Just like when I was young.',req:[9,15]},
+ {n:'The Thornheart',d:'Defeat the Thornheart at the bottom of Thornroot Hollow.',type:'dungeonboss',item:'thornheart',amt:1,r:{g:900,xp:[0,1600]},giver:'Wren',start:'Something old is stirring under the roots in the south-west. Six floors down. Be careful.',finish:'The forest breathes easier. Thornbrook owes you.',note:'Attack 25 recommended. Bring food.'}];
+// ---- the village layout (on the reserved town site) ----
+const LOOK={Wren:{sk:1,hs:2,hc:1,sh:3,pn:2,ht:2,hcol:3,so:3},Hazel:{sk:0,hs:4,hc:4,sh:5,pn:1,ht:0,hcol:1,so:2},'Old Moss':{sk:2,hs:1,hc:6,sh:1,pn:3,ht:1,hcol:2,so:1}};
+const SAYS={Wren:['Keep your blade sharp out there.','The wolves come out more at night.','Thornroot Hollow is down in the south-west.'],
+ Hazel:['Fresh supplies! Potions, arrows, seeds!','I\'ll buy whatever you drag out of the forest.','Oak, willow, pike... it all sells.'],
+ 'Old Moss':['This island was all forest once. Still mostly is.','The Thornheart is older than the village.','Sit a while. Rest your feet.']};
+function bwSetup(R){if(R.region!=='briarwood'||R._bw)return;const site=R.reserved.find(q=>(q.kind||q.t||q.id)==='town');if(!site)return;R._bw=1;
+ const x0=site.x,y0=site.y,W=R.w,set=(x,y,t)=>{if(x>0&&y>0&&x<W-1&&y<R.h-1&&R.tiles[y*W+x]!==0)R.tiles[y*W+x]=t};
+ // clear the site, lay a dirt square and paths
+ for(let y=y0;y<y0+site.h;y++)for(let x=x0;x<x0+site.w;x++){const it=rgObjAt(R,x,y);if(it){it.gone=true;rgCellDel(R,it);R.solid.delete(y*W+x)}if(R.tiles[y*W+x]!==0&&R.tiles[y*W+x]!==11)R.tiles[y*W+x]=y%3&&x%4?2:2}
+ for(let x=x0+1;x<x0+site.w-1;x++){set(x,y0+6,14);set(x,y0+7,14)}for(let y=y0+3;y<y0+site.h;y++){set(x0+8,y,14);set(x0+9,y,14)}
+ const items=[],solidAt=(x,y)=>R.solid.add(y*W+x),add=it=>{items.push(it);R.items.push(it);try{rgCellAdd(R,it)}catch(e){}};
+ // buildings: the ranger lodge (left) and the Sleepy Fern inn (right); their doors are just painted on
+ const blds=[{tx:x0+1,ty:y0+2,w:5,wall:'#c8a878',roof:'#3e7a3a',name:'Ranger Lodge'},{tx:x0+11,ty:y0+2,w:7,wall:'#d8c098',roof:'#7a4a2a',name:'The Sleepy Fern'}];
+ for(const b of blds){add({t:'bwbld',b,x:b.tx+(b.w>>1),y:b.ty+1,w:b.w,h:2});for(let dy=0;dy<2;dy++)for(let dx=0;dx<b.w;dx++)solidAt(b.tx+dx,b.ty+dy)}
+ // Hazel's stall, the well, two lamps, the village sign
+ add({t:'bwstall',x:x0+3,y:y0+9,w:3,h:1});for(let dx=0;dx<3;dx++)solidAt(x0+3+dx,y0+9);
+ add({t:'bwwell',x:x0+13,y:y0+9});solidAt(x0+13,y0+9);
+ for(const[a,b]of[[x0+7,y0+5],[x0+10,y0+8]]){add({t:'bwlamp',x:a,y:b});solidAt(a,b)}
+ add({t:'bwsign',x:x0+10,y:y0+11});solidAt(x0+10,y0+11);
+ // the people
+ BW.npcs=[{id:'Wren',x:(x0+3)*16+8,y:(y0+4)*16+10,role:'quests'},{id:'Hazel',x:(x0+4)*16+8,y:(y0+8)*16+10,role:'shop'},{id:'Old Moss',x:(x0+14)*16+8,y:(y0+4)*16+10,role:'elder'}];
+ for(const n of BW.npcs){n.town='briarwood';n.hx=n.x;n.hy=n.y;const it={t:'bwnpc',n,x:n.x/16,y:n.y/16};add(it)}
+ BW.town={x0,y0,w:site.w,h:site.h};
+ // a landmark, so it shows on the maps and gets "discovered"
+ if(!R.lms.some(l=>l.id==='thornbrook'))R.lms.push({id:'thornbrook',name:'Thornbrook',x:x0+9,y:y0+6});LM_NAMES.thornbrook='Thornbrook';LM_NAMES.thornroot='Thornroot Hollow'}
+{const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region==='briarwood'){bwSetup(R);const d=R.useItems.find(u=>u.kind==='bwroot');if(d&&!R.lms.some(l=>l.id==='thornroot'))R.lms.push({id:'thornroot',name:'Thornroot Hollow',x:d.x,y:d.y})}}catch(e){console.warn(e)}return ok}}
+const bwR=()=>{const R=SCENE&&SCENE.room;return R&&R.region==='briarwood'&&R._bw?R:null};
+const inTown=(x,y)=>{const T=BW.town;return T&&x>=(T.x0-1)*16&&x<(T.x0+T.w+1)*16&&y>=(T.y0-1)*16&&y<(T.y0+T.h+1)*16};
+const bwNear=()=>{if(!bwR())return null;let best=null,bd=26;for(const n of BW.npcs){const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}return best};
+// ---- drawing ----
+{const _df=drawFurn;drawFurn=function(it,tm){if(!it||typeof it.t!=='string'||it.t.slice(0,2)!=='bw')return _df(it,tm);const x=it.x*16,y=it.y*16;
+  if(it.t==='bwbld'){const b=it.b;try{drBld({k:'home',w:b.w,wall:b.wall,roof:b.roof,sc:null,tx:b.tx,ty:b.ty},tm)}catch(e){}
+   const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,tw=b.name.length*4+8,sx=Math.round(X0+w/2-tw/2);g.save();g.font='700 6px '+PF;g.fillStyle='#3a2414';g.fillRect(sx-1,base-35,tw+2,10);g.fillStyle='#f4e8c8';g.fillRect(sx,base-34,tw,8);g.fillStyle='#3a2414';g.textAlign='center';g.textBaseline='middle';g.fillText(b.name,X0+w/2,base-29.5);g.restore();return}
+  if(it.t==='bwstall'){const K='#181018';shd(x+24,y+15,46);Rg(x-1,y-2,50,18,K);Rg(x,y-1,48,16,'#8a5a30');Rg(x,y-1,48,3,'#a8743c');for(const[a,c]of[[4,'#e84850'],[12,'#f8c048'],[20,'#78c050'],[28,'#e88838'],[36,'#a878e0']])Rg(x+a,y+4,5,4,c);
+   for(const a of[1,45])Rg(x+a,y-22,3,22,'#6a4224');Rg(x-3,y-27,54,8,K);for(let k=0;k<9;k++)Rg(x-2+k*6,y-26,6,6,k%2?'#f4f0e8':'#3e8a3a');for(let k=0;k<9;k++)Rg(x-2+k*6,y-20,6,2,k%2?'#d8d0c0':'#2e6a2a');return}
+  if(it.t==='bwwell'){try{drawWell(it.x,it.y)}catch(e){}return}
+  if(it.t==='bwlamp'){try{drawLamp(it.x,it.y,tm)}catch(e){}if(dark()>.15){g.fillStyle='rgba(255,210,120,.16)';g.beginPath();g.arc(x+8,y-14,26,0,6.283);g.fill()}return}
+  if(it.t==='bwsign'){Rg(x+7,y-2,2,14,'#5a3a1e');Rg(x-2,y-12,20,11,'#181018');Rg(x-1,y-11,18,9,'#b8925a');Rg(x-1,y-11,18,1,'#e8c890');g.save();g.font='700 5px '+PF;g.fillStyle='#3a2414';g.textAlign='center';g.textBaseline='middle';g.fillText('THORNBROOK',x+8,y-6.5);g.restore();return}
+  if(it.t==='bwnpc'){const n=it.n,near=Math.hypot(n.x-P.x,n.y-P.y)<60,dir=near?(Math.abs(P.x-n.x)>Math.abs(P.y-n.y)?2:P.y<n.y?1:0):0,fl=near&&P.x<n.x;shd(n.x,n.y+6,12);GC=g;
+   try{cP(LOOK[n.id],dir,0,Math.round(n.x),Math.round(n.y),fl)}catch(e){}if(SQ_SIDE.briarwood&&(()=>{const q=sqCur('briarwood');return q&&q.giver===n.id&&(!SQ_SIDE.briarwood.on||sqReady('briarwood'))})()){const bob=Math.round(Math.sin(tm*4));Rg(n.x-2,n.y-34+bob,4,8,'#181018');Rg(n.x-1,n.y-33+bob,2,5,'#f8d048');Rg(n.x-1,n.y-27+bob,2,1,'#f8d048')}
+   const nm=n.id;g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.strokeStyle='#181018';g.strokeText(nm,n.x,n.y-22);g.fillStyle='#e8ffe0';g.fillText(nm,n.x,n.y-22);g.restore();return}
+  return _df(it,tm)}}
+// ---- talking: TALK / T / ✕ next to them ----
+function bwOpen(n){BW.npc=n;BW.sure=null;shop='bwnpc';pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk')}
+{const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=bwNear();if(n){bwOpen(n);return}}return _t()}}
+tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=bwNear();if(n){e.preventDefault();e.stopImmediatePropagation();bwOpen(n)}},{passive:false,capture:true});
+{const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!bwNear()||!!(_pu&&_pu())}
+let tkMine=false;{const _u=upd;upd=function(dt){_u(dt);const n=!pnOpen&&!menuOpen&&!dead?bwNear():null;
+  if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;tkMine=true}else if(tkMine){tkMine=false;if(!pnOpen)tk.style.display='none'}
+  // monsters keep out of the village
+  const R=bwR();if(R&&BW.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&inTown(m.x,m.y)){m.dead=1;m.dropped=1}}}
+const SHOPBW=[{n:'Healing potion',c:180,k:'pot_heal',m:1},{n:'20 arrows',c:30,k:'arrow',m:20},{n:'10 bait',c:15,k:'bait',m:10},{n:'5 wheat seeds',c:6,k:'wheatseed',m:5},{n:'5 carrot seeds',c:14,k:'carrotseed',m:5,lv:[11,5]},{n:'Fire kit (3 wood + 1 stone)',c:12,kit:1}];
+function bwHTML(){const n=BW.npc;if(!n)return'';const line=SAYS[n.id][Math.floor(performance.now()/7000)%SAYS[n.id].length];
+ let h='<div class="tl">'+esc(n.id)+'</div><div class="qc"><p>"'+esc(n.role==='shop'?line:n.role==='quests'?line:line)+'"</p><small>'+(n.role==='shop'?'Trader of Thornbrook':n.role==='quests'?'Ranger of Thornbrook':'Village elder')+'</small></div>';
+ try{h+=sideCard(n)}catch(e){}
+ if(n.role==='elder'&&!(sqCur('briarwood')&&sqCur('briarwood').giver===n.id))h+='<div class="qc" style="margin-top:8px"><p>"Thornroot Hollow lies to the south-west. Six floors under the roots. At the bottom sleeps the Thornheart: it wakes every day, and it does not like visitors."</p></div>';
+ if(n.role==='shop'){h+='<div class="tl" style="margin-top:12px">Buy</div><div class="qc"><small>Gold: '+GLD+'</small></div>';
+  SHOPBW.forEach((it,i)=>{if(it.lv&&lvOf(it.lv[0])<it.lv[1])return;h+='<button class="sb" data-bw="b'+i+'" style="opacity:'+(GLD>=it.c?1:.45)+'">'+esc(it.n)+'<br><small>'+it.c+' gold</small></button>'});
+  h+='<div class="tl" style="margin-top:12px">Sell</div>';let any=0;for(const k in SELLP){const c=inv[k]|0;if(c<=0)continue;any=1;h+='<button class="sb" data-bw="s'+k+'">Sell all '+esc(SN[k]||INAME[k]||k)+' ('+c+')<br><small>+'+c*SELLP[k]+' gold</small></button>'}
+  if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing to sell</div>'}
+ return h}
+{const _r=rPn;rPn=function(){if(ptab===2&&shop==='bwnpc'&&BW.npc){try{panelChrome('')}catch(e){}pbd.innerHTML=bwHTML();return}_r()}}
+{const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='bwnpc'&&BW.npc){const b=e.target.closest('[data-bw]');if(b){const a=b.dataset.bw;
+    if(a[0]==='b'){const it=SHOPBW[+a.slice(1)];if(!it)return;if(GLD<it.c){say('Not enough gold');sfx('swish');return}GLD-=it.c;if(it.kit){inv.wood=(inv.wood|0)+3;inv.stone=(inv.stone|0)+1}else inv[it.k]=(inv[it.k]|0)+it.m;say('Bought '+it.n+'.');sfx('coin')}
+    else{const k=a.slice(1),c=inv[k]|0;if(c>0){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){}saveLocal(true);rPn();return}
+   const q=e.target.closest('.xb');if(q&&/^sq_/.test(q.dataset.a||'')){sideAct(q.dataset.a.slice(3),BW.npc);saveLocal(true);rPn();return}}return _oc(e)}}
+{const _cp=closePanel;closePanel=function(){if(shop==='bwnpc'){BW.npc=null;shop=null}return _cp()}}
+// quest progress: briar wolves anywhere on Briarwood
+{const _ed=enemyDrop;enemyDrop=function(n){_ed(n);if(n&&n.type==='wolf'&&n.rv==='briar'&&!n._bwq){n._bwq=1;sqEvent('kill','briarwolf');saveLocal(true)}}}
+if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead&&n.type==='wolf'&&n.rv==='briar'&&!n._bwq){n._bwq=1;sqEvent('kill','briarwolf')}}catch(e){}return r}}
+
+// ---- the Thornheart (floor 6 of Thornroot Hollow) ----
+const TH_HP=180;let THDAY=-1;
+{const _da=dArrive;dArrive=function(R,from){_da(R,from);const D=R.dun;if(!D||D.kind!=='bwroot'||D.f!==6||!D.boss||D._th)return;D._th=1;if(THDAY===today()){say('Thornroot Hollow - the Thornheart\'s lair. It sleeps until tomorrow.');return}
+  const[bx,by]=D.boss;const b={x:bx*16+8,y:by*16+8,hp:TH_HP,mhp:TH_HP,kx:0,ky:0,type:'thorn',big:1,rcd:3,scd:0,half:false,roots:[]};R.mobs.push(b);BW.boss=b;setTimeout(()=>{try{sfx('roar')}catch(e){}},300)}}
+{const _u=upd;upd=function(dt){const pre=new Map();for(const n of en)if(n.type==='thorn'&&!n.dead)pre.set(n,[n.x,n.y]);const hp0=P.hp;_u(dt);
+  for(const[n,[x,y]]of pre){if(n.dead)continue;n.x=x+(n.x-x)*.45;n.y=y+(n.y-y)*.45;n.kx*=.3;n.ky*=.3;n.t=(n.t||0)+dt;
+   // roots: three green rings appear near you, then thorny roots burst up out of them
+   if((n.rcd-=dt)<=0){n.rcd=n.half?2.6:3.6;for(let k=0;k<3;k++){const a=Math.random()*6.283,r=k?12+Math.random()*30:0;n.roots.push({x:P.x+Math.cos(a)*r,y:P.y+4+Math.sin(a)*r*.7,t:1.1,hit:false})}}
+   for(const q of n.roots){q.t-=dt;if(q.t<=0&&!q.hit){q.hit=true;if(Math.hypot(P.x-q.x,P.y+4-q.y)<14&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)&&!dead){P.hp--;hurt=1.2;say('Roots burst from the ground!');try{sfx('hurt')}catch(e){}}}}
+   n.roots=n.roots.filter(q=>q.t>-.5);
+   // at half its life it calls the wolves of the wood
+   if(!n.half&&n.hp<=n.mhp/2){n.half=true;n.scd=0;say('The Thornheart howls, and the wolves of the wood answer!');msgT=3}
+   if(n.half&&(n.scd-=dt)<=0){n.scd=14;const alive=en.filter(o=>o.summon&&!o.dead).length;for(let k=alive;k<2;k++){const a=Math.random()*6.283,wx=n.x+Math.cos(a)*30,wy=n.y+Math.sin(a)*24;if(!solid(wx,wy)){const w=rgMake('wolf:briar',22,wx,wy);w.summon=1;w._prov=9;en.push(w)}}}}
+  // its reward, once
+  {const n=BW.boss;if(n&&n.hp<=0&&!n._rew){BW.boss=null;n._rew=1;n.dead=1;n.dropped=1;THDAY=today();try{saveLocal(true)}catch(e){}
+   GLD+=450;inv.oaklog=(inv.oaklog|0)+6;inv.willowlog=(inv.willowlog|0)+4;inv.emerald=(inv.emerald|0)+1;addXp(0,600);addXp(7,300);
+   let rare='';if(Math.random()<.1||window.SQTHORNDROP){inv.ja_thorn=(inv.ja_thorn|0)+1;rare=' and a THORN AMULET!'}
+   sqEvent('dungeonboss','thornheart');say('The Thornheart crumbles into the earth. +450 gold, oak and willow logs, an emerald'+(rare||'.'));msgT=6;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){}}}
+  // the Thorn amulet: whatever hurts you gets hurt back
+  if(P.hp<hp0&&!dead&&window.SQJW&&SQJW.neck==='ja_thorn'){let best=null,bd=48;for(const m of en){if(m.dead)continue;const d=Math.hypot(m.x-P.x,m.y-P.y);if(d<bd){bd=d;best=m}}
+   if(best){best.hp-=4;try{DMGS.push({x:best.x,y:best.y-16,v:'4',t:0,c:'#78e060',sc:curScene()})}catch(e){}if(best.hp<=0&&!best.dead){if(typeof killEnemy==='function'&&best.type!=='thorn')killEnemy(best,'thorn')}}}}}
+// how it looks: a hulking tree with glowing eyes and thorny arms
+function drawThorn(n,tm){const x=Math.round(n.x),y=Math.round(n.y),K='#181018',hit=Math.abs(n.kx)+Math.abs(n.ky)>.3,sw=Math.round(Math.sin((n.t||0)*3)*2),B=hit?'#ffffff':'#6a4424',Bd=hit?'#e0e0e0':'#4a2c14',L=hit?'#ffffff':'#3e8a32',Ld='#2a6424';
+ for(const q of n.roots){if(q.t>0){const a=.4+.4*Math.sin(tm*14);g.strokeStyle='rgba(120,230,90,'+a+')';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,13,7,0,0,6.283);g.stroke()}else{const h=Math.round(14*Math.min(1,-q.t*5+1));for(const dx of[-6,0,6]){Rg(q.x+dx-1,q.y-h,3,h,K);Rg(q.x+dx,q.y-h+1,1,h-1,'#7a5030');Rg(q.x+dx-1,q.y-h-1,1,1,'#58a040')}}}
+ shd(x,y+8,40);
+ // legs (roots)
+ for(const s of[-1,1]){Rg(x+s*8-4,y-4,8,12,K);Rg(x+s*8-3,y-3,6,10,Bd);Rg(x+s*8-6+(s>0?4:0),y+6,8,3,K)}
+ // trunk
+ Rg(x-13,y-38,26,36,K);Rg(x-12,y-37,24,34,B);for(const c of[-8,-2,5])Rg(x+c,y-36,1,32,Bd);Rg(x-12,y-37,3,34,Bd);
+ // face
+ Rg(x-8,y-30,6,4,K);Rg(x+2,y-30,6,4,K);const glow=hit?'#ffffff':'#a8ff78';Rg(x-7,y-29,4,2,glow);Rg(x+3,y-29,4,2,glow);Rg(x-5,y-20,10,3,K);for(let k=0;k<4;k++)Rg(x-4+k*3,y-20,1,2,'#d8f0a0');
+ // thorny arms
+ for(const s of[-1,1]){const ax=x+s*13,ay=y-30+sw*s;Rg(Math.min(ax,ax+s*14),ay,15,5,K);Rg(Math.min(ax,ax+s*14)+1,ay+1,13,3,B);for(let k=0;k<4;k++)Rg(ax+s*(3+k*3),ay-2,1,2,K);Rg(ax+s*14-(s>0?0:4),ay+3,4,8,K);Rg(ax+s*14-(s>0?-1:3),ay+4,2,6,B)}
+ // crown of leaves
+ for(const[cx,cy,r]of[[0,-44,15],[-12,-40,10],[12,-40,10],[-6,-50,9],[7,-50,9]]){g.fillStyle=K;g.beginPath();g.arc(x+cx,y+cy,r+1,0,6.283);g.fill()}
+ for(const[cx,cy,r]of[[0,-44,15],[-12,-40,10],[12,-40,10],[-6,-50,9],[7,-50,9]]){g.fillStyle=L;g.beginPath();g.arc(x+cx,y+cy,r,0,6.283);g.fill();g.fillStyle=Ld;g.fillRect(x+cx-r+2,y+cy+r-4,r*2-4,2)}
+ for(const[a,b]of[[-8,-50],[4,-46],[-14,-42],[10,-52]])Rg(x+a,y+b,3,2,'#78c858');for(const[a,b]of[[-3,-56],[9,-44],[-12,-36]])Rg(x+a,y+b,2,2,'#e84858');
+ // health bar
+ const w=40,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-66,w+2,5,K);Rg(x-w/2,y-65,w,3,'#3a1a1a');Rg(x-w/2,y-65,Math.round(w*f),3,'#78d050')}
+{const _pS=pS;pS=function(n,tm){if(n&&n.type==='thorn')return drawThorn(n,tm);return _pS(n,tm)}}
+// saving the boss day
+{const _sn=snap;snap=function(){const s=_sn();s.thd=THDAY;return s}}
+{const _ap=applySave;applySave=function(S){_ap(S);THDAY=isFinite(S&&S.thd)?+S.thd:-1}}
+try{if(typeof KNOWN49!=='undefined'&&KNOWN49.add)KNOWN49.add('thd')}catch(e){}
+
+// ---- the Thorn amulet (the Thornheart's rare drop) ----
+if(window.SQJK){SQGEMC.thorn=['#78d050','#2a6a20'];const j={k:'ja_thorn',n:'Thorn amulet',s:'neck',g:'thorn',v:4000,d:'Anything that hurts you takes 4 damage back.'};SQJK[j.k]=j;
+ INVK.push(j.k);if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]='Amulet (rare, from the Thornheart): '+j.d+' Wear it from the Bag.';SELLP[j.k]=1500;SN[j.k]=j.n+'s';if(typeof SHORT!=='undefined')SHORT[j.k]=j.n.toLowerCase()}
+
+// ---- the wiki ----
+try{WK_DUN.push({n:'Thornroot Hollow',w:'South-west Briarwood Isle',boss:'The Thornheart',bhp:TH_HP,d:'Six floors of roots and ruins: moss slimes, briar wolves, bats and skeletons. The Thornheart throws roots up out of the ground (watch the green rings) and calls briar wolves at half health.',loot:'450 gold, oak and willow logs, an emerald (once a day); rare: Thorn amulet (10%)'},
+  {n:'Ironcrest mines and caves',w:'Ironcrest Highlands: two mines by the mining camps, two caves in the cliffs',boss:'None',bhp:0,d:'Six floors each, packed with ore veins (gold, mithril and adamant deeper down), chests, snow wolves, rime skeletons, frost slimes and bats. Campfires work inside.',loot:'Ore and chest loot'})}catch(e){}
+try{WK_RARE.push(['Thorn amulet','ja_thorn','Thornheart','An amulet: anything that hurts you takes 4 damage back.','10% from the Thornheart (Thornroot Hollow, Briarwood).'])}catch(e){}
+}
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
