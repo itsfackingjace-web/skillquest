@@ -9144,7 +9144,11 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
   return keys.filter(k=>norm(INAME[k]).includes(nq)||norm(k).includes(nq))}
  const skillIdx=q=>{const nq=norm(q);let i=SKN.findIndex(n=>norm(n)===nq);if(i<0)i=SKN.findIndex(n=>norm(n).startsWith(nq));return i};
  function dev(cmd,args){
-  if(cmd==='dev'||cmd==='devhelp'){out('Dev: /give item [n] · /find text · /gold n · /xp skill n · /heal · /boss dragon|demon|giant|wisp [hp] · /boss off');return}
+  if(cmd==='dev'||cmd==='devhelp'){out('Dev: /give item [n] · /find text · /gold n · /xp skill n · /heal · /boss dragon|demon|giant|wisp [hp] · /boss off · /castle · /pet wolf|briar|snow|void|tree|imp');return}
+  if(cmd==='castle'){inv.castle=(inv.castle|0)+1;out('Gave you a Castle. Open your Bag, pick it and press PLACE.');saveLocal(true);if(pnOpen)rPn();return}
+  if(cmd==='pet'){const PK={wolf:'pwolf',briar:'pbriar',snow:'psnow',void:'pvoid',tree:'ptree',treeling:'ptree',imp:'imp'},k=PK[(args[0]||'').toLowerCase()];
+   if(!k){out('Usage: /pet wolf|briar|snow|void|tree|imp');return}if(k==='imp'){if(window.LUX&&LUX.giveImp)LUX.giveImp();out('Gave you the Imp pet.');return}
+   if(window.SQGIVEPET)SQGIVEPET(k);out('Gave you a pet '+((window.SQNPET&&SQNPET[k].n)||k).toLowerCase()+'.');return}
   if(cmd==='find'){const q=args.join(' ');if(!q){out('Usage: /find text');return}const r=findItems(q);out(r.length?r.slice(0,12).map(k=>k+' = '+INAME[k]).join(' · ')+(r.length>12?' · (+'+(r.length-12)+' more)':''):'No items match "'+q+'".');return}
   if(cmd==='give'){let n=1;if(args.length>1&&/^\d+$/.test(args[args.length-1]))n=Math.min(100000,+args.pop());const q=args.join(' ');if(!q){out('Usage: /give item [n]');return}
    const r=findItems(q);if(r.length!==1){out(r.length?'Which one? '+r.slice(0,10).map(k=>k+' = '+INAME[k]).join(' · '):'No items match "'+q+'". Try /find.');return}
@@ -9160,7 +9164,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
    WB.told=-1;out('Spawned a '+WBT[t].n+' ('+hp+' HP) just in front of you. Only you can see it. /boss off to remove it.');return}
   return false}
  const _s=mpSend;mpSend=function(t){const m=String(t||'').trim().match(/^\/(\w+)\s*(.*)$/);if(m&&devOK){const c=m[1].toLowerCase(),a=m[2].trim()?m[2].trim().split(/\s+/):[];
-   if(['dev','devhelp','give','find','gold','xp','heal','boss'].includes(c)){try{dev(c,a)}catch(e){out('Dev command failed: '+e.message)}return}}return _s(t)};
+   if(['dev','devhelp','give','find','gold','xp','heal','boss','castle','pet'].includes(c)){try{dev(c,a)}catch(e){out('Dev command failed: '+e.message)}return}}return _s(t)};
  window.SQDEV=()=>devOK}
 // ---------------------------------------------------------------- 84. The SkillQuest Wiki (title screen and START menu)
 // A guide to everything in the game: skills and perks, every item (what it's for, where it's made, what it sells
@@ -9168,6 +9172,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.05-20',d:'Nov 5, 2026',t:'Dev tools',n:['Behind-the-scenes testing tools for the new castle and pets. Nothing changes for players.']},
  {v:'2026.11.05-19',d:'Nov 5, 2026',t:'The islands update',n:['Fishing now works on every island, from the shore and from your boat, and each island has its own fish: pike and golden carp (Briarwood), ember eels and lava snappers (Ashfall), ice cod and glacier char (Ironcrest), void rays and crystal anglers (Shattered Expanse).','Farming is public: every tilled plot and crop belongs to everyone. Anyone can till, plant, water and harvest any plot on any island, and everybody sees the same fields growing.','Sail off the edge of the map! Once you have charted a route, sail into Hollow Island\'s west edge to reach Briarwood, east for Ashfall, north for Ironcrest and south for the Shattered Expanse. Sail back off the island\'s edge facing Hollow to come home.','Ironcrest Highlands has two mines and two caves (by the mining camps and in the cliffs). Three floors each, full of ore, and campfires work inside.','Far fewer monsters, and calmer ones: they only come for you when you get close or hit them, chase more slowly, and you get a little longer between hits.','Rain and snow now fall on the other islands too (ash haze on Ashfall), and rain waters crops there.','Every island\'s pier has a trader who buys what you gather.','Crystal veins now show the ore inside (gold, blue mithril, green adamant, lavender iron), and scorched or dark trees show what wood they give.','Rare pets: a wolf with a red collar (1 in 1,000 from each kind of wolf) and a little Treeling (1 in 5,000 trees chopped).','Sharks prowl the Shattered Expanse. They leave you alone, unless you\'re hurt and near the water.','New rare drop from the Stone Giant: a Castle. It works like a house, with a great hall inside, and its torches keep monsters away and heal you.','Fixed: ✕ on a controller now opens chests on the other islands.']},
  {v:'2026.11.05-18',d:'Nov 5, 2026',t:'Craft your own hoe',n:['You can now craft a hoe (3 wood, 2 stone) and a watering can (2 wood, 3 stone) in the Craft menu, under the tools. Both need Crafting 1. The general store still sells them too.']},
  {v:'2026.11.05-17',d:'Nov 5, 2026',t:'Controller landing fix, part 2',n:['Fixed: landing with ✕ on a controller on Briarwood, Ashfall, Ironcrest or the Shattered Expanse left you standing in the water next to the shore, unable to move. ✕ now puts you on land properly.','Landing is easier on rocky, jagged coasts and in narrow inlets: if there\'s land right beside the boat, you can go ashore there.']},
