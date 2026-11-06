@@ -7265,7 +7265,7 @@ async function mpLoad(){const b='https://www.gstatic.com/firebasejs/'+FBV+'/';
 // Phones (iPhone Safari, the Home Screen app) block the storage Firebase's own redirect sign-in needs, so the sign-in
 // would finish at Google and then quietly drop you back on the title screen. There we send you to Google ourselves and
 // come straight back to this page with your Google ID token, then hand it to Firebase.
-const GSI={id:'711983472658-56o2oshpk2ld2c3bj3pepjq5li2red7c.apps.googleusercontent.com',ready:false,
+const GSI={id:'711983472658-56o2oshpk2ld2c3bj3pepjq5li2red7c.apps.googleusercontent.com',ready:true,
  on:()=>GSI.ready&&location.hostname==='skillquestmmo.com',
  phone:()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)||!!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))};
 function gsiNote(e){const c=String((e&&(e.code||e.message))||e||'');if(/popup-closed|cancelled-popup/.test(c))return;
@@ -9195,7 +9195,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.06-6',d:'Nov 6, 2026',t:'Sign-in fixes',n:['If Google sign-in doesn\'t finish, the title screen now tells you why instead of quietly doing nothing.']},
+ {v:'2026.11.06-6',d:'Nov 6, 2026',t:'Sign-in fixes',n:['Fixed Google sign-in on iPhones and in the Home Screen app: picking your account sometimes just dropped you back on the title screen. It now takes you to Google and straight back into the game, signed in.','If Google sign-in doesn\'t finish, the title screen now tells you why instead of quietly doing nothing.']},
  {v:'2026.11.06-5',d:'Nov 6, 2026',t:'Island bosses in the wiki',n:['The wiki\'s Bosses tab now lists all five island bosses (they were missing before), with their new pictures, where to find them, the shards that open their door and their rewards.','Each entry explains how the boss fights and what to watch for before each attack.','Every island boss has a 5% rare drop, listed in the wiki: the Webling pet (Briar Queen), the Warlord\'s blade (Iron Warlord), the Frostbite ring (Frost Wyrm), the Voidling pet (Void Herald) and the Outlaw\'s hat (Black Jack). They also appear under Pets and rare items.']},
  {v:'2026.11.06-4',d:'Nov 6, 2026',t:'Island bosses come to life',n:['The island bosses have been redrawn again, now with real animations: they walk, crawl, slither and drift toward you, and each attack has its own wind-up and strike.','Every attack now has a short tell before it lands. The Briar Queen rears up before spitting web, the Iron Warlord raises his greatsword before a sweep and lowers it before he charges, the Frost Wyrm rears back before it breathes ice, the Void Herald lifts its orbs before it casts, and Black Jack draws both pistols before he fires or lights dynamite over his head.','Watch for the wind-up: that\'s your moment to roll.']},
  {v:'2026.11.06-3',d:'Nov 6, 2026',t:'New island boss art',n:['All five island bosses have been redrawn in the same style as the world bosses: the Briar Queen is a thorn-backed spider with a rose on her back, the Iron Warlord wears horned armour and a red cape, the Frost Wyrm rises from its coils, the Void Herald floats with a crown of shards, and Black Jack wears a long duster coat.']},
