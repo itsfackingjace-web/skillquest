@@ -9211,6 +9211,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.06-16',d:'Nov 6, 2026',t:'Bug fixes',n:['Fixed plateau stairways you couldn\'t walk up: about a third of them led up to the cliff edge and stopped you at the top. Every stairway now has open ground at the top and can be climbed.','Stairways no longer stop you stepping off their sides.']},
  {v:'2026.11.06-15',d:'Nov 6, 2026',t:'Tap the minimap',n:['Tap (or click) the minimap in the corner to open the full map. Works on Hollow Island, every island, and in the deep dungeons.']},
  {v:'2026.11.06-14',d:'Nov 6, 2026',t:'SkillQuest for Windows',n:['SkillQuest is coming to Windows as its own app. On a Windows PC, Options has a Get the Windows app button.','The app plays the same online game as the website: same accounts, same saves, same players. It always runs the newest version, and works offline too.','To sign in from the app, it opens your web browser for Google sign-in, then puts you back in the game.','Press F11 in the app for full screen.','The title screen and character creator no longer show a scrollbar on Windows.']},
  {v:'2026.11.06-13',d:'Nov 6, 2026',t:'Two-column menu',n:['The menu is laid out in two columns, so it\'s half as tall and everything fits on a phone screen without scrolling.','Keyboard and controller: up/down move between rows, left/right between the two columns.','"Save & quit to title" is now just "Save & quit" (it still saves and takes you to the title screen).']},
@@ -12111,7 +12112,11 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
    // stairways climb a cliff face (a rock tile with open ground right below it and plateau above it)
    const face=r=>inG.has(r)&&open(r+W)&&inG.has(r-W)&&inG.has(r-2*W);
    const cand=[];for(const r of grp){if(!face(r))continue;const o=r+W;let room=0;for(const[c,d]of D4)if(open(o+d*W+c))room++;if(room<3)continue;
-    const two=face(r+1)?r+1:face(r-1)?r-1:null;cand.push({r,two,sc:(two!=null?3:0)+(T[o]===14||T[o+W]===14?3:0)+(open(o+W)&&open(o+2*W)?1:0)+C.rnd()*2})}
+    let two=face(r+1)?r+1:face(r-1)?r-1:null;
+    // the top of the stairs needs open plateau on both sides (two rows up), or the edge would pinch the way up
+    const roomy=(a,b)=>{for(let k=1;k<=2;k++)for(let x=a-1;x<=b+1;x++)if(!inG.has(x-k*W))return false;return true};
+    if(two!=null&&!roomy(Math.min(r,two),Math.max(r,two)))two=null;if(two==null&&!roomy(r,r))continue;
+    cand.push({r,two,sc:(two!=null?3:0)+(T[o]===14||T[o+W]===14?3:0)+(open(o+W)&&open(o+2*W)?1:0)+C.rnd()*2})}
    let side=[];if(!cand.length){// no cliff face to climb: a ramp up one of the other edges instead
     for(const r of grp)for(const[a,b]of[[1,0],[-1,0],[0,-1]]){const o=r+b*W+a;if(!open(o)||!inG.has(r-b*W-a))continue;side.push({r,a,b,sc:C.rnd()})}side.sort((p,q)=>q.sc-p.sc);side=side.slice(0,1)}
    cand.sort((p,q)=>q.sc-p.sc);const want=Math.min(9,1+Math.floor(grp.length/90)),got=[];
@@ -12119,7 +12124,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
    if(!got.length&&!side.length)continue;
    for(const g of grp)plat[g]=1;
    for(const c of got)for(const r of c.two!=null?[c.r,c.two]:[c.r]){st.push([r,0,-1]);C.keep[r]=1;C.keep[r+W]=1;C.O[r+W]=null}
-   for(const c of side){st.push([c.r,c.a,c.b]);C.keep[c.r]=1}
+   for(const c of side){st.push([c.r,c.a,c.b<0?1:c.b]);C.keep[c.r]=1}// (a ramp up the back edge is stored as b=1: south stairways are b=-1)
    // scatter a little on the open tops, away from the edges and the stairways
    const near=(g,d)=>st.some(q=>Math.abs(q[0]%W-g%W)+Math.abs(((q[0]/W)|0)-((g/W)|0))<d);
    for(const g of grp){if(C.keep[g])continue;let all=1;for(let b=-1;b<=1&&all;b++)for(let a=-1;a<=1;a++)if(!inG.has(g+b*W+a)){all=0;break}if(!all||near(g,4))continue;
@@ -12133,7 +12138,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  window.SQPLAT=plateaus;
  // edges: which sides of each plateau tile drop to lower ground (1 N, 2 S, 4 W, 8 E). Stair tiles are open on the stair side.
  function edges(R){if(R._pe!==undefined)return R._pe;const P=R.plat;if(!P)return R._pe=null;const W=R.w,E=new Uint8Array(W*R.h),sd=new Map(R.platSt.map(q=>[q[0],q]));
-  for(let i=0;i<W*R.h;i++){if(!P[i])continue;let m=0;if(!P[i-W])m|=1;if(!P[i+W])m|=2;if(!P[i-1])m|=4;if(!P[i+1])m|=8;const q=sd.get(i);if(q){if(q[2]<0)m&=~2;else if(q[2]>0)m&=~1;else if(q[1]>0)m&=~4;else m&=~8}E[i]=m}return R._pe=E}
+  for(let i=0;i<W*R.h;i++){if(!P[i])continue;let m=0;if(!P[i-W])m|=1;if(!P[i+W])m|=2;if(!P[i-1])m|=4;if(!P[i+1])m|=8;const q=sd.get(i);if(q)m=0;E[i]=m}return R._pe=E}
  const _so=solid;solid=function(px,py){if(_so(px,py))return true;const R=SCENE&&SCENE.room;if(!R||!R.plat)return false;const x=Math.floor(px/16),y=Math.floor(py/16),i=y*R.w+x,E=edges(R);if(!E)return false;
   const P=R.plat;if(!P[i])return false;const m=E[i];if(!m)return false;const lx=px-x*16,ly=py-y*16;return(m&1&&ly<5)||(m&2&&ly>=7)||(m&4&&lx<5)||(m&8&&lx>=11)};
  // the stairways: stone steps from the plateau top down the cliff face to the ground
