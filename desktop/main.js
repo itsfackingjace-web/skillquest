@@ -34,6 +34,8 @@ function create() {
     e.preventDefault(); if (/^https?:/.test(url)) shell.openExternal(url);
   });
   win.webContents.on('page-title-updated', e => e.preventDefault());
+  // no page scrollbar on the game window
+  win.webContents.on('did-finish-load', () => { win.webContents.insertCSS('html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}html,body{overscroll-behavior:none}'); });
   // F11 full screen, Ctrl+R / F5 reload, Ctrl+Shift+I developer tools
   win.webContents.on('before-input-event', (e, i) => {
     if (i.type !== 'keyDown') return;
