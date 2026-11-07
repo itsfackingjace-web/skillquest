@@ -705,15 +705,31 @@ const _dr7=draw;draw=function(){_dr7();if(!isPC||menuOpen)return;let f=true;try{
 let lastWid=null;const myDev=Math.random().toString(36).slice(2,10);
 const wOf=S=>S&&S.wid||'legacy';
 const _ap7=applySave;applySave=function(S){_ap7(S);lastWid=wOf(S)};
-function adoptRemote(rs){const S=JSON.parse(JSON.stringify(rs));applySave(S);FISH=null;hideCreator();closePanel();say('Synced progress from your other device');saveLocal(true);lastCloud=keyOf(snap())}
-saveCloud=async function(force){if(!cloud||cloudBusy||dead)return;if(keyOf(snap())===lastCloud&&!force)return;cloudBusy=true;
+// What this device last synced with the account (the account save's id and how much progress it had). A save that
+// another device wrote since then is taken automatically only when this device hasn't made progress of its own since
+// and the other save isn't behind; otherwise the player picks. (Comparing save times was wrong: a device that was just
+// opened saves straight away, so its old progress always looked "newest" and overwrote the account.)
+const sqPf=S=>{try{const xp=(S.xp||[]).reduce((a,v)=>a+(+v||0),0),iv=S.inv?Object.values(S.inv).reduce((a,v)=>a+(+v||0),0):0;return xp+'|'+(+S.gold||0)+'|'+(S.q?S.q.i:0)+'|'+iv}catch(e){return'?'}};
+const sqXpSum=S=>{try{return(S.xp||[]).reduce((a,v)=>a+(+v||0),0)}catch(e){return 0}};
+function syncMark(S){try{localStorage.setItem('sq_spf',JSON.stringify({wid:wOf(S),pf:sqPf(S)}))}catch(e){}}
+function syncDecide(L,S){// 'push' (the account hasn't changed since we synced), 'adopt' or 'ask'
+ if(wOf(S)===lastWid)return'push';let rec=null;try{rec=JSON.parse(localStorage.getItem('sq_spf')||'null')}catch(e){}
+ const localSame=!!(rec&&rec.pf===sqPf(L));// no progress here since the last sync (or a device from before this was tracked)
+ if((localSame||!rec)&&sqXpSum(S)>=sqXpSum(L))return'adopt';return'ask'}
+function adoptRemote(rs){const S=JSON.parse(JSON.stringify(rs));const L=snap();L.savedAt=LOCAL_AT;try{mpBackup('device',L)}catch(e){}applySave(S);FISH=null;hideCreator();closePanel();say('Synced progress from your other device');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
+function syncAsk(rs){if(window.SQMP&&SQMP.choose)return;const L=snap();L.savedAt=LOCAL_AT;const S=JSON.parse(JSON.stringify(rs));
+ mpChooseSave(L,S,pick=>{if(pick==='account'){adoptRemote(S);say('Loaded your account save. This device\'s save is backed up (Options → Backups).')}
+  else{mpBackup('account',S);lastWid=wOf(S);LOCAL_AT=Date.now();saveCloud(true);say('Kept this device\'s save. The other one is backed up (Options → Backups).')}})}
+function syncCheck(rs){if(!(rs&&rs.v==1&&lastWid!==null))return false;const L=snap();if(keyOf(L)===keyOf(rs)){lastWid=wOf(rs);syncMark(rs);return false}
+ const d=syncDecide(L,rs);if(d==='push')return false;if(d==='adopt')adoptRemote(rs);else syncAsk(rs);return true}
+saveCloud=async function(force){if(!cloud||cloudBusy||dead||(window.SQMP&&SQMP.choose))return;if(keyOf(snap())===lastCloud&&!force)return;cloudBusy=true;
  try{const r=await cloud.get(),rs=r&&r.exists?r.data():null;
-  if(rs&&rs.v==1&&lastWid!==null&&wOf(rs)!==lastWid&&(+rs.savedAt||0)>LOCAL_AT){adoptRemote(rs);return}
-  if(dead)return;const s=snap(),k=keyOf(s);s.savedAt=Date.now();s.wid=myDev+'-'+Date.now().toString(36);s.dev=myDev;await cloud.set(s);lastWid=s.wid;lastCloud=k;cloudOk=performance.now()/1000}
+  if(syncCheck(rs))return;
+  if(dead)return;const s=snap(),k=keyOf(s);s.savedAt=Date.now();s.wid=myDev+'-'+Date.now().toString(36);s.dev=myDev;await cloud.set(s);lastWid=s.wid;lastCloud=k;cloudOk=performance.now()/1000;syncMark(s)}
  catch(e){const c=e&&e.code;if(c=='invalid_argument'||c=='revoked'||c=='not_granted'||c=='capability_disabled'||c=='capability_removed')cloud=null}
  finally{cloudBusy=false}};
 document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||!cloud||cloudBusy)return;
- try{const r=await cloud.get(),rs=r&&r.exists?r.data():null;if(rs&&rs.v==1&&lastWid!==null&&wOf(rs)!==lastWid&&(+rs.savedAt||0)>LOCAL_AT)adoptRemote(rs)}catch(e){}});
+ try{const r=await cloud.get(),rs=r&&r.exists?r.data():null;syncCheck(rs)}catch(e){}});
 // ---- chess engine (board index 0 = a8, 63 = h1; uppercase = white) ----
 const CE=(()=>{
  const VAL={p:100,n:320,b:330,r:500,q:900,k:0};
@@ -4333,7 +4349,7 @@ function saveNow(){saveLocal(true);saveCloud(true)}
 // page closing/hiding: write straight to the account (no read first) once this session has synced with it
 function cloudFlush(){if(!cloud||dead)return;if(lastWid===null){saveCloud(true);return}
  try{const s=snap(),k=keyOf(s);if(k===lastCloud)return;s.savedAt=Math.max(Date.now(),LOCAL_AT);s.wid=myDev+'-'+Date.now().toString(36);s.dev=myDev;
-  const pr=cloud.set(s);lastWid=s.wid;lastCloud=k;if(pr&&pr.catch)pr.catch(()=>{})}catch(e){}}
+  const pr=cloud.set(s);lastWid=s.wid;lastCloud=k;syncMark(s);if(pr&&pr.catch)pr.catch(()=>{})}catch(e){}}
 function saveHide(){if(dead)return;saveLocal(true);cloudFlush();try{localStorage.setItem(LS,JSON.stringify(Object.assign(JSON.parse(localStorage.getItem(LS)||'{}'),{wid:lastWid})))}catch(e){}}
 // ---------------------------------------------------------------- 41. Frosthollow: the northern snow village
 // A small lumber village in the snowy north: Pine & Plank (lumber), the Ember Lodge (inn + hearth cooking), the
@@ -7240,17 +7256,21 @@ async function mpLinkSave(uid,adapter){const r=await adapter.get(),linked=lsGet(
  // that account's cloud save, and backed up here), so load this account's own save, or start it fresh
  const prev=lsGet('sq_acct');if(prev&&prev!==uid&&localHasProgress()){const L=snap();L.savedAt=LOCAL_AT;try{mpBackup('device',L)}catch(e){}
   let S=null;if(r.exists){try{S=JSON.parse(JSON.stringify(r.data()))}catch(e){}}
-  if(S&&S.v==1){applySave(S);hideCreator();say('Switched account: loaded this account\'s save.');saveLocal(true);lastCloud=keyOf(snap());done();return}
-  newGame();done();say('Switched account: this account has no save yet, so make a new character.');return}
+  if(S&&S.v==1){applySave(S);hideCreator();say('Switched account: loaded this account\'s save.');saveLocal(true);lastCloud=keyOf(snap());syncMark(S);done();return}
+  try{localStorage.removeItem('sq_spf')}catch(e){}newGame();done();say('Switched account: this account has no save yet, so make a new character.');return}
  if(!r.exists){done();if(localHasProgress())saveCloud(true);return}
  const S=JSON.parse(JSON.stringify(r.data()));if(S.v!=1){done();return}
- if(!localHasProgress()){applySave(S);hideCreator();say('Progress loaded from your account');saveLocal(true);lastCloud=keyOf(snap());done();return}
+ if(!localHasProgress()){applySave(S);hideCreator();say('Progress loaded from your account');saveLocal(true);lastCloud=keyOf(snap());syncMark(S);done();return}
  const L=snap();L.savedAt=LOCAL_AT;
- if(keyOf(L)===keyOf(S)){done();return}
+ if(keyOf(L)===keyOf(S)){lastWid=wOf(S);syncMark(S);done();return}
  if(linked){ // same account as before: newest wins (another device's newer progress is adopted)
-  if((+S.savedAt||0)>LOCAL_AT+2000){mpBackup('device',L);applySave(S);hideCreator();say('Synced progress from your account');saveLocal(true);lastCloud=keyOf(snap())}else{lastWid=wOf(S);saveCloud(true)}done();return}
+  const d=syncDecide(L,S);if(d==='adopt'){mpBackup('device',L);applySave(S);hideCreator();say('Synced progress from your account');saveLocal(true);lastCloud=keyOf(snap());syncMark(S);done();return}
+  if(d==='push'){saveCloud(true);done();return}
+  // both changed, or the account save is behind this one: the player picks (the other is backed up)
+  mpChooseSave(L,S,pick=>{if(pick==='account'){mpBackup('device',L);applySave(S);hideCreator();say('Loaded your account save. This device\'s save is backed up (Options → Backups).');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
+   else{mpBackup('account',S);lastWid=wOf(S);LOCAL_AT=Date.now();done();saveCloud(true);say('Kept this device\'s save. The other one is backed up (Options → Backups).');return}done()});return}
  // first time this device meets this account and both have different progress: ask
- mpChooseSave(L,S,pick=>{if(pick==='account'){mpBackup('device',L);applySave(S);hideCreator();say('Loaded your account save. This device\'s old save is backed up.');saveLocal(true);lastCloud=keyOf(snap())}
+ mpChooseSave(L,S,pick=>{if(pick==='account'){mpBackup('device',L);applySave(S);hideCreator();say('Loaded your account save. This device\'s old save is backed up (Options → Backups).');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
   else{mpBackup('account',S);LOCAL_AT=Date.now();lastWid=wOf(S);done();saveCloud(true);say('Kept this device\'s save. It is now your account save.');return}done()})}
 function mpChooseSave(L,S,cb){const a=saveInfo(L),b=saveInfo(S);const box=el('div','mpsave','g3');
  const card=(k,t,i)=>'<button class="sv" data-k="'+k+'"><b>'+t+'</b><span>Player</span><span>'+esc(i.name)+'</span><span>Total level</span><span>'+i.tl+'</span><span>Quest</span><span>'+i.q+' / '+QS.length+'</span><span>Gold</span><span>'+i.gold+'</span><span>Saved</span><span>'+ago(i.at)+'</span></button>';
@@ -9211,6 +9231,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.07-1',d:'Nov 7, 2026',t:'Saves across devices fixed',n:['Fixed a serious bug that could lose progress when you play on more than one device: opening the game on a device with older progress could overwrite the newer progress you made on another device.','Now each device remembers which account save it last synced with. If another device has saved newer progress since, it\'s loaded automatically. If both devices have new progress, or the account save is behind this one, you choose which to keep, and the other is backed up.','New: Options → Backups lists the saves this device has backed up (whenever a save was replaced), with their total level, quest and gold. Tap Restore (twice) to bring one back. It\'s saved to your account too.','Lost progress yesterday? Open the game on the device where you had it. If it asks which save to keep, pick the one with the higher total level. If it doesn\'t ask, check Options → Backups.','Fixed Options sometimes not showing that you were signed in, so Sign out and Switch Google account were missing.']},
  {v:'2026.11.06-16',d:'Nov 6, 2026',t:'Bug fixes',n:['Fixed plateau stairways you couldn\'t walk up: about a third of them led up to the cliff edge and stopped you at the top. Every stairway now has open ground at the top and can be climbed.','Stairways no longer stop you stepping off their sides.']},
  {v:'2026.11.06-15',d:'Nov 6, 2026',t:'Tap the minimap',n:['Tap (or click) the minimap in the corner to open the full map. Works on Hollow Island, every island, and in the deep dungeons.']},
  {v:'2026.11.06-14',d:'Nov 6, 2026',t:'SkillQuest for Windows',n:['SkillQuest is coming to Windows as its own app. On a Windows PC, Options has a Get the Windows app button.','The app plays the same online game as the website: same accounts, same saves, same players. It always runs the newest version, and works offline too.','To sign in from the app, it opens your web browser for Google sign-in, then puts you back in the game.','Press F11 in the app for full screen.','The title screen and character creator no longer show a scrollbar on Windows.']},
@@ -12269,14 +12290,14 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  // new quests jump to the front of the tracker when you start them
  let lastAct=null;setInterval(()=>{try{const ids=qAll().filter(e=>e.st==='active').map(e=>e.id);if(lastAct){const nw=ids.find(i=>!lastAct.includes(i));if(nw){TRK=nw;try{localStorage.setItem('sq_trk',TRK)}catch(e){}TGT_AT=0}}lastAct=ids}catch(e){}},1500)}
 // ---- 102. Account in Options: who you're signed in as, Sign out, Switch account ----
-{const _o=optionsHTML;optionsHTML=function(){const h=_o(),k=h.indexOf('data-o="myname"');const u=MP.user,E=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+{const _o=optionsHTML;optionsHTML=function(){const h=_o(),k=h.indexOf('data-o="myname"');const u=window.SQMP&&SQMP.user,E=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   const add=u?'<div class="qc" style="font-size:14px;line-height:1.4;padding:10px 12px;margin:8px 0">Signed in as <b style="color:#3058c8">'+E(u.displayName||myName())+'</b>'+(u.email?'<br><small style="opacity:.75">'+E(u.email)+'</small>':'')+'</div><button class="sb mpacct" data-a="out">Sign out</button><button class="sb mpacct" data-a="switch">Switch Google account</button>'
    :'<button class="sb mpacct" data-a="in">Sign in with Google (play online)</button><div class="qc" style="font-size:13px;line-height:1.4;padding:8px 12px;margin:6px 0">Each Google account has its own character and save.</div>';
   const winApp=!window.sqDesktop&&/Windows/.test(navigator.userAgent)?'<a class="sb" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="https://github.com/itsfackingjace-web/skillquest/releases/latest/download/SkillQuest-Setup.exe">Get the Windows app</a>':'';
   if(k<0)return h+'<div class="tl" style="margin-top:16px">ONLINE</div>'+add+winApp;const e=h.indexOf('</button>',k)+9;return h.slice(0,e)+add+winApp+h.slice(e)};
  // sign out exactly the way the chat window's Sign out button does (its code lives with the online code), then wait for it
  const out=async()=>{try{if(typeof saveCloud==='function')await saveCloud(true)}catch(e){}const so=document.getElementById('mpso');if(so)so.click();
-  for(let k=0;k<40&&MP.user;k++)await new Promise(r=>setTimeout(r,75))};
+  for(let k=0;k<40&&window.SQMP&&SQMP.user;k++)await new Promise(r=>setTimeout(r,75))};
  pbd.addEventListener('click',async ev=>{const b=ev.target.closest('.mpacct');if(!b)return;ev.stopPropagation();const a=b.dataset.a;
   if(a==='in'){mpSignIn();return}b.disabled=true;b.textContent='Signing out...';await out();try{rPn()}catch(e){}
   if(a==='switch'){say('Signed out. Pick the account to play on.');mpSignIn()}},true)}
@@ -12330,6 +12351,24 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  cv.addEventListener('touchstart',e=>{const t=e.changedTouches[0];if(t&&hit(t.clientX,t.clientY)){e.preventDefault();e.stopImmediatePropagation();open()}},{capture:true,passive:false});
  cv.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'&&hit(e.clientX,e.clientY)){e.stopImmediatePropagation();e.preventDefault();open()}},{capture:true});
  cv.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const h=hit(e.clientX,e.clientY);if(h!==(cv.style.cursor==='pointer'))cv.style.cursor=h?'pointer':''})}
+// ---- 105. Backups in Options: restore a save this device backed up ----
+// The game backs up a save on this device whenever it replaces it (up to the last 4): when another device's progress
+// is loaded, when you pick between two saves, or when you switch accounts. Options → Backups lists them; Restore puts
+// that save back (and on your account), after backing up what you have now.
+{let armed=null;const ago=t=>{if(!t)return'a while ago';const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
+ const list=()=>{try{return Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort().reverse()}catch(e){return[]}};
+ const _o=optionsHTML;optionsHTML=function(){const h=_o(),L=list();let b='<div class="tl" style="margin-top:16px">BACKUPS</div>';
+  if(!L.length)b+='<div class="qc" style="font-size:13px;line-height:1.4;padding:8px 12px;margin:6px 0">No backups on this device. The game makes one whenever it replaces this device\'s save with another one.</div>';
+  for(const k of L){let S=null;try{S=JSON.parse(localStorage.getItem(k))}catch(e){}if(!S)continue;const i=saveInfo(S),tag=k.split('_').pop(),when=+k.split('_')[2]||i.at;
+   b+='<div class="qc" style="font-size:13px;line-height:1.45;padding:8px 12px;margin:6px 0"><b>'+esc(i.name)+'</b> · total level '+i.tl+' · quest '+i.q+' · '+i.gold+' gold<br><small style="opacity:.75">'+(tag==='account'?'Account save':'This device\'s save')+', backed up '+ago(when)+'</small><br>'+
+    '<button class="sb sqrest" data-k="'+esc(k)+'" style="margin-top:6px">'+(armed===k?'Tap again to restore':'Restore this save')+'</button></div>'}
+  return h+b};
+ pbd.addEventListener('click',async ev=>{const btn=ev.target.closest('.sqrest');if(!btn)return;ev.stopPropagation();const k=btn.dataset.k;
+  if(armed!==k){armed=k;rPn();setTimeout(()=>{if(armed===k){armed=null;try{rPn()}catch(e){}}},4000);return}armed=null;
+  let S=null;try{S=JSON.parse(localStorage.getItem(k))}catch(e){}if(!S||S.v!=1){say('That backup can\'t be read.');return}
+  const cur=snap();cur.savedAt=LOCAL_AT;mpBackup('device',cur);applySave(JSON.parse(JSON.stringify(S)));hideCreator();
+  try{if(cloud){const r=await cloud.get(),rs=r&&r.exists?r.data():null;if(rs)lastWid=wOf(rs)}}catch(e){}
+  saveLocal(true);LOCAL_AT=Date.now();try{await saveCloud(true)}catch(e){}closePanel();say('Backup restored'+(cloud?' and saved to your account':'')+'. What you had before is backed up too.');sfx('quest')},true)}
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
