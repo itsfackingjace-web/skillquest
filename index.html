@@ -7243,7 +7243,9 @@ const crownImg=()=>{const i=document.createElement('img');i.src=crownURL;i.alt='
 // Once linked, the cross-device rule from section 8 applies (newest save wins, another device's newer save is adopted).
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 function mpBackup(tag,S){try{const keys=Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort();while(keys.length>=4)localStorage.removeItem(keys.shift());
- localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){}}
+ localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){}cloudBak(tag,S)}
+// the same backups also go to your account (bak/<uid>, the last 8), so any device can restore them (Options → Backups)
+function cloudBak(tag,S){try{window.sqCloudBak&&sqCloudBak(tag,S)}catch(e){}}
 const lvFromXp=x=>{let l=1;while(l<99&&(+x||0)>=XT[l])l++;return l};
 function saveInfo(S){const xp=Array.isArray(S.xp)?S.xp:[];let tl=0;for(let i=0;i<SKN.length;i++)tl+=lvFromXp(xp[i]);
  const qi=Math.max(0,+(S.q&&S.q.i)||0);return{name:String(S.name||'?').slice(0,10),tl,q:Math.min(qi,QS.length),gold:Math.max(0,+S.gold||0),at:+S.savedAt||0,
@@ -7318,12 +7320,18 @@ function mpSignIn(){if(!FB){say('Still connecting to the server... try again in 
  // in the Windows app: sign in through your browser, then come back here
  if(window.sqDesktop&&sqDesktop.signIn){say('Finish signing in with Google in your web browser, then come back here.');sqDesktop.signIn().then(r=>{if(r&&r.idToken)return FB.auth.signInWithCredential(FB.A,FB.auth.GoogleAuthProvider.credential(r.idToken));if(r&&r.error&&r.error!=='cancelled')gsiNote(r.error)}).catch(e=>{mpErr(e);gsiNote(e)});return}if(GSI.on())return gsiGo();const A=FB.auth,p=new A.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
  A.signInWithPopup(FB.A,p).catch(e=>{const c=e&&e.code||'';if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'){if(GSI.on())gsiGo();else A.signInWithRedirect(FB.A,p).catch(e=>{mpErr(e);gsiNote(e)})}else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){mpErr(e);gsiNote(e)}})}
+window.sqCloudBak=(tag,S)=>{const u=MP.user;if(!FB||!u||!S||S.v!=1)return Promise.resolve(false);const d=FB.db,D=FB.D,base='bak/'+u.uid;
+ return d.set(d.ref(D,base+'/'+Date.now()+'_'+String(tag).slice(0,12)),{json:JSON.stringify(S),at:Date.now(),tag:String(tag).slice(0,12)}).then(async()=>{
+  const s=await d.get(d.ref(D,base));if(!s.exists())return true;const ks=Object.keys(s.val()).sort();while(ks.length>8)await d.remove(d.ref(D,base+'/'+ks.shift()));return true}).catch(e=>{mpErr(e);return false})};
+window.sqCloudBakList=async()=>{const u=MP.user;if(!FB||!u)return null;const d=FB.db,D=FB.D;const s=await d.get(d.ref(D,'bak/'+u.uid));if(!s.exists())return[];const v=s.val(),out=[];
+ for(const k of Object.keys(v).sort().reverse()){let S=null;try{S=JSON.parse(v[k].json)}catch(e){}if(S&&S.v==1)out.push({k,at:+v[k].at||0,tag:v[k].tag||'',S})}return out};
 async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=u;const d=FB.db,D=FB.D,uid=u.uid;
  // account save: one JSON string per player
  const sref=d.ref(D,'saves/'+uid);
  const adapter={async get(){const s=await d.get(sref);if(!s.exists())return{exists:false,data:()=>null};let v=null;try{v=JSON.parse(s.val().json)}catch(e){}return{exists:!!v,data:()=>v}},
   async set(s){await d.set(sref,{json:JSON.stringify(s),savedAt:+s.savedAt||Date.now()})}};
  MP.adapter=adapter;try{await mpLinkSave(uid,adapter)}catch(e){mpErr(e)}
+ try{const kd='sq_dbak_'+uid,last=+lsGet(kd)||0;if(Date.now()-last>20*3600e3){const r=await adapter.get();if(r.exists){const S=r.data();if(S&&S.v==1&&await sqCloudBak('daily',S))lsSet(kd,String(Date.now()))}}}catch(e){}
  // presence
  MP.pref=d.ref(D,'presence/'+uid);MP.last='';MP.lastCh='';MP.lastN='';
  MP.unsub.push(d.onValue(d.ref(D,'.info/serverTimeOffset'),s=>{MP.off=+s.val()||0}));
@@ -9231,6 +9239,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.07-2',d:'Nov 7, 2026',t:'Backups on your account',n:['Backups are now kept on your account as well as on the device, so you can restore them from any device: phone, PC or the Windows app. They also survive clearing your browser.','Your account gets a backup of your save once a day when you play, and whenever a save is replaced on any device. The last 8 are kept.','Find them in Options → Backups → On your account. Tap Restore (twice) to bring one back.']},
  {v:'2026.11.07-1',d:'Nov 7, 2026',t:'Saves across devices fixed',n:['Fixed a serious bug that could lose progress when you play on more than one device: opening the game on a device with older progress could overwrite the newer progress you made on another device.','Now each device remembers which account save it last synced with. If another device has saved newer progress since, it\'s loaded automatically. If both devices have new progress, or the account save is behind this one, you choose which to keep, and the other is backed up.','New: Options → Backups lists the saves this device has backed up (whenever a save was replaced), with their total level, quest and gold. Tap Restore (twice) to bring one back. It\'s saved to your account too.','Lost progress yesterday? Open the game on the device where you had it. If it asks which save to keep, pick the one with the higher total level. If it doesn\'t ask, check Options → Backups.','Fixed Options sometimes not showing that you were signed in, so Sign out and Switch Google account were missing.']},
  {v:'2026.11.06-16',d:'Nov 6, 2026',t:'Bug fixes',n:['Fixed plateau stairways you couldn\'t walk up: about a third of them led up to the cliff edge and stopped you at the top. Every stairway now has open ground at the top and can be climbed.','Stairways no longer stop you stepping off their sides.']},
  {v:'2026.11.06-15',d:'Nov 6, 2026',t:'Tap the minimap',n:['Tap (or click) the minimap in the corner to open the full map. Works on Hollow Island, every island, and in the deep dungeons.']},
@@ -12355,17 +12364,25 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
 // The game backs up a save on this device whenever it replaces it (up to the last 4): when another device's progress
 // is loaded, when you pick between two saves, or when you switch accounts. Options → Backups lists them; Restore puts
 // that save back (and on your account), after backing up what you have now.
-{let armed=null;const ago=t=>{if(!t)return'a while ago';const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
+{let armed=null,ACC=null,ACC_LOAD=0;const ago=t=>{if(!t)return'a while ago';const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
  const list=()=>{try{return Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort().reverse()}catch(e){return[]}};
- const _o=optionsHTML;optionsHTML=function(){const h=_o(),L=list();let b='<div class="tl" style="margin-top:16px">BACKUPS</div>';
+ const _o=optionsHTML;optionsHTML=function(){const h=_o(),L=list();let b='<div class="tl" style="margin-top:16px">BACKUPS</div><div class="tl" style="margin-top:4px;font-size:15px">ON THIS DEVICE</div>';
   if(!L.length)b+='<div class="qc" style="font-size:13px;line-height:1.4;padding:8px 12px;margin:6px 0">No backups on this device. The game makes one whenever it replaces this device\'s save with another one.</div>';
   for(const k of L){let S=null;try{S=JSON.parse(localStorage.getItem(k))}catch(e){}if(!S)continue;const i=saveInfo(S),tag=k.split('_').pop(),when=+k.split('_')[2]||i.at;
    b+='<div class="qc" style="font-size:13px;line-height:1.45;padding:8px 12px;margin:6px 0"><b>'+esc(i.name)+'</b> · total level '+i.tl+' · quest '+i.q+' · '+i.gold+' gold<br><small style="opacity:.75">'+(tag==='account'?'Account save':'This device\'s save')+', backed up '+ago(when)+'</small><br>'+
     '<button class="sb sqrest" data-k="'+esc(k)+'" style="margin-top:6px">'+(armed===k?'Tap again to restore':'Restore this save')+'</button></div>'}
+  // the account's backups (from any device)
+  const signed=window.SQMP&&SQMP.user;if(signed){b+='<div class="tl" style="margin-top:12px;font-size:15px">ON YOUR ACCOUNT</div>';
+   if(!ACC||Date.now()-ACC.t>30000){if(!ACC_LOAD){ACC_LOAD=1;sqCloudBakList().then(l=>{ACC={t:Date.now(),l:l||[]};ACC_LOAD=0;if(pnOpen&&ptab===8)rPn()}).catch(()=>{ACC={t:Date.now(),l:[],err:1};ACC_LOAD=0;if(pnOpen&&ptab===8)rPn()})}}
+   if(!ACC)b+='<div class="qc" style="font-size:13px;padding:8px 12px;margin:6px 0">Loading...</div>';
+   else if(!ACC.l.length)b+='<div class="qc" style="font-size:13px;line-height:1.4;padding:8px 12px;margin:6px 0">'+(ACC.err?'Couldn\'t load your account backups. Try again in a moment.':'No account backups yet. Your account gets one each day you play, and whenever a save is replaced on any device.')+'</div>';
+   else ACC.l.forEach((e,j)=>{const i=saveInfo(e.S);b+='<div class="qc" style="font-size:13px;line-height:1.45;padding:8px 12px;margin:6px 0"><b>'+esc(i.name)+'</b> · total level '+i.tl+' · quest '+i.q+' · '+i.gold+' gold<br><small style="opacity:.75">'+(e.tag==='daily'?'Daily backup':e.tag==='account'?'Account save that was replaced':'A device\'s save that was replaced')+', '+ago(e.at)+'</small><br>'+
+    '<button class="sb sqrest" data-c="'+j+'" style="margin-top:6px">'+(armed==='c'+j?'Tap again to restore':'Restore this save')+'</button></div>'})}
+  else b+='<div class="qc" style="font-size:13px;line-height:1.4;padding:8px 12px;margin:6px 0">Sign in to see the backups on your account too (they work from any device).</div>';
   return h+b};
- pbd.addEventListener('click',async ev=>{const btn=ev.target.closest('.sqrest');if(!btn)return;ev.stopPropagation();const k=btn.dataset.k;
+ pbd.addEventListener('click',async ev=>{const btn=ev.target.closest('.sqrest');if(!btn)return;ev.stopPropagation();const k=btn.dataset.k||('c'+btn.dataset.c);
   if(armed!==k){armed=k;rPn();setTimeout(()=>{if(armed===k){armed=null;try{rPn()}catch(e){}}},4000);return}armed=null;
-  let S=null;try{S=JSON.parse(localStorage.getItem(k))}catch(e){}if(!S||S.v!=1){say('That backup can\'t be read.');return}
+  let S=null;if(btn.dataset.c!=null){const e=ACC&&ACC.l[+btn.dataset.c];S=e?JSON.parse(JSON.stringify(e.S)):null}else try{S=JSON.parse(localStorage.getItem(k))}catch(e){}if(!S||S.v!=1){say('That backup can\'t be read.');return}ACC=null;
   const cur=snap();cur.savedAt=LOCAL_AT;mpBackup('device',cur);applySave(JSON.parse(JSON.stringify(S)));hideCreator();
   try{if(cloud){const r=await cloud.get(),rs=r&&r.exists?r.data():null;if(rs)lastWid=wOf(rs)}}catch(e){}
   saveLocal(true);LOCAL_AT=Date.now();try{await saveCloud(true)}catch(e){}closePanel();say('Backup restored'+(cloud?' and saved to your account':'')+'. What you had before is backed up too.');sfx('quest')},true)}
