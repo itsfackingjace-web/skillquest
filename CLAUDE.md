@@ -1,8 +1,16 @@
 # SkillQuest — notes for whoever updates the game
 
-- The whole game is `index.html` (served by GitHub Pages at skillquestmmo.com). Firebase rules are in `database.rules.json`
-  and must be published in the Firebase console when they change.
-- **Every update to the game must add a patch note.** Put a new entry at the top of `PATCH_NOTES` (search for
-  `const PATCH_NOTES=`) with a new version (`YYYY.MM.DD-N`), the date, a short title and player-friendly bullet points.
+- **Edit the files in `src/`, never `index.html` directly.** `index.html` is built from them:
+  run `node tools/build.mjs` after every change and commit both. GitHub Pages serves `index.html` at skillquestmmo.com,
+  and a check on GitHub fails if `index.html` doesn't match `src/` (`node tools/build.mjs --check`).
+- `src/manifest.txt` lists every source file in build order. Order matters: the files share one script, and later
+  files build on (and often wrap) functions and variables defined by earlier ones. New features go in a new file,
+  added to the manifest just before `core/112-fullscreen-options.js` unless they must run earlier.
+  Folders (core, world, combat, skills, items, ui, graphics, multiplayer, data, shell) are only for finding things;
+  the manifest alone decides the order.
+- The build parses the game script and reports syntax errors with the source file and line.
+- Firebase rules are in `database.rules.json` and must be published in the Firebase console when they change.
+- **Every update to the game must add a patch note.** Put a new entry at the top of `PATCH_NOTES` in
+  `src/data/074-patch-notes.js` with a new version (`YYYY.MM.DD-N`), the date, a short title and player-friendly bullet points.
   The version shown in Options and the wiki's "NEW!" badge both come from that first entry.
 - Write patch notes for players, not developers: what's new or fixed and how to use it.

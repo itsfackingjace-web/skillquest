@@ -15,3 +15,8 @@ Play: https://skillquestmmo.com
 ## Setup notes
 `database.rules.json` holds the Firebase Realtime Database security rules. After changing it, paste the whole file into
 Firebase console > Realtime Database > Rules and click Publish.
+
+## Working on the code
+The game is one page, `index.html`, built from the files in `src/` (listed in build order in `src/manifest.txt`).
+Edit `src/`, then run `node tools/build.mjs` (Node 18+, no installs needed) and commit both. `node tools/build.mjs --check`
+confirms `index.html` is up to date; GitHub runs it on every push.
