@@ -303,6 +303,25 @@
           ".validate": "newData.hasChildren(['json', 'at', 'tag']) && newData.child('json').isString() && newData.child('json').val().length < 3000000 && newData.child('at').isNumber() && newData.child('tag').isString() && newData.child('tag').val().length < 20"
         }
       }
+    },
+    "devs": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid"
+      }
+    },
+    "assets": {
+      "live": {
+        ".read": true,
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true"
+      },
+      "draft": {
+        ".read": "auth != null && root.child('devs').child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true"
+      },
+      "hist": {
+        ".read": "auth != null && root.child('devs').child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true"
+      }
     }
   }
 }

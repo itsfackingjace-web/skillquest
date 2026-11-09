@@ -139,7 +139,7 @@ function mpChooseSave(L,S,cb){const a=saveInfo(L),b=saveInfo(S);const box=el('di
 // ---- Firebase ----
 async function mpLoad(){const b='https://www.gstatic.com/firebasejs/'+FBV+'/';
  const[app,auth,db]=await Promise.all([import(b+'firebase-app.js'),import(b+'firebase-auth.js'),import(b+'firebase-database.js')]);
- const a=app.initializeApp(FBC);FB={auth,db,A:auth.getAuth(a),D:db.getDatabase(a)};
+ const a=app.initializeApp(FBC);FB={auth,db,A:auth.getAuth(a),D:db.getDatabase(a)};window.SQFB=FB;
  try{await auth.getRedirectResult(FB.A)}catch(e){mpErr(e);gsiNote(e)}
  try{await gsiReturn()}catch(e){mpErr(e);gsiNote(e)}
  auth.onAuthStateChanged(FB.A,u=>{if(u)mpStart(u).catch(mpErr);else mpStop(false)})}
@@ -350,7 +350,7 @@ tsEl.addEventListener('click',e=>{if(TS.stage===0&&e.target!==tsPs)tsPs.click()}
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
  if(a==='go')tsClose();else if(a==='in'){mpSignIn();}else if(a==='opt')tsClose(()=>{fromMenu=false;showScreen('options')})});
 // keyboard: any key starts; arrows / Enter / Esc in the menu; the game never sees these keys while the title is up
-addEventListener('keydown',e=>{if(!TS.open||(e.target&&e.target.closest&&e.target.closest('#mpbugf,#mpsave,#sqwk')))return;e.stopImmediatePropagation();const k=e.key;
+addEventListener('keydown',e=>{if(!TS.open||(window.SQSUITE&&SQSUITE.state.open)||(e.target&&e.target.closest&&e.target.closest('#mpbugf,#mpsave,#sqwk')))return;e.stopImmediatePropagation();const k=e.key;
  if(typeof WK!=='undefined'&&WK.open){e.preventDefault();if(k==='Escape'||k==='Backspace'){wkClose();return}if(!e.isTrusted)return;TS.kb=true;
   if(k==='ArrowRight'||k==='d')navMove(1,0);else if(k==='ArrowLeft'||k==='a')navMove(-1,0);else if(k==='ArrowDown'||k==='s')navMove(0,1);else if(k==='ArrowUp'||k==='w')navMove(0,-1);else if(k==='Enter'||k===' '||k==='z')navPress();return}
  if(LB.open){e.preventDefault();if(k==='Escape'||k==='Backspace'){lbClose();return}if(!e.isTrusted)return;TS.kb=true;

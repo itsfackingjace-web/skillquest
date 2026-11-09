@@ -14,3 +14,10 @@
   `src/data/074-patch-notes.js` with a new version (`YYYY.MM.DD-N`), the date, a short title and player-friendly bullet points.
   The version shown in Options and the wiki's "NEW!" badge both come from that first entry.
 - Write patch notes for players, not developers: what's new or fixed and how to use it.
+- **Dev Suite** (`src/dev/`): developer-only editor in the game (Options > Dev Suite, or `/suite` in chat). It edits item
+  sprites and stats and publishes them through the database: drafts in `assets/draft`, the published copy in `assets/live`
+  (public read; players apply it at startup and cache it on the device), replaced versions in `assets/hist`. Writes need
+  the account's uid under `devs/` (added by hand in the Firebase console). `SQA` (`111a-s111-asset-library.js`) applies a
+  library on top of the game's own values and keeps the originals, so anything not published falls back to the code.
+- Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
+  `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).
