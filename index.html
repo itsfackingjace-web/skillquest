@@ -446,7 +446,7 @@ const AT=['Leather','Iron','Steel'],OHP={tree:3,rock:4,bush:1},LS='sq_save';
 const GOODS=[{k:'bowl',n:'Wooden bowl',c:{wood:2},req:1,xp:25,v:5},{k:'jam',n:'Berry jam',c:{berry:3,wood:1},req:3,xp:35,v:9},{k:'brick',n:'Stone brick',c:{stone:2},req:5,xp:45,v:10},{k:'statue',n:'Stone statue',c:{stone:6,wood:2},req:10,xp:110,v:32},{k:'nails',n:'Iron nails',c:{iron:1,wood:1},req:15,xp:90,v:24},{k:'lantern',n:'Iron lantern',c:{iron:2,wood:2},req:20,xp:180,v:55}];
 const INVK=['wood','stone','berry','meat','cooked','iron',...GOODS.map(g=>g.k)];
 for(const g of GOODS){SELLP[g.k]=g.v;SN[g.k]=g.n+'s'}
-function makeGood(i,all){const r=GOODS[i];if(!r)return;if(lvOf(6)<r.req){say('Need Crafting '+r.req);return}let n=0;const mx=all?999:1;
+function makeGood(i,all){const r=GOODS[i];if(!r)return;if(sqDo('craft',all?999:1,()=>makeGood(i,false)))return;if(lvOf(6)<r.req){say('Need Crafting '+r.req);return}let n=0;const mx=all?999:1;
  while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];inv[r.k]=(inv[r.k]|0)+1;n++}
  if(!n){say('Missing materials');return}addXp(6,r.xp*n);say('Made '+n+' '+r.n+(n>1?'s':''));sfx('pickup');saveLocal(true);rPn()}
 function goodsHTML(){let h='<div class="tl" style="margin-top:18px">Goods</div><div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:-6px">Repeatable. Trains Crafting. Sell them at the general store.</div>';
@@ -646,7 +646,7 @@ eat=function(){if(dead||menuOpen||pnOpen)return;
  say(f.k=='meat'?'Raw meat... cook it at a fire next time':'Ate '+f.n+(f.heal?' (+'+f.heal+' heart'+(f.heal>1?'s':'')+')':''))};
 // --- smithing: furnace + anvil next to the smithy ---
 // (the furnace and anvil are inside the smithy now, section 12)
-function smithAct(i,all){const r=SM[i];if(!r)return;if(lvOf(10)<r.lv){say('Need Smithing '+r.lv);return}if(r.def&&lvOf(8)<r.def){say('Need Defence '+r.def+' to wear that');return}
+function smithAct(i,all){const r=SM[i];if(!r)return;if(sqDo(r.smelt?'smelt':'smith',r.arm?1:all?999:1,()=>smithAct(i,false)))return;if(lvOf(10)<r.lv){say('Need Smithing '+r.lv);return}if(r.def&&lvOf(8)<r.def){say('Need Defence '+r.def+' to wear that');return}
  let n=0;const mx=r.arm?1:all?999:1;while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];if(r.k)inv[r.k]=(inv[r.k]|0)+1;n++}
  if(!n){say('Missing materials');return}
  if(r.arm){ARM[r.arm[0]]=Math.max(ARM[r.arm[0]],r.arm[1]);say('Forged and equipped '+r.n+'!')}else say((r.smelt?'Smelted ':'Forged ')+n+' '+r.n+(n>1?'s':''));
@@ -1209,7 +1209,9 @@ function iconURL(k,col){const key=k+(col||'');if(ICONC[key])return ICONC[key];co
 // --- bag: one inventory grid ---
 const BAG_ORDER=()=>['wood','stone','iron','ibar','sbar','berry','meat','cooked',...FISH_T.map(f=>'c'+f.k),...FISH_T.map(f=>f.k),...GOODS.map(gd=>gd.k),'idag','sdag','pelt','bone',...BK,...(typeof EXTRA_BAG!=='undefined'?EXTRA_BAG:[])];
 let invSel=null;
-function slotHTML(k,n,on,act){return'<button class="slot'+(on?' on':'')+'" data-k="'+k+'"'+(act?' data-a="'+act+'"':'')+' title="'+esc(INAME[k]||k)+'"><img alt="" src="'+iconURL(k)+'"><span class="q">'+n+'</span></button>'}
+// every slot shows the item's name under its picture, so you can tell things apart at a glance
+const slotName=k=>{let n=INAME[k]||k;n=n.replace(/ \(pet\)$/,'');return n.charAt(0).toUpperCase()+n.slice(1)};
+function slotHTML(k,n,on,act){return'<button class="slot'+(on?' on':'')+'" data-k="'+k+'"'+(act?' data-a="'+act+'"':'')+' title="'+esc(INAME[k]||k)+'"><img alt="" src="'+iconURL(k)+'"><span class="q">'+n+'</span><span class="nm">'+esc(slotName(k))+'</span></button>'}
 function gridHTML(keys,count,sel,act,minSlots){const cells=keys.map(k=>slotHTML(k,count(k),k===sel,act));const total=Math.max(minSlots,Math.ceil(cells.length/5)*5);while(cells.length<total)cells.push('<div class="slot empty"></div>');return'<div class="ig">'+cells.join('')+'</div>'}
 function bagGridHTML(){const keys=BAG_ORDER().filter(k=>(inv[k]|0)>0);if(!keys.includes(invSel))invSel=keys[0]||null;const k=invSel;
  let d='Gather, craft and fish to fill your bag.';if(k){d='<b>'+esc(INAME[k]||k)+'</b> ×'+(inv[k]|0)+'<br>'+esc(IDESC[k]||'');if(isFood(k))d='<button class="use" data-k="'+k+'">USE</button>'+d;if(BK.includes(k))d='<button class="use plc" data-k="'+k+'">PLACE</button>'+d}
@@ -1227,7 +1229,7 @@ function equipHTML(){const TC=['','#b07838','#a8a8b0','#d8e0e8','#88a8d8'],an=s=
 // --- building recipes in the Craft tab ---
 function buildHTML(){let h='<div class="tl" style="margin-top:18px">Building</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.7;margin-top:-6px">Make pieces here, then place them from your Bag.</div>';
  BREC.forEach((r,i)=>{const can=lvOf(6)>=r.req&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b);h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(r.k)+'"><div class="gi"><b>'+r.n+'</b> <small>(have '+(inv[r.k]|0)+')</small><br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · '+r.xp+' xp</small></div><button class="gc bc" data-i="'+i+'" data-a="1">Make</button><button class="gc bc" data-i="'+i+'" data-a="all">All</button></div>'});return h}
-function makeBuild(i,all){const r=BREC[i];if(!r)return;if(lvOf(6)<r.req){say('Need Crafting '+r.req);return}let n=0;const mx=all?999:1;
+function makeBuild(i,all){const r=BREC[i];if(!r)return;if(sqDo('craft',all?999:1,()=>makeBuild(i,false)))return;if(lvOf(6)<r.req){say('Need Crafting '+r.req);return}let n=0;const mx=all?999:1;
  while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];inv[r.k]=(inv[r.k]|0)+1;n++}if(!n){say('Missing materials');return}
  addXp(6,r.xp*n);say('Made '+n+' '+r.n.toLowerCase()+(n>1?'s':'')+'.');sfx('chop');saveLocal(true);rPn()}
 // --- routing ---
@@ -1244,6 +1246,8 @@ const st11=document.createElement('style');st11.textContent=`
 .slot{position:relative;aspect-ratio:1;background:#fff;border:2px solid #c8d0e0;border-radius:6px;padding:0;cursor:pointer;min-width:0}
 .slot.on{border-color:#5878b8;box-shadow:0 0 0 2px #a8c0e0}.slot.empty{background:#f2f5fa;cursor:default}
 .slot img{position:absolute;left:14%;top:10%;width:72%;height:72%;image-rendering:pixelated}
+.ig .slot{aspect-ratio:auto;height:auto;min-height:0;padding-top:58%}.ig .slot img{left:24%;top:5%;width:52%;height:auto;aspect-ratio:1}.ig .slot .q{top:1px;bottom:auto;right:4px;font-size:12px}.ig .slot.empty{padding-top:calc(58% + 24px);aspect-ratio:auto}
+.slot .nm{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font:600 9.5px/1.15 var(--pf);color:#404040;text-align:center;padding:0 2px 4px;word-break:break-word;min-height:22px}@media(min-width:700px){.slot .nm{font-size:11px;min-height:25px}}
 .slot .q{position:absolute;right:4px;bottom:0;font:700 14px var(--pf);color:#404040;text-shadow:1px 1px 0 #fff,-1px -1px 0 #fff}
 .bd b{color:#d05030}.bd .plc{background:#48a058;border-color:#2f7040}
 .gimg{width:30px;height:30px;image-rendering:pixelated;flex:none}
@@ -2271,8 +2275,8 @@ const _r22=rPn;rPn=function(){if(ptab===2&&shop==='station'&&STATION){panelChrom
 function stationAct(a){const o=STATION;if(!o)return;
  if(a==='pickup'){const k=plantKey(o.inside,o.i);delete PLANTD[k];closePanel();STATION=null;if(o.inside)pickFurn(o.i);else pickStruct(o.i);return}
  if(a==='pick'){const k=plantKey(o.inside,o.i);if(PLANTD[k]===today())return;PLANTD[k]=today();const n=3+Math.floor(lvOf(11)/10);inv.berry=(inv.berry|0)+n;addXp(11,15);say('Picked '+n+' berries.');sfx('pickup')}
- else if(a.startsWith('ck_')){const c=COOKS.find(q=>q.raw===a.slice(3));if(!c||lvOf(4)<c.lv)return;let ok=0,burnt=0;
-  while((inv[c.raw]|0)>0){inv[c.raw]--;const cl=lvOf(4);if(Math.random()<Math.max(.02,(.4-(cl-c.lv)*.02-cl*.004)*.55)){burnt++;addXp(4,5)}else{ok++;inv[c.ck]=(inv[c.ck]|0)+1;addXp(4,c.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='cook')Q.k++}}
+ else if(a.startsWith('ck_')){const c=COOKS.find(q=>q.raw===a.slice(3));if(!c||lvOf(4)<c.lv)return;if((inv[c.raw]|0)>0&&sqDo('cook',inv[c.raw]|0,()=>stationAct(a)))return;let ok=0,burnt=0;
+  for(let n1=0;(inv[c.raw]|0)>0&&!(window.SQDO_STEP&&n1>=1);n1++){inv[c.raw]--;const cl=lvOf(4);if(Math.random()<Math.max(.02,(.4-(cl-c.lv)*.02-cl*.004)*.55)){burnt++;addXp(4,5)}else{ok++;inv[c.ck]=(inv[c.ck]|0)+1;addXp(4,c.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='cook')Q.k++}}
   say('Cooked '+ok+(burnt?', burnt '+burnt:'')+'.');sfx('sizzle')}
  saveLocal(true);rPn()}
 const _oc22=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.stb');if(b){stationAct(b.dataset.a);return}_oc22(e)};
@@ -7932,7 +7936,7 @@ function trNearList(){const a=[];for(const[u,r]of MP.players)if(trNear(u))a.push
 // what's in your bag that can be traded (minus what's already on your side)
 const trCan=k=>(inv[k]|0)-(TR.me[k]|0);
 function trBagKeys(){const seen=new Set(),out=[];for(const k of BAG_ORDER().concat(INVK))if(!seen.has(k)&&INAME[k]){seen.add(k);if(trCan(k)>0)out.push(k)}return out}
-const trClean=o=>{const r={};if(o&&typeof o==='object')for(const k in o){const n=Math.floor(+o[k]||0);if(n>0&&INAME[k]&&INVK.includes(k))r[k]=Math.min(n,1e6)}return r};
+const trClean=o=>{const r={};if(o&&typeof o==='object')for(const k in o){sqBookReg(k);const n=Math.floor(+o[k]||0);if(n>0&&INAME[k]&&INVK.includes(k))r[k]=Math.min(n,1e6)}return r};
 // the agreement key: both offers, in a fixed order. Changing anything changes the key, so old accepts stop counting.
 function trKey(){const mine=MP.user.uid,[a]=TR.tid.split('_'),s=o=>Object.keys(o).sort().map(k=>k+':'+o[k]).join(',');
  const A=a===mine?[s(TR.me),TR.g]:[s(TR.th),TR.tg],B=a===mine?[s(TR.th),TR.tg]:[s(TR.me),TR.g];return JSON.stringify([A,B])}
@@ -8074,7 +8078,7 @@ window.SQTRADE=TR;
 const GRV={list:{},local:{},unsub:null,lastSpot:null,lostN:0,hint:null,open:null,busy:false},GRAVE_LIFE=15*60*1000,GTAB=33;
 const grvNow=()=>MP.on?mpNow():Date.now();
 const grvLeft=g=>g.at+GRAVE_LIFE-grvNow();
-const grvItems=g=>{const o={};const s=g&&g.i;if(s&&typeof s==='object')for(const k in s){const n=Math.floor(+s[k]||0);if(n>0&&INAME[k])o[k]=n}return o};
+const grvItems=g=>{const o={};const s=g&&g.i;if(s&&typeof s==='object')for(const k in s){sqBookReg(k);const n=Math.floor(+s[k]||0);if(n>0&&INAME[k])o[k]=n}return o};
 const grvAll=()=>{const a=[];for(const id in GRV.list)a.push(GRV.list[id]);for(const id in GRV.local)a.push(GRV.local[id]);return a};
 const grvMine=()=>grvAll().filter(g=>(g.local||(MP.user&&g.u===MP.user.uid))&&grvLeft(g)>0&&Object.keys(grvItems(g)).length);
 // offline graves live on this device
@@ -8620,6 +8624,7 @@ const WBT={
  giant:{n:'Stone Giant',ic:'⛰',hp:1600,per:7000,dmg:2,col:'#a08060',c2:'#d8c8a8',where:['ironcrest'],pats:['ring','rocks','ring'],gold:[300,600]},
  demon:{n:'Demon',ic:'😈',hp:2300,per:6500,dmg:2,col:'#a040e0',c2:'#f070f8',where:['shattered'],pats:['beams','pools','ring'],gold:[500,900]},
  dragon:{n:'Ancient Dragon',ic:'🐉',hp:3200,per:6000,dmg:2,col:'#f05020',c2:'#f8c040',where:['ashfall'],pats:['meteors','breath','ring'],gold:[800,1500]}};
+for(const k in WBT)WBT[k].hp=Math.round(WBT[k].hp*2);// world bosses: twice the HP (Nov 9)
 window.SQWBT=WBT;const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 function wbFor(slot){const r=rng(slot*7919+17),p=r();let type=p<.35?'wisp':p<.6?'giant':p<.8?'demon':'dragon';const F=window.SQWBFORCE;if(F&&F.type)type=F.type;const T=WBT[type];let where=T.where[Math.floor(r()*T.where.length)];if(F&&F.where)where=F.where;
  if(F&&F.dev)return{slot,type,T,where,start:F.start,end:F.start+WB_LIFE,mhp:F.hp||T.hp,dev:1};
@@ -8755,7 +8760,9 @@ setInterval(()=>{const B=WB.b,show=B&&MP.on&&!dead&&!pnOpen&&!menuOpen&&!TS.open
   else sub='Your damage: '+Math.round(WB.dmg)+' · Dodge the red!'}else sub='On '+wbWhere(B)+(B.where!=='hollow'&&typeof routeOpen==='function'&&!routeOpen(B.where)?' (route not charted yet)':'');
  wbbEl.innerHTML='<div class="t"><span>'+esc(B.T.ic+' '+B.T.n.toUpperCase())+'</span><b>'+mm+'</b></div><div class="bar"><i style="width:'+(hp/B.mhp*100).toFixed(1)+'%"></i></div><small>'+esc(sub)+' · '+Math.ceil(hp)+' / '+B.mhp+'</small>';
  // on narrow screens it would cover your health: sit under the left-hand HUD instead
- if(innerWidth<700&&HUDL){const d=window.devicePixelRatio||1;wbbEl.style.left=Math.round(HUDL.ins/d)+'px';wbbEl.style.transform='none';wbbEl.style.top=Math.round(HUDL.stackBottom/d+6)+'px';wbbEl.style.width=Math.round(HUDL.bw/d)+'px';wbbEl.classList.add('nar')}else{wbbEl.style.left=wbbEl.style.transform=wbbEl.style.top=wbbEl.style.width='';wbbEl.classList.remove('nar')}},400);
+ if(innerWidth<700&&HUDL){const d=window.devicePixelRatio||1;wbbEl.style.left=Math.round(HUDL.ins/d)+'px';wbbEl.style.transform='none';wbbEl.style.top=Math.round(HUDL.stackBottom/d+6)+'px';wbbEl.style.width=Math.round(HUDL.bw/d)+'px';wbbEl.classList.add('nar')}else{wbbEl.style.left=wbbEl.style.transform=wbbEl.style.top=wbbEl.style.width='';wbbEl.classList.remove('nar')}
+ // a message box you need to read (a sign, a door, someone talking) wins: the banner steps aside while it's up
+ try{if(msgT>0&&msg&&MSGBOX){const r=wbbEl.getBoundingClientRect(),m=MSGBOX;if(r.left<m.x+m.w&&r.right>m.x&&r.top<m.y+m.h&&r.bottom>m.y)wbbEl.style.display='none'}}catch(e){}},150);
 // ---- saving, and the leaderboard ----
 {const _s=snap;snap=function(){const s=_s();if(WB.kills)s.wbk=WB.kills;const c=Object.keys(WB.claimed).slice(-20);if(c.length)s.wbc=c;return s}}
 {const _a=applySave;applySave=function(S){_a(S);WB.kills=Math.max(0,+(S&&S.wbk)||0);WB.claimed={};if(S&&Array.isArray(S.wbc))for(const k of S.wbc)WB.claimed[k]=1}}
@@ -9154,6 +9161,8 @@ function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y
 // HIT: harvest, water, check, or till
 {const _a=attack;attack=function(){const R=rbR();if(!R||dead||menuOpen||pnOpen||BUILD||swing>0||FISH||facingNpc())return _a();
   const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),k=rbK(tx,ty);if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _a();
+  // a tree, bush or rock standing on the soil (it grew back there): chop/mine it as normal
+  if(typeof rgObjAt==='function'&&rgObjAt(R,tx,ty))return _a();
   const p=rfMap(R.region).get(k);
   if(p){swing=.25;if(ripe(p)){harvest(-1,p);return}
    if(p.c&&!wet(p)){if(!TL.can){say('Buy a watering can at the general store to water crops.');sfx('swish');return}p.w=CLK+WATER_FOR;addXp(11,3);say('Watered the '+CROPS[p.c].n.toLowerCase()+'.');sfx('splash');saveLocal();return}
@@ -9211,12 +9220,13 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
   return keys.filter(k=>norm(INAME[k]).includes(nq)||norm(k).includes(nq))}
  const skillIdx=q=>{const nq=norm(q);let i=SKN.findIndex(n=>norm(n)===nq);if(i<0)i=SKN.findIndex(n=>norm(n).startsWith(nq));return i};
  function dev(cmd,args){
-  if(cmd==='dev'||cmd==='devhelp'){out('Dev: /give item [n] · /find text · /gold n · /xp skill n · /heal · /boss dragon|demon|giant|wisp [hp] · /boss off · /castle · /pet wolf|briar|snow|void|tree|oak|willow|maple|yew|pine|voidtree|dead|imp · /give sledgehammer');return}
+  if(cmd==='dev'||cmd==='devhelp'){out('Dev: /give item [n] · /give skill xp [books] (XP book, e.g. /give fishing 1000) · /find text · /gold n · /xp skill n · /heal · /boss dragon|demon|giant|wisp [hp] · /boss off · /castle · /pet wolf|briar|snow|void|tree|oak|willow|maple|yew|pine|voidtree|dead|imp · /give sledgehammer');return}
   if(cmd==='castle'){inv.castle=(inv.castle|0)+1;out('Gave you a Castle. Open your Bag, pick it and press PLACE.');saveLocal(true);if(pnOpen)rPn();return}
   if(cmd==='pet'){const PK={wolf:'pwolf',briar:'pbriar',snow:'psnow',void:'pvoid',tree:'ptree',treeling:'ptree',oak:'ptoak',willow:'ptwil',maple:'ptmap',yew:'ptyew',pine:'ptpine',voidtree:'ptvoid',dead:'ptdead',imp:'imp'},k=PK[(args[0]||'').toLowerCase()];
    if(!k){out('Usage: /pet wolf|briar|snow|void|tree|oak|willow|maple|yew|pine|voidtree|dead|imp');return}if(k==='imp'){if(window.LUX&&LUX.giveImp)LUX.giveImp();out('Gave you the Imp pet.');return}
    if(window.SQGIVEPET)SQGIVEPET(k);out('Gave you a pet '+((window.SQNPET&&SQNPET[k].n)||k).toLowerCase()+'.');return}
   if(cmd==='find'){const q=args.join(' ');if(!q){out('Usage: /find text');return}const r=findItems(q);out(r.length?r.slice(0,12).map(k=>k+' = '+INAME[k]).join(' · ')+(r.length>12?' · (+'+(r.length-12)+' more)':''):'No items match "'+q+'".');return}
+  if(cmd==='give'&&args.length>=2&&/^\d+$/.test(args[1])){const si=SKN.findIndex(x=>norm(x)===norm(args[0]));if(si>=0){const xp=Math.min(5e7,Math.max(1,+args[1])),c=Math.min(1000,Math.max(1,parseInt(args[2])||1)),k='xpb_'+si+'_'+xp;sqBookReg(k);inv[k]=(inv[k]|0)+c;out('Gave you '+c+' × '+INAME[k]+'. Read it from your Bag. It can be traded and sold at the World Market.');saveLocal(true);if(pnOpen)rPn();return}}
   if(cmd==='give'){let n=1;if(args.length>1&&/^\d+$/.test(args[args.length-1]))n=Math.min(100000,+args.pop());const q=args.join(' ');if(!q){out('Usage: /give item [n]');return}
    const r=findItems(q);if(r.length!==1){out(r.length?'Which one? '+r.slice(0,10).map(k=>k+' = '+INAME[k]).join(' · '):'No items match "'+q+'". Try /find.');return}
    const k=r[0];inv[k]=(inv[k]|0)+n;out('Gave you '+n+' × '+INAME[k]+'.');saveLocal(true);if(pnOpen)rPn();return}
@@ -9239,6 +9249,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.09-1',d:'Nov 9, 2026',t:'Skilling takes time, tougher bosses, shop stock and fixes',n:['Cooking, lighting fires, smelting, smithing, crafting and reeling in fish now take 2-3 seconds each, with an animation and a progress bar over your head. "Make all" and "Cook all" make one at a time until you run out; walking away stops it.','All bosses are much tougher: island bosses have over twice the HP, world bosses twice, dungeon bosses double, and every boss hits 60% harder.','You can only eat once every 3 seconds, so you can\'t out-eat a boss\'s damage by standing still.','Shops now keep a daily stock (8 a day of ores, bars, logs and raw fish; 2 of each tool or piece of gear; 20 of everything else). What\'s left is shown on each item, and shops restock every morning.','Every bag, chest and bank slot shows the item\'s name under its picture.','Sigil shards drop twice as often (1 in 12.5).','New: skill tomes. Reading one (Bag → READ) gives XP in its skill. They can be traded and sold at the World Market.','Fixed the World Market: typing a quantity or price and then tapping SELL or BUY sometimes did nothing, and other players\' offers changing could wipe what you were typing.','Fixed trees and bushes that grew back on tilled soil not being choppable.','A world boss announcement no longer covers a message you need to read; it steps aside until the message closes.','On phones, the ONLINE/CHAT and BUG buttons now sit under the minimap instead of over the middle of the screen.']},
  {v:'2026.11.07-2',d:'Nov 7, 2026',t:'Backups on your account',n:['Backups are now kept on your account as well as on the device, so you can restore them from any device: phone, PC or the Windows app. They also survive clearing your browser.','Your account gets a backup of your save once a day when you play, and whenever a save is replaced on any device. The last 8 are kept.','Find them in Options → Backups → On your account. Tap Restore (twice) to bring one back.']},
  {v:'2026.11.07-1',d:'Nov 7, 2026',t:'Saves across devices fixed',n:['Fixed a serious bug that could lose progress when you play on more than one device: opening the game on a device with older progress could overwrite the newer progress you made on another device.','Now each device remembers which account save it last synced with. If another device has saved newer progress since, it\'s loaded automatically. If both devices have new progress, or the account save is behind this one, you choose which to keep, and the other is backed up.','New: Options → Backups lists the saves this device has backed up (whenever a save was replaced), with their total level, quest and gold. Tap Restore (twice) to bring one back. It\'s saved to your account too.','Lost progress yesterday? Open the game on the device where you had it. If it asks which save to keep, pick the one with the higher total level. If it doesn\'t ask, check Options → Backups.','Fixed Options sometimes not showing that you were signed in, so Sign out and Switch Google account were missing.']},
  {v:'2026.11.06-16',d:'Nov 6, 2026',t:'Bug fixes',n:['Fixed plateau stairways you couldn\'t walk up: about a third of them led up to the cliff edge and stopped you at the top. Every stairway now has open ground at the top and can be climbed.','Stairways no longer stop you stepping off their sides.']},
@@ -9796,13 +9807,13 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
  const atMarket=()=>sp&&!SCENE&&Math.hypot(WMK.clerk.x-P.x,WMK.clerk.y-P.y)<70;
  // ---- data ----
  function wmStart(){if(WMK.unsub.length||!online())return;const d=FB.db;
-  WMK.unsub.push(d.onValue(d.ref(FB.D,'market/offers'),s=>{const v=s.val()||{};WMK.offers=v;for(const id in v){const o=v[id];if(o&&o.u===me()&&o.f>=o.q)d.remove(d.ref(FB.D,'market/offers/'+id)).catch(()=>{})}if(pnOpen&&shop==='wmkt')rPn()},e=>mpErr(e)));
+  WMK.unsub.push(d.onValue(d.ref(FB.D,'market/offers'),s=>{const v=s.val()||{};WMK.offers=v;for(const id in v){const o=v[id];if(o&&o.u===me()&&o.f>=o.q)d.remove(d.ref(FB.D,'market/offers/'+id)).catch(()=>{})}if(pnOpen&&shop==='wmkt'&&!WMK.busy&&!(typeof typing==='function'&&typing()))rPn()},e=>mpErr(e)));
   WMK.unsub.push(d.onValue(d.ref(FB.D,'market/box/'+me()),s=>{const v=s.val()||{};const fresh=Object.keys(v).filter(k=>!WMK.seenBox.has(k));WMK.box=v;for(const k of fresh)WMK.seenBox.add(k);
    if(fresh.length&&WMK.ready){say('World Market: one of your offers traded! Collect it at the World Market in Hollow Village.');msgT=5;try{sfx('coin')}catch(e){}}WMK.ready=true;if(pnOpen&&shop==='wmkt')rPn()},e=>mpErr(e)));
   WMK.unsub.push(d.onValue(d.ref(FB.D,'market/last'),s=>{WMK.last=s.val()||{}},e=>{}))}
  {const _ms=mpStart;mpStart=async function(u){await _ms(u);try{wmStart()}catch(e){mpErr(e)}if(MP.on)MP.unsub.push(()=>{for(const f of WMK.unsub)try{f()}catch(e){}WMK.unsub.length=0;WMK.offers={};WMK.box={};WMK.ready=false})}}
  const mine=()=>Object.entries(WMK.offers).filter(([,o])=>o&&o.u===me());
- const tradeable=k=>!!(INAME[k]&&SELLP[k]&&k!=='gold'&&!/^ja_?$/.test(k));
+ const tradeable=k=>!!(sqBookReg(k),INAME[k]&&SELLP[k]&&k!=='gold'&&!/^ja_?$/.test(k));
  const nm=(k,n)=>n===1?(INAME[k]||k):(SN[k]||INAME[k]||k);
  const fmt=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e4?(n/1e3).toFixed(n%1e3?1:0)+'k':String(n);
  // ---- placing an offer, then matching it ----
@@ -9836,7 +9847,7 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
   if(!r||!r.committed||!last)return;const left=Math.max(0,last.q-last.f);if(last.s==='s')inv[last.k]=(inv[last.k]|0)+left;else GLD+=left*last.p;delete WMK.offers[id];
   say('Offer cancelled.'+(left?' Back to you: '+(last.s==='s'?left+' '+nm(last.k,left).toLowerCase():left*last.p+' gold')+'.':''));sfx('coin');saveNow();try{svg()}catch(e){}}
  async function collect(){const d=FB.db;let items=0,gold=0;for(const bid of Object.keys(WMK.box)){let got=null;const r=await d.runTransaction(d.ref(FB.D,'market/box/'+me()+'/'+bid),cur=>{got=cur;if(!cur)return;return null}).catch(()=>null);
-   if(!r||!r.committed||!got||!(got.n>0))continue;if(got.k==='gold'){GLD+=got.n;gold+=got.n}else if(INAME[got.k]){inv[got.k]=(inv[got.k]|0)+got.n;items+=got.n}}
+   if(!r||!r.committed||!got||!(got.n>0))continue;if(got.k==='gold'){GLD+=got.n;gold+=got.n}else if((sqBookReg(got.k),INAME[got.k])){inv[got.k]=(inv[got.k]|0)+got.n;items+=got.n}}
   if(items||gold){say('Collected'+(gold?' '+gold+' gold':'')+(gold&&items?' and':'')+(items?' '+items+' item'+(items>1?'s':''):'')+' from the market.');sfx('coin');saveNow();try{svg()}catch(e){}}}
  // ---- the panel ----
  function open(){if(!online()){say('The World Market needs you to be signed in (Menu > Online).');sfx('swish');return}wmStart();shop='wmkt';WMK.tab='mine';WMK.form=null;pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');
@@ -9869,7 +9880,12 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
   return h}
  {const _r=rPn;rPn=function(){if(ptab===2&&shop==='wmkt'){try{panelChrome('')}catch(e){}const fo=document.activeElement&&document.activeElement.id==='wmf';pbd.innerHTML=wmHTML();
    const fi=document.getElementById('wmf');if(fi){fi.oninput=()=>{WMK.filter=fi.value;const pos=fi.selectionStart;rPn();const f2=document.getElementById('wmf');if(f2){f2.focus();try{f2.setSelectionRange(pos,pos)}catch(e){}}};if(fo){fi.focus()}}
-   for(const id of['wmq','wmp']){const el=document.getElementById(id);if(el)el.onchange=()=>{const v=Math.max(1,Math.floor(+el.value||1));if(id==='wmq')WMK.form.q=v;else WMK.form.p=Math.min(1e7,v);rPn()}}return}_r()}}
+   // typing a number just updates the offer (no redraw: a redraw while typing ate your next tap, e.g. on SELL / BUY)
+   for(const id of['wmq','wmp']){const el=document.getElementById(id);if(el)el.oninput=()=>{if(!WMK.form)return;const v=Math.max(1,Math.floor(+el.value||1));if(id==='wmq')WMK.form.q=v;else WMK.form.p=Math.min(1e7,v);wmTotal()}}return}_r()}}
+ // keep the SELL/BUY button's total right while typing, without rebuilding the panel
+ function wmTotal(){const F=WMK.form,b=pbd.querySelector('[data-w="go"]');if(!F||!b)return;const tot=F.q*F.p,ok=F.s==='s'?(inv[F.k]|0)>=F.q:GLD>=tot;b.style.opacity=ok?1:.45;const t=b.querySelector('b');if(t)t.textContent=(F.s==='s'?'SELL ':'BUY ')+F.q+' for '+fmt(tot)+' gold'}
+ // other players' offers changing shouldn't redraw the panel under your fingers while you type
+ const typing=()=>{const a=document.activeElement;return!!(a&&(a.id==='wmq'||a.id==='wmp'||a.id==='wmf'))};
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='wmkt'){const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w,F=WMK.form;
    if(a.startsWith('tab:')){WMK.tab=a.slice(4)}
    else if(a==='collect'){collect().then(()=>rPn());return}
@@ -9878,7 +9894,7 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
    else if(a==='back'){WMK.form=null}
    else if(F&&a.startsWith('q:')){const v=a.slice(2);F.q=v==='all'?Math.max(1,inv[F.k]|0):Math.max(1,F.q+(+v))}
    else if(F&&a.startsWith('p:')){const v=a.slice(2),B=book(F.k);if(v==='match')F.p=F.s==='s'?B.bb:B.bs;else if(v.endsWith('%'))F.p=Math.max(1,Math.round(F.p*(1+(+v.slice(0,-1))/100))+(+v.slice(0,-1)>0?0:0));else F.p=Math.max(1,F.p+(+v));F.p=Math.min(1e7,F.p)}
-   else if(F&&a==='go'){const q=document.getElementById('wmq'),p=document.getElementById('wmp');if(q)F.q=Math.max(1,Math.floor(+q.value||1));if(p)F.p=Math.max(1,Math.floor(+p.value||1));place(F.s,F.k,F.q,F.p);return}
+   else if(F&&a==='go'){if(WMK.busy)return;const q=document.getElementById('wmq'),p=document.getElementById('wmp');if(q)F.q=Math.max(1,Math.floor(+q.value||1));if(p)F.p=Math.max(1,Math.floor(+p.value||1));place(F.s,F.k,F.q,F.p);return}
    rPn();return}return _oc(e)}}
  {const _cp=closePanel;closePanel=function(){if(shop==='wmkt'){shop=null;WMK.form=null}return _cp()}}
  // talking to the clerk (T / TALK / ✕) or hitting the stalls opens it
@@ -10341,7 +10357,7 @@ var LUX={};
  function jwRows(){let h='<div class="tl" style="margin-top:14px">Jewelry</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75;margin-top:-6px">Crafting level '+lvOf(6)+' · Gold bars: '+(inv.gbar|0)+'</div>';
   for(const j of JWL){const need=[[ 'gbar',j.b]].concat(j.g?[[j.g,1]]:[]),can=lvOf(6)>=j.lv&&need.every(([a,b])=>(inv[a]|0)>=b);
    h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(j.k)+'"><div class="gi"><b>'+j.n+'</b> <small>(have '+(inv[j.k]|0)+')</small><br><small>'+need.map(([a,b])=>b+' '+(INAME[a]||a).toLowerCase()).join(', ')+' · Crafting '+j.lv+' · '+j.xp+' xp<br>'+j.d+'</small></div><button class="fg" data-jw="make" data-k="'+j.k+'">Make</button></div>'}return h}
- function jwMake(k){const j=JK[k];if(!j)return;if(lvOf(6)<j.lv){say('You need Crafting '+j.lv+' to make that.');sfx('swish');return}
+ function jwMake(k){const j=JK[k];if(!j)return;if(sqDo('craft',1,()=>jwMake(k)))return;if(lvOf(6)<j.lv){say('You need Crafting '+j.lv+' to make that.');sfx('swish');return}
   if((inv.gbar|0)<j.b||(j.g&&(inv[j.g]|0)<1)){say('You need '+j.b+' gold bar'+(j.b>1?'s':'')+(j.g?' and a '+INAME[j.g].toLowerCase():'')+'.');sfx('swish');return}
   inv.gbar-=j.b;if(j.g)inv[j.g]--;inv[k]=(inv[k]|0)+1;addXp(6,j.xp);say('You made a '+j.n.toLowerCase()+'!');try{sfx('smelt')}catch(e){}saveLocal(true);rPn()}
  const _sh=stationHTML;stationHTML=function(o){const h=_sh(o);if(!o||o.t!=='furnace')return h;const i=h.lastIndexOf('<button class="ng stb"');return i<0?h+jwRows():h.slice(0,i)+jwRows()+h.slice(i)};
@@ -11937,6 +11953,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   nomans:{n:'Black Jack, the Outlaw King',door:'nmmine',lm:'The Old Silver Mine',hp:820,col:'#c8a040',shard:'Silver sigil shard',sc:['#e8e8f0','#8a8a98'],
    floor:['#6a5a48','#625240'],wall:'#4a3c2e',trim:'#2a2018',gold:[700,1100],loot:[['gbar',4],['sbar',4],['iarrow',30]],xp:3000,rare:['eq_ohat','Outlaw\'s hat','A black cowboy hat with a silver band. Defence like an adamant helmet.'],
    atk:[['fan',1.9,{n:5,spread:.18,sp:170,k:'bullet',burst:2}],['circles',4.2,{n:3,r:26,delay:1.4,k:'dyn'}],['summon',11,{key:'bandit',n:2,cap:2}]]}};
+ for(const k in IB)IB[k].hp=Math.round(IB[k].hp*2.2);// island bosses: much tougher (Nov 9)
  window.SQIB=IB;const ISL=Object.keys(IB);
  // ---- the shards ----
  for(const id of ISL){const k='ibs_'+id,B=IB[id];INVK.push(k);EXTRA_BAG.push(k);INAME[k]=B.shard;SN[k]=B.shard+'s';SHORT[k]=B.shard.toLowerCase();SELLP[k]=40;
@@ -11944,7 +11961,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  {const _ic=iconURL;iconURL=function(k,col){if(!/^ibs_/.test(k))return _ic(k,col);const key='ibs'+k;if(ICONC[key])return ICONC[key];const B=IB[k.slice(4)],c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
    for(let j=0;j<12;j++){const w=j<6?j+1:12-j;r(7-w,j+1,w*2,1,K)}for(let j=1;j<11;j++){const w=j<6?j:11-j;r(7-w,j+1,w*2,1,B.sc[1]);if(w>1)r(7-w+1,j+1,w-1,1,B.sc[0])}r(6,3,1,2,'#ffffff');return ICONC[key]=c.toDataURL()}}
  {const _ed=enemyDrop;enemyDrop=function(n){_ed(n);try{const R=SCENE&&SCENE.room,isl=(n&&n.rg)||(R&&R.region)||(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region);
-   if(!n||!IB[isl]||n.type==='ib'||n.summon||n._ibs)return;n._ibs=1;if(Math.random()<1/25||window.SQSHARDDROP){const k='ibs_'+isl;inv[k]=(inv[k]|0)+1;say('+1 '+INAME[k].toLowerCase()+' ('+inv[k]+'/5)');try{gTxt(n.x,n.y-20,'+1 shard',IB[isl].sc[0]);sfx('pickup')}catch(e){}}}catch(e){}}}
+   if(!n||!IB[isl]||n.type==='ib'||n.summon||n._ibs)return;n._ibs=1;if(Math.random()<2/25||window.SQSHARDDROP){const k='ibs_'+isl;inv[k]=(inv[k]|0)+1;say('+1 '+INAME[k].toLowerCase()+' ('+inv[k]+'/5)');try{gTxt(n.x,n.y-20,'+1 shard',IB[isl].sc[0]);sfx('pickup')}catch(e){}}}catch(e){}}}
 
  // ---- the doors ----
  const doorOf=(R,it)=>R&&R.region&&IB[R.region]&&it&&it.t==='lm'&&it.k===IB[R.region].door;
@@ -12355,6 +12372,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  const keep=(x,y,w,h)=>{const r=R2();MINIBOX={x:x/r,y:y/r,w:w/r,h:h/r}};
  const _m52=drawMini52;drawMini52=function(){_m52();const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w;keep(L.dx-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+6*U)};
  const _u=upd;upd=function(dt){_u(dt);const R=SCENE&&SCENE.room;if(R&&R.dun&&!menuOpen&&!dead){const L=HUDL||hudLayout(),U=L.U,w=L.dw,hh=w*R.h/R.w;keep(L.dx-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+16*U)}};
+ window.SQMINIBOX=()=>MINIBOX;
  const hit=(x,y)=>{const b=MINIBOX;return b&&!pnOpen&&!menuOpen&&!dead&&x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h};
  const open=()=>{fromMenu=false;showScreen('map')};
  cv.addEventListener('touchstart',e=>{const t=e.changedTouches[0];if(t&&hit(t.clientX,t.clientY)){e.preventDefault();e.stopImmediatePropagation();open()}},{capture:true,passive:false});
@@ -12386,6 +12404,109 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   const cur=snap();cur.savedAt=LOCAL_AT;mpBackup('device',cur);applySave(JSON.parse(JSON.stringify(S)));hideCreator();
   try{if(cloud){const r=await cloud.get(),rs=r&&r.exists?r.data():null;if(rs)lastWid=wOf(rs)}}catch(e){}
   saveLocal(true);LOCAL_AT=Date.now();try{await saveCloud(true)}catch(e){}closePanel();say('Backup restored'+(cloud?' and saved to your account':'')+'. What you had before is backed up too.');sfx('quest')},true)}
+// ---- 106. Shops keep a daily stock ----
+// Every shop item has a limited stock each day (shared across every shop, per player), so nobody can buy their way up a
+// skill with ores, bars, logs or raw fish. What's left is shown on each item, and it all restocks every morning (each
+// new game day). Raw materials: 8 a day; tools and gear: 2; everything else: 20; bait: 200.
+{const RAW=new Set(['wood','stone','iron','gold','mith','adam','coal','meat','pelt','bone','hide','flax','clay','ruby','sapphire','emerald','diamond','heartwood',...FISH_T.map(f=>f.k)]);
+ const max=k=>k==='bait'?200:RAW.has(k)||/bar$|log$|ore$/.test(k)?8:EQ[k]||TL[k]!==undefined||/^(axe|pick|rod|hoe|can|bow|sword|wand)/.test(k)?2:20;
+ const day=()=>1+Math.floor(time/DAYLEN);let STK={d:0,n:{}};const cur=()=>{if(STK.d!==day())STK={d:day(),n:{}};return STK};
+ const left=k=>Math.max(0,max(k)-(cur().n[k]|0));window.SQSTOCK={left,max,day,keyOf:t=>keyOf(t)};
+ {const _s=snap;snap=function(){const s=_s();s.stk=cur();return s}}
+ {const _a=applySave;applySave=function(S){_a(S);STK=S&&S.stk&&S.stk.n?{d:+S.stk.d||0,n:{...S.stk.n}}:{d:0,n:{}}}}
+ const isShop=()=>pnOpen&&ptab===2&&shop&&shop!=='wmkt';
+ // a purchase = gold went down and items came in. Over today's stock: undo it.
+ pbd.addEventListener('click',ev=>{if(!isShop())return;const b=ev.target.closest('[data-a]');if(!b)return;const inv0={...inv},g0=GLD;
+  const bk=/^b/.test(b.dataset.a||'')?keyOf((b.innerText||'').replace(/\n.*left today|\n.*restocks.*/,'')):null;if(bk&&!left(bk)){ev.stopImmediatePropagation();ev.preventDefault();say('Sold out of '+(SN[bk]||INAME[bk]||bk).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish')}catch(e){}return}
+  setTimeout(()=>{if(GLD>=g0)return;const got={};for(const k in inv){const d=(inv[k]|0)-(inv0[k]|0);if(d>0)got[k]=d}const ks=Object.keys(got);if(!ks.length){if(bk){cur().n[bk]=(cur().n[bk]|0)+1;try{if(isShop())rPn()}catch(e){}}return}
+   const over=ks.find(k=>got[k]>left(k));
+   if(over){for(const k of ks)inv[k]=inv0[k]|0;GLD=g0;const L=left(over);say(L?'Only '+L+' '+(SN[over]||INAME[over]||over).toLowerCase()+' left in stock today. More arrive in the morning.':'Sold out of '+(SN[over]||INAME[over]||over).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish');svg();saveLocal(true)}catch(e){}}
+   else{for(const k of ks)cur().n[k]=(cur().n[k]|0)+got[k];if(bk&&!got[bk])cur().n[bk]=(cur().n[bk]|0)+1}
+   try{if(isShop())rPn()}catch(e){}},0)},true);
+ // show what's left on every shop button: match the button's words to an item
+ const names=()=>{const L=[];for(const k in INAME){const n=(INAME[k]||'').toLowerCase().replace(/ \(.*\)$/,'');if(n.length>2)L.push([n,k]);const p=(SN[k]||'').toLowerCase();if(p.length>2)L.push([p,k])}return L.sort((a,b)=>b[0].length-a[0].length)};let NM=null;
+ const keyOf=t=>{t=t.toLowerCase();if(/fire kit/.test(t))return null;NM=NM||names();for(const[n,k]of NM)if(t.includes(n))return k;return null};
+ const _r=rPn;rPn=function(){_r();if(!isShop())return;try{for(const b of pbd.querySelectorAll('[data-a]')){const a=b.dataset.a||'';if(!/^b/.test(a))continue;const old=b.querySelector('.stk');if(old)old.remove();const k=keyOf(b.innerText||'');if(!k)continue;
+   const l=left(k),m=max(k),s=document.createElement('span');s.className='stk';b.style.opacity='';s.textContent=l?l+' / '+m+' left today':'Sold out · restocks in the morning';s.style.cssText='display:block;font:600 11px var(--pf);margin-top:2px;color:'+(l?l<=m/4?'#c06010':'#3a7a3a':'#c03030');b.appendChild(s);if(!l)b.style.opacity=.55}}catch(e){}}}
+// ---- 107. Skill tomes (XP books) ----
+// /give <skill> <xp> [count] (owner only) makes "Fishing tome (1,000 XP)" and so on: a real item that can be traded,
+// sold at the World Market, dropped in graves... Reading it (Bag → READ) gives that much XP in that skill.
+// Item key: xpb_<skill index>_<xp>. Any such key is registered the moment the game meets it.
+function sqBookReg(k){if(typeof k!=='string'||k.slice(0,4)!=='xpb_'||INAME[k])return;const m=/^xpb_(\d{1,2})_(\d{1,8})$/.exec(k);if(!m)return;const i=+m[1],xp=+m[2];if(!(i<SKN.length)||!(xp>0))return;
+ INAME[k]=SKN[i]+' tome ('+xp.toLocaleString('en-US')+' XP)';SN[k]=SKN[i]+' tomes ('+xp.toLocaleString('en-US')+' XP)';SHORT[k]=SKN[i].toLowerCase()+' tome';
+ IDESC[k]='An old book of '+SKN[i].toLowerCase()+' secrets. Read it (Bag → READ) to gain '+xp.toLocaleString('en-US')+' '+SKN[i]+' XP. It can be traded or sold at the World Market.';
+ SELLP[k]=Math.max(1,Math.round(xp/20));if(!INVK.includes(k))INVK.push(k);if(typeof EXTRA_BAG!=='undefined'&&!EXTRA_BAG.includes(k))EXTRA_BAG.push(k)}
+{const _ap=applySave;applySave=function(S){try{if(S&&S.inv)for(const k in S.inv)sqBookReg(k)}catch(e){}return _ap(S)};
+ // icon: a book in the skill's colour
+ const _ic=iconURL;iconURL=function(k,col){if(typeof k==='string'&&k.slice(0,4)==='xpb_'){sqBookReg(k);const m=/^xpb_(\d+)_/.exec(k),i=m?+m[1]:0,key='ixb'+i;if(ICONC[key])return ICONC[key];
+   const c=document.createElement('canvas');c.width=c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)},cl=(typeof SKC!=='undefined'&&SKC[i])||'#a06030';
+   r(2,2,10,11,'#302018');r(3,2,8,10,cl);r(3,2,1,10,'rgba(0,0,0,.35)');r(10,3,1,9,'#f0e8d0');r(4,12,8,1,'#f0e8d0');r(5,4,4,1,'rgba(255,255,255,.55)');r(5,6,3,1,'rgba(255,255,255,.4)');r(6,8,2,2,'#f8d048');return ICONC[key]=c.toDataURL()}
+  return _ic(k,col)};
+ // Bag: READ
+ const _bg=bagGridHTML;bagGridHTML=function(){const h=_bg(),k=invSel;if(!k||k.slice(0,4)!=='xpb_'||(inv[k]|0)<1)return h;return h.replace('<div class="bd">','<div class="bd"><button class="use xpread" data-k="'+k+'" style="background:#5878b8;color:#fff">READ</button>')};
+ pbd.addEventListener('click',ev=>{const b=ev.target.closest('.xpread');if(!b)return;ev.stopPropagation();const k=b.dataset.k,m=/^xpb_(\d+)_(\d+)$/.exec(k);if(!m||(inv[k]|0)<1)return;
+  inv[k]--;const i=+m[1],xp=+m[2];addXp(i,xp);say('You read the '+SKN[i].toLowerCase()+' tome: +'+xp.toLocaleString('en-US')+' '+SKN[i]+' XP!');msgT=4;try{sfx('quest')}catch(e){}saveLocal(true);try{saveCloud(true)}catch(e){}rPn()},true)}
+// ---- 108. Skilling takes time: every cook, fire, smelt, forge, craft and catch is a short action you can see ----
+// Lighting a fire, cooking, smelting, smithing, crafting and reeling in a fish each take about 2-3 seconds, with an
+// animation and a progress bar over your head. "Make all" / "Cook all" do one at a time until you run out. Moving
+// stops it. (Before, these happened instantly, so whole levels could be made in seconds.)
+var SQDO=null;
+function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;const D={fire:2.6,cook:2.4,smelt:2.4,smith:2.6,craft:2.4,reel:1.8}[kind]||2.4;
+ SQDO={kind,n:Math.max(1,n|0),fn,t:0,d:D,x:P.x,y:P.y,done:0};try{if(pnOpen)closePanel()}catch(e){}jx=jy=0;
+ say({fire:'Lighting a fire...',cook:'Cooking...',smelt:'Smelting...',smith:'Hammering at the anvil...',craft:'Crafting...',reel:'Reeling it in...'}[kind]||'Working...');return true}
+{const _f=fire;fire=function(){if(sqDo('fire',1,()=>_f()))return;return _f()};
+ const _e=eat;eat=function(){if(dead||menuOpen||pnOpen)return _e();// cooking at a fire takes time; eating doesn't
+  if(nearFire(P.x,P.y,45)&&(typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv)||(inv.meat|0)>0&&nearFire(P.x,P.y,45))){let n=0;for(const c of COOKS)if(lvOf(4)>=c.lv)n+=inv[c.raw]|0;if(sqDo('cook',Math.max(1,n),()=>_e()))return}return _e()};
+ const _cf=catchFish;catchFish=function(){if(window.SQDO_STEP||!FISH)return _cf();FISH.t=-999;FISH.bite=0;sqDo('reel',1,()=>{if(FISH)_cf()});};
+ const xpSum=()=>XPS.reduce((a,v)=>a+v,0),invSum=()=>Object.values(inv).reduce((a,v)=>a+(+v||0),0);
+ const _u=upd;upd=function(dt){_u(dt);const D=SQDO;if(!D)return;
+  if(dead||Math.hypot(P.x-D.x,P.y-D.y)>3||(D.kind==='reel'&&!FISH)){SQDO=null;if(!dead&&D.kind!=='reel')say('Stopped'+(D.done?' after '+D.done:'')+'.');return}
+  if(D.kind==='reel'&&FISH)FISH.t=-999;
+  if((D.kind==='smith'||D.kind==='craft')&&swing<=0&&(D.t%0.7)<dt)swing=.25;
+  D.t+=dt;if(D.t<D.d)return;
+  const x0=xpSum(),i0=invSum(),f0=fires.length;window.SQDO_STEP=true;try{D.fn()}catch(e){console.warn(e)}finally{window.SQDO_STEP=false}
+  const ok=xpSum()!==x0||invSum()!==i0||fires.length!==f0;if(ok)D.done++;D.n--;
+  if(!ok||D.n<=0||SQDO!==D){if(SQDO===D)SQDO=null}else{D.t=0;D.x=P.x;D.y=P.y}};
+ // the look of it: a progress bar over your head and something happening in front of you
+ const _dh=drawHUD;drawHUD=function(){_dh();const D=SQDO;if(!D||menuOpen)return;const U=(HUDL&&HUDL.U)||1,sx=W/2,sy=H/2,tm=performance.now()/1000,[fx0,fy0]=front(14),fx=W/2+(fx0-P.x)*Z,fy=H/2+(fy0-P.y)*Z,z=Z,pr=Math.min(1,D.t/D.d);
+  g.save();g.setTransform(1,0,0,1,0,0);const bw=34*z,bh=5*z,bx=sx-bw/2,by=sy-28*z;g.fillStyle='#302818';g.fillRect(bx-z,by-z,bw+2*z,bh+2*z);g.fillStyle='#e8e0c8';g.fillRect(bx,by,bw,bh);
+  const col={fire:'#f87830',cook:'#f0a840',smelt:'#e06030',smith:'#90a8d0',craft:'#a880e0',reel:'#58a8ff'}[D.kind]||'#58c058';g.fillStyle=col;g.fillRect(bx,by,bw*pr,bh);
+  if(D.n>1&&D.n<900){g.font='700 '+Math.round(5*z)+'px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2*U;g.strokeStyle='#302818';g.strokeText(D.n+' left',sx,by-z);g.fillStyle='#f8f0d8';g.fillText(D.n+' left',sx,by-z)}
+  const P2=(x,y,s,c)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.max(1,s*z),Math.max(1,s*z))};
+  if(D.kind==='fire'){// kindling, flint sparks, then the first wisps of smoke
+   for(let k=0;k<3;k++){g.fillStyle='#6a4020';g.fillRect(fx-6*z+k*3*z,fy+2*z-k%2*z,7*z,2*z)}
+   if(Math.floor(tm*6)%2)for(let k=0;k<4;k++)P2(fx+(Math.random()-.5)*10*z,fy-(Math.random()*6)*z,1,Math.random()<.5?'#ffe080':'#ff9030');
+   if(pr>.5)for(let k=0;k<3;k++){const ph=(tm*.8+k/3)%1;g.globalAlpha=(1-ph)*.6;P2(fx+Math.sin(ph*6+k)*3*z,fy-ph*16*z,2,'#c8c0b8')}g.globalAlpha=1;if(pr>.75){P2(fx-z,fy-2*z,2,'#f86020');P2(fx,fy-3*z,1,'#ffd040')}}
+  else if(D.kind==='cook'){for(let k=0;k<4;k++){const ph=(tm*1.2+k/4)%1;g.globalAlpha=(1-ph)*.55;P2(fx-4*z+k*3*z+Math.sin(ph*8)*z,fy-4*z-ph*14*z,2,'#f0f0f0')}g.globalAlpha=1;
+   if(Math.floor(tm*8)%3===0)P2(fx+(Math.random()-.5)*8*z,fy-2*z,1,'#ffd060');g.strokeStyle='#8a6a40';g.lineWidth=Math.max(1,z);g.beginPath();g.moveTo(sx+3*z,sy-4*z);g.lineTo(fx,fy-2*z);g.stroke()}
+  else if(D.kind==='smith'||D.kind==='smelt'){if(D.kind==='smelt'){g.globalAlpha=.5+.3*Math.sin(tm*8);P2(fx-3*z,fy-3*z,6,'#f86020');g.globalAlpha=1}
+   const hit=(D.t%0.7)<.12;if(hit)for(let k=0;k<6;k++){const a=Math.random()*6.283,r=(2+Math.random()*7)*z;P2(fx+Math.cos(a)*r,fy-3*z+Math.sin(a)*r*.6,1,Math.random()<.5?'#ffe080':'#ffb040')}}
+  else if(D.kind==='craft'){if((D.t%0.7)<.15)for(let k=0;k<4;k++)P2(fx+(Math.random()-.5)*9*z,fy-2*z-(Math.random()*5)*z,1,'#c8a070')}
+  else if(D.kind==='reel'&&FISH){const bx=W/2+(FISH.bx-P.x)*Z,by=H/2+(FISH.by-P.y)*Z,k=pr;const x=bx+(sx-bx)*k*.7,y=by+(sy-by)*k*.7;for(let j=0;j<3;j++){const ph=(tm*3+j/3)%1;g.globalAlpha=1-ph;g.strokeStyle='#e8f8ff';g.lineWidth=Math.max(1,z*.6);g.beginPath();g.ellipse(x,y+2*z,(2+ph*6)*z,(1+ph*3)*z,0,0,6.283);g.stroke()}g.globalAlpha=1;P2(x-z,y-z+Math.sin(tm*20)*z,2,'#e04040')}
+  g.restore()};
+}
+// ---- 109. Bosses are much tougher, and eating has a short cooldown ----
+// Every boss (island bosses, world bosses, dungeon and floor bosses) has more HP and hits harder, and you can only eat
+// once every 3 seconds, so standing still and eating through a boss's damage no longer works.
+{const BT=new Set(['boss','bonelord','matri','tidekeeper','frostfang','thorn','emberl','ib']);try{for(const f of Object.values(window.WK_BOSSMK||{})){const t=f().type;if(t)BT.add(t)}}catch(e){}
+ const isBoss=m=>m&&!m.dead&&(m.big||m.boss||BT.has(m.type)||m._wb);
+ // dungeon/floor bosses (island and world bosses get their HP from their own tables): double HP the first time they appear
+ const _u=upd;upd=function(dt){_u(dt);for(const m of en)if(!m._hard&&!m._rp&&!m._wb&&m.type!=='ib'&&isBoss(m)){m._hard=1;m.hp=Math.round((m.hp||1)*2);m.mhp=Math.round((m.mhp||m.hp/2)*2)}
+  if(EATCD>0)EATCD-=dt};
+ // bosses hit 60% harder
+ const near=()=>{for(const m of en)if(isBoss(m)&&Math.hypot(m.x-P.x,m.y-P.y)<360)return true;const R=SCENE&&SCENE.room;return!!(R&&/^ib_/.test(SCENE.id||''))};
+ const _h=hurtP;hurtP=function(d,msg){return _h(near()?Math.ceil(d*1.6*10)/10:d,msg)};
+ // eating: once every 3 seconds (cooking at a fire isn't eating)
+ var EATCD=0;window.SQEATCD=()=>EATCD;
+ const _e=eat;eat=function(){if(dead||menuOpen||pnOpen||window.SQDO_STEP||SQDO)return _e();
+  const cooking=nearFire(P.x,P.y,45)&&typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv);if(cooking)return _e();
+  if(EATCD>0){say('Still chewing... ('+EATCD.toFixed(1)+'s)');return}const h0=P.hp,u0=hunger,i0=JSON.stringify(inv);_e();if(P.hp!==h0||hunger!==u0||JSON.stringify(inv)!==i0)EATCD=3}}
+// ---- 110. Phones: ONLINE/CHAT and BUG move under the minimap, out of the middle of the screen ----
+// On narrow screens they sat over the left side of the world, right where Elder Rowan stands at the start.
+setInterval(()=>{const a=document.getElementById('mpb'),b=document.getElementById('mpbug');if(!a)return;const B=window.SQMINIBOX&&SQMINIBOX();
+ if(innerWidth<700&&B&&B.h>20){const t=Math.round(B.y+B.h+8);a.style.left='auto';a.style.right=Math.max(8,Math.round(innerWidth-(B.x+B.w)))+'px';a.style.top=t+'px';
+  if(b){b.style.left='auto';b.style.right=a.style.right;b.style.top=(t+48)+'px'}}
+ else{a.style.left=a.style.right=a.style.top='';if(b)b.style.left=b.style.right=b.style.top=''}},400);
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
