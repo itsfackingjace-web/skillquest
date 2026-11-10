@@ -11,7 +11,7 @@
 //   islands: {id:{n name, b description, lv, dir, w, h, t tiles (one hex digit per tile, packed), o objects (PXC index into
 //   ISL_OBJ per tile, packed), lm [{k,x,y,v,n,tx,loot}] buildings/props/signs/loot chests (ISL_LM), pier n|e|s|w, mob (monsters like an existing island, or none), max, mx, my (world map)}}.
 //   A custom island is a normal sailing region whose generator returns the painted map (with open water around it).
-//   gear: {itemKey:{dmg,rng,blk,mp,rq}} how a weapon or armour piece works (see 111a2-s114-gear-rules.js).
+//   gear: {itemKey:{dmg,rng,blk,mp,rq,fx}} how a weapon or armour piece works; newgear: {eq_cu_name:{n,b,v,d,sm}} new gear items (see 111a2-s114-gear-rules.js).
 //   worn: how a helmet / body / legs / weapon / shield looks on the character, one 96 x 112 layer per facing
 //   (f front, b back, s side; left is side mirrored), drawn over the character. h = hide the game's own look for that slot.
 var SQA=(()=>{
@@ -163,7 +163,7 @@ var SQA=(()=>{
  setTimeout(refresh,400);
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,
   ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
-  get live(){return live},
+  get live(){return live},hasIcon:k=>!!ICO[k],
   // a section that reads its own part of the library: called now with the current library and after every change
   onApply(f){HOOKS.push(f);try{f(preview||live||{})}catch(e){console.warn(e)}},
   // the Dev Suite can show unpublished edits in the developer's own game

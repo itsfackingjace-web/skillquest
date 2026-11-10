@@ -13,13 +13,14 @@
  const R=p=>fb().db.ref(fb().D,'assets/'+p);
  const dget=async p=>(await fb().db.get(R(p))).val(),dset=(p,v)=>fb().db.set(R(p),v==null?null:v);
  const body=L=>{const o=clone(L)||{};delete o.v;delete o.at;delete o.by;return o};
- const norm=d=>{d.icons=d.icons||{};d.stats=d.stats||{};d.worn=d.worn||{};d.islands=d.islands||{};d.pets=d.pets||{};d.gear=d.gear||{};return d};
+ const norm=d=>{d.icons=d.icons||{};d.stats=d.stats||{};d.worn=d.worn||{};d.islands=d.islands||{};d.pets=d.pets||{};d.gear=d.gear||{};d.newgear=d.newgear||{};return d};
  const EXT={};// extra tabs (the island builder lives in its own file)
  async function load(){S.ok=null;S.note='';draw();
   if(!fb()||!user()){S.ok='signin';draw();return}S.uid=user().uid;
   try{S.live=await dget('live');S.draft=await dget('draft')}catch(e){S.ok=/permission/i.test(e.message)?'setup':'error';S.note=e.message;draw();return}
   if(!S.draft){S.draft=body(S.live);try{await dset('draft',S.draft)}catch(e){}}
-  norm(S.draft);S.ok='yes';draw()}
+  norm(S.draft);S.ok='yes';syncNG();draw()}
+ const syncNG=()=>{try{if(window.SQGEAR)SQGEAR.devItems(S.draft&&S.draft.newgear)}catch(e){console.warn(e)}};
  const toast=t=>{S.note=t;const n=document.querySelector('#dvs .dv-note');if(n)n.textContent=t;clearTimeout(toast.t);toast.t=setTimeout(()=>{S.note='';const n2=document.querySelector('#dvs .dv-note');if(n2)n2.textContent=''},4000)};
  const fail=e=>{console.error(e);toast('Could not save: '+(e&&e.message||e))};
  // ---- comparing draft and live ----
@@ -31,6 +32,8 @@
   for(const k of wk)if(!same((L.worn||{})[k],(D.worn||{})[k]))out.push({kind:'worn',k,what:(D.worn||{})[k]?((L.worn||{})[k]?'Worn look changed':'New worn look'):'Back to the game\'s own worn look'});
   const pk=new Set([...Object.keys(L.pets||{}),...Object.keys(D.pets||{})]);
   for(const k of pk)if(!same((L.pets||{})[k],(D.pets||{})[k]))out.push({kind:'pet',k:'pet_'+k,what:(D.pets||{})[k]?((L.pets||{})[k]?'Pet look changed':'New pet look'):'Back to the game\'s own pet look'});
+  const nk=new Set([...Object.keys(L.newgear||{}),...Object.keys(D.newgear||{})]);
+  for(const k of nk)if(!same((L.newgear||{})[k],(D.newgear||{})[k]))out.push({kind:'gear',k,what:(D.newgear||{})[k]?((L.newgear||{})[k]?'New gear item changed':'New gear item'):'New gear item removed'});
   const gk=new Set([...Object.keys(L.gear||{}),...Object.keys(D.gear||{})]);
   for(const k of gk)if(!same((L.gear||{})[k],(D.gear||{})[k]))out.push({kind:'gear',k,what:(D.gear||{})[k]?((L.gear||{})[k]?'How it works changed':'New rules for how it works'):'Back to how the game made it work'});
   for(const t in A.TABLES){const l=(L.stats||{})[t]||{},d=(D.stats||{})[t]||{};
@@ -40,7 +43,7 @@
   for(const k in EXT)if(EXT[k].changes)try{out.push(...EXT[k].changes(L,D))}catch(e){}
   return out}
  const wState=k=>{const d=S.draft&&S.draft.worn&&S.draft.worn[k],l=S.live&&S.live.worn&&S.live.worn[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
- const rState=k=>{const d=S.draft&&S.draft.gear&&S.draft.gear[k],l=S.live&&S.live.gear&&S.live.gear[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
+ const rState=k=>{const d0=S.draft||{},l0=S.live||{},d=(d0.gear||{})[k]||(d0.newgear||{})[k]?[(d0.gear||{})[k],(d0.newgear||{})[k]]:null,l=(l0.gear||{})[k]||(l0.newgear||{})[k]?[(l0.gear||{})[k],(l0.newgear||{})[k]]:null;return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
  const gState=k=>{const a=[wState(k),state(k),rState(k)];return a.includes('draft')?'draft':a.includes('live')?'live':''};
  const state=k=>{const d=S.draft&&S.draft.icons[k],l=S.live&&S.live.icons&&S.live.icons[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
  // ---- sprites: turn any icon picture into an editable pixel grid ----
@@ -248,11 +251,12 @@
  function openGear(k){S.sel=k;if(S.gm==='icon')return openSprite(k);if(S.gm==='rules'){S.ed=null;draw();return}openWorn(k)}
  function worn(){const q=S.q.toLowerCase(),all=A.wornKeys(),keys=all.filter(k=>(!q||(INAME[k]||'').toLowerCase().includes(q)||k.includes(q))&&(!S.only||gState(k)));
   let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+all.length+' weapons and armour" value="'+E(S.q)+'" data-in="q">'+
-   '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only edited gear</label><div class="dv-grid">';
+   '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only edited gear</label><button class="dv-b'+(S.sel==='__new'?' dv-tl dv-on':'')+'" data-a="ngnew">+ New gear item</button><div class="dv-grid">';
   for(const k of keys){const s2=gState(k);h+='<button class="dv-it'+(S.sel===k?' dv-on':'')+'" data-k="'+E(k)+'">'+(s2?'<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>':'')+'<img alt="" src="'+thumb(k)+'"><span>'+E(INAME[k]||k)+'</span></button>'}
   if(!keys.length)h+='<p class="dv-mut">Nothing matches.</p>';
   h+='</div></div><div class="dv-ed">';
-  if(!S.sel)return h+'<div class="dv-card"><b>Pick a helmet, body, legs, weapon or shield.</b><p class="dv-mut">Everything about a piece of gear is here. <b>On the character</b>: draw how it looks on the character from the front, back and side, with the character wearing it underneath. <b>Icon</b>: its picture in bags, chests and shops. <b>How it works</b>: its damage, range, block, mana cost and what it needs. Save each to your draft, then publish from the Publish tab.</p></div></div></div>';
+  if(S.sel==='__new')return h+newHtml()+'</div></div>';
+  if(!S.sel)return h+'<div class="dv-card"><b>Pick a helmet, body, legs, weapon or shield.</b><p class="dv-mut">Everything about a piece of gear is here. <b>On the character</b>: draw how it looks on the character from the front, back and side, with the character wearing it underneath. <b>Icon</b>: its picture in bags, chests and shops. <b>How it works</b>: its damage, range, block, mana cost and what it needs. Save each to your draft, then publish from the Publish tab. <b>+ New gear item</b> makes a brand-new piece that starts out working like one you pick.</p></div></div></div>';
   const k=S.sel,sl=EQ[k]&&EQ[k].slot;
   h+='<div class="dv-row"><button class="dv-b dv-back" data-a="back">‹ All gear</button><b style="font-size:16px">'+E(INAME[k]||k)+'</b><span class="dv-mut">'+E(SLN[sl]||sl)+' · '+E(k)+'</span></div>'+
    '<div class="dv-row dv-modes">'+GMODES.map(([m,n])=>'<button class="dv-b'+(S.gm===m?' dv-tl dv-on':'')+'" data-a="gm" data-m="'+m+'">'+n+'</button>').join('')+'</div>';
@@ -272,12 +276,16 @@
    '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+Y redo · Ctrl+S save</p>';
   return h+'</div></div>'}
  // "How it works": numbers are shown as they are for your character now; what's saved is the change from the game's own number
+ const FXH={ls:'Chance to heal 1 heart when you hit',burn:'Chance to set what you hit on fire',slow:'Chance to slow what you hit',crit:'Chance to hit again for the same damage',spd:'Walk and run faster',xp:'More XP from everything'};
  function rulesHtml(k){const G=window.SQGEAR;if(!G)return'<p class="dv-mut">Gear rules aren\'t available.</p>';
-  const b=G.base(k),d=S.draft.gear[k]||{},t=b.kind,io=merged0(k),lab=(n,f,val,orig,hint)=>{const chg=val!==orig;
+  const b=G.base(k),d=S.draft.gear[k]||{},t=b.kind,ng=S.draft.newgear[k],lab=(n,f,val,orig,hint)=>{const chg=val!==orig;
    return'<label class="dv-gf"><span>'+n+'</span><input type="number" data-g="'+f+'" value="'+val+'"'+(chg?' class="dv-chg"':'')+'><small class="dv-mut">Game\'s own: '+orig+(hint||'')+'</small></label>'};
   let h='<div class="dv-card dv-rules">';
-  h+='<label class="dv-gf"><span>Name</span><input type="text" data-gs="n" value="'+E(io.n)+'"'+(io.n!==A.TABLES.items.orig(k).n?' class="dv-chg"':'')+'></label>'+
-   '<label class="dv-gf"><span>Sell price</span><input type="number" min="0" data-gs="v" value="'+io.v+'"'+(io.v!==A.TABLES.items.orig(k).v?' class="dv-chg"':'')+'><small class="dv-mut">Gold</small></label>';
+  if(ng){h+='<label class="dv-gf"><span>Name</span><input type="text" maxlength="40" data-gn="n" value="'+E(ng.n)+'"></label>'+
+    '<label class="dv-gf"><span>Sell price</span><input type="number" min="0" data-gn="v" value="'+(ng.v|0)+'"><small class="dv-mut">Gold</small></label>'+
+    '<label class="dv-gf"><span>Description</span><textarea maxlength="300" data-gn="d" rows="2">'+E(ng.d||'')+'</textarea><small class="dv-mut">Works like: '+E(INAME[ng.b]||ng.b)+' (same slot and look until you draw its own)</small></label>'}
+  else{const io=merged0(k);h+='<label class="dv-gf"><span>Name</span><input type="text" data-gs="n" value="'+E(io.n)+'"'+(io.n!==A.TABLES.items.orig(k).n?' class="dv-chg"':'')+'></label>'+
+   '<label class="dv-gf"><span>Sell price</span><input type="number" min="0" data-gs="v" value="'+io.v+'"'+(io.v!==A.TABLES.items.orig(k).v?' class="dv-chg"':'')+'><small class="dv-mut">Gold</small></label>'}
   if(t==='melee')h+=lab('Damage per hit','dmg',b.dmg+(d.dmg||0),b.dmg);
   if(t==='bow')h+=lab('Arrow damage','dmg',b.dmg+(d.dmg||0),b.dmg)+lab('Range','rng',b.rng+(d.rng||0),b.rng,' (about 16 per tile)');
   if(t==='wand')h+=lab('Spell damage','dmg',b.dmg+(d.dmg||0),b.dmg)+lab('Mana per spell','mp',d.mp!=null?d.mp:b.mp,b.mp,' · a '+E(EQ[k].el)+' wand sets the cost of every '+E(EQ[k].el)+' spell while it\'s in your hand');
@@ -285,18 +293,40 @@
   const q0=b.rq||{s:0,l:0},q=d.rq||q0;
   h+='<label class="dv-gf"><span>Needs</span><span class="dv-gq"><select data-g="rqs">'+SKN.map((n,i)=>'<option value="'+i+'"'+(i===q.s?' selected':'')+'>'+E(n)+'</option>').join('')+'</select>'+
    '<input type="number" min="0" max="99" data-g="rql" value="'+q.l+'"'+(d.rq?' class="dv-chg"':'')+' title="Level (0 = nothing needed)"></span><small class="dv-mut">Level 0 means anyone can use it. Game\'s own: '+(b.rq&&b.rq.l?E(SKN[b.rq.s])+' '+b.rq.l:'nothing')+'</small></label>';
-  if(t==='other')h+='<p class="dv-mut">This item has no damage or block numbers to change.</p>';
+  h+='<b style="margin-top:6px">Special effects</b><p class="dv-mut" style="margin:0">While it\'s worn. Effects from every piece a player wears add up. Hits are sword hits, arrows and spells.</p>';
+  const fx=d.fx||{};for(const x in G.FXN)h+='<label class="dv-gf"><span>'+G.FXN[x]+' (%)</span><input type="number" min="0" max="'+G.FXMAX[x]+'" data-g="fx_'+x+'" value="'+(fx[x]|0)+'"'+(fx[x]?' class="dv-chg"':'')+'><small class="dv-mut">'+FXH[x]+(G.FXMAX[x]<100?' (up to '+G.FXMAX[x]+'%)':'')+'</small></label>';
   h+='<p class="dv-mut">Numbers are what your character gets right now: your levels, perks and other gear count too, so other players may see slightly different totals. What you change is added for everyone. Changes save to your draft as you go.</p>'+
    '<div class="dv-row">'+(S.draft.gear[k]?'<button class="dv-b '+(S.arm==='grst'?'dv-arm':'dv-bad')+'" data-a="grst">'+(S.arm==='grst'?'Tap again to go back to the game\'s own rules':'Use the game\'s own rules')+'</button>':'')+'</div></div>';
+  if(ng)h+=ngHtml(k,ng);
   return h}
+ // a new gear item: how players get it, a test copy for you, and removing it before it's published
+ const mats=()=>{const m=new Set();for(const r of SM)if(!r._cu)for(const c in r.c||{})if(INAME[c])m.add(c);return[...m].sort((a,b)=>(INAME[a]>INAME[b]?1:-1))};
+ function ngHtml(k,ng){const sm=ng.sm||{c:{},lv:1},rows=Object.entries(sm.c);while(rows.length<2)rows.push(['',0]);const M=mats(),pub=S.live&&S.live.newgear&&S.live.newgear[k];
+  let h='<div class="dv-card dv-rules" style="margin-top:12px"><b>Getting it</b><p class="dv-mut" style="margin:0">Players can find it in island loot chests (pick it in the island builder) and, if you give it a recipe, make it at an anvil.</p>';
+  rows.slice(0,3).forEach(([m,c],i)=>{h+='<label class="dv-gf"><span>'+(i?'and':'Anvil recipe')+'</span><span class="dv-gq"><select data-gr="m'+i+'"><option value="">'+(i?'(nothing else)':'(no recipe)')+'</option>'+M.map(x=>'<option value="'+x+'"'+(x===m?' selected':'')+'>'+E(INAME[x])+'</option>').join('')+'</select><input type="number" min="0" max="99" data-gr="c'+i+'" value="'+(c|0)+'"></span></label>'});
+  h+='<label class="dv-gf"><span>Smithing level</span><input type="number" min="1" max="99" data-gr="lv" value="'+(sm.lv|0||1)+'"></label>';
+  h+='<div class="dv-row"><button class="dv-b" data-a="nggive">Put one in my bag (to test)</button>'+(pub?'':'<button class="dv-b '+(S.arm==='ngdel'?'dv-arm':'dv-bad')+'" data-a="ngdel">'+(S.arm==='ngdel'?'Tap again to delete it':'Delete this item')+'</button>')+'</div>'+
+   (pub?'<p class="dv-mut">Published items can\'t be deleted, because players may already have one.</p>':'<p class="dv-mut">It only exists in your game until you publish it.</p>')+'</div>';
+  return h}
+ function newHtml(){const G=window.SQGEAR,B=(G?G.gearKeys():[]).filter(k=>!EQ[k].custom);const by={};for(const k of B)(by[EQ[k].slot]=by[EQ[k].slot]||[]).push(k);
+  return'<div class="dv-card dv-rules"><b>New gear item</b><p class="dv-mut" style="margin:0">It starts out working and looking like the item you pick. Then give it its own look, icon, numbers and effects.</p>'+
+   '<label class="dv-gf"><span>Name</span><input type="text" maxlength="40" data-in="ngn" placeholder="Frostbite blade"></label>'+
+   '<label class="dv-gf"><span>Works like</span><select data-in="ngb">'+['main','off','helm','body','legs'].filter(s=>by[s]).map(s=>'<optgroup label="'+E(SLN[s]||s)+'">'+by[s].map(k=>'<option value="'+k+'">'+E(INAME[k])+'</option>').join('')+'</optgroup>').join('')+'</select></label>'+
+   '<div class="dv-row"><button class="dv-b dv-pri" data-a="ngmake">Create it</button></div></div>'}
  const merged0=k=>A.merged('items',k,(S.draft.stats.items||{})[k]);
  async function gearSet(k,f,v){const G=window.SQGEAR,b=G.base(k),cur={...(S.draft.gear[k]||{})};
   if(f==='dmg'||f==='rng'||f==='blk'){const n=Math.round(Number(v));if(!isFinite(n)||v==='')return draw();const dl=n-(b[f]|0);if(dl)cur[f]=dl;else delete cur[f]}
   else if(f==='mp'){const n=Math.max(0,Math.round(Number(v))||0);if(n===b.mp)delete cur.mp;else cur.mp=n}
+  else if(f.startsWith('fx_')){const x=f.slice(3);cur.fx={...(cur.fx||{}),[x]:Math.max(0,Math.round(Number(v))||0)}}
   else if(f==='rqs'||f==='rql'){const dq=b.rq||{s:0,l:0},q={...(cur.rq||dq)};if(f==='rqs')q.s=+v;else q.l=Math.max(0,Math.min(99,Math.round(Number(v))||0));
    if((q.s===dq.s&&q.l===dq.l)||(!q.l&&!dq.l))delete cur.rq;else cur.rq=q}
   const r=G.clean(cur,k);if(r)S.draft.gear[k]=r;else delete S.draft.gear[k];
   try{await dset('draft/gear/'+k,r||null);toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}if(A.previewing)A.preview(S.draft);draw()}
+ async function ngSave(k,o){const G=window.SQGEAR,r=o&&G.ngClean(o,k);if(r)S.draft.newgear[k]=r;else delete S.draft.newgear[k];syncNG();
+  try{await dset('draft/newgear/'+k,r||null);toast(r?'Saved to draft. Publish it from the Publish tab.':'Deleted.')}catch(e){fail(e)}if(A.previewing)A.preview(S.draft);draw()}
+ function ngSet(k,f,v){const o={...S.draft.newgear[k]};if(f==='v')o.v=Math.max(0,Math.round(Number(v))||0);else o[f]=v;return ngSave(k,o)}
+ function ngRecipe(k){const o={...S.draft.newgear[k]},c={};for(let i=0;i<3;i++){const m=root.querySelector('[data-gr="m'+i+'"]'),n=root.querySelector('[data-gr="c'+i+'"]');if(m&&m.value)c[m.value]=(c[m.value]|0)+Math.max(1,+(n&&n.value)||1)}
+  const lv=+(root.querySelector('[data-gr="lv"]')||{}).value||1;if(Object.keys(c).length)o.sm={c,lv};else delete o.sm;return ngSave(k,o)}
  function drawTools(){const t=root.querySelector('.dv-tools');if(!t||!S.ed)return;const T=[['pen','Pen'],['erase','Eraser'],['fill','Fill'],['pick','Pick colour']];
   if(S.ed.kind==='worn'||S.ed.kind==='pet')T.push(['pan','Move']);
   t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button>'+
@@ -360,6 +390,13 @@
   if(a==='copyid'){try{await navigator.clipboard.writeText(S.uid);toast('Copied.')}catch(e2){toast('Select the ID and copy it.')}return}
   if(a==='pv'){A.preview(t.checked?S.draft:null);toast(t.checked?'Your game now shows your draft (only on this device).':'Your game shows the published version again.');return}
   if(a==='only'){S.only=t.checked;draw();return}
+  if(a==='ngnew'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;if(S.ed)S.ed.dirty=false;S.sel='__new';S.ed=null;draw();const i=root.querySelector('[data-in="ngn"]');if(i)i.focus();return}
+  if(a==='ngmake'){const n=((root.querySelector('[data-in="ngn"]')||{}).value||'').trim(),b=(root.querySelector('[data-in="ngb"]')||{}).value;if(!n){toast('Give it a name first.');return}if(!EQ[b])return;
+   const sl=n.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,24)||'item';let k='eq_cu_'+sl,i=2;while(EQ[k]||S.draft.newgear[k]||(S.live&&S.live.newgear&&S.live.newgear[k]))k='eq_cu_'+sl+'_'+(i++);
+   await ngSave(k,{n,b,v:SELLP[b]|0,d:''});if(!EQ[k]){toast('Could not create that item.');return}S.gm='rules';openGear(k);toast('Created. Draw its look and icon, and set how it works.');return}
+  if(a==='nggive'){const k=S.sel;if(EQ[k]){inv[k]=(inv[k]|0)+1;try{saveLocal(true)}catch(e2){}toast('One '+INAME[k]+' is in your bag.')}return}
+  if(a==='ngdel'){const k=S.sel;return arm('ngdel',async()=>{for(const sec of['gear','worn','icons'])if(S.draft[sec]&&S.draft[sec][k]){delete S.draft[sec][k];try{await dset('draft/'+sec+'/'+k,null)}catch(e2){}}
+   S.sel=null;S.ed=null;await ngSave(k,null)})}
   if(a==='gm'){const m=t.dataset.m;if(m===S.gm)return;if(S.ed&&S.ed.dirty&&!confirmLeave())return;if(S.ed)S.ed.dirty=false;S.gm=m;S.ed=null;openGear(S.sel);return}
   if(a==='grst'){const k=S.sel;return arm('grst',async()=>{delete S.draft.gear[k];try{await dset('draft/gear/'+k,null);toast('Back to how the game made it work (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw()})}
   if(a==='back'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;S.sel=null;S.ed=null;draw();return}
@@ -379,9 +416,9 @@
   if(a==='orig'){const k=S.sel;delete S.draft.icons[k];try{await dset('draft/icons/'+k,null);toast('Back to the game\'s original sprite (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.ed=null;openSprite(k);return}
   if(a==='rowreset'){const k=t.closest('[data-row]').dataset.row,all=S.draft.stats[S.statT]||{};delete all[k];try{await dset('draft/stats/'+S.statT+'/'+k,null);toast('Back to the original.')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw();return}
   if(a==='pub')return arm('pub',()=>goLive(S.draft,'Published.'));
-  if(a==='disc')return arm('disc',async()=>{S.draft=norm(body(S.live));try{await dset('draft',S.draft)}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.sel=null;S.ed=null;toast('Draft reset to the live version.');draw()});
+  if(a==='disc')return arm('disc',async()=>{S.draft=norm(body(S.live));syncNG();try{await dset('draft',S.draft)}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.sel=null;S.ed=null;toast('Draft reset to the live version.');draw()});
   if(a==='restore'){const v=+t.dataset.v;return arm('h'+v,async()=>{const H=v?S.hist.find(x=>x.v===v):{};await goLive(H,v?'Restored v'+v+' as the live version.':'Back to the game\'s own sprites and stats.');
-   S.draft=norm(body(S.live));try{await dset('draft',S.draft)}catch(e2){}draw()})}});
+   S.draft=norm(body(S.live));syncNG();try{await dset('draft',S.draft)}catch(e2){}draw()})}});
  let pendingLeave=0;const confirmLeave=()=>{if(Date.now()-pendingLeave<4000)return true;pendingLeave=Date.now();toast('Unsaved changes. Tap again to leave without saving.');return false};
  async function saveSprite(){const ed=S.ed;if(!ed)return;const sp=toSp(ed);S.draft.icons[ed.k]=sp;try{await dset('draft/icons/'+ed.k,sp);ed.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const im=it.querySelector('img');if(im)im.src=thumb(ed.k)}paint()}
@@ -393,6 +430,8 @@
   if(t.dataset.in==='addcol'&&S.ed){snapEd();S.ed.pal.push(t.value);S.ed.col=S.ed.pal.length-1;S.ed.tool='pen';drawPal();drawTools();paint();return}
   if(t.dataset.in==='recol'){t._snap=0;drawPal();return}
   if(t.dataset.g&&S.sel){gearSet(S.sel,t.dataset.g,t.value);return}
+  if(t.dataset.gn&&S.sel){ngSet(S.sel,t.dataset.gn,t.value);return}
+  if(t.dataset.gr&&S.sel){ngRecipe(S.sel);return}
   if(t.dataset.gs&&S.sel){statSet('items',S.sel,t.dataset.gs,t.value).then(()=>{try{if(A.previewing)A.preview(S.draft)}catch(e2){}draw()});return}
   if(t.dataset.f){const k=t.closest('[data-row]').dataset.row;statSet(S.statT,k,t.dataset.f,t.value).then(()=>{const o=A.TABLES[S.statT].orig(k),cur=A.merged(S.statT,k,(S.draft.stats[S.statT]||{})[k]);t.classList.toggle('dv-chg',cur[t.dataset.f]!==o[t.dataset.f]);
    const last=t.closest('tr').lastElementChild;if(last)last.innerHTML=(S.draft.stats[S.statT]||{})[k]?'<button class="dv-b" data-a="rowreset" title="Back to original">↺</button>':''})}});

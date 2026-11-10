@@ -27,6 +27,13 @@
   mana cost, rq replaces the requirement (skill index, level; 0 = none). Applied through `SQA.onApply`, by the outermost
   `meleeFlat`, `arrowDmg`, `bowRange`, `spellDmg`, `blockBonus`, `setSlot` and `equipItem` wrappers. The editor shows numbers
   for the developer's character (`SQGEAR.base`) and saves the difference.
+  `fx` = special effects in % ({ls,burn,slow,crit,spd,xp}), summed over everything worn; on-hit ones run from the
+  outermost `attack` (hp diff on `en`), `arrowHit` and `spellHit`; `spd` nudges movement in `upd` (outdoors only).
+- **New gear items**: `newgear.eq_cu_<name>` = {n,b,v,d,sm} in the library. `b` is an existing item it works like: the
+  game holds it as b's tier (TL/ARM/CLS) and `CUS[slot]` remembers the new key (outermost `occ`/`setSlot`). Saves store
+  `cus` and keep counts/worn pieces of not-yet-loaded new items (`PEND`/`PCUS`), so never rename or delete a published
+  one (the suite only deletes unpublished ones). Unpublished new items exist only on the developer's device
+  (`SQGEAR.devItems`). They get loot-chest entries automatically and an anvil recipe (`SM` entry with `_cu`) if `sm` is set.
 - **Pet looks** (Dev Suite > Pets): `pets.<kind>` = {w,h,s,ox,oy,a,b} (standing/walking frame, drawn facing right, mirrored
   when walking left). `SQA` draws them in place of the pet's own look through the outermost `pP` wrapper and
   `LUX.drawPeerPet`; `SQA.capturePet` copies the game's current look to start from. The Imp is left out (tied to combat).
