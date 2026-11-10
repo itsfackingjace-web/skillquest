@@ -114,6 +114,7 @@ combat/110-s109-bosses-are-much-tougher-and-eating-has-a-short-c.js
 core/111-s110-phones-online-chat-and-bug-move-under-the-minima.js
 dev/111a-s111-asset-library.js
 dev/111b-s112-dev-suite.js
+dev/111c-s113-island-builder.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

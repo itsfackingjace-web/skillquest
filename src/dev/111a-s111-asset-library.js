@@ -6,6 +6,9 @@
 //          stats:{items:{k:{n,pl,d,v}}, ib:{k:{n,hp}}, wb:{k:{n,hp,dmg,g0,g1}}}}
 //   sprite: w x h pixels drawn at s x scale; p = palette "#rrggbb,..." ; d = one char per pixel ('.' = clear,
 //   otherwise an index into p using PXC), or r = the same run-length packed ("A*12;" = 12 x "A").
+//   islands: {id:{n name, b description, lv, dir, w, h, t tiles (one hex digit per tile, packed), o objects (PXC index into
+//   ISL_OBJ per tile, packed), pier n|e|s|w, mob (monsters like an existing island, or none), max, mx, my (world map)}}.
+//   A custom island is a normal sailing region whose generator returns the painted map (with open water around it).
 //   worn: how a helmet / body / legs / weapon / shield looks on the character, one 96 x 112 layer per facing
 //   (f front, b back, s side; left is side mirrored), drawn over the character. h = hide the game's own look for that slot.
 var SQA=(()=>{
@@ -58,12 +61,51 @@ var SQA=(()=>{
   if(wr.length)c.wr=wr;return c};
  const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){_cPw(ch,dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
   try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl)}catch(e){}};
+ // ---- custom islands: painted in the Dev Suite, sailed to like any other island ----
+ const ISL_TILES=[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15],HEX='0123456789abcdef',ISL_PAD=8;
+ const ISL_OBJ=['tree','tree:dark','tree:dead','pine','oak','willow','maple','yew','bush','nutbush','shroom','rock','rock:moss','ore','ore:crystal','cactus'];
+ const ISL_DIR={n:'north',ne:'north-east',e:'east',se:'south-east',s:'south',sw:'south-west',w:'west',nw:'north-west'};
+ const ISL_POS={n:[180,22],ne:[318,52],e:[338,180],se:[318,318],s:[180,342],sw:[44,330],w:[22,180],nw:[44,48]};
+ const clean=(v,n)=>String(v==null?'':v).replace(/[<>&"]/g,'').slice(0,n);
+ const islandValid=I=>I&&typeof I==='object'&&I.w>=20&&I.h>=20&&I.w<=220&&I.h<=220&&typeof I.t==='string'&&unpack(I.t).length===I.w*I.h&&(!I.o||unpack(I.o).length===I.w*I.h);
+ const ISLC=new WeakMap(),islandGrid=I=>{let g=ISLC.get(I);if(!g){g={t:unpack(I.t),o:I.o?unpack(I.o):''};ISLC.set(I,g)}return g};
+ function islandGen(I){return function*(D){const C=rgCtx(D),{W,T}=C,P=ISL_PAD,g=islandGrid(I);
+   for(let y=0;y<I.h;y++)for(let x=0;x<I.w;x++){const v=HEX.indexOf(g.t[y*I.w+x]);T[(y+P)*W+x+P]=v>0&&v!==6?v:0}
+   yield;rgDock(C,['n','e','s','w'].includes(I.pier)?I.pier:'e',1);yield;
+   if(g.o)for(let y=0;y<I.h;y++)for(let x=0;x<I.w;x++){const ch=g.o[y*I.w+x];if(!ch||ch==='.')continue;const k=ISL_OBJ[PXC.indexOf(ch)];if(!k)continue;
+    const i=(y+P)*W+x+P;if(C.keep[i]||!RG_WALK[T[i]])continue;const[t,v]=k.split(':');C.O[i]={t,hp:OHP[t]||3,v:v||undefined}}
+   return rgFinish(C)}}
+ const hashId=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h};
+ const ISL={};// id -> the island data currently registered
+ const here=()=>{try{return curRegion()}catch(e){return null}};
+ function regIsland(id,I){if(here()===id)return;// never swap the island you are standing on
+  const dir=ISL_DIR[I.dir]?I.dir:'e',mob=I.mob&&I.mob!==id&&typeof RG_MOBS!=='undefined'&&RG_MOBS[I.mob]?I.mob:null;
+  WORLD_REGIONS[id]={id,name:clean(I.n,40)||'Unnamed Isle',width:I.w+ISL_PAD*2,height:I.h+ISL_PAD*2,seed:100.5+hashId(id)%9000,generationVersion:1,
+   biome:clean(I.b,120)||'A newly charted island',lv:clean(I.lv,12)||'any',dir:ISL_DIR[dir],custom:true};
+  if(!ROUTE_ORDER.includes(id))ROUTE_ORDER.push(id);
+  REGION_SPAWNS[id]={maxEnemies:mob?Math.max(0,Math.min(30,I.max==null?20:I.max|0)):0};if(typeof RG_MOBS!=='undefined'){if(mob)RG_MOBS[id]=RG_MOBS[mob];else delete RG_MOBS[id]}
+  RG_LMCOUNT[id]=0;const pos=ISL_POS[dir];WM_POS[id]=[isFinite(I.mx)?Math.max(10,Math.min(350,+I.mx)):pos[0],isFinite(I.my)?Math.max(10,Math.min(350,+I.my)):pos[1]];
+  WM_ROUTE[id]={from:'Tidewatch',post:'tidewatch'};RG_GENS[id]=islandGen(I);RG_GEN[id]=D=>rgRunSync(RG_GENS[id](D));
+  try{delete RG_CACHE[id];delete RG_PRE[id];delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id];const j=RG_ORDER.indexOf(id);if(j>=0)RG_ORDER.splice(j,1)}catch(e){}
+  ISL[id]=I}
+ function unregIsland(id){if(here()===id)return;const j=ROUTE_ORDER.indexOf(id);if(j>=0)ROUTE_ORDER.splice(j,1);delete RG_GEN[id];delete RG_GENS[id];
+  try{delete RG_CACHE[id];delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id]}catch(e){}delete ISL[id]}// the name stays known, so old references still read well
+ function applyIslands(L){const want={};for(const id of Object.keys(L||{}).sort())if(/^cu_[a-z0-9_]{1,30}$/.test(id)&&islandValid(L[id]))want[id]=L[id];
+  for(const id in ISL)if(!want[id])unregIsland(id);for(const id in want)if(JSON.stringify(ISL[id])!==JSON.stringify(want[id]))regIsland(id,want[id])}
+ // painted islands keep exactly what was placed (generated islands thin out trees and upgrade tiers at random)
+ const _rpI=rgPrepare;rgPrepare=function(id){const R=_rpI(id);if(R&&WORLD_REGIONS[id]&&WORLD_REGIONS[id].custom)R._t64=1;return R};
+ // custom islands are open as soon as they're published (no voyage needed)
+ const _ro=routeOpen;routeOpen=function(id){const D=WORLD_REGIONS[id];if(D&&D.custom)return!!RG_GEN[id];return _ro(id)};
+ // a save on an island that no longer exists comes back to Hollow Island
+ const _asI=applySave;applySave=function(S){try{if(S&&S.region&&S.region.id&&S.region.id!=='hollow'&&!(WORLD_REGIONS[S.region.id]&&RG_GEN[S.region.id])&&/^cu_/.test(S.region.id)){
+   S.region={id:'hollow'};setTimeout(()=>{try{say('The island you were on has gone from the charts. You are safe back on Hollow Island.');msgT=8}catch(e){}},600)}}catch(e){}return _asI.apply(this,arguments)};
  // ---- apply a whole library (undoing whatever was applied before) ----
  let applied={stats:{}};
  function apply(lib){lib=lib||{};
   for(const t in applied.stats)for(const k in applied.stats[t])if(TABLES[t]&&TABLES[t].keys().includes(k))TABLES[t].set(k,TABLES[t].orig(k));
   for(const k in ICO)delete ICO[k];for(const k in WORN)delete WORN[k];ver++;wcache.clear();
   const icons=lib.icons||{};for(const k in icons)if(valid(icons[k]))ICO[k]=icons[k];
+  try{applyIslands(lib.islands)}catch(e){console.warn('islands:',e)}
   const worn=lib.worn||{};for(const k in worn)if(EQ[k]&&WSLOTS.includes(EQ[k].slot)&&validWorn(worn[k]))WORN[k]=worn[k];
   const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){}}}
   applied={stats:st};
@@ -77,6 +119,7 @@ var SQA=(()=>{
    if(!preview)apply(live)}catch(e){}}
  setTimeout(refresh,400);
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,
+  ISL_TILES,ISL_OBJ,ISL_DIR,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
   get live(){return live},
   // the Dev Suite can show unpublished edits in the developer's own game
   preview(lib){preview=lib||null;apply(preview||live)},get previewing(){return!!preview},
