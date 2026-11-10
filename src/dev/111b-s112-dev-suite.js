@@ -109,35 +109,37 @@
   try{await dset('draft/worn/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this item keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const b=it.querySelector('.dv-bd'),s2=wState(ed.k);if(b)b.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
  // ---- pet looks: a standing and a walking frame, drawn facing right ----
- const PFN=['Standing','Walking'],PF=['a','b'];
+ const PFN=['Standing 1','Standing 2','Walking 1','Walking 2'],PF=['a','c','b','d'];
  const pState=k=>{const d=S.draft&&S.draft.pets&&S.draft.pets[k],l=S.live&&S.live.pets&&S.live.pets[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
  async function openPet(item,fresh){const k=EQ[item].pet;S.sel=item;S.ed=null;draw();const L=!fresh&&S.draft.pets[k];let ed;
-  try{if(L&&A.validPet(L)){const pal=[],N=L.w*L.h,layers=[0,1].map(()=>new Uint8Array(N).fill(255));
-    for(let d=0;d<2;d++){const sp=L[PF[d]];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});const dd=A.pix(sp);for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')layers[d][i]=map[PXC.indexOf(ch)]}}
+  try{if(L&&A.validPet(L)){const pal=[],N=L.w*L.h,layers=[0,1,2,3].map(()=>new Uint8Array(N).fill(255));
+    for(let d=0;d<4;d++){const sp=L[PF[d]];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});const dd=A.pix(sp);for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')layers[d][i]=map[PXC.indexOf(ch)]}}
+    // an older look (one standing and one walking frame) walked between them: fill the new frames to match
+    if(!L.c)layers[1].set(layers[0]);if(!L.d)layers[3].set(layers[0]);
     ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers}}
-   else{const cap=A.capturePet(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px,b.px.slice()]}}
-    else ed={w:16,h:16,s:2,ox:-8,oy:-9,pal:[],layers:[new Uint8Array(256).fill(255),new Uint8Array(256).fill(255)]}}}
+   else{const cap=A.capturePet(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px,b.px.slice(),b.px.slice(),b.px.slice()]}}
+    else ed={w:16,h:16,s:2,ox:-8,oy:-9,pal:[],layers:[0,1,2,3].map(()=>new Uint8Array(256).fill(255))}}}
   catch(e){console.warn(e);toast('Could not read that pet.');return}
   if(S.sel!==item)return;if(!ed.pal.length)ed.pal.push('#181018','#7a5a3a','#c89858','#f8e8c8');
-  S.ed={...ed,kind:'pet',k,item,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:[null,null],rcd:[1,1]};draw()}
- function petOut(ed){const o={w:ed.w,h:ed.h,s:ed.s,ox:ed.ox,oy:ed.oy};let any=false;for(let d=0;d<2;d++){const px=ed.layers[d];if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[PF[d]]={w:sp.w,h:sp.h,s:sp.s,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
+  S.ed={...ed,kind:'pet',k,item,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:[null,null,null,null],rcd:[1,1,1,1]};draw()}
+ function petOut(ed){const o={w:ed.w,h:ed.h,s:ed.s,ox:ed.ox,oy:ed.oy};let any=false;for(let d=0;d<4;d++){const px=ed.layers[d];if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[PF[d]]={w:sp.w,h:sp.h,s:sp.s,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
  async function savePet(){const ed=S.ed;if(!ed)return;const o=petOut(ed);if(o)S.draft.pets[ed.k]=o;else delete S.draft.pets[ed.k];
   try{await dset('draft/pets/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this pet keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.item+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=pState(ed.k);if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
  function petResize(w,h){const ed=S.ed;w=Math.max(4,Math.min(96,w|0));h=Math.max(4,Math.min(96,h|0));if(w===ed.w&&h===ed.h)return;snapEd();const ox=Math.floor((w-ed.w)/2),oy=h-ed.h;// keeps the feet where they are
   ed.layers=ed.layers.map(L=>{const n=new Uint8Array(w*h).fill(255);for(let y=0;y<ed.h;y++)for(let x=0;x<ed.w;x++){const X=x+ox,Y=y+oy;if(X>=0&&Y>=0&&X<w&&Y<h)n[Y*w+X]=L[y*ed.w+x]}return n});
-  ed.ox-=ox*ed.s/2;ed.oy-=oy*ed.s/2;ed.w=w;ed.h=h;ed.px=ed.layers[ed.dir];ed.undo=[];ed.redo=[];ed.fit=0;ed.z=0;ed.rcd=[1,1];draw()}
+  ed.ox-=ox*ed.s/2;ed.oy-=oy*ed.s/2;ed.w=w;ed.h=h;ed.px=ed.layers[ed.dir];ed.undo=[];ed.redo=[];ed.fit=0;ed.z=0;ed.rcd=[1,1,1,1];draw()}
  function pets(){const q=S.q.toLowerCase(),all=A.petKinds(),keys=all.filter(k=>(!q||(INAME[k]||'').toLowerCase().includes(q)||k.includes(q))&&(!S.only||pState(EQ[k].pet)));
   let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+all.length+' pets" value="'+E(S.q)+'" data-in="q">'+
    '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only pets with a new look</label><div class="dv-grid">';
   for(const k of keys){const s2=pState(EQ[k].pet);h+='<button class="dv-it'+(S.sel===k?' dv-on':'')+'" data-k="'+E(k)+'">'+(s2?'<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>':'')+'<img alt="" src="'+thumb(k)+'"><span>'+E(EQ[k].n||k)+'</span></button>'}
   if(!keys.length)h+='<p class="dv-mut">Nothing matches.</p>';
   h+='</div></div><div class="dv-ed">';
-  if(!S.sel)h+='<div class="dv-card"><b>Pick a pet.</b><p class="dv-mut">Change how a pet looks when it follows you around: a standing frame and a walking frame, drawn facing right (it turns around by itself when it walks left). It starts from the pet\'s current look. Everyone sees the new look on everyone\'s pet. (The Imp isn\'t here yet: its look is tied to its fighting.)</p></div>';
+  if(!S.sel)h+='<div class="dv-card"><b>Pick a pet.</b><p class="dv-mut">Change how a pet looks when it follows you around: two standing frames it idles between and two walking frames it steps between, drawn facing right (it turns around by itself when it walks left). It starts from the pet\'s current look. Everyone sees the new look on everyone\'s pet. (The Imp isn\'t here yet: its look is tied to its fighting.)</p></div>';
   else if(!S.ed)h+='<p class="dv-mut">Opening...</p>';
   else{const ed=S.ed;h+='<div class="dv-row"><button class="dv-b dv-back" data-a="back">‹ All pets</button><b style="font-size:16px">'+E(EQ[ed.item].n)+'</b><span class="dv-mut">'+E(ed.item)+' · '+ed.w+' × '+ed.h+' pixels</span></div>'+
    '<div class="dv-row">'+PFN.map((n,d)=>'<button class="dv-b'+(ed.dir===d?' dv-tl dv-on':'')+'" data-dir="'+d+'">'+n+(ed.layers[d].some(v=>v!==255)?' •':'')+'</button>').join('')+
-   '<button class="dv-b" data-copy="'+(1-ed.dir)+'">Copy from '+PFN[1-ed.dir].toLowerCase()+'</button><button class="dv-b" data-a="pflip">Flip</button></div>'+
+   '<button class="dv-b" data-a="pflip">Flip</button></div><div class="dv-row"><span class="dv-mut">Copy into this frame from:</span>'+PFN.map((n,d)=>d===ed.dir?'':'<button class="dv-b" data-copy="'+d+'">'+n+'</button>').join('')+'<span class="dv-mut">It idles between the two standing frames and steps between the two walking frames.</span></div>'+
    '<div class="dv-row dv-tools"></div><div class="dv-cv dv-cvw'+(ed.tool==='pan'?' dv-pan':'')+'"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw"><canvas id="dvwalk" width="400" height="112"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><span class="dv-mut">Canvas</span><input type="number" data-in="pw" min="4" max="96" value="'+ed.w+'" style="width:70px"> × <input type="number" data-in="ph" min="4" max="96" value="'+ed.h+'" style="width:70px"><button class="dv-b" data-a="presize">Resize</button><span class="dv-mut">keeps the feet in place</span></div>'+
@@ -146,10 +148,10 @@
   return h+'</div></div>'}
  // walking preview in all four directions
  let walkT=0;setInterval(()=>{const c=document.getElementById('dvwalk'),ed=S.ed;if(!S.open||!c||!ed||(ed.kind!=='worn'&&ed.kind!=='pet'))return;walkT++;
-  if(ed.kind==='pet'){for(let d=0;d<2;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
+  if(ed.kind==='pet'){for(let d=0;d<4;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
    const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<40;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
-   const S2=3,ph=walkT%60,goR=ph<30,px=goR?60+ph*10:340-(ph-30)*10,py=86,f=(walkT%2)&&(ph%30<28)?1:0,L=ed.rc[f]||ed.rc[0]||ed.rc[1];
-   const still=ed.rc[0];if(still){x.drawImage(still,20,py+ed.oy*S2,still.width/2*S2,still.height/2*S2)}
+   const S2=3,ph=walkT%60,goR=ph<30,px=goR?60+ph*10:340-(ph-30)*10,py=86,f=(walkT%2)&&(ph%30<28)?3:2,L=ed.rc[f]||ed.rc[2]||ed.rc[0];
+   const still=(Math.floor(walkT/3)%2&&ed.rc[1])||ed.rc[0];if(still){x.drawImage(still,20,py+ed.oy*S2,still.width/2*S2,still.height/2*S2)}
    if(L){x.save();if(!goR){x.translate(px*2,0);x.scale(-1,1)}x.drawImage(L,px+ed.ox*S2,py+ed.oy*S2,L.width/2*S2,L.height/2*S2);x.restore()}return}
   for(let d=0;d<3;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
   const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,c.width,c.height);const st=[1,0,2,0][walkT%4],bob=st&&EQ[ed.k]&&EQ[ed.k].slot!=='legs'?-1:0;
@@ -166,7 +168,7 @@
   if(ed.kind==='pet'){ed.fit=fit;return Math.max(2,Math.round(fit*ed.zoom))}if(ed.kind!=='worn')return fit;ed.fit=fit;if(!ed.zoom){const B=charBox(),bw=B.x1-B.x0+1,bh=B.y1-B.y0+1,want=Math.floor(Math.min((box.width-8)/bw,(window.innerHeight*.62-8)/bh));ed.zoom=Math.max(1,Math.min(8,want/fit));ed.recenter=1}
   return Math.max(2,Math.round(fit*ed.zoom))}
  function paint(){const c=document.getElementById('dvc'),ed=S.ed;if(!c||!ed)return;const z=down&&ed.z?ed.z:(ed.z=cell());if(c.width!==ed.w*z)c.width=ed.w*z;if(c.height!==ed.h*z)c.height=ed.h*z;const x=c.getContext('2d');
-  if(ed.kind==='worn'||ed.kind==='pet'){if(ed.kind==='pet')ed.rcd=[1,1];else ed.rcd[ed.dir]=1;x.imageSmoothingEnabled=false;x.fillStyle='#2c323e';x.fillRect(0,0,c.width,c.height);
+  if(ed.kind==='worn'||ed.kind==='pet'){if(ed.kind==='pet')ed.rcd=[1,1,1,1];else ed.rcd[ed.dir]=1;x.imageSmoothingEnabled=false;x.fillStyle='#2c323e';x.fillRect(0,0,c.width,c.height);
    if(ed.kind==='pet'){x.fillStyle='rgba(255,255,255,.04)';for(let yy=0;yy<ed.h;yy++)for(let xx=(yy&1);xx<ed.w;xx+=2)x.fillRect(xx*z,yy*z,z,z)}
    if(ed.kind==='worn'&&ed.under){const u=charCan(ed.dir,0,false);if(u){x.globalAlpha=.8;x.drawImage(u,0,0,c.width,c.height);x.globalAlpha=1}}
    const DM=ed.kind==='worn'&&ed.pvd&&ed.dyi&&ed.dyi.size&&DYES()[ed.pvd-1]?A.dyeMap([...ed.dyi].map(i=>ed.pal[i]),DYES()[ed.pvd-1].c):null;
@@ -181,7 +183,7 @@
   const st=document.querySelector('#dvs .dv-st');if(st)st.textContent=ed.w+' × '+ed.h+' pixels, shown at '+ed.s+'×  ·  '+sp.p.split(',').filter(Boolean).length+' colours'+(ed.dirty?'  ·  unsaved changes':'')}
  const snapEd=()=>{const ed=S.ed;ed.undo.push({px:ed.px.slice(),pal:ed.pal.slice(),dir:ed.dir});if(ed.undo.length>80)ed.undo.shift();ed.redo=[];ed.dirty=true};
  function undo(r){const ed=S.ed;if(!ed)return;const a=r?ed.redo:ed.undo,b=r?ed.undo:ed.redo,s=a.pop();if(!s)return;
-  if(ed.kind==='worn'||ed.kind==='pet'){b.push({px:ed.layers[s.dir].slice(),pal:ed.pal.slice(),dir:s.dir});ed.layers[s.dir]=s.px;ed.rcd=[1,1,1];const sw=ed.dir!==s.dir;ed.dir=s.dir;ed.px=ed.layers[ed.dir];ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;if(sw){draw();return}drawPal();paint();return}
+  if(ed.kind==='worn'||ed.kind==='pet'){b.push({px:ed.layers[s.dir].slice(),pal:ed.pal.slice(),dir:s.dir});ed.layers[s.dir]=s.px;ed.rcd=ed.layers.map(()=>1);const sw=ed.dir!==s.dir;ed.dir=s.dir;ed.px=ed.layers[ed.dir];ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;if(sw){draw();return}drawPal();paint();return}
   b.push({px:ed.px.slice(),pal:ed.pal.slice()});ed.px=s.px;ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;drawPal();paint()}
  function fill(i,to){const ed=S.ed,from=ed.px[i];if(from===to)return;const st=[i];while(st.length){const j=st.pop();if(ed.px[j]!==from)continue;ed.px[j]=to;const X=j%ed.w;
   if(X>0)st.push(j-1);if(X<ed.w-1)st.push(j+1);if(j>=ed.w)st.push(j-ed.w);if(j<ed.w*(ed.h-1))st.push(j+ed.w)}}

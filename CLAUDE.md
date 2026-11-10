@@ -42,8 +42,9 @@
   `cus` and keep counts/worn pieces of not-yet-loaded new items (`PEND`/`PCUS`), so never rename or delete a published
   one (the suite only deletes unpublished ones). Unpublished new items exist only on the developer's device
   (`SQGEAR.devItems`). They get loot-chest entries automatically and an anvil recipe (`SM` entry with `_cu`) if `sm` is set.
-- **Pet looks** (Dev Suite > Pets): `pets.<kind>` = {w,h,s,ox,oy,a,b} (standing/walking frame, drawn facing right, mirrored
-  when walking left). `SQA` draws them in place of the pet's own look through the outermost `pP` wrapper and
+- **Pet looks** (Dev Suite > Pets): `pets.<kind>` = {w,h,s,ox,oy,a,c,b,d} (standing frames a/c, idling every 0.5 s;
+  walking frames b/d, stepping with the pet's own walk clock; older looks with only a/b walk a/b), drawn facing right, mirrored
+  when walking left. `SQA` draws them in place of the pet's own look through the outermost `pP` wrapper and
   `LUX.drawPeerPet`; `SQA.capturePet` copies the game's current look to start from. The Imp is left out (tied to combat).
 - **Island builder** (`dev/111c-s113-island-builder.js`, a Dev Suite tab added through `SQSUITE.addTab`): custom islands are
   saved as `islands.cu_<name>` in the asset library and registered by `SQA` as normal regions (painted tiles + objects,
