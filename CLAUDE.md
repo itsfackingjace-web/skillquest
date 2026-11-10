@@ -16,7 +16,9 @@
 - Write patch notes for players, not developers: what's new or fixed and how to use it.
 - **Dev Suite** (`src/dev/`): developer-only editor in the game (Options > Dev Suite, or `/suite` in chat). It edits item
   sprites, worn looks (gear drawn on the character: a 96x112 layer per facing f/b/s, run-length packed; equipped keys
-  travel to other players as `ch.wr`) and stats and publishes them through the database: drafts in `assets/draft`, the published copy in `assets/live`
+  travel to other players as `ch.wr`, kept by `cleanCh` in 061; with them go the wearer's own hat/shirt/trousers as
+  `wht/whc/wsh/wpn`, and the viewer's game applies a look's "hide" itself in the outermost `cP` via `SQA.hideFor`, so a
+  viewer without that look in its library still sees the game's own piece) and stats and publishes them through the database: drafts in `assets/draft`, the published copy in `assets/live`
   (public read; players apply it at startup and cache it on the device), replaced versions in `assets/hist`. Writes need
   the account's uid under `devs/` (added by hand in the Firebase console). `SQA` (`111a-s111-asset-library.js`) applies a
   library on top of the game's own values and keeps the originals, so anything not published falls back to the code.

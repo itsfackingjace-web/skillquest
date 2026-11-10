@@ -7355,7 +7355,9 @@ async function mpStop(manual){const was=MP.on;MP.on=false;for(const f of MP.unsu
  MP.players.clear();try{mobStop()}catch(e){}MP.pref=null;MP.user=null;if(cloud&&cloud===MP.adapter)cloud=null;if(was)mpCloseChat();mpRBtn()}
 // ---- other players ----
 const live=r=>performance.now()-r.seen<20000;
-const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v=c[k];if(typeof v==='number'&&isFinite(v))o[k]=Math.max(0,Math.min(99,v|0))}return o};
+const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v=c[k];if(typeof v==='number'&&isFinite(v))o[k]=Math.max(0,Math.min(99,v|0))}
+ // the gear with a new look that this player wears (drawn from the asset library): item keys only (the database may hand an array back as an object)
+ if(c&&c.wr&&typeof c.wr==='object'){const w=Object.values(c.wr).filter(k=>typeof k==='string'&&/^eq_[a-z0-9_]{1,40}$/.test(k)).slice(0,6);if(w.length)o.wr=w}return o};
 function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='number'||typeof v.y!=='number')return;let r=MP.players.get(k);
  if(!r){r={uid:k,x:v.x,y:v.y,w:0,said:null};MP.players.set(k,r)}
  if(r.loc!==v.loc||Math.hypot(r.x-v.x,r.y-v.y)>200){r.x=v.x;r.y=v.y}
@@ -9249,7 +9251,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.09-10',d:'Nov 9, 2026',t:'Dyes work on newly drawn gear',n:['When a piece of armour gets a new look, your outfit dye still recolours it, keeping its light and dark shading.']},
+ {v:'2026.11.09-10',d:'Nov 9, 2026',t:'Redesigned gear shows for everyone',n:['Fixed: when a piece of gear had a new look, other players saw you without it (a redesigned helmet looked like no helmet at all). Everyone now sees the new look. If their game hasn\'t loaded it yet, they see the old look instead.','When a piece of armour gets a new look, your outfit dye still recolours it, keeping its light and dark shading.']},
  {v:'2026.11.09-9',d:'Nov 9, 2026',t:'Behind the scenes: gear art tools',n:['The developer\'s gear editor now shows the character exactly as the game draws it, so new looks for armour and weapons fit properly. Nothing changes in your game.']},
  {v:'2026.11.09-8',d:'Nov 9, 2026',t:'New gear and special effects between updates',n:['Brand-new weapons and armour can now arrive without a full update. Look for them in island treasure chests and at the anvil.','Gear can now have special effects while you wear it: life steal, setting enemies on fire, slowing them, critical hits, faster walking and bonus XP. Effects from every piece you wear add up.','Weapon and armour numbers (damage, bow range, block chance, a wand\'s mana cost) and what each piece needs can now be tuned too. Descriptions always show the numbers that really apply.','Your saves are untouched, and new gear you own is kept safe even if it takes a moment to load.']},
  {v:'2026.11.09-7',d:'Nov 9, 2026',t:'New looks for pets',n:['Pets can now get brand new looks. When one does, everyone sees it on everyone\'s pet. Pets without a new look stay exactly as they are.']},
@@ -12605,10 +12607,13 @@ var SQA=(()=>{
  const wornCanvasFrom=(w,dir,fl,dc)=>{let sp=w[WDIR[dir]];if(!sp||!valid(sp))return null;if(dc&&w.dy)sp=recol(sp,dyeMap(w.dy,dc));const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
  // what you have on travels with your look (ch.wr) so other players' games draw it too
  const _gch=gearCH;gearCH=function(){const c=_gch();const wr=[];
-  for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){}if(!k||!WORN[k])continue;wr.push(k);
-   if(WORN[k].h){if(sl==='helm'){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.fc;delete c.oh}else if(sl==='body'){c.sh=CH.sh;delete c.mr}else if(sl==='legs')c.pn=CH.pn}}
-  if(wr.length)c.wr=wr;return c};
- const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){_cPw(ch,dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
+  for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){}if(!k||!WORN[k])continue;wr.push(k)}
+  // your own hat, shirt and trousers, so a game that has a look marked "hide" can take the game's piece off you
+  if(wr.length){c.wr=wr;c.wht=CH.ht|0;c.whc=CH.hcol|0;c.wsh=CH.sh|0;c.wpn=CH.pn|0}return c};
+ // "hide" is decided by the game drawing you (it needs the look in its library), not by the game you play on
+ const hideFor=ch=>{let o=null;if(!ch||!Array.isArray(ch.wr)||ch.wsh==null)return ch;for(const k of ch.wr){const w=WORN[k],sl=EQ[k]&&EQ[k].slot;if(!w||!w.h)continue;o=o||{...ch};
+   if(sl==='helm'){o.ht=ch.wht;o.hcol=ch.whc;delete o.mh;delete o.fc;delete o.oh}else if(sl==='body'){o.sh=ch.wsh;delete o.mr}else if(sl==='legs')o.pn=ch.wpn}return o||ch};
+ const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
   try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl,null,ch)}catch(e){}};
  // ---- pet looks: replace how a pet is drawn following its owner (yours and other players') ----
  const PETL={},pcache=new Map();
@@ -12709,7 +12714,7 @@ var SQA=(()=>{
  setTimeout(refresh,400);
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,
   ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
-  get live(){return live},hasIcon:k=>!!ICO[k],
+  get live(){return live},hasIcon:k=>!!ICO[k],hideFor,
   // a section that reads its own part of the library: called now with the current library and after every change
   onApply(f){HOOKS.push(f);try{f(preview||live||{})}catch(e){console.warn(e)}},
   // the Dev Suite can show unpublished edits in the developer's own game

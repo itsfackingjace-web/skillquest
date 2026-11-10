@@ -66,10 +66,13 @@ var SQA=(()=>{
  const wornCanvasFrom=(w,dir,fl,dc)=>{let sp=w[WDIR[dir]];if(!sp||!valid(sp))return null;if(dc&&w.dy)sp=recol(sp,dyeMap(w.dy,dc));const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
  // what you have on travels with your look (ch.wr) so other players' games draw it too
  const _gch=gearCH;gearCH=function(){const c=_gch();const wr=[];
-  for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){}if(!k||!WORN[k])continue;wr.push(k);
-   if(WORN[k].h){if(sl==='helm'){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.fc;delete c.oh}else if(sl==='body'){c.sh=CH.sh;delete c.mr}else if(sl==='legs')c.pn=CH.pn}}
-  if(wr.length)c.wr=wr;return c};
- const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){_cPw(ch,dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
+  for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){}if(!k||!WORN[k])continue;wr.push(k)}
+  // your own hat, shirt and trousers, so a game that has a look marked "hide" can take the game's piece off you
+  if(wr.length){c.wr=wr;c.wht=CH.ht|0;c.whc=CH.hcol|0;c.wsh=CH.sh|0;c.wpn=CH.pn|0}return c};
+ // "hide" is decided by the game drawing you (it needs the look in its library), not by the game you play on
+ const hideFor=ch=>{let o=null;if(!ch||!Array.isArray(ch.wr)||ch.wsh==null)return ch;for(const k of ch.wr){const w=WORN[k],sl=EQ[k]&&EQ[k].slot;if(!w||!w.h)continue;o=o||{...ch};
+   if(sl==='helm'){o.ht=ch.wht;o.hcol=ch.whc;delete o.mh;delete o.fc;delete o.oh}else if(sl==='body'){o.sh=ch.wsh;delete o.mr}else if(sl==='legs')o.pn=ch.wpn}return o||ch};
+ const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
   try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl,null,ch)}catch(e){}};
  // ---- pet looks: replace how a pet is drawn following its owner (yours and other players') ----
  const PETL={},pcache=new Map();
@@ -170,7 +173,7 @@ var SQA=(()=>{
  setTimeout(refresh,400);
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,
   ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
-  get live(){return live},hasIcon:k=>!!ICO[k],
+  get live(){return live},hasIcon:k=>!!ICO[k],hideFor,
   // a section that reads its own part of the library: called now with the current library and after every change
   onApply(f){HOOKS.push(f);try{f(preview||live||{})}catch(e){console.warn(e)}},
   // the Dev Suite can show unpublished edits in the developer's own game

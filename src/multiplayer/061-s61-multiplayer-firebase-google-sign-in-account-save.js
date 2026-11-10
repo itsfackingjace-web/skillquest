@@ -203,7 +203,9 @@ async function mpStop(manual){const was=MP.on;MP.on=false;for(const f of MP.unsu
  MP.players.clear();try{mobStop()}catch(e){}MP.pref=null;MP.user=null;if(cloud&&cloud===MP.adapter)cloud=null;if(was)mpCloseChat();mpRBtn()}
 // ---- other players ----
 const live=r=>performance.now()-r.seen<20000;
-const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v=c[k];if(typeof v==='number'&&isFinite(v))o[k]=Math.max(0,Math.min(99,v|0))}return o};
+const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v=c[k];if(typeof v==='number'&&isFinite(v))o[k]=Math.max(0,Math.min(99,v|0))}
+ // the gear with a new look that this player wears (drawn from the asset library): item keys only (the database may hand an array back as an object)
+ if(c&&c.wr&&typeof c.wr==='object'){const w=Object.values(c.wr).filter(k=>typeof k==='string'&&/^eq_[a-z0-9_]{1,40}$/.test(k)).slice(0,6);if(w.length)o.wr=w}return o};
 function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='number'||typeof v.y!=='number')return;let r=MP.players.get(k);
  if(!r){r={uid:k,x:v.x,y:v.y,w:0,said:null};MP.players.set(k,r)}
  if(r.loc!==v.loc||Math.hypot(r.x-v.x,r.y-v.y)>200){r.x=v.x;r.y=v.y}
