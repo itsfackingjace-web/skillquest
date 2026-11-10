@@ -25,7 +25,10 @@
   its icon (the sprite editor), and how it works. The underlay is the game's real character sprite (`kitSprite`, 16x32,
   drawn 2x at layer (32,38)); an item with no worn look yet opens with the game's own look already in the layers (armour:
   the pixels the item changes on the kit, with "hide" on; weapons: their icon at the hand, since the kit only shows a
-  weapon mid-swing), so editing starts from what players see now. Rules live in `gear.<k>` = {dmg, rng, blk, mp, rq:{s,l}}
+  weapon mid-swing), so editing starts from what players see now. Worn looks for head/body/legs can list dyeable colours
+  (`worn.<k>.dy`); `SQA.dyeMap` gives them the wearer's dye (`ch.dyh/dyb/dyl`, `LUX.EMP.DYES`) keeping relative brightness.
+  The editor strips the developer's own dyes from the underlay and the starting look, and marks the colours a dye changes
+  on the game's kit as dyeable. Rules live in `gear.<k>` = {dmg, rng, blk, mp, rq:{s,l}}
   (`dev/111a2-s114-gear-rules.js`): dmg/rng/blk are changes added to the game's own numbers (blk in % points), mp is a wand's
   mana cost, rq replaces the requirement (skill index, level; 0 = none). Applied through `SQA.onApply`, by the outermost
   `meleeFlat`, `arrowDmg`, `bowRange`, `spellDmg`, `blockBonus`, `setSlot` and `equipItem` wrappers. The editor shows numbers

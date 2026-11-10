@@ -68,8 +68,11 @@
  // the character is drawn exactly as the game draws it (the 16 x 32 kit sprite), at the worn layer's 2x scale: world (-24,-44) is layer (0,0)
  const CHC=new Map(),KS=(L,dir,st,fl)=>{try{return typeof kitSprite==='function'?kitSprite(L,dir,st,fl):null}catch(e){console.warn('kit',e);return null}};
  const bare=(c,sl)=>{if(sl==='helm'){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.fc;delete c.oh}else if(sl==='body'){c.sh=CH.sh;delete c.mr}else if(sl==='legs')c.pn=CH.pn;return c};
- function lookFor(k,hide){let c;try{c=k&&EQ[k]&&window.SQGEAR?SQGEAR.wearing(k,()=>gearCH()):gearCH()}catch(e){c={...CH}}c={...c};delete c.wr;if(hide&&k&&EQ[k])bare(c,EQ[k].slot);return c}
- const myLook=()=>lookFor(S.tab==='worn'&&S.sel&&S.sel!=='__new'?S.sel:null,!!(S.ed&&S.ed.kind==='worn'&&S.ed.hide));
+ // dyes: the editor never bakes your own dyes into a look; "Preview a dye" shows one on the character and the dyeable colours
+ const DYK={helm:'dyh',body:'dyb',legs:'dyl'},DYES=()=>(window.LUX&&LUX.EMP&&LUX.EMP.DYES)||[];
+ function lookFor(k,hide,dye){let c;try{c=k&&EQ[k]&&window.SQGEAR?SQGEAR.wearing(k,()=>gearCH()):gearCH()}catch(e){c={...CH}}c={...c};delete c.wr;delete c.dyb;delete c.dyl;delete c.dyh;
+  if(hide&&k&&EQ[k])bare(c,EQ[k].slot);if(dye&&k&&EQ[k]&&DYK[EQ[k].slot])c[DYK[EQ[k].slot]]=dye;return c}
+ const myLook=()=>lookFor(S.tab==='worn'&&S.sel&&S.sel!=='__new'?S.sel:null,!!(S.ed&&S.ed.kind==='worn'&&S.ed.hide),S.ed&&S.ed.kind==='worn'?S.ed.pvd|0:0);
  function charCan(dir,st,fl){const L=myLook(),key=JSON.stringify(L)+dir+st+(fl?1:0);let c=CHC.get(key);if(c)return c;
   const ks=KS(L,dir,st,fl);if(ks){c=document.createElement('canvas');c.width=A.WW;c.height=A.WH;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(ks,32,38,32,64)}
   else{try{c=hdTrainer(L,dir,st,fl)}catch(e){console.warn('character',e);c=null}}
@@ -77,15 +80,17 @@
  // the game's own look of a piece of gear, as worn layers to start from: what the character gains by wearing it
  // (armour), or its icon held at the right hand (weapons only show in the game while swinging)
  const kpx=c=>{const x=document.createElement('canvas');x.width=16;x.height=32;const t=x.getContext('2d');t.drawImage(c,0,0);return t.getImageData(0,0,16,32).data};
- async function gameLook(k){const e=EQ[k];if(!e)return null;const sl=e.slot,out=[0,1,2].map(()=>new Int32Array(A.WW*A.WH).fill(-1));let any=false;
+ async function gameLook(k){const e=EQ[k];if(!e)return null;const sl=e.slot,out=[0,1,2].map(()=>new Int32Array(A.WW*A.WH).fill(-1)),dyed=new Set();let any=false;
   const put=(arr,X,Y,v)=>{for(const[a,b]of[[0,0],[1,0],[0,1],[1,1]]){const xx=X+a,yy=Y+b;if(xx>=0&&yy>=0&&xx<A.WW&&yy<A.WH)arr[yy*A.WW+xx]=v}};
-  if(sl==='helm'||sl==='body'||sl==='legs'){for(let d=0;d<3;d++){const a=KS(lookFor(k,false),d,0,false),b=KS(lookFor(k,true),d,0,false);if(!a||!b)continue;const da=kpx(a),db=kpx(b);
-    for(let y=0;y<32;y++)for(let x=0;x<16;x++){const i=(y*16+x)*4;if(da[i+3]<128)continue;if(db[i+3]>=128&&da[i]===db[i]&&da[i+1]===db[i+1]&&da[i+2]===db[i+2])continue;put(out[d],32+x*2,38+y*2,da[i]<<16|da[i+1]<<8|da[i+2]);any=true}}}
+  if(sl==='helm'||sl==='body'||sl==='legs'){for(let d=0;d<3;d++){const a=KS(lookFor(k,false),d,0,false),b=KS(lookFor(k,true),d,0,false),c=KS(lookFor(k,false,1),d,0,false);if(!a||!b)continue;const da=kpx(a),db=kpx(b),dc=c?kpx(c):da;
+    for(let y=0;y<32;y++)for(let x=0;x<16;x++){const i=(y*16+x)*4;if(da[i+3]<128)continue;if(db[i+3]>=128&&da[i]===db[i]&&da[i+1]===db[i+1]&&da[i+2]===db[i+2])continue;const v=da[i]<<16|da[i+1]<<8|da[i+2];put(out[d],32+x*2,38+y*2,v);any=true;
+     if(dc[i]!==da[i]||dc[i+1]!==da[i+1]||dc[i+2]!==da[i+2])dyed.add(hex(da[i],da[i+1],da[i+2]))}}}
   else{try{const im=new Image();im.src=typeof eqIcon==='function'?eqIcon(k):iconURL(k);await im.decode();const c=document.createElement('canvas');c.width=14;c.height=14;const t=c.getContext('2d');t.imageSmoothingEnabled=false;t.drawImage(im,0,0,14,14);const d=t.getImageData(0,0,14,14).data;
     const HX=[33,59,48];for(let dd=0;dd<3;dd++)for(let y=0;y<14;y++)for(let x=0;x<14;x++){const i=(y*14+x)*4;if(d[i+3]<128)continue;out[dd][(82+y)*A.WW+HX[dd]+x]=d[i]<<16|d[i+1]<<8|d[i+2];any=true}}catch(e){console.warn(e)}}
-  return any?out:null}
+  if(any)out.dy=dyed;return any?out:null}
  function fillFromGame(ed,L){const pal=ed.pal,idx=new Map(pal.map((c,i)=>[c,i]));const near=v=>{let bi=0,bd=1e9;pal.forEach((c,i)=>{const n=parseInt(c.slice(1),16),dd=((n>>16)-(v>>16))**2+((n>>8&255)-(v>>8&255))**2+((n&255)-(v&255))**2;if(dd<bd){bd=dd;bi=i}});return bi};
   for(let d=0;d<3;d++){const lay=ed.layers[d];lay.fill(255);for(let i=0;i<L[d].length;i++){const v=L[d][i];if(v<0)continue;const h=hex(v>>16,v>>8&255,v&255);let j=idx.get(h);if(j==null){if(pal.length<MAXC){pal.push(h);j=pal.length-1;idx.set(h,j)}else j=near(v)}lay[i]=j}}
+  ed.dyi=new Set();if(L.dy)for(const h of L.dy){const j=idx.get(h);if(j!=null)ed.dyi.add(j)}
   ed.px=ed.layers[ed.dir];ed.rcd=[1,1,1];ed.undo=[];ed.redo=[]}
  let CBB=null;function charBox(){if(CBB)return CBB;let x0=96,y0=112,x1=0,y1=0;for(const d of[0,1,2]){const c=charCan(d,0,false);if(!c)continue;const a=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
   for(let i=0;i<a.length;i+=4)if(a[i+3]>0){const X=(i/4)%c.width,Y=Math.floor(i/4/c.width);if(X<x0)x0=X;if(X>x1)x1=X;if(Y<y0)y0=Y;if(Y>y1)y1=Y}}
@@ -94,12 +99,12 @@
   if(w)for(let d=0;d<3;d++){const sp=w[WK[d]];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});
    const dd=A.pix(sp);for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')layers[d][i]=map[PXC.indexOf(ch)]}}
   const fresh=!pal.length;if(fresh)pal.push('#2a1c24','#4a5060','#7a8496','#a8b2c4','#d8e0ec','#f8d848','#b83838');
-  const ed=S.ed={kind:'worn',k,w:A.WW,h:A.WH,s:1,dir:0,layers,px:layers[0],pal,col:0,tool:'pen',undo:[],redo:[],dirty:false,hide:!!(w&&w.h),zoom:0,under:true,rc:[null,null,null],rcd:[1,1,1]};draw();
+  const ed=S.ed={kind:'worn',k,w:A.WW,h:A.WH,s:1,dir:0,layers,px:layers[0],pal,col:0,tool:'pen',undo:[],redo:[],dirty:false,hide:!!(w&&w.h),zoom:0,under:true,rc:[null,null,null],rcd:[1,1,1],pvd:0,dyi:new Set((w&&Array.isArray(w.dy)?w.dy:[]).map(h=>pal.findIndex(c=>c.toLowerCase()===String(h).toLowerCase())).filter(i=>i>=0))};draw();
   if(!w)startFromGame(ed,true)}
  async function startFromGame(ed,auto){const L=await gameLook(ed.k);if(S.ed!==ed)return;if(!L){if(!auto)toast('The game draws nothing for this item on a standing character.');return}
   if(auto)ed.pal.length=0;fillFromGame(ed,L);const sl=EQ[ed.k]&&EQ[ed.k].slot;if(sl==='helm'||sl==='body'||sl==='legs')ed.hide=true;ed.fromGame=1;if(!auto)ed.dirty=true;CBB=null;ed.recenter=1;draw();
   toast(sl==='main'||sl==='off'?'Started from its icon held in the hand (weapons only show in the game while swinging). Edit it and save.':'This is how the game draws it now. Edit it and save to make it its own look.')}
- function wornOut(ed){const o={};if(ed.hide)o.h=1;let any=false;for(let d=0;d<3;d++){const px=ed.layers[d];if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[WK[d]]={w:sp.w,h:sp.h,s:1,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
+ function wornOut(ed){const o={};if(ed.hide)o.h=1;let any=false;const used=new Set(ed.layers.flatMap(L=>[...L]));const dy=[...(ed.dyi||[])].filter(i=>used.has(i)&&ed.pal[i]).map(i=>ed.pal[i].toLowerCase());if(dy.length&&DYK[EQ[ed.k]&&EQ[ed.k].slot])o.dy=[...new Set(dy)];for(let d=0;d<3;d++){const px=ed.layers[d];if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[WK[d]]={w:sp.w,h:sp.h,s:1,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
  async function saveWorn(){const ed=S.ed;if(!ed)return;const o=wornOut(ed);if(o)S.draft.worn[ed.k]=o;else delete S.draft.worn[ed.k];
   try{await dset('draft/worn/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this item keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const b=it.querySelector('.dv-bd'),s2=wState(ed.k);if(b)b.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
@@ -164,7 +169,8 @@
   if(ed.kind==='worn'||ed.kind==='pet'){if(ed.kind==='pet')ed.rcd=[1,1];else ed.rcd[ed.dir]=1;x.imageSmoothingEnabled=false;x.fillStyle='#2c323e';x.fillRect(0,0,c.width,c.height);
    if(ed.kind==='pet'){x.fillStyle='rgba(255,255,255,.04)';for(let yy=0;yy<ed.h;yy++)for(let xx=(yy&1);xx<ed.w;xx+=2)x.fillRect(xx*z,yy*z,z,z)}
    if(ed.kind==='worn'&&ed.under){const u=charCan(ed.dir,0,false);if(u){x.globalAlpha=.8;x.drawImage(u,0,0,c.width,c.height);x.globalAlpha=1}}
-   for(let i=0;i<ed.px.length;i++){const v=ed.px[i];if(v===255)continue;x.fillStyle=ed.pal[v];x.fillRect((i%ed.w)*z,Math.floor(i/ed.w)*z,z,z)}
+   const DM=ed.kind==='worn'&&ed.pvd&&ed.dyi&&ed.dyi.size&&DYES()[ed.pvd-1]?A.dyeMap([...ed.dyi].map(i=>ed.pal[i]),DYES()[ed.pvd-1].c):null;
+   for(let i=0;i<ed.px.length;i++){const v=ed.px[i];if(v===255)continue;x.fillStyle=DM&&ed.dyi.has(v)?DM[ed.pal[v].toLowerCase()]||ed.pal[v]:ed.pal[v];x.fillRect((i%ed.w)*z,Math.floor(i/ed.w)*z,z,z)}
    if(ed.recenter&&ed.kind==='worn'){ed.recenter=0;const cv=c.parentElement,B=charBox();cv.scrollLeft=((B.x0+B.x1)/2)*z-cv.clientWidth/2;cv.scrollTop=((B.y0+B.y1)/2)*z-cv.clientHeight/2}
    if(z>=8){x.strokeStyle='rgba(255,255,255,.07)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
    const n=new Set(ed.layers.flatMap(L=>[...L].filter(v=>v!==255))).size,st=document.querySelector('#dvs .dv-st');
@@ -231,7 +237,7 @@
 #dvs .dv-back{display:none}#dvs .dv-pvs{display:none}
 #dvs .dv-cvw{display:block;overflow:auto;text-align:center;max-height:62vh}#dvs .dv-cvw #dvc{max-width:none;display:inline-block}#dvs .dv-cvw.dv-pan #dvc{cursor:grab}
 #dvs #dvwalk{image-rendering:pixelated;background:#e8e4d4;border-radius:8px;width:300px;height:84px;max-width:100%}
-#dvs .dv-chk{display:flex;gap:6px;align-items:center;color:#c0c8d6}
+#dvs .dv-chk{display:flex;gap:6px;align-items:center;color:#c0c8d6}#dvs .dv-sw.dv-dy{position:relative}#dvs .dv-sw.dv-dy::after{content:'D';position:absolute;right:-3px;bottom:-4px;font:700 9px/1 sans-serif;color:#111;background:#f8d848;border-radius:3px;padding:1px 2px}
 #dvs .dv-rules{display:flex;flex-direction:column;gap:12px;max-width:560px}#dvs .dv-gf{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;align-items:center}#dvs .dv-gf>small{grid-column:2}#dvs .dv-gf input,#dvs .dv-gf select{max-width:200px}#dvs .dv-gq{display:flex;gap:6px}#dvs .dv-gq input{width:70px}#dvs .dv-modes{border-bottom:1px solid #2a3442;padding-bottom:8px}
 @media (max-width:520px){#dvs .dv-gf{grid-template-columns:1fr}#dvs .dv-gf>small{grid-column:1}}
 @media (max-width:760px){#dvs .dv-pvlong{display:none}#dvs .dv-pvs{display:inline}#dvs .dv-top{gap:2px;padding-left:8px;padding-right:8px}#dvs .dv-tab{padding:7px 9px}#dvs .dv-ttl{width:100%;margin:0 0 2px}#dvs .dv-spr{grid-template-columns:1fr;height:auto}#dvs .dv-spr.dv-has .dv-ls{display:none}#dvs .dv-spr:not(.dv-has) .dv-ed{display:none}#dvs .dv-back{display:inline-block}#dvs .dv-ls .dv-grid{max-height:none}
@@ -295,6 +301,9 @@
    '<div class="dv-pvw"><canvas id="dvwalk" width="400" height="112"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><label class="dv-chk"><input type="checkbox" data-a="under"'+(ed.under?' checked':'')+'> Show the character wearing it underneath</label>'+
    (sl==='helm'||sl==='body'||sl==='legs'?'<label class="dv-chk"><input type="checkbox" data-a="hide"'+(ed.hide?' checked':'')+'> Hide the game\'s own '+(sl==='helm'?'hat':sl==='body'?'shirt colour':'trouser colour')+' for this item</label>':'')+'</div>'+
+   (DYK[sl]?'<div class="dv-row"><span class="dv-mut">Dyes:</span><button class="dv-b'+(ed.dyi&&ed.dyi.has(ed.col)?' dv-tl dv-on':'')+'" data-a="dytog">'+(ed.dyi&&ed.dyi.has(ed.col)?'✓ Selected colour takes dye':'Make selected colour dyeable')+'</button>'+
+    '<label class="dv-mut">Preview a dye <select data-in="pvd"><option value="0">None</option>'+DYES().map((d,i)=>'<option value="'+(i+1)+'"'+(ed.pvd===i+1?' selected':'')+'>'+E(d.n)+'</option>').join('')+'</select></label>'+
+    '<span class="dv-mut">Dyeable colours (marked D) take a player\'s dye and keep your light and dark shades.</span></div>':'')+
    '<div class="dv-row"><span class="dv-mut">Copy into this layer from:</span>'+WDN.map((n,d)=>d===ed.dir?'':'<button class="dv-b" data-copy="'+d+'">'+n+'</button>').join('')+'<button class="dv-b dv-bad" data-a="clr">Clear this layer</button><button class="dv-b '+(S.arm==='wcap'?'dv-arm':'')+'" data-a="wcap">'+(S.arm==='wcap'?'Tap again: replaces all three layers':'Start again from the game\'s look')+'</button></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s own look</button></div>'+
    '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+Y redo · Ctrl+S save</p>';
@@ -357,7 +366,7 @@
    (S.ed.kind==='worn'||S.ed.kind==='pet'?'<button class="dv-b" data-a="zout" title="Zoom out">−</button><button class="dv-b" data-a="zin" title="Zoom in">+</button>':'');
   const cv=root.querySelector('.dv-cvw');if(cv)cv.classList.toggle('dv-pan',S.ed.tool==='pan')}
  function drawPal(){const p=root.querySelector('.dv-pal'),ed=S.ed;if(!p||!ed)return;
-  p.innerHTML=ed.pal.map((c,i)=>'<button class="dv-sw'+(i===ed.col?' dv-on':'')+'" data-col="'+i+'" style="background:'+c+'" title="'+c+'"></button>').join('')+
+  p.innerHTML=ed.pal.map((c,i)=>'<button class="dv-sw'+(i===ed.col?' dv-on':'')+(ed.dyi&&ed.dyi.has(i)?' dv-dy':'')+'" data-col="'+i+'" style="background:'+c+'" title="'+c+(ed.dyi&&ed.dyi.has(i)?' (dyeable)':'')+'"></button>').join('')+
    '<label class="dv-mut" style="margin-left:8px">Change this colour <input type="color" data-in="recol" value="'+(ed.pal[ed.col]||'#000000')+'"></label>'+
    (ed.pal.length<MAXC?'<label class="dv-mut" style="margin-left:8px">Add a colour <input type="color" data-in="addcol" value="#ffffff"></label>':'')}
  // ---- stats ----
@@ -435,6 +444,7 @@
   if(a==='zin'||a==='zout'){const ed=S.ed,cv=root.querySelector('.dv-cvw'),c=document.getElementById('dvc');const fx=cv&&c.width?(cv.scrollLeft+cv.clientWidth/2)/c.width:.5,fy=cv&&c.height?(cv.scrollTop+cv.clientHeight/2)/c.height:.5;
    ed.zoom=Math.max(1,Math.min(12,(ed.zoom||1)*(a==='zin'?1.5:1/1.5)));if(a==='zin'&&ed.tool!=='pan')toast('Tip: use Move (M) to look around.');ed.z=0;paint();if(cv){cv.scrollLeft=fx*c.width-cv.clientWidth/2;cv.scrollTop=fy*c.height-cv.clientHeight/2}return}
   if(a==='clr'){snapEd();S.ed.px.fill(255);paint();draw();return}
+  if(a==='dytog'&&S.ed&&S.ed.kind==='worn'){const ed=S.ed;ed.dyi=ed.dyi||new Set();if(ed.dyi.has(ed.col))ed.dyi.delete(ed.col);else ed.dyi.add(ed.col);ed.dirty=true;draw();return}
   if(a==='wcap'&&S.ed&&S.ed.kind==='worn'){const ed=S.ed;return arm('wcap',()=>startFromGame(ed,false))}
   if(a==='orig'&&S.ed&&S.ed.kind==='pet'){const k=S.ed.k,item=S.sel;delete S.draft.pets[k];try{await dset('draft/pets/'+k,null);toast('Back to the game\'s own look (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.ed=null;openPet(item);return}
   if(a==='orig'&&S.ed&&S.ed.kind==='worn'){const k=S.sel;delete S.draft.worn[k];try{await dset('draft/worn/'+k,null);toast('Back to the game\'s own look (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);openWorn(k);return}
@@ -454,6 +464,7 @@
  root.addEventListener('change',e=>{const t=e.target;
   if(t.dataset.in==='addcol'&&S.ed){snapEd();S.ed.pal.push(t.value);S.ed.col=S.ed.pal.length-1;S.ed.tool='pen';drawPal();drawTools();paint();return}
   if(t.dataset.in==='recol'){t._snap=0;drawPal();return}
+  if(t.dataset.in==='pvd'&&S.ed){S.ed.pvd=+t.value|0;draw();return}
   if(t.dataset.g&&S.sel){gearSet(S.sel,t.dataset.g,t.value);return}
   if(t.dataset.gn&&S.sel){ngSet(S.sel,t.dataset.gn,t.value);return}
   if(t.dataset.gr&&S.sel){ngRecipe(S.sel);return}

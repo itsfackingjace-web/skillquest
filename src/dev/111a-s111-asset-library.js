@@ -13,7 +13,8 @@
 //   A custom island is a normal sailing region whose generator returns the painted map (with open water around it).
 //   gear: {itemKey:{dmg,rng,blk,mp,rq,fx}} how a weapon or armour piece works; newgear: {eq_cu_name:{n,b,v,d,sm}} new gear items (see 111a2-s114-gear-rules.js).
 //   worn: how a helmet / body / legs / weapon / shield looks on the character, one 96 x 112 layer per facing
-//   (f front, b back, s side; left is side mirrored), drawn over the character. h = hide the game's own look for that slot.
+//   (f front, b back, s side; left is side mirrored), drawn over the character. h = hide the game's own look for that slot;
+//   dy = the colours that take the wearer's dye for that slot (dyeMap keeps their shading).
 var SQA=(()=>{
  const DBURL='https://skillquest-913e2-default-rtdb.firebaseio.com',LS='sq_assets_live',PXC='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-';
  const IB=window.SQIB||{},WB=window.SQWBT||{};
@@ -49,21 +50,27 @@ var SQA=(()=>{
  const WSLOTS=['legs','body','helm','off','main'],WDIR=['f','b','s'],WW=96,WH=112,WORN={},wcache=new Map();
  const wornKeys=()=>itemKeys().filter(k=>EQ[k]&&WSLOTS.includes(EQ[k].slot));
  const validWorn=w=>w&&typeof w==='object'&&WDIR.some(d=>w[d]&&w[d].w===WW&&w[d].h===WH&&w[d].s===1&&valid(w[d]));
- function wornCanvas(w,k,dir,fl){const key=k+'@'+ver+dir+(fl?1:0);let c=wcache.get(key);if(c!==undefined)return c;const sp=w[WDIR[dir]];c=null;
-  if(sp&&valid(sp)){const r=render(sp);if(fl){c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0)}else c=r}
+ // dyes: the colours a look marks as dyeable (w.dy) take the wearer's dye for that slot, keeping the drawn light and dark shades
+ const DYK={helm:'dyh',body:'dyb',legs:'dyl'},lum=h=>{const n=parseInt(String(h).slice(1),16);return .299*(n>>16)+.587*(n>>8&255)+.114*(n&255)};
+ function dyeMap(dy,col){const out={};if(Array.isArray(dy))dy=dy.filter(h=>/^#[0-9a-f]{6}$/i.test(h)).slice(0,64);if(!Array.isArray(dy)||!dy.length||!/^#[0-9a-f]{6}$/i.test(col))return out;const L=dy.map(lum),avg=L.reduce((a,b)=>a+b,0)/L.length||1,d=parseInt(col.slice(1),16),D=[d>>16,d>>8&255,d&255];
+  dy.forEach((h,i)=>{const f=L[i]/avg;out[String(h).toLowerCase()]='#'+D.map(v=>Math.round(Math.max(0,Math.min(255,f<=1?v*f:v+(255-v)*Math.min(1,f-1))))).map(v=>v.toString(16).padStart(2,'0')).join('')});return out}
+ const dyeOf=(ch,k)=>{const sl=EQ[k]&&EQ[k].slot,f=DYK[sl],i=ch&&f?ch[f]|0:0,D=window.LUX&&LUX.EMP&&LUX.EMP.DYES;return i&&D&&D[i-1]?D[i-1].c:null};
+ const recol=(sp,M)=>({...sp,p:String(sp.p).split(',').map(c=>M[c.toLowerCase()]||c).join(',')});
+ function wornCanvas(w,k,dir,fl,dc){const M=dc&&w.dy?dyeMap(w.dy,dc):null,key=k+'@'+ver+dir+(fl?1:0)+(M?dc:'');let c=wcache.get(key);if(c!==undefined)return c;let sp=w[WDIR[dir]];c=null;
+  if(sp&&valid(sp)){if(M)sp=recol(sp,M);const r=render(sp);if(fl){c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0)}else c=r}
   if(wcache.size>300)wcache.clear();wcache.set(key,c);return c}
  // draw a character's worn layers; same placement and walking bob as the character sprite (legs don't bob)
- function drawWorn(C,keys,dir,st,ox,oy,fl,lib){if(!keys||!keys.length)return;const src=lib||WORN;
-  for(const sl of WSLOTS)for(const k of keys){if(!EQ[k]||EQ[k].slot!==sl||!src[k])continue;const c=lib?wornCanvasFrom(src[k],dir,fl):wornCanvas(src[k],k,dir,fl);if(!c)continue;
+ function drawWorn(C,keys,dir,st,ox,oy,fl,lib,ch){if(!keys||!keys.length)return;const src=lib||WORN;
+  for(const sl of WSLOTS)for(const k of keys){if(!EQ[k]||EQ[k].slot!==sl||!src[k])continue;const dc=dyeOf(ch,k),c=lib?wornCanvasFrom(src[k],dir,fl,dc):wornCanvas(src[k],k,dir,fl,dc);if(!c)continue;
    C.drawImage(c,Math.round(ox)-24,Math.round(oy)-44+(st&&sl!=='legs'?-.5:0),48,56)}}
- const wornCanvasFrom=(w,dir,fl)=>{const sp=w[WDIR[dir]];if(!sp||!valid(sp))return null;const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
+ const wornCanvasFrom=(w,dir,fl,dc)=>{let sp=w[WDIR[dir]];if(!sp||!valid(sp))return null;if(dc&&w.dy)sp=recol(sp,dyeMap(w.dy,dc));const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
  // what you have on travels with your look (ch.wr) so other players' games draw it too
  const _gch=gearCH;gearCH=function(){const c=_gch();const wr=[];
   for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){}if(!k||!WORN[k])continue;wr.push(k);
    if(WORN[k].h){if(sl==='helm'){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.fc;delete c.oh}else if(sl==='body'){c.sh=CH.sh;delete c.mr}else if(sl==='legs')c.pn=CH.pn}}
   if(wr.length)c.wr=wr;return c};
  const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){_cPw(ch,dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
-  try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl)}catch(e){}};
+  try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl,null,ch)}catch(e){}};
  // ---- pet looks: replace how a pet is drawn following its owner (yours and other players') ----
  const PETL={},pcache=new Map();
  const validPet=L=>L&&L.w>0&&L.h>0&&L.w<=96&&L.h<=96&&L.s>=1&&L.s<=8&&isFinite(L.ox)&&isFinite(L.oy)&&['a','b'].some(f=>L[f]&&L[f].w===L.w&&L[f].h===L.h&&valid(L[f]));
@@ -161,7 +168,7 @@ var SQA=(()=>{
    if(JSON.stringify(L)===JSON.stringify(live))return;live=L;try{if(L)localStorage.setItem(LS,JSON.stringify(L));else localStorage.removeItem(LS)}catch(e){}
    if(!preview)apply(live)}catch(e){}}
  setTimeout(refresh,400);
- return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,
+ return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,
   ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
   get live(){return live},hasIcon:k=>!!ICO[k],
   // a section that reads its own part of the library: called now with the current library and after every change
