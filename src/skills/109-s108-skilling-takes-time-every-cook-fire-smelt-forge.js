@@ -3,8 +3,14 @@
 // animation and a progress bar over your head. "Make all" / "Cook all" do one at a time until you run out. Moving
 // stops it. (Before, these happened instantly, so whole levels could be made in seconds.)
 var SQDO=null;
+// A station (stove, furnace, anvil, crafting bench) lends you the materials in nearby chests only while its button is
+// being handled. A timed action runs its steps later, after the screen has closed, so it remembers the station it was
+// started at and the chests that station was using, and borrows from them again for every step.
+function sqMerge(chests){if(typeof BMERGE==='undefined'||BMERGE||!chests||!chests.length)return false;const tot={};for(const c of chests)for(const k in c)if(c[k]>0)tot[k]=(tot[k]||0)+c[k];
+ const bag={};for(const k in tot){bag[k]=inv[k]|0;inv[k]=bag[k]+tot[k]}BMERGE={chests,tot,bag};return true}
 function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;const D={fire:2.6,cook:2.4,smelt:2.4,smith:2.6,craft:2.4,reel:1.8}[kind]||2.4;
- SQDO={kind,n:Math.max(1,n|0),fn,t:0,d:D,x:P.x,y:P.y,done:0};try{if(pnOpen)closePanel()}catch(e){}jx=jy=0;
+ const st=typeof STATION!=='undefined'?STATION:null,chests=typeof BMERGE!=='undefined'&&BMERGE?BMERGE.chests.slice():null;
+ SQDO={kind,n:Math.max(1,n|0),fn,t:0,d:D,x:P.x,y:P.y,done:0,st,chests};try{if(pnOpen)closePanel()}catch(e){}jx=jy=0;
  say({fire:'Lighting a fire...',cook:'Cooking...',smelt:'Smelting...',smith:'Hammering at the anvil...',craft:'Crafting...',reel:'Reeling it in...'}[kind]||'Working...');return true}
 {const _f=fire;fire=function(){if(sqDo('fire',1,()=>_f()))return;return _f()};
  const _e=eat;eat=function(){if(dead||menuOpen||pnOpen)return _e();// cooking at a fire takes time; eating doesn't
@@ -16,8 +22,10 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;co
   if(D.kind==='reel'&&FISH)FISH.t=-999;
   if((D.kind==='smith'||D.kind==='craft')&&swing<=0&&(D.t%0.7)<dt)swing=.25;
   D.t+=dt;if(D.t<D.d)return;
-  const x0=xpSum(),i0=invSum(),f0=fires.length;window.SQDO_STEP=true;try{D.fn()}catch(e){console.warn(e)}finally{window.SQDO_STEP=false}
-  const ok=xpSum()!==x0||invSum()!==i0||fires.length!==f0;if(ok)D.done++;D.n--;
+  const x0=xpSum(),i0=invSum(),f0=fires.length,c0=JSON.stringify(D.chests||[]),st0=typeof STATION!=='undefined'?STATION:null;window.SQDO_STEP=true;
+  if(D.st)STATION=D.st;const m=sqMerge(D.chests);
+  try{D.fn()}catch(e){console.warn(e)}finally{if(m)benchSplit();if(D.st)STATION=st0;window.SQDO_STEP=false}
+  const ok=xpSum()!==x0||invSum()!==i0||fires.length!==f0||JSON.stringify(D.chests||[])!==c0;if(ok)D.done++;D.n--;
   if(!ok||D.n<=0||SQDO!==D){if(SQDO===D)SQDO=null}else{D.t=0;D.x=P.x;D.y=P.y}};
  // the look of it: a progress bar over your head and something happening in front of you
  const _dh=drawHUD;drawHUD=function(){_dh();const D=SQDO;if(!D||menuOpen)return;const U=(HUDL&&HUDL.U)||1,sx=W/2,sy=H/2,tm=performance.now()/1000,[fx0,fy0]=front(14),fx=W/2+(fx0-P.x)*Z,fy=H/2+(fy0-P.y)*Z,z=Z,pr=Math.min(1,D.t/D.d);
