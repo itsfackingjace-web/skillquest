@@ -230,6 +230,7 @@
   if(a==='check'){check();return}
   if(a==='resize')return resize();
   if(a==='sail'){if(!check()){toast('Fix the island first (see the check below).');return}
+   if(window.SQTITLE&&SQTITLE()){toast('Start your game first (Continue on the title screen), then sail there.');return}
    if(typeof curRegion==='function'&&curRegion()===ed.id){toast('You are on this island now. Sail home first, then come back to see your changes.');return}
    const prev=Object.assign({},S.draft,{islands:Object.assign({},isl(),{[ed.id]:toData(ed)})});A.preview(prev);const dd=ed.dirty;ed.dirty=false;SQSUITE.close();ed.dirty=dd;
    setTimeout(()=>{try{routeGo(ed.id)}catch(e2){console.warn(e2)}},50);return}

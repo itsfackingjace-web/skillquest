@@ -9249,6 +9249,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.09-8',d:'Nov 9, 2026',t:'Behind the scenes: safer tools for the developer',n:['The game\'s built-in editor can now be opened from the title screen, and the developer\'s character no longer gets hungry or hurt while it\'s open. Nothing changes for players, and your saves are untouched.']},
  {v:'2026.11.09-7',d:'Nov 9, 2026',t:'New looks for pets',n:['Pets can now get brand new looks. When one does, everyone sees it on everyone\'s pet. Pets without a new look stay exactly as they are.']},
  {v:'2026.11.09-6',d:'Nov 9, 2026',t:'Treasure on new islands',n:['New islands can now have buildings, signs to read and treasure chests. Find a chest, press USE and the treasure is yours: each chest can be opened once by every player.']},
  {v:'2026.11.09-5',d:'Nov 9, 2026',t:'World Market trades, stoves and chests fixed',n:['Fixed: buying or selling at the World Market against someone else\'s offer always failed with "The market couldn\'t take that offer". Offers now trade straight away, and a buy and sell offer that match will also find each other on their own a moment later.','Fixed: cooking at a stove did nothing since the last big update. "Cook all" works again.','Fixed: stoves, furnaces, anvils and crafting benches use the materials in nearby chests again (or every chest in the house), not just what\'s in your bag.']},
@@ -13069,8 +13070,15 @@ window.SQA=SQA;
   if((S.ed.kind==='worn'||S.ed.kind==='pet')&&!m&&(k==='+'||k==='='||k==='-')){const b=root.querySelector('[data-a="'+(k==='-'?'zout':'zin')+'"]');if(b)b.click();return}
   const T={p:'pen',b:'pen',e:'erase',f:'fill',g:'fill',i:'pick'};if(S.ed.kind==='worn'||S.ed.kind==='pet')T.m='pan';if(!m&&T[k]){S.ed.tool=T[k];drawTools()}},true);
  addEventListener('keyup',e=>{if(S.open)e.stopPropagation()},true);
- // no damage while you're in the suite
+ // you're safe while the suite is open: no damage, no hunger, nothing can kill you
  const _hp=hurtP;hurtP=function(){if(S.open)return;return _hp.apply(this,arguments)};
+ const _uS=upd;upd=function(dt){if(!S.open)return _uS(dt);const h0=hunger,hp0=P&&P.hp,d0=dead;_uS(dt);try{if(hunger<h0)hunger=h0;if(P&&P.hp<hp0)P.hp=hp0;if(dead&&!d0&&P&&P.hp>0)dead=false}catch(e){}};
+ // ... and it opens straight from the title screen once you're signed in
+ window.SQTITLE=()=>{const t=document.getElementById('sqts');return!!(t&&t.style.display!=='none'&&getComputedStyle(t).display!=='none')};
+ {const mn=document.getElementById('tsmn');const addBtn=()=>{if(!mn||mn.querySelector('[data-a="dvs"]')||!(window.SQDEV&&SQDEV()&&user()))return;const o=mn.querySelector('[data-a="opt"]');if(!o)return;
+   const b=document.createElement('button');b.dataset.a='dvs';b.textContent='DEV SUITE';o.after(b)};
+  if(mn){new MutationObserver(addBtn).observe(mn,{childList:true});setInterval(addBtn,1500);
+   mn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='dvs'){e.stopPropagation();openSuite()}},true)}}
  function openSuite(){if(!(window.SQDEV&&SQDEV()))return;try{for(const k in K)K[k]=0}catch(e){}try{if(pnOpen)closePanel()}catch(e){}
   S.open=true;root.style.display='flex';draw();if(S.ok!=='yes')load()}
  function close(){if(((S.ed&&S.ed.dirty)||(EXT[S.tab]&&EXT[S.tab].dirty&&EXT[S.tab].dirty()))&&!confirmLeave())return;S.open=false;root.style.display='none';root.innerHTML=''}
@@ -13314,6 +13322,7 @@ window.SQA=SQA;
   if(a==='check'){check();return}
   if(a==='resize')return resize();
   if(a==='sail'){if(!check()){toast('Fix the island first (see the check below).');return}
+   if(window.SQTITLE&&SQTITLE()){toast('Start your game first (Continue on the title screen), then sail there.');return}
    if(typeof curRegion==='function'&&curRegion()===ed.id){toast('You are on this island now. Sail home first, then come back to see your changes.');return}
    const prev=Object.assign({},S.draft,{islands:Object.assign({},isl(),{[ed.id]:toData(ed)})});A.preview(prev);const dd=ed.dirty;ed.dirty=false;SQSUITE.close();ed.dirty=dd;
    setTimeout(()=>{try{routeGo(ed.id)}catch(e2){console.warn(e2)}},50);return}

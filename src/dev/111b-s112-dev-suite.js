@@ -365,8 +365,15 @@
   if((S.ed.kind==='worn'||S.ed.kind==='pet')&&!m&&(k==='+'||k==='='||k==='-')){const b=root.querySelector('[data-a="'+(k==='-'?'zout':'zin')+'"]');if(b)b.click();return}
   const T={p:'pen',b:'pen',e:'erase',f:'fill',g:'fill',i:'pick'};if(S.ed.kind==='worn'||S.ed.kind==='pet')T.m='pan';if(!m&&T[k]){S.ed.tool=T[k];drawTools()}},true);
  addEventListener('keyup',e=>{if(S.open)e.stopPropagation()},true);
- // no damage while you're in the suite
+ // you're safe while the suite is open: no damage, no hunger, nothing can kill you
  const _hp=hurtP;hurtP=function(){if(S.open)return;return _hp.apply(this,arguments)};
+ const _uS=upd;upd=function(dt){if(!S.open)return _uS(dt);const h0=hunger,hp0=P&&P.hp,d0=dead;_uS(dt);try{if(hunger<h0)hunger=h0;if(P&&P.hp<hp0)P.hp=hp0;if(dead&&!d0&&P&&P.hp>0)dead=false}catch(e){}};
+ // ... and it opens straight from the title screen once you're signed in
+ window.SQTITLE=()=>{const t=document.getElementById('sqts');return!!(t&&t.style.display!=='none'&&getComputedStyle(t).display!=='none')};
+ {const mn=document.getElementById('tsmn');const addBtn=()=>{if(!mn||mn.querySelector('[data-a="dvs"]')||!(window.SQDEV&&SQDEV()&&user()))return;const o=mn.querySelector('[data-a="opt"]');if(!o)return;
+   const b=document.createElement('button');b.dataset.a='dvs';b.textContent='DEV SUITE';o.after(b)};
+  if(mn){new MutationObserver(addBtn).observe(mn,{childList:true});setInterval(addBtn,1500);
+   mn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='dvs'){e.stopPropagation();openSuite()}},true)}}
  function openSuite(){if(!(window.SQDEV&&SQDEV()))return;try{for(const k in K)K[k]=0}catch(e){}try{if(pnOpen)closePanel()}catch(e){}
   S.open=true;root.style.display='flex';draw();if(S.ok!=='yes')load()}
  function close(){if(((S.ed&&S.ed.dirty)||(EXT[S.tab]&&EXT[S.tab].dirty&&EXT[S.tab].dirty()))&&!confirmLeave())return;S.open=false;root.style.display='none';root.innerHTML=''}
