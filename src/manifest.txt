@@ -117,6 +117,7 @@ dev/111a2-s114-gear-rules.js
 dev/111b-s112-dev-suite.js
 dev/111c-s113-island-builder.js
 world/113-s115-sledgehammer-smashes-ore.js
+skills/114-s116-skilling-looks.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

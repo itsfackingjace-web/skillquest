@@ -32,7 +32,7 @@ window.SQRFISH=RFISH;
      const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}}
   return _a()}}
 // the line and bobber, drawn on the other islands too
-{const _dr=drawRoom;drawRoom=function(tm){_dr(tm);const R=SCENE&&SCENE.room;if(!FISH||!R||!R.region)return;
+{const _dr=drawRoom;drawRoom=function(tm){_dr(tm);const R=SCENE&&SCENE.room;if(!FISH||!R||!R.region||window.SQSKFX)return;
   const hx=Math.round(P.x+face[0]*6),hy=Math.round(P.y-3+(face[1]>0?2:0)),rx=Math.round(P.x+face[0]*13+(face[1]?4:0)),ry=Math.round(P.y-13+face[1]*7),bx=Math.round(FISH.bx),by=Math.round(FISH.by)+(FISH.bite>0?2:Math.round(Math.sin(tm*3)));
   pline(hx,hy,rx,ry,'#7a4a20');pline(rx,ry,bx,by-1,'rgba(240,240,255,.75)');
   if(FISH.bite>0){const r=3+Math.round((.45-FISH.bite)*14);for(let k=0;k<12;k++){const an=k/12*6.283;Rg(bx+Math.cos(an)*r,by+1+Math.sin(an)*r*.5,1,1,'#e8f8ff')}}

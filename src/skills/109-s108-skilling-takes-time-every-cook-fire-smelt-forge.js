@@ -29,11 +29,12 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;co
   if(!ok||D.n<=0||SQDO!==D){if(SQDO===D)SQDO=null}else{D.t=0;D.x=P.x;D.y=P.y}};
  // the look of it: a progress bar over your head and something happening in front of you
  const _dh=drawHUD;drawHUD=function(){_dh();const D=SQDO;if(!D||menuOpen)return;const U=(HUDL&&HUDL.U)||1,sx=W/2,sy=H/2,tm=performance.now()/1000,[fx0,fy0]=front(14),fx=W/2+(fx0-P.x)*Z,fy=H/2+(fy0-P.y)*Z,z=Z,pr=Math.min(1,D.t/D.d);
-  g.save();g.setTransform(1,0,0,1,0,0);const bw=34*z,bh=5*z,bx=sx-bw/2,by=sy-28*z;g.fillStyle='#302818';g.fillRect(bx-z,by-z,bw+2*z,bh+2*z);g.fillStyle='#e8e0c8';g.fillRect(bx,by,bw,bh);
-  const col={fire:'#f87830',cook:'#f0a840',smelt:'#e06030',smith:'#90a8d0',craft:'#a880e0',reel:'#58a8ff'}[D.kind]||'#58c058';g.fillStyle=col;g.fillRect(bx,by,bw*pr,bh);
+  // no progress bar: the character's own animation shows the work (fire, cooking and fishing: section 116)
+  g.save();g.setTransform(1,0,0,1,0,0);const by=sy-28*z+6*z;
   if(D.n>1&&D.n<900){g.font='700 '+Math.round(5*z)+'px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2*U;g.strokeStyle='#302818';g.strokeText(D.n+' left',sx,by-z);g.fillStyle='#f8f0d8';g.fillText(D.n+' left',sx,by-z)}
   const P2=(x,y,s,c)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.max(1,s*z),Math.max(1,s*z))};
-  if(D.kind==='fire'){// kindling, flint sparks, then the first wisps of smoke
+  if(window.SQSKFX&&(D.kind==='fire'||D.kind==='cook'||D.kind==='reel')){}
+  else if(D.kind==='fire'){// kindling, flint sparks, then the first wisps of smoke
    for(let k=0;k<3;k++){g.fillStyle='#6a4020';g.fillRect(fx-6*z+k*3*z,fy+2*z-k%2*z,7*z,2*z)}
    if(Math.floor(tm*6)%2)for(let k=0;k<4;k++)P2(fx+(Math.random()-.5)*10*z,fy-(Math.random()*6)*z,1,Math.random()<.5?'#ffe080':'#ff9030');
    if(pr>.5)for(let k=0;k<3;k++){const ph=(tm*.8+k/3)%1;g.globalAlpha=(1-ph)*.6;P2(fx+Math.sin(ph*6+k)*3*z,fy-ph*16*z,2,'#c8c0b8')}g.globalAlpha=1;if(pr>.75){P2(fx-z,fy-2*z,2,'#f86020');P2(fx,fy-3*z,1,'#ffd040')}}

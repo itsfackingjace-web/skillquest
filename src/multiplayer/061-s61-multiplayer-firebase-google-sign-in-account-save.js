@@ -209,10 +209,10 @@ const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v
 function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='number'||typeof v.y!=='number')return;let r=MP.players.get(k);
  if(!r){r={uid:k,x:v.x,y:v.y,w:0,said:null};MP.players.set(k,r)}
  if(r.loc!==v.loc||Math.hypot(r.x-v.x,r.y-v.y)>200){r.x=v.x;r.y=v.y}
- r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;r.sl=!!v.sl;r.ar=typeof v.ar==='string'?v.ar:'';r.pet=typeof v.pet==='string'?v.pet.slice(0,12):'';r.pk=!!v.pk;r.au=!!v.au;r.dg=!!v.dg;r.br=!!v.br;{const q=v.fw&&typeof v.fw==='object'?Object.values(v.fw):null;r.fw=q&&q.length===2?[+q[0],+q[1]]:null}r.im=Array.isArray(v.im)?v.im.slice(0,4).map(Number):(v.im&&typeof v.im==='object'?Object.values(v.im).slice(0,4).map(Number):null);r.ax=+v.ax;r.ay=+v.ay;
+ r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;r.sl=!!v.sl;r.ar=typeof v.ar==='string'?v.ar:'';r.pet=typeof v.pet==='string'?v.pet.slice(0,12):'';r.pk=!!v.pk;r.au=!!v.au;r.ak=Math.max(0,Math.min(9,v.ak|0));r.dg=!!v.dg;r.br=!!v.br;{const q=v.fw&&typeof v.fw==='object'?Object.values(v.fw):null;r.fw=q&&q.length===2?[+q[0],+q[1]]:null}r.im=Array.isArray(v.im)?v.im.slice(0,4).map(Number):(v.im&&typeof v.im==='object'?Object.values(v.im).slice(0,4).map(Number):null);r.ax=+v.ax;r.ay=+v.ay;
  r.n=String(v.n||r.n||(MP.prof&&MP.prof[k]&&MP.prof[k].n)||'Adventurer').replace(/[<>]/g,'').slice(0,12);r.ch=cleanCh(v.ch);r.seen=performance.now();mpRBtn()}
 function mpTick(){if(!MP.on||!MP.pref||MP.passive)return;const d=FB.db,now=performance.now(),loc=mpLoc(),fx=face[0],fy=face[1];
- const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0,dg:(window.SQDF&&SQDF.on&&!dead)?1:0,br:(window.SQDF&&SQDF.br)?1:0,sid:MP.sid,s0:MP.s0,im:(window.SQIMP&&SQIMP.pres())||0,fw:(window.SQFW&&SQFW.pres())||0},k=JSON.stringify(st);
+ const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0,dg:(window.SQDF&&SQDF.on&&!dead)?1:0,br:(window.SQDF&&SQDF.br)?1:0,sid:MP.sid,s0:MP.s0,im:(window.SQIMP&&SQIMP.pres())||0,fw:(window.SQFW&&SQFW.pres())||0,ak:(window.SQACT&&SQACT())||0},k=JSON.stringify(st);
  let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){}const nm=myName();
  if(chk!==MP.lastCh||nm!==MP.lastN){MP.lastCh=chk;MP.lastN=nm;MP.last='';d.update(MP.pref,{ch:JSON.parse(chk),n:nm}).catch(()=>{MP.lastCh=''})}
  if(k!==MP.last||now-MP.beat>5000){MP.last=k;MP.beat=now;d.update(MP.pref,Object.assign(st,{t:d.serverTimestamp()})).catch(()=>{MP.last=''})}}
@@ -223,7 +223,7 @@ function mpStepAll(){const n=performance.now(),dt=Math.min(.1,(n-mpLastF)/1000);
 function mpVis(){if(!MP.on)return[];const loc=mpLoc();if(!loc)return[];const out=[];const rx=W/Z+48,ry=H/Z+64;
  for(const r of MP.players.values())if(r.loc===loc&&live(r)&&Math.abs(r.x-P.x)<rx&&Math.abs(r.y-P.y)<ry)out.push(r);return out}
 function mpDrawPeer(r,tm){const x=Math.round(r.x),y=Math.round(r.y),st=r.mv?[1,0,2,0][Math.floor(r.w)%4]:0;GC=g;shd(x,y+6,12);
- try{cP(r.ch,r.d,st,x,y,r.fl)}catch(e){}MP.T=g.getTransform();MP.Tat=performance.now()}
+ try{cP(r.ak?{...r.ch,ak:r.ak}:r.ch,r.d,st,x,y,r.fl)}catch(e){}MP.T=g.getTransform();MP.Tat=performance.now()}
 // Hollow: join the y-sorted list
 const _lh61=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{if(_lh61)_lh61(L,x0,y0,x1,y1,tm);mpStepAll();for(const r of mpVis())L.push([r.y+6,4,t=>mpDrawPeer(r,t)])};
 // regions: ride along as room items

@@ -60,5 +60,9 @@
 - **Stone Sledgehammer** (`096` + `world/113-s115-sledgehammer-smashes-ore.js`): one hit breaks small ores (`SKOF[t]===2`);
   GROUND SLAM (`window.SQSLAM`) breaks every mineable rock/ore/boulder in its radius by running the game's own `attack()` at
   each tile (player moved there for the call and put back), and sends an `sl` fx event so others see the shockwave.
+- **Skilling looks** (`skills/114-s116-skilling-looks.js`): fire, cooking and fishing are drawn on the character, not as a
+  progress bar (109 now only draws the smith/smelt/craft effects and the "N left" count). The state travels as `ak` in the
+  multiplayer position (1 fire, 2 cook, 3 fishing, 4 bite, 5 reeling, 6 caught; `SQACT()`), the crouch is done in the
+  outermost `cP` (whole character, gear included, re-drawn shorter at the knees), and other players' props via `SQPEERFX`.
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).

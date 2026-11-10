@@ -67,7 +67,7 @@ const _oc6=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.fg');if(b){smi
 // --- drawing: furnace, anvil, fishing line, HUD line ---
 function pline(x0,y0,x1,y1,c){const st=Math.max(Math.abs(x1-x0),Math.abs(y1-y0),1);for(let i=0;i<=st;i++)Rg(x0+(x1-x0)*i/st,y0+(y1-y0)*i/st,1,1,c)}
 const _nd6=NEWDRAW;NEWDRAW=function(...a){_nd6(...a);const tm=a[8];
- if(FISH){const hx=Math.round(P.x+face[0]*6),hy=Math.round(P.y-3+(face[1]>0?2:0)),rx=Math.round(P.x+face[0]*13+(face[1]?4:0)),ry=Math.round(P.y-13+face[1]*7),bx=Math.round(FISH.bx),by=Math.round(FISH.by)+(FISH.bite>0?2:Math.round(Math.sin(tm*3)));
+ if(FISH&&!window.SQSKFX){const hx=Math.round(P.x+face[0]*6),hy=Math.round(P.y-3+(face[1]>0?2:0)),rx=Math.round(P.x+face[0]*13+(face[1]?4:0)),ry=Math.round(P.y-13+face[1]*7),bx=Math.round(FISH.bx),by=Math.round(FISH.by)+(FISH.bite>0?2:Math.round(Math.sin(tm*3)));
   pline(hx,hy,rx,ry,'#7a4a20');pline(rx,ry,bx,by-1,'rgba(240,240,255,.75)');
   if(FISH.bite>0){const r=3+Math.round((.45-FISH.bite)*14);for(let k=0;k<12;k++){const an=k/12*6.283;Rg(bx+Math.cos(an)*r,by+1+Math.sin(an)*r*.5,1,1,'#e8f8ff')}}
   Rg(bx-2,by-3,4,5,O);Rg(bx-1,by-2,2,2,'#e83030');Rg(bx-1,by,2,1,'#fff')}};
