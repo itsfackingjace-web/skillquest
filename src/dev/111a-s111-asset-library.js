@@ -60,7 +60,7 @@ var SQA=(()=>{
  // what you have on travels with your look (ch.wr) so other players' games draw it too
  const _gch=gearCH;gearCH=function(){const c=_gch();const wr=[];
   for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){}if(!k||!WORN[k])continue;wr.push(k);
-   if(WORN[k].h){if(sl==='helm'){c.ht=CH.ht;c.hcol=CH.hcol}else if(sl==='body')c.sh=CH.sh;else if(sl==='legs')c.pn=CH.pn}}
+   if(WORN[k].h){if(sl==='helm'){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.fc;delete c.oh}else if(sl==='body'){c.sh=CH.sh;delete c.mr}else if(sl==='legs')c.pn=CH.pn}}
   if(wr.length)c.wr=wr;return c};
  const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){_cPw(ch,dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
   try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl)}catch(e){}};
