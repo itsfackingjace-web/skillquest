@@ -20,6 +20,13 @@
   (public read; players apply it at startup and cache it on the device), replaced versions in `assets/hist`. Writes need
   the account's uid under `devs/` (added by hand in the Firebase console). `SQA` (`111a-s111-asset-library.js`) applies a
   library on top of the game's own values and keeps the originals, so anything not published falls back to the code.
+- **Gear screen** (Dev Suite > Gear, internally the `worn` tab): per weapon/armour piece, three modes: its look on the character
+  (the underlay wears the item via `SQGEAR.wearing(k,f)`, which equips it for the length of `f` and puts back what was there),
+  its icon (the sprite editor), and how it works. Rules live in `gear.<k>` = {dmg, rng, blk, mp, rq:{s,l}}
+  (`dev/111a2-s114-gear-rules.js`): dmg/rng/blk are changes added to the game's own numbers (blk in % points), mp is a wand's
+  mana cost, rq replaces the requirement (skill index, level; 0 = none). Applied through `SQA.onApply`, by the outermost
+  `meleeFlat`, `arrowDmg`, `bowRange`, `spellDmg`, `blockBonus`, `setSlot` and `equipItem` wrappers. The editor shows numbers
+  for the developer's character (`SQGEAR.base`) and saves the difference.
 - **Pet looks** (Dev Suite > Pets): `pets.<kind>` = {w,h,s,ox,oy,a,b} (standing/walking frame, drawn facing right, mirrored
   when walking left). `SQA` draws them in place of the pet's own look through the outermost `pP` wrapper and
   `LUX.drawPeerPet`; `SQA.capturePet` copies the game's current look to start from. The Imp is left out (tied to combat).

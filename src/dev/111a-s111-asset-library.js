@@ -11,6 +11,7 @@
 //   islands: {id:{n name, b description, lv, dir, w, h, t tiles (one hex digit per tile, packed), o objects (PXC index into
 //   ISL_OBJ per tile, packed), lm [{k,x,y,v,n,tx,loot}] buildings/props/signs/loot chests (ISL_LM), pier n|e|s|w, mob (monsters like an existing island, or none), max, mx, my (world map)}}.
 //   A custom island is a normal sailing region whose generator returns the painted map (with open water around it).
+//   gear: {itemKey:{dmg,rng,blk,mp,rq}} how a weapon or armour piece works (see 111a2-s114-gear-rules.js).
 //   worn: how a helmet / body / legs / weapon / shield looks on the character, one 96 x 112 layer per facing
 //   (f front, b back, s side; left is side mirrored), drawn over the character. h = hide the game's own look for that slot.
 var SQA=(()=>{
@@ -140,7 +141,7 @@ var SQA=(()=>{
  const _asI=applySave;applySave=function(S){try{if(S&&S.region&&S.region.id&&S.region.id!=='hollow'&&!(WORLD_REGIONS[S.region.id]&&RG_GEN[S.region.id])&&/^cu_/.test(S.region.id)){
    S.region={id:'hollow'};setTimeout(()=>{try{say('The island you were on has gone from the charts. You are safe back on Hollow Island.');msgT=8}catch(e){}},600)}}catch(e){}return _asI.apply(this,arguments)};
  // ---- apply a whole library (undoing whatever was applied before) ----
- let applied={stats:{}};
+ let applied={stats:{}};const HOOKS=[];// other sections (gear rules) apply their part of the library here
  function apply(lib){lib=lib||{};
   for(const t in applied.stats)for(const k in applied.stats[t])if(TABLES[t]&&TABLES[t].keys().includes(k))TABLES[t].set(k,TABLES[t].orig(k));
   for(const k in ICO)delete ICO[k];for(const k in WORN)delete WORN[k];ver++;wcache.clear();
@@ -150,6 +151,7 @@ var SQA=(()=>{
   const worn=lib.worn||{};for(const k in worn)if(EQ[k]&&WSLOTS.includes(EQ[k].slot)&&validWorn(worn[k]))WORN[k]=worn[k];
   const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){}}}
   applied={stats:st};
+  for(const f of HOOKS)try{f(lib)}catch(e){console.warn(e)}
   try{if(pnOpen)rPn()}catch(e){}}
  let live=null,preview=null;
  try{live=JSON.parse(localStorage.getItem(LS)||'null')}catch(e){}
@@ -162,6 +164,8 @@ var SQA=(()=>{
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,
   ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
   get live(){return live},
+  // a section that reads its own part of the library: called now with the current library and after every change
+  onApply(f){HOOKS.push(f);try{f(preview||live||{})}catch(e){console.warn(e)}},
   // the Dev Suite can show unpublished edits in the developer's own game
   preview(lib){preview=lib||null;apply(preview||live)},get previewing(){return!!preview},
   setLive(L){live=L;try{if(L)localStorage.setItem(LS,JSON.stringify(L));else localStorage.removeItem(LS)}catch(e){}if(!preview)apply(live)}}})();
