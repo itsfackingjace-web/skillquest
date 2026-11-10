@@ -4,7 +4,7 @@
 // and the trade happens at the price of the offer that was there first. What you get from a trade waits in your
 // collection box at the market. Cancel an offer any time to get back what hasn't traded. Up to 8 offers at once.
 // Data: market/offers/<id> {u,n,k,s:'b'|'s',p,q,f,t}, market/box/<uid>/<id> {k,n} (k 'gold' for coins), market/last/<k> {p,t}.
-{const K='#181018',WMK={offers:{},box:{},last:{},unsub:[],busy:false,tab:'mine',form:null,seenBox:new Set(),spot:null,clerk:null,filter:''};window.SQWMK=WMK;
+{const K='#181018',WMK={offers:{},box:{},last:{},unsub:[],busy:false,matching:new Set(),tab:'mine',form:null,seenBox:new Set(),spot:null,clerk:null,filter:''};window.SQWMK=WMK;
  const MAXO=8,me=()=>MP.user&&MP.user.uid,online=()=>MP.on&&!!me();
  // ---- where it stands: a market hall beside Hollow Village ----
  {const free=i=>{const x=i%N,y=(i/N)|0;return(tile[i]===2||tile[i]===1)&&!BS.has(i)&&!PROT.has(i)&&!BRIDGE.has(i)&&!STR.has(i)&&!(typeof inTownTiles==='function'&&inTownTiles(x,y))};
@@ -36,7 +36,7 @@
  const atMarket=()=>sp&&!SCENE&&Math.hypot(WMK.clerk.x-P.x,WMK.clerk.y-P.y)<70;
  // ---- data ----
  function wmStart(){if(WMK.unsub.length||!online())return;const d=FB.db;
-  WMK.unsub.push(d.onValue(d.ref(FB.D,'market/offers'),s=>{const v=s.val()||{};WMK.offers=v;for(const id in v){const o=v[id];if(o&&o.u===me()&&o.f>=o.q)d.remove(d.ref(FB.D,'market/offers/'+id)).catch(()=>{})}if(pnOpen&&shop==='wmkt'&&!WMK.busy&&!(typeof typing==='function'&&typing()))rPn()},e=>mpErr(e)));
+  WMK.unsub.push(d.onValue(d.ref(FB.D,'market/offers'),s=>{const v=s.val()||{};WMK.offers=v;for(const id in v){const o=v[id];if(o&&o.u===me()&&o.f>=o.q&&!WMK.matching.has(id))d.remove(d.ref(FB.D,'market/offers/'+id)).catch(()=>{})}rematchSoon();if(pnOpen&&shop==='wmkt'&&!WMK.busy&&!(typeof typing==='function'&&typing()))rPn()},e=>mpErr(e)));
   WMK.unsub.push(d.onValue(d.ref(FB.D,'market/box/'+me()),s=>{const v=s.val()||{};const fresh=Object.keys(v).filter(k=>!WMK.seenBox.has(k));WMK.box=v;for(const k of fresh)WMK.seenBox.add(k);
    if(fresh.length&&WMK.ready){say('World Market: one of your offers traded! Collect it at the World Market in Hollow Village.');msgT=5;try{sfx('coin')}catch(e){}}WMK.ready=true;if(pnOpen&&shop==='wmkt')rPn()},e=>mpErr(e)));
   WMK.unsub.push(d.onValue(d.ref(FB.D,'market/last'),s=>{WMK.last=s.val()||{}},e=>{}))}
@@ -52,15 +52,18 @@
   if(side==='s'){if((inv[k]|0)<q){say('You don\'t have '+q+' '+nm(k,q).toLowerCase()+'.');sfx('swish');return}inv[k]-=q}
   else{if(GLD<q*p){say('You need '+(q*p)+' gold for that offer.');sfx('swish');return}GLD-=q*p}
   saveNow();WMK.busy=true;const d=FB.db,id=me()+'_'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
-  try{await d.set(d.ref(FB.D,'market/offers/'+id),{u:me(),n:myName().slice(0,12),k,s:side,p,q,f:0,t:Date.now()});WMK.offers[id]={u:me(),k,s:side,p,q,f:0,t:Date.now()};
+  let up=false;try{await d.set(d.ref(FB.D,'market/offers/'+id),{u:me(),n:myName().slice(0,12),k,s:side,p,q,f:0,t:Date.now()});up=true;WMK.offers[id]={u:me(),k,s:side,p,q,f:0,t:Date.now()};
    say((side==='s'?'Selling ':'Buying ')+q+' '+nm(k,q).toLowerCase()+' at '+p+' gold each.');sfx('coin');await match(id)}
-  catch(e){mpErr(e);if(side==='s')inv[k]=(inv[k]|0)+q;else GLD+=q*p;say('The market couldn\'t take that offer. Try again.');saveNow()}
+  catch(e){mpErr(e);if(!up){if(side==='s')inv[k]=(inv[k]|0)+q;else GLD+=q*p;say('The market couldn\'t take that offer. Try again.')}else say('Your offer is up, but it couldn\'t trade just now. It will keep trying, or you can cancel it.');saveNow()}
   finally{WMK.busy=false;try{svg()}catch(e){}if(pnOpen&&shop==='wmkt'){WMK.tab='mine';WMK.form=null;rPn()}}}
- async function match(id){const d=FB.db,o=WMK.offers[id];if(!o)return;let traded=0,got=0,spent=0;
+ async function match(id){if(WMK.matching.has(id))return;WMK.matching.add(id);try{return await match1(id)}finally{WMK.matching.delete(id);const o=WMK.offers[id];
+   if(o&&o.u===me()&&o.f>=o.q)FB.db.remove(FB.db.ref(FB.D,'market/offers/'+id)).catch(()=>{})}}
+ async function match1(id){const d=FB.db,o=WMK.offers[id];if(!o)return;let traded=0,got=0,spent=0;
   const others=Object.entries(WMK.offers).filter(([oid,c])=>oid!==id&&c&&c.k===o.k&&c.s!==o.s&&c.u!==o.u&&c.f<c.q&&(o.s==='s'?c.p>=o.p:c.p<=o.p))
    .sort((a,b)=>o.s==='s'?(b[1].p-a[1].p||a[1].t-b[1].t):(a[1].p-b[1].p||a[1].t-b[1].t));
   for(const[cid,c]of others){// 1. reserve on my own offer
-   let want=0;const r1=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{want=0;if(!cur)return;want=Math.max(0,cur.q-cur.f);if(!want)return;cur.f+=want;return cur});if(!r1||!r1.committed||!want)break;
+   let want=0;const room=Math.max(0,c.q-c.f);if(!room)continue;
+   const r1=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{want=0;if(!cur)return;want=Math.min(room,Math.max(0,cur.q-cur.f));if(!want)return;cur.f+=want;return cur});if(!r1||!r1.committed||!want)break;
    // 2. take what the other offer still has
    let m=0,price=c.p,owner=c.u;const r2=await d.runTransaction(d.ref(FB.D,'market/offers/'+cid),cur=>{m=0;if(!cur||cur.f>=cur.q)return;m=Math.min(want,cur.q-cur.f);price=cur.p;owner=cur.u;cur.f+=m;return cur});
    if(!r2||!r2.committed)m=0;
@@ -72,6 +75,13 @@
    else{inv[o.k]=(inv[o.k]|0)+m;GLD+=(o.p-price)*m;spent+=m*price;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:'gold',n:m*price}).catch(e=>mpErr(e))}
    d.set(d.ref(FB.D,'market/last/'+o.k),{p:price,t:Date.now()}).catch(()=>{});saveNow()}
   if(traded){say(o.s==='s'?'Sold '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+got+' gold!':'Bought '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+spent+' gold!');msgT=5;try{sfx('quest')}catch(e){}}}
+ // two offers can end up crossed and waiting (one was put up before the other player's list had loaded, or both at once):
+ // whoever owns the newer one matches it a moment later
+ let rmT=0;function rematchSoon(){clearTimeout(rmT);rmT=setTimeout(rematch,1500)}
+ async function rematch(){if(!online()||WMK.busy)return;const all=Object.entries(WMK.offers);
+  for(const[id,o]of all){if(!o||o.u!==me()||o.f>=o.q||WMK.matching.has(id))continue;
+   const cross=all.some(([cid,c])=>cid!==id&&c&&c.k===o.k&&c.s!==o.s&&c.u!==o.u&&c.f<c.q&&(o.s==='s'?c.p>=o.p:c.p<=o.p)&&(c.t||0)<=(o.t||0));
+   if(!cross)continue;WMK.busy=true;try{await match(id)}catch(e){mpErr(e)}finally{WMK.busy=false}try{svg()}catch(e){}if(pnOpen&&shop==='wmkt'&&!typing())rPn()}}
  async function cancel(id){const d=FB.db;let last=null;const r=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{last=cur;if(!cur||cur.u!==me())return;return null}).catch(e=>{mpErr(e);return null});
   if(!r||!r.committed||!last)return;const left=Math.max(0,last.q-last.f);if(last.s==='s')inv[last.k]=(inv[last.k]|0)+left;else GLD+=left*last.p;delete WMK.offers[id];
   say('Offer cancelled.'+(left?' Back to you: '+(last.s==='s'?left+' '+nm(last.k,left).toLowerCase():left*last.p+' gold')+'.':''));sfx('coin');saveNow();try{svg()}catch(e){}}
