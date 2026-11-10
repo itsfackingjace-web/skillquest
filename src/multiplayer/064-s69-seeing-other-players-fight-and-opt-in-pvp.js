@@ -9,6 +9,9 @@
 // A PvP death drops your things in a grave like any death, so whoever wins can loot it.
 const PV={on:false,fight:0,fxSeq:0,seen:{},ghosts:[],unsubFx:null,unsubHit:null,lastBy:null,lastByAt:0,lastSafe:null,koSent:0};
 const PVLOCK=30000,PVSAFE=14;
+// hooks for sections outside this block: SQFXH[kind](player,event) for new event kinds, SQPEERFX drawers run with each
+// other player (in world space), SQPVSEND(event) to send one, and SQPVQUIET (true) to keep the next attack()s from being sent as swings
+const SQFXH=window.SQFXH=window.SQFXH||{},SQPEERFX=window.SQPEERFX=window.SQPEERFX||[];window.SQPVSEND=ev=>pvSend(ev);
 // where fighting is allowed
 function pvSafeAt(loc,x,y){if(!loc)return true;if(loc.startsWith('h:'))return true;
  if(loc.startsWith('in:')&&!(loc.startsWith('in:dun')||loc.startsWith('in:cave')||loc.startsWith('in:tomb')))return true;
@@ -22,14 +25,15 @@ const r2=v=>Math.round(v*100)/100;
 {const _c=castSpell;castSpell=function(first){const n0=SPELLS.length;const r=_c(first);const a=SPELLS.slice(n0).map(s=>[Math.round(s.x),Math.round(s.y),Math.round(s.vx),Math.round(s.vy),r2(s.life),s.el]);if(a.length)pvSend({k:'sp',a});return r}}
 {const _a=attack;attack=function(){const s0=swing,p0=PROJ.length,c0=SPELLS.length;_a();
   const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
-  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH){pvSend({k:'sw',d:[face[0],face[1]],w:(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}}}
+  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH&&!window.SQPVQUIET){pvSend({k:'sw',d:[face[0],face[1]],w:(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}}}
 // ---- what the others do ----
 function pvFx(u,v){if(!v||typeof v!=='object'||!MP.user||u===MP.user.uid)return;const s=+v.s||0;if(PV.seen[u]&&s<=PV.seen[u])return;PV.seen[u]=s;
  if(typeof v.t==='number'&&mpNow()-v.t>2500)return;if(v.loc!==mpLoc())return;const AR=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]):null);v.d=AR(v.d);v.a=AR(v.a);const r=MP.players.get(u);if(!r)return;const sc=curScene();
  if(v.k==='sw'&&Array.isArray(v.d)){r.swAt=performance.now();r.swD=[Math.sign(+v.d[0]||0),Math.sign(+v.d[1]||0)];r.swW=v.w==null?3:(+v.w|0);try{sfx('swish')}catch(e){}}
  else if((v.k==='ar'||v.k==='sp')&&Array.isArray(v.a))for(const q0 of v.a.slice(0,8)){const q=AR(q0);if(!q)continue;const[x,y,vx,vy,life,ex]=q;if(![x,y,vx,vy].every(isFinite))continue;
    const gp={k:v.k==='ar'?'arrow':'spell',x:+x,y:+y,vx:+vx,vy:+vy,t:0,life:Math.min(3,+life||1),sc,f:u,ghost:1};if(v.k==='ar')gp.iron=!!ex;else{if(!WSP[ex])continue;gp.el=ex}PV.ghosts.push(gp);
-   if(v.k==='ar'){r.bowAt=performance.now();try{sfx('bow')}catch(e){}}else{r.castAt=performance.now();r.castEl=gp.el;try{sfx(WSP[gp.el].sfx)}catch(e){}}}}
+   if(v.k==='ar'){r.bowAt=performance.now();try{sfx('bow')}catch(e){}}else{r.castAt=performance.now();r.castEl=gp.el;try{sfx(WSP[gp.el].sfx)}catch(e){}}}
+ else if(SQFXH[v.k])try{SQFXH[v.k](r,v)}catch(e){console.warn(e)}}
 // ghosts fly until a wall, a monster, or (in a fight) you
 function pvGhostStep(dt){const sc=curScene();for(const p of PV.ghosts){if(p.sc!==sc){p.dead=1;continue}p.t+=dt;const nx=p.x+p.vx*dt,ny=p.y+p.vy*dt;
   if(p.t>p.life||projBlocked(nx,ny+4)){p.dead=1;if(p.k==='spell')for(let k=0;k<5;k++)part(p.x,p.y,(Math.random()-.5)*80,(Math.random()-.7)*60,.3,WSP[p.el].col,60);continue}p.x=nx;p.y=ny;
@@ -41,7 +45,7 @@ function pvGhostStep(dt){const sc=curScene();for(const p of PV.ghosts){if(p.sc!=
 {const _d=drawCombatFx;drawCombatFx=function(tm){_d(tm);const sc=curScene();for(const p of PV.ghosts)if(p.sc===sc&&p.k==='arrow')drawProj(p)}}
 {const _d=drawSpells;drawSpells=function(tm){const add=PV.ghosts.filter(p=>p.k==='spell');const n0=SPELLS.length;for(const p of add)SPELLS.push(p);try{_d(tm)}finally{SPELLS.splice(n0,add.length)}}}
 // their sword swing (the same arc as yours), their bow and wand
-{const _dp=mpDrawPeer;mpDrawPeer=function(r,tm){_dp(r,tm);const now=performance.now(),x=Math.round(r.x),y=Math.round(r.y);
+{const _dp=mpDrawPeer;mpDrawPeer=function(r,tm){_dp(r,tm);for(const f of SQPEERFX)try{f(r,tm)}catch(e){}const now=performance.now(),x=Math.round(r.x),y=Math.round(r.y);
   if(r.swAt&&now-r.swAt<250&&window.SQSWING){SQSWING(x,y,r.swD[0],r.swD[1],(now-r.swAt)/250,r.swW,tm)}
   else if(r.swAt&&now-r.swAt<250){const[fx,fy]=r.swD,a=Math.atan2(fy,fx),pr=(now-r.swAt)/250,f=Math.min(2,Math.floor(pr*3)),an=a+(f-1)*1.15,hx=x+fx*5,hy=y-4+fy*5;
    for(let i=2;i<=12;i++)Rg(hx+Math.cos(an)*i-1,hy+Math.sin(an)*i-1,4,4,O);for(let i=2;i<=12;i++)Rg(hx+Math.cos(an)*i,hy+Math.sin(an)*i,2,2,i<=3?GD:SV);

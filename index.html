@@ -8167,6 +8167,9 @@ tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead||nearNpc())return
 // A PvP death drops your things in a grave like any death, so whoever wins can loot it.
 const PV={on:false,fight:0,fxSeq:0,seen:{},ghosts:[],unsubFx:null,unsubHit:null,lastBy:null,lastByAt:0,lastSafe:null,koSent:0};
 const PVLOCK=30000,PVSAFE=14;
+// hooks for sections outside this block: SQFXH[kind](player,event) for new event kinds, SQPEERFX drawers run with each
+// other player (in world space), SQPVSEND(event) to send one, and SQPVQUIET (true) to keep the next attack()s from being sent as swings
+const SQFXH=window.SQFXH=window.SQFXH||{},SQPEERFX=window.SQPEERFX=window.SQPEERFX||[];window.SQPVSEND=ev=>pvSend(ev);
 // where fighting is allowed
 function pvSafeAt(loc,x,y){if(!loc)return true;if(loc.startsWith('h:'))return true;
  if(loc.startsWith('in:')&&!(loc.startsWith('in:dun')||loc.startsWith('in:cave')||loc.startsWith('in:tomb')))return true;
@@ -8180,14 +8183,15 @@ const r2=v=>Math.round(v*100)/100;
 {const _c=castSpell;castSpell=function(first){const n0=SPELLS.length;const r=_c(first);const a=SPELLS.slice(n0).map(s=>[Math.round(s.x),Math.round(s.y),Math.round(s.vx),Math.round(s.vy),r2(s.life),s.el]);if(a.length)pvSend({k:'sp',a});return r}}
 {const _a=attack;attack=function(){const s0=swing,p0=PROJ.length,c0=SPELLS.length;_a();
   const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
-  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH){pvSend({k:'sw',d:[face[0],face[1]],w:(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}}}
+  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH&&!window.SQPVQUIET){pvSend({k:'sw',d:[face[0],face[1]],w:(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}}}
 // ---- what the others do ----
 function pvFx(u,v){if(!v||typeof v!=='object'||!MP.user||u===MP.user.uid)return;const s=+v.s||0;if(PV.seen[u]&&s<=PV.seen[u])return;PV.seen[u]=s;
  if(typeof v.t==='number'&&mpNow()-v.t>2500)return;if(v.loc!==mpLoc())return;const AR=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]):null);v.d=AR(v.d);v.a=AR(v.a);const r=MP.players.get(u);if(!r)return;const sc=curScene();
  if(v.k==='sw'&&Array.isArray(v.d)){r.swAt=performance.now();r.swD=[Math.sign(+v.d[0]||0),Math.sign(+v.d[1]||0)];r.swW=v.w==null?3:(+v.w|0);try{sfx('swish')}catch(e){}}
  else if((v.k==='ar'||v.k==='sp')&&Array.isArray(v.a))for(const q0 of v.a.slice(0,8)){const q=AR(q0);if(!q)continue;const[x,y,vx,vy,life,ex]=q;if(![x,y,vx,vy].every(isFinite))continue;
    const gp={k:v.k==='ar'?'arrow':'spell',x:+x,y:+y,vx:+vx,vy:+vy,t:0,life:Math.min(3,+life||1),sc,f:u,ghost:1};if(v.k==='ar')gp.iron=!!ex;else{if(!WSP[ex])continue;gp.el=ex}PV.ghosts.push(gp);
-   if(v.k==='ar'){r.bowAt=performance.now();try{sfx('bow')}catch(e){}}else{r.castAt=performance.now();r.castEl=gp.el;try{sfx(WSP[gp.el].sfx)}catch(e){}}}}
+   if(v.k==='ar'){r.bowAt=performance.now();try{sfx('bow')}catch(e){}}else{r.castAt=performance.now();r.castEl=gp.el;try{sfx(WSP[gp.el].sfx)}catch(e){}}}
+ else if(SQFXH[v.k])try{SQFXH[v.k](r,v)}catch(e){console.warn(e)}}
 // ghosts fly until a wall, a monster, or (in a fight) you
 function pvGhostStep(dt){const sc=curScene();for(const p of PV.ghosts){if(p.sc!==sc){p.dead=1;continue}p.t+=dt;const nx=p.x+p.vx*dt,ny=p.y+p.vy*dt;
   if(p.t>p.life||projBlocked(nx,ny+4)){p.dead=1;if(p.k==='spell')for(let k=0;k<5;k++)part(p.x,p.y,(Math.random()-.5)*80,(Math.random()-.7)*60,.3,WSP[p.el].col,60);continue}p.x=nx;p.y=ny;
@@ -8199,7 +8203,7 @@ function pvGhostStep(dt){const sc=curScene();for(const p of PV.ghosts){if(p.sc!=
 {const _d=drawCombatFx;drawCombatFx=function(tm){_d(tm);const sc=curScene();for(const p of PV.ghosts)if(p.sc===sc&&p.k==='arrow')drawProj(p)}}
 {const _d=drawSpells;drawSpells=function(tm){const add=PV.ghosts.filter(p=>p.k==='spell');const n0=SPELLS.length;for(const p of add)SPELLS.push(p);try{_d(tm)}finally{SPELLS.splice(n0,add.length)}}}
 // their sword swing (the same arc as yours), their bow and wand
-{const _dp=mpDrawPeer;mpDrawPeer=function(r,tm){_dp(r,tm);const now=performance.now(),x=Math.round(r.x),y=Math.round(r.y);
+{const _dp=mpDrawPeer;mpDrawPeer=function(r,tm){_dp(r,tm);for(const f of SQPEERFX)try{f(r,tm)}catch(e){}const now=performance.now(),x=Math.round(r.x),y=Math.round(r.y);
   if(r.swAt&&now-r.swAt<250&&window.SQSWING){SQSWING(x,y,r.swD[0],r.swD[1],(now-r.swAt)/250,r.swW,tm)}
   else if(r.swAt&&now-r.swAt<250){const[fx,fy]=r.swD,a=Math.atan2(fy,fx),pr=(now-r.swAt)/250,f=Math.min(2,Math.floor(pr*3)),an=a+(f-1)*1.15,hx=x+fx*5,hy=y-4+fy*5;
    for(let i=2;i<=12;i++)Rg(hx+Math.cos(an)*i-1,hy+Math.sin(an)*i-1,4,4,O);for(let i=2;i<=12;i++)Rg(hx+Math.cos(an)*i,hy+Math.sin(an)*i,2,2,i<=3?GD:SV);
@@ -9251,6 +9255,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.10-2',d:'Nov 10, 2026',t:'The sledgehammer smashes ore',n:['The Stone Sledgehammer now breaks any rock or ore vein in one hit (you still need the Mining level and pickaxe for it).','GROUND SLAM now also smashes every rock, ore vein, boulder and ore boulder around you that you could mine, and you get everything inside.','Other players now see your GROUND SLAM: the shockwave, the dust and the sound.']},
  {v:'2026.11.10-1',d:'Nov 10, 2026',t:'Livelier pets',n:['Pets with a new look can now have two standing frames they idle between and two walking frames they step between.']},
  {v:'2026.11.09-10',d:'Nov 9, 2026',t:'Redesigned gear shows for everyone',n:['Fixed: when a piece of gear had a new look, other players saw you without it (a redesigned helmet looked like no helmet at all). Everyone now sees the new look. If their game hasn\'t loaded it yet, they see the old look instead.','When a piece of armour gets a new look, your outfit dye still recolours it, keeping its light and dark shading.']},
  {v:'2026.11.09-9',d:'Nov 9, 2026',t:'Behind the scenes: gear art tools',n:['The developer\'s gear editor now shows the character exactly as the game draws it, so new looks for armour and weapons fit properly. Nothing changes in your game.']},
@@ -13626,6 +13631,54 @@ window.SQA=SQA;
   if(k==='+'||k==='='||k==='-'){const b=root.querySelector('[data-ia="'+(k==='-'?'zout':'zin')+'"]');if(b)b.click()}},true);
  const css=document.createElement('style');css.textContent='#dvs .dv-stack{position:relative;display:inline-block;line-height:0}#dvs #dvio{position:absolute;left:0;top:0;pointer-events:none}#dvs #dvi{touch-action:none;cursor:crosshair;image-rendering:pixelated}#dvs .dv-cvw.dv-pan #dvi{cursor:grab}';document.head.appendChild(css);
  SQSUITE.addTab('islands','Islands',{render,after,changes,dirty:()=>!!(I.ed&&I.ed.dirty),leave(){I.sel=null;I.ed=null;I.make=false}})})();
+// ---------------------------------------------------------------- 115. The Stone Sledgehammer smashes ore
+// - With the sledgehammer in your main hand, one hit breaks any small rock or ore (rock, iron, gold, mithril, adamant
+//   veins) as long as you could mine it (Mining level and pickaxe tier still count).
+// - GROUND SLAM also breaks every rock, ore vein, boulder and ore boulder in its radius that you could mine, with the
+//   usual loot and XP. It goes through the game's own mining (as if you hit each one), so perks, quests and
+//   multiplayer resource sync all work as normal.
+// - Other players see your GROUND SLAM: its shockwave ring, dust and sound, sent as an fx event (k:'sl').
+(()=>{const SLAM=window.SQSLAM;if(!SLAM||typeof castUlt!=='function'){console.warn('sledgehammer: slam not found');return}
+ const TIER=window.SQTIER||{},BOUL=window.SQBOUL||{};
+ const small=t=>!!t&&SKOF[t]===2&&!BOUL[t];
+ const sledge=()=>!!(window.SQSLEDGE&&SQSLEDGE());
+ // what's on a tile: {o} a world/island/dungeon object, or {cave} a cave boulder item
+ function objAt(tx,ty){const R=SCENE&&SCENE.room;
+  if(!SCENE){if(tx<0||ty<0||tx>=N||ty>=N)return null;const o=obj[ty*N+tx];return o?{o}:null}
+  if(!R)return null;
+  if(R.region){const it=rgObjAt(R,tx,ty);return it&&!it.gone&&it.o?{o:it.o}:null}
+  const it=(R.items||[]).find(q=>q.x===tx&&q.y===ty&&!q.gone&&(q.t==='_obj'||q.t==='boulder'));if(!it)return null;return it.t==='boulder'?{cave:it}:it.o?{o:it.o}:null}
+ const typeOf=t=>t.cave?(t.cave.ore||'boulder'):t.o.t;
+ const canMine=typ=>{if(BOUL[typ])return lvOf(2)>=BOUL[typ].lv;const T=TIER[typ];return lvOf(2)>=(T?T.lv:1)&&(TL.pick|0)>=(T?T.pick:1)};
+ const setHp=(t,v)=>{if(t.cave)t.cave.hp=v;else t.o.hp=v};
+ const getHp=t=>t.cave?t.cave.hp:t.o.hp;
+ // one hit breaks small ores
+ const _a=attack;attack=function(){if(!sledge()||dead||menuOpen||pnOpen||BUILD||swing>0)return _a.apply(this,arguments);
+  let t=null;try{const[tx,ty]=frontObjTile();t=objAt(tx,ty)}catch(e){}
+  if(!t||!t.o||!small(t.o.t))return _a.apply(this,arguments);
+  const h=t.o.hp;t.o.hp=1;try{return _a.apply(this,arguments)}finally{if(t.o.hp===1)t.o.hp=h}};
+ // while the slam breaks ores, the hits it makes for you aren't sent as sword swings
+ function smash(tx,ty){const t=objAt(tx,ty);if(!t)return false;const typ=typeOf(t);if(!small(typ)&&!BOUL[typ])return false;if(!canMine(typ))return false;
+  const K={x:P.x,y:P.y,f:face,sw:swing},h=getHp(t);setHp(t,1);
+  P.x=tx*16+8;P.y=ty*16+8-13;face=[0,1];swing=0;window.SQPVQUIET=true;
+  try{attack()}catch(e){console.warn(e)}finally{window.SQPVQUIET=false;P.x=K.x;P.y=K.y;face=K.f;swing=K.sw}
+  const now=objAt(tx,ty);if(now&&(now.o===t.o&&now.cave===t.cave)&&getHp(now)===1){setHp(now,h);return false}return true}
+ const _cu=castUlt;castUlt=function(){const t0=SLAM.t,c0=SLAM.cd;const out=_cu.apply(this,arguments);
+  if(!sledge()||!(SLAM.t>t0)||!(SLAM.cd>c0))return out;// the slam didn't happen
+  let n=0;try{const cx=P.x,cy=P.y+4,R=SLAM.R,tx0=Math.floor((cx-R)/16),tx1=Math.floor((cx+R)/16),ty0=Math.floor((cy-R)/16),ty1=Math.floor((cy+R)/16);
+   for(let ty=ty0;ty<=ty1;ty++)for(let tx=tx0;tx<=tx1;tx++){if(Math.hypot(tx*16+8-cx,ty*16+8-cy)>R)continue;if(smash(tx,ty))n++}}catch(e){console.warn(e)}
+  if(n){try{say('GROUND SLAM! '+n+' rock'+(n>1?'s':'')+' and ore'+(n>1?'s':'')+' smashed.')}catch(e){}}
+  try{if(window.SQPVSEND)SQPVSEND({k:'sl',x:Math.round(P.x),y:Math.round(P.y+4)})}catch(e){}
+  return out};
+ // ---- other players' slams ----
+ function slamFx(x,y){for(let k=0;k<40;k++){const an=k/40*6.283,sp=80+Math.random()*70;part(x,y,Math.cos(an)*sp,Math.sin(an)*sp*.6-20,.5+Math.random()*.2,k%3?'#9a8a78':'#c8b8a0',120,2)}
+  try{sfx('mine');setTimeout(()=>sfx('mine'),70)}catch(e){}}
+ (window.SQFXH=window.SQFXH||{}).sl=(r,v)=>{const x=+v.x,y=+v.y;if(!isFinite(x)||!isFinite(y))return;r.slam=r.lastSlam={x,y,at:performance.now()};slamFx(x,y)};
+ (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{const S=r&&r.slam;if(!S)return;const p=(performance.now()-S.at)/550;if(p>=1){r.slam=null;return}const rr=SLAM.R*Math.min(1,p*1.6);
+   g.strokeStyle='rgba(232,208,160,'+(.75*(1-p))+')';g.lineWidth=3;g.beginPath();g.ellipse(S.x,S.y,rr,rr*.6,0,0,6.283);g.stroke();
+   g.strokeStyle='rgba(90,70,50,'+(.5*(1-p))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(S.x,S.y,rr*.7,rr*.42,0,0,6.283);g.stroke();
+   for(let k=0;k<8;k++){const an=k/8*6.283+.3;Rg(S.x+Math.cos(an)*rr*.5,S.y+Math.sin(an)*rr*.3,2,1,'#3a2a1a')}});
+ window.SQSLAMORE={objAt,smash}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
