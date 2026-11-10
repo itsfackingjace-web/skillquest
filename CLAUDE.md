@@ -24,5 +24,8 @@
   saved as `islands.cu_<name>` in the asset library and registered by `SQA` as normal regions (painted tiles + objects,
   8 tiles of sea added around, pier placed by `rgDock`). They skip the random tree thinning/tiering, are open without a
   voyage, and a save on a removed island loads back on Hollow. Never re-register the island the player is standing on.
+  Islands can hold `lm` entries (buildings/props from `SQA.ISL_LM`, signs with `tx`, loot chests with `loot`; a chest's
+  index is remembered per save in `worldState[<island>].loot`). The builder's "Real look" bakes ground with `hdBakeR` and
+  copies each object/building kind once from the game's own drawing (`drawFurn` on the hidden main canvas).
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).

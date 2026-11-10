@@ -7,7 +7,7 @@
 //   sprite: w x h pixels drawn at s x scale; p = palette "#rrggbb,..." ; d = one char per pixel ('.' = clear,
 //   otherwise an index into p using PXC), or r = the same run-length packed ("A*12;" = 12 x "A").
 //   islands: {id:{n name, b description, lv, dir, w, h, t tiles (one hex digit per tile, packed), o objects (PXC index into
-//   ISL_OBJ per tile, packed), pier n|e|s|w, mob (monsters like an existing island, or none), max, mx, my (world map)}}.
+//   ISL_OBJ per tile, packed), lm [{k,x,y,v,n,tx,loot}] buildings/props/signs/loot chests (ISL_LM), pier n|e|s|w, mob (monsters like an existing island, or none), max, mx, my (world map)}}.
 //   A custom island is a normal sailing region whose generator returns the painted map (with open water around it).
 //   worn: how a helmet / body / legs / weapon / shield looks on the character, one 96 x 112 layer per facing
 //   (f front, b back, s side; left is side mirrored), drawn over the character. h = hide the game's own look for that slot.
@@ -64,6 +64,11 @@ var SQA=(()=>{
  // ---- custom islands: painted in the Dev Suite, sailed to like any other island ----
  const ISL_TILES=[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15],HEX='0123456789abcdef',ISL_PAD=8;
  const ISL_OBJ=['tree','tree:dark','tree:dead','pine','oak','willow','maple','yew','bush','nutbush','shroom','rock','rock:moss','ore','ore:crystal','cactus'];
+ // buildings and props the game already draws (kind: [name, w, h, variant])
+ const ISL_LM={sign:['Sign',1,1],chest:['Loot chest',1,1],tent:['Tent',2,1],firepit:['Campfire ring',1,1],crates:['Crates',1,1],cart:['Ore cart',1,1],bones:['Bones',2,1],
+  ruinwall:['Ruined wall',1,1],'ruinwall:1':['Tall ruined wall',1,1,1],pillar:['Dark pillar',1,1],'pillar:moss':['Mossy pillar',1,1,'moss'],shrine:['Shrine',1,1],bwall:['Black wall',1,1],
+  nmgrave:['Grave',1,1],nmshack:['Shack',4,2],'nmshack:1':['Shack (boarded)',4,2,1],nmsaloon:['Saloon',6,3],nmwater:['Water tower',2,2],nmmine:['Mine entrance',3,2],
+  wtower:['Watchtower',2,2],btower:['Black tower',2,2],lighthouse:['Lighthouse',2,2],spire:['Crystal spire',2,2],vault:['Vault',3,2],observatory:['Observatory',4,3],temple:['Temple',7,4]};
  const ISL_DIR={n:'north',ne:'north-east',e:'east',se:'south-east',s:'south',sw:'south-west',w:'west',nw:'north-west'};
  const ISL_POS={n:[180,22],ne:[318,52],e:[338,180],se:[318,318],s:[180,342],sw:[44,330],w:[22,180],nw:[44,48]};
  const clean=(v,n)=>String(v==null?'':v).replace(/[<>&"]/g,'').slice(0,n);
@@ -74,6 +79,11 @@ var SQA=(()=>{
    yield;rgDock(C,['n','e','s','w'].includes(I.pier)?I.pier:'e',1);yield;
    if(g.o)for(let y=0;y<I.h;y++)for(let x=0;x<I.w;x++){const ch=g.o[y*I.w+x];if(!ch||ch==='.')continue;const k=ISL_OBJ[PXC.indexOf(ch)];if(!k)continue;
     const i=(y+P)*W+x+P;if(C.keep[i]||!RG_WALK[T[i]])continue;const[t,v]=k.split(':');C.O[i]={t,hp:OHP[t]||3,v:v||undefined}}
+   // buildings, props, signs and loot chests (they clear what's under them; blocked ground under them becomes paving)
+   (Array.isArray(I.lm)?I.lm:Object.values(I.lm||{})).forEach((L,ci)=>{if(!L||!ISL_LM[L.k])return;const[,w,h,v]=ISL_LM[L.k],x=(L.x|0)+P,y=(L.y|0)+P;if(L.x<0||L.y<0||L.x+w>I.w||L.y+h>I.h)return;
+    if(C.pier.concat([C.spawn,C.shore||C.spawn]).some(([px,py])=>px>=x-1&&px<=x+w&&py>=y-1&&py<=y+h))return;// never on (or right beside) the pier
+    const ex={};if(v!==undefined)ex.v=v;if(L.k==='chest'){ex.use='loot';ex.ci=ci;ex.loot=L.loot||{};ex.name=clean(L.n,40)||'Chest'}else if(L.k==='sign'||L.tx){ex.use='look';ex.name=clean(L.n,40)||ISL_LM[L.k][0];ex.text=clean(L.tx,300)||ex.name}
+    rgLm(C,L.k.split(':')[0],x,y,w,h,ex)});
    return rgFinish(C)}}
  const hashId=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h};
  const ISL={};// id -> the island data currently registered
@@ -94,6 +104,13 @@ var SQA=(()=>{
   for(const id in ISL)if(!want[id])unregIsland(id);for(const id in want)if(JSON.stringify(ISL[id])!==JSON.stringify(want[id]))regIsland(id,want[id])}
  // painted islands keep exactly what was placed (generated islands thin out trees and upgrade tiers at random)
  const _rpI=rgPrepare;rgPrepare=function(id){const R=_rpI(id);if(R&&WORLD_REGIONS[id]&&WORLD_REGIONS[id].custom)R._t64=1;return R};
+ // loot chests: drawn with the game's chest; each player can take what's inside once (remembered in their save)
+ const _dfI=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='lm'&&it.k==='chest'){try{shd(it.x*16+8,it.y*16+15,14);hdPut(hdChestS(),it.x*16,it.y*16)}catch(e){}return}return _dfI(it,tm)};
+ const _ufI=useFurn;useFurn=function(it){if(it&&it.use==='loot'){const id=here(),W=WORLD_STATE[id]=WORLD_STATE[id]||{},got=W.loot=W.loot||[];
+   if(got.includes(it.ci)){say('The chest is empty. You already took what was inside.');msgT=4;sfx('swish');return}
+   const parts=[];for(const k in it.loot||{}){const n=Math.max(0,Math.min(100000,it.loot[k]|0));if(!n)continue;if(k==='gold'){GLD+=n;parts.push(n+' gold')}else if(INAME[k]){inv[k]=(inv[k]|0)+n;parts.push(n+' '+(n>1?(SN[k]||INAME[k]):INAME[k]).toLowerCase())}}
+   got.push(it.ci);say(parts.length?'You open the '+(it.name||'chest').toLowerCase()+': '+parts.join(', ')+'!':'The chest is empty.');msgT=6;try{sfx(parts.length?'coin':'swish');saveNow();svg()}catch(e){}return}
+  return _ufI(it)};
  // custom islands are open as soon as they're published (no voyage needed)
  const _ro=routeOpen;routeOpen=function(id){const D=WORLD_REGIONS[id];if(D&&D.custom)return!!RG_GEN[id];return _ro(id)};
  // a save on an island that no longer exists comes back to Hollow Island
@@ -119,7 +136,7 @@ var SQA=(()=>{
    if(!preview)apply(live)}catch(e){}}
  setTimeout(refresh,400);
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,
-  ISL_TILES,ISL_OBJ,ISL_DIR,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
+  ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
   get live(){return live},
   // the Dev Suite can show unpublished edits in the developer's own game
   preview(lib){preview=lib||null;apply(preview||live)},get previewing(){return!!preview},
