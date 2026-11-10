@@ -6,6 +6,8 @@
 //          stats:{items:{k:{n,pl,d,v}}, ib:{k:{n,hp}}, wb:{k:{n,hp,dmg,g0,g1}}}}
 //   sprite: w x h pixels drawn at s x scale; p = palette "#rrggbb,..." ; d = one char per pixel ('.' = clear,
 //   otherwise an index into p using PXC), or r = the same run-length packed ("A*12;" = 12 x "A").
+//   pets: {petKind:{w,h,s,ox,oy,a,b}}: how a pet looks following you, a standing frame (a) and a walking frame (b) drawn
+//   facing right (mirrored when it walks left); its pixels are drawn at s/2 world px each, top-left at (ox,oy) from the pet.
 //   islands: {id:{n name, b description, lv, dir, w, h, t tiles (one hex digit per tile, packed), o objects (PXC index into
 //   ISL_OBJ per tile, packed), lm [{k,x,y,v,n,tx,loot}] buildings/props/signs/loot chests (ISL_LM), pier n|e|s|w, mob (monsters like an existing island, or none), max, mx, my (world map)}}.
 //   A custom island is a normal sailing region whose generator returns the painted map (with open water around it).
@@ -61,6 +63,27 @@ var SQA=(()=>{
   if(wr.length)c.wr=wr;return c};
  const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){_cPw(ch,dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
   try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl)}catch(e){}};
+ // ---- pet looks: replace how a pet is drawn following its owner (yours and other players') ----
+ const PETL={},pcache=new Map();
+ const validPet=L=>L&&L.w>0&&L.h>0&&L.w<=96&&L.h<=96&&L.s>=1&&L.s<=8&&isFinite(L.ox)&&isFinite(L.oy)&&['a','b'].some(f=>L[f]&&L[f].w===L.w&&L[f].h===L.h&&valid(L[f]));
+ const petKinds=()=>[...new Set(INVK)].filter(k=>EQ[k]&&EQ[k].slot==='pet'&&EQ[k].pet&&EQ[k].pet!=='imp');
+ function petCan(k,f){const L=PETL[k];if(!L)return null;const sp=L[f]&&valid(L[f])?L[f]:L.a&&valid(L.a)?L.a:L.b;const key=k+'@'+ver+f;let c=pcache.get(key);if(!c){c=render(sp);pcache.set(key,c)}return c}
+ function drawPetLook(k,s,lib){const L=lib||PETL[k];if(!L||!s)return false;const mv=s.mv>0,f=mv&&Math.floor(s.t)%2?'b':'a';const c=lib?render(L[f]&&valid(L[f])?L[f]:L.a):petCan(k,f);if(!c)return false;
+  const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2;try{shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;
+  if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,x+L.ox,y+L.oy,w,h);g.restore();return true}
+ {const _pPL=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!PETL[k])return _pPL(tm);
+   if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on)&&typeof petFollow==='function')drawPetLook(k,petFollow('me',P.x,P.y,face));
+   C.pet=null;try{return _pPL(tm)}finally{C.pet=k}}}
+ if(window.LUX){const _dpp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&PETL[r.pet]&&typeof petFollow==='function'){if(r.sl)return;drawPetLook(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]));return}return _dpp&&_dpp(r,tm)}}
+ // the game's own look of a pet (for the editor to start from): drawn by the game onto its hidden screen canvas at 2x
+ function capturePet(k){const cvs=g.canvas,OX=200,OY=Math.min(300,cvs.height-60),keep=PETL[k],id='__cap_'+k;delete PETL[k];
+  try{if(!window.LUX||typeof petFollow!=='function')return null;const s=petFollow(id,0,0,[1,0]);s.fl=false;s.mv=0;
+   g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cvs.width,cvs.height);g.setTransform(2,0,0,2,OX,OY);LUX.drawPeerPet({pet:k,x:0,y:0,d:2,fl:false,uid:id},0);g.restore();
+   const W=Math.min(cvs.width,OX+140),H=Math.min(cvs.height,OY+100),d=g.getImageData(0,0,W,H).data;let x0=W,y0=H,x1=-1,y1=-1;
+   for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>=128){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+   if(x1<x0)return null;x0-=x0%2?1:0;y0-=y0%2?1:0;const c=document.createElement('canvas');c.width=x1-x0+1+((x1-x0+1)%2);c.height=y1-y0+1+((y1-y0+1)%2);c.getContext('2d').drawImage(cvs,x0,y0,c.width,c.height,0,0,c.width,c.height);
+   return{url:c.toDataURL(),ox:(x0-OX)/2-s.x,oy:(y0-OY)/2-s.y}}
+  catch(e){console.warn(e);return null}finally{if(keep)PETL[k]=keep}}
  // ---- custom islands: painted in the Dev Suite, sailed to like any other island ----
  const ISL_TILES=[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15],HEX='0123456789abcdef',ISL_PAD=8;
  const ISL_OBJ=['tree','tree:dark','tree:dead','pine','oak','willow','maple','yew','bush','nutbush','shroom','rock','rock:moss','ore','ore:crystal','cactus'];
@@ -123,6 +146,7 @@ var SQA=(()=>{
   for(const k in ICO)delete ICO[k];for(const k in WORN)delete WORN[k];ver++;wcache.clear();
   const icons=lib.icons||{};for(const k in icons)if(valid(icons[k]))ICO[k]=icons[k];
   try{applyIslands(lib.islands)}catch(e){console.warn('islands:',e)}
+  for(const k in PETL)delete PETL[k];pcache.clear();const pets=lib.pets||{};for(const k in pets)if(k!=='imp'&&validPet(pets[k]))PETL[k]=pets[k];
   const worn=lib.worn||{};for(const k in worn)if(EQ[k]&&WSLOTS.includes(EQ[k].slot)&&validWorn(worn[k]))WORN[k]=worn[k];
   const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){}}}
   applied={stats:st};
@@ -136,7 +160,7 @@ var SQA=(()=>{
    if(!preview)apply(live)}catch(e){}}
  setTimeout(refresh,400);
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,
-  ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
+  ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
   get live(){return live},
   // the Dev Suite can show unpublished edits in the developer's own game
   preview(lib){preview=lib||null;apply(preview||live)},get previewing(){return!!preview},
