@@ -407,7 +407,7 @@ const locKey=l=>String(l).replace(/[.#$\[\]\/:]/g,'_');
 // sleeping: the night is shared, so the message changes
 {const _say64=say;say=function(s){if(MP.on&&typeof s==='string'&&/Good morning!/.test(s))s=s.replace(/ ?Good morning!/,'')+' Nights pass for everyone together online, but you feel rested.';return _say64(s)}}
 // ---- shared resources ----
-const RES={h:{},r:{},rloc:null,unsubH:null,unsubR:null,stash:{}};
+const RES={h:{},r:{},rloc:null,unsubH:null,unsubR:null,stash:{}};window.SQRES=RES;
 function resSubHollow(){if(RES.unsubH)return;const d=FB.db,ref=d.ref(FB.D,'world/res/hollow2');
  const add=s=>{const i=+s.key,v=s.val();if(!v||!(i>=0&&i<N*N))return;RES.h[i]=v;if(obj[i]&&obj[i].t===v.t)obj[i]=null;for(let j=REM.length-1;j>=0;j--)if(REM[j].i===i)REM.splice(j,1)};
  const u1=d.onChildAdded(ref,add),u2=d.onChildChanged(ref,add),u3=d.onChildRemoved(ref,s=>{const i=+s.key,v=s.val()||RES.h[i];delete RES.h[i];if(v&&!obj[i]&&OHP[v.t])obj[i]={t:v.t,hp:OHP[v.t]}});

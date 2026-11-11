@@ -152,19 +152,19 @@
   return h+'</div></div>'}
  // ---- prop looks: trees, rocks, ores, plants, buildings and island props as they stand in the world ----
  const PR=()=>window.SQPROPS,key=k=>k.replace(/[.#$\[\]\/]/g,'_');// database keys can't hold . # $ [ ] /
- const gameName=k=>{const q=PR()&&PR().list().find(x=>x.k===k);return q?q.n:k},propName=k=>{const n=S.draft&&S.draft.pnames&&S.draft.pnames[k];return n||gameName(k)};
- const prState=k=>{const d=S.draft&&S.draft.props&&S.draft.props[k],l=S.live&&S.live.props&&S.live.props[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
+ const gameName=k=>{const nt=/@n$/.test(k),q=PR()&&PR().list().find(x=>x.k===k.replace(/@n$/,''));return(q?q.n:k)+(nt?' (night)':'')},propName=k=>{if(/@n$/.test(k))return propName(k.slice(0,-2))+' (night)';const n=S.draft&&S.draft.pnames&&S.draft.pnames[k];return n||gameName(k)};
+ const prState=k=>{if(!/@n$/.test(k)){const a=prState(k+'@n'),b=prState1(k);return a==='draft'||b==='draft'?'draft':a||b}return prState1(k)},prState1=k=>{const d=S.draft&&S.draft.props&&S.draft.props[k],l=S.live&&S.live.props&&S.live.props[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
  const TPC=new Map();const pThumb=k=>{const d=S.draft&&S.draft.props&&S.draft.props[k];if(d&&PR().valid(d)){const j=JSON.stringify(d).length+k;if(!TPC.has(j))TPC.set(j,A.render(d).toDataURL());return TPC.get(j)}return PR().thumb(k)};
- async function openProp(k,fresh){S.sel=k;S.ed=null;draw();const L=!fresh&&S.draft.props[k];let ed;
+ async function openProp(k,fresh,night){S.sel=k;S.ed=null;draw();const pk=night?k+'@n':k;let L=!fresh&&S.draft.props[pk],ed;if(night&&!L&&!fresh)L=S.draft.props[k];
   try{if(L&&PR().valid(L)){const pal=[],N=L.w*L.h,n=PR().frames(L),layers=[];
     for(let f=0;f<n;f++){const sp=PR().frSp(L,f),map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)}),dd=A.pix(sp),px=new Uint8Array(N).fill(255);
      for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')px[i]=map[PXC.indexOf(ch)]}layers.push(px)}
     ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers,ms:L.ms|0||250,sy:!!L.sy}}
-   else{const cap=PR().capture(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px]}}
-    else ed={w:32,h:32,s:2,ox:-8,oy:-16,pal:[],layers:[new Uint8Array(1024).fill(255)]}}}
+   else{const cap=PR().capture(k,night)||(k==='f:door:o'?PR().capture('f:door:c',night):null);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px]}}
+    else ed=/^x:/.test(k)?{w:32,h:32,s:1,ox:0,oy:0,pal:[],layers:[new Uint8Array(1024).fill(255)]}:{w:32,h:32,s:2,ox:-8,oy:-16,pal:[],layers:[new Uint8Array(1024).fill(255)]}}}
   catch(e){console.warn(e);toast('Could not read that prop.');return}
   if(S.sel!==k)return;if(!ed.pal.length)ed.pal.push('#181018','#7a5a3a','#c89858','#f8e8c8');
-  S.ed={ms:250,sy:false,...ed,kind:'prop',k,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:ed.layers.map(()=>null),rcd:ed.layers.map(()=>1)};draw()}
+  S.ed={ms:250,sy:false,...ed,kind:'prop',k:pk,base:k,night:!!night,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:ed.layers.map(()=>null),rcd:ed.layers.map(()=>1)};draw()}
  // frames: add (a copy of the one you're on) or delete one; undo history starts again, since it remembers frames by number
  function propFrames(add){const ed=S.ed;if(add){if(ed.layers.length>=12){toast('Up to 12 frames.');return}ed.layers.splice(ed.dir+1,0,ed.layers[ed.dir].slice());ed.dir++}
   else{if(ed.layers.length<2)return;ed.layers.splice(ed.dir,1);ed.dir=Math.min(ed.dir,ed.layers.length-1)}
@@ -173,7 +173,10 @@
   if(ed.layers.length>1){o.fr=ed.layers.slice(1).map(L=>{const f=toSpPx(ed,L);return{p:f.p,r:A.pack(f.d)}});o.ms=Math.max(60,Math.min(5000,ed.ms|0||250));if(ed.sy)o.sy=1}return o}
  async function saveProp(){const ed=S.ed;if(!ed)return;const o=propOut(ed);if(o)S.draft.props[ed.k]=o;else delete S.draft.props[ed.k];
   try{await dset('draft/props/'+key(ed.k),o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this keeps the game\'s own look.')}catch(e){fail(e)}
-  if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.k),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.k)}}
+  if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.base+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.base),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.base)}}
+ const HINT=k=>/^f:.*:[ewns]$/.test(k)?'This is the part drawn towards a neighbouring piece on that side, on top of the post or block (draw only what joins them; the editor starts from what the game adds there). Draw the post too, or the game keeps drawing its own fence.':
+  /^f:/.test(k)?'A fence or wall piece is built from this post or block plus a part for each side that has another piece next to it.':/^x:/.test(k)?'What players see on the spot while it grows back (the game normally shows nothing). The picture starts one tile big at the tile it stood on.':
+  /^v:sail_/.test(k)?'Your boat is drawn in two parts so you sit in it: the part behind you is drawn first, then you, then the part in front of you. Sailing west uses the east picture, mirrored.':/^c:/.test(k)?'A farm plot is drawn as soil, then the crop on top.':'';
  function props(){if(!PR())return'<p class="dv-mut">Props aren\'t available in this version of the game.</p>';const q=S.q.toLowerCase(),all=PR().list(),keys=all.filter(x=>(!q||propName(x.k).toLowerCase().includes(q)||x.n.toLowerCase().includes(q)||x.k.includes(q)||x.grp.toLowerCase().includes(q))&&(!S.only||prState(x.k)));
   let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+all.length+' props" value="'+E(S.q)+'" data-in="q">'+
    '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only props with a new look</label><div class="dv-grid">';let grp='';
@@ -181,9 +184,11 @@
    h+='<button class="dv-it'+(S.sel===x.k?' dv-on':'')+'" data-k="'+E(x.k)+'">'+(s2?'<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>':'')+'<img alt="" src="'+pThumb(x.k)+'"><span>'+E(propName(x.k))+'</span></button>'}
   if(!keys.length)h+='<p class="dv-mut">Nothing matches.</p>';
   h+='</div></div><div class="dv-ed">';
-  if(!S.sel)h+='<div class="dv-card"><b>Pick a prop.</b><p class="dv-mut">Change how things look in the world: trees, rocks, ores, mushrooms, cacti and bushes, the town buildings, players\' houses, village details (street lamps, wells, signposts, bridges, tall grass, the shipwreck and the hermit\'s hut) and the buildings and props on the islands. It starts from the game\'s own look. Add frames to animate it. A new look replaces every one of that kind for every player (trees that came in a few shapes all take the new one). How they work doesn\'t change: a tree is still chopped from its tile, and a building keeps its doors and walls where they were.</p></div>';
+  if(!S.sel)h+='<div class="dv-card"><b>Pick a prop.</b><p class="dv-mut">Change how things look in the world: trees, rocks, ores, mushrooms, cacti and bushes, the town buildings, players\' houses, village details, boats, everything players build (stations, furniture, fences and walls, campfires), farm soil and crops, things inside shops, homes, dungeons and caves, the island villages, the buildings and props on the islands, and the spot a tree, rock or plant leaves behind while it grows back. It starts from the game\'s own look. Add frames to animate it, and a night look to change it after dark. A new look replaces every one of that kind for every player (trees that came in a few shapes all take the new one). How they work doesn\'t change: a tree is still chopped from its tile, and a building keeps its doors and walls where they were.</p></div>';
   else if(!S.ed)h+='<p class="dv-mut">Opening...</p>';
-  else{const ed=S.ed;h+='<div class="dv-row"><button class="dv-b dv-back" data-a="back">‹ All props</button><input type="text" data-in="pname" maxlength="40" value="'+E(propName(ed.k))+'" placeholder="'+E(gameName(ed.k))+'" title="Its name here in the Dev Suite" style="max-width:240px;font-weight:600;font-size:15px"><span class="dv-mut">'+ed.w+' × '+ed.h+' pixels · the name is only used here in the Dev Suite</span></div>'+
+  else{const ed=S.ed;h+='<div class="dv-row"><button class="dv-b dv-back" data-a="back">‹ All props</button><input type="text" data-in="pname" maxlength="40" value="'+E(propName(ed.base))+'" placeholder="'+E(gameName(ed.base))+'" title="Its name here in the Dev Suite" style="max-width:240px;font-weight:600;font-size:15px"><span class="dv-mut">'+ed.w+' × '+ed.h+' pixels · the name is only used here in the Dev Suite</span></div>'+
+   '<div class="dv-row"><button class="dv-b'+(ed.night?'':' dv-tl dv-on')+'" data-a="pday">☀ Day look</button><button class="dv-b'+(ed.night?' dv-tl dv-on':'')+'" data-a="pnight">☾ Night look'+(S.draft.props[ed.base+'@n']?' •':'')+'</button><span class="dv-mut">'+(ed.night?'Used after dark, in place of the day look. It starts as a copy of the day look (or the game\'s look at night).':'A night look is optional: draw one to change it after dark (lit windows, a glowing lamp).')+'</span></div>'+
+   (HINT(ed.base)?'<p class="dv-mut" style="margin:0">'+HINT(ed.base)+'</p>':'')+
    '<div class="dv-row">'+ed.layers.map((L,d)=>'<button class="dv-b'+(ed.dir===d?' dv-tl dv-on':'')+'" data-dir="'+d+'">Frame '+(d+1)+'</button>').join('')+
     '<button class="dv-b" data-a="fradd">+ Add frame</button>'+(ed.layers.length>1?'<button class="dv-b dv-bad" data-a="frdel">Delete this frame</button>':'')+'</div>'+
    (ed.layers.length>1?'<div class="dv-row"><span class="dv-mut">Each frame shows for</span><input type="number" data-in="pms" min="60" max="5000" step="10" value="'+ed.ms+'" style="width:90px"><span class="dv-mut">ms ('+(1000/ed.ms).toFixed(1)+' frames a second)</span>'+
@@ -198,7 +203,7 @@
  // before / after, on grass, with a player for size (everything at the game's 2x detail, scaled to fit)
  const PRV={};function propPreview(c,ed){for(let d=0;d<ed.layers.length;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
   const nf=ed.layers.length,fi=nf>1?Math.floor(performance.now()/Math.max(60,ed.ms||250))%nf:0;
-  if(!PRV[ed.k]){PRV[ed.k]='…';const cap=PR().capture(ed.k);if(cap){const im=new Image();im.onload=()=>{PRV[ed.k]={im,ox:cap.ox,oy:cap.oy}};im.src=cap.url}else PRV[ed.k]=null}
+  if(!PRV[ed.k]){PRV[ed.k]='…';const cap=PR().capture(ed.base,ed.night);if(cap){const im=new Image();im.onload=()=>{PRV[ed.k]={im,ox:cap.ox,oy:cap.oy}};im.src=cap.url}else PRV[ed.k]=null}
   const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<60;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
   const O=PRV[ed.k]&&PRV[ed.k].im?PRV[ed.k]:null,L=ed.rc[fi]||ed.rc[0],me=charCan(0,0,false);
   // fit: world px -> canvas px
@@ -500,12 +505,13 @@
   if(a==='back'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;S.sel=null;S.ed=null;draw();return}
   if(a==='undo')return undo(false);if(a==='redo')return undo(true);
   if(a==='save')return S.ed&&S.ed.kind==='worn'?saveWorn():S.ed&&S.ed.kind==='pet'?savePet():S.ed&&S.ed.kind==='prop'?saveProp():saveSprite();
-  if(a==='revert'){S.ed.dirty=false;if(S.ed.kind==='worn')openWorn(S.sel);else if(S.ed.kind==='pet')openPet(S.sel);else if(S.ed.kind==='prop')openProp(S.sel);else openSprite(S.sel);return}
+  if(a==='revert'){S.ed.dirty=false;if(S.ed.kind==='worn')openWorn(S.sel);else if(S.ed.kind==='pet')openPet(S.sel);else if(S.ed.kind==='prop')openProp(S.sel,false,S.ed.night);else openSprite(S.sel);return}
   if(a==='pcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openPet(S.sel,true);return}
   if(a==='pflip'){const ed=S.ed;snapEd();const L=ed.layers[ed.dir];for(let y=0;y<ed.h;y++){for(let x=0;x<ed.w>>1;x++){const i=y*ed.w+x,j=y*ed.w+ed.w-1-x,t2=L[i];L[i]=L[j];L[j]=t2}}paint();return}
   if(a==='fradd'&&S.ed&&S.ed.kind==='prop'){propFrames(true);return}if(a==='frdel'&&S.ed&&S.ed.kind==='prop'){propFrames(false);return}
   if(a==='psy'&&S.ed){S.ed.sy=t.checked;S.ed.dirty=true;draw();return}
-  if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true);return}
+  if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true,S.ed&&S.ed.night);return}
+  if((a==='pday'||a==='pnight')&&S.ed&&S.ed.kind==='prop'){const nt=a==='pnight';if(nt===S.ed.night)return;if(S.ed.dirty&&!confirmLeave())return;S.ed.dirty=false;openProp(S.sel,false,nt);return}
   if(a==='presize'){petResize(+(root.querySelector('[data-in="pw"]')||{}).value,+(root.querySelector('[data-in="ph"]')||{}).value);return}
   if(a==='under'){S.ed.under=t.checked;paint();return}
   if(a==='hide'){S.ed.hide=t.checked;S.ed.dirty=true;paint();return}
@@ -514,7 +520,7 @@
   if(a==='clr'){snapEd();S.ed.px.fill(255);paint();draw();return}
   if(a==='dytog'&&S.ed&&S.ed.kind==='worn'){const ed=S.ed;ed.dyi=ed.dyi||new Set();if(ed.dyi.has(ed.col))ed.dyi.delete(ed.col);else ed.dyi.add(ed.col);ed.dirty=true;draw();return}
   if(a==='wcap'&&S.ed&&S.ed.kind==='worn'){const ed=S.ed;return arm('wcap',()=>startFromGame(ed,false))}
-  if(a==='orig'&&S.ed&&S.ed.kind==='prop'){const k=S.sel;delete S.draft.props[k];try{await dset('draft/props/'+key(k),null);toast('Back to the game\'s own look (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.ed=null;openProp(k);return}
+  if(a==='orig'&&S.ed&&S.ed.kind==='prop'){const k=S.ed.k,nt=S.ed.night;delete S.draft.props[k];try{await dset('draft/props/'+key(k),null);toast(nt?'Night look removed (in your draft).':'Back to the game\'s own look (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.ed=null;openProp(S.sel,false,nt);return}
   if(a==='orig'&&S.ed&&S.ed.kind==='pet'){const k=S.ed.k,item=S.sel;delete S.draft.pets[k];try{await dset('draft/pets/'+k,null);toast('Back to the game\'s own look (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.ed=null;openPet(item);return}
   if(a==='orig'&&S.ed&&S.ed.kind==='worn'){const k=S.sel;delete S.draft.worn[k];try{await dset('draft/worn/'+k,null);toast('Back to the game\'s own look (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);openWorn(k);return}
   if(a==='orig'){const k=S.sel;delete S.draft.icons[k];try{await dset('draft/icons/'+k,null);toast('Back to the game\'s original sprite (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.ed=null;openSprite(k);return}
@@ -533,7 +539,7 @@
  root.addEventListener('change',async e=>{const t=e.target;
   if(t.dataset.in==='addcol'&&S.ed){snapEd();S.ed.pal.push(t.value);S.ed.col=S.ed.pal.length-1;S.ed.tool='pen';drawPal();drawTools();paint();return}
   if(t.dataset.in==='recol'){t._snap=0;drawPal();return}
-  if(t.dataset.in==='pname'&&S.ed&&S.ed.kind==='prop'){const k=S.ed.k,v=t.value.trim().slice(0,40),nv=v&&v!==gameName(k)?v:null;if(nv)S.draft.pnames[k]=nv;else delete S.draft.pnames[k];
+  if(t.dataset.in==='pname'&&S.ed&&S.ed.kind==='prop'){const k=S.ed.base,v=t.value.trim().slice(0,40),nv=v&&v!==gameName(k)?v:null;if(nv)S.draft.pnames[k]=nv;else delete S.draft.pnames[k];
    try{await dset('draft/pnames/'+key(k),nv);toast(nv?'Renamed.':'Back to its own name.')}catch(e2){fail(e2)}const sp=root.querySelector('.dv-it[data-k="'+k+'"] span');if(sp)sp.textContent=propName(k);return}
   if(t.dataset.in==='pms'&&S.ed){S.ed.ms=Math.max(60,Math.min(5000,t.value|0||250));S.ed.dirty=true;draw();return}
   if(t.dataset.in==='pvd'&&S.ed){S.ed.pvd=+t.value|0;draw();return}

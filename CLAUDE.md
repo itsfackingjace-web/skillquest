@@ -92,15 +92,17 @@
   `rgUpd` for custom islands (also the whole-island `mob` setting, which used to spawn nothing), entrance art, custom tiles
   drawn over `ROOMBG`. Monster keys/health come from `RG_FAUNA` (`SQISLIFE.MOBS`).
 - **Prop looks** (Dev Suite > Props; game side `dev/111d-s120-prop-looks.js`, `window.SQPROPS`): `props.<key>` = one
-  picture {w,h,s,ox,oy,p,r} (s/2 world px per pixel, top-left at (ox,oy) from the anchor). Keys: `o:<type>[:<variant>]`
-  world objects (anchor = tile top-left; drawn through the outermost `OBJHD` on Hollow and `drawFurn` on islands, with a
-  shadow), `b:<k>` Hollow town buildings from `BLD`, `b:house<w>` players' houses, `b:castle` (anchor = footprint top-left,
-  outermost `drBld`), `v:<kind>` village details (lamp, well, sign, bridgeh/bridgev, grass, wreck, hut; through the outermost `drawLamp`,
-  `drawWell`, `drawSign`, `drawBridge`, `TGDRAW`, `drawWreck`, `drawHut`), `l:<kind>` island props from `SQA.ISL_LM`.
-  Animation: frame 1 is p/r, more frames in `fr` [{p,r}] (up to 12), `ms` per frame, `sy` = all in step (otherwise each
-  starts at its own point from its position). Fences aren't here: they join to their neighbours. `SQPROPS.capture(key)` draws the game's own look at 2x
-  (with looks switched off) for the editor to start from. The editor is the pet editor with one layer (`kind:'prop'`,
-  `LAY()` in 111b); database keys go through `key()` (no . # $ [ ] /). Names typed in the editor are
-  Dev-Suite-only labels in `pnames.<key>` (`propName()`; the game's own name is `gameName()`).
+  picture {w,h,s,ox,oy,p,r} (s/2 world px per pixel, top-left at (ox,oy) from the anchor), more frames in `fr` [{p,r}]
+  (up to 12, `ms` per frame, `sy` = all in step, otherwise each starts at its own point), `<key>@n` = its night look
+  (used when `dark()>.15`). The full key list and anchors are in the file's header comment: `o:` world objects, `x:` the
+  spot they leave while regrowing (Hollow `REM` + `window.SQRES` from 061, islands `R.gone` + `SQRES.r`), `b:` buildings,
+  `v:` village details and boats (sail back/front layers), `p:` things players build (outermost `drawStation`,
+  `drawPiece`, `drawStruct`, `pF`), `f:<t>:<c|o|e|w|n|s>` fence/wall/gate pieces composed per neighbour (outermost
+  `drawFence`), `c:` soil and crops (outermost `drawPlot`), `r:` room/dungeon/island-village items (outermost `drawFurn`,
+  catalogue built from `ROOMS` and one `buildFloor` per dungeon kind), `l:` island props. Each hook draws the look and
+  skips the game's own drawing only when a look exists. `SQPROPS.capture(key,night)` draws the game's own look at 2x
+  (fence side parts: what the game adds when a neighbour is there). The editor is the pet editor with one layer
+  (`kind:'prop'`, `LAY()` in 111b; `ed.k` = the key being edited, `ed.base` without `@n`); database keys go through
+  `key()`. Names typed in the editor are Dev-Suite-only labels in `pnames.<key>`.
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).
