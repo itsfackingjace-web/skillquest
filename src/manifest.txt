@@ -120,6 +120,7 @@ world/113-s115-sledgehammer-smashes-ore.js
 skills/114-s116-skilling-looks.js
 ui/115-s117-getting-started.js
 skills/116-s118-pet-abilities.js
+world/117-s119-island-life.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

@@ -10,7 +10,9 @@
 //   walking frames (b, d; older looks have only a and b, and walk a/b), drawn
 //   facing right (mirrored when it walks left); its pixels are drawn at s/2 world px each, top-left at (ox,oy) from the pet.
 //   islands: {id:{n name, b description, lv, dir, w, h, t tiles (one hex digit per tile, packed), o objects (PXC index into
-//   ISL_OBJ per tile, packed), lm [{k,x,y,v,n,tx,loot}] buildings/props/signs/loot chests (ISL_LM), pier n|e|s|w, mob (monsters like an existing island, or none), max, mx, my (world map)}}.
+//   ISL_OBJ per tile, packed), lm [{k,x,y,v,n,tx,loot}] buildings/props/signs/loot chests (ISL_LM), pier n|e|s|w, mob (monsters like an existing island, or none), max, mx, my (world map),
+//   npc [{x,y,n,lk:{sk,hs,hc,sh,pn,ht,hcol,so},s:[lines]}] people, cv [{x,y,n,st,f,m:[monster keys]}] dungeon entrances,
+//   zn [{x,y,w,h,n,m:[monster keys],hp}] monster zones, ct [{n,p:png data url 32x32}] custom ground tiles painted as c (packed, '.' or index)}}.
 //   A custom island is a normal sailing region whose generator returns the painted map (with open water around it).
 //   gear: {itemKey:{dmg,rng,blk,mp,rq,fx}} how a weapon or armour piece works; newgear: {eq_cu_name:{n,b,v,d,sm}} new gear items (see 111a2-s114-gear-rules.js).
 //   worn: how a helmet / body / legs / weapon / shield looks on the character, one 96 x 112 layer per facing
@@ -119,7 +121,31 @@ var SQA=(()=>{
     if(C.pier.concat([C.spawn,C.shore||C.spawn]).some(([px,py])=>px>=x-1&&px<=x+w&&py>=y-1&&py<=y+h))return;// never on (or right beside) the pier
     const ex={};if(v!==undefined)ex.v=v;if(L.k==='chest'){ex.use='loot';ex.ci=ci;ex.loot=L.loot||{};ex.name=clean(L.n,40)||'Chest'}else if(L.k==='sign'||L.tx){ex.use='look';ex.name=clean(L.n,40)||ISL_LM[L.k][0];ex.text=clean(L.tx,300)||ex.name}
     rgLm(C,L.k.split(':')[0],x,y,w,h,ex)});
+   const clear1=(x,y)=>{const i=y*W+x;C.keep[i]=1;C.O[i]=null;if(!RG_WALK[T[i]])T[i]=11};
+   const nearPier=(x,y,r)=>C.pier.concat([C.spawn,C.shore||C.spawn]).some(([px,py])=>Math.abs(px-x)<=r&&Math.abs(py-y)<=r);
+   // people: stand on their tile and talk when you come close
+   (Array.isArray(I.npc)?I.npc:[]).slice(0,40).forEach((Q,k)=>{if(!Q)return;const x=(Q.x|0)+P,y=(Q.y|0)+P;if(Q.x<0||Q.y<0||Q.x>=I.w||Q.y>=I.h||nearPier(x,y,1))return;
+    rgLm(C,'npc',x,y,1,1,{use:'npc',ni:k,name:clean(Q.n,24)||'Islander',look:npcLook(Q.lk),lines:(Array.isArray(Q.s)?Q.s:[]).map(l=>clean(l,160)).filter(Boolean).slice(0,8)})});
+   // dungeon entrances: a rock face with a dark opening; walk up into it to go down
+   (Array.isArray(I.cv)?I.cv:[]).slice(0,6).forEach((V,k)=>{if(!V)return;const x=(V.x|0)+P,y=(V.y|0)+P;if(V.x<1||V.y<1||V.x>=I.w-1||V.y>=I.h-1||nearPier(x,y,2))return;
+    for(let b=-1;b<=1;b++)for(let a=-1;a<=1;a++)clear1(x+a,y+b);for(const[a,b]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1]])C.lmSolid[(y+b)*W+x+a]=1;
+    const kind=caveKind(D.id,k),name=clean(V.n,40)||'Hidden Cave';C.items.push({t:'icvdoor',kind,x,y,name,use:'icv',w:1,h:1});rgMark(C,'cv'+k,name,x,y)});
    return rgFinish(C)}}
+ // how a person looks (the character creator's options); anything missing or out of range falls back to the first option
+ const NLIM={sk:5,hs:4,hc:8,sh:8,pn:6,ht:3,hcol:6,so:5};
+ function npcLook(L){const o={};for(const k in NLIM){const v=L&&L[k]|0;o[k]=v>=0&&v<NLIM[k]?v:0}return o}
+ // dungeons under custom islands: one dungeon kind per entrance, built like the island caves of Ironcrest and Briarwood
+ const caveKind=(id,k)=>'cv_'+String(id||'').slice(3,30)+'_'+k;
+ const CAVE_ST={mine:{name:'Mine',floor:['#6e5c48','#665440'],wall:'#4e4034',trim:'#2e2620',W:56,H:40,mine:1,at:'dungeon0'},
+  ice:{name:'Ice cave',floor:['#7c8ea0','#748698'],wall:'#506478',trim:'#2c3848',W:60,H:44,cavey:1,at:'dungeon0'},
+  root:{name:'Root hollow',floor:['#4e5e3a','#465632'],wall:'#2e3a24',trim:'#18200f',W:60,H:44,cavey:1,at:'dungeon0',vines:1},
+  rock:{name:'Rock cave',floor:['#6a6058','#625850'],wall:'#4a423c',trim:'#2e2824',W:60,H:44,cavey:1,at:'dungeon0'},
+  sand:{name:'Sandstone dig',floor:['#c8a870','#c0a068'],wall:'#a08050','trim':'#5a4028',W:60,H:44,cavey:1,at:'dungeon0'}};
+ const CAVES={};// kind -> island id, for unregistering
+ function regCaves(id,I){const IC=window.SQICV;if(!IC||typeof DKIND==='undefined')return;for(const k in CAVES)if(CAVES[k]===id){delete IC[k];delete DKIND[k];delete CAVES[k]}
+  (Array.isArray(I&&I.cv)?I.cv:[]).slice(0,6).forEach((V,k)=>{if(!V)return;const st=CAVE_ST[V.st]||CAVE_ST.rock,kind=caveKind(id,k),keys=(Array.isArray(V.m)?V.m:[]).filter(m=>typeof m==='string'&&/^[a-z]+(:[a-z]+)?$/.test(m)).slice(0,6);
+   const mob=keys.length?keys.map((m,j)=>[m,(j+1)/keys.length]):[['bat',.5],['slime',1]];
+   IC[kind]=DKIND[kind]=Object.assign({},st,{name:clean(V.n,40)||'Hidden Cave',rg:id,floors:Math.max(1,Math.min(6,V.f|0||3)),noboss:1,mob,ore:V.st==='mine'?null:4});if(V.st!=='mine')delete IC[kind].mine;CAVES[kind]=id})}
  const hashId=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h};
  const ISL={};// id -> the island data currently registered
  const here=()=>{try{return curRegion()}catch(e){return null}};
@@ -130,10 +156,10 @@ var SQA=(()=>{
   if(!ROUTE_ORDER.includes(id))ROUTE_ORDER.push(id);
   REGION_SPAWNS[id]={maxEnemies:mob?Math.max(0,Math.min(30,I.max==null?20:I.max|0)):0};if(typeof RG_MOBS!=='undefined'){if(mob)RG_MOBS[id]=RG_MOBS[mob];else delete RG_MOBS[id]}
   RG_LMCOUNT[id]=0;const pos=ISL_POS[dir];WM_POS[id]=[isFinite(I.mx)?Math.max(10,Math.min(350,+I.mx)):pos[0],isFinite(I.my)?Math.max(10,Math.min(350,+I.my)):pos[1]];
-  WM_ROUTE[id]={from:'Tidewatch',post:'tidewatch'};RG_GENS[id]=islandGen(I);RG_GEN[id]=D=>rgRunSync(RG_GENS[id](D));
+  WM_ROUTE[id]={from:'Tidewatch',post:'tidewatch'};RG_GENS[id]=islandGen(I);try{regCaves(id,I)}catch(e){console.warn(e)}RG_GEN[id]=D=>rgRunSync(RG_GENS[id](D));
   try{delete RG_CACHE[id];delete RG_PRE[id];delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id];const j=RG_ORDER.indexOf(id);if(j>=0)RG_ORDER.splice(j,1)}catch(e){}
   ISL[id]=I}
- function unregIsland(id){if(here()===id)return;const j=ROUTE_ORDER.indexOf(id);if(j>=0)ROUTE_ORDER.splice(j,1);delete RG_GEN[id];delete RG_GENS[id];
+ function unregIsland(id){if(here()===id)return;try{regCaves(id,null)}catch(e){}const j=ROUTE_ORDER.indexOf(id);if(j>=0)ROUTE_ORDER.splice(j,1);delete RG_GEN[id];delete RG_GENS[id];
   try{delete RG_CACHE[id];delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id]}catch(e){}delete ISL[id]}// the name stays known, so old references still read well
  function applyIslands(L){const want={};for(const id of Object.keys(L||{}).sort())if(/^cu_[a-z0-9_]{1,30}$/.test(id)&&islandValid(L[id]))want[id]=L[id];
   for(const id in ISL)if(!want[id])unregIsland(id);for(const id in want)if(JSON.stringify(ISL[id])!==JSON.stringify(want[id]))regIsland(id,want[id])}
@@ -173,7 +199,7 @@ var SQA=(()=>{
    if(!preview)apply(live)}catch(e){}}
  setTimeout(refresh,400);
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,
-  ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
+  ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,ISL_POS,CAVE_ST,caveKind,npcLook,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
   get live(){return live},hasIcon:k=>!!ICO[k],hideFor,
   // a section that reads its own part of the library: called now with the current library and after every change
   onApply(f){HOOKS.push(f);try{f(preview||live||{})}catch(e){console.warn(e)}},
