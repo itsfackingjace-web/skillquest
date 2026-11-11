@@ -130,7 +130,7 @@
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.item+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=pState(ed.k);if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
  function petResize(w,h){const ed=S.ed,MX=ed.kind==='prop'?320:96;w=Math.max(4,Math.min(MX,w|0));h=Math.max(4,Math.min(MX,h|0));if(w===ed.w&&h===ed.h)return;snapEd();const ox=Math.floor((w-ed.w)/2),oy=h-ed.h;// keeps the feet where they are
   ed.layers=ed.layers.map(L=>{const n=new Uint8Array(w*h).fill(255);for(let y=0;y<ed.h;y++)for(let x=0;x<ed.w;x++){const X=x+ox,Y=y+oy;if(X>=0&&Y>=0&&X<w&&Y<h)n[Y*w+X]=L[y*ed.w+x]}return n});
-  ed.ox-=ox*ed.s/2;ed.oy-=oy*ed.s/2;ed.w=w;ed.h=h;ed.px=ed.layers[ed.dir];ed.undo=[];ed.redo=[];ed.fit=0;ed.z=0;ed.rcd=[1,1,1,1];draw()}
+  ed.ox-=ox*ed.s/2;ed.oy-=oy*ed.s/2;ed.w=w;ed.h=h;ed.px=ed.layers[ed.dir];ed.undo=[];ed.redo=[];ed.fit=0;ed.z=0;ed.rcd=ed.layers.map(()=>1);draw()}
  function pets(){const q=S.q.toLowerCase(),all=A.petKinds(),keys=all.filter(k=>(!q||(INAME[k]||'').toLowerCase().includes(q)||k.includes(q))&&(!S.only||pState(EQ[k].pet)));
   let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+all.length+' pets" value="'+E(S.q)+'" data-in="q">'+
    '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only pets with a new look</label><div class="dv-grid">';
@@ -154,13 +154,21 @@
  const prState=k=>{const d=S.draft&&S.draft.props&&S.draft.props[k],l=S.live&&S.live.props&&S.live.props[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
  const TPC=new Map();const pThumb=k=>{const d=S.draft&&S.draft.props&&S.draft.props[k];if(d&&PR().valid(d)){const j=JSON.stringify(d).length+k;if(!TPC.has(j))TPC.set(j,A.render(d).toDataURL());return TPC.get(j)}return PR().thumb(k)};
  async function openProp(k,fresh){S.sel=k;S.ed=null;draw();const L=!fresh&&S.draft.props[k];let ed;
-  try{if(L&&PR().valid(L)){const sp={...L,d:A.pix(L)},f=fromSp(sp);ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal:f.pal,layers:[f.px]}}
+  try{if(L&&PR().valid(L)){const pal=[],N=L.w*L.h,n=PR().frames(L),layers=[];
+    for(let f=0;f<n;f++){const sp=PR().frSp(L,f),map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)}),dd=A.pix(sp),px=new Uint8Array(N).fill(255);
+     for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')px[i]=map[PXC.indexOf(ch)]}layers.push(px)}
+    ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers,ms:L.ms|0||250,sy:!!L.sy}}
    else{const cap=PR().capture(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px]}}
     else ed={w:32,h:32,s:2,ox:-8,oy:-16,pal:[],layers:[new Uint8Array(1024).fill(255)]}}}
   catch(e){console.warn(e);toast('Could not read that prop.');return}
   if(S.sel!==k)return;if(!ed.pal.length)ed.pal.push('#181018','#7a5a3a','#c89858','#f8e8c8');
-  S.ed={...ed,kind:'prop',k,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:[null],rcd:[1]};draw()}
- function propOut(ed){const px=ed.layers[0];if(!px.some(v=>v!==255))return null;const sp=toSpPx(ed,px);return{w:sp.w,h:sp.h,s:sp.s,ox:ed.ox,oy:ed.oy,p:sp.p,r:A.pack(sp.d)}}
+  S.ed={ms:250,sy:false,...ed,kind:'prop',k,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:ed.layers.map(()=>null),rcd:ed.layers.map(()=>1)};draw()}
+ // frames: add (a copy of the one you're on) or delete one; undo history starts again, since it remembers frames by number
+ function propFrames(add){const ed=S.ed;if(add){if(ed.layers.length>=12){toast('Up to 12 frames.');return}ed.layers.splice(ed.dir+1,0,ed.layers[ed.dir].slice());ed.dir++}
+  else{if(ed.layers.length<2)return;ed.layers.splice(ed.dir,1);ed.dir=Math.min(ed.dir,ed.layers.length-1)}
+  ed.px=ed.layers[ed.dir];ed.rc=ed.layers.map(()=>null);ed.rcd=ed.layers.map(()=>1);ed.undo=[];ed.redo=[];ed.dirty=true;draw()}
+ function propOut(ed){if(!ed.layers.some(L=>L.some(v=>v!==255)))return null;const sp=toSpPx(ed,ed.layers[0]),o={w:sp.w,h:sp.h,s:sp.s,ox:ed.ox,oy:ed.oy,p:sp.p,r:A.pack(sp.d)};
+  if(ed.layers.length>1){o.fr=ed.layers.slice(1).map(L=>{const f=toSpPx(ed,L);return{p:f.p,r:A.pack(f.d)}});o.ms=Math.max(60,Math.min(5000,ed.ms|0||250));if(ed.sy)o.sy=1}return o}
  async function saveProp(){const ed=S.ed;if(!ed)return;const o=propOut(ed);if(o)S.draft.props[ed.k]=o;else delete S.draft.props[ed.k];
   try{await dset('draft/props/'+key(ed.k),o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.k),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.k)}}
@@ -171,9 +179,14 @@
    h+='<button class="dv-it'+(S.sel===x.k?' dv-on':'')+'" data-k="'+E(x.k)+'">'+(s2?'<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>':'')+'<img alt="" src="'+pThumb(x.k)+'"><span>'+E(x.n)+'</span></button>'}
   if(!keys.length)h+='<p class="dv-mut">Nothing matches.</p>';
   h+='</div></div><div class="dv-ed">';
-  if(!S.sel)h+='<div class="dv-card"><b>Pick a prop.</b><p class="dv-mut">Change how things look in the world: trees, rocks, ores, mushrooms, cacti and bushes, the town buildings, players\' houses and the buildings and props on the islands. It starts from the game\'s own look. A new look replaces every one of that kind for every player (trees that came in a few shapes all take the new one). How they work doesn\'t change: a tree is still chopped from its tile, and a building keeps its doors and walls where they were.</p></div>';
+  if(!S.sel)h+='<div class="dv-card"><b>Pick a prop.</b><p class="dv-mut">Change how things look in the world: trees, rocks, ores, mushrooms, cacti and bushes, the town buildings, players\' houses, village details (street lamps, wells, signposts, bridges, tall grass, the shipwreck and the hermit\'s hut) and the buildings and props on the islands. It starts from the game\'s own look. Add frames to animate it. A new look replaces every one of that kind for every player (trees that came in a few shapes all take the new one). How they work doesn\'t change: a tree is still chopped from its tile, and a building keeps its doors and walls where they were.</p></div>';
   else if(!S.ed)h+='<p class="dv-mut">Opening...</p>';
   else{const ed=S.ed;h+='<div class="dv-row"><button class="dv-b dv-back" data-a="back">‹ All props</button><b style="font-size:16px">'+E(propName(ed.k))+'</b><span class="dv-mut">'+ed.w+' × '+ed.h+' pixels</span></div>'+
+   '<div class="dv-row">'+ed.layers.map((L,d)=>'<button class="dv-b'+(ed.dir===d?' dv-tl dv-on':'')+'" data-dir="'+d+'">Frame '+(d+1)+'</button>').join('')+
+    '<button class="dv-b" data-a="fradd">+ Add frame</button>'+(ed.layers.length>1?'<button class="dv-b dv-bad" data-a="frdel">Delete this frame</button>':'')+'</div>'+
+   (ed.layers.length>1?'<div class="dv-row"><span class="dv-mut">Each frame shows for</span><input type="number" data-in="pms" min="60" max="5000" step="10" value="'+ed.ms+'" style="width:90px"><span class="dv-mut">ms ('+(1000/ed.ms).toFixed(1)+' frames a second)</span>'+
+    '<label class="dv-chk"><input type="checkbox" data-a="psy"'+(ed.sy?' checked':'')+'> All of them move together</label><span class="dv-mut">'+(ed.sy?'':'(otherwise each one starts at its own point, so they don\'t sway in step)')+'</span></div>'+
+    '<div class="dv-row"><span class="dv-mut">Copy into this frame from:</span>'+ed.layers.map((L,d)=>d===ed.dir?'':'<button class="dv-b" data-copy="'+d+'">Frame '+(d+1)+'</button>').join('')+'</div>':'')+
    '<div class="dv-row dv-tools"></div><div class="dv-cv dv-cvw'+(ed.tool==='pan'?' dv-pan':'')+'"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw"><canvas id="dvwalk" width="480" height="240" style="width:min(480px,100%);height:auto"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><span class="dv-mut">Canvas</span><input type="number" data-in="pw" min="4" max="320" value="'+ed.w+'" style="width:70px"> × <input type="number" data-in="ph" min="4" max="320" value="'+ed.h+'" style="width:70px"><button class="dv-b" data-a="presize">Resize</button><span class="dv-mut">keeps the bottom in place</span></div>'+
@@ -181,10 +194,11 @@
    '<p class="dv-mut">The preview shows the game\'s look on the left and yours on the right, next to a player for size. The bottom-middle of the picture is where it stands. Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+S save</p>'}
   return h+'</div></div>'}
  // before / after, on grass, with a player for size (everything at the game's 2x detail, scaled to fit)
- const PRV={};function propPreview(c,ed){if(ed.rcd[0]){ed.rcd[0]=0;ed.rc[0]=ed.layers[0].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[0])):null}
+ const PRV={};function propPreview(c,ed){for(let d=0;d<ed.layers.length;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
+  const nf=ed.layers.length,fi=nf>1?Math.floor(performance.now()/Math.max(60,ed.ms||250))%nf:0;
   if(!PRV[ed.k]){PRV[ed.k]='…';const cap=PR().capture(ed.k);if(cap){const im=new Image();im.onload=()=>{PRV[ed.k]={im,ox:cap.ox,oy:cap.oy}};im.src=cap.url}else PRV[ed.k]=null}
   const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<60;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
-  const O=PRV[ed.k]&&PRV[ed.k].im?PRV[ed.k]:null,L=ed.rc[0],me=charCan(0,0,false);
+  const O=PRV[ed.k]&&PRV[ed.k].im?PRV[ed.k]:null,L=ed.rc[fi]||ed.rc[0],me=charCan(0,0,false);
   // fit: world px -> canvas px
   const bw=Math.max(O?O.im.width/2:0,L?L.width/2:0,24),bh=Math.max(O?O.im.height/2:0,L?L.height/2:0,32),k=Math.max(.5,Math.min(3,Math.min((c.width/2-30)/bw,(c.height-30)/bh)));
   x.fillStyle='rgba(0,0,0,.35)';x.font='600 12px system-ui';x.fillText('Now',8,16);x.fillText('New',c.width/2+8,16);x.fillRect(c.width/2,0,1,c.height);
@@ -223,7 +237,7 @@
    if(ed.recenter&&ed.kind==='worn'){ed.recenter=0;const cv=c.parentElement,B=charBox();cv.scrollLeft=((B.x0+B.x1)/2)*z-cv.clientWidth/2;cv.scrollTop=((B.y0+B.y1)/2)*z-cv.clientHeight/2}
    if(z>=8){x.strokeStyle='rgba(255,255,255,.07)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
    const n=new Set(ed.layers.flatMap(L=>[...L].filter(v=>v!==255))).size,st=document.querySelector('#dvs .dv-st');
-   if(st)st.textContent=(ed.kind==='prop'?'New look':ed.kind==='pet'?PFN[ed.dir]+' frame':WDN[ed.dir]+' layer')+' · '+ed.w+' × '+ed.h+' · '+n+' colours'+(ed.dirty?'  ·  unsaved changes':'');return}
+   if(st)st.textContent=(ed.kind==='prop'?'Frame '+(ed.dir+1)+' of '+ed.layers.length:ed.kind==='pet'?PFN[ed.dir]+' frame':WDN[ed.dir]+' layer')+' · '+ed.w+' × '+ed.h+' · '+n+' colours'+(ed.dirty?'  ·  unsaved changes':'');return}
   for(let y=0;y<ed.h;y++)for(let X=0;X<ed.w;X++){const v=ed.px[y*ed.w+X];x.fillStyle=v===255?((X+y)%2?'#3a4150':'#2c323e'):ed.pal[v];x.fillRect(X*z,y*z,z,z)}
   if(z>=8){x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
   const sp=toSp(ed),u=A.render(sp).toDataURL();for(const im of document.querySelectorAll('#dvs .dv-pv img')){im.src=u;const k=im.dataset.x2?2:1;im.style.width=Math.min(220,sp.w*sp.s*k)+'px';im.style.height=Math.min(220,sp.h*sp.s*k)+'px'}
@@ -487,6 +501,8 @@
   if(a==='revert'){S.ed.dirty=false;if(S.ed.kind==='worn')openWorn(S.sel);else if(S.ed.kind==='pet')openPet(S.sel);else if(S.ed.kind==='prop')openProp(S.sel);else openSprite(S.sel);return}
   if(a==='pcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openPet(S.sel,true);return}
   if(a==='pflip'){const ed=S.ed;snapEd();const L=ed.layers[ed.dir];for(let y=0;y<ed.h;y++){for(let x=0;x<ed.w>>1;x++){const i=y*ed.w+x,j=y*ed.w+ed.w-1-x,t2=L[i];L[i]=L[j];L[j]=t2}}paint();return}
+  if(a==='fradd'&&S.ed&&S.ed.kind==='prop'){propFrames(true);return}if(a==='frdel'&&S.ed&&S.ed.kind==='prop'){propFrames(false);return}
+  if(a==='psy'&&S.ed){S.ed.sy=t.checked;S.ed.dirty=true;draw();return}
   if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true);return}
   if(a==='presize'){petResize(+(root.querySelector('[data-in="pw"]')||{}).value,+(root.querySelector('[data-in="ph"]')||{}).value);return}
   if(a==='under'){S.ed.under=t.checked;paint();return}
@@ -515,6 +531,7 @@
  root.addEventListener('change',e=>{const t=e.target;
   if(t.dataset.in==='addcol'&&S.ed){snapEd();S.ed.pal.push(t.value);S.ed.col=S.ed.pal.length-1;S.ed.tool='pen';drawPal();drawTools();paint();return}
   if(t.dataset.in==='recol'){t._snap=0;drawPal();return}
+  if(t.dataset.in==='pms'&&S.ed){S.ed.ms=Math.max(60,Math.min(5000,t.value|0||250));S.ed.dirty=true;draw();return}
   if(t.dataset.in==='pvd'&&S.ed){S.ed.pvd=+t.value|0;draw();return}
   if(t.dataset.g&&S.sel){gearSet(S.sel,t.dataset.g,t.value);return}
   if(t.dataset.gn&&S.sel){ngSet(S.sel,t.dataset.gn,t.value);return}

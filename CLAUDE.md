@@ -95,7 +95,10 @@
   picture {w,h,s,ox,oy,p,r} (s/2 world px per pixel, top-left at (ox,oy) from the anchor). Keys: `o:<type>[:<variant>]`
   world objects (anchor = tile top-left; drawn through the outermost `OBJHD` on Hollow and `drawFurn` on islands, with a
   shadow), `b:<k>` Hollow town buildings from `BLD`, `b:house<w>` players' houses, `b:castle` (anchor = footprint top-left,
-  outermost `drBld`), `l:<kind>` island props from `SQA.ISL_LM`. `SQPROPS.capture(key)` draws the game's own look at 2x
+  outermost `drBld`), `v:<kind>` village details (lamp, well, sign, bridgeh/bridgev, grass, wreck, hut; through the outermost `drawLamp`,
+  `drawWell`, `drawSign`, `drawBridge`, `TGDRAW`, `drawWreck`, `drawHut`), `l:<kind>` island props from `SQA.ISL_LM`.
+  Animation: frame 1 is p/r, more frames in `fr` [{p,r}] (up to 12), `ms` per frame, `sy` = all in step (otherwise each
+  starts at its own point from its position). Fences aren't here: they join to their neighbours. `SQPROPS.capture(key)` draws the game's own look at 2x
   (with looks switched off) for the editor to start from. The editor is the pet editor with one layer (`kind:'prop'`,
   `LAY()` in 111b); database keys go through `key()` (no . # $ [ ] /).
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
