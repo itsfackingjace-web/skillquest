@@ -13017,7 +13017,7 @@ window.SQA=SQA;
  const R=p=>fb().db.ref(fb().D,'assets/'+p);
  const dget=async p=>(await fb().db.get(R(p))).val(),dset=(p,v)=>fb().db.set(R(p),v==null?null:v);
  const body=L=>{const o=clone(L)||{};delete o.v;delete o.at;delete o.by;return o};
- const norm=d=>{d.icons=d.icons||{};d.stats=d.stats||{};d.worn=d.worn||{};d.islands=d.islands||{};d.pets=d.pets||{};d.gear=d.gear||{};d.newgear=d.newgear||{};d.props=d.props||{};return d};
+ const norm=d=>{d.icons=d.icons||{};d.stats=d.stats||{};d.worn=d.worn||{};d.islands=d.islands||{};d.pets=d.pets||{};d.gear=d.gear||{};d.newgear=d.newgear||{};d.props=d.props||{};d.pnames=d.pnames||{};return d};
  const EXT={},LAY=k=>k==='worn'||k==='pet'||k==='prop';// extra tabs (the island builder lives in its own file)
  async function load(){S.ok=null;S.note='';draw();
   if(!fb()||!user()){S.ok='signin';draw();return}S.uid=user().uid;
@@ -13046,6 +13046,8 @@ window.SQA=SQA;
     out.push({kind:'stat',t,k,what:T.name+': '+f.join(', ')+(d[k]?'':' (back to original)')})}}
   const ok2=new Set([...Object.keys(L.props||{}),...Object.keys(D.props||{})]);
   for(const k of ok2)if(!same((L.props||{})[k],(D.props||{})[k]))out.push({kind:'ext',html:'🏠 '+E(propName(k))+': '+((D.props||{})[k]?((L.props||{})[k]?'look changed':'new look'):'back to the game\'s own look')});
+  const nk2=new Set([...Object.keys(L.pnames||{}),...Object.keys(D.pnames||{})]);
+  for(const k of nk2)if(!same((L.pnames||{})[k],(D.pnames||{})[k]))out.push({kind:'ext',html:'🏷 '+E(gameName(k))+': '+((D.pnames||{})[k]?'renamed to "'+E(D.pnames[k])+'" in the Dev Suite':'back to its own name in the Dev Suite')});
   for(const k in EXT)if(EXT[k].changes)try{out.push(...EXT[k].changes(L,D))}catch(e){}
   return out}
  const wState=k=>{const d=S.draft&&S.draft.worn&&S.draft.worn[k],l=S.live&&S.live.worn&&S.live.worn[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
@@ -13154,7 +13156,7 @@ window.SQA=SQA;
   return h+'</div></div>'}
  // ---- prop looks: trees, rocks, ores, plants, buildings and island props as they stand in the world ----
  const PR=()=>window.SQPROPS,key=k=>k.replace(/[.#$\[\]\/]/g,'_');// database keys can't hold . # $ [ ] /
- const propName=k=>{const q=PR()&&PR().list().find(x=>x.k===k);return q?q.n:k};
+ const gameName=k=>{const q=PR()&&PR().list().find(x=>x.k===k);return q?q.n:k},propName=k=>{const n=S.draft&&S.draft.pnames&&S.draft.pnames[k];return n||gameName(k)};
  const prState=k=>{const d=S.draft&&S.draft.props&&S.draft.props[k],l=S.live&&S.live.props&&S.live.props[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
  const TPC=new Map();const pThumb=k=>{const d=S.draft&&S.draft.props&&S.draft.props[k];if(d&&PR().valid(d)){const j=JSON.stringify(d).length+k;if(!TPC.has(j))TPC.set(j,A.render(d).toDataURL());return TPC.get(j)}return PR().thumb(k)};
  async function openProp(k,fresh){S.sel=k;S.ed=null;draw();const L=!fresh&&S.draft.props[k];let ed;
@@ -13176,16 +13178,16 @@ window.SQA=SQA;
  async function saveProp(){const ed=S.ed;if(!ed)return;const o=propOut(ed);if(o)S.draft.props[ed.k]=o;else delete S.draft.props[ed.k];
   try{await dset('draft/props/'+key(ed.k),o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.k),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.k)}}
- function props(){if(!PR())return'<p class="dv-mut">Props aren\'t available in this version of the game.</p>';const q=S.q.toLowerCase(),all=PR().list(),keys=all.filter(x=>(!q||x.n.toLowerCase().includes(q)||x.k.includes(q)||x.grp.toLowerCase().includes(q))&&(!S.only||prState(x.k)));
+ function props(){if(!PR())return'<p class="dv-mut">Props aren\'t available in this version of the game.</p>';const q=S.q.toLowerCase(),all=PR().list(),keys=all.filter(x=>(!q||propName(x.k).toLowerCase().includes(q)||x.n.toLowerCase().includes(q)||x.k.includes(q)||x.grp.toLowerCase().includes(q))&&(!S.only||prState(x.k)));
   let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+all.length+' props" value="'+E(S.q)+'" data-in="q">'+
    '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only props with a new look</label><div class="dv-grid">';let grp='';
   for(const x of keys){if(x.grp!==grp){grp=x.grp;h+='<div class="dv-mut" style="grid-column:1/-1;margin-top:6px">'+E(grp)+'</div>'}const s2=prState(x.k);
-   h+='<button class="dv-it'+(S.sel===x.k?' dv-on':'')+'" data-k="'+E(x.k)+'">'+(s2?'<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>':'')+'<img alt="" src="'+pThumb(x.k)+'"><span>'+E(x.n)+'</span></button>'}
+   h+='<button class="dv-it'+(S.sel===x.k?' dv-on':'')+'" data-k="'+E(x.k)+'">'+(s2?'<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>':'')+'<img alt="" src="'+pThumb(x.k)+'"><span>'+E(propName(x.k))+'</span></button>'}
   if(!keys.length)h+='<p class="dv-mut">Nothing matches.</p>';
   h+='</div></div><div class="dv-ed">';
   if(!S.sel)h+='<div class="dv-card"><b>Pick a prop.</b><p class="dv-mut">Change how things look in the world: trees, rocks, ores, mushrooms, cacti and bushes, the town buildings, players\' houses, village details (street lamps, wells, signposts, bridges, tall grass, the shipwreck and the hermit\'s hut) and the buildings and props on the islands. It starts from the game\'s own look. Add frames to animate it. A new look replaces every one of that kind for every player (trees that came in a few shapes all take the new one). How they work doesn\'t change: a tree is still chopped from its tile, and a building keeps its doors and walls where they were.</p></div>';
   else if(!S.ed)h+='<p class="dv-mut">Opening...</p>';
-  else{const ed=S.ed;h+='<div class="dv-row"><button class="dv-b dv-back" data-a="back">‹ All props</button><b style="font-size:16px">'+E(propName(ed.k))+'</b><span class="dv-mut">'+ed.w+' × '+ed.h+' pixels</span></div>'+
+  else{const ed=S.ed;h+='<div class="dv-row"><button class="dv-b dv-back" data-a="back">‹ All props</button><input type="text" data-in="pname" maxlength="40" value="'+E(propName(ed.k))+'" placeholder="'+E(gameName(ed.k))+'" title="Its name here in the Dev Suite" style="max-width:240px;font-weight:600;font-size:15px"><span class="dv-mut">'+ed.w+' × '+ed.h+' pixels · the name is only used here in the Dev Suite</span></div>'+
    '<div class="dv-row">'+ed.layers.map((L,d)=>'<button class="dv-b'+(ed.dir===d?' dv-tl dv-on':'')+'" data-dir="'+d+'">Frame '+(d+1)+'</button>').join('')+
     '<button class="dv-b" data-a="fradd">+ Add frame</button>'+(ed.layers.length>1?'<button class="dv-b dv-bad" data-a="frdel">Delete this frame</button>':'')+'</div>'+
    (ed.layers.length>1?'<div class="dv-row"><span class="dv-mut">Each frame shows for</span><input type="number" data-in="pms" min="60" max="5000" step="10" value="'+ed.ms+'" style="width:90px"><span class="dv-mut">ms ('+(1000/ed.ms).toFixed(1)+' frames a second)</span>'+
@@ -13532,9 +13534,11 @@ window.SQA=SQA;
   if(n==='q'){S.q=t.value;const pos=t.selectionStart;draw();const i=root.querySelector('[data-in="q"]');if(i){i.focus();i.setSelectionRange(pos,pos)}return}
   if(n==='sq'){S.statQ=t.value;const pos=t.selectionStart;draw();const i=root.querySelector('[data-in="sq"]');if(i){i.focus();i.setSelectionRange(pos,pos)}return}
   if(n==='recol'&&S.ed&&S.ed.pal[S.ed.col]!=null){if(!t._snap){snapEd();t._snap=1}S.ed.pal[S.ed.col]=t.value;const sw=root.querySelector('.dv-sw.dv-on');if(sw)sw.style.background=t.value;paint()}});
- root.addEventListener('change',e=>{const t=e.target;
+ root.addEventListener('change',async e=>{const t=e.target;
   if(t.dataset.in==='addcol'&&S.ed){snapEd();S.ed.pal.push(t.value);S.ed.col=S.ed.pal.length-1;S.ed.tool='pen';drawPal();drawTools();paint();return}
   if(t.dataset.in==='recol'){t._snap=0;drawPal();return}
+  if(t.dataset.in==='pname'&&S.ed&&S.ed.kind==='prop'){const k=S.ed.k,v=t.value.trim().slice(0,40),nv=v&&v!==gameName(k)?v:null;if(nv)S.draft.pnames[k]=nv;else delete S.draft.pnames[k];
+   try{await dset('draft/pnames/'+key(k),nv);toast(nv?'Renamed.':'Back to its own name.')}catch(e2){fail(e2)}const sp=root.querySelector('.dv-it[data-k="'+k+'"] span');if(sp)sp.textContent=propName(k);return}
   if(t.dataset.in==='pms'&&S.ed){S.ed.ms=Math.max(60,Math.min(5000,t.value|0||250));S.ed.dirty=true;draw();return}
   if(t.dataset.in==='pvd'&&S.ed){S.ed.pvd=+t.value|0;draw();return}
   if(t.dataset.g&&S.sel){gearSet(S.sel,t.dataset.g,t.value);return}

@@ -100,6 +100,7 @@
   Animation: frame 1 is p/r, more frames in `fr` [{p,r}] (up to 12), `ms` per frame, `sy` = all in step (otherwise each
   starts at its own point from its position). Fences aren't here: they join to their neighbours. `SQPROPS.capture(key)` draws the game's own look at 2x
   (with looks switched off) for the editor to start from. The editor is the pet editor with one layer (`kind:'prop'`,
-  `LAY()` in 111b); database keys go through `key()` (no . # $ [ ] /).
+  `LAY()` in 111b); database keys go through `key()` (no . # $ [ ] /). Names typed in the editor are
+  Dev-Suite-only labels in `pnames.<key>` (`propName()`; the game's own name is `gameName()`).
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).
