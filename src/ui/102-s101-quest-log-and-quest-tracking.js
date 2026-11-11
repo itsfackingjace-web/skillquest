@@ -62,7 +62,10 @@
     return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}return null}
   return null}
  let TGT=null,TGE=null,TGT_AT=0;
- function refresh(){const now=performance.now();if(now-TGT_AT<400)return;TGT_AT=now;try{TGE=tracked();TGT=target(TGE)}catch(e){TGT=null}}
+ function refresh(){const now=performance.now();if(now-TGT_AT<400)return;TGT_AT=now;
+  // the getting-started guide (section 117) takes over the tracker while it runs
+  try{const gd=window.SQGUIDE&&SQGUIDE();if(gd){TGE=gd.e;TGT=gd.t;return}}catch(e){}
+  try{TGE=tracked();TGT=target(TGE)}catch(e){TGT=null}}
  window.SQTRACK=()=>{refresh();return{e:TGE,t:TGT}};
  // the hint shown when the place is somewhere else
  function where(e,t){const a=curArea(),par=a.startsWith('scene:')?((SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region)||'hollow'):a;

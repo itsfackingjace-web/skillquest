@@ -69,5 +69,9 @@
   progress bar (109 now only draws the smith/smelt/craft effects and the "N left" count). The state travels as `ak` in the
   multiplayer position (1 fire, 2 cook, 3 fishing, 4 bite, 5 reeling, 6 caught; `SQACT()`), the crouch is done in the
   outermost `cP` (whole character, gear included, re-drawn shorter at the knees), and other players' props via `SQPEERFX`.
+- **Getting started guide** (`ui/115-s117-getting-started.js`): 8 steps for new characters, shown through the quest
+  tracker (102's `refresh` asks `SQGUIDE()` first), with hints, glowing buttons (`.sqglow`) and small rewards. Saved as `gd`
+  (99 = done or skipped); a save without `gd`, or a game started without a save, is judged once play starts. Tapping the
+  quest box opens the quest log (with "Skip the guide").
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).
