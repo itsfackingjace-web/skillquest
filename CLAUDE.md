@@ -91,5 +91,12 @@
   `world/117-s119-island-life.js` runs them: talking (TALK button, speech bubble), zone spawns through the outermost
   `rgUpd` for custom islands (also the whole-island `mob` setting, which used to spawn nothing), entrance art, custom tiles
   drawn over `ROOMBG`. Monster keys/health come from `RG_FAUNA` (`SQISLIFE.MOBS`).
+- **Prop looks** (Dev Suite > Props; game side `dev/111d-s120-prop-looks.js`, `window.SQPROPS`): `props.<key>` = one
+  picture {w,h,s,ox,oy,p,r} (s/2 world px per pixel, top-left at (ox,oy) from the anchor). Keys: `o:<type>[:<variant>]`
+  world objects (anchor = tile top-left; drawn through the outermost `OBJHD` on Hollow and `drawFurn` on islands, with a
+  shadow), `b:<k>` Hollow town buildings from `BLD`, `b:house<w>` players' houses, `b:castle` (anchor = footprint top-left,
+  outermost `drBld`), `l:<kind>` island props from `SQA.ISL_LM`. `SQPROPS.capture(key)` draws the game's own look at 2x
+  (with looks switched off) for the editor to start from. The editor is the pet editor with one layer (`kind:'prop'`,
+  `LAY()` in 111b); database keys go through `key()` (no . # $ [ ] /).
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).

@@ -9289,6 +9289,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.11-8',d:'Nov 11, 2026',t:'Behind the scenes: redrawing the world',n:['The developer can now give trees, rocks, ores, mushrooms, cacti, bushes, town buildings, houses and island props a new look. Nothing changes in your game yet; new looks will arrive in later updates.']},
  {v:'2026.11.11-7',d:'Nov 11, 2026',t:'Islands with people, dungeons and monsters',n:['New islands can now have people to talk to: walk up to them and press TALK, and they tell you something new each time.','New islands can have their own dungeons. Walk up into the cave opening to go down, and walk back out to return to the island.','Monsters now live in set areas on new islands, so you know where the fights are. Beaten monsters come back after a while.','New islands can have their own ground art and their own place on the sea chart.','Fixed: monsters didn\'t appear on new islands that were meant to have them.']},
  {v:'2026.11.11-6',d:'Nov 11, 2026',t:'Fairer World Market',n:['Up to 2 offers per item (still 8 offers in total), so one player can\'t fill the whole list for an item.','Prices must be within a sensible range for each item, from half its shop value up to 25 times it (at least 100 gold). The range is shown when you make an offer.','A price far from the usual one shows a warning and needs a second tap, so an extra zero can\'t slip through.','Offers now last 7 days. After that, whatever hasn\'t traded comes back to you on its own. My offers shows how long each one has left. Offers that are already up get the full 7 days, starting tomorrow.']},
  {v:'2026.11.11-5',d:'Nov 11, 2026',t:'Pets that help',n:['Treelings now help you chop: while one follows you, every tree you chop has a chance to give an extra log. Rarer treelings are better at it (from 10% for a Treeling up to 22% for a Void treeling), and each one is twice as good on its own kind of tree.','New pet: the Mushling, a little red mushroom (1 in 1,000 when picking mushroom patches). When you\'re hurt it puffs healing spores at you now and then (+1 heart); when you\'re fine, it brings you mushrooms.','New pet: the Glowcap, a glowing blue mushroom (1 in 2,500 from mushroom patches). When something hits you it can burst into spores that slow every monster around you.','Both new pets are in the wiki\'s rare drops, and you can switch pets under START > Style.']},
@@ -13016,8 +13017,8 @@ window.SQA=SQA;
  const R=p=>fb().db.ref(fb().D,'assets/'+p);
  const dget=async p=>(await fb().db.get(R(p))).val(),dset=(p,v)=>fb().db.set(R(p),v==null?null:v);
  const body=L=>{const o=clone(L)||{};delete o.v;delete o.at;delete o.by;return o};
- const norm=d=>{d.icons=d.icons||{};d.stats=d.stats||{};d.worn=d.worn||{};d.islands=d.islands||{};d.pets=d.pets||{};d.gear=d.gear||{};d.newgear=d.newgear||{};return d};
- const EXT={};// extra tabs (the island builder lives in its own file)
+ const norm=d=>{d.icons=d.icons||{};d.stats=d.stats||{};d.worn=d.worn||{};d.islands=d.islands||{};d.pets=d.pets||{};d.gear=d.gear||{};d.newgear=d.newgear||{};d.props=d.props||{};return d};
+ const EXT={},LAY=k=>k==='worn'||k==='pet'||k==='prop';// extra tabs (the island builder lives in its own file)
  async function load(){S.ok=null;S.note='';draw();
   if(!fb()||!user()){S.ok='signin';draw();return}S.uid=user().uid;
   try{S.live=await dget('live');S.draft=await dget('draft')}catch(e){S.ok=/permission/i.test(e.message)?'setup':'error';S.note=e.message;draw();return}
@@ -13043,6 +13044,8 @@ window.SQA=SQA;
    for(const k of new Set([...Object.keys(l),...Object.keys(d)]))if(!same(l[k],d[k])){const T=A.TABLES[t];
     const f=Object.keys({...l[k],...d[k]}).map(f=>{const fd=T.fields.find(x=>x[0]===f);return fd?fd[1]:f});
     out.push({kind:'stat',t,k,what:T.name+': '+f.join(', ')+(d[k]?'':' (back to original)')})}}
+  const ok2=new Set([...Object.keys(L.props||{}),...Object.keys(D.props||{})]);
+  for(const k of ok2)if(!same((L.props||{})[k],(D.props||{})[k]))out.push({kind:'ext',html:'🏠 '+E(propName(k))+': '+((D.props||{})[k]?((L.props||{})[k]?'look changed':'new look'):'back to the game\'s own look')});
   for(const k in EXT)if(EXT[k].changes)try{out.push(...EXT[k].changes(L,D))}catch(e){}
   return out}
  const wState=k=>{const d=S.draft&&S.draft.worn&&S.draft.worn[k],l=S.live&&S.live.worn&&S.live.worn[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
@@ -13129,7 +13132,7 @@ window.SQA=SQA;
  async function savePet(){const ed=S.ed;if(!ed)return;const o=petOut(ed);if(o)S.draft.pets[ed.k]=o;else delete S.draft.pets[ed.k];
   try{await dset('draft/pets/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this pet keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.item+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=pState(ed.k);if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
- function petResize(w,h){const ed=S.ed;w=Math.max(4,Math.min(96,w|0));h=Math.max(4,Math.min(96,h|0));if(w===ed.w&&h===ed.h)return;snapEd();const ox=Math.floor((w-ed.w)/2),oy=h-ed.h;// keeps the feet where they are
+ function petResize(w,h){const ed=S.ed,MX=ed.kind==='prop'?320:96;w=Math.max(4,Math.min(MX,w|0));h=Math.max(4,Math.min(MX,h|0));if(w===ed.w&&h===ed.h)return;snapEd();const ox=Math.floor((w-ed.w)/2),oy=h-ed.h;// keeps the feet where they are
   ed.layers=ed.layers.map(L=>{const n=new Uint8Array(w*h).fill(255);for(let y=0;y<ed.h;y++)for(let x=0;x<ed.w;x++){const X=x+ox,Y=y+oy;if(X>=0&&Y>=0&&X<w&&Y<h)n[Y*w+X]=L[y*ed.w+x]}return n});
   ed.ox-=ox*ed.s/2;ed.oy-=oy*ed.s/2;ed.w=w;ed.h=h;ed.px=ed.layers[ed.dir];ed.undo=[];ed.redo=[];ed.fit=0;ed.z=0;ed.rcd=[1,1,1,1];draw()}
  function pets(){const q=S.q.toLowerCase(),all=A.petKinds(),keys=all.filter(k=>(!q||(INAME[k]||'').toLowerCase().includes(q)||k.includes(q))&&(!S.only||pState(EQ[k].pet)));
@@ -13149,8 +13152,53 @@ window.SQA=SQA;
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b" data-a="pcap">Start again from the game\'s look</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s own look</button></div>'+
    '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+Y redo · Ctrl+S save</p>'}
   return h+'</div></div>'}
+ // ---- prop looks: trees, rocks, ores, plants, buildings and island props as they stand in the world ----
+ const PR=()=>window.SQPROPS,key=k=>k.replace(/[.#$\[\]\/]/g,'_');// database keys can't hold . # $ [ ] /
+ const propName=k=>{const q=PR()&&PR().list().find(x=>x.k===k);return q?q.n:k};
+ const prState=k=>{const d=S.draft&&S.draft.props&&S.draft.props[k],l=S.live&&S.live.props&&S.live.props[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
+ const TPC=new Map();const pThumb=k=>{const d=S.draft&&S.draft.props&&S.draft.props[k];if(d&&PR().valid(d)){const j=JSON.stringify(d).length+k;if(!TPC.has(j))TPC.set(j,A.render(d).toDataURL());return TPC.get(j)}return PR().thumb(k)};
+ async function openProp(k,fresh){S.sel=k;S.ed=null;draw();const L=!fresh&&S.draft.props[k];let ed;
+  try{if(L&&PR().valid(L)){const sp={...L,d:A.pix(L)},f=fromSp(sp);ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal:f.pal,layers:[f.px]}}
+   else{const cap=PR().capture(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px]}}
+    else ed={w:32,h:32,s:2,ox:-8,oy:-16,pal:[],layers:[new Uint8Array(1024).fill(255)]}}}
+  catch(e){console.warn(e);toast('Could not read that prop.');return}
+  if(S.sel!==k)return;if(!ed.pal.length)ed.pal.push('#181018','#7a5a3a','#c89858','#f8e8c8');
+  S.ed={...ed,kind:'prop',k,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:[null],rcd:[1]};draw()}
+ function propOut(ed){const px=ed.layers[0];if(!px.some(v=>v!==255))return null;const sp=toSpPx(ed,px);return{w:sp.w,h:sp.h,s:sp.s,ox:ed.ox,oy:ed.oy,p:sp.p,r:A.pack(sp.d)}}
+ async function saveProp(){const ed=S.ed;if(!ed)return;const o=propOut(ed);if(o)S.draft.props[ed.k]=o;else delete S.draft.props[ed.k];
+  try{await dset('draft/props/'+key(ed.k),o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this keeps the game\'s own look.')}catch(e){fail(e)}
+  if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.k),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.k)}}
+ function props(){if(!PR())return'<p class="dv-mut">Props aren\'t available in this version of the game.</p>';const q=S.q.toLowerCase(),all=PR().list(),keys=all.filter(x=>(!q||x.n.toLowerCase().includes(q)||x.k.includes(q)||x.grp.toLowerCase().includes(q))&&(!S.only||prState(x.k)));
+  let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+all.length+' props" value="'+E(S.q)+'" data-in="q">'+
+   '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only props with a new look</label><div class="dv-grid">';let grp='';
+  for(const x of keys){if(x.grp!==grp){grp=x.grp;h+='<div class="dv-mut" style="grid-column:1/-1;margin-top:6px">'+E(grp)+'</div>'}const s2=prState(x.k);
+   h+='<button class="dv-it'+(S.sel===x.k?' dv-on':'')+'" data-k="'+E(x.k)+'">'+(s2?'<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>':'')+'<img alt="" src="'+pThumb(x.k)+'"><span>'+E(x.n)+'</span></button>'}
+  if(!keys.length)h+='<p class="dv-mut">Nothing matches.</p>';
+  h+='</div></div><div class="dv-ed">';
+  if(!S.sel)h+='<div class="dv-card"><b>Pick a prop.</b><p class="dv-mut">Change how things look in the world: trees, rocks, ores, mushrooms, cacti and bushes, the town buildings, players\' houses and the buildings and props on the islands. It starts from the game\'s own look. A new look replaces every one of that kind for every player (trees that came in a few shapes all take the new one). How they work doesn\'t change: a tree is still chopped from its tile, and a building keeps its doors and walls where they were.</p></div>';
+  else if(!S.ed)h+='<p class="dv-mut">Opening...</p>';
+  else{const ed=S.ed;h+='<div class="dv-row"><button class="dv-b dv-back" data-a="back">‹ All props</button><b style="font-size:16px">'+E(propName(ed.k))+'</b><span class="dv-mut">'+ed.w+' × '+ed.h+' pixels</span></div>'+
+   '<div class="dv-row dv-tools"></div><div class="dv-cv dv-cvw'+(ed.tool==='pan'?' dv-pan':'')+'"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
+   '<div class="dv-pvw"><canvas id="dvwalk" width="480" height="240" style="width:min(480px,100%);height:auto"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
+   '<div class="dv-row"><span class="dv-mut">Canvas</span><input type="number" data-in="pw" min="4" max="320" value="'+ed.w+'" style="width:70px"> × <input type="number" data-in="ph" min="4" max="320" value="'+ed.h+'" style="width:70px"><button class="dv-b" data-a="presize">Resize</button><span class="dv-mut">keeps the bottom in place</span></div>'+
+   '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b" data-a="rcap">Start again from the game\'s look</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s own look</button></div>'+
+   '<p class="dv-mut">The preview shows the game\'s look on the left and yours on the right, next to a player for size. The bottom-middle of the picture is where it stands. Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+S save</p>'}
+  return h+'</div></div>'}
+ // before / after, on grass, with a player for size (everything at the game's 2x detail, scaled to fit)
+ const PRV={};function propPreview(c,ed){if(ed.rcd[0]){ed.rcd[0]=0;ed.rc[0]=ed.layers[0].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[0])):null}
+  if(!PRV[ed.k]){PRV[ed.k]='…';const cap=PR().capture(ed.k);if(cap){const im=new Image();im.onload=()=>{PRV[ed.k]={im,ox:cap.ox,oy:cap.oy}};im.src=cap.url}else PRV[ed.k]=null}
+  const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<60;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
+  const O=PRV[ed.k]&&PRV[ed.k].im?PRV[ed.k]:null,L=ed.rc[0],me=charCan(0,0,false);
+  // fit: world px -> canvas px
+  const bw=Math.max(O?O.im.width/2:0,L?L.width/2:0,24),bh=Math.max(O?O.im.height/2:0,L?L.height/2:0,32),k=Math.max(.5,Math.min(3,Math.min((c.width/2-30)/bw,(c.height-30)/bh)));
+  x.fillStyle='rgba(0,0,0,.35)';x.font='600 12px system-ui';x.fillText('Now',8,16);x.fillText('New',c.width/2+8,16);x.fillRect(c.width/2,0,1,c.height);
+  const ref=O?{ox:O.ox,oy:O.oy,w:O.im.width/2,h:O.im.height/2}:L?{ox:ed.ox,oy:ed.oy,w:L.width/2,h:L.height/2}:null,gy=c.height-12;
+  const put=(im,ox,oy,cx)=>{if(!ref)return;const ax=cx-(ref.ox+ref.w/2)*k,ay=gy-(ref.oy+ref.h)*k;x.drawImage(im,ax+ox*k,ay+oy*k,im.width/2*k,im.height/2*k)};
+  if(O)put(O.im,O.ox,O.oy,c.width/4);if(L)put(L,ed.ox,ed.oy,c.width*3/4);
+  if(me){const mw=48*k,mh=56*k;x.drawImage(me,c.width/2-mw-4,c.height-12-mh+4*k,mw,mh)}}
  // walking preview in all four directions
- let walkT=0;setInterval(()=>{const c=document.getElementById('dvwalk'),ed=S.ed;if(!S.open||!c||!ed||(ed.kind!=='worn'&&ed.kind!=='pet'))return;walkT++;
+ let walkT=0;setInterval(()=>{const c=document.getElementById('dvwalk'),ed=S.ed;if(!S.open||!c||!ed||!LAY(ed.kind))return;walkT++;
+  if(ed.kind==='prop'){propPreview(c,ed);return}
   if(ed.kind==='pet'){for(let d=0;d<4;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
    const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<40;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
    const S2=3,ph=walkT%60,goR=ph<30,px=goR?60+ph*10:340-(ph-30)*10,py=86,f=(walkT%2)&&(ph%30<28)?3:2,L=ed.rc[f]||ed.rc[2]||ed.rc[0];
@@ -13166,27 +13214,27 @@ window.SQA=SQA;
   if(S.sel!==k)return;S.ed={...ed,k,tool:'pen',col:Math.max(0,ed.pal.length?0:-1),undo:[],redo:[],dirty:false};if(!S.ed.pal.length){S.ed.pal.push('#000000');S.ed.col=0}draw()}
  // ---- drawing on the editor canvas ----
  function cell(){const c=document.getElementById('dvc');if(!c||!S.ed)return 0;const ed=S.ed,box=c.parentElement.getBoundingClientRect();
-  if((ed.kind==='worn'||ed.kind==='pet')&&ed.fit)return Math.max(2,Math.round(ed.fit*ed.zoom));
+  if((LAY(ed.kind))&&ed.fit)return Math.max(2,Math.round(ed.fit*ed.zoom));
   const fit=Math.max(2,Math.floor(Math.min((box.width-8)/ed.w,(Math.min(box.height||9999,window.innerHeight*.62)-8)/ed.h)));
-  if(ed.kind==='pet'){ed.fit=fit;return Math.max(2,Math.round(fit*ed.zoom))}if(ed.kind!=='worn')return fit;ed.fit=fit;if(!ed.zoom){const B=charBox(),bw=B.x1-B.x0+1,bh=B.y1-B.y0+1,want=Math.floor(Math.min((box.width-8)/bw,(window.innerHeight*.62-8)/bh));ed.zoom=Math.max(1,Math.min(8,want/fit));ed.recenter=1}
+  if(ed.kind==='pet'||ed.kind==='prop'){ed.fit=fit;return Math.max(2,Math.round(fit*ed.zoom))}if(ed.kind!=='worn')return fit;ed.fit=fit;if(!ed.zoom){const B=charBox(),bw=B.x1-B.x0+1,bh=B.y1-B.y0+1,want=Math.floor(Math.min((box.width-8)/bw,(window.innerHeight*.62-8)/bh));ed.zoom=Math.max(1,Math.min(8,want/fit));ed.recenter=1}
   return Math.max(2,Math.round(fit*ed.zoom))}
  function paint(){const c=document.getElementById('dvc'),ed=S.ed;if(!c||!ed)return;const z=down&&ed.z?ed.z:(ed.z=cell());if(c.width!==ed.w*z)c.width=ed.w*z;if(c.height!==ed.h*z)c.height=ed.h*z;const x=c.getContext('2d');
-  if(ed.kind==='worn'||ed.kind==='pet'){if(ed.kind==='pet')ed.rcd=[1,1,1,1];else ed.rcd[ed.dir]=1;x.imageSmoothingEnabled=false;x.fillStyle='#2c323e';x.fillRect(0,0,c.width,c.height);
-   if(ed.kind==='pet'){x.fillStyle='rgba(255,255,255,.04)';for(let yy=0;yy<ed.h;yy++)for(let xx=(yy&1);xx<ed.w;xx+=2)x.fillRect(xx*z,yy*z,z,z)}
+  if(LAY(ed.kind)){if(ed.kind!=='worn')ed.rcd=ed.layers.map(()=>1);else ed.rcd[ed.dir]=1;x.imageSmoothingEnabled=false;x.fillStyle='#2c323e';x.fillRect(0,0,c.width,c.height);
+   if(ed.kind!=='worn'){x.fillStyle='rgba(255,255,255,.04)';for(let yy=0;yy<ed.h;yy++)for(let xx=(yy&1);xx<ed.w;xx+=2)x.fillRect(xx*z,yy*z,z,z)}
    if(ed.kind==='worn'&&ed.under){const u=charCan(ed.dir,0,false);if(u){x.globalAlpha=.8;x.drawImage(u,0,0,c.width,c.height);x.globalAlpha=1}}
    const DM=ed.kind==='worn'&&ed.pvd&&ed.dyi&&ed.dyi.size&&DYES()[ed.pvd-1]?A.dyeMap([...ed.dyi].map(i=>ed.pal[i]),DYES()[ed.pvd-1].c):null;
    for(let i=0;i<ed.px.length;i++){const v=ed.px[i];if(v===255)continue;x.fillStyle=DM&&ed.dyi.has(v)?DM[ed.pal[v].toLowerCase()]||ed.pal[v]:ed.pal[v];x.fillRect((i%ed.w)*z,Math.floor(i/ed.w)*z,z,z)}
    if(ed.recenter&&ed.kind==='worn'){ed.recenter=0;const cv=c.parentElement,B=charBox();cv.scrollLeft=((B.x0+B.x1)/2)*z-cv.clientWidth/2;cv.scrollTop=((B.y0+B.y1)/2)*z-cv.clientHeight/2}
    if(z>=8){x.strokeStyle='rgba(255,255,255,.07)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
    const n=new Set(ed.layers.flatMap(L=>[...L].filter(v=>v!==255))).size,st=document.querySelector('#dvs .dv-st');
-   if(st)st.textContent=(ed.kind==='pet'?PFN[ed.dir]+' frame':WDN[ed.dir]+' layer')+' · '+ed.w+' × '+ed.h+' · '+n+' colours'+(ed.dirty?'  ·  unsaved changes':'');return}
+   if(st)st.textContent=(ed.kind==='prop'?'New look':ed.kind==='pet'?PFN[ed.dir]+' frame':WDN[ed.dir]+' layer')+' · '+ed.w+' × '+ed.h+' · '+n+' colours'+(ed.dirty?'  ·  unsaved changes':'');return}
   for(let y=0;y<ed.h;y++)for(let X=0;X<ed.w;X++){const v=ed.px[y*ed.w+X];x.fillStyle=v===255?((X+y)%2?'#3a4150':'#2c323e'):ed.pal[v];x.fillRect(X*z,y*z,z,z)}
   if(z>=8){x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
   const sp=toSp(ed),u=A.render(sp).toDataURL();for(const im of document.querySelectorAll('#dvs .dv-pv img')){im.src=u;const k=im.dataset.x2?2:1;im.style.width=Math.min(220,sp.w*sp.s*k)+'px';im.style.height=Math.min(220,sp.h*sp.s*k)+'px'}
   const st=document.querySelector('#dvs .dv-st');if(st)st.textContent=ed.w+' × '+ed.h+' pixels, shown at '+ed.s+'×  ·  '+sp.p.split(',').filter(Boolean).length+' colours'+(ed.dirty?'  ·  unsaved changes':'')}
  const snapEd=()=>{const ed=S.ed;ed.undo.push({px:ed.px.slice(),pal:ed.pal.slice(),dir:ed.dir});if(ed.undo.length>80)ed.undo.shift();ed.redo=[];ed.dirty=true};
  function undo(r){const ed=S.ed;if(!ed)return;const a=r?ed.redo:ed.undo,b=r?ed.undo:ed.redo,s=a.pop();if(!s)return;
-  if(ed.kind==='worn'||ed.kind==='pet'){b.push({px:ed.layers[s.dir].slice(),pal:ed.pal.slice(),dir:s.dir});ed.layers[s.dir]=s.px;ed.rcd=ed.layers.map(()=>1);const sw=ed.dir!==s.dir;ed.dir=s.dir;ed.px=ed.layers[ed.dir];ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;if(sw){draw();return}drawPal();paint();return}
+  if(LAY(ed.kind)){b.push({px:ed.layers[s.dir].slice(),pal:ed.pal.slice(),dir:s.dir});ed.layers[s.dir]=s.px;ed.rcd=ed.layers.map(()=>1);const sw=ed.dir!==s.dir;ed.dir=s.dir;ed.px=ed.layers[ed.dir];ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;if(sw){draw();return}drawPal();paint();return}
   b.push({px:ed.px.slice(),pal:ed.pal.slice()});ed.px=s.px;ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;drawPal();paint()}
  function fill(i,to){const ed=S.ed,from=ed.px[i];if(from===to)return;const st=[i];while(st.length){const j=st.pop();if(ed.px[j]!==from)continue;ed.px[j]=to;const X=j%ed.w;
   if(X>0)st.push(j-1);if(X<ed.w-1)st.push(j+1);if(j>=ed.w)st.push(j-ed.w);if(j<ed.w*(ed.h-1))st.push(j+ed.w)}}
@@ -13248,14 +13296,14 @@ window.SQA=SQA;
 @media (max-width:760px){#dvs .dv-pvlong{display:none}#dvs .dv-pvs{display:inline}#dvs .dv-top{gap:2px;padding-left:8px;padding-right:8px}#dvs .dv-tab{padding:7px 9px}#dvs .dv-ttl{width:100%;margin:0 0 2px}#dvs .dv-spr{grid-template-columns:1fr;height:auto}#dvs .dv-spr.dv-has .dv-ls{display:none}#dvs .dv-spr:not(.dv-has) .dv-ed{display:none}#dvs .dv-back{display:inline-block}#dvs .dv-ls .dv-grid{max-height:none}
  #dvs table,#dvs tbody,#dvs tr,#dvs td{display:block}#dvs thead{display:none}#dvs tr{border-top:1px solid #2a3240;padding:8px 0}#dvs td{border:0;padding:3px 0}#dvs td[data-l]::before{content:attr(data-l);display:block;font-size:11px;color:#8a94a6}#dvs td textarea{min-width:0}}`;
  document.head.appendChild(st);
- const TABS=[['sprites','Sprites'],['worn','Gear'],['pets','Pets'],['stats','Stats'],['islands','Islands'],['publish','Publish']];
+ const TABS=[['sprites','Sprites'],['worn','Gear'],['pets','Pets'],['props','Props'],['stats','Stats'],['islands','Islands'],['publish','Publish']];
  function draw(){if(!S.open)return;const nch=S.draft?changes().length:0;
   let h='<div class="dv-top"><span class="dv-ttl">Dev Suite</span>'+TABS.map(([k,n])=>'<button class="dv-tab'+(S.tab===k?' dv-on':'')+'" data-tab="'+k+'">'+n+(k==='publish'&&nch?' ('+nch+')':'')+'</button>').join('')+
    '<span class="dv-sp1"></span>'+(S.ok==='yes'?'<label class="dv-mut" style="display:flex;gap:6px;align-items:center;margin-right:8px"><input type="checkbox" data-a="pv"'+(A.previewing?' checked':'')+'> <span class="dv-pvlong">Show unpublished edits in my game</span><span class="dv-pvs">Preview drafts</span></label>':'')+
    '<button class="dv-x" data-a="close">Close</button></div><div class="dv-main">'+main()+'</div><div class="dv-note">'+E(S.note)+'</div>';
   const sc=root.querySelector('.dv-ls .dv-grid'),top=sc?sc.scrollTop:0,mn=root.querySelector('.dv-main'),mtop=mn?mn.scrollTop:0,cw=root.querySelector('.dv-cvw'),cws=cw?[cw.scrollLeft,cw.scrollTop]:null;
   root.innerHTML=h;const sc2=root.querySelector('.dv-ls .dv-grid');if(sc2)sc2.scrollTop=top;const mn2=root.querySelector('.dv-main');if(mn2)mn2.scrollTop=mtop;const cw2=cws&&root.querySelector('.dv-cvw');if(cw2)requestAnimationFrame(()=>{cw2.scrollLeft=cws[0];cw2.scrollTop=cws[1]});
-  if((S.tab==='sprites'||S.tab==='worn'||S.tab==='pets')&&S.ed){drawPal();drawTools();paint();requestAnimationFrame(paint)}
+  if((S.tab==='sprites'||S.tab==='worn'||S.tab==='pets'||S.tab==='props')&&S.ed){drawPal();drawTools();paint();requestAnimationFrame(paint)}
   if(S.ok==='yes'&&EXT[S.tab]&&EXT[S.tab].after)EXT[S.tab].after()}
  function main(){
   if(S.ok===null)return'<p class="dv-mut">Loading...</p>';
@@ -13266,7 +13314,7 @@ window.SQA=SQA;
    '<p>Your account ID:<br><code>'+E(S.uid)+'</code> <button class="dv-b" data-a="copyid">Copy</button></p><button class="dv-b dv-pri" data-a="retry">I\'ve done it, try again</button></div>';
   if(S.ok==='error')return'<div class="dv-card"><b>Couldn\'t reach the database.</b><p class="dv-mut">'+E(S.note)+'</p><button class="dv-b" data-a="retry">Try again</button></div>';
   if(EXT[S.tab])return EXT[S.tab].render();
-  if(S.tab==='sprites')return sprites();if(S.tab==='worn')return worn();if(S.tab==='pets')return pets();if(S.tab==='stats')return stats();return publish()}
+  if(S.tab==='sprites')return sprites();if(S.tab==='worn')return worn();if(S.tab==='pets')return pets();if(S.tab==='props')return props();if(S.tab==='stats')return stats();return publish()}
  function sprites(){const q=S.q.toLowerCase(),keys=A.itemKeys().filter(k=>(!q||(INAME[k]||'').toLowerCase().includes(q)||k.includes(q))&&(!S.only||state(k)));
   let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+A.itemKeys().length+' item sprites" value="'+E(S.q)+'" data-in="q">'+
    '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only edited sprites</label><div class="dv-grid">';
@@ -13366,7 +13414,7 @@ window.SQA=SQA;
  function ngRecipe(k){const o={...S.draft.newgear[k]},c={};for(let i=0;i<3;i++){const m=root.querySelector('[data-gr="m'+i+'"]'),n=root.querySelector('[data-gr="c'+i+'"]');if(m&&m.value)c[m.value]=(c[m.value]|0)+Math.max(1,+(n&&n.value)||1)}
   const lv=+(root.querySelector('[data-gr="lv"]')||{}).value||1;if(Object.keys(c).length)o.sm={c,lv};else delete o.sm;return ngSave(k,o)}
  function drawTools(){const t=root.querySelector('.dv-tools');if(!t||!S.ed)return;const T=[['pen','Pen'],['erase','Eraser'],['fill','Fill'],['pick','Pick colour']];
-  if(S.ed.kind==='worn'||S.ed.kind==='pet')T.push(['pan','Move']);
+  if(LAY(S.ed.kind))T.push(['pan','Move']);
   t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button>'+
    (S.ed.kind==='worn'||S.ed.kind==='pet'?'<button class="dv-b" data-a="zout" title="Zoom out">−</button><button class="dv-b" data-a="zin" title="Zoom in">+</button>':'');
   const cv=root.querySelector('.dv-cvw');if(cv)cv.classList.toggle('dv-pan',S.ed.tool==='pan')}
@@ -13419,7 +13467,7 @@ window.SQA=SQA;
   if(t.dataset.dir!=null&&S.ed){S.ed.dir=+t.dataset.dir;S.ed.px=S.ed.layers[S.ed.dir];draw();return}
   if(t.dataset.copy!=null&&S.ed){snapEd();S.ed.layers[S.ed.dir].set(S.ed.layers[+t.dataset.copy]);paint();draw();return}
   if(t.dataset.stat){S.statT=t.dataset.stat;draw();return}
-  if(t.dataset.k){if(S.ed&&S.ed.dirty&&S.sel!==t.dataset.k&&!confirmLeave())return;if(S.tab==='worn')openGear(t.dataset.k);else if(S.tab==='pets')openPet(t.dataset.k);else openSprite(t.dataset.k);return}
+  if(t.dataset.k){if(S.ed&&S.ed.dirty&&S.sel!==t.dataset.k&&!confirmLeave())return;if(S.tab==='worn')openGear(t.dataset.k);else if(S.tab==='pets')openPet(t.dataset.k);else if(S.tab==='props')openProp(t.dataset.k);else openSprite(t.dataset.k);return}
   if(t.dataset.tool){S.ed.tool=t.dataset.tool;drawTools();return}
   if(t.dataset.col){S.ed.col=+t.dataset.col;if(S.ed.tool==='erase'||S.ed.tool==='pick')S.ed.tool='pen';drawPal();drawTools();return}
   const a=t.dataset.a;
@@ -13439,10 +13487,11 @@ window.SQA=SQA;
   if(a==='grst'){const k=S.sel;return arm('grst',async()=>{delete S.draft.gear[k];try{await dset('draft/gear/'+k,null);toast('Back to how the game made it work (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw()})}
   if(a==='back'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;S.sel=null;S.ed=null;draw();return}
   if(a==='undo')return undo(false);if(a==='redo')return undo(true);
-  if(a==='save')return S.ed&&S.ed.kind==='worn'?saveWorn():S.ed&&S.ed.kind==='pet'?savePet():saveSprite();
-  if(a==='revert'){S.ed.dirty=false;if(S.ed.kind==='worn')openWorn(S.sel);else if(S.ed.kind==='pet')openPet(S.sel);else openSprite(S.sel);return}
+  if(a==='save')return S.ed&&S.ed.kind==='worn'?saveWorn():S.ed&&S.ed.kind==='pet'?savePet():S.ed&&S.ed.kind==='prop'?saveProp():saveSprite();
+  if(a==='revert'){S.ed.dirty=false;if(S.ed.kind==='worn')openWorn(S.sel);else if(S.ed.kind==='pet')openPet(S.sel);else if(S.ed.kind==='prop')openProp(S.sel);else openSprite(S.sel);return}
   if(a==='pcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openPet(S.sel,true);return}
   if(a==='pflip'){const ed=S.ed;snapEd();const L=ed.layers[ed.dir];for(let y=0;y<ed.h;y++){for(let x=0;x<ed.w>>1;x++){const i=y*ed.w+x,j=y*ed.w+ed.w-1-x,t2=L[i];L[i]=L[j];L[j]=t2}}paint();return}
+  if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true);return}
   if(a==='presize'){petResize(+(root.querySelector('[data-in="pw"]')||{}).value,+(root.querySelector('[data-in="ph"]')||{}).value);return}
   if(a==='under'){S.ed.under=t.checked;paint();return}
   if(a==='hide'){S.ed.hide=t.checked;S.ed.dirty=true;paint();return}
@@ -13451,6 +13500,7 @@ window.SQA=SQA;
   if(a==='clr'){snapEd();S.ed.px.fill(255);paint();draw();return}
   if(a==='dytog'&&S.ed&&S.ed.kind==='worn'){const ed=S.ed;ed.dyi=ed.dyi||new Set();if(ed.dyi.has(ed.col))ed.dyi.delete(ed.col);else ed.dyi.add(ed.col);ed.dirty=true;draw();return}
   if(a==='wcap'&&S.ed&&S.ed.kind==='worn'){const ed=S.ed;return arm('wcap',()=>startFromGame(ed,false))}
+  if(a==='orig'&&S.ed&&S.ed.kind==='prop'){const k=S.sel;delete S.draft.props[k];try{await dset('draft/props/'+key(k),null);toast('Back to the game\'s own look (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.ed=null;openProp(k);return}
   if(a==='orig'&&S.ed&&S.ed.kind==='pet'){const k=S.ed.k,item=S.sel;delete S.draft.pets[k];try{await dset('draft/pets/'+k,null);toast('Back to the game\'s own look (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.ed=null;openPet(item);return}
   if(a==='orig'&&S.ed&&S.ed.kind==='worn'){const k=S.sel;delete S.draft.worn[k];try{await dset('draft/worn/'+k,null);toast('Back to the game\'s own look (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);openWorn(k);return}
   if(a==='orig'){const k=S.sel;delete S.draft.icons[k];try{await dset('draft/icons/'+k,null);toast('Back to the game\'s original sprite (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.ed=null;openSprite(k);return}
@@ -13487,10 +13537,10 @@ window.SQA=SQA;
  addEventListener('resize',()=>{if(S.open&&S.ed){S.ed.fit=0;paint()}});
  // keys: the game must not see them while the suite is open
  addEventListener('keydown',e=>{if(!S.open)return;e.stopPropagation();const tg=e.target,typing=/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)&&tg.type!=='checkbox';
-  if(e.key==='Escape'&&!typing){close();return}if(typing||!S.ed||(S.tab!=='sprites'&&S.tab!=='worn'&&S.tab!=='pets'))return;const k=e.key.toLowerCase(),m=e.ctrlKey||e.metaKey;
-  if(m&&k==='z'){e.preventDefault();undo(e.shiftKey);return}if(m&&k==='y'){e.preventDefault();undo(true);return}if(m&&k==='s'){e.preventDefault();if(S.ed.kind==='worn')saveWorn();else if(S.ed.kind==='pet')savePet();else saveSprite();return}
-  if((S.ed.kind==='worn'||S.ed.kind==='pet')&&!m&&(k==='+'||k==='='||k==='-')){const b=root.querySelector('[data-a="'+(k==='-'?'zout':'zin')+'"]');if(b)b.click();return}
-  const T={p:'pen',b:'pen',e:'erase',f:'fill',g:'fill',i:'pick'};if(S.ed.kind==='worn'||S.ed.kind==='pet')T.m='pan';if(!m&&T[k]){S.ed.tool=T[k];drawTools()}},true);
+  if(e.key==='Escape'&&!typing){close();return}if(typing||!S.ed||(S.tab!=='sprites'&&S.tab!=='worn'&&S.tab!=='pets'&&S.tab!=='props'))return;const k=e.key.toLowerCase(),m=e.ctrlKey||e.metaKey;
+  if(m&&k==='z'){e.preventDefault();undo(e.shiftKey);return}if(m&&k==='y'){e.preventDefault();undo(true);return}if(m&&k==='s'){e.preventDefault();if(S.ed.kind==='worn')saveWorn();else if(S.ed.kind==='pet')savePet();else if(S.ed.kind==='prop')saveProp();else saveSprite();return}
+  if((LAY(S.ed.kind))&&!m&&(k==='+'||k==='='||k==='-')){const b=root.querySelector('[data-a="'+(k==='-'?'zout':'zin')+'"]');if(b)b.click();return}
+  const T={p:'pen',b:'pen',e:'erase',f:'fill',g:'fill',i:'pick'};if(LAY(S.ed.kind))T.m='pan';if(!m&&T[k]){S.ed.tool=T[k];drawTools()}},true);
  addEventListener('keyup',e=>{if(S.open)e.stopPropagation()},true);
  // you're safe while the suite is open: no damage, no hunger, nothing can kill you
  const _hp=hurtP;hurtP=function(){if(S.open)return;return _hp.apply(this,arguments)};
@@ -14311,6 +14361,64 @@ window.SQA=SQA;
    const v=rgView(),P0=A.ISL_PAD,x0=Math.max(0,Math.floor(v.x0/16)-P0),x1=Math.min(I.w-1,Math.ceil(v.x1/16)-P0),y0=Math.max(0,Math.floor(v.y0/16)-P0),y1=Math.min(I.h-1,Math.ceil(v.y1/16)-P0);
    g.imageSmoothingEnabled=false;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const ch=L[y*I.w+x];if(!ch||ch==='.')continue;const T=I.ct[HEX.indexOf(ch)];if(!T||!okUrl(T.p))continue;const m=img(T.p);if(m)g.drawImage(m,(x+P0)*16,(y+P0)*16,16,16)}}catch(e){}return out};
  window.SQISLIFE={MOBS,TOUGH,zonesOf,okUrl,talkTo,near}})();
+// ---- 120. Prop looks: how things in the world look (trees, rocks, ores, plants, buildings, island props) ----
+// The Dev Suite's Props tab paints a new look for a kind of prop; published looks live in the asset library as
+// props.<key> = {w,h,s,ox,oy,p,r}: one picture, s/2 world px per pixel (s=1 is the game's own HD detail), its top-left
+// at (ox,oy) world px from the prop's anchor. Keys and anchors:
+//   o:<type>[:<variant>]  a world object (tree, rock, ore, shroom...); anchor = its tile's top-left
+//   b:<k>                 a town building on Hollow Island (BLD, by its k); anchor = the top-left of its 2-row footprint
+//   b:house<w>            players' houses (w tiles wide)
+//   l:<kind>[:<variant>]  an island building or prop (SQA.ISL_LM); anchor = its top-left tile
+// Anything without a published look is drawn by the game's own code, so removing a look puts the original back.
+(()=>{if(!window.SQA)return;const A=SQA;
+ const PL={},PC=new Map();let ver=0,off=0;// off > 0 while the editor captures the game's own look
+ const vsp=L=>L&&L.w>0&&L.h>0&&L.w<=320&&L.h<=320&&L.s>=1&&L.s<=8&&isFinite(L.ox)&&isFinite(L.oy)&&typeof L.p==='string'&&(typeof L.r==='string'||typeof L.d==='string')&&A.pix(L).length===L.w*L.h;
+ A.onApply(lib=>{for(const k in PL)delete PL[k];PC.clear();ver++;const P=lib&&lib.props||{};for(const k in P)if(vsp(P[k]))PL[k]=P[k]});
+ const can=(k,L)=>{let c=PC.get(k);if(!c){c=A.render(L);PC.set(k,c)}return c};
+ // draw a look; L given = a look straight from the editor (for previews)
+ function drawLook(key,X,Y,L){L=L||(off?null:PL[key]);if(!L)return false;const c=L===PL[key]?can(key,L):A.render(L),w=L.w*L.s/2,h=L.h*L.s/2;
+  g.save();g.imageSmoothingEnabled=false;g.drawImage(c,Math.round((X+L.ox)*2)/2,Math.round((Y+L.oy)*2)/2,w,h);g.restore();return true}
+ const okey=o=>'o:'+o.t+(o.v!=null&&o.v!==''?':'+o.v:'');
+ const has=k=>!off&&!!PL[k];
+ // world objects: Hollow draws them through OBJHD, islands through drawFurn (some island variants never reach OBJHD)
+ const objDraw=(o,bx,by,s)=>{const k=okey(o);if(!has(k))return false;const L=PL[k];try{shd(bx,by-1,Math.max(8,Math.min(30,L.w*L.s/2*.7)))}catch(e){}return drawLook(k,bx-8+(s||0),by-14)};
+ const _oh=OBJHD;OBJHD=(o,x,y,bx,by,s,tm)=>{if(o&&objDraw(o,bx,by,s))return true;return _oh?_oh(o,x,y,bx,by,s,tm):false};
+ const _df=drawFurn;drawFurn=function(it,tm){
+  if(it&&it.t==='_obj'&&it.o&&has(okey(it.o))){const o=it.o,s=o.shake>0?(o.shake-=.016,Math.round(Math.sin(tm*60))):0;objDraw(o,it.x*16+8,it.y*16+14,s);return}
+  if(it&&it.t==='lm'&&it.k!=='npc'){const k='l:'+it.k+(it.v!=null?':'+it.v:'');if(has(k)){drawLook(k,it.x*16,it.y*16);return}}
+  return _df.apply(this,arguments)};
+ // buildings
+ const HS=typeof HOUSE_STYLE!=='undefined'?HOUSE_STYLE:null;
+ const bkey=b=>{if(!b)return null;if(b.castle)return'b:castle';if(HS&&b.k===HS.k&&b.wall===HS.wall&&b.roof===HS.roof)return'b:house'+(b.w|0);return typeof BLD!=='undefined'&&BLD.includes(b)?'b:'+b.k:null};
+ const _db=drBld;drBld=function(b,tm){const k=bkey(b);if(k&&has(k)){drawLook(k,b.tx*16,b.ty*16);return}return _db.apply(this,arguments)};
+ // ---- what can be edited ----
+ const TN={tree:'Tree',pine:'Pine',oak:'Oak tree',willow:'Willow',maple:'Maple',yew:'Yew',rock:'Rock',ore:'Iron ore',bush:'Berry bush',cactus:'Cactus',shroom:'Mushroom patch',nutbush:'Hazel bush',
+  coal:'Coal',gold:'Gold ore',mith:'Mithril ore',adam:'Adamant ore',boulder:'Boulder',copper:'Copper ore',tin:'Tin ore',silver:'Silver ore',runite:'Runite ore'};
+ const VN={'tree:dark':'Dark tree','tree:dead':'Dead tree','rock:moss':'Mossy rock','ore:crystal':'Crystal','shroom:brown':'Mushroom patch (brown)','shroom:void':'Mushroom patch (void)'};
+ const pretty=s=>String(s).replace(/^[a-z]/,c=>c.toUpperCase()).replace(/_/g,' ');
+ const TOWN={gen:'General store',smith:'Smithy',tackle:'Tackle shop',inn:'Inn',forge:'Forge'},TP={hv:'Hollow Village house',sm:'Saltmere house',fh:'Frosthollow building',dh:'Dusthaven building',tw:'Tidewatch building'};
+ function list(){const out=[];const seen=new Set(),add=(k,n,grp,mk)=>{if(seen.has(k))return;seen.add(k);out.push({k,n,grp,mk})};
+  const T=Object.keys(typeof OHP!=='undefined'?OHP:{});const order=['tree','pine','oak','willow','maple','yew','bush','nutbush','shroom','cactus','rock','ore'];
+  for(const t of order.concat(T.filter(t=>!order.includes(t)).sort()))if(OHP[t]!=null){const o={t,hp:OHP[t]};add(okey(o),TN[t]||(window.SQBOUL&&SQBOUL[t]?pretty(SQBOUL[t].n||t):pretty(t)),'Nature',()=>({t:'_obj',x:0,y:0,o}))}
+  for(const kv in VN){const[t,v]=kv.split(':');const o={t,v,hp:OHP[t]||3};add(okey(o),VN[kv],'Nature',()=>({t:'_obj',x:0,y:0,o}))}
+  if(typeof BLD!=='undefined')for(const b of BLD){const m=/^([a-z]+)(\d+)$/.exec(b.k),n=TOWN[b.k]||(m&&TP[m[1]]?TP[m[1]]+' '+m[2]:pretty(b.k));add('b:'+b.k,n,'Buildings',()=>({bld:{...b,tx:0,ty:0}}))}
+  if(HS)for(const w of[5,7])add('b:house'+w,'Player house ('+w+' wide)','Buildings',()=>({bld:{...HS,w,tx:0,ty:0}}));
+  add('b:castle','Castle','Buildings',()=>({bld:{...(HS||{}),k:'home',w:9,tx:0,ty:0,castle:true}}));
+  for(const kk in A.ISL_LM){const[k,v]=kk.split(':'),L=A.ISL_LM[kk];add('l:'+kk,L[0],'Island props',()=>({t:'lm',k,v:L[3],x:0,y:0,w:L[1],h:L[2],sh:L[2],name:L[0]}))}
+  return out}
+ // ---- the game's own look, for the editor to start from: drawn by the game at 2x onto its hidden screen canvas ----
+ function capture(key){const it=list().find(q=>q.k===key);if(!it)return null;const cvs=g.canvas,OX=80,OY=Math.min(260,cvs.height-120);off++;
+  try{const m=it.mk();g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cvs.width,cvs.height);g.setTransform(2,0,0,2,OX,OY);GC=g;
+   if(m.bld)drBld(m.bld,0);else drawFurn(m,0);g.restore();
+   const W=Math.min(cvs.width,OX+700),H=Math.min(cvs.height,OY+120),d=g.getImageData(0,0,W,H).data;let x0=W,y0=H,x1=-1,y1=-1;
+   for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>=128){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+   if(x1<x0)return null;if((x0-OX)%2)x0--;if((y0-OY)%2)y0--;const c=document.createElement('canvas');c.width=Math.min(320,x1-x0+1);c.height=Math.min(320,y1-y0+1);c.getContext('2d').drawImage(cvs,x0,y0,c.width,c.height,0,0,c.width,c.height);
+   return{url:c.toDataURL(),ox:(x0-OX)/2,oy:(y0-OY)/2}}
+  catch(e){console.warn('prop capture',e);return null}finally{off--}}
+ // a small picture of a prop as players see it now (the list's thumbnails)
+ const TH=new Map();function thumb(key){if(TH.has(key+'@'+ver))return TH.get(key+'@'+ver);let u='';
+  if(PL[key]){u=A.render(PL[key]).toDataURL()}else{const c=capture(key);u=c?c.url:''}TH.set(key+'@'+ver,u);return u}
+ window.SQPROPS={list,capture,thumb,drawLook,valid:vsp,get looks(){return PL},clearThumbs(){TH.clear()}}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
