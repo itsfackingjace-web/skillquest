@@ -66,8 +66,8 @@
   `ibScale` adds 60% base HP per extra fighter, a joiner doesn't spawn a boss (`ST.wait`, spawns one after 4 s if no fight
   shows up), the defeat is sent for 4 s (`ST.done`) and gives every fighter the reward; a leaving owner hands it over.
 - **Skilling looks** (`skills/114-s116-skilling-looks.js`): fire, cooking and fishing are drawn on the character, not as a
-  progress bar (109 now only draws the smith/smelt/craft effects and the "N left" count). The state travels as `ak` in the
-  multiplayer position (1 fire, 2 cook, 3 fishing, 4 bite, 5 reeling, 6 caught; `SQACT()`), the crouch is done in the
+  progress bar (109 now only draws the "N left" count). The state travels as `ak` in the
+  multiplayer position (1 fire, 2 cook, 3 fishing, 4 bite, 5 reeling, 6 caught, 7 smelt, 8 smith, 9 craft; `SQACT()`; 0-9 only, `cleanCh`/receiver clamp), the crouch is done in the
   outermost `cP` (whole character, gear included, re-drawn shorter at the knees), and other players' props via `SQPEERFX`.
 - **Getting started guide** (`ui/115-s117-getting-started.js`): 8 steps for new characters, shown through the quest
   tracker (102's `refresh` asks `SQGUIDE()` first), with hints, glowing buttons (`.sqglow`) and small rewards. Saved as `gd`

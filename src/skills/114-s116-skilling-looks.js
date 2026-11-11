@@ -11,10 +11,10 @@
  const ACT={c:0,prev:0,at:0},CATCH={at:-9};
  const now=()=>performance.now()/1000;
  function localAct(){if(dead)return 0;if(now()-CATCH.at<.7&&FISH)return 6;const D=SQDO;
-  if(D){if(D.kind==='fire')return 1;if(D.kind==='cook')return 2;if(D.kind==='reel')return FISH?5:0}
+  if(D){if(D.kind==='fire')return 1;if(D.kind==='cook')return 2;if(D.kind==='reel')return FISH?5:0;if(D.kind==='smelt')return 7;if(D.kind==='smith')return 8;if(D.kind==='craft')return 9}
   if(FISH)return FISH.bite>0?4:3;return 0}
  window.SQACT=()=>ACT.c;
- let FN=-1;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(FISH){const n=fishN();if(FN>=0&&n>FN&&SQDO&&SQDO.kind==='reel'||FN>=0&&n>FN&&ACT.c===5)CATCH.at=now();FN=n}else FN=-1;const c=localAct();if(c!==ACT.c){ACT.prev=ACT.c;ACT.c=c;ACT.at=now()}};
+ let FN=-1;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(FISH){const n=fishN();if(FN>=0&&n>FN&&SQDO&&SQDO.kind==='reel'||FN>=0&&n>FN&&ACT.c===5)CATCH.at=now();FN=n}else FN=-1;const c=localAct();if(c>=7){const n=beat(c,now()-ACT.at);if(n!==MYB){MYB=n;if(n>=0&&c===ACT.c)try{sfx(BEATS[c])}catch(e){}}}else MYB=-9;if(c!==ACT.c){ACT.prev=ACT.c;ACT.c=c;ACT.at=now()}};
  // a fish you actually catch flies out of the water to you
  function fishN(){let n=inv.rainbow|0;for(const f of FISH_T)n+=inv[f.k]|0;return n}
  // ---- crouching (fire and cooking): the whole character, gear included, drawn shorter at the knees ----
@@ -88,8 +88,41 @@
   Rg(ex-3,ey-2,6,5,O);Rg(ex-2,ey-1,4,3,turn?c1:c2);Rg(ex-2+(turn?2:0),ey-1,2,1,turn?c2:c1);
   for(let j=0;j<3;j++){const p=((tm*1.1+j/3))%1;g.globalAlpha=(1-p)*.5;Rg(Math.round(ex-2+j*2+Math.sin(p*7)),Math.round(ey-3-p*12),1,2,'#f0f0f0')}g.globalAlpha=1;
   if(Math.floor(tm*9)%4===0)px(ex+(Math.random()-.5)*4,ey+3+Math.random()*3,'#ffd060')}
+ // the sound of each blow, pour or saw stroke (the same timing as the drawing)
+ const BEATS={7:'sizzle',8:'mine',9:'rustle'},beat=(c,t)=>c===8?Math.floor((t-.504)/.7):c===7?Math.floor((t-1.21)/2.2):c===9?Math.floor(t/1.4):-1;let MYB=-9;
+ // ---- smithing: the hammer rises and rings down on the glowing metal ----
+ // a tool held at the hand: angle a (radians, 0 = pointing ahead, PI/2 = straight up), length L; in front/back views it moves up and down
+ const tool=(hx,hy,fx,fy,a,L)=>fx?[hx+fx*Math.cos(a)*L,hy-Math.sin(a)*L]:[hx+(fy>0?-1:1)*Math.cos(a)*L*.35,hy-Math.sin(a)*L*.9+(fy>0?Math.cos(a)*L*.5:0)];
+ function drawSmith(x,y,fx,fy,t,tm){const ax=Math.round(x+fx*14+(fx?0:5)),ay=Math.round(y+fy*12+(fx?0:2)),p=(t%.7)/.7;
+  // the work on the anvil: a red-hot bar that cools between blows
+  const heat=.6+.4*Math.max(0,1-((t%.7)/.7));Rg(ax-4,ay-6,8,3,O);Rg(ax-3,ay-5,6,1,heat>.85?'#ffd060':'#f87830');px(ax+1,ay-5,'#fff0b0');
+  // the hammer: raised slowly, brought down fast, rests on the bar
+  const a=p<.6?lerp(-.35,1.9,p/.6):p<.72?lerp(1.9,-.35,(p-.6)/.12):-.35,hx=x+(fx?fx*5:(fy>0?-5:5)),hy=y-5;
+  const [ex,ey]=tool(hx,hy,fx,fy,a,9);line(hx+1,hy+1,ex+1,ey+1,O);line(hx,hy,ex,ey,'#8a5a2a');
+  const hd=fx?[Math.round(ex)-2,Math.round(ey)-2]:[Math.round(ex)-2,Math.round(ey)-2];Rg(hd[0]-1,hd[1]-1,6,5,O);Rg(hd[0],hd[1],4,3,'#7a8494');Rg(hd[0],hd[1],4,1,'#b8c0cc');fist(hx,hy+1);
+  // the blow: sparks fly off the anvil
+  if(p>=.72&&p<.86){for(let k=0;k<7;k++){const an=-Math.random()*Math.PI,r=2+Math.random()*9;px(ax+Math.cos(an)*r,ay-5+Math.sin(an)*r*.7,Math.random()<.5?'#ffe080':'#ffb040')}px(ax,ay-6,'#ffffff')}}
+ // ---- smelting: tongs hold a crucible to the furnace, then it tips and pours glowing metal into a mould ----
+ function drawSmelt(x,y,fx,fy,t,tm){const fxp=Math.round(x+fx*15+(fx?0:4)),fyp=Math.round(y+fy*12),cyc=(t%2.2)/2.2;
+  // the furnace's light on the ground and embers rising from its mouth
+  g.globalAlpha=.18+.08*Math.sin(tm*9);g.fillStyle='#f87830';g.beginPath();g.ellipse(fxp,fyp-2,16,9,0,0,6.283);g.fill();g.globalAlpha=1;
+  for(let k=0;k<4;k++){const ph=(tm*.9+k/4)%1;g.globalAlpha=1-ph;px(fxp+Math.sin(ph*9+k)*3,fyp-8-ph*16,k%2?'#ffb040':'#f86020')}g.globalAlpha=1;
+  // a mould on the ground beside you, filling up
+  const mx=Math.round(x+(fx?fx*7:(fy>0?-7:7))),my=Math.round(y+(fx?6:fy*6+5));Rg(mx-3,my-1,7,4,O);Rg(mx-2,my,5,2,'#5a5048');
+  const fill=Math.min(1,t/2.2);if(fill>.05){Rg(mx-2,my,Math.max(1,Math.round(5*fill)),2,cyc>.55?'#f87830':'#ffb040')}
+  // the crucible on its tongs: held to the fire, then tipped over the mould
+  const tip=cyc>.55&&cyc<.9,hx=x+(fx?fx*5:(fy>0?-4:4)),hy=y-4,cx=tip?mx+1:Math.round(lerp(hx,fxp,.55)),cy=tip?my-6:Math.round(fx?hy-1:fy>0?y+3:hy-1);
+  line(hx,hy,cx,cy+1,O);line(hx,hy-1,cx,cy,'#505860');Rg(cx-3,cy-3,6,5,O);Rg(cx-2,cy-2,4,3,'#7a6a5a');Rg(cx-2,cy-2,4,1,'#ffb040');fist(hx,hy);
+  if(tip){for(let k=0;k<4;k++)px(cx+(fx||1)*0,cy+2+k*(my-cy-3)/4,k%2?'#ffd060':'#f87830')}}
+ // ---- crafting: a saw (or knife) works the piece in front of you; shavings fall ----
+ function drawCraft(x,y,fx,fy,t,tm){const wx=Math.round(x+fx*11+(fx?0:4)),wy=Math.round(y+fy*7+(fx?2:0));
+  Rg(wx-5,wy-2,11,4,O);Rg(wx-4,wy-1,9,2,'#c8945a');Rg(wx-4,wy-1,9,1,'#e0b07a');// the piece being made
+  const s=Math.sin(tm*14)*3,hx=wx+Math.round(s),hy=wy-4;line(hx-3,hy+2,hx+4,hy-1,O);line(hx-2,hy+1,hx+4,hy-2,'#c8d0dc');fist(hx-3,hy+2);
+  if(Math.floor(tm*20)%2===0)for(let k=0;k<2;k++)px(wx+(Math.random()-.5)*6,wy+2+Math.random()*4,'#e8c890');
+  // a little dust puff every few strokes
+  if((t%1.4)<.1)for(let k=0;k<5;k++)part(wx,wy,(Math.random()-.5)*40,-20-Math.random()*20,.4,'#e8d8b8',60,1)}
  // ---- draw for a player ----
- function drawFor(code,prev,t,x,y,fx,fy,B,tm,seed,sk){SKN0=sk||'#f0c8a0';if(code===1)drawFire(x,y,fx,fy,t,tm);else if(code===2)drawCook(x,y,fx,fy,t,tm);else if(code>=3)drawFishing(x,y,fx,fy,code,prev,t,tm,B,seed)}
+ function drawFor(code,prev,t,x,y,fx,fy,B,tm,seed,sk){SKN0=sk||'#f0c8a0';if(code===1)drawFire(x,y,fx,fy,t,tm);else if(code===2)drawCook(x,y,fx,fy,t,tm);else if(code===7)drawSmelt(x,y,fx,fy,t,tm);else if(code===8)drawSmith(x,y,fx,fy,t,tm);else if(code===9)drawCraft(x,y,fx,fy,t,tm);else if(code>=3&&code<=6)drawFishing(x,y,fx,fy,code,prev,t,tm,B,seed)}
  // you: behind you when you face away, in front otherwise
  const _pp=pP;pP=function(tm){const c=ACT.c,t=now()-ACT.at,x=Math.round(P.x),y=Math.round(P.y),fx=face[0],fy=fx?0:face[1];
   const B=FISH?[FISH.bx,FISH.by]:[x+fx*24,y+fy*24];const sk=c&&!dead&&!(hurt>0&&Math.floor(tm*20)%2);
@@ -100,6 +133,8 @@
  (window.SQPEERFX=window.SQPEERFX||[]).push((r,tm)=>{const c=r.ak|0;if(c!==(r._ak|0)){r._akPrev=r._ak|0;r._ak=c;r._akAt=now();
    if(c===4&&Math.hypot(r.x-P.x,r.y-P.y)<160)try{sfx('splash')}catch(e){}if(c===3&&!r._akPrev&&Math.hypot(r.x-P.x,r.y-P.y)<160)try{sfx('cast')}catch(e){}}
   if(!c||r.sl){r._fb=null;return}const x=Math.round(r.x),y=Math.round(r.y),fx=r.d===2?(r.fl?-1:1):0,fy=r.d===2?0:r.d===1?-1:1;
-  if(c<3)r._fb=null;else if(!r._fb)r._fb=[x+fx*24,y+fy*24];
+  if(c<3||c>6)r._fb=null;else if(!r._fb)r._fb=[x+fx*24,y+fy*24];
+  // a hammer blow you can hear when you're close
+  if(c>=7&&Math.hypot(r.x-P.x,r.y-P.y)<130){const n=beat(c,now()-r._akAt);if(n!==r._clang){r._clang=n;if(n>=0)try{sfx(BEATS[c])}catch(e){}}}
   drawFor(c,r._akPrev|0,now()-r._akAt,x,y,fx,fy,r._fb||[x+fx*24,y+fy*24],tm,(r.uid||'').length,skinOf(r.ch))});
 })();

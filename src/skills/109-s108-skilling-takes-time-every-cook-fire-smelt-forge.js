@@ -20,7 +20,7 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;co
  const _u=upd;upd=function(dt){_u(dt);const D=SQDO;if(!D)return;
   if(dead||Math.hypot(P.x-D.x,P.y-D.y)>3||(D.kind==='reel'&&!FISH)){SQDO=null;if(!dead&&D.kind!=='reel')say('Stopped'+(D.done?' after '+D.done:'')+'.');return}
   if(D.kind==='reel'&&FISH)FISH.t=-999;
-  if((D.kind==='smith'||D.kind==='craft')&&swing<=0&&(D.t%0.7)<dt)swing=.25;
+  if((D.kind==='smith'||D.kind==='craft')&&!window.SQSKFX&&swing<=0&&(D.t%0.7)<dt)swing=.25;
   D.t+=dt;if(D.t<D.d)return;
   const x0=xpSum(),i0=invSum(),f0=fires.length,c0=JSON.stringify(D.chests||[]),st0=typeof STATION!=='undefined'?STATION:null;window.SQDO_STEP=true;
   if(D.st)STATION=D.st;const m=sqMerge(D.chests);
@@ -33,7 +33,7 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;co
   g.save();g.setTransform(1,0,0,1,0,0);const by=sy-28*z+6*z;
   if(D.n>1&&D.n<900){g.font='700 '+Math.round(5*z)+'px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2*U;g.strokeStyle='#302818';g.strokeText(D.n+' left',sx,by-z);g.fillStyle='#f8f0d8';g.fillText(D.n+' left',sx,by-z)}
   const P2=(x,y,s,c)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.max(1,s*z),Math.max(1,s*z))};
-  if(window.SQSKFX&&(D.kind==='fire'||D.kind==='cook'||D.kind==='reel')){}
+  if(window.SQSKFX){}// drawn on the character (section 116)
   else if(D.kind==='fire'){// kindling, flint sparks, then the first wisps of smoke
    for(let k=0;k<3;k++){g.fillStyle='#6a4020';g.fillRect(fx-6*z+k*3*z,fy+2*z-k%2*z,7*z,2*z)}
    if(Math.floor(tm*6)%2)for(let k=0;k<4;k++)P2(fx+(Math.random()-.5)*10*z,fy-(Math.random()*6)*z,1,Math.random()<.5?'#ffe080':'#ff9030');
