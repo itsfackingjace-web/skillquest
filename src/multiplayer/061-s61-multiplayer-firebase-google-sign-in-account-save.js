@@ -444,6 +444,7 @@ function mobSubscribe(){const l=mpLoc(),key=l?locKey(l):null;if(key===MOB.loc)re
     if(!p){p=Object.assign({kx:0,ky:0},pk);p._rp=1;p._owner=owner;p._id=id;p._ref=pk.hp;p.tx=pk.x;p.ty=pk.y;MOB.prox.set(id,p);en.push(p)}
     else{if(p.dead&&p._deadAt&&performance.now()-p._deadAt>3000){p.dead=0;p._deadAt=0;p.hp=pk.hp;p._ref=pk.hp} // our kill didn't land: it's still alive for its owner
      for(const k in pk)if(k!=='x'&&k!=='y'&&k!=='hp'&&k!=='dead')p[k]=pk[k];p.tx=pk.x;p.ty=pk.y;if(!p.dead&&typeof pk.hp==='number'){p.hp=pk.hp;p._ref=pk.hp}}}}
+  for(const owner in all){const rec=all[owner];if(MP.user&&owner!==MP.user.uid&&rec&&rec.x&&rec.t>cut&&window.SQMOBRX)try{SQMOBRX(owner,rec.x)}catch(e){console.warn(e)}}
   for(const[id,p]of MOB.prox)if(!seen.has(id)){MOB.prox.delete(id);if(p.dead){const j=en.indexOf(p);if(j>=0)en.splice(j,1);continue}p._gone=performance.now();MOB.limbo.push(p)}})}
 function mobHitsCheck(){if(!MP.user)return;for(const p of MOB.prox.values()){if(typeof p.hp!=='number'||typeof p._ref!=='number')continue;if(p.hp<p._ref){const dmg=Math.min(50,Math.round((p._ref-p.hp)*10)/10);p._ref=p.hp;if(dmg<.5)continue; // slow drains (sunlight, burning) are simulated by the owner
   FB.db.push(FB.db.ref(FB.D,'hits/'+p._owner),{id:p._id,d:dmg}).catch(()=>{})}}}
@@ -461,7 +462,8 @@ function mobPost(dt){if(!MP.on||!FB)return;mobSubscribe();if(!MOB.loc)return;mob
  if(now-MOB.pubAt<250)return;MOB.pubAt=now;const d=FB.db,ref=d.ref(FB.D,'mobs/'+MOB.loc+'/'+MP.user.uid);
  if(!othersHere()){if(MOB.pubbed){d.remove(ref).catch(()=>{});MOB.pubbed=false}return}
  const m={};let c=0;for(const n of en){if(n._rp||n._wb||n.dead||c>=24)continue;m[mid(n)]=mobPack(n);c++}
- d.set(ref,{t:d.serverTimestamp(),m}).catch(()=>{});MOB.pubbed=true;
+ // other sections can send extra state along with the monsters (island bosses: their attacks), read back by SQMOBRX
+ let x=null;try{x=window.SQMOBX?SQMOBX():null}catch(e){}d.set(ref,x?{t:d.serverTimestamp(),m,x}:{t:d.serverTimestamp(),m}).catch(()=>{});MOB.pubbed=true;
  if(!MOB.odc||MOB.odc!==MOB.loc){MOB.odc=MOB.loc;d.onDisconnect(ref).remove().catch(()=>{})}}
 // hits other players land on your monsters
 function mobInbox(){if(MOB.inbox||!MP.user)return;const d=FB.db,ref=d.ref(FB.D,'hits/'+MP.user.uid);

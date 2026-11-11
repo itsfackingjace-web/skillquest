@@ -52,35 +52,88 @@
   for(let i=0;i<AW*AH;i++)if(G[i])R.solid.add(i);return R}
  for(const id of ISL)DKIND['ib_'+id]={name:IB[id].n,floor:IB[id].floor,wall:IB[id].wall,trim:IB[id].trim,W:AW,H:AH,floors:1,cavey:1};
  const ST={boss:null,id:null};window.SQIBST=ST;
+ // ---- fighting together (online) ----
+ // Whoever opened the door first runs the boss; it's shared like any dungeon monster (SQMOB), and its attacks (projectiles,
+ // circles, rings, leaps, charges, sweeps) travel with it (`x` next to the shared monsters), so everyone in the arena sees
+ // them and each player's own game checks whether they got hit. The boss picks a new target among everyone in the arena
+ // every few seconds, gets +60% HP for each extra player, and everyone in the arena when it falls gets the full reward.
+ let IBN=0;const ARENA=id=>'in:ib_'+id;
+ const ibOthers=id=>{const M=window.SQMP,out=[];if(M&&M.on&&M.players)for(const[u,r]of M.players)if(r.loc===ARENA(id)&&performance.now()-r.seen<20000)out.push(u);return out};
+ function ibT(b){const now=performance.now();if(!b._tgAt||now-b._tgAt>3500){b._tgAt=now;const c=['me',...ibOthers(b.ib)];b._tg=c[Math.floor(Math.random()*c.length)]}
+  if(b._tg&&b._tg!=='me'){const r=window.SQMP&&SQMP.players.get(b._tg);if(r&&r.loc===ARENA(b.ib)&&now-r.seen<20000)return{x:r.x,y:r.y};b._tgAt=0}return{x:P.x,y:P.y}}
+ function ibScale(b){const n=1+ibOthers(b.ib).length;b._np=b._np||1;if(n>b._np){const add=Math.round(IB[b.ib].hp*.6*(n-b._np));b.mhp+=add;b.hp+=add;b._np=n;try{say('Another fighter joins! '+IB[b.ib].n+' grows stronger.');msgT=3}catch(e){}}}
+ // the owner's boss, as sent along with the shared monsters
+ window.SQMOBX=()=>{const b=ST.boss||ST.done,R=SCENE&&SCENE.room;if(!b||b._rp||!R||R.ib!==b.ib||!b._mid)return null;if(b.dead&&performance.now()-(b._deadAt2||0)>4000)return null;
+  const r1=v=>Math.round(v*10)/10;
+  return{ib:{id:b._mid,dead:b.dead?1:0,pr:b.pr.slice(0,40).map(p=>[p.id|0,r1(p.x),r1(p.y),r1(p.vx),r1(p.vy),r1(p.t),p.k||'',p.slow?1:0]),
+   hz:b.hz.slice(0,24).map(h=>[h.id|0,h.k,r1(h.x),r1(h.y),r1(h.r),r1(h.t),r1(h.d||0),h.kind||'',h.max||0,h.nohit?1:0,h.done?1:0]),
+   act:b.act?{id:b.act.id|0,k:b.act.k,t:r1(b.act.t),d:b.act.d,ax:b.act.ax||0,ay:b.act.ay||0,an:b.act.an||0,done:b.act.done?1:0}:null,
+   wind:b.wind?{a:b.wind.a,t:r1(b.wind.t),d:b.wind.d}:null}}};
+ const DONE=new Set();// attacks that already hit you (or that you already dodged) in this fight
+ window.SQMOBRX=(owner,x)=>{const I=x&&x.ib;if(!I||typeof I.id!=='string')return;const M=window.SQMOB,p=M&&M.prox&&M.prox.get(I.id);if(!p||p.type!=='ib')return;
+  p.pr=(Array.isArray(I.pr)?I.pr:Object.values(I.pr||{})).map(q=>({id:+q[0],x:+q[1],y:+q[2],vx:+q[3],vy:+q[4],t:+q[5],k:String(q[6]||''),slow:!!+q[7]})).filter(q=>!DONE.has('p'+q.id));
+  const old=new Map((p.hz||[]).map(h=>[h.id,h]));
+  p.hz=(Array.isArray(I.hz)?I.hz:Object.values(I.hz||{})).map(q=>{const h={id:+q[0],k:String(q[1]),x:+q[2],y:+q[3],r:+q[4],t:+q[5],d:+q[6],kind:String(q[7]||''),max:+q[8],nohit:!!+q[9],done:!!+q[10]};
+   const o=old.get(h.id);if(o){if(o.done)h.done=true;if(o.hit)h.hit=true;if(h.k==='ring'&&o.r>h.r)h.r=o.r}if(DONE.has('h'+h.id)){h.done=true;h.hit=true}return h});
+  const A=I.act;if(A&&typeof A==='object'){if(!p.act||p.act.id!==A.id)p.act={id:+A.id,k:String(A.k),t:+A.t,d:+A.d,ax:+A.ax,ay:+A.ay,an:+A.an,done:!!A.done,mine:false};else p.act.t=Math.max(p.act.t,+A.t)}else p.act=null;
+  p.wind=I.wind&&typeof I.wind==='object'?{a:String(I.wind.a),t:+I.wind.t,d:+I.wind.d}:null;
+  if(I.dead&&!p._rew){p._rew=1;try{ibReward(p)}catch(e){console.warn(e)}}};
+ // another player's boss here: play its attacks against you
+ function ibResolve(b,dt){const B=IB[b.ib];b.pr=b.pr||[];b.hz=b.hz||[];
+  for(const p of b.pr){p.t-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;const R=SCENE&&SCENE.room;if(R&&R.solid.has(Math.floor((p.y+4)/16)*AW+Math.floor(p.x/16))){p.t=0;continue}
+   if(Math.hypot(P.x-p.x,P.y-6-p.y)<8&&!roll()){p.t=0;DONE.add('p'+p.id);if(hit(1,p.k==='web'?'You\'re caught in sticky web!':p.k==='ice'?'An icicle hits you!':p.k==='bullet'?'Black Jack\'s bullet hits you!':'A void orb hits you!')&&p.slow)SLOW43=2}}
+  b.pr=b.pr.filter(p=>p.t>0);
+  for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;DONE.add('h'+h.id);if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':'The void bursts under you!');
+     if(h.kind==='dyn'||h.kind==='fire')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){}}}
+   else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;DONE.add('h'+h.id);if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
+  b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<(h.max||60));
+  const A=b.act;if(A){A.t+=dt;const pd=Math.hypot(P.x-b.x,P.y-b.y);
+   if(A.k==='leap'&&A.t>=A.d&&!A.mine){A.mine=1;if(pd<26)hit(2,'The Briar Queen lands on you!')}
+   else if(A.k==='charge'&&A.t>A.d&&A.t<A.d+.6&&!A.mine&&pd<22){A.mine=1;hit(2,'The Iron Warlord tramples you!')}
+   else if(A.k==='sweep'&&A.t>A.d&&!A.mine){A.mine=1;const q=Math.atan2(P.y-b.y,P.x-b.x),da=Math.abs(((q-A.an+Math.PI*3)%(Math.PI*2))-Math.PI);if(pd<64&&da<1.1)hit(2,'The great sword cleaves you!')}}
+  if(b.wind){b.wind.t+=dt}}
+ function ibShared(dt){const R=SCENE&&SCENE.room;if(!R||!R.ib){DONE.clear();ST.done=null;return}
+  // another player's boss is here: that's the fight (yours, if you made one, steps aside)
+  const px=en.find(n=>n.type==='ib'&&n._rp&&!n.dead&&n.ib===R.ib);
+  if(px&&(!ST.boss||ST.boss._rp||!en.includes(ST.boss))){ST.boss=px;ST.id=R.ib;ST.wait=0}
+  // its owner left and the fight is now yours to run
+  const b=ST.boss;if(b&&!b._rp&&b.type==='ib'&&!b.cds){const B=IB[b.ib];b.cds=B.atk.map((a,i)=>1.5+i*1.2);b.pr=b.pr||[];b.hz=b.hz||[];b.act=null;b.wind=null;b.t=b.t||0;b.big=1}
+  if(b&&b._rp&&!b.dead&&!menuOpen&&!pnOpen)ibResolve(b,dt);
+  if(b&&!b._rp&&b.dead&&!b._deadAt2)b._deadAt2=performance.now();
+  // you came to join a fight that has ended or whose fighter left: the boss is yours
+  if(!b&&ST.wait&&performance.now()-ST.wait>4000)ibSpawn(R.ib)}
  function ibEnter(id,it){const key='ib_'+id,R=ibArena(id);ROOMS[key]=R;enterScene(key,null,{x:(it.x+((it.w||1)>>1))*16+8,y:(it.y+(it.h||1))*16+10});P.x=R.ex*16+8;P.y=(AH-2)*16+8;face=[0,-1];
-  const B=IB[id],hp=B.hp,b={x:BX*16+8,y:BY*16+8,hp,mhp:hp,kx:0,ky:0,type:'ib',ib:id,big:1,t:0,cds:B.atk.map((a,i)=>1.5+i*1.2),pr:[],hz:[],act:null,face:1};R.mobs.push(b);en.push(b);ST.boss=b;ST.id=id;
+  const B=IB[id];ST.id=id;ST.boss=null;
+  if(ibOthers(id).length){ST.wait=performance.now();setTimeout(()=>{try{say('You join the fight against '+B.n+'!');msgT=4}catch(e){}},500);return}
+  ibSpawn(id)}
+ function ibSpawn(id){const R=SCENE&&SCENE.room;if(!R||R.ib!==id)return;const B=IB[id],hp=B.hp,b={x:BX*16+8,y:BY*16+8,hp,mhp:hp,kx:0,ky:0,type:'ib',ib:id,big:1,t:0,cds:B.atk.map((a,i)=>1.5+i*1.2),pr:[],hz:[],act:null,face:1};R.mobs.push(b);en.push(b);ST.boss=b;ST.id=id;ST.wait=0;ST.done=null;
   setTimeout(()=>{try{say(B.n.toUpperCase()+' awakens!');msgT=4}catch(e){}},500)}
  // ---- attacks ----
  const roll=()=>typeof ROLLT!=='undefined'&&ROLLT>0;
  const hit=(d,msg)=>{if(dead)return false;return hurtP(d,msg)};
  // every attack that isn't a leap, charge or sweep gets a short wind-up first, so you can see it coming
  function start(b,a,o){if(a==='summon'&&o.half&&b.hp>=b.mhp/2)return;if(a==='leap'||a==='charge'||a==='sweep')return ibFire(b,a,o);b.wind={a,o,t:0,d:a==='blink'?.35:.45}}
- function ibFire(b,a,o){const B=IB[b.ib],dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1,an=Math.atan2(dy,dx),en2=b.hp<b.mhp/2;
-  if(a==='fan'){const shots=o.burst||1;for(let s=0;s<shots;s++)setTimeout(()=>{if(b.dead)return;const an2=Math.atan2(P.y-6-b.y+10,P.x-b.x);for(let k=0;k<o.n;k++){const q=an2+(k-(o.n-1)/2)*o.spread;b.pr.push({x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3,k:o.k,slow:o.slow})}try{sfx('swish')}catch(e){}},s*350)}
-  else if(a==='spiral'){const n=en2?o.n+4:o.n;b.sp0=(b.sp0||0)+.4;for(let k=0;k<n;k++){const q=k/n*6.283+b.sp0;b.pr.push({x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3.4,k:o.k})}}
-  else if(a==='circles'){const n=o.n+(en2?2:0);for(let k=0;k<n;k++){const r=k?20+Math.random()*50:0,q=Math.random()*6.283;b.hz.push({k:'circ',x:P.x+Math.cos(q)*r,y:P.y+4+Math.sin(q)*r*.7,r:o.r,t:0,d:o.delay+k*.08,kind:o.k})}}
-  else if(a==='ring')b.hz.push({k:'ring',x:b.x,y:b.y,r:10,max:o.max,hit:false,t:0});
-  else if(a==='leap')b.act={k:'leap',t:0,d:1,tx:P.x,ty:P.y,ox:b.x,oy:b.y},b.hz.push({k:'circ',x:P.x,y:P.y+4,r:30,t:0,d:1,kind:'land',nohit:1});
-  else if(a==='charge')b.act={k:'charge',t:0,d:.75,ax:dx/d,ay:dy/d,run:0};
-  else if(a==='sweep')b.act={k:'sweep',t:0,d:.65,an,done:false};
-  else if(a==='blink'){const R=SCENE&&SCENE.room;for(let t=0;t<30;t++){const x=(4+Math.random()*(AW-8))*16,y=(3+Math.random()*(AH-9))*16;if(R&&!R.solid.has(Math.floor(y/16)*AW+Math.floor(x/16))&&Math.hypot(x-P.x,y-P.y)>70){for(let k=0;k<14;k++)part(b.x,b.y-14,(Math.random()-.5)*90,(Math.random()-.5)*90,.4,B.sc[0],0,2);b.x=x+8;b.y=y+8;break}}}
+ function ibFire(b,a,o){const T=ibT(b),B=IB[b.ib],dx=T.x-b.x,dy=T.y-b.y,d=Math.hypot(dx,dy)||1,an=Math.atan2(dy,dx),en2=b.hp<b.mhp/2;
+  if(a==='fan'){const shots=o.burst||1;for(let s=0;s<shots;s++)setTimeout(()=>{if(b.dead)return;const T2=ibT(b),an2=Math.atan2(T2.y-6-b.y+10,T2.x-b.x);for(let k=0;k<o.n;k++){const q=an2+(k-(o.n-1)/2)*o.spread;b.pr.push({id:++IBN,x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3,k:o.k,slow:o.slow})}try{sfx('swish')}catch(e){}},s*350)}
+  else if(a==='spiral'){const n=en2?o.n+4:o.n;b.sp0=(b.sp0||0)+.4;for(let k=0;k<n;k++){const q=k/n*6.283+b.sp0;b.pr.push({id:++IBN,x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3.4,k:o.k})}}
+  else if(a==='circles'){const n=o.n+(en2?2:0);for(let k=0;k<n;k++){const r=k?20+Math.random()*50:0,q=Math.random()*6.283;b.hz.push({id:++IBN,k:'circ',x:T.x+Math.cos(q)*r,y:T.y+4+Math.sin(q)*r*.7,r:o.r,t:0,d:o.delay+k*.08,kind:o.k})}}
+  else if(a==='ring')b.hz.push({id:++IBN,k:'ring',x:b.x,y:b.y,r:10,max:o.max,hit:false,t:0});
+  else if(a==='leap')b.act={id:++IBN,k:'leap',t:0,d:1,tx:T.x,ty:T.y,ox:b.x,oy:b.y},b.hz.push({id:++IBN,k:'circ',x:T.x,y:T.y+4,r:30,t:0,d:1,kind:'land',nohit:1});
+  else if(a==='charge')b.act={id:++IBN,k:'charge',t:0,d:.75,ax:dx/d,ay:dy/d,run:0};
+  else if(a==='sweep')b.act={id:++IBN,k:'sweep',t:0,d:.65,an,done:false};
+  else if(a==='blink'){const R=SCENE&&SCENE.room;for(let t=0;t<30;t++){const x=(4+Math.random()*(AW-8))*16,y=(3+Math.random()*(AH-9))*16;if(R&&!R.solid.has(Math.floor(y/16)*AW+Math.floor(x/16))&&Math.hypot(x-T.x,y-T.y)>70){for(let k=0;k<14;k++)part(b.x,b.y-14,(Math.random()-.5)*90,(Math.random()-.5)*90,.4,B.sc[0],0,2);b.x=x+8;b.y=y+8;break}}}
   else if(a==='summon'){if(o.half&&!en2)return;const alive=en.filter(m=>m.summon&&!m.dead).length;for(let k=alive;k<Math.min(o.cap,alive+o.n);k++){const q=Math.random()*6.283,x=b.x+Math.cos(q)*40,y=b.y+Math.sin(q)*28;if(solid(x,y))continue;
     let m;if(o.key==='spiderling')m={x,y,hp:12,mhp:12,kx:0,ky:0,type:'spiderling'};else{m=rgMake(o.key,o.key==='bandit'?30:40,x,y);m.rg=b.ib}m.summon=1;m._prov=9;en.push(m);try{if(window.RG_OWN)RG_OWN.add(m)}catch(e){}}}}
- {const _u=upd;upd=function(dt){if(ST.boss&&ST.boss.hp<=0&&!ST.boss._rew){try{ibReward(ST.boss)}catch(e){console.warn(e)}}const b=ST.boss,R=SCENE&&SCENE.room,live=b&&!b.dead&&R&&R.ib===b.ib&&en.includes(b);const pre=live?[b.x,b.y]:null;_u(dt);if(!live||menuOpen||pnOpen)return;
+ {const _u=upd;upd=function(dt){if(ST.boss&&!ST.boss._rp&&ST.boss.hp<=0&&!ST.boss._rew){try{ibReward(ST.boss)}catch(e){console.warn(e)}}ibShared(dt);const b=ST.boss,R=SCENE&&SCENE.room,live=b&&!b._rp&&!b.dead&&R&&R.ib===b.ib&&en.includes(b);const pre=live?[b.x,b.y]:null;_u(dt);if(!live||menuOpen||pnOpen)return;
    const B=IB[b.ib],en2=b.hp<b.mhp/2;b.t+=dt;b.x=pre[0]+b.kx*.15;b.y=pre[1]+b.ky*.15;b.kx*=.5;b.ky*=.5;if(!b.half&&en2){b.half=1;say(B.n+' is enraged!');msgT=3;try{sfx('roar')}catch(e){}}
-   const dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1;b.face=dx<0?-1:1;
+   const T=ibT(b),dx=T.x-b.x,dy=T.y-b.y,d=Math.hypot(dx,dy)||1,pd=Math.hypot(P.x-b.x,P.y-b.y);b.face=dx<0?-1:1;ibScale(b);
    // wind-up, then the strike pose holds for a moment after the attack goes off
    b.mv=0;if(b.cast>0)b.cast-=dt;if(b.wind){b.wind.t+=dt;if(b.wind.t>=b.wind.d){const w=b.wind;b.wind=null;b.cast=.4;b.castA=w.a;ibFire(b,w.a,w.o)}}
    // current action
    const A=b.act;if(A){A.t+=dt;
-    if(A.k==='leap'){const p=Math.min(1,A.t/A.d);b.x=A.ox+(A.tx-A.ox)*p;b.y=A.oy+(A.ty-A.oy)*p;b.jump=Math.sin(p*Math.PI)*30;if(p>=1){b.jump=0;b.act=null;b.hz.push({k:'ring',x:b.x,y:b.y,r:8,max:56,hit:false,t:0});if(Math.hypot(P.x-b.x,P.y-b.y)<26)hit(2,'The Briar Queen lands on you!');try{sfx('mine')}catch(e){}}}
+    if(A.k==='leap'){const p=Math.min(1,A.t/A.d);b.x=A.ox+(A.tx-A.ox)*p;b.y=A.oy+(A.ty-A.oy)*p;b.jump=Math.sin(p*Math.PI)*30;if(p>=1){b.jump=0;b.act=null;b.hz.push({id:++IBN,k:'ring',x:b.x,y:b.y,r:8,max:56,hit:false,t:0});if(Math.hypot(P.x-b.x,P.y-b.y)<26)hit(2,'The Briar Queen lands on you!');try{sfx('mine')}catch(e){}}}
     else if(A.k==='charge'){if(A.t>A.d){const sp=260*dt,nx=b.x+A.ax*sp,ny=b.y+A.ay*sp;if(!solid(nx,ny+6)&&A.run<.6){b.x=nx;b.y=ny;A.run+=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<22&&!A.hit){A.hit=1;hit(2,'The Iron Warlord tramples you!')}}else b.act=null}}
-    else if(A.k==='sweep'){if(A.t>A.d&&!A.done){A.done=1;const q=Math.atan2(P.y-b.y,P.x-b.x),da=Math.abs(((q-A.an+Math.PI*3)%(Math.PI*2))-Math.PI);if(d<64&&da<1.1)hit(2,'The great sword cleaves you!');try{sfx('swish')}catch(e){}}if(A.t>A.d+.3)b.act=null}}
+    else if(A.k==='sweep'){if(A.t>A.d&&!A.done){A.done=1;const q=Math.atan2(P.y-b.y,P.x-b.x),da=Math.abs(((q-A.an+Math.PI*3)%(Math.PI*2))-Math.PI);if(pd<64&&da<1.1)hit(2,'The great sword cleaves you!');try{sfx('swish')}catch(e){}}if(A.t>A.d+.3)b.act=null}}
    else{// walk toward (or keep a little away from) you
     const want=b.ib==='nomans'||b.ib==='shattered'?90:30;if(!b.wind){if(d>want+10){stepTo(b,dx/d*(en2?34:26)*dt,dy/d*(en2?34:26)*dt);b.mv=1}else if(d<want-10){stepTo(b,-dx/d*24*dt,-dy/d*24*dt);b.mv=1}}
     for(let i=0;i<B.atk.length;i++){b.cds[i]-=dt*(en2?1.35:1);if(b.cds[i]<=0&&!b.act&&!b.wind){b.cds[i]=B.atk[i][1]*(.85+Math.random()*.3);start(b,B.atk[i][0],B.atk[i][2]);break}}}
@@ -100,22 +153,22 @@
  function ibReward(b){b._rew=1;b.dead=1;b.dropped=1;b.pr=[];b.hz=[];for(const m of en)if(m.summon&&!m.dead){m.dead=1;m.dropped=1}const B=IB[b.ib],g0=B.gold[0]+Math.floor(Math.random()*(B.gold[1]-B.gold[0]));GLD+=g0;const got=[g0+' gold'];
   for(const[k,n]of B.loot){inv[k]=(inv[k]|0)+n;const nm=INAME[k]||k;got.push(n+' '+(n>1?(SN[k]||(/s$/.test(nm)?nm:nm+'s')):nm).toLowerCase())}addXp(0,B.xp);addXp(7,Math.round(B.xp*.4));
   let rare=null;if(Math.random()<.05||window.SQIBRARE){const[rk,rn]=B.rare;rare=rn;if(window.SQNPET&&SQNPET[rk])SQGIVEPET(rk);else inv[rk]=(inv[rk]|0)+1}
-  ST.boss=null;try{sqEvent('islandboss',b.ib)}catch(e){}saveNow();try{svg()}catch(e){}
+  if(!b._rp){b._deadAt2=performance.now();ST.done=b}ST.boss=null;try{sqEvent('islandboss',b.ib)}catch(e){}saveNow();try{svg()}catch(e){}
   say(B.n+' is defeated! '+got.join(', ')+(rare?'. RARE DROP: '+rare.toUpperCase()+'!':'.'));msgT=7;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){}
   for(let k=0;k<30;k++){const q=k/30*6.283;part(b.x,b.y-16,Math.cos(q)*120,Math.sin(q)*90-30,.7,k%2?B.sc[0]:'#f8d048',120,2)}}
- window.SQIBREWARD=ibReward;
+ window.SQIBREWARD=ibReward;window.SQIBENTER=ibEnter;
  // ---- the boss bar ----
  {const _dh=drawHUD;drawHUD=function(){_dh();const b=ST.boss,R=SCENE&&SCENE.room;if(!b||b.dead||!R||R.ib!==b.ib||menuOpen)return;const B=IB[b.ib],w=Math.min(W*.6,420),x=(W-w)/2,y=Math.max(70,H*.1),f=Math.max(0,b.hp/b.mhp);
    g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(20,16,24,.82)';g.fillRect(x-4,y-20,w+8,34);g.fillStyle='#3a1a1a';g.fillRect(x,y,w,10);g.fillStyle=b.hp<b.mhp/2?'#f05030':B.col;g.fillRect(x,y,w*f,10);g.strokeStyle='#f8f0e0';g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,9);
    g.font='700 13px '+PF;g.fillStyle='#f8f0e0';g.textAlign='center';g.textBaseline='bottom';g.fillText(B.n.toUpperCase(),W/2,y-3);g.restore()}}
  // ---- how they look ----
  const R4=(a,b,w,h,c)=>Rg(Math.round(a),Math.round(b),w,h,c);
- function hzDraw(b,tm){for(const h of b.hz){if(h.k==='circ'){const p=Math.min(1,h.t/h.d),c=h.kind==='ice'?'160,220,255':h.kind==='void'?'180,120,255':h.kind==='land'?'120,200,90':h.kind==='dyn'?'255,200,80':'255,120,40';
+ function hzDraw(b,tm){for(const h of b.hz||[]){if(h.k==='circ'){const p=Math.min(1,h.t/h.d),c=h.kind==='ice'?'160,220,255':h.kind==='void'?'180,120,255':h.kind==='land'?'120,200,90':h.kind==='dyn'?'255,200,80':'255,120,40';
     if(!h.done){g.strokeStyle='rgba('+c+','+(.5+.4*Math.sin(tm*16))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.7,0,0,6.283);g.stroke();g.fillStyle='rgba('+c+','+(.12+.25*p)+')';g.beginPath();g.ellipse(h.x,h.y,h.r*p,h.r*.7*p,0,0,6.283);g.fill();
      if(h.kind==='dyn'){const sx=h.x,sy=h.y-30*(1-p);R4(sx-2,sy-5,4,7,K);R4(sx-1,sy-4,2,5,'#d83020');R4(sx,sy-7,1,2,'#f8e060')}else if(h.kind==='ice'){const sy=h.y-60*(1-p);R4(h.x-2,sy-10,5,10,K);R4(h.x-1,sy-9,3,8,'#d8f4ff')}}
     else{g.fillStyle='rgba('+c+','+(.5*(1-(h.t-h.d)/.35))+')';g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.7,0,0,6.283);g.fill()}}
    else{g.strokeStyle='rgba(240,230,210,'+(.8*(1-h.r/h.max))+')';g.lineWidth=3;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.62,0,0,6.283);g.stroke()}}
-  for(const p of b.pr){if(p.k==='bullet'){R4(p.x-2,p.y-2,4,4,K);R4(p.x-1,p.y-1,2,2,'#f8e070')}else{const c=p.k==='web'?['#f0f0f0','#c8c8c8']:p.k==='ice'?['#e8f8ff','#78c0f0']:['#d8b0ff','#7040c0'];g.fillStyle='rgba(0,0,0,0)';R4(p.x-3,p.y-3,6,6,K);R4(p.x-2,p.y-2,4,4,c[1]);R4(p.x-1,p.y-2,2,2,c[0])}}
+  for(const p of b.pr||[]){if(p.k==='bullet'){R4(p.x-2,p.y-2,4,4,K);R4(p.x-1,p.y-1,2,2,'#f8e070')}else{const c=p.k==='web'?['#f0f0f0','#c8c8c8']:p.k==='ice'?['#e8f8ff','#78c0f0']:['#d8b0ff','#7040c0'];g.fillStyle='rgba(0,0,0,0)';R4(p.x-3,p.y-3,6,6,K);R4(p.x-2,p.y-2,4,4,c[1]);R4(p.x-1,p.y-2,2,2,c[0])}}
   if(b.act&&b.act.k==='charge'&&b.act.t<b.act.d){g.strokeStyle='rgba(255,80,60,'+(.4+.4*Math.sin(tm*20))+')';g.lineWidth=10;g.beginPath();g.moveTo(b.x,b.y);g.lineTo(b.x+b.act.ax*160,b.y+b.act.ay*160);g.stroke()}
   if(b.act&&b.act.k==='sweep'&&!b.act.done){g.fillStyle='rgba(255,90,60,'+(.15+.2*(b.act.t/b.act.d))+')';g.beginPath();g.moveTo(b.x,b.y);g.arc(b.x,b.y,64,b.act.an-1.1,b.act.an+1.1);g.closePath();g.fill()}}
  const hitW=n=>Math.abs(n.kx)+Math.abs(n.ky)>.3;
