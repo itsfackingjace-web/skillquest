@@ -344,11 +344,11 @@ function chOpenShared(owner,cid){if(CHS.open)try{CHS.open()}catch(e){}const box=
  CHS.open=FB.db.onValue(FB.db.ref(FB.D,'chests/'+owner+'/'+cid),s=>{const v=s.val();box.items=chClean(v&&v.i);box.ok=true;if(pnOpen&&ptab===7&&CHEST_H===box)rPn()},()=>{box.err=true;if(pnOpen&&ptab===7)rPn()});
  fromMenu=false;pnOpen=true;ptab=7;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}
 {const _cp=closePanel;closePanel=function(){_cp();if(CHS.open&&!(pnOpen&&ptab===7)){try{CHS.open()}catch(e){}CHS.open=null;if(CHEST_H&&CHEST_H._sh)CHEST_H=null}}}
-{const _cm=chestMove;chestMove=function(k,a){const s=CHEST_H;if(!s||!s._sh)return _cm(k,a);const{o,cid}=s._sh,ref=FB.db.ref(FB.D,'chests/'+o+'/'+cid);
-  if(a==='d'){const n=inv[k]|0;if(n<1)return;inv[k]=0;s.items[k]=(s.items[k]|0)+n;sfx('pickup');rPn();
+{const _cm=chestMove;chestMove=function(k,a,q){const s=CHEST_H;if(!s||!s._sh)return _cm(k,a,q);const lim=q>0?q|0:1e9;const{o,cid}=s._sh,ref=FB.db.ref(FB.D,'chests/'+o+'/'+cid);
+  if(a==='d'){const n=Math.min(inv[k]|0,lim);if(n<1)return;inv[k]-=n;s.items[k]=(s.items[k]|0)+n;sfx('pickup');rPn();
    FB.db.runTransaction(ref,cur=>{const i=chClean(cur&&cur.i);i[k]=(i[k]|0)+n;return{i,v:((cur&&+cur.v)|0)+1}}).then(r=>{if(!r||!r.committed)throw new Error('no')}).then(()=>{saveLocal(true);try{saveCloud(true)}catch(e){}})
     .catch(()=>{inv[k]=(inv[k]|0)+n;say('Could not put that in the chest. Try again.');rPn()})}
-  else{let got=0;if(!(s.items[k]>0))return;FB.db.runTransaction(ref,cur=>{got=0;if(!cur)return cur;const i=chClean(cur.i);got=i[k]|0;if(!got)return;delete i[k];return{i,v:(+cur.v|0)+1}})
+  else{let got=0;if(!(s.items[k]>0))return;FB.db.runTransaction(ref,cur=>{got=0;if(!cur)return cur;const i=chClean(cur.i);got=Math.min(i[k]|0,lim);if(!got)return;i[k]-=got;if(!(i[k]>0))delete i[k];return{i,v:(+cur.v|0)+1}})
     .then(r=>{if(r&&r.committed&&got>0){inv[k]=(inv[k]|0)+got;sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){}}else say('Someone else got to that first.');rPn()}).catch(()=>{say('Could not take that. Try again.')})}}}
 {const _r=rPn;rPn=function(){_r();if(!pnOpen)return;if(ptab===7&&CHEST_H&&CHEST_H._sh){const b=document.getElementById('chpk');if(b)b.remove();
    pbd.insertAdjacentHTML('afterbegin','<div class="tl" style="font-size:12px;font-weight:400;opacity:.8;margin-bottom:6px">'+esc(fname(CHEST_H._sh.o))+'\'s chest'+(CHEST_H.err?' · could not open it (are you still trusted?)':CHEST_H.ok?'':' · loading...')+'</div>')}

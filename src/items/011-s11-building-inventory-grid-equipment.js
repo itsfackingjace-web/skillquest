@@ -131,8 +131,17 @@ function bagGridHTML(){const keys=BAG_ORDER().filter(k=>(inv[k]|0)>0);if(!keys.i
  return gridHTML(keys,x=>inv[x]|0,k,null,20)+'<div class="bd">'+d+'</div><div class="tl" style="margin-top:10px;font-size:15px">Gold: '+GLD+'</div>'}
 // --- chest storage ---
 function chestHTML(){const s=CHEST_H||STR.get(CHEST_AT);if(!s||s.t!=='chest')return'<div class="be">The chest is gone.</div>';const ck=BAG_ORDER().filter(k=>(s.items[k]|0)>0),bk=BAG_ORDER().filter(k=>(inv[k]|0)>0&&k!=='chest');
- return'<div class="tl">CHEST</div>'+gridHTML(ck,k=>s.items[k]|0,null,'w',10)+'<div class="tl" style="margin-top:12px">YOUR BAG</div>'+gridHTML(bk,k=>inv[k]|0,null,'d',10)+'<div class="bd">Tap an item to move the whole stack. Items in a chest are safe if you fall.</div>'}
-function chestMove(k,a){const s=CHEST_H||STR.get(CHEST_AT);if(!s||!s.items)return;if(a==='d'){const n=inv[k]|0;if(n<1)return;s.items[k]=(s.items[k]|0)+n;inv[k]=0}else{const n=s.items[k]|0;if(n<1)return;inv[k]=(inv[k]|0)+n;delete s.items[k]}sfx('pickup');saveLocal(true);saveCloud(true);rPn()}
+ return'<div class="tl">CHEST</div>'+gridHTML(ck,k=>s.items[k]|0,null,'w',10)+'<div class="tl" style="margin-top:12px">YOUR BAG</div>'+gridHTML(bk,k=>inv[k]|0,null,'d',10)+'<div class="bd">Tap an item to see it and choose how many to move. Items in a chest are safe if you fall.</div>'+chestCardHTML(s)}
+// the item card: what it is, how many are where, and how many to move
+let CHCARD=null;
+function chestCardHTML(s){const c=CHCARD;if(!c)return'';const k=c.k,inC=s.items[k]|0,inB=inv[k]|0,n=c.side==='w'?inC:inB;if(n<1){CHCARD=null;return''}
+ const verb=c.side==='w'?'Take':'Put in',btn=(a,l)=>'<button class="chc-b'+(a==='all'?' all':'')+'" data-cm="'+a+'">'+l+'</button>',sp=SELLP[k]|0;
+ let b=btn('1',verb+' 1');if(n>5)b+=btn('5',verb+' 5');if(n>10)b+=btn('10',verb+' 10');if(n>=4)b+=btn('half',verb+' half ('+Math.floor(n/2)+')');b+=btn('all',verb+' all ('+n+')');
+ if(n>2)b+='<span class="chc-x"><input type="number" min="1" max="'+n+'" value="'+Math.min(n,Math.max(1,c.x|0||Math.min(n,20)))+'" data-cmx inputmode="numeric">'+btn('x',verb)+'</span>';
+ return'<div class="chcbg" data-chx><div class="chc" role="dialog"><button class="chc-c" data-chx aria-label="Close">×</button><div class="chc-h"><img alt="" src="'+iconURL(k)+'"><div><b>'+esc(INAME[k]||k)+'</b><small>In the chest: '+inC+' · In your bag: '+inB+(sp?' · Sells for '+sp+' gold':'')+'</small></div></div>'+
+  '<div class="chc-d">'+esc(IDESC[k]||'')+'</div><div class="chc-t">'+(c.side==='w'?'Take out of the chest':'Put into the chest')+'</div><div class="chc-bs">'+b+'</div></div></div>'}
+// a: 'd' put into the chest, 'w' take out; q: how many (the whole stack when left out)
+function chestMove(k,a,q){const s=CHEST_H||STR.get(CHEST_AT);if(!s||!s.items)return;if(a==='d'){const n=Math.min(inv[k]|0,q>0?q|0:1e9);if(n<1)return;s.items[k]=(s.items[k]|0)+n;inv[k]-=n;if(!inv[k])inv[k]=0}else{const n=Math.min(s.items[k]|0,q>0?q|0:1e9);if(n<1)return;inv[k]=(inv[k]|0)+n;s.items[k]-=n;if(!(s.items[k]>0))delete s.items[k]}sfx('pickup');saveLocal(true);saveCloud(true);rPn()}
 // --- equipment (the player's name option in the START menu) ---
 function eqSlot(lbl,k,col,name){return'<div class="eqs'+(name?'':' none')+'"><img alt="" src="'+iconURL(k,col)+'"><div class="ei"><small>'+lbl+'</small>'+(name||'None')+'</div></div>'}
 function equipHTML(){const TC=['','#b07838','#a8a8b0','#d8e0e8','#88a8d8'],an=s=>ARM[s]?AT[ARM[s]-1]+' '+{helm:'helmet',body:'chestplate',legs:'legs'}[s]:'',tn=k=>TL[k]?TIT[TL[k]]+' '+{axe:'axe',pick:'pickaxe',sword:'sword'}[k]:'';
@@ -152,9 +161,29 @@ const _r11=rPn;rPn=function(){if(ptab===3){panelChrome('');pbd.innerHTML=equipHT
 const _oc11=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
  if((b=t.closest('.plc'))){startBuild(b.dataset.k);return}
  if((b=t.closest('.bc'))){makeBuild(+b.dataset.i,b.dataset.a==='all');return}
- if((b=t.closest('.slot[data-k]'))){if(b.dataset.a)chestMove(b.dataset.k,b.dataset.a);else{invSel=b.dataset.k;rPn()}return}
+ if(ptab===7&&(b=t.closest('[data-cm]'))&&CHCARD){const c=CHCARD,S=CHEST_H||STR.get(CHEST_AT),have=c.side==='w'?(S&&S.items[c.k]|0):(inv[c.k]|0),m=b.dataset.cm;
+   let q=m==='all'?have:m==='half'?Math.floor(have/2):m==='x'?Math.max(1,Math.min(have,+((pbd.querySelector('[data-cmx]')||{}).value)|0)):+m;if(m==='x')c.x=q;if(q>0)chestMove(c.k,c.side,q);return}
+ if(ptab===7&&t.closest('[data-chx]')&&!t.closest('.chc:not(.chc-c)')||t.closest('.chc-c')){CHCARD=null;rPn();return}
+ if(ptab===7&&t.closest('.chc'))return;
+ if((b=t.closest('.slot[data-k]'))){if(b.dataset.a){CHCARD={k:b.dataset.k,side:b.dataset.a};sfx('talk');rPn()}else{invSel=b.dataset.k;rPn()}return}
  _oc11(e)};
+{const _cp=closePanel;closePanel=function(){CHCARD=null;return _cp.apply(this,arguments)}}
+// a tap anywhere outside the card closes it
+document.addEventListener('click',e=>{if(!CHCARD||!pnOpen||ptab!==7)return;const t=e.target;if(!t||!t.closest||!t.isConnected||t.closest('.chc')||pbd.contains(t))return;CHCARD=null;rPn()});
+// typing an amount: the game's own key handlers must not see these keys; Enter moves that many
+for(const ev of['keydown','keyup'])window.addEventListener(ev,e=>{const t=e.target;if(!t||!t.matches||!t.matches('[data-cmx]'))return;e.stopImmediatePropagation();
+ if(ev==='keydown'&&e.key==='Enter'){e.preventDefault();const b=pbd.querySelector('[data-cm="x"]');if(b)b.click()}else if(ev==='keydown'&&e.key==='Escape'){e.preventDefault();CHCARD=null;rPn()}},true);
 const st11=document.createElement('style');st11.textContent=`
+.chcbg{position:fixed;inset:0;z-index:40;background:rgba(10,14,28,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.chc{position:relative;background:#f8f8f8;border:3px solid #485870;border-radius:10px;box-shadow:0 0 0 2px #fff inset,0 8px 24px rgba(0,0,0,.4);padding:14px 14px 12px;width:min(360px,100%);max-height:86vh;overflow:auto;color:#404040}
+.chc-c{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:6px;border:2px solid #485870;background:#fff;font-size:20px;line-height:1;cursor:pointer}
+.chc-h{display:flex;gap:12px;align-items:center;padding-right:40px}.chc-h img{width:48px;height:48px;image-rendering:pixelated;background:#e4e9f2;border:2px solid #c8d0e0;border-radius:8px;padding:4px}
+.chc-h b{display:block;font-size:16px;color:#c03828}.chc-h small{display:block;font-size:12px;opacity:.75;margin-top:2px}
+.chc-d{margin:10px 0;font-size:13px;line-height:1.45;white-space:pre-wrap}.chc-t{font-size:12px;font-weight:700;opacity:.7;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.chc-bs{display:flex;flex-wrap:wrap;gap:6px}.chc-b{flex:1 1 auto;min-height:40px;padding:6px 10px;border-radius:6px;border:2px solid #485870;background:#fff;font:inherit;font-size:13px;cursor:pointer}
+.chc-b.all{background:#4868a8;color:#fff;border-color:#304878}
+#pn .chc-b,#pn .chc-c{color:#304060!important;background:#fff!important;text-shadow:none!important;font-family:var(--pf),monospace!important;box-shadow:none!important}#pn .chc-b.all{background:#4868a8!important;color:#fff!important}#pn .chc-b:active{transform:translateY(1px)}
+#pn .chc-x input{color:#304060!important;background:#fff!important}.chc-x{display:flex;gap:6px;flex:1 1 100%}.chc-x input{width:84px;min-height:40px;border:2px solid #485870;border-radius:6px;font:inherit;padding:0 8px}
 .ig{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:#e4e9f2;border:2px solid #c8d0e0;border-radius:8px;padding:8px;max-height:44vh;overflow:auto}
 .slot{position:relative;aspect-ratio:1;background:#fff;border:2px solid #c8d0e0;border-radius:6px;padding:0;cursor:pointer;min-width:0}
 .slot.on{border-color:#5878b8;box-shadow:0 0 0 2px #a8c0e0}.slot.empty{background:#f2f5fa;cursor:default}
