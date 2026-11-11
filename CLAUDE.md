@@ -78,5 +78,10 @@
   (`SQPETAB.MP`) drop from `shroom` patches (`SQMUSHDROP=<kind>` forces it in tests), are drawn through `SQPETDRAW`, and
   registered in `SQNPET`/`LUX.PETS` like the other non-shop pets. Glowcap watches for P.hp drops in `upd` (damage is applied
   in many places, there is no single hurt function).
+- **World Market rules** (`items/079`, a bare block, so edit it in place): `SQWMRULES` = per-item cap (`PERK` 2 of the 8),
+  price band `lo(k)`..`hi(k)` from `SELLP` (half the shop value to 25x, at least 100), expiry `expAt(o)` = 7 days from `t`
+  (old offers from `RULES_AT`). Matching, browsing and the order book ignore expired and out-of-band offers; the owner's
+  client cancels its own expired offers (refund). The database rules keep `t` unchanged when others fill an offer and
+  no later than now (publish `database.rules.json` in the Firebase console).
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).
