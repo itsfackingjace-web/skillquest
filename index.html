@@ -7362,7 +7362,10 @@ function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='nu
  if(!r){r={uid:k,x:v.x,y:v.y,w:0,said:null};MP.players.set(k,r)}
  if(r.loc!==v.loc||Math.hypot(r.x-v.x,r.y-v.y)>200){r.x=v.x;r.y=v.y}
  r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;r.sl=!!v.sl;r.ar=typeof v.ar==='string'?v.ar:'';r.pet=typeof v.pet==='string'?v.pet.slice(0,12):'';r.pk=!!v.pk;r.au=!!v.au;r.ak=Math.max(0,Math.min(9,v.ak|0));r.dg=!!v.dg;r.br=!!v.br;{const q=v.fw&&typeof v.fw==='object'?Object.values(v.fw):null;r.fw=q&&q.length===2?[+q[0],+q[1]]:null}r.im=Array.isArray(v.im)?v.im.slice(0,4).map(Number):(v.im&&typeof v.im==='object'?Object.values(v.im).slice(0,4).map(Number):null);r.ax=+v.ax;r.ay=+v.ay;
- r.n=String(v.n||r.n||(MP.prof&&MP.prof[k]&&MP.prof[k].n)||'Adventurer').replace(/[<>]/g,'').slice(0,12);r.ch=cleanCh(v.ch);r.seen=performance.now();mpRBtn()}
+ r.n=String(v.n||r.n||(MP.prof&&MP.prof[k]&&MP.prof[k].n)||'Adventurer').replace(/[<>]/g,'').slice(0,12);r.ch=cleanCh(v.ch);
+ // seen = when they last sent their position, by the server's clock (a player whose game closed without cleaning up leaves
+ // an old entry behind: on loading, those count as gone right away instead of looking online for the first 20 seconds)
+ r.seen=typeof v.t==='number'?performance.now()-Math.max(0,mpNow()-v.t):-1e9;mpRBtn()}
 function mpTick(){if(!MP.on||!MP.pref||MP.passive)return;const d=FB.db,now=performance.now(),loc=mpLoc(),fx=face[0],fy=face[1];
  const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0,dg:(window.SQDF&&SQDF.on&&!dead)?1:0,br:(window.SQDF&&SQDF.br)?1:0,sid:MP.sid,s0:MP.s0,im:(window.SQIMP&&SQIMP.pres())||0,fw:(window.SQFW&&SQFW.pres())||0,ak:(window.SQACT&&SQACT())||0},k=JSON.stringify(st);
  let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){}const nm=myName();
@@ -9255,6 +9258,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.10-4',d:'Nov 10, 2026',t:'Correct online count',n:['Fixed: right after loading in, the online count (and the player list) showed players who had already left. It now only counts who is really here.']},
  {v:'2026.11.10-3',d:'Nov 10, 2026',t:'Fishing, firemaking and cooking look alive',n:['No more progress bar over your head: your character shows the work instead.','Fishing: a proper cast over your shoulder, a float that bobs and ripples, a splash when something bites, a bending rod while you reel it in, and your catch flying out of the water to you.','Lighting a fire: you crouch at a little pile of kindling and strike flint and steel until the sparks catch.','Cooking: you crouch by the fire turning your food on a stick as it browns and steams.','Other players now see you fishing, lighting fires and cooking too.']},
  {v:'2026.11.10-2',d:'Nov 10, 2026',t:'The sledgehammer smashes ore',n:['The Stone Sledgehammer now breaks any rock or ore vein in one hit (you still need the Mining level and pickaxe for it).','GROUND SLAM now also smashes every rock, ore vein, boulder and ore boulder around you that you could mine, and you get everything inside.','Other players now see your GROUND SLAM: the shockwave, the dust and the sound.']},
  {v:'2026.11.10-1',d:'Nov 10, 2026',t:'Livelier pets',n:['Pets with a new look can now have two standing frames they idle between and two walking frames they step between.']},
