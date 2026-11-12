@@ -128,6 +128,7 @@ ui/118-s123-button-words.js
 multiplayer/119-s124-trade-button.js
 ui/120-s125-daily-challenges.js
 ui/121-s126-chat-at-bottom.js
+combat/122-s127-tool-swings-and-hit.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js
