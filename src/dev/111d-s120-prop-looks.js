@@ -17,6 +17,9 @@
 //   r:<item>[:<w>]        things inside shops, homes, dungeons and caves (and r:icvdoor:<kind> island cave entrances,
 //                         r:bwbld:<name> / r:afbld:<name> island village buildings, anchor = their footprint's top-left)
 //   l:<kind>[:<variant>]  island buildings and props the island builder places (SQA.ISL_LM)
+//   m:<type>[:<variant>]  monsters (the region key, e.g. wolf:briar; anchor = the monster's position). Frames are its walk
+//                         cycle (ak: the last frame is its attack pose, shown while it's right next to you); drawn facing
+//                         right and mirrored to face you (fw: to face the way it walks); flashes white when hit.
 // Anything without a published look is drawn by the game's own code, so removing a look puts the original back.
 (()=>{if(!window.SQA)return;const A=SQA;
  const PL={},PC=new Map();let ver=0,off=0,anyX=false,anyR=false,nAt=0,nightNow=false;// off > 0 while the editor captures the game's own look
@@ -50,6 +53,20 @@
  const HS=typeof HOUSE_STYLE!=='undefined'?HOUSE_STYLE:null;
  const bkey=b=>{if(!b)return null;if(b.castle)return'b:castle';if(HS&&b.k===HS.k&&b.wall===HS.wall&&b.roof===HS.roof)return'b:house'+(b.w|0);return typeof BLD!=='undefined'&&BLD.includes(b)?'b:'+b.k:null};
  const _db=drBld;drBld=function(b,tm){const k=bkey(b);if(k&&has(k)){drawLook(k,b.tx*16,b.ty*16,null,phase(b.tx,b.ty));return}return _db.apply(this,arguments)};
+ // ---- monsters ----
+ const mkey=n=>'m:'+(n.rk||((n.type||'slime')+(n.rv?':'+n.rv:'')));
+ const WC=new Map();// white versions of frames, for the hit flash
+ function white(k,L,f){const key=k+'#'+f;let c=WC.get(key);if(!c){const b=can(k,L,f);c=document.createElement('canvas');c.width=b.width;c.height=b.height;const x=c.getContext('2d');x.drawImage(b,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);WC.set(key,c)}return c}
+ function mobDraw(n,tm){if(!n||n._wb||n.type==='ib')return false;const k=mkey(n),q=pick(k);if(!q)return false;const L=PL[q],x=Math.round(n.x),y=Math.round(n.y),nf=frames(L);
+  // which way it faces: towards you (most monsters do), or the way it's walking
+  if(n._lx==null)n._lx=n.x;const mv=n.x-n._lx;n._lx=n.x;if(Math.abs(mv)>.05)n._dir=mv<0?-1:1;const fl=L.fw?n._dir<0:P.x<n.x;
+  let f;if(L.ak&&nf>1&&Math.hypot(P.x-n.x,P.y-n.y)<20)f=nf-1;else{const wn=L.ak&&nf>1?nf-1:nf,ms=Math.max(60,Math.min(5000,L.ms|0||250));f=wn>1?Math.floor(performance.now()/ms+((x*7+y*3)%11)/11*wn)%wn:0}
+  const hit=Math.abs(n.kx||0)+Math.abs(n.ky||0)>.5,c=hit?white(q,L,f):can(q,L,f),w=L.w*L.s/2,h=L.h*L.s/2;
+  try{shd(x,y+5,Math.max(8,Math.min(40,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;if(n.frozen>0)g.globalAlpha*=.85;if(fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,Math.round((x+L.ox)*2)/2,Math.round((y+L.oy)*2)/2,w,h);g.restore();
+  if(n.frozen>0){g.save();g.globalAlpha=.35;g.fillStyle='#a8e0ff';g.fillRect(x+L.ox,y+L.oy,w,h);g.restore()}
+  // bosses keep their health bar over their head
+  if(n.type==='boss'||n.type==='bonelord'){const mh=n.mhp||(n.type==='boss'?30:45),by=Math.round(y+L.oy-8);Rg(x-16,by,32,4,'#181018');Rg(x-15,by+1,Math.max(0,Math.round(30*n.hp/mh)),2,n.type==='boss'?'#e03030':'#a050e0')}return true}
+ const _ps=pS;pS=function(n,tm){if(mobDraw(n,tm))return;return _ps.apply(this,arguments)};
  // ---- village details and boats (globals the game calls by name) ----
  const wrapG=(name,fn)=>{if(typeof window[name]!=='function')return;const o=window[name];window[name]=function(){if(fn.apply(this,arguments))return;return o.apply(this,arguments)}};
  wrapG('drawLamp',(x,y)=>{if(!has('v:lamp'))return false;try{shd(x*16+8,y*16+15,10)}catch(e){}return drawLook('v:lamp',x*16,y*16,null,phase(x,y))});
@@ -108,7 +125,7 @@
  const FX=3,FY=3,withNb=(t,dx,dy,f)=>{const i0=FY*N+FX,j=i0+dy*N+dx,keep=[[i0,STR.get(i0)],[j,STR.get(j)]];STR.set(i0,{t});STR.set(j,{t});
   try{g.save();g.translate(-FX*16,-FY*16);f(i0);g.restore()}finally{for(const[i,v]of keep){if(v===undefined)STR.delete(i);else STR.set(i,v)}}};
  let CAT=null;
- function list(){if(CAT)return CAT;const out=[];const seen=new Set(),add=(k,n,grp,draw,diff)=>{if(seen.has(k))return;seen.add(k);out.push({k,n,grp,draw,diff})};
+ function list(){if(CAT)return CAT;const out=[];const seen=new Set(),add=(k,n,grp,draw,diff,mob)=>{if(seen.has(k))return;seen.add(k);out.push({k,n,grp,draw,diff,mob})};
   // nature, and what each leaves behind
   const T=Object.keys(typeof OHP!=='undefined'?OHP:{});const order=['tree','pine','oak','willow','maple','yew','bush','nutbush','shroom','cactus','rock','ore'];const types=order.concat(T.filter(t=>!order.includes(t)).sort()).filter(t=>OHP[t]!=null);
   const tn=t=>TN[t]||(window.SQBOUL&&SQBOUL[t]?pretty(SQBOUL[t].n||t):pretty(t));
@@ -153,6 +170,11 @@
   try{for(const id in ROOMS){const R=ROOMS[id];if(!R||R.region||R.dun||/^dun_|^reg_/.test(id))continue;roomItems(R,'Inside shops and homes')}}catch(e){}
   if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(const f of[1,DKIND[kind].floors||3])try{roomItems(buildFloor(kind,f),'Dungeons and caves')}catch(e){}}
   if(window.SQICV)for(const kind in SQICV){if(/^cv_/.test(kind))continue;add('r:icvdoor:'+kind,'Cave entrance: '+SQICV[kind].name,'Dungeons and caves',()=>drawFurn({t:'icvdoor',kind,x:0,y:0,name:SQICV[kind].name,w:1,h:1},0))}
+  // monsters
+  const MB=window.SQISLIFE&&SQISLIFE.MOBS||{},MX=[['boss','Slime King (boss)',30],['bonelord','Bone Lord (boss)',40]];
+  const mobTpl=(k,hp)=>()=>{const[t]=k.split(':');try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}};
+  for(const k of Object.keys(MB).sort((a,b)=>MB[a].n.localeCompare(MB[b].n)))add('m:'+k,MB[k].n,'Monsters',null,null,mobTpl(k,MB[k].hp));
+  for(const[k,n,hp]of MX)add('m:'+k,n,'Monsters',null,null,mobTpl(k,hp));
   // island props
   for(const kk in A.ISL_LM){const[k,v]=kk.split(':'),L=A.ISL_LM[kk];add('l:'+kk,L[0],'Island props',()=>drawFurn({t:'lm',k,v:L[3],x:0,y:0,w:L[1],h:L[2],sh:L[2],name:L[0]},0))}
   return CAT=out}
@@ -165,13 +187,26 @@
   if(x1<x0)return null;if((x0-OX)%2)x0--;if((y0-OY)%2)y0--;const w=Math.min(320,x1-x0+1),h=Math.min(320,y1-y0+1),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d'),im=x.createImageData(w,h);
   for(let y=0;y<h;y++)for(let X=0;X<w;X++){const s=((y+y0)*W+X+x0),i=s*4,o=(y*w+X)*4;if(keep&&!keep[s])continue;im.data[o]=d[i];im.data[o+1]=d[i+1];im.data[o+2]=d[i+2];im.data[o+3]=d[i+3]}
   x.putImageData(im,0,0);return{url:c.toDataURL(),ox:(x0-OX)/2,oy:(y0-OY)/2}}
- function capture(key,night){const base=key.replace(/@n$/,''),it=list().find(q=>q.k===base);if(!it||(!it.draw&&!it.diff))return null;off++;
+ // a monster: drawn by the game at a few moments of its walk, cut to one box, as a strip of frames side by side
+ // (bosses draw their health bar themselves: left out here, the game adds one over any new look)
+ function capMob(it,night){const fr=[],pk={x:P.x,y:P.y},fr0=g.fillRect;P.x=4000;P.y=0;g.fillRect=function(x,y,w,h){if((x===-16&&w===32&&h===4)||(x===-15&&h===2&&w<=30))return;return fr0.apply(this,arguments)};
+  try{for(const tm of[0,.13,.26,.39,.52,.65]){const n=it.mob();n.x=0;n.y=0;n.kx=n.ky=0;fr.push(snapDraw(()=>{pS(n,tm)},night))}}finally{P.x=pk.x;P.y=pk.y;delete g.fillRect;if(g.fillRect!==fr0)g.fillRect=fr0}
+  const{W,H,OX,OY}=fr[0];let x0=W,y0=H,x1=-1,y1=-1;for(const S of fr){const d=S.d;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>=128){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}}
+  if(x1<x0)return null;if((x0-OX)%2)x0--;if((y0-OY)%2)y0--;let w=Math.min(320,x1-x0+1),h=Math.min(320,y1-y0+1);if(w%2)w++;if(h%2)h++;
+  // drop repeated frames (a monster that changes every 0.33 s shows the same picture twice in a row)
+  const sig=S=>{let a=0;for(let y=y0;y<y0+h;y+=1)for(let x=x0;x<x0+w;x+=1){const i=(y*W+x)*4;a=(a*31+S.d[i]+S.d[i+1]*3+S.d[i+2]*7+(S.d[i+3]>127?1:0))|0}return a};
+  const uniq=[];const seen=new Set();for(const S of fr){const k=sig(S);if(seen.has(k))continue;seen.add(k);uniq.push(S)}
+  const c=document.createElement('canvas');c.width=w*uniq.length;c.height=h;const x=c.getContext('2d'),im=x.createImageData(c.width,h);
+  uniq.forEach((S,j)=>{for(let y=0;y<h;y++)for(let X=0;X<w;X++){const sy=y+y0,sx=X+x0;if(sy>=H||sx>=W)continue;const i=(sy*W+sx)*4,o=(y*c.width+j*w+X)*4;if(S.d[i+3]<128)continue;im.data[o]=S.d[i];im.data[o+1]=S.d[i+1];im.data[o+2]=S.d[i+2];im.data[o+3]=255}});
+  x.putImageData(im,0,0);return{url:c.toDataURL(),ox:(x0-OX)/2,oy:(y0-OY)/2,n:uniq.length}}
+ function capture(key,night){const base=key.replace(/@n$/,''),it=list().find(q=>q.k===base);if(!it||(!it.draw&&!it.diff&&!it.mob))return null;off++;
+  if(it.mob){try{return capMob(it,night)}catch(e){console.warn('monster capture',key,e);return null}finally{off--}}
   try{if(it.diff){const A0=snapDraw(it.diff.base,night),B=snapDraw(it.diff.with,night),keep=new Uint8Array(B.W*B.H);
     for(let i=0;i<keep.length;i++){const j=i*4;if(B.d[j+3]>=128&&(A0.d[j+3]<128||Math.abs(A0.d[j]-B.d[j])+Math.abs(A0.d[j+1]-B.d[j+1])+Math.abs(A0.d[j+2]-B.d[j+2])>24))keep[i]=1}return crop(B,keep)}
    return crop(snapDraw(it.draw,night))}catch(e){console.warn('prop capture',key,e);return null}finally{off--}}
  // a small picture of a prop as players see it now (the list's thumbnails)
  const TH=new Map(),BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
  function thumb(key){if(TH.has(key+'@'+ver))return TH.get(key+'@'+ver);let u='';
-  if(PL[key])u=A.render(frSp(PL[key],0)).toDataURL();else{const c=capture(key);u=c?c.url:''}if(!u&&key[0]==='x'){const t=list().find(q=>q.k==='o:'+key.slice(2));if(t)u=thumb('o:'+key.slice(2))}
+  if(PL[key])u=A.render(frSp(PL[key],0)).toDataURL();else{const c=capture(key);u=c?c.url:'';if(c&&c.n>1){const im=new Image();im.src=c.url;const cv=document.createElement('canvas');im.onload=()=>{cv.width=im.width/c.n;cv.height=im.height;cv.getContext('2d').drawImage(im,0,0);TH.set(key+'@'+ver,cv.toDataURL())}}}if(!u&&key[0]==='x'){const t=list().find(q=>q.k==='o:'+key.slice(2));if(t)u=thumb('o:'+key.slice(2))}
   u=u||BLANK;TH.set(key+'@'+ver,u);return u}
- window.SQPROPS={list,capture,thumb,drawLook,valid:vsp,frames,frSp,frameAt,get looks(){return PL},clearThumbs(){TH.clear()}}})();
+ window.SQPROPS={mkey,list,capture,thumb,drawLook,valid:vsp,frames,frSp,frameAt,get looks(){return PL},clearThumbs(){TH.clear()}}})();

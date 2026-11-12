@@ -110,5 +110,13 @@
   daylight melt via `DEVM`), clear them, heal, can't be hurt (`P.hp` becomes a getter/setter that ignores decreases),
   give items/gold, set skill levels (`XPS[i]=XT[L-1]`), and a checkpoint (`snap()` in localStorage `sq_dev_ckpt`,
   restored with `applySave`).
+- **Monsters** (Dev Suite > Monsters, the Props editor filtered to `m:` keys): looks are `props.m:<rk>` (`SQPROPS.mkey(n)`:
+  the region key `n.rk`, else `type[:rv]`), drawn by the outermost `pS` (`mobDraw` in 111d: walk frames, `ak` = last
+  frame is the attack pose within 20 px, `fw` = face the walking direction instead of the player, white flash when hit,
+  bosses get a health bar). Capture draws `pS` at six moments and keeps the different frames (bosses' own bars left out).
+  World bosses and island bosses are left out (`_wb`, type `ib`), and so are Thornroot and the Emberlord (their attack
+  warnings are part of their drawing). Rules: `mobs.<key>` = {hp%, spd%, gold, dk/dn/dc} in
+  `dev/111f-s122-monster-rules.js` (outermost `upd` scales health once and movement every frame; `enemyDrop` adds gold
+  and the drop); proxies of other players' monsters are skipped.
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).

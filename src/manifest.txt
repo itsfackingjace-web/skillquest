@@ -123,6 +123,7 @@ skills/116-s118-pet-abilities.js
 world/117-s119-island-life.js
 dev/111d-s120-prop-looks.js
 dev/111e-s121-test-tools.js
+dev/111f-s122-monster-rules.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

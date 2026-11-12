@@ -13,7 +13,7 @@
  const R=p=>fb().db.ref(fb().D,'assets/'+p);
  const dget=async p=>(await fb().db.get(R(p))).val(),dset=(p,v)=>fb().db.set(R(p),v==null?null:v);
  const body=L=>{const o=clone(L)||{};delete o.v;delete o.at;delete o.by;return o};
- const norm=d=>{d.icons=d.icons||{};d.stats=d.stats||{};d.worn=d.worn||{};d.islands=d.islands||{};d.pets=d.pets||{};d.gear=d.gear||{};d.newgear=d.newgear||{};d.props=d.props||{};d.pnames=d.pnames||{};return d};
+ const norm=d=>{d.icons=d.icons||{};d.stats=d.stats||{};d.worn=d.worn||{};d.islands=d.islands||{};d.pets=d.pets||{};d.gear=d.gear||{};d.newgear=d.newgear||{};d.props=d.props||{};d.pnames=d.pnames||{};d.mobs=d.mobs||{};return d};
  const EXT={},LAY=k=>k==='worn'||k==='pet'||k==='prop';// extra tabs (the island builder lives in its own file)
  async function load(){S.ok=null;S.note='';draw();
   if(!fb()||!user()){S.ok='signin';draw();return}S.uid=user().uid;
@@ -42,6 +42,8 @@
     out.push({kind:'stat',t,k,what:T.name+': '+f.join(', ')+(d[k]?'':' (back to original)')})}}
   const ok2=new Set([...Object.keys(L.props||{}),...Object.keys(D.props||{})]);
   for(const k of ok2)if(!same((L.props||{})[k],(D.props||{})[k]))out.push({kind:'ext',html:'🏠 '+E(propName(k))+': '+((D.props||{})[k]?((L.props||{})[k]?'look changed':'new look'):'back to the game\'s own look')});
+  const mk2=new Set([...Object.keys(L.mobs||{}),...Object.keys(D.mobs||{})]);
+  for(const k of mk2)if(!same((L.mobs||{})[k],(D.mobs||{})[k]))out.push({kind:'ext',html:'👾 '+E(propName(k))+': '+((D.mobs||{})[k]?'rules changed':'back to the game\'s own rules')});
   const nk2=new Set([...Object.keys(L.pnames||{}),...Object.keys(D.pnames||{})]);
   for(const k of nk2)if(!same((L.pnames||{})[k],(D.pnames||{})[k]))out.push({kind:'ext',html:'🏷 '+E(gameName(k))+': '+((D.pnames||{})[k]?'renamed to "'+E(D.pnames[k])+'" in the Dev Suite':'back to its own name in the Dev Suite')});
   for(const k in EXT)if(EXT[k].changes)try{out.push(...EXT[k].changes(L,D))}catch(e){}
@@ -159,8 +161,8 @@
   try{if(L&&PR().valid(L)){const pal=[],N=L.w*L.h,n=PR().frames(L),layers=[];
     for(let f=0;f<n;f++){const sp=PR().frSp(L,f),map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)}),dd=A.pix(sp),px=new Uint8Array(N).fill(255);
      for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')px[i]=map[PXC.indexOf(ch)]}layers.push(px)}
-    ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers,ms:L.ms|0||250,sy:!!L.sy}}
-   else{const cap=PR().capture(k,night)||(k==='f:door:o'?PR().capture('f:door:c',night):null);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px]}}
+    ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers,ms:L.ms|0||250,sy:!!L.sy,ak:!!L.ak,fw:!!L.fw}}
+   else{const cap=PR().capture(k,night)||(k==='f:door:o'?PR().capture('f:door:c',night):null);if(cap){const b=await bake(cap.url),n=cap.n|0||1;if(n>1){const fw=b.w/n,layers=[];for(let f=0;f<n;f++){const px=new Uint8Array(fw*b.h);for(let y=0;y<b.h;y++)for(let x=0;x<fw;x++)px[y*fw+x]=b.px[y*b.w+f*fw+x];layers.push(px)}ed={w:fw,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers,ms:250}}else ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px]}}
     else ed=/^x:/.test(k)?{w:32,h:32,s:1,ox:0,oy:0,pal:[],layers:[new Uint8Array(1024).fill(255)]}:{w:32,h:32,s:2,ox:-8,oy:-16,pal:[],layers:[new Uint8Array(1024).fill(255)]}}}
   catch(e){console.warn(e);toast('Could not read that prop.');return}
   if(S.sel!==k)return;if(!ed.pal.length)ed.pal.push('#181018','#7a5a3a','#c89858','#f8e8c8');
@@ -170,21 +172,32 @@
   else{if(ed.layers.length<2)return;ed.layers.splice(ed.dir,1);ed.dir=Math.min(ed.dir,ed.layers.length-1)}
   ed.px=ed.layers[ed.dir];ed.rc=ed.layers.map(()=>null);ed.rcd=ed.layers.map(()=>1);ed.undo=[];ed.redo=[];ed.dirty=true;draw()}
  function propOut(ed){if(!ed.layers.some(L=>L.some(v=>v!==255)))return null;const sp=toSpPx(ed,ed.layers[0]),o={w:sp.w,h:sp.h,s:sp.s,ox:ed.ox,oy:ed.oy,p:sp.p,r:A.pack(sp.d)};
-  if(ed.layers.length>1){o.fr=ed.layers.slice(1).map(L=>{const f=toSpPx(ed,L);return{p:f.p,r:A.pack(f.d)}});o.ms=Math.max(60,Math.min(5000,ed.ms|0||250));if(ed.sy)o.sy=1}return o}
+  if(ed.layers.length>1){o.fr=ed.layers.slice(1).map(L=>{const f=toSpPx(ed,L);return{p:f.p,r:A.pack(f.d)}});o.ms=Math.max(60,Math.min(5000,ed.ms|0||250));if(ed.sy)o.sy=1;if(ed.ak)o.ak=1}if(ed.fw)o.fw=1;return o}
  async function saveProp(){const ed=S.ed;if(!ed)return;const o=propOut(ed);if(o)S.draft.props[ed.k]=o;else delete S.draft.props[ed.k];
   try{await dset('draft/props/'+key(ed.k),o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.base+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.base),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.base)}}
+ // a monster's rules: health and speed in % of the game's own, extra gold, an extra drop
+ function mobRules(k){const r=S.draft.mobs[k]||{},M=window.SQISLIFE&&SQISLIFE.MOBS&&SQISLIFE.MOBS[k.slice(2)],items=Object.keys(INAME).sort((a,b)=>INAME[a].localeCompare(INAME[b]));
+  return'<div class="dv-card" style="margin:8px 0"><b>How tough it is</b>'+(M?' <span class="dv-mut">(the game gives it '+M.hp+' health where it lives)</span>':'')+'<div class="dv-row" style="flex-wrap:wrap;margin-top:6px">'+
+   '<label class="dv-mut">Health %<br><input type="number" data-mr="hp" min="10" max="1000" value="'+(r.hp||100)+'" style="width:80px"></label>'+
+   '<label class="dv-mut">Speed %<br><input type="number" data-mr="spd" min="10" max="400" value="'+(r.spd||100)+'" style="width:80px"></label>'+
+   '<label class="dv-mut">Extra gold<br><input type="number" data-mr="gold" min="0" max="100000" value="'+(r.gold||0)+'" style="width:90px"></label>'+
+   '<label class="dv-mut">Extra drop<br><select data-mr="dk"><option value="">none</option>'+items.map(i=>'<option value="'+i+'"'+(r.dk===i?' selected':'')+'>'+E(INAME[i])+'</option>').join('')+'</select></label>'+
+   '<label class="dv-mut">How many<br><input type="number" data-mr="dn" min="1" max="1000" value="'+(r.dn||1)+'" style="width:70px"></label>'+
+   '<label class="dv-mut">Chance %<br><input type="number" data-mr="dc" min="0" max="100" value="'+(r.dc!=null?r.dc:100)+'" style="width:70px"></label></div>'+
+   '<div class="dv-row"><button class="dv-b dv-pri" data-a="mrsave">Save rules to draft</button><button class="dv-b dv-bad" data-a="mrclear">Use the game\'s own rules</button><span class="dv-mut">100% = unchanged. Its damage stays the game\'s own.</span></div></div>'}
  const HINT=k=>/^f:.*:[ewns]$/.test(k)?'This is the part drawn towards a neighbouring piece on that side, on top of the post or block (draw only what joins them; the editor starts from what the game adds there). Draw the post too, or the game keeps drawing its own fence.':
   /^f:/.test(k)?'A fence or wall piece is built from this post or block plus a part for each side that has another piece next to it.':/^x:/.test(k)?'What players see on the spot while it grows back (the game normally shows nothing). The picture starts one tile big at the tile it stood on.':
   /^v:sail_/.test(k)?'Your boat is drawn in two parts so you sit in it: the part behind you is drawn first, then you, then the part in front of you. Sailing west uses the east picture, mirrored.':/^c:/.test(k)?'A farm plot is drawn as soil, then the crop on top.':'';
- function props(){if(!PR())return'<p class="dv-mut">Props aren\'t available in this version of the game.</p>';const q=S.q.toLowerCase(),all=PR().list(),keys=all.filter(x=>(!q||propName(x.k).toLowerCase().includes(q)||x.n.toLowerCase().includes(q)||x.k.includes(q)||x.grp.toLowerCase().includes(q))&&(!S.only||prState(x.k)));
-  let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+all.length+' props" value="'+E(S.q)+'" data-in="q">'+
-   '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only props with a new look</label><div class="dv-grid">';let grp='';
+ function props(mode){if(!PR())return'<p class="dv-mut">Props aren\'t available in this version of the game.</p>';const q=S.q.toLowerCase(),all=PR().list().filter(x=>mode==='m'?x.grp==='Monsters':x.grp!=='Monsters'),keys=all.filter(x=>(!q||propName(x.k).toLowerCase().includes(q)||x.n.toLowerCase().includes(q)||x.k.includes(q)||x.grp.toLowerCase().includes(q))&&(!S.only||prState(x.k)));
+  let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+all.length+' '+(mode==='m'?'monsters':'props')+'" value="'+E(S.q)+'" data-in="q">'+
+   '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only '+(mode==='m'?'monsters':'props')+' with changes</label><div class="dv-grid">';let grp='';
   for(const x of keys){if(x.grp!==grp){grp=x.grp;h+='<div class="dv-mut" style="grid-column:1/-1;margin-top:6px">'+E(grp)+'</div>'}const s2=prState(x.k);
    h+='<button class="dv-it'+(S.sel===x.k?' dv-on':'')+'" data-k="'+E(x.k)+'">'+(s2?'<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>':'')+'<img alt="" src="'+pThumb(x.k)+'"><span>'+E(propName(x.k))+'</span></button>'}
   if(!keys.length)h+='<p class="dv-mut">Nothing matches.</p>';
   h+='</div></div><div class="dv-ed">';
-  if(!S.sel)h+='<div class="dv-card"><b>Pick a prop.</b><p class="dv-mut">Change how things look in the world: trees, rocks, ores, mushrooms, cacti and bushes, the town buildings, players\' houses, village details, boats, everything players build (stations, furniture, fences and walls, campfires), farm soil and crops, things inside shops, homes, dungeons and caves, the island villages, the buildings and props on the islands, and the spot a tree, rock or plant leaves behind while it grows back. It starts from the game\'s own look. Add frames to animate it, and a night look to change it after dark. A new look replaces every one of that kind for every player (trees that came in a few shapes all take the new one). How they work doesn\'t change: a tree is still chopped from its tile, and a building keeps its doors and walls where they were.</p></div>';
+  if(!S.sel&&mode==='m')h+='<div class="dv-card"><b>Pick a monster.</b><p class="dv-mut">Redraw how a monster looks and change how tough it is. It opens with the game\'s own look, its walk cycle already split into frames. Pictures face right; the game mirrors them to face you. Tick "Last frame is its attack pose" to have one frame shown only while it\'s right next to you. It flashes white when hit, as now. Below the picture you can change its health and speed and give it extra gold or an extra drop. Use the Test tab to spawn one next to you and see it.</p></div>';
+  else if(!S.sel)h+='<div class="dv-card"><b>Pick a prop.</b><p class="dv-mut">Change how things look in the world: trees, rocks, ores, mushrooms, cacti and bushes, the town buildings, players\' houses, village details, boats, everything players build (stations, furniture, fences and walls, campfires), farm soil and crops, things inside shops, homes, dungeons and caves, the island villages, the buildings and props on the islands, and the spot a tree, rock or plant leaves behind while it grows back. It starts from the game\'s own look. Add frames to animate it, and a night look to change it after dark. A new look replaces every one of that kind for every player (trees that came in a few shapes all take the new one). How they work doesn\'t change: a tree is still chopped from its tile, and a building keeps its doors and walls where they were.</p></div>';
   else if(!S.ed)h+='<p class="dv-mut">Opening...</p>';
   else{const ed=S.ed;h+='<div class="dv-row"><button class="dv-b dv-back" data-a="back">‹ All props</button><input type="text" data-in="pname" maxlength="40" value="'+E(propName(ed.base))+'" placeholder="'+E(gameName(ed.base))+'" title="Its name here in the Dev Suite" style="max-width:240px;font-weight:600;font-size:15px"><span class="dv-mut">'+ed.w+' × '+ed.h+' pixels · the name is only used here in the Dev Suite</span></div>'+
    '<div class="dv-row"><button class="dv-b'+(ed.night?'':' dv-tl dv-on')+'" data-a="pday">☀ Day look</button><button class="dv-b'+(ed.night?' dv-tl dv-on':'')+'" data-a="pnight">☾ Night look'+(S.draft.props[ed.base+'@n']?' •':'')+'</button><span class="dv-mut">'+(ed.night?'Used after dark, in place of the day look. It starts as a copy of the day look (or the game\'s look at night).':'A night look is optional: draw one to change it after dark (lit windows, a glowing lamp).')+'</span></div>'+
@@ -194,18 +207,21 @@
    (ed.layers.length>1?'<div class="dv-row"><span class="dv-mut">Each frame shows for</span><input type="number" data-in="pms" min="60" max="5000" step="10" value="'+ed.ms+'" style="width:90px"><span class="dv-mut">ms ('+(1000/ed.ms).toFixed(1)+' frames a second)</span>'+
     '<label class="dv-chk"><input type="checkbox" data-a="psy"'+(ed.sy?' checked':'')+'> All of them move together</label><span class="dv-mut">'+(ed.sy?'':'(otherwise each one starts at its own point, so they don\'t sway in step)')+'</span></div>'+
     '<div class="dv-row"><span class="dv-mut">Copy into this frame from:</span>'+ed.layers.map((L,d)=>d===ed.dir?'':'<button class="dv-b" data-copy="'+d+'">Frame '+(d+1)+'</button>').join('')+'</div>':'')+
+   (/^m:/.test(ed.base)?'<div class="dv-row"><label class="dv-chk"><input type="checkbox" data-a="pak"'+(ed.ak?' checked':'')+(ed.layers.length<2?' disabled':'')+'> Last frame is its attack pose</label><span class="dv-mut">'+(ed.layers.length<2?'(add a frame first)':'shown while it\'s right next to you')+'</span><label class="dv-chk"><input type="checkbox" data-a="pfw"'+(ed.fw?' checked':'')+'> Faces the way it walks</label><span class="dv-mut">(otherwise it turns to face you)</span></div>':'')+
    '<div class="dv-row dv-tools"></div><div class="dv-cv dv-cvw'+(ed.tool==='pan'?' dv-pan':'')+'"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw"><canvas id="dvwalk" width="480" height="240" style="width:min(480px,100%);height:auto"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><span class="dv-mut">Canvas</span><input type="number" data-in="pw" min="4" max="320" value="'+ed.w+'" style="width:70px"> × <input type="number" data-in="ph" min="4" max="320" value="'+ed.h+'" style="width:70px"><button class="dv-b" data-a="presize">Resize</button><span class="dv-mut">keeps the bottom in place</span></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b" data-a="rcap">Start again from the game\'s look</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s own look</button></div>'+
+   (/^m:/.test(ed.base)?mobRules(ed.base):'')+
    '<p class="dv-mut">The preview shows the game\'s look on the left and yours on the right, next to a player for size. The bottom-middle of the picture is where it stands. Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+S save</p>'}
   return h+'</div></div>'}
  // before / after, on grass, with a player for size (everything at the game's 2x detail, scaled to fit)
  const PRV={};function propPreview(c,ed){for(let d=0;d<ed.layers.length;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
   const nf=ed.layers.length,fi=nf>1?Math.floor(performance.now()/Math.max(60,ed.ms||250))%nf:0;
-  if(!PRV[ed.k]){PRV[ed.k]='…';const cap=PR().capture(ed.base,ed.night);if(cap){const im=new Image();im.onload=()=>{PRV[ed.k]={im,ox:cap.ox,oy:cap.oy}};im.src=cap.url}else PRV[ed.k]=null}
+  if(!PRV[ed.k]){PRV[ed.k]='…';const cap=PR().capture(ed.base,ed.night);if(cap){const im=new Image();im.onload=()=>{const n=cap.n|0||1,fr=[];if(n>1)for(let j=0;j<n;j++){const c2=document.createElement('canvas');c2.width=im.width/n;c2.height=im.height;c2.getContext('2d').drawImage(im,-j*c2.width,0);fr.push(c2)}PRV[ed.k]={im:n>1?fr[0]:im,fr:n>1?fr:null,ox:cap.ox,oy:cap.oy}};im.src=cap.url}else PRV[ed.k]=null}
   const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<60;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
-  const O=PRV[ed.k]&&PRV[ed.k].im?PRV[ed.k]:null,L=ed.rc[fi]||ed.rc[0],me=charCan(0,0,false);
+  const O=PRV[ed.k]&&PRV[ed.k].im?PRV[ed.k]:null;if(O&&O.fr)O.im=O.fr[Math.floor(performance.now()/250)%O.fr.length];
+  const wn=ed.ak&&nf>1?nf-1:nf,L=(ed.ak&&nf>1?ed.rc[Math.floor(performance.now()/Math.max(60,ed.ms||250))%(wn+2)>=wn?nf-1:Math.floor(performance.now()/Math.max(60,ed.ms||250))%wn]:ed.rc[fi])||ed.rc[0],me=charCan(0,0,false);
   // fit: world px -> canvas px
   const bw=Math.max(O?O.im.width/2:0,L?L.width/2:0,24),bh=Math.max(O?O.im.height/2:0,L?L.height/2:0,32),k=Math.max(.5,Math.min(3,Math.min((c.width/2-30)/bw,(c.height-30)/bh)));
   x.fillStyle='rgba(0,0,0,.35)';x.font='600 12px system-ui';x.fillText('Now',8,16);x.fillText('New',c.width/2+8,16);x.fillRect(c.width/2,0,1,c.height);
@@ -313,14 +329,14 @@
 @media (max-width:760px){#dvs .dv-pvlong{display:none}#dvs .dv-pvs{display:inline}#dvs .dv-top{gap:2px;padding-left:8px;padding-right:8px}#dvs .dv-tab{padding:7px 9px}#dvs .dv-ttl{width:100%;margin:0 0 2px}#dvs .dv-spr{grid-template-columns:1fr;height:auto}#dvs .dv-spr.dv-has .dv-ls{display:none}#dvs .dv-spr:not(.dv-has) .dv-ed{display:none}#dvs .dv-back{display:inline-block}#dvs .dv-ls .dv-grid{max-height:none}
  #dvs table,#dvs tbody,#dvs tr,#dvs td{display:block}#dvs thead{display:none}#dvs tr{border-top:1px solid #2a3240;padding:8px 0}#dvs td{border:0;padding:3px 0}#dvs td[data-l]::before{content:attr(data-l);display:block;font-size:11px;color:#8a94a6}#dvs td textarea{min-width:0}}`;
  document.head.appendChild(st);
- const TABS=[['sprites','Sprites'],['worn','Gear'],['pets','Pets'],['props','Props'],['stats','Stats'],['islands','Islands'],['publish','Publish']];
+ const TABS=[['sprites','Sprites'],['worn','Gear'],['pets','Pets'],['props','Props'],['monsters','Monsters'],['stats','Stats'],['islands','Islands'],['publish','Publish']];
  function draw(){if(!S.open)return;const nch=S.draft?changes().length:0;
   let h='<div class="dv-top"><span class="dv-ttl">Dev Suite</span>'+TABS.map(([k,n])=>'<button class="dv-tab'+(S.tab===k?' dv-on':'')+'" data-tab="'+k+'">'+n+(k==='publish'&&nch?' ('+nch+')':'')+'</button>').join('')+
    '<span class="dv-sp1"></span>'+(S.ok==='yes'?'<label class="dv-mut" style="display:flex;gap:6px;align-items:center;margin-right:8px"><input type="checkbox" data-a="pv"'+(A.previewing?' checked':'')+'> <span class="dv-pvlong">Show unpublished edits in my game</span><span class="dv-pvs">Preview drafts</span></label>':'')+
    '<button class="dv-x" data-a="close">Close</button></div><div class="dv-main">'+main()+'</div><div class="dv-note">'+E(S.note)+'</div>';
   const sc=root.querySelector('.dv-ls .dv-grid'),top=sc?sc.scrollTop:0,mn=root.querySelector('.dv-main'),mtop=mn?mn.scrollTop:0,cw=root.querySelector('.dv-cvw'),cws=cw?[cw.scrollLeft,cw.scrollTop]:null;
   root.innerHTML=h;const sc2=root.querySelector('.dv-ls .dv-grid');if(sc2)sc2.scrollTop=top;const mn2=root.querySelector('.dv-main');if(mn2)mn2.scrollTop=mtop;const cw2=cws&&root.querySelector('.dv-cvw');if(cw2)requestAnimationFrame(()=>{cw2.scrollLeft=cws[0];cw2.scrollTop=cws[1]});
-  if((S.tab==='sprites'||S.tab==='worn'||S.tab==='pets'||S.tab==='props')&&S.ed){drawPal();drawTools();paint();requestAnimationFrame(paint)}
+  if((S.tab==='sprites'||S.tab==='worn'||S.tab==='pets'||S.tab==='props'||S.tab==='monsters')&&S.ed){drawPal();drawTools();paint();requestAnimationFrame(paint)}
   if(S.ok==='yes'&&EXT[S.tab]&&EXT[S.tab].after)EXT[S.tab].after()}
  function main(){
   if(S.ok===null)return'<p class="dv-mut">Loading...</p>';
@@ -331,7 +347,7 @@
    '<p>Your account ID:<br><code>'+E(S.uid)+'</code> <button class="dv-b" data-a="copyid">Copy</button></p><button class="dv-b dv-pri" data-a="retry">I\'ve done it, try again</button></div>';
   if(S.ok==='error')return'<div class="dv-card"><b>Couldn\'t reach the database.</b><p class="dv-mut">'+E(S.note)+'</p><button class="dv-b" data-a="retry">Try again</button></div>';
   if(EXT[S.tab])return EXT[S.tab].render();
-  if(S.tab==='sprites')return sprites();if(S.tab==='worn')return worn();if(S.tab==='pets')return pets();if(S.tab==='props')return props();if(S.tab==='stats')return stats();return publish()}
+  if(S.tab==='sprites')return sprites();if(S.tab==='worn')return worn();if(S.tab==='pets')return pets();if(S.tab==='props')return props();if(S.tab==='monsters')return props('m');if(S.tab==='stats')return stats();return publish()}
  function sprites(){const q=S.q.toLowerCase(),keys=A.itemKeys().filter(k=>(!q||(INAME[k]||'').toLowerCase().includes(q)||k.includes(q))&&(!S.only||state(k)));
   let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+A.itemKeys().length+' item sprites" value="'+E(S.q)+'" data-in="q">'+
    '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only edited sprites</label><div class="dv-grid">';
@@ -484,7 +500,7 @@
   if(t.dataset.dir!=null&&S.ed){S.ed.dir=+t.dataset.dir;S.ed.px=S.ed.layers[S.ed.dir];draw();return}
   if(t.dataset.copy!=null&&S.ed){snapEd();S.ed.layers[S.ed.dir].set(S.ed.layers[+t.dataset.copy]);paint();draw();return}
   if(t.dataset.stat){S.statT=t.dataset.stat;draw();return}
-  if(t.dataset.k){if(S.ed&&S.ed.dirty&&S.sel!==t.dataset.k&&!confirmLeave())return;if(S.tab==='worn')openGear(t.dataset.k);else if(S.tab==='pets')openPet(t.dataset.k);else if(S.tab==='props')openProp(t.dataset.k);else openSprite(t.dataset.k);return}
+  if(t.dataset.k){if(S.ed&&S.ed.dirty&&S.sel!==t.dataset.k&&!confirmLeave())return;if(S.tab==='worn')openGear(t.dataset.k);else if(S.tab==='pets')openPet(t.dataset.k);else if(S.tab==='props'||S.tab==='monsters')openProp(t.dataset.k);else openSprite(t.dataset.k);return}
   if(t.dataset.tool){S.ed.tool=t.dataset.tool;drawTools();return}
   if(t.dataset.col){S.ed.col=+t.dataset.col;if(S.ed.tool==='erase'||S.ed.tool==='pick')S.ed.tool='pen';drawPal();drawTools();return}
   const a=t.dataset.a;
@@ -509,6 +525,10 @@
   if(a==='pcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openPet(S.sel,true);return}
   if(a==='pflip'){const ed=S.ed;snapEd();const L=ed.layers[ed.dir];for(let y=0;y<ed.h;y++){for(let x=0;x<ed.w>>1;x++){const i=y*ed.w+x,j=y*ed.w+ed.w-1-x,t2=L[i];L[i]=L[j];L[j]=t2}}paint();return}
   if(a==='fradd'&&S.ed&&S.ed.kind==='prop'){propFrames(true);return}if(a==='frdel'&&S.ed&&S.ed.kind==='prop'){propFrames(false);return}
+  if(a==='pak'&&S.ed){S.ed.ak=t.checked;S.ed.dirty=true;draw();return}if(a==='pfw'&&S.ed){S.ed.fw=t.checked;S.ed.dirty=true;draw();return}
+  if((a==='mrsave'||a==='mrclear')&&S.ed){const k=S.ed.base;let r=null;if(a==='mrsave'){const v=f=>{const i=root.querySelector('[data-mr="'+f+'"]');return i?i.value:''};r={hp:Math.max(10,Math.min(1000,+v('hp')||100)),spd:Math.max(10,Math.min(400,+v('spd')||100)),gold:Math.max(0,Math.min(100000,v('gold')|0))};
+    if(v('dk')){r.dk=v('dk');r.dn=Math.max(1,Math.min(1000,v('dn')|0||1));r.dc=Math.max(0,Math.min(100,+v('dc')))}if(r.hp===100&&r.spd===100&&!r.gold&&!r.dk)r=null}
+   if(r)S.draft.mobs[k]=r;else delete S.draft.mobs[k];try{await dset('draft/mobs/'+key(k),r);toast(r?'Rules saved to draft.':'Back to the game\'s own rules (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw();return}
   if(a==='psy'&&S.ed){S.ed.sy=t.checked;S.ed.dirty=true;draw();return}
   if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true,S.ed&&S.ed.night);return}
   if((a==='pday'||a==='pnight')&&S.ed&&S.ed.kind==='prop'){const nt=a==='pnight';if(nt===S.ed.night)return;if(S.ed.dirty&&!confirmLeave())return;S.ed.dirty=false;openProp(S.sel,false,nt);return}
@@ -560,7 +580,7 @@
  addEventListener('resize',()=>{if(S.open&&S.ed){S.ed.fit=0;paint()}});
  // keys: the game must not see them while the suite is open
  addEventListener('keydown',e=>{if(!S.open)return;e.stopPropagation();const tg=e.target,typing=/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)&&tg.type!=='checkbox';
-  if(e.key==='Escape'&&!typing){close();return}if(typing||!S.ed||(S.tab!=='sprites'&&S.tab!=='worn'&&S.tab!=='pets'&&S.tab!=='props'))return;const k=e.key.toLowerCase(),m=e.ctrlKey||e.metaKey;
+  if(e.key==='Escape'&&!typing){close();return}if(typing||!S.ed||(S.tab!=='sprites'&&S.tab!=='worn'&&S.tab!=='pets'&&S.tab!=='props'&&S.tab!=='monsters'))return;const k=e.key.toLowerCase(),m=e.ctrlKey||e.metaKey;
   if(m&&k==='z'){e.preventDefault();undo(e.shiftKey);return}if(m&&k==='y'){e.preventDefault();undo(true);return}if(m&&k==='s'){e.preventDefault();if(S.ed.kind==='worn')saveWorn();else if(S.ed.kind==='pet')savePet();else if(S.ed.kind==='prop')saveProp();else saveSprite();return}
   if((LAY(S.ed.kind))&&!m&&(k==='+'||k==='='||k==='-')){const b=root.querySelector('[data-a="'+(k==='-'?'zout':'zin')+'"]');if(b)b.click();return}
   const T={p:'pen',b:'pen',e:'erase',f:'fill',g:'fill',i:'pick'};if(LAY(S.ed.kind))T.m='pan';if(!m&&T[k]){S.ed.tool=T[k];drawTools()}},true);
