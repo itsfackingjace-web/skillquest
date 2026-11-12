@@ -163,3 +163,8 @@
   it with `window.SQVER` (set at the end of 074; PATCH_NOTES itself is inside the multiplayer block). UPDATE saves
   (`saveLocal(true)` + `saveCloud(true)`, 2.5 s at most) and loads `?v=<version>`; the query is removed again on load.
   Options button, auto-check every 10 min / on returning to the tab, and a top bar (hidden while a panel is open).
+- **Touch button layout** (`ui/126-s131-touch-layout.js`, `window.SQTOUCH`, Options > Controls > Touch): localStorage
+  `sq_touch` = {p|l:{id:{x,y,s}}} (centre as a share of the screen, size), per orientation (`innerWidth>innerHeight` = l).
+  `apply()` (outermost `upd`, every frame, only writes changed values) sets left/top/transform with `!important` on
+  a, e, f, tk, rl, ub, aimb (beats 082's `placeBtn` for BOW/CAST). Edit mode: pnOpen=true (game paused), all buttons
+  shown, window-capture listeners turn touches into drags and keep them from the game; closePanel ends it.

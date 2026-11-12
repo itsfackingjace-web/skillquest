@@ -74,8 +74,9 @@
 #pn .ctc{flex:none;width:auto;padding:7px 12px;border:2px solid #485870;border-radius:6px;background:#fff;color:#304060;font:700 13px var(--pf,inherit);cursor:pointer}`;document.head.appendChild(st)}
  const _oh=optionsHTML;optionsHTML=function(){const h=_oh(),add='<button class="sb ctlb" style="width:100%;margin-top:8px">Controls: keys and buttons</button>',k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
  function html(){const gp=typeof GPON!=='undefined'&&GPON,pk=CAP&&CAP.kind==='p',kk=CAP&&CAP.kind==='k';
-  let h='<div class="tl">CONTROLS</div><div style="display:flex;gap:6px;margin:4px 0 8px"><button class="sb" data-ct="tab:k" style="flex:1;opacity:'+(VIEW==='k'?1:.55)+'">Keyboard & mouse</button><button class="sb" data-ct="tab:p" style="flex:1;opacity:'+(VIEW==='p'?1:.55)+'">Controller</button></div>';
-  if(VIEW==='k'){h+='<div class="qc" style="font-size:13px">Tap Change, then press a key (or the middle or side mouse buttons). Taking a key another action uses swaps them. The arrow keys always move; Esc always closes; left click hits and right click shoots.</div>';
+  let h='<div class="tl">CONTROLS</div><div style="display:flex;gap:6px;margin:4px 0 8px"><button class="sb" data-ct="tab:k" style="flex:1;opacity:'+(VIEW==='k'?1:.55)+'">Keyboard & mouse</button><button class="sb" data-ct="tab:p" style="flex:1;opacity:'+(VIEW==='p'?1:.55)+'">Controller</button><button class="sb" data-ct="tab:t" style="flex:1;opacity:'+(VIEW==='t'?1:.55)+'">Touch</button></div>';
+  if(VIEW==='t'){h+=window.SQTOUCH?SQTOUCH.html():''}
+  else if(VIEW==='k'){h+='<div class="qc" style="font-size:13px">Tap Change, then press a key (or the middle or side mouse buttons). Taking a key another action uses swaps them. The arrow keys always move; Esc always closes; left click hits and right click shoots.</div>';
    for(const[id,lab]of KA){const w=kk&&CAP.id===id;h+='<div class="ctr"><span>'+esc(lab)+'</span><b style="'+(KB[id]!==KDEF[id]?';color:#b06010':'')+'">'+(w?'Press a key…':esc(kname(KB[id])))+'</b><button class="ctc" data-ct="k:'+id+'">'+(w?'Cancel':'Change')+'</button></div>'}
    h+='<button class="sb" data-ct="kreset" style="width:100%;margin-top:10px">Reset keys to the game\'s own</button>'}
   else{h+='<div class="qc" style="font-size:13px">'+(gp?'Choose Change, then press the button you want for it (Options cancels). Taking a button another action uses swaps them. The stick and D-pad move; Options opens the menu; in menus ✕ picks and ○ goes back as always.':'Connect a controller (press any of its buttons) to change its buttons.')+'</div>';
@@ -84,7 +85,7 @@
   return h+'<button class="sb" data-ct="back" style="width:100%">Back to Options</button>'}
  function draw(){if(pnOpen&&ptab===CTAB)rPn()}
  const _r=rPn;rPn=function(){if(ptab===CTAB){try{panelChrome('')}catch(e){}pbd.innerHTML=html();return}return _r.apply(this,arguments)};
- const open=()=>{VIEW=(typeof GPON!=='undefined'&&GPON)?'p':'k';CAP=null;pnOpen=true;ptab=CTAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
+ const open=()=>{VIEW=(typeof GPON!=='undefined'&&GPON)?'p':isPC?'k':'t';CAP=null;pnOpen=true;ptab=CTAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
  pbd.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.ctlb')){e.stopPropagation();open()}},true);
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab!==CTAB)return _oc(e);const b=e.target.closest('[data-ct]');if(!b)return;const a=b.dataset.ct;
    if(a.startsWith('tab:')){VIEW=a.slice(4);CAP=null}
@@ -93,6 +94,7 @@
    else if(a==='kreset'){KB=Object.assign({},KDEF);LS('sq_keys',null);rebuild();labels();CAP=null}
    else if(a==='preset'){PM=Object.assign({},PDEF);LS('sq_pad',null);labels();CAP=null}
    else if(a==='back'){CAP=null;ptab=8}
+   else if(a.startsWith('t')&&window.SQTOUCH){CAP=null;if(SQTOUCH.act(a)===false)return}
    sfx('talk');rPn()}}
  {const _cp=closePanel;closePanel=function(){CAP=null;return _cp.apply(this,arguments)}}
  window.SQKEYS={get keys(){return KB},get pad(){return PM},KDEF,PDEF,bindKey,bindPad,open,labels}})();

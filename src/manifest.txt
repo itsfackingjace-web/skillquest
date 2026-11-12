@@ -132,6 +132,7 @@ combat/122-s127-tool-swings-and-hit.js
 dev/123-s128-item-sprite-swings.js
 ui/124-s129-custom-controls.js
 ui/125-s130-check-for-updates.js
+ui/126-s131-touch-layout.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js
