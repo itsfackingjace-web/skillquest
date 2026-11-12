@@ -134,6 +134,7 @@ ui/124-s129-custom-controls.js
 ui/125-s130-check-for-updates.js
 ui/126-s131-touch-layout.js
 graphics/127-s132-smooth-camera.js
+world/128-s133-quest-chapter-two.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

@@ -173,3 +173,10 @@
   in world space (never `Math.round(P.x-(W/Z)/2)`: with a fractional half screen that made the player jump a world pixel
   back and forth, the old "shaky camera"). The outermost `pP` translates by the player's sub-pixel offset so you and
   everything drawn with you stay put.
+- **Main quest chapter two** (`world/128-s133-quest-chapter-two.js`, `window.SQCH2`): edits QS entries by name (slime
+  quests `item:'slime'`, typeless Hollow slimes counted there; Night Watch type `night`; replaced duplicate quests;
+  Grandmaster 150), moves The Road East after Gone Fishing, adds chapter two before Grandmaster and Legend of the Isles
+  last. New types: `night`, `visit` (region key; done on arrival), `line` (a village line's `SQ_SIDE[k].completed`),
+  `ib` (island bosses beaten, `ibk` in the save, recorded from `sqEvent('islandboss',id)`). Save `qv` 10; a qv 9 save is
+  converted to names with the old order (`QOLD9`) then `qSkip`. Never reorder QS without such a name-based migration.
+  102's tracker: `routeStep(region)` names the next voyage/boat upgrade on the way, `villNext([key])` the next village quest.

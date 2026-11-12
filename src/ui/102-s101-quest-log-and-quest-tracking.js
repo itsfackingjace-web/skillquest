@@ -13,15 +13,26 @@
   if(ready)return'Return to '+giver;const t=q.type;
   if(t==='give')return'Bring '+giver+' '+q.amt+' '+nm(q.item,q.amt);
   if(t==='kill')return'Defeat '+q.amt+' '+(q.item?nm(q.item==='skel'?'skeleton':q.item,q.amt).replace(/^briarwolfs?$/,'briar wolves').replace(/^wolfs$/,'wolves'):'slimes');
-  if(t==='cook')return'Cook '+q.amt+' meals at a campfire';if(t==='day')return'Survive until day '+q.amt;if(t==='harvest')return'Harvest '+q.amt+' crops';
+  if(t==='cook')return'Cook '+q.amt+' meals at a campfire';if(t==='day')return'Survive until day '+q.amt;if(t==='night')return'See one whole night through (dusk to dawn) without falling';
+  if(t==='visit')return'Sail to '+((typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[q.item]&&WORLD_REGIONS[q.item].name)||town(q.item));if(t==='line')return'Finish the quests of '+town(q.item);if(t==='ib')return q.amt>1?'Defeat all '+q.amt+' island bosses':'Defeat an island boss';if(t==='harvest')return'Harvest '+q.amt+' crops';
   if(t==='chess')return'Win a game of chess';if(t==='talk')return'Talk to the harbor master in Saltmere';if(t==='hermit')return'Find the Old Hermit';
   if(t==='jobs')return'Do '+q.amt+' jobs for villagers';if(t==='village')return'Finish the quests of all three villages';if(t==='total')return'Reach total level '+q.amt;
   if(t==='dungeonboss'||t==='boss'||t==='bonelord')return'Defeat '+q.n.replace(/^(The |Heart of |Beneath the )/,'the ');
   return(q.d||'').replace(/^"[^"]*"\s*/,'').slice(0,60)}
  // "Three Villages": which village is next, and that village's own next step (so the tracker can say where to go)
  const VILL=['frosthollow','dusthaven','tidewatch'];
- function villNext(){if(typeof SQ_SIDE==='undefined')return null;for(const t of VILL){const s=SQ_SIDE[t],L=SIDE_QS[t];if(!s||!L||!L.length||s.completed)continue;const q=sqCur(t);if(!q)continue;
-   const ready=sqReady(t),giver=sqGiverName(q.giver);return{t,q,s,ready,giver,e:{kind:'side',area:'hollow',giver:q.giver,st:s.on?'active':'avail',ready,q}}}return null}
+ function villNext(list){if(typeof SQ_SIDE==='undefined')return null;for(const t of list||VILL){const s=SQ_SIDE[t],L=SIDE_QS[t];if(!s||!L||!L.length||s.completed)continue;const q=sqCur(t);if(!q)continue;
+   const ready=sqReady(t),giver=sqGiverName(q.giver);const area=(typeof SQ_REGION!=='undefined'&&SQ_REGION[t])||'hollow';return{t,q,s,ready,giver,e:{kind:'side',area,giver:q.giver,st:s.on?'active':'avail',ready,q}}}return null}
+ // the next voyage (or boat upgrade) on the way to a region whose route isn't open yet
+ function routeStep(rg){try{if(typeof routeOpen!=='function'||routeOpen(rg)||typeof VOYS==='undefined')return null;const D=WORLD_REGIONS[rg],V=VQ();
+   const unlocker=id=>VOYS.find(v=>(v.unlock||[]).includes(id));let goal=D&&D.unlock&&unlocker(D.unlock);const seen=new Set();
+   while(goal&&!seen.has(goal.id)){seen.add(goal.id);const miss=goal.needs.find(n=>!vDone(n));if(!miss)break;
+    if(miss[0]==='@'){const u=(typeof UPGRADES!=='undefined'?UPGRADES:[]).find(o=>o.id===miss.slice(1));if(u&&u.needs.every(vDone)){const post=HARBOR_POSTS.find(p=>p.id===u.post);return{step:'Upgrade your boat: '+u.name+' at the '+(post?post.name:'')+' harbor post',e:{kind:'voyAvail',q:{post:u.post}}}}goal=u?VOYS.find(v=>u.needs.includes(v.id)&&!vDone(v.id)):null;continue}
+    goal=VOYS.find(v=>v.id===miss)}
+   if(!goal)return null;const st=V[goal.id];
+   if(st&&st!==99)return{step:goal.name+': '+goal.steps[st-1],e:{kind:'voy',q:goal,step:goal.steps[st-1]}};
+   if(goal.req&&!goal.req())return{step:goal.name+': '+(goal.reqTxt||'not ready yet'),e:null};
+   const post=HARBOR_POSTS.find(p=>p.id===goal.post);return{step:'Voyage: '+goal.name+' (ask at the '+(post?post.name:'')+' harbor post)',e:{kind:'voyAvail',q:goal}}}catch(e){return null}}
  const villList=()=>VILL.filter(t=>typeof SQ_SIDE!=='undefined'&&SQ_SIDE[t]).map(t=>{const s=SQ_SIDE[t],L=SIDE_QS[t]||[];return town(t)+(s.completed?' ✓':' '+s.index+'/'+L.length)}).join(' · ');
  function qAll(){const out=[];
   // Elder Rowan
@@ -29,6 +40,8 @@
    if(done){out.push({id,cat:'Elder Rowan',area:'hollow',name:q.n,st:'done',rew:rewardTxt(q)});return}
    if(i!==Q.i)return;let ready=false,prog='';try{ready=Q.on&&qDone(q);prog=Q.on?qProg(q):''}catch(e){}
    const E1={id,cat:'Elder Rowan',area:'hollow',name:q.n,desc:q.d,st:Q.on?'active':'avail',step:Q.on?step(q,ready,'Elder Rowan'):'Talk to Elder Rowan in Hollow Village',prog,ready,rew:rewardTxt(q),q,kind:'main'};
+   if((q.type==='visit'||q.type==='line')&&Q.on&&!ready){const rs=routeStep(q.item);if(rs){E1.step=rs.step;E1.via=rs.e}
+    else if(q.type==='line'){const v=villNext([q.item]);if(v){E1.vill=v;E1.step=town(v.t)+': '+(v.s.on?step(v.q,v.ready,v.giver):'talk to '+v.giver+' ('+v.q.n+')')}}}
    if(q.type==='village'&&Q.on&&!ready){const v=villNext();E1.desc=q.d+' Village quests: '+villList()+'.';if(v){E1.vill=v;E1.step=town(v.t)+': '+(v.s.on?step(v.q,v.ready,v.giver):'talk to '+v.giver+' ('+v.q.n+')')}}
    out.push(E1)});
   // the villages and island towns
@@ -58,7 +71,7 @@
  function nearMob(type){let best=null,bd=1e9;for(const m of en){if(m.dead||m.hp<=0||m.summon)continue;if(type&&m.type!==type&&!(type==='wolf'&&/wolf/.test(m.type)))continue;const d=(m.x-P.x)**2+(m.y-P.y)**2;if(d<bd){bd=d;best={area:curArea(),x:m.x,y:m.y,mob:1}}}return best}
  function regionGiver(rg,id){const R=SCENE&&SCENE.room;if(!R||R.region!==rg)return{area:rg};for(const it of R.items){const n=it.n;if(n&&(n.id===id||n.name===id))return{area:rg,x:n.x,y:n.y}}return{area:rg}}
  function target(e){if(!e)return null;
-  if(e.kind==='main'||(!e.kind&&e.cat==='Elder Rowan')){const q=e.q;if(e.st==='avail'||e.ready)return npcAt('elder');if(e.vill)return target(e.vill.e);
+  if(e.kind==='main'||(!e.kind&&e.cat==='Elder Rowan')){const q=e.q;if(e.st==='avail'||e.ready)return npcAt('elder');if(e.via)return target(e.via);if(e.vill)return target(e.vill.e);
    if(q.type==='give'){const s=SRC[q.item];return Array.isArray(s)?nearObj(s):null}if(q.type==='kill')return nearMob(q.item||'slime');
    if(q.type==='hermit')return npcAt('hermit');if(q.type==='talk')return npcAt('harbor');return null}
   if(e.kind==='side'){const rg=e.area,gv=e.giver;const giverT=()=>rg==='hollow'?npcAt(gv):regionGiver(rg,gv);if(e.st==='avail'||e.ready)return giverT();
