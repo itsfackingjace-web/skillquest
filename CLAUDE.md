@@ -118,5 +118,10 @@
   warnings are part of their drawing). Rules: `mobs.<key>` = {hp%, spd%, gold, dk/dn/dc} in
   `dev/111f-s122-monster-rules.js` (outermost `upd` scales health once and movement every frame; `enemyDrop` adds gold
   and the drop); proxies of other players' monsters are skipped.
+- **Button words** (`ui/118-s123-button-words.js`, `window.SQWORDS`): every 0.1 s the HIT (`a`) and EAT (`e`) buttons get
+  the word for what they'd do now (`hitWord`/`eatWord`, following the same order as the `attack`/`eat` wrappers: build,
+  facing someone, fishing, station, home furniture/chest/bed, monster in front, water, sign, the object's skill via
+  `SKOF`), and a TALK button showing USE gets the thing's word (`useWord`). The `<small>` key hint is kept. When a new
+  context is added to `attack`, `eat` or `talk`, add its word here too.
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).
