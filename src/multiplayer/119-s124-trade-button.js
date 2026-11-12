@@ -2,12 +2,13 @@
 // Trading (section 67) used to start from START > Trade, /trade name or the Friends list. Now, when another player
 // stands right next to you and the TALK button isn't busy with anything else (a person, a door, a chest...), it says
 // TRADE: one tap (T on a computer, ✕ on a controller) asks the nearest of them to trade. If they already asked you,
-// the same tap says yes. Uses window.SQTRREQ / SQTRNEAR / SQTRADE from 062.
+// the same tap says yes. With PvP on, players who also have PvP on never get it (on a controller ✕ is also the attack
+// button, so it would turn a hit into a trade request mid-fight); START > Trade still works. Uses window.SQTRREQ / SQTRNEAR / SQTRADE from 062.
 (()=>{const CLOSE=34;let mine=false,who=null,t=0,lab='';
  const ok=()=>!!(window.SQTRREQ&&window.SQTRNEAR&&window.SQTRADE&&window.SQMP&&SQMP.on&&SQMP.user);
  // the nearest player within a couple of steps (the trade itself allows a little more room)
- function nearest(){if(!ok()||SQTRADE.st!=='idle')return null;let best=null,bd=CLOSE;
-  for(const u of SQTRNEAR()){const r=SQMP.players.get(u);if(!r)continue;const d=Math.hypot(r.tx-P.x,r.ty-P.y);if(d<bd){bd=d;best=u}}return best}
+ function nearest(){if(!ok()||SQTRADE.st!=='idle')return null;let best=null,bd=CLOSE;const foes=!!(window.SQPVP&&SQPVP.on);
+  for(const u of SQTRNEAR()){const r=SQMP.players.get(u);if(!r||(foes&&r.pk))continue;const d=Math.hypot(r.tx-P.x,r.ty-P.y);if(d<bd){bd=d;best=u}}return best}
  const label=()=>'TRADE'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));
  const ask=()=>{const u=who;if(!u)return false;try{SQTRREQ(u);sfx('talk')}catch(e){}return true};
  // the button is ours only while nothing else wants it: hide it before the game's own code runs each frame; if that

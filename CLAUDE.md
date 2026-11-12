@@ -129,6 +129,7 @@
   wants the TALK button that frame (it hides the button before the inner `upd` runs and yields if anything shows it again),
   the button says TRADE and a tap / T / ✕ calls `SQTRREQ(uid)` (062's `trRequest`, which also answers an incoming request).
   062 exposes `SQTRREQ`, `SQTRNEAR` (its `trNearList`) next to `SQTRADE`.
+  Skipped for players with `pk` while `SQPVP.on` (a controller's ✕ is also the attack, via `SQPADUSE`).
 - **Daily challenges** (`ui/120-s125-daily-challenges.js`, `window.SQDAILY`): three tasks per real day (device date), picked
   from `T` by a hash of the date, skipping ones the character can't do yet (`r`), target scaled by skill level. Items count
   when they arrive in a frame where that task's skill gained XP (outermost `addXp` marks it; positive `inv` deltas in `upd`),
