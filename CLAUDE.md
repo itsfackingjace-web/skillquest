@@ -228,3 +228,5 @@
   id) after OPTIONS; `window.open` from the title menu opened nothing. The Windows app sends it to the browser.
 - **World boss on maps** (`ui/138`, `window.SQWBMAP`): world map, area map (with a line saying where it is) and minimap mark
   the boss at `wbPos(b, lair)` (071's block functions, global through Annex B); the lair is known on Hollow or once you're on its island.
+- **Players online** (`ui/139`, `window.SQONLINE`): a pill with a green dot and the count (you + players seen in the last 20 s)
+  over the minimap's top-right corner, drawn in the outermost `drawHUD` while online.

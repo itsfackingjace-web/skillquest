@@ -9308,7 +9308,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.12-12',d:'Nov 12, 2026',t:'World bosses on the map, fewer pop-ups',n:['World bosses now show on the map: a red ring with the boss\'s icon on the world map (with its name and time left), on the island map and on your minimap, right where it is. The map also says which island it\'s on.','Far fewer pop-up boxes: most short messages now float over your head instead. The big box is kept for quests, level-ups, rare finds and people talking to you.']},
+ {v:'2026.11.12-12',d:'Nov 12, 2026',t:'World bosses on the map, players online, fewer pop-ups',n:['World bosses now show on the map: a red ring with the boss\'s icon on the world map (with its name and time left), on the island map and on your minimap, right where it is. The map also says which island it\'s on.','Far fewer pop-up boxes: most short messages now float over your head instead. The big box is kept for quests, level-ups, rare finds and people talking to you.','The top corner of your minimap now shows how many players are online, next to a green dot.']},
  {v:'2026.11.12-11',d:'Nov 12, 2026',t:'Tidier screen',n:['Eating ("Ate cooked meat") no longer opens the big text box: it floats over your head.','XP and food numbers over your head are smaller.','On phones, your party list now sits on the left under the quest box instead of covering the CHAT button.']},
  {v:'2026.11.12-10',d:'Nov 12, 2026',t:'Emotes you act out',n:['Emotes are now acted out by your character instead of a bubble: wave your arm, bow, dance (spinning and hopping), cheer with both arms up and confetti, laugh, send hearts, nod yes, shake your head no, think, sit down or fall asleep. Everyone nearby sees it.','New emotes: Sit and Sleep (they last until you move). Walking ends any emote.','Find them in START > Emotes, press G on a keyboard, or type /wave, /dance, /cheer, /sit and so on in chat.']},
  {v:'2026.11.12-9',d:'Nov 12, 2026',t:'Quieter skilling',n:['"Reeling it in...", "Cooking...", "Smelting..." and the like no longer pop up in the big text box: your character already shows what you\'re doing.','Small messages like "It got away..." are now smaller and follow you.','Fixed: dungeon boss quests in the quest tracker said things like "Defeat the Dunes" instead of the boss\'s name (now "Defeat the Sandclaw Matriarch").','The USE button\'s word (SAIL, OPEN, SLEEP...) no longer flips back to USE now and then.']},
@@ -16010,6 +16010,17 @@ window.SQA=SQA;
    const p=pos(b);if(!p)return out;const H=hudLayout(),U=H.U,w=H.dw,hh=w*t.h/t.w,x0=H.dx,y0=H.top+H.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
    mark(g,x0+p.x/16/t.w*w,y0+p.y/16/t.h*hh,4*U,b,null);g.restore()}catch(e){}return out}}
  window.SQWBMAP={pos,lair}})();
+// ---- 144. Players online, at the top of the screen ----
+// A small pill over the top-right corner of the minimap: a green dot and how many players are online (you included),
+// counted from the players the game hears from (seen in the last 20 s). Only while you're playing online.
+(()=>{let N0=0,at=0;const count=()=>{const t=performance.now();if(t-at<1000)return N0;at=t;let n=1;try{for(const r of SQMP.players.values())if(t-r.seen<20000)n++}catch(e){}return N0=n};
+ const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!(window.SQMP&&SQMP.on&&SQMP.user))return out;const L=hudLayout(),U=L.U,n=count();
+   const s=String(n);g.save();g.setTransform(1,0,0,1,0,0);g.font='700 '+11*U+'px '+PF;const tw=g.measureText(s).width,w=tw+20*U,h=16*U;
+   const x=Math.round(L.dx+L.dw-w-3*U),y=Math.round(L.top+L.dh+46*U+3*U);// minimap: top-left (dx, top+dh+46U), width dw
+   g.fillStyle='rgba(16,24,40,.72)';g.beginPath();g.roundRect(x,y,w,h,h/2);g.fill();
+   g.fillStyle='#183818';g.beginPath();g.arc(x+9*U,y+h/2,4.2*U,0,6.283);g.fill();g.fillStyle='#48e060';g.beginPath();g.arc(x+9*U,y+h/2,3*U,0,6.283);g.fill();
+   g.fillStyle='#f0f8f0';g.textAlign='left';g.textBaseline='middle';g.fillText(s,x+16*U,y+h/2+.5*U);g.restore()}catch(e){}return out};
+ window.SQONLINE=count})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
