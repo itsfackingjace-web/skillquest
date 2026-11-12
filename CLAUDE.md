@@ -220,4 +220,5 @@
 - **Emotes and parties** (`multiplayer/136`): presence carries `em` (emote "kind:n"), `pt` (party id), `hp` (061 reads them
   as `r.em`, `r.pt`, `r.hpv`). Party invites go through `dreq` with `k:'party'` (135 hands them to `SQPARTYINV`). Party id
   kept in localStorage `sq_party` for 2 h. START > Party (`ptab` 38) and Emotes (`ptab` 39); G = emotes (in 124's `KA`).
-- **Discord button** (`ui/137`): added to the title menu (`#tsmn`, 061's block, so found by id) after OPTIONS.
+- **Discord button** (`ui/137`): a real `<a target="_blank">` (class `tsdc`) in the title menu (`#tsmn`, 061's block, so found by
+  id) after OPTIONS; `window.open` from the title menu opened nothing. The Windows app sends it to the browser.
