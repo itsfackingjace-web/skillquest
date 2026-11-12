@@ -9308,6 +9308,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-12',d:'Nov 12, 2026',t:'World bosses on the map, fewer pop-ups',n:['World bosses now show on the map: a red ring with the boss\'s icon on the world map (with its name and time left), on the island map and on your minimap, right where it is. The map also says which island it\'s on.','Far fewer pop-up boxes: most short messages now float over your head instead. The big box is kept for quests, level-ups, rare finds and people talking to you.']},
  {v:'2026.11.12-11',d:'Nov 12, 2026',t:'Tidier screen',n:['Eating ("Ate cooked meat") no longer opens the big text box: it floats over your head.','XP and food numbers over your head are smaller.','On phones, your party list now sits on the left under the quest box instead of covering the CHAT button.']},
  {v:'2026.11.12-10',d:'Nov 12, 2026',t:'Emotes you act out',n:['Emotes are now acted out by your character instead of a bubble: wave your arm, bow, dance (spinning and hopping), cheer with both arms up and confetti, laugh, send hearts, nod yes, shake your head no, think, sit down or fall asleep. Everyone nearby sees it.','New emotes: Sit and Sleep (they last until you move). Walking ends any emote.','Find them in START > Emotes, press G on a keyboard, or type /wave, /dance, /cheer, /sit and so on in chat.']},
  {v:'2026.11.12-9',d:'Nov 12, 2026',t:'Quieter skilling',n:['"Reeling it in...", "Cooking...", "Smelting..." and the like no longer pop up in the big text box: your character already shows what you\'re doing.','Small messages like "It got away..." are now smaller and follow you.','Fixed: dungeon boss quests in the quest tracker said things like "Defeat the Dunes" instead of the boss\'s name (now "Defeat the Sandclaw Matriarch").','The USE button\'s word (SAIL, OPEN, SLEEP...) no longer flips back to USE now and then.']},
@@ -15655,15 +15656,20 @@ window.SQA=SQA;
  // "Reeling it in...", "Cooking..." and the like (109's progress words) aren't shown at all: your character already shows it.
  const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |Still chewing|Ate |You eat |You drink |\+\d+ [a-z])/,
   SILENT=/^(Lighting a fire\.\.\.|Cooking\.\.\.|Smelting\.\.\.|Hammering at the anvil\.\.\.|Crafting\.\.\.|Reeling it in\.\.\.|Working\.\.\.)$/;
+ const KEEP=/quest|level|unlock|learn|discover|achiev|welcome|collection|rare |RAINBOW|DRAGONSOUL|died|you fell|"|“|^[A-Z][a-z]+: /i;
  const QL=[];// small words over your head: {tx,t}
  {const _s=say;say=function(s){const t=typeof s==='string'?s:'';
    if(t&&SILENT.test(t)&&!pnOpen)return;
-   if(t&&t.length<=46&&QUIET.test(t)&&!pnOpen&&!menuOpen&&!dead){if(!QL.some(q=>q.tx===t&&q.t<.5)){QL.push({tx:t,t:0});if(QL.length>3)QL.shift()}return}
+   // every short message floats; the box is kept for quests, levels, unlocks, rare finds, people talking and long explanations
+   if(t&&!pnOpen&&!menuOpen&&!dead&&!(typeof TALKN!=='undefined'&&TALKN)&&(t.length<=46&&QUIET.test(t)||t.length<=56&&!KEEP.test(t))){
+    if(!QL.some(q=>q.tx===t&&q.t<.5)){QL.push({tx:t,t:0});if(QL.length>3)QL.shift()}if(!(msgT>0))msg='';return}
    return _s.apply(this,arguments)};window.SQQUIET=QUIET;window.SQQL=QL}
  // drawn small (4.5 world px, a little smaller than XP numbers), following you, fading out over 1.8 s
  function drawQL(){if(!QL.length)return;g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.3;g.lineJoin='round';
-  for(let i=0;i<QL.length;i++){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));const x=Math.round(P.x),y=Math.round(P.y-28-(QL.length-1-i)*6-q.t*4);
-   g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(q.tx,x,y);g.fillStyle='#fff';g.fillText(q.tx,x,y)}
+  const lines=t=>{if(t.length<=30)return[t];const w=t.split(' ');let a='',L=[];for(const x of w){if(a&&(a+' '+x).length>30){L.push(a);a=x}else a=a?a+' '+x:x}L.push(a);return L.slice(0,2)};
+  let off=0;
+  for(let i=QL.length-1;i>=0;i--){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));const L=lines(q.tx),x=Math.round(P.x);
+   for(let j=L.length-1;j>=0;j--){const y=Math.round(P.y-28-off-q.t*4);g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(L[j],x,y);g.fillStyle='#fff';g.fillText(L[j],x,y);off+=5.5}off+=1}
   g.restore();for(let i=QL.length-1;i>=0;i--)if(QL[i].t>=1.8)QL.splice(i,1)}
 
  {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}try{drawQL()}catch(e){}return out}}
@@ -15973,6 +15979,37 @@ window.SQA=SQA;
   for(const ev of['touchstart','pointerdown','mousedown'])a.addEventListener(ev,e=>e.stopPropagation());a.addEventListener('click',e=>{e.stopPropagation();try{sfx('talk')}catch(x){}});o.after(a)};
  new MutationObserver(add).observe(tsMn,{childList:true});add();
  window.SQDISCORD=URL_})();
+// ---- 143. The world boss on the maps ----
+// While a world boss is up (071's WB.b, window.SQWB): the world map marks its island with a pulsing red ring, its icon,
+// name and time left (at its lair when that's known: always on Hollow, on an island once you're there); the area map and
+// the HUD minimap mark it where it is right now (071's wbPos, which every game works out from the shared clock); and the
+// area map says where it is when it's on another island.
+(()=>{const B=()=>{try{const b=window.SQWB&&SQWB.b;return b&&Date.now()<b.end+60000?b:null}catch(e){return null}};
+ const left=b=>{const now=(window.SQMP&&SQMP.on&&typeof mpNow==='function')?mpNow():Date.now(),s=Math.max(0,Math.round((b.end-now)/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+ const where=b=>b.where==='hollow'?'Hollow Island':(WORLD_REGIONS[b.where]?WORLD_REGIONS[b.where].name:b.where);
+ // its lair (world px in its own area) if this game knows it
+ function lair(b){try{if(b.where==='hollow'&&!SCENE)return wbLair(b);if(b.where!=='hollow'&&SCENE&&SCENE.room&&SCENE.room.region===b.where)return wbLair(b);
+   if(SQWB.lair&&SQWB.lairKey===b.slot+':'+b.where)return SQWB.lair}catch(e){}return null}
+ function pos(b){const L=lair(b);if(!L)return null;try{return wbPos(b,L,(window.SQMP&&SQMP.on&&typeof mpNow==='function')?mpNow():Date.now())}catch(e){return L}}
+ // the marker: a pulsing ring, a dark dot and the icon (s = size in canvas px)
+ function mark(x,cx,cy,s,b,label){const t=performance.now()/1000,pr=s*(1.1+.35*Math.abs(Math.sin(t*3)));x.save();x.lineWidth=Math.max(1.5,s*.18);x.strokeStyle='rgba(240,48,48,.95)';x.beginPath();x.arc(cx,cy,pr,0,6.283);x.stroke();
+  x.fillStyle='rgba(40,8,8,.85)';x.beginPath();x.arc(cx,cy,s*.8,0,6.283);x.fill();x.font=Math.round(s*1.15)+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(b.T.ic,cx,cy+s*.05);
+  if(label){x.font='bold '+Math.max(9,Math.round(s*.9))+'px "Pixelify Sans",monospace';x.textBaseline='alphabetic';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.strokeText(label,cx,cy-s*1.6);x.fillStyle='#ffd8d0';x.fillText(label,cx,cy-s*1.6)}x.restore()}
+ // world map
+ {const _dw=drawWorld52;drawWorld52=function(){const out=_dw.apply(this,arguments);try{const b=B();if(!b)return out;const c=document.getElementById('wmc');if(!c)return out;const x=c.getContext('2d'),r=wmRect(b.where);
+   let cx=r.x+r.w/2,cy=r.y+r.h/2;const p=pos(b);if(p){const W=b.where==='hollow'?N:WORLD_REGIONS[b.where].width,H=b.where==='hollow'?N:WORLD_REGIONS[b.where].height;cx=r.x+p.x/16/W*r.w;cy=r.y+p.y/16/H*r.h}
+   mark(x,cx,cy,6,b,b.T.n+' '+left(b))}catch(e){}return out}}
+ // area map (local view)
+ {const _dm=drawMap;drawMap=function(){const out=_dm.apply(this,arguments);try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return out;const b=B();if(!b||b.where!==curRegion())return out;const p=pos(b);if(!p)return out;
+   const c=document.getElementById('mpc');if(!c)return out;const x=c.getContext('2d');mark(x,p.x/16,p.y/16,Math.max(3,c.width/45),b,null)}catch(e){}return out}}
+ {const _mh=mapHTML;mapHTML=function(){let h=_mh.apply(this,arguments);try{const b=B();if(b){const here=b.where===curRegion();
+   const line='<div style="margin:4px 0;padding:5px 8px;background:#3a1818;color:#ffd8d0;border:2px solid #a83030;font-size:13px;text-align:center">'+esc(b.T.ic+' WORLD BOSS: '+b.T.n)+' · '+esc(here?'here on this island':'on '+where(b))+' · '+left(b)+' left</div>';
+   const i=h.indexOf('<canvas');h=i>=0?h.slice(0,i)+line+h.slice(i):line+h}}catch(e){}return h}}
+ // HUD minimap
+ if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{const b=B();if(!b)return out;const t=miniTarget();if(!t)return out;const area=t.k==='region'?t.R.region:'hollow';if(area!==b.where)return out;
+   const p=pos(b);if(!p)return out;const H=hudLayout(),U=H.U,w=H.dw,hh=w*t.h/t.w,x0=H.dx,y0=H.top+H.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
+   mark(g,x0+p.x/16/t.w*w,y0+p.y/16/t.h*hh,4*U,b,null);g.restore()}catch(e){}return out}}
+ window.SQWBMAP={pos,lair}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

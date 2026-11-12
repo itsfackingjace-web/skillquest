@@ -196,7 +196,8 @@
 - **Quality fixes** (`ui/131-s136-quality-fixes.js`): during `upd`, writes to `tk.innerHTML` are buffered (one write per
   frame, only if changed), and tk's shown/hidden state is held by classes `sqtkon/sqtkoff` set at the end of each frame
   (browsers can't intercept `style.display`; the classes come off when no frames run). Short routine messages matching
-  `SQQUIET` float over your head as drops instead of the text box (not while a panel is open). `drawDrops` also runs in
+  `SQQUIET`, and any message of 56 characters or less that doesn't match `KEEP` (quests, levels, unlocks, rare finds,
+  dialog), float over your head (`SQQL`, up to 2 lines) instead of the text box (not while a panel is open or talking). `drawDrops` also runs in
   scenes. Cooking (`nearFire(P.x,P.y,45)`) needs a real fire, not a castle. Boats can't enter `BRIDGE` tiles. Hollow's
   generator in 001 pushes land down within 18 tiles of the map edge (open sea); saves with builds/houses/farm there get
   them packed into the bag on load.
@@ -225,3 +226,5 @@
   `SELF` is set while pP draws you; other players are matched by position (`r.x/r.y` = cP's ox/oy) and `r._emK`. Moving ends yours.
 - **Discord button** (`ui/137`): a real `<a target="_blank">` (class `tsdc`) in the title menu (`#tsmn`, 061's block, so found by
   id) after OPTIONS; `window.open` from the title menu opened nothing. The Windows app sends it to the browser.
+- **World boss on maps** (`ui/138`, `window.SQWBMAP`): world map, area map (with a line saying where it is) and minimap mark
+  the boss at `wbPos(b, lair)` (071's block functions, global through Annex B); the lair is known on Hollow or once you're on its island.

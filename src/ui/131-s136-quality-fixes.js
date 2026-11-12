@@ -25,15 +25,20 @@
  // "Reeling it in...", "Cooking..." and the like (109's progress words) aren't shown at all: your character already shows it.
  const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |Still chewing|Ate |You eat |You drink |\+\d+ [a-z])/,
   SILENT=/^(Lighting a fire\.\.\.|Cooking\.\.\.|Smelting\.\.\.|Hammering at the anvil\.\.\.|Crafting\.\.\.|Reeling it in\.\.\.|Working\.\.\.)$/;
+ const KEEP=/quest|level|unlock|learn|discover|achiev|welcome|collection|rare |RAINBOW|DRAGONSOUL|died|you fell|"|“|^[A-Z][a-z]+: /i;
  const QL=[];// small words over your head: {tx,t}
  {const _s=say;say=function(s){const t=typeof s==='string'?s:'';
    if(t&&SILENT.test(t)&&!pnOpen)return;
-   if(t&&t.length<=46&&QUIET.test(t)&&!pnOpen&&!menuOpen&&!dead){if(!QL.some(q=>q.tx===t&&q.t<.5)){QL.push({tx:t,t:0});if(QL.length>3)QL.shift()}return}
+   // every short message floats; the box is kept for quests, levels, unlocks, rare finds, people talking and long explanations
+   if(t&&!pnOpen&&!menuOpen&&!dead&&!(typeof TALKN!=='undefined'&&TALKN)&&(t.length<=46&&QUIET.test(t)||t.length<=56&&!KEEP.test(t))){
+    if(!QL.some(q=>q.tx===t&&q.t<.5)){QL.push({tx:t,t:0});if(QL.length>3)QL.shift()}if(!(msgT>0))msg='';return}
    return _s.apply(this,arguments)};window.SQQUIET=QUIET;window.SQQL=QL}
  // drawn small (4.5 world px, a little smaller than XP numbers), following you, fading out over 1.8 s
  function drawQL(){if(!QL.length)return;g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.3;g.lineJoin='round';
-  for(let i=0;i<QL.length;i++){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));const x=Math.round(P.x),y=Math.round(P.y-28-(QL.length-1-i)*6-q.t*4);
-   g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(q.tx,x,y);g.fillStyle='#fff';g.fillText(q.tx,x,y)}
+  const lines=t=>{if(t.length<=30)return[t];const w=t.split(' ');let a='',L=[];for(const x of w){if(a&&(a+' '+x).length>30){L.push(a);a=x}else a=a?a+' '+x:x}L.push(a);return L.slice(0,2)};
+  let off=0;
+  for(let i=QL.length-1;i>=0;i--){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));const L=lines(q.tx),x=Math.round(P.x);
+   for(let j=L.length-1;j>=0;j--){const y=Math.round(P.y-28-off-q.t*4);g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(L[j],x,y);g.fillStyle='#fff';g.fillText(L[j],x,y);off+=5.5}off+=1}
   g.restore();for(let i=QL.length-1;i>=0;i--)if(QL[i].t>=1.8)QL.splice(i,1)}
 
  {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}try{drawQL()}catch(e){}return out}}

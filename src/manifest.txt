@@ -144,6 +144,7 @@ multiplayer/134-s139-chess-with-players.js
 multiplayer/135-s140-leaderboard-counts.js
 multiplayer/136-s141-emotes-and-parties.js
 ui/137-s142-discord-button.js
+ui/138-s143-world-boss-on-maps.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js
