@@ -54,7 +54,7 @@
  const bkey=b=>{if(!b)return null;if(b.castle)return'b:castle';if(HS&&b.k===HS.k&&b.wall===HS.wall&&b.roof===HS.roof)return'b:house'+(b.w|0);return typeof BLD!=='undefined'&&BLD.includes(b)?'b:'+b.k:null};
  const _db=drBld;drBld=function(b,tm){const k=bkey(b);if(k&&has(k)){drawLook(k,b.tx*16,b.ty*16,null,phase(b.tx,b.ty));return}return _db.apply(this,arguments)};
  // ---- monsters ----
- const mkey=n=>'m:'+(n.rk||((n.type||'slime')+(n.rv?':'+n.rv:'')));
+ const mkey=n=>'m:'+(n.rk||((n.type||'slime')+(n.rv||n.vr?':'+(n.rv||n.vr):'')));
  const WC=new Map();// white versions of frames, for the hit flash
  function white(k,L,f){const key=k+'#'+f;let c=WC.get(key);if(!c){const b=can(k,L,f);c=document.createElement('canvas');c.width=b.width;c.height=b.height;const x=c.getContext('2d');x.drawImage(b,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);WC.set(key,c)}return c}
  function mobDraw(n,tm){if(!n||n._wb||n.type==='ib')return false;const k=mkey(n),q=pick(k);if(!q)return false;const L=PL[q],x=Math.round(n.x),y=Math.round(n.y),nf=frames(L);
@@ -175,6 +175,11 @@
   const mobTpl=(k,hp)=>()=>{const[t]=k.split(':');try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}};
   for(const k of Object.keys(MB).sort((a,b)=>MB[a].n.localeCompare(MB[b].n)))add('m:'+k,MB[k].n,'Monsters',null,null,mobTpl(k,MB[k].hp));
   for(const[k,n,hp]of MX)add('m:'+k,n,'Monsters',null,null,mobTpl(k,hp));
+  // monsters that only live in dungeons, by their variant (Frostfang's snow wolves, the grotto's tide slimes...)
+  {const have=new Set([...Object.keys(MB),...MX.map(e=>e[0])]),VN={dust:'Dust skeleton',snow:'Snow wolf',frost:'Frost slime',tide:'Tide slime',magma:'Magma slime'};
+   if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(let f=1;f<=(DKIND[kind].floors||3);f++){let R=null;try{R=buildFloor(kind,f)}catch(e){}
+    for(const m of R&&R.mobs||[]){if(!m||!m.vr||m.rk||m.rv)continue;const k=(m.type||'slime')+':'+m.vr;if(have.has(k))continue;have.add(k);const tpl={...m,x:0,y:0};
+     add('m:'+k,VN[m.vr]||pretty(m.vr+' '+m.type),'Monsters',null,null,()=>({...tpl}))}}}}
   // island props
   for(const kk in A.ISL_LM){const[k,v]=kk.split(':'),L=A.ISL_LM[kk];add('l:'+kk,L[0],'Island props',()=>drawFurn({t:'lm',k,v:L[3],x:0,y:0,w:L[1],h:L[2],sh:L[2],name:L[0]},0))}
   return CAT=out}

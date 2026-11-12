@@ -44,10 +44,13 @@
   return L.join(' · ')}
  function foodStats(k){const f=FOODS.find(q=>q.k===k);if(!f)return'';const L=[];if(f.heal)L.push('Heals '+f.heal+' HP');if(f.hun)L.push('Food +'+f.hun);return L.join(' · ')}
  // every description shows its stats first
+ // a description that was saved with its stats line in it (the Dev Suite stores what it shows) keeps only its own words
+ const STW=/^(Damage \d|Arrow damage \d|Range \d|[A-Z][a-z]+ spells$|Costs \d|Sets enemies on fire$|Slows enemies$|Strikes hard$|Needs [A-Z]|Block [+-]|Your block chance|Ranger set|Mage set|[23] pieces:|Chop power|Mine power|Stronger than|Weaker than|Heals \d|Food \+|[+-]\d+%? |same as your|Life steal|Burn \d|Slow \d|Critical hit|Move speed|Bonus XP)/;
+ const strip=s=>{s=String(s==null?'':s);for(let n=0;n<6;n++){const i=s.indexOf('. ');if(i<0)break;const parts=s.slice(0,i).split(' · ');if(!parts.every(x=>STW.test(x)))break;s=s.slice(i+2)}return s};window.SQSTRIPSTATS=strip;
  const BASE={};for(const k in IDESC)BASE[k]=IDESC[k];
  const statsFor=k=>EQ[k]?eqStats(k):isFood(k)?foodStats(k):'';
- const wrapDesc=k=>{if(Object.getOwnPropertyDescriptor(IDESC,k)&&Object.getOwnPropertyDescriptor(IDESC,k).get)return;if(!(k in BASE))BASE[k]=IDESC[k];
-  Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){let s='';try{s=statsFor(k)}catch(e){}return(s?s+'. ':'')+(BASE[k]||'')},set(v){BASE[k]=v}})};
+ const wrapDesc=k=>{if(Object.getOwnPropertyDescriptor(IDESC,k)&&Object.getOwnPropertyDescriptor(IDESC,k).get)return;if(!(k in BASE))BASE[k]=strip(IDESC[k]);
+  Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){let s='';try{s=statsFor(k)}catch(e){}return(s?s+'. ':'')+strip(BASE[k]||'')},set(v){BASE[k]=strip(v)}})};
  for(const k of new Set([...EQK,...FOODS.map(f=>f.k)]))wrapDesc(k);
  IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns.';
  window.SQSTATS=statsFor}

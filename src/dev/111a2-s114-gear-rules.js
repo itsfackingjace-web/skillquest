@@ -112,9 +112,9 @@
   if(r.fx)for(const x in FXN)if(r.fx[x])L.push(FXN[x]+' '+(x==='spd'||x==='xp'?'+':'')+r.fx[x]+'%');
   const q=r.rq||defReq(k);if(q&&q.l)L.push('Needs '+SKN[q.s]+' '+q.l);return L.join(' · ')}
  function hookDesc(k){if(D0[k])return;const d=Object.getOwnPropertyDescriptor(IDESC,k)||{value:IDESC[k],writable:true};D0[k]=d;let plain=d.get?null:d.value;
-  const own=()=>{if(NG[k])return(NG[k].d?NG[k].d+' ':'')+'Equip it from your Bag or the equipment screen.';if(!d.get)return plain||'';let s=d.get.call(IDESC);try{const p=window.SQSTATS&&SQSTATS(k);if(p&&s.startsWith(p+'. '))s=s.slice(p.length+2)}catch(e){}return s};
+  const own=()=>{if(NG[k])return(NG[k].d?NG[k].d+' ':'')+'Equip it from your Bag or the equipment screen.';if(!d.get)return window.SQSTRIPSTATS?SQSTRIPSTATS(plain||''):plain||'';let s=d.get.call(IDESC);try{s=window.SQSTRIPSTATS?SQSTRIPSTATS(s):s}catch(e){}return s};
   Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){if(!GR[k]&&!NG[k])return d.get?d.get.call(IDESC):plain;let s='';try{s=statLine(k)}catch(e){}const b=own();return(s?s+'. ':'')+b},
-   set(v){if(d.set)d.set.call(IDESC,v);else plain=v}})}
+   set(v){if(d.set)d.set.call(IDESC,v);else plain=window.SQSTRIPSTATS?SQSTRIPSTATS(v):v}})}
  // ---- apply the library (plus the developer's unpublished new items, on their own device) ----
  let LIB={},DEV=null;
  function applyGear(lib){LIB=lib||{};

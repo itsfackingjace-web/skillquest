@@ -107,7 +107,8 @@ const vn=(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf
 const tile=new Uint8Array(N*N),obj=new Array(N*N);
 for(let y=0;y<N;y++)for(let x=0;x<N;x++){
  const dx=(x-N/2)/(N/2),dy=(y-N/2)/(N/2);
- let e=vn(x/(14*HSC),y/(14*HSC))*.7+vn(x/(5*HSC),y/(5*HSC))*.3+(vn(x/4,y/4)-.5)*.06-(dx*dx+dy*dy)*.35;
+ let e=vn(x/(14*HSC),y/(14*HSC))*.7+vn(x/(5*HSC),y/(5*HSC))*.3+(vn(x/4,y/4)-.5)*.06-(dx*dx+dy*dy)*.35
+ const ed=Math.min(x,y,N-1-x,N-1-y);if(ed<18)e-=((18-ed)/18)**2*.7;   // open sea all around the edge of the map;
  let t=e<.28?0:e<.33?1:e<.62?2:3;tile[y*N+x]=t;
  const m=vn(x/(8*HSC)+50,y/(8*HSC)),r=h(x*3.1,y*7.3);
  if(t==2){if(r<(m>.55?.28:.03))obj[y*N+x]={t:'tree',hp:3};else if(r>.975)obj[y*N+x]={t:'bush',hp:1};else if(r>.965)obj[y*N+x]={t:'rock',hp:4}}

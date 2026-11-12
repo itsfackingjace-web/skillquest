@@ -127,7 +127,8 @@ const vn=(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf
 const tile=new Uint8Array(N*N),obj=new Array(N*N);
 for(let y=0;y<N;y++)for(let x=0;x<N;x++){
  const dx=(x-N/2)/(N/2),dy=(y-N/2)/(N/2);
- let e=vn(x/(14*HSC),y/(14*HSC))*.7+vn(x/(5*HSC),y/(5*HSC))*.3+(vn(x/4,y/4)-.5)*.06-(dx*dx+dy*dy)*.35;
+ let e=vn(x/(14*HSC),y/(14*HSC))*.7+vn(x/(5*HSC),y/(5*HSC))*.3+(vn(x/4,y/4)-.5)*.06-(dx*dx+dy*dy)*.35
+ const ed=Math.min(x,y,N-1-x,N-1-y);if(ed<18)e-=((18-ed)/18)**2*.7;   // open sea all around the edge of the map;
  let t=e<.28?0:e<.33?1:e<.62?2:3;tile[y*N+x]=t;
  const m=vn(x/(8*HSC)+50,y/(8*HSC)),r=h(x*3.1,y*7.3);
  if(t==2){if(r<(m>.55?.28:.03))obj[y*N+x]={t:'tree',hp:3};else if(r>.975)obj[y*N+x]={t:'bush',hp:1};else if(r>.965)obj[y*N+x]={t:'rock',hp:4}}
@@ -370,7 +371,7 @@ for(const id of['a','e','f']){const o=document.getElementById(id),n=o.cloneNode(
 // recipes
 const REC=[];for(let t=1;t<=3;t++)['axe','pick','sword'].forEach((k,i)=>REC.push({k,t,name:TIT[t]+' '+['axe','pickaxe','sword'][i],c:t==1?{wood:[3,4,3][i]}:t==2?{wood:[2,2,1][i],stone:[3,3,2][i]}:{wood:2,iron:[3,3,2][i]},req:[1,5,15][t-1],xp:[40,80,150][t-1]}));
 // farming tools are craftable too (one of each; the general store still sells them)
-REC.push({k:'hoe',t:1,name:'Hoe',c:{wood:3,stone:2},req:1,xp:40},{k:'can',t:1,name:'Watering can',c:{wood:2,stone:3},req:1,xp:40});
+REC.push({k:'hoe',t:1,name:'Hoe',c:{wood:3,stone:2},req:1,xp:40},{k:'can',t:1,name:'Watering can',c:{wood:2,stone:3},req:1,xp:40},{k:'rod',t:1,name:'Fishing rod',c:{wood:4,iron:1},req:3,xp:40});
 const canC=r=>lvOf(6)>=r.req&&Object.entries(r.c).every(([a,b])=>(inv[a]||0)>=b);
 function craft(r){if(!canC(r)){say(lvOf(6)<r.req?'Need Crafting '+r.req:'Missing materials');return}for(const a in r.c)inv[a]-=r.c[a];TL[r.k]=r.t;say('Crafted '+r.name);addXp(6,r.xp);rPn()}
 // panel
@@ -382,7 +383,7 @@ function rPn(){document.getElementById('t0').className=ptab?'':'on';document.get
  if(!ptab){let tot=0,s='';for(let i=0;i<SKN.length;i++){const l=lvOf(i);tot+=l;const b=XT[l-1],n=l<99?XT[l]:b+1,p=l<99?Math.min(100,(XPS[i]-b)/(n-b)*100):100;s+='<div class="sk"><div style="color:'+SKC[i]+'">'+SKN[i]+'</div><b>'+l+'<small>/99</small></b><div class="br"><i style="width:'+p+'%;background:'+SKC[i]+'"></i></div><small>'+Math.floor(XPS[i])+' xp</small></div>'}h='<div class="tl">Total level: '+tot+'</div><div class="sg">'+s+'</div>'}
  else{h='<div class="tl">Wood '+inv.wood+' · Stone '+inv.stone+' · Iron '+(inv.iron||0)+'</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.8">Axe: '+TIT[TL.axe]+' · Pickaxe: '+TIT[TL.pick]+' · Sword: '+TIT[TL.sword]+'<br>Crafting level '+lvOf(6)+'</div>';
   for(const k of['axe','pick','sword']){const t=TL[k]+1;if(t>3)continue;const i=REC.findIndex(x=>x.k==k&&x.t==t),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+'</small></button>'}
-  for(const k of['hoe','can']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · for farming</small></button>'}
+  for(const k of['hoe','can','rod']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · '+(k==='rod'?'for fishing':'for farming')+'</small></button>'}
   h+='<div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:14px">Better tools hit harder. Rocks need a pickaxe; iron ore needs Mining 15 + a stone pickaxe.</div>'}
  pbd.innerHTML=h}
 pbd.onclick=e=>{const b=e.target.closest('.rc');if(b)craft(REC[+b.dataset.i])};
@@ -797,8 +798,9 @@ const CE=(()=>{
 })();
 // ---------------------------------------------------------------- 9. Chess
 // Grandmaster Orla plays from a table in the village square. Wins train Tactics.
-const CLV=[{n:'Novice',req:1,depth:1,noise:150,xp:80,g:10},{n:'Club player',req:5,depth:2,noise:40,xp:200,g:30},{n:'Expert',req:15,depth:3,noise:12,xp:450,g:80},{n:'Master',req:30,depth:4,noise:0,xp:900,g:200}];
-let CHS={w:0,l:0,d:0},chessOpen=false,CG=null;
+// rand: the share of moves Orla plays without thinking (Novice and Club player leave pieces hanging now and then)
+const CLV=[{n:'Novice',req:1,depth:1,noise:320,rand:.45,xp:80,g:10},{n:'Club player',req:5,depth:1,noise:160,rand:.2,xp:200,g:30},{n:'Expert',req:15,depth:2,noise:60,rand:.06,xp:450,g:80},{n:'Master',req:30,depth:3,noise:15,xp:900,g:200}];
+let CHS={w:0,l:0,d:0,rz:0,om:0},chessOpen=false,CG=null;
 // stats + quest in saves (quest inserted at index 3; older saves are remapped)
 QS.splice(3,0,{n:'Opening Moves',d:'Grandmaster Orla sits at the chess table in the village square. Beat her once on any difficulty.',type:'chess',amt:1,r:{g:100,xp:[7,300]}});
 const _qv9=qVal;qVal=function(q){return q.type==='chess'?Q.k:_qv9(q)};
@@ -846,14 +848,15 @@ function startChess(li){const L=CLV[li];if(!L)return;if(lvOf(7)<L.req){say('Need
 function endChess(res,why){const L=CLV[CG.li];CG.over=true;CG.moves=[];CG.sel=-1;let t;
  if(res==='w'){CHS.w++;GLD+=L.g;addXp(7,L.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='chess')Q.k++;t='You win '+why+'! +'+L.xp+' Tactics XP, +'+L.g+' gold';sfx('quest')}
  else if(res==='d'){CHS.d++;const x=Math.round(L.xp/2),g=Math.round(L.g/2);GLD+=g;addXp(7,x);t='Draw ('+why+'). +'+x+' Tactics XP, +'+g+' gold';sfx('coin')}
- else{CHS.l++;const x=Math.round(L.xp*.15);addXp(7,x);t='Orla wins '+why+'. +'+x+' Tactics XP for the lesson';sfx('death')}
+ else{CHS.l++;const rs=why==='by resignation',none=rs&&(CG.st.ply<20||(CHS.rz|0)>=1);CG.noXp=none;const x=none?0:Math.round(L.xp*.15);if(x)addXp(7,x);t='Orla wins '+why+'. '+(none?((CHS.rz|0)>=1?'No Tactics XP for resigning again: finish a game first.':'No Tactics XP for resigning this early.'):'+'+x+' Tactics XP for the lesson');sfx('death')}
+ CHS.rz=why==='by resignation'?(CHS.rz|0)+1:0;
  chst.textContent=t;saveLocal(true);saveCloud();chUI()}
 function checkEnd(){const s=CE.status(CG.st);if(!s&&CG.st.ply<300)return false;const mover=CG.st.turn;
  if(s==='mate'){endChess(mover==='b'?'w':'l','by checkmate');return true}
  endChess('d',s==='stalemate'?'stalemate':s==='material'?'not enough pieces to mate':s==='draw50'?'50-move rule':'move limit');return true}
 function doMove(m){const cap=m.cap!=='.';CG.st=CE.make(CG.st,m);CG.last=m;CG.sel=-1;CG.moves=[];sfx(cap?'hit':'talk')}
 function aiMove(){if(!CG||CG.over)return;CG.busy=true;chst.textContent='Orla is thinking...';chUI();
- setTimeout(()=>{if(!CG||CG.over||!chessOpen){if(CG)CG.busy=false;return}const L=CLV[CG.li],m=CE.best(CG.st,L);if(m)doMove(m);CG.busy=false;
+ setTimeout(()=>{if(!CG||CG.over||!chessOpen){if(CG)CG.busy=false;return}const L=CLV[CG.li];let m=null;if(L.rand&&Math.random()<L.rand){const A=CE.legal(CG.st);m=A[Math.floor(Math.random()*A.length)]||null}if(!m)m=CE.best(CG.st,L);if(m)doMove(m);CG.busy=false;
   if(!checkEnd()){chst.textContent=CE.inCheck(CG.st,'w')?'Check! Your move.':'Your move.';if(CE.inCheck(CG.st,'w'))sfx('block')}chUI()},60)}
 chb.addEventListener('pointerdown',e=>{e.preventDefault();if(!CG||CG.over||CG.busy||CG.st.turn!=='w')return;const r=chb.getBoundingClientRect(),c=Math.floor((e.clientX-r.left)/r.width*8),rw=Math.floor((e.clientY-r.top)/r.height*8);
  if(c<0||c>7||rw<0||rw>7)return;const sq=rw*8+c,mv=CG.moves.find(m=>m.t===sq);
@@ -4039,7 +4042,7 @@ const _chu37=chUI;chUI=function(){_chu37();const G=CG;tbb.style.display=G&&!G.ov
 const _ec37=endChess;endChess=function(res,why){const L=CLV[CG.li],li=CG.li;_ec37(res,why);let extra='';
  if(res==='w'){if(perk(7,'prize')){const g=Math.round(L.g*.5);GLD+=g;extra+=' +'+g+' prize gold.'}if(perk(7,'tournament')&&li===3){GLD+=L.g;addXp(7,L.xp);extra+=' Tournament: double rewards!'}}
  else if(res==='d'&&perk(7,'patience')){GLD+=L.g-Math.round(L.g/2);addXp(7,L.xp-Math.round(L.xp/2));extra+=' Patience: a draw pays like a win.'}
- else if(res!=='w'&&res!=='d'&&perk(7,'studyhall')){addXp(7,L.xp-Math.round(L.xp*.15));extra+=' Study Hall: full XP.'}
+ else if(res!=='w'&&res!=='d'&&perk(7,'studyhall')&&!CG.noXp){addXp(7,L.xp-Math.round(L.xp*.15));extra+=' Study Hall: full XP.'}
  if(extra){chst.textContent+=extra;saveLocal(true)}};
 // ---------------------------------------------------------------- 38. Gathering skill trees: Woodcutting, Mining, Fishing, Foraging, Farming
 // Built from the gathering spec. Every level: +0.5% speed; every 5 levels: +1% extra-yield chance; every 15: +1% rare
@@ -6258,20 +6261,20 @@ function postHere(){if(SCENE){const R=SCENE.room;return R&&R.region?{id:'pier',n
 // --- voyages ---
 const VOYS=[
  {id:'west',name:'The Western Route',post:'tidewatch',needs:[],req:()=>TL.boat>0,reqTxt:'own a sailboat (Ida sells one in Saltmere)',buoy:'west',gold:100,unlock:['briarwoodRoute'],
-  d:'The harbor master wants proof you can find the western sea lane before she charts Briarwood Isle for you.',steps:['Sail your boat to the red buoy far west of Tidewatch','Report at the Tidewatch harbor post']},
+  d:'The harbor master wants proof you can find the western sea lane before she charts Briarwood Isle for you.',steps:['Sail your boat to the red buoy far west of Tidewatch','Report to Sera, the Navigator in Tidewatch']},
  {id:'briar',name:'Into Briarwood',post:'tidewatch',report:'any',needs:['west'],gold:150,
-  d:'Map the heart of Briarwood Isle so the captains know it\'s safe to land.',steps:['On Briarwood Isle, find the Elder Grove, the Whispering Ruins and Thornwater Lake','Report at any harbor post'],
+  d:'Map the heart of Briarwood Isle so the captains know it\'s safe to land.',steps:['On Briarwood Isle, find the Elder Grove, the Whispering Ruins and Thornwater Lake','Report to Sera, the Navigator in Tidewatch'],
   check:()=>['elder_grove','whispering_ruins','thornwater'].every(id=>rgSeen('briarwood',id))},
  {id:'east',name:'Eastern Waters',post:'saltmere',needs:['briar','@reinforcedHull'],buoy:'east',gold:150,unlock:['ashfallRoute'],
-  d:'With a reinforced hull you can ride the eastern swell. Find the lane that leads to the Ashfall Coast.',steps:['Sail your boat to the red buoy east of Saltmere','Report at the Saltmere harbor post']},
+  d:'With a reinforced hull you can ride the eastern swell. Find the lane that leads to the Ashfall Coast.',steps:['Sail your boat to the red buoy east of Saltmere','Report to Sera, the Navigator in Tidewatch']},
  {id:'pass',name:'The High Pass',post:'frosthollow',needs:['west'],gold:120,unlock:['mountainPassage'],
-  d:'An old trail over the northern cliffs leads to the Ironcrest sea lane. Find the cairn that marks it and clear the way.',steps:['Find the old cairn on the cliffs north of Frosthollow','Clear the rockfall: Mining 25, or bring 12 iron ore and 4 wolf pelts to the Frosthollow post'],
+  d:'An old trail over the northern cliffs leads to the Ironcrest sea lane. Find the cairn that marks it and clear the way.',steps:['Find the old cairn on the cliffs north of Frosthollow','Clear the rockfall (Mining 25), or bring 12 iron ore and 4 wolf pelts to Sera in Tidewatch'],
   cairn:true},
  {id:'isles',name:'Charting the Isles',post:'tidewatch',report:'any',needs:['east','pass'],gold:200,
-  d:'The navigators want a landmark charted in both of the newer lands before anyone tries the deep southern waters.',steps:['Discover a landmark on the Ashfall Coast and in the Ironcrest Highlands','Report at any harbor post'],
+  d:'The navigators want a landmark charted in both of the newer lands before anyone tries the deep southern waters.',steps:['Discover a landmark on the Ashfall Coast and in the Ironcrest Highlands','Report to Sera, the Navigator in Tidewatch'],
   check:()=>['ashfall','ironcrest'].every(r=>(WORLD_STATE[r]&&WORLD_STATE[r].seen||[]).length>0)},
  {id:'south',name:'The Southern Route',post:'tidewatch',needs:['isles','@deepwaterSail'],buoy:'south',gold:250,unlock:['shatteredRoute'],
-  d:'Only a deepwater sail survives the southern currents. Find the lane to the Shattered Expanse.',steps:['Sail your boat to the red buoy far south of Hollow Island','Report at the Tidewatch harbor post']}];
+  d:'Only a deepwater sail survives the southern currents. Find the lane to the Shattered Expanse.',steps:['Sail your boat to the red buoy far south of Hollow Island','Report to Sera, the Navigator in Tidewatch']}];
 const UPGRADES=[{id:'reinforcedHull',name:'Reinforced Hull',post:'saltmere',needs:['briar'],cost:{wood:30,ibar:6,nails:20},d:'Iron-banded planking for the eastern swell. A permanent boat upgrade.'},
  {id:'deepwaterSail',name:'Deepwater Sail',post:'tidewatch',needs:['isles'],cost:{sbar:4,pelt:6,wood:20},d:'A heavy, steel-rigged sail for the southern currents. A permanent boat upgrade.'}];
 const VQ=()=>{const h=WORLD_STATE.hollow||(WORLD_STATE.hollow={});return h.voy||(h.voy={})};
@@ -6295,23 +6298,23 @@ let VTICK=0;
 const _u51=upd;upd=function(dt){_u51(dt);if(menuOpen||pnOpen||dead||TRAVEL49||(VTICK-=dt)>0)return;VTICK=.25;const V=VQ();
  for(const q of VOYS){if(V[q.id]!==1)continue;
   if(q.buoy&&!SCENE&&SAILING){const b=BUOYS[q.buoy];if(b&&Math.hypot(P.x-(b.x*16+8),P.y-(b.y*16+8))<36)vAdvance(q,'You reach the buoy and chart the sea lane. Now report back.')}
-  else if(q.cairn&&!SCENE&&CAIRN&&Math.hypot(P.x-(CAIRN.x*16+8),P.y-(CAIRN.y*16+8))<26)vAdvance(q,'The cairn marks a buried trail, blocked by a rockfall. Report at the Frosthollow post.');
-  else if(q.check&&q.check())vAdvance(q,q.name+': done! Report at any harbor post.')}};
+  else if(q.cairn&&!SCENE&&CAIRN&&Math.hypot(P.x-(CAIRN.x*16+8),P.y-(CAIRN.y*16+8))<26)vAdvance(q,'The cairn marks a buried trail, blocked by a rockfall. Report to Sera, the Navigator in Tidewatch.');
+  else if(q.check&&q.check())vAdvance(q,q.name+': done! Report to Sera, the Navigator in Tidewatch.')}};
 function vComplete(q){const V=VQ(),before=ROUTE_ORDER.filter(r=>routeOpen(r));V[q.id]=99;GLD+=q.gold;for(const k of q.unlock||[])TRAVEL_UNLOCKS[k]=true;
  const opened=ROUTE_ORDER.filter(r=>routeOpen(r)&&!before.includes(r));
  say(q.name+' complete! +'+q.gold+' gold'+(opened.length?'. Route charted: '+opened.map(r=>WORLD_REGIONS[r].name).join(', ')+'!':''));msgT=6;sfx('quest');saveNow()}
-function voyAct(a){const[k,id]=a.split(':'),p=postHere();if(!p){closePanel();return}const V=VQ();
- if(k==='acc'){const q=VOYS.find(v=>v.id===id);if(!q||V[id]||!vNeedsOK(q)||q.post!==p.id)return;V[id]=1;say('New voyage: '+q.name+' - '+q.steps[0]);sfx('quest');saveNow()}
- else if(k==='rep'){const q=VOYS.find(v=>v.id===id);if(!q||V[id]!==q.steps.length)return;if(q.report!=='any'&&q.post!==p.id)return;
+function voyAct(a,nav){const[k,id]=a.split(':'),p=nav?{id:'nav'}:postHere();if(!p){closePanel();return}const V=VQ();if(!nav&&k!=='craft')return;
+ if(k==='acc'){const q=VOYS.find(v=>v.id===id);if(!q||V[id]||!vNeedsOK(q))return;V[id]=1;say('New voyage: '+q.name+' - '+q.steps[0]);sfx('quest');saveNow()}
+ else if(k==='rep'){const q=VOYS.find(v=>v.id===id);if(!q||V[id]!==q.steps.length)return;
   if(q.id==='pass'){if(lvOf(2)<25){say('The rockfall needs Mining 25 - or bring 12 iron ore and 4 wolf pelts.');sfx('swish');return}say('You clear the rockfall with your pickaxe. The surveyor hands you the Mountain Passage Chart.')}
   vComplete(q)}
- else if(k==='hand'){const q=VOYS.find(v=>v.id===id);if(!q||q.id!=='pass'||V.pass!==2||p.id!=='frosthollow')return;if((inv.iron|0)<12||(inv.pelt|0)<4){say('You need 12 iron ore and 4 wolf pelts.');sfx('swish');return}
+ else if(k==='hand'){const q=VOYS.find(v=>v.id===id);if(!q||q.id!=='pass'||V.pass!==2)return;if((inv.iron|0)<12||(inv.pelt|0)<4){say('You need 12 iron ore and 4 wolf pelts.');sfx('swish');return}
   inv.iron-=12;inv.pelt-=4;say('The surveyor\'s crew clears the rockfall and hands you the Mountain Passage Chart.');vComplete(q)}
- else if(k==='craft'){const u=UPGRADES.find(x=>x.id===id);if(!u||TRAVEL_UNLOCKS[u.id]||u.post!==p.id||!u.needs.every(vDone))return;
+ else if(k==='craft'){const u=UPGRADES.find(x=>x.id===id);if(!u||TRAVEL_UNLOCKS[u.id]||!nav&&u.post!==p.id||!u.needs.every(vDone))return;
   if(!TL.boat){say('You need a sailboat to fit this to.');sfx('swish');return}
   for(const[c,n]of Object.entries(u.cost))if((inv[c]|0)<n){say('Not enough '+iname(c)+' ('+(inv[c]|0)+'/'+n+').');sfx('swish');return}
   for(const[c,n]of Object.entries(u.cost))inv[c]-=n;TRAVEL_UNLOCKS[u.id]=true;say(u.name+' fitted to your boat!');msgT=5;sfx('quest');saveNow()}
- rPn()}
+ if(nav&&pnOpen)rPn();else if(!nav)rPn()}
 // --- the harbor post panel: routes (with what each needs) + voyages and upgrades offered here ---
 routesHTML=function(){const p=postHere()||{id:'tidewatch',name:'Tidewatch'},here=curRegion(),V=VQ();
  const row=(id,label,sub,ok)=>'<button class="sb rt49" data-r="'+id+'" style="opacity:'+(ok?1:.45)+';width:100%;text-align:left"'+(ok?'':' disabled')+'>'+label+'<br><small>'+sub+'</small></button>';
@@ -6322,12 +6325,7 @@ routesHTML=function(){const p=postHere()||{id:'tidewatch',name:'Tidewatch'},here
   else if(routeOpen(id))h+=row(id,'⛵ '+D.name,D.biome+' · lies '+D.dir+' · suggested combat '+D.lv,true);
   else h+=row(id,'🔒 '+D.name+' [LOCKED]','Needs: '+routeReq(id).map(r=>(r.ok?'✓ ':'☐ ')+r.t).join(' · '),false)}
  const cards=[];
- for(const q of VOYS){const st=V[q.id];const here2=q.post===p.id,repHere=st===q.steps.length&&(q.report==='any'||here2);
-  if(st===99||(!st&&!here2))continue;if(!st&&!q.needs.every(vDone))continue;
-  let b='';const step=s=>q.steps.map((t,i)=>'<br>'+(st===99||i<s-1?'✓ ':i===s-1?'▶ ':'· ')+t).join('');
-  if(!st){const ok=!q.req||q.req();b=step(0)+'<br><button class="qb vq51" data-v="acc:'+q.id+'" style="opacity:'+(ok?1:.5)+'"'+(ok?'':' disabled')+'>'+(ok?'Accept voyage':'Needs: '+q.reqTxt)+'</button>'}
-  else{b=step(st);if(repHere)b+='<br><button class="qb vq51" data-v="rep:'+q.id+'">'+(q.id==='pass'?'Clear the rockfall (Mining 25)':'Report')+'</button>'+(q.id==='pass'&&p.id==='frosthollow'?' <button class="qb vq51" data-v="hand:pass">Hand in 12 iron ore + 4 pelts</button>':'')}
-  cards.push('<div class="qc" style="margin-top:8px"><b>'+(st?'Voyage: ':'New voyage: ')+q.name+'</b><p>'+q.d+'</p><small>Reward: '+q.gold+' gold'+(q.unlock?' · opens a sea route':'')+b+'</small></div>')}
+ if(VOYS.some(q=>V[q.id]!==99&&(V[q.id]||vNeedsOK(q))))cards.push('<div class="qc" style="margin-top:8px"><b>Voyages</b><p>Sera, the Navigator in Tidewatch, hands out the voyages that chart new sea routes. Find her in the Navigator\'s House by day.</p></div>');
  for(const u of UPGRADES){if(u.post!==p.id)continue;const have=!!TRAVEL_UNLOCKS[u.id],ready=u.needs.every(vDone),afford=Object.entries(u.cost).every(([c,n])=>(inv[c]|0)>=n);
   if(!ready&&!have)continue;cards.push('<div class="qc" style="margin-top:8px"><b>Boat upgrade: '+u.name+(have?' ✓':'')+'</b><p>'+u.d+'</p><small>'+(have?'Fitted to your boat.':'Cost: '+Object.entries(u.cost).map(([c,n])=>n+' '+iname(c)+' ('+(inv[c]|0)+')').join(', ')+
    '<br><button class="qb vq51" data-v="craft:'+u.id+'" style="opacity:'+(afford&&TL.boat?1:.5)+'">Build it</button>')+'</small></div>')}
@@ -6341,7 +6339,7 @@ const _qh51=questsHTML;questsHTML=function(){const V=VQ(),act=VOYS.filter(q=>V[q
  if(!act.length&&!next.length&&!VOYS.some(q=>V[q.id]===99))return h;
  h+='<div class="tl" style="margin-top:14px">Voyages</div>';
  for(const q of act)h+='<div class="qc"><b>'+q.name+'</b><p>▶ '+q.steps[V[q.id]-1]+'</p></div>';
- for(const q of next)h+='<div class="qrow">New voyage at the '+HARBOR_POSTS.find(p=>p.id===q.post).name+' harbor post: '+q.name+'</div>';
+ for(const q of next)h+='<div class="qrow">New voyage from Sera, the Navigator in Tidewatch: '+q.name+'</div>';
  const done=VOYS.filter(q=>V[q.id]===99);if(done.length)h+='<div class="qrow qd">✓ '+done.map(q=>q.name).join(' · ')+'</div>';
  const ups=UPGRADES.filter(u=>TRAVEL_UNLOCKS[u.id]);if(ups.length)h+='<div class="qrow qd">Boat: '+ups.map(u=>u.name).join(' · ')+'</div>';return h};
 // --- drawing: the new posts, the buoys, the cairn; map markers ---
@@ -6358,6 +6356,18 @@ const _dmap51=drawMap;drawMap=function(){_dmap51();if(SCENE&&SCENE.room&&SCENE.r
  for(const q of VOYS)if(V[q.id]===1){const t=q.buoy?BUOYS[q.buoy]:q.cairn?CAIRN:null;if(t&&bl){x.fillStyle='#f83030';x.fillRect(t.x-1,t.y-1,3,3)}}};
 const _mh51=mapHTML;mapHTML=function(){const h=_mh51();return SCENE&&SCENE.room&&SCENE.room.region?h:h.replace('<div class="tl" style="margin-top:10px">WORLD</div>','<div class="lg"><span><i style="background:#58d8ff"></i>Harbor post</span><span><i style="background:#f83030"></i>Voyage goal</span></div><div class="tl" style="margin-top:10px">WORLD</div>')};
 const _wh51=worldHTML;worldHTML=function(){return _wh51().replace('harbor post on the Tidewatch pier','harbor posts at '+HARBOR_POSTS.map(p=>p.name).join(', '))};
+// --- Sera, the Navigator in Tidewatch, runs every voyage: take them on, report back, hand in the High Pass materials ---
+function navSpot(){const b=typeof TWB!=='undefined'&&TWB.find(b=>b.k==='tw_nav');return b?{x:b.tx+2,y:b.ty+2}:null}
+function navCards(){const V=VQ(),cards=[];
+ for(const q of VOYS){const st=V[q.id];if(st===99)continue;if(!st&&!q.needs.every(vDone))continue;
+  const step=s=>q.steps.map((t,i)=>'<br>'+(i<s-1?'✓ ':i===s-1?'▶ ':'· ')+t).join('');let b='';
+  if(!st){const ok=!q.req||q.req();b=step(0)+'<br><button class="qb xb" data-a="nav_acc:'+q.id+'" style="opacity:'+(ok?1:.5)+'"'+(ok?'':' disabled')+'>'+(ok?'Accept voyage':'Needs: '+q.reqTxt)+'</button>'}
+  else{b=step(st);if(st===q.steps.length)b+='<br><button class="qb xb" data-a="nav_rep:'+q.id+'">'+(q.id==='pass'?'Clear the rockfall (Mining 25)':'Report')+'</button>'+(q.id==='pass'?' <button class="qb xb" data-a="nav_hand:pass">Hand in 12 iron ore + 4 pelts</button>':'')}
+  cards.push('<div class="qc" style="margin-top:8px"><b>'+(st?'Voyage: ':'New voyage: ')+q.name+'</b><p>'+q.d+'</p><small>Reward: '+q.gold+' gold'+(q.unlock?' · opens a sea route':'')+b+'</small></div>')}
+ const done=VOYS.filter(q=>V[q.id]===99).map(q=>q.name);
+ return'<div class="tl" style="margin-top:10px;font-size:13px">VOYAGES</div>'+(cards.length?cards.join(''):'<div class="qc"><p>'+(done.length===VOYS.length?'Every sea route is charted. The captains sing your name.':'No new voyages for you yet. Come back when you\'ve grown as a sailor.')+'</p></div>')+(done.length?'<div class="qrow qd">✓ '+done.join(' · ')+'</div>':'')}
+{const _tp=twPanel;twPanel=function(n){let h=_tp(n);if(n&&n.id==='sera')h+=navCards();return h}}
+{const _xa=xAct;xAct=function(a){if(typeof a==='string'&&a.startsWith('nav_')){if(!TALKN||TALKN.id!=='sera')return;voyAct(a.slice(4),true);if(pnOpen)rPn();return}return _xa.apply(this,arguments)}}
 // ---------------------------------------------------------------- 52. World map and minimaps
 // A HUD minimap on Hollow Island and in every region (scaled to the area's shape, terrain cached, markers drawn on
 // top each frame, drawn under the message box so text stays readable). The new regions are charted as you walk:
@@ -6429,7 +6439,7 @@ function wmThumbCanvas(id){const th=RG_THUMB[id];if(!th)return null;const known=
 function worldHTML52(){const sel=WSEL||curRegion(),D=WORLD_REGIONS[sel],known=wmKnown(sel);let h='<canvas id="wmc" width="'+WM.W+'" height="'+WM.H+'" style="position:static;inset:auto;display:block;margin:6px auto;width:min(84vw,52vh,380px);height:auto;image-rendering:pixelated;border:3px solid #485870;border-radius:6px;background:#1d3f7a"></canvas>'+
  '<div class="lg"><span><i style="background:#f83030"></i>You</span><span><i style="background:#f8d848"></i>Sea route</span><span><i style="background:#58d8ff"></i>Harbor post</span><span><i style="background:#f8f8f8"></i>Landmark</span></div>';
  h+='<div class="qc"><b>'+(wmNamed(sel)?D.name:'Uncharted waters')+(sel===curRegion()?' · you are here':'')+'</b><small>';
- if(!wmNamed(sel))h+='<br>Nobody has charted a route here yet. Ask at a harbor post.';
+ if(!wmNamed(sel))h+='<br>Nobody has charted a route here yet. Ask Sera, the Navigator in Tidewatch.';
  else{h+='<br>'+D.biome+(D.lv?' · suggested combat '+D.lv:'');
   if(sel==='hollow'){h+='<br>Towns: '+TOWN_REG.filter(t=>t.on).map(t=>t.name).join(', ')+'<br>Dungeons: '+DUNGEON_REG.filter(d=>d.on).map(d=>d.name).join(', ')+'<br>Harbor posts: '+HARBOR_POSTS.map(p=>p.name).join(', ')}
   else{const seen=(WORLD_STATE[sel]&&WORLD_STATE[sel].seen)||[],names=[...new Set(seen.map(lmName))];
@@ -7393,13 +7403,13 @@ const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v
 function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='number'||typeof v.y!=='number')return;let r=MP.players.get(k);
  if(!r){r={uid:k,x:v.x,y:v.y,w:0,said:null};MP.players.set(k,r)}
  if(r.loc!==v.loc||Math.hypot(r.x-v.x,r.y-v.y)>200){r.x=v.x;r.y=v.y}
- r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;r.sl=!!v.sl;r.ar=typeof v.ar==='string'?v.ar:'';r.pet=typeof v.pet==='string'?v.pet.slice(0,12):'';r.pk=!!v.pk;r.au=!!v.au;r.ak=Math.max(0,Math.min(9,v.ak|0));r.dg=!!v.dg;r.br=!!v.br;{const q=v.fw&&typeof v.fw==='object'?Object.values(v.fw):null;r.fw=q&&q.length===2?[+q[0],+q[1]]:null}r.im=Array.isArray(v.im)?v.im.slice(0,4).map(Number):(v.im&&typeof v.im==='object'?Object.values(v.im).slice(0,4).map(Number):null);r.ax=+v.ax;r.ay=+v.ay;
+ r.tx=v.x;r.ty=v.y;r.loc=typeof v.loc==='string'?v.loc:'';r.d=Math.max(0,Math.min(2,v.d|0));r.fl=!!v.fl;r.m=!!v.m;r.sl=!!v.sl;r.ar=typeof v.ar==='string'?v.ar:'';r.pet=typeof v.pet==='string'?v.pet.slice(0,12):'';r.pk=!!v.pk;r.au=!!v.au;r.ak=Math.max(0,Math.min(9,v.ak|0));r.dg=!!v.dg;r.br=!!v.br;{const q=v.fw&&typeof v.fw==='object'?Object.values(v.fw):null;r.fw=q&&q.length===2?[+q[0],+q[1]]:null}r.im=Array.isArray(v.im)?v.im.slice(0,4).map(Number):(v.im&&typeof v.im==='object'?Object.values(v.im).slice(0,4).map(Number):null);r.ax=+v.ax;r.ay=+v.ay;r.pt=typeof v.pt==='string'?v.pt.slice(0,40):'';r.hpv=Math.max(0,Math.min(99,+v.hp||0));r.em=typeof v.em==='string'?v.em.slice(0,16):'';
  r.n=String(v.n||r.n||(MP.prof&&MP.prof[k]&&MP.prof[k].n)||'Adventurer').replace(/[<>]/g,'').slice(0,12);r.ch=cleanCh(v.ch);
  // seen = when they last sent their position, by the server's clock (a player whose game closed without cleaning up leaves
  // an old entry behind: on loading, those count as gone right away instead of looking online for the first 20 seconds)
  r.seen=typeof v.t==='number'?performance.now()-Math.max(0,mpNow()-v.t):-1e9;mpRBtn()}
 function mpTick(){if(!MP.on||!MP.pref||MP.passive)return;const d=FB.db,now=performance.now(),loc=mpLoc(),fx=face[0],fy=face[1];
- const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0,dg:(window.SQDF&&SQDF.on&&!dead)?1:0,br:(window.SQDF&&SQDF.br)?1:0,sid:MP.sid,s0:MP.s0,im:(window.SQIMP&&SQIMP.pres())||0,fw:(window.SQFW&&SQFW.pres())||0,ak:(window.SQACT&&SQACT())||0},k=JSON.stringify(st);
+ const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0,dg:(window.SQDF&&SQDF.on&&!dead)?1:0,br:(window.SQDF&&SQDF.br)?1:0,sid:MP.sid,s0:MP.s0,im:(window.SQIMP&&SQIMP.pres())||0,fw:(window.SQFW&&SQFW.pres())||0,ak:(window.SQACT&&SQACT())||0,pt:(window.SQPARTY&&SQPARTY.id)||'',hp:dead?0:Math.max(0,Math.min(99,Math.round(+P.hp||0))),em:(window.SQEMOTE&&SQEMOTE.pres())||''},k=JSON.stringify(st);
  let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){}const nm=myName();
  if(chk!==MP.lastCh||nm!==MP.lastN){MP.lastCh=chk;MP.lastN=nm;MP.last='';d.update(MP.pref,{ch:JSON.parse(chk),n:nm}).catch(()=>{MP.lastCh=''})}
  if(k!==MP.last||now-MP.beat>5000){MP.last=k;MP.beat=now;d.update(MP.pref,Object.assign(st,{t:d.serverTimestamp()})).catch(()=>{MP.last=''})}}
@@ -8481,9 +8491,10 @@ const LB={open:false,cat:'tot',data:{},unsub:null,pubKey:'',pubAt:-1e9,pk:0};
 {const _sn=snap;snap=function(){const s=_sn();if(LB.pk)s.pvpk=LB.pk;return s}}
 {const _ap=applySave;applySave=function(S){_ap(S);LB.pk=Math.max(0,+(S&&S.pvpk)||0)}}
 function lbTick(){if(!MP.on||!MP.user||!FB)return;const now=performance.now();if(now-LB.pubAt<20000)return;LB.pubAt=now;
- const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};const k=JSON.stringify(row);if(k===LB.pubKey)return;
+ const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};const k=JSON.stringify(row);if(k===LB.pubKey)return;
  LB.pubKey=k;FB.db.set(FB.db.ref(FB.D,'lb/'+MP.user.uid),Object.assign(row,{t:FB.db.serverTimestamp()})).catch(e=>{LB.pubKey='';mpErr(e)})}
 setInterval(()=>{try{lbTick()}catch(e){}},5000);
+window.SQLB=LB;
 // ---- the categories ----
 const lbCats=()=>{const c=[{k:'tot',n:'Overall',sub:'Total level',ic:'★',col:'#f8d048'},{k:'qp',n:'Quests',sub:'Quest points',ic:'!',col:'#68b8f8'},{k:'pk',n:'PvP kills',sub:'Players defeated',ic:'☠',col:'#e85848'},{k:'mk',n:'Monsters',sub:'Monsters slain',ic:'⚔',col:'#a8a8b8'},{k:'bk',n:'World bosses',sub:'World bosses defeated',ic:'♛',col:'#c83020'}];
  SKN.forEach((n,i)=>c.push({k:'s'+i,n,sub:n+' level',ic:n[0],col:SKC[i]||'#88a'}));return c};
@@ -8798,15 +8809,17 @@ function drawWB(n,tm){const x=Math.round(n.x),y=Math.round(n.y),t=n._wb,fl=Math.
 // ---- banner: what, where, how long, and its health when you're there ----
 {const st=document.createElement('style');st.textContent=`#wbb{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 6px);z-index:9;display:none;width:min(340px,calc(100vw - 24px));box-sizing:border-box;padding:6px 10px 8px;font:700 13px ${PF};pointer-events:none;text-align:center;background:#2a1418!important;color:#f8e8d8!important;border-color:#702018!important;box-shadow:inset 0 0 0 2px #c04030!important}
 #wbb .t{display:flex;justify-content:space-between;gap:8px}#wbb .t b{color:#f8c040}#wbb .bar{height:9px;margin-top:5px;background:#100808;border:2px solid #000;position:relative}#wbb .bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#f86048,#b82018)}#wbb small{display:block;font-weight:500;font-size:11px;opacity:.85;margin-top:3px}
-#wbb.nar{padding:4px 7px 5px;font-size:10px;line-height:1.2}#wbb.nar .bar{height:6px;margin-top:3px}#wbb.nar small{font-size:9px;margin-top:2px}`;document.head.appendChild(st)}
+#wbb.nar{padding:4px 7px 5px;font-size:10px;line-height:1.2}#wbb.mini{padding:3px 7px 4px;font-size:10px;line-height:1.1;opacity:.9;white-space:nowrap}#wbb.mini .bar{display:inline-block;vertical-align:middle;width:44px;height:5px;margin:0 0 0 6px}#wbb.nar .bar{height:6px;margin-top:3px}#wbb.nar small{font-size:9px;margin-top:2px}`;document.head.appendChild(st)}
 const wbbEl=el('div','wbb','g3','');document.body.appendChild(wbbEl);
 setInterval(()=>{const B=WB.b,show=B&&MP.on&&!dead&&!pnOpen&&!menuOpen&&!TS.open&&wbHp(B)>0;wbbEl.style.display=show?'block':'none';if(!show)return;
  const left=Math.max(0,B.end-wbNow()),mm=Math.floor(left/60000)+':'+String(Math.floor(left/1000)%60).padStart(2,'0'),H2=wbHere(),hp=wbHp(B);let sub='';
  if(H2){const d=Math.hypot(H2.L.x-P.x,H2.L.y-P.y);if(d>260){const a=Math.atan2(H2.L.y-P.y,H2.L.x-P.x),dir=['east','south-east','south','south-west','west','north-west','north','north-east'][(Math.round(a/(Math.PI/4))+8)%8];sub='Its lair is '+Math.round(d/16)+' steps to the '+dir+'.'}
   else sub='Your damage: '+Math.round(WB.dmg)+' · Dodge the red!'}else sub='On '+wbWhere(B)+(B.where!=='hollow'&&typeof routeOpen==='function'&&!routeOpen(B.where)?' (route not charted yet)':'');
- wbbEl.innerHTML='<div class="t"><span>'+esc(B.T.ic+' '+B.T.n.toUpperCase())+'</span><b>'+mm+'</b></div><div class="bar"><i style="width:'+(hp/B.mhp*100).toFixed(1)+'%"></i></div><small>'+esc(sub)+' · '+Math.ceil(hp)+' / '+B.mhp+'</small>';
+ // on phones it's only a small chip (icon, time left, health) until you're at the fight; the full banner then
+ const mini=(innerWidth<700||!isPC)&&!(H2&&Math.hypot(H2.L.x-P.x,H2.L.y-P.y)<=260);wbbEl.classList.toggle('mini',mini);
+ wbbEl.innerHTML=mini?'<span>'+esc(B.T.ic)+' '+mm+'</span><div class="bar"><i style="width:'+(hp/B.mhp*100).toFixed(1)+'%"></i></div>':'<div class="t"><span>'+esc(B.T.ic+' '+B.T.n.toUpperCase())+'</span><b>'+mm+'</b></div><div class="bar"><i style="width:'+(hp/B.mhp*100).toFixed(1)+'%"></i></div><small>'+esc(sub)+' · '+Math.ceil(hp)+' / '+B.mhp+'</small>';
  // on narrow screens it would cover your health: sit under the left-hand HUD instead
- if(innerWidth<700&&HUDL){const d=window.devicePixelRatio||1;wbbEl.style.left=Math.round(HUDL.ins/d)+'px';wbbEl.style.transform='none';wbbEl.style.top=Math.round(HUDL.stackBottom/d+6)+'px';wbbEl.style.width=Math.round(HUDL.bw/d)+'px';wbbEl.classList.add('nar')}else{wbbEl.style.left=wbbEl.style.transform=wbbEl.style.top=wbbEl.style.width='';wbbEl.classList.remove('nar')}
+ if(innerWidth<700&&HUDL){const d=window.devicePixelRatio||1;wbbEl.style.left=Math.round(HUDL.ins/d)+'px';wbbEl.style.transform='none';wbbEl.style.top=Math.round(HUDL.stackBottom/d+6)+'px';wbbEl.style.width=mini?'auto':Math.round(HUDL.bw/d)+'px';wbbEl.classList.add('nar')}else{wbbEl.style.left=wbbEl.style.transform=wbbEl.style.top=wbbEl.style.width='';wbbEl.classList.remove('nar')}
  // a message box you need to read (a sign, a door, someone talking) wins: the banner steps aside while it's up
  try{if(msgT>0&&msg&&MSGBOX){const r=wbbEl.getBoundingClientRect(),m=MSGBOX;if(r.left<m.x+m.w&&r.right>m.x&&r.top<m.y+m.h&&r.bottom>m.y)wbbEl.style.display='none'}}catch(e){}},150);
 // ---- saving, and the leaderboard ----
@@ -9295,6 +9308,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-7',d:'Nov 12, 2026',t:'Chess with friends, parties and emotes',n:['Play chess with other players: tap someone\'s name and choose CHESS. You can both stake items and gold, like a duel, and the winner takes both stakes. Games against players give no Tactics XP. A move can take up to 3 minutes.','Grandmaster Orla is much easier to beat now, especially on Novice and Club player. Resigning straight away, or resigning game after game, no longer gives Tactics XP.','Opening Moves is now Orla\'s own side quest instead of part of Elder Rowan\'s story. If you were on it, it\'s waiting for you at her table.','You can\'t be hurt while you\'re playing chess.','Parties: tap a player\'s name and choose INVITE TO PARTY (up to 4 players). Party members show in green on the map and minimap, with their health under the minimap and a star over their heads. You get +10% XP while one is close by, and /p in chat talks to your party. START > Party lists everyone.','Emotes: START > Emotes (G on a keyboard), or type /wave, /dance, /cheer, /love, /bow, /laugh, /yes, /no in chat. Everyone nearby sees them.','Voyages now come from one person: Sera, the Navigator in Tidewatch. Take on every voyage and report back to her. Harbor posts still list the sea routes and sell boat upgrades.','Hollow Island now has open sea all the way around its edge. Anything you built where the land became sea is safe in your bag.','Your houses and castles show on the map and minimap, and so do other players\' houses on Hollow.','Join the SkillQuest Discord: there\'s a JOIN OUR DISCORD button on the title screen.','Smith your own tools: iron and steel axes and pickaxes at the anvil. You can craft a fishing rod in the Craft menu, and the general store now buys everything you build or craft.','Duel wins now count as PvP kills on the leaderboard. Falling no longer resets your Monsters count, and the Quests board counts every quest you\'ve finished (village quests, voyages and Orla\'s too).','Small messages like "You cast your line" now float over your head instead of opening the big text box. On phones, a world boss somewhere else shows as a small chip; the full banner appears when you reach the fight.','Fixed: the TALK/USE button flickering next to harbor posts, furnaces, anvils and chests. XP numbers now show over your head on every island, in dungeons and indoors.','Fixed: you could cook on a castle as if it were a campfire (its warmth still heals you and keeps monsters away). Boats can no longer ride up onto bridges and piers.','Fixed: item descriptions showing their stats twice. Dungeon monsters (like Scorpion Hollow\'s dust skeletons) now use their own looks, and the wiki shows monster changes right away.']},
  {v:'2026.11.12-6',d:'Nov 12, 2026',t:'Achievements, collection log and duels',n:['Achievements: START > Achievements. Over 40 goals across skills, gathering, combat, quests, travel, wealth and collecting. Each one pays gold the moment you reach it.','Collection log: the second page of Achievements shows every item, piece of gear and pet in the game. What you\'ve had shows in colour; the rest is a mystery shape until you find it.','Players: stand next to someone and the TALK button shows their name. Tap it for TRADE, ADD FRIEND and DUEL (chess is coming).','Duels: challenge someone, then both put in a stake of items and gold and accept twice. Fight anywhere, PvP on or off. The duel ends when one of you falls: you get back up right where you fell, and the winner takes the loser\'s stake (and keeps their own). Leaving the area or going offline loses the duel; after 3 minutes it\'s a draw and both stakes go back.']},
  {v:'2026.11.12-5',d:'Nov 12, 2026',t:'Elder Rowan\'s second chapter',n:['The story goes on! After Three Villages, One Island, Elder Rowan sends you across the sea: sail to Briarwood Isle, help Thornbrook, brave the Ashfall Coast, and open an island\'s sealed door to face its boss.','The new finale, Legend of the Isles: defeat all five island bosses for 5,000 gold. Grandmaster now asks for total level 150 and pays 1,500 gold.','The quest box tells you how to get there: which voyage to take, which boat upgrade you need, and which village quest is next.','Fixes: Slime Trouble and Slime Slayer now count slimes only. Night Watch is a real challenge: see one whole night through, dusk to dawn, without falling.','No more doing the same job twice: Northern Supplies now wants oak logs, The Ranger\'s Warning wolf pelts, and Across the Western Sea cooked salmon.','The Road East (a short walk to Saltmere) now comes early, right after Gone Fishing. Your progress is kept: anything you already finished stays finished.']},
  {v:'2026.11.12-4',d:'Nov 12, 2026',t:'Smooth camera',n:['No more shaky screen: your character used to jump a little back and forth while walking, especially on phones. You now stay perfectly still in the middle of the screen.','The world also scrolls smoothly now instead of in small jumps, so walking, sprinting and sailing look much steadier.']},
@@ -9479,10 +9493,10 @@ function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab](
    out.push({t:at+' '+by[at].map(r=>r.n).join(' '),h:h+'</table>'})}
   head('Farming');let h='<table><tr><th>Crop</th><th>Level</th><th>Seed</th><th>XP</th></tr>';for(const k in CROPS){const c=CROPS[k];h+='<tr><td>'+wkE(c.n)+'</td><td>Farming '+c.lv+'</td><td>'+(INAME[c.seed]?wkLink(c.seed):wkE(c.seed))+'</td><td>'+c.xp+'</td></tr>'}out.push({t:'farming crops '+Object.values(CROPS).map(c=>c.n).join(' '),h:h+'</table>'});
   head('Fishing');h='<table><tr><th>Fish</th><th>Level</th><th>XP</th><th>Cooked heals</th></tr>';for(const f of FISH_T)h+='<tr><td>'+(INAME[f.k]?wkLink(f.k):wkE(f.n))+'</td><td>Fishing '+f.lv+'</td><td>'+f.xp+'</td><td>'+(f.heal||0)+' heart'+(f.heal===1?'':'s')+'</td></tr>';out.push({t:'fishing fish '+FISH_T.map(f=>f.n).join(' '),h:h+'</table>'})}
- else if(tab==='mobs'){head('Hollow Island & its dungeons');for(const m of WK_MOBS)card(m.n+' '+m.w,WK_MK[m.n]?wkPic(m.n,WK_MK[m.n]):'','<b>'+wkE(m.n)+'</b> <span class="tag">'+m.hp+' HP</span><br>'+wkE(m.d)+'<br><small>Where: '+wkE(m.w)+' · Drops: '+wkE(m.drop)+'</small>','mob');
+ else if(tab==='mobs'){head('Hollow Island & its dungeons');for(const m of WK_MOBS)card(m.n+' '+m.w,WK_MK[m.n]?wkPic(m.n,WK_MK[m.n]):'','<b>'+wkE(m.n)+'</b> <span class="tag">'+wkHp(m.hp,WK_MK[m.n]&&WK_MK[m.n]())+' HP</span><br>'+wkE(m.d)+'<br><small>Where: '+wkE(m.w)+' · Drops: '+wkE(m.drop)+'</small>','mob');
   if(typeof RG_FAUNA!=='undefined')for(const id in RG_FAUNA){const F=RG_FAUNA[id],R=WORLD_REGIONS[id];head((R?R.name:id)+(R&&R.lv?' (level '+R.lv+')':''));const seen={};
    for(const[when,L]of[['Day',F.day],['Night',F.night]])for(const e of L){const k=e[0];const s=seen[k]||(seen[k]={hp:e[1],when:[]});s.when.push(when)}
-   for(const k in seen){const nm=WK_RGN[k]||k;card(nm+' '+(R?R.name:id),wkPic('rg_'+k,()=>rgMake(k,seen[k].hp,0,0)),'<b>'+wkE(nm)+'</b> <span class="tag">'+seen[k].hp+' HP</span>'+(F.pack&&F.pack[k]?' <span class="tag">packs of '+F.pack[k]+'</span>':'')+'<br><small>'+seen[k].when.join(' and ')+' · stronger than on Hollow; more gold and XP</small>','mob')}}}
+   for(const k in seen){const nm=WK_RGN[k]||k;card(nm+' '+(R?R.name:id),wkPic('rg_'+k,()=>rgMake(k,seen[k].hp,0,0)),'<b>'+wkE(nm)+'</b> <span class="tag">'+wkHp(seen[k].hp,{rk:k})+' HP</span>'+(F.pack&&F.pack[k]?' <span class="tag">packs of '+F.pack[k]+'</span>':'')+'<br><small>'+seen[k].when.join(' and ')+' · stronger than on Hollow; more gold and XP</small>','mob')}}}
  else if(tab==='bosses'){head('World bosses');out.push({t:'',h:'<p>A world boss appears every 30 minutes somewhere in the world and stays for 20. Everyone fights it together; the top three damage dealers get extra loot. Online only.</p>'});
   const T=window.SQWBT||{};for(const k in T){const b=T[k];let pic='';try{const c=SQWBART[k](0,'s'),u=c.toDataURL();pic=u}catch(e){}
    const rare=WK_RARE.filter(r=>r[2]===b.n||(k==='dragon'&&r[2]==='Ancient Dragon'));
@@ -9507,7 +9521,8 @@ function wkRender(){const t=wk$('wkt'),b=wk$('wkb'),q=WK.q.trim().toLowerCase();
  else{for(const[k,n]of WK_TABS){if(k==='start'||k==='patch')continue;const cs=wkCards(k,1).filter(c=>!c.head&&(c.t+' '+c.h.replace(/<[^>]+>/g,' ')).toLowerCase().includes(q));if(cs.length)h+='<h3>'+wkE(n)+' ('+cs.length+')</h3>'+cs.slice(0,40).map(c=>c.h).join('')}
   if(!h)h='<div class="emp">Nothing matches "'+wkE(WK.q)+'".</div>'}
  b.innerHTML=h||'<div class="emp">Nothing here yet.</div>';if(wk$('wkxr'))wkXpCalc()}
-function wkOpen(tab,q){WK.open=true;if(tab)WK.tab=tab;else if(wkNew())WK.tab='patch';WK.q=q||'';wk$('wkq').value=WK.q;wkEl.style.display='flex';wkRender();wk$('wkb').scrollTop=0;try{sfx('talk')}catch(e){}
+function wkOpen(tab,q){WK.open=true;for(const k in WKPIC)delete WKPIC[k];   // monster pictures are drawn again (the Dev Suite may have changed a look)
+ if(tab)WK.tab=tab;else if(wkNew())WK.tab='patch';WK.q=q||'';wk$('wkq').value=WK.q;wkEl.style.display='flex';wkRender();wk$('wkb').scrollTop=0;try{sfx('talk')}catch(e){}
  setTimeout(()=>{const f=wkEl.querySelector('.wt button.on');if(f&&typeof GPON!=='undefined'&&(GPON||TS.kb))setFocus(f)},30)}
 function wkClose(){WK.open=false;wkEl.style.display='none';try{setFocus(null)}catch(e){}try{sfx('talk')}catch(e){}if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="wk"]');if(b&&(GPON||TS.kb))setFocus(b)}}
 wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt],[data-wki],[data-wks]');if(!b)return;if(b.dataset.wk==='x'){wkClose();return}
@@ -9538,6 +9553,8 @@ function wkActions(skill){const A=[];const add=(n,xp,lv,c)=>{if(xp>0)A.push({n,x
  return A.sort((a,b)=>a.lv-b.lv||a.xp-b.xp)}
 const xpAt=l=>XT[Math.max(0,Math.min(98,l-1))]|0;
 // a picture of a monster: drawn by the game's own code onto the screen for an instant, then copied
+// health as the Dev Suite's monster rules have it (Monsters tab: health %)
+const wkHp=(hp,n)=>{try{const r=n&&window.SQMOBRULES&&window.SQPROPS&&SQMOBRULES.rules[SQPROPS.mkey(n)];if(r&&r.hp!==100)return Math.max(1,Math.round(hp*r.hp/100))}catch(e){}return hp};
 const WKPIC={};function wkPic(key,mk,box){if(WKPIC[key])return WKPIC[key];try{const n=mk();n.x=2000;n.y=2000;n.dead=0;const S=3,B=box||40,px=B*S;
   const o=document.createElement('canvas');o.width=px;o.height=px;g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,px,px);g.setTransform(S,0,0,S,-(n.x-B/2)*S,-(n.y-B*.62)*S);GC=g;
   pS(n,.4);g.restore();const ox=o.getContext('2d');ox.drawImage(cv,0,0,px,px,0,0,px,px);
@@ -9573,7 +9590,7 @@ function wkNpcs(){const out=[],seen=new Set();for(const n of NPCS){const nm=n.na
 WK2.guides=()=>{const out=[];const G=(t,h)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,' '),h:'<div class="c"><div class="tx"><b>'+wkE(t)+'</b>'+h+'</div></div>'});
  G('Your first day','<p>Chop trees (HIT) for wood and pick berries to eat. Before night, build a campfire (F: 3 wood + 1 stone): monsters stay away from it, and you can cook meat on it. Visit Elder Rowan in Hollow Village for your first quests.</p>');
  G('Getting a boat','<p>Walk to Saltmere (the harbor town) and talk to Captain Ida. She sells a sailboat for 250 gold. Face the water and press USE to set sail. Nearby: Gull Rock (north-east), a shipwreck (south-east) and Hermit\'s Isle.</p>');
- let h='<p>Each new island is unlocked by a sea-route quest from a harbor post, in this order:</p><table><tr><th>Route</th><th>Where</th><th>What to do</th><th>Reward</th></tr>';
+ let h='<p>Each new island is unlocked by a voyage from Sera, the Navigator in Tidewatch, in this order:</p><table><tr><th>Route</th><th>Where</th><th>What to do</th><th>Reward</th></tr>';
  for(const v of (typeof VOYS!=='undefined'?VOYS:[]))h+='<tr><td><b>'+wkE(v.name)+'</b></td><td>'+wkE(v.post[0].toUpperCase()+v.post.slice(1))+'</td><td>'+wkE(v.d)+'<br><small>'+v.steps.map(wkE).join(' → ')+(v.needs.some(x=>x[0]==='@')?'<br>Needs the '+v.needs.filter(x=>x[0]==='@').map(x=>wkE((UPGRADES.find(u=>u.id===x.slice(1))||{}).name)).join(', '):'')+'</small></td><td>'+v.gold+' gold</td></tr>';
  h+='</table><p><b>Boat upgrades</b></p><table>';for(const u of (typeof UPGRADES!=='undefined'?UPGRADES:[]))h+='<tr><td><b>'+wkE(u.name)+'</b><br><small>'+wkE(u.d)+'</small></td><td>'+wkE(u.post[0].toUpperCase()+u.post.slice(1))+'</td><td>'+wkCost(u.cost)+'</td></tr>';
  G('Unlocking the islands',h+'</table>');
@@ -9736,7 +9753,7 @@ function edgeMsg(t){const n=performance.now();if(n-EDGE.msgAt>2500){EDGE.msgAt=n
 function edgeGo(to,side,frac){if(TRAVEL49||dead)return;TRAVEL49={t:0,dur:1.3,to,done:false,job:to!=='hollow'&&!RG_CACHE[to]?rgJob(to):null,hold:0,edge:{side,frac}};sfx('splash')}
 {const _u=upd;upd=function(dt){_u(dt);if(TRAVEL49||dead||menuOpen||pnOpen)return;
   if(!SCENE&&SAILING){const side=edgePush(N,N);if(!side)return;const id=edgeRegion(side);if(!id)return;
-   if(!routeOpen(id)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[id].name+', but the route isn\'t charted yet. Ask at a harbor post.');return}
+   if(!routeOpen(id)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[id].name+', but the route isn\'t charted yet. Ask Sera, the Navigator in Tidewatch.');return}
    edgeGo(id,side,side==='west'||side==='east'?P.y/(N*16):P.x/(N*16));return}
   const R=rbR();if(R&&RSAIL.on){const side=edgePush(R.w,R.h);if(!side)return;const nb=window.SQNEIGH&&SQNEIGH[R.region]&&SQNEIGH[R.region][side];
    if(nb){if(!routeOpen(nb)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[nb].name+', but the route isn\'t charted yet.');return}edgeGo(nb,side,side==='west'||side==='east'?P.y/(R.h*16):P.x/(R.w*16));return}
@@ -10047,7 +10064,7 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
   return out};
  const _gd=WK2.guides;WK2.guides=()=>{const out=_gd();const G=(t,h)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,' '),h:'<div class="c"><div class="tx"><b>'+wkE(t)+'</b>'+h+'</div></div>'});
   G('The World Market','<p>The World Market stands just outside Hollow Village. Talk to the Market clerk to trade with every player:</p><p>• <b>Sell</b>: pick something from your bag, how many, and the price each. The market holds your items until someone buys them.<br>• <b>Buy</b>: search for an item, set how many and the most you\'ll pay each. The market holds your gold.<br>• Offers match automatically with other players\' offers, even while you\'re offline. A trade happens at the price of the offer that was there first, so if you offer more than the cheapest seller asks, you get the difference back.<br>• What you get waits in your <b>collection box</b>: collect it at the market. Cancel an offer any time to get back what hasn\'t traded. Up to 8 offers at once. You need to be signed in.</p>');
-  G('No Man\'s Land','<p>A lawless desert south of Briarwood and west of the Shattered Expanse. Unlock it with the <b>Lawless Waters</b> voyage at the Tidewatch harbor post (after Into Briarwood), or sail off Briarwood\'s south edge / the Shattered Expanse\'s west edge once it\'s charted.</p><p><b>PvP is always on there</b>, for everyone, and you can\'t turn it off until you leave. Bandits keep their distance and shoot (a "!" over their head means they\'re aiming: roll!), Cacticus pretend to be cacti until you walk past, and giant scorpions sting hard.</p>');
+  G('No Man\'s Land','<p>A lawless desert south of Briarwood and west of the Shattered Expanse. Unlock it with the <b>Lawless Waters</b> voyage from Sera, the Navigator in Tidewatch (after Into Briarwood), or sail off Briarwood\'s south edge / the Shattered Expanse\'s west edge once it\'s charted.</p><p><b>PvP is always on there</b>, for everyone, and you can\'t turn it off until you leave. Bandits keep their distance and shoot (a "!" over their head means they\'re aiming: roll!), Cacticus pretend to be cacti until you walk past, and giant scorpions sting hard.</p>');
   G('Boulders and the Stone Sledgehammer','<p>Big boulders sit on every island and in caves. Only the Stone Sledgehammer (a rare drop from the Stone Giant) can break them: 35-50 stone each. Ore boulders glint with iron, gold, mithril or adamant and give a big pile of ore (Mining 15 / 30 / 45 / 60). Holding the hammer also turns your ultimate into a Ground Slam.</p>');
   G('Foraging','<p>Pick berries from bushes, mushrooms from the patches that grow beside trees (Foraging 5), nuts from hazel bushes (Foraging 10) and fruit from cacti. Roast mushrooms and nuts at a campfire. Berry bushes can drop a squirrel pet (1 in 1,000) that forages for you.</p>');
   G('Pets that work for you','<p>The squirrel (from berry bushes, 1 in 1,000) brings you berries, nuts, mushrooms, cactus fruit, coins and sometimes a healing potion. Ore golems (1 in 2,000 from mining iron, gold, mithril or adamant ore) dig up their own ore for you every couple of minutes. Each kind of tree has its own treeling (1 in 5,000).</p>');
@@ -10262,10 +10279,13 @@ window.SQMP=MP;
   return L.join(' · ')}
  function foodStats(k){const f=FOODS.find(q=>q.k===k);if(!f)return'';const L=[];if(f.heal)L.push('Heals '+f.heal+' HP');if(f.hun)L.push('Food +'+f.hun);return L.join(' · ')}
  // every description shows its stats first
+ // a description that was saved with its stats line in it (the Dev Suite stores what it shows) keeps only its own words
+ const STW=/^(Damage \d|Arrow damage \d|Range \d|[A-Z][a-z]+ spells$|Costs \d|Sets enemies on fire$|Slows enemies$|Strikes hard$|Needs [A-Z]|Block [+-]|Your block chance|Ranger set|Mage set|[23] pieces:|Chop power|Mine power|Stronger than|Weaker than|Heals \d|Food \+|[+-]\d+%? |same as your|Life steal|Burn \d|Slow \d|Critical hit|Move speed|Bonus XP)/;
+ const strip=s=>{s=String(s==null?'':s);for(let n=0;n<6;n++){const i=s.indexOf('. ');if(i<0)break;const parts=s.slice(0,i).split(' · ');if(!parts.every(x=>STW.test(x)))break;s=s.slice(i+2)}return s};window.SQSTRIPSTATS=strip;
  const BASE={};for(const k in IDESC)BASE[k]=IDESC[k];
  const statsFor=k=>EQ[k]?eqStats(k):isFood(k)?foodStats(k):'';
- const wrapDesc=k=>{if(Object.getOwnPropertyDescriptor(IDESC,k)&&Object.getOwnPropertyDescriptor(IDESC,k).get)return;if(!(k in BASE))BASE[k]=IDESC[k];
-  Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){let s='';try{s=statsFor(k)}catch(e){}return(s?s+'. ':'')+(BASE[k]||'')},set(v){BASE[k]=v}})};
+ const wrapDesc=k=>{if(Object.getOwnPropertyDescriptor(IDESC,k)&&Object.getOwnPropertyDescriptor(IDESC,k).get)return;if(!(k in BASE))BASE[k]=strip(IDESC[k]);
+  Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){let s='';try{s=statsFor(k)}catch(e){}return(s?s+'. ':'')+strip(BASE[k]||'')},set(v){BASE[k]=strip(v)}})};
  for(const k of new Set([...EQK,...FOODS.map(f=>f.k)]))wrapDesc(k);
  IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns.';
  window.SQSTATS=statsFor}
@@ -11715,7 +11735,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
 // South of Briarwood and west of the Shattered Expanse. Mesas, cracked earth, cactus flats, a ghost town (Dustwater),
 // Boot Hill, an old silver mine and an oasis. Giant scorpions, Cacticus (cactus monsters that pretend to be cacti)
 // and desert bandits (they keep their distance and shoot; watch for the "!" and roll). PvP is always on here.
-// Getting there: the "Lawless Waters" voyage at the Tidewatch harbor post (after Into Briarwood), or sail off
+// Getting there: the "Lawless Waters" voyage from Sera, the Navigator in Tidewatch (after Into Briarwood), or sail off
 // Briarwood's south edge / the Shattered Expanse's west edge once the route is charted.
 {const K='#181018',ID='nomans';
  WORLD_REGIONS[ID]={id:ID,name:'No Man\'s Land',width:170,height:150,seed:2291.3,generationVersion:1,biome:'Lawless desert: mesas, cactus flats and a ghost town. PvP is always on',lv:'45–75',dir:'south-west',unlock:'nomansRoute',hint:'Chart the Lawless Waters from Tidewatch.'};
@@ -11726,7 +11746,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  // ---- the voyage that charts it ----
  try{const tw=HARBOR_POSTS.find(p=>p.id==='tidewatch');if(tw)BUOYS.sw=buoySpot(boatWater(tw.x,tw.y),16,N-16)}catch(e){}
  VOYS.push({id:'lawless',name:'Lawless Waters',post:'tidewatch',needs:['briar'],buoy:'sw',gold:150,unlock:['nomansRoute'],
-  d:'Nobody charts the south-western lane: it leads to No Man\'s Land, where there is no law and everyone fights everyone. Find the lane anyway, if you dare.',steps:['Sail your boat to the red buoy far south-west of Hollow Island','Report at the Tidewatch harbor post']});
+  d:'Nobody charts the south-western lane: it leads to No Man\'s Land, where there is no law and everyone fights everyone. Find the lane anyway, if you dare.',steps:['Sail your boat to the red buoy far south-west of Hollow Island','Report to Sera, the Navigator in Tidewatch']});
 
  // ---- the land ----
  RG_GENS[ID]=function*(D){const C=rgCtx(D),{W,H,T}=C;
@@ -12393,7 +12413,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
    if(!goal)return null;const st=V[goal.id];
    if(st&&st!==99)return{step:goal.name+': '+goal.steps[st-1],e:{kind:'voy',q:goal,step:goal.steps[st-1]}};
    if(goal.req&&!goal.req())return{step:goal.name+': '+(goal.reqTxt||'not ready yet'),e:null};
-   const post=HARBOR_POSTS.find(p=>p.id===goal.post);return{step:'Voyage: '+goal.name+' (ask at the '+(post?post.name:'')+' harbor post)',e:{kind:'voyAvail',q:goal}}}catch(e){return null}}
+   const post=HARBOR_POSTS.find(p=>p.id===goal.post);return{step:'Voyage: '+goal.name+' (ask Sera, the Navigator in Tidewatch)',e:{kind:'voyAvail',q:goal}}}catch(e){return null}}
  const villList=()=>VILL.filter(t=>typeof SQ_SIDE!=='undefined'&&SQ_SIDE[t]).map(t=>{const s=SQ_SIDE[t],L=SIDE_QS[t]||[];return town(t)+(s.completed?' ✓':' '+s.index+'/'+L.length)}).join(' · ');
  function qAll(){const out=[];
   // Elder Rowan
@@ -12415,7 +12435,9 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   if(typeof VOYS!=='undefined'){const V=VQ();for(const q of VOYS){const id='v:'+q.id,post=HARBOR_POSTS.find(p=>p.id===q.post);
    if(V[q.id]===99)out.push({id,cat:'Voyage',area:'hollow',name:q.name,st:'done',rew:q.gold?q.gold+' gold':''});
    else if(V[q.id])out.push({id,cat:'Voyage',area:'hollow',name:q.name,desc:q.d,st:'active',step:q.steps[V[q.id]-1],prog:V[q.id]+'/'+q.steps.length,rew:q.gold?q.gold+' gold':'',q,kind:'voy',si:V[q.id]-1});
-   else{let ok=true;try{ok=typeof vNeedsOK!=='function'||vNeedsOK(q)}catch(e){}if(ok)out.push({id,cat:'Voyage',area:'hollow',name:q.name,desc:q.d,st:'avail',step:'Ask at the '+(post?post.name:'')+' harbor post',rew:q.gold?q.gold+' gold':'',q,kind:'voyAvail'})}}}
+   else{let ok=true;try{ok=typeof vNeedsOK!=='function'||vNeedsOK(q)}catch(e){}if(ok)out.push({id,cat:'Voyage',area:'hollow',name:q.name,desc:q.d,st:'avail',step:'Ask Sera, the Navigator in Tidewatch',rew:q.gold?q.gold+' gold':'',q,kind:'voyAvail'})}}}
+  // quests other sections add (Orla's Opening Moves): window.SQQEXTRA = [() => [entries]]
+  if(window.SQQEXTRA)for(const f of SQQEXTRA)try{for(const e of f()||[])out.push(e)}catch(x){}
   return out}
  window.SQQUESTS=qAll;
  function tracked(L){if(TRK==='none')return null;L=L||qAll();let e=TRK&&L.find(e=>e.id===TRK&&e.st!=='done');if(!e)e=L.find(e=>e.st==='active'&&e.kind==='main')||L.find(e=>e.st==='active')||L.find(e=>e.st==='avail');return e||null}
@@ -12431,14 +12453,15 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   return best}
  function nearMob(type){let best=null,bd=1e9;for(const m of en){if(m.dead||m.hp<=0||m.summon)continue;if(type&&m.type!==type&&!(type==='wolf'&&/wolf/.test(m.type)))continue;const d=(m.x-P.x)**2+(m.y-P.y)**2;if(d<bd){bd=d;best={area:curArea(),x:m.x,y:m.y,mob:1}}}return best}
  function regionGiver(rg,id){const R=SCENE&&SCENE.room;if(!R||R.region!==rg)return{area:rg};for(const it of R.items){const n=it.n;if(n&&(n.id===id||n.name===id))return{area:rg,x:n.x,y:n.y}}return{area:rg}}
- function target(e){if(!e)return null;
+ function target(e){if(!e)return null;if(e.at)return e.at;
   if(e.kind==='main'||(!e.kind&&e.cat==='Elder Rowan')){const q=e.q;if(e.st==='avail'||e.ready)return npcAt('elder');if(e.via)return target(e.via);if(e.vill)return target(e.vill.e);
    if(q.type==='give'){const s=SRC[q.item];return Array.isArray(s)?nearObj(s):null}if(q.type==='kill')return nearMob(q.item||'slime');
    if(q.type==='hermit')return npcAt('hermit');if(q.type==='talk')return npcAt('harbor');return null}
   if(e.kind==='side'){const rg=e.area,gv=e.giver;const giverT=()=>rg==='hollow'?npcAt(gv):regionGiver(rg,gv);if(e.st==='avail'||e.ready)return giverT();
    const q=e.q;if(q.type==='give'){const s=SRC[q.item];return Array.isArray(s)?(nearObj(s)||null):null}if(q.type==='kill')return nearMob(q.item);return null}
-  if(e.kind==='voyAvail'){const p=HARBOR_POSTS.find(p=>p.id===e.q.post);return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}
+  if(e.kind==='voyAvail'){const p=e.q&&e.q.id&&typeof navSpot==='function'?navSpot():HARBOR_POSTS.find(p=>p.id===e.q.post);return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}
   if(e.kind==='voy'){const q=e.q,s=e.step||'';if(/buoy/i.test(s)&&q.buoy&&BUOYS[q.buoy]){const b=BUOYS[q.buoy];return{area:'hollow',x:b.x*16+8,y:b.y*16+8}}
+   if(/Navigator|Sera/.test(s)&&typeof navSpot==='function'){const p=navSpot();return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}
    if(/^Report/i.test(s)||/post/i.test(s)){let p=null;if(q.report==='any'||/any harbor/i.test(s)){let bd=1e9;for(const h of HARBOR_POSTS){const d=(h.x*16-P.x)**2+(h.y*16-P.y)**2;if(d<bd){bd=d;p=h}}}else p=HARBOR_POSTS.find(h=>s.includes(h.name))||HARBOR_POSTS.find(h=>h.id===q.post);
     return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}return null}
   return null}
@@ -13026,9 +13049,9 @@ window.SQA=SQA;
   if(r.fx)for(const x in FXN)if(r.fx[x])L.push(FXN[x]+' '+(x==='spd'||x==='xp'?'+':'')+r.fx[x]+'%');
   const q=r.rq||defReq(k);if(q&&q.l)L.push('Needs '+SKN[q.s]+' '+q.l);return L.join(' · ')}
  function hookDesc(k){if(D0[k])return;const d=Object.getOwnPropertyDescriptor(IDESC,k)||{value:IDESC[k],writable:true};D0[k]=d;let plain=d.get?null:d.value;
-  const own=()=>{if(NG[k])return(NG[k].d?NG[k].d+' ':'')+'Equip it from your Bag or the equipment screen.';if(!d.get)return plain||'';let s=d.get.call(IDESC);try{const p=window.SQSTATS&&SQSTATS(k);if(p&&s.startsWith(p+'. '))s=s.slice(p.length+2)}catch(e){}return s};
+  const own=()=>{if(NG[k])return(NG[k].d?NG[k].d+' ':'')+'Equip it from your Bag or the equipment screen.';if(!d.get)return window.SQSTRIPSTATS?SQSTRIPSTATS(plain||''):plain||'';let s=d.get.call(IDESC);try{s=window.SQSTRIPSTATS?SQSTRIPSTATS(s):s}catch(e){}return s};
   Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){if(!GR[k]&&!NG[k])return d.get?d.get.call(IDESC):plain;let s='';try{s=statLine(k)}catch(e){}const b=own();return(s?s+'. ':'')+b},
-   set(v){if(d.set)d.set.call(IDESC,v);else plain=v}})}
+   set(v){if(d.set)d.set.call(IDESC,v);else plain=window.SQSTRIPSTATS?SQSTRIPSTATS(v):v}})}
  // ---- apply the library (plus the developer's unpublished new items, on their own device) ----
  let LIB={},DEV=null;
  function applyGear(lib){LIB=lib||{};
@@ -14504,7 +14527,7 @@ window.SQA=SQA;
  const bkey=b=>{if(!b)return null;if(b.castle)return'b:castle';if(HS&&b.k===HS.k&&b.wall===HS.wall&&b.roof===HS.roof)return'b:house'+(b.w|0);return typeof BLD!=='undefined'&&BLD.includes(b)?'b:'+b.k:null};
  const _db=drBld;drBld=function(b,tm){const k=bkey(b);if(k&&has(k)){drawLook(k,b.tx*16,b.ty*16,null,phase(b.tx,b.ty));return}return _db.apply(this,arguments)};
  // ---- monsters ----
- const mkey=n=>'m:'+(n.rk||((n.type||'slime')+(n.rv?':'+n.rv:'')));
+ const mkey=n=>'m:'+(n.rk||((n.type||'slime')+(n.rv||n.vr?':'+(n.rv||n.vr):'')));
  const WC=new Map();// white versions of frames, for the hit flash
  function white(k,L,f){const key=k+'#'+f;let c=WC.get(key);if(!c){const b=can(k,L,f);c=document.createElement('canvas');c.width=b.width;c.height=b.height;const x=c.getContext('2d');x.drawImage(b,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);WC.set(key,c)}return c}
  function mobDraw(n,tm){if(!n||n._wb||n.type==='ib')return false;const k=mkey(n),q=pick(k);if(!q)return false;const L=PL[q],x=Math.round(n.x),y=Math.round(n.y),nf=frames(L);
@@ -14625,6 +14648,11 @@ window.SQA=SQA;
   const mobTpl=(k,hp)=>()=>{const[t]=k.split(':');try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}};
   for(const k of Object.keys(MB).sort((a,b)=>MB[a].n.localeCompare(MB[b].n)))add('m:'+k,MB[k].n,'Monsters',null,null,mobTpl(k,MB[k].hp));
   for(const[k,n,hp]of MX)add('m:'+k,n,'Monsters',null,null,mobTpl(k,hp));
+  // monsters that only live in dungeons, by their variant (Frostfang's snow wolves, the grotto's tide slimes...)
+  {const have=new Set([...Object.keys(MB),...MX.map(e=>e[0])]),VN={dust:'Dust skeleton',snow:'Snow wolf',frost:'Frost slime',tide:'Tide slime',magma:'Magma slime'};
+   if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(let f=1;f<=(DKIND[kind].floors||3);f++){let R=null;try{R=buildFloor(kind,f)}catch(e){}
+    for(const m of R&&R.mobs||[]){if(!m||!m.vr||m.rk||m.rv)continue;const k=(m.type||'slime')+':'+m.vr;if(have.has(k))continue;have.add(k);const tpl={...m,x:0,y:0};
+     add('m:'+k,VN[m.vr]||pretty(m.vr+' '+m.type),'Monsters',null,null,()=>({...tpl}))}}}}
   // island props
   for(const kk in A.ISL_LM){const[k,v]=kk.split(':'),L=A.ISL_LM[kk];add('l:'+kk,L[0],'Island props',()=>drawFurn({t:'lm',k,v:L[3],x:0,y:0,w:L[1],h:L[2],sh:L[2],name:L[0]},0))}
   return CAT=out}
@@ -15058,7 +15086,7 @@ window.SQA=SQA;
  // ---------- keyboard & mouse ----------
  const KA=[['mvu','Move up','w'],['mvd','Move down','s'],['mvl','Move left','a'],['mvr','Move right','d'],['spr','Sprint (hold)','shift'],
   ['hit','Hit, chop, mine, fish',' '],['eat','Eat / cook','e'],['fire','Build a campfire','f'],['talk','Talk / use','t'],['roll','Dodge roll','r'],['ult','Wand ultimate','v'],
-  ['bag','Bag','b'],['map','Map','m'],['quests','Quests','q'],['skills','Skills','k'],['craft','Craft','c'],['card','Character','p'],['help','Show / hide the help box','h']];
+  ['bag','Bag','b'],['map','Map','m'],['quests','Quests','q'],['skills','Skills','k'],['craft','Craft','c'],['card','Character','p'],['help','Show / hide the help box','h'],['emote','Emotes','g']];
  const KDEF={};for(const[id,,k]of KA)KDEF[id]=k;
  let KB=Object.assign({},KDEF,LS('sq_keys')||{}),REV={},MOVED=new Set();
  function rebuild(){REV={};for(const id in KDEF)REV[KB[id]]=KDEF[id];MOVED=new Set();for(const id in KDEF)if(KB[id]!==KDEF[id]&&!(KDEF[id]in REV))MOVED.add(KDEF[id])}rebuild();
@@ -15265,7 +15293,7 @@ window.SQA=SQA;
  // The Road East: right after Gone Fishing
  {const i=QS.findIndex(q=>q.n==='The Road East'),j=QS.findIndex(q=>q.n==='Gone Fishing');if(i>=0&&j>=0&&i>j+1){const[q]=QS.splice(i,1);QS.splice(j+1,0,q)}}
  const CH2=[
-  {n:'Beyond the Horizon',d:'"Captains in Tidewatch talk of an island past the western reef." Take on the Western Route voyage at the Tidewatch harbor post and sail to Briarwood Isle.',type:'visit',item:'briarwood',amt:1,r:{g:400,xp:[9,1200]},fin:'Briarwood! I knew there was more out there.'},
+  {n:'Beyond the Horizon',d:'"Captains in Tidewatch talk of an island past the western reef." Take on the Western Route voyage from Sera, the Navigator in Tidewatch, and sail to Briarwood Isle.',type:'visit',item:'briarwood',amt:1,r:{g:400,xp:[9,1200]},fin:'Briarwood! I knew there was more out there.'},
   {n:'Thornbrook\'s Troubles',d:'"The people of Thornbrook on Briarwood could use a friend." Finish all of Briarwood\'s village quests.',type:'line',item:'briarwood',amt:1,r:{g:900,xp:[1,2500]},fin:'Word travels fast. Thornbrook speaks well of you.'},
   {n:'Fire Beneath the Mountain',d:'"Smoke rises from the Ashfall Coast in the east." Give your boat a reinforced hull, find the Eastern Waters, and finish all of Ashfall\'s quests.',type:'line',item:'ashfall',amt:1,r:{g:1200,xp:[10,3500]},fin:'The forge camp will be singing about you for years.'},
   {n:'The Sealed Doors',d:'"Every island hides a sealed door, and something waits behind it." Gather an island\'s sigil shards (its monsters drop them), open its door and defeat the island boss inside.',type:'ib',amt:1,r:{g:1500,xp:[0,4000]},fin:'You opened one of the old doors and lived. Remarkable.'}];
@@ -15452,30 +15480,32 @@ window.SQA=SQA;
  const near=u=>{const r=Mp().players.get(u);if(!r||!liveR(r))return false;let L=null;try{L=mpLoc()}catch(e){}return!!L&&r.loc===L&&Math.hypot(r.tx-P.x,r.ty-P.y)<=NEAR};
  const tid=(a,b)=>a<b?a+'_'+b:b+'_'+a;
  const now=()=>Date.now()+((Mp()&&Mp().off)||0);
- const D={st:'idle',foe:null,tid:'',me:{},g:0,th:{},tg:0,my:{a:'',c:'',f:'',l:'',d:''},their:null,seen:false,unsub:null,esc:null,t0:0,cd:0,away:0,warnAt:0,lastTh:'',inbox:{},sent:{},rq:null};
- window.SQDUEL={get fighting(){return D.st==='fight'},get foe(){return D.foe},get st(){return D.st},state:D};
+ const D={kind:'duel',st:'idle',foe:null,mv:[],tid:'',me:{},g:0,th:{},tg:0,my:{a:'',c:'',f:'',l:'',d:''},their:null,seen:false,unsub:null,esc:null,t0:0,cd:0,away:0,warnAt:0,lastTh:'',inbox:{},sent:{},rq:null};
+ window.SQDUEL={get fighting(){return D.st==='fight'&&D.kind==='duel'},get chess(){return D.kind==='chess'&&D.st==='fight'},get kind(){return D.kind},get foe(){return D.foe},get st(){return D.st},state:D};
  // ---- the player menu ----
  const MTAB=36,DTAB=37;let MU=null;
  function menuOpenFor(u){MU=u;try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){}pnOpen=true;ptab=MTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk')}
  window.SQPLAYERMENU=menuOpenFor;
- function menuHTML(){const u=MU,n=esc(nameOf(u)),fr=!!(Mp()&&Mp().friends&&Mp().friends[u]),T=window.SQTRADE,tIn=!!(T&&T.inbox&&T.inbox[u]),dIn=!!D.inbox[u],dSent=!!D.sent[u];
+ function menuHTML(){const u=MU,n=esc(nameOf(u)),fr=!!(Mp()&&Mp().friends&&Mp().friends[u]),T=window.SQTRADE,tIn=!!(T&&T.inbox&&T.inbox[u]),kIn=D.inbox[u]&&D.inbox[u].k,kS=D.sent[u]&&D.sent[u].k,dIn=kIn==='duel',dSent=kS==='duel',cIn=kIn==='chess',cSent=kS==='chess';
   let h='<div class="tl">'+n.toUpperCase()+'</div><div class="qc" style="font-size:13px;text-align:center">'+(near(u)?'Standing right next to you.':'Too far away now. Walk up to them again.')+'</div><div class="pmb">';
   h+='<button class="sb" data-pm="trade">'+(tIn?'ACCEPT TRADE':'TRADE')+'</button>';
   h+='<button class="sb" data-pm="friend"'+(fr?' disabled style="opacity:.55"':'')+'>'+(fr?'FRIENDS ✓':'ADD FRIEND')+'</button>';
   h+='<button class="sb" data-pm="duel"'+(dSent&&!dIn?' disabled style="opacity:.55"':'')+'>'+(dIn?'ACCEPT DUEL':dSent?'DUEL ASKED…':'DUEL')+'</button>';
-  h+='<button class="sb" disabled style="opacity:.45">CHESS · coming soon</button><button class="sb" data-pm="close">CLOSE</button></div>';
+  if(window.SQPARTY){const inP=SQPARTY.has(u),inv=SQPARTY.invited(u);h+='<button class="sb" data-pm="party"'+(inP||inv?' disabled style="opacity:.55"':'')+'>'+(inP?'IN YOUR PARTY ✓':inv?'PARTY INVITE SENT…':'INVITE TO PARTY')+'</button>'}
+  h+='<button class="sb" data-pm="chess"'+(cSent&&!cIn?' disabled style="opacity:.55"':'')+'>'+(cIn?'ACCEPT CHESS':cSent?'CHESS ASKED…':'CHESS')+'</button><button class="sb" data-pm="close">CLOSE</button></div>';
   return h}
  // ---- duel requests ----
- function ask(u){if(!on()){say('Sign in to duel other players.');return}if(D.st!=='idle'){say('Finish your current duel first.');return}if(!near(u)){say(nameOf(u)+' is too far away. Stand next to them.');sfx('swish');return}
-  if(D.inbox[u]){answer(u,true);return}if(D.sent[u])return;const db=Fm().db,sn=Math.random().toString(36).slice(2,10);D.sent[u]={at:performance.now(),s:sn};
-  db.set(ref('dreq/'+u+'/'+me()),{n:String(pname()).slice(0,12),s:sn,t:db.serverTimestamp()}).then(()=>{say('You challenged '+nameOf(u)+' to a duel.');try{mpLog('game','You challenged '+nameOf(u)+' to a duel.')}catch(e){}watchReq(u)})
-   .catch(e=>{delete D.sent[u];say(/permission/i.test(String(e&&(e.code||e.message)))?'Duels need the latest database rules.':'Could not send the duel request.')})}
+ const WHAT=k=>k==='chess'?'game of chess':'duel';
+ function ask(u,kind){kind=kind==='chess'?'chess':'duel';if(!on()){say(kind==='chess'?'Sign in to play chess with other players.':'Sign in to duel other players.');return}if(D.st!=='idle'){say('Finish your current '+WHAT(D.kind)+' first.');return}if(!near(u)){say(nameOf(u)+' is too far away. Stand next to them.');sfx('swish');return}
+  if(D.inbox[u]&&D.inbox[u].k===kind){answer(u,true);return}if(D.sent[u])return;const db=Fm().db,sn=Math.random().toString(36).slice(2,10);D.sent[u]={at:performance.now(),s:sn,k:kind};
+  db.set(ref('dreq/'+u+'/'+me()),{n:String(pname()).slice(0,12),s:sn,k:kind,t:db.serverTimestamp()}).then(()=>{const m=kind==='chess'?'You asked '+nameOf(u)+' for a game of chess.':'You challenged '+nameOf(u)+' to a duel.';say(m);try{mpLog('game',m)}catch(e){}watchReq(u)})
+   .catch(e=>{delete D.sent[u];say(/permission/i.test(String(e&&(e.code||e.message)))?'This needs the latest database rules.':'Could not send the request.')})}
  function watchReq(u){const db=Fm().db,S=D.sent[u];if(!S)return;const offs=[];S.done=()=>{offs.forEach(f=>f());delete D.sent[u];draw()};
   const t0=now()-3000;// an old side left from the last duel doesn't count as a yes
-  offs.push(db.onValue(ref('duels/'+tid(u,me())+'/'+u),s=>{const v=s.val();if(v&&v.s===S.s&&D.st==='idle'&&D.sent[u]){const sn=S.s;S.done();open(u,sn)}}));
-  setTimeout(()=>{if(D.sent[u]&&D.st==='idle'){S.done();db.remove(ref('dreq/'+u+'/'+me())).catch(()=>{});say(nameOf(u)+' did not answer the duel.')}},60000)}
- function answer(u,yes){const sn=D.inbox[u]&&D.inbox[u].s;delete D.inbox[u];popHide(u);Fm().db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{});if(!yes)return;
-  if(D.st!=='idle'){say('Finish your current duel first.');return}if(!near(u)){say(nameOf(u)+' is too far away now.');sfx('swish');return}if(sn)open(u,sn)}
+  offs.push(db.onValue(ref('duels/'+tid(u,me())+'/'+u),s=>{const v=s.val();if(v&&v.s===S.s&&D.st==='idle'&&D.sent[u]){const sn=S.s,kd=S.k;S.done();open(u,sn,kd)}}));
+  setTimeout(()=>{if(D.sent[u]&&D.st==='idle'){S.done();db.remove(ref('dreq/'+u+'/'+me())).catch(()=>{});say(nameOf(u)+' did not answer.')}},60000)}
+ function answer(u,yes){const sn=D.inbox[u]&&D.inbox[u].s,kd=D.inbox[u]&&D.inbox[u].k;delete D.inbox[u];popHide(u);Fm().db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{});if(!yes)return;
+  if(D.st!=='idle'){say('Finish your current '+WHAT(D.kind)+' first.');return}if(!near(u)){say(nameOf(u)+' is too far away now.');sfx('swish');return}if(sn)open(u,sn,kd)}
  // request pop-up
  const st=document.createElement('style');st.textContent=`#dlpop{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 58px);z-index:31;display:none;align-items:center;gap:8px;padding:8px 10px;max-width:calc(100vw - 24px);box-sizing:border-box;font:600 14px ${PF};background:#f8f0d8;color:#404040;border:3px solid #b03828}
 #dlpop span{flex:1;min-width:0}#dlpop button{font:700 13px ${PF};padding:7px 12px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#dlpop .ok{background:#b03828;border-color:#701810;color:#fff}
@@ -15485,7 +15515,7 @@ window.SQA=SQA;
  const pop=document.createElement('div');pop.id='dlpop';pop.innerHTML='<span></span><button class="ok">DUEL</button><button class="no">NO</button>';document.body.appendChild(pop);
  for(const ev of['touchstart','pointerdown','mousedown'])pop.addEventListener(ev,e=>e.stopPropagation());
  let popU=null,popT=0;pop.querySelector('.ok').onclick=()=>{if(popU)answer(popU,true)};pop.querySelector('.no').onclick=()=>{if(popU)answer(popU,false)};
- function popShow(u){popU=u;pop.querySelector('span').textContent=nameOf(u)+' challenges you to a duel!';pop.style.display='flex';clearTimeout(popT);popT=setTimeout(()=>popHide(u),30000)}
+ function popShow(u){popU=u;const ch=D.inbox[u]&&D.inbox[u].k==='chess';pop.querySelector('.ok').textContent=ch?'PLAY':'DUEL';pop.querySelector('span').textContent=ch?nameOf(u)+' wants to play chess!':nameOf(u)+' challenges you to a duel!';pop.style.display='flex';clearTimeout(popT);popT=setTimeout(()=>popHide(u),30000)}
  function popHide(u){if(u&&popU!==u)return;popU=null;pop.style.display='none';clearTimeout(popT)}
  const bar=document.createElement('div');bar.id='dlbar';document.body.appendChild(bar);const big=document.createElement('div');big.id='dlbig';document.body.appendChild(big);
  let bigT=0;const bigSay=(t,ms)=>{big.textContent=t;big.style.display='block';clearTimeout(bigT);bigT=setTimeout(()=>{big.style.display='none'},ms||900)};
@@ -15493,14 +15523,15 @@ window.SQA=SQA;
  const can=k=>(inv[k]|0)-(D.me[k]|0);
  const clean=o=>{const r={};if(o&&typeof o==='object')for(const k in o){const n=Math.floor(+o[k]||0);if(n>0&&INAME[k]&&INVK.includes(k))r[k]=Math.min(n,1e6)}return r};
  function key(){const[a]=[D.tid.split('_')[0]],s=o=>Object.keys(o).sort().map(k=>k+':'+o[k]).join(','),M=[s(D.me),D.g],T=[s(D.th),D.tg];return JSON.stringify(a===me()?[D.s,M,T]:[D.s,T,M])}
- function push(){if(!D.tid||!on())return;const db=Fm().db;db.set(ref('duels/'+D.tid+'/'+me()),{i:D.me,g:D.g,s:D.s,a:D.my.a,c:D.my.c,f:D.my.f,l:D.my.l,d:D.my.d,t:db.serverTimestamp()})
+ function push(){if(!D.tid||!on())return;const db=Fm().db;db.set(ref('duels/'+D.tid+'/'+me()),{i:D.me,g:D.g,s:D.s,k:D.kind,m:D.kind==='chess'?D.mv.join(' '):'',a:D.my.a,c:D.my.c,f:D.my.f,l:D.my.l,d:D.my.d,t:db.serverTimestamp()})
   .catch(e=>{end(/permission/i.test(String(e&&(e.code||e.message)))?'Duels need the latest database rules.':'Lost the connection, so the duel was cancelled.')})}
- function open(u,sn){D.s=sn||'';D.st='stake';D.foe=u;D.tid=tid(u,me());D.me={};D.g=0;D.th={};D.tg=0;D.my={a:'',c:'',f:'',l:'',d:''};D.their=null;D.seen=false;D.esc=null;D.warnAt=0;D.lastTh='';
+ function open(u,sn,kind){D.kind=kind==='chess'?'chess':'duel';D.mv=[];D.s=sn||'';D.st='stake';D.foe=u;D.tid=tid(u,me());D.me={};D.g=0;D.th={};D.tg=0;D.my={a:'',c:'',f:'',l:'',d:''};D.their=null;D.seen=false;D.esc=null;D.warnAt=0;D.lastTh='';
   delete D.inbox[u];popHide(u);if(D.sent[u]&&D.sent[u].done)D.sent[u].done();
   try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){}push();D.unsub=Fm().db.onValue(ref('duels/'+D.tid+'/'+u),s=>theirs(s.val()));
-  pnOpen=true;ptab=DTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');try{mpLog('game','Setting up a duel with '+nameOf(u)+'.')}catch(e){}}
+  pnOpen=true;ptab=DTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');try{mpLog('game','Setting up a '+WHAT(D.kind)+' with '+nameOf(u)+'.')}catch(e){}}
  function theirs(v){if(D.st==='idle')return;if(v&&v.s!==D.s)v=null;// a side left from another duel
   if(!v){if(D.seen&&D.st!=='fight'&&D.st!=='over')end(nameOf(D.foe)+' left the duel.');else if(D.seen&&D.st==='fight')win('left');return}
+  if(D.kind==='chess'&&window.SQPVC)try{SQPVC.theirMoves(String(v.m||''))}catch(e){console.warn(e)}
   D.seen=true;const th=clean(v.i),tg=Math.max(0,Math.min(1e9,Math.floor(+v.g||0)));D.their={a:String(v.a||''),c:String(v.c||''),f:String(v.f||''),l:String(v.l||''),d:String(v.d||'')};
   if(D.st==='stake'||D.st==='confirm'){const k=JSON.stringify([th,tg]);if(D.lastTh&&k!==D.lastTh){const less=tg<D.tg||Object.keys(D.th).some(q=>(th[q]|0)<D.th[q]),was=D.their;if(less||D.my.a||D.st==='confirm')D.warnAt=performance.now();D.st='stake';if(D.my.a||D.my.c){D.my.a='';D.my.c='';push()}sfx('swish')}D.lastTh=k;D.th=th;D.tg=tg}
   step()}
@@ -15516,36 +15547,36 @@ window.SQA=SQA;
  function takeStake(k){for(const q in D.me)if((inv[q]|0)<D.me[q]){end('You no longer have everything you staked, so the duel was cancelled.');return}if(GLD<D.g){end('You no longer have that much gold.');return}
   for(const q in D.me)inv[q]=(inv[q]|0)-D.me[q];GLD-=D.g;D.esc={i:Object.assign({},D.me),g:D.g,th:Object.assign({},D.th),tg:D.tg};
   try{saveLocal(true)}catch(e){}try{saveCloud(true)}catch(e){}D.my.f=k;D.st='ready';D.readyAt=performance.now();push();if(pnOpen&&ptab===DTAB)closePanel();say('Stakes are in. Get ready!');step()}
- function countdown(){D.st='count';D.t0=performance.now();let n=3;bigSay('3');sfx('talk');const tick=()=>{if(D.st!=='count')return;n--;if(n>0){bigSay(String(n));sfx('talk');setTimeout(tick,800);return}
+ function countdown(){if(D.kind==='chess'){D.st='fight';D.t0=performance.now();D.away=0;guard(true);try{window.SQPVC&&SQPVC.begin()}catch(e){console.warn(e)}return}D.st='count';D.t0=performance.now();let n=3;bigSay('3');sfx('talk');const tick=()=>{if(D.st!=='count')return;n--;if(n>0){bigSay(String(n));sfx('talk');setTimeout(tick,800);return}
    D.st='fight';D.t0=performance.now();D.away=0;guard(true);bigSay('FIGHT!',1100);sfx('quest');try{mpLog('game','Duel with '+nameOf(D.foe)+': fight!')}catch(e){}};setTimeout(tick,800)}
  // ---- falling: you get back up where you fell; the duel is lost ----
  let hpv=0,guarded=false;
- function guard(onn){if(onn&&!guarded){hpv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hpv},set(v){if(D.st==='fight'&&v<=0){hpv=maxHp();lose('fell')}else hpv=v}});guarded=true}
+ function guard(onn){if(onn&&!guarded){hpv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hpv},set(v){if(D.kind==='chess'){if(v>hpv)hpv=v;return}if(D.st==='fight'&&v<=0){hpv=maxHp();lose('fell')}else hpv=v}});guarded=true}
   else if(!onn&&guarded){const v=hpv;delete P.hp;P.hp=v;guarded=false}}
  const maxHp=()=>6;// the game's health is out of 6
- function lose(why){if(D.st!=='fight')return;D.my.l=D.my.f;push();const n=nameOf(D.foe),lost=list(D.esc.i,D.esc.g);D.st='over';
+ function lose(why){if(D.st!=='fight')return;try{window.SQPVC&&SQPVC.over(why==='resign'?'You resigned.':'You lost.')}catch(e){}D.my.l=D.my.f;push();const n=nameOf(D.foe),lost=list(D.esc.i,D.esc.g);D.st='over';
   FLASH=.5;hurt=1.2;setTimeout(()=>guard(false),0);bigSay('DEFEAT',1500);try{sfx('hurt')}catch(e){}
-  const m=(why==='left'?'You left the duel, so '+n+' wins.':n+' won the duel.')+(lost?' You lost '+lost+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(e){}finishLater()}
- function win(why){if(D.st!=='fight')return;const e=D.esc;D.st='over';guard(false);
+  const m=(D.kind==='chess'?(why==='resign'?'You resigned. '+n+' wins the game.':why==='left'?'You left the game, so '+n+' wins.':why==='time'?'You ran out of time. '+n+' wins.':'Checkmate. '+n+' won the game.'):why==='left'?'You left the duel, so '+n+' wins.':n+' won the duel.')+(lost?' You lost '+lost+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(e){}finishLater()}
+ function win(why){if(D.st!=='fight')return;try{window.SQPVC&&SQPVC.over('You won!')}catch(e){}const e=D.esc;D.st='over';guard(false);
   for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];for(const k in e.th)inv[k]=(inv[k]|0)+e.th[k];GLD+=e.g+e.tg;try{saveLocal(true)}catch(x){}try{saveCloud(true)}catch(x){}
-  D.my.d=D.my.f;push();try{window.SQACH&&SQACH.add('duelw')}catch(x){}const got=list(e.th,e.tg);bigSay('VICTORY!',1600);sfx('quest');try{setTimeout(()=>sfx('coin'),200)}catch(x){}
-  const n=nameOf(D.foe),m=(why==='left'?n+' left the duel. You win!':why==='gone'?n+' went offline. You win!':'You beat '+n+'!')+(got?' You won '+got+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(x){}finishLater()}
- function draw3(){if(D.st!=='fight')return;const e=D.esc;D.st='over';guard(false);for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];GLD+=e.g;try{saveLocal(true)}catch(x){}
-  say('Time is up: the duel is a draw. Your stake is back in your bag.');msgT=5;bigSay('DRAW',1400);finishLater()}
+  D.my.d=D.my.f;push();try{if(D.kind==='duel'){window.SQACH&&SQACH.add('duelw');window.SQDUELWIN&&SQDUELWIN(D.foe)}else window.SQACH&&SQACH.add('chessw')}catch(x){}const got=list(e.th,e.tg);bigSay('VICTORY!',1600);sfx('quest');try{setTimeout(()=>sfx('coin'),200)}catch(x){}
+  const n=nameOf(D.foe),m=(D.kind==='chess'?(why==='mate'?'Checkmate! You beat '+n+'.':why==='resign'?n+' resigned. You win!':why==='time'?n+' ran out of time. You win!':why==='fell'?n+' resigned. You win!':why==='gone'?n+' went offline. You win!':n+' left the game. You win!'):why==='left'?n+' left the duel. You win!':why==='gone'?n+' went offline. You win!':'You beat '+n+'!')+(got?' You won '+got+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(x){}finishLater()}
+ function draw3(){if(D.st!=='fight')return;try{window.SQPVC&&SQPVC.over('Draw.')}catch(e){}const e=D.esc;D.st='over';guard(false);for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];GLD+=e.g;try{saveLocal(true)}catch(x){}
+  say(D.kind==='chess'?'The game is a draw'+(D.why?' ('+D.why+')':'')+'. Your stake is back in your bag.':'Time is up: the duel is a draw. Your stake is back in your bag.');msgT=5;bigSay('DRAW',1400);finishLater()}
  function finishLater(){const t=D.tid,u=me(),sn=D.s;setTimeout(()=>{if(on()&&!(D.tid===t&&D.s!==sn&&D.st!=='idle'))Fm().db.remove(ref('duels/'+t+'/'+u)).catch(()=>{})},8000);setTimeout(()=>end(null),300)}
  // anything ending before the fight gives your stake back
  function end(why){if(D.st==='idle')return;const was=D.st,t=D.tid;if(D.esc&&(was==='ready'||was==='count')){for(const k in D.esc.i)inv[k]=(inv[k]|0)+D.esc.i[k];GLD+=D.esc.g;try{saveLocal(true)}catch(e){}}
   if(was==='fight'){lose('left');return}
   if(D.unsub){D.unsub();D.unsub=null}if(was!=='over'&&on()&&t)Fm().db.remove(ref('duels/'+t+'/'+me())).catch(()=>{});
-  guard(false);D.st='idle';D.foe=null;D.tid='';D.esc=null;D.their=null;bar.style.display='none';
+  guard(false);try{window.SQPVC&&SQPVC.cancel()}catch(e){}D.st='idle';D.foe=null;D.mv=[];D.tid='';D.esc=null;D.their=null;bar.style.display='none';
   if(why){say(why);sfx('swish');try{mpLog('game',why)}catch(e){}}if(pnOpen&&ptab===DTAB)closePanel();draw()}
  const list=(o,g)=>{const a=Object.keys(o||{}).map(k=>o[k]+' × '+(INAME[k]||k).toLowerCase());if(g)a.push(g.toLocaleString('en-US')+' gold');return a.join(', ')};
  function side(o,g,them){let h='';for(const k in o)h+='<div class="tri"'+(them?'':' data-dl="rm" data-k="'+k+'"')+'><span>'+esc(INAME[k]||k)+'</span><i>×'+o[k]+'</i></div>';
   if(g)h+='<div class="tri trg"'+(them?'':' data-dl="g0"')+'><span>Gold</span><i>'+g.toLocaleString('en-US')+'</i></div>';if(!Object.keys(o).length&&!g)h+='<div style="opacity:.55;font-size:12px">Nothing (just for glory)</div>';return h}
  function stakeHTML(){const n=esc(nameOf(D.foe)),k=key(),t=D.their||{a:'',c:''};const warn=performance.now()-D.warnAt<6000?'<div class="trw">'+n+' changed their stake! Check it again.</div>':'';
-  if(D.st==='confirm'){return'<div class="tl">DUEL: ARE YOU SURE?</div>'+warn+'<div class="qc"><b>If you lose, you give '+n+':</b><p>'+esc(list(D.me,D.g)||'nothing')+'</p><b>If you win, you get:</b><p>'+esc(list(D.th,D.tg)||'nothing')+'</p><p style="font-size:12px;opacity:.8">The duel ends when one of you falls. You get back up where you fell. Leaving the area or going offline loses the duel.</p></div>'+
+  if(D.st==='confirm'){return'<div class="tl">'+(D.kind==='chess'?'CHESS':'DUEL')+': ARE YOU SURE?</div>'+warn+'<div class="qc"><b>If you lose, you give '+n+':</b><p>'+esc(list(D.me,D.g)||'nothing')+'</p><b>If you win, you get:</b><p>'+esc(list(D.th,D.tg)||'nothing')+'</p><p style="font-size:12px;opacity:.8">'+(D.kind==='chess'?'The game ends with checkmate, a resignation or a draw (a draw gives both stakes back). Going offline or taking more than 3 minutes for a move loses the game. Chess against players gives no Tactics XP.':'The duel ends when one of you falls. You get back up where you fell. Leaving the area or going offline loses the duel.')+'</p></div>'+
    '<div class="trst">'+(D.my.c===k?'Waiting for '+n+'…':t.c===k?n+' is ready. Your turn.':'Check the stakes, then accept.')+'</div><div class="tra"><button class="y'+(D.my.c===k?' on':'')+'" data-dl="ok2">'+(D.my.c===k?'ACCEPTED':'ACCEPT')+'</button><button class="n" data-dl="no">DECLINE</button></div>'}
-  let h='<div class="tl">DUEL WITH '+n.toUpperCase()+'</div>'+warn+'<div class="trc"><div class="trs"><b>YOUR STAKE</b>'+side(D.me,D.g,false)+'</div><div class="trs them"><b>'+n.toUpperCase()+'\'S STAKE</b>'+side(D.th,D.tg,true)+'</div></div>';
+  let h='<div class="tl">'+(D.kind==='chess'?'CHESS':'DUEL')+' WITH '+n.toUpperCase()+'</div>'+warn+'<div class="trc"><div class="trs"><b>YOUR STAKE</b>'+side(D.me,D.g,false)+'</div><div class="trs them"><b>'+n.toUpperCase()+'\'S STAKE</b>'+side(D.th,D.tg,true)+'</div></div>';
   h+='<div class="trst">'+(D.my.a===k?'Waiting for '+n+'…':t.a===k?n+' has accepted. Your turn.':'The winner takes the loser\'s stake. Tap your stake to take things back.')+'</div>';
   h+='<div class="tra"><button class="y'+(D.my.a===k?' on':'')+'" data-dl="ok1">'+(D.my.a===k?'ACCEPTED':'ACCEPT')+'</button><button class="n" data-dl="no">DECLINE</button></div>';
   const left=GLD-D.g;h+='<div class="trh">GOLD (you have '+left.toLocaleString('en-US')+' left)</div><div class="trgb">';for(const v of[10,100,1000,10000])h+='<button data-dl="g" data-v="'+v+'"'+(left<v?' disabled style="opacity:.4"':'')+'>+'+v.toLocaleString('en-US')+'</button>';
@@ -15553,7 +15584,7 @@ window.SQA=SQA;
   const seen=new Set();let any=false;for(const q of BAG_ORDER().concat(INVK)){if(seen.has(q)||!INAME[q])continue;seen.add(q);const c=can(q);if(c<=0)continue;any=true;
    h+='<div class="trb"><span>'+esc(INAME[q])+' <i style="font-style:normal;opacity:.65">×'+c+'</i></span><button data-dl="add" data-k="'+q+'" data-v="1">+1</button>'+(c>5?'<button data-dl="add" data-k="'+q+'" data-v="5">+5</button>':'')+(c>1?'<button data-dl="add" data-k="'+q+'" data-v="all">All</button>':'')+'</div>'}
   if(!any)h+='<div style="opacity:.6;font-size:13px;padding:6px">Nothing left to stake.</div>';return h}
- function click(b){const a=b.dataset.dl,k=b.dataset.k;if(D.st==='idle')return;if(a==='no'){end('You declined the duel.');return}
+ function click(b){const a=b.dataset.dl,k=b.dataset.k;if(D.st==='idle')return;if(a==='no'){end('You declined the '+WHAT(D.kind)+'.');return}
   if(a==='ok1'){if(D.my.a===key())return;D.my.a=key();push();step();rPn();return}
   if(a==='ok2'){const kk=key();if(D.my.c===kk)return;for(const q in D.me)if((inv[q]|0)<D.me[q]){end('You no longer have everything you staked.');return}D.my.c=kk;push();step();return}
   if(D.st!=='stake')return;let ch=false;
@@ -15568,27 +15599,325 @@ window.SQA=SQA;
    if(ptab===MTAB){const b=e.target.closest('[data-pm]');if(!b||b.disabled)return;const a=b.dataset.pm,u=MU;
     if(a==='close'){closePanel();return}if(a==='trade'){closePanel();try{SQTRREQ(u)}catch(x){}return}
     if(a==='friend'){try{SQADDFRIEND(u);say(nameOf(u)+' is now on your friends list.')}catch(x){}setTimeout(draw,600);return}
-    if(a==='duel'){if(D.inbox[u]){closePanel();answer(u,true);return}ask(u);setTimeout(draw,300);return}return}
+    if(a==='party'){try{SQPARTY.invite(u)}catch(x){}setTimeout(draw,400);return}
+    if(a==='duel'||a==='chess'){if(D.inbox[u]&&D.inbox[u].k===a){closePanel();answer(u,true);return}ask(u,a);setTimeout(draw,300);return}return}
    return _oc(e)}}
- {const _cp=closePanel;closePanel=function(){const r=_cp.apply(this,arguments);if((D.st==='stake'||D.st==='confirm')&&ptab===DTAB)end('You declined the duel.');return r}}
+ {const _cp=closePanel;closePanel=function(){const r=_cp.apply(this,arguments);if((D.st==='stake'||D.st==='confirm')&&ptab===DTAB)end('You declined the '+WHAT(D.kind)+'.');return r}}
  // ---- watching: requests, the other player, the clock ----
  let started=false,reqOff=null;
  function start(){started=true;D.inbox={};const db=Fm().db;reqOff=db.onValue(ref('dreq/'+me()),s=>{const v=s.val()||{},old=D.inbox;D.inbox={};
-   for(const u in v){const q=v[u];if(!q||typeof q!=='object')continue;if(typeof q.t==='number'&&now()-q.t>60000){db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{});continue}D.inbox[u]={t:q.t,s:typeof q.s==='string'?q.s.slice(0,12):''}}
-   for(const u in D.inbox)if(!old[u]){if(D.sent[u]&&D.st==='idle'){answer(u,true);continue}try{mpLog('game',nameOf(u)+' challenges you to a duel! Tap DUEL, or tap their name.')}catch(e){}if(D.st==='idle')popShow(u);try{sfx('talk')}catch(e){}}
+   for(const u in v){const q=v[u];if(!q||typeof q!=='object')continue;if(q.k==='party'){try{window.SQPARTYINV&&SQPARTYINV(u,q)}catch(e){}continue}if(typeof q.t==='number'&&now()-q.t>60000){db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{});continue}D.inbox[u]={t:q.t,s:typeof q.s==='string'?q.s.slice(0,12):'',k:q.k==='chess'?'chess':'duel'}}
+   for(const u in D.inbox)if(!old[u]){if(D.sent[u]&&D.st==='idle'){answer(u,true);continue}try{mpLog('game',D.inbox[u].k==='chess'?nameOf(u)+' wants to play chess! Tap PLAY, or tap their name.':nameOf(u)+' challenges you to a duel! Tap DUEL, or tap their name.')}catch(e){}if(D.st==='idle')popShow(u);try{sfx('talk')}catch(e){}}
    if(popU&&!D.inbox[popU])popHide();draw()})}
- function stop(){started=false;if(reqOff){reqOff();reqOff=null}D.inbox={};popHide();if(D.st!=='idle')end('You went offline, so the duel was cancelled.')}
+ function stop(){started=false;if(reqOff){reqOff();reqOff=null}D.inbox={};popHide();if(D.st!=='idle')end('You went offline, so the '+WHAT(D.kind)+' was cancelled.')}
  const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{
    if(on()&&!started)start();else if(!on()&&started)stop();
-   if(D.st==='stake'||D.st==='confirm'){if(!(pnOpen&&ptab===DTAB))end('You declined the duel.');else if(D.foe&&!near(D.foe)){const r=Mp().players.get(D.foe);if(!r||!liveR(r))end(nameOf(D.foe)+' went offline.');else if(Math.hypot(r.tx-P.x,r.ty-P.y)>NEAR*2.5||r.loc!==mpLoc())end(nameOf(D.foe)+' walked away, so the duel was cancelled.')}}
+   if(D.st==='stake'||D.st==='confirm'){if(!(pnOpen&&ptab===DTAB))end('You declined the '+WHAT(D.kind)+'.');else if(D.foe&&!near(D.foe)){const r=Mp().players.get(D.foe);if(!r||!liveR(r))end(nameOf(D.foe)+' went offline.');else if(Math.hypot(r.tx-P.x,r.ty-P.y)>NEAR*2.5||r.loc!==mpLoc())end(nameOf(D.foe)+' walked away, so the '+WHAT(D.kind)+' was cancelled.')}}
    if(D.st==='ready'&&performance.now()-D.readyAt>20000){end(nameOf(D.foe)+' did not get ready in time.')}
-   if(D.st==='fight'){const r=Mp().players.get(D.foe),left=Math.max(0,FIGHT-(performance.now()-D.t0)/1000);
+   if(D.st==='fight'&&D.kind==='chess'){const r=Mp().players.get(D.foe);bar.style.display='none';if(!r||!liveR(r)||performance.now()-r.seen>20000)win('gone');else try{window.SQPVC&&SQPVC.tick(dt)}catch(e){}}
+   else if(D.st==='fight'){const r=Mp().players.get(D.foe),left=Math.max(0,FIGHT-(performance.now()-D.t0)/1000);
     bar.style.display=pnOpen||menuOpen?'none':'block';bar.textContent='DUEL vs '+nameOf(D.foe)+' · '+Math.floor(left/60)+':'+String(Math.floor(left%60)).padStart(2,'0');
     if(left<=0)draw3();else if(dead)lose('fell');
     else{let L=null;try{L=mpLoc()}catch(e){}if(D.loc0===undefined)D.loc0=L;if(L!==D.loc0)lose('left');
      else if(!r||!liveR(r)||performance.now()-r.seen>20000)win('gone');else if(r.loc!==L){D.away+=dt;if(D.away>5)win('left')}else D.away=0}}
    else if(D.st!=='fight'){D.loc0=undefined}}catch(e){console.warn(e)}return out};
- window.SQDUELAPI={ask,answer,open,end,lose,win,menuOpenFor,key,get inbox(){return D.inbox}}})();
+ window.SQDUELAPI={ask,answer,open,end,lose,win,draw3,push,menuOpenFor,key,me:()=>me(),nameOf,get D(){return D},get inbox(){return D.inbox}}})();
+// ---- 136. Quality fixes: a steady TALK/USE button, small messages over your head, XP drops everywhere, no cooking on
+// castles, boats stay off bridges and piers, saves on the new open sea ----
+(()=>{
+ // ---- the TALK/USE button: many sections each write their word on it every frame (one says USE, the next says ROUTES),
+ // which rebuilt the button 60 times a second next to harbor posts, furnaces and the like (a visible flicker on phones,
+ // and a tap could land on a label that had just been replaced). During a frame the writes are only remembered; the
+ // last one is put on the button once, and only if it's different from what's there.
+ // Showing and hiding it flipped every frame too (one section hid it, the next showed it again), which on iPhones cancels a
+ // press that's under way. Browsers don't let a page catch those style writes, so the button's shown/hidden state is
+ // held by a class set once at the end of each frame from where the writes ended up; in between, the inline flips don't
+ // reach the screen. When the game isn't running frames (title screen), the classes come off and the button behaves as before.
+ {const D=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');let buf=null,inUpd=0,last=0;
+  {const st=document.createElement('style');st.textContent='#tk.sqtkon{display:flex!important}#tk.sqtkoff{display:none!important}';document.head.appendChild(st)}
+  Object.defineProperty(tk,'innerHTML',{configurable:true,get(){return inUpd&&buf!==null?buf:D.get.call(this)},set(v){if(inUpd)buf=String(v);else D.set.call(this,v)}});
+  const hold=()=>{const on=tk.style.display!=='none';tk.classList.toggle('sqtkon',on);tk.classList.toggle('sqtkoff',!on)};
+  const _u=upd;upd=function(){inUpd++;if(inUpd===1)buf=null;try{return _u.apply(this,arguments)}finally{inUpd--;
+   if(!inUpd){if(buf!==null){const v=buf;buf=null;if(D.get.call(tk)!==v)D.set.call(tk,v)}last=performance.now();hold()}}};
+  setInterval(()=>{if(performance.now()-last>200&&(tk.classList.contains('sqtkon')||tk.classList.contains('sqtkoff')))tk.classList.remove('sqtkon','sqtkoff')},100);
+  // something outside the frame (a panel closing, a menu) shows or hides it: follow at once
+  for(const f of['closePanel','showScreen'])try{const o=window[f];if(typeof o==='function')window[f]=function(){const out=o.apply(this,arguments);try{hold()}catch(e){}return out}}catch(e){}
+  window.SQTKBUF={get pending(){return buf}}}
+
+ // ---- routine messages (casting a line, a catch, a cooked fish, +1 log...) float over your head instead of opening the
+ // big text box; anything you need to read (people, signs, warnings, quests) still uses the box
+ const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |\+\d+ [a-z])/;
+ {const _s=say;say=function(s){const t=typeof s==='string'?s:'';
+   if(t&&t.length<=46&&QUIET.test(t)&&!pnOpen&&!menuOpen&&!dead){try{if(!drops.some(d=>d.tx===t&&d.t<.5))drops.push({x:P.x,y:P.y-30-(drops.length%2)*7,t:0,tx:t,c:'#ffffff'})}catch(e){}return}
+   return _s.apply(this,arguments)};window.SQQUIET=QUIET}
+
+ // ---- XP drops (and those little words) were only drawn on Hollow's own map: also in buildings, dungeons and on islands
+ {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}return out}}
+
+ // ---- a castle's warmth keeps monsters away and heals you, but cooking needs a real campfire
+ {const _nf=nearFire;nearFire=function(x,y,r){const v=_nf(x,y,r);if(!v||r!==45||x!==P.x||y!==P.y)return v;
+   if(SCENE&&!(SCENE.room&&SCENE.room.region))return v;return fires.some(f=>(f.life===undefined||f.life>0)&&Math.hypot(f.x-x,f.y-y)<45)}}
+
+ // ---- a boat can't ride up onto a bridge or a pier (they're built over the water, so the boat used to slide onto them
+ // and from there reach the land); a boat that starts on one can still sail off it
+ {const onB=(x,y)=>[[-6,-1],[6,-1],[-6,6],[6,6]].some(([a,b])=>{const tx=Math.floor((x+a)/16),ty=Math.floor((y+b)/16);return tx>=0&&ty>=0&&tx<N&&ty<N&&BRIDGE.has(ty*N+tx)});
+  const _u=upd;upd=function(dt){const s=SAILING&&!SCENE,ox=P.x,oy=P.y;const out=_u.apply(this,arguments);
+   if(s&&SAILING&&!SCENE&&(P.x!==ox||P.y!==oy)&&!onB(ox,oy)&&onB(P.x,P.y)){if(!onB(P.x,oy))P.y=oy;else if(!onB(ox,P.y))P.x=ox;else{P.x=ox;P.y=oy}}return out}}
+
+ // ---- Hollow Island now has open sea all around its edge: things built where the land became sea go back in your bag
+ {const bad=i=>i<0||i>=N*N||tile[i]===0;const add=(S,k,n)=>{if(!S.inv||typeof S.inv!=='object')S.inv={};S.inv[k]=(+S.inv[k]||0)+n};
+  const items=(S,o)=>{if(o&&typeof o==='object')for(const k in o){const n=Math.max(0,+o[k]||0);if(n)add(S,k,n)}};let PACKED=null;
+  const _ap=applySave;applySave=function(S){PACKED=null;try{if(S&&typeof S==='object'){const inH=!S.region||!S.region.id||S.region.id==='hollow',pk=[];
+     if(Array.isArray(S.str))S.str=S.str.filter(e=>{if(!Array.isArray(e)||!bad(e[0]|0))return true;if(BRIDGE.has(e[0]|0))return true;add(S,e[1],1);items(S,e[2]);pk.push(INAME[e[1]]||e[1]);if(+S.bsp===(e[0]|0))S.bsp=-1;return false});
+     if(Array.isArray(S.houses))S.houses=S.houses.filter(h=>{if(!h||!isFinite(h.x)||!isFinite(h.y))return true;const w=h.w||5,hw=(w-1)/2;let ok=true;for(let dy=-1;dy<=0&&ok;dy++)for(let dx=-hw;dx<=hw;dx++)if(bad((h.y+dy)*N+h.x+dx)){ok=false;break}
+       if(ok)return true;add(S,h.c?'castle':'house',1);pk.push(h.c?'Castle':'House');if(Array.isArray(h.f))for(const q of h.f)if(Array.isArray(q)&&q[1]){add(S,q[1],1);items(S,q[2])}if(S.home===h.id)S.home=null;return false});
+     if(Array.isArray(S.farm))S.farm=S.farm.filter(e=>!Array.isArray(e)||!bad(e[0]|0));
+     if(inH&&S.p&&typeof S.p==='object'&&isFinite(S.p.x)&&isFinite(S.p.y)&&!S.sail&&bad(Math.floor(S.p.y/16)*N+Math.floor(S.p.x/16)))PACKED=PACKED||[];
+     if(pk.length)PACKED=pk}}catch(e){console.warn('sea edge',e)}
+   const out=_ap.apply(this,arguments);
+   try{if(PACKED&&!SCENE&&!SAILING){if(solid(P.x-5,P.y-3)||solid(P.x+5,P.y+6)){const tx=Math.floor(P.x/16),ty=Math.floor(P.y/16);let done=false;
+      for(let r=1;r<40&&!done;r++)for(let dy=-r;dy<=r&&!done;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const x=(tx+dx)*16+8,y=(ty+dy)*16+8;if(!solid(x-5,y-3)&&!solid(x+5,y+6)&&!solid(x,y)){P.x=x;P.y=y;done=true;break}}}
+     if(PACKED.length){const L=[...new Set(PACKED)];setTimeout(()=>{try{say('The sea has risen around the edge of Hollow Island. What you built out there is safe in your bag: '+L.join(', ')+'.');msgT=8;saveLocal(true)}catch(e){}},1500)}}}catch(e){}
+   return out}}
+
+})();
+// ---- 137. Houses on the maps: your houses and castles (gold, a brighter roof for the one you live in) and other players'
+// houses on Hollow (blue-grey) show on the map screen and on the HUD minimap; your island houses show on that island's map ----
+(()=>{const mineH=()=>{try{return HOUSES.filter(h=>!h._foreign)}catch(e){return[]}},theirs=()=>{try{return HOUSES.filter(h=>h._foreign)}catch(e){return[]}};
+ const isle=id=>{try{return(window.SQRH||[]).filter(h=>h.rg===id)}catch(e){return[]}};
+ const home=h=>{try{return typeof HOMESP!=='undefined'&&HOMESP===h.id}catch(e){return false}};
+ // a little house: roof and walls, s = size of one "pixel"
+ function glyph(x,cx,cy,s,roof,wall){x.fillStyle='#201810';x.fillRect(cx-3*s,cy-3*s,6*s,6*s);x.fillStyle=roof;x.fillRect(cx-2*s,cy-2*s,4*s,2*s);x.fillStyle=wall;x.fillRect(cx-2*s,cy,4*s,2*s);x.fillStyle='#201810';x.fillRect(cx-s/2,cy+s,s,s)}
+ const draw=(x,list,aw,s,toX,toY)=>{for(const[h,own]of list){const hm=own&&home(h);glyph(x,toX(h.x+.5),toY(h.y),s,own?(hm?'#f8e050':'#d8a030'):'#7890b0',own?'#f8f0d8':'#c8d0e0')}};
+ const _dm=drawMap;drawMap=function(){const out=_dm.apply(this,arguments);try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return out;const c=document.getElementById('mpc');if(!c)return out;
+   const R=SCENE&&SCENE.room,area=R&&R.region?R.region:(SCENE?null:'hollow');if(!area)return out;const x=c.getContext('2d'),aw=c.width,s=Math.max(1,Math.round(aw/110));
+   const L=area==='hollow'?theirs().map(h=>[h,false]).concat(mineH().map(h=>[h,true])):isle(area).map(h=>[h,true]);draw(x,L,aw,s,v=>v,v=>v)}catch(e){}return out};
+ {const _mh=mapHTML;mapHTML=function(){const h=_mh.apply(this,arguments);return h.replace('<div class="lg">','<div class="lg"><span><i style="background:#d8a030"></i>Your house</span>'+(theirs().length?'<span><i style="background:#7890b0"></i>Other players\' houses</span>':''))}}
+ // the HUD minimap
+ if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{const t=miniTarget();if(!t)return out;
+   const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U,s=Math.max(1,U*.7);g.save();g.setTransform(1,0,0,1,0,0);
+   const list=t.k==='region'?isle(t.R.region).map(h=>[h,true]):mineH().map(h=>[h,true]);draw(g,list,t.w,s,v=>x0+v/t.w*w,v=>y0+v/t.h*hh);g.restore()}catch(e){}return out}}
+ window.SQHOUSEMAP={glyph}})();
+// ---- 138. Smith your own tools, and sell anything you craft ----
+// The anvil now forges iron and steel axes and pickaxes (they go in your bag; equip them like any tool). The fishing rod
+// is in the Craft menu (section 4). Everything you can build or craft has a price at the general store: pieces with no
+// price of their own are worth a share of what went into them.
+(()=>{
+ SM.push({k:'eq_axe3',n:'Iron axe',c:{ibar:2,wood:1},lv:5,xp:60},{k:'eq_pick3',n:'Iron pickaxe',c:{ibar:2,wood:1},lv:5,xp:60},
+  {k:'eq_axe4',n:'Steel axe',c:{sbar:2,wood:1},lv:25,xp:140},{k:'eq_pick4',n:'Steel pickaxe',c:{sbar:2,wood:1},lv:25,xp:140});
+ const worth=c=>{let v=0;for(const k in c)v+=(SELLP[k]|0)*c[k];return Math.max(1,Math.round(v*.6))};
+ const price=()=>{for(const r of[...BREC,...GOODS,...SM])try{const k=r.k;if(k&&INAME[k]&&!(SELLP[k]>0))SELLP[k]=worth(r.c||{})}catch(e){}};
+ price();setTimeout(price,0);window.SQCRAFTPRICE=price})();
+// ---- 139. Chess: against other players (with stakes), Opening Moves as Orla's own side quest, no damage at the board ----
+// Player chess runs through the duel machinery in section 135 (kind 'chess'): ask from the player menu, stake items and
+// gold, accept twice, then play. The challenger's side record carries the moves (duels/<a_b>/<uid>.m, "from.to" square
+// numbers, space separated); each game applies the other side's new moves only if they are legal. The player whose id
+// comes first in the pair plays white. A move may take 3 minutes at most; going offline for 20 s loses; checkmate, a
+// resignation or a draw (stalemate, bare kings, 50 moves, 300 plies) ends it. Games against players give no Tactics XP.
+// Opening Moves left Elder Rowan's chain (saves: qv 11, older saves converted by quest name) and is Orla's side quest.
+(()=>{
+ // ---- Opening Moves: from the main chain to Orla ----
+ const QOLD10=QS.map(q=>q.n);{const i=QS.findIndex(q=>q.n==='Opening Moves');if(i>=0)QS.splice(i,1)}
+ const OM={n:'Opening Moves',d:'Beat Grandmaster Orla at chess once, on any difficulty. She plays at the table in the village square.',r:{g:100,xp:[7,300]}};
+ const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.qv=11;return s};
+ const _ap=applySave;applySave=function(S){const v=S&&S.q?(S.qv|0):11,raw=S&&Array.isArray(S.qdone)?S.qdone.slice():[],sq=S&&S.q?{...S.q}:null;
+  const out=_ap.apply(this,arguments);
+  try{if(sq&&v<11){const i=Math.max(0,+sq.i||0);let done=raw.includes(OM.n),cur=null;
+    const list=v===10?QOLD10:v===9&&window.SQCH2?SQCH2.QOLD9:null;
+    if(list){const oi=list.indexOf(OM.n);if(oi>=0){if(i>oi)done=true;else if(i===oi&&sq.on)cur={k:Math.max(0,+sq.k||0)}}}
+    else{if(i>3)done=true;else if(i===3&&sq.on)cur={k:Math.max(0,+sq.k||0)}}
+    CHS.om=done?3:cur?(cur.k>=1?2:1):0;
+    if(v===10){// the saved index points into the old order: go by names
+     for(const n of QOLD10.slice(0,Math.min(i,QOLD10.length)))if(QS.some(q=>q.n===n))QDONE.add(n);
+     const name=QOLD10[i];QHOLD=sq.on&&name&&name!==OM.n?{n:name,on:true,k:Math.max(0,+sq.k||0)}:null;Q.i=0;Q.on=false;Q.k=0;qSkip();if(QHOLD&&QS[Q.i]&&QS[Q.i].n!==QHOLD.n){Q.on=false;Q.k=0}QHOLD=null;
+     Q.i=Math.max(0,Math.min(QS.length,Q.i))}}}catch(e){console.warn('opening moves',e)}
+  return out};
+ // a win counts for it
+ {const _ec=endChess;endChess=function(res,why){const out=_ec.apply(this,arguments);try{if(res==='w'&&(CHS.om|0)===1){CHS.om=2;chst.textContent+=' Opening Moves done: tell Orla!';saveLocal(true)}}catch(e){}return out}}
+ // Orla's card
+ function omCard(){const s=CHS.om|0;if(s>=3)return'<div class="qc" style="margin-top:8px"><b>✓ Opening Moves</b><p>"You have a feel for the game. Come back any time."</p></div>';
+  let h='<div class="qc" style="margin-top:8px"><b>'+(s?'▶ ':'! ')+'Opening Moves</b><p>'+esc(OM.d)+'</p><p class="qr">Reward: 100 gold · 300 Tactics XP</p>';
+  h+=s===0?'<button class="qb om139" data-o="acc">Accept quest</button>':s===1?'<p>Progress: 0 / 1 wins</p>':'<p>Progress: 1 / 1 wins</p><button class="qb om139" data-o="done">Hand in</button>';return h+'</div>'}
+ {const _cl=chessLobby;chessLobby=function(){const h=_cl.apply(this,arguments),i=h.indexOf('<button class="cg');return i<0?h+omCard():h.slice(0,i)+omCard()+h.slice(i)}}
+ {const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.om139');if(b){const a=b.dataset.o;
+   if(a==='acc'&&!(CHS.om|0)){CHS.om=1;say('Quest started: Opening Moves');sfx('quest')}
+   else if(a==='done'&&(CHS.om|0)===2){CHS.om=3;GLD+=OM.r.g;addXp(OM.r.xp[0],OM.r.xp[1]);say('Quest complete: Opening Moves! "Well played. You will be a fine player."');msgT=5;sfx('quest')}
+   try{saveLocal(true)}catch(x){}rPn();return}return _oc(e)}}
+ // in the quest log
+ const ORLA={area:'hollow',x:(TBX-2)*16+8,y:(TBY+1)*16+8};
+ (window.SQQEXTRA=window.SQQEXTRA||[]).push(()=>{const s=CHS.om|0,e={id:'c:om',cat:'Grandmaster Orla',area:'hollow',name:OM.n,rew:'100 gold · 300 Tactics XP',at:ORLA};
+  if(s>=3)return[{...e,st:'done'}];return[{...e,desc:OM.d,st:s?'active':'avail',step:s===0?'Talk to Grandmaster Orla in the village square':s===1?'Win a game of chess against Orla':'Return to Grandmaster Orla',prog:s?(s>=2?'1':'0')+'/1':'',ready:s===2,kind:'side'}]});
+
+ // ---- no damage while you sit at a chess board (Orla's or another player's) ----
+ {let held=false,hv=0;const want=()=>!!(chessOpen||PV.open);
+  const _u=upd;upd=function(dt){const w=want();if(PV.open)pnOpen=true;if(w&&!held){const d=Object.getOwnPropertyDescriptor(P,'hp');if(!d||!d.get){hv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hv},set(v){if(v>hv)hv=v}});held=true}}
+   else if(!w&&held){const v=hv;delete P.hp;P.hp=v;held=false}return _u.apply(this,arguments)}}
+
+ // ---- chess against another player ----
+ const PV={open:false,st:null,white:true,sel:-1,moves:[],last:null,at:0,over:false};
+ const A=()=>window.SQDUELAPI,DD=()=>A()&&A().D;
+ const css=document.createElement('style');css.textContent='#pvc{position:fixed;inset:0;z-index:26;display:none;background:rgba(10,14,28,.97);color:#f4f0d8;font-family:"SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace;overflow:auto;touch-action:manipulation;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 20px)}#pvc .cw{max-width:480px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:8px}#pvc .ct2{font-weight:700;color:#f8d848;letter-spacing:1px;text-align:center}#pvc .who{font-size:13px;opacity:.85}#pvc_pvb{position:static;inset:auto;flex:none;width:min(92vw,58vh,480px);height:min(92vw,58vh,480px);image-rendering:pixelated;border:3px solid #f4f0d8;border-radius:4px;touch-action:none;cursor:pointer}#pvc_pvst{min-height:2.8em;text-align:center;font-size:14px;line-height:1.4}#pvc .bt{display:flex;gap:10px}#pvc .bt button{padding:10px 18px;border-radius:8px;border:2px solid #f4f0d8;background:#223;color:#f4f0d8;font:700 14px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace;cursor:pointer}';document.head.appendChild(css);
+ const el=document.createElement('div');el.id='pvc';el.innerHTML='<div class="cw"><div class="ct2" id="pvc_pvt"></div><div class="who" id="pvc_pvw1"></div><canvas id="pvc_pvb" width="128" height="128"></canvas><div class="who" id="pvc_pvw2"></div><div id="pvc_pvst"></div><div class="bt"><button id="pvc_pvr">Resign</button><button id="pvc_pvl">Leave</button></div></div>';document.body.appendChild(el);
+ for(const ev of['touchstart','pointerdown','mousedown'])el.addEventListener(ev,e=>e.stopPropagation());
+ const cv=document.getElementById('pvc_pvb'),c2=cv.getContext('2d'),stx=document.getElementById('pvc_pvst');
+ const enc=m=>m.f+'.'+m.t,mine=()=>PV.st&&(PV.st.turn==='w')===PV.white;
+ const view=i=>PV.white?i:63-i;// board square under view cell i
+ function drawB(){if(!PV.st)return;c2.imageSmoothingEnabled=false;const S=PV.st;
+  for(let v=0;v<64;v++){const r=v>>3,c=v&7;c2.fillStyle=(r+c)%2?'#a87850':'#f0dcb0';c2.fillRect(c*16,r*16,16,16)}
+  const at=(sq,col)=>{const v=view(sq);c2.fillStyle=col;c2.fillRect((v&7)*16,(v>>3)*16,16,16)};
+  if(PV.last){at(PV.last.f,'rgba(248,216,72,.35)');at(PV.last.t,'rgba(248,216,72,.35)')}
+  if(PV.sel>=0)at(PV.sel,'rgba(120,200,255,.5)');
+  if(!PV.over&&CE.inCheck(S,S.turn))at(S.b.indexOf(S.turn==='w'?'K':'k'),'rgba(232,48,48,.6)');
+  for(let i=0;i<64;i++){const p=S.b[i];if(p!=='.'){const v=view(i);c2.drawImage(PSP[p],(v&7)*16+2,(v>>3)*16+2)}}
+  for(const m of PV.moves){const v=view(m.t),x=(v&7)*16,y=(v>>3)*16;c2.fillStyle='rgba(40,40,60,.55)';if(m.cap!=='.'){c2.fillRect(x,y,16,2);c2.fillRect(x,y+14,16,2);c2.fillRect(x,y,2,16);c2.fillRect(x+14,y,2,16)}else c2.fillRect(x+6,y+6,4,4)}}
+ const LIMIT=180;
+ function status(){if(PV.over)return;const left=Math.max(0,Math.ceil(LIMIT-(performance.now()-PV.at)/1000)),t=Math.floor(left/60)+':'+String(left%60).padStart(2,'0'),D=DD(),n=D?A().nameOf(D.foe):'They';
+  stx.textContent=(mine()?(CE.inCheck(PV.st,PV.st.turn)?'Check! ':'')+'Your move ('+t+' left).':n+' is thinking... ('+t+')')}
+ function ui(){document.getElementById('pvc_pvr').style.display=PV.over?'none':'';document.getElementById('pvc_pvl').style.display=PV.over?'':'none';drawB()}
+ function apply(m,fromMe){const cap=m.cap!=='.';PV.st=CE.make(PV.st,m);PV.last=m;PV.sel=-1;PV.moves=[];PV.at=performance.now();try{sfx(cap?'hit':'talk')}catch(e){}
+  if(fromMe){const D=DD();D.mv.push(enc(m));A().push()}checkEnd()}
+ function checkEnd(){const s=CE.status(PV.st);if(!s&&PV.st.ply<300){status();ui();return}const D=DD();
+  if(s==='mate'){const loser=PV.st.turn==='w'?'white':'black';if((loser==='white')===PV.white)A().lose('mate');else A().win('mate');return}
+  D.why=s==='stalemate'?'stalemate':s==='material'?'not enough pieces to mate':s==='draw50'?'50-move rule':'move limit';A().draw3()}
+ window.SQPVC={
+  get open(){return PV.open},
+  begin(){const D=DD();if(!D)return;PV.white=D.tid.split('_')[0]===A().me();PV.st=CE.start();PV.sel=-1;PV.moves=[];PV.last=null;PV.over=false;PV.at=performance.now();
+   for(const s of D.mv){const[f,t]=s.split('.').map(Number),m=CE.legal(PV.st).find(x=>x.f===f&&x.t===t);if(m){PV.st=CE.make(PV.st,m);PV.last=m}}
+   const n=A().nameOf(D.foe);document.getElementById('pvc_pvt').textContent='CHESS vs '+n.toUpperCase();
+   document.getElementById('pvc_pvw1').textContent=n+' plays '+(PV.white?'black':'white');document.getElementById('pvc_pvw2').textContent='You play '+(PV.white?'white':'black')+(D.esc&&(Object.keys(D.esc.th).length||D.esc.tg)?' · the winner takes both stakes':'');
+   PV.open=true;try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){}pnOpen=true;jx=jy=0;pn.style.display='none';el.style.display='block';sfx('quest');status();ui()},
+  theirMoves(str){const D=DD();if(!D||!PV.open||PV.over)return;const L=str?str.split(' ').filter(Boolean):[];if(L.length<=D.mv.length)return;
+   for(let i=0;i<D.mv.length;i++)if(L[i]!==D.mv[i])return;// not the same game: ignore
+   for(const s of L.slice(D.mv.length)){if(mine())return;const[f,t]=s.split('.').map(Number),m=CE.legal(PV.st).find(x=>x.f===f&&x.t===t);if(!m)return;D.mv.push(s);apply(m,false);if(PV.over)return}},
+  tick(){if(!PV.open||PV.over)return;const el2=(performance.now()-PV.at)/1000;if(mine()&&el2>LIMIT)A().lose('time');else if(!mine()&&el2>LIMIT+10)A().win('time');else status()},
+  over(t){if(!PV.open)return;PV.over=true;PV.sel=-1;PV.moves=[];stx.textContent=t;ui()},
+  cancel(){if(PV.open&&!PV.over){stx.textContent='The game was cancelled.';window.SQPVC.close()}},
+  close(){if(!PV.open)return;PV.open=false;PV.st=null;el.style.display='none';pnOpen=false;try{closePanel()}catch(e){}}};
+ cv.addEventListener('pointerdown',e=>{e.preventDefault();if(!PV.open||PV.over||!mine())return;const r=cv.getBoundingClientRect(),c=Math.floor((e.clientX-r.left)/r.width*8),rw=Math.floor((e.clientY-r.top)/r.height*8);
+  if(c<0||c>7||rw<0||rw>7)return;const sq=view(rw*8+c),mv=PV.moves.find(m=>m.t===sq);if(mv){apply(mv,true);return}
+  const p=PV.st.b[sq];if(p!=='.'&&CE.isW(p)===PV.white){PV.sel=sq;PV.moves=CE.legal(PV.st).filter(m=>m.f===sq);try{sfx('talk')}catch(x){}}else{PV.sel=-1;PV.moves=[]}drawB()});
+ document.getElementById('pvc_pvr').onclick=()=>{if(PV.open&&!PV.over)A().lose('resign')};
+ document.getElementById('pvc_pvl').onclick=()=>{window.SQPVC.close()};
+ window.SQPVCSTATE=PV})();
+// ---- 140. Leaderboard counts ----
+// Monsters slain: falling used to reset your kill count to 0 (the respawn reset everything), so the Monsters board
+// dropped every time you died; now it only starts from 0 on a new character. PvP kills: a duel you win counts as one.
+// Quests: every quest you've finished counts, not only Elder Rowan's (village quests, voyages and Orla's too).
+(()=>{
+ {const _rs=reset;reset=function(){const keep=kills,fresh=typeof NEWG!=='undefined'&&NEWG;const out=_rs.apply(this,arguments);if(!fresh&&typeof keep==='number'&&keep>kills){kills=keep;try{lastK=kills}catch(e){}}return out}}
+ window.SQDUELWIN=u=>{try{if(window.SQLB){SQLB.pk=(SQLB.pk|0)+1;SQLB.pubAt=-1e9;saveLocal(true)}}catch(e){}};
+ window.SQQPTOTAL=()=>{let n=0;try{QS.forEach((q,i)=>{if(i<Q.i||(typeof QDONE!=='undefined'&&QDONE.has(q.n)))n++})}catch(e){}
+  try{for(const t in SIDE_QS){const s=SQ_SIDE[t],L=SIDE_QS[t];if(s&&L)n+=s.completed?L.length:Math.min(L.length,s.index|0)}}catch(e){}
+  try{const V=VQ();for(const q of VOYS)if(V[q.id]===99)n++}catch(e){}
+  try{if((CHS.om|0)>=3)n++}catch(e){}
+  return Math.max(n,(Q&&+Q.qp)||0)}})();
+// ---- 141. Emotes and parties ----
+// Emotes: START > Emotes (or /wave, /bow, /dance, /cheer, /laugh, /love, /yes, /no in chat; G on a keyboard opens the list)
+// show a bubble over your head for 3 s, with a little burst of hearts, notes or confetti. Other players see it too: the
+// emote travels in your multiplayer position as em = "<kind>:<number>" (061 reads r.em).
+// Parties: up to 4 players. Invite from the player menu (tap someone's name); they get a JOIN pop-up. The invite goes
+// through dreq/<to>/<from> with k:'party' and s = the party id (section 135 hands those to SQPARTYINV). Each member
+// shows their party id in their position (pt), so a party is everyone online with the same pt. Members see each other
+// on the map and the minimap (green), get a party list on the HUD with health, a ★ over each other's heads, +10% XP
+// while a party member is close by (same area, within 20 steps), and "/p message" sends a message to the party.
+// START > Party lists the members and has LEAVE PARTY. The party id is kept on the device for 2 hours.
+(()=>{const Mp=()=>window.SQMP,Fm=()=>window.SQFB,on=()=>!!(Mp()&&Mp().on&&Mp().user&&Fm()),me=()=>Mp().user.uid,ref=p=>Fm().db.ref(Fm().D,p);
+ const live=r=>!!r&&performance.now()-r.seen<20000;
+ const LSG=k=>{try{return localStorage.getItem(k)}catch(e){return null}},LSS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
+ // ======== emotes ========
+ const EM={wave:{n:'Wave',ic:'👋',fx:null},bow:{n:'Bow',ic:'🙇',fx:null},dance:{n:'Dance',ic:'💃',fx:'note'},cheer:{n:'Cheer',ic:'🎉',fx:'conf'},laugh:{n:'Laugh',ic:'😂',fx:null},love:{n:'Love',ic:'❤️',fx:'heart'},yes:{n:'Yes',ic:'👍',fx:null},no:{n:'No',ic:'👎',fx:null},think:{n:'Hmm',ic:'🤔',fx:null},sleep:{n:'Sleepy',ic:'💤',fx:null}};
+ const DUR=3;let MINE=null,SEQ=0;// {k, at}
+ function emote(k){if(!EM[k]||dead)return false;MINE={k,at:performance.now()};SEQ++;try{sfx('talk')}catch(e){}return true}
+ // a bubble with the emote over someone's head; hop for dance and cheer
+ function bubble(x,y,k,t){const E=EM[k];if(!E)return;const a=Math.min(1,(DUR-t)/.4,t/.15),bob=E.fx==='note'||E.fx==='conf'?Math.abs(Math.sin(t*9))*3:0;g.save();g.globalAlpha=Math.max(0,a);
+  const bx=Math.round(x),by=Math.round(y-40-bob);g.fillStyle='#f8f8f8';g.strokeStyle='#283048';g.lineWidth=1.5;g.beginPath();g.roundRect(bx-9,by-9,18,16,4);g.fill();g.stroke();
+  g.beginPath();g.moveTo(bx-2,by+7);g.lineTo(bx,by+11);g.lineTo(bx+2,by+7);g.fill();g.font='11px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(E.ic,bx,by);
+  if(E.fx){const n=5;for(let i=0;i<n;i++){const u=((t*0.9+i/n)%1),px=bx+Math.sin(i*2.1+t*3)*12,py=by-4-u*22;g.globalAlpha=Math.max(0,a*(1-u));
+    if(E.fx==='heart'){g.fillStyle='#f04870';g.fillRect(px-2,py,2,2);g.fillRect(px,py,2,2);g.fillRect(px-1,py+2,2,1)}else if(E.fx==='note'){g.fillStyle='#5868d8';g.fillRect(px,py-3,1,4);g.fillRect(px-2,py,2,2)}else{g.fillStyle=['#f8d048','#48c8f8','#f86878','#78e070'][i%4];g.fillRect(px,py,2,2)}}}
+  g.restore()}
+ window.SQEMOTE={emote,list:EM,pres(){return MINE&&performance.now()-MINE.at<DUR*1000?MINE.k+':'+SEQ:''},get mine(){return MINE}};
+ // you: drawn with you (the outermost pP runs in world space at your feet)
+ {const _pp=pP;pP=function(tm){const out=_pp.apply(this,arguments);try{if(MINE){const t=(performance.now()-MINE.at)/1000;if(t>DUR)MINE=null;else bubble(P.x,P.y,MINE.k,t)}}catch(e){}return out}}
+ // the others
+ (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r)return;const em=r.em||'';if(em!==(r._em||'')){r._em=em;if(em){const k=em.split(':')[0];if(EM[k]){r._emK=k;r._emAt=performance.now()}}}
+  if(r._emK){const t=(performance.now()-r._emAt)/1000;if(t>DUR)r._emK=null;else bubble(r.x,r.y,r._emK,t)}
+  if(PT.id&&r.pt===PT.id){g.save();g.fillStyle='#58e070';g.strokeStyle='#183818';g.lineWidth=1;g.font='700 7px '+PF;g.textAlign='center';g.strokeText('★',Math.round(r.x),Math.round(r.y-33));g.fillText('★',Math.round(r.x),Math.round(r.y-33));g.restore()}});
+ // ======== parties ========
+ const MAX=4;const PT={id:'',sent:{},inv:null};
+ {const s=LSG('sq_party');if(s){try{const o=JSON.parse(s);if(o&&typeof o.id==='string'&&Date.now()-o.at<7200000)PT.id=o.id.slice(0,12)}catch(e){}}}
+ const keep=()=>LSS('sq_party',PT.id?JSON.stringify({id:PT.id,at:Date.now()}):null);
+ const others=()=>{const L=[];if(!PT.id||!on())return L;for(const r of Mp().players.values())if(live(r)&&r.pt===PT.id&&r.uid!==me())L.push(r);return L};
+ const nameOf=u=>{const r=Mp()&&Mp().players.get(u);return(r&&r.n)||'Player'};
+ function invite(u){if(!on()){say('Sign in to make a party.');return}if(others().some(r=>r.uid===u)){say(nameOf(u)+' is already in your party.');return}
+  if(others().length>=MAX-1){say('Your party is full (4 players).');sfx('swish');return}if(PT.sent[u]&&performance.now()-PT.sent[u]<60000)return;
+  if(!PT.id){PT.id=Math.random().toString(36).slice(2,12);keep()}PT.sent[u]=performance.now();const db=Fm().db;
+  db.set(ref('dreq/'+u+'/'+me()),{n:String(pname()).slice(0,12),s:PT.id,k:'party',t:db.serverTimestamp()}).then(()=>{say('You invited '+nameOf(u)+' to your party.');try{mpLog('game','You invited '+nameOf(u)+' to your party.')}catch(e){}})
+   .catch(e=>{delete PT.sent[u];say(/permission/i.test(String(e&&(e.code||e.message)))?'Parties need the latest database rules.':'Could not send the invite.')})}
+ function join(id,from){const n=nameOf(from);const cnt=[...Mp().players.values()].filter(r=>live(r)&&r.pt===id&&r.uid!==me()).length;if(cnt>=MAX){say(n+'\'s party is full.');sfx('swish');return}
+  PT.id=id;keep();say('You joined '+n+'\'s party!');try{mpLog('game','You joined '+n+'\'s party. Type /p to talk to your party.')}catch(e){}sfx('quest');if(pnOpen&&ptab===PTAB)rPn()}
+ function leave(){if(!PT.id)return;PT.id='';PT.sent={};keep();say('You left the party.');try{mpLog('game','You left the party.')}catch(e){}if(pnOpen&&ptab===PTAB)rPn()}
+ window.SQPARTY={get id(){return PT.id},members:others,invite,leave,join,has:u=>others().some(r=>r.uid===u),invited:u=>!!(PT.sent[u]&&performance.now()-PT.sent[u]<60000)&&!others().some(r=>r.uid===u)};
+ // the invite pop-up
+ {const st=document.createElement('style');st.textContent=`#ptpop{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 104px);z-index:31;display:none;align-items:center;gap:8px;padding:8px 10px;max-width:calc(100vw - 24px);box-sizing:border-box;font:600 14px ${PF};background:#f8f0d8;color:#404040;border:4px solid #485870;box-shadow:inset 0 0 0 2px #a8c0e0}
+#ptpop span{flex:1;min-width:0}#ptpop button{font:700 13px ${PF};padding:7px 12px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#ptpop .ok{background:#38a050;border-color:#185828;color:#fff}
+#pn .ptm{display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #d8e0f0;color:#404040}#pn .ptm b{display:block}#pn .ptm small{display:block;font-size:12px;opacity:.8}#pn .ptm .tx{flex:1;min-width:0}#pn .ptm .hb{width:70px;height:7px;background:#d0d8e8;border:2px solid #485870}#pn .ptm .hb i{display:block;height:100%;background:#48c878}
+#pn .emg{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:8px}#pn .emg button{font:700 13px ${PF};padding:10px 6px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#pn .emg button span{display:block;font-size:22px;margin-bottom:2px}`;document.head.appendChild(st)}
+ const pop=document.createElement('div');pop.id='ptpop';pop.innerHTML='<span></span><button class="ok">JOIN</button><button class="no">NO</button>';document.body.appendChild(pop);
+ for(const ev of['touchstart','pointerdown','mousedown'])pop.addEventListener(ev,e=>e.stopPropagation());
+ let popT=0;const hidePop=()=>{PT.inv=null;pop.style.display='none';clearTimeout(popT)};
+ window.SQPARTYINV=(u,q)=>{try{Fm().db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{})}catch(e){}if(typeof q.t==='number'&&Date.now()+((Mp()&&Mp().off)||0)-q.t>60000)return;const id=typeof q.s==='string'?q.s.slice(0,12):'';if(!id)return;
+  if(PT.id===id)return;PT.inv={u,id};pop.querySelector('span').textContent=nameOf(u)+' invites you to their party!';pop.style.display='flex';clearTimeout(popT);popT=setTimeout(hidePop,30000);try{sfx('talk')}catch(e){}
+  try{mpLog('game',nameOf(u)+' invites you to their party. Tap JOIN.')}catch(e){}};
+ pop.querySelector('.ok').onclick=()=>{const v=PT.inv;hidePop();if(v)join(v.id,v.u)};pop.querySelector('.no').onclick=hidePop;
+ // +10% XP with a party member close by
+ const near=()=>{let L=null;try{L=mpLoc()}catch(e){}return others().some(r=>r.loc===L&&Math.hypot(r.tx-P.x,r.ty-P.y)<=320)};
+ {const _ax=addXp;addXp=function(i,x){if(x>0&&PT.id)try{if(near())x=Math.max(x+(x>=5?1:0),Math.round(x*1.1))}catch(e){}return _ax.call(this,i,x)}}
+ // chat: /p to the party, emotes by name
+ {const _ms=mpSend;mpSend=function(t){const s=String(t||'').trim(),m=/^\/(\w+)\s*(.*)$/.exec(s);
+   if(m){const c=m[1].toLowerCase();if(EM[c]&&!m[2]){emote(c);return}
+    if(c==='p'||c==='party'){const msg=m[2].replace(/\s+/g,' ').trim().slice(0,72);if(!PT.id||!others().length){try{mpLog('game','You\'re not in a party. Tap a player\'s name to invite them.')}catch(e){}return}if(!msg)return;
+     const db=Fm().db;for(const r of others())db.push(ref('pm/'+r.uid),{f:me(),n:String(pname()).slice(0,12),m:'[Party] '+msg,t:db.serverTimestamp()}).catch(()=>{});try{mpLog('game','[Party] '+pname()+': '+msg)}catch(e){}return}}
+   return _ms.apply(this,arguments)}}
+ // ---- START > Party and START > Emotes ----
+ const PTAB=38,ETAB=39;
+ SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'party',l:()=>PT.id&&others().length?'Party ('+(others().length+1)+')':'Party'},{id:'emotes',l:()=>'Emotes'});
+ {const _ss=showScreen;showScreen=function(id){if(id==='party'||id==='emotes'){pnOpen=true;ptab=id==='party'?PTAB:ETAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk');return}return _ss.apply(this,arguments)}}
+ const areaName=r=>{try{const a=r.ar||'';if(!a)return'';const D=WORLD_REGIONS[a];return D?D.name:a}catch(e){return''}};
+ function partyHTML(){const L=others();let h='<div class="tl">PARTY</div>';
+  if(!on())return h+'<div class="qc"><p>Sign in to play online and make a party with friends.</p></div>';
+  if(!PT.id||!L.length)return h+'<div class="qc"><p>You\'re not in a party yet.</p><p>Walk up to a player, tap their name and choose <b>INVITE TO PARTY</b>. Up to 4 players.</p><p style="font-size:12px;opacity:.8">In a party you see each other on the map, get +10% XP when you\'re close together, and can talk with /p in chat.</p></div>'+(PT.id?'<button class="sb" data-pt="leave" style="width:100%;margin-top:8px">LEAVE PARTY</button>':'');
+  h+='<div class="ptm"><div class="tx"><b>'+esc(pname())+' (you)</b><small>'+esc(areaName({ar:curRegion()}))+'</small></div><div class="hb"><i style="width:'+Math.max(0,Math.min(100,P.hp/6*100))+'%"></i></div></div>';
+  for(const r of L)h+='<div class="ptm"><div class="tx"><b>'+esc(r.n)+'</b><small>'+esc(areaName(r)||'')+'</small></div><div class="hb"><i style="width:'+Math.max(0,Math.min(100,(r.hpv||0)/6*100))+'%"></i></div></div>';
+  return h+'<div class="qc" style="margin-top:8px;font-size:12px"><p>+10% XP while a party member is close by. Type <b>/p</b> and a message to talk to your party.</p></div><button class="sb" data-pt="leave" style="width:100%;margin-top:8px">LEAVE PARTY</button>'}
+ function emotesHTML(){let h='<div class="tl">EMOTES</div><div class="emg">';for(const k in EM)h+='<button data-em="'+k+'"><span>'+EM[k].ic+'</span>'+EM[k].n+'</button>';
+  return h+'</div><div class="qc" style="margin-top:10px;font-size:12px"><p>Everyone nearby sees it. In chat you can also type /'+Object.keys(EM).slice(0,4).join(', /')+' and so on.</p></div>'}
+ {const _r=rPn;rPn=function(){if(ptab===PTAB){try{panelChrome('')}catch(e){}pbd.innerHTML=partyHTML();return}if(ptab===ETAB){try{panelChrome('')}catch(e){}pbd.innerHTML=emotesHTML();return}return _r.apply(this,arguments)}}
+ {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab===PTAB){const b=e.target.closest('[data-pt]');if(b&&b.dataset.pt==='leave')leave();return}
+   if(ptab===ETAB){const b=e.target.closest('[data-em]');if(b){closePanel();emote(b.dataset.em)}return}return _oc(e)}}
+ // G opens the emotes (keyboard)
+ window.addEventListener('keydown',e=>{if(e.key!=='g'&&e.key!=='G')return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;if(pnOpen||menuOpen||dead||e.ctrlKey||e.metaKey||e.altKey)return;showScreen('emotes');e.preventDefault()});
+ // ---- the HUD: party members under the minimap ----
+ {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!PT.id)return out;const L=others().slice(0,3);if(!L.length)return out;const H=hudLayout(),U=H.U,w=H.dw,x0=H.dx;
+   let y=H.top+H.dh+46*U+w*.75+10*U;try{const t=miniTarget();if(t)y=H.top+H.dh+46*U+w*t.h/t.w+10*U}catch(e){}
+   g.save();g.setTransform(1,0,0,1,0,0);for(const r of L){g3box(x0,y,w,26*U,U,'#eef8e8');g.font='700 '+9*U+'px '+PF;g.textAlign='left';g.textBaseline='middle';g.fillStyle='#284028';g.fillText(fitText('★ '+r.n,w-12*U),x0+6*U,y+9*U);
+    const f=Math.max(0,Math.min(1,(r.hpv||0)/6));g.fillStyle='#485870';g.fillRect(x0+6*U,y+16*U,w-12*U,5*U);g.fillStyle=f>.5?'#48c878':f>.2?'#f8c030':'#f05030';g.fillRect(x0+7*U,y+17*U,(w-14*U)*f,3*U);y+=29*U}g.restore()}catch(e){}return out}}
+ // ---- the map and the minimap: party members in green ----
+ const inArea=(r,area)=>(r.ar||'')===area&&isFinite(r.ax)&&isFinite(r.ay);
+ {const _dm=drawMap;drawMap=function(){const out=_dm.apply(this,arguments);try{if(!PT.id||(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world'))return out;const c=document.getElementById('mpc');if(!c)return out;const area=curRegion(),x=c.getContext('2d'),s=Math.max(2,Math.round(c.width/70));
+   for(const r of others())if(inArea(r,area)){const tx=r.ax/16,ty=r.ay/16;x.fillStyle='#183818';x.fillRect(tx-s/2-1,ty-s/2-1,s+2,s+2);x.fillStyle='#58e070';x.fillRect(tx-s/2,ty-s/2,s,s)}}catch(e){}return out}}
+ if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{if(!PT.id)return out;const t=miniTarget();if(!t)return out;const area=t.k==='region'?t.R.region:'hollow';
+   const H=hudLayout(),U=H.U,w=H.dw,hh=w*t.h/t.w,x0=H.dx,y0=H.top+H.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
+   for(const r of others())if(inArea(r,area)){const px=x0+(r.ax/16)/t.w*w,py=y0+(r.ay/16)/t.h*hh;g.fillStyle='#183818';g.fillRect(px-2.5*U,py-2.5*U,5*U,5*U);g.fillStyle='#58e070';g.fillRect(px-1.8*U,py-1.8*U,3.6*U,3.6*U)}g.restore()}catch(e){}return out}}
+})();
+// ---- 142. A Discord button on the title screen ----
+// Opens the SkillQuest Discord invite in a new tab. tsMenu (061) rebuilds the title buttons now and then, so the button
+// is put back (after OPTIONS) whenever the list changes. No link set = no button.
+(()=>{const URL_='https://discord.gg/aatNxU9MNf';if(!/^https:\/\/(discord\.gg|discord\.com\/invite)\//.test(URL_))return;const tsMn=document.getElementById('tsmn');if(!tsMn)return;
+ {const st=document.createElement('style');st.textContent='#tsmn button[data-a="dc"]{background:#5865f2;color:#fff;border-color:#2c34a0}#tsmn button[data-a="dc"]:hover,#tsmn button[data-a="dc"].gpf{background:#4752c4}';document.head.appendChild(st)}
+ const add=()=>{if(tsMn.querySelector('[data-a="dc"]'))return;const o=tsMn.querySelector('[data-a="opt"]');if(!o)return;const b=document.createElement('button');b.dataset.a='dc';b.textContent='JOIN OUR DISCORD';o.after(b)};
+ new MutationObserver(add).observe(tsMn,{childList:true});add();
+ tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='dc'){try{sfx('talk')}catch(x){}window.open(URL_,'_blank','noopener')}});
+ window.SQDISCORD=URL_})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

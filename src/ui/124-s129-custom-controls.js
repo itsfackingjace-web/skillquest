@@ -14,7 +14,7 @@
  // ---------- keyboard & mouse ----------
  const KA=[['mvu','Move up','w'],['mvd','Move down','s'],['mvl','Move left','a'],['mvr','Move right','d'],['spr','Sprint (hold)','shift'],
   ['hit','Hit, chop, mine, fish',' '],['eat','Eat / cook','e'],['fire','Build a campfire','f'],['talk','Talk / use','t'],['roll','Dodge roll','r'],['ult','Wand ultimate','v'],
-  ['bag','Bag','b'],['map','Map','m'],['quests','Quests','q'],['skills','Skills','k'],['craft','Craft','c'],['card','Character','p'],['help','Show / hide the help box','h']];
+  ['bag','Bag','b'],['map','Map','m'],['quests','Quests','q'],['skills','Skills','k'],['craft','Craft','c'],['card','Character','p'],['help','Show / hide the help box','h'],['emote','Emotes','g']];
  const KDEF={};for(const[id,,k]of KA)KDEF[id]=k;
  let KB=Object.assign({},KDEF,LS('sq_keys')||{}),REV={},MOVED=new Set();
  function rebuild(){REV={};for(const id in KDEF)REV[KB[id]]=KDEF[id];MOVED=new Set();for(const id in KDEF)if(KB[id]!==KDEF[id]&&!(KDEF[id]in REV))MOVED.add(KDEF[id])}rebuild();

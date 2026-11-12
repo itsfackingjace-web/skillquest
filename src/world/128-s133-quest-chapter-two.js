@@ -20,7 +20,7 @@
  // The Road East: right after Gone Fishing
  {const i=QS.findIndex(q=>q.n==='The Road East'),j=QS.findIndex(q=>q.n==='Gone Fishing');if(i>=0&&j>=0&&i>j+1){const[q]=QS.splice(i,1);QS.splice(j+1,0,q)}}
  const CH2=[
-  {n:'Beyond the Horizon',d:'"Captains in Tidewatch talk of an island past the western reef." Take on the Western Route voyage at the Tidewatch harbor post and sail to Briarwood Isle.',type:'visit',item:'briarwood',amt:1,r:{g:400,xp:[9,1200]},fin:'Briarwood! I knew there was more out there.'},
+  {n:'Beyond the Horizon',d:'"Captains in Tidewatch talk of an island past the western reef." Take on the Western Route voyage from Sera, the Navigator in Tidewatch, and sail to Briarwood Isle.',type:'visit',item:'briarwood',amt:1,r:{g:400,xp:[9,1200]},fin:'Briarwood! I knew there was more out there.'},
   {n:'Thornbrook\'s Troubles',d:'"The people of Thornbrook on Briarwood could use a friend." Finish all of Briarwood\'s village quests.',type:'line',item:'briarwood',amt:1,r:{g:900,xp:[1,2500]},fin:'Word travels fast. Thornbrook speaks well of you.'},
   {n:'Fire Beneath the Mountain',d:'"Smoke rises from the Ashfall Coast in the east." Give your boat a reinforced hull, find the Eastern Waters, and finish all of Ashfall\'s quests.',type:'line',item:'ashfall',amt:1,r:{g:1200,xp:[10,3500]},fin:'The forge camp will be singing about you for years.'},
   {n:'The Sealed Doors',d:'"Every island hides a sealed door, and something waits behind it." Gather an island\'s sigil shards (its monsters drop them), open its door and defeat the island boss inside.',type:'ib',amt:1,r:{g:1500,xp:[0,4000]},fin:'You opened one of the old doors and lived. Remarkable.'}];

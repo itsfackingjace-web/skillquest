@@ -332,6 +332,9 @@
           ".validate": "newData.hasChildren(['n', 't']) && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('t').val() === now",
           "s": {
             ".validate": "newData.isString() && newData.val().length <= 12"
+          },
+          "k": {
+            ".validate": "newData.isString() && newData.val().length <= 8"
           }
         }
       }
@@ -367,6 +370,12 @@
           },
           "s": {
             ".validate": "newData.isString() && newData.val().length <= 12"
+          },
+          "k": {
+            ".validate": "newData.isString() && newData.val().length <= 8"
+          },
+          "m": {
+            ".validate": "newData.isString() && newData.val().length < 4000"
           }
         }
       }

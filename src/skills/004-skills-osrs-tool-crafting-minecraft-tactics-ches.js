@@ -34,7 +34,7 @@ for(const id of['a','e','f']){const o=document.getElementById(id),n=o.cloneNode(
 // recipes
 const REC=[];for(let t=1;t<=3;t++)['axe','pick','sword'].forEach((k,i)=>REC.push({k,t,name:TIT[t]+' '+['axe','pickaxe','sword'][i],c:t==1?{wood:[3,4,3][i]}:t==2?{wood:[2,2,1][i],stone:[3,3,2][i]}:{wood:2,iron:[3,3,2][i]},req:[1,5,15][t-1],xp:[40,80,150][t-1]}));
 // farming tools are craftable too (one of each; the general store still sells them)
-REC.push({k:'hoe',t:1,name:'Hoe',c:{wood:3,stone:2},req:1,xp:40},{k:'can',t:1,name:'Watering can',c:{wood:2,stone:3},req:1,xp:40});
+REC.push({k:'hoe',t:1,name:'Hoe',c:{wood:3,stone:2},req:1,xp:40},{k:'can',t:1,name:'Watering can',c:{wood:2,stone:3},req:1,xp:40},{k:'rod',t:1,name:'Fishing rod',c:{wood:4,iron:1},req:3,xp:40});
 const canC=r=>lvOf(6)>=r.req&&Object.entries(r.c).every(([a,b])=>(inv[a]||0)>=b);
 function craft(r){if(!canC(r)){say(lvOf(6)<r.req?'Need Crafting '+r.req:'Missing materials');return}for(const a in r.c)inv[a]-=r.c[a];TL[r.k]=r.t;say('Crafted '+r.name);addXp(6,r.xp);rPn()}
 // panel
@@ -46,7 +46,7 @@ function rPn(){document.getElementById('t0').className=ptab?'':'on';document.get
  if(!ptab){let tot=0,s='';for(let i=0;i<SKN.length;i++){const l=lvOf(i);tot+=l;const b=XT[l-1],n=l<99?XT[l]:b+1,p=l<99?Math.min(100,(XPS[i]-b)/(n-b)*100):100;s+='<div class="sk"><div style="color:'+SKC[i]+'">'+SKN[i]+'</div><b>'+l+'<small>/99</small></b><div class="br"><i style="width:'+p+'%;background:'+SKC[i]+'"></i></div><small>'+Math.floor(XPS[i])+' xp</small></div>'}h='<div class="tl">Total level: '+tot+'</div><div class="sg">'+s+'</div>'}
  else{h='<div class="tl">Wood '+inv.wood+' · Stone '+inv.stone+' · Iron '+(inv.iron||0)+'</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.8">Axe: '+TIT[TL.axe]+' · Pickaxe: '+TIT[TL.pick]+' · Sword: '+TIT[TL.sword]+'<br>Crafting level '+lvOf(6)+'</div>';
   for(const k of['axe','pick','sword']){const t=TL[k]+1;if(t>3)continue;const i=REC.findIndex(x=>x.k==k&&x.t==t),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+'</small></button>'}
-  for(const k of['hoe','can']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · for farming</small></button>'}
+  for(const k of['hoe','can','rod']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · '+(k==='rod'?'for fishing':'for farming')+'</small></button>'}
   h+='<div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:14px">Better tools hit harder. Rocks need a pickaxe; iron ore needs Mining 15 + a stone pickaxe.</div>'}
  pbd.innerHTML=h}
 pbd.onclick=e=>{const b=e.target.closest('.rc');if(b)craft(REC[+b.dataset.i])};

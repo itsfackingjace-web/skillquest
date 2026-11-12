@@ -43,20 +43,20 @@ function postHere(){if(SCENE){const R=SCENE.room;return R&&R.region?{id:'pier',n
 // --- voyages ---
 const VOYS=[
  {id:'west',name:'The Western Route',post:'tidewatch',needs:[],req:()=>TL.boat>0,reqTxt:'own a sailboat (Ida sells one in Saltmere)',buoy:'west',gold:100,unlock:['briarwoodRoute'],
-  d:'The harbor master wants proof you can find the western sea lane before she charts Briarwood Isle for you.',steps:['Sail your boat to the red buoy far west of Tidewatch','Report at the Tidewatch harbor post']},
+  d:'The harbor master wants proof you can find the western sea lane before she charts Briarwood Isle for you.',steps:['Sail your boat to the red buoy far west of Tidewatch','Report to Sera, the Navigator in Tidewatch']},
  {id:'briar',name:'Into Briarwood',post:'tidewatch',report:'any',needs:['west'],gold:150,
-  d:'Map the heart of Briarwood Isle so the captains know it\'s safe to land.',steps:['On Briarwood Isle, find the Elder Grove, the Whispering Ruins and Thornwater Lake','Report at any harbor post'],
+  d:'Map the heart of Briarwood Isle so the captains know it\'s safe to land.',steps:['On Briarwood Isle, find the Elder Grove, the Whispering Ruins and Thornwater Lake','Report to Sera, the Navigator in Tidewatch'],
   check:()=>['elder_grove','whispering_ruins','thornwater'].every(id=>rgSeen('briarwood',id))},
  {id:'east',name:'Eastern Waters',post:'saltmere',needs:['briar','@reinforcedHull'],buoy:'east',gold:150,unlock:['ashfallRoute'],
-  d:'With a reinforced hull you can ride the eastern swell. Find the lane that leads to the Ashfall Coast.',steps:['Sail your boat to the red buoy east of Saltmere','Report at the Saltmere harbor post']},
+  d:'With a reinforced hull you can ride the eastern swell. Find the lane that leads to the Ashfall Coast.',steps:['Sail your boat to the red buoy east of Saltmere','Report to Sera, the Navigator in Tidewatch']},
  {id:'pass',name:'The High Pass',post:'frosthollow',needs:['west'],gold:120,unlock:['mountainPassage'],
-  d:'An old trail over the northern cliffs leads to the Ironcrest sea lane. Find the cairn that marks it and clear the way.',steps:['Find the old cairn on the cliffs north of Frosthollow','Clear the rockfall: Mining 25, or bring 12 iron ore and 4 wolf pelts to the Frosthollow post'],
+  d:'An old trail over the northern cliffs leads to the Ironcrest sea lane. Find the cairn that marks it and clear the way.',steps:['Find the old cairn on the cliffs north of Frosthollow','Clear the rockfall (Mining 25), or bring 12 iron ore and 4 wolf pelts to Sera in Tidewatch'],
   cairn:true},
  {id:'isles',name:'Charting the Isles',post:'tidewatch',report:'any',needs:['east','pass'],gold:200,
-  d:'The navigators want a landmark charted in both of the newer lands before anyone tries the deep southern waters.',steps:['Discover a landmark on the Ashfall Coast and in the Ironcrest Highlands','Report at any harbor post'],
+  d:'The navigators want a landmark charted in both of the newer lands before anyone tries the deep southern waters.',steps:['Discover a landmark on the Ashfall Coast and in the Ironcrest Highlands','Report to Sera, the Navigator in Tidewatch'],
   check:()=>['ashfall','ironcrest'].every(r=>(WORLD_STATE[r]&&WORLD_STATE[r].seen||[]).length>0)},
  {id:'south',name:'The Southern Route',post:'tidewatch',needs:['isles','@deepwaterSail'],buoy:'south',gold:250,unlock:['shatteredRoute'],
-  d:'Only a deepwater sail survives the southern currents. Find the lane to the Shattered Expanse.',steps:['Sail your boat to the red buoy far south of Hollow Island','Report at the Tidewatch harbor post']}];
+  d:'Only a deepwater sail survives the southern currents. Find the lane to the Shattered Expanse.',steps:['Sail your boat to the red buoy far south of Hollow Island','Report to Sera, the Navigator in Tidewatch']}];
 const UPGRADES=[{id:'reinforcedHull',name:'Reinforced Hull',post:'saltmere',needs:['briar'],cost:{wood:30,ibar:6,nails:20},d:'Iron-banded planking for the eastern swell. A permanent boat upgrade.'},
  {id:'deepwaterSail',name:'Deepwater Sail',post:'tidewatch',needs:['isles'],cost:{sbar:4,pelt:6,wood:20},d:'A heavy, steel-rigged sail for the southern currents. A permanent boat upgrade.'}];
 const VQ=()=>{const h=WORLD_STATE.hollow||(WORLD_STATE.hollow={});return h.voy||(h.voy={})};
@@ -80,23 +80,23 @@ let VTICK=0;
 const _u51=upd;upd=function(dt){_u51(dt);if(menuOpen||pnOpen||dead||TRAVEL49||(VTICK-=dt)>0)return;VTICK=.25;const V=VQ();
  for(const q of VOYS){if(V[q.id]!==1)continue;
   if(q.buoy&&!SCENE&&SAILING){const b=BUOYS[q.buoy];if(b&&Math.hypot(P.x-(b.x*16+8),P.y-(b.y*16+8))<36)vAdvance(q,'You reach the buoy and chart the sea lane. Now report back.')}
-  else if(q.cairn&&!SCENE&&CAIRN&&Math.hypot(P.x-(CAIRN.x*16+8),P.y-(CAIRN.y*16+8))<26)vAdvance(q,'The cairn marks a buried trail, blocked by a rockfall. Report at the Frosthollow post.');
-  else if(q.check&&q.check())vAdvance(q,q.name+': done! Report at any harbor post.')}};
+  else if(q.cairn&&!SCENE&&CAIRN&&Math.hypot(P.x-(CAIRN.x*16+8),P.y-(CAIRN.y*16+8))<26)vAdvance(q,'The cairn marks a buried trail, blocked by a rockfall. Report to Sera, the Navigator in Tidewatch.');
+  else if(q.check&&q.check())vAdvance(q,q.name+': done! Report to Sera, the Navigator in Tidewatch.')}};
 function vComplete(q){const V=VQ(),before=ROUTE_ORDER.filter(r=>routeOpen(r));V[q.id]=99;GLD+=q.gold;for(const k of q.unlock||[])TRAVEL_UNLOCKS[k]=true;
  const opened=ROUTE_ORDER.filter(r=>routeOpen(r)&&!before.includes(r));
  say(q.name+' complete! +'+q.gold+' gold'+(opened.length?'. Route charted: '+opened.map(r=>WORLD_REGIONS[r].name).join(', ')+'!':''));msgT=6;sfx('quest');saveNow()}
-function voyAct(a){const[k,id]=a.split(':'),p=postHere();if(!p){closePanel();return}const V=VQ();
- if(k==='acc'){const q=VOYS.find(v=>v.id===id);if(!q||V[id]||!vNeedsOK(q)||q.post!==p.id)return;V[id]=1;say('New voyage: '+q.name+' - '+q.steps[0]);sfx('quest');saveNow()}
- else if(k==='rep'){const q=VOYS.find(v=>v.id===id);if(!q||V[id]!==q.steps.length)return;if(q.report!=='any'&&q.post!==p.id)return;
+function voyAct(a,nav){const[k,id]=a.split(':'),p=nav?{id:'nav'}:postHere();if(!p){closePanel();return}const V=VQ();if(!nav&&k!=='craft')return;
+ if(k==='acc'){const q=VOYS.find(v=>v.id===id);if(!q||V[id]||!vNeedsOK(q))return;V[id]=1;say('New voyage: '+q.name+' - '+q.steps[0]);sfx('quest');saveNow()}
+ else if(k==='rep'){const q=VOYS.find(v=>v.id===id);if(!q||V[id]!==q.steps.length)return;
   if(q.id==='pass'){if(lvOf(2)<25){say('The rockfall needs Mining 25 - or bring 12 iron ore and 4 wolf pelts.');sfx('swish');return}say('You clear the rockfall with your pickaxe. The surveyor hands you the Mountain Passage Chart.')}
   vComplete(q)}
- else if(k==='hand'){const q=VOYS.find(v=>v.id===id);if(!q||q.id!=='pass'||V.pass!==2||p.id!=='frosthollow')return;if((inv.iron|0)<12||(inv.pelt|0)<4){say('You need 12 iron ore and 4 wolf pelts.');sfx('swish');return}
+ else if(k==='hand'){const q=VOYS.find(v=>v.id===id);if(!q||q.id!=='pass'||V.pass!==2)return;if((inv.iron|0)<12||(inv.pelt|0)<4){say('You need 12 iron ore and 4 wolf pelts.');sfx('swish');return}
   inv.iron-=12;inv.pelt-=4;say('The surveyor\'s crew clears the rockfall and hands you the Mountain Passage Chart.');vComplete(q)}
- else if(k==='craft'){const u=UPGRADES.find(x=>x.id===id);if(!u||TRAVEL_UNLOCKS[u.id]||u.post!==p.id||!u.needs.every(vDone))return;
+ else if(k==='craft'){const u=UPGRADES.find(x=>x.id===id);if(!u||TRAVEL_UNLOCKS[u.id]||!nav&&u.post!==p.id||!u.needs.every(vDone))return;
   if(!TL.boat){say('You need a sailboat to fit this to.');sfx('swish');return}
   for(const[c,n]of Object.entries(u.cost))if((inv[c]|0)<n){say('Not enough '+iname(c)+' ('+(inv[c]|0)+'/'+n+').');sfx('swish');return}
   for(const[c,n]of Object.entries(u.cost))inv[c]-=n;TRAVEL_UNLOCKS[u.id]=true;say(u.name+' fitted to your boat!');msgT=5;sfx('quest');saveNow()}
- rPn()}
+ if(nav&&pnOpen)rPn();else if(!nav)rPn()}
 // --- the harbor post panel: routes (with what each needs) + voyages and upgrades offered here ---
 routesHTML=function(){const p=postHere()||{id:'tidewatch',name:'Tidewatch'},here=curRegion(),V=VQ();
  const row=(id,label,sub,ok)=>'<button class="sb rt49" data-r="'+id+'" style="opacity:'+(ok?1:.45)+';width:100%;text-align:left"'+(ok?'':' disabled')+'>'+label+'<br><small>'+sub+'</small></button>';
@@ -107,12 +107,7 @@ routesHTML=function(){const p=postHere()||{id:'tidewatch',name:'Tidewatch'},here
   else if(routeOpen(id))h+=row(id,'⛵ '+D.name,D.biome+' · lies '+D.dir+' · suggested combat '+D.lv,true);
   else h+=row(id,'🔒 '+D.name+' [LOCKED]','Needs: '+routeReq(id).map(r=>(r.ok?'✓ ':'☐ ')+r.t).join(' · '),false)}
  const cards=[];
- for(const q of VOYS){const st=V[q.id];const here2=q.post===p.id,repHere=st===q.steps.length&&(q.report==='any'||here2);
-  if(st===99||(!st&&!here2))continue;if(!st&&!q.needs.every(vDone))continue;
-  let b='';const step=s=>q.steps.map((t,i)=>'<br>'+(st===99||i<s-1?'✓ ':i===s-1?'▶ ':'· ')+t).join('');
-  if(!st){const ok=!q.req||q.req();b=step(0)+'<br><button class="qb vq51" data-v="acc:'+q.id+'" style="opacity:'+(ok?1:.5)+'"'+(ok?'':' disabled')+'>'+(ok?'Accept voyage':'Needs: '+q.reqTxt)+'</button>'}
-  else{b=step(st);if(repHere)b+='<br><button class="qb vq51" data-v="rep:'+q.id+'">'+(q.id==='pass'?'Clear the rockfall (Mining 25)':'Report')+'</button>'+(q.id==='pass'&&p.id==='frosthollow'?' <button class="qb vq51" data-v="hand:pass">Hand in 12 iron ore + 4 pelts</button>':'')}
-  cards.push('<div class="qc" style="margin-top:8px"><b>'+(st?'Voyage: ':'New voyage: ')+q.name+'</b><p>'+q.d+'</p><small>Reward: '+q.gold+' gold'+(q.unlock?' · opens a sea route':'')+b+'</small></div>')}
+ if(VOYS.some(q=>V[q.id]!==99&&(V[q.id]||vNeedsOK(q))))cards.push('<div class="qc" style="margin-top:8px"><b>Voyages</b><p>Sera, the Navigator in Tidewatch, hands out the voyages that chart new sea routes. Find her in the Navigator\'s House by day.</p></div>');
  for(const u of UPGRADES){if(u.post!==p.id)continue;const have=!!TRAVEL_UNLOCKS[u.id],ready=u.needs.every(vDone),afford=Object.entries(u.cost).every(([c,n])=>(inv[c]|0)>=n);
   if(!ready&&!have)continue;cards.push('<div class="qc" style="margin-top:8px"><b>Boat upgrade: '+u.name+(have?' ✓':'')+'</b><p>'+u.d+'</p><small>'+(have?'Fitted to your boat.':'Cost: '+Object.entries(u.cost).map(([c,n])=>n+' '+iname(c)+' ('+(inv[c]|0)+')').join(', ')+
    '<br><button class="qb vq51" data-v="craft:'+u.id+'" style="opacity:'+(afford&&TL.boat?1:.5)+'">Build it</button>')+'</small></div>')}
@@ -126,7 +121,7 @@ const _qh51=questsHTML;questsHTML=function(){const V=VQ(),act=VOYS.filter(q=>V[q
  if(!act.length&&!next.length&&!VOYS.some(q=>V[q.id]===99))return h;
  h+='<div class="tl" style="margin-top:14px">Voyages</div>';
  for(const q of act)h+='<div class="qc"><b>'+q.name+'</b><p>▶ '+q.steps[V[q.id]-1]+'</p></div>';
- for(const q of next)h+='<div class="qrow">New voyage at the '+HARBOR_POSTS.find(p=>p.id===q.post).name+' harbor post: '+q.name+'</div>';
+ for(const q of next)h+='<div class="qrow">New voyage from Sera, the Navigator in Tidewatch: '+q.name+'</div>';
  const done=VOYS.filter(q=>V[q.id]===99);if(done.length)h+='<div class="qrow qd">✓ '+done.map(q=>q.name).join(' · ')+'</div>';
  const ups=UPGRADES.filter(u=>TRAVEL_UNLOCKS[u.id]);if(ups.length)h+='<div class="qrow qd">Boat: '+ups.map(u=>u.name).join(' · ')+'</div>';return h};
 // --- drawing: the new posts, the buoys, the cairn; map markers ---
@@ -143,3 +138,15 @@ const _dmap51=drawMap;drawMap=function(){_dmap51();if(SCENE&&SCENE.room&&SCENE.r
  for(const q of VOYS)if(V[q.id]===1){const t=q.buoy?BUOYS[q.buoy]:q.cairn?CAIRN:null;if(t&&bl){x.fillStyle='#f83030';x.fillRect(t.x-1,t.y-1,3,3)}}};
 const _mh51=mapHTML;mapHTML=function(){const h=_mh51();return SCENE&&SCENE.room&&SCENE.room.region?h:h.replace('<div class="tl" style="margin-top:10px">WORLD</div>','<div class="lg"><span><i style="background:#58d8ff"></i>Harbor post</span><span><i style="background:#f83030"></i>Voyage goal</span></div><div class="tl" style="margin-top:10px">WORLD</div>')};
 const _wh51=worldHTML;worldHTML=function(){return _wh51().replace('harbor post on the Tidewatch pier','harbor posts at '+HARBOR_POSTS.map(p=>p.name).join(', '))};
+// --- Sera, the Navigator in Tidewatch, runs every voyage: take them on, report back, hand in the High Pass materials ---
+function navSpot(){const b=typeof TWB!=='undefined'&&TWB.find(b=>b.k==='tw_nav');return b?{x:b.tx+2,y:b.ty+2}:null}
+function navCards(){const V=VQ(),cards=[];
+ for(const q of VOYS){const st=V[q.id];if(st===99)continue;if(!st&&!q.needs.every(vDone))continue;
+  const step=s=>q.steps.map((t,i)=>'<br>'+(i<s-1?'✓ ':i===s-1?'▶ ':'· ')+t).join('');let b='';
+  if(!st){const ok=!q.req||q.req();b=step(0)+'<br><button class="qb xb" data-a="nav_acc:'+q.id+'" style="opacity:'+(ok?1:.5)+'"'+(ok?'':' disabled')+'>'+(ok?'Accept voyage':'Needs: '+q.reqTxt)+'</button>'}
+  else{b=step(st);if(st===q.steps.length)b+='<br><button class="qb xb" data-a="nav_rep:'+q.id+'">'+(q.id==='pass'?'Clear the rockfall (Mining 25)':'Report')+'</button>'+(q.id==='pass'?' <button class="qb xb" data-a="nav_hand:pass">Hand in 12 iron ore + 4 pelts</button>':'')}
+  cards.push('<div class="qc" style="margin-top:8px"><b>'+(st?'Voyage: ':'New voyage: ')+q.name+'</b><p>'+q.d+'</p><small>Reward: '+q.gold+' gold'+(q.unlock?' · opens a sea route':'')+b+'</small></div>')}
+ const done=VOYS.filter(q=>V[q.id]===99).map(q=>q.name);
+ return'<div class="tl" style="margin-top:10px;font-size:13px">VOYAGES</div>'+(cards.length?cards.join(''):'<div class="qc"><p>'+(done.length===VOYS.length?'Every sea route is charted. The captains sing your name.':'No new voyages for you yet. Come back when you\'ve grown as a sailor.')+'</p></div>')+(done.length?'<div class="qrow qd">✓ '+done.join(' · ')+'</div>':'')}
+{const _tp=twPanel;twPanel=function(n){let h=_tp(n);if(n&&n.id==='sera')h+=navCards();return h}}
+{const _xa=xAct;xAct=function(a){if(typeof a==='string'&&a.startsWith('nav_')){if(!TALKN||TALKN.id!=='sera')return;voyAct(a.slice(4),true);if(pnOpen)rPn();return}return _xa.apply(this,arguments)}}

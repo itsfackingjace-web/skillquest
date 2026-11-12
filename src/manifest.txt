@@ -137,6 +137,13 @@ graphics/127-s132-smooth-camera.js
 world/128-s133-quest-chapter-two.js
 ui/129-s134-achievements.js
 multiplayer/130-s135-player-menu-and-duels.js
+ui/131-s136-quality-fixes.js
+ui/132-s137-houses-on-maps.js
+items/133-s138-smith-tools-sell-crafts.js
+multiplayer/134-s139-chess-with-players.js
+multiplayer/135-s140-leaderboard-counts.js
+multiplayer/136-s141-emotes-and-parties.js
+ui/137-s142-discord-button.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

@@ -73,7 +73,7 @@ function edgeMsg(t){const n=performance.now();if(n-EDGE.msgAt>2500){EDGE.msgAt=n
 function edgeGo(to,side,frac){if(TRAVEL49||dead)return;TRAVEL49={t:0,dur:1.3,to,done:false,job:to!=='hollow'&&!RG_CACHE[to]?rgJob(to):null,hold:0,edge:{side,frac}};sfx('splash')}
 {const _u=upd;upd=function(dt){_u(dt);if(TRAVEL49||dead||menuOpen||pnOpen)return;
   if(!SCENE&&SAILING){const side=edgePush(N,N);if(!side)return;const id=edgeRegion(side);if(!id)return;
-   if(!routeOpen(id)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[id].name+', but the route isn\'t charted yet. Ask at a harbor post.');return}
+   if(!routeOpen(id)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[id].name+', but the route isn\'t charted yet. Ask Sera, the Navigator in Tidewatch.');return}
    edgeGo(id,side,side==='west'||side==='east'?P.y/(N*16):P.x/(N*16));return}
   const R=rbR();if(R&&RSAIL.on){const side=edgePush(R.w,R.h);if(!side)return;const nb=window.SQNEIGH&&SQNEIGH[R.region]&&SQNEIGH[R.region][side];
    if(nb){if(!routeOpen(nb)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[nb].name+', but the route isn\'t charted yet.');return}edgeGo(nb,side,side==='west'||side==='east'?P.y/(R.h*16):P.x/(R.w*16));return}

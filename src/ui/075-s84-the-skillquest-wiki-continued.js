@@ -99,10 +99,10 @@ function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab](
    out.push({t:at+' '+by[at].map(r=>r.n).join(' '),h:h+'</table>'})}
   head('Farming');let h='<table><tr><th>Crop</th><th>Level</th><th>Seed</th><th>XP</th></tr>';for(const k in CROPS){const c=CROPS[k];h+='<tr><td>'+wkE(c.n)+'</td><td>Farming '+c.lv+'</td><td>'+(INAME[c.seed]?wkLink(c.seed):wkE(c.seed))+'</td><td>'+c.xp+'</td></tr>'}out.push({t:'farming crops '+Object.values(CROPS).map(c=>c.n).join(' '),h:h+'</table>'});
   head('Fishing');h='<table><tr><th>Fish</th><th>Level</th><th>XP</th><th>Cooked heals</th></tr>';for(const f of FISH_T)h+='<tr><td>'+(INAME[f.k]?wkLink(f.k):wkE(f.n))+'</td><td>Fishing '+f.lv+'</td><td>'+f.xp+'</td><td>'+(f.heal||0)+' heart'+(f.heal===1?'':'s')+'</td></tr>';out.push({t:'fishing fish '+FISH_T.map(f=>f.n).join(' '),h:h+'</table>'})}
- else if(tab==='mobs'){head('Hollow Island & its dungeons');for(const m of WK_MOBS)card(m.n+' '+m.w,WK_MK[m.n]?wkPic(m.n,WK_MK[m.n]):'','<b>'+wkE(m.n)+'</b> <span class="tag">'+m.hp+' HP</span><br>'+wkE(m.d)+'<br><small>Where: '+wkE(m.w)+' · Drops: '+wkE(m.drop)+'</small>','mob');
+ else if(tab==='mobs'){head('Hollow Island & its dungeons');for(const m of WK_MOBS)card(m.n+' '+m.w,WK_MK[m.n]?wkPic(m.n,WK_MK[m.n]):'','<b>'+wkE(m.n)+'</b> <span class="tag">'+wkHp(m.hp,WK_MK[m.n]&&WK_MK[m.n]())+' HP</span><br>'+wkE(m.d)+'<br><small>Where: '+wkE(m.w)+' · Drops: '+wkE(m.drop)+'</small>','mob');
   if(typeof RG_FAUNA!=='undefined')for(const id in RG_FAUNA){const F=RG_FAUNA[id],R=WORLD_REGIONS[id];head((R?R.name:id)+(R&&R.lv?' (level '+R.lv+')':''));const seen={};
    for(const[when,L]of[['Day',F.day],['Night',F.night]])for(const e of L){const k=e[0];const s=seen[k]||(seen[k]={hp:e[1],when:[]});s.when.push(when)}
-   for(const k in seen){const nm=WK_RGN[k]||k;card(nm+' '+(R?R.name:id),wkPic('rg_'+k,()=>rgMake(k,seen[k].hp,0,0)),'<b>'+wkE(nm)+'</b> <span class="tag">'+seen[k].hp+' HP</span>'+(F.pack&&F.pack[k]?' <span class="tag">packs of '+F.pack[k]+'</span>':'')+'<br><small>'+seen[k].when.join(' and ')+' · stronger than on Hollow; more gold and XP</small>','mob')}}}
+   for(const k in seen){const nm=WK_RGN[k]||k;card(nm+' '+(R?R.name:id),wkPic('rg_'+k,()=>rgMake(k,seen[k].hp,0,0)),'<b>'+wkE(nm)+'</b> <span class="tag">'+wkHp(seen[k].hp,{rk:k})+' HP</span>'+(F.pack&&F.pack[k]?' <span class="tag">packs of '+F.pack[k]+'</span>':'')+'<br><small>'+seen[k].when.join(' and ')+' · stronger than on Hollow; more gold and XP</small>','mob')}}}
  else if(tab==='bosses'){head('World bosses');out.push({t:'',h:'<p>A world boss appears every 30 minutes somewhere in the world and stays for 20. Everyone fights it together; the top three damage dealers get extra loot. Online only.</p>'});
   const T=window.SQWBT||{};for(const k in T){const b=T[k];let pic='';try{const c=SQWBART[k](0,'s'),u=c.toDataURL();pic=u}catch(e){}
    const rare=WK_RARE.filter(r=>r[2]===b.n||(k==='dragon'&&r[2]==='Ancient Dragon'));
@@ -127,7 +127,8 @@ function wkRender(){const t=wk$('wkt'),b=wk$('wkb'),q=WK.q.trim().toLowerCase();
  else{for(const[k,n]of WK_TABS){if(k==='start'||k==='patch')continue;const cs=wkCards(k,1).filter(c=>!c.head&&(c.t+' '+c.h.replace(/<[^>]+>/g,' ')).toLowerCase().includes(q));if(cs.length)h+='<h3>'+wkE(n)+' ('+cs.length+')</h3>'+cs.slice(0,40).map(c=>c.h).join('')}
   if(!h)h='<div class="emp">Nothing matches "'+wkE(WK.q)+'".</div>'}
  b.innerHTML=h||'<div class="emp">Nothing here yet.</div>';if(wk$('wkxr'))wkXpCalc()}
-function wkOpen(tab,q){WK.open=true;if(tab)WK.tab=tab;else if(wkNew())WK.tab='patch';WK.q=q||'';wk$('wkq').value=WK.q;wkEl.style.display='flex';wkRender();wk$('wkb').scrollTop=0;try{sfx('talk')}catch(e){}
+function wkOpen(tab,q){WK.open=true;for(const k in WKPIC)delete WKPIC[k];   // monster pictures are drawn again (the Dev Suite may have changed a look)
+ if(tab)WK.tab=tab;else if(wkNew())WK.tab='patch';WK.q=q||'';wk$('wkq').value=WK.q;wkEl.style.display='flex';wkRender();wk$('wkb').scrollTop=0;try{sfx('talk')}catch(e){}
  setTimeout(()=>{const f=wkEl.querySelector('.wt button.on');if(f&&typeof GPON!=='undefined'&&(GPON||TS.kb))setFocus(f)},30)}
 function wkClose(){WK.open=false;wkEl.style.display='none';try{setFocus(null)}catch(e){}try{sfx('talk')}catch(e){}if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="wk"]');if(b&&(GPON||TS.kb))setFocus(b)}}
 wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt],[data-wki],[data-wks]');if(!b)return;if(b.dataset.wk==='x'){wkClose();return}
@@ -158,6 +159,8 @@ function wkActions(skill){const A=[];const add=(n,xp,lv,c)=>{if(xp>0)A.push({n,x
  return A.sort((a,b)=>a.lv-b.lv||a.xp-b.xp)}
 const xpAt=l=>XT[Math.max(0,Math.min(98,l-1))]|0;
 // a picture of a monster: drawn by the game's own code onto the screen for an instant, then copied
+// health as the Dev Suite's monster rules have it (Monsters tab: health %)
+const wkHp=(hp,n)=>{try{const r=n&&window.SQMOBRULES&&window.SQPROPS&&SQMOBRULES.rules[SQPROPS.mkey(n)];if(r&&r.hp!==100)return Math.max(1,Math.round(hp*r.hp/100))}catch(e){}return hp};
 const WKPIC={};function wkPic(key,mk,box){if(WKPIC[key])return WKPIC[key];try{const n=mk();n.x=2000;n.y=2000;n.dead=0;const S=3,B=box||40,px=B*S;
   const o=document.createElement('canvas');o.width=px;o.height=px;g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,px,px);g.setTransform(S,0,0,S,-(n.x-B/2)*S,-(n.y-B*.62)*S);GC=g;
   pS(n,.4);g.restore();const ox=o.getContext('2d');ox.drawImage(cv,0,0,px,px,0,0,px,px);
@@ -193,7 +196,7 @@ function wkNpcs(){const out=[],seen=new Set();for(const n of NPCS){const nm=n.na
 WK2.guides=()=>{const out=[];const G=(t,h)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,' '),h:'<div class="c"><div class="tx"><b>'+wkE(t)+'</b>'+h+'</div></div>'});
  G('Your first day','<p>Chop trees (HIT) for wood and pick berries to eat. Before night, build a campfire (F: 3 wood + 1 stone): monsters stay away from it, and you can cook meat on it. Visit Elder Rowan in Hollow Village for your first quests.</p>');
  G('Getting a boat','<p>Walk to Saltmere (the harbor town) and talk to Captain Ida. She sells a sailboat for 250 gold. Face the water and press USE to set sail. Nearby: Gull Rock (north-east), a shipwreck (south-east) and Hermit\'s Isle.</p>');
- let h='<p>Each new island is unlocked by a sea-route quest from a harbor post, in this order:</p><table><tr><th>Route</th><th>Where</th><th>What to do</th><th>Reward</th></tr>';
+ let h='<p>Each new island is unlocked by a voyage from Sera, the Navigator in Tidewatch, in this order:</p><table><tr><th>Route</th><th>Where</th><th>What to do</th><th>Reward</th></tr>';
  for(const v of (typeof VOYS!=='undefined'?VOYS:[]))h+='<tr><td><b>'+wkE(v.name)+'</b></td><td>'+wkE(v.post[0].toUpperCase()+v.post.slice(1))+'</td><td>'+wkE(v.d)+'<br><small>'+v.steps.map(wkE).join(' → ')+(v.needs.some(x=>x[0]==='@')?'<br>Needs the '+v.needs.filter(x=>x[0]==='@').map(x=>wkE((UPGRADES.find(u=>u.id===x.slice(1))||{}).name)).join(', '):'')+'</small></td><td>'+v.gold+' gold</td></tr>';
  h+='</table><p><b>Boat upgrades</b></p><table>';for(const u of (typeof UPGRADES!=='undefined'?UPGRADES:[]))h+='<tr><td><b>'+wkE(u.name)+'</b><br><small>'+wkE(u.d)+'</small></td><td>'+wkE(u.post[0].toUpperCase()+u.post.slice(1))+'</td><td>'+wkCost(u.cost)+'</td></tr>';
  G('Unlocking the islands',h+'</table>');

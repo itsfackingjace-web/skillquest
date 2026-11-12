@@ -69,7 +69,7 @@ function wmThumbCanvas(id){const th=RG_THUMB[id];if(!th)return null;const known=
 function worldHTML52(){const sel=WSEL||curRegion(),D=WORLD_REGIONS[sel],known=wmKnown(sel);let h='<canvas id="wmc" width="'+WM.W+'" height="'+WM.H+'" style="position:static;inset:auto;display:block;margin:6px auto;width:min(84vw,52vh,380px);height:auto;image-rendering:pixelated;border:3px solid #485870;border-radius:6px;background:#1d3f7a"></canvas>'+
  '<div class="lg"><span><i style="background:#f83030"></i>You</span><span><i style="background:#f8d848"></i>Sea route</span><span><i style="background:#58d8ff"></i>Harbor post</span><span><i style="background:#f8f8f8"></i>Landmark</span></div>';
  h+='<div class="qc"><b>'+(wmNamed(sel)?D.name:'Uncharted waters')+(sel===curRegion()?' · you are here':'')+'</b><small>';
- if(!wmNamed(sel))h+='<br>Nobody has charted a route here yet. Ask at a harbor post.';
+ if(!wmNamed(sel))h+='<br>Nobody has charted a route here yet. Ask Sera, the Navigator in Tidewatch.';
  else{h+='<br>'+D.biome+(D.lv?' · suggested combat '+D.lv:'');
   if(sel==='hollow'){h+='<br>Towns: '+TOWN_REG.filter(t=>t.on).map(t=>t.name).join(', ')+'<br>Dungeons: '+DUNGEON_REG.filter(d=>d.on).map(d=>d.name).join(', ')+'<br>Harbor posts: '+HARBOR_POSTS.map(p=>p.name).join(', ')}
   else{const seen=(WORLD_STATE[sel]&&WORLD_STATE[sel].seen)||[],names=[...new Set(seen.map(lmName))];

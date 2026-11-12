@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------- 9. Chess
 // Grandmaster Orla plays from a table in the village square. Wins train Tactics.
-const CLV=[{n:'Novice',req:1,depth:1,noise:150,xp:80,g:10},{n:'Club player',req:5,depth:2,noise:40,xp:200,g:30},{n:'Expert',req:15,depth:3,noise:12,xp:450,g:80},{n:'Master',req:30,depth:4,noise:0,xp:900,g:200}];
-let CHS={w:0,l:0,d:0},chessOpen=false,CG=null;
+// rand: the share of moves Orla plays without thinking (Novice and Club player leave pieces hanging now and then)
+const CLV=[{n:'Novice',req:1,depth:1,noise:320,rand:.45,xp:80,g:10},{n:'Club player',req:5,depth:1,noise:160,rand:.2,xp:200,g:30},{n:'Expert',req:15,depth:2,noise:60,rand:.06,xp:450,g:80},{n:'Master',req:30,depth:3,noise:15,xp:900,g:200}];
+let CHS={w:0,l:0,d:0,rz:0,om:0},chessOpen=false,CG=null;
 // stats + quest in saves (quest inserted at index 3; older saves are remapped)
 QS.splice(3,0,{n:'Opening Moves',d:'Grandmaster Orla sits at the chess table in the village square. Beat her once on any difficulty.',type:'chess',amt:1,r:{g:100,xp:[7,300]}});
 const _qv9=qVal;qVal=function(q){return q.type==='chess'?Q.k:_qv9(q)};
@@ -49,14 +50,15 @@ function startChess(li){const L=CLV[li];if(!L)return;if(lvOf(7)<L.req){say('Need
 function endChess(res,why){const L=CLV[CG.li];CG.over=true;CG.moves=[];CG.sel=-1;let t;
  if(res==='w'){CHS.w++;GLD+=L.g;addXp(7,L.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='chess')Q.k++;t='You win '+why+'! +'+L.xp+' Tactics XP, +'+L.g+' gold';sfx('quest')}
  else if(res==='d'){CHS.d++;const x=Math.round(L.xp/2),g=Math.round(L.g/2);GLD+=g;addXp(7,x);t='Draw ('+why+'). +'+x+' Tactics XP, +'+g+' gold';sfx('coin')}
- else{CHS.l++;const x=Math.round(L.xp*.15);addXp(7,x);t='Orla wins '+why+'. +'+x+' Tactics XP for the lesson';sfx('death')}
+ else{CHS.l++;const rs=why==='by resignation',none=rs&&(CG.st.ply<20||(CHS.rz|0)>=1);CG.noXp=none;const x=none?0:Math.round(L.xp*.15);if(x)addXp(7,x);t='Orla wins '+why+'. '+(none?((CHS.rz|0)>=1?'No Tactics XP for resigning again: finish a game first.':'No Tactics XP for resigning this early.'):'+'+x+' Tactics XP for the lesson');sfx('death')}
+ CHS.rz=why==='by resignation'?(CHS.rz|0)+1:0;
  chst.textContent=t;saveLocal(true);saveCloud();chUI()}
 function checkEnd(){const s=CE.status(CG.st);if(!s&&CG.st.ply<300)return false;const mover=CG.st.turn;
  if(s==='mate'){endChess(mover==='b'?'w':'l','by checkmate');return true}
  endChess('d',s==='stalemate'?'stalemate':s==='material'?'not enough pieces to mate':s==='draw50'?'50-move rule':'move limit');return true}
 function doMove(m){const cap=m.cap!=='.';CG.st=CE.make(CG.st,m);CG.last=m;CG.sel=-1;CG.moves=[];sfx(cap?'hit':'talk')}
 function aiMove(){if(!CG||CG.over)return;CG.busy=true;chst.textContent='Orla is thinking...';chUI();
- setTimeout(()=>{if(!CG||CG.over||!chessOpen){if(CG)CG.busy=false;return}const L=CLV[CG.li],m=CE.best(CG.st,L);if(m)doMove(m);CG.busy=false;
+ setTimeout(()=>{if(!CG||CG.over||!chessOpen){if(CG)CG.busy=false;return}const L=CLV[CG.li];let m=null;if(L.rand&&Math.random()<L.rand){const A=CE.legal(CG.st);m=A[Math.floor(Math.random()*A.length)]||null}if(!m)m=CE.best(CG.st,L);if(m)doMove(m);CG.busy=false;
   if(!checkEnd()){chst.textContent=CE.inCheck(CG.st,'w')?'Check! Your move.':'Your move.';if(CE.inCheck(CG.st,'w'))sfx('block')}chUI()},60)}
 chb.addEventListener('pointerdown',e=>{e.preventDefault();if(!CG||CG.over||CG.busy||CG.st.turn!=='w')return;const r=chb.getBoundingClientRect(),c=Math.floor((e.clientX-r.left)/r.width*8),rw=Math.floor((e.clientY-r.top)/r.height*8);
  if(c<0||c>7||rw<0||rw>7)return;const sq=rw*8+c,mv=CG.moves.find(m=>m.t===sq);

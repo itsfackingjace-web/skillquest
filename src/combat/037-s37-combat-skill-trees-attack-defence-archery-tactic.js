@@ -141,5 +141,5 @@ const _chu37=chUI;chUI=function(){_chu37();const G=CG;tbb.style.display=G&&!G.ov
 const _ec37=endChess;endChess=function(res,why){const L=CLV[CG.li],li=CG.li;_ec37(res,why);let extra='';
  if(res==='w'){if(perk(7,'prize')){const g=Math.round(L.g*.5);GLD+=g;extra+=' +'+g+' prize gold.'}if(perk(7,'tournament')&&li===3){GLD+=L.g;addXp(7,L.xp);extra+=' Tournament: double rewards!'}}
  else if(res==='d'&&perk(7,'patience')){GLD+=L.g-Math.round(L.g/2);addXp(7,L.xp-Math.round(L.xp/2));extra+=' Patience: a draw pays like a win.'}
- else if(res!=='w'&&res!=='d'&&perk(7,'studyhall')){addXp(7,L.xp-Math.round(L.xp*.15));extra+=' Study Hall: full XP.'}
+ else if(res!=='w'&&res!=='d'&&perk(7,'studyhall')&&!CG.noXp){addXp(7,L.xp-Math.round(L.xp*.15));extra+=' Study Hall: full XP.'}
  if(extra){chst.textContent+=extra;saveLocal(true)}};

@@ -186,10 +186,38 @@
   Collection log categories `CATS` over `INAME` (first match wins, `eq_cu_` left out), seeded from bag/worn/pets on load.
   Saved as `ach` {c,d,col,rg}.
 - **Player menu and duels** (`multiplayer/130-s135-player-menu-and-duels.js`, `window.SQDUEL`/`SQDUELAPI`, `ptab` 36/37):
-  menu = TRADE (`SQTRREQ`), ADD FRIEND (`SQADDFRIEND`, exposed in 061), DUEL, CHESS (placeholder). Duels: `dreq/<to>/<from>`
+  menu = TRADE (`SQTRREQ`), ADD FRIEND (`SQADDFRIEND`, exposed in 061), INVITE TO PARTY, DUEL, CHESS. Duels: `dreq/<to>/<from>`
   {n,s,t} and `duels/<a_b>/<uid>` {i,g,s,a,c,f,l,d,t}; `s` = a per-duel nonce (in the key, and sides with another `s`
   are ignored). Stakes leave the bag when both accept twice (f), countdown, fight: 064's `pvTarget`/`pvMelee`/
   `pvProjHits`/`pvIncoming` let the two hit each other (`pvDuel`); `P.hp` gets a setter so reaching 0 = loss with full
   health on the spot (no death). Winner adds both stakes; loc change or 20 s offline = loss; 3 min = draw. Rules for
   `dreq`/`duels` are in `database.rules.json` (publish them).
 
+- **Quality fixes** (`ui/131-s136-quality-fixes.js`): during `upd`, writes to `tk.innerHTML` are buffered (one write per
+  frame, only if changed), and tk's shown/hidden state is held by classes `sqtkon/sqtkoff` set at the end of each frame
+  (browsers can't intercept `style.display`; the classes come off when no frames run). Short routine messages matching
+  `SQQUIET` float over your head as drops instead of the text box (not while a panel is open). `drawDrops` also runs in
+  scenes. Cooking (`nearFire(P.x,P.y,45)`) needs a real fire, not a castle. Boats can't enter `BRIDGE` tiles. Hollow's
+  generator in 001 pushes land down within 18 tiles of the map edge (open sea); saves with builds/houses/farm there get
+  them packed into the bag on load.
+- **Voyages** (051): Sera (`n.id==='sera'`, Tidewatch) runs every voyage: `navCards()` on her `twPanel`, `nav_acc/rep/hand`
+  through `xAct` → `voyAct(a,true)`. Harbor posts keep routes and boat upgrades. `navSpot()` = the Navigator's House door
+  (102's tracker uses it).
+- **Descriptions**: `SQSTRIPSTATS` (084) removes a leading stats line from saved description text, so library items saved
+  with their stats in them don't show them twice. `SQPROPS.mkey` uses `rv` or `vr` (dungeon monsters keep variants in `vr`);
+  the Monsters tab lists dungeon-only variants. The wiki (075, inside the MP block) redraws monster pictures on every open
+  and shows health through `wkHp` (monster rules).
+- **Houses on maps** (`ui/132`), **tool smithing / craft prices** (`items/133`: iron/steel axe and pickaxe SM recipes, fishing
+  rod in REC, every BREC/GOODS/SM output gets a SELLP of 60% of its materials when it has none).
+- **Chess** (`multiplayer/134`): Opening Moves left QS (qv 11; qv 10 saves converted by name with `QOLD10`) and is Orla's
+  side quest (`CHS.om` 0-3, card in `chessLobby`, quest log via `window.SQQEXTRA` in 102). Orla levels have `rand` (share of
+  random moves). Resigning with < 20 plies or right after another resignation gives no XP (`CHS.rz`, `CG.noXp`). No damage
+  while at a board. Player chess = section 135's duel flow with `D.kind==='chess'`: requests carry `k`, the side record
+  carries `k` and `m` (moves "from.to", space separated); white = first uid in the tid; `SQPVC` draws the board, applies
+  only legal moves from the other side, 3 min per move, 20 s offline loses; no Tactics XP. Rules: `dreq.k`, `duels.k/m`.
+- **Leaderboard** (`multiplayer/135`): `reset()` (respawn) keeps `kills`; duel wins add to `SQLB.pk` (068 exposes `LB` as
+  `SQLB`); quest points = every finished quest (`SQQPTOTAL`).
+- **Emotes and parties** (`multiplayer/136`): presence carries `em` (emote "kind:n"), `pt` (party id), `hp` (061 reads them
+  as `r.em`, `r.pt`, `r.hpv`). Party invites go through `dreq` with `k:'party'` (135 hands them to `SQPARTYINV`). Party id
+  kept in localStorage `sq_party` for 2 h. START > Party (`ptab` 38) and Emotes (`ptab` 39); G = emotes (in 124's `KA`).
+- **Discord button** (`ui/137`): added to the title menu (`#tsmn`, 061's block, so found by id) after OPTIONS.

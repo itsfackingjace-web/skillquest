@@ -9,9 +9,10 @@ const LB={open:false,cat:'tot',data:{},unsub:null,pubKey:'',pubAt:-1e9,pk:0};
 {const _sn=snap;snap=function(){const s=_sn();if(LB.pk)s.pvpk=LB.pk;return s}}
 {const _ap=applySave;applySave=function(S){_ap(S);LB.pk=Math.max(0,+(S&&S.pvpk)||0)}}
 function lbTick(){if(!MP.on||!MP.user||!FB)return;const now=performance.now();if(now-LB.pubAt<20000)return;LB.pubAt=now;
- const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};const k=JSON.stringify(row);if(k===LB.pubKey)return;
+ const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};const k=JSON.stringify(row);if(k===LB.pubKey)return;
  LB.pubKey=k;FB.db.set(FB.db.ref(FB.D,'lb/'+MP.user.uid),Object.assign(row,{t:FB.db.serverTimestamp()})).catch(e=>{LB.pubKey='';mpErr(e)})}
 setInterval(()=>{try{lbTick()}catch(e){}},5000);
+window.SQLB=LB;
 // ---- the categories ----
 const lbCats=()=>{const c=[{k:'tot',n:'Overall',sub:'Total level',ic:'★',col:'#f8d048'},{k:'qp',n:'Quests',sub:'Quest points',ic:'!',col:'#68b8f8'},{k:'pk',n:'PvP kills',sub:'Players defeated',ic:'☠',col:'#e85848'},{k:'mk',n:'Monsters',sub:'Monsters slain',ic:'⚔',col:'#a8a8b8'},{k:'bk',n:'World bosses',sub:'World bosses defeated',ic:'♛',col:'#c83020'}];
  SKN.forEach((n,i)=>c.push({k:'s'+i,n,sub:n+' level',ic:n[0],col:SKC[i]||'#88a'}));return c};

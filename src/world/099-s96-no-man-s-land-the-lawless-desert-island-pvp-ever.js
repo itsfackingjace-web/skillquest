@@ -2,7 +2,7 @@
 // South of Briarwood and west of the Shattered Expanse. Mesas, cracked earth, cactus flats, a ghost town (Dustwater),
 // Boot Hill, an old silver mine and an oasis. Giant scorpions, Cacticus (cactus monsters that pretend to be cacti)
 // and desert bandits (they keep their distance and shoot; watch for the "!" and roll). PvP is always on here.
-// Getting there: the "Lawless Waters" voyage at the Tidewatch harbor post (after Into Briarwood), or sail off
+// Getting there: the "Lawless Waters" voyage from Sera, the Navigator in Tidewatch (after Into Briarwood), or sail off
 // Briarwood's south edge / the Shattered Expanse's west edge once the route is charted.
 {const K='#181018',ID='nomans';
  WORLD_REGIONS[ID]={id:ID,name:'No Man\'s Land',width:170,height:150,seed:2291.3,generationVersion:1,biome:'Lawless desert: mesas, cactus flats and a ghost town. PvP is always on',lv:'45–75',dir:'south-west',unlock:'nomansRoute',hint:'Chart the Lawless Waters from Tidewatch.'};
@@ -13,7 +13,7 @@
  // ---- the voyage that charts it ----
  try{const tw=HARBOR_POSTS.find(p=>p.id==='tidewatch');if(tw)BUOYS.sw=buoySpot(boatWater(tw.x,tw.y),16,N-16)}catch(e){}
  VOYS.push({id:'lawless',name:'Lawless Waters',post:'tidewatch',needs:['briar'],buoy:'sw',gold:150,unlock:['nomansRoute'],
-  d:'Nobody charts the south-western lane: it leads to No Man\'s Land, where there is no law and everyone fights everyone. Find the lane anyway, if you dare.',steps:['Sail your boat to the red buoy far south-west of Hollow Island','Report at the Tidewatch harbor post']});
+  d:'Nobody charts the south-western lane: it leads to No Man\'s Land, where there is no law and everyone fights everyone. Find the lane anyway, if you dare.',steps:['Sail your boat to the red buoy far south-west of Hollow Island','Report to Sera, the Navigator in Tidewatch']});
 
  // ---- the land ----
  RG_GENS[ID]=function*(D){const C=rgCtx(D),{W,H,T}=C;

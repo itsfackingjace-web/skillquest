@@ -32,7 +32,7 @@
    if(!goal)return null;const st=V[goal.id];
    if(st&&st!==99)return{step:goal.name+': '+goal.steps[st-1],e:{kind:'voy',q:goal,step:goal.steps[st-1]}};
    if(goal.req&&!goal.req())return{step:goal.name+': '+(goal.reqTxt||'not ready yet'),e:null};
-   const post=HARBOR_POSTS.find(p=>p.id===goal.post);return{step:'Voyage: '+goal.name+' (ask at the '+(post?post.name:'')+' harbor post)',e:{kind:'voyAvail',q:goal}}}catch(e){return null}}
+   const post=HARBOR_POSTS.find(p=>p.id===goal.post);return{step:'Voyage: '+goal.name+' (ask Sera, the Navigator in Tidewatch)',e:{kind:'voyAvail',q:goal}}}catch(e){return null}}
  const villList=()=>VILL.filter(t=>typeof SQ_SIDE!=='undefined'&&SQ_SIDE[t]).map(t=>{const s=SQ_SIDE[t],L=SIDE_QS[t]||[];return town(t)+(s.completed?' ✓':' '+s.index+'/'+L.length)}).join(' · ');
  function qAll(){const out=[];
   // Elder Rowan
@@ -54,7 +54,9 @@
   if(typeof VOYS!=='undefined'){const V=VQ();for(const q of VOYS){const id='v:'+q.id,post=HARBOR_POSTS.find(p=>p.id===q.post);
    if(V[q.id]===99)out.push({id,cat:'Voyage',area:'hollow',name:q.name,st:'done',rew:q.gold?q.gold+' gold':''});
    else if(V[q.id])out.push({id,cat:'Voyage',area:'hollow',name:q.name,desc:q.d,st:'active',step:q.steps[V[q.id]-1],prog:V[q.id]+'/'+q.steps.length,rew:q.gold?q.gold+' gold':'',q,kind:'voy',si:V[q.id]-1});
-   else{let ok=true;try{ok=typeof vNeedsOK!=='function'||vNeedsOK(q)}catch(e){}if(ok)out.push({id,cat:'Voyage',area:'hollow',name:q.name,desc:q.d,st:'avail',step:'Ask at the '+(post?post.name:'')+' harbor post',rew:q.gold?q.gold+' gold':'',q,kind:'voyAvail'})}}}
+   else{let ok=true;try{ok=typeof vNeedsOK!=='function'||vNeedsOK(q)}catch(e){}if(ok)out.push({id,cat:'Voyage',area:'hollow',name:q.name,desc:q.d,st:'avail',step:'Ask Sera, the Navigator in Tidewatch',rew:q.gold?q.gold+' gold':'',q,kind:'voyAvail'})}}}
+  // quests other sections add (Orla's Opening Moves): window.SQQEXTRA = [() => [entries]]
+  if(window.SQQEXTRA)for(const f of SQQEXTRA)try{for(const e of f()||[])out.push(e)}catch(x){}
   return out}
  window.SQQUESTS=qAll;
  function tracked(L){if(TRK==='none')return null;L=L||qAll();let e=TRK&&L.find(e=>e.id===TRK&&e.st!=='done');if(!e)e=L.find(e=>e.st==='active'&&e.kind==='main')||L.find(e=>e.st==='active')||L.find(e=>e.st==='avail');return e||null}
@@ -70,14 +72,15 @@
   return best}
  function nearMob(type){let best=null,bd=1e9;for(const m of en){if(m.dead||m.hp<=0||m.summon)continue;if(type&&m.type!==type&&!(type==='wolf'&&/wolf/.test(m.type)))continue;const d=(m.x-P.x)**2+(m.y-P.y)**2;if(d<bd){bd=d;best={area:curArea(),x:m.x,y:m.y,mob:1}}}return best}
  function regionGiver(rg,id){const R=SCENE&&SCENE.room;if(!R||R.region!==rg)return{area:rg};for(const it of R.items){const n=it.n;if(n&&(n.id===id||n.name===id))return{area:rg,x:n.x,y:n.y}}return{area:rg}}
- function target(e){if(!e)return null;
+ function target(e){if(!e)return null;if(e.at)return e.at;
   if(e.kind==='main'||(!e.kind&&e.cat==='Elder Rowan')){const q=e.q;if(e.st==='avail'||e.ready)return npcAt('elder');if(e.via)return target(e.via);if(e.vill)return target(e.vill.e);
    if(q.type==='give'){const s=SRC[q.item];return Array.isArray(s)?nearObj(s):null}if(q.type==='kill')return nearMob(q.item||'slime');
    if(q.type==='hermit')return npcAt('hermit');if(q.type==='talk')return npcAt('harbor');return null}
   if(e.kind==='side'){const rg=e.area,gv=e.giver;const giverT=()=>rg==='hollow'?npcAt(gv):regionGiver(rg,gv);if(e.st==='avail'||e.ready)return giverT();
    const q=e.q;if(q.type==='give'){const s=SRC[q.item];return Array.isArray(s)?(nearObj(s)||null):null}if(q.type==='kill')return nearMob(q.item);return null}
-  if(e.kind==='voyAvail'){const p=HARBOR_POSTS.find(p=>p.id===e.q.post);return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}
+  if(e.kind==='voyAvail'){const p=e.q&&e.q.id&&typeof navSpot==='function'?navSpot():HARBOR_POSTS.find(p=>p.id===e.q.post);return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}
   if(e.kind==='voy'){const q=e.q,s=e.step||'';if(/buoy/i.test(s)&&q.buoy&&BUOYS[q.buoy]){const b=BUOYS[q.buoy];return{area:'hollow',x:b.x*16+8,y:b.y*16+8}}
+   if(/Navigator|Sera/.test(s)&&typeof navSpot==='function'){const p=navSpot();return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}
    if(/^Report/i.test(s)||/post/i.test(s)){let p=null;if(q.report==='any'||/any harbor/i.test(s)){let bd=1e9;for(const h of HARBOR_POSTS){const d=(h.x*16-P.x)**2+(h.y*16-P.y)**2;if(d<bd){bd=d;p=h}}}else p=HARBOR_POSTS.find(h=>s.includes(h.name))||HARBOR_POSTS.find(h=>h.id===q.post);
     return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}return null}
   return null}
