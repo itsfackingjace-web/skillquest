@@ -135,7 +135,7 @@ function drawCrosshair(tm){if(!GPON||!TL.bow||!aimLive()||dead||ROLLT>0)return;i
  g.globalAlpha=Math.min(1,1.2-(performance.now()-AIM.t)/1000);for(const[a,b,w,hh]of[[-k-2,-1,3,3],[k,-1,3,3],[-1,-k-2,3,3],[-1,k,3,3]]){Rg(x+a-1,y+b-1,w+2,hh+2,O)}
  Rg(x-k-2,y,3,1,c);Rg(x+k,y,3,1,c);Rg(x,y-k-2,1,3,c);Rg(x,y+k,1,3,c);Rg(x,y,1,1,c);g.globalAlpha=1}
 // crosshair goes on top of the night tint so it stays easy to see
-const _dh25=drawHUD;drawHUD=function(){if(GPON&&!menuOpen){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);drawCrosshair(performance.now()/1000);g.restore()}_dh25()};
+const _dh25=drawHUD;drawHUD=function(){if(GPON&&!menuOpen){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);drawCrosshair(performance.now()/1000);g.restore()}_dh25()};
 // shooting shows a drawn bow instead of the sword swing
 let BOWT=0,BOWD=[0,1];
 const _pP25=pP;pP=function(tm){if(BOWT<=0)return _pP25(tm);const sw=swing;swing=0;_pP25(tm);swing=sw;if(hurt>0&&Math.floor(tm*20)%2)return;

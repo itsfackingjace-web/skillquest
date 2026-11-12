@@ -227,7 +227,7 @@ function drawCastle(b,tm){const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,S=['#5a5650
  R(X0+2,base-1,w-4,2,'rgba(0,0,0,.25)')}
 {const _db=drBld;drBld=function(b,tm){if(b&&b.castle)return drawCastle(b,tm);return _db(b,tm)}}
 // where a castle would go, while placing
-{const _dh=drawHUD;drawHUD=function(){if(BUILD&&BUILD.k==='castle'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=canPlace(x,y),cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);
+{const _dh=drawHUD;drawHUD=function(){if(BUILD&&BUILD.k==='castle'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=canPlace(x,y),cx=camX(),cy=camY();
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drawCastle({w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}_dh()}}
 // the great hall
 {const _rb=ROOMBG;ROOMBG=(R,W2,H2)=>{if(!R.castle)return _rb(R,W2,H2);const S=['#6a645a','#7a746a','#8a8478','#9a9488'];Rg(-5,-5,W2+10,H2+10,'#141016');

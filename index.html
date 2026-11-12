@@ -189,19 +189,22 @@ function upd(dt){
  en=en.filter(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<260);
  if(P.hp<=0){dead=true;time=0;en=[]}
 }
+// the camera: centred on you, to the nearest screen pixel (not the nearest world pixel) so the world scrolls smoothly;
+// a whole number of world pixels from the screen's left/top edge to you, so you never jump back and forth
+function camX(){return Math.round(P.x*Z)/Z-Math.floor(W/Z/2)}function camY(){return Math.round(P.y*Z)/Z-Math.floor(H/Z/2)}
 function draw(){
  g.setTransform(1,0,0,1,0,0);g.fillStyle='#0b1220';g.fillRect(0,0,W,H);
- const vw=W/Z,vh=H/Z,cx=P.x-vw/2,cy=P.y-vh/2;
- g.setTransform(Z,0,0,Z,-Math.round(cx)*Z,-Math.round(cy)*Z);
+ const vw=W/Z,vh=H/Z,cx=camX(),cy=camY();
+ g.setTransform(Z,0,0,Z,-Math.round(cx*Z),-Math.round(cy*Z));
  const x0=Math.max(0,Math.floor(cx/T)),y0=Math.max(0,Math.floor(cy/T)),x1=Math.min(N-1,Math.ceil((cx+vw)/T)),y1=Math.min(N-1,Math.ceil((cy+vh)/T));
  const tm=performance.now()/1000;NEWDRAW(cx,cy,x0,y0,x1,y1,vw,vh,tm);
  // darkness
  g.setTransform(1,0,0,1,0,0);const dk=dark();
  if(dk>0){// the night: darker everywhere except around you when your Flame Aura is lit
-  const AU=window.SQAURALIT&&SQAURALIT(),nightFill=(rgb,a)=>{if(!AU){g.fillStyle='rgba('+rgb+','+a+')';return}const sx=(P.x-Math.round(cx))*Z,sy=(P.y-4-Math.round(cy))*Z,r=AU*Z,gr=g.createRadialGradient(sx,sy,r*.35,sx,sy,r);
+  const AU=window.SQAURALIT&&SQAURALIT(),nightFill=(rgb,a)=>{if(!AU){g.fillStyle='rgba('+rgb+','+a+')';return}const sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=AU*Z,gr=g.createRadialGradient(sx,sy,r*.35,sx,sy,r);
    gr.addColorStop(0,'rgba('+rgb+','+(a*.08)+')');gr.addColorStop(.6,'rgba('+rgb+','+(a*.45)+')');gr.addColorStop(1,'rgba('+rgb+','+a+')');g.fillStyle=gr};
   g.globalCompositeOperation='multiply';nightFill('60,70,160',dk*.7);g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';nightFill('6,8,30',dk*.2);g.fillRect(0,0,W,H);
-  g.globalCompositeOperation='lighter';for(const f of fires){const sx=(f.x-Math.round(cx))*Z,sy=(f.y-Math.round(cy))*Z,r=48*(typeof fireLR==='function'?fireLR():1)*Z,gr=g.createRadialGradient(sx,sy,0,sx,sy,r);gr.addColorStop(0,'rgba(255,150,40,'+(.45*dk)+')');gr.addColorStop(1,'rgba(255,150,40,0)');g.fillStyle=gr;g.fillRect(sx-r,sy-r,r*2,r*2)}
+  g.globalCompositeOperation='lighter';for(const f of fires){const sx=(f.x-cx)*Z,sy=(f.y-cy)*Z,r=48*(typeof fireLR==='function'?fireLR():1)*Z,gr=g.createRadialGradient(sx,sy,0,sx,sy,r);gr.addColorStop(0,'rgba(255,150,40,'+(.45*dk)+')');gr.addColorStop(1,'rgba(255,150,40,0)');g.fillStyle=gr;g.fillRect(sx-r,sy-r,r*2,r*2)}
   g.globalCompositeOperation='source-over'}
  {const vg=g.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=vg;g.fillRect(0,0,W,H);if(dk>0&&dk<.55){g.fillStyle='rgba(255,130,50,'+(.14*(1-dk/.55))+')';g.fillRect(0,0,W,H)}}
  drawHUD(); // Gen 3-style HUD, section 10
@@ -1737,7 +1740,7 @@ function tgCover(cx,fy,hw,hh,tm){const tx=Math.floor(cx/16),ty=Math.floor(fy/16)
 const _nd18=NEWDRAW;NEWDRAW=function(...a){_nd18(...a);if(SCENE)return;const tm=a[8];
  if(!dead)tgCover(P.x,P.y+7,9,7,tm);for(const n of en)if(n.type!=='boss')tgCover(n.x,n.y+6,9,4,tm)};
 // --- night: blue palette tint instead of a flat dark overlay, and lit windows ---
-const _dh18=drawHUD;drawHUD=function(){const dk=SCENE?0:dark();if(dk>.25){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
+const _dh18=drawHUD;drawHUD=function(){const dk=SCENE?0:dark();if(dk>.25){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
   const lit=(X0,w,base,k)=>{for(const wx of[X0+8,X0+w-20]){g.fillStyle='rgba(255,210,110,'+(.55*dk)+')';g.fillRect(wx,base-22,12,10);g.fillStyle='rgba(255,200,100,'+(.12*dk)+')';g.fillRect(wx-4,base-26,20,18)}};
   for(const b of BLD)lit(b.tx*16,b.w*16,(b.ty+2)*16);for(const h of HOUSES){const w=(h.w||5);lit((h.x-(w-1)/2)*16,w*16,(h.y+1)*16)}g.restore()}_dh18()};
 // --- fence icon ---
@@ -2050,7 +2053,7 @@ const _dr20=drawRoom;drawRoom=function(tm){_dr20(tm);if(!SCENE)return;
   Rg(x0+4,y0,8,8,O);Rg(x0+5,y0+1,6,6,sk);Rg(x0+5,y0+1,6,2,hr);Rg(x0+4,y0+2,1,3,hr);Rg(x0+11,y0+2,1,3,hr);Rg(x0+6,y0+5,2,1,O);Rg(x0+9,y0+5,2,1,O);
   const k=(tm*.8+n.bed[0]*.3)%1;g.save();g.globalAlpha=1-k;g.font='700 8px "Pixelify Sans",monospace';g.fillStyle='#ffffff';g.strokeStyle=O;g.lineWidth=2;g.strokeText('z',x0+12+k*6,y0-2-k*12);g.fillText('z',x0+12+k*6,y0-2-k*12);g.restore()}};
 // lamp glow at night
-const _dh20=drawHUD;drawHUD=function(){const dk=SCENE?0:dark();if(dk>.15){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
+const _dh20=drawHUD;drawHUD=function(){const dk=SCENE?0:dark();if(dk>.15){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
   for(const[x,y]of LAMPS){if(Math.abs(x*16-P.x)>W/Z||Math.abs(y*16-P.y)>H/Z)continue;const gr=g.createRadialGradient(x*16+8,y*16-12,2,x*16+8,y*16-12,40);gr.addColorStop(0,'rgba(255,210,120,'+(.5*dk)+')');gr.addColorStop(1,'rgba(255,200,100,0)');g.fillStyle=gr;g.fillRect(x*16-34,y*16-54,84,84)}g.restore()}_dh20()};
 // map: towns, road, bridge
 const _dmap20=drawMap;drawMap=function(){_dmap20();const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#a86830';for(const i of BRIDGE)x.fillRect(i%N,(i/N)|0,1,1);
@@ -2182,12 +2185,12 @@ function drawGulls(tm){if(dark()>.3)return;for(let k=0;k<3;k++){const a=tm*(.25+
   if(Math.abs(x-P.x)>W/Z||Math.abs(y-P.y)>H/Z)continue;const f=Math.floor(tm*6+k)%2;g.fillStyle='rgba(0,0,0,.18)';g.fillRect(x-3,y+34,6,2);
   Rg(x-5,y-(f?2:0),2,1,O);Rg(x-3,y-(f?1:0),2,1,O);Rg(x-1,y,2,2,'#f8f8f8');Rg(x+1,y-(f?1:0),2,1,O);Rg(x+3,y-(f?2:0),2,1,O);Rg(x-1,y+1,2,1,'#c0c8d0')}}
 const _nd21=NEWDRAW;NEWDRAW=function(...a){_nd21(...a);if(SCENE)return;const tm=a[8];drawCombatFx(tm);
- if(RAINV>.05){g.fillStyle='rgba(210,230,255,'+(.55*RAINV)+')';const t=tm;for(let k=0;k<Math.round(26*RAINV);k++){const sx=Math.floor((hsh(k,Math.floor(t*6))%1000)/1000*(W/Z))+Math.round(P.x-W/Z/2),sy=Math.floor((hsh(k+99,Math.floor(t*6))%1000)/1000*(H/Z))+Math.round(P.y-H/Z/2);
+ if(RAINV>.05){g.fillStyle='rgba(210,230,255,'+(.55*RAINV)+')';const t=tm;for(let k=0;k<Math.round(26*RAINV);k++){const sx=Math.floor((hsh(k,Math.floor(t*6))%1000)/1000*(W/Z))+camX(),sy=Math.floor((hsh(k+99,Math.floor(t*6))%1000)/1000*(H/Z))+camY();
   const ti=tile[Math.floor(sy/16)*N+Math.floor(sx/16)];if(ti===0){g.fillRect(sx-2,sy,1,1);g.fillRect(sx+2,sy,1,1);g.fillRect(sx-1,sy-1,3,1)}else{g.fillRect(sx-1,sy,1,1);g.fillRect(sx+1,sy,1,1);g.fillRect(sx,sy-1,1,1)}}}
  if(Math.abs(P.x-TX*16)<500&&Math.abs(P.y-TY*16)<400)drawGulls(tm);};
 const _dr21=drawRoom;drawRoom=function(tm){_dr21(tm);if(!SCENE)return;drawCombatFx(tm)};
 // screen-space weather (after the night tint so rain stays visible), fireflies, HUD icon
-function drawWeather(){const tm=performance.now()/1000,cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);
+function drawWeather(){const tm=performance.now()/1000,cx=camX(),cy=camY();
  if(RAINV>.03){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(40,52,78,'+(.22*RAINV)+')';g.fillRect(0,0,W,H);g.fillStyle='rgba(200,220,255,'+(.55*RAINV)+')';
   const n=Math.round(140*RAINV),ww=W/Z,hh=H/Z;for(let k=0;k<n;k++){const sp=1+(k%3)*.25,x=((hsh(k,3)%10000)/10000*ww+(-tm*40*sp)+cx*0)%ww,y=((hsh(k,7)%10000)/10000*hh+tm*260*sp)%hh;
    const X=Math.round(((x%ww)+ww)%ww)*Z,Y=Math.round(y)*Z;g.fillRect(X,Y,Z,5*Z);g.fillRect(X-Z,Y+5*Z,Z,2*Z)}g.restore()}
@@ -2460,7 +2463,7 @@ function drawCrosshair(tm){if(!GPON||!TL.bow||!aimLive()||dead||ROLLT>0)return;i
  g.globalAlpha=Math.min(1,1.2-(performance.now()-AIM.t)/1000);for(const[a,b,w,hh]of[[-k-2,-1,3,3],[k,-1,3,3],[-1,-k-2,3,3],[-1,k,3,3]]){Rg(x+a-1,y+b-1,w+2,hh+2,O)}
  Rg(x-k-2,y,3,1,c);Rg(x+k,y,3,1,c);Rg(x,y-k-2,1,3,c);Rg(x,y+k,1,3,c);Rg(x,y,1,1,c);g.globalAlpha=1}
 // crosshair goes on top of the night tint so it stays easy to see
-const _dh25=drawHUD;drawHUD=function(){if(GPON&&!menuOpen){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);drawCrosshair(performance.now()/1000);g.restore()}_dh25()};
+const _dh25=drawHUD;drawHUD=function(){if(GPON&&!menuOpen){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);drawCrosshair(performance.now()/1000);g.restore()}_dh25()};
 // shooting shows a drawn bow instead of the sword swing
 let BOWT=0,BOWD=[0,1];
 const _pP25=pP;pP=function(tm){if(BOWT<=0)return _pP25(tm);const sw=swing;swing=0;_pP25(tm);swing=sw;if(hurt>0&&Math.floor(tm*20)%2)return;
@@ -2792,7 +2795,7 @@ const _pP28=pP;pP=function(tm){const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==
 const _nd28=NEWDRAW;NEWDRAW=function(...a){_nd28(...a);if(!SCENE){drawSpells(a[8]);drawParts()}};
 const _dr28=drawRoom;drawRoom=function(tm){_dr28(tm);drawSpells(tm);drawParts()};
 // wand crosshair (controller)
-const _dh28=drawHUD;drawHUD=function(){if(typeof GPON!=='undefined'&&GPON&&WAND&&!menuOpen&&typeof aimLive==='function'&&aimLive()&&!dead){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2),[dx,dy]=castDir(),x=Math.round(P.x+dx*34),y=Math.round(P.y-4+dy*34),c=WSP[WAND].col;
+const _dh28=drawHUD;drawHUD=function(){if(typeof GPON!=='undefined'&&GPON&&WAND&&!menuOpen&&typeof aimLive==='function'&&aimLive()&&!dead){const cx=camX(),cy=camY(),[dx,dy]=castDir(),x=Math.round(P.x+dx*34),y=Math.round(P.y-4+dy*34),c=WSP[WAND].col;
   g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);for(const[a,b]of[[-6,-1],[4,-1],[-1,-6],[-1,4]])Rg(x+a-1,y+b-1,5,5,O);Rg(x-6,y,3,1,c);Rg(x+4,y,3,1,c);Rg(x,y-6,1,3,c);Rg(x,y+4,1,3,c);Rg(x,y,1,1,c);g.restore()}_dh28()};
 // --- update: mana, spells, particles, effects, upgrade watcher ---
 const _u28=upd;upd=function(dt){watchUpgrades();const paused=menuOpen||pnOpen;
@@ -2906,7 +2909,7 @@ function drawUlt(tm){const f=ULTFX;if(f&&!SCENE===!SCENE){const p=f.t/f.life,x=M
     g.globalAlpha=.5*(1-p/.6);g.fillStyle='#fffbd0';g.beginPath();g.arc(bx,by-4,12,0,6.283);g.fill();g.globalAlpha=1}}}
  for(const n of en){if(n.dead||!(n.frozen>0))continue;const big=n.type==='boss'||n.type==='bonelord'||n.big,w=big?30:16,hh=big?34:16,x0=Math.round(n.x-w/2),y0=Math.round(n.y+6-hh);
   g.globalAlpha=.55;Rg(x0,y0,w,hh,'#a8e0ff');g.globalAlpha=1;Rg(x0,y0,w,1,'#ffffff');Rg(x0,y0,1,hh,'#ffffff');Rg(x0+w-1,y0,1,hh,'#68b8e8');Rg(x0,y0+hh-1,w,1,'#68b8e8');Rg(x0+3,y0+3,2,1,'#ffffff')}}
-const _dh29=drawHUD;drawHUD=function(){if(!menuOpen){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);drawUlt(performance.now()/1000);g.restore()}if(ULTFX&&ULTFX.flash&&ULTFX.t<ULTFX.flash){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(255,255,230,'+(.55*(1-ULTFX.t/ULTFX.flash))+')';g.fillRect(0,0,W,H);g.restore()}_dh29()};
+const _dh29=drawHUD;drawHUD=function(){if(!menuOpen){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);drawUlt(performance.now()/1000);g.restore()}if(ULTFX&&ULTFX.flash&&ULTFX.t<ULTFX.flash){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(255,255,230,'+(.55*(1-ULTFX.t/ULTFX.flash))+')';g.fillRect(0,0,W,H);g.restore()}_dh29()};
 // ---------------------------------------------------------------- 30. Touch ULT button; controllers on phones and tablets
 // A ULT button appears for touch players with a wand. The Options screen shows live controller status (connected,
 // waiting for a button press, or blocked by the page) with a button test, and phones get mappings that avoid
@@ -8391,7 +8394,7 @@ const pvFront=(maxAl,minAl,wide)=>{let best=null,bd=1e9;for(const r of MP.player
    try{sfx(el==='fire'?'cfire':el==='ice'?'cice':'cstorm')}catch(e){}return}return _fx(u,v)}}
 {const _u=upd;upd=function(dt){const fz=PVU.frozen>performance.now()&&!menuOpen&&!pnOpen&&!dead,px=P.x,py=P.y;_u(dt);if(fz){P.x=px;P.y=py}
   if(menuOpen||pnOpen)return;for(const u of PVU.list)u.t+=dt;PVU.list=PVU.list.filter(u=>u.t<u.life)}}
-{const _dh=drawHUD;drawHUD=function(){if(!menuOpen&&PVU.list.length){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2),tm=performance.now()/1000,f0=ULTFX,px=P.x,py=P.y;
+{const _dh=drawHUD;drawHUD=function(){if(!menuOpen&&PVU.list.length){const cx=camX(),cy=camY(),tm=performance.now()/1000,f0=ULTFX,px=P.x,py=P.y;
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{for(const u of PVU.list){ULTFX=u;P.x=u.x;P.y=u.y;drawUlt(tm)}}finally{ULTFX=f0;P.x=px;P.y=py;g.restore()}
    for(const u of PVU.list)if(u.flash&&u.t<u.flash){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(255,255,230,'+(.45*(1-u.t/u.flash))+')';g.fillRect(0,0,W,H);g.restore()}}
   _dh()}}
@@ -8450,7 +8453,7 @@ function rhSign(h){const nm=h._foreign?fname(h._owner):(MP.on?myName():pname());
  g.fillStyle='#3a2414';g.fillRect(X-1,y-1,tw+2,10);g.fillStyle='#f4e8c8';g.fillRect(X,y,tw,8);g.fillStyle='#d8c098';g.fillRect(X,y+7,tw,1);g.fillStyle='#3a2414';g.textAlign='center';g.textBaseline='middle';g.fillText(nm,cx,y+4.5);g.restore()}
 {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rhs'){try{rhSign(it.h)}catch(e){}return}if(it&&it.t==='_rh'){try{drBld({...HOUSE_STYLE,w:7,tx:it.h.x-3,ty:it.h.y-1,castle:!!it.h.castle},tm)}catch(e){}return}return _df(it,tm)}}
 // where it would go, while placing
-{const _dh=drawHUD;drawHUD=function(){const R=rbR();if(R&&BUILD&&BUILD.k==='house'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=rhFits(R,x,y),cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);
+{const _dh=drawHUD;drawHUD=function(){const R=rbR();if(R&&BUILD&&BUILD.k==='house'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=rhFits(R,x,y),cx=camX(),cy=camY();
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drBld({...HOUSE_STYLE,w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}_dh()}}
 // ---- saving ----
 {const _sn=snap;snap=function(){const s=_sn();if(RH.length)s.rh=RH.map(h=>({id:h.id,rg:h.rg,x:h.x,y:h.y,f:[...h.furn].map(([i,f])=>[i,f.t,f.items||null])}));
@@ -8645,7 +8648,7 @@ lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.data
 window.SQIGN=IGN;
 // other players' Flame Aura glows on your screen too
 {const _dh=drawHUD;drawHUD=function(){try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
-  if(dk>.05&&MP.on){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);let st=false;
+  if(dk>.05&&MP.on){const cx=camX(),cy=camY();let st=false;
    for(const r of mpVis()){if(!r.au)continue;if(!st){g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';st=true}
     const sx=(r.x-cx)*Z,sy=(r.y-4-cy)*Z,rad=120*Z,gr=g.createRadialGradient(sx,sy,0,sx,sy,rad);gr.addColorStop(0,'rgba(255,215,150,'+(.4*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.2*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
     g.fillStyle=gr;g.fillRect(sx-rad*1.1,sy-rad*1.1,rad*2.2,rad*2.2)}if(st)g.restore()}}catch(e){}_dh()}}
@@ -8752,7 +8755,7 @@ function wbDrawAttacks(H,tm){const now=wbNow(),T=H.B.T;g.save();
    else if(now<a.hit+350){g.globalAlpha=1-(now-a.hit)/350;g.fillStyle=T.col;g.fillRect(0,-a.w/2,a.len,a.w);g.fillStyle=T.c2;g.fillRect(0,-a.w/4,a.len,a.w/2)}g.restore()}}
  g.restore()}
 // drawn over the world, under the HUD
-{const _dh=drawHUD;drawHUD=function(){const HB=wbHere();if(HB&&!menuOpen){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{wbDrawAttacks(HB,performance.now()/1000)}catch(e){}g.restore()}_dh()}}
+{const _dh=drawHUD;drawHUD=function(){const HB=wbHere();if(HB&&!menuOpen){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{wbDrawAttacks(HB,performance.now()/1000)}catch(e){}g.restore()}_dh()}}
 // ---- the four bosses ----
 function wbEll(cx,cy,rx,ry,col){g.fillStyle=col;for(let y=-ry;y<=ry;y++){const w=Math.round(rx*Math.sqrt(Math.max(0,1-(y*y)/(ry*ry))));g.fillRect(Math.round(cx-w),Math.round(cy+y),w*2,1)}}
 function wbEllO(cx,cy,rx,ry,col){wbEll(cx,cy,rx+1,ry+1,O);wbEll(cx,cy,rx,ry,col)}
@@ -9289,6 +9292,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-4',d:'Nov 12, 2026',t:'Smooth camera',n:['No more shaky screen: your character used to jump a little back and forth while walking, especially on phones. You now stay perfectly still in the middle of the screen.','The world also scrolls smoothly now instead of in small jumps, so walking, sprinting and sailing look much steadier.']},
  {v:'2026.11.12-3',d:'Nov 12, 2026',t:'Check for updates and move your buttons',n:['Phones and tablets: move the touch buttons where your thumbs like them. Options > Controls > Touch > Move my buttons, then drag HIT, EAT, FIRE, TALK, ROLL, ULT and BOW/CAST anywhere, and make any of them bigger or smaller. Portrait and landscape each keep their own layout.','No more refreshing to get the newest version: Options > Check for updates. If there\'s a new version, UPDATE NOW saves your game and loads it.','The game also checks by itself every 10 minutes and shows an "Update ready" bar at the top. Tap UPDATE when it suits you, or LATER to keep playing.']},
  {v:'2026.11.12-2',d:'Nov 12, 2026',t:'Your own controls',n:['Change your keys and controller buttons: Options > Controls. Pick an action, tap Change, then press the new key or button. Taking one another action uses swaps the two.','Keyboard: every action can move, including walking, sprinting, hitting, eating, the campfire, talking, rolling, the ultimate and the bag, map, quests, skills and craft screens. The middle and side mouse buttons can be used too.','Controller: hit, talk/use, roll, eat, campfire, bow/wand, L1, quests, sprint, bag and map can all go on the buttons you like. Menus keep ✕ to pick and ○ to go back.','Your layout is kept on each device, and Reset puts the original back. The button hints and the help box show your keys.']},
  {v:'2026.11.12-1',d:'Nov 12, 2026',t:'HIT does what you meant',n:['Your weapon in hand now looks just like it does in your bag: swords, the sledgehammer, axes, pickaxes, wands and bows are drawn with their own item picture as you swing, chop, mine, cast and shoot. Other players see your sword swings the same way.','Chopping and mining now show just your axe or pickaxe swing, never the sword swing on top of it. This works for every kind of tree, ore and boulder, on every island and in dungeons too, and other players see it the same way.','HIT no longer casts spells. With a wand it used to fire a spell whenever a monster was somewhere ahead, even while you were chopping a tree. Use the CAST button (or the mouse on a computer) to cast.','Casting a spell no longer flashes a sword swing at the end.']},
@@ -10553,7 +10557,7 @@ var LUX={};
  window.SQAURALIT=()=>{try{return!dead&&perk(5,'fi_aura')&&myFire()?150:0}catch(e){return 0}};
  const myFire=()=>{if(fires.some(f=>!f._rp&&f.life>0))return true;const st=window.FIRESTASH;if(st)for(const k in st)if(Array.isArray(st[k])&&st[k].some(f=>!f._rp&&f.life>0))return true;return false};
  const _dh=drawHUD;drawHUD=function(){try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
-   if(dk>.05&&!dead&&perk(5,'fi_aura')&&myFire()){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2),sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=120*Z,fl=1+Math.sin(performance.now()/180)*.03;
+   if(dk>.05&&!dead&&perk(5,'fi_aura')&&myFire()){const cx=camX(),cy=camY(),sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=120*Z,fl=1+Math.sin(performance.now()/180)*.03;
     g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(sx,sy,0,sx,sy,r*fl);gr.addColorStop(0,'rgba(255,215,150,'+(.22*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.1*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
     g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){}_dh()}}
 // the leaderboards take the controller / keyboard while they're open (title screen)
@@ -11008,7 +11012,7 @@ function drawCastle(b,tm){const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,S=['#5a5650
  R(X0+2,base-1,w-4,2,'rgba(0,0,0,.25)')}
 {const _db=drBld;drBld=function(b,tm){if(b&&b.castle)return drawCastle(b,tm);return _db(b,tm)}}
 // where a castle would go, while placing
-{const _dh=drawHUD;drawHUD=function(){if(BUILD&&BUILD.k==='castle'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=canPlace(x,y),cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);
+{const _dh=drawHUD;drawHUD=function(){if(BUILD&&BUILD.k==='castle'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=canPlace(x,y),cx=camX(),cy=camY();
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drawCastle({w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}_dh()}}
 // the great hall
 {const _rb=ROOMBG;ROOMBG=(R,W2,H2)=>{if(!R.castle)return _rb(R,W2,H2);const S=['#6a645a','#7a746a','#8a8478','#9a9488'];Rg(-5,-5,W2+10,H2+10,'#141016');
@@ -15212,6 +15216,12 @@ window.SQA=SQA;
    '<button class="sb" data-ct="tedit" style="width:100%;margin-top:6px"><b>Move my buttons</b></button><button class="sb" data-ct="treset" style="width:100%">Reset both layouts</button>'}
  function act(a){if(a==='tedit'){start();return false}if(a==='treset'){LAY={};save();apply()}}
  window.SQTOUCH={html,act,start,done,apply,get layout(){return LAY},get editing(){return ED.on}}})();
+// ---- 132. Smooth camera ----
+// The camera follows you to the nearest screen pixel (camX/camY in 001), so the world glides instead of stepping a whole
+// world pixel (8 screen pixels on a phone) at a time. You (and everything drawn with you in pP: gear, pets, your boat)
+// are drawn at the same screen-pixel position, so you stay perfectly still in the middle of the screen while you walk.
+(()=>{const _pp=pP;pP=function(tm){const dx=Math.round(P.x*Z)/Z-Math.round(P.x),dy=Math.round(P.y*Z)/Z-Math.round(P.y);
+  if(!dx&&!dy)return _pp.apply(this,arguments);g.save();g.translate(dx,dy);try{return _pp.apply(this,arguments)}finally{g.restore()}}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

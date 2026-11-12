@@ -127,7 +127,7 @@ const _pP28=pP;pP=function(tm){const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==
 const _nd28=NEWDRAW;NEWDRAW=function(...a){_nd28(...a);if(!SCENE){drawSpells(a[8]);drawParts()}};
 const _dr28=drawRoom;drawRoom=function(tm){_dr28(tm);drawSpells(tm);drawParts()};
 // wand crosshair (controller)
-const _dh28=drawHUD;drawHUD=function(){if(typeof GPON!=='undefined'&&GPON&&WAND&&!menuOpen&&typeof aimLive==='function'&&aimLive()&&!dead){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2),[dx,dy]=castDir(),x=Math.round(P.x+dx*34),y=Math.round(P.y-4+dy*34),c=WSP[WAND].col;
+const _dh28=drawHUD;drawHUD=function(){if(typeof GPON!=='undefined'&&GPON&&WAND&&!menuOpen&&typeof aimLive==='function'&&aimLive()&&!dead){const cx=camX(),cy=camY(),[dx,dy]=castDir(),x=Math.round(P.x+dx*34),y=Math.round(P.y-4+dy*34),c=WSP[WAND].col;
   g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);for(const[a,b]of[[-6,-1],[4,-1],[-1,-6],[-1,4]])Rg(x+a-1,y+b-1,5,5,O);Rg(x-6,y,3,1,c);Rg(x+4,y,3,1,c);Rg(x,y-6,1,3,c);Rg(x,y+4,1,3,c);Rg(x,y,1,1,c);g.restore()}_dh28()};
 // --- update: mana, spells, particles, effects, upgrade watcher ---
 const _u28=upd;upd=function(dt){watchUpgrades();const paused=menuOpen||pnOpen;

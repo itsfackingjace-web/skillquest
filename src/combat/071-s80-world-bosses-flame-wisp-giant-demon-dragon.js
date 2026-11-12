@@ -101,7 +101,7 @@ function wbDrawAttacks(H,tm){const now=wbNow(),T=H.B.T;g.save();
    else if(now<a.hit+350){g.globalAlpha=1-(now-a.hit)/350;g.fillStyle=T.col;g.fillRect(0,-a.w/2,a.len,a.w);g.fillStyle=T.c2;g.fillRect(0,-a.w/4,a.len,a.w/2)}g.restore()}}
  g.restore()}
 // drawn over the world, under the HUD
-{const _dh=drawHUD;drawHUD=function(){const HB=wbHere();if(HB&&!menuOpen){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{wbDrawAttacks(HB,performance.now()/1000)}catch(e){}g.restore()}_dh()}}
+{const _dh=drawHUD;drawHUD=function(){const HB=wbHere();if(HB&&!menuOpen){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{wbDrawAttacks(HB,performance.now()/1000)}catch(e){}g.restore()}_dh()}}
 // ---- the four bosses ----
 function wbEll(cx,cy,rx,ry,col){g.fillStyle=col;for(let y=-ry;y<=ry;y++){const w=Math.round(rx*Math.sqrt(Math.max(0,1-(y*y)/(ry*ry))));g.fillRect(Math.round(cx-w),Math.round(cy+y),w*2,1)}}
 function wbEllO(cx,cy,rx,ry,col){wbEll(cx,cy,rx+1,ry+1,O);wbEll(cx,cy,rx,ry,col)}

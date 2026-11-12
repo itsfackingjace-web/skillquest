@@ -24,7 +24,7 @@ const pvFront=(maxAl,minAl,wide)=>{let best=null,bd=1e9;for(const r of MP.player
    try{sfx(el==='fire'?'cfire':el==='ice'?'cice':'cstorm')}catch(e){}return}return _fx(u,v)}}
 {const _u=upd;upd=function(dt){const fz=PVU.frozen>performance.now()&&!menuOpen&&!pnOpen&&!dead,px=P.x,py=P.y;_u(dt);if(fz){P.x=px;P.y=py}
   if(menuOpen||pnOpen)return;for(const u of PVU.list)u.t+=dt;PVU.list=PVU.list.filter(u=>u.t<u.life)}}
-{const _dh=drawHUD;drawHUD=function(){if(!menuOpen&&PVU.list.length){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2),tm=performance.now()/1000,f0=ULTFX,px=P.x,py=P.y;
+{const _dh=drawHUD;drawHUD=function(){if(!menuOpen&&PVU.list.length){const cx=camX(),cy=camY(),tm=performance.now()/1000,f0=ULTFX,px=P.x,py=P.y;
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{for(const u of PVU.list){ULTFX=u;P.x=u.x;P.y=u.y;drawUlt(tm)}}finally{ULTFX=f0;P.x=px;P.y=py;g.restore()}
    for(const u of PVU.list)if(u.flash&&u.t<u.flash){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(255,255,230,'+(.45*(1-u.t/u.flash))+')';g.fillRect(0,0,W,H);g.restore()}}
   _dh()}}

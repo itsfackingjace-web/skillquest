@@ -56,7 +56,7 @@ lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.data
 window.SQIGN=IGN;
 // other players' Flame Aura glows on your screen too
 {const _dh=drawHUD;drawHUD=function(){try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
-  if(dk>.05&&MP.on){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);let st=false;
+  if(dk>.05&&MP.on){const cx=camX(),cy=camY();let st=false;
    for(const r of mpVis()){if(!r.au)continue;if(!st){g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';st=true}
     const sx=(r.x-cx)*Z,sy=(r.y-4-cy)*Z,rad=120*Z,gr=g.createRadialGradient(sx,sy,0,sx,sy,rad);gr.addColorStop(0,'rgba(255,215,150,'+(.4*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.2*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
     g.fillStyle=gr;g.fillRect(sx-rad*1.1,sy-rad*1.1,rad*2.2,rad*2.2)}if(st)g.restore()}}catch(e){}_dh()}}

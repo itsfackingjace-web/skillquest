@@ -169,19 +169,22 @@ function upd(dt){
  en=en.filter(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<260);
  if(P.hp<=0){dead=true;time=0;en=[]}
 }
+// the camera: centred on you, to the nearest screen pixel (not the nearest world pixel) so the world scrolls smoothly;
+// a whole number of world pixels from the screen's left/top edge to you, so you never jump back and forth
+function camX(){return Math.round(P.x*Z)/Z-Math.floor(W/Z/2)}function camY(){return Math.round(P.y*Z)/Z-Math.floor(H/Z/2)}
 function draw(){
  g.setTransform(1,0,0,1,0,0);g.fillStyle='#0b1220';g.fillRect(0,0,W,H);
- const vw=W/Z,vh=H/Z,cx=P.x-vw/2,cy=P.y-vh/2;
- g.setTransform(Z,0,0,Z,-Math.round(cx)*Z,-Math.round(cy)*Z);
+ const vw=W/Z,vh=H/Z,cx=camX(),cy=camY();
+ g.setTransform(Z,0,0,Z,-Math.round(cx*Z),-Math.round(cy*Z));
  const x0=Math.max(0,Math.floor(cx/T)),y0=Math.max(0,Math.floor(cy/T)),x1=Math.min(N-1,Math.ceil((cx+vw)/T)),y1=Math.min(N-1,Math.ceil((cy+vh)/T));
  const tm=performance.now()/1000;NEWDRAW(cx,cy,x0,y0,x1,y1,vw,vh,tm);
  // darkness
  g.setTransform(1,0,0,1,0,0);const dk=dark();
  if(dk>0){// the night: darker everywhere except around you when your Flame Aura is lit
-  const AU=window.SQAURALIT&&SQAURALIT(),nightFill=(rgb,a)=>{if(!AU){g.fillStyle='rgba('+rgb+','+a+')';return}const sx=(P.x-Math.round(cx))*Z,sy=(P.y-4-Math.round(cy))*Z,r=AU*Z,gr=g.createRadialGradient(sx,sy,r*.35,sx,sy,r);
+  const AU=window.SQAURALIT&&SQAURALIT(),nightFill=(rgb,a)=>{if(!AU){g.fillStyle='rgba('+rgb+','+a+')';return}const sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=AU*Z,gr=g.createRadialGradient(sx,sy,r*.35,sx,sy,r);
    gr.addColorStop(0,'rgba('+rgb+','+(a*.08)+')');gr.addColorStop(.6,'rgba('+rgb+','+(a*.45)+')');gr.addColorStop(1,'rgba('+rgb+','+a+')');g.fillStyle=gr};
   g.globalCompositeOperation='multiply';nightFill('60,70,160',dk*.7);g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';nightFill('6,8,30',dk*.2);g.fillRect(0,0,W,H);
-  g.globalCompositeOperation='lighter';for(const f of fires){const sx=(f.x-Math.round(cx))*Z,sy=(f.y-Math.round(cy))*Z,r=48*(typeof fireLR==='function'?fireLR():1)*Z,gr=g.createRadialGradient(sx,sy,0,sx,sy,r);gr.addColorStop(0,'rgba(255,150,40,'+(.45*dk)+')');gr.addColorStop(1,'rgba(255,150,40,0)');g.fillStyle=gr;g.fillRect(sx-r,sy-r,r*2,r*2)}
+  g.globalCompositeOperation='lighter';for(const f of fires){const sx=(f.x-cx)*Z,sy=(f.y-cy)*Z,r=48*(typeof fireLR==='function'?fireLR():1)*Z,gr=g.createRadialGradient(sx,sy,0,sx,sy,r);gr.addColorStop(0,'rgba(255,150,40,'+(.45*dk)+')');gr.addColorStop(1,'rgba(255,150,40,0)');g.fillStyle=gr;g.fillRect(sx-r,sy-r,r*2,r*2)}
   g.globalCompositeOperation='source-over'}
  {const vg=g.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=vg;g.fillRect(0,0,W,H);if(dk>0&&dk<.55){g.fillStyle='rgba(255,130,50,'+(.14*(1-dk/.55))+')';g.fillRect(0,0,W,H)}}
  drawHUD(); // Gen 3-style HUD, section 10

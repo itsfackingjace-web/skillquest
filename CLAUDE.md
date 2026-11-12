@@ -168,3 +168,8 @@
   `apply()` (outermost `upd`, every frame, only writes changed values) sets left/top/transform with `!important` on
   a, e, f, tk, rl, ub, aimb (beats 082's `placeBtn` for BOW/CAST). Edit mode: pnOpen=true (game paused), all buttons
   shown, window-capture listeners turn touches into drags and keep them from the game; closePanel ends it.
+- **Camera** (001 `camX()/camY()` + `graphics/127-s132-smooth-camera.js`): the view's top-left is `round(P.x*Z)/Z - floor(W/Z/2)`
+  (screen-pixel precise; a whole number of world pixels to the centre). Always use `camX()/camY()` for overlays that redraw
+  in world space (never `Math.round(P.x-(W/Z)/2)`: with a fractional half screen that made the player jump a world pixel
+  back and forth, the old "shaky camera"). The outermost `pP` translates by the player's sub-pixel offset so you and
+  everything drawn with you stay put.

@@ -260,7 +260,7 @@ const _dr20=drawRoom;drawRoom=function(tm){_dr20(tm);if(!SCENE)return;
   Rg(x0+4,y0,8,8,O);Rg(x0+5,y0+1,6,6,sk);Rg(x0+5,y0+1,6,2,hr);Rg(x0+4,y0+2,1,3,hr);Rg(x0+11,y0+2,1,3,hr);Rg(x0+6,y0+5,2,1,O);Rg(x0+9,y0+5,2,1,O);
   const k=(tm*.8+n.bed[0]*.3)%1;g.save();g.globalAlpha=1-k;g.font='700 8px "Pixelify Sans",monospace';g.fillStyle='#ffffff';g.strokeStyle=O;g.lineWidth=2;g.strokeText('z',x0+12+k*6,y0-2-k*12);g.fillText('z',x0+12+k*6,y0-2-k*12);g.restore()}};
 // lamp glow at night
-const _dh20=drawHUD;drawHUD=function(){const dk=SCENE?0:dark();if(dk>.15){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
+const _dh20=drawHUD;drawHUD=function(){const dk=SCENE?0:dark();if(dk>.15){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
   for(const[x,y]of LAMPS){if(Math.abs(x*16-P.x)>W/Z||Math.abs(y*16-P.y)>H/Z)continue;const gr=g.createRadialGradient(x*16+8,y*16-12,2,x*16+8,y*16-12,40);gr.addColorStop(0,'rgba(255,210,120,'+(.5*dk)+')');gr.addColorStop(1,'rgba(255,200,100,0)');g.fillStyle=gr;g.fillRect(x*16-34,y*16-54,84,84)}g.restore()}_dh20()};
 // map: towns, road, bridge
 const _dmap20=drawMap;drawMap=function(){_dmap20();const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#a86830';for(const i of BRIDGE)x.fillRect(i%N,(i/N)|0,1,1);

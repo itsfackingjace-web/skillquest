@@ -115,12 +115,12 @@ function drawGulls(tm){if(dark()>.3)return;for(let k=0;k<3;k++){const a=tm*(.25+
   if(Math.abs(x-P.x)>W/Z||Math.abs(y-P.y)>H/Z)continue;const f=Math.floor(tm*6+k)%2;g.fillStyle='rgba(0,0,0,.18)';g.fillRect(x-3,y+34,6,2);
   Rg(x-5,y-(f?2:0),2,1,O);Rg(x-3,y-(f?1:0),2,1,O);Rg(x-1,y,2,2,'#f8f8f8');Rg(x+1,y-(f?1:0),2,1,O);Rg(x+3,y-(f?2:0),2,1,O);Rg(x-1,y+1,2,1,'#c0c8d0')}}
 const _nd21=NEWDRAW;NEWDRAW=function(...a){_nd21(...a);if(SCENE)return;const tm=a[8];drawCombatFx(tm);
- if(RAINV>.05){g.fillStyle='rgba(210,230,255,'+(.55*RAINV)+')';const t=tm;for(let k=0;k<Math.round(26*RAINV);k++){const sx=Math.floor((hsh(k,Math.floor(t*6))%1000)/1000*(W/Z))+Math.round(P.x-W/Z/2),sy=Math.floor((hsh(k+99,Math.floor(t*6))%1000)/1000*(H/Z))+Math.round(P.y-H/Z/2);
+ if(RAINV>.05){g.fillStyle='rgba(210,230,255,'+(.55*RAINV)+')';const t=tm;for(let k=0;k<Math.round(26*RAINV);k++){const sx=Math.floor((hsh(k,Math.floor(t*6))%1000)/1000*(W/Z))+camX(),sy=Math.floor((hsh(k+99,Math.floor(t*6))%1000)/1000*(H/Z))+camY();
   const ti=tile[Math.floor(sy/16)*N+Math.floor(sx/16)];if(ti===0){g.fillRect(sx-2,sy,1,1);g.fillRect(sx+2,sy,1,1);g.fillRect(sx-1,sy-1,3,1)}else{g.fillRect(sx-1,sy,1,1);g.fillRect(sx+1,sy,1,1);g.fillRect(sx,sy-1,1,1)}}}
  if(Math.abs(P.x-TX*16)<500&&Math.abs(P.y-TY*16)<400)drawGulls(tm);};
 const _dr21=drawRoom;drawRoom=function(tm){_dr21(tm);if(!SCENE)return;drawCombatFx(tm)};
 // screen-space weather (after the night tint so rain stays visible), fireflies, HUD icon
-function drawWeather(){const tm=performance.now()/1000,cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2);
+function drawWeather(){const tm=performance.now()/1000,cx=camX(),cy=camY();
  if(RAINV>.03){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(40,52,78,'+(.22*RAINV)+')';g.fillRect(0,0,W,H);g.fillStyle='rgba(200,220,255,'+(.55*RAINV)+')';
   const n=Math.round(140*RAINV),ww=W/Z,hh=H/Z;for(let k=0;k<n;k++){const sp=1+(k%3)*.25,x=((hsh(k,3)%10000)/10000*ww+(-tm*40*sp)+cx*0)%ww,y=((hsh(k,7)%10000)/10000*hh+tm*260*sp)%hh;
    const X=Math.round(((x%ww)+ww)%ww)*Z,Y=Math.round(y)*Z;g.fillRect(X,Y,Z,5*Z);g.fillRect(X-Z,Y+5*Z,Z,2*Z)}g.restore()}

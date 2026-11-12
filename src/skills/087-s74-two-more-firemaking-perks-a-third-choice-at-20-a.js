@@ -18,7 +18,7 @@
  window.SQAURALIT=()=>{try{return!dead&&perk(5,'fi_aura')&&myFire()?150:0}catch(e){return 0}};
  const myFire=()=>{if(fires.some(f=>!f._rp&&f.life>0))return true;const st=window.FIRESTASH;if(st)for(const k in st)if(Array.isArray(st[k])&&st[k].some(f=>!f._rp&&f.life>0))return true;return false};
  const _dh=drawHUD;drawHUD=function(){try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
-   if(dk>.05&&!dead&&perk(5,'fi_aura')&&myFire()){const cx=Math.round(P.x-(W/Z)/2),cy=Math.round(P.y-(H/Z)/2),sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=120*Z,fl=1+Math.sin(performance.now()/180)*.03;
+   if(dk>.05&&!dead&&perk(5,'fi_aura')&&myFire()){const cx=camX(),cy=camY(),sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=120*Z,fl=1+Math.sin(performance.now()/180)*.03;
     g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(sx,sy,0,sx,sy,r*fl);gr.addColorStop(0,'rgba(255,215,150,'+(.22*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.1*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
     g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){}_dh()}}
 // the leaderboards take the controller / keyboard while they're open (title screen)
