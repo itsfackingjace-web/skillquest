@@ -125,3 +125,13 @@
   context is added to `attack`, `eat` or `talk`, add its word here too.
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).
+- **TRADE button** (`multiplayer/119-s124-trade-button.js`): when another player stands within ~2 tiles and no other code
+  wants the TALK button that frame (it hides the button before the inner `upd` runs and yields if anything shows it again),
+  the button says TRADE and a tap / T / ✕ calls `SQTRREQ(uid)` (062's `trRequest`, which also answers an incoming request).
+  062 exposes `SQTRREQ`, `SQTRNEAR` (its `trNearList`) next to `SQTRADE`.
+- **Daily challenges** (`ui/120-s125-daily-challenges.js`, `window.SQDAILY`): three tasks per real day (device date), picked
+  from `T` by a hash of the date, skipping ones the character can't do yet (`r`), target scaled by skill level. Items count
+  when they arrive in a frame where that task's skill gained XP (outermost `addXp` marks it; positive `inv` deltas in `upd`),
+  `xpc` tasks count XP gains, `kill` uses the game's `kills` counter. Paid at once (gold + XP); all three = streak bonus.
+  Saved as `dly` {d,q:[{t,n,p,c}],s,l}; shown at the top of the quest log (below the guide box). Separate from the
+  townsfolk "daily jobs" in 020.

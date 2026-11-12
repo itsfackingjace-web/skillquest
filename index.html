@@ -8102,7 +8102,7 @@ function trStart(){const d=FB.db,uid=MP.user.uid;TR.inbox={};
 {const _fv=friendsView;friendsView=function(){_fv();for(const row of lst.querySelectorAll('.fr')){const msg=[...row.querySelectorAll('button')].find(b=>b.textContent==='MESSAGE');if(!msg)continue;
   const nm=row.querySelector('.fn b');const u=Object.keys(MP.friends).find(k=>fname(k)===(nm&&nm.textContent));if(!u||!trNear(u))continue;const b=document.createElement('button');b.textContent='TRADE';
   b.onclick=()=>{if(typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){}trRequest(u)};msg.after(b)}}}
-window.SQTRADE=TR;
+window.SQTRADE=TR;window.SQTRREQ=u=>trRequest(u);window.SQTRNEAR=()=>trNearList();
 // ---------------------------------------------------------------- 68. Gravestones
 // When you fall, everything you'd normally lose (what's in your bag except gear) goes into a gravestone where you
 // fell instead. Graves are strictly public: anyone who finds one can loot it, the owner included, and it crumbles
@@ -9289,6 +9289,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.11-13',d:'Nov 11, 2026',t:'Daily challenges and a TRADE button',n:['Daily challenges: every day you get three small tasks, such as chop 30 logs, catch 10 fish or beat 12 monsters. They\'re at the top of your quest log (tap the quest box).','Each finished challenge pays gold and XP in that skill right away. Finish all three for a streak bonus that grows every day in a row, up to 7 days. New challenges arrive at midnight.','Only what you gather, make or beat yourself counts. Things you buy or get in a trade don\'t.','Trading is quicker: stand right next to another player and the TALK button says TRADE. One tap asks them, and if they already asked you, the same tap says yes.']},
  {v:'2026.11.11-12',d:'Nov 11, 2026',t:'Buttons say what they do',n:['The action buttons now name what they\'ll do right now: CHOP at a tree, MINE at a rock or ore, PICK at a bush or mushroom patch, FISH at the water and REEL while your line is out.','At a furnace, anvil, stove or crafting bench the button says SMELT, SMITH, COOK or CRAFT. At a chest it says OPEN, at a bed SLEEP, and at a sign READ.','Standing at a fire with something to cook, EAT turns into COOK.','The TALK button says OPEN, SLEEP, READ or ENTER (or the station\'s job) instead of USE.']},
  {v:'2026.11.11-11',d:'Nov 11, 2026',t:'Behind the scenes: monster editor',n:['The developer can now redraw monsters and tune how tough they are, how fast they move and what they drop. Nothing changes in your game yet; changes will arrive in later updates.']},
  {v:'2026.11.11-10',d:'Nov 11, 2026',t:'Behind the scenes: testing tools',n:['The developer has new tools for checking updates in the game quickly, so new things can be tried out before they reach you.']},
@@ -14759,6 +14760,106 @@ window.SQA=SQA;
   try{put(document.getElementById('a'),hitWord());put(document.getElementById('e'),eatWord());
    const tw=tk.innerHTML.split('<')[0];if(tk.style.display!=='none'&&(tw==='USE'||MINE.has(tw)&&typeof tkLab!=='undefined'&&tkLab==='USE')){put(tk,useWord()||'USE')}}catch(e){}};
  window.SQWORDS={hitWord,eatWord,useWord}})();
+// ---- 124. A TRADE button when you stand next to another player ----
+// Trading (section 67) used to start from START > Trade, /trade name or the Friends list. Now, when another player
+// stands right next to you and the TALK button isn't busy with anything else (a person, a door, a chest...), it says
+// TRADE: one tap (T on a computer, ✕ on a controller) asks the nearest of them to trade. If they already asked you,
+// the same tap says yes. Uses window.SQTRREQ / SQTRNEAR / SQTRADE from 062.
+(()=>{const CLOSE=34;let mine=false,who=null,t=0,lab='';
+ const ok=()=>!!(window.SQTRREQ&&window.SQTRNEAR&&window.SQTRADE&&window.SQMP&&SQMP.on&&SQMP.user);
+ // the nearest player within a couple of steps (the trade itself allows a little more room)
+ function nearest(){if(!ok()||SQTRADE.st!=='idle')return null;let best=null,bd=CLOSE;
+  for(const u of SQTRNEAR()){const r=SQMP.players.get(u);if(!r)continue;const d=Math.hypot(r.tx-P.x,r.ty-P.y);if(d<bd){bd=d;best=u}}return best}
+ const label=()=>'TRADE'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));
+ const ask=()=>{const u=who;if(!u)return false;try{SQTRREQ(u);sfx('talk')}catch(e){}return true};
+ // the button is ours only while nothing else wants it: hide it before the game's own code runs each frame; if that
+ // code shows it again (a person, a chest, a boat...), it's theirs, and their word goes back on it
+ const giveBack=()=>{mine=false;who=null;if(tk.innerHTML===lab){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
+ const _u=upd;upd=function(dt){if(mine)tk.style.display='none';const out=_u.apply(this,arguments);
+  if(mine&&(tk.style.display!=='none'||tk.innerHTML!==lab))giveBack();
+  if(mine&&!pnOpen&&!menuOpen&&!dead)tk.style.display='flex';
+  if((t-=dt)>0)return out;t=.15;
+  const busy=pnOpen||menuOpen||dead||BUILD||(tk.style.display!=='none'&&!mine);
+  const u=busy?null:nearest();
+  if(u){who=u;lab=label();if(tk.innerHTML!==lab)tk.innerHTML=lab;tk.style.display='flex';mine=true}
+  else if(mine){giveBack();tk.style.display='none'}
+  return out};
+ tk.addEventListener('touchstart',e=>{if(!mine||pnOpen||menuOpen||dead)return;e.preventDefault();e.stopImmediatePropagation();ask()},{passive:false,capture:true});
+ const _t=talk;talk=function(){if(mine&&!pnOpen&&!menuOpen&&!dead&&ask())return;return _t.apply(this,arguments)};
+ {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!(mine&&who)||!!(_pu&&_pu())}
+ window.SQTRBTN={nearest,get on(){return mine},get who(){return who}}})();
+// ---- 125. Daily challenges: three small tasks every real day, with a streak ----
+// Each day (by the device's own date, new ones at midnight) you get three tasks such as "Chop 25 logs", "Catch 10 fish"
+// or "Beat 12 monsters", picked from what your character can already do (the same day gives everyone the same order,
+// so a family playing together often shares tasks). Finishing one pays gold and XP in that skill straight away;
+// finishing all three keeps your streak going (days in a row) and pays a streak bonus that grows for 7 days.
+// They're listed at the top of the quest log (tap the quest box or open Quests).
+// Counting: items are counted when they arrive in the same frame the matching skill gains XP (so buying, trading or
+// collecting doesn't count), fires by Firemaking XP gains, monsters by the game's own kill counter.
+// Saved as `dly` = {d: day 'YYYY-MM-DD', q: [{t: task id, n: target, p: progress, c: 1 when paid}], s: streak, l: last full day}.
+(()=>{const SK=n=>SKN.indexOf(n);
+ const T={
+  wc:{s:'Woodcutting',w:n=>'Chop '+n+' logs',a:[20,35],x:8,g:6},
+  mine:{s:'Mining',w:n=>'Mine '+n+' ore or stone',a:[15,30],x:9,g:7,r:()=>TL.pick>=1},
+  forage:{s:'Foraging',w:n=>'Forage '+n+' berries or plants',a:[15,25],x:6,g:5},
+  fish:{s:'Fishing',w:n=>'Catch '+n+' fish',a:[8,16],x:14,g:10,r:()=>!!TL.rod},
+  cook:{s:'Cooking',w:n=>'Cook '+n+' meals',a:[8,15],x:12,g:9},
+  fire:{s:'Firemaking',w:n=>'Light '+n+' fires',a:[4,8],x:30,g:20,xpc:1},
+  craft:{s:'Crafting',w:n=>'Craft '+n+' things',a:[4,8],x:25,g:18,min1:1},
+  smith:{s:'Smithing',w:n=>'Smith '+n+' things',a:[3,6],x:30,g:22,min1:1,r:()=>lvOf(SK('Smithing'))>=2},
+  farm:{s:'Farming',w:n=>'Harvest '+n+' crops',a:[5,10],x:20,g:14,r:()=>!!TL.hoe},
+  kill:{s:'Attack',w:n=>'Beat '+n+' monsters',a:[8,15],x:20,g:12,kill:1}};
+ const IDS=Object.keys(T);
+ const pad=v=>String(v).padStart(2,'0'),dkey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+ const today=()=>dkey(new Date()),yday=()=>{const d=new Date();return dkey(new Date(d.getFullYear(),d.getMonth(),d.getDate()-1))};
+ const dnum=k=>{const[y,m,d]=k.split('-').map(Number);return Math.floor(Date.UTC(y,m-1,d)/864e5)};
+ const hsh=(a,b)=>{let h=(a*374761393+b*668265263)|0;h=(h^(h>>>13))*1274126177|0;return(h^(h>>>16))>>>0};
+ let D=null,LASTINV=null,LASTK=0,XPF=new Set(),XPN={},PAYING=false,TOLD='';
+ const lv=id=>Math.max(1,lvOf(SK(T[id].s)));
+ // the day's three: the pool shuffled by the date, minus what this character can't do yet
+ function pick(day){const n=dnum(day),ord=IDS.slice().sort((a,b)=>hsh(n,IDS.indexOf(a)+1)-hsh(n,IDS.indexOf(b)+1)),out=[];
+  for(const id of ord){if(out.length>=3)break;const t=T[id];if(SK(t.s)<0)continue;try{if(t.r&&!t.r())continue}catch(e){continue}
+   const base=t.a[0]+hsh(IDS.indexOf(id)+7,n)%(t.a[1]-t.a[0]+1);out.push({t:id,n:Math.max(1,Math.round(base*(1+(lv(id)-1)/60))),p:0,c:0})}return out}
+ function fresh(){const day=today();const old=D;D={d:day,q:pick(day),s:old?old.s|0:0,l:old?old.l||'':''};if(D.l&&D.l!==yday()&&D.l!==day)D.s=0}
+ const gold=q=>Math.round(T[q.t].g*q.n*(1+lv(q.t)/50));
+ const xp=q=>Math.round(T[q.t].x*q.n*(1+lv(q.t)/40));
+ const bonus=s=>100*Math.min(7,Math.max(1,s));
+ function pay(q){const t=T[q.t];q.c=1;PAYING=true;try{const g=gold(q),x=xp(q);GLD+=g;addXp(SK(t.s),x);say('Daily challenge done: '+t.w(q.n)+'! +'+g+' gold, +'+x+' '+t.s+' XP');msgT=4;sfx('quest')}catch(e){}finally{PAYING=false}
+  if(D.q.every(z=>z.c)){const day=D.d;D.s=D.l===yday()?(D.s|0)+1:D.l===day?D.s|0:1;D.l=day;const b=bonus(D.s);GLD+=b;
+   setTimeout(()=>{say('All three daily challenges done! Streak: '+D.s+' day'+(D.s>1?'s':'')+'. Bonus +'+b+' gold');msgT=5;try{sfx('coin')}catch(e){}},1800)}
+  try{svg()}catch(e){}try{saveLocal(true)}catch(e){}}
+ function add(id,k){if(!D||!(k>0))return;for(const q of D.q)if(q.t===id&&!q.c){q.p=Math.min(q.n,q.p+k);if(q.p>=q.n)pay(q);else if(pnOpen&&ptab===6)rPn()}}
+ // XP gains mark the skill for this frame
+ const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);XPN[i]=(XPN[i]|0)+1}return out};
+ const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;
+   if(!D||D.d!==today()){fresh();LASTINV=null;
+    if(TOLD!==D.d){TOLD=D.d;let gd=null;try{gd=window.SQGUIDE&&SQGUIDE()}catch(e){}if(!gd)setTimeout(()=>{if(!dead){say('New daily challenges! Find them in your quest log.');msgT=4}},2500)}}
+   // what arrived this frame, for the skills that just gained XP
+   if(LASTINV&&XPF.size){const got={};let tot=0;for(const k in inv){const v=(inv[k]|0)-(LASTINV[k]|0);if(v>0){got[k]=v;tot+=v}}
+    for(const q of D.q){if(q.c)continue;const t=T[q.t],si=SK(t.s);if(t.kill||!XPF.has(si))continue;
+     if(t.xpc)add(q.t,XPN[si]|0);else add(q.t,t.min1?Math.max(1,tot):tot)}}
+   if(typeof kills==='number'){if(kills>LASTK&&LASTINV)add('kill',kills-LASTK);LASTK=kills}
+   XPF.clear();XPN={};LASTINV=Object.assign({},inv)}catch(e){}return out};
+ // the quest log: the three of today at the top (below the getting-started box if it's showing)
+ function html(){if(!D)return'';let h='<div class="sqdl-h"><b>DAILY CHALLENGES</b><span>'+(D.s>0?'Streak: '+D.s+' day'+(D.s>1?'s':''):'New ones every day')+'</span></div>';
+  for(const q of D.q){const t=T[q.t],pc=Math.round(q.p/q.n*100);h+='<div class="sqdl-r'+(q.c?' done':'')+'"><div class="sqdl-t"><span>'+(q.c?'✔ ':'')+esc(t.w(q.n))+'</span><i>'+q.p+'/'+q.n+'</i></div>'+
+   '<div class="sqdl-b"><div style="width:'+pc+'%"></div></div><small>'+(q.c?'Done!':'Reward: '+gold(q)+' gold, '+xp(q)+' '+t.s+' XP')+'</small></div>'}
+  const all=D.q.every(z=>z.c),next=D.l===yday()?(D.s|0)+1:D.l===D.d?D.s|0:1;
+  h+='<small class="sqdl-f">'+(all?'All done for today. Come back tomorrow to keep your streak!':'Finish all three for a streak bonus of '+bonus(next)+' gold (more each day in a row, up to 7).')+'</small>';return h}
+ const _rp=rPn;rPn=function(){const out=_rp.apply(this,arguments);try{if(pnOpen&&ptab===6&&D){const d=document.createElement('div');d.className='sqdl';d.innerHTML=html();
+   const gd=pbd.querySelector('.sqgd');if(gd)gd.after(d);else pbd.prepend(d)}}catch(e){}return out};
+ // saves
+ const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{if(D)s.dly=JSON.parse(JSON.stringify(D))}catch(e){}return s};
+ const _ap=applySave;applySave=function(Sv){const out=_ap.apply(this,arguments);try{const v=Sv&&Sv.dly;
+   if(v&&typeof v==='object'&&typeof v.d==='string'&&Array.isArray(v.q)){D={d:v.d,s:Math.max(0,v.s|0),l:typeof v.l==='string'?v.l:'',
+     q:v.q.filter(q=>q&&T[q.t]).slice(0,3).map(q=>({t:q.t,n:Math.max(1,q.n|0),p:Math.max(0,q.p|0),c:q.c?1:0}))};if(!D.q.length)D=null}
+   else D=null;LASTINV=null;LASTK=typeof kills==='number'?kills:0}catch(e){D=null}return out};
+ const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);D=null;LASTINV=null;LASTK=0;return out};
+ {const st=document.createElement('style');st.textContent=`#pn .sqdl{background:#eef4fc;border:2px solid #7890b8;border-radius:8px;padding:8px 10px;margin:0 0 10px;font-size:13px;color:#404040;text-align:left}
+#pn .sqdl-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}#pn .sqdl-h b{letter-spacing:1px;color:#304870}#pn .sqdl-h span{font-size:12px;color:#b06010;font-weight:700}
+#pn .sqdl-r{margin:6px 0}#pn .sqdl-r.done{opacity:.6}#pn .sqdl-t{display:flex;justify-content:space-between;font-weight:700}#pn .sqdl-t i{font-style:normal}
+#pn .sqdl-b{height:6px;background:#c8d4e8;margin:3px 0 2px}#pn .sqdl-b div{height:6px;background:#48a838}#pn .sqdl-r small,#pn .sqdl-f{font-size:11px;opacity:.85}#pn .sqdl-f{display:block;margin-top:6px}`;document.head.appendChild(st)}
+ window.SQDAILY={get state(){return D},set state(v){D=v},T,pick,fresh,today,html}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

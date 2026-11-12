@@ -125,6 +125,8 @@ dev/111d-s120-prop-looks.js
 dev/111e-s121-test-tools.js
 dev/111f-s122-monster-rules.js
 ui/118-s123-button-words.js
+multiplayer/119-s124-trade-button.js
+ui/120-s125-daily-challenges.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

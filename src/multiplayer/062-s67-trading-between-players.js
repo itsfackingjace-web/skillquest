@@ -148,4 +148,4 @@ function trStart(){const d=FB.db,uid=MP.user.uid;TR.inbox={};
 {const _fv=friendsView;friendsView=function(){_fv();for(const row of lst.querySelectorAll('.fr')){const msg=[...row.querySelectorAll('button')].find(b=>b.textContent==='MESSAGE');if(!msg)continue;
   const nm=row.querySelector('.fn b');const u=Object.keys(MP.friends).find(k=>fname(k)===(nm&&nm.textContent));if(!u||!trNear(u))continue;const b=document.createElement('button');b.textContent='TRADE';
   b.onclick=()=>{if(typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){}trRequest(u)};msg.after(b)}}}
-window.SQTRADE=TR;
+window.SQTRADE=TR;window.SQTRREQ=u=>trRequest(u);window.SQTRNEAR=()=>trNearList();
