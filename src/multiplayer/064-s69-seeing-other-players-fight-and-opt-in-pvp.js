@@ -17,7 +17,8 @@ function pvSafeAt(loc,x,y){if(!loc)return true;if(loc.startsWith('h:'))return tr
  if(loc.startsWith('in:')&&!(loc.startsWith('in:dun')||loc.startsWith('in:cave')||loc.startsWith('in:tomb')))return true;
  if(loc==='hollow'&&Math.hypot(x/16-VX,y/16-VY)<PVSAFE)return true;return false}
 const pvMeSafe=()=>pvSafeAt(mpLoc(),P.x,P.y);
-function pvTarget(r){return PV.on&&MP.on&&r&&r.pk&&live(r)&&!dead&&r.loc===mpLoc()&&!pvMeSafe()&&!pvSafeAt(r.loc,r.tx,r.ty)}
+const pvDuel=u=>!!(window.SQDUEL&&SQDUEL.fighting&&u&&SQDUEL.foe===u);// a duel: the two can fight anywhere, PvP on or off
+function pvTarget(r){if(r&&pvDuel(r.uid))return MP.on&&live(r)&&!dead&&r.loc===mpLoc();return PV.on&&MP.on&&r&&r.pk&&live(r)&&!dead&&r.loc===mpLoc()&&!pvMeSafe()&&!pvSafeAt(r.loc,r.tx,r.ty)}
 // ---- sending what you do ----
 function pvSend(ev){if(!MP.on||!MP.user)return;const L=mpLoc();if(!L)return;ev.s=++PV.fxSeq;ev.loc=L;ev.t=FB.db.serverTimestamp();FB.db.set(FB.db.ref(FB.D,'fx/'+MP.user.uid),ev).catch(()=>{})}
 const r2=v=>Math.round(v*100)/100;
@@ -58,8 +59,8 @@ function pvDmg(kind,p){if(kind==='sw')return TL.sword>=6?2:1;if(kind==='ar')retu
 function pvHit(r,kind,el){const n=performance.now();if(r.pvHitAt&&n-r.pvHitAt<350)return;r.pvHitAt=n;PV.fight=n;const d=pvDmg(kind);
  FB.db.push(FB.db.ref(FB.D,'pvp/'+r.uid),{f:MP.user.uid,n:myName().slice(0,12),d,k:kind,el:el||'',t:FB.db.serverTimestamp()}).catch(mpErr);
  DMGS.push({x:r.x,y:r.y-16,v:String(d),t:0,c:'#f86848',sc:curScene()});try{sfx('hit')}catch(e){}}
-function pvMelee(){if(!PV.on)return;for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-P.x,dy=r.y-P.y,al=dx*face[0]+dy*face[1],pe=Math.abs(dx*face[1]-dy*face[0]);if(al>-2&&al<24&&pe<14){pvHit(r,'sw');break}}}
-function pvProjHits(){if(!PV.on)return;const ts=[...MP.players.values()].filter(pvTarget);if(!ts.length)return;const sc=curScene();
+function pvMelee(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-P.x,dy=r.y-P.y,al=dx*face[0]+dy*face[1],pe=Math.abs(dx*face[1]-dy*face[0]);if(al>-2&&al<24&&pe<14){pvHit(r,'sw');break}}}
+function pvProjHits(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;const ts=[...MP.players.values()].filter(pvTarget);if(!ts.length)return;const sc=curScene();
  for(const p of PROJ){if(p.dead||p.hostile||p.k!=='arrow'||p.sc!==sc)continue;for(const r of ts)if(Math.hypot(r.x-p.x,r.y-4-p.y)<10){p.dead=1;p.life=-1;pvHit(r,'ar');break}}
  for(const s of SPELLS){if(s.dead||s.ghost||s.sc!==sc)continue;for(const r of ts)if(Math.hypot(r.x-s.x,r.y-4-s.y)<10){s.dead=1;s.life=-1;pvHit(r,'sp',s.el);break}}}
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen)return;try{pvGhostStep(dt);pvProjHits()}catch(e){console.warn(e)}}}
@@ -67,7 +68,8 @@ function pvProjHits(){if(!PV.on)return;const ts=[...MP.players.values()].filter(
 function pvIncoming(id,v){FB.db.remove(FB.db.ref(FB.D,'pvp/'+MP.user.uid+'/'+id)).catch(()=>{});if(!v||typeof v!=='object')return;
  const u=String(v.f||''),r=MP.players.get(u);if(typeof v.t==='number'&&mpNow()-v.t>5000)return;
  if(v.k==='ko'){mpLog('game','You defeated '+String(v.n||trName(u)).slice(0,12)+'! Their grave is where they fell.');try{sfx('quest')}catch(e){}return}
- if(!PV.on||dead||!r||!r.pk||r.loc!==mpLoc()||pvMeSafe()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return;
+ if(pvDuel(u)){if(dead||!r||r.loc!==mpLoc()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return}
+ else if(!PV.on||dead||!r||!r.pk||r.loc!==mpLoc()||pvMeSafe()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return;
  const d=Math.max(1,Math.min(2,+v.d|0)),who=String(v.n||r.n).slice(0,12);PV.fight=performance.now();PV.lastBy=u;PV.lastByAt=performance.now();
  if(ROLLT>0)return;if(hurt>0)return;
  if(Math.random()<blockCh()){hurt=.5;say('Blocked '+who+'\'s attack!');sfx('block');addXp(8,10);return}

@@ -125,9 +125,9 @@
   context is added to `attack`, `eat` or `talk`, add its word here too.
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).
-- **TRADE button** (`multiplayer/119-s124-trade-button.js`): when another player stands within ~2 tiles and no other code
+- **Name button** (`multiplayer/119-s124-trade-button.js`): when another player stands within ~2 tiles and no other code
   wants the TALK button that frame (it hides the button before the inner `upd` runs and yields if anything shows it again),
-  the button says TRADE and a tap / T / ✕ calls `SQTRREQ(uid)` (062's `trRequest`, which also answers an incoming request).
+  the button shows their name (class `sqpn`) and a tap / T / ✕ opens the player menu `SQPLAYERMENU(uid)` (130).
   062 exposes `SQTRREQ`, `SQTRNEAR` (its `trNearList`) next to `SQTRADE`.
   Skipped for players with `pk` while `SQPVP.on` (a controller's ✕ is also the attack, via `SQPADUSE`).
 - **Daily challenges** (`ui/120-s125-daily-challenges.js`, `window.SQDAILY`): three tasks per real day (device date), picked
@@ -180,3 +180,16 @@
   `ib` (island bosses beaten, `ibk` in the save, recorded from `sqEvent('islandboss',id)`). Save `qv` 10; a qv 9 save is
   converted to names with the old order (`QOLD9`) then `qSkip`. Never reorder QS without such a name-based migration.
   102's tracker: `routeStep(region)` names the next voyage/boat upgrade on the way, `villNext([key])` the next village quest.
+- **Achievements / collection log** (`ui/129-s134-achievements.js`, `window.SQACH`, START > Achievements, `ptab` 35): list
+  `A` ({g,id,n,d,val(),goal,gold}); lifetime counters `C` (items arriving in a frame with that skill's XP, fires, kills,
+  `ibw`, plus `SQACH.add(k)` from elsewhere: `trade` in 062, `duelw` in 130); checked once a second, one unlock at a time.
+  Collection log categories `CATS` over `INAME` (first match wins, `eq_cu_` left out), seeded from bag/worn/pets on load.
+  Saved as `ach` {c,d,col,rg}.
+- **Player menu and duels** (`multiplayer/130-s135-player-menu-and-duels.js`, `window.SQDUEL`/`SQDUELAPI`, `ptab` 36/37):
+  menu = TRADE (`SQTRREQ`), ADD FRIEND (`SQADDFRIEND`, exposed in 061), DUEL, CHESS (placeholder). Duels: `dreq/<to>/<from>`
+  {n,s,t} and `duels/<a_b>/<uid>` {i,g,s,a,c,f,l,d,t}; `s` = a per-duel nonce (in the key, and sides with another `s`
+  are ignored). Stakes leave the bag when both accept twice (f), countdown, fight: 064's `pvTarget`/`pvMelee`/
+  `pvProjHits`/`pvIncoming` let the two hit each other (`pvDuel`); `P.hp` gets a setter so reaching 0 = loss with full
+  health on the spot (no death). Winner adds both stakes; loc change or 20 s offline = loss; 3 min = draw. Rules for
+  `dreq`/`duels` are in `database.rules.json` (publish them).
+

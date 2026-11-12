@@ -7719,6 +7719,7 @@ mpRList=function(){pc.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on'
  for(const m of MP.log)if(MP.tab==='all'||m.k===MP.tab)lst.appendChild(mpLine(m));lst.scrollTop=lst.scrollHeight;mpRBtn()};
 lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;const u=b.dataset.u;
  if(isFriend(u)){MP.pmTo=u;MP.tab='pm';mpRList();setTimeout(()=>inp.focus(),20)}else{MP.tab='fr';MP.addHint=null;mpRList();const i=$('mpfa');if(i){i.value=fname(u);MP.addUid=u}}});
+window.SQADDFRIEND=u=>addFriend(u);
 function addFriend(u){if(!MP.on||!u||u===MP.user.uid)return;const d=FB.db;
  d.set(d.ref(FB.D,'friends/'+MP.user.uid+'/'+u),true).then(()=>{mpLog('game',fname(u)+' is now on your friends list.');MP.addHint=null;
    if(MP.req&&MP.req[u])d.remove(d.ref(FB.D,'freq/'+MP.user.uid+'/'+u)).catch(()=>{});
@@ -8036,7 +8037,7 @@ function trStep(){if(TR.st==='idle'||!TR.their)return;const key=trKey(),t=TR.the
 function trApply(key){for(const k in TR.me)if((inv[k]|0)<TR.me[k]){trEnd('You no longer have everything you offered, so the trade was cancelled.');return}if(GLD<TR.g){trEnd('You no longer have that much gold.');return}
  TR.applied=true;for(const k in TR.me)inv[k]=(inv[k]|0)-TR.me[k];GLD-=TR.g;for(const k in TR.th)inv[k]=(inv[k]|0)+TR.th[k];GLD+=TR.tg;
  const got=trList(TR.th,TR.tg);try{saveLocal(true)}catch(e){}try{saveCloud(true)}catch(e){}TR.my.d=key;trPush();
- const w=TR.w;sfx('quest');try{setTimeout(()=>sfx('coin'),150)}catch(e){}say('Trade complete!'+(got?' You got '+got+'.':''));mpLog('game','Trade with '+trName(w)+' complete.'+(got?' You got '+got+'.':''));
+ const w=TR.w;sfx('quest');try{setTimeout(()=>sfx('coin'),150)}catch(e){}say('Trade complete!'+(got?' You got '+got+'.':''));try{window.SQACH&&SQACH.add('trade')}catch(e){}mpLog('game','Trade with '+trName(w)+' complete.'+(got?' You got '+got+'.':''));
  trEnd(null)}
 function trEnd(why){if(TR.st==='idle')return;const tid=TR.tid,me=MP.user&&MP.user.uid,keep=TR.applied;TR.st='idle';if(TR.unsub){TR.unsub();TR.unsub=null}
  // remove your side (after a moment when finished, so the other player sees your "done" first)
@@ -8212,7 +8213,8 @@ function pvSafeAt(loc,x,y){if(!loc)return true;if(loc.startsWith('h:'))return tr
  if(loc.startsWith('in:')&&!(loc.startsWith('in:dun')||loc.startsWith('in:cave')||loc.startsWith('in:tomb')))return true;
  if(loc==='hollow'&&Math.hypot(x/16-VX,y/16-VY)<PVSAFE)return true;return false}
 const pvMeSafe=()=>pvSafeAt(mpLoc(),P.x,P.y);
-function pvTarget(r){return PV.on&&MP.on&&r&&r.pk&&live(r)&&!dead&&r.loc===mpLoc()&&!pvMeSafe()&&!pvSafeAt(r.loc,r.tx,r.ty)}
+const pvDuel=u=>!!(window.SQDUEL&&SQDUEL.fighting&&u&&SQDUEL.foe===u);// a duel: the two can fight anywhere, PvP on or off
+function pvTarget(r){if(r&&pvDuel(r.uid))return MP.on&&live(r)&&!dead&&r.loc===mpLoc();return PV.on&&MP.on&&r&&r.pk&&live(r)&&!dead&&r.loc===mpLoc()&&!pvMeSafe()&&!pvSafeAt(r.loc,r.tx,r.ty)}
 // ---- sending what you do ----
 function pvSend(ev){if(!MP.on||!MP.user)return;const L=mpLoc();if(!L)return;ev.s=++PV.fxSeq;ev.loc=L;ev.t=FB.db.serverTimestamp();FB.db.set(FB.db.ref(FB.D,'fx/'+MP.user.uid),ev).catch(()=>{})}
 const r2=v=>Math.round(v*100)/100;
@@ -8253,8 +8255,8 @@ function pvDmg(kind,p){if(kind==='sw')return TL.sword>=6?2:1;if(kind==='ar')retu
 function pvHit(r,kind,el){const n=performance.now();if(r.pvHitAt&&n-r.pvHitAt<350)return;r.pvHitAt=n;PV.fight=n;const d=pvDmg(kind);
  FB.db.push(FB.db.ref(FB.D,'pvp/'+r.uid),{f:MP.user.uid,n:myName().slice(0,12),d,k:kind,el:el||'',t:FB.db.serverTimestamp()}).catch(mpErr);
  DMGS.push({x:r.x,y:r.y-16,v:String(d),t:0,c:'#f86848',sc:curScene()});try{sfx('hit')}catch(e){}}
-function pvMelee(){if(!PV.on)return;for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-P.x,dy=r.y-P.y,al=dx*face[0]+dy*face[1],pe=Math.abs(dx*face[1]-dy*face[0]);if(al>-2&&al<24&&pe<14){pvHit(r,'sw');break}}}
-function pvProjHits(){if(!PV.on)return;const ts=[...MP.players.values()].filter(pvTarget);if(!ts.length)return;const sc=curScene();
+function pvMelee(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-P.x,dy=r.y-P.y,al=dx*face[0]+dy*face[1],pe=Math.abs(dx*face[1]-dy*face[0]);if(al>-2&&al<24&&pe<14){pvHit(r,'sw');break}}}
+function pvProjHits(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;const ts=[...MP.players.values()].filter(pvTarget);if(!ts.length)return;const sc=curScene();
  for(const p of PROJ){if(p.dead||p.hostile||p.k!=='arrow'||p.sc!==sc)continue;for(const r of ts)if(Math.hypot(r.x-p.x,r.y-4-p.y)<10){p.dead=1;p.life=-1;pvHit(r,'ar');break}}
  for(const s of SPELLS){if(s.dead||s.ghost||s.sc!==sc)continue;for(const r of ts)if(Math.hypot(r.x-s.x,r.y-4-s.y)<10){s.dead=1;s.life=-1;pvHit(r,'sp',s.el);break}}}
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen)return;try{pvGhostStep(dt);pvProjHits()}catch(e){console.warn(e)}}}
@@ -8262,7 +8264,8 @@ function pvProjHits(){if(!PV.on)return;const ts=[...MP.players.values()].filter(
 function pvIncoming(id,v){FB.db.remove(FB.db.ref(FB.D,'pvp/'+MP.user.uid+'/'+id)).catch(()=>{});if(!v||typeof v!=='object')return;
  const u=String(v.f||''),r=MP.players.get(u);if(typeof v.t==='number'&&mpNow()-v.t>5000)return;
  if(v.k==='ko'){mpLog('game','You defeated '+String(v.n||trName(u)).slice(0,12)+'! Their grave is where they fell.');try{sfx('quest')}catch(e){}return}
- if(!PV.on||dead||!r||!r.pk||r.loc!==mpLoc()||pvMeSafe()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return;
+ if(pvDuel(u)){if(dead||!r||r.loc!==mpLoc()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return}
+ else if(!PV.on||dead||!r||!r.pk||r.loc!==mpLoc()||pvMeSafe()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return;
  const d=Math.max(1,Math.min(2,+v.d|0)),who=String(v.n||r.n).slice(0,12);PV.fight=performance.now();PV.lastBy=u;PV.lastByAt=performance.now();
  if(ROLLT>0)return;if(hurt>0)return;
  if(Math.random()<blockCh()){hurt=.5;say('Blocked '+who+'\'s attack!');sfx('block');addXp(8,10);return}
@@ -9292,6 +9295,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-6',d:'Nov 12, 2026',t:'Achievements, collection log and duels',n:['Achievements: START > Achievements. Over 40 goals across skills, gathering, combat, quests, travel, wealth and collecting. Each one pays gold the moment you reach it.','Collection log: the second page of Achievements shows every item, piece of gear and pet in the game. What you\'ve had shows in colour; the rest is a mystery shape until you find it.','Players: stand next to someone and the TALK button shows their name. Tap it for TRADE, ADD FRIEND and DUEL (chess is coming).','Duels: challenge someone, then both put in a stake of items and gold and accept twice. Fight anywhere, PvP on or off. The duel ends when one of you falls: you get back up right where you fell, and the winner takes the loser\'s stake (and keeps their own). Leaving the area or going offline loses the duel; after 3 minutes it\'s a draw and both stakes go back.']},
  {v:'2026.11.12-5',d:'Nov 12, 2026',t:'Elder Rowan\'s second chapter',n:['The story goes on! After Three Villages, One Island, Elder Rowan sends you across the sea: sail to Briarwood Isle, help Thornbrook, brave the Ashfall Coast, and open an island\'s sealed door to face its boss.','The new finale, Legend of the Isles: defeat all five island bosses for 5,000 gold. Grandmaster now asks for total level 150 and pays 1,500 gold.','The quest box tells you how to get there: which voyage to take, which boat upgrade you need, and which village quest is next.','Fixes: Slime Trouble and Slime Slayer now count slimes only. Night Watch is a real challenge: see one whole night through, dusk to dawn, without falling.','No more doing the same job twice: Northern Supplies now wants oak logs, The Ranger\'s Warning wolf pelts, and Across the Western Sea cooked salmon.','The Road East (a short walk to Saltmere) now comes early, right after Gone Fishing. Your progress is kept: anything you already finished stays finished.']},
  {v:'2026.11.12-4',d:'Nov 12, 2026',t:'Smooth camera',n:['No more shaky screen: your character used to jump a little back and forth while walking, especially on phones. You now stay perfectly still in the middle of the screen.','The world also scrolls smoothly now instead of in small jumps, so walking, sprinting and sailing look much steadier.']},
  {v:'2026.11.12-3',d:'Nov 12, 2026',t:'Check for updates and move your buttons',n:['Phones and tablets: move the touch buttons where your thumbs like them. Options > Controls > Touch > Move my buttons, then drag HIT, EAT, FIRE, TALK, ROLL, ULT and BOW/CAST anywhere, and make any of them bigger or smaller. Portrait and landscape each keep their own layout.','No more refreshing to get the newest version: Options > Check for updates. If there\'s a new version, UPDATE NOW saves your game and loads it.','The game also checks by itself every 10 minutes and shows an "Update ready" bar at the top. Tap UPDATE when it suits you, or LATER to keep playing.']},
@@ -14791,29 +14795,32 @@ window.SQA=SQA;
   try{put(document.getElementById('a'),hitWord());put(document.getElementById('e'),eatWord());
    const tw=tk.innerHTML.split('<')[0];if(tk.style.display!=='none'&&(tw==='USE'||MINE.has(tw)&&typeof tkLab!=='undefined'&&tkLab==='USE')){put(tk,useWord()||'USE')}}catch(e){}};
  window.SQWORDS={hitWord,eatWord,useWord}})();
-// ---- 124. A TRADE button when you stand next to another player ----
+// ---- 124. The player's name on the TALK button when you stand next to them ----
+// (Since section 135 the button shows the player's name and opens the player menu: trade, add friend, duel.)
 // Trading (section 67) used to start from START > Trade, /trade name or the Friends list. Now, when another player
 // stands right next to you and the TALK button isn't busy with anything else (a person, a door, a chest...), it says
 // TRADE: one tap (T on a computer, ✕ on a controller) asks the nearest of them to trade. If they already asked you,
 // the same tap says yes. With PvP on, players who also have PvP on never get it (on a controller ✕ is also the attack
 // button, so it would turn a hit into a trade request mid-fight); START > Trade still works. Uses window.SQTRREQ / SQTRNEAR / SQTRADE from 062.
-(()=>{const CLOSE=34;let mine=false,who=null,t=0,lab='';
+(()=>{{const st=document.createElement('style');st.textContent='#tk.sqpn{font-size:11px!important;letter-spacing:0!important;line-height:1.1;text-align:center;word-break:break-all}';document.head.appendChild(st)}
+ const CLOSE=34;let mine=false,who=null,t=0,lab='';
  const ok=()=>!!(window.SQTRREQ&&window.SQTRNEAR&&window.SQTRADE&&window.SQMP&&SQMP.on&&SQMP.user);
  // the nearest player within a couple of steps (the trade itself allows a little more room)
- function nearest(){if(!ok()||SQTRADE.st!=='idle')return null;let best=null,bd=CLOSE;const foes=!!(window.SQPVP&&SQPVP.on);
+ function nearest(){if(!ok()||SQTRADE.st!=='idle'||(window.SQDUEL&&SQDUEL.st!=='idle'))return null;let best=null,bd=CLOSE;const foes=!!(window.SQPVP&&SQPVP.on);
   for(const u of SQTRNEAR()){const r=SQMP.players.get(u);if(!r||(foes&&r.pk))continue;const d=Math.hypot(r.tx-P.x,r.ty-P.y);if(d<bd){bd=d;best=u}}return best}
- const label=()=>'TRADE'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));
- const ask=()=>{const u=who;if(!u)return false;try{SQTRREQ(u);sfx('talk')}catch(e){}return true};
+ const short=u=>{const r=SQMP.players.get(u),n=String((r&&r.n)||'PLAYER').toUpperCase();return n.length>8?n.slice(0,7)+'…':n};
+ const label=()=>esc(short(who))+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));
+ const ask=()=>{const u=who;if(!u)return false;try{if(window.SQPLAYERMENU)SQPLAYERMENU(u);else{SQTRREQ(u);sfx('talk')}}catch(e){}return true};
  // the button is ours only while nothing else wants it: hide it before the game's own code runs each frame; if that
  // code shows it again (a person, a chest, a boat...), it's theirs, and their word goes back on it
- const giveBack=()=>{mine=false;who=null;if(tk.innerHTML===lab){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
+ const giveBack=()=>{mine=false;who=null;tk.classList.remove('sqpn');if(tk.innerHTML===lab){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
  const _u=upd;upd=function(dt){if(mine)tk.style.display='none';const out=_u.apply(this,arguments);
   if(mine&&(tk.style.display!=='none'||tk.innerHTML!==lab))giveBack();
   if(mine&&!pnOpen&&!menuOpen&&!dead)tk.style.display='flex';
   if((t-=dt)>0)return out;t=.15;
   const busy=pnOpen||menuOpen||dead||BUILD||(tk.style.display!=='none'&&!mine);
   const u=busy?null:nearest();
-  if(u){who=u;lab=label();if(tk.innerHTML!==lab)tk.innerHTML=lab;tk.style.display='flex';mine=true}
+  if(u){who=u;lab=label();if(tk.innerHTML!==lab)tk.innerHTML=lab;tk.classList.add('sqpn');tk.style.display='flex';mine=true}
   else if(mine){giveBack();tk.style.display='none'}
   return out};
  tk.addEventListener('touchstart',e=>{if(!mine||pnOpen||menuOpen||dead)return;e.preventDefault();e.stopImmediatePropagation();ask()},{passive:false,capture:true});
@@ -15288,6 +15295,300 @@ window.SQA=SQA;
    Q.i=Math.max(0,Math.min(QS.length,Q.i))}catch(e){console.warn(e)}return out};
  const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);IBK=new Set();NW=0;return out};
  window.SQCH2={get ibk(){return IBK},get nw(){return NW},QOLD9}})();
+// ---- 134. Achievements and the collection log ----
+// START > Achievements opens two pages:
+//  - Achievements: goals across skills, gathering, combat, quests, travel, wealth and collecting. Each pays gold once,
+//    the moment it's reached (a message and a jingle), and shows its progress until then.
+//  - Collection log: every item, gear piece and pet in the game, by category. What you've had shows in colour, the rest
+//    as a dark shape; tap one for its name.
+// Counting (lifetime, from this update on): items arriving in a frame where the matching skill gained XP (like the daily
+// challenges), fires by Firemaking XP gains, monsters by the game's `kills`, island bosses by sqEvent('islandboss').
+// Achievements about levels, gold, quests, chess, pets and the log itself read the game's own state, so old saves get
+// them straight away. The collection log starts with what's in your bag, on you and your pets.
+// Saved as `ach` = {c: counters, d: {id: day reached}, col: [item keys], rg: [islands visited]}.
+// Other sections can count things too: SQACH.add(counter, n) (duels won, trades...).
+(()=>{const SK=n=>SKN.indexOf(n);
+ let C={},D={},COL=new Set(),RG=new Set(),READY=false;
+ const cnt=k=>C[k]|0;
+ const pets=()=>{try{return LUX.COS.pets||[]}catch(e){return[]}};
+ const maxLv=()=>Math.max(...XPS.map((_,i)=>lvOf(i)));
+ const quests=()=>{try{return Math.max(QDONE.size,Math.min(Q.i,QS.length))}catch(e){return 0}};
+ const lines=()=>{try{return Object.keys(SIDE_QS).filter(t=>SQ_SIDE[t]&&SQ_SIDE[t].completed).length}catch(e){return 0}};
+ const linesAll=()=>{try{return Object.keys(SIDE_QS).filter(t=>SIDE_QS[t]&&SIDE_QS[t].length).length}catch(e){return 99}};
+ const ibs=()=>{try{return SQCH2.ibk.size}catch(e){return 0}};
+ const A=[];const add=(g,id,n,d,val,goal,gold)=>A.push({g,id,n,d,val,goal,gold});
+ // skills
+ add('Skills','lv10','Getting Good','Reach level 10 in any skill',maxLv,10,50);
+ add('Skills','lv30','Skilled','Reach level 30 in any skill',maxLv,30,250);
+ add('Skills','lv50','Expert','Reach level 50 in any skill',maxLv,50,800);
+ add('Skills','lv99','Master','Reach level 99 in any skill',maxLv,99,10000);
+ add('Skills','tot50','Jack of All Trades','Reach total level 50',()=>lvTot(),50,100);
+ add('Skills','tot150','Well Rounded','Reach total level 150',()=>lvTot(),150,500);
+ add('Skills','tot300','Island Veteran','Reach total level 300',()=>lvTot(),300,1500);
+ add('Skills','tot600','Living Legend','Reach total level 600',()=>lvTot(),600,5000);
+ // gathering and making
+ add('Gathering','log100','Lumberjack','Chop 100 logs',()=>cnt('wc'),100,100);
+ add('Gathering','log1k','Timberlord','Chop 1,000 logs',()=>cnt('wc'),1000,800);
+ add('Gathering','ore100','Rock Bottom','Mine 100 ore or stone',()=>cnt('mine'),100,100);
+ add('Gathering','ore1k','Deep Delver','Mine 1,000 ore or stone',()=>cnt('mine'),1000,800);
+ add('Gathering','fish50','Gone Fishin\'','Catch 50 fish',()=>cnt('fish'),50,100);
+ add('Gathering','fish500','Master Angler','Catch 500 fish',()=>cnt('fish'),500,800);
+ add('Gathering','for100','Forager','Forage 100 berries, mushrooms or plants',()=>cnt('forage'),100,100);
+ add('Gathering','crop50','Green Fingers','Harvest 50 crops',()=>cnt('farm'),50,250);
+ add('Gathering','cook50','Line Cook','Cook 50 meals',()=>cnt('cook'),50,100);
+ add('Gathering','cook500','Head Chef','Cook 500 meals',()=>cnt('cook'),500,800);
+ add('Gathering','fire25','Firestarter','Light 25 fires',()=>cnt('fire'),25,100);
+ add('Gathering','craft25','Handy','Craft 25 things',()=>cnt('craft'),25,150);
+ add('Gathering','smith25','Anvil Ringer','Smith 25 things (bars count too)',()=>cnt('smith'),25,150);
+ // combat
+ add('Combat','kill1','First Blood','Beat a monster',()=>cnt('kill'),1,20);
+ add('Combat','kill100','Monster Hunter','Beat 100 monsters',()=>cnt('kill'),100,200);
+ add('Combat','kill1k','Slayer','Beat 1,000 monsters',()=>cnt('kill'),1000,1500);
+ add('Combat','ib1','Door Opener','Defeat an island boss',()=>Math.max(ibs(),cnt('ibw')),1,500);
+ add('Combat','ib5','Legend of the Isles','Defeat all five island bosses',ibs,5,5000);
+ add('Combat','ib10','Boss Regular','Win 10 island boss fights',()=>cnt('ibw'),10,2000);
+ add('Combat','duel1','Duelist','Win a duel against another player',()=>cnt('duelw'),1,200);
+ add('Combat','duel10','Champion of the Ring','Win 10 duels',()=>cnt('duelw'),10,1500);
+ // quests and travel
+ add('Quests & travel','q10','Helping Hand','Finish 10 of Elder Rowan\'s quests',quests,10,200);
+ add('Quests & travel','qall','Elder\'s Champion','Finish every one of Elder Rowan\'s quests',quests,()=>QS.length,3000);
+ add('Quests & travel','line3','Friend of the Island','Finish 3 village quest lines',lines,3,500);
+ add('Quests & travel','lineall','Friend of Every Shore','Finish every village quest line',lines,linesAll,3000);
+ add('Quests & travel','sea1','Sea Legs','Set foot on another island',()=>RG.size,1,150);
+ add('Quests & travel','sea5','World Traveller','Visit 5 islands beyond Hollow',()=>RG.size,5,1500);
+ add('Quests & travel','chess5','Chess Champion','Win 5 games of chess',()=>CHS.w|0,5,300);
+ add('Quests & travel','daily7','Every Day Counts','Keep a 7-day daily challenge streak',()=>{try{return SQDAILY.state.s|0}catch(e){return 0}},7,1000);
+ add('Quests & travel','trade1','Trader','Finish a trade with another player',()=>cnt('trade'),1,100);
+ // wealth and collecting
+ add('Wealth & collecting','g1k','Pocket Change','Have 1,000 gold at once',()=>GLD,1000,0);
+ add('Wealth & collecting','g10k','Well Off','Have 10,000 gold at once',()=>GLD,10000,0);
+ add('Wealth & collecting','g100k','Tycoon','Have 100,000 gold at once',()=>GLD,100000,0);
+ add('Wealth & collecting','col50','Collector','Fill 50 collection log slots',()=>colCount(),50,500);
+ add('Wealth & collecting','col100','Hoarder','Fill 100 collection log slots',()=>colCount(),100,2000);
+ add('Wealth & collecting','pet3','Pet Lover','Own 3 pets',()=>pets().length,3,300);
+ add('Wealth & collecting','pet10','Menagerie','Own 10 pets',()=>pets().length,10,2000);
+ const goalOf=a=>typeof a.goal==='function'?a.goal():a.goal;
+ // ---- the collection log ----
+ const CATS=[
+  ['Logs',k=>/^(wood|heartwood|\w+log)$/.test(k)],
+  ['Ores & bars',k=>/^(stone|iron|\w*ore|[isgma]bar)$/.test(k)],
+  ['Fish',k=>['shrimp','trout','salmon','swordfish','rainbow','pike','gcarp','eeel','lsnap','icod','gchar','vray','cangl'].includes(k)],
+  ['Cooking',k=>/^c(shrimp|trout|salmon|swordfish|rainbow|pike|gcarp|eeel|lsnap|icod|gchar|vray|cangl|shroom)$/.test(k)||['cooked','bread','rcarrot','pie','stew','jam','rnuts'].includes(k)],
+  ['Farming & foraging',k=>['berry','wheat','carrot','pumpkin','honey','goldcrop','cfruit','nuts','shroom','meat','pelt','bone'].includes(k)],
+  ['Rare finds',k=>/^ibs_/.test(k)||['elixir','coin','ftroph','eq_fcrown','eq_ohat','eq_sword8','ja_frost','ja_dsoul','ja_thorn','ja_ember','pet_pweb','pet_pvoidl'].includes(k)],
+  ['Gems & jewellery',k=>/^(ruby|sapphire|emerald|diamond|jr_\w+|ja_\w+)$/.test(k)],
+  ['Weapons & tools',k=>/^(eq_(sword|axe|pick|bow|w)\w*|eq_sledge|eq_rod|eq_hoe|eq_can|idag|sdag)$/.test(k)],
+  ['Armour',k=>/^eq_(helm|body|legs|r(helm|body|legs)|m(helm|body|legs))\w*$/.test(k)],
+  ['Pets',k=>/^pet_/.test(k)]];
+ let CATL=null;
+ function cats(){if(CATL)return CATL;const used=new Set(),out=[];for(const[n,f]of CATS){const L=[];for(const k in INAME){if(used.has(k)||/^eq_cu_/.test(k))continue;if(f(k)){L.push(k);used.add(k)}}out.push([n,L])}
+  // rare finds first so they're not counted twice
+  return CATL=out}
+ const inLog=k=>cats().some(([,L])=>L.includes(k));
+ const colCount=()=>{let n=0;for(const[,L]of cats())for(const k of L)if(COL.has(k))n++;return n};
+ const colTotal=()=>cats().reduce((s,[,L])=>s+L.length,0);
+ function seed(){try{for(const k in inv)if((inv[k]|0)>0)COL.add(k);for(const s of['main','off','axe','pick','helm','body','legs','rod','hoe','can']){try{const k=occ(s);if(k)COL.add(k)}catch(e){}}for(const p of pets())COL.add('pet_'+p)}catch(e){}}
+ function note(k){if(COL.has(k)||!INAME[k]||!inLog(k))return;COL.add(k);const rare=cats().find(([n])=>n==='Rare finds')[1].includes(k)||/^pet_/.test(k);if(rare&&READY){say('New in your collection log: '+INAME[k].replace(/ \(pet\)$/,'')+'!');msgT=4}}
+ // ---- counting ----
+ const WHICH={1:'wc',2:'mine',3:'forage',9:'fish',4:'cook',11:'farm',6:'craft',10:'smith'},MIN1={craft:1,smith:1};
+ let LAST=null,LK=null,XF=new Set(),t=0;
+ const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(x>0){XF.add(i);if(i===SK('Firemaking'))C.fire=cnt('fire')+1}return out};
+ const _se=sqEvent;sqEvent=function(type,item){if(type==='islandboss')C.ibw=cnt('ibw')+1;return _se.apply(this,arguments)};
+ const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(!READY){seed();READY=true;LK=typeof kills==='number'?kills:null}if(dead)return out;
+   if(LAST){const got={};let tot=0;for(const k in inv){const v=(inv[k]|0)-(LAST[k]|0);if(v>0){got[k]=v;tot+=v;note(k)}}
+    if(XF.size)for(const i of XF){const c=WHICH[i];if(!c)continue;C[c]=cnt(c)+(MIN1[c]?Math.max(1,tot):tot)}}
+   if(typeof kills==='number'){if(LK!=null&&kills>LK)C.kill=cnt('kill')+(kills-LK);LK=kills}
+   XF.clear();LAST=Object.assign({},inv);
+   if((t-=dt)<=0){t=1;for(const s of['main','off','axe','pick','helm','body','legs']){try{const k=occ(s);if(k)note(k)}catch(e){}}for(const p of pets())note('pet_'+p);
+    try{const r=curRegion();if(r&&r!=='hollow')RG.add(r)}catch(e){}check()}}catch(e){}return out};
+ function check(){for(const a of A){if(D[a.id])continue;let v=0;try{v=a.val()}catch(e){}if(v>=goalOf(a)){D[a.id]=Math.floor(Date.now()/864e5);if(a.gold)GLD+=a.gold;
+   say('Achievement unlocked: '+a.n+'!'+(a.gold?' +'+a.gold+' gold':''));msgT=5;try{sfx('level')}catch(e){}try{svg()}catch(e){}try{saveLocal(true)}catch(e){}if(pnOpen&&ptab===ATAB)rPn();break}}}
+ window.SQACH={add:(k,n)=>{C[k]=cnt(k)+(n||1)},get counters(){return C},get done(){return D},get col(){return COL},A,cats,check,colCount,colTotal};
+ // ---- saves ----
+ const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.ach={c:Object.assign({},C),d:Object.assign({},D),col:[...COL],rg:[...RG]};return s};
+ const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const v=S&&S.ach;C={};D={};COL=new Set();RG=new Set();
+   if(v&&typeof v==='object'){for(const k in v.c||{}){const n=+v.c[k];if(isFinite(n)&&n>0)C[k]=Math.floor(n)}for(const k in v.d||{})if(A.some(a=>a.id===k))D[k]=+v.d[k]||1;
+    for(const k of Array.isArray(v.col)?v.col:[])if(typeof k==='string'&&INAME[k])COL.add(k);for(const r of Array.isArray(v.rg)?v.rg:[])if(typeof r==='string')RG.add(r)}
+   seed();LAST=null;LK=typeof kills==='number'?kills:null;READY=true}catch(e){console.warn(e)}return out};
+ const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);C={};D={};COL=new Set();RG=new Set();LAST=null;LK=typeof kills==='number'?kills:null;READY=true;return out};
+ // ---- the screen ----
+ const ATAB=35;let VIEW='a',PICK='';
+ SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'achievements',l:()=>'Achievements'});
+ {const _ss=showScreen;showScreen=function(id){if(id!=='achievements')return _ss(id);pnOpen=true;ptab=ATAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}}
+ const st=document.createElement('style');st.textContent=`#pn .ach{display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #d8e0f0;color:#404040}#pn .ach.done{background:#f4f8e8}
+#pn .ach .ic{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid #485870;background:#e8e8f0;color:#485870}#pn .ach.done .ic{background:#f8d048;border-color:#a07010;color:#604000}
+#pn .ach .tx{flex:1;min-width:0}#pn .ach b{display:block;font-size:14px}#pn .ach small{display:block;font-size:12px;opacity:.85}#pn .ach .bar{height:5px;background:#d0d8e8;margin-top:4px}#pn .ach .bar div{height:5px;background:#5878c0}
+#pn .ach .gd{flex:none;font-size:12px;font-weight:700;color:#a07010}#pn .colg{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;margin:6px 0 12px}
+#pn .colg button{all:unset;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#e8ecf4;border:2px solid #c8d0e0}#pn .colg button.on{background:#f8f4e0;border-color:#c8b070}
+#pn .colg img{width:28px;height:28px;image-rendering:pixelated}#pn .colg button:not(.on) img{filter:brightness(0);opacity:.3}#pn .colh{display:flex;justify-content:space-between;font-weight:700;color:#304870;margin-top:6px}`;document.head.appendChild(st);
+ const ICO={};const ico=k=>{if(ICO[k])return ICO[k];try{return ICO[k]=(EQ[k]&&typeof eqIcon==='function')?eqIcon(k):iconURL(k)}catch(e){return''}};
+ function html(){let h='<div class="tl">ACHIEVEMENTS</div><div style="display:flex;gap:6px;margin:4px 0 8px"><button class="sb" data-ac="tab:a" style="flex:1;opacity:'+(VIEW==='a'?1:.55)+'">Achievements</button><button class="sb" data-ac="tab:c" style="flex:1;opacity:'+(VIEW==='c'?1:.55)+'">Collection log</button></div>';
+  if(VIEW==='a'){const n=A.filter(a=>D[a.id]).length;h+='<div class="qc" style="font-size:13px">'+n+' of '+A.length+' achievements · each pays gold the moment you reach it.</div>';let grp='';
+   for(const a of A){if(a.g!==grp){grp=a.g;h+='<div class="colh"><span>'+esc(grp)+'</span></div>'}const g=goalOf(a);let v=0;try{v=a.val()}catch(e){}const dn=!!D[a.id],pc=Math.min(100,Math.round(v/g*100));
+    h+='<div class="ach'+(dn?' done':'')+'"><div class="ic">'+(dn?'✓':'?')+'</div><div class="tx"><b>'+esc(a.n)+'</b><small>'+esc(a.d)+'</small>'+(dn?'':'<div class="bar"><div style="width:'+pc+'%"></div></div><small>'+Math.min(v,g).toLocaleString()+' / '+g.toLocaleString()+'</small>')+'</div>'+(a.gold?'<div class="gd">'+a.gold.toLocaleString()+' g</div>':'')+'</div>'}}
+  else{h+='<div class="qc" style="font-size:13px">'+colCount()+' of '+colTotal()+' found. '+'<b class="acpick">'+esc(PICK||'Tap a slot to see its name.')+'</b>'+'</div>';
+   for(const[n,L]of cats()){const got=L.filter(k=>COL.has(k)).length;h+='<div class="colh"><span>'+esc(n)+'</span><span>'+got+'/'+L.length+'</span></div><div class="colg">';
+    for(const k of L){const on=COL.has(k);h+='<button class="'+(on?'on':'')+'" data-acn="'+esc(on?INAME[k].replace(/ \(pet\)$/,''):'Not found yet')+'"><img alt="" src="'+ico(k)+'"></button>'}h+='</div>'}}
+  return h}
+ const _r=rPn;rPn=function(){if(ptab===ATAB){try{panelChrome('')}catch(e){}pbd.innerHTML=html();return}return _r.apply(this,arguments)};
+ {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab!==ATAB)return _oc(e);const b=e.target.closest('[data-ac],[data-acn]');if(!b)return;
+   if(b.dataset.ac){VIEW=b.dataset.ac.slice(4);PICK='';sfx('talk');rPn();return}PICK=b.dataset.acn;const q=pbd.querySelector('.acpick');if(q)q.textContent=PICK;else rPn()}}})();
+// ---- 135. The player menu and duels ----
+// Next to another player the TALK button shows their name (multiplayer/119). Tapping it opens the player menu:
+// TRADE, ADD FRIEND, DUEL (and CHESS, coming later).
+// Duels: ask (they get a pop-up and a chat line), then a stake window like the trade window: each side puts in items
+// and gold, two rounds of accepting ("If you lose you give... If you win you get..."). When both have accepted twice,
+// each side's stake is taken out of their bag (saved at once), a 3-2-1 countdown runs and the two can hit each other
+// anywhere (PvP on or off; nobody else can join in). The duel ends when one of them falls: the loser gets back up right
+// where they fell with full health and loses only their stake; the winner gets their own stake back plus the loser's.
+// Leaving the area (or going offline for 20 s) during the fight counts as losing. After 3 minutes it's a draw and both
+// stakes go back.
+// Database: dreq/<to>/<from> = a duel request; duels/<a_b>/<uid> = that player's side {i, g, a, c, f, l, d, t}:
+// a/c = first/second accept key, f = stake taken (ready to fight), l = I lost, d = I've collected (winner).
+(()=>{const NEAR=6*16,FIGHT=180,Fm=()=>window.SQFB,Mp=()=>window.SQMP;
+ const on=()=>!!(Mp()&&Mp().on&&Mp().user&&Fm()),me=()=>Mp().user.uid,ref=p=>Fm().db.ref(Fm().D,p);
+ const liveR=r=>!!r&&performance.now()-r.seen<20000;
+ const nameOf=u=>{const r=Mp()&&Mp().players.get(u);return(r&&r.n)||'Player'};
+ const near=u=>{const r=Mp().players.get(u);if(!r||!liveR(r))return false;let L=null;try{L=mpLoc()}catch(e){}return!!L&&r.loc===L&&Math.hypot(r.tx-P.x,r.ty-P.y)<=NEAR};
+ const tid=(a,b)=>a<b?a+'_'+b:b+'_'+a;
+ const now=()=>Date.now()+((Mp()&&Mp().off)||0);
+ const D={st:'idle',foe:null,tid:'',me:{},g:0,th:{},tg:0,my:{a:'',c:'',f:'',l:'',d:''},their:null,seen:false,unsub:null,esc:null,t0:0,cd:0,away:0,warnAt:0,lastTh:'',inbox:{},sent:{},rq:null};
+ window.SQDUEL={get fighting(){return D.st==='fight'},get foe(){return D.foe},get st(){return D.st},state:D};
+ // ---- the player menu ----
+ const MTAB=36,DTAB=37;let MU=null;
+ function menuOpenFor(u){MU=u;try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){}pnOpen=true;ptab=MTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk')}
+ window.SQPLAYERMENU=menuOpenFor;
+ function menuHTML(){const u=MU,n=esc(nameOf(u)),fr=!!(Mp()&&Mp().friends&&Mp().friends[u]),T=window.SQTRADE,tIn=!!(T&&T.inbox&&T.inbox[u]),dIn=!!D.inbox[u],dSent=!!D.sent[u];
+  let h='<div class="tl">'+n.toUpperCase()+'</div><div class="qc" style="font-size:13px;text-align:center">'+(near(u)?'Standing right next to you.':'Too far away now. Walk up to them again.')+'</div><div class="pmb">';
+  h+='<button class="sb" data-pm="trade">'+(tIn?'ACCEPT TRADE':'TRADE')+'</button>';
+  h+='<button class="sb" data-pm="friend"'+(fr?' disabled style="opacity:.55"':'')+'>'+(fr?'FRIENDS ✓':'ADD FRIEND')+'</button>';
+  h+='<button class="sb" data-pm="duel"'+(dSent&&!dIn?' disabled style="opacity:.55"':'')+'>'+(dIn?'ACCEPT DUEL':dSent?'DUEL ASKED…':'DUEL')+'</button>';
+  h+='<button class="sb" disabled style="opacity:.45">CHESS · coming soon</button><button class="sb" data-pm="close">CLOSE</button></div>';
+  return h}
+ // ---- duel requests ----
+ function ask(u){if(!on()){say('Sign in to duel other players.');return}if(D.st!=='idle'){say('Finish your current duel first.');return}if(!near(u)){say(nameOf(u)+' is too far away. Stand next to them.');sfx('swish');return}
+  if(D.inbox[u]){answer(u,true);return}if(D.sent[u])return;const db=Fm().db,sn=Math.random().toString(36).slice(2,10);D.sent[u]={at:performance.now(),s:sn};
+  db.set(ref('dreq/'+u+'/'+me()),{n:String(pname()).slice(0,12),s:sn,t:db.serverTimestamp()}).then(()=>{say('You challenged '+nameOf(u)+' to a duel.');try{mpLog('game','You challenged '+nameOf(u)+' to a duel.')}catch(e){}watchReq(u)})
+   .catch(e=>{delete D.sent[u];say(/permission/i.test(String(e&&(e.code||e.message)))?'Duels need the latest database rules.':'Could not send the duel request.')})}
+ function watchReq(u){const db=Fm().db,S=D.sent[u];if(!S)return;const offs=[];S.done=()=>{offs.forEach(f=>f());delete D.sent[u];draw()};
+  const t0=now()-3000;// an old side left from the last duel doesn't count as a yes
+  offs.push(db.onValue(ref('duels/'+tid(u,me())+'/'+u),s=>{const v=s.val();if(v&&v.s===S.s&&D.st==='idle'&&D.sent[u]){const sn=S.s;S.done();open(u,sn)}}));
+  setTimeout(()=>{if(D.sent[u]&&D.st==='idle'){S.done();db.remove(ref('dreq/'+u+'/'+me())).catch(()=>{});say(nameOf(u)+' did not answer the duel.')}},60000)}
+ function answer(u,yes){const sn=D.inbox[u]&&D.inbox[u].s;delete D.inbox[u];popHide(u);Fm().db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{});if(!yes)return;
+  if(D.st!=='idle'){say('Finish your current duel first.');return}if(!near(u)){say(nameOf(u)+' is too far away now.');sfx('swish');return}if(sn)open(u,sn)}
+ // request pop-up
+ const st=document.createElement('style');st.textContent=`#dlpop{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 58px);z-index:31;display:none;align-items:center;gap:8px;padding:8px 10px;max-width:calc(100vw - 24px);box-sizing:border-box;font:600 14px ${PF};background:#f8f0d8;color:#404040;border:3px solid #b03828}
+#dlpop span{flex:1;min-width:0}#dlpop button{font:700 13px ${PF};padding:7px 12px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#dlpop .ok{background:#b03828;border-color:#701810;color:#fff}
+#pn .pmb{display:flex;flex-direction:column;gap:8px;margin-top:8px}#pn .pmb .sb{width:100%;margin:0}
+#dlbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 64px);z-index:30;display:none;padding:6px 12px;font:700 14px ${PF};color:#fff;background:#b03828;border:3px solid #701810;pointer-events:none;white-space:nowrap}
+#dlbig{position:fixed;left:0;right:0;top:38%;z-index:30;display:none;text-align:center;font:700 54px ${PF};color:#fff;text-shadow:0 4px 0 #701810,0 0 12px #000;pointer-events:none}`;document.head.appendChild(st);
+ const pop=document.createElement('div');pop.id='dlpop';pop.innerHTML='<span></span><button class="ok">DUEL</button><button class="no">NO</button>';document.body.appendChild(pop);
+ for(const ev of['touchstart','pointerdown','mousedown'])pop.addEventListener(ev,e=>e.stopPropagation());
+ let popU=null,popT=0;pop.querySelector('.ok').onclick=()=>{if(popU)answer(popU,true)};pop.querySelector('.no').onclick=()=>{if(popU)answer(popU,false)};
+ function popShow(u){popU=u;pop.querySelector('span').textContent=nameOf(u)+' challenges you to a duel!';pop.style.display='flex';clearTimeout(popT);popT=setTimeout(()=>popHide(u),30000)}
+ function popHide(u){if(u&&popU!==u)return;popU=null;pop.style.display='none';clearTimeout(popT)}
+ const bar=document.createElement('div');bar.id='dlbar';document.body.appendChild(bar);const big=document.createElement('div');big.id='dlbig';document.body.appendChild(big);
+ let bigT=0;const bigSay=(t,ms)=>{big.textContent=t;big.style.display='block';clearTimeout(bigT);bigT=setTimeout(()=>{big.style.display='none'},ms||900)};
+ // ---- the stake window ----
+ const can=k=>(inv[k]|0)-(D.me[k]|0);
+ const clean=o=>{const r={};if(o&&typeof o==='object')for(const k in o){const n=Math.floor(+o[k]||0);if(n>0&&INAME[k]&&INVK.includes(k))r[k]=Math.min(n,1e6)}return r};
+ function key(){const[a]=[D.tid.split('_')[0]],s=o=>Object.keys(o).sort().map(k=>k+':'+o[k]).join(','),M=[s(D.me),D.g],T=[s(D.th),D.tg];return JSON.stringify(a===me()?[D.s,M,T]:[D.s,T,M])}
+ function push(){if(!D.tid||!on())return;const db=Fm().db;db.set(ref('duels/'+D.tid+'/'+me()),{i:D.me,g:D.g,s:D.s,a:D.my.a,c:D.my.c,f:D.my.f,l:D.my.l,d:D.my.d,t:db.serverTimestamp()})
+  .catch(e=>{end(/permission/i.test(String(e&&(e.code||e.message)))?'Duels need the latest database rules.':'Lost the connection, so the duel was cancelled.')})}
+ function open(u,sn){D.s=sn||'';D.st='stake';D.foe=u;D.tid=tid(u,me());D.me={};D.g=0;D.th={};D.tg=0;D.my={a:'',c:'',f:'',l:'',d:''};D.their=null;D.seen=false;D.esc=null;D.warnAt=0;D.lastTh='';
+  delete D.inbox[u];popHide(u);if(D.sent[u]&&D.sent[u].done)D.sent[u].done();
+  try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){}push();D.unsub=Fm().db.onValue(ref('duels/'+D.tid+'/'+u),s=>theirs(s.val()));
+  pnOpen=true;ptab=DTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');try{mpLog('game','Setting up a duel with '+nameOf(u)+'.')}catch(e){}}
+ function theirs(v){if(D.st==='idle')return;if(v&&v.s!==D.s)v=null;// a side left from another duel
+  if(!v){if(D.seen&&D.st!=='fight'&&D.st!=='over')end(nameOf(D.foe)+' left the duel.');else if(D.seen&&D.st==='fight')win('left');return}
+  D.seen=true;const th=clean(v.i),tg=Math.max(0,Math.min(1e9,Math.floor(+v.g||0)));D.their={a:String(v.a||''),c:String(v.c||''),f:String(v.f||''),l:String(v.l||''),d:String(v.d||'')};
+  if(D.st==='stake'||D.st==='confirm'){const k=JSON.stringify([th,tg]);if(D.lastTh&&k!==D.lastTh){const less=tg<D.tg||Object.keys(D.th).some(q=>(th[q]|0)<D.th[q]),was=D.their;if(less||D.my.a||D.st==='confirm')D.warnAt=performance.now();D.st='stake';if(D.my.a||D.my.c){D.my.a='';D.my.c='';push()}sfx('swish')}D.lastTh=k;D.th=th;D.tg=tg}
+  step()}
+ function step(){if(D.st==='idle'||!D.their)return;const k=key(),t=D.their;
+  if(D.st==='stake'||D.st==='confirm'){if(D.my.a&&D.my.a!==k){D.my.a='';D.my.c='';push()}
+   if(D.st==='stake'&&D.my.a===k&&t.a===k){D.st='confirm';sfx('talk')}if(D.st==='confirm'&&(D.my.a!==k||t.a!==k))D.st='stake';
+   if(D.st==='confirm'&&D.my.c===k&&(t.c===k||t.f===k))takeStake(k)}
+  if(D.st==='ready'&&t.f===D.my.f)countdown();
+  if(D.st==='fight'&&t.l&&t.l===D.my.f)win('fell');
+  if(D.st==='fight'&&t.d&&t.d===D.my.f&&!D.my.l)lose('left');// they were told you'd left: keep both sides the same
+  draw()}
+ // both accepted twice: take your stake out of your bag and get ready
+ function takeStake(k){for(const q in D.me)if((inv[q]|0)<D.me[q]){end('You no longer have everything you staked, so the duel was cancelled.');return}if(GLD<D.g){end('You no longer have that much gold.');return}
+  for(const q in D.me)inv[q]=(inv[q]|0)-D.me[q];GLD-=D.g;D.esc={i:Object.assign({},D.me),g:D.g,th:Object.assign({},D.th),tg:D.tg};
+  try{saveLocal(true)}catch(e){}try{saveCloud(true)}catch(e){}D.my.f=k;D.st='ready';D.readyAt=performance.now();push();if(pnOpen&&ptab===DTAB)closePanel();say('Stakes are in. Get ready!');step()}
+ function countdown(){D.st='count';D.t0=performance.now();let n=3;bigSay('3');sfx('talk');const tick=()=>{if(D.st!=='count')return;n--;if(n>0){bigSay(String(n));sfx('talk');setTimeout(tick,800);return}
+   D.st='fight';D.t0=performance.now();D.away=0;guard(true);bigSay('FIGHT!',1100);sfx('quest');try{mpLog('game','Duel with '+nameOf(D.foe)+': fight!')}catch(e){}};setTimeout(tick,800)}
+ // ---- falling: you get back up where you fell; the duel is lost ----
+ let hpv=0,guarded=false;
+ function guard(onn){if(onn&&!guarded){hpv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hpv},set(v){if(D.st==='fight'&&v<=0){hpv=maxHp();lose('fell')}else hpv=v}});guarded=true}
+  else if(!onn&&guarded){const v=hpv;delete P.hp;P.hp=v;guarded=false}}
+ const maxHp=()=>6;// the game's health is out of 6
+ function lose(why){if(D.st!=='fight')return;D.my.l=D.my.f;push();const n=nameOf(D.foe),lost=list(D.esc.i,D.esc.g);D.st='over';
+  FLASH=.5;hurt=1.2;setTimeout(()=>guard(false),0);bigSay('DEFEAT',1500);try{sfx('hurt')}catch(e){}
+  const m=(why==='left'?'You left the duel, so '+n+' wins.':n+' won the duel.')+(lost?' You lost '+lost+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(e){}finishLater()}
+ function win(why){if(D.st!=='fight')return;const e=D.esc;D.st='over';guard(false);
+  for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];for(const k in e.th)inv[k]=(inv[k]|0)+e.th[k];GLD+=e.g+e.tg;try{saveLocal(true)}catch(x){}try{saveCloud(true)}catch(x){}
+  D.my.d=D.my.f;push();try{window.SQACH&&SQACH.add('duelw')}catch(x){}const got=list(e.th,e.tg);bigSay('VICTORY!',1600);sfx('quest');try{setTimeout(()=>sfx('coin'),200)}catch(x){}
+  const n=nameOf(D.foe),m=(why==='left'?n+' left the duel. You win!':why==='gone'?n+' went offline. You win!':'You beat '+n+'!')+(got?' You won '+got+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(x){}finishLater()}
+ function draw3(){if(D.st!=='fight')return;const e=D.esc;D.st='over';guard(false);for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];GLD+=e.g;try{saveLocal(true)}catch(x){}
+  say('Time is up: the duel is a draw. Your stake is back in your bag.');msgT=5;bigSay('DRAW',1400);finishLater()}
+ function finishLater(){const t=D.tid,u=me(),sn=D.s;setTimeout(()=>{if(on()&&!(D.tid===t&&D.s!==sn&&D.st!=='idle'))Fm().db.remove(ref('duels/'+t+'/'+u)).catch(()=>{})},8000);setTimeout(()=>end(null),300)}
+ // anything ending before the fight gives your stake back
+ function end(why){if(D.st==='idle')return;const was=D.st,t=D.tid;if(D.esc&&(was==='ready'||was==='count')){for(const k in D.esc.i)inv[k]=(inv[k]|0)+D.esc.i[k];GLD+=D.esc.g;try{saveLocal(true)}catch(e){}}
+  if(was==='fight'){lose('left');return}
+  if(D.unsub){D.unsub();D.unsub=null}if(was!=='over'&&on()&&t)Fm().db.remove(ref('duels/'+t+'/'+me())).catch(()=>{});
+  guard(false);D.st='idle';D.foe=null;D.tid='';D.esc=null;D.their=null;bar.style.display='none';
+  if(why){say(why);sfx('swish');try{mpLog('game',why)}catch(e){}}if(pnOpen&&ptab===DTAB)closePanel();draw()}
+ const list=(o,g)=>{const a=Object.keys(o||{}).map(k=>o[k]+' × '+(INAME[k]||k).toLowerCase());if(g)a.push(g.toLocaleString('en-US')+' gold');return a.join(', ')};
+ function side(o,g,them){let h='';for(const k in o)h+='<div class="tri"'+(them?'':' data-dl="rm" data-k="'+k+'"')+'><span>'+esc(INAME[k]||k)+'</span><i>×'+o[k]+'</i></div>';
+  if(g)h+='<div class="tri trg"'+(them?'':' data-dl="g0"')+'><span>Gold</span><i>'+g.toLocaleString('en-US')+'</i></div>';if(!Object.keys(o).length&&!g)h+='<div style="opacity:.55;font-size:12px">Nothing (just for glory)</div>';return h}
+ function stakeHTML(){const n=esc(nameOf(D.foe)),k=key(),t=D.their||{a:'',c:''};const warn=performance.now()-D.warnAt<6000?'<div class="trw">'+n+' changed their stake! Check it again.</div>':'';
+  if(D.st==='confirm'){return'<div class="tl">DUEL: ARE YOU SURE?</div>'+warn+'<div class="qc"><b>If you lose, you give '+n+':</b><p>'+esc(list(D.me,D.g)||'nothing')+'</p><b>If you win, you get:</b><p>'+esc(list(D.th,D.tg)||'nothing')+'</p><p style="font-size:12px;opacity:.8">The duel ends when one of you falls. You get back up where you fell. Leaving the area or going offline loses the duel.</p></div>'+
+   '<div class="trst">'+(D.my.c===k?'Waiting for '+n+'…':t.c===k?n+' is ready. Your turn.':'Check the stakes, then accept.')+'</div><div class="tra"><button class="y'+(D.my.c===k?' on':'')+'" data-dl="ok2">'+(D.my.c===k?'ACCEPTED':'ACCEPT')+'</button><button class="n" data-dl="no">DECLINE</button></div>'}
+  let h='<div class="tl">DUEL WITH '+n.toUpperCase()+'</div>'+warn+'<div class="trc"><div class="trs"><b>YOUR STAKE</b>'+side(D.me,D.g,false)+'</div><div class="trs them"><b>'+n.toUpperCase()+'\'S STAKE</b>'+side(D.th,D.tg,true)+'</div></div>';
+  h+='<div class="trst">'+(D.my.a===k?'Waiting for '+n+'…':t.a===k?n+' has accepted. Your turn.':'The winner takes the loser\'s stake. Tap your stake to take things back.')+'</div>';
+  h+='<div class="tra"><button class="y'+(D.my.a===k?' on':'')+'" data-dl="ok1">'+(D.my.a===k?'ACCEPTED':'ACCEPT')+'</button><button class="n" data-dl="no">DECLINE</button></div>';
+  const left=GLD-D.g;h+='<div class="trh">GOLD (you have '+left.toLocaleString('en-US')+' left)</div><div class="trgb">';for(const v of[10,100,1000,10000])h+='<button data-dl="g" data-v="'+v+'"'+(left<v?' disabled style="opacity:.4"':'')+'>+'+v.toLocaleString('en-US')+'</button>';
+  h+=(D.g?'<button data-dl="g0">Clear</button>':'')+'</div><div class="trh">YOUR BAG</div>';
+  const seen=new Set();let any=false;for(const q of BAG_ORDER().concat(INVK)){if(seen.has(q)||!INAME[q])continue;seen.add(q);const c=can(q);if(c<=0)continue;any=true;
+   h+='<div class="trb"><span>'+esc(INAME[q])+' <i style="font-style:normal;opacity:.65">×'+c+'</i></span><button data-dl="add" data-k="'+q+'" data-v="1">+1</button>'+(c>5?'<button data-dl="add" data-k="'+q+'" data-v="5">+5</button>':'')+(c>1?'<button data-dl="add" data-k="'+q+'" data-v="all">All</button>':'')+'</div>'}
+  if(!any)h+='<div style="opacity:.6;font-size:13px;padding:6px">Nothing left to stake.</div>';return h}
+ function click(b){const a=b.dataset.dl,k=b.dataset.k;if(D.st==='idle')return;if(a==='no'){end('You declined the duel.');return}
+  if(a==='ok1'){if(D.my.a===key())return;D.my.a=key();push();step();rPn();return}
+  if(a==='ok2'){const kk=key();if(D.my.c===kk)return;for(const q in D.me)if((inv[q]|0)<D.me[q]){end('You no longer have everything you staked.');return}D.my.c=kk;push();step();return}
+  if(D.st!=='stake')return;let ch=false;
+  if(a==='add'){const n=can(k),v=b.dataset.v==='all'?n:Math.min(n,+b.dataset.v);if(v>0){D.me[k]=(D.me[k]|0)+v;ch=true}}
+  else if(a==='rm'){if(D.me[k]){if(--D.me[k]<=0)delete D.me[k];ch=true}}
+  else if(a==='g'){const left=GLD-D.g,v=Math.min(left,+b.dataset.v);if(v>0){D.g+=v;ch=true}}else if(a==='g0'){if(D.g){D.g=0;ch=true}}
+  if(ch){D.my.a='';D.my.c='';push();sfx('pickup');rPn()}}
+ // ---- panel hooks ----
+ function draw(){if(pnOpen&&(ptab===MTAB||ptab===DTAB))rPn()}
+ const _r=rPn;rPn=function(){if(ptab===MTAB){try{panelChrome('')}catch(e){}pbd.innerHTML=menuHTML();return}if(ptab===DTAB){try{panelChrome('')}catch(e){}pbd.innerHTML=D.st==='idle'?'<div class="tl">DUEL</div>':stakeHTML();return}return _r.apply(this,arguments)};
+ {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab===DTAB){const b=e.target.closest('[data-dl]');if(b&&!b.disabled)click(b);return}
+   if(ptab===MTAB){const b=e.target.closest('[data-pm]');if(!b||b.disabled)return;const a=b.dataset.pm,u=MU;
+    if(a==='close'){closePanel();return}if(a==='trade'){closePanel();try{SQTRREQ(u)}catch(x){}return}
+    if(a==='friend'){try{SQADDFRIEND(u);say(nameOf(u)+' is now on your friends list.')}catch(x){}setTimeout(draw,600);return}
+    if(a==='duel'){if(D.inbox[u]){closePanel();answer(u,true);return}ask(u);setTimeout(draw,300);return}return}
+   return _oc(e)}}
+ {const _cp=closePanel;closePanel=function(){const r=_cp.apply(this,arguments);if((D.st==='stake'||D.st==='confirm')&&ptab===DTAB)end('You declined the duel.');return r}}
+ // ---- watching: requests, the other player, the clock ----
+ let started=false,reqOff=null;
+ function start(){started=true;D.inbox={};const db=Fm().db;reqOff=db.onValue(ref('dreq/'+me()),s=>{const v=s.val()||{},old=D.inbox;D.inbox={};
+   for(const u in v){const q=v[u];if(!q||typeof q!=='object')continue;if(typeof q.t==='number'&&now()-q.t>60000){db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{});continue}D.inbox[u]={t:q.t,s:typeof q.s==='string'?q.s.slice(0,12):''}}
+   for(const u in D.inbox)if(!old[u]){if(D.sent[u]&&D.st==='idle'){answer(u,true);continue}try{mpLog('game',nameOf(u)+' challenges you to a duel! Tap DUEL, or tap their name.')}catch(e){}if(D.st==='idle')popShow(u);try{sfx('talk')}catch(e){}}
+   if(popU&&!D.inbox[popU])popHide();draw()})}
+ function stop(){started=false;if(reqOff){reqOff();reqOff=null}D.inbox={};popHide();if(D.st!=='idle')end('You went offline, so the duel was cancelled.')}
+ const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{
+   if(on()&&!started)start();else if(!on()&&started)stop();
+   if(D.st==='stake'||D.st==='confirm'){if(!(pnOpen&&ptab===DTAB))end('You declined the duel.');else if(D.foe&&!near(D.foe)){const r=Mp().players.get(D.foe);if(!r||!liveR(r))end(nameOf(D.foe)+' went offline.');else if(Math.hypot(r.tx-P.x,r.ty-P.y)>NEAR*2.5||r.loc!==mpLoc())end(nameOf(D.foe)+' walked away, so the duel was cancelled.')}}
+   if(D.st==='ready'&&performance.now()-D.readyAt>20000){end(nameOf(D.foe)+' did not get ready in time.')}
+   if(D.st==='fight'){const r=Mp().players.get(D.foe),left=Math.max(0,FIGHT-(performance.now()-D.t0)/1000);
+    bar.style.display=pnOpen||menuOpen?'none':'block';bar.textContent='DUEL vs '+nameOf(D.foe)+' · '+Math.floor(left/60)+':'+String(Math.floor(left%60)).padStart(2,'0');
+    if(left<=0)draw3();else if(dead)lose('fell');
+    else{let L=null;try{L=mpLoc()}catch(e){}if(D.loc0===undefined)D.loc0=L;if(L!==D.loc0)lose('left');
+     else if(!r||!liveR(r)||performance.now()-r.seen>20000)win('gone');else if(r.loc!==L){D.away+=dt;if(D.away>5)win('left')}else D.away=0}}
+   else if(D.st!=='fight'){D.loc0=undefined}}catch(e){console.warn(e)}return out};
+ window.SQDUELAPI={ask,answer,open,end,lose,win,menuOpenFor,key,get inbox(){return D.inbox}}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

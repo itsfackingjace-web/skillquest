@@ -79,7 +79,7 @@ function trStep(){if(TR.st==='idle'||!TR.their)return;const key=trKey(),t=TR.the
 function trApply(key){for(const k in TR.me)if((inv[k]|0)<TR.me[k]){trEnd('You no longer have everything you offered, so the trade was cancelled.');return}if(GLD<TR.g){trEnd('You no longer have that much gold.');return}
  TR.applied=true;for(const k in TR.me)inv[k]=(inv[k]|0)-TR.me[k];GLD-=TR.g;for(const k in TR.th)inv[k]=(inv[k]|0)+TR.th[k];GLD+=TR.tg;
  const got=trList(TR.th,TR.tg);try{saveLocal(true)}catch(e){}try{saveCloud(true)}catch(e){}TR.my.d=key;trPush();
- const w=TR.w;sfx('quest');try{setTimeout(()=>sfx('coin'),150)}catch(e){}say('Trade complete!'+(got?' You got '+got+'.':''));mpLog('game','Trade with '+trName(w)+' complete.'+(got?' You got '+got+'.':''));
+ const w=TR.w;sfx('quest');try{setTimeout(()=>sfx('coin'),150)}catch(e){}say('Trade complete!'+(got?' You got '+got+'.':''));try{window.SQACH&&SQACH.add('trade')}catch(e){}mpLog('game','Trade with '+trName(w)+' complete.'+(got?' You got '+got+'.':''));
  trEnd(null)}
 function trEnd(why){if(TR.st==='idle')return;const tid=TR.tid,me=MP.user&&MP.user.uid,keep=TR.applied;TR.st='idle';if(TR.unsub){TR.unsub();TR.unsub=null}
  // remove your side (after a moment when finished, so the other player sees your "done" first)

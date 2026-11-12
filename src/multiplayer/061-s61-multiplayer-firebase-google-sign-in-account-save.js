@@ -535,6 +535,7 @@ mpRList=function(){pc.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on'
  for(const m of MP.log)if(MP.tab==='all'||m.k===MP.tab)lst.appendChild(mpLine(m));lst.scrollTop=lst.scrollHeight;mpRBtn()};
 lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;const u=b.dataset.u;
  if(isFriend(u)){MP.pmTo=u;MP.tab='pm';mpRList();setTimeout(()=>inp.focus(),20)}else{MP.tab='fr';MP.addHint=null;mpRList();const i=$('mpfa');if(i){i.value=fname(u);MP.addUid=u}}});
+window.SQADDFRIEND=u=>addFriend(u);
 function addFriend(u){if(!MP.on||!u||u===MP.user.uid)return;const d=FB.db;
  d.set(d.ref(FB.D,'friends/'+MP.user.uid+'/'+u),true).then(()=>{mpLog('game',fname(u)+' is now on your friends list.');MP.addHint=null;
    if(MP.req&&MP.req[u])d.remove(d.ref(FB.D,'freq/'+MP.user.uid+'/'+u)).catch(()=>{});
