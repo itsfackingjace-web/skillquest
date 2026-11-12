@@ -9308,6 +9308,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-9',d:'Nov 12, 2026',t:'Quieter skilling',n:['"Reeling it in...", "Cooking...", "Smelting..." and the like no longer pop up in the big text box: your character already shows what you\'re doing.','Small messages like "It got away..." are now smaller and follow you.','Fixed: dungeon boss quests in the quest tracker said things like "Defeat the Dunes" instead of the boss\'s name (now "Defeat the Sandclaw Matriarch").','The USE button\'s word (SAIL, OPEN, SLEEP...) no longer flips back to USE now and then.']},
  {v:'2026.11.12-8',d:'Nov 12, 2026',t:'Discord button fixed',n:['Fixed: the JOIN OUR DISCORD button on the title screen didn\'t open anything. It now opens our Discord invite on phones, computers and the Windows app.']},
  {v:'2026.11.12-7',d:'Nov 12, 2026',t:'Chess with friends, parties and emotes',n:['Play chess with other players: tap someone\'s name and choose CHESS. You can both stake items and gold, like a duel, and the winner takes both stakes. Games against players give no Tactics XP. A move can take up to 3 minutes.','Grandmaster Orla is much easier to beat now, especially on Novice and Club player. Resigning straight away, or resigning game after game, no longer gives Tactics XP.','Opening Moves is now Orla\'s own side quest instead of part of Elder Rowan\'s story. If you were on it, it\'s waiting for you at her table.','You can\'t be hurt while you\'re playing chess.','Parties: tap a player\'s name and choose INVITE TO PARTY (up to 4 players). Party members show in green on the map and minimap, with their health under the minimap and a star over their heads. You get +10% XP while one is close by, and /p in chat talks to your party. START > Party lists everyone.','Emotes: START > Emotes (G on a keyboard), or type /wave, /dance, /cheer, /love, /bow, /laugh, /yes, /no in chat. Everyone nearby sees them.','Voyages now come from one person: Sera, the Navigator in Tidewatch. Take on every voyage and report back to her. Harbor posts still list the sea routes and sell boat upgrades.','Hollow Island now has open sea all the way around its edge. Anything you built where the land became sea is safe in your bag.','Your houses and castles show on the map and minimap, and so do other players\' houses on Hollow.','Join the SkillQuest Discord: there\'s a JOIN OUR DISCORD button on the title screen.','Smith your own tools: iron and steel axes and pickaxes at the anvil. You can craft a fishing rod in the Craft menu, and the general store now buys everything you build or craft.','Duel wins now count as PvP kills on the leaderboard. Falling no longer resets your Monsters count, and the Quests board counts every quest you\'ve finished (village quests, voyages and Orla\'s too).','Small messages like "You cast your line" now float over your head instead of opening the big text box. On phones, a world boss somewhere else shows as a small chip; the full banner appears when you reach the fight.','Fixed: the TALK/USE button flickering next to harbor posts, furnaces, anvils and chests. XP numbers now show over your head on every island, in dungeons and indoors.','Fixed: you could cook on a castle as if it were a campfire (its warmth still heals you and keeps monsters away). Boats can no longer ride up onto bridges and piers.','Fixed: item descriptions showing their stats twice. Dungeon monsters (like Scorpion Hollow\'s dust skeletons) now use their own looks, and the wiki shows monster changes right away.']},
  {v:'2026.11.12-6',d:'Nov 12, 2026',t:'Achievements, collection log and duels',n:['Achievements: START > Achievements. Over 40 goals across skills, gathering, combat, quests, travel, wealth and collecting. Each one pays gold the moment you reach it.','Collection log: the second page of Achievements shows every item, piece of gear and pet in the game. What you\'ve had shows in colour; the rest is a mystery shape until you find it.','Players: stand next to someone and the TALK button shows their name. Tap it for TRADE, ADD FRIEND and DUEL (chess is coming).','Duels: challenge someone, then both put in a stake of items and gold and accept twice. Fight anywhere, PvP on or off. The duel ends when one of you falls: you get back up right where you fell, and the winner takes the loser\'s stake (and keeps their own). Leaving the area or going offline loses the duel; after 3 minutes it\'s a draw and both stakes go back.']},
@@ -12399,7 +12400,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   if(t==='visit')return'Sail to '+((typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[q.item]&&WORLD_REGIONS[q.item].name)||town(q.item));if(t==='line')return'Finish the quests of '+town(q.item);if(t==='ib')return q.amt>1?'Defeat all '+q.amt+' island bosses':'Defeat an island boss';if(t==='harvest')return'Harvest '+q.amt+' crops';
   if(t==='chess')return'Win a game of chess';if(t==='talk')return'Talk to the harbor master in Saltmere';if(t==='hermit')return'Find the Old Hermit';
   if(t==='jobs')return'Do '+q.amt+' jobs for villagers';if(t==='village')return'Finish the quests of all three villages';if(t==='total')return'Reach total level '+q.amt;
-  if(t==='dungeonboss'||t==='boss'||t==='bonelord')return'Defeat '+q.n.replace(/^(The |Heart of |Beneath the )/,'the ');
+  if(t==='dungeonboss'||t==='boss'||t==='bonelord')return /^Defeat /.test(q.d||'')?String(q.d).split(/\.\s/)[0].replace(/\.$/,''):'Defeat '+q.n.replace(/^(The |Heart of |Beneath the )/,'the ');
   return(q.d||'').replace(/^"[^"]*"\s*/,'').slice(0,60)}
  // "Three Villages": which village is next, and that village's own next step (so the tracker can say where to go)
  const VILL=['frosthollow','dusthaven','tidewatch'];
@@ -14820,9 +14821,11 @@ window.SQA=SQA;
   try{if(typeof nearStruct==='function'){const i=nearStruct();if(i!=null){const s=STR.get(i);if(s)return s.t==='bed'?'SLEEP':s.t==='chest'?'OPEN':STW[s.t]||null}}}catch(e){}return null}
  // set a button's word, keeping whatever hint is under it
  function put(el,w){if(!el||!w)return;const h=el.innerHTML,i=h.indexOf('<small'),word=i<0?h:h.slice(0,i);if(word===w)return;el.innerHTML=w+(i<0?'':h.slice(i))}
- let t=0;const _u=upd;upd=function(dt){_u.apply(this,arguments);if((t-=dt)>0)return;t=.1;if(dead)return;
-  try{put(document.getElementById('a'),hitWord());put(document.getElementById('e'),eatWord());
-   const tw=tk.innerHTML.split('<')[0];if(tk.style.display!=='none'&&(tw==='USE'||MINE.has(tw)&&typeof tkLab!=='undefined'&&tkLab==='USE')){put(tk,useWord()||'USE')}}catch(e){}};
+ // HIT/EAT words are worked out every 0.1 s; the TALK button's word is put back every frame (other sections write USE on it
+ // every frame, so doing it only every 0.1 s made it flip between USE and the word, e.g. SAIL on a pier)
+ let t=0,uw=null;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(dead)return;const fresh=(t-=dt)<=0;if(fresh)t=.1;
+  try{if(fresh){put(document.getElementById('a'),hitWord());put(document.getElementById('e'),eatWord())}
+   const tw=tk.innerHTML.split('<')[0];if(tk.style.display!=='none'&&(tw==='USE'||MINE.has(tw)&&typeof tkLab!=='undefined'&&tkLab==='USE')){if(fresh||uw===null)uw=useWord()||'USE';put(tk,uw)}else uw=null}catch(e){}};
  window.SQWORDS={hitWord,eatWord,useWord}})();
 // ---- 124. The player's name on the TALK button when you stand next to them ----
 // (Since section 135 the button shows the player's name and opens the player menu: trade, add friend, duel.)
@@ -15647,13 +15650,21 @@ window.SQA=SQA;
 
  // ---- routine messages (casting a line, a catch, a cooked fish, +1 log...) float over your head instead of opening the
  // big text box; anything you need to read (people, signs, warnings, quests) still uses the box
- const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |\+\d+ [a-z])/;
+ // "Reeling it in...", "Cooking..." and the like (109's progress words) aren't shown at all: your character already shows it.
+ const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |Still chewing|\+\d+ [a-z])/,
+  SILENT=/^(Lighting a fire\.\.\.|Cooking\.\.\.|Smelting\.\.\.|Hammering at the anvil\.\.\.|Crafting\.\.\.|Reeling it in\.\.\.|Working\.\.\.)$/;
+ const QL=[];// small words over your head: {tx,t}
  {const _s=say;say=function(s){const t=typeof s==='string'?s:'';
-   if(t&&t.length<=46&&QUIET.test(t)&&!pnOpen&&!menuOpen&&!dead){try{if(!drops.some(d=>d.tx===t&&d.t<.5))drops.push({x:P.x,y:P.y-30-(drops.length%2)*7,t:0,tx:t,c:'#ffffff'})}catch(e){}return}
-   return _s.apply(this,arguments)};window.SQQUIET=QUIET}
+   if(t&&SILENT.test(t)&&!pnOpen)return;
+   if(t&&t.length<=46&&QUIET.test(t)&&!pnOpen&&!menuOpen&&!dead){if(!QL.some(q=>q.tx===t&&q.t<.5)){QL.push({tx:t,t:0});if(QL.length>3)QL.shift()}return}
+   return _s.apply(this,arguments)};window.SQQUIET=QUIET;window.SQQL=QL}
+ // drawn small (4.5 world px, a little smaller than XP numbers), following you, fading out over 1.8 s
+ function drawQL(){if(!QL.length)return;g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.3;g.lineJoin='round';
+  for(let i=0;i<QL.length;i++){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));const x=Math.round(P.x),y=Math.round(P.y-28-(QL.length-1-i)*6-q.t*4);
+   g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(q.tx,x,y);g.fillStyle='#fff';g.fillText(q.tx,x,y)}
+  g.restore();for(let i=QL.length-1;i>=0;i--)if(QL[i].t>=1.8)QL.splice(i,1)}
 
- // ---- XP drops (and those little words) were only drawn on Hollow's own map: also in buildings, dungeons and on islands
- {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}return out}}
+ {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}try{drawQL()}catch(e){}return out}}
 
  // ---- a castle's warmth keeps monsters away and heals you, but cooking needs a real campfire
  {const _nf=nearFire;nearFire=function(x,y,r){const v=_nf(x,y,r);if(!v||r!==45||x!==P.x||y!==P.y)return v;

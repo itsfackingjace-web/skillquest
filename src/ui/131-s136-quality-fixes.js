@@ -22,13 +22,21 @@
 
  // ---- routine messages (casting a line, a catch, a cooked fish, +1 log...) float over your head instead of opening the
  // big text box; anything you need to read (people, signs, warnings, quests) still uses the box
- const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |\+\d+ [a-z])/;
+ // "Reeling it in...", "Cooking..." and the like (109's progress words) aren't shown at all: your character already shows it.
+ const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |Still chewing|\+\d+ [a-z])/,
+  SILENT=/^(Lighting a fire\.\.\.|Cooking\.\.\.|Smelting\.\.\.|Hammering at the anvil\.\.\.|Crafting\.\.\.|Reeling it in\.\.\.|Working\.\.\.)$/;
+ const QL=[];// small words over your head: {tx,t}
  {const _s=say;say=function(s){const t=typeof s==='string'?s:'';
-   if(t&&t.length<=46&&QUIET.test(t)&&!pnOpen&&!menuOpen&&!dead){try{if(!drops.some(d=>d.tx===t&&d.t<.5))drops.push({x:P.x,y:P.y-30-(drops.length%2)*7,t:0,tx:t,c:'#ffffff'})}catch(e){}return}
-   return _s.apply(this,arguments)};window.SQQUIET=QUIET}
+   if(t&&SILENT.test(t)&&!pnOpen)return;
+   if(t&&t.length<=46&&QUIET.test(t)&&!pnOpen&&!menuOpen&&!dead){if(!QL.some(q=>q.tx===t&&q.t<.5)){QL.push({tx:t,t:0});if(QL.length>3)QL.shift()}return}
+   return _s.apply(this,arguments)};window.SQQUIET=QUIET;window.SQQL=QL}
+ // drawn small (4.5 world px, a little smaller than XP numbers), following you, fading out over 1.8 s
+ function drawQL(){if(!QL.length)return;g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.3;g.lineJoin='round';
+  for(let i=0;i<QL.length;i++){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));const x=Math.round(P.x),y=Math.round(P.y-28-(QL.length-1-i)*6-q.t*4);
+   g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(q.tx,x,y);g.fillStyle='#fff';g.fillText(q.tx,x,y)}
+  g.restore();for(let i=QL.length-1;i>=0;i--)if(QL[i].t>=1.8)QL.splice(i,1)}
 
- // ---- XP drops (and those little words) were only drawn on Hollow's own map: also in buildings, dungeons and on islands
- {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}return out}}
+ {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}try{drawQL()}catch(e){}return out}}
 
  // ---- a castle's warmth keeps monsters away and heals you, but cooking needs a real campfire
  {const _nf=nearFire;nearFire=function(x,y,r){const v=_nf(x,y,r);if(!v||r!==45||x!==P.x||y!==P.y)return v;

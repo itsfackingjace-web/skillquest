@@ -35,7 +35,9 @@
   try{if(typeof nearStruct==='function'){const i=nearStruct();if(i!=null){const s=STR.get(i);if(s)return s.t==='bed'?'SLEEP':s.t==='chest'?'OPEN':STW[s.t]||null}}}catch(e){}return null}
  // set a button's word, keeping whatever hint is under it
  function put(el,w){if(!el||!w)return;const h=el.innerHTML,i=h.indexOf('<small'),word=i<0?h:h.slice(0,i);if(word===w)return;el.innerHTML=w+(i<0?'':h.slice(i))}
- let t=0;const _u=upd;upd=function(dt){_u.apply(this,arguments);if((t-=dt)>0)return;t=.1;if(dead)return;
-  try{put(document.getElementById('a'),hitWord());put(document.getElementById('e'),eatWord());
-   const tw=tk.innerHTML.split('<')[0];if(tk.style.display!=='none'&&(tw==='USE'||MINE.has(tw)&&typeof tkLab!=='undefined'&&tkLab==='USE')){put(tk,useWord()||'USE')}}catch(e){}};
+ // HIT/EAT words are worked out every 0.1 s; the TALK button's word is put back every frame (other sections write USE on it
+ // every frame, so doing it only every 0.1 s made it flip between USE and the word, e.g. SAIL on a pier)
+ let t=0,uw=null;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(dead)return;const fresh=(t-=dt)<=0;if(fresh)t=.1;
+  try{if(fresh){put(document.getElementById('a'),hitWord());put(document.getElementById('e'),eatWord())}
+   const tw=tk.innerHTML.split('<')[0];if(tk.style.display!=='none'&&(tw==='USE'||MINE.has(tw)&&typeof tkLab!=='undefined'&&tkLab==='USE')){if(fresh||uw===null)uw=useWord()||'USE';put(tk,uw)}else uw=null}catch(e){}};
  window.SQWORDS={hitWord,eatWord,useWord}})();

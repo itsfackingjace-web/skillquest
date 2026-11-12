@@ -17,7 +17,7 @@
   if(t==='visit')return'Sail to '+((typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[q.item]&&WORLD_REGIONS[q.item].name)||town(q.item));if(t==='line')return'Finish the quests of '+town(q.item);if(t==='ib')return q.amt>1?'Defeat all '+q.amt+' island bosses':'Defeat an island boss';if(t==='harvest')return'Harvest '+q.amt+' crops';
   if(t==='chess')return'Win a game of chess';if(t==='talk')return'Talk to the harbor master in Saltmere';if(t==='hermit')return'Find the Old Hermit';
   if(t==='jobs')return'Do '+q.amt+' jobs for villagers';if(t==='village')return'Finish the quests of all three villages';if(t==='total')return'Reach total level '+q.amt;
-  if(t==='dungeonboss'||t==='boss'||t==='bonelord')return'Defeat '+q.n.replace(/^(The |Heart of |Beneath the )/,'the ');
+  if(t==='dungeonboss'||t==='boss'||t==='bonelord')return /^Defeat /.test(q.d||'')?String(q.d).split(/\.\s/)[0].replace(/\.$/,''):'Defeat '+q.n.replace(/^(The |Heart of |Beneath the )/,'the ');
   return(q.d||'').replace(/^"[^"]*"\s*/,'').slice(0,60)}
  // "Three Villages": which village is next, and that village's own next step (so the tracker can say where to go)
  const VILL=['frosthollow','dusthaven','tidewatch'];
