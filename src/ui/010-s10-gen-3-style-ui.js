@@ -191,7 +191,7 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
  if(typeof maxMP==='function')g3bar('MANA',ins+12*U,top+60*U,U,MANA/maxMP(),'#a070f0',Math.floor(MANA)+'/'+maxMP(),ins+bw-10*U);
  // quest tracker
  const q=QS[Q.i];let qt=q?(Q.on?q.n+'  '+qProg(q)+(qDone(q)?'  ✓':''):'! New quest - see the Elder'):'All quests complete!';
- g3box(ins,qy,qw,26*U,U,'#f8f0d8');g.font='600 '+12*U+'px '+PF;g3text(fitText(qt,qw-22*U),ins+11*U,qy+13.5*U,12,U,Q.on&&q&&qDone(q)?'#2f8a3a':'#404040','left',600);
+ if(!(window.SQTRKOFF&&SQTRKOFF())){g3box(ins,qy,qw,26*U,U,'#f8f0d8');g.font='600 '+12*U+'px '+PF;g3text(fitText(qt,qw-22*U),ins+11*U,qy+13.5*U,12,U,Q.on&&q&&qDone(q)?'#2f8a3a':'#404040','left',600);}
  // small chips: arrows, bait, sprint
  let cx=ins;g.imageSmoothingEnabled=false;for(const[k,t]of L.chips){g.font='700 '+11*U+'px '+PF;const w=(k==='run'||k==='ult'?14:30)*U+g.measureText(t).width;g3box(cx,L.cy,w,22*U,U);
   if(k==='ult'){g3text(t,cx+7*U,L.cy+11.5*U,11,U,t==='ULT'?'#8a50e0':'#a0a0b0','left',700)}else if(k!=='run'){const im=hudIcon(k);if(im.complete)g.drawImage(im,cx+5*U,L.cy+4*U,14*U,14*U);g3text(t,cx+23*U,L.cy+11.5*U,11,U,'#404040','left',700)}else g3text(t,cx+7*U,L.cy+11.5*U,11,U,'#d05030','left',700);cx+=w+4*U}

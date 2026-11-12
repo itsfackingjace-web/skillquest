@@ -18,12 +18,19 @@
   if(t==='jobs')return'Do '+q.amt+' jobs for villagers';if(t==='village')return'Finish the quests of all three villages';if(t==='total')return'Reach total level '+q.amt;
   if(t==='dungeonboss'||t==='boss'||t==='bonelord')return'Defeat '+q.n.replace(/^(The |Heart of |Beneath the )/,'the ');
   return(q.d||'').replace(/^"[^"]*"\s*/,'').slice(0,60)}
+ // "Three Villages": which village is next, and that village's own next step (so the tracker can say where to go)
+ const VILL=['frosthollow','dusthaven','tidewatch'];
+ function villNext(){if(typeof SQ_SIDE==='undefined')return null;for(const t of VILL){const s=SQ_SIDE[t],L=SIDE_QS[t];if(!s||!L||!L.length||s.completed)continue;const q=sqCur(t);if(!q)continue;
+   const ready=sqReady(t),giver=sqGiverName(q.giver);return{t,q,s,ready,giver,e:{kind:'side',area:'hollow',giver:q.giver,st:s.on?'active':'avail',ready,q}}}return null}
+ const villList=()=>VILL.filter(t=>typeof SQ_SIDE!=='undefined'&&SQ_SIDE[t]).map(t=>{const s=SQ_SIDE[t],L=SIDE_QS[t]||[];return town(t)+(s.completed?' ✓':' '+s.index+'/'+L.length)}).join(' · ');
  function qAll(){const out=[];
   // Elder Rowan
   QS.forEach((q,i)=>{const done=i<Q.i||(typeof QDONE!=='undefined'&&QDONE.has(q.n));const id='m:'+q.n;
    if(done){out.push({id,cat:'Elder Rowan',area:'hollow',name:q.n,st:'done',rew:rewardTxt(q)});return}
    if(i!==Q.i)return;let ready=false,prog='';try{ready=Q.on&&qDone(q);prog=Q.on?qProg(q):''}catch(e){}
-   out.push({id,cat:'Elder Rowan',area:'hollow',name:q.n,desc:q.d,st:Q.on?'active':'avail',step:Q.on?step(q,ready,'Elder Rowan'):'Talk to Elder Rowan in Hollow Village',prog,ready,rew:rewardTxt(q),q,kind:'main'})});
+   const E1={id,cat:'Elder Rowan',area:'hollow',name:q.n,desc:q.d,st:Q.on?'active':'avail',step:Q.on?step(q,ready,'Elder Rowan'):'Talk to Elder Rowan in Hollow Village',prog,ready,rew:rewardTxt(q),q,kind:'main'};
+   if(q.type==='village'&&Q.on&&!ready){const v=villNext();E1.desc=q.d+' Village quests: '+villList()+'.';if(v){E1.vill=v;E1.step=town(v.t)+': '+(v.s.on?step(v.q,v.ready,v.giver):'talk to '+v.giver+' ('+v.q.n+')')}}
+   out.push(E1)});
   // the villages and island towns
   if(typeof SIDE_QS!=='undefined')for(const t in SIDE_QS){const L=SIDE_QS[t],s=SQ_SIDE[t];if(!L||!L.length||!s)continue;if(t==='frosthollow'&&typeof FHON!=='undefined'&&!FHON)continue;
    const rg=(typeof SQ_REGION!=='undefined'&&SQ_REGION[t])||'hollow';if(rg!=='hollow'&&typeof routeOpen==='function'&&!routeOpen(rg))continue;
@@ -37,7 +44,7 @@
    else{let ok=true;try{ok=typeof vNeedsOK!=='function'||vNeedsOK(q)}catch(e){}if(ok)out.push({id,cat:'Voyage',area:'hollow',name:q.name,desc:q.d,st:'avail',step:'Ask at the '+(post?post.name:'')+' harbor post',rew:q.gold?q.gold+' gold':'',q,kind:'voyAvail'})}}}
   return out}
  window.SQQUESTS=qAll;
- function tracked(L){L=L||qAll();let e=TRK&&L.find(e=>e.id===TRK&&e.st!=='done');if(!e)e=L.find(e=>e.st==='active'&&e.kind==='main')||L.find(e=>e.st==='active')||L.find(e=>e.st==='avail');return e||null}
+ function tracked(L){if(TRK==='none')return null;L=L||qAll();let e=TRK&&L.find(e=>e.id===TRK&&e.st!=='done');if(!e)e=L.find(e=>e.st==='active'&&e.kind==='main')||L.find(e=>e.st==='active')||L.find(e=>e.st==='avail');return e||null}
  // ---------- where to go ----------
  const curArea=()=>{if(!SCENE)return'hollow';const R=SCENE.room;if(R&&R.region)return R.region;return'scene:'+SCENE.id};
  const npcAt=id=>{const n=NPCS.find(o=>o.id===id||o.kind===id);if(!n)return null;if(n.scene){const base=n.scene.split('#')[0];if(SCENE&&SCENE.id===base)return{area:'scene:'+base,x:n.x,y:n.y};
@@ -51,7 +58,7 @@
  function nearMob(type){let best=null,bd=1e9;for(const m of en){if(m.dead||m.hp<=0||m.summon)continue;if(type&&m.type!==type&&!(type==='wolf'&&/wolf/.test(m.type)))continue;const d=(m.x-P.x)**2+(m.y-P.y)**2;if(d<bd){bd=d;best={area:curArea(),x:m.x,y:m.y,mob:1}}}return best}
  function regionGiver(rg,id){const R=SCENE&&SCENE.room;if(!R||R.region!==rg)return{area:rg};for(const it of R.items){const n=it.n;if(n&&(n.id===id||n.name===id))return{area:rg,x:n.x,y:n.y}}return{area:rg}}
  function target(e){if(!e)return null;
-  if(e.kind==='main'||(!e.kind&&e.cat==='Elder Rowan')){const q=e.q;if(e.st==='avail'||e.ready)return npcAt('elder');
+  if(e.kind==='main'||(!e.kind&&e.cat==='Elder Rowan')){const q=e.q;if(e.st==='avail'||e.ready)return npcAt('elder');if(e.vill)return target(e.vill.e);
    if(q.type==='give'){const s=SRC[q.item];return Array.isArray(s)?nearObj(s):null}if(q.type==='kill')return nearMob(q.item||'slime');
    if(q.type==='hermit')return npcAt('hermit');if(q.type==='talk')return npcAt('harbor');return null}
   if(e.kind==='side'){const rg=e.area,gv=e.giver;const giverT=()=>rg==='hollow'?npcAt(gv):regionGiver(rg,gv);if(e.st==='avail'||e.ready)return giverT();
@@ -67,13 +74,14 @@
   try{const gd=window.SQGUIDE&&SQGUIDE();if(gd){TGE=gd.e;TGT=gd.t;return}}catch(e){}
   try{TGE=tracked();TGT=target(TGE)}catch(e){TGT=null}}
  window.SQTRACK=()=>{refresh();return{e:TGE,t:TGT}};
+ window.SQTRKOFF=()=>{refresh();return TRK==='none'&&!TGE};
  // the hint shown when the place is somewhere else
  function where(e,t){const a=curArea(),par=a.startsWith('scene:')?((SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region)||'hollow'):a;
   if(t&&t.area){if(t.area===a)return'';if(t.area.startsWith('scene:'))return'go inside';if(t.area===par)return'head outside';return'on '+isl(t.area)}
   return e&&e.area&&e.area!==par?'on '+isl(e.area):''}
  // ---------- the HUD line and the arrow ----------
  {const _hl=hudLayout;hudLayout=function(){const L=_hl();L.cy+=16*L.U;L.stackBottom+=16*L.U;return L}}
- const _dh=drawHUD;drawHUD=function(){_dh();if(menuOpen||typeof HUDL==='undefined'||!HUDL)return;refresh();const e=TGE,L=HUDL,{U,ins,qy,qw}=L;
+ const _dh=drawHUD;drawHUD=function(){_dh();if(menuOpen||typeof HUDL==='undefined'||!HUDL)return;refresh();const e=TGE,L=HUDL,{U,ins,qy,qw}=L;if(!e&&TRK==='none')return;
   g.save();g.setTransform(1,0,0,1,0,0);g.shadowBlur=0;
   const t1=e?(e.st==='avail'?'! New: ':'')+e.name:'All quests complete!',wh=e?where(e,TGT):'',t2=e?(e.step||'')+(e.prog&&!e.ready?' ('+e.prog+')':'')+(wh?' · '+wh:''):'';
   g3box(ins,qy,qw,42*U,U,'#f8f0d8');g.font='700 '+11*U+'px '+PF;g3text(fitText(t1,qw-22*U),ins+11*U,qy+12*U,11,U,e&&e.st==='avail'?'#b06010':'#3058c8','left',700);
@@ -102,7 +110,7 @@
   const tag=e=>'<span class="qtag'+(e.cat==='Voyage'?' v':e.cat!=='Elder Rowan'?' s':'')+'">'+E(e.cat)+'</span>';
   const card=e=>{const open=QOPEN===e.id||(QOPEN==null&&tk&&tk.id===e.id),isT=tk&&tk.id===e.id;
    let h='<div class="qe'+(isT?' trk':'')+(e.st==='done'?' done':'')+'"><button class="qh" data-qx="'+E(e.id)+'"><span class="qt">'+(e.st==='done'?'✓ ':isT?'▶ ':'')+E(e.name)+(e.st!=='done'?'<small>'+E(e.step||'')+(e.prog&&!e.ready?' · '+E(e.prog):'')+(e.ready?' · ready!':'')+(e.area&&e.area!=='hollow'?' · '+E(isl(e.area)):'')+'</small>':'')+'</span>'+tag(e)+'</button>';
-   if(open&&e.st!=='done'){h+='<div class="qb2">'+(e.desc?'<p>'+E(e.desc)+'</p>':'')+(e.rew?'<p class="qr">Reward: '+E(e.rew)+'</p>':'')+'<button class="qtk'+(isT?' on':'')+'" data-qt="'+E(e.id)+'">'+(isT?'★ Tracking':'Track this quest')+'</button></div>'}
+   if(open&&e.st!=='done'){h+='<div class="qb2">'+(e.desc?'<p>'+E(e.desc)+'</p>':'')+(e.rew?'<p class="qr">Reward: '+E(e.rew)+'</p>':'')+(isT?'<button class="qtk on" data-qt="none">★ Tracking · tap to stop</button>':'<button class="qtk" data-qt="'+E(e.id)+'">Track this quest</button>')+'</div>'}
    return h+'</div>'};
   let h='<div class="qsum">Quest points: '+Q.qp+' / '+QS.length+' · '+dn.length+' quests done</div><div class="qtabs">'+[['active','Active',act.length],['avail','Available',av.length],['done','Done',dn.length]].map(([k,l,n])=>'<button data-qtab="'+k+'"'+(QTAB===k?' class="on"':'')+'>'+l+' ('+n+')</button>').join('')+'</div>';
   const list=QTAB==='active'?act:QTAB==='avail'?av:dn;
@@ -113,7 +121,7 @@
   return h};
  pbd.addEventListener('click',ev=>{if(typeof ptab==='undefined'||ptab!==6)return;const t=ev.target;let b;
   if((b=t.closest('[data-qtab]'))){QTAB=b.dataset.qtab;QOPEN=null;sfx('talk');rPn();return}
-  if((b=t.closest('[data-qt]'))){TRK=b.dataset.qt;try{localStorage.setItem('sq_trk',TRK)}catch(e){}TGT_AT=0;sfx('quest');rPn();return}
+  if((b=t.closest('[data-qt]'))){TRK=b.dataset.qt;try{localStorage.setItem('sq_trk',TRK)}catch(e){}TGT_AT=0;sfx(TRK==='none'?'swish':'quest');if(TRK==='none')say('Quest tracking off. Track any quest from the quest log.');rPn();return}
   if((b=t.closest('[data-qx]'))){const id=b.dataset.qx;QOPEN=QOPEN===id?'':id;sfx('talk');rPn();return}});
  // new quests jump to the front of the tracker when you start them
- let lastAct=null;setInterval(()=>{try{const ids=qAll().filter(e=>e.st==='active').map(e=>e.id);if(lastAct){const nw=ids.find(i=>!lastAct.includes(i));if(nw){TRK=nw;try{localStorage.setItem('sq_trk',TRK)}catch(e){}TGT_AT=0}}lastAct=ids}catch(e){}},1500)}
+ let lastAct=null;setInterval(()=>{try{const ids=qAll().filter(e=>e.st==='active').map(e=>e.id);if(lastAct){const nw=ids.find(i=>!lastAct.includes(i));if(nw&&TRK!=='none'){TRK=nw;try{localStorage.setItem('sq_trk',TRK)}catch(e){}TGT_AT=0}}lastAct=ids}catch(e){}},1500)}

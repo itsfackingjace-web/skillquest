@@ -62,7 +62,7 @@
   g3box(bx,by,bw,bh,U,'#f8f0d8');let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',W/2,y,11,U,'#b06010','center',700);y+=lh}
   lines.forEach(l=>{g3text(l,W/2,y,12,U,'#404040','center',600);y+=lh});g.restore()};
  // tapping the quest box opens the quest log
- cv.addEventListener('pointerdown',e=>{if(menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)||typeof HUDL==='undefined'||!HUDL)return;const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*(cv.width/r.width),sy=(e.clientY-r.top)*(cv.height/r.height),L=HUDL;
+ cv.addEventListener('pointerdown',e=>{if(menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)||typeof HUDL==='undefined'||!HUDL||(window.SQTRKOFF&&SQTRKOFF()))return;const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*(cv.width/r.width),sy=(e.clientY-r.top)*(cv.height/r.height),L=HUDL;
   if(sx>=L.ins&&sx<=L.ins+L.qw&&sy>=L.qy&&sy<=L.qy+42*L.U){e.stopImmediatePropagation();e.preventDefault();try{openPanel(6)}catch(x){}}},true);
  // the quest log: where the guide is, and a way to skip it
  const _rp=rPn;rPn=function(){_rp.apply(this,arguments);if(!pnOpen||ptab!==6||!active())return;const d=document.createElement('div');d.className='sqgd';
