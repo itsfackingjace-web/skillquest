@@ -158,3 +158,8 @@
   combos pass untouched. Middle/side mouse buttons bind as `mouse1/3/4` (pointer events). The outermost `pollPad` swaps
   PADB to the player's buttons only during play (no menu/`navRoot`, title, chess, START menu, fallen) and puts it back.
   New key-driven actions should be added to `KA` (keyboard) or `PA` (controller) there.
+- **Check for updates** (`ui/125-s130-check-for-updates.js`, `window.SQUPD`): fetches `index.html?upd=<time>` with
+  `cache:'no-store'` (the query skips the Pages CDN cache), reads the first `PATCH_NOTES` version from the text and compares
+  it with `window.SQVER` (set at the end of 074; PATCH_NOTES itself is inside the multiplayer block). UPDATE saves
+  (`saveLocal(true)` + `saveCloud(true)`, 2.5 s at most) and loads `?v=<version>`; the query is removed again on load.
+  Options button, auto-check every 10 min / on returning to the tab, and a top bar (hidden while a panel is open).

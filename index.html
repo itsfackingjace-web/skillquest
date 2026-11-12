@@ -9289,6 +9289,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-3',d:'Nov 12, 2026',t:'Check for updates',n:['No more refreshing to get the newest version: Options > Check for updates. If there\'s a new version, UPDATE NOW saves your game and loads it.','The game also checks by itself every 10 minutes and shows an "Update ready" bar at the top. Tap UPDATE when it suits you, or LATER to keep playing.']},
  {v:'2026.11.12-2',d:'Nov 12, 2026',t:'Your own controls',n:['Change your keys and controller buttons: Options > Controls. Pick an action, tap Change, then press the new key or button. Taking one another action uses swaps the two.','Keyboard: every action can move, including walking, sprinting, hitting, eating, the campfire, talking, rolling, the ultimate and the bag, map, quests, skills and craft screens. The middle and side mouse buttons can be used too.','Controller: hit, talk/use, roll, eat, campfire, bow/wand, L1, quests, sprint, bag and map can all go on the buttons you like. Menus keep ✕ to pick and ○ to go back.','Your layout is kept on each device, and Reset puts the original back. The button hints and the help box show your keys.']},
  {v:'2026.11.12-1',d:'Nov 12, 2026',t:'HIT does what you meant',n:['Your weapon in hand now looks just like it does in your bag: swords, the sledgehammer, axes, pickaxes, wands and bows are drawn with their own item picture as you swing, chop, mine, cast and shoot. Other players see your sword swings the same way.','Chopping and mining now show just your axe or pickaxe swing, never the sword swing on top of it. This works for every kind of tree, ore and boulder, on every island and in dungeons too, and other players see it the same way.','HIT no longer casts spells. With a wand it used to fire a spell whenever a monster was somewhere ahead, even while you were chopping a tree. Use the CAST button (or the mouse on a computer) to cast.','Casting a spell no longer flashes a sword swing at the end.']},
  {v:'2026.11.11-14',d:'Nov 11, 2026',t:'Quest tracking and chat',n:['Three Villages, One Island now tells you exactly what\'s next: the quest box names the village and the next step there (for example "Dusthaven: talk to Zahra"), and the arrow points the way. Its card in the quest log lists how far you are in each village.','You can stop tracking quests: open the quest log, tap the tracked quest and tap "Tracking · tap to stop". The quest box disappears until you track a quest again.','On phones and tablets the chat window now opens at the bottom of the screen and moves up above the keyboard while you type. The CHAT button stays where it was.']},
@@ -9367,6 +9368,7 @@ const PATCH_NOTES=[
  {v:'2026.11.04-1',d:'Nov 4, 2026',t:'World bosses',n:['World bosses: the Flame Wisp, Stone Giant, Demon and Ancient Dragon appear every 30 minutes. Fight them together, dodge their telegraphed attacks and earn loot by damage rank.','All bosses redrawn in chunky pixel art, and they turn to face you.','Houses on any island; friends can visit them.','Leaderboards on the title screen. Sail around the other islands.','Firemaking perks: Lone Bonfire, Flame Aura and Hearthkeeper.','Ignore and report players from chat. Mithril and adamant bows and wands.','Fixes: bug reports with screenshots, names turning into "Adventurer", monsters standing on top of you, invisible campfires on other islands, and exit doors at the end of every dungeon.']},
  {v:'2026.11.03',d:'Nov 3, 2026',t:'Playing together',n:['Trading, public gravestones (your items wait 15 minutes where you fell), and opt-in PvP with safe zones.','See other players\' swings, arrows, spells and ultimates.','Build and cook on every island. Gold jewelry with gems. Marlo\'s Emporium: pets, capes, dyes, fine furniture and potions.','A shared world: one clock, shared trees, rocks, monsters, dungeons and campfires. Friends, private messages and friend requests.','Visit friends\' houses; see each other\'s farms, builds and boats.','A title screen, controller support, mouse and touch aiming, and a bug report button.']},
  {v:'2026.11.02',d:'Nov 2, 2026',t:'Online!',n:['SkillQuest goes online: Google sign-in, saves on your account, other players and chat.','OG crowns for everyone who signs in before Dec 3, 2026.']}];
+window.SQVER=PATCH_NOTES[0].v;
 window.SQPATCH=PATCH_NOTES;
 const WK={open:false,tab:'start',q:''},wk$=id=>document.getElementById(id);
 const wkSeen=()=>{try{return localStorage.getItem('sq_seenv')||''}catch(e){return''}},wkNew=()=>wkSeen()!==PATCH_NOTES[0].v;
@@ -15113,6 +15115,41 @@ window.SQA=SQA;
    sfx('talk');rPn()}}
  {const _cp=closePanel;closePanel=function(){CAP=null;return _cp.apply(this,arguments)}}
  window.SQKEYS={get keys(){return KB},get pad(){return PM},KDEF,PDEF,bindKey,bindPad,open,labels}})();
+// ---- 130. Check for updates ----
+// Options > "Check for updates" asks the website for the newest copy of the game (skipping every cache) and reads its
+// version (the first PATCH_NOTES entry). If it's newer than the one running, an UPDATE NOW button saves your game and
+// loads the new version. The game also checks by itself every 10 minutes (and when you come back to the tab), and shows a
+// small bar when an update is ready. Only on the website (http/https), never in a saved copy of the file.
+(()=>{if(!/^https?:$/.test(location.protocol))return;
+ const CUR=window.SQVER||'0',num=v=>String(v||'').split(/[.-]/).map(n=>+n||0),newer=(a,b)=>{const A=num(a),B=num(b);for(let i=0;i<Math.max(A.length,B.length);i++){if((A[i]|0)!==(B[i]|0))return(A[i]|0)>(B[i]|0)}return false};
+ const U={st:'',v:null,busy:false,at:0,dismissed:null};
+ async function check(){if(U.busy)return U.v;U.busy=true;U.st='checking';draw();
+  try{const r=await fetch(location.pathname+'?upd='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(r.status);const t=await r.text();
+   const m=t.match(/const PATCH_NOTES=\[\s*\{v:'([0-9.\-]+)'/);if(!m)throw new Error('no version');U.v=newer(m[1],CUR)?m[1]:null;U.st=U.v?'new':'latest'}
+  catch(e){U.st='fail'}finally{U.busy=false;U.at=Date.now()}draw();bar();return U.v}
+ async function update(){U.st='saving';draw();bar();
+  try{saveLocal(true)}catch(e){}try{await Promise.race([saveCloud(true),new Promise(r=>setTimeout(r,2500))])}catch(e){}
+  location.replace(location.pathname+'?v='+encodeURIComponent(U.v||Date.now())+location.hash)}
+ // after an update the address keeps ?v=...; tidy it away so a bookmark or a share isn't stuck on it
+ try{if(/[?&](v|upd)=/.test(location.search))history.replaceState(null,'',location.pathname+location.hash)}catch(e){}
+ // ---- Options ----
+ function row(){const t=U.st==='checking'?'Checking…':U.st==='latest'?'You have the newest version ('+CUR+').':U.st==='fail'?'Couldn\'t reach the website. Check your connection and try again.':U.st==='saving'?'Saving your game and updating…':U.st==='new'?'Update '+U.v+' is ready!':'You have version '+CUR+'.';
+  return'<div class="upd-r"><button class="sb upb" data-up="'+(U.st==='new'?'go':'check')+'" style="width:100%;margin-top:8px'+(U.st==='new'?';background:#f8e8b0':'')+'"'+(U.busy||U.st==='saving'?' disabled':'')+'><b>'+(U.st==='new'?'UPDATE NOW':'Check for updates')+'</b><br><small>'+t+'</small></button></div>'}
+ const _oh=optionsHTML;optionsHTML=function(){const h=_oh(),k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+row():h.slice(0,k)+row()+h.slice(k)};
+ function draw(){try{if(pnOpen&&ptab===8){const el=pbd.querySelector('.upd-r');if(el)el.outerHTML=row();else rPn()}}catch(e){}}
+ pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-up]');if(!b)return;e.stopPropagation();if(b.dataset.up==='go')update();else check()},true);
+ // ---- the "update ready" bar ----
+ const st=document.createElement('style');st.textContent=`#updbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);z-index:32;display:none;align-items:center;gap:8px;padding:8px 10px;max-width:calc(100vw - 24px);background:#f8f0d8;color:#404040;border:3px solid #485870;font:600 13px ${PF}}
+#updbar span{flex:1;min-width:0}#updbar button{font:700 13px ${PF};padding:7px 12px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#updbar .ok{background:#485870;color:#f8f8f8}`;document.head.appendChild(st);
+ const el=document.createElement('div');el.id='updbar';el.innerHTML='<span></span><button class="ok">UPDATE</button><button class="no">LATER</button>';document.body.appendChild(el);
+ for(const ev of['touchstart','pointerdown','mousedown'])el.addEventListener(ev,e=>e.stopPropagation());
+ el.querySelector('.ok').onclick=()=>update();el.querySelector('.no').onclick=()=>{U.dismissed=U.v;bar()};
+ function bar(){const show=U.v&&U.dismissed!==U.v&&!(window.SQTS&&SQTS.open)&&!pnOpen&&!menuOpen&&U.st!=='saving';el.style.display=show?'flex':'none';if(show)el.querySelector('span').textContent='Update '+U.v+' is ready.'}
+ {const _cp=closePanel;closePanel=function(){const r=_cp.apply(this,arguments);try{bar()}catch(e){}return r}}
+ setInterval(()=>{bar();if(!document.hidden&&Date.now()-U.at>10*60e3)check()},60e3);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-U.at>5*60e3)check()});
+ setTimeout(()=>{if(!U.at)check()},20e3);
+ window.SQUPD={check,update,newer,get state(){return U}}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
