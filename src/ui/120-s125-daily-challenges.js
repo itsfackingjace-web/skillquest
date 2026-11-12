@@ -17,7 +17,7 @@
   fire:{s:'Firemaking',w:n=>'Light '+n+' fires',a:[4,8],x:30,g:20,xpc:1},
   craft:{s:'Crafting',w:n=>'Craft '+n+' things',a:[4,8],x:25,g:18,min1:1},
   smith:{s:'Smithing',w:n=>'Smith '+n+' things',a:[3,6],x:30,g:22,min1:1,r:()=>lvOf(SK('Smithing'))>=2},
-  farm:{s:'Farming',w:n=>'Harvest '+n+' crops',a:[5,10],x:20,g:14,r:()=>!!TL.hoe},
+  farm:{s:'Farming',w:n=>'Harvest '+n+' crops',a:[5,10],x:20,g:14,r:()=>!!TL.hoe||(inv.eq_hoe|0)>0},
   kill:{s:'Attack',w:n=>'Beat '+n+' monsters',a:[8,15],x:20,g:12,kill:1}};
  const IDS=Object.keys(T);
  const pad=v=>String(v).padStart(2,'0'),dkey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());

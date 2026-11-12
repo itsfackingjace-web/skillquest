@@ -9308,6 +9308,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-13',d:'Nov 12, 2026',t:'Off-hand key, hoe in the off-hand',n:['Keyboard and mouse: press X to use your off-hand. With a bow or wand it shoots or casts toward your mouse pointer (hold to keep firing); with the hoe it tills the ground in front of you. Right-click still works, and you can change the key in Options > Controls.','The hoe is now an off-hand item, so there\'s no separate HOE slot any more. Equip it in place of your bow or wand to farm. If you had both, your hoe is waiting in your bag.','The players-online count now sits right above the day box.']},
  {v:'2026.11.12-12',d:'Nov 12, 2026',t:'World bosses on the map, players online, fewer pop-ups',n:['World bosses now show on the map: a red ring with the boss\'s icon on the world map (with its name and time left), on the island map and on your minimap, right where it is. The map also says which island it\'s on.','Far fewer pop-up boxes: most short messages now float over your head instead. The big box is kept for quests, level-ups, rare finds and people talking to you.','The top corner of your minimap now shows how many players are online, next to a green dot.']},
  {v:'2026.11.12-11',d:'Nov 12, 2026',t:'Tidier screen',n:['Eating ("Ate cooked meat") no longer opens the big text box: it floats over your head.','XP and food numbers over your head are smaller.','On phones, your party list now sits on the left under the quest box instead of covering the CHAT button.']},
  {v:'2026.11.12-10',d:'Nov 12, 2026',t:'Emotes you act out',n:['Emotes are now acted out by your character instead of a bubble: wave your arm, bow, dance (spinning and hopping), cheer with both arms up and confetti, laugh, send hearts, nod yes, shake your head no, think, sit down or fall asleep. Everyone nearby sees it.','New emotes: Sit and Sleep (they last until you move). Walking ends any emote.','Find them in START > Emotes, press G on a keyboard, or type /wave, /dance, /cheer, /sit and so on in chat.']},
@@ -14881,7 +14882,7 @@ window.SQA=SQA;
   fire:{s:'Firemaking',w:n=>'Light '+n+' fires',a:[4,8],x:30,g:20,xpc:1},
   craft:{s:'Crafting',w:n=>'Craft '+n+' things',a:[4,8],x:25,g:18,min1:1},
   smith:{s:'Smithing',w:n=>'Smith '+n+' things',a:[3,6],x:30,g:22,min1:1,r:()=>lvOf(SK('Smithing'))>=2},
-  farm:{s:'Farming',w:n=>'Harvest '+n+' crops',a:[5,10],x:20,g:14,r:()=>!!TL.hoe},
+  farm:{s:'Farming',w:n=>'Harvest '+n+' crops',a:[5,10],x:20,g:14,r:()=>!!TL.hoe||(inv.eq_hoe|0)>0},
   kill:{s:'Attack',w:n=>'Beat '+n+' monsters',a:[8,15],x:20,g:12,kill:1}};
  const IDS=Object.keys(T);
  const pad=v=>String(v).padStart(2,'0'),dkey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
@@ -15093,7 +15094,7 @@ window.SQA=SQA;
  // ---------- keyboard & mouse ----------
  const KA=[['mvu','Move up','w'],['mvd','Move down','s'],['mvl','Move left','a'],['mvr','Move right','d'],['spr','Sprint (hold)','shift'],
   ['hit','Hit, chop, mine, fish',' '],['eat','Eat / cook','e'],['fire','Build a campfire','f'],['talk','Talk / use','t'],['roll','Dodge roll','r'],['ult','Wand ultimate','v'],
-  ['bag','Bag','b'],['map','Map','m'],['quests','Quests','q'],['skills','Skills','k'],['craft','Craft','c'],['card','Character','p'],['help','Show / hide the help box','h'],['emote','Emotes','g']];
+  ['bag','Bag','b'],['map','Map','m'],['quests','Quests','q'],['skills','Skills','k'],['craft','Craft','c'],['card','Character','p'],['help','Show / hide the help box','h'],['emote','Emotes','g'],['off','Use off-hand (shoot / cast / till)','x']];
  const KDEF={};for(const[id,,k]of KA)KDEF[id]=k;
  let KB=Object.assign({},KDEF,LS('sq_keys')||{}),REV={},MOVED=new Set();
  function rebuild(){REV={};for(const id in KDEF)REV[KB[id]]=KDEF[id];MOVED=new Set();for(const id in KDEF)if(KB[id]!==KDEF[id]&&!(KDEF[id]in REV))MOVED.add(KDEF[id])}rebuild();
@@ -15141,7 +15142,7 @@ window.SQA=SQA;
     if(custom()&&typeof hp!=='undefined'&&hp){const n=k=>pname(PM[k]);hp.innerHTML='<b>Controller</b> (your layout)<br>Left stick / D-pad: move · '+n('L3')+': sprint on/off<br>'+n('R2')+': sword, chop, mine, fish (hold to repeat)<br>Right stick: aim · '+n('R1')+': bow or wand<br>'+n('L1')+' + '+n('R1')+': wand ultimate<br>'+n('X')+': talk, use, read<br>'+n('O')+': dodge roll · '+n('SQ')+': eat · '+n('TRI')+': campfire · '+n('L2')+': quests<br>Options: menu · '+n('CREATE')+': map · '+n('PAD')+': bag<br>Menus: D-pad moves, ✕ picks, ○ back'}}
    else if(isPC){const L={a:kname(KB.hit),e:kname(KB.eat),f:kname(KB.fire),tk:kname(KB.talk),rl:kname(KB.roll)};for(const id in L){const el=document.getElementById(id);const sm=el&&el.querySelector('small');if(sm)sm.textContent=L[id]}
     if(typeof hp!=='undefined'&&hp&&!(typeof GPON!=='undefined'&&GPON)){const mv=[KB.mvu,KB.mvl,KB.mvd,KB.mvr].map(kname).join('');
-     hp.innerHTML='<b>Controls</b><br>'+mv+' / arrows: move · '+kname(KB.spr)+': sprint<br>'+kname(KB.hit)+': hit, chop, mine, fish<br>'+kname(KB.eat)+': eat / cook at fire<br>'+kname(KB.fire)+': build campfire<br>'+kname(KB.talk)+' or Enter: talk<br>'+
+     hp.innerHTML='<b>Controls</b><br>'+mv+' / arrows: move · '+kname(KB.spr)+': sprint<br>'+kname(KB.hit)+': hit, chop, mine, fish<br>'+kname(KB.eat)+': eat / cook at fire<br>'+kname(KB.fire)+': build campfire<br>'+kname(KB.talk)+' or Enter: talk<br>Right-click or '+kname(KB.off)+': use off-hand (bow, wand, hoe)<br>'+
       kname(KB.bag)+': bag · '+kname(KB.skills)+': skills · '+kname(KB.craft)+': craft · Esc: close<br>'+kname(KB.help)+': hide this help · Options > Controls: change keys'}}}catch(e){}}
  if(typeof gpLabels==='function'){const _gl=gpLabels;gpLabels=function(on){_gl.apply(this,arguments);labels()}}
  if(typeof setActionLabels==='function'){const _sl=setActionLabels;setActionLabels=function(){_sl.apply(this,arguments);labels()}}
@@ -16011,16 +16012,48 @@ window.SQA=SQA;
    mark(g,x0+p.x/16/t.w*w,y0+p.y/16/t.h*hh,4*U,b,null);g.restore()}catch(e){}return out}}
  window.SQWBMAP={pos,lair}})();
 // ---- 144. Players online, at the top of the screen ----
-// A small pill over the top-right corner of the minimap: a green dot and how many players are online (you included),
+// A small pill right above the day box: a green dot and how many players are online (you included),
 // counted from the players the game hears from (seen in the last 20 s). Only while you're playing online.
 (()=>{let N0=0,at=0;const count=()=>{const t=performance.now();if(t-at<1000)return N0;at=t;let n=1;try{for(const r of SQMP.players.values())if(t-r.seen<20000)n++}catch(e){}return N0=n};
  const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!(window.SQMP&&SQMP.on&&SQMP.user))return out;const L=hudLayout(),U=L.U,n=count();
    const s=String(n);g.save();g.setTransform(1,0,0,1,0,0);g.font='700 '+11*U+'px '+PF;const tw=g.measureText(s).width,w=tw+20*U,h=16*U;
-   const x=Math.round(L.dx+L.dw-w-3*U),y=Math.round(L.top+L.dh+46*U+3*U);// minimap: top-left (dx, top+dh+46U), width dw
+   const x=Math.round(L.dx+L.dw-w),y=Math.round(L.top-h-4*U);// right above the day box (dx, top, width dw)
    g.fillStyle='rgba(16,24,40,.72)';g.beginPath();g.roundRect(x,y,w,h,h/2);g.fill();
    g.fillStyle='#183818';g.beginPath();g.arc(x+9*U,y+h/2,4.2*U,0,6.283);g.fill();g.fillStyle='#48e060';g.beginPath();g.arc(x+9*U,y+h/2,3*U,0,6.283);g.fill();
    g.fillStyle='#f0f8f0';g.textAlign='left';g.textBaseline='middle';g.fillText(s,x+16*U,y+h/2+.5*U);g.restore()}catch(e){}return out};
  window.SQONLINE=count})();
+// ---- 145. The off-hand: a key for it, and the hoe moves into it ----
+// The hoe is an off-hand item now (like a bow or a wand): the equipment screen has no HOE slot any more, and holding
+// the hoe means no bow or wand. TL.hoe still says "a hoe is in hand" for the farming code (016, 072). A save (or a craft
+// or shop buy) that ends up with a hoe AND a bow or wand puts the hoe in the bag. The equipment screen loses its HOE row.
+// X (bindable in Options > Controls, 124's KA 'off') uses the off-hand: with a bow or a wand it shoots / casts toward the
+// mouse cursor (or straight ahead if the cursor isn't over the game), held = keep firing, through 082's own right-click
+// code; with the hoe it tills the ground in front (the game's HIT). Right-click still works too.
+(()=>{
+ EQ.eq_hoe.slot='off';EQ.eq_hoe.kind='hoe';
+ IDESC.eq_hoe='An off-hand tool. Face grass and press HIT (or X on a keyboard) to till soil for planting. It takes the off-hand, so put your bow or wand away to farm.';
+ {const i=SLOTS.findIndex(s=>s[0]==='hoe');if(i>=0)SLOTS.splice(i,1)}
+ const _occ=occ;occ=function(slot){if(slot==='hoe')return null;const k=_occ.apply(this,arguments);if(slot==='off'&&!k&&TL.hoe&&!TL.bow&&!WAND)return'eq_hoe';return k};
+ const _ss=setSlot;setSlot=function(slot,k){if(slot==='hoe')slot='off';const out=_ss.call(this,slot,k);if(slot==='off'){const e=k?EQ[k]:null;TL.hoe=e&&e.kind==='hoe'?1:0}return out};
+ // a hoe together with a bow or wand: the hoe goes in the bag
+ let told=false;const fix=()=>{if(TL.hoe&&(TL.bow||WAND)){TL.hoe=0;inv.eq_hoe=(inv.eq_hoe|0)+1;try{snapEq()}catch(e){}if(!told){told=true;setTimeout(()=>{try{say('Your hoe is an off-hand item now, so it went in your bag. Equip it in place of your bow or wand to farm.');msgT=7}catch(e){}},1200)}try{saveLocal(true)}catch(e){}}};
+ {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{fix()}catch(e){}return out}}
+ // farming hints that told you to craft a hoe when it's just in your bag
+ {const _s=say;say=function(s){if(typeof s==='string'&&!TL.hoe&&(inv.eq_hoe|0)>0&&/^You need tilled soil\. Craft a hoe/.test(s))s='Put your hoe in your off-hand to till soil (Bag > hoe > EQUIP).';return _s.call(this,s)}}
+ // ---- X: use the off-hand ----
+ let mx=null,my=null,inCv=false,held=false;
+ cv.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;inCv=true});cv.addEventListener('mouseleave',()=>{inCv=false});
+ const playing=()=>!dead&&!menuOpen&&!pnOpen&&!(typeof chessOpen!=='undefined'&&chessOpen)&&!(window.SQPVC&&SQPVC.open);
+ function down(){if(!playing())return false;
+  if(TL.hoe&&!TL.bow&&!WAND){try{attack()}catch(e){}return true}
+  if(!TL.bow&&!WAND){say('Put a bow, a wand or a hoe in your off-hand to use it with X.');try{sfx('swish')}catch(e){}return true}
+  let x=mx,y=my;const r=cv.getBoundingClientRect();if(!inCv||x==null){x=r.left+r.width/2+face[0]*80;y=r.top+r.height/2+face[1]*80-6}
+  cv.dispatchEvent(new MouseEvent('mousedown',{button:2,buttons:2,clientX:x,clientY:y,bubbles:true,cancelable:true}));held=true;return true}
+ function up(){if(!held)return;held=false;window.dispatchEvent(new MouseEvent('mouseup',{button:2,bubbles:true}))}
+ addEventListener('keydown',e=>{if(e.key!=='x'&&e.key!=='X')return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.repeat){if(held)e.preventDefault();return}if(down())e.preventDefault()});
+ addEventListener('keyup',e=>{if(e.key==='x'||e.key==='X')up()});addEventListener('blur',up);
+ window.SQOFFHAND={use:down,stop:up}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

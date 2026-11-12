@@ -229,4 +229,7 @@
 - **World boss on maps** (`ui/138`, `window.SQWBMAP`): world map, area map (with a line saying where it is) and minimap mark
   the boss at `wbPos(b, lair)` (071's block functions, global through Annex B); the lair is known on Hollow or once you're on its island.
 - **Players online** (`ui/139`, `window.SQONLINE`): a pill with a green dot and the count (you + players seen in the last 20 s)
-  over the minimap's top-right corner, drawn in the outermost `drawHUD` while online.
+  right above the day box, drawn in the outermost `drawHUD` while online.
+- **Off-hand** (`items/140`, `window.SQOFFHAND`): `eq_hoe` is slot `off` (kind `hoe`); `TL.hoe` = hoe in hand (farming code
+  unchanged); outermost `occ`/`setSlot` handle it and drop 'hoe' from `SLOTS`; a hoe together with a bow/wand goes to the bag.
+  X (124's `KA` 'off') = use off-hand: hoe → `attack()`, bow/wand → a synthetic right-click on `cv` at the cursor (082's code).
