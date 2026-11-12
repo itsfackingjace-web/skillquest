@@ -54,7 +54,7 @@ document.getElementById('t0').onclick=()=>{ptab=0;rPn()};document.getElementById
 document.getElementById('px').onclick=()=>{pnOpen=false;pn.style.display='none'};
 pb2.onclick=()=>{pnOpen=true;jx=jy=0;pn.style.display='block';rPn()};
 const _u2=upd;upd=function(dt){if(!pnOpen)_u2(dt)};
-function drawDrops(){g.save();g.font='700 6px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.6;g.lineJoin='round';
+function drawDrops(){g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.3;g.lineJoin='round';
  for(const d of drops){d.t+=.016;g.globalAlpha=Math.max(0,1-d.t/1.6);const y=Math.round(P.y-16-d.t*14-(d.y-P.y+16)*0),x=Math.round(d.x);g.strokeStyle='#000';g.strokeText(d.tx,x,Math.round(d.y-d.t*14));g.fillStyle=d.c;g.fillText(d.tx,x,Math.round(d.y-d.t*14))}
  g.restore();drops=drops.filter(d=>d.t<1.6)}
 const _nd=NEWDRAW;NEWDRAW=function(...a){_nd(...a);drawDrops()};

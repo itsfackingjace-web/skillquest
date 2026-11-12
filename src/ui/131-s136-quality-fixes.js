@@ -23,7 +23,7 @@
  // ---- routine messages (casting a line, a catch, a cooked fish, +1 log...) float over your head instead of opening the
  // big text box; anything you need to read (people, signs, warnings, quests) still uses the box
  // "Reeling it in...", "Cooking..." and the like (109's progress words) aren't shown at all: your character already shows it.
- const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |Still chewing|\+\d+ [a-z])/,
+ const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |Still chewing|Ate |You eat |You drink |\+\d+ [a-z])/,
   SILENT=/^(Lighting a fire\.\.\.|Cooking\.\.\.|Smelting\.\.\.|Hammering at the anvil\.\.\.|Crafting\.\.\.|Reeling it in\.\.\.|Working\.\.\.)$/;
  const QL=[];// small words over your head: {tx,t}
  {const _s=say;say=function(s){const t=typeof s==='string'?s:'';

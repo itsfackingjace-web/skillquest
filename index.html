@@ -391,7 +391,7 @@ document.getElementById('t0').onclick=()=>{ptab=0;rPn()};document.getElementById
 document.getElementById('px').onclick=()=>{pnOpen=false;pn.style.display='none'};
 pb2.onclick=()=>{pnOpen=true;jx=jy=0;pn.style.display='block';rPn()};
 const _u2=upd;upd=function(dt){if(!pnOpen)_u2(dt)};
-function drawDrops(){g.save();g.font='700 6px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.6;g.lineJoin='round';
+function drawDrops(){g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.3;g.lineJoin='round';
  for(const d of drops){d.t+=.016;g.globalAlpha=Math.max(0,1-d.t/1.6);const y=Math.round(P.y-16-d.t*14-(d.y-P.y+16)*0),x=Math.round(d.x);g.strokeStyle='#000';g.strokeText(d.tx,x,Math.round(d.y-d.t*14));g.fillStyle=d.c;g.fillText(d.tx,x,Math.round(d.y-d.t*14))}
  g.restore();drops=drops.filter(d=>d.t<1.6)}
 const _nd=NEWDRAW;NEWDRAW=function(...a){_nd(...a);drawDrops()};
@@ -9308,6 +9308,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-11',d:'Nov 12, 2026',t:'Tidier screen',n:['Eating ("Ate cooked meat") no longer opens the big text box: it floats over your head.','XP and food numbers over your head are smaller.','On phones, your party list now sits on the left under the quest box instead of covering the CHAT button.']},
  {v:'2026.11.12-10',d:'Nov 12, 2026',t:'Emotes you act out',n:['Emotes are now acted out by your character instead of a bubble: wave your arm, bow, dance (spinning and hopping), cheer with both arms up and confetti, laugh, send hearts, nod yes, shake your head no, think, sit down or fall asleep. Everyone nearby sees it.','New emotes: Sit and Sleep (they last until you move). Walking ends any emote.','Find them in START > Emotes, press G on a keyboard, or type /wave, /dance, /cheer, /sit and so on in chat.']},
  {v:'2026.11.12-9',d:'Nov 12, 2026',t:'Quieter skilling',n:['"Reeling it in...", "Cooking...", "Smelting..." and the like no longer pop up in the big text box: your character already shows what you\'re doing.','Small messages like "It got away..." are now smaller and follow you.','Fixed: dungeon boss quests in the quest tracker said things like "Defeat the Dunes" instead of the boss\'s name (now "Defeat the Sandclaw Matriarch").','The USE button\'s word (SAIL, OPEN, SLEEP...) no longer flips back to USE now and then.']},
  {v:'2026.11.12-8',d:'Nov 12, 2026',t:'Discord button fixed',n:['Fixed: the JOIN OUR DISCORD button on the title screen didn\'t open anything. It now opens our Discord invite on phones, computers and the Windows app.']},
@@ -15652,7 +15653,7 @@ window.SQA=SQA;
  // ---- routine messages (casting a line, a catch, a cooked fish, +1 log...) float over your head instead of opening the
  // big text box; anything you need to read (people, signs, warnings, quests) still uses the box
  // "Reeling it in...", "Cooking..." and the like (109's progress words) aren't shown at all: your character already shows it.
- const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |Still chewing|\+\d+ [a-z])/,
+ const QUIET=/^(You cast your line|You reel in your line|It got away|You stop fishing|Stopped|You catch |You burn the |Burnt it|Cooked |Picked up |Watered the |Tilled!|Blocked!|Campfire built|Made |Equipped the |You put on the |Still chewing|Ate |You eat |You drink |\+\d+ [a-z])/,
   SILENT=/^(Lighting a fire\.\.\.|Cooking\.\.\.|Smelting\.\.\.|Hammering at the anvil\.\.\.|Crafting\.\.\.|Reeling it in\.\.\.|Working\.\.\.)$/;
  const QL=[];// small words over your head: {tx,t}
  {const _s=say;say=function(s){const t=typeof s==='string'?s:'';
@@ -15947,8 +15948,9 @@ window.SQA=SQA;
  // G opens the emotes (keyboard)
  window.addEventListener('keydown',e=>{if(e.key!=='g'&&e.key!=='G')return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;if(pnOpen||menuOpen||dead||e.ctrlKey||e.metaKey||e.altKey)return;showScreen('emotes');e.preventDefault()});
  // ---- the HUD: party members under the minimap ----
- {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!PT.id)return out;const L=others().slice(0,3);if(!L.length)return out;const H=hudLayout(),U=H.U,w=H.dw,x0=H.dx;
-   let y=H.top+H.dh+46*U+w*.75+10*U;try{const t=miniTarget();if(t)y=H.top+H.dh+46*U+w*t.h/t.w+10*U}catch(e){}
+ {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!PT.id)return out;const L=others().slice(0,3);if(!L.length)return out;const H=hudLayout(),U=H.U,w=100*U,x0=H.ins;
+   // left column, under the quest box and its chips (the right side has the minimap, CHAT and BUG)
+   let y=(H.stackBottom||H.qy+30*U)+6*U;try{const wb=document.getElementById('wbb');if(wb&&wb.style.display==='block'){const r=wb.getBoundingClientRect(),k=cv.width/(cv.clientWidth||innerWidth);if(r.left*k<x0+w&&r.bottom>0)y=Math.max(y,r.bottom*k+6*U)}}catch(e){}
    g.save();g.setTransform(1,0,0,1,0,0);for(const r of L){g3box(x0,y,w,26*U,U,'#eef8e8');g.font='700 '+9*U+'px '+PF;g.textAlign='left';g.textBaseline='middle';g.fillStyle='#284028';g.fillText(fitText('★ '+r.n,w-12*U),x0+6*U,y+9*U);
     const f=Math.max(0,Math.min(1,(r.hpv||0)/6));g.fillStyle='#485870';g.fillRect(x0+6*U,y+16*U,w-12*U,5*U);g.fillStyle=f>.5?'#48c878':f>.2?'#f8c030':'#f05030';g.fillRect(x0+7*U,y+17*U,(w-14*U)*f,3*U);y+=29*U}g.restore()}catch(e){}return out}}
  // ---- the map and the minimap: party members in green ----
