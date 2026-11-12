@@ -1,6 +1,6 @@
 // ---- 141. Emotes and parties ----
-// Emotes: START > Emotes (or /wave, /bow, /dance, /cheer, /laugh, /love, /yes, /no in chat; G on a keyboard opens the list)
-// show a bubble over your head for 3 s, with a little burst of hearts, notes or confetti. Other players see it too: the
+// Emotes: START > Emotes (or /wave, /bow, /dance, /cheer, /laugh, /love, /yes, /no, /think, /sit, /sleep in chat; G on a
+// keyboard opens the list): your character acts them out (see below). Other players see it too: the
 // emote travels in your multiplayer position as em = "<kind>:<number>" (061 reads r.em).
 // Parties: up to 4 players. Invite from the player menu (tap someone's name); they get a JOIN pop-up. The invite goes
 // through dreq/<to>/<from> with k:'party' and s = the party id (section 135 hands those to SQPARTYINV). Each member
@@ -11,23 +11,60 @@
 (()=>{const Mp=()=>window.SQMP,Fm=()=>window.SQFB,on=()=>!!(Mp()&&Mp().on&&Mp().user&&Fm()),me=()=>Mp().user.uid,ref=p=>Fm().db.ref(Fm().D,p);
  const live=r=>!!r&&performance.now()-r.seen<20000;
  const LSG=k=>{try{return localStorage.getItem(k)}catch(e){return null}},LSS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
- // ======== emotes ========
- const EM={wave:{n:'Wave',ic:'👋',fx:null},bow:{n:'Bow',ic:'🙇',fx:null},dance:{n:'Dance',ic:'💃',fx:'note'},cheer:{n:'Cheer',ic:'🎉',fx:'conf'},laugh:{n:'Laugh',ic:'😂',fx:null},love:{n:'Love',ic:'❤️',fx:'heart'},yes:{n:'Yes',ic:'👍',fx:null},no:{n:'No',ic:'👎',fx:null},think:{n:'Hmm',ic:'🤔',fx:null},sleep:{n:'Sleepy',ic:'💤',fx:null}};
- const DUR=3;let MINE=null,SEQ=0;// {k, at}
- function emote(k){if(!EM[k]||dead)return false;MINE={k,at:performance.now()};SEQ++;try{sfx('talk')}catch(e){}return true}
- // a bubble with the emote over someone's head; hop for dance and cheer
- function bubble(x,y,k,t){const E=EM[k];if(!E)return;const a=Math.min(1,(DUR-t)/.4,t/.15),bob=E.fx==='note'||E.fx==='conf'?Math.abs(Math.sin(t*9))*3:0;g.save();g.globalAlpha=Math.max(0,a);
-  const bx=Math.round(x),by=Math.round(y-40-bob);g.fillStyle='#f8f8f8';g.strokeStyle='#283048';g.lineWidth=1.5;g.beginPath();g.roundRect(bx-9,by-9,18,16,4);g.fill();g.stroke();
-  g.beginPath();g.moveTo(bx-2,by+7);g.lineTo(bx,by+11);g.lineTo(bx+2,by+7);g.fill();g.font='11px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(E.ic,bx,by);
-  if(E.fx){const n=5;for(let i=0;i<n;i++){const u=((t*0.9+i/n)%1),px=bx+Math.sin(i*2.1+t*3)*12,py=by-4-u*22;g.globalAlpha=Math.max(0,a*(1-u));
-    if(E.fx==='heart'){g.fillStyle='#f04870';g.fillRect(px-2,py,2,2);g.fillRect(px,py,2,2);g.fillRect(px-1,py+2,2,1)}else if(E.fx==='note'){g.fillStyle='#5868d8';g.fillRect(px,py-3,1,4);g.fillRect(px-2,py,2,2)}else{g.fillStyle=['#f8d048','#48c8f8','#f86878','#78e070'][i%4];g.fillRect(px,py,2,2)}}}
-  g.restore()}
- window.SQEMOTE={emote,list:EM,pres(){return MINE&&performance.now()-MINE.at<DUR*1000?MINE.k+':'+SEQ:''},get mine(){return MINE}};
- // you: drawn with you (the outermost pP runs in world space at your feet)
- {const _pp=pP;pP=function(tm){const out=_pp.apply(this,arguments);try{if(MINE){const t=(performance.now()-MINE.at)/1000;if(t>DUR)MINE=null;else bubble(P.x,P.y,MINE.k,t)}}catch(e){}return out}}
- // the others
- (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r)return;const em=r.em||'';if(em!==(r._em||'')){r._em=em;if(em){const k=em.split(':')[0];if(EM[k]){r._emK=k;r._emAt=performance.now()}}}
-  if(r._emK){const t=(performance.now()-r._emAt)/1000;if(t>DUR)r._emK=null;else bubble(r.x,r.y,r._emK,t)}
+ // ======== emotes: your character acts them out ========
+ // The character is drawn into a small canvas (anchor 24,44 like 114's crouch), changed there (an arm raised, the head
+ // lowered or shaken, sitting) and put back with a hop or a sway; little pixel effects (hearts, notes, confetti, Z's,
+ // "ha!", thinking dots) rise around it. Your own emote stops when you walk.
+ const EM={wave:{n:'Wave',ic:'👋',d:3},bow:{n:'Bow',ic:'🙇',d:2.6},dance:{n:'Dance',ic:'💃',d:5},cheer:{n:'Cheer',ic:'🎉',d:3},laugh:{n:'Laugh',ic:'😂',d:3},
+  love:{n:'Love',ic:'❤️',d:3},yes:{n:'Yes',ic:'👍',d:2.2},no:{n:'No',ic:'👎',d:2.2},think:{n:'Hmm',ic:'🤔',d:4},sit:{n:'Sit',ic:'🪑',d:30},sleep:{n:'Sleep',ic:'💤',d:30}};
+ let MINE=null,SEQ=0,MX=0,MY=0;// {k, at}
+ function emote(k){if(!EM[k]||dead||SAILING)return false;MINE={k,at:performance.now()};MX=P.x;MY=P.y;SEQ++;try{sfx('talk')}catch(e){}return true}
+ const live1=(k,at)=>k&&EM[k]&&(performance.now()-at)/1000<EM[k].d;
+ const OFF=document.createElement('canvas');OFF.width=48;OFF.height=56;OFF.hd2=true;const OX=OFF.getContext('2d');
+ const INK='#282030';
+ const shirtOf=ch=>{try{return OPT.shirt[ch.sh]}catch(e){return'#48a048'}},skinOf=ch=>{try{return OPT.skin[ch.sk][0]}catch(e){return'#f0c8a0'}};
+ // a raised arm at column cx (the arm's own column), swaying by sw
+ // a raised arm on the right (side 1) or left (side -1) of the body: the hanging hand is taken away, a 2-wide arm goes up
+ // from the shoulder (sleeve, then the hand), outlined; sw sways the hand
+ function armUp(ch,side,sw){const e=side>0?30:17,x0=side>0?31:15;OX.clearRect(side>0?30:16,41,2,6);OX.fillStyle=INK;OX.fillRect(e,41,1,5);
+  OX.fillRect(x0-1+sw,32,4,6);OX.fillRect(x0-1,37,4,6);OX.fillStyle=shirtOf(ch);OX.fillRect(x0,38,2,4);OX.fillStyle=skinOf(ch);OX.fillRect(x0+sw,33,2,4)}
+ const R=(C,x,y,w,h,c)=>{C.fillStyle=c;C.fillRect(Math.round(x),Math.round(y),w,h)};
+ function act(ch,dir,st,ox,oy,fl,k,t,inner){const C=GC||g,X=Math.round(ox)-24,Y=Math.round(oy)-44;let d=dir,f=fl,s=0,dy=0,dx=0;
+  if(k==='dance'){const ph=Math.floor(t*4)%4;d=[0,2,1,2][ph];f=ph===3;s=ph%2?1:2;dy=-Math.round(Math.abs(Math.sin(t*Math.PI*4))*2)}
+  if(k==='cheer')dy=-Math.round(Math.abs(Math.sin(t*Math.PI*3))*4);
+  if(k==='laugh')dy=Math.floor(t*10)%2?-1:0;
+  if(k==='love')dx=Math.round(Math.sin(t*4));
+  OX.setTransform(1,0,0,1,0,0);OX.clearRect(0,0,48,56);OX.imageSmoothingEnabled=false;GC=OX;try{inner(ch,d,s,24,44,f)}finally{GC=C}
+  if(k==='wave')armUp(ch,1,Math.floor(t*5)%2?1:-1);
+  if(k==='cheer'){armUp(ch,1,0);armUp(ch,-1,0)}
+  const sm=C.imageSmoothingEnabled;C.imageSmoothingEnabled=false;
+  if(k==='bow'||k==='yes'||k==='no'){// the head moves: rows above the shoulders
+   const hy=k==='bow'?(t<2?Math.min(4,Math.round(t*8)):0):k==='yes'?(Math.floor(t*5)%2?2:0):0,hx=k==='no'?(Math.floor(t*6)%2?2:-1):0;
+   C.drawImage(OFF,0,40,48,16,X+dx,Y+40+dy,48,16);C.drawImage(OFF,0,0,48,40,X+dx+hx,Y+dy+hy,48,40)}
+  else if(k==='sit'||k==='sleep'){C.drawImage(OFF,0,0,48,41,X,Y+4,48,41);C.drawImage(OFF,0,41,48,11,X,Y+45,48,6)}
+  else C.drawImage(OFF,X+dx,Y+dy);
+  C.imageSmoothingEnabled=sm;
+  // effects
+  const hx0=Math.round(ox),hy0=Math.round(oy)-20,E=EM[k],fade=Math.min(1,(E.d-t)/.4);C.save();C.globalAlpha=Math.max(0,fade);
+  const rise=(i,n,sp)=>((t*sp+i/n)%1);
+  if(k==='love')for(let i=0;i<4;i++){const u=rise(i,4,.7),x=hx0+Math.sin(i*2.3+t*2)*9,y=hy0-u*16;C.globalAlpha=Math.max(0,fade*(1-u));R(C,x-2,y,2,2,'#f04870');R(C,x+1,y,2,2,'#f04870');R(C,x-1,y+2,3,1,'#f04870');R(C,x,y+3,1,1,'#f04870')}
+  if(k==='dance')for(let i=0;i<3;i++){const u=rise(i,3,.8),x=hx0+(i-1)*9+Math.sin(t*5+i)*2,y=hy0-u*14;C.globalAlpha=Math.max(0,fade*(1-u));R(C,x,y-4,1,5,'#3848b8');R(C,x+1,y-4,2,1,'#3848b8');R(C,x-2,y,2,2,'#3848b8')}
+  if(k==='cheer')for(let i=0;i<10;i++){const u=rise(i,10,.9),x=hx0+Math.sin(i*1.7)*14,y=hy0-14+u*18;C.globalAlpha=Math.max(0,fade*(1-u));R(C,x,y,2,1+(i%2),['#f8d048','#48c8f8','#f86878','#78e070'][i%4])}
+  if(k==='sleep')for(let i=0;i<3;i++){const u=rise(i,3,.4),x=hx0+5+u*8,y=hy0+2-u*14,z=u<.4?2:3;C.globalAlpha=Math.max(0,fade*(1-u));C.fillStyle='#4858c0';C.fillRect(x,y,z+1,1);C.fillRect(x+z-1,y+1,1,1);C.fillRect(x,y+2,z+1,1)}
+  if(k==='think'){const n=1+Math.floor(t*2)%3;for(let i=0;i<n;i++){R(C,hx0+6+i*4-1,hy0-2-i*3-1,4,4,INK);R(C,hx0+6+i*4,hy0-2-i*3,2,2,'#f8f8f8')}}
+  if(k==='laugh'&&Math.floor(t*3)%2===0){C.font='700 5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';C.textAlign='center';C.lineWidth=1.2;C.strokeStyle=INK;C.strokeText('ha!',hx0+9,hy0);C.fillStyle='#f8e070';C.fillText('ha!',hx0+9,hy0)}
+  C.restore()}
+ let SELF=false;const pkey=(x,y)=>Math.round(x)+','+Math.round(y);
+ {const _cP=cP;cP=function(ch,dir,st,ox,oy,fl){try{let k=null,at=0;
+    if(SELF&&MINE){k=MINE.k;at=MINE.at}
+    else if(!SELF&&window.SQMP&&SQMP.players&&SQMP.players.size){for(const r of SQMP.players.values()){if(Math.round(r.x)===Math.round(ox)&&Math.round(r.y)===Math.round(oy)&&r._emK){k=r._emK;at=r._emAt;break}}}
+    if(k&&live1(k,at))return act(ch,dir,st,ox,oy,fl,k,(performance.now()-at)/1000,_cP)}catch(e){}
+   return _cP.apply(this,arguments)}}
+ window.SQEMOTE={emote,list:EM,pres(){return MINE&&live1(MINE.k,MINE.at)?MINE.k+':'+SEQ:''},get mine(){return MINE}};
+ // you: walking (or anything that moves you) ends it
+ {const _pp=pP;pP=function(tm){if(MINE&&(!live1(MINE.k,MINE.at)||Math.hypot(P.x-MX,P.y-MY)>1.5||dead||SAILING))MINE=null;SELF=true;try{return _pp.apply(this,arguments)}finally{SELF=false}}}
+ // the others: their emote comes in their position (em); it stops when theirs does
+ (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r)return;const em=r.em||'';if(em!==(r._em||'')){r._em=em;const k=em.split(':')[0];if(em&&EM[k]){r._emK=k;r._emAt=performance.now()}else r._emK=null}
   if(PT.id&&r.pt===PT.id){g.save();g.fillStyle='#58e070';g.strokeStyle='#183818';g.lineWidth=1;g.font='700 7px '+PF;g.textAlign='center';g.strokeText('★',Math.round(r.x),Math.round(r.y-33));g.fillText('★',Math.round(r.x),Math.round(r.y-33));g.restore()}});
  // ======== parties ========
  const MAX=4;const PT={id:'',sent:{},inv:null};

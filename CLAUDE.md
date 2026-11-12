@@ -220,5 +220,8 @@
 - **Emotes and parties** (`multiplayer/136`): presence carries `em` (emote "kind:n"), `pt` (party id), `hp` (061 reads them
   as `r.em`, `r.pt`, `r.hpv`). Party invites go through `dreq` with `k:'party'` (135 hands them to `SQPARTYINV`). Party id
   kept in localStorage `sq_party` for 2 h. START > Party (`ptab` 38) and Emotes (`ptab` 39); G = emotes (in 124's `KA`).
+  Emotes are acted out in the outermost `cP`: the character is drawn into a 48x56 canvas (anchor 24,44), changed (raised arms
+  `armUp`, head rows moved for bow/yes/no, sit = 114's crouch) and composited with a hop/sway, plus pixel effects. Own emote:
+  `SELF` is set while pP draws you; other players are matched by position (`r.x/r.y` = cP's ox/oy) and `r._emK`. Moving ends yours.
 - **Discord button** (`ui/137`): a real `<a target="_blank">` (class `tsdc`) in the title menu (`#tsmn`, 061's block, so found by
   id) after OPTIONS; `window.open` from the title menu opened nothing. The Windows app sends it to the browser.
