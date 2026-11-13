@@ -26,7 +26,7 @@ function wbLair(b){const key=b.slot+':'+b.where;if(WB.lairKey===key)return WB.la
    if(Math.hypot(x-VX,y-VY)<26)continue;let ok=true;for(let dy=-5;dy<=4&&ok;dy++)for(let dx=-5;dx<=5;dx++){const i=(y+dy)*N+x+dx;if(tile[i]===0||inVillage(x+dx,y+dy)||(typeof PROT!=='undefined'&&PROT.has(i))||BS.has(i)){ok=false;break}}if(ok)found={x:x*16+8,y:y*16+8}}}
  else{const R=SCENE&&SCENE.room;if(!R||R.region!==b.where)return null;const r=rng(b.slot*31+9),sp=R.spawn||[R.w/2,R.h/2];
   for(let k=0;k<800&&!found;k++){const x=8+Math.floor(r()*(R.w-16)),y=8+Math.floor(r()*(R.h-16)),d=Math.hypot(x-sp[0],y-sp[1]);if(d<22||d>95)continue;let ok=true;
-   for(let dy=-3;dy<=3&&ok;dy++)for(let dx=-3;dx<=3;dx++){if(R.tiles[(y+dy)*R.w+x+dx]===0){ok=false;break}}if(ok)found={x:x*16+8,y:y*16+8}}}
+   for(let dy=-3;dy<=3&&ok;dy++)for(let dx=-4;dx<=4;dx++){const i=(y+dy)*R.w+x+dx;if(R.tiles[i]===0||(R.reach&&!R.reach[i])){ok=false;break}}/* Nov 13: the whole patch it moves over must be walkable and reachable (a dragon over cliffs/lava on Ashfall couldn't be reached) */if(ok)found={x:x*16+8,y:y*16+8}}}
  WB.lair=found;WB.lairKey=found?key:'';return found}
 // where it is right now, and the attacks it's making (pure functions of the shared clock)
 const wbNow=()=>MP.on?mpNow():Date.now();

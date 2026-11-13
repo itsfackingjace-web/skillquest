@@ -363,4 +363,10 @@
   free land tile around the saved position instead (Hollow outdoors, not sailing, within 30 tiles).
 - **Calmer monsters** (093): a monster that started the frame more than 95 px away has any step toward you undone. Anything that
   moves a monster by teleporting (burrowing beetles, `n.under`, parked 200 px away by 045) must be skipped there, or it stays parked.
+- **Player-report fixes** (`items/157-s163-player-reports.js`, `SQREPORTS`): inside a house/castle the tiles in front of each
+  back door (`HDOOR`, rows 2-3) refuse furniture (outermost `canPlaceIn`), furniture already there is moved once per house per
+  session, and in any `home` scene a player standing inside something is stepped out (`unstick`, every frame). Screen Wake Lock
+  while playing (requested on input / return to the tab). `body.sqibf` hides 071's `#wbb` banner in island boss lairs.
+  Also: 004's crafting header uses `tierName(k)` (tiers past `TIT`, e.g. the Crystal sword); 005's sell list falls back to
+  `INAME` (133 gives craft outputs a `SELLP` without an `SN`); 071's island lair search requires `R.reach` over the boss's path.
 

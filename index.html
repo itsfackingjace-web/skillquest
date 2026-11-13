@@ -369,6 +369,8 @@ function eat(){if(dead)return;inv.cooked=inv.cooked||0;
 function fire(){if(dead)return;if(inv.wood>=3&&inv.stone>=1){const[fx,fy]=front(16);if(solid(fx,fy)){say('No room there');return}inv.wood-=3;inv.stone--;fires.push({x:fx,y:fy,life:150+lvOf(5)*3});say('Campfire built');addXp(5,40)}else say('Need 3 wood + 1 stone')}
 for(const id of['a','e','f']){const o=document.getElementById(id),n=o.cloneNode(true);o.replaceWith(n);n.addEventListener('touchstart',e=>{e.preventDefault();if(!dead&&!pnOpen&&!menuOpen)({a:attack,e:eat,f:fire})[id]()},{passive:false})}
 // recipes
+// a tool's tier name for the crafting header; tiers past the table (Crystal sword, custom items) use the item's own name
+function tierName(k){const t=TL[k]|0;if(!t)return TIT[0]||'none';if(TIT[t])return TIT[t];try{const o=typeof occ==='function'?occ('main'):null;if(k==='sword'&&o&&INAME[o])return INAME[o].replace(/ sword$/i,'')}catch(e){}const e=EQ&&EQ['eq_'+k+t];return e&&e.n?e.n.split(' ')[0]:'Tier '+t}
 const REC=[];for(let t=1;t<=3;t++)['axe','pick','sword'].forEach((k,i)=>REC.push({k,t,name:TIT[t]+' '+['axe','pickaxe','sword'][i],c:t==1?{wood:[3,4,3][i]}:t==2?{wood:[2,2,1][i],stone:[3,3,2][i]}:{wood:2,iron:[3,3,2][i]},req:[1,5,15][t-1],xp:[40,80,150][t-1]}));
 // farming tools are craftable too (one of each; the general store still sells them)
 REC.push({k:'hoe',t:1,name:'Hoe',c:{wood:3,stone:2},req:1,xp:40},{k:'can',t:1,name:'Watering can',c:{wood:2,stone:3},req:1,xp:40},{k:'rod',t:1,name:'Fishing rod',c:{wood:4,iron:1},req:3,xp:40});
@@ -381,7 +383,7 @@ const pb2=document.createElement('button');pb2.id='pb2';pb2.textContent='📊';d
 let ptab=0;const pbd=document.getElementById('pbd');
 function rPn(){document.getElementById('t0').className=ptab?'':'on';document.getElementById('t1').className=ptab?'on':'';let h='';
  if(!ptab){let tot=0,s='';for(let i=0;i<SKN.length;i++){const l=lvOf(i);tot+=l;const b=XT[l-1],n=l<99?XT[l]:b+1,p=l<99?Math.min(100,(XPS[i]-b)/(n-b)*100):100;s+='<div class="sk"><div style="color:'+SKC[i]+'">'+SKN[i]+'</div><b>'+l+'<small>/99</small></b><div class="br"><i style="width:'+p+'%;background:'+SKC[i]+'"></i></div><small>'+Math.floor(XPS[i])+' xp</small></div>'}h='<div class="tl">Total level: '+tot+'</div><div class="sg">'+s+'</div>'}
- else{h='<div class="tl">Wood '+inv.wood+' · Stone '+inv.stone+' · Iron '+(inv.iron||0)+'</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.8">Axe: '+TIT[TL.axe]+' · Pickaxe: '+TIT[TL.pick]+' · Sword: '+TIT[TL.sword]+'<br>Crafting level '+lvOf(6)+'</div>';
+ else{h='<div class="tl">Wood '+inv.wood+' · Stone '+inv.stone+' · Iron '+(inv.iron||0)+'</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.8">Axe: '+tierName('axe')+' · Pickaxe: '+tierName('pick')+' · Sword: '+tierName('sword')+'<br>Crafting level '+lvOf(6)+'</div>';
   for(const k of['axe','pick','sword']){const t=TL[k]+1;if(t>3)continue;const i=REC.findIndex(x=>x.k==k&&x.t==t),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+'</small></button>'}
   for(const k of['hoe','can','rod']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · '+(k==='rod'?'for fishing':'for farming')+'</small></button>'}
   h+='<div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:14px">Better tools hit harder. Rocks need a pickaxe; iron ore needs Mining 15 + a stone pickaxe.</div>'}
@@ -425,7 +427,7 @@ function rShop(){const sm=shop=='smith';let h='<div class="tl">'+(sm?'Blacksmith
  (sm?smItems():genItems()).forEach((it,i)=>{h+='<button class="sb" data-a="b'+i+'" style="opacity:'+(GLD>=it.c&&!(it.req>lvOf(8))?1:.45)+'">'+it.n+'<br><small>'+it.c+' gold'+(it.req>1?' · Defence '+it.req:'')+'</small></button>'});
  if(sm&&!smItems().length)h+='<div class="tl" style="font-weight:400;opacity:.6">You own the best tools!</div>';
  h+='<div class="tl" style="font-size:12px;margin-top:12px">SELL</div>';let any=0;
- for(const k in SELLP){if(sm&&!SMB.has(k))continue;const n=inv[k]|0;if(n>0){any=1;h+='<button class="sb" data-a="s'+k+'">Sell all '+SN[k]+' ('+n+')<br><small>+'+n*sellP(k)+' gold</small></button>'}}
+ for(const k in SELLP){if(sm&&!SMB.has(k))continue;const n=inv[k]|0;if(n>0){any=1;h+='<button class="sb" data-a="s'+k+'">Sell all '+(SN[k]||INAME[k]||k)+' ('+n+')<br><small>+'+n*sellP(k)+' gold</small></button>'}}
  if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing to sell</div>';pbd.innerHTML=h}
 function shopAct(a){if(a[0]=='b'){const it=(shop=='smith'?smItems():genItems())[+a.slice(1)];if(!it)return;if(it.req>lvOf(8))say('Need Defence '+it.req);else if(GLD>=it.c){GLD-=it.c;it.f();say('Bought '+it.n)}else say('Not enough gold')}
  else{const k=a.slice(1),n=inv[k]|0;if(n>0){const v=n*sellP(k);GLD+=v;inv[k]=0;say('Sold for '+v+' gold');drops.push({x:P.x,y:P.y-16,t:0,tx:'+'+v+' gold',c:'#f8d848'})}}
@@ -8764,7 +8766,7 @@ function wbLair(b){const key=b.slot+':'+b.where;if(WB.lairKey===key)return WB.la
    if(Math.hypot(x-VX,y-VY)<26)continue;let ok=true;for(let dy=-5;dy<=4&&ok;dy++)for(let dx=-5;dx<=5;dx++){const i=(y+dy)*N+x+dx;if(tile[i]===0||inVillage(x+dx,y+dy)||(typeof PROT!=='undefined'&&PROT.has(i))||BS.has(i)){ok=false;break}}if(ok)found={x:x*16+8,y:y*16+8}}}
  else{const R=SCENE&&SCENE.room;if(!R||R.region!==b.where)return null;const r=rng(b.slot*31+9),sp=R.spawn||[R.w/2,R.h/2];
   for(let k=0;k<800&&!found;k++){const x=8+Math.floor(r()*(R.w-16)),y=8+Math.floor(r()*(R.h-16)),d=Math.hypot(x-sp[0],y-sp[1]);if(d<22||d>95)continue;let ok=true;
-   for(let dy=-3;dy<=3&&ok;dy++)for(let dx=-3;dx<=3;dx++){if(R.tiles[(y+dy)*R.w+x+dx]===0){ok=false;break}}if(ok)found={x:x*16+8,y:y*16+8}}}
+   for(let dy=-3;dy<=3&&ok;dy++)for(let dx=-4;dx<=4;dx++){const i=(y+dy)*R.w+x+dx;if(R.tiles[i]===0||(R.reach&&!R.reach[i])){ok=false;break}}/* Nov 13: the whole patch it moves over must be walkable and reachable (a dragon over cliffs/lava on Ashfall couldn't be reached) */if(ok)found={x:x*16+8,y:y*16+8}}}
  WB.lair=found;WB.lairKey=found?key:'';return found}
 // where it is right now, and the attacks it's making (pure functions of the shared clock)
 const wbNow=()=>MP.on?mpNow():Date.now();
@@ -9378,6 +9380,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-15',d:'Nov 13, 2026',t:'Fixes from your bug reports',n:['Fixed: furniture placed in front of a house\'s back door could trap you when you came back in from the backyard. That spot is now kept clear, anything already there is moved aside, and if you ever end up inside furniture you step out of it.','Fixed: the general store showed "undefined" next to some items you could sell.','Fixed: the crafting screen showed "Sword: undefined" while holding the Crystal Sword.','Phones now stay awake while you play, so the screen no longer dims and locks while you fish or cook.','During an island boss fight the world boss banner gets out of the way, so you can see the island boss\'s health bar.','World bosses on the other islands now always appear on open ground you can walk to (the Ancient Dragon could end up over spots you couldn\'t reach).']},
  {v:'2026.11.13-14',d:'Nov 13, 2026',t:'Beetles come back up, and no more top price on the World Market',n:['Fixed: beetles that burrowed into the ground never came back out (they got stuck out of sight). Now they burst out of the sand next to you again, everywhere they live.','World Market: there is no maximum price any more. Ask whatever you think something is worth; if it\'s too much, nobody will buy it. The minimum price stays.']},
  {v:'2026.11.13-13',d:'Nov 13, 2026',t:'No more surprise trips back to spawn',n:['Fixed: logging in could put you back at the spawn point (for example after fishing on Gull Rock). It happened when you had saved standing where a rock or tree used to be and it had grown back. Now you\'re placed right next to where you left off.']},
  {v:'2026.11.13-12',d:'Nov 13, 2026',t:'A brand-new orchestral soundtrack',n:['All new music: 18 original songs played on real orchestral instruments (flutes, strings, harp, horns, choir, accordion and more) in a concert-hall sound.','Every island has its own theme now: Briarwood, Ashfall Coast, Ironcrest Highlands, the Shattered Expanse and No Man\'s Land.','New sailing song for the open sea, and boss music that starts when a boss is near (island bosses, world bosses, dungeon bosses and Dev Suite bosses).','Hollow by day and night, houses, Saltmere, Frosthollow, Tidewatch, Dusthaven, the caves and every dungeon got new songs, and the loops are much longer.','The instruments load the first time a song plays, so a new area\'s song can take a moment to start. Music volume and the on/off switch in Options work as before.']},
@@ -17302,6 +17305,39 @@ window.SQA=SQA;
     if(!blocked(p.x,p.y)){P.x=p.x;P.y=p.y}else{const q=nearest(p.x,p.y);if(q){P.x=q[0];P.y=q[1]}}}}catch(e){console.warn('keep spot',e)}
   return out};
  window.SQKEEPSPOT={nearest}})();
+// ---- 163. Fixes from player reports (Nov 13) ----
+// - Back doors (145) can't be built over: inside a house/castle the tiles in front of a back door (the two rows below
+//   it) are kept free for furniture, furniture already standing there is moved to the nearest free spot, and if you
+//   ever come through a door onto a blocked spot (a table placed before this fix) you're nudged to the nearest free one.
+// - In an island boss's lair the world boss banner (071's #wbb) is hidden (body.sqibf); it covered the boss's bar.
+// - Phones stay awake while you play (Screen Wake Lock), so the screen doesn't dim and lock while you fish or cook.
+(()=>{const Y=()=>window.SQYARD;
+ const inHouse=()=>!!(SCENE&&SCENE.id==='home'&&SCENE.house&&!SCENE.yardOf&&(SCENE.room===ROOMS.home||SCENE.room===ROOMS.castle));
+ const doorTile=(R,x,y)=>{if(y>3)return false;const L=Y()?Y().HDOOR(R):[];return L.some(hx=>Math.abs(x*16+8-hx)<=8)};
+ {const _cp=canPlaceIn;canPlaceIn=function(x,y){if(inHouse()&&doorTile(SCENE.room,x,y))return false;return _cp.apply(this,arguments)}}
+ const blocked=(x,y)=>solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6);
+ function unstick(){if(!blocked(P.x,P.y))return false;const R=SCENE&&SCENE.room;
+  for(let r=4;r<=96;r+=4)for(let a=0;a<16;a++){const x=P.x+Math.cos(a/16*6.283)*r,y=P.y+Math.sin(a/16*6.283)*r;if(R&&(x<4||y<4||x>R.w*16-4||y>R.h*16-4))continue;if(!blocked(x,y)){P.x=x;P.y=y;return true}}return false}
+ const fixed=new WeakSet();
+ {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{
+   if(SCENE&&SCENE.id==='home'&&!dead)unstick();// you should never stand inside something; if a door put you there, step out
+   if(inHouse()&&!SCENE.house._foreign&&!SCENE.house.ro&&!fixed.has(SCENE.house)){const h=SCENE.house,R=SCENE.room;fixed.add(h);let moved=0;
+    if(h.furn&&typeof h.furn.forEach==='function')for(const [i,f] of [...h.furn]){const x=i%R.w,y=i/R.w|0;if(!doorTile(R,x,y))continue;h.furn.delete(i);
+     let to=-1;for(let r=1;r<R.w&&to<0;r++)for(let dy=-r;dy<=r&&to<0;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const nx=x+dx,ny=y+dy;if(nx<0||ny<2||nx>=R.w||ny>=R.h)continue;if(canPlaceIn(nx,ny)&&!(Math.abs(nx*16+8-P.x)<12&&Math.abs(ny*16+8-P.y)<14)){to=ny*R.w+nx;break}}
+     if(to>=0){h.furn.set(to,f);moved++}else h.furn.set(i,f)}
+    if(moved){say('Some furniture was in front of your back door, so it was moved aside.');try{saveLocal(true)}catch(e){}}
+    unstick()}}catch(e){console.warn('door fix',e)}return out}}
+ // ---- in an island boss's lair the world boss banner steps aside (it covered the island boss's health bar) ----
+ {const st=document.createElement('style');st.textContent='body.sqibf #wbb{display:none!important}';document.head.appendChild(st);
+  const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{const on=!!(SCENE&&SCENE.room&&SCENE.room.ib);if(document.body.classList.contains('sqibf')!==on)document.body.classList.toggle('sqibf',on)}catch(e){}return out}}
+ // ---- keep the screen awake while playing ----
+ let lock=null,want=false;
+ async function wake(){try{if(!('wakeLock' in navigator)||document.hidden||lock)return;lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}catch(e){lock=null}}
+ const playing=()=>{try{return!(typeof TS!=='undefined'&&TS&&TS.open)}catch(e){return true}};
+ for(const ev of['pointerdown','keydown','touchend'])addEventListener(ev,()=>{want=true;if(playing())wake()},{capture:true,passive:true});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&want&&playing())wake()});
+ setInterval(()=>{if(want&&playing()&&!lock&&!document.hidden)wake()},15000);
+ window.SQREPORTS={unstick,doorTile,get wakeLock(){return lock}}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

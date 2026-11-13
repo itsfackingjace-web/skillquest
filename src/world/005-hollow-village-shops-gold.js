@@ -28,7 +28,7 @@ function rShop(){const sm=shop=='smith';let h='<div class="tl">'+(sm?'Blacksmith
  (sm?smItems():genItems()).forEach((it,i)=>{h+='<button class="sb" data-a="b'+i+'" style="opacity:'+(GLD>=it.c&&!(it.req>lvOf(8))?1:.45)+'">'+it.n+'<br><small>'+it.c+' gold'+(it.req>1?' · Defence '+it.req:'')+'</small></button>'});
  if(sm&&!smItems().length)h+='<div class="tl" style="font-weight:400;opacity:.6">You own the best tools!</div>';
  h+='<div class="tl" style="font-size:12px;margin-top:12px">SELL</div>';let any=0;
- for(const k in SELLP){if(sm&&!SMB.has(k))continue;const n=inv[k]|0;if(n>0){any=1;h+='<button class="sb" data-a="s'+k+'">Sell all '+SN[k]+' ('+n+')<br><small>+'+n*sellP(k)+' gold</small></button>'}}
+ for(const k in SELLP){if(sm&&!SMB.has(k))continue;const n=inv[k]|0;if(n>0){any=1;h+='<button class="sb" data-a="s'+k+'">Sell all '+(SN[k]||INAME[k]||k)+' ('+n+')<br><small>+'+n*sellP(k)+' gold</small></button>'}}
  if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing to sell</div>';pbd.innerHTML=h}
 function shopAct(a){if(a[0]=='b'){const it=(shop=='smith'?smItems():genItems())[+a.slice(1)];if(!it)return;if(it.req>lvOf(8))say('Need Defence '+it.req);else if(GLD>=it.c){GLD-=it.c;it.f();say('Bought '+it.n)}else say('Not enough gold')}
  else{const k=a.slice(1),n=inv[k]|0;if(n>0){const v=n*sellP(k);GLD+=v;inv[k]=0;say('Sold for '+v+' gold');drops.push({x:P.x,y:P.y-16,t:0,tx:'+'+v+' gold',c:'#f8d848'})}}
