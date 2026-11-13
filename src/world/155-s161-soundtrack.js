@@ -204,9 +204,9 @@
  const hush=()=>{try{for(const k in PARSED){const p=PARSED[k];if(p&&p.lead&&p.lead.ev.length){p.lead.ev=[];p.bass.ev=[]}}}catch(e){}};hush();
  // ---------- scheduler ----------
  // A new song starts once its instruments have loaded; until then the current one keeps playing.
- let cur=null,t0=0,step=0,def=null,song=null,failAt=0;
+ let cur=null,t0=0,step=0,def=null,song=null,failAt=0,FORCE=null;// FORCE: a song the Dev Suite's song editor is playing
  function tick(){try{hush();if(typeof MUSIC!=='undefined'&&!MUSIC){cur=null;return}if(!setup()||ctx.state!=='running')return;
-  let want=wantSong();if(!SONGS2[want])want=/cave/.test(want)?'cave':'day';
+  let want=FORCE||wantSong();if(!SONGS2[want])want=/cave/.test(want)?'cave':'day';
   const now=ctx.currentTime;
   if(want!==cur){if(!ready(want)){if(performance.now()>failAt)loadSong(want).catch(e=>{failAt=performance.now()+30000;console.warn(e)})}
    else{cur=want;def=S[want];song=SONGS2[want];step=0;t0=now+.15;BUS.gain.setTargetAtTime(.8*(VOL[want]||1),now,.05)}}
@@ -217,5 +217,5 @@
  setInterval(tick,100);
  // credit for the instrument samples (CC BY 3.0 asks for it), at the bottom of Options
  {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div style="margin:14px 0 4px;font-size:11px;opacity:.6;text-align:center">Music instruments: FluidR3_GM SoundFont by Frank Wen (CC BY 3.0)</div>'}}
- window.SQMUSIC={S,SONGS:SONGS2,INST,build,render,load,loadSong,get cur(){return cur},REGION_SONG,tick};
+ window.SQMUSIC={S,SONGS:SONGS2,INST,VOL,build,render,load,loadSong,get cur(){return cur},REGION_SONG,tick,get force(){return FORCE},set force(v){FORCE=v||null;cur=null},restart(){cur=null},get step(){return step},get len(){return song?song.len:0}};
 })();

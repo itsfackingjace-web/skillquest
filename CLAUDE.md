@@ -412,3 +412,7 @@
   versions list what each changed vs the one before; "Make live again"/"Undo the last publish" publish an old version as a new
   one (same hist/prune steps as 111b's goLive). Search covers items, monsters, islands (people, signs), bosses, content, look
   names, skills; results open the tab (Content through `SQCONTENT.edit(section,id)`).
+- **Song editor** (`dev/165-s171-song-editor.js`, `window.SQSONGS`, Dev Suite > Songs): library `songs.<key>` = a song in 155's format
+  (+ `vol`); built-in keys replace that song, `su_<id>` are new; `songmap.<region>` = song key (155's `REGION_SONG`). `check()`
+  validates chords/notes/bar lengths/order and builds it; originals restored when removed. 155 exposes `VOL`, `force` (play a song
+  regardless of `wantSong`; the editor plays its working copy as `__ed`), `restart()`, `step`, `len`. Write only original melodies.
