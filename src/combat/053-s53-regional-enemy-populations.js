@@ -47,7 +47,7 @@ rgUpd=function(R,dt){rgTick(R,dt);const F=RG_FAUNA[R.region];if(!F)return;const 
  if(!night)for(const n of en)if(n.night&&!n.dead){n.hp-=dt*Math.max(.8,(n.mhp||6)/5);if(n.hp<=0){n.dead=1;n.dropped=1}}
  // the arrival pier is a safe zone: creatures that wander close turn back
  for(const n of en){if(n.dead)continue;const dd=Math.hypot(n.x-dkx,n.y-dky);if(dd<72&&!n.summon){const l=dd||1;stepTo(n,(n.x-dkx)/l*40*dt,(n.y-dky)/l*40*dt)}}
- let alive=en.filter(n=>!n.dead);if(alive.length>cap){for(const n of alive.slice(cap))n.dead=1,n.dropped=1;alive=alive.slice(0,cap)}
+ let alive=en.filter(n=>!n.dead&&!n.cb&&!n._cbs);/* Dev Suite bosses and their helpers (152) don't count */if(alive.length>cap){for(const n of alive.slice(cap))n.dead=1,n.dropped=1;alive=alive.slice(0,cap)}
  if((RG_SPT2-=dt)>0||alive.length>=cap)return;RG_SPT2=night?3.2:6;
  const L=night?F.night:F.day,r=Math.random(),e=L.find(q=>r<q[2])||L[L.length-1],key=e[0],coast=key==='crab';
  for(let k=0;k<16;k++){const a=Math.random()*6.283,d=180+Math.random()*60,x=P.x+Math.cos(a)*d,y=P.y+Math.sin(a)*d,tx=Math.floor(x/16),ty=Math.floor(y/16);

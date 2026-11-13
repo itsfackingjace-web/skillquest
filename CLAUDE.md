@@ -282,3 +282,10 @@
   builder darkens them via `G._keep` from `base(id)`, which generates without the patch). Patched regions skip tiering
   (`R._t64`); the cached region is dropped when its patch changes (not the one you stand on). 111a's `applyIslands` only
   takes `cu_` ids, so `ed_` entries never become islands of their own. Dungeons/zones/own tiles are custom-island only.
+- **Bosses made in the Dev Suite** (`combat/146-s152-custom-bosses.js`, `window.SQBOSSES`, Dev Suite > Bosses): `bosses.cb_<id>` =
+  {n, base, hp, sz, dmg, spd, cd, rs, atk:{ring,charge,slam,summon}, sk}; each becomes monster kind `cb:<letters>` (`keyOf`) in
+  `SQISLIFE.MOBS` (island builder zones, island-dungeon monster lists; in a `cv_` dungeon one boss on the last floor via the
+  outermost `buildFloor`). `rgMake` builds the base monster and tags it (`n.cb`, `big`, rk = the cb key so looks/rules use
+  `m:cb:...`); the boss walks itself (`stepTo`), attacks from `upd` (bolts `SH`, slam marks `TG`, drawn in `pP`), is drawn scaled
+  with a name and bar in the outermost `pS`. 053's population cap ignores `n.cb`/`n._cbs` (helpers get `RG_OWN`). After a
+  kill it stays away `rs` minutes (localStorage `sq_cbdead`). Drops = the Monsters tab rules for `m:cb:...`.

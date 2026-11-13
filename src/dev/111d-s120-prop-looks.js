@@ -230,4 +230,4 @@
  function thumb(key){if(TH.has(key+'@'+ver))return TH.get(key+'@'+ver);let u='';
   if(PL[key])u=A.render(frSp(PL[key],0)).toDataURL();else{const c=capture(key);u=c?c.url:'';if(c&&c.n>1){const im=new Image();im.src=c.url;const cv=document.createElement('canvas');im.onload=()=>{cv.width=im.width/c.n;cv.height=im.height;cv.getContext('2d').drawImage(im,0,0);TH.set(key+'@'+ver,cv.toDataURL())}}}if(!u&&key[0]==='x'){const t=list().find(q=>q.k==='o:'+key.slice(2));if(t)u=thumb('o:'+key.slice(2))}
   u=u||BLANK;TH.set(key+'@'+ver,u);return u}
- window.SQPROPS={mkey,list,capture,thumb,drawLook,valid:vsp,frames,frSp,frameAt,get looks(){return PL},clearThumbs(){TH.clear()}}})();
+ window.SQPROPS={mkey,list,recat(){CAT=null},capture,thumb,drawLook,valid:vsp,frames,frSp,frameAt,get looks(){return PL},clearThumbs(){TH.clear()}}})();
