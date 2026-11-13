@@ -243,8 +243,8 @@
 - **Weekly event** (`ui/143-s148-weekly-event.js`, `window.SQWEEK`): week = `floor((day-4)/7)` (Monday 00:00 UTC), event `EV[week % 7]`;
   counting like 120's daily challenges (items with that skill's XP in the frame, `xpc` = XP gains of 200 or less, kills).
   `wev/<week>/t` total (only up, +500 a write at most) and `wev/<week>/p/<uid>` {n,c}; sent every 10 s. Tiers at 1/3, 2/3, 1 of
-  `goal`, paid once each (`got`) if your count is at least `mins` (2%); last week's tiers paid at the turn. HUD pill left of 139's
-  online pill (tap = quest log), card under the daily box. Saved as `wev` {w,c,got,q}. Rules: `wev` (publish them).
+  `goal`, paid once each (`got`) if your count is at least `mins` (2%); last week's tiers paid at the turn. Only shown as a card in the
+  quest log under the daily box (no HUD element). Saved as `wev` {w,c,got,q}. Rules: `wev` (publish them).
 - **Chess ladder** (`multiplayer/142-s147-chess-ladder.js`, `window.SQCHR`): Elo from 1000 (K 40 for 10 games, then 24) through
   `SQDUELEND(kind,res,foe,why)` (called from 130's win/lose/draw3); opponent rating read from `lb/<foe>.cr` at `SQPVC.begin`.
   Unrated: < 10 plies, > 3 games against one player a day. 068 posts `cr`/`cg` and has the `cr` "Chess" category. Saved as `chr`.
@@ -255,4 +255,4 @@
   `attack` (tillable ground with the can → hoe; dry crop with the hoe → can) and on the "Buy a watering can" message;
   `shootAim` (controller R1) uses hoe/can when that's the off-hand.
 - **Message box on phones** (010's `drawHUD`): touch screens held upright (`H>=W`) draw the text box in the strip above the status
-  box (`ty=top-th-3U`, 44U tall, `MSGBOX.top`); the players-online and weekly pills (139, 143) skip drawing while it's there.
+  box (`ty=top-th-3U`, 44U tall, `MSGBOX.top`); the players-online pill (139) skips drawing while it's there.

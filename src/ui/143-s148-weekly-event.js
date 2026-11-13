@@ -8,8 +8,8 @@
 // time you play (also for last week's event, read once when the week turns).
 // Database: wev/<week>/t = the shared total (only goes up, at most 500 a write), wev/<week>/p/<uid> = {n, c} your own
 // count. The client sends what it gathered every 10 s. Rules in database.rules.json (publish them).
-// HUD: a pill left of the players-online pill (139) with the event's icon and %, tap = quest log, where a card shows the
-// goal, the bar, your part, the top helpers and the rewards (below the daily challenges).
+// Shown only in the quest log: a card with the goal, the bar, your part, the top helpers and the rewards (below the
+// daily challenges). No HUD element.
 // Saved as `wev` = {w: week, c: your count, got: tiers paid, q: not yet sent}.
 (()=>{const SK=n=>SKN.indexOf(n);
  const EV=[
@@ -80,18 +80,6 @@
 #pn .sqwe-b i{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:#806030}#pn .sqwe-b i:last-of-type{display:none}
 #pn .sqwe-t{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin:3px 0 5px}#pn .sqwe-r{display:flex;flex-direction:column;gap:1px;font-size:11px;margin-bottom:5px}
 #pn .sqwe-r span{opacity:.6}#pn .sqwe-r span.on{opacity:1;color:#287818;font-weight:700}#pn .sqwe small{display:block;font-size:11px;opacity:.9}#pn .sqwe-top{margin-top:3px}`;document.head.appendChild(st)}
- // ---- the HUD pill (left of the players-online pill), tap = quest log ----
- let RECT=null;
- {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);RECT=null;try{if(menuOpen||(MSGBOX&&MSGBOX.top)||!on()||(window.SQTS&&SQTS.open))return out;const L=hudLayout(),U=L.U,e=E(),pc=Math.min(100,Math.floor(TOT/e.goal*100));
-   g.save();g.setTransform(1,0,0,1,0,0);g.font='700 '+10*U+'px '+PF;const txt=pc+'%',tw=g.measureText(txt).width,bw=34*U,h=16*U,w=bw+tw+30*U;
-   let ow=0;{g.font='700 '+11*U+'px '+PF;ow=g.measureText(String(window.SQONLINE?SQONLINE():1)).width+20*U;g.font='700 '+10*U+'px '+PF}
-   const x=Math.round(L.dx+L.dw-ow-6*U-w),y=Math.round(L.top-h-4*U);RECT={x,y,w,h};
-   g.fillStyle='rgba(16,24,40,.72)';g.beginPath();g.roundRect(x,y,w,h,h/2);g.fill();
-   g.font=(11*U)+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(e.ic,x+10*U,y+h/2+.5*U);
-   const bx=x+20*U,by=y+h/2-2.5*U;g.fillStyle='rgba(255,255,255,.22)';g.fillRect(bx,by,bw,5*U);g.fillStyle=e.col;g.fillRect(bx,by,Math.round(bw*pc/100),5*U);
-   g.font='700 '+10*U+'px '+PF;g.fillStyle='#fff4d8';g.textAlign='left';g.fillText(txt,bx+bw+4*U,y+h/2+.5*U);g.restore()}catch(er){}return out}}
- cv.addEventListener('pointerdown',ev=>{if(!RECT||menuOpen||pnOpen)return;const r=cv.getBoundingClientRect(),sx=(ev.clientX-r.left)*(cv.width/r.width),sy=(ev.clientY-r.top)*(cv.height/r.height);
-  if(sx>=RECT.x-4&&sx<=RECT.x+RECT.w+4&&sy>=RECT.y-4&&sy<=RECT.y+RECT.h+4){ev.stopImmediatePropagation();ev.preventDefault();try{openPanel(6)}catch(x){}}},true);
  // ---- saves ----
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{if(W.c||W.got)s.wev={w:W.w,c:W.c,got:W.got,q:W.q}}catch(e){}return s}}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const v=S&&S.wev;W=v&&typeof v==='object'&&isFinite(+v.w)?{w:+v.w|0,c:Math.max(0,v.c|0),got:Math.max(0,Math.min(3,v.got|0)),q:Math.max(0,v.q|0)}:{w:weekOf(now()),c:0,got:0,q:0};
