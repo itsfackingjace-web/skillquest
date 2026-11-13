@@ -397,6 +397,15 @@
           ".validate": false
         }
       }
+    },
+    "yards": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        "$hid": {
+          ".validate": "$hid.length <= 12 && newData.hasChildren()"
+        }
+      }
     }
   }
 }

@@ -261,4 +261,18 @@
   `bowTarget` returns null (`HID`). Off-hand use goes through `viaOff` (X, R1, the farming swaps) which skips the hiding.
 - **Dev Suite copy/paste** (111b `pxCopy`/`pxPaste`, Copy/Paste buttons, Ctrl+C/V): the clipboard is colours per pixel in
   localStorage `sq_dev_clip`, pasted bottom-middle aligned into any editor, colours added to the palette.
-
+- **Castle hall symmetry** (077 `ROOMS.castle.ex=10.5`, 093's castle `ROOMBG`/`c_throne`): the hall stays 22 wide (furniture is keyed
+  `y*w+x`, so never change a room's width); a half-tile `ex` = a two-tile gate on the centre line (012's `solid`/leave handle it,
+  077's `canPlaceIn` keeps both gate tiles free). Floor marks are mirrored, the wall bricks are laid out from the middle.
+- **One home** (`items/144-s149-one-home.js`, `window.SQONEHOME`): one house or castle across `HOUSES` + `SQRH`; `startBuild`
+  refuses a second; `enforce()` (called from 150 after the yards are read) keeps a castle, else the most furnished, and packs
+  the rest (item, furniture, chest contents, yard).
+- **Backyards / courtyards** (`items/145-s150-backyards.js`, `window.SQYARD`): rooms `yard` (16x12) and `court` (26x16, fountain
+  solid), `ex:-10` (the exits are handled here). Back doors: `HDOOR` (house x 112; castle 120/232) ↔ `YDOOR` (yard 128; court
+  152/264); walking up into one / down out of the yard (`upd`), `leaveScene` from a yard goes back into the house. The yard
+  scene is `id:'home'` with `house` = the yard object (`h._yd`: `furn`=h.yf, `plots`=h.yp, `_oid` = id+'~y' so `mpLoc` differs),
+  `yardOf` = the house scene, `ret`/`prev` copied from it (saves place you outside). Farming: own HIT handler (till / water /
+  harvest via 016's `harvest(-1,p)`, swaps hoe/can only on off-hand use: `SQOFFVIA()` from 140), seeds via PLANT, growth in
+  `upd`. Saved as `yf`/`yp` on `houses[]`/`rh[]`. Friends: `yards/<uid>/<hid>` {f,p(stage)} published every 8 s when changed;
+  a visitor needs `trustedBy(owner)` (072) and gets a read-only copy (`ro`). A house that disappears (packed) puts its yard
+  furniture in the bag (`KNOWN` watch). Rules: `yards`.

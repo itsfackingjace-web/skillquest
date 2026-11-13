@@ -151,6 +151,7 @@ items/141-s146-mithril-adamant-tools.js
 multiplayer/142-s147-chess-ladder.js
 ui/143-s148-weekly-event.js
 items/144-s149-one-home.js
+items/145-s150-backyards.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

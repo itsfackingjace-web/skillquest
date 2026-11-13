@@ -19,7 +19,8 @@
   for(const o of L){if(o===keep)continue;gone.push(what(o.h)+' on '+where(o));pack(o);n++}
   const m='You can only have one home now, so you kept your '+what(keep.h)+' on '+where(keep)+'. Your '+gone.join(' and your ')+(n>1?' were':' was')+' packed into your bag with everything inside.';
   setTimeout(()=>{try{say(m);msgT=9;try{mpLog('game',m)}catch(e){}saveLocal(true);saveCloud(true)}catch(e){}},2500);return n}
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{enforce()}catch(e){console.warn(e)}return out}}
+ // (with backyards (150) loaded, 150 calls SQONEHOME.enforce itself once the yards are read, so they get packed too)
+ {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{if(!window.SQYARD)enforce()}catch(e){console.warn(e)}return out}}
  // placing a second one is refused
  {const _sb=startBuild;startBuild=function(k){if((k==='house'||k==='castle')&&homes().length){const o=homes()[0];
     say('You already have a '+what(o.h)+' on '+where(o)+'. You can only have one home: pack that one up first (HIT its walls), then place this one.');msgT=7;try{sfx('swish')}catch(e){}try{closePanel()}catch(e){}return}

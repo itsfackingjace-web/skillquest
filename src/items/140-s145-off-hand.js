@@ -67,4 +67,5 @@
  {const _a=attack;attack=function(){if(VIA||!isPC||(typeof GPON!=='undefined'&&GPON))return _a.apply(this,arguments);
    const h=TL.hoe,c=TL.can,bt=bowTarget;HID={h,c};TL.hoe=0;TL.can=0;bowTarget=()=>null;
    try{return _a.apply(this,arguments)}finally{TL.hoe=h;TL.can=c;bowTarget=bt;HID=null}}}
+ window.SQOFFVIA=()=>VIA;// true while the off-hand is being used (X, R1, a farming swap), for later HIT handlers
  window.SQOFFHAND={use:down,stop:up}})();
