@@ -13,3 +13,10 @@
  // the skill needed to use them
  const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.req&&(inv[k]|0)>0&&lvOf(e.req.s)<e.req.l){say('You need '+SKN[e.req.s]+' '+e.req.l+' to use the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){}return}return _eq.apply(this,arguments)};
  window.SQTOOLS67=T})();
+// ---- on the skill trees: the levels to use them, and the smithing levels to forge them ----
+(()=>{const ex=(sk,l,t)=>{const T=TREES[sk];if(!T)return;T.extra=T.extra||{};T.extra[l]=T.extra[l]?T.extra[l]+' · '+t:t};
+ ex(1,30,'Use a mithril axe');ex(1,45,'Use an adamant axe');ex(2,30,'Use a mithril pickaxe');ex(2,45,'Use an adamant pickaxe');
+ // Smithing's tree lists what the anvil and furnace make; 039 read the recipe list before later sections (mithril and
+ // adamant gear, tools, new gear from the Dev Suite) added theirs, so it's read again
+ const smith=()=>{try{const o=UL39(SM,r=>r.lv,r=>(r.smelt?'Smelt ':'Forge ')+r.n.toLowerCase()+(r.def?' (wear at Defence '+r.def+')':''));for(const k in ulSmith)delete ulSmith[k];Object.assign(ulSmith,o)}catch(e){}};
+ smith();setTimeout(smith,0);try{if(window.SQA&&SQA.onApply)SQA.onApply(smith)}catch(e){}})();

@@ -9308,7 +9308,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.12-14',d:'Nov 12, 2026',t:'Mithril and adamant tools',n:['Forge mithril and adamant axes and pickaxes at an anvil: 2 bars and a log each (Smithing 52 for mithril, 67 for adamant).','They hit much harder than steel, so trees and rocks come down in fewer swings. A mithril tool needs Woodcutting or Mining 30, an adamant one 45.']},
+ {v:'2026.11.12-14',d:'Nov 12, 2026',t:'Mithril and adamant tools',n:['Forge mithril and adamant axes and pickaxes at an anvil: 2 bars and a log each (Smithing 52 for mithril, 67 for adamant).','They hit much harder than steel, so trees and rocks come down in fewer swings. A mithril tool needs Woodcutting or Mining 30, an adamant one 45.','The Woodcutting, Mining and Smithing skill trees now show these levels. The Smithing tree also lists everything else the anvil makes, including mithril and adamant gear and bows, which were missing.']},
  {v:'2026.11.12-13',d:'Nov 12, 2026',t:'Off-hand key, hoe in the off-hand',n:['Keyboard and mouse: press X to use your off-hand. With a bow or wand it shoots or casts toward your mouse pointer (hold to keep firing); with the hoe it tills the ground in front of you. Right-click still works, and you can change the key in Options > Controls.','The hoe is now an off-hand item, so there\'s no separate HOE slot any more. Equip it in place of your bow or wand to farm. If you had both, your hoe is waiting in your bag.','The players-online count now sits right above the day box.']},
  {v:'2026.11.12-12',d:'Nov 12, 2026',t:'World bosses on the map, players online, fewer pop-ups',n:['World bosses now show on the map: a red ring with the boss\'s icon on the world map (with its name and time left), on the island map and on your minimap, right where it is. The map also says which island it\'s on.','Far fewer pop-up boxes: most short messages now float over your head instead. The big box is kept for quests, level-ups, rare finds and people talking to you.','The top corner of your minimap now shows how many players are online, next to a green dot.']},
  {v:'2026.11.12-11',d:'Nov 12, 2026',t:'Tidier screen',n:['Eating ("Ate cooked meat") no longer opens the big text box: it floats over your head.','XP and food numbers over your head are smaller.','On phones, your party list now sits on the left under the quest box instead of covering the CHAT button.']},
@@ -16070,6 +16070,13 @@ window.SQA=SQA;
  // the skill needed to use them
  const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.req&&(inv[k]|0)>0&&lvOf(e.req.s)<e.req.l){say('You need '+SKN[e.req.s]+' '+e.req.l+' to use the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){}return}return _eq.apply(this,arguments)};
  window.SQTOOLS67=T})();
+// ---- on the skill trees: the levels to use them, and the smithing levels to forge them ----
+(()=>{const ex=(sk,l,t)=>{const T=TREES[sk];if(!T)return;T.extra=T.extra||{};T.extra[l]=T.extra[l]?T.extra[l]+' · '+t:t};
+ ex(1,30,'Use a mithril axe');ex(1,45,'Use an adamant axe');ex(2,30,'Use a mithril pickaxe');ex(2,45,'Use an adamant pickaxe');
+ // Smithing's tree lists what the anvil and furnace make; 039 read the recipe list before later sections (mithril and
+ // adamant gear, tools, new gear from the Dev Suite) added theirs, so it's read again
+ const smith=()=>{try{const o=UL39(SM,r=>r.lv,r=>(r.smelt?'Smelt ':'Forge ')+r.n.toLowerCase()+(r.def?' (wear at Defence '+r.def+')':''));for(const k in ulSmith)delete ulSmith[k];Object.assign(ulSmith,o)}catch(e){}};
+ smith();setTimeout(smith,0);try{if(window.SQA&&SQA.onApply)SQA.onApply(smith)}catch(e){}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
