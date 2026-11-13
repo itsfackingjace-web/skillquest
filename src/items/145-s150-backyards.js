@@ -46,7 +46,9 @@
     if(inHouse()&&P.y<2*16+9&&keyUp()){const L=HDOOR(SCENE.room);for(let i=0;i<L.length;i++)if(Math.abs(P.x-L[i])<7){goOut(i);break}}
     else if(isYard()&&P.y<DOORY*16+5&&keyUp()){for(const dx of YDOOR(SCENE.room))if(Math.abs(P.x-dx)<10){goBack();break}}}catch(e){console.warn(e)}return out}}
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;try{for(const h of mine())if(h.yp)for(const p of h.yp.values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}catch(e){}return out}}
- const mine=()=>HOUSES.concat(window.SQRH||[]);
+ // your own houses only: HOUSES also holds other players' houses while online (_foreign); a friend's yard you visited
+ // must never be packed into your bag when their house unloads
+ const mine=()=>HOUSES.concat(window.SQRH||[]).filter(h=>h&&!h._foreign);
  // ---- farming in the yard (HIT) ----
  const yi=(R,x,y)=>y*R.w+x;
  const onDoorTile=(R,x,y)=>y<=DOORY&&YDOOR(R).some(dx=>Math.abs(x*16+8-dx)<16);

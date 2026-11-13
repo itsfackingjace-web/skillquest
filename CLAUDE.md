@@ -265,7 +265,7 @@
 - **Castle hall symmetry** (077 `ROOMS.castle.ex=10.5`, 093's castle `ROOMBG`/`c_throne`): the hall stays 22 wide (furniture is keyed
   `y*w+x`, so never change a room's width); a half-tile `ex` = a two-tile gate on the centre line (012's `solid`/leave handle it,
   077's `canPlaceIn` keeps both gate tiles free). Floor marks are mirrored, the wall bricks are laid out from the middle.
-- **One home** (`items/144-s149-one-home.js`, `window.SQONEHOME`): one house or castle across `HOUSES` + `SQRH`; `startBuild`
+- **One home** (`items/144-s149-one-home.js`, `window.SQONEHOME`): one house or castle across `HOUSES` + `SQRH`; **`HOUSES` also holds other players' houses while online (`_foreign`, 061): 144's `homes()` and 145's `mine()` skip them; anything new that loops over `HOUSES` as "yours" must too.** `startBuild`
   refuses a second; `enforce()` (called from 150 after the yards are read) keeps a castle, else the most furnished, and packs
   the rest (item, furniture, chest contents, yard).
 - **Backyards / courtyards** (`items/145-s150-backyards.js`, `window.SQYARD`): rooms `yard` (22x16) and `court` (40x28),

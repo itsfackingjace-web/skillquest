@@ -9317,6 +9317,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-5',d:'Nov 13, 2026',t:'Placing your castle',n:['Fixed: after packing up your house, the game could still say "You already have a house" and refuse to place your castle (or a new house) while other players\' houses were nearby. Only your own home counts now.']},
  {v:'2026.11.13-4',d:'Nov 13, 2026',t:'Living backyards',n:['The trees, bushes and ponds in backyards and courtyards now work like everywhere else: chop the trees for logs (oak and maple too, with the right axe), pick berries and hazelnuts from the bushes, and fish in the pond with your rod.','What you take grows back after a few minutes. While it regrows, you can\'t plant or build on that spot.','Visiting a friend\'s yard? You can fish in their pond, but their trees and bushes are theirs.']},
  {v:'2026.11.13-3',d:'Nov 13, 2026',t:'Warlord\'s blade fix',n:['Fixed: a Warlord\'s blade in your hand turned into a steel sword when you loaded your game. The same happened to mithril and adamant axes and pickaxes. They now stay what they are.','If this happened to you, your lost Warlord\'s blade, axe or pickaxe is back in your Bag the next time you play (as long as you don\'t still have one somewhere). Sorry about that!']},
  {v:'2026.11.13-2',d:'Nov 13, 2026',t:'Bigger, prettier backyards and courtyards',n:['Courtyards are much bigger now: a stone terrace below your castle, wide paths, a pond in a paved plaza, an avenue of trees and orchards in the corners, with plenty of open lawn for farming and furniture.','Backyards are bigger too, with a path, a little patio, a pond and trees.','Both now sit in a clearing in the forest with soft grass and wildflowers, and your own house or castle stands behind you. No more odd edges or dark gaps around them.','Only grass can be tilled: the stone paths and patios stay clear.','Walk up the path into the door to go back inside. Going through a door no longer bounces you straight back if you keep holding the button.','Everything you already placed or planted came along. Anything that ended up on a tree, the pond or the path to the door moved to the nearest free spot.']},
@@ -16454,7 +16455,8 @@ window.SQA=SQA;
 // bag: the house/castle item itself, every piece of furniture and everything in their chests. This happens once, when
 // the save is loaded, and is saved right after.
 (()=>{const ISL=()=>window.SQRH||[];
- const homes=()=>HOUSES.map(h=>({h,isl:false})).concat(ISL().map(h=>({h,isl:true})));
+ // only your own: HOUSES also holds other players' houses while you're online (_foreign, 061)
+ const own=h=>h&&!h._foreign,homes=()=>HOUSES.filter(own).map(h=>({h,isl:false})).concat(ISL().filter(own).map(h=>({h,isl:true})));
  const where=o=>o.isl?(WORLD_REGIONS[o.h.rg]?WORLD_REGIONS[o.h.rg].name:'an island'):'Hollow Island';
  const what=h=>h.castle?'castle':'house';
  function pack(o){const h=o.h;
@@ -16523,7 +16525,9 @@ window.SQA=SQA;
     if(inHouse()&&P.y<2*16+9&&keyUp()){const L=HDOOR(SCENE.room);for(let i=0;i<L.length;i++)if(Math.abs(P.x-L[i])<7){goOut(i);break}}
     else if(isYard()&&P.y<DOORY*16+5&&keyUp()){for(const dx of YDOOR(SCENE.room))if(Math.abs(P.x-dx)<10){goBack();break}}}catch(e){console.warn(e)}return out}}
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;try{for(const h of mine())if(h.yp)for(const p of h.yp.values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}catch(e){}return out}}
- const mine=()=>HOUSES.concat(window.SQRH||[]);
+ // your own houses only: HOUSES also holds other players' houses while online (_foreign); a friend's yard you visited
+ // must never be packed into your bag when their house unloads
+ const mine=()=>HOUSES.concat(window.SQRH||[]).filter(h=>h&&!h._foreign);
  // ---- farming in the yard (HIT) ----
  const yi=(R,x,y)=>y*R.w+x;
  const onDoorTile=(R,x,y)=>y<=DOORY&&YDOOR(R).some(dx=>Math.abs(x*16+8-dx)<16);

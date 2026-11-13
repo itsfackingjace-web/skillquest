@@ -5,7 +5,8 @@
 // bag: the house/castle item itself, every piece of furniture and everything in their chests. This happens once, when
 // the save is loaded, and is saved right after.
 (()=>{const ISL=()=>window.SQRH||[];
- const homes=()=>HOUSES.map(h=>({h,isl:false})).concat(ISL().map(h=>({h,isl:true})));
+ // only your own: HOUSES also holds other players' houses while you're online (_foreign, 061)
+ const own=h=>h&&!h._foreign,homes=()=>HOUSES.filter(own).map(h=>({h,isl:false})).concat(ISL().filter(own).map(h=>({h,isl:true})));
  const where=o=>o.isl?(WORLD_REGIONS[o.h.rg]?WORLD_REGIONS[o.h.rg].name:'an island'):'Hollow Island';
  const what=h=>h.castle?'castle':'house';
  function pack(o){const h=o.h;
