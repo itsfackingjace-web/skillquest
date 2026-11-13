@@ -56,7 +56,7 @@ function pvGhostStep(dt){const sc=curScene();for(const p of PV.ghosts){if(p.sc!=
   if(r.bowAt&&now-r.bowAt<300){const dx=r.d===2?(r.fl?-1:1):0,dy=r.d===2?0:r.d===1?-1:1,bx=x+dx*7,by=y-3+dy*6;if(dx){for(let i=-5;i<=5;i++)Rg(bx+Math.round(Math.abs(i)*-.35*dx),by+i,1,1,'#8a5a30');Rg(bx-dx*2,by-5,1,11,'#f0f0f0')}else{for(let i=-5;i<=5;i++)Rg(bx+i,by+Math.round(Math.abs(i)*-.35*dy),1,1,'#8a5a30');Rg(bx-5,by-dy*2,11,1,'#f0f0f0')}}}}
 // ---- PvP: your hits on them ----
 function pvDmg(kind,p){if(kind==='sw')return TL.sword>=6?2:1;if(kind==='ar')return(p&&p.dmg>=6)?2:1;return 1}
-function pvHit(r,kind,el){const n=performance.now();if(r.pvHitAt&&n-r.pvHitAt<350)return;r.pvHitAt=n;PV.fight=n;const d=pvDmg(kind);
+function pvHit(r,kind,el){const n=performance.now();if(r.pvHitAt&&n-r.pvHitAt<350)return;r.pvHitAt=n;PV.fight=n;let d=pvDmg(kind);try{if(window.SQPVDMG)d=SQPVDMG(kind,el)}catch(e){}
  FB.db.push(FB.db.ref(FB.D,'pvp/'+r.uid),{f:MP.user.uid,n:myName().slice(0,12),d,k:kind,el:el||'',t:FB.db.serverTimestamp()}).catch(mpErr);
  DMGS.push({x:r.x,y:r.y-16,v:String(d),t:0,c:'#f86848',sc:curScene()});try{sfx('hit')}catch(e){}}
 function pvMelee(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-P.x,dy=r.y-P.y,al=dx*face[0]+dy*face[1],pe=Math.abs(dx*face[1]-dy*face[0]);if(al>-2&&al<24&&pe<14){pvHit(r,'sw');break}}}
@@ -70,10 +70,10 @@ function pvIncoming(id,v){FB.db.remove(FB.db.ref(FB.D,'pvp/'+MP.user.uid+'/'+id)
  if(v.k==='ko'){mpLog('game','You defeated '+String(v.n||trName(u)).slice(0,12)+'! Their grave is where they fell.');try{sfx('quest')}catch(e){}return}
  if(pvDuel(u)){if(dead||!r||r.loc!==mpLoc()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return}
  else if(!PV.on||dead||!r||!r.pk||r.loc!==mpLoc()||pvMeSafe()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return;
- const d=Math.max(1,Math.min(2,+v.d|0)),who=String(v.n||r.n).slice(0,12);PV.fight=performance.now();PV.lastBy=u;PV.lastByAt=performance.now();
+ let d=Math.max(1,Math.min(3,+v.d|0));try{if(window.SQPVARM)d=SQPVARM(d)}catch(e){}const who=String(v.n||r.n).slice(0,12);PV.fight=performance.now();PV.lastBy=u;PV.lastByAt=performance.now();
  if(ROLLT>0)return;if(hurt>0)return;
- if(Math.random()<blockCh()){hurt=.5;say('Blocked '+who+'\'s attack!');sfx('block');addXp(8,10);return}
- hurtP(d,'Hit by '+who+'!');DMGS.push({x:P.x,y:P.y-18,v:String(d),t:0,c:'#f86848',sc:curScene()})}
+ if(Math.random()<Math.min(window.SQPVBLK||1,blockCh())){hurt=.5;say('Blocked '+who+'\'s attack!');sfx('block');addXp(8,10);return}
+ hurtP(d,'Hit by '+who+'!');if(window.SQPVIF&&hurt>SQPVIF)hurt=SQPVIF;DMGS.push({x:P.x,y:P.y-18,v:String(d),t:0,c:'#f86848',sc:curScene()})}
 // when a player beats you, they hear about it
 setInterval(()=>{if(dead&&PV.lastBy&&performance.now()-PV.lastByAt<8000&&PV.koSent!==PV.lastByAt&&MP.on){PV.koSent=PV.lastByAt;const k=PV.lastBy;
   FB.db.push(FB.db.ref(FB.D,'pvp/'+k),{f:MP.user.uid,n:myName().slice(0,12),d:0,k:'ko',el:'',t:FB.db.serverTimestamp()}).catch(()=>{});mpLog('game',trName(k)+' defeated you.')}},300);

@@ -339,4 +339,11 @@
   song (`wantSong`). Also: 079's World Market opener is `wmOpen` (a `function open` in that bare block replaced `window.open`);
   039's fire-perk line had code after a `//` comment (use `/* */` mid-line); 120's new-day `dly` has the loaded field order.
   **Never name a function in a bare block after a browser global** (open, close, print, find, stop, focus, name...).
+- **PvP balance** (`combat/154-s160-pvp-balance.js`, hooks called from 064's `pvHit`/`pvIncoming`, which can't be wrapped from outside
+  the MP block): `SQPVDMG(kind,el)` = hearts from the monster damage numbers (melee `1+TL.sword+lv/15+meleeFlat`, `arrowDmg`,
+  `spellDmg`; <7 = 1, 7-13 = 2, 14+ = 3; `ul` +4), receivers accept up to 3; `SQPVARM` (12+ armour points: -1 on hits of 2+);
+  `SQPVIF` (0.5 s invulnerability after a player hit); `SQPVBLK` (block vs players capped at 25%). While fighting
+  (`SQPVHEAL.fighting()`: duel, or `SQPVP.fight` within 10 s) healing is halved with carry, from food (outermost `eat`, `EATCD`
+  5 s) and anything else (outermost `upd`, also between frames); duels after 60 s = sudden death (no healing, `#dlbar` text).
+  A duel that ends in a frame restores health untouched.
 
