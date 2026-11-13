@@ -278,7 +278,7 @@
   ones are moved from `OLDW` (16/26) by `mv` (centred), then `settle` moves anything on a solid tile or the door to the nearest
   free one. Never change the sizes without bumping that. The yard
   scene is `id:'home'` with `house` = the yard object (`h._yd`: `furn`=h.yf, `plots`=h.yp, `_oid` = id+'~y' so `mpLoc` differs),
-  `yardOf` = the house scene, `ret`/`prev` copied from it (saves place you outside). Farming: own HIT handler (till grass only, `R.lay(x,y)===2`; water /
+  `yardOf` = the house scene, `ret`/`prev` copied from it (saves place you outside). Trees/bushes (non-`ring` `_obj`, `R.cells`/`R.gone`): HIT sets `R.region='_yard'` for that one call so 050's `rgGather`/083's tiers/098's bushes run; regrowth after 240 s in 145's `upd`; `regrowing()` blocks tilling/placing. Ponds: `fishWaterAt` wrapped (yard water), cast/reel handled in 145 because 012 swallows HIT in scenes. Farming: own HIT handler (till grass only, `R.lay(x,y)===2`; water /
   harvest via 016's `harvest(-1,p)`, swaps hoe/can only on off-hand use: `SQOFFVIA()` from 140), seeds via PLANT, growth in
   `upd`. Saved as `yf`/`yp` on `houses[]`/`rh[]`. Friends: `yards/<uid>/<hid>` {f,p(stage)} published every 8 s when changed;
   a visitor needs `trustedBy(owner)` (072) and gets a read-only copy (`ro`). A house that disappears (packed) puts its yard

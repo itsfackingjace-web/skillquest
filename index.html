@@ -9317,6 +9317,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-4',d:'Nov 13, 2026',t:'Living backyards',n:['The trees, bushes and ponds in backyards and courtyards now work like everywhere else: chop the trees for logs (oak and maple too, with the right axe), pick berries and hazelnuts from the bushes, and fish in the pond with your rod.','What you take grows back after a few minutes. While it regrows, you can\'t plant or build on that spot.','Visiting a friend\'s yard? You can fish in their pond, but their trees and bushes are theirs.']},
  {v:'2026.11.13-3',d:'Nov 13, 2026',t:'Warlord\'s blade fix',n:['Fixed: a Warlord\'s blade in your hand turned into a steel sword when you loaded your game. The same happened to mithril and adamant axes and pickaxes. They now stay what they are.','If this happened to you, your lost Warlord\'s blade, axe or pickaxe is back in your Bag the next time you play (as long as you don\'t still have one somewhere). Sorry about that!']},
  {v:'2026.11.13-2',d:'Nov 13, 2026',t:'Bigger, prettier backyards and courtyards',n:['Courtyards are much bigger now: a stone terrace below your castle, wide paths, a pond in a paved plaza, an avenue of trees and orchards in the corners, with plenty of open lawn for farming and furniture.','Backyards are bigger too, with a path, a little patio, a pond and trees.','Both now sit in a clearing in the forest with soft grass and wildflowers, and your own house or castle stands behind you. No more odd edges or dark gaps around them.','Only grass can be tilled: the stone paths and patios stay clear.','Walk up the path into the door to go back inside. Going through a door no longer bounces you straight back if you keep holding the button.','Everything you already placed or planted came along. Anything that ended up on a tree, the pond or the path to the door moved to the nearest free spot.']},
  {v:'2026.11.13-1',d:'Nov 13, 2026',t:'More room for new content',n:['Behind the scenes: island bosses, world bosses and the Imp can now get fresh looks, monsters can get tougher (or gentler) hits, and the islands can get new caves, monster grounds and paths. Watch for changes as they arrive!']},
@@ -16526,7 +16527,7 @@ window.SQA=SQA;
  // ---- farming in the yard (HIT) ----
  const yi=(R,x,y)=>y*R.w+x;
  const onDoorTile=(R,x,y)=>y<=DOORY&&YDOOR(R).some(dx=>Math.abs(x*16+8-dx)<16);
- function tillable(R,Y,x,y){if(x<0||y<2||x>=R.w||y>=R.h||onDoorTile(R,x,y))return false;const i=yi(R,x,y);return R.lay(x,y)===2&&!R.solid.has(i)&&!Y.furn.has(i)&&!Y.plots.has(i)}
+ function tillable(R,Y,x,y){if(x<0||y<2||x>=R.w||y>=R.h||onDoorTile(R,x,y))return false;const i=yi(R,x,y);return R.lay(x,y)===2&&!R.solid.has(i)&&!regrowing(R,i)&&!Y.furn.has(i)&&!Y.plots.has(i)}
  {const _a=attack;attack=function(){if(!isYard()||dead||menuOpen||pnOpen||BUILD||swing>0||FISH)return _a.apply(this,arguments);const R=SCENE.room,Y=SCENE.house;
    const[x,y]=frontTile(),i=yi(R,x,y),p=Y.plots.get(i);
    if(Y.ro){if(p||Y.furn.has(i)){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}return _a.apply(this,arguments)}
@@ -16550,7 +16551,7 @@ window.SQA=SQA;
    inv[k]--;p.c=c;p.g=0;addXp(11,5);try{sfx('rustle')}catch(e){}saveLocal(true);pub();if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
  {const _cp=canPlace;canPlace=function(x,y){if(isYard()&&BUILD&&SEED2CROP[BUILD.k]){const p=SCENE.house.plots.get(yi(SCENE.room,x,y));return!!p&&!p.c}return _cp.apply(this,arguments)}}
  // furniture: not on plots, the gate or a friend's yard
- {const _cp=canPlaceIn;canPlaceIn=function(x,y){if(isYard()){const R=SCENE.room,Y=SCENE.house;if(Y.ro||Y.plots.has(yi(R,x,y))||onDoorTile(R,x,y))return false}return _cp.apply(this,arguments)}}
+ {const _cp=canPlaceIn;canPlaceIn=function(x,y){if(isYard()){const R=SCENE.room,Y=SCENE.house;if(Y.ro||Y.plots.has(yi(R,x,y))||onDoorTile(R,x,y)||regrowing(R,yi(R,x,y)))return false}return _cp.apply(this,arguments)}}
  {const _t=talk;talk=function(){if(isYard()&&SCENE.house.ro&&!dead&&!pnOpen){try{if(nearFurn()){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;return}}catch(e){}}return _t.apply(this,arguments)}}
  // ---- drawing: the game's own ground (hdBakeR, like the islands), its trees, bushes and buildings ----
  // The ground comes from a small map of tile types (0 water, 2 grass, 7 forest floor, 11 paving), baked once per room.
@@ -16577,7 +16578,7 @@ window.SQA=SQA;
   if(dx<=5.6&&dy<=4.6&&!(dx>5&&dy>4))return 11;// its plaza
   if(y>=3&&y<=4&&m>=10)return 11;if(m>=19&&y>=3)return 11;if((y===13||y===14)&&m>=3)return 11;
   if((m===3)&&y>=5&&y<=24||y===24&&m>=3&&m<=16)return 11;return 2}
- function decorate(R){const W=R.w,put=(x,y,t,v)=>{R.items.push({t:'_obj',x,y,o:{t,hp:99,v}});R.solid.add(y*W+x)},both=(x,y,t,v)=>{put(x,y,t,v);put(W-1-x,y,t,v)};
+ function decorate(R){const W=R.w,put=(x,y,t,v)=>{R.items.push({t:'_obj',x,y,o:{t,hp:OHP[t]||3,v}});R.solid.add(y*W+x)},both=(x,y,t,v)=>{put(x,y,t,v);put(W-1-x,y,t,v)};
   const bld=(w,castle)=>{const tx=W/2-w/2,b=Object.assign({},HOUSE_STYLE,{w,tx,ty:1},castle?{castle:1}:{});R.items.push({t:'_ybld',x:Math.floor(tx+(w-1)/2),y:2,b,sh:1});
    for(let y=1;y<=2;y++)for(let x=Math.floor(tx);x<=Math.ceil(tx+w-1);x++)R.solid.add(y*W+x);R.solid.delete(2*W+W/2-1);R.solid.delete(2*W+W/2)};
   for(let y=0;y<R.h;y++)for(let x=0;x<W;x++)if(R.lay(x,y)===0)R.solid.add(y*W+x);
@@ -16595,6 +16596,27 @@ window.SQA=SQA;
   for(let y=-9;y<R.h+9;y++)for(let x=-7;x<W+7;x++){const out=x<0||y<0||x>=W||y>R.h;if(!out||(x+y)&1)continue;const r=hs(x,y);if(r<.12)continue;
    R.items.push({t:'_obj',x,y,ring:1,o:{t:r<.5?'oak':r<.8?'tree':'maple',hp:99}})}}
  decorate(ROOMS.yard);decorate(ROOMS.court);
+ // ---- the trees, bushes and ponds work like the islands' ----
+ // HIT a tree or bush: the yard counts as an island for that one call, so the islands' own gathering runs (050's
+ // rgGather, 083's tiered trees, 098's hazel bushes: same tools needed, same logs/berries/nuts, XP and perks). What you
+ // take grows back after 4 minutes (R.gone, like rgTick); nothing can be planted or placed on its spot meanwhile.
+ // The ponds are fishing water (fishWaterAt), with Hollow's fish. Friends can fish but not take anything.
+ for(const R of[ROOMS.yard,ROOMS.court]){R.cells=new Map();R.gone=[];for(const it of R.items)if(it.t==='_obj'&&!it.ring)rgCellAdd(R,it)}
+ const objAt=(R,x,y)=>R.items.find(it=>it.t==='_obj'&&!it.ring&&!it.gone&&it.x===x&&it.y===y);
+ const regrowing=(R,i)=>R.gone&&R.gone.some(g2=>g2.it.y*R.w+g2.it.x===i);
+ {const _df=drawFurn;drawFurn=function(it){if(it&&it.t==='_obj'&&it.gone&&SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court))return;return _df.apply(this,arguments)}}
+ {const _a=attack;attack=function(){if(isYard()&&FISH&&!dead&&!menuOpen&&!pnOpen){FISH=null;say('You reel in your line');return}
+   if(!isYard()||dead||menuOpen||pnOpen||BUILD||FISH||swing>0)return _a.apply(this,arguments);const R=SCENE.room,[x,y]=frontTile(),it=objAt(R,x,y);
+   // casting (the house scene's own HIT, 012, would take it otherwise; this is 093's island cast)
+   if(!it){const[fx,fy]=front(14);if(fishWaterAt(Math.floor(fx/16),Math.floor(fy/16))&&!facingNpc()){if(!TL.rod){say('You need a fishing rod - buy one at the general store');return}
+     const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}
+   if(!it||en.some(n=>!n.dead))return _a.apply(this,arguments);
+   if(SCENE.house.ro){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}
+   R.region='_yard';try{return _a.apply(this,arguments)}finally{delete R.region}}}
+ {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{for(const R of[ROOMS.yard,ROOMS.court])for(let j=R.gone.length-1;j>=0;j--){const g2=R.gone[j];if(CLK-g2.at<=240)continue;
+    const it=g2.it,here=SCENE&&SCENE.room===R;if(here&&Math.hypot(P.x-(it.x*16+8),P.y-(it.y*16+8))<40)continue;
+    it.gone=false;it.o.hp=OHP[it.o.t]||3;rgCellAdd(R,it);R.solid.add(it.y*R.w+it.x);R.gone.splice(j,1)}}catch(e){}return out}}
+ {const _fw=fishWaterAt;fishWaterAt=function(tx,ty){if(isYard()){const R=SCENE.room;return tx>=0&&ty>=2&&tx<R.w&&ty<R.h&&R.lay(tx,ty)===0}return _fw.apply(this,arguments)}}
  {const _rb=ROOMBG;ROOMBG=function(R,W2,H2){if(R&&(R.yard||R.court))return drawYard(R,W2,H2);const out=_rb?_rb.apply(this,arguments):undefined;
    // the back door(s) on a house's or castle's back wall
    try{if(SCENE&&SCENE.room===R&&!SCENE.yardOf){for(const dx of HDOOR(R)){const stone=R===ROOMS.castle;Rg(dx-9,4,18,28,K);Rg(dx-8,5,16,27,stone?'#3a2a20':'#7a5030');Rg(dx-8,5,16,2,stone?'#5a4430':'#9a6a3c');
