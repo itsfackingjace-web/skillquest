@@ -268,9 +268,12 @@
 - **One home** (`items/144-s149-one-home.js`, `window.SQONEHOME`): one house or castle across `HOUSES` + `SQRH`; `startBuild`
   refuses a second; `enforce()` (called from 150 after the yards are read) keeps a castle, else the most furnished, and packs
   the rest (item, furniture, chest contents, yard).
-- **Backyards / courtyards** (`items/145-s150-backyards.js`, `window.SQYARD`): rooms `yard` (16x12) and `court` (26x16, fountain
-  solid), `ex:-10` (the exits are handled here). Back doors: `HDOOR` (house x 112; castle 120/232) ↔ `YDOOR` (yard 128; court
-  152/264); walking up into one / down out of the yard (`upd`), `leaveScene` from a yard goes back into the house. The yard
+- **Backyards / courtyards** (`items/145-s150-backyards.js`, `window.SQYARD`): rooms `yard` (16x12) and `court` (26x16),
+  `ex:-10` (the exits are handled here). Look: ground baked with `hdBakeR` from `R.lay` (`YARD_LAY`/`COURT_LAY`: grass, paving,
+  forest floor, court pond), the islands' trees/bushes as solid `_obj` room items and the house/castle facade as a `_ybld` item
+  drawn by `drBld` along the top (`decorate`). Back doors: `HDOOR` (house x 112; castle 120/232) ↔ `YDOOR` (the facade's door: yard
+  128; court 208), you arrive on row `DOORY` (3) and walk up into the facade to go back; `leaveScene` from a yard goes back into
+  the house. On load (and for visitors) `settle` moves furniture/plots off tiles that are now solid or the door to the nearest free tile. The yard
   scene is `id:'home'` with `house` = the yard object (`h._yd`: `furn`=h.yf, `plots`=h.yp, `_oid` = id+'~y' so `mpLoc` differs),
   `yardOf` = the house scene, `ret`/`prev` copied from it (saves place you outside). Farming: own HIT handler (till / water /
   harvest via 016's `harvest(-1,p)`, swaps hoe/can only on off-hand use: `SQOFFVIA()` from 140), seeds via PLANT, growth in
