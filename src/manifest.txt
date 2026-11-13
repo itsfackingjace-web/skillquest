@@ -155,6 +155,7 @@ items/144-s149-one-home.js
 items/145-s150-backyards.js
 combat/146-s152-custom-bosses.js
 items/147-s153-keep-top-tier-gear.js
+items/148-s154-home-comforts.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

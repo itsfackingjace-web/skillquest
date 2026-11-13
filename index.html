@@ -1374,7 +1374,7 @@ tk.addEventListener('touchstart',e=>{if(SCENE&&!nearNpc()&&!pnOpen){const it=nea
 // actions that only make sense outdoors
 const _atk12=attack;attack=function(){if(dead||menuOpen||pnOpen)return;if(SCENE){if(swing<=0){swing=.25;sfx('swish')}return}
  if(!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile(),h=houseAt(x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;hitHouse(h);return}}_atk12()};
-const _fi12=fire;fire=function(){if(SCENE&&!(SCENE.room&&SCENE.room.icv)){say('Better not light a fire indoors.');return}_fi12()};
+const _fi12=fire;fire=function(){if(SCENE&&!(SCENE.room&&(SCENE.room.icv||SCENE.room.yard||SCENE.room.court))){say('Better not light a fire indoors.');return}_fi12()};
 // respawn: home bed beats a field bed beats the village
 const _rs12=reset;reset=function(){SCENE=null;_rs12();const h=HOUSES.find(o=>o.id===HOMESP);if(h){enterScene('home',h,{x:h.x*16+8,y:(h.y+1)*16+6});P.x=2*16+10;P.y=3*16+8;face=[0,1];say('You wake up at home, safe and sound.')}};
 const _ng12=newGame;newGame=function(){for(const h of HOUSES)for(const i of houseTiles(h))BS.delete(i);HOUSES=[];HOMESP=null;SCENE=null;_ng12()};
@@ -5738,7 +5738,7 @@ const _nfu49=nearFurn;nearFurn=function(){const R=SCENE&&SCENE.room;if(R&&R.regi
   d=Math.hypot(Math.max(x0-P.x,0,P.x-x1),Math.max(y0-P.y,0,P.y-y1));if(d<bd){bd=d;best=it}}return best}return _nfu49()};
 const _uf49=useFurn;useFurn=function(it){if(it&&it.use==='regdock'){openRoutes();return}if(it&&it.use==='look'){rgLook(it);return}_uf49(it)};
 const _nf49=nearFire;nearFire=function(x,y,r){return curRegion()!=='hollow'?false:_nf49(x,y,r)};   // Hollow campfires don't burn in other lands
-const _fi49=fire;fire=function(){if(curRegion()!=='hollow'){say('Too windy out here for a campfire.');return}_fi49()};
+const _fi49=fire;fire=function(){if(curRegion()!=='hollow'&&!(SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court))){say('Too windy out here for a campfire.');return}_fi49()};
 
 // --- update: travel, quest regions, spawns ---
 const RG_OWN=new WeakSet();let RG_SPT=0;
@@ -9378,6 +9378,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-7',d:'Nov 13, 2026',t:'Home comforts',n:['Light campfires in your backyard or courtyard (FIRE, 3 wood and a stone, like anywhere outdoors). Cook at them, warm up, and they keep burning there while you\'re inside.','No more getting hungry at home: your food doesn\'t go down while you\'re inside your house or castle. Sleeping in your bed still uses up some food overnight.','Wardrobes can now be picked up: open the wardrobe and tap PICK UP WARDROBE at the bottom.']},
  {v:'2026.11.13-6',d:'Nov 13, 2026',t:'One save: your Google account',n:['You now sign in with Google to play. Your character lives in your Google account, so it\'s the same on your phone, your computer and the Windows app.','Only one device or tab can play your account at a time. Open the game somewhere else and the old one stops with a PLAY HERE INSTEAD button; tap it to take your game back with your latest progress.','No more "Which save do you want?" questions. The first time you sign in after this update, the game keeps whichever save has more progress (this device\'s or your account\'s) and backs up the other one in Options > Backups.','If your connection drops, you\'ll see "Not saved: reconnecting..." at the top. Your progress saves again as soon as you\'re back online.']},
  {v:'2026.11.13-5',d:'Nov 13, 2026',t:'Placing your castle',n:['Fixed: after packing up your house, the game could still say "You already have a house" and refuse to place your castle (or a new house) while other players\' houses were nearby. Only your own home counts now.']},
  {v:'2026.11.13-4',d:'Nov 13, 2026',t:'Living backyards',n:['The trees, bushes and ponds in backyards and courtyards now work like everywhere else: chop the trees for logs (oak and maple too, with the right axe), pick berries and hazelnuts from the bushes, and fish in the pond with your rod.','What you take grows back after a few minutes. While it regrows, you can\'t plant or build on that spot.','Visiting a friend\'s yard? You can fish in their pond, but their trees and bushes are theirs.']},
@@ -16844,6 +16845,34 @@ window.SQA=SQA;
  let wait=0;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(back.length&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;
    const n=back.map(k=>INAME[k]).join(', ');back=[];say('Sorry about that! A bug swapped your '+n+' for a steel one. It\'s back in your Bag.');msgT=8;try{saveLocal(true)}catch(e){}}return out}}
  window.SQTFX={LOST}})();
+// ---- 154. Home comforts: campfires in yards, no hunger indoors at home, picking up a wardrobe ----
+// - Campfires in backyards and courtyards (150): 012 (indoors) and 049 (too windy off Hollow) let yards through, so FIRE
+//   runs the game's own campfire (perks, timed lighting, cooking at it). Each yard keeps its own fires (083's per-place
+//   fire stash, keyed 'yard:<house>' by wrapping fireKey64), and they're drawn as room items so they sort with you.
+// - Inside a house or castle (your own or a friend's; not the yard) hunger doesn't go down. Eating still fills it; sleeping
+//   still costs the night's food (12/13's bed).
+// - The wardrobe opens the character screen, which had no "pick it up" button like the other stations: it has one now.
+(()=>{const yard=()=>!!(SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court)&&SCENE.yardOf);
+ const indoors=()=>!!(SCENE&&SCENE.id==='home'&&SCENE.house&&!SCENE.yardOf);
+ // ---- yard campfires ----
+ {const _fk=window.fireKey64;window.fireKey64=function(){if(yard())return'yard:'+(SCENE.house.id||'?');return _fk?_fk():curRegion()}}
+ {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&(R.yard||R.court)){
+    // the room's fire items follow the current fires (only in your yard scene; another yard has its own list)
+    const want=yard()?fires.filter(f=>f.life>0&&!f._rp&&!f._glow):[];const have=R.items.filter(it=>it.t==='_fire');
+    if(have.length!==want.length||have.some((it,k)=>it.f!==want[k])){R.items=R.items.filter(it=>it.t!=='_fire');for(const f of want)R.items.push({t:'_fire',f,x:f.x/16,y:(f.y+3)/16-1})}}}catch(e){}return out}}
+ // ---- no hunger drain at home ----
+ {const _u=upd;upd=function(dt){if(!indoors()||dead||menuOpen||pnOpen||typeof hunger!=='number')return _u.apply(this,arguments);
+   // a little extra first, so the drain (walking or sprinting) never reaches the "starving" check, then take it back
+   const h0=hunger,pc=3*dt*.9*(typeof FOOD_RATE==='number'?FOOD_RATE:1);hunger+=pc;const out=_u.apply(this,arguments);
+   if(indoors()&&typeof hunger==='number')hunger=Math.max(h0,hunger-pc);else if(typeof hunger==='number')hunger=Math.max(0,hunger-pc);return out}}
+ // ---- picking up a wardrobe ----
+ let WR=null;const go=document.getElementById('cgo');
+ const pb=document.createElement('button');pb.id='cwpk';pb.textContent='PICK UP WARDROBE';pb.style.cssText='display:none;margin:14px auto 0;padding:10px 18px;font:700 15px '+(typeof PF!=='undefined'?PF:'monospace')+';letter-spacing:.04em;background:#f8f8f8;color:#404040;border:3px solid #485870;box-shadow:inset 0 0 0 2px #a8c0e0;cursor:pointer';if(go)go.insertAdjacentElement('afterend',pb)
+ {const _os=openStation;openStation=function(o){const r=_os.apply(this,arguments);if(o&&o.t==='wardrobe'){WR=o;pb.style.display='block'}return r}}
+ if(go){const _c=go.onclick;go.onclick=function(){WR=null;pb.style.display='none';return _c&&_c.apply(this,arguments)}}
+ pb.onclick=()=>{const o=WR;if(!o)return;WR=null;pb.style.display='none';try{go.onclick()}catch(e){}
+  setTimeout(()=>{try{if(o.inside)pickFurn(o.i);else pickStruct(o.i);saveLocal(true)}catch(e){console.warn(e)}},0)};
+ window.SQHOME={indoors,yard}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

@@ -153,7 +153,7 @@ const _nfu49=nearFurn;nearFurn=function(){const R=SCENE&&SCENE.room;if(R&&R.regi
   d=Math.hypot(Math.max(x0-P.x,0,P.x-x1),Math.max(y0-P.y,0,P.y-y1));if(d<bd){bd=d;best=it}}return best}return _nfu49()};
 const _uf49=useFurn;useFurn=function(it){if(it&&it.use==='regdock'){openRoutes();return}if(it&&it.use==='look'){rgLook(it);return}_uf49(it)};
 const _nf49=nearFire;nearFire=function(x,y,r){return curRegion()!=='hollow'?false:_nf49(x,y,r)};   // Hollow campfires don't burn in other lands
-const _fi49=fire;fire=function(){if(curRegion()!=='hollow'){say('Too windy out here for a campfire.');return}_fi49()};
+const _fi49=fire;fire=function(){if(curRegion()!=='hollow'&&!(SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court))){say('Too windy out here for a campfire.');return}_fi49()};
 
 // --- update: travel, quest regions, spawns ---
 const RG_OWN=new WeakSet();let RG_SPT=0;

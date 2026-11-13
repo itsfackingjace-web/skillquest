@@ -314,4 +314,9 @@
   from another account (`sq_acct`) is never used (backed up on the device only). The other save goes to backups. Cloud
   writes in strict skip 008's `syncCheck` (no adopt/ask) and are marked `as:1`. `#sqoff` shows "Not saved: reconnecting..."
   (`.info/connected`). Rules: `sess`, `saves.sid` (publish them).
+- **Home comforts** (`items/148-s154-home-comforts.js`, `window.SQHOME`): yard campfires (012's indoors check and 049's
+  "too windy" let yards through; `fireKey64` gives each yard its own fire stash `yard:<house id>`; the fires are kept as `_fire`
+  room items so they draw and sort, 083's `drawFurn`). No hunger drain inside a house/castle (`SCENE.id==='home'`, not a yard):
+  the outermost `upd` adds 3x the drain first and takes it back, so starving can't trigger; eating still counts. The
+  wardrobe opens the character screen, so it gets its own `#cwpk` PICK UP WARDROBE button (`pickFurn`/`pickStruct`).
 
