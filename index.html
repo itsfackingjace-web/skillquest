@@ -9317,6 +9317,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-3',d:'Nov 13, 2026',t:'Warlord\'s blade fix',n:['Fixed: a Warlord\'s blade in your hand turned into a steel sword when you loaded your game. The same happened to mithril and adamant axes and pickaxes. They now stay what they are.','If this happened to you, your lost Warlord\'s blade, axe or pickaxe is back in your Bag the next time you play (as long as you don\'t still have one somewhere). Sorry about that!']},
  {v:'2026.11.13-2',d:'Nov 13, 2026',t:'Bigger, prettier backyards and courtyards',n:['Courtyards are much bigger now: a stone terrace below your castle, wide paths, a pond in a paved plaza, an avenue of trees and orchards in the corners, with plenty of open lawn for farming and furniture.','Backyards are bigger too, with a path, a little patio, a pond and trees.','Both now sit in a clearing in the forest with soft grass and wildflowers, and your own house or castle stands behind you. No more odd edges or dark gaps around them.','Only grass can be tilled: the stone paths and patios stay clear.','Walk up the path into the door to go back inside. Going through a door no longer bounces you straight back if you keep holding the button.','Everything you already placed or planted came along. Anything that ended up on a tree, the pond or the path to the door moved to the nearest free spot.']},
  {v:'2026.11.13-1',d:'Nov 13, 2026',t:'More room for new content',n:['Behind the scenes: island bosses, world bosses and the Imp can now get fresh looks, monsters can get tougher (or gentler) hits, and the islands can get new caves, monster grounds and paths. Watch for changes as they arrive!']},
  {v:'2026.11.12-20',d:'Nov 12, 2026',t:'Backyards, courtyards and a royal throne',n:['Backyards: every house now has a back door in the middle of its back wall. It leads to your own private backyard, a fenced lawn where you can place furniture and farm in peace: till with your hoe, plant seeds from your Bag, water and harvest like anywhere else.','Castles get two back gates beside the throne that open onto a courtyard: bigger and grander, with stone paths, flower beds and a fountain.','Only friends you trust can step into your backyard or courtyard. They can look around but can\'t change anything.','One home each: you can now have one house or one castle in the world. If you had more, you keep one (a castle first) and the others were packed into your bag with all their furniture and everything in their chests.','Castle halls are now perfectly symmetrical: the gate and the red carpet line up with the throne. Nothing you placed inside was moved or lost.','A brand new throne: gold and red velvet on a stone dais.','Dungeon bosses can now get new looks and new drops from the game\'s artists, and new bosses can appear on the islands.']},
@@ -16735,6 +16736,26 @@ window.SQA=SQA;
   if(a==='look'){const k='m:'+keyOf(ST.sel);if(window.SQA)SQA.preview(S.draft);S.tab='monsters';API.draw();setTimeout(()=>{const b=document.querySelector('#dvs [data-k="'+k+'"]');if(b)b.click();else toast('Save the boss and turn on "Show unpublished edits in my game" first.')},300);return}
   if(a==='del')return arm('cbdel',async()=>{const id=ST.sel;delete sec()[id];try{await dset('draft/bosses/'+id,null);toast('Boss deleted from your draft.')}catch(e2){fail(e2)}ST.sel=null;API.draw()})},true);
  SQSUITE.addTab('bosses','Bosses',{render,changes(L,D){const out=[],l=L&&L.bosses||{},d=D&&D.bosses||{};for(const id of new Set([...Object.keys(l),...Object.keys(d)]))if(JSON.stringify(l[id])!==JSON.stringify(d[id]))out.push({kind:'ext',html:'👑 Boss '+E((d[id]||l[id]).n||id)+': '+(d[id]?(l[id]?'changed':'new'):'removed')});return out}})})();
+// ---- 153. Top-tier gear survives loading ----
+// 020's applySave clamps the sword, axe and pickaxe tiers to 4 (steel, the best there was then). Later sections put
+// back what they added (035: sword 5, 084: swords 6/7) but nothing put back the Warlord's blade (sword 8, 100) or the
+// mithril/adamant axes and pickaxes (6/7, 141): loading a save with one of them in hand turned it into a steel one.
+// This restores any tier the game has an item for (eq_<slot><tier>) from the save's tl, after all the clamps.
+// Saves made before this (no `tfx`) get one-time help: an item from that list that is in the collection log (129's
+// ach.col) but nowhere in the save (bag, chests, houses, yards, builds) and not in hand goes back into the bag.
+(()=>{const SL=['sword','axe','pick'],LOST=['eq_sword8','eq_axe6','eq_axe7','eq_pick6','eq_pick7'];let back=[];
+ {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);back=[];try{
+   for(const k of SL){const v=+(S&&S.tl&&S.tl[k])|0;if(v>4&&EQ['eq_'+k+v]&&TL[k]!==v&&!(k==='sword'&&window.SLEDGE))TL[k]=v}
+   if(S&&!S.tfx&&S.ach&&Array.isArray(S.ach.col)){const js=JSON.stringify(Object.assign({},S,{ach:null,rare:null}));
+    for(const key of LOST){if(!S.ach.col.includes(key))continue;const e=EQ[key];if(!e)continue;
+     const sl=e.slot==='main'?'sword':e.slot,inHand=TL[sl]===e.tier,anywhere=new RegExp('"'+key+'"\\s*[:,]\\s*"?[1-9]').test(js)||(inv[key]|0)>0;
+     if(!inHand&&!anywhere){inv[key]=(inv[key]|0)+1;back.push(key)}}}
+   if(typeof snapEq==='function')snapEq()}catch(e){console.warn(e)}return out}}
+ {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.tfx=1;return s}}
+ // tell the player once play is running (upd only runs in play)
+ let wait=0;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(back.length&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;
+   const n=back.map(k=>INAME[k]).join(', ');back=[];say('Sorry about that! A bug swapped your '+n+' for a steel one. It\'s back in your Bag.');msgT=8;try{saveLocal(true)}catch(e){}}return out}}
+ window.SQTFX={LOST}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
