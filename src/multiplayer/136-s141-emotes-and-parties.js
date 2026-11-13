@@ -78,7 +78,7 @@
   db.set(ref('dreq/'+u+'/'+me()),{n:String(pname()).slice(0,12),s:PT.id,k:'party',t:db.serverTimestamp()}).then(()=>{say('You invited '+nameOf(u)+' to your party.');try{mpLog('game','You invited '+nameOf(u)+' to your party.')}catch(e){}})
    .catch(e=>{delete PT.sent[u];say(/permission/i.test(String(e&&(e.code||e.message)))?'Parties need the latest database rules.':'Could not send the invite.')})}
  function join(id,from){const n=nameOf(from);const cnt=[...Mp().players.values()].filter(r=>live(r)&&r.pt===id&&r.uid!==me()).length;if(cnt>=MAX){say(n+'\'s party is full.');sfx('swish');return}
-  PT.id=id;keep();say('You joined '+n+'\'s party!');try{mpLog('game','You joined '+n+'\'s party. Type /p to talk to your party.')}catch(e){}sfx('quest');if(pnOpen&&ptab===PTAB)rPn()}
+  PT.id=id;keep();say('You joined '+n+'\'s party!');try{mpLog('game','You joined '+n+'\'s party. Talk to them in the chat\'s Party tab.')}catch(e){}sfx('quest');if(pnOpen&&ptab===PTAB)rPn()}
  function leave(){if(!PT.id)return;PT.id='';PT.sent={};keep();say('You left the party.');try{mpLog('game','You left the party.')}catch(e){}if(pnOpen&&ptab===PTAB)rPn()}
  window.SQPARTY={get id(){return PT.id},members:others,invite,leave,join,has:u=>others().some(r=>r.uid===u),invited:u=>!!(PT.sent[u]&&performance.now()-PT.sent[u]<60000)&&!others().some(r=>r.uid===u)};
  // the invite pop-up
@@ -96,11 +96,24 @@
  // +10% XP with a party member close by
  const near=()=>{let L=null;try{L=mpLoc()}catch(e){}return others().some(r=>r.loc===L&&Math.hypot(r.tx-P.x,r.ty-P.y)<=320)};
  {const _ax=addXp;addXp=function(i,x){if(x>0&&PT.id)try{if(near())x=Math.max(x+(x>=5?1:0),Math.round(x*1.1))}catch(e){}return _ax.call(this,i,x)}}
+ // party chat: one private message to each member, marked [Party] (061 files those under the Party tab)
+ let lastSay=0;function partySay(t){const msg=String(t||'').replace(/\s+/g,' ').trim().slice(0,72);if(!msg)return;if(!on())return;
+  if(!PT.id||!others().length){try{mpLog('game','You\'re not in a party. Tap a player\'s name to invite them.')}catch(e){}return}
+  const n=performance.now();if(n-lastSay<1200){try{mpLog('game','Slow down a little!')}catch(e){}return}lastSay=n;
+  const db=Fm().db;for(const r of others())db.push(ref('pm/'+r.uid),{f:me(),n:String(pname()).slice(0,12),m:'[Party] '+msg,t:db.serverTimestamp()}).catch(()=>{});
+  try{mpLog('pt',msg,{n:String(pname()).slice(0,12),uid:me(),me:1})}catch(e){}}
+ window.SQPARTYSAY=partySay;
+ // shared gold: when you beat a monster with party members close by (same area, within 20 steps), each of them gets
+ // half the gold it gave you (the kill's own 2-6 gold counted as 4, plus what enemyDrop added; at most 100), sent as fx kind 'pg' {g, p: party id, x, y}
+ {const _ed=enemyDrop;enemyDrop=function(n){const g0=GLD;const out=_ed.apply(this,arguments);try{if(PT.id&&on()&&n&&near()&&window.SQPVSEND){const dg=Math.max(0,GLD-g0);
+    SQPVSEND({k:'pg',g:Math.max(1,Math.min(100,Math.ceil((dg+4)/2))),p:PT.id,x:Math.round(P.x),y:Math.round(P.y)})}}catch(e){}return out}}
+ {const last={};(window.SQFXH=window.SQFXH||{}).pg=(r,v)=>{if(!PT.id||v.p!==PT.id||r.pt!==PT.id||dead)return;const x=+v.x,y=+v.y,g=Math.max(0,Math.min(100,v.g|0));if(!g||!isFinite(x)||!isFinite(y))return;
+   if(Math.hypot(x-P.x,y-P.y)>320)return;const now=performance.now();if(now-(last[r.uid]||0)<400)return;last[r.uid]=now;GLD+=g;
+   try{gTxt(P.x,P.y-28,'+'+g+' gold','#f8d048')}catch(e){}try{sfx('coin')}catch(e){}PT.shared=(PT.shared|0)+g}}
  // chat: /p to the party, emotes by name
  {const _ms=mpSend;mpSend=function(t){const s=String(t||'').trim(),m=/^\/(\w+)\s*(.*)$/.exec(s);
    if(m){const c=m[1].toLowerCase();if(EM[c]&&!m[2]){emote(c);return}
-    if(c==='p'||c==='party'){const msg=m[2].replace(/\s+/g,' ').trim().slice(0,72);if(!PT.id||!others().length){try{mpLog('game','You\'re not in a party. Tap a player\'s name to invite them.')}catch(e){}return}if(!msg)return;
-     const db=Fm().db;for(const r of others())db.push(ref('pm/'+r.uid),{f:me(),n:String(pname()).slice(0,12),m:'[Party] '+msg,t:db.serverTimestamp()}).catch(()=>{});try{mpLog('game','[Party] '+pname()+': '+msg)}catch(e){}return}}
+    if(c==='p'||c==='party'){partySay(m[2]);return}}
    return _ms.apply(this,arguments)}}
  // ---- START > Party and START > Emotes ----
  const PTAB=38,ETAB=39;
@@ -112,7 +125,7 @@
   if(!PT.id||!L.length)return h+'<div class="qc"><p>You\'re not in a party yet.</p><p>Walk up to a player, tap their name and choose <b>INVITE TO PARTY</b>. Up to 4 players.</p><p style="font-size:12px;opacity:.8">In a party you see each other on the map, get +10% XP when you\'re close together, and can talk with /p in chat.</p></div>'+(PT.id?'<button class="sb" data-pt="leave" style="width:100%;margin-top:8px">LEAVE PARTY</button>':'');
   h+='<div class="ptm"><div class="tx"><b>'+esc(pname())+' (you)</b><small>'+esc(areaName({ar:curRegion()}))+'</small></div><div class="hb"><i style="width:'+Math.max(0,Math.min(100,P.hp/6*100))+'%"></i></div></div>';
   for(const r of L)h+='<div class="ptm"><div class="tx"><b>'+esc(r.n)+'</b><small>'+esc(areaName(r)||'')+'</small></div><div class="hb"><i style="width:'+Math.max(0,Math.min(100,(r.hpv||0)/6*100))+'%"></i></div></div>';
-  return h+'<div class="qc" style="margin-top:8px;font-size:12px"><p>+10% XP while a party member is close by. Type <b>/p</b> and a message to talk to your party.</p></div><button class="sb" data-pt="leave" style="width:100%;margin-top:8px">LEAVE PARTY</button>'}
+  return h+'<div class="qc" style="margin-top:8px;font-size:12px"><p>+10% XP while a party member is close by, and when one of you beats a monster the others nearby get half its gold. Talk to your party in the chat\'s <b>Party</b> tab (or type <b>/p</b> and a message).</p></div><button class="sb" data-pt="leave" style="width:100%;margin-top:8px">LEAVE PARTY</button>'}
  function emotesHTML(){let h='<div class="tl">EMOTES</div><div class="emg">';for(const k in EM)h+='<button data-em="'+k+'"><span>'+EM[k].ic+'</span>'+EM[k].n+'</button>';
   return h+'</div><div class="qc" style="margin-top:10px;font-size:12px"><p>Everyone nearby sees it. In chat you can also type /'+Object.keys(EM).slice(0,4).join(', /')+' and so on.</p></div>'}
  {const _r=rPn;rPn=function(){if(ptab===PTAB){try{panelChrome('')}catch(e){}pbd.innerHTML=partyHTML();return}if(ptab===ETAB){try{panelChrome('')}catch(e){}pbd.innerHTML=emotesHTML();return}return _r.apply(this,arguments)}}

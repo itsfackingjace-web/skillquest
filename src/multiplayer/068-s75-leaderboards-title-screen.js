@@ -9,16 +9,17 @@ const LB={open:false,cat:'tot',data:{},unsub:null,pubKey:'',pubAt:-1e9,pk:0};
 {const _sn=snap;snap=function(){const s=_sn();if(LB.pk)s.pvpk=LB.pk;return s}}
 {const _ap=applySave;applySave=function(S){_ap(S);LB.pk=Math.max(0,+(S&&S.pvpk)||0)}}
 function lbTick(){if(!MP.on||!MP.user||!FB)return;const now=performance.now();if(now-LB.pubAt<20000)return;LB.pubAt=now;
- const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};const k=JSON.stringify(row);if(k===LB.pubKey)return;
+ const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};try{const c=window.SQCHR&&SQCHR.row();if(c){row.cr=c.r;row.cg=c.g}}catch(e){}const k=JSON.stringify(row);if(k===LB.pubKey)return;
  LB.pubKey=k;FB.db.set(FB.db.ref(FB.D,'lb/'+MP.user.uid),Object.assign(row,{t:FB.db.serverTimestamp()})).catch(e=>{LB.pubKey='';mpErr(e)})}
 setInterval(()=>{try{lbTick()}catch(e){}},5000);
 window.SQLB=LB;
 // ---- the categories ----
-const lbCats=()=>{const c=[{k:'tot',n:'Overall',sub:'Total level',ic:'★',col:'#f8d048'},{k:'qp',n:'Quests',sub:'Quest points',ic:'!',col:'#68b8f8'},{k:'pk',n:'PvP kills',sub:'Players defeated',ic:'☠',col:'#e85848'},{k:'mk',n:'Monsters',sub:'Monsters slain',ic:'⚔',col:'#a8a8b8'},{k:'bk',n:'World bosses',sub:'World bosses defeated',ic:'♛',col:'#c83020'}];
+const lbCats=()=>{const c=[{k:'tot',n:'Overall',sub:'Total level',ic:'★',col:'#f8d048'},{k:'qp',n:'Quests',sub:'Quest points',ic:'!',col:'#68b8f8'},{k:'pk',n:'PvP kills',sub:'Players defeated',ic:'☠',col:'#e85848'},{k:'mk',n:'Monsters',sub:'Monsters slain',ic:'⚔',col:'#a8a8b8'},{k:'bk',n:'World bosses',sub:'World bosses defeated',ic:'♛',col:'#c83020'},{k:'cr',n:'Chess',sub:'Chess rating (games against players)',ic:'♞',col:'#8058c0'}];
  SKN.forEach((n,i)=>c.push({k:'s'+i,n,sub:n+' level',ic:n[0],col:SKC[i]||'#88a'}));return c};
 const xpOf=(r,i)=>{const a=r&&r.x;if(!a)return 0;const v=Array.isArray(a)?a[i]:a[i];return Math.max(0,+v||0)};
 function lbRows(cat){const out=[];for(const u in LB.data){const r=LB.data[u];if(!r||typeof r!=='object'||typeof r.n!=='string')continue;let v,s='',sort;
   if(cat==='tot'){let tx=0;const a=r.x?(Array.isArray(r.x)?r.x:Object.values(r.x)):[];for(const q of a)tx+=+q||0;v=+r.tot||0;sort=v*1e10+tx;s=tx.toLocaleString('en-US')+' xp'}
+  else if(cat==='cr'){if(!((+r.cg|0)>0))continue;v=Math.round(+r.cr||0);sort=v;s=(+r.cg|0)+' game'+((+r.cg|0)>1?'s':'')}
   else if(cat==='qp'||cat==='pk'||cat==='mk'||cat==='bk'){v=+r[cat]||0;sort=v}
   else{const i=+cat.slice(1),xp=xpOf(r,i);v=lvFromXp(xp);sort=xp;s=Math.floor(xp).toLocaleString('en-US')+' xp'}
   if(cat!=='tot'&&!(sort>0))continue;out.push({u,n:r.n.replace(/[<>]/g,'').slice(0,12),v,s,sort,t:+r.t||0})}
@@ -57,12 +58,12 @@ function lbClose(){LB.open=false;lbEl.style.display='none';if(LB.unsub){try{LB.u
  if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="lb"]');if(b&&(GPON||TS.kb))setFocus(b)}}
 function lbRender(){const cats=lbCats(),C=cats.find(c=>c.k===LB.cat)||cats[0],me=MP.user&&MP.user.uid;
  $('lbc').innerHTML=cats.map(c=>'<button data-lbc="'+c.k+'" class="'+(c.k===C.k?'on':'')+'"><i style="background:'+c.col+'">'+esc(c.ic)+'</i>'+esc(c.n)+'</button>').join('');
- const B=$('lbb'),rows=lbRows(C.k),val=r=>C.k==='tot'?'Lv '+r.v:C.k[0]==='s'?'Lv '+r.v:r.v.toLocaleString('en-US'),nm=r=>(isOG(r.u)?'<img class="cr" src="'+crownURL+'" alt="OG">':'')+esc(r.n)+(r.u===me?'<span class="you">YOU</span>':'');
+ const B=$('lbb'),rows=lbRows(C.k),val=r=>C.k==='cr'?String(r.v):C.k==='tot'?'Lv '+r.v:C.k[0]==='s'?'Lv '+r.v:r.v.toLocaleString('en-US'),nm=r=>(isOG(r.u)?'<img class="cr" src="'+crownURL+'" alt="OG">':'')+esc(r.n)+(r.u===me?'<span class="you">YOU</span>':'');
  $('lbn').textContent=Object.keys(LB.data).length?Object.keys(LB.data).length+' adventurers':'';
  let h='<div class="lbt"><b>'+esc(C.sub)+'</b><small>'+(rows.length?rows.length+' ranked':'')+'</small></div>';
  if(!FB||!FB.db){B.innerHTML=h+'<div class="emp">Connecting to the leaderboards...</div>';return}
  if(LB.err&&!rows.length){B.innerHTML=h+'<div class="emp">The leaderboards are being set up. Check back soon!</div>';return}
- if(!rows.length){B.innerHTML=h+'<div class="emp">Nobody is on this board yet.<br>'+(C.k==='pk'?'Turn on PvP (START menu) to start climbing it!':'Play online to claim the top spot!')+'</div>';return}
+ if(!rows.length){B.innerHTML=h+'<div class="emp">Nobody is on this board yet.<br>'+(C.k==='pk'?'Turn on PvP (START menu) to start climbing it!':C.k==='cr'?'Play chess with another player (tap their name, then CHESS) to get rated.':'Play online to claim the top spot!')+'</div>';return}
  const pod=[rows[1],rows[0],rows[2]],cls=['p2','p1','p3'],md=['2','1','3'];h+='<div class="pod">';
  pod.forEach((r,j)=>{if(!r){h+='<div></div>';return}h+='<div class="lbp '+cls[j]+(r.u===me?' me':'')+'"><div class="md">'+md[j]+'</div><div class="nm">'+nm(r)+'</div><div class="vl">'+esc(val(r))+'</div>'+(r.s?'<small>'+esc(r.s)+'</small>':'')+'</div>'});h+='</div>';
  const top=rows.slice(3,50);for(let i=0;i<top.length;i++){const r=top[i];h+='<div class="row'+(r.u===me?' me':'')+'"><span class="rk">#'+(i+4)+'</span><span class="nm">'+nm(r)+'</span><span class="vl">'+esc(val(r))+(r.s?'<small>'+esc(r.s)+'</small>':'')+'</span></div>'}

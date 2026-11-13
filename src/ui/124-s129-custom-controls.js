@@ -41,7 +41,7 @@
   const diff={};for(const i in KB)if(KB[i]!==KDEF[i])diff[i]=KB[i];LS('sq_keys',Object.keys(diff).length?diff:null);rebuild();labels();sfx('talk');draw()}
  // ---------- controller ----------
  const PA=[['R2','Hit, chop, mine, fish (hold to repeat)'],['X','Talk / use (hits if nothing is there)'],['O','Dodge roll'],['SQ','Eat / cook'],['TRI','Build a campfire'],
-  ['R1','Bow or wand (hold to repeat)'],['L1','Talk / use on release · with R1: wand ultimate'],['L2','Quests'],['L3','Sprint on / off'],['PAD','Bag'],['R3','Bag (controllers without a touchpad)'],['CREATE','Map']];
+  ['R1','Off-hand: bow or wand (hold to repeat), hoe or watering can'],['L1','Talk / use on release · with R1: wand ultimate'],['L2','Quests'],['L3','Sprint on / off'],['PAD','Bag'],['R3','Bag (controllers without a touchpad)'],['CREATE','Map']];
  const PDEF={};for(const[n]of PA)PDEF[n]=PADB[n];const OK=new Set(Object.values(PDEF));
  let PM=Object.assign({},PDEF);{const s=LS('sq_pad');if(s)for(const n in s)if(n in PDEF&&OK.has(s[n]))PM[n]=s[n];if(new Set(Object.values(PM)).size!==Object.keys(PM).length)PM=Object.assign({},PDEF)}
  const custom=()=>Object.keys(PDEF).some(n=>PM[n]!==PDEF[n]);
@@ -62,7 +62,7 @@
     if(custom()&&typeof hp!=='undefined'&&hp){const n=k=>pname(PM[k]);hp.innerHTML='<b>Controller</b> (your layout)<br>Left stick / D-pad: move · '+n('L3')+': sprint on/off<br>'+n('R2')+': sword, chop, mine, fish (hold to repeat)<br>Right stick: aim · '+n('R1')+': bow or wand<br>'+n('L1')+' + '+n('R1')+': wand ultimate<br>'+n('X')+': talk, use, read<br>'+n('O')+': dodge roll · '+n('SQ')+': eat · '+n('TRI')+': campfire · '+n('L2')+': quests<br>Options: menu · '+n('CREATE')+': map · '+n('PAD')+': bag<br>Menus: D-pad moves, ✕ picks, ○ back'}}
    else if(isPC){const L={a:kname(KB.hit),e:kname(KB.eat),f:kname(KB.fire),tk:kname(KB.talk),rl:kname(KB.roll)};for(const id in L){const el=document.getElementById(id);const sm=el&&el.querySelector('small');if(sm)sm.textContent=L[id]}
     if(typeof hp!=='undefined'&&hp&&!(typeof GPON!=='undefined'&&GPON)){const mv=[KB.mvu,KB.mvl,KB.mvd,KB.mvr].map(kname).join('');
-     hp.innerHTML='<b>Controls</b><br>'+mv+' / arrows: move · '+kname(KB.spr)+': sprint<br>'+kname(KB.hit)+': hit, chop, mine, fish<br>'+kname(KB.eat)+': eat / cook at fire<br>'+kname(KB.fire)+': build campfire<br>'+kname(KB.talk)+' or Enter: talk<br>Right-click or '+kname(KB.off)+': use off-hand (bow, wand, hoe)<br>'+
+     hp.innerHTML='<b>Controls</b><br>'+mv+' / arrows: move · '+kname(KB.spr)+': sprint<br>'+kname(KB.hit)+': hit, chop, mine, fish<br>'+kname(KB.eat)+': eat / cook at fire<br>'+kname(KB.fire)+': build campfire<br>'+kname(KB.talk)+' or Enter: talk<br>Right-click or '+kname(KB.off)+': use off-hand (bow, wand, hoe, can)<br>'+
       kname(KB.bag)+': bag · '+kname(KB.skills)+': skills · '+kname(KB.craft)+': craft · Esc: close<br>'+kname(KB.help)+': hide this help · Options > Controls: change keys'}}}catch(e){}}
  if(typeof gpLabels==='function'){const _gl=gpLabels;gpLabels=function(on){_gl.apply(this,arguments);labels()}}
  if(typeof setActionLabels==='function'){const _sl=setActionLabels;setActionLabels=function(){_sl.apply(this,arguments);labels()}}

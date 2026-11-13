@@ -148,6 +148,8 @@ ui/138-s143-world-boss-on-maps.js
 ui/139-s144-players-online.js
 items/140-s145-off-hand.js
 items/141-s146-mithril-adamant-tools.js
+multiplayer/142-s147-chess-ladder.js
+ui/143-s148-weekly-event.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

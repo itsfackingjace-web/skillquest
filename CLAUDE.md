@@ -240,3 +240,17 @@
   duration) instead of giving bonus XP. Flame Aura (`fi_aura`, 087) needs only the perk (`SQAURA`/`SQAURALIT`; 014's cave dark
   widens with it). fi_haven/fi_sacred act on all non-boss local monsters. `SELLB` (038) lists use functions where recipes grow.
 - **Graves outside entrances** (063 `grvPos`, `SQGRV.pos`): a grave whose `loc` is `in:` (dungeon, island boss lair, building; not houses) is shown, looted and mapped at its `ar/ax/ay` (the spot you come out at, +8 px) in that outdoor area. Display only, the database record is unchanged, so older graves move too. Kept inside when that spot is water on Hollow (Drowned Grotto).
+- **Weekly event** (`ui/143-s148-weekly-event.js`, `window.SQWEEK`): week = `floor((day-4)/7)` (Monday 00:00 UTC), event `EV[week % 7]`;
+  counting like 120's daily challenges (items with that skill's XP in the frame, `xpc` = XP gains of 200 or less, kills).
+  `wev/<week>/t` total (only up, +500 a write at most) and `wev/<week>/p/<uid>` {n,c}; sent every 10 s. Tiers at 1/3, 2/3, 1 of
+  `goal`, paid once each (`got`) if your count is at least `mins` (2%); last week's tiers paid at the turn. HUD pill left of 139's
+  online pill (tap = quest log), card under the daily box. Saved as `wev` {w,c,got,q}. Rules: `wev` (publish them).
+- **Chess ladder** (`multiplayer/142-s147-chess-ladder.js`, `window.SQCHR`): Elo from 1000 (K 40 for 10 games, then 24) through
+  `SQDUELEND(kind,res,foe,why)` (called from 130's win/lose/draw3); opponent rating read from `lb/<foe>.cr` at `SQPVC.begin`.
+  Unrated: < 10 plies, > 3 games against one player a day. 068 posts `cr`/`cg` and has the `cr` "Chess" category. Saved as `chr`.
+- **Party chat and shared gold** (061 + 136): chat tab `pt`; party messages are pm's starting with `[Party] ` and are logged as `pt`
+  (not pm). `SQPARTYSAY(msg)` sends; 061's block `mpSend` routes the Party tab and `/p`. Beating a monster (`enemyDrop`) with a
+  member nearby sends fx `pg` {g,p,x,y}: members within 20 steps get half (the kill's 2-6 gold counted as 4 + the drop's gold, max 100).
+- **Watering can off-hand** (140): `eq_can` slot `off` kind `can` (`TL.can`); hoe and can swap by themselves in the outermost
+  `attack` (tillable ground with the can → hoe; dry crop with the hoe → can) and on the "Buy a watering can" message;
+  `shootAim` (controller R1) uses hoe/can when that's the off-hand.

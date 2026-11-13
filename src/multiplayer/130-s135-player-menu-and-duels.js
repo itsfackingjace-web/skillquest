@@ -91,14 +91,14 @@
  function guard(onn){if(onn&&!guarded){hpv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hpv},set(v){if(D.kind==='chess'){if(v>hpv)hpv=v;return}if(D.st==='fight'&&v<=0){hpv=maxHp();lose('fell')}else hpv=v}});guarded=true}
   else if(!onn&&guarded){const v=hpv;delete P.hp;P.hp=v;guarded=false}}
  const maxHp=()=>6;// the game's health is out of 6
- function lose(why){if(D.st!=='fight')return;try{window.SQPVC&&SQPVC.over(why==='resign'?'You resigned.':'You lost.')}catch(e){}D.my.l=D.my.f;push();const n=nameOf(D.foe),lost=list(D.esc.i,D.esc.g);D.st='over';
+ function lose(why){if(D.st!=='fight')return;try{window.SQDUELEND&&SQDUELEND(D.kind,'l',D.foe,why)}catch(x){}try{window.SQPVC&&SQPVC.over(why==='resign'?'You resigned.':'You lost.')}catch(e){}D.my.l=D.my.f;push();const n=nameOf(D.foe),lost=list(D.esc.i,D.esc.g);D.st='over';
   FLASH=.5;hurt=1.2;setTimeout(()=>guard(false),0);bigSay('DEFEAT',1500);try{sfx('hurt')}catch(e){}
   const m=(D.kind==='chess'?(why==='resign'?'You resigned. '+n+' wins the game.':why==='left'?'You left the game, so '+n+' wins.':why==='time'?'You ran out of time. '+n+' wins.':'Checkmate. '+n+' won the game.'):why==='left'?'You left the duel, so '+n+' wins.':n+' won the duel.')+(lost?' You lost '+lost+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(e){}finishLater()}
- function win(why){if(D.st!=='fight')return;try{window.SQPVC&&SQPVC.over('You won!')}catch(e){}const e=D.esc;D.st='over';guard(false);
+ function win(why){if(D.st!=='fight')return;try{window.SQDUELEND&&SQDUELEND(D.kind,'w',D.foe,why)}catch(x){}try{window.SQPVC&&SQPVC.over('You won!')}catch(e){}const e=D.esc;D.st='over';guard(false);
   for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];for(const k in e.th)inv[k]=(inv[k]|0)+e.th[k];GLD+=e.g+e.tg;try{saveLocal(true)}catch(x){}try{saveCloud(true)}catch(x){}
   D.my.d=D.my.f;push();try{if(D.kind==='duel'){window.SQACH&&SQACH.add('duelw');window.SQDUELWIN&&SQDUELWIN(D.foe)}else window.SQACH&&SQACH.add('chessw')}catch(x){}const got=list(e.th,e.tg);bigSay('VICTORY!',1600);sfx('quest');try{setTimeout(()=>sfx('coin'),200)}catch(x){}
   const n=nameOf(D.foe),m=(D.kind==='chess'?(why==='mate'?'Checkmate! You beat '+n+'.':why==='resign'?n+' resigned. You win!':why==='time'?n+' ran out of time. You win!':why==='fell'?n+' resigned. You win!':why==='gone'?n+' went offline. You win!':n+' left the game. You win!'):why==='left'?n+' left the duel. You win!':why==='gone'?n+' went offline. You win!':'You beat '+n+'!')+(got?' You won '+got+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(x){}finishLater()}
- function draw3(){if(D.st!=='fight')return;try{window.SQPVC&&SQPVC.over('Draw.')}catch(e){}const e=D.esc;D.st='over';guard(false);for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];GLD+=e.g;try{saveLocal(true)}catch(x){}
+ function draw3(){if(D.st!=='fight')return;try{window.SQDUELEND&&SQDUELEND(D.kind,'d',D.foe,D.why||'')}catch(x){}try{window.SQPVC&&SQPVC.over('Draw.')}catch(e){}const e=D.esc;D.st='over';guard(false);for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];GLD+=e.g;try{saveLocal(true)}catch(x){}
   say(D.kind==='chess'?'The game is a draw'+(D.why?' ('+D.why+')':'')+'. Your stake is back in your bag.':'Time is up: the duel is a draw. Your stake is back in your bag.');msgT=5;bigSay('DRAW',1400);finishLater()}
  function finishLater(){const t=D.tid,u=me(),sn=D.s;setTimeout(()=>{if(on()&&!(D.tid===t&&D.s!==sn&&D.st!=='idle'))Fm().db.remove(ref('duels/'+t+'/'+u)).catch(()=>{})},8000);setTimeout(()=>end(null),300)}
  // anything ending before the fight gives your stake back
