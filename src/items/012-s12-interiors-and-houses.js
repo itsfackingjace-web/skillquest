@@ -50,7 +50,7 @@ function leaveScene(){const r=SCENE.ret;SCENE=null;P.x=r.x;P.y=r.y;face=[0,1];FA
 SFX.door=()=>{noise(.12,.1,700);tone(260,.1,'square',.04,-60,.04)};
 // --- collision inside rooms ---
 const _sol12=solid;solid=function(px,py){if(!SCENE)return _sol12(px,py);const R=SCENE.room,x=Math.floor(px/16),y=Math.floor(py/16);
- if(x<0||x>=R.w)return true;if(y<2)return true;if(y>=R.h)return x!==R.ex;return R.solid.has(y*R.w+x)};
+ if(x<0||x>=R.w)return true;if(y<2)return true;if(y>=R.h)return x!==R.ex&&!(R.ex%1&&(x===Math.floor(R.ex)||x===Math.ceil(R.ex)));/* a half-tile ex = a gate two tiles wide */return R.solid.has(y*R.w+x)};
 // --- furniture use (bed + chest at home) ---
 function nearFurn(){if(!SCENE)return null;let best=null,bd=26;for(const it of SCENE.room.items){if(!it.use)continue;const cx=it.x*16+8,cy=(it.y+(it.sh||1)/2)*16;const d=Math.hypot(P.x-cx,P.y-cy);if(d<bd){bd=d;best=it}}return best}
 function useFurn(it){if(!SCENE||!it)return;const h=SCENE.house;if(!h)return;

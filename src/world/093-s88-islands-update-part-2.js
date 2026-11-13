@@ -231,19 +231,30 @@ function drawCastle(b,tm){const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,S=['#5a5650
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drawCastle({w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}_dh()}}
 // the great hall
 {const _rb=ROOMBG;ROOMBG=(R,W2,H2)=>{if(!R.castle)return _rb(R,W2,H2);const S=['#6a645a','#7a746a','#8a8478','#9a9488'];Rg(-5,-5,W2+10,H2+10,'#141016');
-  for(let y=2;y<R.h;y++)for(let x=0;x<R.w;x++){const v=(x*7+y*13)%4;Rg(x*16,y*16,16,16,S[1+((x+y)&1)]);Rg(x*16,y*16,16,1,S[3]);Rg(x*16,y*16,1,16,S[3]);Rg(x*16+15,y*16,1,16,S[0]);Rg(x*16,y*16+15,16,1,S[0]);if(v===0)Rg(x*16+5,y*16+6,3,2,S[0])}
+  // (mirrored left to right: the marks in the stone use the distance from the nearer side wall)
+  for(let y=2;y<R.h;y++)for(let x=0;x<R.w;x++){const mx=Math.min(x,R.w-1-x),v=(mx*7+y*13)%4;Rg(x*16,y*16,16,16,S[1+((x+y)&1)]);Rg(x*16,y*16,16,1,S[3]);Rg(x*16,y*16,1,16,S[3]);Rg(x*16+15,y*16,1,16,S[0]);Rg(x*16,y*16+15,16,1,S[0]);if(v===0)Rg(x<R.w/2?x*16+5:x*16+8,y*16+6,3,2,S[0])}
   // the wall: big stone blocks, a dark trim and a frieze
-  Rg(0,0,W2,32,'#8a8274');for(let y=0;y<30;y+=8)for(let x=((y/8)&1)*12;x<W2;x+=24){Rg(x,y,23,7,'#9a9284');Rg(x,y,23,1,'#b2aa9a');Rg(x,y+7,24,1,'#5e584e')}Rg(0,0,W2,3,'#4a443c');Rg(0,28,W2,4,'#4a443c');Rg(0,32,W2,2,'rgba(0,0,0,.25)');
+  Rg(0,0,W2,32,'#8a8274');{const c0=W2/2;for(let y=0;y<30;y+=8)for(let x=c0-((y/8)&1?12:0)-24*Math.ceil(c0/24);x<W2;x+=24){const a=Math.max(0,x),b=Math.min(W2,x+23);if(b<=a)continue;Rg(a,y,b-a,7,'#9a9284');Rg(a,y,b-a,1,'#b2aa9a');Rg(a,y+7,Math.min(W2,x+24)-a,1,'#5e584e')}}Rg(0,0,W2,3,'#4a443c');Rg(0,28,W2,4,'#4a443c');Rg(0,32,W2,2,'rgba(0,0,0,.25)');
   // a red carpet from the door to the throne
-  const cx=R.ex*16;Rg(cx-8,48,32,H2-48,'#8a1c22');Rg(cx-6,48,28,H2-48,'#c0303a');Rg(cx-6,48,2,H2-48,'#e8b830');Rg(cx+20,48,2,H2-48,'#e8b830');
-  Rg(R.ex*16,H2-1,16,6,S[1]);Rg(R.ex*16+2,H2-7,12,7,'#c04030')}}
+  const cx=R.w*8;Rg(cx-16,48,32,H2-48,'#8a1c22');Rg(cx-14,48,28,H2-48,'#c0303a');Rg(cx-14,48,2,H2-48,'#e8b830');Rg(cx+12,48,2,H2-48,'#e8b830');
+  // the gate: two tiles wide in the middle of the south wall
+  Rg(cx-16,H2-1,32,6,S[1]);Rg(cx-14,H2-7,28,7,'#c04030');Rg(cx-12,H2-5,24,1,'#e88868')}}
 {const _df=drawFurn;drawFurn=function(it,tm){if(!it||typeof it.t!=='string'||!/^c_|^ic_|^icvdoor$/.test(it.t))return _df(it,tm);const x=it.x*16,y=it.y*16,K='#181018';
   if(it.t==='c_banner'){Rg(x+3,y+4,10,22,K);Rg(x+4,y+5,8,19,'#c83040');Rg(x+4,y+5,8,2,'#e8b830');Rg(x+6,y+10,4,4,'#e8b830');Rg(x+7,y+11,2,2,'#c83040');Rg(x+4,y+24,2,2,'#c83040');Rg(x+10,y+24,2,2,'#c83040');return}
   if(it.t==='c_window'){Rg(x+2,y+5,12,20,K);Rg(x+3,y+6,10,18,'#3a5a8a');Rg(x+3,y+6,10,3,'#5a8ac8');Rg(x+7,y+6,2,18,K);Rg(x+3,y+14,10,1,K);return}
   if(it.t==='c_torch'){Rg(x+6,y+14,4,10,K);Rg(x+7,y+15,2,8,'#7a5030');const f=Math.sin(tm*12+x)*1;Rg(x+5,y+8+f*.4,6,7,'#f8901c');Rg(x+6,y+6+f,4,6,'#ffc040');Rg(x+7,y+8+f,2,3,'#fff0a0');
    g.fillStyle='rgba(255,200,90,'+(.15+.05*Math.sin(tm*9+x))+')';g.beginPath();g.arc(x+8,y+12,22,0,6.283);g.fill();return}
   if(it.t==='c_pillar'){Rg(x+1,y-20,14,36,K);Rg(x+2,y-19,12,34,'#a49c90');Rg(x+2,y-19,3,34,'#bcb4a6');Rg(x+11,y-19,3,34,'#7a746a');Rg(x,y-22,16,4,K);Rg(x+1,y-21,14,2,'#bcb4a6');Rg(x,y+12,16,4,K);Rg(x+1,y+13,14,2,'#8a847a');return}
-  if(it.t==='c_throne'){Rg(x+4,y-14,24,30,K);Rg(x+5,y-13,22,28,'#e8b830');Rg(x+8,y-10,16,14,'#c0303a');Rg(x+5,y-13,22,2,'#f8e070');Rg(x+3,y+4,26,10,K);Rg(x+4,y+5,24,8,'#c89020');Rg(x+8,y+5,16,5,'#c0303a');for(const k of[6,15,24])Rg(x+k,y-17,3,4,'#e8b830');return}
+  // the throne (2 tiles wide): a stone dais with two steps, a tall gilded back with red velvet and a crest, padded seat
+  // and armrests; every part is mirrored around its middle (cx)
+  if(it.t==='c_throne'){const cx=x+16,G='#e8b830',GL='#f8e070',GD='#b88a20',RD='#b02838',RL='#d84858',RK='#801828',ST='#9a9488',SL='#b8b2a4',SD='#6a645a';
+   Rg(cx-23,y+9,46,10,K);Rg(cx-22,y+10,44,8,ST);Rg(cx-22,y+10,44,1,SL);Rg(cx-22,y+17,44,1,SD);Rg(cx-17,y+5,34,6,K);Rg(cx-16,y+6,32,4,ST);Rg(cx-16,y+6,32,1,SL);
+   Rg(cx-6,y+11,12,7,RK);Rg(cx-5,y+11,10,7,RD);Rg(cx-5,y+11,10,1,RL);// a strip of the carpet up the steps
+   Rg(cx-12,y-19,24,26,K);Rg(cx-11,y-18,22,24,GD);Rg(cx-10,y-17,20,22,G);Rg(cx-10,y-17,20,1,GL);Rg(cx-7,y-14,14,17,RK);Rg(cx-6,y-13,12,15,RD);Rg(cx-6,y-13,2,15,RL);Rg(cx+4,y-13,2,15,RK);
+   Rg(cx-1,y-11,2,1,GL);Rg(cx-2,y-10,4,1,G);Rg(cx-3,y-9,6,2,G);Rg(cx-2,y-7,4,1,G);Rg(cx-1,y-6,2,1,GD);
+   Rg(cx-7,y-24,3,6,K);Rg(cx+4,y-24,3,6,K);Rg(cx-2,y-27,4,9,K);Rg(cx-6,y-23,1,5,G);Rg(cx+5,y-23,1,5,G);Rg(cx-1,y-26,2,8,G);Rg(cx-1,y-22,2,2,'#58c8f8');Rg(cx-7,y-20,14,2,G);
+   for(const sd of[-1,1]){const ax=sd<0?cx-16:cx+11;Rg(ax,y-4,5,13,K);Rg(ax+1,y-3,3,11,GD);Rg(ax+1,y-3,3,1,GL);Rg(ax-1,y-6,7,3,K);Rg(ax,y-5,5,1,G)}
+   Rg(cx-13,y+1,26,9,K);Rg(cx-12,y+2,24,7,GD);Rg(cx-10,y+2,20,4,RD);Rg(cx-10,y+2,20,1,RL);Rg(cx-12,y+8,24,1,G);return}
   if(it.t==='ic_beam'){Rg(x+1,y-18,14,34,K);Rg(x+2,y-17,3,32,'#8a5a30');Rg(x+11,y-17,3,32,'#8a5a30');Rg(x+2,y-17,12,4,'#a06a38');Rg(x+3,y-16,10,1,'#c08848');Rg(x+7,y-13,2,2,'#f8c860');return}
   if(it.t==='ic_cart'){Rg(x,y+2,16,11,K);Rg(x+1,y+3,14,8,'#6a5040');Rg(x+1,y+3,14,2,'#8a6a50');Rg(x+3,y+1,4,3,'#8a8a98');Rg(x+8,y,5,4,'#e8b830');Rg(x+2,y+11,4,4,K);Rg(x+10,y+11,4,4,K);return}
   if(it.t==='icvdoor'){const I=ICV[it.kind]||{},mine=I.mine;

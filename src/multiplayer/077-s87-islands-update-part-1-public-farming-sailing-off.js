@@ -115,14 +115,16 @@ const CASTLE_W=22,CASTLE_H=14;
 BK.push('castle');BHP.castle=20;INVK.push('castle');INAME.castle='Castle';SELLP.castle=4000;SN.castle='Castles';if(typeof SHORT!=='undefined')SHORT.castle='castle';
 IDESC.castle='A royal castle! Place it like a house, on any island: inside is a great hall to decorate. Its torches keep monsters away and heal you, like a giant campfire.';
 if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push('castle');
-ROOMS.castle={w:CASTLE_W,h:CASTLE_H,ex:11,castle:1,floor:['#8a8478','#7e786c'],wall:'#9a9284',trim:'#4a443c',items:[
+// the gate is in the middle of the 22-wide hall: ex 10.5 puts you (and the way out) on the centre line between tiles 10
+// and 11; the width stays 22 because furniture is saved by tile number (y*w+x)
+ROOMS.castle={w:CASTLE_W,h:CASTLE_H,ex:10.5,castle:1,floor:['#8a8478','#7e786c'],wall:'#9a9284',trim:'#4a443c',items:[
  {t:'c_banner',x:3,y:0},{t:'c_torch',x:6,y:0},{t:'c_window',x:9,y:0},{t:'c_window',x:12,y:0},{t:'c_torch',x:15,y:0},{t:'c_banner',x:18,y:0},
  {t:'c_pillar',x:4,y:4,sh:1,solid:1},{t:'c_pillar',x:17,y:4,sh:1,solid:1},{t:'c_pillar',x:4,y:9,sh:1,solid:1},{t:'c_pillar',x:17,y:9,sh:1,solid:1},
  {t:'c_throne',x:10,y:2,w:2,solid:1}],solid:new Set()};
 {const R=ROOMS.castle;for(const it of R.items)if(it.solid)for(let dy=0;dy<(it.sh||1);dy++)for(let dx=0;dx<(it.w||1);dx++)R.solid.add((it.y+dy)*R.w+it.x+dx)}
 // going in: the castle hall instead of the house room (it is still "home", so furniture and beds work the same)
 {const _es=enterScene;enterScene=function(id,house,ret){if(id==='home'&&house&&house.castle){_es('castle',house,ret);if(SCENE&&SCENE.room===ROOMS.castle)SCENE.id='home';return}return _es(id,house,ret)}}
-{const _cp=canPlaceIn;canPlaceIn=function(x,y){if(SCENE&&SCENE.room&&SCENE.room.castle&&SCENE.room.solid.has(y*SCENE.room.w+x))return false;return _cp(x,y)}}
+{const _cp=canPlaceIn;canPlaceIn=function(x,y){const R=SCENE&&SCENE.room;if(R&&R.castle&&(R.solid.has(y*R.w+x)||(y>=R.h-1&&Math.abs(x+.5-(R.ex+.5))<1.01)))return false;return _cp(x,y)}}
 // placing
 const castleIn=()=>{const R=rbR();return R?rhHere().concat(rhForeign(R.region)):(!SCENE?HOUSES:[])};
 {const _sb=startBuild;startBuild=function(k){if(k!=='castle')return _sb(k);if((inv.castle|0)<1)return;if(SCENE&&!rbR()){say('Go outside to build.');closePanel();return}
