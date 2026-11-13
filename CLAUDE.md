@@ -369,4 +369,18 @@
   while playing (requested on input / return to the tab). `body.sqibf` hides 071's `#wbb` banner in island boss lairs.
   Also: 004's crafting header uses `tierName(k)` (tiers past `TIT`, e.g. the Crystal sword); 005's sell list falls back to
   `INAME` (133 gives craft outputs a `SELLP` without an `SN`); 071's island lair search requires `R.reach` over the boss's path.
+- **Controller cards** (`ui/158-s164-controller-cards.js`): the outermost `navMove` measures to the nearest edge (gap in the
+  direction + side gap ×3 + centre offset ×.15) so wide buttons are reachable; the thing a `[role=dialog]` card was opened from
+  (`data-k`/`data-a`) gets the highlight back when the card closes (checked every 60 ms).
+- **Ult picker** (`combat/159-s165-ult-picker.js`, `SQULT`): `avail()` = slam (`SLEDGE`), dragon (`SQJW.neck==='ja_dsoul'`), wand
+  (`WAND`); the gear tab (`equipHTML`, `data-ultp`) picks one, saved as `ultp`. The outermost `castUlt` hides the others
+  (SLEDGE / SQJW.neck / WAND) for the call and puts them back. A new ultimate source must be added to `avail()` and hidden there.
+- **Monster attacks** (`dev/160-s166-monster-attacks.js`, `SQMOBATK`): `SHOOT` = types that put hostile shots in 021's `PROJ`
+  (skel, bonelord, guard, tidek). `PROJ.push` tags each hostile shot with the nearest monster (`p._mk`, look key `p._jk` =
+  `j:<key>`, `n._shotAt`); `mobs.<key>.pj` = {rate %, dmg hearts, fx:{slow|burn|freeze|poison:[chance %, s]}} (Dev Suite >
+  Monsters > "Its shots", 111b `mrShots`); the outermost `drawProj` draws `props['j:...']` turned the way it flies; status
+  timers in the outermost `upd`. 111d lists `j:` looks for shooters (captured from `drawProj`). Look frames: `af` = last N frames
+  are the attack animation (111d `mobDraw`: within 20 px, 450 ms after a shot, or `n.cast`; `ak` = old one-frame form).
+  Pets: the pet editor has Attack 1/2 frames (`k`/`l`), used by the Imp while it fights (111a `impPaint`).
+  Bandits, cacti and Dev Suite bosses shoot through their own lists and aren't covered yet.
 

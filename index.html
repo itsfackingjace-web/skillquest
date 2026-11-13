@@ -9380,6 +9380,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-16',d:'Nov 13, 2026',t:'Pick your ultimate, and smoother controllers in chests',n:['Pick your ultimate: if your gear gives more than one (a Stone Sledgehammer, a wand, the Dragonsoul amulet), choose which one the ULT button uses in the Gear tab, under ULTIMATE.','Controllers: in a chest or bag, the d-pad now reaches every button on an item card (including the wide "Take all"/"Put in all" button), and ○ closes the card with the highlight back on the same item instead of jumping to the first one.','Monsters that shoot can now have their own look, attack speed, extra damage and status effects (slowed, burning, frozen or poisoned) set by the developer, so watch out for new tricks.']},
  {v:'2026.11.13-15',d:'Nov 13, 2026',t:'Fixes from your bug reports',n:['Fixed: furniture placed in front of a house\'s back door could trap you when you came back in from the backyard. That spot is now kept clear, anything already there is moved aside, and if you ever end up inside furniture you step out of it.','Fixed: the general store showed "undefined" next to some items you could sell.','Fixed: the crafting screen showed "Sword: undefined" while holding the Crystal Sword.','Phones now stay awake while you play, so the screen no longer dims and locks while you fish or cook.','During an island boss fight the world boss banner gets out of the way, so you can see the island boss\'s health bar.','World bosses on the other islands now always appear on open ground you can walk to (the Ancient Dragon could end up over spots you couldn\'t reach).']},
  {v:'2026.11.13-14',d:'Nov 13, 2026',t:'Beetles come back up, and no more top price on the World Market',n:['Fixed: beetles that burrowed into the ground never came back out (they got stuck out of sight). Now they burst out of the sand next to you again, everywhere they live.','World Market: there is no maximum price any more. Ask whatever you think something is worth; if it\'s too much, nobody will buy it. The minimum price stays.']},
  {v:'2026.11.13-13',d:'Nov 13, 2026',t:'No more surprise trips back to spawn',n:['Fixed: logging in could put you back at the spawn point (for example after fishing on Gull Rock). It happened when you had saved standing where a rock or tree used to be and it had grown back. Now you\'re placed right next to where you left off.']},
@@ -12939,11 +12940,11 @@ var SQA=(()=>{
  // the Imp (it fights, so it isn't a follower): 085 asks window.SQIMPSP(frame, 'n'|'s'|'e'|'w', attacking) for a 24 x 27
  // picture (feet at 12,22) and keeps each one for good, so the canvases handed out here are kept and repainted in place
  // whenever the library changes (back to the game's own picture when there is no look). Walking frames b/d, the attack
- // pose d (else b); drawn facing right, mirrored when it goes west.
+ // pose: its Attack frames k/l if drawn (else d, else b); drawn facing right, mirrored when it goes west.
  const IMPK=new Map(),_isp=window.SQIMPSP;
  function impPaint(c,fr,d,a){const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.imageSmoothingEnabled=false;const L=PETL.imp;
   if(!L){const o=_isp&&_isp(fr,d,a);if(o){c.width=o.width;c.height=o.height;x.drawImage(o,0,0)}return}
-  const ok=f=>L[f]&&valid(L[f]),f=a?(ok('d')?'d':'b'):fr%2?(ok('d')?'d':ok('b')?'b':'a'):(ok('b')?'b':'a'),sp=ok(f)?L[f]:L.a;if(!sp)return;const im=render(sp);
+  const ok=f=>L[f]&&valid(L[f]),f=a&&ok('k')?(fr%2&&ok('l')?'l':'k'):a?(ok('d')?'d':'b'):fr%2?(ok('d')?'d':ok('b')?'b':'a'):(ok('b')?'b':'a'),sp=ok(f)?L[f]:L.a;if(!sp)return;const im=render(sp);
   c.width=24;c.height=27;x.imageSmoothingEnabled=false;if(d==='w'){x.translate(24,0);x.scale(-1,1)}x.drawImage(im,12+L.ox,22+L.oy,im.width/2,im.height/2)}
  function impRepaint(){for(const[k,c]of IMPK){const[fr,d,a]=k.split('|');impPaint(c,+fr,d,a==='1')}}
  if(_isp)window.SQIMPSP=(fr,d,a)=>{if(!PETL.imp)return _isp(fr,d,a);const k=fr+'|'+d+'|'+(a?1:0);let c=IMPK.get(k);if(!c){c=document.createElement('canvas');IMPK.set(k,c)}impPaint(c,fr,d,a);return c};
@@ -13311,20 +13312,20 @@ window.SQA=SQA;
   try{await dset('draft/worn/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this item keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const b=it.querySelector('.dv-bd'),s2=wState(ed.k);if(b)b.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
  // ---- pet looks: a standing and a walking frame, drawn facing right ----
- const PFN=['Standing 1','Standing 2','Walking 1','Walking 2'],PF=['a','c','b','d'];
+ const PFN=['Standing 1','Standing 2','Walking 1','Walking 2','Attack 1','Attack 2'],PF=['a','c','b','d','k','l'];// attack frames: used while a pet fights (the Imp)
  const pState=k=>{const d=S.draft&&S.draft.pets&&S.draft.pets[k],l=S.live&&S.live.pets&&S.live.pets[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
  async function openPet(item,fresh){const k=EQ[item].pet;S.sel=item;S.ed=null;draw();const L=!fresh&&S.draft.pets[k];let ed;
-  try{if(L&&A.validPet(L)){const pal=[],N=L.w*L.h,layers=[0,1,2,3].map(()=>new Uint8Array(N).fill(255));
-    for(let d=0;d<4;d++){const sp=L[PF[d]];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});const dd=A.pix(sp);for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')layers[d][i]=map[PXC.indexOf(ch)]}}
+  try{if(L&&A.validPet(L)){const pal=[],N=L.w*L.h,layers=PF.map(()=>new Uint8Array(N).fill(255));
+    for(let d=0;d<PF.length;d++){const sp=L[PF[d]];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});const dd=A.pix(sp);for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')layers[d][i]=map[PXC.indexOf(ch)]}}
     // an older look (one standing and one walking frame) walked between them: fill the new frames to match
     if(!L.c)layers[1].set(layers[0]);if(!L.d)layers[3].set(layers[0]);
     ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers}}
-   else{const cap=A.capturePet(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px,b.px.slice(),b.px.slice(),b.px.slice()]}}
-    else ed={w:16,h:16,s:2,ox:-8,oy:-9,pal:[],layers:[0,1,2,3].map(()=>new Uint8Array(256).fill(255))}}}
+   else{const cap=A.capturePet(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px,b.px.slice(),b.px.slice(),b.px.slice(),new Uint8Array(b.px.length).fill(255),new Uint8Array(b.px.length).fill(255)]}}
+    else ed={w:16,h:16,s:2,ox:-8,oy:-9,pal:[],layers:PF.map(()=>new Uint8Array(256).fill(255))}}}
   catch(e){console.warn(e);toast('Could not read that pet.');return}
   if(S.sel!==item)return;if(!ed.pal.length)ed.pal.push('#181018','#7a5a3a','#c89858','#f8e8c8');
-  S.ed={...ed,kind:'pet',k,item,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:[null,null,null,null],rcd:[1,1,1,1]};draw()}
- function petOut(ed){const o={w:ed.w,h:ed.h,s:ed.s,ox:ed.ox,oy:ed.oy};let any=false;for(let d=0;d<4;d++){const px=ed.layers[d];if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[PF[d]]={w:sp.w,h:sp.h,s:sp.s,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
+  S.ed={...ed,kind:'pet',k,item,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:PF.map(()=>null),rcd:PF.map(()=>1)};draw()}
+ function petOut(ed){const o={w:ed.w,h:ed.h,s:ed.s,ox:ed.ox,oy:ed.oy};let any=false;for(let d=0;d<PF.length;d++){const px=ed.layers[d];if(!px)continue;if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[PF[d]]={w:sp.w,h:sp.h,s:sp.s,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
  async function savePet(){const ed=S.ed;if(!ed)return;const o=petOut(ed);if(o)S.draft.pets[ed.k]=o;else delete S.draft.pets[ed.k];
   try{await dset('draft/pets/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this pet keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.item+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=pState(ed.k);if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
@@ -13357,7 +13358,7 @@ window.SQA=SQA;
   try{if(L&&PR().valid(L)){const pal=[],N=L.w*L.h,n=PR().frames(L),layers=[];
     for(let f=0;f<n;f++){const sp=PR().frSp(L,f),map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)}),dd=A.pix(sp),px=new Uint8Array(N).fill(255);
      for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')px[i]=map[PXC.indexOf(ch)]}layers.push(px)}
-    ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers,ms:L.ms|0||250,sy:!!L.sy,ak:!!L.ak,fw:!!L.fw}}
+    ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers,ms:L.ms|0||250,sy:!!L.sy,ak:!!L.ak,af:L.af!=null?Math.max(0,L.af|0):(L.ak?1:0),fw:!!L.fw}}
    else{const cap=PR().capture(k,night)||(k==='f:door:o'?PR().capture('f:door:c',night):null);if(cap){const b=await bake(cap.url),n=cap.n|0||1;if(n>1){const fw=b.w/n,layers=[];for(let f=0;f<n;f++){const px=new Uint8Array(fw*b.h);for(let y=0;y<b.h;y++)for(let x=0;x<fw;x++)px[y*fw+x]=b.px[y*b.w+f*fw+x];layers.push(px)}ed={w:fw,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers,ms:250}}else ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px]}}
     else ed=/^x:/.test(k)?{w:32,h:32,s:1,ox:0,oy:0,pal:[],layers:[new Uint8Array(1024).fill(255)]}:{w:32,h:32,s:2,ox:-8,oy:-16,pal:[],layers:[new Uint8Array(1024).fill(255)]}}}
   catch(e){console.warn(e);toast('Could not read that prop.');return}
@@ -13368,7 +13369,7 @@ window.SQA=SQA;
   else{if(ed.layers.length<2)return;ed.layers.splice(ed.dir,1);ed.dir=Math.min(ed.dir,ed.layers.length-1)}
   ed.px=ed.layers[ed.dir];ed.rc=ed.layers.map(()=>null);ed.rcd=ed.layers.map(()=>1);ed.undo=[];ed.redo=[];ed.dirty=true;draw()}
  function propOut(ed){if(!ed.layers.some(L=>L.some(v=>v!==255)))return null;const sp=toSpPx(ed,ed.layers[0]),o={w:sp.w,h:sp.h,s:sp.s,ox:ed.ox,oy:ed.oy,p:sp.p,r:A.pack(sp.d)};
-  if(ed.layers.length>1){o.fr=ed.layers.slice(1).map(L=>{const f=toSpPx(ed,L);return{p:f.p,r:A.pack(f.d)}});o.ms=Math.max(60,Math.min(5000,ed.ms|0||250));if(ed.sy)o.sy=1;if(ed.ak)o.ak=1}if(ed.fw)o.fw=1;return o}
+  if(ed.layers.length>1){o.fr=ed.layers.slice(1).map(L=>{const f=toSpPx(ed,L);return{p:f.p,r:A.pack(f.d)}});o.ms=Math.max(60,Math.min(5000,ed.ms|0||250));if(ed.sy)o.sy=1;const af=Math.min(ed.layers.length-1,ed.af|0);if(af>0){o.af=af;if(af===1)o.ak=1}}if(ed.fw)o.fw=1;return o}
  async function saveProp(){const ed=S.ed;if(!ed)return;const o=propOut(ed);if(o)S.draft.props[ed.k]=o;else delete S.draft.props[ed.k];
   try{await dset('draft/props/'+key(ed.k),o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.base+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.base),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.base)}}
@@ -13382,6 +13383,16 @@ window.SQA=SQA;
    '<label class="dv-mut">from <input type="number" data-mr="dn'+i+'" min="1" max="1000" value="'+(d.n||1)+'" style="width:60px"></label><label class="dv-mut">to <input type="number" data-mr="dx'+i+'" min="1" max="1000" value="'+(d.x||d.n||1)+'" style="width:60px"></label>'+
    '<label class="dv-mut">chance % <input type="number" data-mr="dc'+i+'" min="0" max="100" step="0.1" value="'+(d.c!=null?d.c:100)+'" style="width:64px"></label></div>'}
   return h+(rows<MRN?'<p class="dv-mut" style="margin:4px 0">Save to get another empty row.</p>':'')+'<label class="dv-mut" style="display:block;margin-top:6px"><input type="checkbox" data-mr="rep"'+(r.rep?' checked':'')+'> Instead of the game\'s own drops (the items and golden chest it gives when beaten). XP, quest progress and the few coins any kill gives stay.</label></div>'}
+ // its shots (monsters that shoot, 160): attack rate, extra damage, status effects, and a link to the projectile's look
+ function mrShots(k,r){const MA=window.SQMOBATK;if(!MA||!MA.shoots(k))return'';const j=r.pj||{},fx=j.fx||{},jk='j:'+k.slice(2);
+  const FXN={slow:'Slow (half speed)',burn:'Burn (1 heart / 1.5 s)',freeze:'Freeze (can\'t move)',poison:'Poison (1 heart / 3 s)'};
+  let h='<div class="dv-card" style="margin:8px 0"><b>Its shots</b> <span class="dv-mut">(this monster shoots)</span><div class="dv-row" style="flex-wrap:wrap;margin-top:6px">'+
+   '<label class="dv-mut">Attack rate %<br><input type="number" data-mr="pjr" min="10" max="1000" value="'+(j.rate||100)+'" style="width:80px"></label>'+
+   '<label class="dv-mut">Extra damage (hearts)<br><input type="number" data-mr="pjd" min="0" max="10" value="'+(j.dmg|0)+'" style="width:80px"></label>'+
+   '<button class="dv-b" data-k="'+E(jk)+'" style="align-self:flex-end">Edit how its shots look</button></div>'+
+   '<p class="dv-mut" style="margin:6px 0 2px">Status effects when a shot hits you:</p>';
+  for(const f of MA.FX){const e=fx[f]||[0,3];h+='<div class="dv-row" style="flex-wrap:wrap"><span class="dv-mut" style="min-width:170px">'+FXN[f]+'</span><label class="dv-mut">chance % <input type="number" data-mr="fx_'+f+'_c" min="0" max="100" value="'+(e[0]||0)+'" style="width:64px"></label><label class="dv-mut">seconds <input type="number" data-mr="fx_'+f+'_t" min="0.5" max="30" step="0.5" value="'+(e[1]||3)+'" style="width:64px"></label></div>'}
+  return h+'<p class="dv-mut" style="margin:4px 0 0">Shots are drawn facing right and turn the way they fly. Rate 200% = twice as often.</p></div>'}
  // a monster's rules: health and speed in % of the game's own, extra gold, drops
  function mobRules(k){const r=S.draft.mobs[k]||{},M=window.SQISLIFE&&SQISLIFE.MOBS&&SQISLIFE.MOBS[k.slice(2)],items=Object.keys(INAME).sort((a,b)=>INAME[a].localeCompare(INAME[b]));
   return'<div class="dv-card" style="margin:8px 0"><b>How tough it is</b>'+(M?' <span class="dv-mut">(the game gives it '+M.hp+' health where it lives)</span>':'')+'<div class="dv-row" style="flex-wrap:wrap;margin-top:6px">'+
@@ -13389,7 +13400,7 @@ window.SQA=SQA;
    '<label class="dv-mut">Speed %<br><input type="number" data-mr="spd" min="10" max="400" value="'+(r.spd||100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Damage %<br><input type="number" data-mr="dmg" min="0" max="1000" value="'+(r.dmg!=null?r.dmg:100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Extra gold<br><input type="number" data-mr="gold" min="0" max="100000" value="'+(r.gold||0)+'" style="width:90px"></label>'+
-   '</div>'+mrDrops(r,items)+
+   '</div>'+mrDrops(r,items)+mrShots(k,r)+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="mrsave">Save rules to draft</button><button class="dv-b dv-bad" data-a="mrclear">Use the game\'s own rules</button><span class="dv-mut">100% = unchanged.</span></div></div>'}
  const HINT=k=>/^f:.*:[ewns]$/.test(k)?'This is the part drawn towards a neighbouring piece on that side, on top of the post or block (draw only what joins them; the editor starts from what the game adds there). Draw the post too, or the game keeps drawing its own fence.':
   /^f:/.test(k)?'A fence or wall piece is built from this post or block plus a part for each side that has another piece next to it.':/^x:/.test(k)?'What players see on the spot while it grows back (the game normally shows nothing). The picture starts one tile big at the tile it stood on.':
@@ -13412,7 +13423,7 @@ window.SQA=SQA;
    (ed.layers.length>1?'<div class="dv-row"><span class="dv-mut">Each frame shows for</span><input type="number" data-in="pms" min="60" max="5000" step="10" value="'+ed.ms+'" style="width:90px"><span class="dv-mut">ms ('+(1000/ed.ms).toFixed(1)+' frames a second)</span>'+
     '<label class="dv-chk"><input type="checkbox" data-a="psy"'+(ed.sy?' checked':'')+'> All of them move together</label><span class="dv-mut">'+(ed.sy?'':'(otherwise each one starts at its own point, so they don\'t sway in step)')+'</span></div>'+
     '<div class="dv-row"><span class="dv-mut">Copy into this frame from:</span>'+ed.layers.map((L,d)=>d===ed.dir?'':'<button class="dv-b" data-copy="'+d+'">Frame '+(d+1)+'</button>').join('')+'</div>':'')+
-   (/^m:/.test(ed.base)?'<div class="dv-row"><label class="dv-chk"><input type="checkbox" data-a="pak"'+(ed.ak?' checked':'')+(ed.layers.length<2?' disabled':'')+'> Last frame is its attack pose</label><span class="dv-mut">'+(ed.layers.length<2?'(add a frame first)':'shown while it\'s right next to you')+'</span><label class="dv-chk"><input type="checkbox" data-a="pfw"'+(ed.fw?' checked':'')+'> Faces the way it walks</label><span class="dv-mut">(otherwise it turns to face you)</span></div>':'')+
+   (/^m:/.test(ed.base)?'<div class="dv-row"><label class="dv-mut">Attack frames <input type="number" data-in="paf" min="0" max="'+Math.max(0,ed.layers.length-1)+'" value="'+(ed.af|0)+'" style="width:56px"'+(ed.layers.length<2?' disabled':'')+'></label><span class="dv-mut">'+(ed.layers.length<2?'(add frames first)':'the last frames, played while it attacks (right next to you, or just after it shoots)')+'</span><label class="dv-chk"><input type="checkbox" data-a="pfw"'+(ed.fw?' checked':'')+'> Faces the way it walks</label><span class="dv-mut">(otherwise it turns to face you)</span></div>':'')+
    '<div class="dv-row dv-tools"></div><div class="dv-cv dv-cvw'+(ed.tool==='pan'?' dv-pan':'')+'"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw"><canvas id="dvwalk" width="480" height="240" style="width:min(480px,100%);height:auto"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><span class="dv-mut">Canvas</span><input type="number" data-in="pw" min="4" max="320" value="'+ed.w+'" style="width:70px"> × <input type="number" data-in="ph" min="4" max="320" value="'+ed.h+'" style="width:70px"><button class="dv-b" data-a="presize">Resize</button><span class="dv-mut">keeps the bottom in place</span></div>'+
@@ -13426,7 +13437,7 @@ window.SQA=SQA;
   if(!PRV[ed.k]){PRV[ed.k]='…';const cap=PR().capture(ed.base,ed.night);if(cap){const im=new Image();im.onload=()=>{const n=cap.n|0||1,fr=[];if(n>1)for(let j=0;j<n;j++){const c2=document.createElement('canvas');c2.width=im.width/n;c2.height=im.height;c2.getContext('2d').drawImage(im,-j*c2.width,0);fr.push(c2)}PRV[ed.k]={im:n>1?fr[0]:im,fr:n>1?fr:null,ox:cap.ox,oy:cap.oy}};im.src=cap.url}else PRV[ed.k]=null}
   const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<60;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
   const O=PRV[ed.k]&&PRV[ed.k].im?PRV[ed.k]:null;if(O&&O.fr)O.im=O.fr[Math.floor(performance.now()/250)%O.fr.length];
-  const wn=ed.ak&&nf>1?nf-1:nf,L=(ed.ak&&nf>1?ed.rc[Math.floor(performance.now()/Math.max(60,ed.ms||250))%(wn+2)>=wn?nf-1:Math.floor(performance.now()/Math.max(60,ed.ms||250))%wn]:ed.rc[fi])||ed.rc[0],me=charCan(0,0,false);
+  const af=Math.min(nf-1,ed.af|0),wn=nf-af,tk=Math.floor(performance.now()/Math.max(60,ed.ms||250)),L=(af>0?ed.rc[tk%(wn+af*2)>=wn?wn+(tk%af):tk%wn]:ed.rc[fi])||ed.rc[0],me=charCan(0,0,false);
   // fit: world px -> canvas px
   const bw=Math.max(O?O.im.width/2:0,L?L.width/2:0,24),bh=Math.max(O?O.im.height/2:0,L?L.height/2:0,32),k=Math.max(.5,Math.min(3,Math.min((c.width/2-30)/bw,(c.height-30)/bh)));
   x.fillStyle='rgba(0,0,0,.35)';x.font='600 12px system-ui';x.fillText('Now',8,16);x.fillText('New',c.width/2+8,16);x.fillRect(c.width/2,0,1,c.height);
@@ -13437,7 +13448,7 @@ window.SQA=SQA;
  // walking preview in all four directions
  let walkT=0;setInterval(()=>{const c=document.getElementById('dvwalk'),ed=S.ed;if(!S.open||!c||!ed||!LAY(ed.kind))return;walkT++;
   if(ed.kind==='prop'){propPreview(c,ed);return}
-  if(ed.kind==='pet'){for(let d=0;d<4;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
+  if(ed.kind==='pet'){for(let d=0;d<ed.layers.length;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
    const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<40;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
    const S2=3,ph=walkT%60,goR=ph<30,px=goR?60+ph*10:340-(ph-30)*10,py=86,f=(walkT%2)&&(ph%30<28)?3:2,L=ed.rc[f]||ed.rc[2]||ed.rc[0];
    const still=(Math.floor(walkT/3)%2&&ed.rc[1])||ed.rc[0];if(still){x.drawImage(still,20,py+ed.oy*S2,still.width/2*S2,still.height/2*S2)}
@@ -13744,7 +13755,10 @@ window.SQA=SQA;
   if(a==='pak'&&S.ed){S.ed.ak=t.checked;S.ed.dirty=true;draw();return}if(a==='pfw'&&S.ed){S.ed.fw=t.checked;S.ed.dirty=true;draw();return}
   if((a==='mrsave'||a==='mrclear')&&S.ed){const k=S.ed.base;let r=null;if(a==='mrsave'){const v=f=>{const i=root.querySelector('[data-mr="'+f+'"]');return i?i.value:''};r={hp:Math.max(10,Math.min(1000,+v('hp')||100)),spd:Math.max(10,Math.min(400,+v('spd')||100)),dmg:Math.max(0,Math.min(1000,v('dmg')===''?100:+v('dmg'))),gold:Math.max(0,Math.min(100000,v('gold')|0))};
     const dr=[];for(let i=0;i<MRN;i++){const k=v('dk'+i);if(!k||!INAME[k])continue;const n=Math.max(1,Math.min(1000,v('dn'+i)|0||1)),x=Math.max(n,Math.min(1000,v('dx'+i)|0||n)),c=Math.max(0,Math.min(100,+v('dc'+i)));dr.push({k,n,x,c:isFinite(c)?c:100})}
-    if(dr.length)r.dr=dr;const rp=root.querySelector('[data-mr="rep"]');if(rp&&rp.checked)r.rep=1;if(!(r.dmg>=0))r.dmg=100;if(r.dmg===100)delete r.dmg;if(r.hp===100&&r.spd===100&&!r.gold&&!r.dr&&!r.rep&&r.dmg==null)r=null}
+    if(dr.length)r.dr=dr;const rp=root.querySelector('[data-mr="rep"]');if(rp&&rp.checked)r.rep=1;if(!(r.dmg>=0))r.dmg=100;if(r.dmg===100)delete r.dmg;
+    if(root.querySelector('[data-mr="pjr"]')){const pj={rate:Math.max(10,Math.min(1000,+v('pjr')||100)),dmg:Math.max(0,Math.min(10,v('pjd')|0)),fx:{}};for(const f of(window.SQMOBATK?SQMOBATK.FX:[])){const c=Math.max(0,Math.min(100,+v('fx_'+f+'_c')||0)),tt=Math.max(.5,Math.min(30,+v('fx_'+f+'_t')||3));if(c>0)pj.fx[f]=[c,tt]}
+     if(!Object.keys(pj.fx).length)delete pj.fx;if(pj.rate!==100||pj.dmg||pj.fx)r.pj=pj}
+    if(r.hp===100&&r.spd===100&&!r.gold&&!r.dr&&!r.rep&&r.dmg==null&&!r.pj)r=null}
    if(r)S.draft.mobs[k]=r;else delete S.draft.mobs[k];try{await dset('draft/mobs/'+key(k),r);toast(r?'Rules saved to draft.':'Back to the game\'s own rules (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw();return}
   if(a==='psy'&&S.ed){S.ed.sy=t.checked;S.ed.dirty=true;draw();return}
   if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true,S.ed&&S.ed.night);return}
@@ -13774,6 +13788,7 @@ window.SQA=SQA;
   if(n==='sq'){S.statQ=t.value;const pos=t.selectionStart;draw();const i=root.querySelector('[data-in="sq"]');if(i){i.focus();i.setSelectionRange(pos,pos)}return}
   if(n==='recol'&&S.ed&&S.ed.pal[S.ed.col]!=null){if(!t._snap){snapEd();t._snap=1}S.ed.pal[S.ed.col]=t.value;const sw=root.querySelector('.dv-sw.dv-on');if(sw)sw.style.background=t.value;paint()}});
  root.addEventListener('change',async e=>{const t=e.target;
+  if(t.dataset.in==='paf'&&S.ed){S.ed.af=Math.max(0,Math.min(S.ed.layers.length-1,t.value|0));S.ed.ak=S.ed.af>0;S.ed.dirty=true;draw();return}
   if(t.dataset.in==='addcol'&&S.ed){snapEd();S.ed.pal.push(t.value);S.ed.col=S.ed.pal.length-1;S.ed.tool='pen';drawPal();drawTools();paint();return}
   if(t.dataset.in==='recol'){t._snap=0;drawPal();return}
   if(t.dataset.in==='pname'&&S.ed&&S.ed.kind==='prop'){const k=S.ed.base,v=t.value.trim().slice(0,40),nv=v&&v!==gameName(k)?v:null;if(nv)S.draft.pnames[k]=nv;else delete S.draft.pnames[k];
@@ -14722,7 +14737,8 @@ window.SQA=SQA;
 //                         r:bwbld:<name> / r:afbld:<name> island village buildings, anchor = their footprint's top-left)
 //   l:<kind>[:<variant>]  island buildings and props the island builder places (SQA.ISL_LM)
 //   m:<type>[:<variant>]  monsters (the region key, e.g. wolf:briar; anchor = the monster's position). Frames are its walk
-//                         cycle (ak: the last frame is its attack pose, shown while it's right next to you); drawn facing
+//                         cycle (af: the last af frames are its attack animation, played while it's right next to you or
+//                         has just shot; older looks: ak = one attack frame); drawn facing
 //                         right and mirrored to face you (fw: to face the way it walks); flashes white when hit.
 // Anything without a published look is drawn by the game's own code, so removing a look puts the original back.
 (()=>{if(!window.SQA)return;const A=SQA;
@@ -14764,7 +14780,9 @@ window.SQA=SQA;
  function mobDraw(n,tm){if(!n)return false;const k=mkey(n),q=pick(k);if(!q)return false;const L=PL[q],x=Math.round(n.x),y=Math.round(n.y),nf=frames(L);
   // which way it faces: towards you (most monsters do), or the way it's walking
   if(n._lx==null)n._lx=n.x;const mv=n.x-n._lx;n._lx=n.x;if(Math.abs(mv)>.05)n._dir=mv<0?-1:1;const fl=L.fw?n._dir<0:P.x<n.x;
-  let f;if(L.ak&&nf>1&&Math.hypot(P.x-n.x,P.y-n.y)<20)f=nf-1;else{const wn=L.ak&&nf>1?nf-1:nf,ms=Math.max(60,Math.min(5000,L.ms|0||250));f=wn>1?Math.floor(performance.now()/ms+((x*7+y*3)%11)/11*wn)%wn:0}
+  // attack frames (af, older looks: ak = 1): the last af frames play while it's right next to you or just shot (n._shotAt, 160)
+  const af=Math.min(nf-1,L.af!=null?L.af|0:(L.ak?1:0)),ms=Math.max(60,Math.min(5000,L.ms|0||250)),atk=af>0&&(Math.hypot(P.x-n.x,P.y-n.y)<20||n._shotAt&&performance.now()-n._shotAt<450||n.cast>0);
+  let f;if(atk)f=nf-af+Math.floor(performance.now()/ms)%af;else{const wn=nf-af;f=wn>1?Math.floor(performance.now()/ms+((x*7+y*3)%11)/11*wn)%wn:0}
   const hit=Math.abs(n.kx||0)+Math.abs(n.ky||0)>.5,c=hit?white(q,L,f):can(q,L,f),w=L.w*L.s/2,h=L.h*L.s/2;
   if(n.type==='matri'&&n.under)return true;
   // dungeon bosses keep the game's own glow, attack warnings and health bar: the game's drawer runs with every picture
@@ -14903,6 +14921,8 @@ window.SQA=SQA;
    if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(let f=1;f<=(DKIND[kind].floors||3);f++){let R=null;try{R=buildFloor(kind,f)}catch(e){}
     for(const m of R&&R.mobs||[]){if(!m||!m.vr||m.rk||m.rv)continue;const k=(m.type||'slime')+':'+m.vr;if(have.has(k))continue;have.add(k);const tpl={...m,x:0,y:0};
      add('m:'+k,VN[m.vr]||pretty(m.vr+' '+m.type),'Monsters',null,null,()=>({...tpl}))}}}}
+  // projectile looks for monsters that shoot (160 draws them): j:<monster key>, captured from the game's own projectile
+  try{const SH=window.SQMOBATK&&SQMOBATK.SHOOT||{};for(const q of out.slice())if(q.grp==='Monsters'&&/^m:/.test(q.k)){const t=q.k.slice(2).split(':')[0];if(SH[t])add('j:'+q.k.slice(2),q.n+' · projectile','Monsters',()=>drawProj({x:0,y:0,vx:1,vy:0,t:0,k:SH[t],sc:curScene()}))}}catch(e){}
   // island props
   for(const kk in A.ISL_LM){const[k,v]=kk.split(':'),L=A.ISL_LM[kk];add('l:'+kk,L[0],'Island props',()=>drawFurn({t:'lm',k,v:L[3],x:0,y:0,w:L[1],h:L[2],sh:L[2],name:L[0]},0))}
   return CAT=out}
@@ -17338,6 +17358,102 @@ window.SQA=SQA;
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&want&&playing())wake()});
  setInterval(()=>{if(want&&playing()&&!lock&&!document.hidden)wake()},15000);
  window.SQREPORTS={unstick,doorTile,get wakeLock(){return lock}}})();
+// ---- 164. Controller: better d-pad moves, and item cards give the highlight back ----
+// - 023's navMove aimed at button centres, so a wide button (the chest card's "Take all") was skipped and the d-pad
+//   jumped past it or wrapped around. Now it measures to the nearest edge: the next button in that direction is the one
+//   with the smallest gap, preferring buttons that line up with the current one. If nothing is that way, it still wraps.
+// - Closing a card (011's chest item card, any [role=dialog] in a panel) with ○ put the highlight back on the chest's
+//   first item; now it goes back to the item whose card you opened.
+(()=>{
+ navMove=function(dx,dy){const root=navRoot();if(!root)return;const items=navItems(root);if(!items.length)return;
+  if(!GPF||!items.includes(GPF)){setFocus(items[0]);return}const a=GPF.getBoundingClientRect(),ax=a.left+a.width/2,ay=a.top+a.height/2;let best=null,bs=1e9;
+  for(const e of items){if(e===GPF)continue;const r=e.getBoundingClientRect();if(!r.width||!r.height)continue;const cx=r.left+r.width/2,cy=r.top+r.height/2;
+   if((cx-ax)*dx+(cy-ay)*dy<=4)continue;// not that way
+   let d,gap,off;
+   if(dy){d=dy>0?r.top-a.bottom:a.top-r.bottom;if(d<-Math.min(a.height,r.height)/2)continue;gap=Math.max(0,r.left-a.right,a.left-r.right);off=Math.abs(cx-ax)}
+   else{d=dx>0?r.left-a.right:a.left-r.right;if(d<-Math.min(a.width,r.width)/2)continue;gap=Math.max(0,r.top-a.bottom,a.top-r.bottom);off=Math.abs(cy-ay)}
+   const s=Math.max(0,d)+gap*3+off*.15;if(s<bs){bs=s;best=e}}
+  if(!best){const i=items.indexOf(GPF);best=items[(i+(dx+dy>0?1:items.length-1))%items.length]}setFocus(best);try{sfx('talk')}catch(e){}};
+ // remember the thing a card was opened from, and go back to it when the card closes
+ const key=e=>e&&e.dataset?(e.dataset.k||'')+'|'+(e.dataset.a||'')+'|'+(e.dataset.cm||''):'';
+ let from=null,wasCard=false;
+ {const _np=navPress;navPress=function(){const before=GPF,bk=key(before);const out=_np.apply(this,arguments);
+   try{const c=pn&&pn.querySelector('[role="dialog"]');if(c&&before&&!c.contains(before)&&bk!=='||')from=bk}catch(e){}return out}}
+ setInterval(()=>{try{if(!GPON||!pnOpen){wasCard=false;return}const card=!!pn.querySelector('[role="dialog"]');
+   if(wasCard&&!card&&from){const [k,a]=from.split('|');const el=[...navItems(pn)].find(e=>e.dataset&&e.dataset.k===k&&(e.dataset.a||'')===a);if(el)setFocus(el)}
+   if(!card&&wasCard)from=null;wasCard=card}catch(e){}},60);
+})();
+// ---- 165. Choose your ultimate ----
+// Three kinds of gear give an ultimate: a sledgehammer in the main hand (GROUND SLAM, 096), a wand in the off-hand
+// (Inferno / Frost Nova / Thunderstorm, 029) and the Dragonsoul amulet (Dragon Form, 086). The wrappers decide in that
+// order (sledge > amulet > wand), so with several worn you only ever got the first. The gear tab (equipHTML) now lists
+// the ultimates your gear gives and you pick the one the ULT button (V / L1+R1) uses. Saved as `ultp`
+// ('slam' | 'dragon' | 'wand'; none = the old order). The choice is applied by hiding the others for the length of the
+// castUlt call (SLEDGE, SQJW.neck, WAND are put back right after).
+(()=>{let PICK=null;
+ const WN={fire:'Inferno',ice:'Frost Nova',storm:'Thunderstorm'};
+ const avail=()=>{const L=[];try{if(typeof SLEDGE!=='undefined'&&SLEDGE)L.push({k:'slam',n:'Ground Slam',from:'Stone Sledgehammer'})}catch(e){}
+  try{if(window.SQJW&&SQJW.neck==='ja_dsoul')L.push({k:'dragon',n:'Dragon Form',from:'Dragonsoul amulet'})}catch(e){}
+  try{if(WAND)L.push({k:'wand',n:WN[WAND]||'Wand ultimate',from:(INAME[occ('off')]||'your wand')})}catch(e){}return L};
+ const chosen=()=>{const L=avail();if(!L.length)return null;return L.find(o=>o.k===PICK)||L[0]};
+ {const _cu=castUlt;castUlt=function(){const L=avail(),c=chosen();if(L.length<2||!c)return _cu.apply(this,arguments);
+   const sv={sl:SLEDGE,neck:window.SQJW&&SQJW.neck,w:WAND};
+   try{if(c.k!=='slam')SLEDGE=false;if(c.k!=='dragon'&&window.SQJW&&SQJW.neck==='ja_dsoul')SQJW.neck=null;if(c.k!=='wand')WAND=null;return _cu.apply(this,arguments)}
+   finally{SLEDGE=sv.sl;if(window.SQJW&&sv.neck==='ja_dsoul'&&SQJW.neck==null)SQJW.neck=sv.neck;if(WAND==null)WAND=sv.w}}}
+ // the gear tab
+ {const _eh=equipHTML;equipHTML=function(){const h=_eh.apply(this,arguments),L=avail();if(!L.length)return h;const c=chosen();
+   let s='<div class="tl" style="margin-top:12px">ULTIMATE</div><div class="qc"><p style="margin:0 0 6px">'+(L.length>1?'Pick which ultimate the ULT button uses:':'Your ULT button uses:')+'</p>';
+   for(const o of L){const on=c&&o.k===c.k;s+='<button class="sb'+(on?' sqult-on':'')+'" data-ultp="'+o.k+'" style="width:100%;margin:3px 0;text-align:left'+(on?';background:#fff6c8;border-color:#c89830':'')+'">'+(on?'★ ':'')+o.n+'<br><small>from '+esc(o.from)+'</small></button>'}
+   return h+s+'</div>'}}
+ pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ultp]');if(!b||ptab!==3)return;e.stopPropagation();e.preventDefault();PICK=b.dataset.ultp;
+  const o=avail().find(x=>x.k===PICK);say('Your ULT button now uses '+(o?o.n:'that ultimate')+'.');try{sfx('talk')}catch(_){}try{saveLocal(true)}catch(_){}rPn()},true);
+ {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(PICK)s.ultp=PICK;return s}}
+ {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);PICK=S&&/^(slam|dragon|wand)$/.test(S.ultp)?S.ultp:null;return out}}
+ try{KNOWN49.add('ultp')}catch(e){}
+ window.SQULT={avail,chosen,get pick(){return PICK},set pick(v){PICK=v}}})();
+// ---- 166. Monster attacks from the Dev Suite: projectile looks, attack rate, extra damage, status effects ----
+// Monsters that shoot (SHOOT: type -> the game's projectile kind) put their shots in 021's PROJ. Each hostile shot is
+// matched to the monster that just fired it (nearest within 26 px of where the shot starts) and tagged with its look key
+// (n._shotAt is set too: 111d plays its attack frames). Rules live in mobs.<key>.pj = {rate, dmg, fx:{slow,burn,freeze,
+// poison: [chance %, seconds]}} (Dev Suite > Monsters > How it works):
+//   rate  attack rate in % (200 = twice as often): the monster's reload (tcd / gcd) is divided by it, once per volley
+//   dmg   extra hearts when one of its shots hits you (after blocks and rolls: only when the shot really hurt you)
+//   fx    a status effect with a chance: slow (half speed), burn (1 heart every 1.5 s), poison (1 heart every 3 s),
+//         freeze (can't move). Timers in ST, run in the outermost upd.
+// Looks: props j:<monster key without m:> (e.g. j:skel:dust), drawn by the outermost drawProj turned the way it flies
+// (draw it facing right). Monsters that shoot with their own systems (bandits, cacti, Dev Suite bosses) aren't covered.
+(()=>{if(!window.SQA||!window.SQPROPS)return;const A=SQA,R={};
+ const SHOOT={skel:'bone',bonelord:'bone',guard:'water',tidek:'water'};
+ const num=(v,lo,hi,d)=>{v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):d};
+ const FX=['slow','burn','freeze','poison'];
+ A.onApply(lib=>{for(const k in R)delete R[k];const M=lib&&lib.mobs||{};for(const k in M){const j=M[k]&&M[k].pj;if(!j||typeof j!=='object')continue;
+  const o={rate:num(j.rate,10,1000,100),dmg:num(j.dmg,0,10,0)|0,fx:{}};for(const f of FX){const e=j.fx&&j.fx[f];if(Array.isArray(e)){const c=num(e[0],0,100,0),t=num(e[1],.5,30,3);if(c>0)o.fx[f]=[c,t]}}R[k]=o}});
+ const mk=n=>SQPROPS.mkey(n);
+ // ---- tagging shots ----
+ let FRAME=0,SEEN=[];const _push=PROJ.push;// SEEN: the monsters at the start of this frame (some code sets en aside while the frame runs)
+ PROJ.push=function(...ps){for(const p of ps)try{if(p&&p.hostile&&!p._mk){let best=null,bd=26;for(const n of en.length?en.concat(SEEN):SEEN){if(!n||n.dead)continue;const d=Math.hypot(n.x-p.x,n.y-8-p.y);if(d<bd){bd=d;best=n}}
+    if(best){const k=mk(best);p._mk=k;p._jk='j:'+k.slice(2);best._shotAt=performance.now();const r=R[k];
+     if(r&&r.rate!==100&&best._rateF!==FRAME){best._rateF=FRAME;for(const f of['tcd','gcd'])if(best[f]>0)best[f]=best[f]*100/r.rate}}}}catch(e){}
+  return _push.apply(this,ps)};
+ // ---- drawing a shot with its look ----
+ {const _dp=drawProj;drawProj=function(p){if(p&&p._jk&&SQPROPS.looks){const L=SQPROPS.looks[p._jk];if(L){const a=Math.atan2(p.vy||0,p.vx||1);g.save();g.translate(Math.round(p.x),Math.round(p.y));g.rotate(Math.round(a/(Math.PI/8))*(Math.PI/8));try{SQPROPS.drawLook(p._jk,0,0,null,0,false)}catch(e){}g.restore();return}}return _dp.apply(this,arguments)}}
+ // ---- hits and status effects ----
+ const ST={slow:0,burn:0,freeze:0,poison:0,bt:0,pt:0};const NAMES={slow:'slowed',burn:'burning',freeze:'frozen',poison:'poisoned'};
+ const COL={slow:'#80b0ff',burn:'#ff7a28',freeze:'#c8f0ff',poison:'#78d048'};
+ function apply(r){if(r.dmg>0&&!dead)P.hp-=r.dmg;const got=[];for(const f in r.fx){const[c,t]=r.fx[f];if(Math.random()*100<c){ST[f]=Math.max(ST[f],t);got.push(NAMES[f])}}
+  if(got.length){say('You are '+got.join(' and ')+'!');try{sfx('hurt')}catch(e){}}}
+ {const _u=upd;upd=function(dt){FRAME++;SEEN=en.slice();const live=[],x0=P.x,y0=P.y,hp0=P.hp,h0=hurt;
+   if(Object.keys(R).length)for(const p of PROJ)if(p&&!p.dead&&p.hostile&&p._mk&&R[p._mk])live.push(p);
+   const out=_u.apply(this,arguments);
+   try{if(!dead&&live.length&&(P.hp<hp0||hurt>h0))for(const p of live)if((p.dead||p.life<0||!PROJ.includes(p))&&Math.hypot(P.x-p.x,P.y-2-p.y)<16){apply(R[p._mk]);break}
+    if(dead){for(const f of FX)ST[f]=0}else if(!menuOpen&&!pnOpen){
+     if(ST.freeze>0){P.x=x0;P.y=y0}else if(ST.slow>0){P.x=x0+(P.x-x0)*.5;P.y=y0+(P.y-y0)*.5}
+     if(ST.burn>0&&(ST.bt-=dt)<=0){ST.bt=1.5;P.hp-=1;FLASH=.2}if(ST.poison>0&&(ST.pt-=dt)<=0){ST.pt=3;P.hp-=1;FLASH=.15}
+     for(const f of FX)if(ST[f]>0){ST[f]=Math.max(0,ST[f]-dt);if(Math.random()<dt*8&&typeof part==='function')part(P.x+(Math.random()-.5)*10,P.y-8-Math.random()*10,(Math.random()-.5)*16,-24,.5,COL[f],f==='freeze'?0:-40,1)}
+     if(ST.burn<=0)ST.bt=0;if(ST.poison<=0)ST.pt=0}}catch(e){console.warn('monster attacks',e)}
+   return out}}
+ window.SQMOBATK={SHOOT,FX,get rules(){return R},status:ST,shoots:k=>!!SHOOT[String(k||'').replace(/^[mj]:/,'').split(':')[0]],clear(){for(const f of FX)ST[f]=0}};
+ try{SQPROPS.recat()}catch(e){}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

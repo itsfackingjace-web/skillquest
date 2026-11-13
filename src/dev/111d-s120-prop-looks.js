@@ -18,7 +18,8 @@
 //                         r:bwbld:<name> / r:afbld:<name> island village buildings, anchor = their footprint's top-left)
 //   l:<kind>[:<variant>]  island buildings and props the island builder places (SQA.ISL_LM)
 //   m:<type>[:<variant>]  monsters (the region key, e.g. wolf:briar; anchor = the monster's position). Frames are its walk
-//                         cycle (ak: the last frame is its attack pose, shown while it's right next to you); drawn facing
+//                         cycle (af: the last af frames are its attack animation, played while it's right next to you or
+//                         has just shot; older looks: ak = one attack frame); drawn facing
 //                         right and mirrored to face you (fw: to face the way it walks); flashes white when hit.
 // Anything without a published look is drawn by the game's own code, so removing a look puts the original back.
 (()=>{if(!window.SQA)return;const A=SQA;
@@ -60,7 +61,9 @@
  function mobDraw(n,tm){if(!n)return false;const k=mkey(n),q=pick(k);if(!q)return false;const L=PL[q],x=Math.round(n.x),y=Math.round(n.y),nf=frames(L);
   // which way it faces: towards you (most monsters do), or the way it's walking
   if(n._lx==null)n._lx=n.x;const mv=n.x-n._lx;n._lx=n.x;if(Math.abs(mv)>.05)n._dir=mv<0?-1:1;const fl=L.fw?n._dir<0:P.x<n.x;
-  let f;if(L.ak&&nf>1&&Math.hypot(P.x-n.x,P.y-n.y)<20)f=nf-1;else{const wn=L.ak&&nf>1?nf-1:nf,ms=Math.max(60,Math.min(5000,L.ms|0||250));f=wn>1?Math.floor(performance.now()/ms+((x*7+y*3)%11)/11*wn)%wn:0}
+  // attack frames (af, older looks: ak = 1): the last af frames play while it's right next to you or just shot (n._shotAt, 160)
+  const af=Math.min(nf-1,L.af!=null?L.af|0:(L.ak?1:0)),ms=Math.max(60,Math.min(5000,L.ms|0||250)),atk=af>0&&(Math.hypot(P.x-n.x,P.y-n.y)<20||n._shotAt&&performance.now()-n._shotAt<450||n.cast>0);
+  let f;if(atk)f=nf-af+Math.floor(performance.now()/ms)%af;else{const wn=nf-af;f=wn>1?Math.floor(performance.now()/ms+((x*7+y*3)%11)/11*wn)%wn:0}
   const hit=Math.abs(n.kx||0)+Math.abs(n.ky||0)>.5,c=hit?white(q,L,f):can(q,L,f),w=L.w*L.s/2,h=L.h*L.s/2;
   if(n.type==='matri'&&n.under)return true;
   // dungeon bosses keep the game's own glow, attack warnings and health bar: the game's drawer runs with every picture
@@ -199,6 +202,8 @@
    if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(let f=1;f<=(DKIND[kind].floors||3);f++){let R=null;try{R=buildFloor(kind,f)}catch(e){}
     for(const m of R&&R.mobs||[]){if(!m||!m.vr||m.rk||m.rv)continue;const k=(m.type||'slime')+':'+m.vr;if(have.has(k))continue;have.add(k);const tpl={...m,x:0,y:0};
      add('m:'+k,VN[m.vr]||pretty(m.vr+' '+m.type),'Monsters',null,null,()=>({...tpl}))}}}}
+  // projectile looks for monsters that shoot (160 draws them): j:<monster key>, captured from the game's own projectile
+  try{const SH=window.SQMOBATK&&SQMOBATK.SHOOT||{};for(const q of out.slice())if(q.grp==='Monsters'&&/^m:/.test(q.k)){const t=q.k.slice(2).split(':')[0];if(SH[t])add('j:'+q.k.slice(2),q.n+' · projectile','Monsters',()=>drawProj({x:0,y:0,vx:1,vy:0,t:0,k:SH[t],sc:curScene()}))}}catch(e){}
   // island props
   for(const kk in A.ISL_LM){const[k,v]=kk.split(':'),L=A.ISL_LM[kk];add('l:'+kk,L[0],'Island props',()=>drawFurn({t:'lm',k,v:L[3],x:0,y:0,w:L[1],h:L[2],sh:L[2],name:L[0]},0))}
   return CAT=out}

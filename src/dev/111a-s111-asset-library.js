@@ -93,11 +93,11 @@ var SQA=(()=>{
  // the Imp (it fights, so it isn't a follower): 085 asks window.SQIMPSP(frame, 'n'|'s'|'e'|'w', attacking) for a 24 x 27
  // picture (feet at 12,22) and keeps each one for good, so the canvases handed out here are kept and repainted in place
  // whenever the library changes (back to the game's own picture when there is no look). Walking frames b/d, the attack
- // pose d (else b); drawn facing right, mirrored when it goes west.
+ // pose: its Attack frames k/l if drawn (else d, else b); drawn facing right, mirrored when it goes west.
  const IMPK=new Map(),_isp=window.SQIMPSP;
  function impPaint(c,fr,d,a){const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.imageSmoothingEnabled=false;const L=PETL.imp;
   if(!L){const o=_isp&&_isp(fr,d,a);if(o){c.width=o.width;c.height=o.height;x.drawImage(o,0,0)}return}
-  const ok=f=>L[f]&&valid(L[f]),f=a?(ok('d')?'d':'b'):fr%2?(ok('d')?'d':ok('b')?'b':'a'):(ok('b')?'b':'a'),sp=ok(f)?L[f]:L.a;if(!sp)return;const im=render(sp);
+  const ok=f=>L[f]&&valid(L[f]),f=a&&ok('k')?(fr%2&&ok('l')?'l':'k'):a?(ok('d')?'d':'b'):fr%2?(ok('d')?'d':ok('b')?'b':'a'):(ok('b')?'b':'a'),sp=ok(f)?L[f]:L.a;if(!sp)return;const im=render(sp);
   c.width=24;c.height=27;x.imageSmoothingEnabled=false;if(d==='w'){x.translate(24,0);x.scale(-1,1)}x.drawImage(im,12+L.ox,22+L.oy,im.width/2,im.height/2)}
  function impRepaint(){for(const[k,c]of IMPK){const[fr,d,a]=k.split('|');impPaint(c,+fr,d,a==='1')}}
  if(_isp)window.SQIMPSP=(fr,d,a)=>{if(!PETL.imp)return _isp(fr,d,a);const k=fr+'|'+d+'|'+(a?1:0);let c=IMPK.get(k);if(!c){c=document.createElement('canvas');IMPK.set(k,c)}impPaint(c,fr,d,a);return c};

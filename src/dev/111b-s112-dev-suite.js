@@ -115,20 +115,20 @@
   try{await dset('draft/worn/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this item keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const b=it.querySelector('.dv-bd'),s2=wState(ed.k);if(b)b.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
  // ---- pet looks: a standing and a walking frame, drawn facing right ----
- const PFN=['Standing 1','Standing 2','Walking 1','Walking 2'],PF=['a','c','b','d'];
+ const PFN=['Standing 1','Standing 2','Walking 1','Walking 2','Attack 1','Attack 2'],PF=['a','c','b','d','k','l'];// attack frames: used while a pet fights (the Imp)
  const pState=k=>{const d=S.draft&&S.draft.pets&&S.draft.pets[k],l=S.live&&S.live.pets&&S.live.pets[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
  async function openPet(item,fresh){const k=EQ[item].pet;S.sel=item;S.ed=null;draw();const L=!fresh&&S.draft.pets[k];let ed;
-  try{if(L&&A.validPet(L)){const pal=[],N=L.w*L.h,layers=[0,1,2,3].map(()=>new Uint8Array(N).fill(255));
-    for(let d=0;d<4;d++){const sp=L[PF[d]];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});const dd=A.pix(sp);for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')layers[d][i]=map[PXC.indexOf(ch)]}}
+  try{if(L&&A.validPet(L)){const pal=[],N=L.w*L.h,layers=PF.map(()=>new Uint8Array(N).fill(255));
+    for(let d=0;d<PF.length;d++){const sp=L[PF[d]];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});const dd=A.pix(sp);for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')layers[d][i]=map[PXC.indexOf(ch)]}}
     // an older look (one standing and one walking frame) walked between them: fill the new frames to match
     if(!L.c)layers[1].set(layers[0]);if(!L.d)layers[3].set(layers[0]);
     ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers}}
-   else{const cap=A.capturePet(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px,b.px.slice(),b.px.slice(),b.px.slice()]}}
-    else ed={w:16,h:16,s:2,ox:-8,oy:-9,pal:[],layers:[0,1,2,3].map(()=>new Uint8Array(256).fill(255))}}}
+   else{const cap=A.capturePet(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px,b.px.slice(),b.px.slice(),b.px.slice(),new Uint8Array(b.px.length).fill(255),new Uint8Array(b.px.length).fill(255)]}}
+    else ed={w:16,h:16,s:2,ox:-8,oy:-9,pal:[],layers:PF.map(()=>new Uint8Array(256).fill(255))}}}
   catch(e){console.warn(e);toast('Could not read that pet.');return}
   if(S.sel!==item)return;if(!ed.pal.length)ed.pal.push('#181018','#7a5a3a','#c89858','#f8e8c8');
-  S.ed={...ed,kind:'pet',k,item,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:[null,null,null,null],rcd:[1,1,1,1]};draw()}
- function petOut(ed){const o={w:ed.w,h:ed.h,s:ed.s,ox:ed.ox,oy:ed.oy};let any=false;for(let d=0;d<4;d++){const px=ed.layers[d];if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[PF[d]]={w:sp.w,h:sp.h,s:sp.s,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
+  S.ed={...ed,kind:'pet',k,item,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:PF.map(()=>null),rcd:PF.map(()=>1)};draw()}
+ function petOut(ed){const o={w:ed.w,h:ed.h,s:ed.s,ox:ed.ox,oy:ed.oy};let any=false;for(let d=0;d<PF.length;d++){const px=ed.layers[d];if(!px)continue;if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[PF[d]]={w:sp.w,h:sp.h,s:sp.s,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
  async function savePet(){const ed=S.ed;if(!ed)return;const o=petOut(ed);if(o)S.draft.pets[ed.k]=o;else delete S.draft.pets[ed.k];
   try{await dset('draft/pets/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this pet keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.item+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=pState(ed.k);if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
@@ -161,7 +161,7 @@
   try{if(L&&PR().valid(L)){const pal=[],N=L.w*L.h,n=PR().frames(L),layers=[];
     for(let f=0;f<n;f++){const sp=PR().frSp(L,f),map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)}),dd=A.pix(sp),px=new Uint8Array(N).fill(255);
      for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')px[i]=map[PXC.indexOf(ch)]}layers.push(px)}
-    ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers,ms:L.ms|0||250,sy:!!L.sy,ak:!!L.ak,fw:!!L.fw}}
+    ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers,ms:L.ms|0||250,sy:!!L.sy,ak:!!L.ak,af:L.af!=null?Math.max(0,L.af|0):(L.ak?1:0),fw:!!L.fw}}
    else{const cap=PR().capture(k,night)||(k==='f:door:o'?PR().capture('f:door:c',night):null);if(cap){const b=await bake(cap.url),n=cap.n|0||1;if(n>1){const fw=b.w/n,layers=[];for(let f=0;f<n;f++){const px=new Uint8Array(fw*b.h);for(let y=0;y<b.h;y++)for(let x=0;x<fw;x++)px[y*fw+x]=b.px[y*b.w+f*fw+x];layers.push(px)}ed={w:fw,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers,ms:250}}else ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px]}}
     else ed=/^x:/.test(k)?{w:32,h:32,s:1,ox:0,oy:0,pal:[],layers:[new Uint8Array(1024).fill(255)]}:{w:32,h:32,s:2,ox:-8,oy:-16,pal:[],layers:[new Uint8Array(1024).fill(255)]}}}
   catch(e){console.warn(e);toast('Could not read that prop.');return}
@@ -172,7 +172,7 @@
   else{if(ed.layers.length<2)return;ed.layers.splice(ed.dir,1);ed.dir=Math.min(ed.dir,ed.layers.length-1)}
   ed.px=ed.layers[ed.dir];ed.rc=ed.layers.map(()=>null);ed.rcd=ed.layers.map(()=>1);ed.undo=[];ed.redo=[];ed.dirty=true;draw()}
  function propOut(ed){if(!ed.layers.some(L=>L.some(v=>v!==255)))return null;const sp=toSpPx(ed,ed.layers[0]),o={w:sp.w,h:sp.h,s:sp.s,ox:ed.ox,oy:ed.oy,p:sp.p,r:A.pack(sp.d)};
-  if(ed.layers.length>1){o.fr=ed.layers.slice(1).map(L=>{const f=toSpPx(ed,L);return{p:f.p,r:A.pack(f.d)}});o.ms=Math.max(60,Math.min(5000,ed.ms|0||250));if(ed.sy)o.sy=1;if(ed.ak)o.ak=1}if(ed.fw)o.fw=1;return o}
+  if(ed.layers.length>1){o.fr=ed.layers.slice(1).map(L=>{const f=toSpPx(ed,L);return{p:f.p,r:A.pack(f.d)}});o.ms=Math.max(60,Math.min(5000,ed.ms|0||250));if(ed.sy)o.sy=1;const af=Math.min(ed.layers.length-1,ed.af|0);if(af>0){o.af=af;if(af===1)o.ak=1}}if(ed.fw)o.fw=1;return o}
  async function saveProp(){const ed=S.ed;if(!ed)return;const o=propOut(ed);if(o)S.draft.props[ed.k]=o;else delete S.draft.props[ed.k];
   try{await dset('draft/props/'+key(ed.k),o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.base+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.base),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.base)}}
@@ -186,6 +186,16 @@
    '<label class="dv-mut">from <input type="number" data-mr="dn'+i+'" min="1" max="1000" value="'+(d.n||1)+'" style="width:60px"></label><label class="dv-mut">to <input type="number" data-mr="dx'+i+'" min="1" max="1000" value="'+(d.x||d.n||1)+'" style="width:60px"></label>'+
    '<label class="dv-mut">chance % <input type="number" data-mr="dc'+i+'" min="0" max="100" step="0.1" value="'+(d.c!=null?d.c:100)+'" style="width:64px"></label></div>'}
   return h+(rows<MRN?'<p class="dv-mut" style="margin:4px 0">Save to get another empty row.</p>':'')+'<label class="dv-mut" style="display:block;margin-top:6px"><input type="checkbox" data-mr="rep"'+(r.rep?' checked':'')+'> Instead of the game\'s own drops (the items and golden chest it gives when beaten). XP, quest progress and the few coins any kill gives stay.</label></div>'}
+ // its shots (monsters that shoot, 160): attack rate, extra damage, status effects, and a link to the projectile's look
+ function mrShots(k,r){const MA=window.SQMOBATK;if(!MA||!MA.shoots(k))return'';const j=r.pj||{},fx=j.fx||{},jk='j:'+k.slice(2);
+  const FXN={slow:'Slow (half speed)',burn:'Burn (1 heart / 1.5 s)',freeze:'Freeze (can\'t move)',poison:'Poison (1 heart / 3 s)'};
+  let h='<div class="dv-card" style="margin:8px 0"><b>Its shots</b> <span class="dv-mut">(this monster shoots)</span><div class="dv-row" style="flex-wrap:wrap;margin-top:6px">'+
+   '<label class="dv-mut">Attack rate %<br><input type="number" data-mr="pjr" min="10" max="1000" value="'+(j.rate||100)+'" style="width:80px"></label>'+
+   '<label class="dv-mut">Extra damage (hearts)<br><input type="number" data-mr="pjd" min="0" max="10" value="'+(j.dmg|0)+'" style="width:80px"></label>'+
+   '<button class="dv-b" data-k="'+E(jk)+'" style="align-self:flex-end">Edit how its shots look</button></div>'+
+   '<p class="dv-mut" style="margin:6px 0 2px">Status effects when a shot hits you:</p>';
+  for(const f of MA.FX){const e=fx[f]||[0,3];h+='<div class="dv-row" style="flex-wrap:wrap"><span class="dv-mut" style="min-width:170px">'+FXN[f]+'</span><label class="dv-mut">chance % <input type="number" data-mr="fx_'+f+'_c" min="0" max="100" value="'+(e[0]||0)+'" style="width:64px"></label><label class="dv-mut">seconds <input type="number" data-mr="fx_'+f+'_t" min="0.5" max="30" step="0.5" value="'+(e[1]||3)+'" style="width:64px"></label></div>'}
+  return h+'<p class="dv-mut" style="margin:4px 0 0">Shots are drawn facing right and turn the way they fly. Rate 200% = twice as often.</p></div>'}
  // a monster's rules: health and speed in % of the game's own, extra gold, drops
  function mobRules(k){const r=S.draft.mobs[k]||{},M=window.SQISLIFE&&SQISLIFE.MOBS&&SQISLIFE.MOBS[k.slice(2)],items=Object.keys(INAME).sort((a,b)=>INAME[a].localeCompare(INAME[b]));
   return'<div class="dv-card" style="margin:8px 0"><b>How tough it is</b>'+(M?' <span class="dv-mut">(the game gives it '+M.hp+' health where it lives)</span>':'')+'<div class="dv-row" style="flex-wrap:wrap;margin-top:6px">'+
@@ -193,7 +203,7 @@
    '<label class="dv-mut">Speed %<br><input type="number" data-mr="spd" min="10" max="400" value="'+(r.spd||100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Damage %<br><input type="number" data-mr="dmg" min="0" max="1000" value="'+(r.dmg!=null?r.dmg:100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Extra gold<br><input type="number" data-mr="gold" min="0" max="100000" value="'+(r.gold||0)+'" style="width:90px"></label>'+
-   '</div>'+mrDrops(r,items)+
+   '</div>'+mrDrops(r,items)+mrShots(k,r)+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="mrsave">Save rules to draft</button><button class="dv-b dv-bad" data-a="mrclear">Use the game\'s own rules</button><span class="dv-mut">100% = unchanged.</span></div></div>'}
  const HINT=k=>/^f:.*:[ewns]$/.test(k)?'This is the part drawn towards a neighbouring piece on that side, on top of the post or block (draw only what joins them; the editor starts from what the game adds there). Draw the post too, or the game keeps drawing its own fence.':
   /^f:/.test(k)?'A fence or wall piece is built from this post or block plus a part for each side that has another piece next to it.':/^x:/.test(k)?'What players see on the spot while it grows back (the game normally shows nothing). The picture starts one tile big at the tile it stood on.':
@@ -216,7 +226,7 @@
    (ed.layers.length>1?'<div class="dv-row"><span class="dv-mut">Each frame shows for</span><input type="number" data-in="pms" min="60" max="5000" step="10" value="'+ed.ms+'" style="width:90px"><span class="dv-mut">ms ('+(1000/ed.ms).toFixed(1)+' frames a second)</span>'+
     '<label class="dv-chk"><input type="checkbox" data-a="psy"'+(ed.sy?' checked':'')+'> All of them move together</label><span class="dv-mut">'+(ed.sy?'':'(otherwise each one starts at its own point, so they don\'t sway in step)')+'</span></div>'+
     '<div class="dv-row"><span class="dv-mut">Copy into this frame from:</span>'+ed.layers.map((L,d)=>d===ed.dir?'':'<button class="dv-b" data-copy="'+d+'">Frame '+(d+1)+'</button>').join('')+'</div>':'')+
-   (/^m:/.test(ed.base)?'<div class="dv-row"><label class="dv-chk"><input type="checkbox" data-a="pak"'+(ed.ak?' checked':'')+(ed.layers.length<2?' disabled':'')+'> Last frame is its attack pose</label><span class="dv-mut">'+(ed.layers.length<2?'(add a frame first)':'shown while it\'s right next to you')+'</span><label class="dv-chk"><input type="checkbox" data-a="pfw"'+(ed.fw?' checked':'')+'> Faces the way it walks</label><span class="dv-mut">(otherwise it turns to face you)</span></div>':'')+
+   (/^m:/.test(ed.base)?'<div class="dv-row"><label class="dv-mut">Attack frames <input type="number" data-in="paf" min="0" max="'+Math.max(0,ed.layers.length-1)+'" value="'+(ed.af|0)+'" style="width:56px"'+(ed.layers.length<2?' disabled':'')+'></label><span class="dv-mut">'+(ed.layers.length<2?'(add frames first)':'the last frames, played while it attacks (right next to you, or just after it shoots)')+'</span><label class="dv-chk"><input type="checkbox" data-a="pfw"'+(ed.fw?' checked':'')+'> Faces the way it walks</label><span class="dv-mut">(otherwise it turns to face you)</span></div>':'')+
    '<div class="dv-row dv-tools"></div><div class="dv-cv dv-cvw'+(ed.tool==='pan'?' dv-pan':'')+'"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw"><canvas id="dvwalk" width="480" height="240" style="width:min(480px,100%);height:auto"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><span class="dv-mut">Canvas</span><input type="number" data-in="pw" min="4" max="320" value="'+ed.w+'" style="width:70px"> × <input type="number" data-in="ph" min="4" max="320" value="'+ed.h+'" style="width:70px"><button class="dv-b" data-a="presize">Resize</button><span class="dv-mut">keeps the bottom in place</span></div>'+
@@ -230,7 +240,7 @@
   if(!PRV[ed.k]){PRV[ed.k]='…';const cap=PR().capture(ed.base,ed.night);if(cap){const im=new Image();im.onload=()=>{const n=cap.n|0||1,fr=[];if(n>1)for(let j=0;j<n;j++){const c2=document.createElement('canvas');c2.width=im.width/n;c2.height=im.height;c2.getContext('2d').drawImage(im,-j*c2.width,0);fr.push(c2)}PRV[ed.k]={im:n>1?fr[0]:im,fr:n>1?fr:null,ox:cap.ox,oy:cap.oy}};im.src=cap.url}else PRV[ed.k]=null}
   const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<60;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
   const O=PRV[ed.k]&&PRV[ed.k].im?PRV[ed.k]:null;if(O&&O.fr)O.im=O.fr[Math.floor(performance.now()/250)%O.fr.length];
-  const wn=ed.ak&&nf>1?nf-1:nf,L=(ed.ak&&nf>1?ed.rc[Math.floor(performance.now()/Math.max(60,ed.ms||250))%(wn+2)>=wn?nf-1:Math.floor(performance.now()/Math.max(60,ed.ms||250))%wn]:ed.rc[fi])||ed.rc[0],me=charCan(0,0,false);
+  const af=Math.min(nf-1,ed.af|0),wn=nf-af,tk=Math.floor(performance.now()/Math.max(60,ed.ms||250)),L=(af>0?ed.rc[tk%(wn+af*2)>=wn?wn+(tk%af):tk%wn]:ed.rc[fi])||ed.rc[0],me=charCan(0,0,false);
   // fit: world px -> canvas px
   const bw=Math.max(O?O.im.width/2:0,L?L.width/2:0,24),bh=Math.max(O?O.im.height/2:0,L?L.height/2:0,32),k=Math.max(.5,Math.min(3,Math.min((c.width/2-30)/bw,(c.height-30)/bh)));
   x.fillStyle='rgba(0,0,0,.35)';x.font='600 12px system-ui';x.fillText('Now',8,16);x.fillText('New',c.width/2+8,16);x.fillRect(c.width/2,0,1,c.height);
@@ -241,7 +251,7 @@
  // walking preview in all four directions
  let walkT=0;setInterval(()=>{const c=document.getElementById('dvwalk'),ed=S.ed;if(!S.open||!c||!ed||!LAY(ed.kind))return;walkT++;
   if(ed.kind==='prop'){propPreview(c,ed);return}
-  if(ed.kind==='pet'){for(let d=0;d<4;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
+  if(ed.kind==='pet'){for(let d=0;d<ed.layers.length;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
    const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#78c050';x.fillRect(0,0,c.width,c.height);x.fillStyle='#68b044';for(let i=0;i<40;i++)x.fillRect((i*53)%c.width,(i*37)%c.height,4,2);
    const S2=3,ph=walkT%60,goR=ph<30,px=goR?60+ph*10:340-(ph-30)*10,py=86,f=(walkT%2)&&(ph%30<28)?3:2,L=ed.rc[f]||ed.rc[2]||ed.rc[0];
    const still=(Math.floor(walkT/3)%2&&ed.rc[1])||ed.rc[0];if(still){x.drawImage(still,20,py+ed.oy*S2,still.width/2*S2,still.height/2*S2)}
@@ -548,7 +558,10 @@
   if(a==='pak'&&S.ed){S.ed.ak=t.checked;S.ed.dirty=true;draw();return}if(a==='pfw'&&S.ed){S.ed.fw=t.checked;S.ed.dirty=true;draw();return}
   if((a==='mrsave'||a==='mrclear')&&S.ed){const k=S.ed.base;let r=null;if(a==='mrsave'){const v=f=>{const i=root.querySelector('[data-mr="'+f+'"]');return i?i.value:''};r={hp:Math.max(10,Math.min(1000,+v('hp')||100)),spd:Math.max(10,Math.min(400,+v('spd')||100)),dmg:Math.max(0,Math.min(1000,v('dmg')===''?100:+v('dmg'))),gold:Math.max(0,Math.min(100000,v('gold')|0))};
     const dr=[];for(let i=0;i<MRN;i++){const k=v('dk'+i);if(!k||!INAME[k])continue;const n=Math.max(1,Math.min(1000,v('dn'+i)|0||1)),x=Math.max(n,Math.min(1000,v('dx'+i)|0||n)),c=Math.max(0,Math.min(100,+v('dc'+i)));dr.push({k,n,x,c:isFinite(c)?c:100})}
-    if(dr.length)r.dr=dr;const rp=root.querySelector('[data-mr="rep"]');if(rp&&rp.checked)r.rep=1;if(!(r.dmg>=0))r.dmg=100;if(r.dmg===100)delete r.dmg;if(r.hp===100&&r.spd===100&&!r.gold&&!r.dr&&!r.rep&&r.dmg==null)r=null}
+    if(dr.length)r.dr=dr;const rp=root.querySelector('[data-mr="rep"]');if(rp&&rp.checked)r.rep=1;if(!(r.dmg>=0))r.dmg=100;if(r.dmg===100)delete r.dmg;
+    if(root.querySelector('[data-mr="pjr"]')){const pj={rate:Math.max(10,Math.min(1000,+v('pjr')||100)),dmg:Math.max(0,Math.min(10,v('pjd')|0)),fx:{}};for(const f of(window.SQMOBATK?SQMOBATK.FX:[])){const c=Math.max(0,Math.min(100,+v('fx_'+f+'_c')||0)),tt=Math.max(.5,Math.min(30,+v('fx_'+f+'_t')||3));if(c>0)pj.fx[f]=[c,tt]}
+     if(!Object.keys(pj.fx).length)delete pj.fx;if(pj.rate!==100||pj.dmg||pj.fx)r.pj=pj}
+    if(r.hp===100&&r.spd===100&&!r.gold&&!r.dr&&!r.rep&&r.dmg==null&&!r.pj)r=null}
    if(r)S.draft.mobs[k]=r;else delete S.draft.mobs[k];try{await dset('draft/mobs/'+key(k),r);toast(r?'Rules saved to draft.':'Back to the game\'s own rules (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw();return}
   if(a==='psy'&&S.ed){S.ed.sy=t.checked;S.ed.dirty=true;draw();return}
   if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true,S.ed&&S.ed.night);return}
@@ -578,6 +591,7 @@
   if(n==='sq'){S.statQ=t.value;const pos=t.selectionStart;draw();const i=root.querySelector('[data-in="sq"]');if(i){i.focus();i.setSelectionRange(pos,pos)}return}
   if(n==='recol'&&S.ed&&S.ed.pal[S.ed.col]!=null){if(!t._snap){snapEd();t._snap=1}S.ed.pal[S.ed.col]=t.value;const sw=root.querySelector('.dv-sw.dv-on');if(sw)sw.style.background=t.value;paint()}});
  root.addEventListener('change',async e=>{const t=e.target;
+  if(t.dataset.in==='paf'&&S.ed){S.ed.af=Math.max(0,Math.min(S.ed.layers.length-1,t.value|0));S.ed.ak=S.ed.af>0;S.ed.dirty=true;draw();return}
   if(t.dataset.in==='addcol'&&S.ed){snapEd();S.ed.pal.push(t.value);S.ed.col=S.ed.pal.length-1;S.ed.tool='pen';drawPal();drawTools();paint();return}
   if(t.dataset.in==='recol'){t._snap=0;drawPal();return}
   if(t.dataset.in==='pname'&&S.ed&&S.ed.kind==='prop'){const k=S.ed.base,v=t.value.trim().slice(0,40),nv=v&&v!==gameName(k)?v:null;if(nv)S.draft.pnames[k]=nv;else delete S.draft.pnames[k];
