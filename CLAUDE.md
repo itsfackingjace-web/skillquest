@@ -268,12 +268,15 @@
 - **One home** (`items/144-s149-one-home.js`, `window.SQONEHOME`): one house or castle across `HOUSES` + `SQRH`; `startBuild`
   refuses a second; `enforce()` (called from 150 after the yards are read) keeps a castle, else the most furnished, and packs
   the rest (item, furniture, chest contents, yard).
-- **Backyards / courtyards** (`items/145-s150-backyards.js`, `window.SQYARD`): rooms `yard` (16x12) and `court` (26x16),
+- **Backyards / courtyards** (`items/145-s150-backyards.js`, `window.SQYARD`): rooms `yard` (22x16) and `court` (40x28),
   `ex:-10` (the exits are handled here). Look: ground baked with `hdBakeR` from `R.lay` (`YARD_LAY`/`COURT_LAY`: grass, paving,
-  forest floor, court pond), the islands' trees/bushes as solid `_obj` room items and the house/castle facade as a `_ybld` item
-  drawn by `drBld` along the top (`decorate`). Back doors: `HDOOR` (house x 112; castle 120/232) ↔ `YDOOR` (the facade's door: yard
-  128; court 208), you arrive on row `DOORY` (3) and walk up into the facade to go back; `leaveScene` from a yard goes back into
-  the house. On load (and for visitors) `settle` moves furniture/plots off tiles that are now solid or the door to the nearest free tile. The yard
+  forest floor, ponds; drawn for the whole view, forest floor outside the room), the islands' trees/bushes as solid `_obj` room
+  items, a forest of `_obj` items with `ring:1` outside the room (drawn only on screen), and the house/castle facade as a `_ybld`
+  item drawn by `drBld` along the top (`decorate`). Back doors: `HDOOR` (house x 112; castle 120/232) ↔ `YDOOR` (the facade's
+  door at the room's centre line, `R.w*8`); you arrive on row `DOORY` (3) and walk up into the facade to go back; after a door
+  `LOCK` holds until you turn or step away (no bouncing). Indices are `y*w+x`: saves carry `yw` (and published yards `w`), older
+  ones are moved from `OLDW` (16/26) by `mv` (centred), then `settle` moves anything on a solid tile or the door to the nearest
+  free one. Never change the sizes without bumping that. The yard
   scene is `id:'home'` with `house` = the yard object (`h._yd`: `furn`=h.yf, `plots`=h.yp, `_oid` = id+'~y' so `mpLoc` differs),
   `yardOf` = the house scene, `ret`/`prev` copied from it (saves place you outside). Farming: own HIT handler (till / water /
   harvest via 016's `harvest(-1,p)`, swaps hoe/can only on off-hand use: `SQOFFVIA()` from 140), seeds via PLANT, growth in
