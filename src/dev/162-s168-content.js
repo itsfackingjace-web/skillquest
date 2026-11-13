@@ -229,5 +229,6 @@
   if(a==='try'){const was=C.loot[ST.sel];const tmp={...C.loot};loot({...Object.fromEntries(Object.entries(C.loot)),[ST.sel]:tidy('loot',ST.w)});const tot={};for(let i=0;i<10;i++){const r=roll(ST.sel);for(const k in r)tot[k]=(tot[k]|0)+r[k]}C.loot=tmp;if(!was)delete C.loot[ST.sel];
    const out=document.getElementById('dvcfout');if(out)out.textContent='10 rolls: '+(Object.entries(tot).map(([k,n])=>n+' '+(k==='gold'?'gold':INAME[k])).join(', ')||'nothing');return}
   if(a==='del')return arm('cfdel',async()=>{const s=ST.sec,id=ST.sel;delete sec(s)[id];try{await dset('draft/content/'+s+'/'+id,null);toast('Deleted from your draft.')}catch(e2){fail(e2)}ST.sel=null;ST.w=null;if(SQA.previewing)SQA.preview(S.draft);API.draw()})},true);
+ SQCONTENT.edit=(s2,id)=>{if(!SECS[s2])return;S.tab='content';ST.sec=s2;ST.sel=id;const o=sec(s2)[id];ST.w=JSON.parse(JSON.stringify(o||SECS[s2].blank()));API.draw()};SQCONTENT.SECS=SECS;
  SQSUITE.addTab('content','Content',{render,changes(L,D){const out=[],l=L&&L.content||{},d=D&&D.content||{};for(const s in SECS){const a=l[s]||{},b=d[s]||{};for(const id of new Set([...Object.keys(a),...Object.keys(b)]))if(JSON.stringify(a[id])!==JSON.stringify(b[id]))
    out.push({kind:'ext',html:SECS[s].l+' '+E(titleOf(s,id,b[id]||a[id]))+': '+(b[id]?(a[id]?'changed':'new'):'removed')})}return out}})})();

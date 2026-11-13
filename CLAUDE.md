@@ -407,3 +407,8 @@
   `perk` edits the [id,value] pairs of 038/039's GSPD/GEXT/GRAR/GDBL/STAYP/FOODP/PSPD (one id can sit in two tables, hence the
   table in the key) and swaps the % in the perk's description. Originals captured at load. Perks written into code have no
   table and aren't editable. `sim()` = actions/time between two levels from XT.
+- **History & search** (`dev/164-s170-history-search.js`, `window.SQHIST`, Dev Suite > History): the library diffed as units (one
+  entry; one level deeper for stats/content/balance; swings whole). Publish some changes = live + the ticked units from the draft;
+  versions list what each changed vs the one before; "Make live again"/"Undo the last publish" publish an old version as a new
+  one (same hist/prune steps as 111b's goLive). Search covers items, monsters, islands (people, signs), bosses, content, look
+  names, skills; results open the tab (Content through `SQCONTENT.edit(section,id)`).
