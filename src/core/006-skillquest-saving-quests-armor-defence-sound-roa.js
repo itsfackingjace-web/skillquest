@@ -109,7 +109,7 @@ function snap(){return{v:1,ch:{...CH},xp:XPS.slice(),tl:{...TL},gold:GLD,arm:{..
  inv:Object.fromEntries(INVK.map(k=>[k,inv[k]|0])),
  p:{x:Math.round(P.x),y:Math.round(P.y),hp:P.hp},hunger:Math.round(hunger),time:Math.round(time),kills,
  fires:fires.map(f=>({x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)})),rm:REM.map(r=>({i:r.i,t:r.t,at:Math.round(r.at)})),clk:Math.round(CLK),mute:MUTE}}
-const keyOf=s=>{const o={...s};for(const k of['time','clk','hunger','mp','savedAt','wid','dev'])delete o[k];o.p=s.p?[s.p.x>>4,s.p.y>>4,s.p.hp]:0;o.fires=(s.fires||[]).length;return JSON.stringify(o)};
+const keyOf=s=>{const o={...s};for(const k of['time','clk','hunger','mp','savedAt','wid','dev','bw','as'])delete o[k];o.p=s.p?[s.p.x>>4,s.p.y>>4,s.p.hp]:0;o.fires=(s.fires||[]).length;return JSON.stringify(o)};
 function saveLocal(force){if(dead)return;const s=snap(),k=keyOf(s);if(k===lastLocal&&!force)return;lastLocal=k;s.savedAt=Date.now();LOCAL_AT=s.savedAt;try{localStorage.setItem(LS,JSON.stringify(s))}catch(e){}}
 async function saveCloud(force){if(!cloud||cloudBusy||dead)return;const s=snap(),k=keyOf(s);if(k===lastCloud&&!force)return;cloudBusy=true;s.savedAt=Date.now();
  try{await cloud.set(s);lastCloud=k;cloudOk=performance.now()/1000}catch(e){const c=e&&e.code;if(c=='invalid_argument'||c=='revoked'||c=='not_granted'||c=='capability_disabled'||c=='capability_removed')cloud=null}finally{cloudBusy=false}}

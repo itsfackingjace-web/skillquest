@@ -280,7 +280,7 @@ const sessEl=el('div','sqsess','g3','');sessEl.style.cssText='position:fixed;ins
 sessEl.innerHTML='<div class="g3" style="max-width:320px;padding:18px;text-align:center;font:500 15px '+PF+';background:#f8f8f8;border:3px solid #485870"><b style="font-size:18px">Playing somewhere else</b><br><br>SkillQuest was opened on another device or tab with your account, so this one is paused.<br><br><button id="sqsessgo" style="font:700 16px '+PF+';padding:10px 18px;border:3px solid #485870;background:#485870;color:#fff;cursor:pointer">PLAY HERE</button></div>';
 document.body.appendChild(sessEl);for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])sessEl.addEventListener(ev,e=>e.stopPropagation());
 $('sqsessgo').onclick=()=>{try{location.reload()}catch(e){}};
-function sessPassive(){if(MP.passive)return;MP.passive=true;try{FB.db.onDisconnect(MP.pref).cancel().catch(()=>{})}catch(e){}sessEl.style.display='flex';try{if(TR&&TR.st!=='idle'&&typeof trCancel==='function')trCancel()}catch(e){}}
+function sessPassive(){if(MP.passive||window.SQSTRICT)return;/* account-only saves: 061 sess lock */MP.passive=true;try{FB.db.onDisconnect(MP.pref).cancel().catch(()=>{})}catch(e){}sessEl.style.display='flex';try{if(TR&&TR.st!=='idle'&&typeof trCancel==='function')trCancel()}catch(e){}}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(!MP.on||!MP.pref)return;MP.unsub.push(FB.db.onValue(MP.pref,s=>{const v=s.val();if(MP.passive)return;
    // the copy opened later wins (both sides compare the same numbers, so they always agree)
    if(v&&v.sid&&v.sid!==MP.sid&&(+v.s0>MP.s0||(+v.s0===MP.s0&&v.sid>MP.sid)))sessPassive();else if(!v)MP.last=''}))}}

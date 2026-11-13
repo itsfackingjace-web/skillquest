@@ -4,7 +4,14 @@
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid",
-        ".validate": "newData.hasChildren(['json', 'savedAt']) && newData.child('json').isString() && newData.child('json').val().length < 3000000 && newData.child('savedAt').isNumber()"
+        ".validate": "newData.hasChildren(['json', 'savedAt']) && newData.child('json').isString() && newData.child('json').val().length < 3000000 && newData.child('savedAt').isNumber() && (!root.child('sess/' + $uid + '/id').exists() || newData.child('sid').val() === root.child('sess/' + $uid + '/id').val())"
+      }
+    },
+    "sess": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['id', 't']) && newData.child('id').isString() && newData.child('id').val().length < 40 && newData.child('t').isNumber()"
       }
     },
     "presence": {

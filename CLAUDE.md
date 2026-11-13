@@ -303,3 +303,15 @@
   to 4; later sections restore only their own tiers (035: 5, 084: 6/7). 147 restores any tier above 4 that has an `eq_<slot><tier>`
   item, from the save's `tl`, after every clamp. **A new tier above 4 needs nothing more, but never clamp again.** Saves without
   `tfx` get a one-time return of `LOST` items that are in `ach.col` but nowhere in the save and not in hand.
+- **Account-only saves** (061, on skillquestmmo.com and the Windows app; `window.SQSTRICT`, tests opt in with localStorage
+  `sq_strict=1`): signing in is required to play (the title has no PLAY until `SQSTRICT.ready`). Each page load claims
+  `sess/<uid>` {id: `SQSTRICT.sid`, t} before reading the account save; the account save carries `sid` and the database rules
+  refuse a save whose `sid` isn't `sess/<uid>/id` (when one exists), so a session that lost the account can't write. Losing it
+  (sess listener, or a refused save via `SQSTRICT.denied`) = `sqLost()`: overlay `#sqlost`, `upd`/`saveLocal`/`saveCloud` stop;
+  PLAY HERE INSTEAD = `sqTakeBack` (claim, load the account save in place). 072's presence-based `sessPassive` is off in strict.
+  Loading (`mpLinkStrict`): the account save, except the first time under these rules (no `as` on the account save: the one
+  with more XP wins) or when this device's save continues it exactly (`bw`/`wid` = the account save's `wid`, newer); a save
+  from another account (`sq_acct`) is never used (backed up on the device only). The other save goes to backups. Cloud
+  writes in strict skip 008's `syncCheck` (no adopt/ask) and are marked `as:1`. `#sqoff` shows "Not saved: reconnecting..."
+  (`.info/connected`). Rules: `sess`, `saves.sid` (publish them).
+

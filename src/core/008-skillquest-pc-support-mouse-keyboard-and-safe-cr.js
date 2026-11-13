@@ -38,6 +38,9 @@ const _dr7=draw;draw=function(){_dr7();if(!isPC||menuOpen)return;let f=true;try{
 let lastWid=null;const myDev=Math.random().toString(36).slice(2,10);
 const wOf=S=>S&&S.wid||'legacy';
 const _ap7=applySave;applySave=function(S){_ap7(S);lastWid=wOf(S)};
+// every save remembers which account save it continues from (bw), so a device's own unsent progress can be told apart
+// from an old copy (061's account-only saves use it)
+{const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(lastWid)s.bw=lastWid;return s}}
 // What this device last synced with the account (the account save's id and how much progress it had). A save that
 // another device wrote since then is taken automatically only when this device hasn't made progress of its own since
 // and the other save isn't behind; otherwise the player picks. (Comparing save times was wrong: a device that was just
@@ -56,12 +59,16 @@ function syncAsk(rs){if(window.SQMP&&SQMP.choose)return;const L=snap();L.savedAt
 function syncCheck(rs){if(!(rs&&rs.v==1&&lastWid!==null))return false;const L=snap();if(keyOf(L)===keyOf(rs)){lastWid=wOf(rs);syncMark(rs);return false}
  const d=syncDecide(L,rs);if(d==='push')return false;if(d==='adopt')adoptRemote(rs);else syncAsk(rs);return true}
 saveCloud=async function(force){if(!cloud||cloudBusy||dead||(window.SQMP&&SQMP.choose))return;if(keyOf(snap())===lastCloud&&!force)return;cloudBusy=true;
- try{const r=await cloud.get(),rs=r&&r.exists?r.data():null;
-  if(syncCheck(rs))return;
-  if(dead)return;const s=snap(),k=keyOf(s);s.savedAt=Date.now();s.wid=myDev+'-'+Date.now().toString(36);s.dev=myDev;await cloud.set(s);lastWid=s.wid;lastCloud=k;cloudOk=performance.now()/1000;syncMark(s)}
- catch(e){const c=e&&e.code;if(c=='invalid_argument'||c=='revoked'||c=='not_granted'||c=='capability_disabled'||c=='capability_removed')cloud=null}
+ try{const r=window.SQSTRICT?null:await cloud.get(),rs=r&&r.exists?r.data():null;
+  // account-only saves (061, SQSTRICT): this session owns the account (sess/<uid>), so it just writes; the server refuses
+  // writes from a session that lost it. Older rules: compare with the account first.
+  if(window.SQSTRICT){if(window.SQSTRICT.lost)return}else if(syncCheck(rs))return;
+  if(dead)return;const s=snap(),k=keyOf(s);s.savedAt=Date.now();s.wid=myDev+'-'+Date.now().toString(36);s.dev=myDev;if(window.SQSTRICT)s.as=1;await cloud.set(s);lastWid=s.wid;lastCloud=k;cloudOk=performance.now()/1000;syncMark(s)}
+ catch(e){const c=e&&e.code;if(c=='invalid_argument'||c=='revoked'||c=='not_granted'||c=='capability_disabled'||c=='capability_removed')cloud=null;
+  // the server refused: another device or tab has taken over this account
+  if(window.SQSTRICT&&/PERMISSION_DENIED|permission/i.test(String(c||'')+' '+String(e&&e.message||'')))try{SQSTRICT.denied()}catch(e2){}}
  finally{cloudBusy=false}};
-document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||!cloud||cloudBusy)return;
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||!cloud||cloudBusy||window.SQSTRICT)return;
  try{const r=await cloud.get(),rs=r&&r.exists?r.data():null;syncCheck(rs)}catch(e){}});
 // ---- chess engine (board index 0 = a8, 63 = h1; uppercase = white) ----
 const CE=(()=>{

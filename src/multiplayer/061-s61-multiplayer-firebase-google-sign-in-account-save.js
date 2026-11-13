@@ -13,6 +13,12 @@ const FBV='10.12.2',FBC={apiKey:"AIzaSyDqKBIszPeg7y-cto-YRDzgPUfENSVXPjk",authDo
  databaseURL:"https://skillquest-913e2-default-rtdb.firebaseio.com",projectId:"skillquest-913e2",storageBucket:"skillquest-913e2.firebasestorage.app",
  messagingSenderId:"711983472658",appId:"1:711983472658:web:43c695d15a29386c1ef8cb"};
 const MP_OK=/^https?:$/.test(location.protocol)&&!(window.claude&&window.claude.use);
+// Account-only saves (on skillquestmmo.com, and the Windows app, which loads it): you sign in to play, your Google account's
+// save is THE save, and only one device or tab plays an account at a time. The newest session claims sess/<uid> {id,t};
+// a session that loses it stops (overlay, PLAY HERE takes it back) and the database refuses saves from it (saves.sid must
+// match sess.id). This device's own copy is only a cache. Tests elsewhere can opt in with localStorage sq_strict=1.
+const STRICT=MP_OK&&(/(^|\.)skillquestmmo\.com$/.test(location.hostname)||(()=>{try{return localStorage.getItem('sq_strict')==='1'}catch(e){return false}})());
+const SQSTRICT=STRICT?{sid:Math.random().toString(36).slice(2,10)+Date.now().toString(36),lost:false,ready:false,conn:true,offAt:0,denied:()=>{}}:null;window.SQSTRICT=SQSTRICT;
 let FB=null;
 const myName=()=>PNAME||((MP.user&&MP.user.displayName)||'').split(' ')[0].replace(/[<>]/g,'').slice(0,10)||'Adventurer';
 let mpErrAt=0,mpErrLast='';
@@ -56,7 +62,7 @@ function mpCloseChat(){MP.open=false;pc.style.display='none';inp.blur()}
 btn.onclick=()=>MP.open?mpCloseChat():mpOpenChat();
 $('mpx').onclick=mpCloseChat;$('mpno').onclick=()=>{sg.style.display='none'};
 $('mpgo').onclick=()=>{sg.style.display='none';mpSignIn()};
-$('mpso').onclick=async()=>{mpCloseChat();await mpStop(true);try{await FB.auth.signOut(FB.A)}catch(e){}say('Signed out. Playing offline.')};
+$('mpso').onclick=async()=>{mpCloseChat();if(STRICT)try{await saveCloud(true)}catch(e){}await mpStop(true);try{await FB.auth.signOut(FB.A)}catch(e){}say(STRICT?'Signed out.':'Signed out. Playing offline.')};
 pc.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{MP.tab=b.dataset.t;mpRList()});
 // the game's keyboard handlers (capture phase on document) would swallow Enter, so the chat box gets the key first
 addEventListener('keydown',e=>{if(e.target!==inp){const t=e.target;if(t&&t.tagName==='INPUT'&&t.closest&&t.closest('#mpchat')){e.stopImmediatePropagation();if(e.key==='Enter'&&!e.isComposing){e.preventDefault();const f=t.closest('form');if(f)f.requestSubmit()}else if(e.key==='Escape'){e.preventDefault();mpCloseChat()}}return}e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();mpCloseChat()}else if(e.key==='Enter'&&!e.isComposing){e.preventDefault();mpSend(inp.value);inp.value=''}},true);
@@ -177,12 +183,58 @@ window.sqCloudBak=(tag,S)=>{const u=MP.user;if(!FB||!u||!S||S.v!=1)return Promis
   const s=await d.get(d.ref(D,base));if(!s.exists())return true;const ks=Object.keys(s.val()).sort();while(ks.length>8)await d.remove(d.ref(D,base+'/'+ks.shift()));return true}).catch(e=>{mpErr(e);return false})};
 window.sqCloudBakList=async()=>{const u=MP.user;if(!FB||!u)return null;const d=FB.db,D=FB.D;const s=await d.get(d.ref(D,'bak/'+u.uid));if(!s.exists())return[];const v=s.val(),out=[];
  for(const k of Object.keys(v).sort().reverse()){let S=null;try{S=JSON.parse(v[k].json)}catch(e){}if(S&&S.v==1)out.push({k,at:+v[k].at||0,tag:v[k].tag||'',S})}return out};
+// ---- account-only saves: the session lock, loading, losing the account to another device ----
+async function sqClaim(uid){const d=FB.db;await d.set(d.ref(FB.D,'sess/'+uid),{id:SQSTRICT.sid,t:Date.now()});SQSTRICT.lost=false}
+function sqWatch(uid){const d=FB.db;MP.unsub.push(d.onValue(d.ref(FB.D,'sess/'+uid),s=>{const v=s.val();if(v&&v.id&&v.id!==SQSTRICT.sid&&!SQSTRICT.lost&&MP.user&&MP.user.uid===uid)sqLost()}));
+ MP.unsub.push(d.onValue(d.ref(FB.D,'.info/connected'),s=>{const c=s.val()===true;if(!c&&SQSTRICT.conn)SQSTRICT.offAt=Date.now();SQSTRICT.conn=c}))}
+SQSTRICT&&(SQSTRICT.denied=async()=>{try{const u=MP.user;if(!u||SQSTRICT.lost)return;const s=await FB.db.get(FB.db.ref(FB.D,'sess/'+u.uid));const v=s.val();if(!v||v.id!==SQSTRICT.sid)sqLost()}catch(e){}});
+// what to load when you sign in: the account save, except (a) the very first time under these rules, when the save with more
+// progress wins (the other one is backed up), and (b) when this device's save continues the account save exactly (made after
+// it, from it: bw = its wid) and simply hadn't reached the account yet. A save on this device from another account is never used.
+function bakLocalOnly(tag,S){try{const keys=Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort();while(keys.length>=4)localStorage.removeItem(keys.shift());localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){}}
+async function mpLinkStrict(uid,adapter){const r=await adapter.get();let S=r.exists?r.data():null;if(S&&S.v!=1)S=null;
+ const prev=lsGet('sq_acct'),has=localHasProgress();let L=null;
+ if(has){L=snap();L.savedAt=LOCAL_AT;const bw=lastWid&&lastWid!=='legacy'?lastWid:(typeof BOOT_LOCAL!=='undefined'&&BOOT_LOCAL&&BOOT_LOCAL.bw)||null;L.bw=bw}
+ const mine=!!L&&(!prev||prev===uid);let pick;
+ if(!S)pick=mine?'local':'none';else if(!L)pick='account';else if(!mine)pick='account';else if(keyOf(L)===keyOf(S))pick='same';
+ else if(S.as)pick=L.bw&&L.bw===S.wid&&(+L.savedAt||0)>(+S.savedAt||0)?'local':'account';
+ else{const a=sqXpSum(L),b=sqXpSum(S);pick=a>b||a===b&&(+L.savedAt||0)>(+S.savedAt||0)?'local':'account'}
+ if(L&&(pick==='account'||pick==='none')&&!(S&&keyOf(L)===keyOf(S))){if(mine)mpBackup('device',L);else bakLocalOnly('other',L)}
+ if(pick==='local'&&S)mpBackup('account',S);
+ if(pick==='account'){applySave(S);hideCreator();say('Progress loaded from your account.')}
+ else if(pick==='none'){if(L)newGame();say('Welcome! Make your character: it\'s saved to your Google account.')}
+ else if(pick==='same')lastWid=wOf(S);
+ lsSet('sq_acct',uid);cloud=adapter;SQSTRICT.ready=true;SQSTRICT.pick=pick;if(TS&&TS.open)TS.mh='';
+ try{localStorage.removeItem('sq_spf')}catch(e){}
+ saveLocal(true);if(pick!=='none')await saveCloud(true)}
+let lostBox=null;
+function sqLost(){SQSTRICT.lost=true;cloud=null;try{if(BUILD)endBuild()}catch(e){}FISH=null;
+ if(!lostBox){lostBox=document.createElement('div');lostBox.id='sqlost';lostBox.innerHTML='<div class="sqlb"><div class="h">PLAYING ON ANOTHER DEVICE</div><p>Your account was opened on another device or tab, so this one has stopped. Your progress is saved there.</p><button data-a="here">PLAY HERE INSTEAD</button></div>';
+  for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])lostBox.addEventListener(ev,e=>e.stopPropagation());
+  lostBox.querySelector('button').onclick=sqTakeBack;document.body.appendChild(lostBox)}
+ lostBox.style.display='flex';try{mpLog('game','Your account was opened somewhere else, so this game stopped.')}catch(e){}}
+async function sqTakeBack(){const b=lostBox.querySelector('button'),u=MP.user;if(!u||!MP.adapter){b.textContent='SIGN IN AGAIN';tsReopen();lostBox.style.display='none';return}
+ b.disabled=true;b.textContent='LOADING...';
+ try{await sqClaim(u.uid);const r=await MP.adapter.get();const S=r.exists?r.data():null;if(S&&S.v==1){applySave(S);hideCreator()}cloud=MP.adapter;SQSTRICT.lost=false;lostBox.style.display='none';
+  saveLocal(true);say('Playing here. Your latest progress is loaded.');msgT=4}catch(e){mpErr(e);SQSTRICT.lost=true;say('Couldn\'t take over. Check your connection.')}
+ b.disabled=false;b.textContent='PLAY HERE INSTEAD'}
+if(STRICT){const st=document.createElement('style');st.textContent=`#sqlost{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;background:rgba(8,12,24,.72)}
+#sqlost .sqlb{max-width:420px;margin:12px;background:#f8f8f8;color:#404040;border:4px solid #485870;box-shadow:inset 0 0 0 3px #a8c0e0;padding:16px;font:500 15px ${PF};text-align:center;line-height:1.4}
+#sqlost .h{font-weight:700;font-size:17px;letter-spacing:1px;margin-bottom:8px}#sqlost button{margin-top:12px;width:100%;padding:12px;background:#fff;border:3px solid #485870;font:700 16px ${PF};color:#3058c8;cursor:pointer}
+#sqoff{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 6px);transform:translateX(-50%);z-index:60;background:#f8e8c0;color:#5a3a10;border:2px solid #a87830;padding:3px 10px;font:700 12px ${PF};display:none;pointer-events:none}`;document.head.appendChild(st);
+ const off=document.createElement('div');off.id='sqoff';off.textContent='Not saved: reconnecting...';document.body.appendChild(off);
+ setInterval(()=>{const show=MP.on&&SQSTRICT.ready&&!SQSTRICT.conn&&!SQSTRICT.lost&&!(TS&&TS.open)&&Date.now()-SQSTRICT.offAt>4000;off.style.display=show?'block':'none'},500);
+ // a stopped game stands still and writes nothing, not even to this device
+ const _u=upd;upd=function(dt){if(SQSTRICT.lost)return;return _u.apply(this,arguments)};
+ const _sl=saveLocal;saveLocal=function(){if(SQSTRICT.lost)return;return _sl.apply(this,arguments)}}
 async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=u;const d=FB.db,D=FB.D,uid=u.uid;
  // account save: one JSON string per player
  const sref=d.ref(D,'saves/'+uid);
  const adapter={async get(){const s=await d.get(sref);if(!s.exists())return{exists:false,data:()=>null};let v=null;try{v=JSON.parse(s.val().json)}catch(e){}return{exists:!!v,data:()=>v}},
-  async set(s){await d.set(sref,{json:JSON.stringify(s),savedAt:+s.savedAt||Date.now()})}};
- MP.adapter=adapter;try{await mpLinkSave(uid,adapter)}catch(e){mpErr(e)}
+  async set(s){await d.set(sref,Object.assign({json:JSON.stringify(s),savedAt:+s.savedAt||Date.now()},STRICT?{sid:SQSTRICT.sid}:{}))}};
+ MP.adapter=adapter;
+ if(STRICT){try{await sqClaim(uid);await mpLinkStrict(uid,adapter);sqWatch(uid)}catch(e){mpErr(e);say('Couldn\'t load your save. Check your connection and try again.')}}
+ else try{await mpLinkSave(uid,adapter)}catch(e){mpErr(e)}
  try{const kd='sq_dbak_'+uid,last=+lsGet(kd)||0;if(Date.now()-last>20*3600e3){const r=await adapter.get();if(r.exists){const S=r.data();if(S&&S.v==1&&await sqCloudBak('daily',S))lsSet(kd,String(Date.now()))}}}catch(e){}
  // presence
  MP.pref=d.ref(D,'presence/'+uid);MP.last='';MP.lastCh='';MP.lastN='';
@@ -200,7 +252,8 @@ async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=
  MP.on=true;mpRBtn();say('Online as '+myName()+'!')}
 async function mpStop(manual){const was=MP.on;MP.on=false;for(const f of MP.unsub)try{f()}catch(e){}MP.unsub=[];
  if(manual&&MP.pref)try{await FB.db.remove(MP.pref)}catch(e){}
- MP.players.clear();try{mobStop()}catch(e){}MP.pref=null;MP.user=null;if(cloud&&cloud===MP.adapter)cloud=null;if(was)mpCloseChat();mpRBtn()}
+ MP.players.clear();try{mobStop()}catch(e){}MP.pref=null;MP.user=null;if(cloud&&cloud===MP.adapter)cloud=null;if(was)mpCloseChat();mpRBtn();
+ if(STRICT){const wasReady=SQSTRICT.ready;SQSTRICT.ready=false;if(lostBox)lostBox.style.display='none';SQSTRICT.lost=false;if(wasReady&&!TS.open)try{tsReopen()}catch(e){}TS.mh=''}}
 // ---- other players ----
 const live=r=>performance.now()-r.seen<20000;
 const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v=c[k];if(typeof v==='number'&&isFinite(v))o[k]=Math.max(0,Math.min(99,v|0))}
@@ -338,11 +391,12 @@ const hasSave=()=>!(cm.style.display!=='none'&&!PNAME);
 const fmtT=s=>{s=Math.max(0,Math.floor(+s||0));const h=Math.floor(s/3600),m=Math.floor(s/60)%60;return h+':'+String(m).padStart(2,'0')};
 function tsTotal(){let t=0;for(let i=0;i<XPS.length;i++)t+=lvOf(i);return t}
 function tsMenu(){let h='';const btn=(a,html)=>{h+='<button data-a="'+a+'">'+html+'</button>'};
- if(hasSave()){const og=MP.user&&isOG(MP.user.uid);btn('go','CONTINUE<div class="tsci"><span>PLAYER</span><span>'+(og?'<img src="'+crownURL+'" alt="OG">':'')+esc(pname())+'</span><span>TIME</span><span>'+fmtT(CLK)+'</span><span>TOTAL LV</span><span>'+tsTotal()+'</span><span>GOLD</span><span>'+GLD+'</span></div>')}
+ const gate=STRICT&&!(MP.on&&SQSTRICT.ready);
+ if(gate){}else if(hasSave()){const og=MP.user&&isOG(MP.user.uid);btn('go','CONTINUE<div class="tsci"><span>PLAYER</span><span>'+(og?'<img src="'+crownURL+'" alt="OG">':'')+esc(pname())+'</span><span>TIME</span><span>'+fmtT(CLK)+'</span><span>TOTAL LV</span><span>'+tsTotal()+'</span><span>GOLD</span><span>'+GLD+'</span></div>')}
  else btn('go','NEW GAME');
  if(MP_OK&&!MP.on)btn('in','SIGN IN WITH GOOGLE');
  btn('opt','OPTIONS');
- const st=MP.on?'Online as '+myName()+(MP.user&&isOG(MP.user.uid)?' · OG #'+ogRank(MP.user.uid):''):MP_OK?(FB?'Sign in to play with others and keep your progress on any device.':'Connecting...'):'';
+ const st=gate?(!FB?'Connecting...':!MP.on?'Sign in with Google to play. Your character is saved to your Google account, on every device.':'Loading your save...'):MP.on?'Online as '+myName()+(MP.user&&isOG(MP.user.uid)?' · OG #'+ogRank(MP.user.uid):''):MP_OK?(FB?'Sign in to play with others and keep your progress on any device.':'Connecting...'):'';
  h+='<div class="tsst">'+esc(st)+'</div>';if(h===TS.mh)return;TS.mh=h;
  const keep=GPF&&tsMn.contains(GPF)?GPF.dataset.a:null;tsMn.innerHTML=h;
  if(keep){const k=tsMn.querySelector('[data-a="'+keep+'"]')||tsMn.querySelector('button');if(k)setFocus(k)}}
@@ -353,7 +407,7 @@ function tsClose(then){TS.open=false;tsEl.style.display='none';setFocus(null);me
 tsPs.onclick=()=>{try{sfx('talk')}catch(e){}tsStage(1)};
 tsEl.addEventListener('click',e=>{if(TS.stage===0&&e.target!==tsPs)tsPs.click()});
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
- if(a==='go')tsClose();else if(a==='in'){mpSignIn();}else if(a==='opt')tsClose(()=>{fromMenu=false;showScreen('options')})});
+ if(a==='go'){if(STRICT&&!(MP.on&&SQSTRICT.ready))return;tsClose()}else if(a==='in'){mpSignIn();}else if(a==='opt')tsClose(()=>{fromMenu=false;showScreen('options')})});
 // keyboard: any key starts; arrows / Enter / Esc in the menu; the game never sees these keys while the title is up
 addEventListener('keydown',e=>{if(!TS.open||(window.SQSUITE&&SQSUITE.state.open)||(e.target&&e.target.closest&&e.target.closest('#mpbugf,#mpsave,#sqwk')))return;e.stopImmediatePropagation();const k=e.key;
  if(typeof WK!=='undefined'&&WK.open){e.preventDefault();if(k==='Escape'||k==='Backspace'){wkClose();return}if(!e.isTrusted)return;TS.kb=true;
