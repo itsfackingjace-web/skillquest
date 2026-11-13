@@ -9317,7 +9317,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.13-2',d:'Nov 13, 2026',t:'Bigger, prettier backyards and courtyards',n:['Courtyards are much bigger now: a stone terrace below your castle, wide paths, a pond in a paved plaza, an avenue of trees and orchards in the corners, with plenty of open lawn for farming and furniture.','Backyards are bigger too, with a path, a little patio, a pond and trees.','Both now sit in a clearing in the forest with soft grass and wildflowers, and your own house or castle stands behind you. No more odd edges or dark gaps around them.','Walk up the path into the door to go back inside. Going through a door no longer bounces you straight back if you keep holding the button.','Everything you already placed or planted came along. Anything that ended up on a tree, the pond or the path to the door moved to the nearest free spot.']},
+ {v:'2026.11.13-2',d:'Nov 13, 2026',t:'Bigger, prettier backyards and courtyards',n:['Courtyards are much bigger now: a stone terrace below your castle, wide paths, a pond in a paved plaza, an avenue of trees and orchards in the corners, with plenty of open lawn for farming and furniture.','Backyards are bigger too, with a path, a little patio, a pond and trees.','Both now sit in a clearing in the forest with soft grass and wildflowers, and your own house or castle stands behind you. No more odd edges or dark gaps around them.','Only grass can be tilled: the stone paths and patios stay clear.','Walk up the path into the door to go back inside. Going through a door no longer bounces you straight back if you keep holding the button.','Everything you already placed or planted came along. Anything that ended up on a tree, the pond or the path to the door moved to the nearest free spot.']},
  {v:'2026.11.13-1',d:'Nov 13, 2026',t:'More room for new content',n:['Behind the scenes: island bosses, world bosses and the Imp can now get fresh looks, monsters can get tougher (or gentler) hits, and the islands can get new caves, monster grounds and paths. Watch for changes as they arrive!']},
  {v:'2026.11.12-20',d:'Nov 12, 2026',t:'Backyards, courtyards and a royal throne',n:['Backyards: every house now has a back door in the middle of its back wall. It leads to your own private backyard, a fenced lawn where you can place furniture and farm in peace: till with your hoe, plant seeds from your Bag, water and harvest like anywhere else.','Castles get two back gates beside the throne that open onto a courtyard: bigger and grander, with stone paths, flower beds and a fountain.','Only friends you trust can step into your backyard or courtyard. They can look around but can\'t change anything.','One home each: you can now have one house or one castle in the world. If you had more, you keep one (a castle first) and the others were packed into your bag with all their furniture and everything in their chests.','Castle halls are now perfectly symmetrical: the gate and the red carpet line up with the throne. Nothing you placed inside was moved or lost.','A brand new throne: gold and red velvet on a stone dais.','Dungeon bosses can now get new looks and new drops from the game\'s artists, and new bosses can appear on the islands.']},
  {v:'2026.11.12-19',d:'Nov 12, 2026',t:'Melee stays melee on PC',n:['Keyboard and mouse: Space and left-click now only use your main hand. They no longer shoot your bow or till and water with your hoe or watering can. Use X or right-click for your off-hand.']},
@@ -16525,7 +16525,7 @@ window.SQA=SQA;
  // ---- farming in the yard (HIT) ----
  const yi=(R,x,y)=>y*R.w+x;
  const onDoorTile=(R,x,y)=>y<=DOORY&&YDOOR(R).some(dx=>Math.abs(x*16+8-dx)<16);
- function tillable(R,Y,x,y){if(x<0||y<2||x>=R.w||y>=R.h||onDoorTile(R,x,y))return false;const i=yi(R,x,y);return!R.solid.has(i)&&!Y.furn.has(i)&&!Y.plots.has(i)}
+ function tillable(R,Y,x,y){if(x<0||y<2||x>=R.w||y>=R.h||onDoorTile(R,x,y))return false;const i=yi(R,x,y);return R.lay(x,y)===2&&!R.solid.has(i)&&!Y.furn.has(i)&&!Y.plots.has(i)}
  {const _a=attack;attack=function(){if(!isYard()||dead||menuOpen||pnOpen||BUILD||swing>0||FISH)return _a.apply(this,arguments);const R=SCENE.room,Y=SCENE.house;
    const[x,y]=frontTile(),i=yi(R,x,y),p=Y.plots.get(i);
    if(Y.ro){if(p||Y.furn.has(i)){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}return _a.apply(this,arguments)}
@@ -16538,6 +16538,7 @@ window.SQA=SQA;
     if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');try{sfx('swish')}catch(e){}return}
     const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');try{sfx('swish')}catch(e){}return}
    if(tillable(R,Y,x,y)&&!en.some(n=>!n.dead)&&(TL.hoe||TL.can||(inv.eq_hoe|0)>0)&&want('eq_hoe')){swing=.25;Y.plots.set(i,{c:null,g:0,w:0,e:nowS2()});addXp(11,4);try{sfx('chop')}catch(e){}saveLocal(true);pub();return}
+   if(R.lay(x,y)!==2&&!R.solid.has(i)&&!Y.furn.has(i)&&y>=2&&!onDoorTile(R,x,y)&&(TL.hoe||TL.can)&&!melee&&!en.some(n=>!n.dead)){swing=.2;say('You can only till grass.');try{sfx('swish')}catch(e){}return}
    return _a.apply(this,arguments)}}
  // planting: PLANT mode with seeds from the Bag
  {const _sb=startBuild;startBuild=function(k){if(!isYard()||!SEED2CROP[k])return _sb.apply(this,arguments);if(SCENE.house.ro){say('You can\'t plant in a friend\'s yard.');closePanel();return}if((inv[k]|0)<1)return;
@@ -16608,8 +16609,8 @@ window.SQA=SQA;
  const mv=(i,ow,R)=>ow===R.w||!ow?i:(Math.floor(i/ow))*R.w+i%ow+Math.floor((R.w-ow)/2);
  // yards saved before the trees/house/pond were added: anything now standing on one moves to the nearest free spot
  function settle(h,ro){const R=RofH(h),W=R.w,used=new Set([...h.yf.keys(),...h.yp.keys()]),free=i=>{const x=i%W,y=i/W|0;return y>=2&&!R.solid.has(i)&&!onDoorTile(R,x,y)&&!used.has(i)};
-  for(const M of[h.yf,h.yp])for(const[i,v]of[...M]){const x=i%W,y=i/W|0;if(!R.solid.has(i)&&!onDoorTile(R,x,y))continue;let best=-1,bd=1e9;
-   for(let j=2*W;j<W*R.h;j++)if(free(j)){const d=Math.hypot(j%W-x,(j/W|0)-y);if(d<bd){bd=d;best=j}}
+  for(const M of[h.yf,h.yp])for(const[i,v]of[...M]){const x=i%W,y=i/W|0,grass=j=>M!==h.yp||R.lay(j%W,j/W|0)===2;if(!R.solid.has(i)&&!onDoorTile(R,x,y)&&grass(i))continue;let best=-1,bd=1e9;
+   for(let j=2*W;j<W*R.h;j++)if(free(j)&&grass(j)){const d=Math.hypot(j%W-x,(j/W|0)-y);if(d<bd){bd=d;best=j}}
    M.delete(i);used.delete(i);if(best>=0){M.set(best,v);used.add(best)}else if(M===h.yf&&!ro){inv[v.t]=(inv[v.t]|0)+1;if(v.items)for(const k in v.items)inv[k]=(inv[k]|0)+(v.items[k]|0)}}}
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{const put=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;const f=outF(h),p=outP(h);if(f)e.yf=f;if(p)e.yp=p;if(f||p)e.yw=RofH(h).w}};
     put(HOUSES,s.houses);put(window.SQRH||[],s.rh);

@@ -50,7 +50,7 @@
  // ---- farming in the yard (HIT) ----
  const yi=(R,x,y)=>y*R.w+x;
  const onDoorTile=(R,x,y)=>y<=DOORY&&YDOOR(R).some(dx=>Math.abs(x*16+8-dx)<16);
- function tillable(R,Y,x,y){if(x<0||y<2||x>=R.w||y>=R.h||onDoorTile(R,x,y))return false;const i=yi(R,x,y);return!R.solid.has(i)&&!Y.furn.has(i)&&!Y.plots.has(i)}
+ function tillable(R,Y,x,y){if(x<0||y<2||x>=R.w||y>=R.h||onDoorTile(R,x,y))return false;const i=yi(R,x,y);return R.lay(x,y)===2&&!R.solid.has(i)&&!Y.furn.has(i)&&!Y.plots.has(i)}
  {const _a=attack;attack=function(){if(!isYard()||dead||menuOpen||pnOpen||BUILD||swing>0||FISH)return _a.apply(this,arguments);const R=SCENE.room,Y=SCENE.house;
    const[x,y]=frontTile(),i=yi(R,x,y),p=Y.plots.get(i);
    if(Y.ro){if(p||Y.furn.has(i)){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}return _a.apply(this,arguments)}
@@ -63,6 +63,7 @@
     if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');try{sfx('swish')}catch(e){}return}
     const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');try{sfx('swish')}catch(e){}return}
    if(tillable(R,Y,x,y)&&!en.some(n=>!n.dead)&&(TL.hoe||TL.can||(inv.eq_hoe|0)>0)&&want('eq_hoe')){swing=.25;Y.plots.set(i,{c:null,g:0,w:0,e:nowS2()});addXp(11,4);try{sfx('chop')}catch(e){}saveLocal(true);pub();return}
+   if(R.lay(x,y)!==2&&!R.solid.has(i)&&!Y.furn.has(i)&&y>=2&&!onDoorTile(R,x,y)&&(TL.hoe||TL.can)&&!melee&&!en.some(n=>!n.dead)){swing=.2;say('You can only till grass.');try{sfx('swish')}catch(e){}return}
    return _a.apply(this,arguments)}}
  // planting: PLANT mode with seeds from the Bag
  {const _sb=startBuild;startBuild=function(k){if(!isYard()||!SEED2CROP[k])return _sb.apply(this,arguments);if(SCENE.house.ro){say('You can\'t plant in a friend\'s yard.');closePanel();return}if((inv[k]|0)<1)return;
@@ -133,8 +134,8 @@
  const mv=(i,ow,R)=>ow===R.w||!ow?i:(Math.floor(i/ow))*R.w+i%ow+Math.floor((R.w-ow)/2);
  // yards saved before the trees/house/pond were added: anything now standing on one moves to the nearest free spot
  function settle(h,ro){const R=RofH(h),W=R.w,used=new Set([...h.yf.keys(),...h.yp.keys()]),free=i=>{const x=i%W,y=i/W|0;return y>=2&&!R.solid.has(i)&&!onDoorTile(R,x,y)&&!used.has(i)};
-  for(const M of[h.yf,h.yp])for(const[i,v]of[...M]){const x=i%W,y=i/W|0;if(!R.solid.has(i)&&!onDoorTile(R,x,y))continue;let best=-1,bd=1e9;
-   for(let j=2*W;j<W*R.h;j++)if(free(j)){const d=Math.hypot(j%W-x,(j/W|0)-y);if(d<bd){bd=d;best=j}}
+  for(const M of[h.yf,h.yp])for(const[i,v]of[...M]){const x=i%W,y=i/W|0,grass=j=>M!==h.yp||R.lay(j%W,j/W|0)===2;if(!R.solid.has(i)&&!onDoorTile(R,x,y)&&grass(i))continue;let best=-1,bd=1e9;
+   for(let j=2*W;j<W*R.h;j++)if(free(j)&&grass(j)){const d=Math.hypot(j%W-x,(j/W|0)-y);if(d<bd){bd=d;best=j}}
    M.delete(i);used.delete(i);if(best>=0){M.set(best,v);used.add(best)}else if(M===h.yf&&!ro){inv[v.t]=(inv[v.t]|0)+1;if(v.items)for(const k in v.items)inv[k]=(inv[k]|0)+(v.items[k]|0)}}}
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{const put=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;const f=outF(h),p=outP(h);if(f)e.yf=f;if(p)e.yp=p;if(f||p)e.yw=RofH(h).w}};
     put(HOUSES,s.houses);put(window.SQRH||[],s.rh);
