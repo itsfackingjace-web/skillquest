@@ -384,3 +384,13 @@
   Pets: the pet editor has Attack 1/2 frames (`k`/`l`), used by the Imp while it fights (111a `impPaint`).
   Bandits, cacti and Dev Suite bosses shoot through their own lists and aren't covered yet.
 
+- **Admin tab** (`dev/161-s167-admin.js`, `window.SQADMIN`, Dev Suite > Admin): Bug reports (`bugs`, devs read; `st` status and
+  `re` reply are dev-only children, a reply also goes to the player as a gift message), Players (`lb` list + dev read of
+  `saves/<uid>`, gifts), News & events, Economy (gold/items summed over every account save, market offers/last trades).
+  Game side: `gifts/<uid>/<id>` {k,n,g,m,t,f} written by devs, claimed once by the player's game (transaction to null, then
+  bag/gold + message); `news` {m,t,until} = banner `#sqnews` (closed per `t` in localStorage); `events` {n,xp,until} = XP
+  multiplier (outermost `addXp`, max ×5) and pill `#sqevp`. Rules: `gifts`, `news`, `events`, `bugs.st/re`, `saves.read` (publish them).
+- **World Market box** (079): deliveries carry `o` (the box owner's offer) and `b` (writer); the rules only take them from someone
+  else and tied to an offer of the owner's for that item. So the offer must still exist when the box is written: filled offers
+  are removed by their owner after `HOLD` (30 s, `sweep()`), and cancelling an offer that already traded keeps it as `x:1`
+  with `q=f` (removed by the same sweep). Offers with `f>=q` don't count toward the caps and aren't listed.

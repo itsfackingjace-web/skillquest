@@ -3,7 +3,8 @@
 // automatically with other players' offers for the same item at a matching price, even while they're offline,
 // and the trade happens at the price of the offer that was there first. What you get from a trade waits in your
 // collection box at the market. Cancel an offer any time to get back what hasn't traded. Up to 8 offers at once.
-// Data: market/offers/<id> {u,n,k,s:'b'|'s',p,q,f,t}, market/box/<uid>/<id> {k,n} (k 'gold' for coins), market/last/<k> {p,t}.
+// Data: market/offers/<id> {u,n,k,s:'b'|'s',p,q,f,t}, market/box/<uid>/<id> {k,n,o,b} (k 'gold' for coins; o = the box owner's offer it pays for, b = who wrote it: the
+// database rules only take deliveries from someone else, tied to an offer of the box owner's for that item), market/last/<k> {p,t}.
 {const K='#181018',WMK={offers:{},box:{},last:{},unsub:[],busy:false,matching:new Set(),tab:'mine',form:null,seenBox:new Set(),spot:null,clerk:null,filter:''};window.SQWMK=WMK;
  const MAXO=8,me=()=>MP.user&&MP.user.uid,online=()=>MP.on&&!!me();
  // ---- market rules: at most 2 offers per item, prices within a sane range of the item's value, offers expire after 7 days ----
@@ -42,7 +43,7 @@
  const atMarket=()=>sp&&!SCENE&&Math.hypot(WMK.clerk.x-P.x,WMK.clerk.y-P.y)<70;
  // ---- data ----
  function wmStart(){if(WMK.unsub.length||!online())return;const d=FB.db;
-  WMK.unsub.push(d.onValue(d.ref(FB.D,'market/offers'),s=>{const v=s.val()||{};WMK.offers=v;for(const id in v){const o=v[id];if(o&&o.u===me()&&o.f>=o.q&&!WMK.matching.has(id))d.remove(d.ref(FB.D,'market/offers/'+id)).catch(()=>{})}expireSoon();rematchSoon();if(pnOpen&&shop==='wmkt'&&!WMK.busy&&!(typeof typing==='function'&&typing()))rPn()},e=>mpErr(e)));
+  WMK.unsub.push(d.onValue(d.ref(FB.D,'market/offers'),s=>{const v=s.val()||{};WMK.offers=v;sweep();expireSoon();rematchSoon();if(pnOpen&&shop==='wmkt'&&!WMK.busy&&!(typeof typing==='function'&&typing()))rPn()},e=>mpErr(e)));
   WMK.unsub.push(d.onValue(d.ref(FB.D,'market/box/'+me()),s=>{const v=s.val()||{};const fresh=Object.keys(v).filter(k=>!WMK.seenBox.has(k));WMK.box=v;for(const k of fresh)WMK.seenBox.add(k);
    if(fresh.length&&WMK.ready){say('World Market: one of your offers traded! Collect it at the World Market in Hollow Village.');msgT=5;try{sfx('coin')}catch(e){}}WMK.ready=true;if(pnOpen&&shop==='wmkt')rPn()},e=>mpErr(e)));
   WMK.unsub.push(d.onValue(d.ref(FB.D,'market/last'),s=>{WMK.last=s.val()||{}},e=>{}))}
@@ -55,8 +56,8 @@
  // ---- placing an offer, then matching it ----
  async function place(side,k,q,p){if(!online()){say('The World Market needs you to be signed in.');return}if(WMK.busy)return;q=Math.floor(q);p=Math.floor(p);
   if(!tradeable(k)||!(q>=1)||!(p>=1)||p>1e7||q>1e5){say('That offer doesn\'t work.');return}
-  if(mine().length>=MAXO){say('You already have '+MAXO+' offers. Cancel one first.');sfx('swish');return}
-  if(mine().filter(([,o])=>o.k===k).length>=PERK){say('You can have up to '+PERK+' offers for the same item. Cancel one first.');sfx('swish');return}
+  if(mine().filter(([,o])=>o.f<o.q).length>=MAXO){say('You already have '+MAXO+' offers. Cancel one first.');sfx('swish');return}
+  if(mine().filter(([,o])=>o.k===k&&o.f<o.q).length>=PERK){say('You can have up to '+PERK+' offers for the same item. Cancel one first.');sfx('swish');return}
   if(!inBand(k,p)){say('The market only takes '+(INAME[k]||k).toLowerCase()+' offers of '+fmt(lo(k))+' gold or more each.');sfx('swish');return}
   if(side==='s'){if((inv[k]|0)<q){say('You don\'t have '+q+' '+nm(k,q).toLowerCase()+'.');sfx('swish');return}inv[k]-=q}
   else{if(GLD<q*p){say('You need '+(q*p)+' gold for that offer.');sfx('swish');return}GLD-=q*p}
@@ -66,7 +67,12 @@
   catch(e){mpErr(e);if(!up){if(side==='s')inv[k]=(inv[k]|0)+q;else GLD+=q*p;say('The market couldn\'t take that offer. Try again.')}else say('Your offer is up, but it couldn\'t trade just now. It will keep trying, or you can cancel it.');saveNow()}
   finally{WMK.busy=false;try{svg()}catch(e){}if(pnOpen&&shop==='wmkt'){WMK.tab='mine';WMK.form=null;rPn()}}}
  async function match(id){if(WMK.matching.has(id))return;WMK.matching.add(id);try{return await match1(id)}finally{WMK.matching.delete(id);const o=WMK.offers[id];
-   if(o&&o.u===me()&&o.f>=o.q)FB.db.remove(FB.db.ref(FB.D,'market/offers/'+id)).catch(()=>{})}}
+   if(o&&o.u===me()&&o.f>=o.q)sweep()}}
+ // A filled (or cancelled) offer stays up for HOLD ms before its owner removes it: the box delivery for the last trade is
+ // written right after the trade and the database only takes it while the offer is still there.
+ const HOLD=30000,FULL={};function sweep(){const d=FB.db,now=Date.now();for(const id in WMK.offers){const o=WMK.offers[id];if(!o||o.u!==me()||o.f<o.q||WMK.matching.has(id)){delete FULL[id];continue}
+   if(!FULL[id])FULL[id]=now;else if(now-FULL[id]>=HOLD){delete FULL[id];d.remove(d.ref(FB.D,'market/offers/'+id)).catch(()=>{})}}}
+ setInterval(()=>{try{if(online())sweep()}catch(e){}},5000);
  async function match1(id){const d=FB.db,o=WMK.offers[id];if(!o||!live(o))return;let traded=0,got=0,spent=0;
   const others=Object.entries(WMK.offers).filter(([oid,c])=>oid!==id&&live(c)&&inBand(c.k,c.p)&&c.k===o.k&&c.s!==o.s&&c.u!==o.u&&(o.s==='s'?c.p>=o.p:c.p<=o.p))
    .sort((a,b)=>o.s==='s'?(b[1].p-a[1].p||a[1].t-b[1].t):(a[1].p-b[1].p||a[1].t-b[1].t));
@@ -80,8 +86,8 @@
    if(m<want)await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{if(!cur)return;cur.f=Math.max(0,cur.f-(want-m));return cur});
    if(!m)continue;traded+=m;
    const bid='b'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);
-   if(o.s==='s'){GLD+=m*price;got+=m*price;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:o.k,n:m}).catch(e=>mpErr(e))}
-   else{inv[o.k]=(inv[o.k]|0)+m;GLD+=(o.p-price)*m;spent+=m*price;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:'gold',n:m*price}).catch(e=>mpErr(e))}
+   if(o.s==='s'){GLD+=m*price;got+=m*price;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:o.k,n:m,o:cid,b:me()}).catch(e=>mpErr(e))}
+   else{inv[o.k]=(inv[o.k]|0)+m;GLD+=(o.p-price)*m;spent+=m*price;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:'gold',n:m*price,o:cid,b:me()}).catch(e=>mpErr(e))}
    d.set(d.ref(FB.D,'market/last/'+o.k),{p:price,t:Date.now()}).catch(()=>{});saveNow()}
   if(traded){say(o.s==='s'?'Sold '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+got+' gold!':'Bought '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+spent+' gold!');msgT=5;try{sfx('quest')}catch(e){}}}
  // two offers can end up crossed and waiting (one was put up before the other player's list had loaded, or both at once):
@@ -94,7 +100,7 @@
  let exT=0;function expireSoon(){clearTimeout(exT);exT=setTimeout(expire,2500)}
  async function expire(){if(!online()||WMK.busy)return;for(const[id,o]of mine()){if(o.f>=o.q||Date.now()<expAt(o)||WMK.matching.has(id))continue;try{await cancel(id,'exp')}catch(e){mpErr(e)}}if(pnOpen&&shop==='wmkt'&&!typing())rPn()}
  setInterval(()=>{try{if(online()&&mine().some(([,o])=>o.f<o.q&&Date.now()>=expAt(o)))expire()}catch(e){}},60000);
- async function cancel(id,why){const d=FB.db;let last=null;const r=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{last=cur;if(!cur||cur.u!==me())return;return null}).catch(e=>{mpErr(e);return null});
+ async function cancel(id,why){const d=FB.db;let last=null;const r=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{last=cur?{...cur}:cur;if(!cur||cur.u!==me()||cur.x||cur.f>=cur.q)return;if(!cur.f)return null;cur.q=cur.f;cur.x=1;return cur}).catch(e=>{mpErr(e);return null});
   if(!r||!r.committed||!last)return;const left=Math.max(0,last.q-last.f);if(last.s==='s')inv[last.k]=(inv[last.k]|0)+left;else GLD+=left*last.p;delete WMK.offers[id];
   say((why==='exp'?'World Market: your offer for '+nm(last.k,2).toLowerCase()+' expired after 7 days.':'Offer cancelled.')+(left?' Back to you: '+(last.s==='s'?left+' '+nm(last.k,left).toLowerCase():left*last.p+' gold')+'.':''));sfx('coin');saveNow();try{svg()}catch(e){}}
  async function collect(){const d=FB.db;let items=0,gold=0;for(const bid of Object.keys(WMK.box)){let got=null;const r=await d.runTransaction(d.ref(FB.D,'market/box/'+me()+'/'+bid),cur=>{got=cur;if(!cur)return;return null}).catch(()=>null);
@@ -122,7 +128,7 @@
  function wmHTML(){if(WMK.form)return'<div class="tl">WORLD MARKET</div>'+formHTML();
   const tabs=[['mine','My offers'],['browse','Browse'],['sell','Sell'],['buy','Buy']];let h='<div class="tl">WORLD MARKET</div><div style="display:flex;gap:4px;margin:4px 0">'+tabs.map(([t,l])=>'<button class="sb" data-w="tab:'+t+'" style="flex:1;opacity:'+(WMK.tab===t?1:.55)+'">'+l+'</button>').join('')+'</div>';
   const bx=Object.values(WMK.box);if(bx.length)h+='<button class="sb" data-w="collect" style="width:100%;background:#f8e8b0"><b>COLLECT</b> ('+bx.length+' waiting)</button>';
-  if(WMK.tab==='mine'){const L=mine().sort((a,b)=>b[1].t-a[1].t);h+='<div class="qc"><small>Offers trade with other players automatically, even while you\'re away. Up to '+MAXO+' at once (2 per item). Offers last 7 days; then whatever hasn\'t traded comes back to you.</small></div>';
+  if(WMK.tab==='mine'){const L=mine().filter(([,o])=>o.f<o.q).sort((a,b)=>b[1].t-a[1].t);h+='<div class="qc"><small>Offers trade with other players automatically, even while you\'re away. Up to '+MAXO+' at once (2 per item). Offers last 7 days; then whatever hasn\'t traded comes back to you.</small></div>';
    if(!L.length)h+='<div class="tl" style="font-weight:400;opacity:.6">No offers yet. Use Sell or Buy.</div>';
    for(const[id,o]of L){const pr=Math.round(o.f/o.q*100);h+='<div class="qc" style="display:flex;align-items:center;gap:6px;text-align:left"><div style="flex:1;min-width:0"><b>'+(o.s==='s'?'Selling':'Buying')+'</b> '+ic(o.k)+o.q+' '+esc(nm(o.k,o.q))+' @ '+fmt(o.p)+'<br><small>'+o.f+' / '+o.q+' done · '+left(o)+'</small><div style="height:5px;background:#ccc;margin-top:2px"><div style="height:5px;width:'+pr+'%;background:'+(o.s==='s'?'#d8a020':'#38a838')+'"></div></div></div><button class="sb" data-w="x:'+id+'" style="flex:0 0 auto;width:auto;min-width:0;padding:6px 10px">Cancel</button></div>'}}
   else if(WMK.tab==='browse'){const ks=[...new Set(Object.values(WMK.offers).filter(o=>live(o)&&inBand(o.k,o.p)).map(o=>o.k))].filter(tradeable).sort((a,b)=>(INAME[a]||a).localeCompare(INAME[b]||b));
