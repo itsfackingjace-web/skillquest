@@ -13801,6 +13801,7 @@ window.SQA=SQA;
   h+='<div class="dv-grid" style="grid-template-columns:1fr">';for(const id of ids){const d=isl()[id]||(I.ed&&I.ed.id===id?{n:I.ed.meta.n,w:I.ed.w,h:I.ed.h}:{}),l=S.live&&S.live.islands&&S.live.islands[id],st=!same(d,l)?'draft':'live';
    h+='<button class="dv-it'+(I.sel===id?' dv-on':'')+'" data-isl="'+E(id)+'" style="flex-direction:row;justify-content:flex-start;padding:8px 10px"><i class="dv-bd dv-'+st+'">'+(st==='draft'?'DRAFT':'LIVE')+'</i><span style="font-size:13px;-webkit-line-clamp:1;text-align:left">🏝 '+E(d.n||id)+'<br><small style="color:#8a94a6">'+d.w+' × '+d.h+'</small></span></button>'}
   if(!ids.length&&!I.make)h+='<p class="dv-mut">No islands yet. Make one with "New island".</p>';
+  {const B=Object.keys(WORLD_REGIONS).filter(k=>!WORLD_REGIONS[k].custom&&typeof RG_GENS!=='undefined'&&RG_GENS[k]&&!ids.includes('ed_'+k));if(B.length)h+='<div class="dv-mut" style="margin:10px 0 4px">Built-in islands <small>(paint changes on top of them)</small></div>'+B.map(k=>'<button class="dv-it" data-ia="bi:'+E(k)+'" style="flex-direction:row;justify-content:flex-start;padding:6px 10px"><span style="font-size:13px;text-align:left">✎ '+E(WORLD_REGIONS[k].name)+'</span></button>').join('')}
   h+='</div></div><div class="dv-ed">';
   if(!I.ed)h+='<div class="dv-card"><b>Build a new island.</b><p class="dv-mut">Paint the ground, scatter forests and rocks, place buildings, signs and loot chests, choose where the pier goes, then publish it. Players sail to it from any harbor post, like the other islands. Your island gets open sea around it automatically.</p></div>';
   else{const ed=I.ed,m=ed.meta;
@@ -13813,7 +13814,8 @@ window.SQA=SQA;
     '<div class="dv-mut" style="margin:8px 0 4px">People, dungeons and monsters <small>(a monster zone is drawn with a drag)</small></div><div class="dv-pal dv-ipal-x"></div>'+
     '<div class="dv-mut" style="margin:8px 0 4px">Your own ground tiles <small>(drawn over the ground; the ground under them still decides where players can walk)</small></div><div class="dv-pal dv-ipal-c"></div><div id="dvitile"></div></div>'+
     '<div class="dv-row" style="margin-top:6px"><button class="dv-b" data-ia="beach">Add beaches</button><span class="dv-mut">turns land along the water into sand</span></div>'+
-    '<div class="dv-card" style="margin-top:6px"><b>Island details</b>'+
+    (ed.bi?'<div class="dv-card" style="margin-top:6px"><b>Changes to '+E(WORLD_REGIONS[ed.bi]?WORLD_REGIONS[ed.bi].name:ed.bi)+'</b><p class="dv-mut">You are painting on top of the island the game makes. The darkened parts (villages, the harbor and the game\'s own buildings and landmarks) stay as they are and can\'t be painted. Trees and rocks keep exactly the places you give them.</p>'+'<div class="dv-row"><button class="dv-b dv-pri" data-ia="save">Save to draft</button><button class="dv-b '+(S.arm==='idel'?'dv-arm':'dv-bad')+'" data-ia="del">'+(S.arm==='idel'?'Tap again to undo every change':'Undo all my changes')+'</button></div><p class="dv-mut">Publish to send the changes to players. Use Dev Suite &gt; Test to go there.</p></div>':'')+
+    (ed.bi?'':'<div class="dv-card" style="margin-top:6px"><b>Island details</b>'+
     '<p><label class="dv-mut">Name<input type="text" data-im="n" maxlength="40" value="'+E(m.n)+'"></label></p>'+
     '<p><label class="dv-mut">Description (shown on the sailing routes and world map)<input type="text" data-im="b" maxlength="120" value="'+E(m.b)+'" placeholder="Meadows, a quiet lake and an old ruin"></label></p>'+
     '<div class="dv-row"><label class="dv-mut">Suggested level<input type="text" data-im="lv" maxlength="12" value="'+E(m.lv)+'" placeholder="1–20" style="width:110px"></label>'+
@@ -13823,9 +13825,9 @@ window.SQA=SQA;
     (m.mob?'<label class="dv-mut">At most<input type="number" data-im="max" min="0" max="30" value="'+(m.max|0)+'" style="width:70px"></label>':'')+'</div>'+
     '<div style="margin-top:8px"><span class="dv-mut">Where it lies on the sea chart <small>(tap to move it'+(m.mx!=null?'':'; now placed by its direction')+')</small></span><br><canvas id="dvichart" width="360" height="360" style="width:min(360px,100%);aspect-ratio:1;border-radius:8px;cursor:crosshair;margin-top:4px;touch-action:none"></canvas>'+
      (m.mx!=null?'<br><button class="dv-b" data-ia="chartreset">Place it by its direction again</button>':'')+'</div>'+
-    '<div class="dv-row" style="margin-top:8px"><span class="dv-mut">Size</span><input type="number" data-im="w" min="20" max="200" value="'+ed.w+'" style="width:76px"> × <input type="number" data-im="h" min="20" max="200" value="'+ed.h+'" style="width:76px"><button class="dv-b" data-ia="resize">Resize</button><span class="dv-mut">keeps the middle</span></div></div>'+
+    '')+(ed.bi?'':'<div class="dv-row" style="margin-top:8px"><span class="dv-mut">Size</span><input type="number" data-im="w" min="20" max="200" value="'+ed.w+'" style="width:76px"> × <input type="number" data-im="h" min="20" max="200" value="'+ed.h+'" style="width:76px"><button class="dv-b" data-ia="resize">Resize</button><span class="dv-mut">keeps the middle</span></div></div>'+
     '<div class="dv-row"><button class="dv-b dv-pri" data-ia="save">Save to draft</button><button class="dv-b" data-ia="check">Check island</button><button class="dv-b" data-ia="sail">Sail there now</button>'+
-    '<button class="dv-b '+(S.arm==='idel'?'dv-arm':'dv-bad')+'" data-ia="del">'+(S.arm==='idel'?'Tap again to delete this island':'Delete island')+'</button></div>'+
+    '<button class="dv-b '+(S.arm==='idel'?'dv-arm':'dv-bad')+'" data-ia="del">'+(S.arm==='idel'?'Tap again to delete this island':'Delete island')+'</button></div>')+
     '<div class="dv-mut" id="dvicheck">'+(ed.check||'')+'</div>'+
     '<p class="dv-mut">Keys: B paint · S scatter · F fill · L line · R box · O oval · E erase · I pick · M move · 1–5 brush · V real look · + / − zoom · Ctrl+Z undo · Ctrl+S save</p>'}
   return h+'</div></div>'}
@@ -13908,7 +13910,7 @@ window.SQA=SQA;
  const zmax=ed=>Math.max(1,Math.floor(MAXPX/Math.max(ed.w,ed.h)));
  function cell(){const ed=I.ed,c=document.getElementById('dvi');if(!c)return 4;if(!ed.fit){const box=c.parentElement.parentElement.getBoundingClientRect();ed.fit=Math.max(1,Math.min((box.width-8)/ed.w,(window.innerHeight*.62-8)/ed.h))}
   if(!ed.zoom)ed.zoom=1;return Math.max(1,Math.min(zmax(ed),Math.round(ed.fit*ed.zoom)))}
- function cellDraw(x,i,z){const ed=I.ed,X=(i%ed.w)*z,Y=Math.floor(i/ed.w)*z;x.fillStyle=COL[ed.t[i]];x.fillRect(X,Y,z,z);const cv=ed.c[i];if(cv!==NONE&&ed.ct[cv]){const m=timg(ed.ct[cv].p);if(m){x.imageSmoothingEnabled=false;x.drawImage(m,X,Y,z,z)}else{x.fillStyle='#e0a0f0';x.fillRect(X+z/4,Y+z/4,z/2,z/2)}}const o=ed.o[i];
+ function cellDraw(x,i,z){const ed=I.ed,X=(i%ed.w)*z,Y=Math.floor(i/ed.w)*z;if(ed.prot&&ed.prot[i]){x.fillStyle=COL[ed.t[i]];x.fillRect(X,Y,z,z);x.fillStyle='rgba(20,20,30,.45)';x.fillRect(X,Y,z,z);if(z>=4){x.fillStyle='rgba(255,255,255,.25)';x.fillRect(X,Y,1,1)}return}x.fillStyle=COL[ed.t[i]];x.fillRect(X,Y,z,z);const cv=ed.c[i];if(cv!==NONE&&ed.ct[cv]){const m=timg(ed.ct[cv].p);if(m){x.imageSmoothingEnabled=false;x.drawImage(m,X,Y,z,z)}else{x.fillStyle='#e0a0f0';x.fillRect(X+z/4,Y+z/4,z/2,z/2)}}const o=ed.o[i];
   if(o!==NONE){x.fillStyle=OBJC[OBJ[o]];if(z>=6){x.beginPath();x.arc(X+z/2,Y+z/2,z*.36,0,7);x.fill();x.strokeStyle='rgba(0,0,0,.45)';x.lineWidth=1;x.stroke()}else{const s=Math.max(1,z-1);x.fillRect(X,Y,s,s)}}}
  function lmDrawMap(x,L,z,sel){const[w,h]=lmSize(L.k);x.fillStyle=L.k==='chest'?'#e0a030':L.k==='sign'?'#c89858':'#8a7a6a';x.fillRect(L.x*z,L.y*z,w*z,h*z);x.strokeStyle=sel?'#f8d848':'rgba(0,0,0,.6)';x.lineWidth=sel?Math.max(2,z/4):1;x.strokeRect(L.x*z+.5,L.y*z+.5,w*z-1,h*z-1);
   if(z>=10){x.fillStyle='#fff';x.font='700 '+Math.min(12,Math.round(z*.6))+'px system-ui';x.textBaseline='top';x.fillText(L.k==='chest'?'$':L.k==='sign'?'!':LM[L.k][0][0],L.x*z+2,L.y*z+1)}}
@@ -13959,7 +13961,7 @@ window.SQA=SQA;
   snap();if(k==='npc')ed.npc.push({x,y,n:'',lk:{sk:Math.floor(Math.random()*5),hs:Math.floor(Math.random()*4),hc:Math.floor(Math.random()*8),sh:Math.floor(Math.random()*8),pn:Math.floor(Math.random()*6),ht:0,hcol:0,so:0},s:''});
   else{ed.cv.push({x,y,n:'',st:'rock',f:3,m:['bat','slime']});for(let b=-1;b<=1;b++)for(let a=-1;a<=1;a++){const j=(y+b)*ed.w+x+a;if(j>=0&&j<ed.o.length)ed.o[j]=NONE}}
   ed.sk=k;ed.sel=ed[k].length-1;selPanel();paint(true);hint();if(k==='npc')setTimeout(()=>{const f=document.querySelector('#dvisel [data-ixf="n"]');if(f)f.focus()},50)}
- function setCell(j,ch,rnd){const ed=I.ed;if(rnd&&Math.random()*100>=ed.dens)return;
+ function setCell(j,ch,rnd){const ed=I.ed;if(ed.prot&&ed.prot[j])return;if(rnd&&Math.random()*100>=ed.dens)return;
   if(ed.tool==='erase'){if(ed.o[j]!==NONE){ed.o[j]=NONE;ch.push(j)}if(ed.c[j]!==NONE){ed.c[j]=NONE;ch.push(j)}const li=lmAt(ed,j%ed.w,(j/ed.w)|0);if(li>=0){ed.lm.splice(li,1);if(ed.sk==='lm'){if(ed.sel===li)ed.sel=-1;else if(ed.sel>li)ed.sel--}ch.lm=1}
    const xa=xAt(ed,j%ed.w,(j/ed.w)|0);if(xa&&(xa[0]!=='zn'||ed.pal==='zn')){ed[xa[0]].splice(xa[1],1);if(ed.sk===xa[0]){if(ed.sel===xa[1])ed.sel=-1;else if(ed.sel>xa[1])ed.sel--}ch.lm=1}return}
   if(ed.pal==='ct'){if(!ed.ct[ed.cti])return;ed.c[j]=ed.cti;ch.push(j);return}
@@ -14016,7 +14018,7 @@ window.SQA=SQA;
     (ed.npc.length||ed.cv.length||ed.zn.length?' '+ed.npc.length+' people, '+ed.cv.length+' dungeon'+(ed.cv.length===1?'':'s')+', '+ed.zn.length+' monster zone'+(ed.zn.length===1?'':'s')+'.':'')}
   catch(e){msg='✗ '+(/pier/.test(e.message)?'There\'s no room for a pier on the '+SIDES.find(s=>s[0]===ed.meta.pier)[1].toLowerCase()+' coast: it needs land facing open sea near the middle of that side. Try another side, or paint some coast there.':'This island can\'t be built: '+e.message)}
   ed.check=msg;const c=document.getElementById('dvicheck');if(c)c.textContent=msg;return msg.startsWith('✓')}
- async function save(){const ed=I.ed;if(!ed)return;if(!check()){toast('Saved anyway, but players can\'t sail there until the check passes.')}
+ async function save(){const ed=I.ed;if(!ed)return;if(ed.bi)return saveBuiltin();if(!check()){toast('Saved anyway, but players can\'t sail there until the check passes.')}
   const d=toData(ed);isl()[ed.id]=d;try{await dset('draft/islands/'+ed.id,d);ed.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);redraw()}
  function resize(){const ed=I.ed,iw=document.querySelector('#dvs [data-im="w"]'),ih=document.querySelector('#dvs [data-im="h"]'),w=Math.max(20,Math.min(200,iw.value|0)),h=Math.max(20,Math.min(200,ih.value|0));
@@ -14028,10 +14030,25 @@ window.SQA=SQA;
   ed.undo=[];ed.redo=[];ed.w=w;ed.h=h;ed.t=t;ed.o=o;ed.fit=0;ed.ck=null;ed.recenter=1;redraw()}
  // a full redraw that keeps where you were looking on the map
  function redraw(){const cv=document.getElementById('dvicv'),ed=I.ed;if(cv&&ed&&!ed.recenter){ed.sx=cv.scrollLeft;ed.sy=cv.scrollTop}API.draw();const c2=document.getElementById('dvicv');if(c2&&ed&&ed.sx!=null){c2.scrollLeft=ed.sx;c2.scrollTop=ed.sy;ed.sx=null}}
- function open(id){const d=isl()[id];if(!d)return;I.sel=id;I.ed=fromData(id,d);I.ed.recenter=1;S.arm=null;API.draw()}
+ // built-in islands: the editor starts from the island as the game makes it, with the draft's changes on top
+ const EDB=()=>A.islandEdits;
+ function openBuiltin(rid){const X=EDB();if(!X)return;let G;try{G=X.base(rid)}catch(e){toast('Can\'t open that island: '+e.message);return}
+  const D=WORLD_REGIONS[rid],W=D.width,H=D.height,N=W*H,t=new Uint8Array(N),o=new Uint8Array(N).fill(NONE);for(let i=0;i<N;i++)t[i]=G.tiles[i]|0;
+  for(const it of G.items){if(it.t!=='_obj'||!it.o)continue;const k=OBJ.indexOf(it.o.t+(it.o.v?':'+it.o.v:''));const k2=k>=0?k:OBJ.indexOf(it.o.t);if(k2>=0)o[it.y*W+it.x]=k2}
+  const base={t:t.slice(),o:o.slice()},d0=isl()['ed_'+rid];
+  let tt='',oo='';for(let i=0;i<N;i++){tt+=HEX[t[i]];oo+=o[i]===NONE?'.':PXC[o[i]]}
+  const ed=fromData('ed_'+rid,{w:W,h:H,t:A.pack?A.pack(tt):tt,o:A.pack?A.pack(oo):oo,lm:d0&&d0.lm,npc:d0&&d0.npc,n:D.name});
+  if(d0)for(const[i,ti,c]of X.parse(d0)){if(i<0||i>=N)continue;if(ti>=0)ed.t[i]=ti;if(c==='.')ed.o[i]=NONE;else if(c){const k=PXC.indexOf(c);if(k>=0&&k<OBJ.length)ed.o[i]=k}}
+  ed.prot=G._keep||null;ed.bi=rid;ed.base=base;ed.meta.n=D.name;I.sel='ed_'+rid;I.ed=ed;ed.recenter=1;S.arm=null;API.draw()}
+ async function saveBuiltin(){const ed=I.ed,b=ed.base,parts=[];for(let i=0;i<ed.t.length;i++){const dt=ed.t[i]!==b.t[i],dob=ed.o[i]!==b.o[i];if(!dt&&!dob)continue;parts.push(i+'.'+(dt?HEX[ed.t[i]]:'')+'.'+(dob?(ed.o[i]===NONE?'.':PXC[ed.o[i]]):''))}
+  const full=toData(ed),d={bi:ed.bi,n:WORLD_REGIONS[ed.bi].name,w:ed.w,h:ed.h,x:parts.join(';')};if(full.lm&&full.lm.length)d.lm=full.lm;if(full.npc&&full.npc.length)d.npc=full.npc;
+  const empty=!parts.length&&!d.lm&&!d.npc;if(empty)delete isl()[ed.id];else isl()[ed.id]=d;
+  try{await dset('draft/islands/'+ed.id,empty?null:d);ed.dirty=false;toast(empty?'No changes, so nothing is saved.':'Saved to draft ('+parts.length+' tiles changed). Publish it from the Publish tab.')}catch(e){fail(e)}if(A.previewing)A.preview(S.draft);redraw()}
+ function open(id){if(/^ed_/.test(id))return openBuiltin(id.slice(3));const d=isl()[id];if(!d)return;I.sel=id;I.ed=fromData(id,d);I.ed.recenter=1;S.arm=null;API.draw()}
  // ---- input ----
  const root=document.getElementById('dvs');
  root.addEventListener('click',e=>{if(S.tab!=='islands')return;const t=e.target.closest('[data-ia],[data-isl],[data-itool],[data-ibrush],[data-itile],[data-iobj],[data-ilm],[data-iloot-x],[data-ix],[data-ict],[data-ixm],[data-itt],[data-itc]');if(!t)return;const ed=I.ed;
+  if(t.dataset.ia&&t.dataset.ia.startsWith('bi:')){if(ed&&ed.dirty&&!confirmLeave())return;openBuiltin(t.dataset.ia.slice(3));return}
   if(t.dataset.ix){ed.pal=t.dataset.ix;ed.tool=ed.pal==='zn'?'rect':'paint';tools();pals();hint();return}
   if(t.dataset.ict!=null){ed.pal='ct';ed.cti=+t.dataset.ict;if(['erase','pick','pan','fill'].includes(ed.tool))ed.tool='paint';tools();pals();hint();return}
   if(t.dataset.ixm){const X=ed[ed.sk]&&ed[ed.sk][ed.sel];if(!X||!X.m)return;snap();const k=t.dataset.ixm,j=X.m.indexOf(k);if(j>=0)X.m.splice(j,1);else if(X.m.length<6)X.m.push(k);else{toast('Up to 6 kinds of monster.');return}selPanel();paint(true);hint();return}
@@ -14106,6 +14123,42 @@ window.SQA=SQA;
   if(k==='+'||k==='='||k==='-'){const b=root.querySelector('[data-ia="'+(k==='-'?'zout':'zin')+'"]');if(b)b.click()}},true);
  const css=document.createElement('style');css.textContent='#dvs .dv-stack{position:relative;display:inline-block;line-height:0}#dvs #dvio{position:absolute;left:0;top:0;pointer-events:none}#dvs #dvi{touch-action:none;cursor:crosshair;image-rendering:pixelated}#dvs .dv-cvw.dv-pan #dvi{cursor:grab}';document.head.appendChild(css);
  SQSUITE.addTab('islands','Islands',{render,after,changes,dirty:()=>!!(I.ed&&I.ed.dirty),leave(){I.sel=null;I.ed=null;I.make=false;TE.ed=null}})})();
+// ---- 151. Editing the built-in islands (Dev Suite > Islands > "Built-in islands") ----
+// islands.ed_<region> in the asset library = changes painted on top of a built-in island:
+//   {bi: region id, n: its name, w, h, x: "i.t.o;..." changed cells (t = new ground or '' if unchanged, o = an object
+//    letter as in custom islands, '.' = removed, '' = unchanged), lm: buildings/props/signs/chests, npc: people}
+// Applied while the island is generated: 050's rgFinish is wrapped, and for a patched region the changes go into the
+// generator's grid before it's finished. Cells the generator keeps (villages, harbors, landmarks: C.keep) are never
+// touched. A patched island skips the random tree thinning/tiering (083) so it looks exactly as painted. The cached
+// island is thrown away when its patch changes (never the one the player is standing on; that one changes next visit).
+(()=>{if(!window.SQA)return;const A=SQA,PXC='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-',HEX='0123456789abcdef';
+ const PATCH={};let OFF=null;// OFF = a region generated without its patch (the builder's starting point)
+ const clean=(v,n)=>String(v==null?'':v).replace(/[<>&"]/g,'').slice(0,n);
+ const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+ function parse(E){const out=[];for(const s of String(E.x||'').split(';')){if(!s)continue;const[a,b,c]=s.split('.');const i=a|0,t=b===''||b==null?-1:HEX.indexOf(b);out.push([i,t,c==null?'':c])}return out}
+ const NL={sk:5,hs:4,hc:8,sh:8,pn:6,ht:3,hcol:6,so:5};const look=L=>{const o={};for(const k in NL){const v=L&&L[k]|0;o[k]=v>=0&&v<NL[k]?v:0}return o};
+ function apply(C,E){const{W,H,T,O}=C;for(const[i,t,c]of E.cells||(E.cells=parse(E))){if(i<0||i>=W*H||C.keep[i]||C.lmSolid[i])continue;
+   if(t>=0&&t!==6)T[i]=t;
+   if(c==='.')O[i]=null;else if(c){const k=A.ISL_OBJ[PXC.indexOf(c)];if(k){const[ot,v]=k.split(':');O[i]=RG_WALK[T[i]]?{t:ot,hp:OHP[ot]||3,v:v||undefined}:null}}
+   else if(t>=0&&!RG_WALK[T[i]])O[i]=null}
+  const free=(x,y,w,h)=>{for(let b=0;b<h;b++)for(let a=0;a<w;a++){const j=(y+b)*W+x+a;if(x+a<0||y+b<0||x+a>=W||y+b>=H||C.keep[j]||C.lmSolid[j])return false}return true};
+  arr(E.lm).forEach((L,ci)=>{if(!L||!A.ISL_LM[L.k])return;const[,w,h,v]=A.ISL_LM[L.k],x=L.x|0,y=L.y|0;if(!free(x,y,w,h))return;
+   const ex={};if(v!==undefined)ex.v=v;if(L.k==='chest'){ex.use='loot';ex.ci=1000+ci;ex.loot=L.loot||{};ex.name=clean(L.n,40)||'Chest'}else if(L.k==='sign'||L.tx){ex.use='look';ex.name=clean(L.n,40)||A.ISL_LM[L.k][0];ex.text=clean(L.tx,300)||ex.name}
+   for(let b=0;b<h;b++)for(let a=0;a<w;a++)O[(y+b)*W+x+a]=null;rgLm(C,L.k.split(':')[0],x,y,w,h,ex)});
+  arr(E.npc).slice(0,40).forEach((Q,k)=>{if(!Q)return;const x=Q.x|0,y=Q.y|0;if(!free(x,y,1,1))return;O[y*W+x]=null;
+   rgLm(C,'npc',x,y,1,1,{use:'npc',ni:k,name:clean(Q.n,24)||'Islander',look:look(Q.lk),lines:arr(Q.s).map(l=>clean(l,160)).filter(Boolean).slice(0,8)})})}
+ {const _rf=rgFinish;rgFinish=function(C){try{const id=C&&C.D&&C.D.id,E=id&&id!==OFF&&PATCH[id];if(E)apply(C,E)}catch(e){console.warn(e)}return _rf.apply(this,arguments)}}
+ {const _rp=rgPrepare;rgPrepare=function(id){const R=_rp.apply(this,arguments);if(R&&PATCH[id])R._t64=1;return R}}
+ const here=()=>{try{return curRegion()}catch(e){return null}};
+ function drop(id){if(here()===id)return;try{delete RG_CACHE[id];if(typeof RG_PRE!=='undefined')delete RG_PRE[id];if(typeof RG_THUMB!=='undefined')delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id];if(typeof HDRM!=='undefined'&&ROOMS['reg_'+id])HDRM.delete(ROOMS['reg_'+id])}catch(e){}}
+ A.onApply(lib=>{const L=lib&&lib.islands||{},want={};for(const k in L){const E=L[k];if(!/^ed_[a-z0-9_]{1,30}$/.test(k)||!E||typeof E!=='object')continue;const id=k.slice(3);if(!WORLD_REGIONS[id]||WORLD_REGIONS[id].custom||E.bi!==id)continue;want[id]=E}
+  for(const id in PATCH)if(!want[id]){delete PATCH[id];drop(id)}
+  for(const id in want){const s=JSON.stringify(want[id]);if(PATCH[id]&&PATCH[id]._s===s)continue;PATCH[id]=Object.assign({},want[id],{_s:s,cells:null});drop(id)}});
+ // the builder's starting point: the island exactly as the game generates it, without its patch
+ function base(id){const D=WORLD_REGIONS[id];if(!D||!RG_GENS[id])throw new Error('unknown island');OFF=id;let keep=null;const rf=rgFinish;
+  rgFinish=function(C){if(C&&C.D&&C.D.id===id){keep=new Uint8Array(C.N2);for(let i=0;i<C.N2;i++)keep[i]=C.keep[i]||C.lmSolid[i]?1:0}return rf.apply(this,arguments)};
+  try{const G=rgRunSync(RG_GENS[id](D));G._keep=keep;return G}finally{OFF=null;rgFinish=rf}}
+ A.islandEdits={PATCH,base,parse,apply}})();
 // ---------------------------------------------------------------- 115. The Stone Sledgehammer smashes ore
 // - With the sledgehammer in your main hand, one hit breaks any small rock or ore (rock, iron, gold, mithril, adamant
 //   veins) as long as you could mine it (Mining level and pickaxe tier still count).

@@ -116,6 +116,7 @@ dev/111a-s111-asset-library.js
 dev/111a2-s114-gear-rules.js
 dev/111b-s112-dev-suite.js
 dev/111c-s113-island-builder.js
+dev/111g-s151-island-edits.js
 world/113-s115-sledgehammer-smashes-ore.js
 skills/114-s116-skilling-looks.js
 ui/115-s117-getting-started.js

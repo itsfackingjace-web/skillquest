@@ -276,3 +276,9 @@
   `upd`. Saved as `yf`/`yp` on `houses[]`/`rh[]`. Friends: `yards/<uid>/<hid>` {f,p(stage)} published every 8 s when changed;
   a visitor needs `trustedBy(owner)` (072) and gets a read-only copy (`ro`). A house that disappears (packed) puts its yard
   furniture in the bag (`KNOWN` watch). Rules: `yards`.
+- **Editing built-in islands** (`dev/111g-s151-island-edits.js`, `SQA.islandEdits`; builder 111c `openBuiltin`/`saveBuiltin`):
+  `islands.ed_<region>` = {bi, n, w, h, x: "i.t.o;..." changed cells (hex ground / object letter, '.' removed, '' unchanged),
+  lm, npc}. Applied inside generation by wrapping 050's `rgFinish` (cells with `C.keep`/`lmSolid` are never touched; the
+  builder darkens them via `G._keep` from `base(id)`, which generates without the patch). Patched regions skip tiering
+  (`R._t64`); the cached region is dropped when its patch changes (not the one you stand on). 111a's `applyIslands` only
+  takes `cu_` ids, so `ed_` entries never become islands of their own. Dungeons/zones/own tiles are custom-island only.
