@@ -358,3 +358,7 @@
   boss near (boss/_wb/cb/ib, or `big` inside a dungeon; held 6 s) > `sail` > island theme by region (`REGION_SONG`) > the
   older names (day night indoor cave port frost tide desert icecave sandcave seacave). Unknown names fall back to cave/day.
   Write only original melodies.
+- **Keep your spot** (`core/156-s162-keep-your-spot.js`, `SQKEEPSPOT`): 006's applySave puts you at SPX/SPY when the saved spot is
+  blocked (a regrown rock/tree, or the shared world's removals not in yet). The outermost applySave then moves you to the nearest
+  free land tile around the saved position instead (Hollow outdoors, not sailing, within 30 tiles).
+

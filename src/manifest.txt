@@ -163,6 +163,7 @@ skills/152-s158-farming-seeds.js
 core/153-s159-audit-fixes.js
 combat/154-s160-pvp-balance.js
 world/155-s161-soundtrack.js
+core/156-s162-keep-your-spot.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js
