@@ -326,4 +326,12 @@
   `navPress` with `GPON`: text inputs/textareas open the on-screen keyboard #sqosk (number inputs get digits), checkboxes tick,
   selects cycle. The keyboard's ○/△/□/R1/Options are taken in the outermost `pollPad` before 023 (marked held in `GPPREV`).
   OK writes the value (input/change events) and submits a one-line input's form (chat #mpf, name). New text boxes need nothing.
+  A visible `[role=dialog]` inside the panel (011's chest item card) becomes `navRoot` (the highlight stays in it); ○/Options
+  click its close (`[data-chx]`/aria-label Close/×). Give new in-panel cards `role="dialog"` and a close button.
+- **Late pet items** (`items/151-s157-late-pet-items.js`): 104 makes `pet_<kind>` items only for pets already in `LUX.PETS`;
+  pets added later (116's `pmush`/`pglow`) get theirs here (else the PET slot shows empty and bag copies aren't in `INVK`).
+  A pet added by a section after 151 needs the same.
+- **Farming seeds** (`skills/152-s158-farming-seeds.js`, `SQSEEDS(L)`): 016's harvest asks it for the seed count: 45% + 0.5%/level
+  (cap 95%), second seed 5% per 10 levels (max 45%); perks (third choices, like 087's) `fm_pouch` (20, +15%), `fm_twin` (40,
+  each seed 25% ×2), `fm_heir` (70, at least one). `TREES[11].step` lists the seed numbers. 038's `fm_seed` still adds its own.
 

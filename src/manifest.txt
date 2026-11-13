@@ -158,6 +158,8 @@ items/147-s153-keep-top-tier-gear.js
 items/148-s154-home-comforts.js
 items/149-s155-deposit-bag.js
 ui/150-s156-controller-everywhere.js
+items/151-s157-late-pet-items.js
+skills/152-s158-farming-seeds.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

@@ -1658,7 +1658,7 @@ const _qv16=qVal;qVal=function(q){return q.type==='harvest'?Q.k:_qv16(q)};
 const stageOf=p=>p.c?Math.min(CROPS[p.c].max,Math.floor(p.g/CROPS[p.c].st)):0,ripe=p=>p.c&&stageOf(p)>=CROPS[p.c].max,wet=p=>CLK<p.w;
 function canTill(x,y){if(x<1||y<1||x>=N-1||y>=N-1)return false;const i=y*N+x;return tile[i]===2&&!obj[i]&&!STR.has(i)&&!BS.has(i)&&!houseAt(x,y)&&!FARM.has(i)&&!inVillage(x,y)&&!fires.some(f=>Math.abs(f.x-(x*16+8))<12&&Math.abs(f.y-(y*16+8))<12)}
 function harvest(i,p){const C=CROPS[p.c],L=lvOf(11);let n=C.yield[0]+(Math.random()<.35+L*.01?C.yield[1]-C.yield[0]:0);inv[p.c]=(inv[p.c]|0)+n;let extra='';
- if(Math.random()<.45+L*.005){inv[C.seed]=(inv[C.seed]|0)+1;extra=' and a seed'}addXp(11,C.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='harvest')Q.k++;
+ {const ns=window.SQSEEDS?SQSEEDS(L):(Math.random()<.45+L*.005?1:0);if(ns>0){inv[C.seed]=(inv[C.seed]|0)+ns;extra=ns>1?' and '+ns+' seeds':' and a seed'}}addXp(11,C.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='harvest')Q.k++;
  say('Harvested '+n+' '+C.n.toLowerCase()+(n>1&&p.c!=='wheat'?'s':'')+extra+'!');p.c=null;p.g=0;p.e=nowS();sfx('pickup');setTimeout(()=>sfx('coin'),120);saveLocal(true)}
 // HIT on the farm: till, water, harvest
 const _atk16=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH)return _atk16();if(facingNpc())return _atk16();
@@ -9378,6 +9378,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-9',d:'Nov 13, 2026',t:'Seeds, pets and controller fixes',n:['Farming: the higher your level, the more seeds your harvests give. Every 10 levels adds a 5% chance of a second seed, and the Farming skill tree now shows your seed chances at every level.','Three new Farming perks (a third choice at levels 20, 40 and 70): Seed Pouch (seeds 15% more often), Twin Seeds (each seed can come as two) and Heirloom Seeds (at least one seed from every harvest).','Fixed: the Mushling and Glowcap pets showed an empty PET slot even when you had one out. They now show in the slot, and a spare one in your bag is saved properly.','Controllers: an item card in a chest (the one that asks how many to move) can now be closed with ○, and the highlight stays inside the card while it\'s open. ○ again closes the chest.']},
  {v:'2026.11.13-8',d:'Nov 13, 2026',t:'Controllers everywhere, deposit bag',n:['Controller players can now answer trade, party and duel requests: after a moment the request is highlighted, ✕ picks TRADE (or JOIN, DUEL, PLAY) and ○ says no. The update bar works the same way.','Controllers reach every part of every menu, including text boxes, dropdowns and checkboxes.','New on-screen keyboard for controllers, like the one in Pokemon: pick a text box and press ✕. ✕ types, ○ deletes, △ adds a space, □ switches capitals, R1 shows symbols and Options (START) is OK. In chat, OK sends your message.','HIT no longer tills or waters on any device: the hoe and watering can are off-hand tools. Use X or right-click on a computer, R1 on a controller, or the new TILL / WATER button on touch screens.','Chests have a DEPOSIT BAG button that puts everything in your bag into the chest at once.']},
  {v:'2026.11.13-7',d:'Nov 13, 2026',t:'Home comforts',n:['Light campfires in your backyard or courtyard (FIRE, 3 wood and a stone, like anywhere outdoors). Cook at them, warm up, and they keep burning there while you\'re inside.','No more getting hungry at home: your food doesn\'t go down while you\'re inside your house or castle. Sleeping in your bed still uses up some food overnight.','Wardrobes can now be picked up: open the wardrobe and tap PICK UP WARDROBE at the bottom.']},
  {v:'2026.11.13-6',d:'Nov 13, 2026',t:'One save: your Google account',n:['You now sign in with Google to play. Your character lives in your Google account, so it\'s the same on your phone, your computer and the Windows app.','Only one device or tab can play your account at a time. Open the game somewhere else and the old one stops with a PLAY HERE INSTEAD button; tap it to take your game back with your latest progress.','No more "Which save do you want?" questions. The first time you sign in after this update, the game keeps whichever save has more progress (this device\'s or your account\'s) and backs up the other one in Options > Backups.','If your connection drops, you\'ll see "Not saved: reconnecting..." at the top. Your progress saves again as soon as you\'re back online.']},
@@ -16945,7 +16946,11 @@ window.SQA=SQA;
   setTimeout(()=>{const r=navRoot();if(r&&r.contains(el)&&navItems(r).includes(el))setFocus(el);else setFocus(null)},0);try{sfx(ok?'pickup':'swish')}catch(e){}}
  window.SQOSK={open,done,state:K};
  // ---- 023's controller code: where the highlight lives, what it can reach, what ✕ does ----
- {const _nr=navRoot;navRoot=function(){if(K.open)return box;return popRoot()||_nr()}}
+ // a card inside a menu (the chest's item card, 011: any [role=dialog] in the panel) is its own screen: the highlight stays in
+ // it and ○ closes it (its × / [data-chx]) instead of leaving the whole menu
+ const cardIn=r=>{if(!r)return null;for(const d of r.querySelectorAll('[role="dialog"]'))if(vis(d))return d;return null};
+ const cardClose=d=>d.querySelector('[data-chx],[aria-label="Close"],.chc-c')||[...d.querySelectorAll('button')].find(b=>/^[×✕x]$/i.test((b.textContent||'').trim()));
+ {const _nr=navRoot;navRoot=function(){if(K.open)return box;const p=popRoot();if(p)return p;const r=_nr();return r&&r===pn&&cardIn(pn)||r}}
  {const _ni=navItems;navItems=function(root){const base=_ni(root);if(!root||root===box)return base;
    const more=[...root.querySelectorAll('textarea,select')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility!=='hidden'&&!e.disabled});
    if(!more.length)return base;const all=new Set(base.concat(more));return[...root.querySelectorAll('button,input,textarea,select')].filter(e=>all.has(e))}}
@@ -16962,11 +16967,41 @@ window.SQA=SQA;
     if(K.open){if(pr(B.O)){take(B.O);if(K.buf)op('del',GPF&&(GPF.dataset.ch||GPF.dataset.op));else done(false)}
      if(pr(B.TRI)&&!K.num){take(B.TRI);op('space')}if(pr(B.SQ)&&!K.num){take(B.SQ);op('case',GPF&&(GPF.dataset.ch||GPF.dataset.op))}
      if(pr(B.R1)&&!K.num){take(B.R1);op('sym',GPF&&(GPF.dataset.ch||GPF.dataset.op))}if(pr(B.OPT)){take(B.OPT);done(true)}if(down(B.L1))take(B.L1)}
-    else{const r=popRoot();if(r&&pr(B.O)){take(B.O);const no=r.querySelector('.no');if(no)no.click()}if(r&&pr(B.OPT))take(B.OPT)}
+    else{const r=popRoot();if(r&&pr(B.O)){take(B.O);const no=r.querySelector('.no');if(no)no.click()}if(r&&pr(B.OPT))take(B.OPT);
+     const c=!r&&pnOpen&&cardIn(pn);if(c&&(pr(B.O)||pr(B.OPT))){take(B.O);take(B.OPT);const x=cardClose(c);if(x){x.click();try{sfx('talk')}catch(e){}}}
+     if(c){take(B.L1);take(B.R1)}}
     prev=gp.buttons.map(b=>b.pressed||b.value>.5)}
    return _pp.apply(this,arguments)}}
  // a keyboard or a tap closes the on-screen keyboard (keeping what was typed so far in it is not wanted: nothing changes)
  addEventListener('keydown',e=>{if(K.open&&e.isTrusted&&!GPON)done(false)},true)})();
+// ---- 157. Pet items for pets added after 104 ----
+// 104 turns every pet in LUX.PETS into an item (pet_<kind>, the PET slot reads EQ['pet_'+kind]) when it loads, but some pets
+// are added to LUX.PETS by later sections (116's mushroom pets Mushling/Glowcap). Those had no item:
+// the PET slot showed empty and a spare one in the bag wasn't saved (INVK). This gives them the same item 104 would have.
+// Runs before the boot load (114), so saves with these pets load into a working slot.
+(()=>{const PL=()=>(window.LUX&&LUX.PETS)||[];let n=0;
+ for(const p of PL()){const k='pet_'+p.k;if(EQ[k])continue;n++;
+  EQ[k]={slot:'pet',n:p.n,ic:'pet:'+p.k,v:p.rare?250:Math.floor((p.v|0)/4),pet:p.k};EQK.push(k);if(!INVK.includes(k))INVK.push(k);if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k);
+  INAME[k]=p.n+' (pet)';SN[k]=p.n+' pets';SHORT[k]=p.n.toLowerCase()+' pet';SELLP[k]=EQ[k].v;if(!(k in inv))inv[k]=0;
+  const src=window.SQNPET&&SQNPET[p.k]&&SQNPET[p.k].src;
+  IDESC[k]=(p.rare?'A rare pet'+(src?' ('+src+')':'')+'. ':'A pet. ')+'Put it in your PET slot (Equip) and it follows you everywhere; other players see it too. You can sell it, trade it at the World Market, or release it.'}
+ window.SQLATEPETS=n})();
+// ---- 158. Seeds from harvests grow with Farming ----
+// 016's harvest asks SQSEEDS(level) how many seeds a harvest gives (it used to roll one seed at 45% + 0.5% per level,
+// unchanged here). Now also: a chance of a second seed, +5% every 10 levels (45% at 90), and three new perks, each a third
+// choice in the Farming tree: Seed Pouch (20, +15% seed chance), Twin Seeds (40, each seed 25% chance to be two),
+// Heirloom Seeds (70, at least one seed every harvest). 038's Seed Saver (60) still adds its own extra seed. The tree's
+// level list shows the seed numbers.
+(()=>{const has=id=>{try{return typeof P_==='function'&&P_(11,id)}catch(e){return false}};
+ const seedP=L=>Math.min(.95,.45+L*.005+(has('fm_pouch')?.15:0)),twoP=L=>Math.min(.45,.05*Math.floor(L/10));
+ window.SQSEEDS=function(L){let n=Math.random()<seedP(L)?1:0;if(!n&&has('fm_heir'))n=1;if(n&&Math.random()<twoP(L))n++;
+  if(n&&has('fm_twin')){let x=0;for(let i=0;i<n;i++)if(Math.random()<.25)x++;n+=x}return n};
+ window.SQSEEDS.p=seedP;window.SQSEEDS.two=twoP;
+ const T=TREES[11];
+ T.choices[20].push({id:'fm_pouch',n:'Seed Pouch',d:'Harvests give a seed 15% more often.'});
+ T.choices[40].push({id:'fm_twin',n:'Twin Seeds',d:'Every seed you get from a harvest has a 25% chance to be two.'});
+ T.choices[70].push({id:'fm_heir',n:'Heirloom Seeds',d:'Every harvest gives you at least one seed.'});
+ const _st=T.step;T.step=function(l){const a=_st.apply(this,arguments);if(l===1)a.push('Seed chance 45% when you harvest');else a.push('+0.5% seed chance');if(l%10===0)a.push('+5% chance of a second seed');return a}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

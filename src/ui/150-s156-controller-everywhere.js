@@ -45,7 +45,11 @@
   setTimeout(()=>{const r=navRoot();if(r&&r.contains(el)&&navItems(r).includes(el))setFocus(el);else setFocus(null)},0);try{sfx(ok?'pickup':'swish')}catch(e){}}
  window.SQOSK={open,done,state:K};
  // ---- 023's controller code: where the highlight lives, what it can reach, what ✕ does ----
- {const _nr=navRoot;navRoot=function(){if(K.open)return box;return popRoot()||_nr()}}
+ // a card inside a menu (the chest's item card, 011: any [role=dialog] in the panel) is its own screen: the highlight stays in
+ // it and ○ closes it (its × / [data-chx]) instead of leaving the whole menu
+ const cardIn=r=>{if(!r)return null;for(const d of r.querySelectorAll('[role="dialog"]'))if(vis(d))return d;return null};
+ const cardClose=d=>d.querySelector('[data-chx],[aria-label="Close"],.chc-c')||[...d.querySelectorAll('button')].find(b=>/^[×✕x]$/i.test((b.textContent||'').trim()));
+ {const _nr=navRoot;navRoot=function(){if(K.open)return box;const p=popRoot();if(p)return p;const r=_nr();return r&&r===pn&&cardIn(pn)||r}}
  {const _ni=navItems;navItems=function(root){const base=_ni(root);if(!root||root===box)return base;
    const more=[...root.querySelectorAll('textarea,select')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility!=='hidden'&&!e.disabled});
    if(!more.length)return base;const all=new Set(base.concat(more));return[...root.querySelectorAll('button,input,textarea,select')].filter(e=>all.has(e))}}
@@ -62,7 +66,9 @@
     if(K.open){if(pr(B.O)){take(B.O);if(K.buf)op('del',GPF&&(GPF.dataset.ch||GPF.dataset.op));else done(false)}
      if(pr(B.TRI)&&!K.num){take(B.TRI);op('space')}if(pr(B.SQ)&&!K.num){take(B.SQ);op('case',GPF&&(GPF.dataset.ch||GPF.dataset.op))}
      if(pr(B.R1)&&!K.num){take(B.R1);op('sym',GPF&&(GPF.dataset.ch||GPF.dataset.op))}if(pr(B.OPT)){take(B.OPT);done(true)}if(down(B.L1))take(B.L1)}
-    else{const r=popRoot();if(r&&pr(B.O)){take(B.O);const no=r.querySelector('.no');if(no)no.click()}if(r&&pr(B.OPT))take(B.OPT)}
+    else{const r=popRoot();if(r&&pr(B.O)){take(B.O);const no=r.querySelector('.no');if(no)no.click()}if(r&&pr(B.OPT))take(B.OPT);
+     const c=!r&&pnOpen&&cardIn(pn);if(c&&(pr(B.O)||pr(B.OPT))){take(B.O);take(B.OPT);const x=cardClose(c);if(x){x.click();try{sfx('talk')}catch(e){}}}
+     if(c){take(B.L1);take(B.R1)}}
     prev=gp.buttons.map(b=>b.pressed||b.value>.5)}
    return _pp.apply(this,arguments)}}
  // a keyboard or a tap closes the on-screen keyboard (keeping what was typed so far in it is not wanted: nothing changes)

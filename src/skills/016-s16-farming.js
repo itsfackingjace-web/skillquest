@@ -31,7 +31,7 @@ const _qv16=qVal;qVal=function(q){return q.type==='harvest'?Q.k:_qv16(q)};
 const stageOf=p=>p.c?Math.min(CROPS[p.c].max,Math.floor(p.g/CROPS[p.c].st)):0,ripe=p=>p.c&&stageOf(p)>=CROPS[p.c].max,wet=p=>CLK<p.w;
 function canTill(x,y){if(x<1||y<1||x>=N-1||y>=N-1)return false;const i=y*N+x;return tile[i]===2&&!obj[i]&&!STR.has(i)&&!BS.has(i)&&!houseAt(x,y)&&!FARM.has(i)&&!inVillage(x,y)&&!fires.some(f=>Math.abs(f.x-(x*16+8))<12&&Math.abs(f.y-(y*16+8))<12)}
 function harvest(i,p){const C=CROPS[p.c],L=lvOf(11);let n=C.yield[0]+(Math.random()<.35+L*.01?C.yield[1]-C.yield[0]:0);inv[p.c]=(inv[p.c]|0)+n;let extra='';
- if(Math.random()<.45+L*.005){inv[C.seed]=(inv[C.seed]|0)+1;extra=' and a seed'}addXp(11,C.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='harvest')Q.k++;
+ {const ns=window.SQSEEDS?SQSEEDS(L):(Math.random()<.45+L*.005?1:0);if(ns>0){inv[C.seed]=(inv[C.seed]|0)+ns;extra=ns>1?' and '+ns+' seeds':' and a seed'}}addXp(11,C.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='harvest')Q.k++;
  say('Harvested '+n+' '+C.n.toLowerCase()+(n>1&&p.c!=='wheat'?'s':'')+extra+'!');p.c=null;p.g=0;p.e=nowS();sfx('pickup');setTimeout(()=>sfx('coin'),120);saveLocal(true)}
 // HIT on the farm: till, water, harvest
 const _atk16=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH)return _atk16();if(facingNpc())return _atk16();
