@@ -14,7 +14,7 @@ const PSK={4:{sp:'cooking speed',ex:'burn prevention',ra:'FOOD from cooked meals
  10:{sp:'smithing speed',ex:'bar-saving chance',ra:'bonus-item chance',e:[3,3,5],r:2},6:{sp:'crafting speed',ex:'material-saving chance',ra:'bonus-item chance',e:[3,3,5],r:2}};
 function pTree(sk,unlocks,choices){const G=PSK[sk],fmt=v=>(Math.round(v*10)/10)+'%';
  const sp=l=>l===1?0:.5+(l===35||l===75?5:0),ex=l=>(l%5===0?1:0)+(l===25?G.e[0]:l===55?G.e[1]:l===95?G.e[2]:0),ra=l=>(l%15===0?1:0)+(l===65||l===85?G.r:0);
- return{every:()=>null,extra:{},step:l=>{const a=[];if(unlocks[l])a.push(unlocks[l]);if(l===1)a.push('Base '+G.sp+' 100% (actions are instant, so speed bonuses give bonus '+SKN[sk]+' XP)');else a.push('+'+fmt(sp(l))+' '+G.sp);
+ return{every:()=>null,extra:{},step:l=>{const a=[];if(unlocks[l])a.push(unlocks[l]);if(l===1)a.push('Base '+G.sp+' 100%');else a.push('+'+fmt(sp(l))+' '+G.sp);
    if(ex(l))a.push('+'+fmt(ex(l))+' '+G.ex);if(ra(l))a.push('+'+fmt(ra(l))+' '+G.ra);return a},
   choices:Object.fromEntries(Object.entries(choices).map(([l,[A,B]])=>[l,[{id:A[0],n:A[1],d:A[2]},{id:B[0],n:B[1],d:B[2]}]]))}}
 // --- real unlocks, read from the game's recipe lists ---
@@ -23,7 +23,7 @@ const ckName=c=>c.raw==='meat'?'meat':c.raw==='wheat'?'bread (wheat)':c.raw==='c
 const ulCook=UL39(COOKS,c=>c.lv,ckName);for(const l in ulCook)ulCook[l]='Cook '+ulCook[l];
 const ulSmith=UL39(SM,r=>r.lv,r=>(r.smelt?'Smelt ':'Forge ')+r.n.toLowerCase()+(r.def?' (wear at Defence '+r.def+')':''));
 const ulCraft=UL39([...REC.map(r=>({n:r.name,l:r.req})),...GOODS.map(r=>({n:r.n,l:r.req})),...BREC.map(r=>({n:r.n,l:r.req}))],r=>r.l,r=>r.n);for(const l in ulCraft)ulCraft[l]='Make: '+ulCraft[l];
-const X39=' (instant here, so: bonus XP)';
+const X39='';
 TREES[4]=pTree(4,ulCook,{
  10:[['co_steady','Steady Flame','+10% burn prevention.'],['co_quick','Quick Cook','Cook food 10% faster'+X39.replace('bonus','+10%')+'.']],
  20:[['co_hearty','Hearty Meals','Cooked food restores 5% more FOOD.'],['co_saver','Ingredient Saver','10% chance to refund one consumed ingredient.']],
@@ -39,35 +39,35 @@ TREES[5]=pTree(5,{1:'Build campfires (3 wood + 1 stone); they burn longer as you
  10:[['fi_long','Long Flames','Campfires burn 15% longer.'],['fi_quick','Quick Spark','Start fires 15% faster'+X39.replace('bonus','+15%')+'.']],
  20:[['fi_saver','Fuel Saver','+10% chance to save fuel: building a campfire may give 1 wood back.'],['fi_warm','Warm Shelter','Campfires heal and warm you from 20% farther away.']],
  30:[['fi_endure','Enduring Embers','Campfires burn 20% longer.'],['fi_kindle','Cheap Kindling','Campfires need one fewer wood (2 wood + 1 stone).']],
- 40:[['fi_bright','Bright Flames','Firelight reaches 25% farther, and monsters keep 25% farther away from your fires.'],['fi_haven','Safe Haven','While you\'re near a campfire, slimes notice you 20% less easily.']],
+ 40:[['fi_bright','Bright Flames','Firelight reaches 25% farther, and monsters keep 25% farther away from your fires.'],['fi_haven','Safe Haven','While you\'re near a campfire, monsters notice you 20% less easily.']],
  50:[['fi_gchar','Golden Charcoal','Your fires leave charcoal: 20% chance each smelt needs no wood.'],['fi_eff','Efficient Flames','Campfires use 15% fewer materials: each wood and stone has a 15% chance to come back.']],
- 60:[['fi_dchar','Double Charcoal','12% chance a new campfire burns twice as long.'],['fi_fuelm','Fuel Master','+20% chance to save fuel: building a campfire may give 1 wood back.']],
+ 60:[['fi_dchar','Charcoal Bed','12% chance a new campfire burns twice as long.'],['fi_fuelm','Fuel Master','+20% chance to save fuel: building a campfire may give 1 wood back.']],
  70:[['fi_master','Master Firekeeper','Campfires burn 25% longer.'],['fi_rapid','Rapid Ignition','Start fires 30% faster'+X39.replace('bonus','+30%')+'.']],
  80:[['fi_embers','Endless Embers','When a campfire burns out, it flares back up once with 30% of its fuel.'],['fi_blaze','Blazing Light','Firelight reaches 40% farther, and monsters keep 40% farther away from your fires.']],
- 90:[['fi_eternal','Eternal Warmth','Campfires burn 35% longer.'],['fi_sacred','Sacred Flames','Slimes within 5 tiles of a campfire move 15% slower.']],
+ 90:[['fi_eternal','Eternal Warmth','Campfires burn 35% longer.'],['fi_sacred','Sacred Flames','Monsters within 5 tiles of a campfire move 15% slower.']],
  99:[['fi_sov','Flame Sovereign','Every 5th campfire costs no wood.'],['fi_guard','Eternal Guardian','Campfires burn 50% longer and drive monsters away from 6 tiles out (normally about 4).']]});
 TREES[10]=pTree(10,ulSmith,{
  10:[['sm_quick','Quick Forge','Smith metal items 10% faster'+X39.replace('bonus','+10%')+'.'],['sm_saver','Metal Saver','10% chance to save one metal bar (or ore, when smelting).']],
  20:[['sm_heavy','Heavy Hammer','Smithing speed increases 15%'+X39.replace('bonus','+15%')+'.'],['sm_bonus','Bonus Metal','5% chance to produce an extra metal item.']],
  30:[['sm_double','Double Forge','8% chance to produce two metal items instead of one.'],['sm_smelt','Efficient Smelting','Smelting uses 10% less ore: each ore has a 10% chance to come back.']],
  40:[['sm_steady','Steady Hammer','Your FOOD drains 20% slower right after smithing.'],['sm_fortune','Metal Fortune','+8% chance to save one metal bar.']],
- 50:[['sm_gold','Golden Forge','Bars and forged daggers sell for 20% more gold.'],['sm_cheap','Cheap Forging','Forging uses 10% fewer bars: each bar has a 10% chance to come back.']],
- 60:[['sm_smelter','Master Smelter','12% chance to smelt an extra metal bar.'],['sm_rapid','Rapid Forging','20% less recovery time. Smithing has no wait here, so: +20% Smithing XP.']],
+ 50:[['sm_gold','Golden Forge','Everything you smelt or forge (bars, weapons, armour, tools) sells for 20% more gold.'],['sm_cheap','Cheap Forging','Forging uses 10% fewer bars: each bar has a 10% chance to come back.']],
+ 60:[['sm_smelter','Master Smelter','12% chance to smelt an extra metal bar.'],['sm_rapid','Rapid Forging','Smith and smelt 20% faster.']],
  70:[['sm_master','Master Smith','Smith metal items 20% faster'+X39.replace('bonus','+20%')+'.'],['sm_precious','Precious Metal','+15% chance to save one metal bar.']],
  80:[['sm_anvil','Double Anvil','15% chance to produce two metal items instead of one.'],['sm_eff','Efficient Forge','Forging uses 15% fewer bars: each bar has a 15% chance to come back.']],
  90:[['sm_relent','Relentless Hammer','Smithing speed increases 25%'+X39.replace('bonus','+25%')+'.'],['sm_mastery','Metal Mastery','20% chance to produce an extra metal item.']],
- 99:[['sm_sov','Forge Sovereign','Every 5th successful smithing recipe produces two items.'],['sm_legend','Legendary Smith','Smith 35% faster (+35% XP); each bar has a 20% chance to come back.']]});
+ 99:[['sm_sov','Forge Sovereign','Every 5th successful smithing recipe produces two items.'],['sm_legend','Legendary Smith','Smith 35% faster; each bar has a 20% chance to come back.']]});
 TREES[6]=pTree(6,ulCraft,{
  10:[['cr_quick','Quick Hands','Craft items 10% faster'+X39.replace('bonus','+10%')+'.'],['cr_saver','Material Saver','10% chance to save one crafting material.']],
  20:[['cr_double','Double Craft','5% chance to produce an extra crafted item.'],['cr_steady','Steady Hands','Your FOOD drains 20% slower right after crafting.']],
  30:[['cr_eff','Efficient Crafting','Recipes use 10% fewer materials: each material has a 10% chance to come back.'],['cr_rapid','Rapid Crafting','Craft items 15% faster'+X39.replace('bonus','+15%')+'.']],
- 40:[['cr_bonus','Bonus Supplies','8% chance to produce an extra crafted item.'],['cr_careful','Careful Cutting','15% chance to save one wood or berry (the game\'s softer materials, in place of cloth and leather).']],
+ 40:[['cr_bonus','Bonus Supplies','8% chance to produce an extra crafted item.'],['cr_careful','Careful Cutting','15% chance to save one wood or berry when crafting.']],
  50:[['cr_gold','Golden Goods','Crafted goods sell for 20% more gold.'],['cr_cheap','Cheap Recipes','Recipes use 15% fewer materials: each material has a 15% chance to come back.']],
  60:[['cr_prod','Double Production','12% chance to produce an extra crafted item.'],['cr_resource','Resource Master','20% chance to save one crafting material.']],
  70:[['cr_master','Master Crafter','Craft items 20% faster'+X39.replace('bonus','+20%')+'.'],['cr_hands','Efficient Hands','Recipes use 20% fewer materials: each material has a 20% chance to come back.']],
  80:[['cr_endless','Endless Supplies','25% chance to save one crafting material.'],['cr_creation','Double Creation','15% chance to produce two items instead of one.']],
  90:[['cr_relent','Relentless Crafting','Craft items 25% faster'+X39.replace('bonus','+25%')+'.'],['cr_fortune','Crafting Fortune','20% chance to produce an extra crafted item.']],
- 99:[['cr_sov','Crafting Sovereign','Every 5th successful crafting recipe produces two items.'],['cr_legend','Artisan Legend','Craft 35% faster (+35% XP); each material has a 25% chance to come back.']]});
+ 99:[['cr_sov','Crafting Sovereign','Every 5th successful crafting recipe produces two items.'],['cr_legend','Artisan Legend','Craft 35% faster; each material has a 25% chance to come back.']]});
 // --- the numbers ---
 const sum39=(sk,L)=>L.reduce((a,[id,v])=>a+(P39(sk,id)?v:0),0);
 const PSPD={4:[['co_quick',.1],['co_timing',.15],['co_master',.2]],5:[['fi_quick',.15],['fi_rapid',.3]],10:[['sm_quick',.1],['sm_heavy',.15],['sm_rapid',.2],['sm_master',.2],['sm_relent',.25],['sm_legend',.35]],
@@ -85,8 +85,7 @@ const PROD={4:{save:()=>sum39(4,[['co_saver',.1],['co_endless',.2]]),fewer:()=>s
 const SOV39={4:0,10:0,6:0};
 // o: {out: item key or null (tools, armour), n: units made, used: {key: amount consumed}, xp: base XP earned, prefer: keys to save first, fewerKeys: keys "fewer" applies to}
 function prodBoost(sk,o){if(!o.n)return{};const C=PROD[sk],add=(k,v)=>{inv[k]=(inv[k]|0)+v},got={},back={};let j=0;const tag=t=>gTxt(P.x,P.y-24-(j++)*7,t,SKC[sk]);
- const xb=Math.round((o.xp||0)*pSpeed(sk));if(xb>0)addXp(sk,xb);
- const usedK=Object.keys(o.used||{}).filter(k=>o.used[k]>0),pick=()=>{const pr=(o.prefer||[]).filter(k=>usedK.includes(k));const L=pr.length?pr:usedK;return L[Math.floor(Math.random()*L.length)]};
+  const usedK=Object.keys(o.used||{}).filter(k=>o.used[k]>0),pick=()=>{const pr=(o.prefer||[]).filter(k=>usedK.includes(k));const L=pr.length?pr:usedK;return L[Math.floor(Math.random()*L.length)]};
  const ps=C.save(),pf=C.fewer(),pe=C.extra(),pd=C.dbl();
  for(let u=0;u<o.n;u++){
   if(usedK.length&&Math.random()<ps){const k=pick();back[k]=(back[k]|0)+1}
@@ -150,7 +149,7 @@ const _fire39=fire;fire=function(){const n0=fires.length,kin=P39(5,'fi_kindle')&
  if(P39(5,'fi_sov')&&++FSOV39>=5){FSOV39=0;wb=wUsed;gTxt(P.x,P.y-46,'Flame sovereign: no wood used!',SKC[5])}
  else{if(Math.random()<fFuel())wb++;if(P39(5,'fi_eff')){for(let u=wb;u<wUsed;u++)if(Math.random()<.15)wb++;for(let u=0;u<sUsed;u++)if(Math.random()<.15)sb++}}
  wb=Math.min(wb,wUsed);sb=Math.min(sb,sUsed);if(wb){inv.wood=(inv.wood|0)+wb;gTxt(P.x,P.y-30,'+'+wb+' wood saved',SKC[5])}if(sb){inv.stone=(inv.stone|0)+sb;gTxt(P.x,P.y-36,'+'+sb+' stone saved',SKC[5])}
- const xb=Math.round(40*pSpeed(5));if(xb>0)addXp(5,xb);saveLocal(true)};
+ saveLocal(true)};
 // warmth ring (50), the "monsters keep away" ring (70) and the glow scale with the light perks; cached once per frame
 let NF50=50,NF70=70;
 function fireLR(){return NF70/70}
@@ -163,7 +162,7 @@ const _u39=upd;upd=function(dt){
  const haven=!paused&&P39(5,'fi_haven')&&fires.length&&_nf39(P.x,P.y,80),sacred=!paused&&P39(5,'fi_sacred')&&fires.length;
  const pos=(haven||sacred)?en.map(n=>[n,n.x,n.y]):null;
  _u39(dt);
- if(pos)for(const[n,x0,y0]of pos){if(n.dead||!isSlime39(n))continue;let s=1;const d=Math.hypot(P.x-x0,P.y-y0);
+ if(pos)for(const[n,x0,y0]of pos){if(n.dead||n.boss||n._wb||n.type==='ib'||n._rp)continue;// every monster except bosses (other players\' monsters move on their own games)let s=1;const d=Math.hypot(P.x-x0,P.y-y0);
   if(haven&&d>=104&&d<130)s=.25;// beyond 80% of a slime's notice range: it doesn't spot you, so it just drifts
   if(sacred&&_nf39(x0,y0,80))s*=.85;if(s<1){n.x=x0+(n.x-x0)*s;n.y=y0+(n.y-y0)*s}}
  if(paused||dead)return;if(LAST39>0)LAST39-=dt;if(FEAST39>0)FEAST39-=dt;
@@ -171,4 +170,4 @@ const _u39=upd;upd=function(dt){
 // FOOD perks for smithing and crafting ride on section 38's activity timers
 ACTW[10]=0;FOODP[10]=['sm_steady',.2];ACTW[6]=0;FOODP[6]=['cr_steady',.2];
 // --- selling perks ---
-SELLB.push([4,'co_gold',.2,()=>[...CKSET]],[10,'sm_gold',.2,['ibar','sbar','idag','sdag']],[6,'cr_gold',.2,GOODS.map(g=>g.k)]);
+SELLB.push([4,'co_gold',.2,()=>[...CKSET]],[10,'sm_gold',.2,()=>SM.map(r=>r.k).filter(Boolean)],[6,'cr_gold',.2,()=>[...GOODS,...BREC].map(g=>g.k).filter(Boolean)]);

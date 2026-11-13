@@ -71,7 +71,7 @@ TREES[11]=gTree(11,{1:'Grow wheat',5:'Grow carrots',15:'Grow pumpkins'},{
  20:[['fm_gseeds','Golden Seeds','Rare-crop chance increases 5%.'],['fm_soil','Healthy Soil','Crops need watering 20% less often.']],
  30:[['fm_rich','Rich Harvest','8% chance to double a crop harvest.'],['fm_swift','Swift Growth','Crops grow 15% faster.']],
  40:[['fm_roots','Deep Roots','Hardy crops: dry crops keep growing at a quarter of their speed.'],['fm_bloom','Rare Bloom','Rare-crop chance increases 8%.']],
- 50:[['fm_gold','Golden Harvest','Crops sell for 25% more gold.'],['fm_water','Efficient Watering','Your FOOD drains 25% slower while you\'re farming.']],
+ 50:[['fm_gold','Golden Harvest','Crops sell for 25% more gold.'],['fm_water','Farmhand\'s Stamina','Your FOOD drains 25% slower while you\'re farming.']],
  60:[['fm_bounty','Farmer\'s Bounty','12% chance to double a crop harvest.'],['fm_seed','Seed Saver','20% chance to recover an extra seed when harvesting.']],
  70:[['fm_master','Master Farmer','Crops grow 20% faster.'],['fm_cult','Rare Cultivator','Rare-crop chance increases 10%.']],
  80:[['fm_endless','Endless Harvest','Crops produce 25% more.'],['fm_yield','Double Yield','15% chance to receive two harvests from one crop.']],
@@ -144,7 +144,7 @@ const _u38=upd;upd=function(dt){_u38(dt);if(menuOpen||pnOpen)return;const gs=gSp
  for(const[,p]of FARM){if(!p.c||ripe(p))continue;if(wet(p))p.g+=dt*gs;else if(hardy)p.g+=dt*.25*(1+gs)}
  let save=0;for(const sk in ACTW){if(ACTW[sk]>0){ACTW[sk]-=dt;const f=FOODP[sk];if(f&&P_(+sk,f[0]))save=Math.max(save,f[1])}}if(save&&!dead&&hunger>0)hunger=Math.min(100,hunger+dt*.9*FOOD_RATE*save)};
 // --- selling perks: a bonus on top of any shop's price ---
-const SELLB=[[1,'wc_grain',.25,['heartwood']],[2,'mn_touch',.2,['stone','iron','ruby','sapphire','emerald','diamond']],[9,'fs_gold',.25,()=>[...FISHK(),...FISH_T.map(f=>'c'+f.k),'crainbow']],
+const SELLB=[[1,'wc_grain',.25,['heartwood']],[2,'mn_touch',.2,['stone','iron','goldore','mithore','adamore','ruby','sapphire','emerald','diamond']],[9,'fs_gold',.25,()=>[...FISHK(),...FISH_T.map(f=>'c'+f.k),'crainbow']],
  [3,'fg_gold',.25,['berry','honey']],[11,'fm_gold',.25,['wheat','carrot','pumpkin','goldcrop']]];
 let SELL0=null;
 pbd.addEventListener('click',()=>{SELL0={g:GLD,inv:{...inv}};setTimeout(()=>{const S0=SELL0;SELL0=null;if(!S0||GLD<=S0.g)return;const dg=GLD-S0.g;let bonus=0;

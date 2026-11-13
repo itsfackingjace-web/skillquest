@@ -236,3 +236,6 @@
 - **Mithril/adamant tools** (`items/141`): `eq_axe6/7`, `eq_pick6/7` = tool tiers 6/7 (same numbers and `TCOL` as the swords),
   anvil recipes from `mbar`/`abar`, `req:{s,l}` checked by the outermost `equipItem` (Woodcutting/Mining 30/45).
   Skill trees: `TREES[1|2].extra[30|45]`; Smithing's `ulSmith` (039) is rebuilt from `SM` after load and on `SQA.onApply`.
+- **Perks**: production speed (039's `pSpeed`: level + `PSPD` perks) shortens 109's timed actions (`sqDo` divides the
+  duration) instead of giving bonus XP. Flame Aura (`fi_aura`, 087) needs only the perk (`SQAURA`/`SQAURALIT`; 014's cave dark
+  widens with it). fi_haven/fi_sacred act on all non-boss local monsters. `SELLB` (038) lists use functions where recipes grow.

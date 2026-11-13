@@ -61,7 +61,8 @@ const _df14=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='crystal'){const p=.6+.4*Math.sin(tm*2+x0);g.fillStyle='rgba(120,200,255,'+(.18*p)+')';g.beginPath();g.arc(x0+8,y0+4,14,0,6.283);g.fill();Rg(x0+4,y0-4,8,18,O);Rg(x0+5,y0-3,6,16,'#68b8f0');Rg(x0+6,y0-2,2,12,'#c8ecff');Rg(x0+2,y0+6,4,8,O);Rg(x0+3,y0+7,2,6,'#4890d0');return}
  _df14(it,tm)};
 const _dr14=drawRoom;drawRoom=function(tm){_dr14(tm);if(!SCENE||!SCENE.room.cave||SCENE.room.region)return;for(const n of en)if(!n.dead)pS(n,tm);if(!dead)pP(tm);
- const gr=g.createRadialGradient(P.x,P.y-4,28,P.x,P.y-4,118);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(6,4,12,.88)');g.fillStyle=gr;g.fillRect(P.x-500,P.y-500,1000,1000)};
+ const au=window.SQAURA&&SQAURA()&&!dead,gr=g.createRadialGradient(P.x,P.y-4,au?70:28,P.x,P.y-4,au?190:118);// Flame Aura lights more of the cave
+ gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(6,4,12,.88)');g.fillStyle=gr;g.fillRect(P.x-500,P.y-500,1000,1000)};
 // --- the desert trader ---
 let TRADER=null;{const cx=N>>1;outer:for(let y=N-8;y>N/2;y--)for(let dx=0;dx<30*HSC;dx++)for(const x of[cx+dx,cx-dx]){let ok=true;for(let a=-1;a<=2;a++)for(let b=-1;b<=1;b++){const i=(y+b)*N+x+a;if(tile[i]!==5||obj[i]||BS.has(i))ok=false}if(ok){TRADER={x,y};break outer}}}
 if(TRADER){BS.add(TRADER.y*N+TRADER.x+1);NPCS.push({kind:'trader',x:TRADER.x*16+8,y:(TRADER.y+1)*16+4,ch:{sk:2,hs:0,hc:0,sh:4,pn:2,ht:1,hcol:5,so:3}})}
