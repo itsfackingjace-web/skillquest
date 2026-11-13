@@ -20,3 +20,6 @@ Firebase console > Realtime Database > Rules and click Publish.
 The game is one page, `index.html`, built from the files in `src/` (listed in build order in `src/manifest.txt`).
 Edit `src/`, then run `node tools/build.mjs` (Node 18+, no installs needed) and commit both. `node tools/build.mjs --check`
 confirms `index.html` is up to date; GitHub runs it on every push.
+
+## Credits
+Music instrument samples: FluidR3_GM SoundFont by Frank Wen, CC BY 3.0 (see `music/README.md`). Songs are original.

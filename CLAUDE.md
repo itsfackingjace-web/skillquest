@@ -346,13 +346,15 @@
   (`SQPVHEAL.fighting()`: duel, or `SQPVP.fight` within 10 s) healing is halved with carry, from food (outermost `eat`, `EATCD`
   5 s) and anything else (outermost `upd`, also between frames); duels after 60 s = sudden death (no healing, `#dlbar` text).
   A duel that ends in a frame restores health untouched.
-- **Soundtrack** (`world/155-s161-soundtrack.js`, `window.SQMUSIC`): a small tracker replaces 014's two-voice loops (014's
-  scheduler still runs and owns `MG`, the volume/fade bus, but its `PARSED` tracks are emptied every tick). Songs in `S`:
-  {bpm, m (8ths per bar: 8 = 4/4, 6 = 3/4 or 6/8), lead (p12/p25/p50s/tri/flute/bell), bass (drive/pulse8/walk/root5/waltz/
-  shanty/pedal/roll), arp (up16/roll8/stab/sparkle/none), pad, drums (`DR` patterns), echo 0-2, swing, parts {name:[chords,
-  melody]}, order}. Melody tokens are 8ths ("X/Y" two 16ths, "-" hold, "." rest, "|" bar line); one chord per bar ("C,G" =
-  half each). `VOL` evens loudness (re-measure with `SQMUSIC.render(name,secs)` → AudioBuffer when adding a song). The
-  outermost `wantSong`: boss near (boss/_wb/cb/ib, or `big` inside a dungeon; held 6 s) > `sail` > island theme by region
-  (`REGION_SONG`) > the older names (day night indoor cave port frost tide desert icecave sandcave seacave). Unknown names
-  fall back to cave/day. Write only original melodies.
-
+- **Soundtrack** (`world/155-s161-soundtrack.js`, `window.SQMUSIC`): orchestral samples (FluidR3_GM, CC BY 3.0, credited in
+  Options, `README.md` and `music/README.md`) in `music/<inst>.json` ({s:{midi:base64 mp3}}, one every 4 semitones), fetched
+  per song (`loadSong`; a new song starts once loaded, the old one keeps playing meanwhile). 014's scheduler still runs and
+  owns `MG` (volume/fade bus) but its `PARSED` tracks are emptied every tick. Songs in `S`: {bpm, m (8ths per bar: 8 = 4/4,
+  6 = 3/4 or 6/8), lead, harm (second voice: chord tone a third+ below, on quarter notes or longer), pad, arp + arps
+  (harp8/strum/stab/ost8/sparkle), bass + bs (held/pedal/pizz/drive/walk/root5/waltz/shanty), perc (timp/march/timp8/taiko/
+  tamb/boss), swing, parts {name:[chords, melody, {lead,harm}?]}, order}; instruments in `INST` (range, sustained or not).
+  Melody tokens are 8ths ("X/Y" two 16ths, "-" hold, "." rest, "|" bar line); one chord per bar ("C,G" = half each). `VOL`
+  evens loudness (re-measure with `SQMUSIC.render(name,secs)` → AudioBuffer when adding a song). The outermost `wantSong`:
+  boss near (boss/_wb/cb/ib, or `big` inside a dungeon; held 6 s) > `sail` > island theme by region (`REGION_SONG`) > the
+  older names (day night indoor cave port frost tide desert icecave sandcave seacave). Unknown names fall back to cave/day.
+  Write only original melodies.
