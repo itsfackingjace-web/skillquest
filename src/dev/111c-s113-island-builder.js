@@ -84,7 +84,7 @@
     '<div class="dv-mut" style="margin:8px 0 4px">People, dungeons and monsters <small>(a monster zone is drawn with a drag)</small></div><div class="dv-pal dv-ipal-x"></div>'+
     '<div class="dv-mut" style="margin:8px 0 4px">Your own ground tiles <small>(drawn over the ground; the ground under them still decides where players can walk)</small></div><div class="dv-pal dv-ipal-c"></div><div id="dvitile"></div></div>'+
     '<div class="dv-row" style="margin-top:6px"><button class="dv-b" data-ia="beach">Add beaches</button><span class="dv-mut">turns land along the water into sand</span></div>'+
-    (ed.bi?'<div class="dv-card" style="margin-top:6px"><b>Changes to '+E(WORLD_REGIONS[ed.bi]?WORLD_REGIONS[ed.bi].name:ed.bi)+'</b><p class="dv-mut">You are painting on top of the island the game makes. The darkened parts (villages, the harbor and the game\'s own buildings and landmarks) stay as they are and can\'t be painted. Trees and rocks keep exactly the places you give them.</p>'+'<div class="dv-row"><button class="dv-b dv-pri" data-ia="save">Save to draft</button><button class="dv-b '+(S.arm==='idel'?'dv-arm':'dv-bad')+'" data-ia="del">'+(S.arm==='idel'?'Tap again to undo every change':'Undo all my changes')+'</button></div><p class="dv-mut">Publish to send the changes to players. Use Dev Suite &gt; Test to go there.</p></div>':'')+
+    (ed.bi?'<div class="dv-card" style="margin-top:6px"><b>Changes to '+E(WORLD_REGIONS[ed.bi]?WORLD_REGIONS[ed.bi].name:ed.bi)+'</b><p class="dv-mut">You are painting on top of the island the game makes. The darkened parts (villages, the harbor and the game\'s own buildings and landmarks) are locked.</p><label class="dv-mut" style="display:block;margin:4px 0"><input type="checkbox" data-ia="biul"'+(ed.ul?' checked':'')+'> Unlock them (the buildings\' own tiles still stay; painting a village over can make it hard to walk through)</label><p class="dv-mut">The island\'s size and its harbor stay the game\'s own, since villages, quests and the voyage all depend on them. Trees and rocks keep exactly the places you give them.</p>'+'<div class="dv-row"><button class="dv-b dv-pri" data-ia="save">Save to draft</button><button class="dv-b '+(S.arm==='idel'?'dv-arm':'dv-bad')+'" data-ia="del">'+(S.arm==='idel'?'Tap again to undo every change':'Undo all my changes')+'</button></div><p class="dv-mut">Publish to send the changes to players. Use Dev Suite &gt; Test to go there.</p></div>':'')+
     (ed.bi?'':'<div class="dv-card" style="margin-top:6px"><b>Island details</b>'+
     '<p><label class="dv-mut">Name<input type="text" data-im="n" maxlength="40" value="'+E(m.n)+'"></label></p>'+
     '<p><label class="dv-mut">Description (shown on the sailing routes and world map)<input type="text" data-im="b" maxlength="120" value="'+E(m.b)+'" placeholder="Meadows, a quiet lake and an old ruin"></label></p>'+
@@ -307,17 +307,18 @@
   for(const it of G.items){if(it.t!=='_obj'||!it.o)continue;const k=OBJ.indexOf(it.o.t+(it.o.v?':'+it.o.v:''));const k2=k>=0?k:OBJ.indexOf(it.o.t);if(k2>=0)o[it.y*W+it.x]=k2}
   const base={t:t.slice(),o:o.slice()},d0=isl()['ed_'+rid];
   let tt='',oo='';for(let i=0;i<N;i++){tt+=HEX[t[i]];oo+=o[i]===NONE?'.':PXC[o[i]]}
-  const ed=fromData('ed_'+rid,{w:W,h:H,t:A.pack?A.pack(tt):tt,o:A.pack?A.pack(oo):oo,lm:d0&&d0.lm,npc:d0&&d0.npc,n:D.name});
+  const ed=fromData('ed_'+rid,{w:W,h:H,t:A.pack?A.pack(tt):tt,o:A.pack?A.pack(oo):oo,lm:d0&&d0.lm,npc:d0&&d0.npc,cv:d0&&d0.cv,zn:d0&&d0.zn,ct:d0&&d0.ct,c:d0&&d0.c,n:D.name});
   if(d0)for(const[i,ti,c]of X.parse(d0)){if(i<0||i>=N)continue;if(ti>=0)ed.t[i]=ti;if(c==='.')ed.o[i]=NONE;else if(c){const k=PXC.indexOf(c);if(k>=0&&k<OBJ.length)ed.o[i]=k}}
-  ed.prot=G._keep||null;ed.bi=rid;ed.base=base;ed.meta.n=D.name;I.sel='ed_'+rid;I.ed=ed;ed.recenter=1;S.arm=null;API.draw()}
+  ed.keep=G._keep||null;ed.ul=!!(d0&&d0.ul);ed.prot=ed.ul?null:ed.keep;ed.bi=rid;ed.base=base;ed.meta.n=D.name;I.sel='ed_'+rid;I.ed=ed;ed.recenter=1;S.arm=null;API.draw()}
  async function saveBuiltin(){const ed=I.ed,b=ed.base,parts=[];for(let i=0;i<ed.t.length;i++){const dt=ed.t[i]!==b.t[i],dob=ed.o[i]!==b.o[i];if(!dt&&!dob)continue;parts.push(i+'.'+(dt?HEX[ed.t[i]]:'')+'.'+(dob?(ed.o[i]===NONE?'.':PXC[ed.o[i]]):''))}
-  const full=toData(ed),d={bi:ed.bi,n:WORLD_REGIONS[ed.bi].name,w:ed.w,h:ed.h,x:parts.join(';')};if(full.lm&&full.lm.length)d.lm=full.lm;if(full.npc&&full.npc.length)d.npc=full.npc;
-  const empty=!parts.length&&!d.lm&&!d.npc;if(empty)delete isl()[ed.id];else isl()[ed.id]=d;
+  const full=toData(ed),d={bi:ed.bi,n:WORLD_REGIONS[ed.bi].name,w:ed.w,h:ed.h,x:parts.join(';')};for(const k of['lm','npc','cv','zn','ct'])if(full[k]&&full[k].length)d[k]=full[k];if(d.ct&&full.c)d.c=full.c;if(ed.ul)d.ul=1;
+  const empty=!parts.length&&!d.lm&&!d.npc&&!d.cv&&!d.zn&&!d.ct&&!d.ul;if(empty)delete isl()[ed.id];else isl()[ed.id]=d;
   try{await dset('draft/islands/'+ed.id,empty?null:d);ed.dirty=false;toast(empty?'No changes, so nothing is saved.':'Saved to draft ('+parts.length+' tiles changed). Publish it from the Publish tab.')}catch(e){fail(e)}if(A.previewing)A.preview(S.draft);redraw()}
  function open(id){if(/^ed_/.test(id))return openBuiltin(id.slice(3));const d=isl()[id];if(!d)return;I.sel=id;I.ed=fromData(id,d);I.ed.recenter=1;S.arm=null;API.draw()}
  // ---- input ----
  const root=document.getElementById('dvs');
  root.addEventListener('click',e=>{if(S.tab!=='islands')return;const t=e.target.closest('[data-ia],[data-isl],[data-itool],[data-ibrush],[data-itile],[data-iobj],[data-ilm],[data-iloot-x],[data-ix],[data-ict],[data-ixm],[data-itt],[data-itc]');if(!t)return;const ed=I.ed;
+  if(t.dataset.ia==='biul'&&ed&&ed.bi){ed.ul=t.checked;ed.prot=ed.ul?null:ed.keep;ed.dirty=true;paint(true);return}
   if(t.dataset.ia&&t.dataset.ia.startsWith('bi:')){if(ed&&ed.dirty&&!confirmLeave())return;openBuiltin(t.dataset.ia.slice(3));return}
   if(t.dataset.ix){ed.pal=t.dataset.ix;ed.tool=ed.pal==='zn'?'rect':'paint';tools();pals();hint();return}
   if(t.dataset.ict!=null){ed.pal='ct';ed.cti=+t.dataset.ict;if(['erase','pick','pan','fill'].includes(ed.tool))ed.tool='paint';tools();pals();hint();return}

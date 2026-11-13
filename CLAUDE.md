@@ -45,7 +45,8 @@
 - **Pet looks** (Dev Suite > Pets): `pets.<kind>` = {w,h,s,ox,oy,a,c,b,d} (standing frames a/c, idling every 0.5 s;
   walking frames b/d, stepping with the pet's own walk clock; older looks with only a/b walk a/b), drawn facing right, mirrored
   when walking left. `SQA` draws them in place of the pet's own look through the outermost `pP` wrapper and
-  `LUX.drawPeerPet`; `SQA.capturePet` copies the game's current look to start from. The Imp is left out (tied to combat).
+  `LUX.drawPeerPet`; `SQA.capturePet` copies the game's current look to start from. The Imp (`pets.imp`) isn't a follower: 111a
+  overrides `window.SQIMPSP` (085 keeps every canvas it gets, so 111a hands out canvases it repaints in place on each library change).
 - **Island builder** (`dev/111c-s113-island-builder.js`, a Dev Suite tab added through `SQSUITE.addTab`): custom islands are
   saved as `islands.cu_<name>` in the asset library and registered by `SQA` as normal regions (painted tiles + objects,
   8 tiles of sea added around, pier placed by `rgDock`). They skip the random tree thinning/tiering, are open without a
@@ -114,11 +115,11 @@
   the region key `n.rk`, else `type[:rv]`), drawn by the outermost `pS` (`mobDraw` in 111d: walk frames, `ak` = last
   frame is the attack pose within 20 px, `fw` = face the walking direction instead of the player, white flash when hit,
   bosses get a health bar). Capture draws `pS` at six moments and keeps the different frames (bosses' own bars left out).
-  World bosses and island bosses are left out (`_wb`, type `ib`). Dungeon bosses are in (`MX` + templates `BT` in 111d): for
+  Island bosses (`m:ib:<id>`) and world bosses (`m:wb:<wisp|giant|demon|dragon>`) are in too (`mkey`), drawn like alpha below. Dungeon bosses are in (`MX` + templates `BT` in 111d): for
   alpha/matri/tidek the game's drawer still runs with `g.drawImage` switched off (glow, attack warnings, health bar stay, body
   goes); Thornroot's roots and the Emberlord's pools/fireballs + a health bar are drawn by `BXFX`. Rules: `mobs.<key>` = {hp%, spd%, gold, dr:[{k,n,x,c}] (older: dk/dn/dc), rep} in
   `dev/111f-s122-monster-rules.js` (outermost `upd` scales health once and movement every frame; `enemyDrop` adds gold
-  and the drops; `rep` takes back what the inner `enemyDrop` gave, incl. a new `dchest`; Thornroot/Emberlord pay through `upd` when `_rew` appears); proxies of other players' monsters are skipped.
+  and the drops; `rep` takes back what the inner `enemyDrop` gave, incl. a new `dchest`; Thornroot/Emberlord pay through `upd` when `_rew` appears; island bosses pay on `sqEvent('islandboss',id)`, world bosses when `SQWB.kills` goes up, no `rep` for those two); `dmg` % scales the health you lose in a frame when a ruled monster was within 40 px at the start of it; proxies of other players' monsters are skipped.
 - **Button words** (`ui/118-s123-button-words.js`, `window.SQWORDS`): every 0.1 s the HIT (`a`) and EAT (`e`) buttons get
   the word for what they'd do now (`hitWord`/`eatWord`, following the same order as the `attack`/`eat` wrappers: build,
   facing someone, fishing, station, home furniture/chest/bed, monster in front, water, sign, the object's skill via
@@ -281,7 +282,10 @@
   lm, npc}. Applied inside generation by wrapping 050's `rgFinish` (cells with `C.keep`/`lmSolid` are never touched; the
   builder darkens them via `G._keep` from `base(id)`, which generates without the patch). Patched regions skip tiering
   (`R._t64`); the cached region is dropped when its patch changes (not the one you stand on). 111a's `applyIslands` only
-  takes `cu_` ids, so `ed_` entries never become islands of their own. Dungeons/zones/own tiles are custom-island only.
+  takes `cu_` ids, so `ed_` entries never become islands of their own. Also `cv` (dungeon kinds `cv_<region>_e<i>`, registered
+  in 111g), `zn` (spawned by 111g's own `upd` loop, `n.zi='e<k>'`, exempt from 053's cap), `ct`+`c` (drawn over `ROOMBG`) and `ul`
+  (unlock: `C.keep` cells may change, `lmSolid` never). A patch change while you stand on the island rebuilds it around you
+  (`refresh`). Size and pier stay the game's own.
 - **Bosses made in the Dev Suite** (`combat/146-s152-custom-bosses.js`, `window.SQBOSSES`, Dev Suite > Bosses): `bosses.cb_<id>` =
   {n, base, hp, sz, dmg, spd, cd, rs, atk:{ring,charge,slam,summon}, sk}; each becomes monster kind `cb:<letters>` (`keyOf`) in
   `SQISLIFE.MOBS` (island builder zones, island-dungeon monster lists; in a `cv_` dungeon one boss on the last floor via the
