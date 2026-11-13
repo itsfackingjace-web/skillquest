@@ -205,9 +205,9 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
  const sa=performance.now()/1000-cloudOk;if(sa<2.5){g.globalAlpha=Math.min(1,2.5-sa);g3text('SAVED',dx-8*U,top+17*U,10,U,'#f8f8f8','right',700);g.globalAlpha=1}
  // text box: pages of two lines; tap it to skip ahead
  MSGBOX=null;
- if(msgT>0&&msg){const touchUI=!isPC&&!GPON,th=54*U;let tw,tx,ty;
+ if(msgT>0&&msg){const touchUI=!isPC&&!GPON,atTop=touchUI&&H>=W,th=(atTop?44:54)*U;let tw,tx,ty;
   if(!touchUI){const hpW=isPC&&hp.style.display==='block'?(hp.getBoundingClientRect().right+14)*D:0;tw=Math.min(W-2*ins,470*U);tx=(W-tw)/2;if(hpW&&tx<hpW){tx=hpW;tw=Math.min(tw,W-ins-hpW)}ty=H-th-18*U}
-  else if(H>=W){tx=ins;tw=W-2*ins;ty=L.stackBottom+6*U}
+  else if(H>=W){tx=ins;tw=W-2*ins;ty=Math.max(2*U,top-th-3*U)}// phones held upright: the strip above the status box
   else{tx=ins+Math.max(bw,qw)+10*U;tw=Math.min(470*U,dx-10*U-tx);if(tw<240*U){tx=ins;tw=W-2*ins;ty=L.stackBottom+6*U}else ty=top}
   g.font='600 '+15*U+'px '+PF;const full=String(msg),words=full.split(' '),lines=[''];
   for(const w of words){const tl=lines[lines.length-1]?lines[lines.length-1]+' '+w:w;if(g.measureText(tl).width>tw-48*U&&lines[lines.length-1])lines.push(w);else lines[lines.length-1]=tl}
@@ -216,9 +216,9 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
   const pg=pages[MP.p],plen=pg.join(' ').length,n=Math.floor((now-MP.pat)/1000*75),done=n>=plen,more=MP.p<pages.length-1;
   if(more){msgT=Math.max(msgT,1);if(done&&now-MP.pat>plen/75*1000+1500+plen*25){MP.p++;MP.pat=now;msgT=Math.max(msgT,2.6)}}
   g.globalAlpha=Math.min(1,msgT/.3);g3box(tx,ty,tw,th,U);let left=n;
-  pg.forEach((l,i)=>{const s=l.slice(0,Math.max(0,left));left-=l.length+1;g3text(s,tx+16*U,ty+(pg.length>1?19:27)*U+i*17*U,15,U,'#404040','left',600)});
+  pg.forEach((l,i)=>{const s=l.slice(0,Math.max(0,left));left-=l.length+1;g3text(s,tx+16*U,ty+(atTop?(pg.length>1?17:24):(pg.length>1?19:27))*U+i*17*U,15,U,'#404040','left',600)});
   if(done&&Math.floor(now/350)%2){g.fillStyle='#e04830';g.beginPath();g.moveTo(tx+tw-24*U,ty+th-18*U);g.lineTo(tx+tw-14*U,ty+th-18*U);g.lineTo(tx+tw-19*U,ty+th-12*U);g.fill()}
-  g.globalAlpha=1;MSGBOX={x:tx/D,y:ty/D,w:tw/D,h:th/D,more,done}}
+  g.globalAlpha=1;MSGBOX={x:tx/D,y:ty/D,w:tw/D,h:th/D,more,done,top:atTop}}
  g.restore()}
 function drawDead(){const U=uiS();g.save();g.fillStyle='rgba(0,0,0,.6)';g.fillRect(0,0,W,H);const bw=Math.min(W-24*U,360*U),bh=118*U,x=(W-bw)/2,y=H*.34;g3box(x,y,bw,bh,U);
  g3text('You fell!',x+bw/2,y+26*U,22,U,'#d05030','center',700);{const gl=window.SQGRV&&SQGRV.lostPreview?SQGRV.lostPreview():0;g3text(gl?'Your things are in a grave where you fell. It\'s on your map.':'You weren\'t carrying anything.',x+bw/2,y+52*U,13,U,'#404040','center',500);g3text(gl?'Anyone can loot it! Gold and gear are safe.':'Skills, gold and gear are safe.',x+bw/2,y+70*U,13,U,'#404040','center',500)}

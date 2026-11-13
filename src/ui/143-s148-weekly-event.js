@@ -82,7 +82,7 @@
 #pn .sqwe-r span{opacity:.6}#pn .sqwe-r span.on{opacity:1;color:#287818;font-weight:700}#pn .sqwe small{display:block;font-size:11px;opacity:.9}#pn .sqwe-top{margin-top:3px}`;document.head.appendChild(st)}
  // ---- the HUD pill (left of the players-online pill), tap = quest log ----
  let RECT=null;
- {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);RECT=null;try{if(menuOpen||!on()||(window.SQTS&&SQTS.open))return out;const L=hudLayout(),U=L.U,e=E(),pc=Math.min(100,Math.floor(TOT/e.goal*100));
+ {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);RECT=null;try{if(menuOpen||(MSGBOX&&MSGBOX.top)||!on()||(window.SQTS&&SQTS.open))return out;const L=hudLayout(),U=L.U,e=E(),pc=Math.min(100,Math.floor(TOT/e.goal*100));
    g.save();g.setTransform(1,0,0,1,0,0);g.font='700 '+10*U+'px '+PF;const txt=pc+'%',tw=g.measureText(txt).width,bw=34*U,h=16*U,w=bw+tw+30*U;
    let ow=0;{g.font='700 '+11*U+'px '+PF;ow=g.measureText(String(window.SQONLINE?SQONLINE():1)).width+20*U;g.font='700 '+10*U+'px '+PF}
    const x=Math.round(L.dx+L.dw-ow-6*U-w),y=Math.round(L.top-h-4*U);RECT={x,y,w,h};

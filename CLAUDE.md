@@ -254,3 +254,5 @@
 - **Watering can off-hand** (140): `eq_can` slot `off` kind `can` (`TL.can`); hoe and can swap by themselves in the outermost
   `attack` (tillable ground with the can → hoe; dry crop with the hoe → can) and on the "Buy a watering can" message;
   `shootAim` (controller R1) uses hoe/can when that's the off-hand.
+- **Message box on phones** (010's `drawHUD`): touch screens held upright (`H>=W`) draw the text box in the strip above the status
+  box (`ty=top-th-3U`, 44U tall, `MSGBOX.top`); the players-online and weekly pills (139, 143) skip drawing while it's there.

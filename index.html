@@ -1073,9 +1073,9 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
  const sa=performance.now()/1000-cloudOk;if(sa<2.5){g.globalAlpha=Math.min(1,2.5-sa);g3text('SAVED',dx-8*U,top+17*U,10,U,'#f8f8f8','right',700);g.globalAlpha=1}
  // text box: pages of two lines; tap it to skip ahead
  MSGBOX=null;
- if(msgT>0&&msg){const touchUI=!isPC&&!GPON,th=54*U;let tw,tx,ty;
+ if(msgT>0&&msg){const touchUI=!isPC&&!GPON,atTop=touchUI&&H>=W,th=(atTop?44:54)*U;let tw,tx,ty;
   if(!touchUI){const hpW=isPC&&hp.style.display==='block'?(hp.getBoundingClientRect().right+14)*D:0;tw=Math.min(W-2*ins,470*U);tx=(W-tw)/2;if(hpW&&tx<hpW){tx=hpW;tw=Math.min(tw,W-ins-hpW)}ty=H-th-18*U}
-  else if(H>=W){tx=ins;tw=W-2*ins;ty=L.stackBottom+6*U}
+  else if(H>=W){tx=ins;tw=W-2*ins;ty=Math.max(2*U,top-th-3*U)}// phones held upright: the strip above the status box
   else{tx=ins+Math.max(bw,qw)+10*U;tw=Math.min(470*U,dx-10*U-tx);if(tw<240*U){tx=ins;tw=W-2*ins;ty=L.stackBottom+6*U}else ty=top}
   g.font='600 '+15*U+'px '+PF;const full=String(msg),words=full.split(' '),lines=[''];
   for(const w of words){const tl=lines[lines.length-1]?lines[lines.length-1]+' '+w:w;if(g.measureText(tl).width>tw-48*U&&lines[lines.length-1])lines.push(w);else lines[lines.length-1]=tl}
@@ -1084,9 +1084,9 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
   const pg=pages[MP.p],plen=pg.join(' ').length,n=Math.floor((now-MP.pat)/1000*75),done=n>=plen,more=MP.p<pages.length-1;
   if(more){msgT=Math.max(msgT,1);if(done&&now-MP.pat>plen/75*1000+1500+plen*25){MP.p++;MP.pat=now;msgT=Math.max(msgT,2.6)}}
   g.globalAlpha=Math.min(1,msgT/.3);g3box(tx,ty,tw,th,U);let left=n;
-  pg.forEach((l,i)=>{const s=l.slice(0,Math.max(0,left));left-=l.length+1;g3text(s,tx+16*U,ty+(pg.length>1?19:27)*U+i*17*U,15,U,'#404040','left',600)});
+  pg.forEach((l,i)=>{const s=l.slice(0,Math.max(0,left));left-=l.length+1;g3text(s,tx+16*U,ty+(atTop?(pg.length>1?17:24):(pg.length>1?19:27))*U+i*17*U,15,U,'#404040','left',600)});
   if(done&&Math.floor(now/350)%2){g.fillStyle='#e04830';g.beginPath();g.moveTo(tx+tw-24*U,ty+th-18*U);g.lineTo(tx+tw-14*U,ty+th-18*U);g.lineTo(tx+tw-19*U,ty+th-12*U);g.fill()}
-  g.globalAlpha=1;MSGBOX={x:tx/D,y:ty/D,w:tw/D,h:th/D,more,done}}
+  g.globalAlpha=1;MSGBOX={x:tx/D,y:ty/D,w:tw/D,h:th/D,more,done,top:atTop}}
  g.restore()}
 function drawDead(){const U=uiS();g.save();g.fillStyle='rgba(0,0,0,.6)';g.fillRect(0,0,W,H);const bw=Math.min(W-24*U,360*U),bh=118*U,x=(W-bw)/2,y=H*.34;g3box(x,y,bw,bh,U);
  g3text('You fell!',x+bw/2,y+26*U,22,U,'#d05030','center',700);{const gl=window.SQGRV&&SQGRV.lostPreview?SQGRV.lostPreview():0;g3text(gl?'Your things are in a grave where you fell. It\'s on your map.':'You weren\'t carrying anything.',x+bw/2,y+52*U,13,U,'#404040','center',500);g3text(gl?'Anyone can loot it! Gold and gear are safe.':'Skills, gold and gear are safe.',x+bw/2,y+70*U,13,U,'#404040','center',500)}
@@ -9317,6 +9317,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-18',d:'Nov 12, 2026',t:'Messages at the top on phones',n:['On phones held upright, the message box now sits in the strip at the very top of the screen instead of the middle, so it no longer covers you or what you\'re doing. Tap it to skip ahead like before.']},
  {v:'2026.11.12-17',d:'Nov 12, 2026',t:'Weekly events, chess ladder, party perks',n:['Weekly events: every week the whole server works on one goal together, like chopping 3,000 logs or lighting 300 fires. Watch the bar at the top of the screen (tap it for details in your quest log). When the community reaches a tier, everyone who helped gets gold and XP. A new event starts every Monday.','Chess ladder: games of chess against other players now give you a rating (everyone starts at 1000). Beat stronger players to climb faster. See the top players in Leaderboards > Chess, and your own rating at Orla\'s board. Very short games and more than 3 games a day against the same player aren\'t rated.','Parties: the chat has a new Party tab for talking to your party. When you beat a monster, party members nearby get half its gold too.','The watering can is now an off-hand item, like the hoe. Farming swaps them for you: HIT dry crops with the hoe in hand and you switch to the can, HIT grass with the can and you switch to the hoe.','Controllers: R1 now uses a hoe or watering can in your off-hand too, not just a bow or wand.']},
  {v:'2026.11.12-16',d:'Nov 12, 2026',t:'Graves outside dungeons',n:['Fall in a dungeon, an island boss lair or another building and your grave now appears just outside its entrance, so you can always get your things back, even without shards or sigils to open the door again.','Graves that were already inside a dungeon or lair also show up outside the entrance now.','Your grave timer says "(outside)" when that\'s where it is, and the map shows the spot.']},
  {v:'2026.11.12-15',d:'Nov 12, 2026',t:'Skill perks that do what they say',n:['Flame Aura now works: you glow at night and in dark caves, with no campfire needed. Other players see your glow too.','Speed perks for Cooking, Firemaking, Smithing and Crafting (and the speed you gain from levels) now really make those actions faster. Before, they quietly gave a little extra XP, from back when those actions were instant.','Safe Haven and Sacred Flames now work on every monster near your campfire, not just slimes.','Golden Forge now raises the price of everything you smelt or forge, Golden Goods covers everything you build, and Golden Touch covers gold, mithril and adamant ore too.','A few perks got clearer names and descriptions (Charcoal Bed, Farmhand\'s Stamina, Careful Cutting).']},
@@ -16043,7 +16044,7 @@ window.SQA=SQA;
 // A small pill right above the day box: a green dot and how many players are online (you included),
 // counted from the players the game hears from (seen in the last 20 s). Only while you're playing online.
 (()=>{let N0=0,at=0;const count=()=>{const t=performance.now();if(t-at<1000)return N0;at=t;let n=1;try{for(const r of SQMP.players.values())if(t-r.seen<20000)n++}catch(e){}return N0=n};
- const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!(window.SQMP&&SQMP.on&&SQMP.user))return out;const L=hudLayout(),U=L.U,n=count();
+ const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||(MSGBOX&&MSGBOX.top)||!(window.SQMP&&SQMP.on&&SQMP.user))return out;const L=hudLayout(),U=L.U,n=count();
    const s=String(n);g.save();g.setTransform(1,0,0,1,0,0);g.font='700 '+11*U+'px '+PF;const tw=g.measureText(s).width,w=tw+20*U,h=16*U;
    const x=Math.round(L.dx+L.dw-w),y=Math.round(L.top-h-4*U);// right above the day box (dx, top, width dw)
    g.fillStyle='rgba(16,24,40,.72)';g.beginPath();g.roundRect(x,y,w,h,h/2);g.fill();
@@ -16256,7 +16257,7 @@ window.SQA=SQA;
 #pn .sqwe-r span{opacity:.6}#pn .sqwe-r span.on{opacity:1;color:#287818;font-weight:700}#pn .sqwe small{display:block;font-size:11px;opacity:.9}#pn .sqwe-top{margin-top:3px}`;document.head.appendChild(st)}
  // ---- the HUD pill (left of the players-online pill), tap = quest log ----
  let RECT=null;
- {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);RECT=null;try{if(menuOpen||!on()||(window.SQTS&&SQTS.open))return out;const L=hudLayout(),U=L.U,e=E(),pc=Math.min(100,Math.floor(TOT/e.goal*100));
+ {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);RECT=null;try{if(menuOpen||(MSGBOX&&MSGBOX.top)||!on()||(window.SQTS&&SQTS.open))return out;const L=hudLayout(),U=L.U,e=E(),pc=Math.min(100,Math.floor(TOT/e.goal*100));
    g.save();g.setTransform(1,0,0,1,0,0);g.font='700 '+10*U+'px '+PF;const txt=pc+'%',tw=g.measureText(txt).width,bw=34*U,h=16*U,w=bw+tw+30*U;
    let ow=0;{g.font='700 '+11*U+'px '+PF;ow=g.measureText(String(window.SQONLINE?SQONLINE():1)).width+20*U;g.font='700 '+10*U+'px '+PF}
    const x=Math.round(L.dx+L.dw-ow-6*U-w),y=Math.round(L.top-h-4*U);RECT={x,y,w,h};
