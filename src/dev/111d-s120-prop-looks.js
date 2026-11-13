@@ -62,10 +62,25 @@
   if(n._lx==null)n._lx=n.x;const mv=n.x-n._lx;n._lx=n.x;if(Math.abs(mv)>.05)n._dir=mv<0?-1:1;const fl=L.fw?n._dir<0:P.x<n.x;
   let f;if(L.ak&&nf>1&&Math.hypot(P.x-n.x,P.y-n.y)<20)f=nf-1;else{const wn=L.ak&&nf>1?nf-1:nf,ms=Math.max(60,Math.min(5000,L.ms|0||250));f=wn>1?Math.floor(performance.now()/ms+((x*7+y*3)%11)/11*wn)%wn:0}
   const hit=Math.abs(n.kx||0)+Math.abs(n.ky||0)>.5,c=hit?white(q,L,f):can(q,L,f),w=L.w*L.s/2,h=L.h*L.s/2;
-  try{shd(x,y+5,Math.max(8,Math.min(40,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;if(n.frozen>0)g.globalAlpha*=.85;if(fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,Math.round((x+L.ox)*2)/2,Math.round((y+L.oy)*2)/2,w,h);g.restore();
+  if(n.type==='matri'&&n.under)return true;
+  // dungeon bosses keep the game's own glow, attack warnings and health bar: the game's drawer runs with every picture
+  // (its body) left out (Frostfang Alpha, Sandclaw Matriarch, Tidekeeper); Thornroot's roots and the Emberlord's fire
+  // pools and fireballs are drawn here since their bodies aren't pictures
+  const BX=BXFX[n.type];if(BX==='skip'){const di=g.drawImage;g.drawImage=function(){};try{_ps(n,tm)}catch(e){}finally{delete g.drawImage;if(g.drawImage!==di)g.drawImage=di}}
+  else if(BX)try{BX(n,tm,0)}catch(e){}
+  if(!BX)try{shd(x,y+5,Math.max(8,Math.min(40,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;if(n.frozen>0)g.globalAlpha*=.85;if(fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,Math.round((x+L.ox)*2)/2,Math.round((y+L.oy)*2)/2,w,h);g.restore();
   if(n.frozen>0){g.save();g.globalAlpha=.35;g.fillStyle='#a8e0ff';g.fillRect(x+L.ox,y+L.oy,w,h);g.restore()}
   // bosses keep their health bar over their head
+  if(BX&&BX!=='skip')try{BX(n,tm,1,y+L.oy)}catch(e){}
   if(n.type==='boss'||n.type==='bonelord'){const mh=n.mhp||(n.type==='boss'?30:45),by=Math.round(y+L.oy-8);Rg(x-16,by,32,4,'#181018');Rg(x-15,by+1,Math.max(0,Math.round(30*n.hp/mh)),2,n.type==='boss'?'#e03030':'#a050e0')}return true}
+ const bossBar=(n,x,top,col)=>{const w=40,f=Math.max(0,n.hp/(n.mhp||1)),K='#181018';Rg(x-w/2-1,top-8,w+2,5,K);Rg(x-w/2,top-7,w,3,'#3a1a1a');Rg(x-w/2,top-7,Math.round(w*f),3,col)};
+ const BXFX={alpha:'skip',matri:'skip',tidek:'skip',
+  thorn:(n,tm,after,top)=>{const x=Math.round(n.x),y=Math.round(n.y),K='#181018';if(after){bossBar(n,x,Math.min(top,y-58),'#78d050');return}
+   for(const q of n.roots||[]){if(q.t>0){const a=.4+.4*Math.sin(tm*14);g.strokeStyle='rgba(120,230,90,'+a+')';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,13,7,0,0,6.283);g.stroke()}else{const h=Math.round(14*Math.min(1,-q.t*5+1));for(const dx of[-6,0,6]){Rg(q.x+dx-1,q.y-h,3,h,K);Rg(q.x+dx,q.y-h+1,1,h-1,'#7a5030');Rg(q.x+dx-1,q.y-h-1,1,1,'#58a040')}}}shd(x,y+8,40)},
+  emberl:(n,tm,after,top)=>{const x=Math.round(n.x),y=Math.round(n.y),K='#181018';
+   if(after){for(const b of n.balls||[]){g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(b.x,b.y,6,0,6.283);g.fill();Rg(b.x-3,b.y-3,6,6,K);Rg(b.x-2,b.y-2,4,4,'#f87020');Rg(b.x-1,b.y-2,2,2,'#fff0a0')}bossBar(n,x,Math.min(top,y-54),'#f87020');return}
+   for(const q of n.pools||[]){if(q.t>0){const a=.4+.4*Math.sin(tm*14);g.strokeStyle='rgba(255,140,40,'+a+')';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.stroke()}
+    else{g.fillStyle='rgba(255,100,20,.35)';g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.fill();for(let k=0;k<5;k++){const ph=(tm*1.8+k*.21)%1,fx=q.x-10+k*5,fh=Math.round(4+8*(1-ph));Rg(fx,q.y-fh,2,fh,k%2?'#f86020':'#f8b030');Rg(fx,q.y-fh,1,2,'#fff0a0')}}}shd(x,y+8,44)}};
  const _ps=pS;pS=function(n,tm){if(mobDraw(n,tm))return;return _ps.apply(this,arguments)};
  // ---- village details and boats (globals the game calls by name) ----
  const wrapG=(name,fn)=>{if(typeof window[name]!=='function')return;const o=window[name];window[name]=function(){if(fn.apply(this,arguments))return;return o.apply(this,arguments)}};
@@ -171,8 +186,9 @@
   if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(const f of[1,DKIND[kind].floors||3])try{roomItems(buildFloor(kind,f),'Dungeons and caves')}catch(e){}}
   if(window.SQICV)for(const kind in SQICV){if(/^cv_/.test(kind))continue;add('r:icvdoor:'+kind,'Cave entrance: '+SQICV[kind].name,'Dungeons and caves',()=>drawFurn({t:'icvdoor',kind,x:0,y:0,name:SQICV[kind].name,w:1,h:1},0))}
   // monsters
-  const MB=window.SQISLIFE&&SQISLIFE.MOBS||{},MX=[['boss','Slime King (boss)',30],['bonelord','Bone Lord (boss)',40]];
-  const mobTpl=(k,hp)=>()=>{const[t]=k.split(':');try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}};
+  const MB=window.SQISLIFE&&SQISLIFE.MOBS||{},MX=[['boss','Slime King (boss)',30],['bonelord','Bone Lord (boss)',40],['alpha','Frostfang Alpha (boss)',38],['matri','Sandclaw Matriarch (boss)',55],['tidek','Tidekeeper (boss)',48],['thorn','Thornroot (boss)',120],['emberl','The Emberlord (boss)',150]];
+  const BT={alpha:{big:1,as:'circle',at:2,ang:0,combo:0,scd:9,rcd:9,dmg:2},matri:{big:1,ms:'stalk',mt:1.5,seq:[],bcd:9,dmg:2},tidek:{big:1,ks:'move',kt:1.5,ang:0,bcd:9,scd:9,dmg:2},thorn:{big:1,rcd:3,scd:0,half:false,roots:[]},emberl:{big:1,pcd:2.5,fcd:4,scd:0,half:false,pools:[],balls:[]},bonelord:{tcd:9,scd:9}};
+  const mobTpl=(k,hp)=>()=>{const[t]=k.split(':');try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}};
   for(const k of Object.keys(MB).sort((a,b)=>MB[a].n.localeCompare(MB[b].n)))add('m:'+k,MB[k].n,'Monsters',null,null,mobTpl(k,MB[k].hp));
   for(const[k,n,hp]of MX)add('m:'+k,n,'Monsters',null,null,mobTpl(k,hp));
   // monsters that only live in dungeons, by their variant (Frostfang's snow wolves, the grotto's tide slimes...)
@@ -194,7 +210,7 @@
   x.putImageData(im,0,0);return{url:c.toDataURL(),ox:(x0-OX)/2,oy:(y0-OY)/2}}
  // a monster: drawn by the game at a few moments of its walk, cut to one box, as a strip of frames side by side
  // (bosses draw their health bar themselves: left out here, the game adds one over any new look)
- function capMob(it,night){const fr=[],pk={x:P.x,y:P.y},fr0=g.fillRect;P.x=4000;P.y=0;g.fillRect=function(x,y,w,h){if((x===-16&&w===32&&h===4)||(x===-15&&h===2&&w<=30))return;return fr0.apply(this,arguments)};
+ function capMob(it,night){const fr=[],pk={x:P.x,y:P.y},fr0=g.fillRect;P.x=4000;P.y=0;g.fillRect=function(x,y,w,h){if((x===-16&&w===32&&h===4)||(x===-15&&h===2&&w<=30)||(h<=5&&w>=28&&y<-28)||(h===3&&w<1&&y<-28))return;return fr0.apply(this,arguments)};// health bars left out
   try{for(const tm of[0,.13,.26,.39,.52,.65]){const n=it.mob();n.x=0;n.y=0;n.kx=n.ky=0;fr.push(snapDraw(()=>{pS(n,tm)},night))}}finally{P.x=pk.x;P.y=pk.y;delete g.fillRect;if(g.fillRect!==fr0)g.fillRect=fr0}
   const{W,H,OX,OY}=fr[0];let x0=W,y0=H,x1=-1,y1=-1;for(const S of fr){const d=S.d;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>=128){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}}
   if(x1<x0)return null;if((x0-OX)%2)x0--;if((y0-OY)%2)y0--;let w=Math.min(320,x1-x0+1),h=Math.min(320,y1-y0+1);if(w%2)w++;if(h%2)h++;

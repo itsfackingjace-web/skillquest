@@ -176,15 +176,23 @@
  async function saveProp(){const ed=S.ed;if(!ed)return;const o=propOut(ed);if(o)S.draft.props[ed.k]=o;else delete S.draft.props[ed.k];
   try{await dset('draft/props/'+key(ed.k),o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.base+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.base),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.base)}}
- // a monster's rules: health and speed in % of the game's own, extra gold, an extra drop
+ // a monster's rules: health and speed in % of the game's own, extra gold, drops (up to 8 rows: item, how many from-to,
+ // chance %), and "instead of the game's own drops" (rep): what the game itself gives at the kill (items, gold, a boss's
+ // golden chest) is taken back first. Older rules with one drop (dk/dn/dc) open as the first row.
+ const MRN=8;
+ function mrDrops(r,items){const L=Array.isArray(r.dr)?r.dr.slice():r.dk?[{k:r.dk,n:r.dn||1,x:r.dn||1,c:r.dc!=null?r.dc:100}]:[];const rows=Math.min(MRN,Math.max(2,L.length+1));
+  let h='<div style="margin-top:8px"><b>Drops</b> <span class="dv-mut">(rolled each time it\'s beaten)</span>';
+  for(let i=0;i<rows;i++){const d=L[i]||{};h+='<div class="dv-row" style="flex-wrap:wrap;margin-top:4px"><select data-mr="dk'+i+'"><option value="">(no item)</option>'+items.map(k=>'<option value="'+k+'"'+(d.k===k?' selected':'')+'>'+E(INAME[k])+'</option>').join('')+'</select>'+
+   '<label class="dv-mut">from <input type="number" data-mr="dn'+i+'" min="1" max="1000" value="'+(d.n||1)+'" style="width:60px"></label><label class="dv-mut">to <input type="number" data-mr="dx'+i+'" min="1" max="1000" value="'+(d.x||d.n||1)+'" style="width:60px"></label>'+
+   '<label class="dv-mut">chance % <input type="number" data-mr="dc'+i+'" min="0" max="100" step="0.1" value="'+(d.c!=null?d.c:100)+'" style="width:64px"></label></div>'}
+  return h+(rows<MRN?'<p class="dv-mut" style="margin:4px 0">Save to get another empty row.</p>':'')+'<label class="dv-mut" style="display:block;margin-top:6px"><input type="checkbox" data-mr="rep"'+(r.rep?' checked':'')+'> Instead of the game\'s own drops (the items and golden chest it gives when beaten). XP, quest progress and the few coins any kill gives stay.</label></div>'}
+ // a monster's rules: health and speed in % of the game's own, extra gold, drops
  function mobRules(k){const r=S.draft.mobs[k]||{},M=window.SQISLIFE&&SQISLIFE.MOBS&&SQISLIFE.MOBS[k.slice(2)],items=Object.keys(INAME).sort((a,b)=>INAME[a].localeCompare(INAME[b]));
   return'<div class="dv-card" style="margin:8px 0"><b>How tough it is</b>'+(M?' <span class="dv-mut">(the game gives it '+M.hp+' health where it lives)</span>':'')+'<div class="dv-row" style="flex-wrap:wrap;margin-top:6px">'+
    '<label class="dv-mut">Health %<br><input type="number" data-mr="hp" min="10" max="1000" value="'+(r.hp||100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Speed %<br><input type="number" data-mr="spd" min="10" max="400" value="'+(r.spd||100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Extra gold<br><input type="number" data-mr="gold" min="0" max="100000" value="'+(r.gold||0)+'" style="width:90px"></label>'+
-   '<label class="dv-mut">Extra drop<br><select data-mr="dk"><option value="">none</option>'+items.map(i=>'<option value="'+i+'"'+(r.dk===i?' selected':'')+'>'+E(INAME[i])+'</option>').join('')+'</select></label>'+
-   '<label class="dv-mut">How many<br><input type="number" data-mr="dn" min="1" max="1000" value="'+(r.dn||1)+'" style="width:70px"></label>'+
-   '<label class="dv-mut">Chance %<br><input type="number" data-mr="dc" min="0" max="100" value="'+(r.dc!=null?r.dc:100)+'" style="width:70px"></label></div>'+
+   '</div>'+mrDrops(r,items)+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="mrsave">Save rules to draft</button><button class="dv-b dv-bad" data-a="mrclear">Use the game\'s own rules</button><span class="dv-mut">100% = unchanged. Its damage stays the game\'s own.</span></div></div>'}
  const HINT=k=>/^f:.*:[ewns]$/.test(k)?'This is the part drawn towards a neighbouring piece on that side, on top of the post or block (draw only what joins them; the editor starts from what the game adds there). Draw the post too, or the game keeps drawing its own fence.':
   /^f:/.test(k)?'A fence or wall piece is built from this post or block plus a part for each side that has another piece next to it.':/^x:/.test(k)?'What players see on the spot while it grows back (the game normally shows nothing). The picture starts one tile big at the tile it stood on.':
@@ -538,7 +546,8 @@
   if(a==='fradd'&&S.ed&&S.ed.kind==='prop'){propFrames(true);return}if(a==='frdel'&&S.ed&&S.ed.kind==='prop'){propFrames(false);return}
   if(a==='pak'&&S.ed){S.ed.ak=t.checked;S.ed.dirty=true;draw();return}if(a==='pfw'&&S.ed){S.ed.fw=t.checked;S.ed.dirty=true;draw();return}
   if((a==='mrsave'||a==='mrclear')&&S.ed){const k=S.ed.base;let r=null;if(a==='mrsave'){const v=f=>{const i=root.querySelector('[data-mr="'+f+'"]');return i?i.value:''};r={hp:Math.max(10,Math.min(1000,+v('hp')||100)),spd:Math.max(10,Math.min(400,+v('spd')||100)),gold:Math.max(0,Math.min(100000,v('gold')|0))};
-    if(v('dk')){r.dk=v('dk');r.dn=Math.max(1,Math.min(1000,v('dn')|0||1));r.dc=Math.max(0,Math.min(100,+v('dc')))}if(r.hp===100&&r.spd===100&&!r.gold&&!r.dk)r=null}
+    const dr=[];for(let i=0;i<MRN;i++){const k=v('dk'+i);if(!k||!INAME[k])continue;const n=Math.max(1,Math.min(1000,v('dn'+i)|0||1)),x=Math.max(n,Math.min(1000,v('dx'+i)|0||n)),c=Math.max(0,Math.min(100,+v('dc'+i)));dr.push({k,n,x,c:isFinite(c)?c:100})}
+    if(dr.length)r.dr=dr;const rp=root.querySelector('[data-mr="rep"]');if(rp&&rp.checked)r.rep=1;if(r.hp===100&&r.spd===100&&!r.gold&&!r.dr&&!r.rep)r=null}
    if(r)S.draft.mobs[k]=r;else delete S.draft.mobs[k];try{await dset('draft/mobs/'+key(k),r);toast(r?'Rules saved to draft.':'Back to the game\'s own rules (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw();return}
   if(a==='psy'&&S.ed){S.ed.sy=t.checked;S.ed.dirty=true;draw();return}
   if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true,S.ed&&S.ed.night);return}

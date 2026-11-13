@@ -114,10 +114,11 @@
   the region key `n.rk`, else `type[:rv]`), drawn by the outermost `pS` (`mobDraw` in 111d: walk frames, `ak` = last
   frame is the attack pose within 20 px, `fw` = face the walking direction instead of the player, white flash when hit,
   bosses get a health bar). Capture draws `pS` at six moments and keeps the different frames (bosses' own bars left out).
-  World bosses and island bosses are left out (`_wb`, type `ib`), and so are Thornroot and the Emberlord (their attack
-  warnings are part of their drawing). Rules: `mobs.<key>` = {hp%, spd%, gold, dk/dn/dc} in
+  World bosses and island bosses are left out (`_wb`, type `ib`). Dungeon bosses are in (`MX` + templates `BT` in 111d): for
+  alpha/matri/tidek the game's drawer still runs with `g.drawImage` switched off (glow, attack warnings, health bar stay, body
+  goes); Thornroot's roots and the Emberlord's pools/fireballs + a health bar are drawn by `BXFX`. Rules: `mobs.<key>` = {hp%, spd%, gold, dr:[{k,n,x,c}] (older: dk/dn/dc), rep} in
   `dev/111f-s122-monster-rules.js` (outermost `upd` scales health once and movement every frame; `enemyDrop` adds gold
-  and the drop); proxies of other players' monsters are skipped.
+  and the drops; `rep` takes back what the inner `enemyDrop` gave, incl. a new `dchest`; Thornroot/Emberlord pay through `upd` when `_rew` appears); proxies of other players' monsters are skipped.
 - **Button words** (`ui/118-s123-button-words.js`, `window.SQWORDS`): every 0.1 s the HIT (`a`) and EAT (`e`) buttons get
   the word for what they'd do now (`hitWord`/`eatWord`, following the same order as the `attack`/`eat` wrappers: build,
   facing someone, fishing, station, home furniture/chest/bed, monster in front, water, sign, the object's skill via

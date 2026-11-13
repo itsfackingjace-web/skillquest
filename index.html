@@ -13266,15 +13266,23 @@ window.SQA=SQA;
  async function saveProp(){const ed=S.ed;if(!ed)return;const o=propOut(ed);if(o)S.draft.props[ed.k]=o;else delete S.draft.props[ed.k];
   try{await dset('draft/props/'+key(ed.k),o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.base+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=prState(ed.base),im=it.querySelector('img');if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>');if(im)im.src=pThumb(ed.base)}}
- // a monster's rules: health and speed in % of the game's own, extra gold, an extra drop
+ // a monster's rules: health and speed in % of the game's own, extra gold, drops (up to 8 rows: item, how many from-to,
+ // chance %), and "instead of the game's own drops" (rep): what the game itself gives at the kill (items, gold, a boss's
+ // golden chest) is taken back first. Older rules with one drop (dk/dn/dc) open as the first row.
+ const MRN=8;
+ function mrDrops(r,items){const L=Array.isArray(r.dr)?r.dr.slice():r.dk?[{k:r.dk,n:r.dn||1,x:r.dn||1,c:r.dc!=null?r.dc:100}]:[];const rows=Math.min(MRN,Math.max(2,L.length+1));
+  let h='<div style="margin-top:8px"><b>Drops</b> <span class="dv-mut">(rolled each time it\'s beaten)</span>';
+  for(let i=0;i<rows;i++){const d=L[i]||{};h+='<div class="dv-row" style="flex-wrap:wrap;margin-top:4px"><select data-mr="dk'+i+'"><option value="">(no item)</option>'+items.map(k=>'<option value="'+k+'"'+(d.k===k?' selected':'')+'>'+E(INAME[k])+'</option>').join('')+'</select>'+
+   '<label class="dv-mut">from <input type="number" data-mr="dn'+i+'" min="1" max="1000" value="'+(d.n||1)+'" style="width:60px"></label><label class="dv-mut">to <input type="number" data-mr="dx'+i+'" min="1" max="1000" value="'+(d.x||d.n||1)+'" style="width:60px"></label>'+
+   '<label class="dv-mut">chance % <input type="number" data-mr="dc'+i+'" min="0" max="100" step="0.1" value="'+(d.c!=null?d.c:100)+'" style="width:64px"></label></div>'}
+  return h+(rows<MRN?'<p class="dv-mut" style="margin:4px 0">Save to get another empty row.</p>':'')+'<label class="dv-mut" style="display:block;margin-top:6px"><input type="checkbox" data-mr="rep"'+(r.rep?' checked':'')+'> Instead of the game\'s own drops (the items and golden chest it gives when beaten). XP, quest progress and the few coins any kill gives stay.</label></div>'}
+ // a monster's rules: health and speed in % of the game's own, extra gold, drops
  function mobRules(k){const r=S.draft.mobs[k]||{},M=window.SQISLIFE&&SQISLIFE.MOBS&&SQISLIFE.MOBS[k.slice(2)],items=Object.keys(INAME).sort((a,b)=>INAME[a].localeCompare(INAME[b]));
   return'<div class="dv-card" style="margin:8px 0"><b>How tough it is</b>'+(M?' <span class="dv-mut">(the game gives it '+M.hp+' health where it lives)</span>':'')+'<div class="dv-row" style="flex-wrap:wrap;margin-top:6px">'+
    '<label class="dv-mut">Health %<br><input type="number" data-mr="hp" min="10" max="1000" value="'+(r.hp||100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Speed %<br><input type="number" data-mr="spd" min="10" max="400" value="'+(r.spd||100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Extra gold<br><input type="number" data-mr="gold" min="0" max="100000" value="'+(r.gold||0)+'" style="width:90px"></label>'+
-   '<label class="dv-mut">Extra drop<br><select data-mr="dk"><option value="">none</option>'+items.map(i=>'<option value="'+i+'"'+(r.dk===i?' selected':'')+'>'+E(INAME[i])+'</option>').join('')+'</select></label>'+
-   '<label class="dv-mut">How many<br><input type="number" data-mr="dn" min="1" max="1000" value="'+(r.dn||1)+'" style="width:70px"></label>'+
-   '<label class="dv-mut">Chance %<br><input type="number" data-mr="dc" min="0" max="100" value="'+(r.dc!=null?r.dc:100)+'" style="width:70px"></label></div>'+
+   '</div>'+mrDrops(r,items)+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="mrsave">Save rules to draft</button><button class="dv-b dv-bad" data-a="mrclear">Use the game\'s own rules</button><span class="dv-mut">100% = unchanged. Its damage stays the game\'s own.</span></div></div>'}
  const HINT=k=>/^f:.*:[ewns]$/.test(k)?'This is the part drawn towards a neighbouring piece on that side, on top of the post or block (draw only what joins them; the editor starts from what the game adds there). Draw the post too, or the game keeps drawing its own fence.':
   /^f:/.test(k)?'A fence or wall piece is built from this post or block plus a part for each side that has another piece next to it.':/^x:/.test(k)?'What players see on the spot while it grows back (the game normally shows nothing). The picture starts one tile big at the tile it stood on.':
@@ -13628,7 +13636,8 @@ window.SQA=SQA;
   if(a==='fradd'&&S.ed&&S.ed.kind==='prop'){propFrames(true);return}if(a==='frdel'&&S.ed&&S.ed.kind==='prop'){propFrames(false);return}
   if(a==='pak'&&S.ed){S.ed.ak=t.checked;S.ed.dirty=true;draw();return}if(a==='pfw'&&S.ed){S.ed.fw=t.checked;S.ed.dirty=true;draw();return}
   if((a==='mrsave'||a==='mrclear')&&S.ed){const k=S.ed.base;let r=null;if(a==='mrsave'){const v=f=>{const i=root.querySelector('[data-mr="'+f+'"]');return i?i.value:''};r={hp:Math.max(10,Math.min(1000,+v('hp')||100)),spd:Math.max(10,Math.min(400,+v('spd')||100)),gold:Math.max(0,Math.min(100000,v('gold')|0))};
-    if(v('dk')){r.dk=v('dk');r.dn=Math.max(1,Math.min(1000,v('dn')|0||1));r.dc=Math.max(0,Math.min(100,+v('dc')))}if(r.hp===100&&r.spd===100&&!r.gold&&!r.dk)r=null}
+    const dr=[];for(let i=0;i<MRN;i++){const k=v('dk'+i);if(!k||!INAME[k])continue;const n=Math.max(1,Math.min(1000,v('dn'+i)|0||1)),x=Math.max(n,Math.min(1000,v('dx'+i)|0||n)),c=Math.max(0,Math.min(100,+v('dc'+i)));dr.push({k,n,x,c:isFinite(c)?c:100})}
+    if(dr.length)r.dr=dr;const rp=root.querySelector('[data-mr="rep"]');if(rp&&rp.checked)r.rep=1;if(r.hp===100&&r.spd===100&&!r.gold&&!r.dr&&!r.rep)r=null}
    if(r)S.draft.mobs[k]=r;else delete S.draft.mobs[k];try{await dset('draft/mobs/'+key(k),r);toast(r?'Rules saved to draft.':'Back to the game\'s own rules (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw();return}
   if(a==='psy'&&S.ed){S.ed.sy=t.checked;S.ed.dirty=true;draw();return}
   if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true,S.ed&&S.ed.night);return}
@@ -14569,10 +14578,25 @@ window.SQA=SQA;
   if(n._lx==null)n._lx=n.x;const mv=n.x-n._lx;n._lx=n.x;if(Math.abs(mv)>.05)n._dir=mv<0?-1:1;const fl=L.fw?n._dir<0:P.x<n.x;
   let f;if(L.ak&&nf>1&&Math.hypot(P.x-n.x,P.y-n.y)<20)f=nf-1;else{const wn=L.ak&&nf>1?nf-1:nf,ms=Math.max(60,Math.min(5000,L.ms|0||250));f=wn>1?Math.floor(performance.now()/ms+((x*7+y*3)%11)/11*wn)%wn:0}
   const hit=Math.abs(n.kx||0)+Math.abs(n.ky||0)>.5,c=hit?white(q,L,f):can(q,L,f),w=L.w*L.s/2,h=L.h*L.s/2;
-  try{shd(x,y+5,Math.max(8,Math.min(40,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;if(n.frozen>0)g.globalAlpha*=.85;if(fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,Math.round((x+L.ox)*2)/2,Math.round((y+L.oy)*2)/2,w,h);g.restore();
+  if(n.type==='matri'&&n.under)return true;
+  // dungeon bosses keep the game's own glow, attack warnings and health bar: the game's drawer runs with every picture
+  // (its body) left out (Frostfang Alpha, Sandclaw Matriarch, Tidekeeper); Thornroot's roots and the Emberlord's fire
+  // pools and fireballs are drawn here since their bodies aren't pictures
+  const BX=BXFX[n.type];if(BX==='skip'){const di=g.drawImage;g.drawImage=function(){};try{_ps(n,tm)}catch(e){}finally{delete g.drawImage;if(g.drawImage!==di)g.drawImage=di}}
+  else if(BX)try{BX(n,tm,0)}catch(e){}
+  if(!BX)try{shd(x,y+5,Math.max(8,Math.min(40,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;if(n.frozen>0)g.globalAlpha*=.85;if(fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,Math.round((x+L.ox)*2)/2,Math.round((y+L.oy)*2)/2,w,h);g.restore();
   if(n.frozen>0){g.save();g.globalAlpha=.35;g.fillStyle='#a8e0ff';g.fillRect(x+L.ox,y+L.oy,w,h);g.restore()}
   // bosses keep their health bar over their head
+  if(BX&&BX!=='skip')try{BX(n,tm,1,y+L.oy)}catch(e){}
   if(n.type==='boss'||n.type==='bonelord'){const mh=n.mhp||(n.type==='boss'?30:45),by=Math.round(y+L.oy-8);Rg(x-16,by,32,4,'#181018');Rg(x-15,by+1,Math.max(0,Math.round(30*n.hp/mh)),2,n.type==='boss'?'#e03030':'#a050e0')}return true}
+ const bossBar=(n,x,top,col)=>{const w=40,f=Math.max(0,n.hp/(n.mhp||1)),K='#181018';Rg(x-w/2-1,top-8,w+2,5,K);Rg(x-w/2,top-7,w,3,'#3a1a1a');Rg(x-w/2,top-7,Math.round(w*f),3,col)};
+ const BXFX={alpha:'skip',matri:'skip',tidek:'skip',
+  thorn:(n,tm,after,top)=>{const x=Math.round(n.x),y=Math.round(n.y),K='#181018';if(after){bossBar(n,x,Math.min(top,y-58),'#78d050');return}
+   for(const q of n.roots||[]){if(q.t>0){const a=.4+.4*Math.sin(tm*14);g.strokeStyle='rgba(120,230,90,'+a+')';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,13,7,0,0,6.283);g.stroke()}else{const h=Math.round(14*Math.min(1,-q.t*5+1));for(const dx of[-6,0,6]){Rg(q.x+dx-1,q.y-h,3,h,K);Rg(q.x+dx,q.y-h+1,1,h-1,'#7a5030');Rg(q.x+dx-1,q.y-h-1,1,1,'#58a040')}}}shd(x,y+8,40)},
+  emberl:(n,tm,after,top)=>{const x=Math.round(n.x),y=Math.round(n.y),K='#181018';
+   if(after){for(const b of n.balls||[]){g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(b.x,b.y,6,0,6.283);g.fill();Rg(b.x-3,b.y-3,6,6,K);Rg(b.x-2,b.y-2,4,4,'#f87020');Rg(b.x-1,b.y-2,2,2,'#fff0a0')}bossBar(n,x,Math.min(top,y-54),'#f87020');return}
+   for(const q of n.pools||[]){if(q.t>0){const a=.4+.4*Math.sin(tm*14);g.strokeStyle='rgba(255,140,40,'+a+')';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.stroke()}
+    else{g.fillStyle='rgba(255,100,20,.35)';g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.fill();for(let k=0;k<5;k++){const ph=(tm*1.8+k*.21)%1,fx=q.x-10+k*5,fh=Math.round(4+8*(1-ph));Rg(fx,q.y-fh,2,fh,k%2?'#f86020':'#f8b030');Rg(fx,q.y-fh,1,2,'#fff0a0')}}}shd(x,y+8,44)}};
  const _ps=pS;pS=function(n,tm){if(mobDraw(n,tm))return;return _ps.apply(this,arguments)};
  // ---- village details and boats (globals the game calls by name) ----
  const wrapG=(name,fn)=>{if(typeof window[name]!=='function')return;const o=window[name];window[name]=function(){if(fn.apply(this,arguments))return;return o.apply(this,arguments)}};
@@ -14678,8 +14702,9 @@ window.SQA=SQA;
   if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(const f of[1,DKIND[kind].floors||3])try{roomItems(buildFloor(kind,f),'Dungeons and caves')}catch(e){}}
   if(window.SQICV)for(const kind in SQICV){if(/^cv_/.test(kind))continue;add('r:icvdoor:'+kind,'Cave entrance: '+SQICV[kind].name,'Dungeons and caves',()=>drawFurn({t:'icvdoor',kind,x:0,y:0,name:SQICV[kind].name,w:1,h:1},0))}
   // monsters
-  const MB=window.SQISLIFE&&SQISLIFE.MOBS||{},MX=[['boss','Slime King (boss)',30],['bonelord','Bone Lord (boss)',40]];
-  const mobTpl=(k,hp)=>()=>{const[t]=k.split(':');try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t}}};
+  const MB=window.SQISLIFE&&SQISLIFE.MOBS||{},MX=[['boss','Slime King (boss)',30],['bonelord','Bone Lord (boss)',40],['alpha','Frostfang Alpha (boss)',38],['matri','Sandclaw Matriarch (boss)',55],['tidek','Tidekeeper (boss)',48],['thorn','Thornroot (boss)',120],['emberl','The Emberlord (boss)',150]];
+  const BT={alpha:{big:1,as:'circle',at:2,ang:0,combo:0,scd:9,rcd:9,dmg:2},matri:{big:1,ms:'stalk',mt:1.5,seq:[],bcd:9,dmg:2},tidek:{big:1,ks:'move',kt:1.5,ang:0,bcd:9,scd:9,dmg:2},thorn:{big:1,rcd:3,scd:0,half:false,roots:[]},emberl:{big:1,pcd:2.5,fcd:4,scd:0,half:false,pools:[],balls:[]},bonelord:{tcd:9,scd:9}};
+  const mobTpl=(k,hp)=>()=>{const[t]=k.split(':');try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}};
   for(const k of Object.keys(MB).sort((a,b)=>MB[a].n.localeCompare(MB[b].n)))add('m:'+k,MB[k].n,'Monsters',null,null,mobTpl(k,MB[k].hp));
   for(const[k,n,hp]of MX)add('m:'+k,n,'Monsters',null,null,mobTpl(k,hp));
   // monsters that only live in dungeons, by their variant (Frostfang's snow wolves, the grotto's tide slimes...)
@@ -14701,7 +14726,7 @@ window.SQA=SQA;
   x.putImageData(im,0,0);return{url:c.toDataURL(),ox:(x0-OX)/2,oy:(y0-OY)/2}}
  // a monster: drawn by the game at a few moments of its walk, cut to one box, as a strip of frames side by side
  // (bosses draw their health bar themselves: left out here, the game adds one over any new look)
- function capMob(it,night){const fr=[],pk={x:P.x,y:P.y},fr0=g.fillRect;P.x=4000;P.y=0;g.fillRect=function(x,y,w,h){if((x===-16&&w===32&&h===4)||(x===-15&&h===2&&w<=30))return;return fr0.apply(this,arguments)};
+ function capMob(it,night){const fr=[],pk={x:P.x,y:P.y},fr0=g.fillRect;P.x=4000;P.y=0;g.fillRect=function(x,y,w,h){if((x===-16&&w===32&&h===4)||(x===-15&&h===2&&w<=30)||(h<=5&&w>=28&&y<-28)||(h===3&&w<1&&y<-28))return;return fr0.apply(this,arguments)};// health bars left out
   try{for(const tm of[0,.13,.26,.39,.52,.65]){const n=it.mob();n.x=0;n.y=0;n.kx=n.ky=0;fr.push(snapDraw(()=>{pS(n,tm)},night))}}finally{P.x=pk.x;P.y=pk.y;delete g.fillRect;if(g.fillRect!==fr0)g.fillRect=fr0}
   const{W,H,OX,OY}=fr[0];let x0=W,y0=H,x1=-1,y1=-1;for(const S of fr){const d=S.d;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>=128){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}}
   if(x1<x0)return null;if((x0-OX)%2)x0--;if((y0-OY)%2)y0--;let w=Math.min(320,x1-x0+1),h=Math.min(320,y1-y0+1);if(w%2)w++;if(h%2)h++;
@@ -14802,19 +14827,34 @@ window.SQA=SQA;
 // mobs.<key> in the asset library, keyed like monster looks (SQPROPS.mkey: 'm:wolf:briar'):
 //   hp  health in % of the game's own (100 = unchanged), applied once when the monster first appears
 //   spd speed in % of the game's own: each frame its movement is scaled (knockback too)
-//   gold extra gold when it's beaten; dk/dn/dc an extra drop: item key, how many, chance in %
+//   gold extra gold when it's beaten; dr = drops [{k item, n..x how many, c chance %}] (older rules: one drop dk/dn/dc)
+//   rep  instead of the game's own drops: what the game gave at the kill (items, gold, a dungeon boss's golden chest) is
+//        taken back before the rule's drops are given. XP and quest progress are left alone.
+// Kills that go through enemyDrop are handled there; Thornroot and the Emberlord pay out in their own update, so upd also
+// looks for those two having paid out this frame (n._rew) (n._mrd marks the ones already paid).
 // Monsters other players share with you (proxies) are left alone: their owner's game already applied the rules.
 (()=>{if(!window.SQA||!window.SQPROPS)return;const A=SQA,MR={};
  const num=(v,lo,hi,d)=>{v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):d};
  A.onApply(lib=>{for(const k in MR)delete MR[k];const M=lib&&lib.mobs||{};for(const k in M){const r=M[k];if(!r||typeof r!=='object')continue;
-  const o={hp:num(r.hp,10,1000,100),spd:num(r.spd,10,400,100),gold:num(r.gold,0,100000,0)|0};if(typeof r.dk==='string'&&INAME[r.dk]){o.dk=r.dk;o.dn=num(r.dn,1,1000,1)|0;o.dc=num(r.dc,0,100,100)}MR[k]=o}});
+  const o={hp:num(r.hp,10,1000,100),spd:num(r.spd,10,400,100),gold:num(r.gold,0,100000,0)|0,dr:[],rep:!!r.rep};
+  const L=Array.isArray(r.dr)?r.dr:(r.dr&&typeof r.dr==='object'?Object.values(r.dr):r.dk?[{k:r.dk,n:r.dn,x:r.dn,c:r.dc}]:[]);
+  for(const d of L.slice(0,8)){if(!d||typeof d.k!=='string'||!INAME[d.k])continue;const n=num(d.n,1,1000,1)|0;o.dr.push({k:d.k,n,x:Math.max(n,num(d.x,1,1000,n)|0),c:num(d.c,0,100,100)})}MR[k]=o}});
  const rule=n=>n&&!n._rp?MR[SQPROPS.mkey(n)]:null;
- const _u=upd;upd=function(dt){let pos=null;if(Object.keys(MR).length){pos=[];for(const n of en){const r=rule(n);if(!r)continue;
+ function give(n,r){if(n._mrd)return;n._mrd=1;const got=[];if(r.gold){GLD+=r.gold;got.push(r.gold+' gold')}
+  for(const d of r.dr)if(Math.random()*100<d.c){const c=d.n+Math.floor(Math.random()*(d.x-d.n+1));inv[d.k]=(inv[d.k]|0)+c;got.push(c+' × '+INAME[d.k].toLowerCase())}
+  if(got.length)setTimeout(()=>{try{say('+'+got.join(', +'));sfx('pickup')}catch(e){}},r.rep?0:900)}
+ const snapInv=()=>({inv:Object.assign({},inv),g:GLD,items:(SCENE&&SCENE.room&&SCENE.room.items)?SCENE.room.items.length:-1,room:SCENE&&SCENE.room});
+ function takeBack(s0){for(const k in inv){const d=(inv[k]|0)-(s0.inv[k]|0);if(d>0)inv[k]-=d}if(GLD>s0.g)GLD=s0.g;
+  const R=s0.room;if(R&&R.items&&s0.items>=0)for(let i=R.items.length-1;i>=s0.items;i--)if(R.items[i]&&R.items[i].t==='dchest')R.items.splice(i,1)}
+ const _u=upd;upd=function(dt){let pos=null,watch=null,s0=null;if(Object.keys(MR).length){pos=[];for(const n of en){const r=rule(n);if(!r)continue;
+   if(!n._mrd&&!n.dead&&n.hp>0)(watch=watch||[]).push([n,r]);
    if(!n._mr){n._mr=1;if(r.hp!==100){n.hp=Math.max(1,Math.round(n.hp*r.hp/100));if(n.mhp)n.mhp=Math.max(1,Math.round(n.mhp*r.hp/100))}}if(r.spd!==100)pos.push([n,n.x,n.y,r.spd/100])}}
+  if(watch&&watch.some(w=>w[1].rep))s0=snapInv();
   const out=_u.apply(this,arguments);
+  if(watch)for(const[n,r]of watch){if(n._mrd||!(n.type==='thorn'||n.type==='emberl')||!n._rew)continue;if(r.rep&&s0)takeBack(s0);give(n,r)}
   if(pos)for(const[n,x,y,k]of pos){if(n.dead)continue;const nx=x+(n.x-x)*k,ny=y+(n.y-y)*k;if(!solid(nx,n.y))n.x=nx;if(!solid(n.x,ny))n.y=ny}return out};
- const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const r=rule(n);if(r){if(r.gold){GLD+=r.gold}
-   if(r.dk&&Math.random()*100<r.dc){inv[r.dk]=(inv[r.dk]|0)+r.dn;say('+'+r.dn+' '+INAME[r.dk])}}}catch(e){}return out};
+ const _ed=enemyDrop;enemyDrop=function(n){const r=rule(n);if(!r||n._mrd)return _ed.apply(this,arguments);const s0=r.rep?snapInv():null;const out=_ed.apply(this,arguments);
+  try{if(s0)takeBack(s0);give(n,r)}catch(e){}return out};
  window.SQMOBRULES={get rules(){return MR},rule}})();
 // ---- 123. Buttons say what they'll do ----
 // The action buttons change job with what's around you, so their word changes too:
