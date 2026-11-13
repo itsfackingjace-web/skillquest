@@ -54,10 +54,10 @@
  const bkey=b=>{if(!b)return null;if(b.castle)return'b:castle';if(HS&&b.k===HS.k&&b.wall===HS.wall&&b.roof===HS.roof)return'b:house'+(b.w|0);return typeof BLD!=='undefined'&&BLD.includes(b)?'b:'+b.k:null};
  const _db=drBld;drBld=function(b,tm){const k=bkey(b);if(k&&has(k)){drawLook(k,b.tx*16,b.ty*16,null,phase(b.tx,b.ty));return}return _db.apply(this,arguments)};
  // ---- monsters ----
- const mkey=n=>'m:'+(n.rk||((n.type||'slime')+(n.rv||n.vr?':'+(n.rv||n.vr):'')));
+ const mkey=n=>n&&n.type==='ib'&&n.ib?'m:ib:'+n.ib:n&&n._wb?'m:wb:'+n._wb:'m:'+(n.rk||((n.type||'slime')+(n.rv||n.vr?':'+(n.rv||n.vr):'')));
  const WC=new Map();// white versions of frames, for the hit flash
  function white(k,L,f){const key=k+'#'+f;let c=WC.get(key);if(!c){const b=can(k,L,f);c=document.createElement('canvas');c.width=b.width;c.height=b.height;const x=c.getContext('2d');x.drawImage(b,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);WC.set(key,c)}return c}
- function mobDraw(n,tm){if(!n||n._wb||n.type==='ib')return false;const k=mkey(n),q=pick(k);if(!q)return false;const L=PL[q],x=Math.round(n.x),y=Math.round(n.y),nf=frames(L);
+ function mobDraw(n,tm){if(!n)return false;const k=mkey(n),q=pick(k);if(!q)return false;const L=PL[q],x=Math.round(n.x),y=Math.round(n.y),nf=frames(L);
   // which way it faces: towards you (most monsters do), or the way it's walking
   if(n._lx==null)n._lx=n.x;const mv=n.x-n._lx;n._lx=n.x;if(Math.abs(mv)>.05)n._dir=mv<0?-1:1;const fl=L.fw?n._dir<0:P.x<n.x;
   let f;if(L.ak&&nf>1&&Math.hypot(P.x-n.x,P.y-n.y)<20)f=nf-1;else{const wn=L.ak&&nf>1?nf-1:nf,ms=Math.max(60,Math.min(5000,L.ms|0||250));f=wn>1?Math.floor(performance.now()/ms+((x*7+y*3)%11)/11*wn)%wn:0}
@@ -66,7 +66,7 @@
   // dungeon bosses keep the game's own glow, attack warnings and health bar: the game's drawer runs with every picture
   // (its body) left out (Frostfang Alpha, Sandclaw Matriarch, Tidekeeper); Thornroot's roots and the Emberlord's fire
   // pools and fireballs are drawn here since their bodies aren't pictures
-  const BX=BXFX[n.type];if(BX==='skip'){const di=g.drawImage;g.drawImage=function(){};try{_ps(n,tm)}catch(e){}finally{delete g.drawImage;if(g.drawImage!==di)g.drawImage=di}}
+  const BX=n._wb||n.type==='ib'?'skip':BXFX[n.type];if(BX==='skip'){const di=g.drawImage;g.drawImage=function(){};try{_ps(n,tm)}catch(e){}finally{delete g.drawImage;if(g.drawImage!==di)g.drawImage=di}}
   else if(BX)try{BX(n,tm,0)}catch(e){}
   if(!BX)try{shd(x,y+5,Math.max(8,Math.min(40,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;if(n.frozen>0)g.globalAlpha*=.85;if(fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,Math.round((x+L.ox)*2)/2,Math.round((y+L.oy)*2)/2,w,h);g.restore();
   if(n.frozen>0){g.save();g.globalAlpha=.35;g.fillStyle='#a8e0ff';g.fillRect(x+L.ox,y+L.oy,w,h);g.restore()}
@@ -187,8 +187,11 @@
   if(window.SQICV)for(const kind in SQICV){if(/^cv_/.test(kind))continue;add('r:icvdoor:'+kind,'Cave entrance: '+SQICV[kind].name,'Dungeons and caves',()=>drawFurn({t:'icvdoor',kind,x:0,y:0,name:SQICV[kind].name,w:1,h:1},0))}
   // monsters
   const MB=window.SQISLIFE&&SQISLIFE.MOBS||{},MX=[['boss','Slime King (boss)',30],['bonelord','Bone Lord (boss)',40],['alpha','Frostfang Alpha (boss)',38],['matri','Sandclaw Matriarch (boss)',55],['tidek','Tidekeeper (boss)',48],['thorn','Thornroot (boss)',120],['emberl','The Emberlord (boss)',150]];
+  // island bosses (100's SQIB) and world bosses (071): drawn like the dungeon bosses, the game's own drawer with its pictures left out
+  try{for(const id in window.SQIB||{})MX.push(['ib:'+id,(SQIB[id].n||id)+' (island boss)',SQIB[id].hp||300])}catch(e){}
+  for(const[k,n,hp]of[['wisp','Flame Wisp'],['giant','Stone Giant'],['demon','Demon'],['dragon','Ancient Dragon']].map(a=>[a[0],a[1],1000]))MX.push(['wb:'+k,n+' (world boss)',hp]);
   const BT={alpha:{big:1,as:'circle',at:2,ang:0,combo:0,scd:9,rcd:9,dmg:2},matri:{big:1,ms:'stalk',mt:1.5,seq:[],bcd:9,dmg:2},tidek:{big:1,ks:'move',kt:1.5,ang:0,bcd:9,scd:9,dmg:2},thorn:{big:1,rcd:3,scd:0,half:false,roots:[]},emberl:{big:1,pcd:2.5,fcd:4,scd:0,half:false,pools:[],balls:[]},bonelord:{tcd:9,scd:9}};
-  const mobTpl=(k,hp)=>()=>{const[t]=k.split(':');try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}};
+  const mobTpl=(k,hp)=>()=>{const[t,v]=k.split(':');if(t==='ib')return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:'ib',ib:v,big:1,st:'idle',t:0};if(t==='wb')return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:'wb',_wb:v,big:1,t:0};try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}};
   for(const k of Object.keys(MB).sort((a,b)=>MB[a].n.localeCompare(MB[b].n)))add('m:'+k,MB[k].n,'Monsters',null,null,mobTpl(k,MB[k].hp));
   for(const[k,n,hp]of MX)add('m:'+k,n,'Monsters',null,null,mobTpl(k,hp));
   // monsters that only live in dungeons, by their variant (Frostfang's snow wolves, the grotto's tide slimes...)

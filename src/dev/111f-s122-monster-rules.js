@@ -35,4 +35,10 @@
   if(pos)for(const[n,x,y,k]of pos){if(n.dead)continue;const nx=x+(n.x-x)*k,ny=y+(n.y-y)*k;if(!solid(nx,n.y))n.x=nx;if(!solid(n.x,ny))n.y=ny}return out};
  const _ed=enemyDrop;enemyDrop=function(n){const r=rule(n);if(!r||n._mrd)return _ed.apply(this,arguments);const s0=r.rep?snapInv():null;const out=_ed.apply(this,arguments);
   try{if(s0)takeBack(s0);give(n,r)}catch(e){}return out};
+ // island bosses pay every fighter from 100's defeat (sqEvent 'islandboss'); world bosses from 071's reward (SQWB.kills
+ // goes up): their rules' gold and drops are given then ("instead of" isn't possible for these two)
+ if(typeof sqEvent==='function'){const _ev=sqEvent;sqEvent=function(k,id){const out=_ev.apply(this,arguments);try{if(k==='islandboss'){const r=MR['m:ib:'+id];if(r)give({},r)}}catch(e){}return out}}
+ {let wk=-1,wt=null;const WN={'Flame Wisp':'wisp','Stone Giant':'giant','Demon':'demon','Ancient Dragon':'dragon'};
+  const _u2=upd;upd=function(dt){const out=_u2.apply(this,arguments);try{const W=window.SQWB;if(W){const b=W.b;if(b&&b.T&&WN[b.T.n])wt=WN[b.T.n];for(const n of en)if(n&&n._wb)wt=n._wb;
+     const k=W.kills|0;if(wk>=0&&k>wk&&wt){const r=MR['m:wb:'+wt];if(r)give({},r)}wk=k}}catch(e){}return out}}
  window.SQMOBRULES={get rules(){return MR},rule}})();
