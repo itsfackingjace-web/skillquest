@@ -162,7 +162,7 @@ const _u39=upd;upd=function(dt){
  const haven=!paused&&P39(5,'fi_haven')&&fires.length&&_nf39(P.x,P.y,80),sacred=!paused&&P39(5,'fi_sacred')&&fires.length;
  const pos=(haven||sacred)?en.map(n=>[n,n.x,n.y]):null;
  _u39(dt);
- if(pos)for(const[n,x0,y0]of pos){if(n.dead||n.boss||n._wb||n.type==='ib'||n._rp)continue;// every monster except bosses (other players\' monsters move on their own games)let s=1;const d=Math.hypot(P.x-x0,P.y-y0);
+ if(pos)for(const[n,x0,y0]of pos){if(n.dead||n.boss||n._wb||n.type==='ib'||n._rp)continue;/* every monster except bosses (other players\' monsters move on their own games) */let s=1;const d=Math.hypot(P.x-x0,P.y-y0);
   if(haven&&d>=104&&d<130)s=.25;// beyond 80% of a slime's notice range: it doesn't spot you, so it just drifts
   if(sacred&&_nf39(x0,y0,80))s*=.85;if(s<1){n.x=x0+(n.x-x0)*s;n.y=y0+(n.y-y0)*s}}
  if(paused||dead)return;if(LAST39>0)LAST39-=dt;if(FEAST39>0)FEAST39-=dt;

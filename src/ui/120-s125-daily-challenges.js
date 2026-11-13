@@ -30,7 +30,7 @@
  function pick(day){const n=dnum(day),ord=IDS.slice().sort((a,b)=>hsh(n,IDS.indexOf(a)+1)-hsh(n,IDS.indexOf(b)+1)),out=[];
   for(const id of ord){if(out.length>=3)break;const t=T[id];if(SK(t.s)<0)continue;try{if(t.r&&!t.r())continue}catch(e){continue}
    const base=t.a[0]+hsh(IDS.indexOf(id)+7,n)%(t.a[1]-t.a[0]+1);out.push({t:id,n:Math.max(1,Math.round(base*(1+(lv(id)-1)/60))),p:0,c:0})}return out}
- function fresh(){const day=today();const old=D;D={d:day,q:pick(day),s:old?old.s|0:0,l:old?old.l||'':''};if(D.l&&D.l!==yday()&&D.l!==day)D.s=0}
+ function fresh(){const day=today();const old=D;D={d:day,s:old?old.s|0:0,l:old?old.l||'':'',q:pick(day)};/* same field order as a loaded one, so a load isn't a change */if(D.l&&D.l!==yday()&&D.l!==day)D.s=0}
  const gold=q=>Math.round(T[q.t].g*q.n*(1+lv(q.t)/50));
  const xp=q=>Math.round(T[q.t].x*q.n*(1+lv(q.t)/40));
  const bonus=s=>100*Math.min(7,Math.max(1,s));

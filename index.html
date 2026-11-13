@@ -4368,7 +4368,7 @@ const _u39=upd;upd=function(dt){
  const haven=!paused&&P39(5,'fi_haven')&&fires.length&&_nf39(P.x,P.y,80),sacred=!paused&&P39(5,'fi_sacred')&&fires.length;
  const pos=(haven||sacred)?en.map(n=>[n,n.x,n.y]):null;
  _u39(dt);
- if(pos)for(const[n,x0,y0]of pos){if(n.dead||n.boss||n._wb||n.type==='ib'||n._rp)continue;// every monster except bosses (other players\' monsters move on their own games)let s=1;const d=Math.hypot(P.x-x0,P.y-y0);
+ if(pos)for(const[n,x0,y0]of pos){if(n.dead||n.boss||n._wb||n.type==='ib'||n._rp)continue;/* every monster except bosses (other players\' monsters move on their own games) */let s=1;const d=Math.hypot(P.x-x0,P.y-y0);
   if(haven&&d>=104&&d<130)s=.25;// beyond 80% of a slime's notice range: it doesn't spot you, so it just drifts
   if(sacred&&_nf39(x0,y0,80))s*=.85;if(s<1){n.x=x0+(n.x-x0)*s;n.y=y0+(n.y-y0)*s}}
  if(paused||dead)return;if(LAST39>0)LAST39-=dt;if(FEAST39>0)FEAST39-=dt;
@@ -9378,6 +9378,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-10',d:'Nov 13, 2026',t:'Fixes from a full check-up',n:['Fixed: the Safe Haven and Sacred Flames campfire perks did nothing. Now monsters at the edge of your campfire\'s light hold back (Safe Haven), and monsters near a campfire move more slowly (Sacred Flames).','Sound: music and rain no longer keep playing in stuttering bits when you switch to another tab or app; they pause and come back when you return.','Sound: pressing a key now starts the music too, not just a click or tap.','Backyards and courtyards play the outdoor day and night music instead of the house tune.','Behind the scenes: a link-opening problem that once broke the Discord button is fixed for good, and the game saves a little less often for no reason.']},
  {v:'2026.11.13-9',d:'Nov 13, 2026',t:'Seeds, pets and controller fixes',n:['Farming: the higher your level, the more seeds your harvests give. Every 10 levels adds a 5% chance of a second seed, and the Farming skill tree now shows your seed chances at every level.','Three new Farming perks (a third choice at levels 20, 40 and 70): Seed Pouch (seeds 15% more often), Twin Seeds (each seed can come as two) and Heirloom Seeds (at least one seed from every harvest).','Fixed: the Mushling and Glowcap pets showed an empty PET slot even when you had one out. They now show in the slot, and a spare one in your bag is saved properly.','Controllers: an item card in a chest (the one that asks how many to move) can now be closed with ○, and the highlight stays inside the card while it\'s open. ○ again closes the chest.']},
  {v:'2026.11.13-8',d:'Nov 13, 2026',t:'Controllers everywhere, deposit bag',n:['Controller players can now answer trade, party and duel requests: after a moment the request is highlighted, ✕ picks TRADE (or JOIN, DUEL, PLAY) and ○ says no. The update bar works the same way.','Controllers reach every part of every menu, including text boxes, dropdowns and checkboxes.','New on-screen keyboard for controllers, like the one in Pokemon: pick a text box and press ✕. ✕ types, ○ deletes, △ adds a space, □ switches capitals, R1 shows symbols and Options (START) is OK. In chat, OK sends your message.','HIT no longer tills or waters on any device: the hoe and watering can are off-hand tools. Use X or right-click on a computer, R1 on a controller, or the new TILL / WATER button on touch screens.','Chests have a DEPOSIT BAG button that puts everything in your bag into the chest at once.']},
  {v:'2026.11.13-7',d:'Nov 13, 2026',t:'Home comforts',n:['Light campfires in your backyard or courtyard (FIRE, 3 wood and a stone, like anywhere outdoors). Cook at them, warm up, and they keep burning there while you\'re inside.','No more getting hungry at home: your food doesn\'t go down while you\'re inside your house or castle. Sleeping in your bed still uses up some food overnight.','Wardrobes can now be picked up: open the wardrobe and tap PICK UP WARDROBE at the bottom.']},
@@ -10063,7 +10064,7 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
    if(!r||!r.committed||!got||!(got.n>0))continue;if(got.k==='gold'){GLD+=got.n;gold+=got.n}else if((sqBookReg(got.k),INAME[got.k])){inv[got.k]=(inv[got.k]|0)+got.n;items+=got.n}}
   if(items||gold){say('Collected'+(gold?' '+gold+' gold':'')+(gold&&items?' and':'')+(items?' '+items+' item'+(items>1?'s':''):'')+' from the market.');sfx('coin');saveNow();try{svg()}catch(e){}}}
  // ---- the panel ----
- function open(){if(!online()){say('The World Market needs you to be signed in (Menu > Online).');sfx('swish');return}wmStart();shop='wmkt';WMK.tab='mine';WMK.form=null;pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');
+ function wmOpen(){/* not "open": a function here (a bare block) becomes window.open */if(!online()){say('The World Market needs you to be signed in (Menu > Online).');sfx('swish');return}wmStart();shop='wmkt';WMK.tab='mine';WMK.form=null;pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');
   if(Object.keys(WMK.box).length)collect().then(()=>{if(pnOpen&&shop==='wmkt')rPn()})}
  window.SQWMOPEN=open;
  const ic=k=>{try{return'<img src="'+iconURL(k)+'" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:-2px;margin-right:4px">'}catch(e){return''}};
@@ -10116,14 +10117,14 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
    rPn();return}return _oc(e)}}
  {const _cp=closePanel;closePanel=function(){if(shop==='wmkt'){shop=null;WMK.form=null}return _cp()}}
  // talking to the clerk (T / TALK / ✕) or hitting the stalls opens it
- {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead&&nearClerk()){open();return}return _t()}}
- tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead||!nearClerk())return;e.preventDefault();e.stopImmediatePropagation();open()},{passive:false,capture:true});
+ {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead&&nearClerk()){wmOpen();return}return _t()}}
+ tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead||!nearClerk())return;e.preventDefault();e.stopImmediatePropagation();wmOpen()},{passive:false,capture:true});
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!nearClerk()||!!(_pu&&_pu())}
  {let mineTk=false;const _u=upd;upd=function(dt){_u(dt);const n=!pnOpen&&!menuOpen&&!dead&&nearClerk();
    if(n){tk.style.display='flex';const lab='TRADE'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mineTk=true}else if(mineTk){mineTk=false;if(!pnOpen)tk.style.display='none'}
    if(sp&&!SCENE)for(const m of en)if(!m.dead&&!m.big&&Math.hypot(m.x-WMK.clerk.x,m.y-WMK.clerk.y)<90){m.dead=1;m.dropped=1}}}
  {const _a=attack;attack=function(){if(!sp||SCENE||dead||menuOpen||pnOpen||BUILD||swing>0)return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),s=WMK.spot;
-   if(tx>=s.tx&&tx<s.tx+s.w&&ty>=s.ty&&ty<=s.ty+1&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){open();return}return _a()}}
+   if(tx>=s.tx&&tx<s.tx+s.w&&ty>=s.ty&&ty<=s.ty+1&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){wmOpen();return}return _a()}}
  try{WK_PLACES&&WK_PLACES.push&&WK_PLACES.push({n:'World Market',w:'Hollow Village',d:'Trade with every player: put up offers to buy or sell anything, and they match automatically.'})}catch(e){}
 }
 // ---- 98. The wiki catches up: every dungeon, boss, monster, pet and place, with pictures ----
@@ -15157,7 +15158,7 @@ window.SQA=SQA;
  function pick(day){const n=dnum(day),ord=IDS.slice().sort((a,b)=>hsh(n,IDS.indexOf(a)+1)-hsh(n,IDS.indexOf(b)+1)),out=[];
   for(const id of ord){if(out.length>=3)break;const t=T[id];if(SK(t.s)<0)continue;try{if(t.r&&!t.r())continue}catch(e){continue}
    const base=t.a[0]+hsh(IDS.indexOf(id)+7,n)%(t.a[1]-t.a[0]+1);out.push({t:id,n:Math.max(1,Math.round(base*(1+(lv(id)-1)/60))),p:0,c:0})}return out}
- function fresh(){const day=today();const old=D;D={d:day,q:pick(day),s:old?old.s|0:0,l:old?old.l||'':''};if(D.l&&D.l!==yday()&&D.l!==day)D.s=0}
+ function fresh(){const day=today();const old=D;D={d:day,s:old?old.s|0:0,l:old?old.l||'':'',q:pick(day)};/* same field order as a loaded one, so a load isn't a change */if(D.l&&D.l!==yday()&&D.l!==day)D.s=0}
  const gold=q=>Math.round(T[q.t].g*q.n*(1+lv(q.t)/50));
  const xp=q=>Math.round(T[q.t].x*q.n*(1+lv(q.t)/40));
  const bonus=s=>100*Math.min(7,Math.max(1,s));
@@ -17002,6 +17003,19 @@ window.SQA=SQA;
  T.choices[40].push({id:'fm_twin',n:'Twin Seeds',d:'Every seed you get from a harvest has a 25% chance to be two.'});
  T.choices[70].push({id:'fm_heir',n:'Heirloom Seeds',d:'Every harvest gives you at least one seed.'});
  const _st=T.step;T.step=function(l){const a=_st.apply(this,arguments);if(l===1)a.push('Seed chance 45% when you harvest');else a.push('+0.5% seed chance');if(l%10===0)a.push('+5% chance of a second seed');return a}})();
+// ---- 159. Fixes from the Nov 13 audit ----
+// - Sound in the background: the music (014) is scheduled by a timer that browsers slow to about once a second in a
+//   background tab, so it kept playing as stray fragments (rain too). The audio now pauses while the page is hidden and
+//   comes back when you return.
+// - Keyboard players: the audio only woke up on a tap or click (006's ac()); a key press counts too now, so music starts
+//   for someone who only uses the keyboard.
+// - Backyards and courtyards (145) are outdoors: they play the day/night music, not the house tune (014's wantSong
+//   treats every scene as indoors; 049 does the same fix for the islands).
+(()=>{let paused=false;
+ document.addEventListener('visibilitychange',()=>{try{if(!ACX)return;if(document.hidden){if(ACX.state==='running'){paused=true;ACX.suspend()}}
+   else if(paused){paused=false;ACX.resume()}}catch(e){}});
+ addEventListener('keydown',e=>{if(e.isTrusted&&!document.hidden)try{ac()}catch(_){}},{capture:true});
+ {const _ws=wantSong;wantSong=function(){const R=SCENE&&SCENE.room;if(R&&(R.yard||R.court))return dark()>.4?'night':'day';return _ws.apply(this,arguments)}}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

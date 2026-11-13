@@ -334,4 +334,9 @@
 - **Farming seeds** (`skills/152-s158-farming-seeds.js`, `SQSEEDS(L)`): 016's harvest asks it for the seed count: 45% + 0.5%/level
   (cap 95%), second seed 5% per 10 levels (max 45%); perks (third choices, like 087's) `fm_pouch` (20, +15%), `fm_twin` (40,
   each seed 25% ×2), `fm_heir` (70, at least one). `TREES[11].step` lists the seed numbers. 038's `fm_seed` still adds its own.
+- **Audit fixes** (`core/153-s159-audit-fixes.js`): audio is suspended while the page is hidden (014's music timer is throttled in
+  the background) and resumed on return; a trusted keydown also wakes the audio (`ac()`); yards/courtyards use the day/night
+  song (`wantSong`). Also: 079's World Market opener is `wmOpen` (a `function open` in that bare block replaced `window.open`);
+  039's fire-perk line had code after a `//` comment (use `/* */` mid-line); 120's new-day `dly` has the loaded field order.
+  **Never name a function in a bare block after a browser global** (open, close, print, find, stop, focus, name...).
 
