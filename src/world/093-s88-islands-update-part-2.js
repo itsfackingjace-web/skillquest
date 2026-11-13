@@ -47,7 +47,7 @@ window.SQRFISH=RFISH;
 // close (or you hit them), they chase more slowly, and after a hit you get a moment longer before the next one lands.
 for(const id in RG_FAUNA){const F=RG_FAUNA[id];F.cap={day:Math.max(2,Math.round(F.cap.day*.5)),night:Math.max(3,Math.round(F.cap.night*.55))}}
 {const AG=95,PROV=6;const _u=upd;upd=function(dt){const pre=new Map(),live=!dead&&!menuOpen&&!pnOpen;
-  if(live)for(const n of en){if(n.dead||n._rp||n._wb||n.type==='boss'||n.type==='bonelord'||n.big||n.summon||n._pet)continue;pre.set(n,[n.x,n.y,n.hp])}
+  if(live)for(const n of en){if(n.dead||n._rp||n._wb||n.type==='boss'||n.type==='bonelord'||n.big||n.summon||n._pet||n.under)continue;/* n.under: a burrowed beetle is parked far away (045) and surfaces next to you; don't snap it back */pre.set(n,[n.x,n.y,n.hp])}
   const hp0=P.hp;_u(dt);
   for(const[n,[x,y,h]]of pre){if(n.dead)continue;if(n.hp<h)n._prov=PROV;else if(n._prov>0)n._prov-=dt;
    const d0=Math.hypot(x-P.x,y-P.y),d1=Math.hypot(n.x-P.x,n.y-P.y),calm=d0>AG&&!(n._prov>0);

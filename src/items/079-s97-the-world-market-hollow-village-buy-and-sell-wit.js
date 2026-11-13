@@ -10,7 +10,7 @@
  // (offers from before these rules count their 7 days from when the rules came in)
  const PERK=2,DAY=864e5,LIFE=7*DAY,RULES_AT=Date.UTC(2026,10,12);
  const expAt=o=>Math.max(o.t||0,RULES_AT)+LIFE,live=o=>!!o&&o.f<o.q&&Date.now()<expAt(o);
- const lo=k=>Math.max(1,Math.floor((SELLP[k]||1)*.5)),hi=k=>Math.max(100,(SELLP[k]||1)*25),inBand=(k,p)=>p>=lo(k)&&p<=hi(k);
+ const lo=k=>Math.max(1,Math.floor((SELLP[k]||1)*.5)),hi=k=>1e7/* no top price any more (Nov 13): a price nobody pays just doesn't sell */,inBand=(k,p)=>p>=lo(k)&&p<=hi(k);
  const clampP=(k,p)=>Math.min(hi(k),Math.max(lo(k),Math.round(p)));window.SQWMRULES={PERK,LIFE,lo,hi,expAt};
  // ---- where it stands: a market hall beside Hollow Village ----
  {const free=i=>{const x=i%N,y=(i/N)|0;return(tile[i]===2||tile[i]===1)&&!BS.has(i)&&!PROT.has(i)&&!BRIDGE.has(i)&&!STR.has(i)&&!(typeof inTownTiles==='function'&&inTownTiles(x,y))};
@@ -57,7 +57,7 @@
   if(!tradeable(k)||!(q>=1)||!(p>=1)||p>1e7||q>1e5){say('That offer doesn\'t work.');return}
   if(mine().length>=MAXO){say('You already have '+MAXO+' offers. Cancel one first.');sfx('swish');return}
   if(mine().filter(([,o])=>o.k===k).length>=PERK){say('You can have up to '+PERK+' offers for the same item. Cancel one first.');sfx('swish');return}
-  if(!inBand(k,p)){say('The market only takes '+(INAME[k]||k).toLowerCase()+' offers between '+fmt(lo(k))+' and '+fmt(hi(k))+' gold each.');sfx('swish');return}
+  if(!inBand(k,p)){say('The market only takes '+(INAME[k]||k).toLowerCase()+' offers of '+fmt(lo(k))+' gold or more each.');sfx('swish');return}
   if(side==='s'){if((inv[k]|0)<q){say('You don\'t have '+q+' '+nm(k,q).toLowerCase()+'.');sfx('swish');return}inv[k]-=q}
   else{if(GLD<q*p){say('You need '+(q*p)+' gold for that offer.');sfx('swish');return}GLD-=q*p}
   saveNow();WMK.busy=true;const d=FB.db,id=me()+'_'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
@@ -103,14 +103,14 @@
  // ---- the panel ----
  function wmOpen(){/* not "open": a function here (a bare block) becomes window.open */if(!online()){say('The World Market needs you to be signed in (Menu > Online).');sfx('swish');return}wmStart();shop='wmkt';WMK.tab='mine';WMK.form=null;pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');
   if(Object.keys(WMK.box).length)collect().then(()=>{if(pnOpen&&shop==='wmkt')rPn()})}
- window.SQWMOPEN=open;
+ window.SQWMOPEN=wmOpen;
  const ic=k=>{try{return'<img src="'+iconURL(k)+'" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:-2px;margin-right:4px">'}catch(e){return''}};
  function book(k){let bs=null,bb=null,qs=0,qb=0;for(const o of Object.values(WMK.offers)){if(!live(o)||o.k!==k||!inBand(k,o.p))continue;const r=o.q-o.f;if(o.s==='s'){qs+=r;if(bs==null||o.p<bs)bs=o.p}else{qb+=r;if(bb==null||o.p>bb)bb=o.p}}return{bs,bb,qs,qb}}
  const guide=k=>{const L=WMK.last[k];return clampP(k,L&&L.p>0?L.p:Math.max(1,Math.round((SELLP[k]||1)*1.3)))};
  const lastP=k=>{const L=WMK.last[k];return L&&L.p>0&&inBand(k,L.p)?L.p:null};
  // a price far from the last trade asks for a second tap (a typo of one zero is easy to make)
  const odd=F=>{const g=guide(F.k);return F.p>=g*3||F.p*3<=g};
- const warnTxt=F=>!inBand(F.k,F.p)?'Prices for this item must be '+fmt(lo(F.k))+' to '+fmt(hi(F.k))+'.':odd(F)?'That\'s far from the usual '+fmt(guide(F.k))+' each'+(F.ok===F.p+':'+F.q?'. Tap again to place it.':'. Check the price.'):(F.s==='s'&&F.p<(SELLP[F.k]||0)?'The shop pays '+SELLP[F.k]+' each.':'');
+ const warnTxt=F=>!inBand(F.k,F.p)?'Prices for this item must be at least '+fmt(lo(F.k))+'.':odd(F)?'That\'s far from the usual '+fmt(guide(F.k))+' each'+(F.ok===F.p+':'+F.q?'. Tap again to place it.':'. Check the price.'):(F.s==='s'&&F.p<(SELLP[F.k]||0)?'The shop pays '+SELLP[F.k]+' each.':'');
  function formHTML(){const F=WMK.form,k=F.k,B=book(k),side=F.s;
   let h='<div class="qc"><b>'+ic(k)+esc(INAME[k]||k)+'</b><small><br>Shop value '+(SELLP[k]||0)+' · last trade '+(lastP(k)!=null?lastP(k):'none')+(B.bs!=null?'<br>Cheapest for sale: '+B.bs+' ('+B.qs+' left)':'')+(B.bb!=null?'<br>Best buy offer: '+B.bb+' ('+B.qb+' wanted)':'')+(side==='s'?'<br>In your bag: '+(inv[k]|0):'<br>Your gold: '+GLD)+'<br>Allowed price: '+fmt(lo(k))+' to '+fmt(hi(k))+' each</small></div>';
   h+='<div class="tl" style="margin-top:8px">How many</div><div style="display:flex;gap:4px;align-items:center;justify-content:center"><button class="sb" data-w="q:-10">-10</button><button class="sb" data-w="q:-1">-1</button><input id="wmq" type="number" min="1" value="'+F.q+'" style="width:70px;font:600 15px '+PF+';text-align:center"><button class="sb" data-w="q:1">+1</button><button class="sb" data-w="q:10">+10</button>'+(side==='s'?'<button class="sb" data-w="q:all">All</button>':'')+'</div>';

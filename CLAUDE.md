@@ -80,7 +80,7 @@
   registered in `SQNPET`/`LUX.PETS` like the other non-shop pets. Glowcap watches for P.hp drops in `upd` (damage is applied
   in many places, there is no single hurt function).
 - **World Market rules** (`items/079`, a bare block, so edit it in place): `SQWMRULES` = per-item cap (`PERK` 2 of the 8),
-  price band `lo(k)`..`hi(k)` from `SELLP` (half the shop value to 25x, at least 100), expiry `expAt(o)` = 7 days from `t`
+  price band `lo(k)`..`hi(k)`: at least half the shop value (`SELLP`), no top price since Nov 13 (`hi` = 1e7, the database's limit), expiry `expAt(o)` = 7 days from `t`
   (old offers from `RULES_AT`). Matching, browsing and the order book ignore expired and out-of-band offers; the owner's
   client cancels its own expired offers (refund). The database rules keep `t` unchanged when others fill an offer and
   no later than now (publish `database.rules.json` in the Firebase console).
@@ -361,4 +361,6 @@
 - **Keep your spot** (`core/156-s162-keep-your-spot.js`, `SQKEEPSPOT`): 006's applySave puts you at SPX/SPY when the saved spot is
   blocked (a regrown rock/tree, or the shared world's removals not in yet). The outermost applySave then moves you to the nearest
   free land tile around the saved position instead (Hollow outdoors, not sailing, within 30 tiles).
+- **Calmer monsters** (093): a monster that started the frame more than 95 px away has any step toward you undone. Anything that
+  moves a monster by teleporting (burrowing beetles, `n.under`, parked 200 px away by 045) must be skipped there, or it stays parked.
 
