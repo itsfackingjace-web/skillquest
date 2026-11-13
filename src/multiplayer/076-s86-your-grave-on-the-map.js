@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------- 86. Your grave on the map
 // While one of your graves still has things in it, it shows on the HUD minimap, the map (HERE and WORLD) with how long
 // it has left, and an arrow at the side of the screen points to it when it's in the same area as you.
-// Graves inside buildings or dungeons show at the door you went in by.
-{const grvWhere=gr=>{if(gr.ar&&WORLD_REGIONS[gr.ar]&&isFinite(gr.ax)&&isFinite(gr.ay))return{ar:gr.ar,x:+gr.ax,y:+gr.ay};
+// Graves inside houses show at the door; graves made in dungeons and other buildings sit outside the entrance (063's grvPos).
+{const grvWhere=gr=>{{const p=grvPos(gr);if(p.out)return{ar:gr.ar,x:p.x,y:p.y}}if(gr.ar&&WORLD_REGIONS[gr.ar]&&isFinite(gr.ax)&&isFinite(gr.ay))return{ar:gr.ar,x:+gr.ax,y:+gr.ay};
    if(gr.loc==='hollow')return{ar:'hollow',x:gr.x,y:gr.y};if(gr.loc&&gr.loc.startsWith('r:')&&WORLD_REGIONS[gr.loc.slice(2)])return{ar:gr.loc.slice(2),x:gr.x,y:gr.y};return null};
  const mine=()=>{try{return grvMine().map(g=>({g,w:grvWhere(g)})).filter(o=>o.w)}catch(e){return[]}};
  const areaSize=a=>a==='hollow'?[N,N]:[WORLD_REGIONS[a].width,WORLD_REGIONS[a].height];
@@ -22,8 +22,8 @@
    for(const o of mine()){const r=wmRect(o.w.ar),[aw,ah]=areaSize(o.w.ar);tomb(x,r.x+(o.w.x/16)/aw*r.w,r.y+(o.w.y/16)/ah*r.h,1,blink())}}}
  {const _mh=mapHTML;mapHTML=function(){let h=_mh();const M=mine();if(!M.length)return h;
    h=h.replace(/(<div class="lg">)/,'$1<span><i style="background:#c8c8dc;outline:1px solid #181018"></i>Your grave</span>');
-   const rows=M.map(o=>{const left=Math.max(1,Math.ceil(grvLeft(o.g)/60000)),nm=o.w.ar==='hollow'?'Hollow Island':WORLD_REGIONS[o.w.ar].name,inside=o.g.loc&&(o.g.loc.startsWith('in:')||o.g.loc.startsWith('h:'));
-    return '<br>'+esc(nm)+(inside?' (inside, by the door)':'')+' · crumbles in '+left+' min'}).join('');
+   const rows=M.map(o=>{const left=Math.max(1,Math.ceil(grvLeft(o.g)/60000)),nm=o.w.ar==='hollow'?'Hollow Island':WORLD_REGIONS[o.w.ar].name,out=grvPos(o.g).out,inside=!out&&o.g.loc&&(o.g.loc.startsWith('in:')||o.g.loc.startsWith('h:'));
+    return '<br>'+esc(nm)+(out?' (outside the entrance)':inside?' (inside, by the door)':'')+' · crumbles in '+left+' min'}).join('');
    return h+'<div class="qc" style="margin-top:8px"><b>Your grave'+(M.length>1?'s':'')+'</b><small>'+rows+'</small></div>'}}
  // an arrow at the side of the screen pointing to your grave (same area, not on screen)
  {const _dh=drawHUD;drawHUD=function(){_dh();if(dead||menuOpen||pnOpen||window.SQTS&&SQTS.open)return;const R=SCENE&&SCENE.room;if(SCENE&&!(R&&R.region))return;const area=curRegion();

@@ -11,6 +11,12 @@ const grvNow=()=>MP.on?mpNow():Date.now();
 const grvLeft=g=>g.at+GRAVE_LIFE-grvNow();
 const grvItems=g=>{const o={};const s=g&&g.i;if(s&&typeof s==='object')for(const k in s){sqBookReg(k);const n=Math.floor(+s[k]||0);if(n>0&&INAME[k])o[k]=n}return o};
 const grvAll=()=>{const a=[];for(const id in GRV.list)a.push(GRV.list[id]);for(const id in GRV.local)a.push(GRV.local[id]);return a};
+// where a grave is shown: one made inside a dungeon, an island boss lair or another building (not a house) sits just
+// outside its entrance (ar/ax/ay = the outdoor area and the spot you come out at), so you can always get back to it,
+// even without what it takes to open the door again. One whose entrance is on water (the Drowned Grotto) stays inside.
+const grvPos=g=>{if(g&&typeof g.loc==='string'&&g.loc.startsWith('in:')&&g.ar&&(g.ar==='hollow'||WORLD_REGIONS[g.ar])&&isFinite(g.ax)&&isFinite(g.ay)){
+  const x=+g.ax,y=+g.ay+8;let wet=false;try{wet=g.ar==='hollow'&&typeof boatOK==='function'&&boatOK(x,y)}catch(e){}
+  if(!wet)return{loc:g.ar==='hollow'?'hollow':'r:'+g.ar,x,y,out:true}}return{loc:g.loc,x:g.x,y:g.y,out:false}};
 const grvMine=()=>grvAll().filter(g=>(g.local||(MP.user&&g.u===MP.user.uid))&&grvLeft(g)>0&&Object.keys(grvItems(g)).length);
 // offline graves live on this device
 try{const s=JSON.parse(localStorage.getItem('sq_graves')||'{}');for(const id in s){const g=s[id];if(g&&g.at+GRAVE_LIFE>Date.now()){g.local=true;g.id=id;GRV.local[id]=g}}}catch(e){}
@@ -29,7 +35,7 @@ setInterval(()=>{if(!dead){GRV.fell=false;return}if(GRV.fell||NEWG)return;GRV.fe
  grvMake(lost,spot);const hp0=P.hp;dead=false;P.hp=Math.max(1,hp0);try{saveLocal(true);saveCloud(true)}catch(e){}finally{dead=true;P.hp=hp0}},100);
 function grvMake(items,spot){const g={u:MP.user?MP.user.uid:'me',n:myName().slice(0,12),loc:spot.loc,x:spot.x,y:spot.y,i:items},mk=spot.ar&&isFinite(spot.ax)&&isFinite(spot.ay)?{ar:spot.ar,ax:spot.ax,ay:spot.ay}:{};Object.assign(g,mk);
  const local=()=>{const id='L'+Date.now().toString(36);g.at=Date.now();g.local=true;g.id=id;GRV.local[id]=g;grvSaveLocal()};
- const n=Object.values(items).reduce((a,b)=>a+b,0);mpLog('game','You fell! '+n+' item'+(n>1?'s are':' is')+' in your grave ('+LOCN(spot.loc)+'). Anyone can loot it, and it crumbles in 15 minutes.');
+ const n=Object.values(items).reduce((a,b)=>a+b,0);const gp=grvPos(g);mpLog('game','You fell! '+n+' item'+(n>1?'s are':' is')+' in your grave ('+LOCN(gp.loc)+(gp.out?', outside the entrance':'')+'). Anyone can loot it, and it crumbles in 15 minutes.');
  if(!MP.on||!MP.user){local();return}const d=FB.db;const id='g'+MP.user.uid.slice(0,8)+Date.now().toString(36);
  d.set(d.ref(FB.D,'graves/'+id),{u:g.u,n:g.n,loc:g.loc,x:g.x,y:g.y,...mk,i:items,at:d.serverTimestamp()}).then(()=>{if(!GRV.list[id])GRV.list[id]={...g,id,at:mpNow()}}).catch(e=>{mpErr(e);local()})}
 // ---- shared graves ----
@@ -42,9 +48,9 @@ function grvStart(){const d=FB.db;GRV.unsub=d.onValue(d.ref(FB.D,'graves'),s=>{c
 setInterval(()=>{for(const id in GRV.local)if(grvLeft(GRV.local[id])<=0||!Object.keys(grvItems(GRV.local[id])).length){delete GRV.local[id];grvSaveLocal()}
  if(!MP.on)return;for(const id in GRV.list){const g=GRV.list[id];if(grvLeft(g)<-5000||!Object.keys(grvItems(g)).length&&grvNow()-g.at>8000){delete GRV.list[id];FB.db.remove(FB.db.ref(FB.D,'graves/'+id)).catch(()=>{})}}},5000);
 // ---- in the world ----
-const grvHere=()=>{const L=mpLoc();if(!L)return[];return grvAll().filter(g=>g.loc===L&&grvLeft(g)>0&&Object.keys(grvItems(g)).length)};
-function grvNear(){let best=null,bd=26;for(const g of grvHere()){const d=Math.hypot(g.x-P.x,g.y-(P.y-2));if(d<bd){bd=d;best=g}}return best}
-function grvDraw(g,tm){const x=Math.round(g.x),y=Math.round(g.y),S='#7a8496',L='#b8c0d0',D='#4a5060',O='#202838',mine=g.local||(MP.user&&g.u===MP.user.uid);
+const grvHere=()=>{const L=mpLoc();if(!L)return[];return grvAll().filter(g=>grvPos(g).loc===L&&grvLeft(g)>0&&Object.keys(grvItems(g)).length)};
+function grvNear(){let best=null,bd=26;for(const g of grvHere()){const p=grvPos(g),d=Math.hypot(p.x-P.x,p.y-(P.y-2));if(d<bd){bd=d;best=g}}return best}
+function grvDraw(g,tm){const gp=grvPos(g),x=Math.round(gp.x),y=Math.round(gp.y),S='#7a8496',L='#b8c0d0',D='#4a5060',O='#202838',mine=g.local||(MP.user&&g.u===MP.user.uid);
  Rg(x-6,y+3,13,3,'rgba(0,0,0,.25)');Rg(x-5,y-11,10,15,O);Rg(x-4,y-12,8,1,O);Rg(x-4,y-10,8,13,S);Rg(x-3,y-11,6,1,S);Rg(x-4,y-10,1,13,L);Rg(x-3,y-11,2,1,L);Rg(x+3,y-9,1,12,D);
  Rg(x-1,y-8,2,8,D);Rg(x-3,y-6,6,2,D);Rg(x-6,y+2,12,2,'#6a4a2a');Rg(x-5,y+1,2,1,'#3a8a3a');Rg(x+3,y+1,2,1,'#3a8a3a');
  if(grvLeft(g)<60000&&Math.floor(tm*4)%2)Rg(x-4,y-10,8,13,'rgba(248,200,80,.35)'); // last minute: it flickers
@@ -58,7 +64,7 @@ const grvH=el('div','grvh','g3',''),grvT=el('div','grvt','g3','');document.body.
 const mmss=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 setInterval(()=>{const busy=dead||pnOpen||menuOpen||TS.open;const g=busy?null:grvNear();
  if(g){const mine=g.local||(MP.user&&g.u===MP.user.uid);grvH.textContent=(mine?'Your grave':g.n+'\'s grave')+' · crumbles in '+mmss(grvLeft(g))+' · '+(GPON?'✕ to loot':isPC?'T to loot':'tap LOOT');grvH.style.display='block'}else grvH.style.display='none';
- const m=busy?[]:grvMine().sort((a,b)=>grvLeft(a)-grvLeft(b));if(m.length){const a=m[0];grvT.textContent='Your grave '+mmss(grvLeft(a))+' · '+LOCN(a.loc)+(m.length>1?' (+'+(m.length-1)+')':'');grvT.style.display='block'}else grvT.style.display='none'},250);
+ const m=busy?[]:grvMine().sort((a,b)=>grvLeft(a)-grvLeft(b));if(m.length){const a=m[0];grvT.textContent='Your grave '+mmss(grvLeft(a))+' · '+LOCN(grvPos(a).loc)+(grvPos(a).out?' (outside)':'')+(m.length>1?' (+'+(m.length-1)+')':'');grvT.style.display='block'}else grvT.style.display='none'},250);
 // ---- looting ----
 {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const g=grvNear();if(g){GRV.open=g;pnOpen=true;ptab=GTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');return}}return _t()}}
 function graveHTML(){const g=GRV.open&&(GRV.open.local?GRV.local[GRV.open.id]:GRV.list[GRV.open.id]);if(!g)return'<div class="tl">GRAVE</div><div class="qc"><p>Nothing left here.</p></div>';
@@ -67,7 +73,7 @@ function graveHTML(){const g=GRV.open&&(GRV.open.local?GRV.local[GRV.open.id]:GR
  if(!ks.length)return h+'<div class="qc"><p>Someone got here first. It\'s empty.</p></div>';
  for(const k of ks)h+='<div class="grl"><span>'+esc(INAME[k])+' <i style="font-style:normal;opacity:.65">×'+it[k]+'</i></span><button data-gr="one" data-k="'+k+'">TAKE</button></div>';
  return h+'<div class="gra"><button class="y" data-gr="all"'+(GRV.busy?' disabled':'')+'>TAKE ALL</button></div>'}
-async function grvTake(keys){const g0=GRV.open;if(!g0||GRV.busy)return;if(Math.hypot(g0.x-P.x,g0.y-P.y)>40){closePanel();return}GRV.busy=true;const got={};
+async function grvTake(keys){const g0=GRV.open;if(!g0||GRV.busy)return;{const gp=grvPos(g0);if(Math.hypot(gp.x-P.x,gp.y-P.y)>40){closePanel();return}}GRV.busy=true;const got={};
  try{if(g0.local){const g=GRV.local[g0.id];if(!g)return;for(const k of keys){const n=grvItems(g)[k]|0;if(n>0){got[k]=n;delete g.i[k]}}grvSaveLocal()}
   else{const d=FB.db;for(const k of keys){let n=0;const ref=d.ref(FB.D,'graves/'+g0.id+'/i/'+k);
     if(d.runTransaction){const r=await d.runTransaction(ref,cur=>{n=0;if(!cur||cur<=0)return;n=cur;return null}).catch(e=>{mpErr(e);return null});if(!r||!r.committed)n=0}
@@ -81,7 +87,7 @@ async function grvTake(keys){const g0=GRV.open;if(!g0||GRV.busy)return;if(Math.h
 {const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-gr]');if(b&&ptab===GTAB){const g=GRV.open&&(GRV.open.local?GRV.local[GRV.open.id]:GRV.list[GRV.open.id]);if(!g)return;
   grvTake(b.dataset.gr==='all'?Object.keys(grvItems(g)):[b.dataset.k]);return}_oc(e)}}
 GRV.lostPreview=()=>GRV.fell?GRV.fellN:0;
-window.SQGRV=GRV;
+GRV.pos=grvPos;window.SQGRV=GRV;
 // touch: the TALK button (shown as LOOT) opens the grave
 window.SQGRVNEAR=()=>{try{return!dead&&!pnOpen&&!menuOpen&&!TS.open&&!!grvNear()}catch(e){return false}};
 tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead||nearNpc())return;if(grvNear()){e.preventDefault();e.stopImmediatePropagation();talk()}},{passive:false,capture:true});

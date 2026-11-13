@@ -239,3 +239,4 @@
 - **Perks**: production speed (039's `pSpeed`: level + `PSPD` perks) shortens 109's timed actions (`sqDo` divides the
   duration) instead of giving bonus XP. Flame Aura (`fi_aura`, 087) needs only the perk (`SQAURA`/`SQAURALIT`; 014's cave dark
   widens with it). fi_haven/fi_sacred act on all non-boss local monsters. `SELLB` (038) lists use functions where recipes grow.
+- **Graves outside entrances** (063 `grvPos`, `SQGRV.pos`): a grave whose `loc` is `in:` (dungeon, island boss lair, building; not houses) is shown, looted and mapped at its `ar/ax/ay` (the spot you come out at, +8 px) in that outdoor area. Display only, the database record is unchanged, so older graves move too. Kept inside when that spot is water on Hollow (Drowned Grotto).
