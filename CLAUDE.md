@@ -256,3 +256,8 @@
   `shootAim` (controller R1) uses hoe/can when that's the off-hand.
 - **Message box on phones** (010's `drawHUD`): touch screens held upright (`H>=W`) draw the text box in the strip above the status
   box (`ty=top-th-3U`, 44U tall, `MSGBOX.top`); the players-online pill (139) skips drawing while it's there.
+- **HIT on PC** (140, outermost `attack`): with keyboard/mouse (`isPC`, no `GPON`) HIT is melee only: for that call `TL.hoe`/`TL.can` are 0 and
+  `bowTarget` returns null (`HID`). Off-hand use goes through `viaOff` (X, R1, the farming swaps) which skips the hiding.
+- **Dev Suite copy/paste** (111b `pxCopy`/`pxPaste`, Copy/Paste buttons, Ctrl+C/V): the clipboard is colours per pixel in
+  localStorage `sq_dev_clip`, pasted bottom-middle aligned into any editor, colours added to the palette.
+

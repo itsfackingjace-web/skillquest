@@ -150,7 +150,7 @@
    '<div class="dv-pvw"><canvas id="dvwalk" width="400" height="112"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><span class="dv-mut">Canvas</span><input type="number" data-in="pw" min="4" max="96" value="'+ed.w+'" style="width:70px"> × <input type="number" data-in="ph" min="4" max="96" value="'+ed.h+'" style="width:70px"><button class="dv-b" data-a="presize">Resize</button><span class="dv-mut">keeps the feet in place</span></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b" data-a="pcap">Start again from the game\'s look</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s own look</button></div>'+
-   '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+Y redo · Ctrl+S save</p>'}
+   '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+Y redo · Ctrl+C / Ctrl+V copy and paste a picture · Ctrl+S save</p>'}
   return h+'</div></div>'}
  // ---- prop looks: trees, rocks, ores, plants, buildings and island props as they stand in the world ----
  const PR=()=>window.SQPROPS,key=k=>k.replace(/[.#$\[\]\/]/g,'_');// database keys can't hold . # $ [ ] /
@@ -213,7 +213,7 @@
    '<div class="dv-row"><span class="dv-mut">Canvas</span><input type="number" data-in="pw" min="4" max="320" value="'+ed.w+'" style="width:70px"> × <input type="number" data-in="ph" min="4" max="320" value="'+ed.h+'" style="width:70px"><button class="dv-b" data-a="presize">Resize</button><span class="dv-mut">keeps the bottom in place</span></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b" data-a="rcap">Start again from the game\'s look</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s own look</button></div>'+
    (/^m:/.test(ed.base)?mobRules(ed.base):'')+
-   '<p class="dv-mut">The preview shows the game\'s look on the left and yours on the right, next to a player for size. The bottom-middle of the picture is where it stands. Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+S save</p>'}
+   '<p class="dv-mut">The preview shows the game\'s look on the left and yours on the right, next to a player for size. The bottom-middle of the picture is where it stands. Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+C / Ctrl+V copy and paste · Ctrl+S save</p>'}
   return h+'</div></div>'}
  // before / after, on grass, with a player for size (everything at the game's 2x detail, scaled to fit)
  const PRV={};function propPreview(c,ed){for(let d=0;d<ed.layers.length;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
@@ -265,6 +265,17 @@
   if(z>=8){x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
   const sp=toSp(ed),u=A.render(sp).toDataURL();for(const im of document.querySelectorAll('#dvs .dv-pv img')){im.src=u;const k=im.dataset.x2?2:1;im.style.width=Math.min(220,sp.w*sp.s*k)+'px';im.style.height=Math.min(220,sp.h*sp.s*k)+'px'}
   const st=document.querySelector('#dvs .dv-st');if(st)st.textContent=ed.w+' × '+ed.h+' pixels, shown at '+ed.s+'×  ·  '+sp.p.split(',').filter(Boolean).length+' colours'+(ed.dirty?'  ·  unsaved changes':'')}
+ // copy / paste between pictures (any editor): the clipboard keeps colours, not palette numbers, and lives in
+ // localStorage sq_dev_clip so it carries over between sprites, props, pets, monsters and gear. A paste is lined up by the
+ // bottom middle (where things stand) and cropped to the picture; its colours join this picture's palette.
+ function pxCopy(){const ed=S.ed;if(!ed)return;const c={w:ed.w,h:ed.h,p:[...ed.px].map(v=>v===255?'':ed.pal[v]||'')};try{localStorage.setItem('sq_dev_clip',JSON.stringify(c))}catch(e){}pxCopy.mem=c;
+  toast('Copied ('+ed.w+' × '+ed.h+'). Open another picture and press Paste.')}
+ function pxPaste(){const ed=S.ed;if(!ed)return;let c=pxCopy.mem;try{const v=JSON.parse(localStorage.getItem('sq_dev_clip')||'null');if(v)c=v}catch(e){}
+  if(!c||!Array.isArray(c.p)){toast('Nothing copied yet: open a picture and press Copy first.');return}
+  snapEd();const dx=Math.floor((ed.w-c.w)/2),dy=ed.h-c.h;let n=0;
+  for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){const col=c.p[y*c.w+x];if(!col)continue;const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=ed.w||Y>=ed.h)continue;
+   let i=ed.pal.findIndex(q=>String(q).toLowerCase()===col.toLowerCase());if(i<0){if(ed.pal.length>=255)continue;ed.pal.push(col);i=ed.pal.length-1}ed.px[Y*ed.w+X]=i;n++}
+  if(ed.rcd)ed.rcd=ed.rcd.map(()=>1);ed.dirty=true;drawPal();paint();toast(n?'Pasted'+(c.w!==ed.w||c.h!==ed.h?' (lined up at the bottom middle; this picture is '+ed.w+' × '+ed.h+', the copy '+c.w+' × '+c.h+')':'')+'. Undo takes it back.':'The copy was empty.')}
  const snapEd=()=>{const ed=S.ed;ed.undo.push({px:ed.px.slice(),pal:ed.pal.slice(),dir:ed.dir});if(ed.undo.length>80)ed.undo.shift();ed.redo=[];ed.dirty=true};
  function undo(r){const ed=S.ed;if(!ed)return;const a=r?ed.redo:ed.undo,b=r?ed.undo:ed.redo,s=a.pop();if(!s)return;
   if(LAY(ed.kind)){b.push({px:ed.layers[s.dir].slice(),pal:ed.pal.slice(),dir:s.dir});ed.layers[s.dir]=s.px;ed.rcd=ed.layers.map(()=>1);const sw=ed.dir!==s.dir;ed.dir=s.dir;ed.px=ed.layers[ed.dir];ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;if(sw){draw();return}drawPal();paint();return}
@@ -360,7 +371,7 @@
    '<div class="dv-row dv-tools"></div><div class="dv-cv"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw dv-pv"><figure><span class="dv-pvl"><img alt=""></span>light</figure><figure><span class="dv-pvd"><img alt=""></span>dark</figure><figure><span class="dv-pvd"><img alt="" data-x2="1"></span>2× size</figure><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s original</button></div>'+
-   '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · Ctrl+Z undo · Ctrl+Y redo · Ctrl+S save</p>'}
+   '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · Ctrl+Z undo · Ctrl+Y redo · Ctrl+C / Ctrl+V copy and paste a picture · Ctrl+S save</p>'}
   return h+'</div></div>'}
  // ---- Gear: one screen per weapon or armour piece: its look on the character, its icon, and how it works ----
  const GMODES=[['look','On the character'],['icon','Icon'],['rules','How it works']];
@@ -381,7 +392,7 @@
   if(S.ed.kind!=='worn')return h+'<div class="dv-row dv-tools"></div><div class="dv-cv"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw dv-pv"><figure><span class="dv-pvl"><img alt=""></span>light</figure><figure><span class="dv-pvd"><img alt=""></span>dark</figure><figure><span class="dv-pvd"><img alt="" data-x2="1"></span>2× size</figure><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s original</button></div>'+
-   '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · Ctrl+Z undo · Ctrl+Y redo · Ctrl+S save</p></div></div>';
+   '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · Ctrl+Z undo · Ctrl+Y redo · Ctrl+C / Ctrl+V copy and paste a picture · Ctrl+S save</p></div></div>';
   const ed=S.ed;h+='<div class="dv-row">'+WDN.map((n,d)=>'<button class="dv-b'+(ed.dir===d?' dv-tl dv-on':'')+'" data-dir="'+d+'">'+n+(ed.layers[d].some(v=>v!==255)?' •':'')+'</button>').join('')+'<span class="dv-mut">'+(ed.dir===2?'Side faces right; facing left is mirrored for you.':'')+'</span></div>'+
    '<div class="dv-row dv-tools"></div><div class="dv-cv dv-cvw'+(ed.tool==='pan'?' dv-pan':'')+'"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw"><canvas id="dvwalk" width="400" height="112"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
@@ -392,7 +403,7 @@
     '<span class="dv-mut">Dyeable colours (marked D) take a player\'s dye and keep your light and dark shades.</span></div>':'')+
    '<div class="dv-row"><span class="dv-mut">Copy into this layer from:</span>'+WDN.map((n,d)=>d===ed.dir?'':'<button class="dv-b" data-copy="'+d+'">'+n+'</button>').join('')+'<button class="dv-b dv-bad" data-a="clr">Clear this layer</button><button class="dv-b '+(S.arm==='wcap'?'dv-arm':'')+'" data-a="wcap">'+(S.arm==='wcap'?'Tap again: replaces all three layers':'Start again from the game\'s look')+'</button></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s own look</button></div>'+
-   '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+Y redo · Ctrl+S save</p>';
+   '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+Y redo · Ctrl+C / Ctrl+V copy and paste a picture · Ctrl+S save</p>';
   return h+'</div></div>'}
  // "How it works": numbers are shown as they are for your character now; what's saved is the change from the game's own number
  const FXH={ls:'Chance to heal 1 heart when you hit',burn:'Chance to set what you hit on fire',slow:'Chance to slow what you hit',crit:'Chance to hit again for the same damage',spd:'Walk and run faster',xp:'More XP from everything'};
@@ -448,7 +459,7 @@
   const lv=+(root.querySelector('[data-gr="lv"]')||{}).value||1;if(Object.keys(c).length)o.sm={c,lv};else delete o.sm;return ngSave(k,o)}
  function drawTools(){const t=root.querySelector('.dv-tools');if(!t||!S.ed)return;const T=[['pen','Pen'],['erase','Eraser'],['fill','Fill'],['pick','Pick colour']];
   if(LAY(S.ed.kind))T.push(['pan','Move']);
-  t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button>'+
+  t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button><button class="dv-b" data-a="pxcopy" title="Copy this picture (Ctrl+C)">Copy</button><button class="dv-b" data-a="pxpaste" title="Paste a copied picture here (Ctrl+V)">Paste</button>'+
    (S.ed.kind==='worn'||S.ed.kind==='pet'?'<button class="dv-b" data-a="zout" title="Zoom out">−</button><button class="dv-b" data-a="zin" title="Zoom in">+</button>':'');
   const cv=root.querySelector('.dv-cvw');if(cv)cv.classList.toggle('dv-pan',S.ed.tool==='pan')}
  function drawPal(){const p=root.querySelector('.dv-pal'),ed=S.ed;if(!p||!ed)return;
@@ -519,7 +530,7 @@
   if(a==='gm'){const m=t.dataset.m;if(m===S.gm)return;if(S.ed&&S.ed.dirty&&!confirmLeave())return;if(S.ed)S.ed.dirty=false;S.gm=m;S.ed=null;openGear(S.sel);return}
   if(a==='grst'){const k=S.sel;return arm('grst',async()=>{delete S.draft.gear[k];try{await dset('draft/gear/'+k,null);toast('Back to how the game made it work (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw()})}
   if(a==='back'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;S.sel=null;S.ed=null;draw();return}
-  if(a==='undo')return undo(false);if(a==='redo')return undo(true);
+  if(a==='undo')return undo(false);if(a==='redo')return undo(true);if(a==='pxcopy')return pxCopy();if(a==='pxpaste')return pxPaste();
   if(a==='save')return S.ed&&S.ed.kind==='worn'?saveWorn():S.ed&&S.ed.kind==='pet'?savePet():S.ed&&S.ed.kind==='prop'?saveProp():saveSprite();
   if(a==='revert'){S.ed.dirty=false;if(S.ed.kind==='worn')openWorn(S.sel);else if(S.ed.kind==='pet')openPet(S.sel);else if(S.ed.kind==='prop')openProp(S.sel,false,S.ed.night);else openSprite(S.sel);return}
   if(a==='pcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openPet(S.sel,true);return}
@@ -581,7 +592,7 @@
  // keys: the game must not see them while the suite is open
  addEventListener('keydown',e=>{if(!S.open)return;e.stopPropagation();const tg=e.target,typing=/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)&&tg.type!=='checkbox';
   if(e.key==='Escape'&&!typing){close();return}if(typing||!S.ed||(S.tab!=='sprites'&&S.tab!=='worn'&&S.tab!=='pets'&&S.tab!=='props'&&S.tab!=='monsters'))return;const k=e.key.toLowerCase(),m=e.ctrlKey||e.metaKey;
-  if(m&&k==='z'){e.preventDefault();undo(e.shiftKey);return}if(m&&k==='y'){e.preventDefault();undo(true);return}if(m&&k==='s'){e.preventDefault();if(S.ed.kind==='worn')saveWorn();else if(S.ed.kind==='pet')savePet();else if(S.ed.kind==='prop')saveProp();else saveSprite();return}
+  if(m&&k==='z'){e.preventDefault();undo(e.shiftKey);return}if(m&&k==='c'){e.preventDefault();pxCopy();return}if(m&&k==='v'){e.preventDefault();pxPaste();return}if(m&&k==='y'){e.preventDefault();undo(true);return}if(m&&k==='s'){e.preventDefault();if(S.ed.kind==='worn')saveWorn();else if(S.ed.kind==='pet')savePet();else if(S.ed.kind==='prop')saveProp();else saveSprite();return}
   if((LAY(S.ed.kind))&&!m&&(k==='+'||k==='='||k==='-')){const b=root.querySelector('[data-a="'+(k==='-'?'zout':'zin')+'"]');if(b)b.click();return}
   const T={p:'pen',b:'pen',e:'erase',f:'fill',g:'fill',i:'pick'};if(LAY(S.ed.kind))T.m='pan';if(!m&&T[k]){S.ed.tool=T[k];drawTools()}},true);
  addEventListener('keyup',e=>{if(S.open)e.stopPropagation()},true);

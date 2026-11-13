@@ -27,10 +27,11 @@
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{fix()}catch(e){}return out}}
  // farming hints that told you to craft a hoe when it's just in your bag
  // ...and when the other farming tool is in the bag, swap to it and do the job instead
- let swapAt=0;const swapTo=k=>{const now=performance.now();if(now-swapAt<400||(inv[k]|0)<1||dead)return false;swapAt=now;
-  try{const was=occ('off');equipItem(k);if(occ('off')!==k)return false;say('Swapped to your '+EQ[k].n.toLowerCase()+(was&&EQ[was]?' (your '+EQ[was].n.toLowerCase()+' is in your bag)':'')+'.');setTimeout(()=>{try{if(!dead&&!pnOpen)attack()}catch(e){}},0);return true}catch(e){return false}};
+ let swapAt=0,VIA=false,HID=null;const viaOff=f=>{const v=VIA;VIA=true;try{return f()}finally{VIA=v}};const swapTo=k=>{const now=performance.now();if(now-swapAt<400||(inv[k]|0)<1||dead)return false;swapAt=now;
+  try{const was=occ('off');equipItem(k);if(occ('off')!==k)return false;say('Swapped to your '+EQ[k].n.toLowerCase()+(was&&EQ[was]?' (your '+EQ[was].n.toLowerCase()+' is in your bag)':'')+'.');setTimeout(()=>{try{if(!dead&&!pnOpen)viaOff(()=>attack())}catch(e){}},0);return true}catch(e){return false}};
  {const _s=say;say=function(s){if(typeof s==='string'){
    if(!TL.hoe&&(inv.eq_hoe|0)>0&&/^You need tilled soil\. Craft a hoe/.test(s)){if(swapTo('eq_hoe'))return;s='Put your hoe in your off-hand to till soil (Bag > hoe > EQUIP).'}
+   if(HID&&HID.c&&/^Buy a watering can/.test(s))s='Press X (or right-click) to water it with your watering can.';
    else if(!TL.can&&(inv.eq_can|0)>0&&/^Buy a watering can/.test(s)){if(swapTo('eq_can'))return;s='Put your watering can in your off-hand to water crops (Bag > watering can > EQUIP).'}}
   return _s.apply(this,arguments.length>1?[s,...[].slice.call(arguments,1)]:[s])}}
  // ---- X: use the off-hand ----
@@ -38,7 +39,7 @@
  cv.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;inCv=true});cv.addEventListener('mouseleave',()=>{inCv=false});
  const playing=()=>!dead&&!menuOpen&&!pnOpen&&!(typeof chessOpen!=='undefined'&&chessOpen)&&!(window.SQPVC&&SQPVC.open);
  function down(){if(!playing())return false;
-  if((TL.hoe||TL.can)&&!TL.bow&&!WAND){try{attack()}catch(e){}return true}
+  if((TL.hoe||TL.can)&&!TL.bow&&!WAND){try{viaOff(()=>attack())}catch(e){}return true}
   if(!TL.bow&&!WAND){say('Put a bow, a wand, a hoe or a watering can in your off-hand to use it with X.');try{sfx('swish')}catch(e){}return true}
   let x=mx,y=my;const r=cv.getBoundingClientRect();if(!inCv||x==null){x=r.left+r.width/2+face[0]*80;y=r.top+r.height/2+face[1]*80-6}
   cv.dispatchEvent(new MouseEvent('mousedown',{button:2,buttons:2,clientX:x,clientY:y,bubbles:true,cancelable:true}));held=true;return true}
@@ -58,5 +59,12 @@
     if(!SCENE)pl=FARM.get(ty*N+tx);else{const R=typeof rbR==='function'?rbR():null;if(R)pl=rfMap(R.region).get(rbK(tx,ty))}
     if(pl&&pl.c&&!ripe(pl)&&!wet(pl)&&swapTo('eq_can'))return}}catch(e){}return _a.apply(this,arguments)}}
  // controller R1 / anything else that "shoots": with the hoe or can in hand, use it
- {const _sa=shootAim;shootAim=function(first){if(!TL.bow&&!WAND&&(TL.hoe||TL.can)){if(first)try{attack()}catch(e){}return}return _sa.apply(this,arguments)}}
+ {const _sa=shootAim;shootAim=function(first){if(!TL.bow&&!WAND&&(TL.hoe||TL.can)){if(first)try{viaOff(()=>attack())}catch(e){}return}return _sa.apply(this,arguments)}}
+ // keyboard and mouse: HIT (Space, left click) is melee only. It doesn't shoot the bow (021 shot at monsters out of sword
+ // reach), and the hoe / watering can don't till or water from it; X or right-click uses the off-hand. For that call the
+ // off-hand tools are hidden (TL.hoe/TL.can 0, bowTarget null); 122 already keeps wands from casting on HIT. Touch screens
+ // and controllers are unchanged.
+ {const _a=attack;attack=function(){if(VIA||!isPC||(typeof GPON!=='undefined'&&GPON))return _a.apply(this,arguments);
+   const h=TL.hoe,c=TL.can,bt=bowTarget;HID={h,c};TL.hoe=0;TL.can=0;bowTarget=()=>null;
+   try{return _a.apply(this,arguments)}finally{TL.hoe=h;TL.can=c;bowTarget=bt;HID=null}}}
  window.SQOFFHAND={use:down,stop:up}})();
