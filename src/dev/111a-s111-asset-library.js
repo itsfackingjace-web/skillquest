@@ -80,19 +80,30 @@ var SQA=(()=>{
  // ---- pet looks: replace how a pet is drawn following its owner (yours and other players') ----
  const PETL={},pcache=new Map();
  const validPet=L=>L&&L.w>0&&L.h>0&&L.w<=96&&L.h<=96&&L.s>=1&&L.s<=8&&isFinite(L.ox)&&isFinite(L.oy)&&['a','b','c','d'].some(f=>L[f]&&L[f].w===L.w&&L[f].h===L.h&&valid(L[f]));
- const petKinds=()=>[...new Set(INVK)].filter(k=>EQ[k]&&EQ[k].slot==='pet'&&EQ[k].pet&&EQ[k].pet!=='imp');
+ const petKinds=()=>[...new Set(INVK)].filter(k=>EQ[k]&&EQ[k].slot==='pet'&&EQ[k].pet);
  function petCan(k,f){const L=PETL[k];if(!L)return null;const sp=L[f]&&valid(L[f])?L[f]:L.a&&valid(L.a)?L.a:L.b;const key=k+'@'+ver+f;let c=pcache.get(key);if(!c){c=render(sp);pcache.set(key,c)}return c}
  function drawPetLook(k,s,lib){const L=lib||PETL[k];if(!L||!s)return false;const ok=f=>L[f]&&valid(L[f]),mv=s.mv>0,f=mv?(Math.floor(s.t)%2?(ok('d')?'d':'a'):'b'):(Math.floor(performance.now()/500)%2&&ok('c')?'c':'a');const c=lib?render(L[f]&&valid(L[f])?L[f]:L.a):petCan(k,f);if(!c)return false;
   const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2;try{shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;
   if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,x+L.ox,y+L.oy,w,h);g.restore();return true}
- {const _pPL=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!PETL[k])return _pPL(tm);
+ {const _pPL=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||k==='imp'||!PETL[k])return _pPL(tm);
    if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on)&&typeof petFollow==='function')drawPetLook(k,petFollow('me',P.x,P.y,face));
    C.pet=null;try{return _pPL(tm)}finally{C.pet=k}}}
- if(window.LUX){const _dpp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&PETL[r.pet]&&typeof petFollow==='function'){if(r.sl)return;drawPetLook(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]));return}return _dpp&&_dpp(r,tm)}}
+ if(window.LUX){const _dpp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&r.pet!=='imp'&&PETL[r.pet]&&typeof petFollow==='function'){if(r.sl)return;drawPetLook(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]));return}return _dpp&&_dpp(r,tm)}}
  // the game's own look of a pet (for the editor to start from): drawn by the game onto its hidden screen canvas at 2x
+ // the Imp (it fights, so it isn't a follower): 085 asks window.SQIMPSP(frame, 'n'|'s'|'e'|'w', attacking) for a 24 x 27
+ // picture (feet at 12,22) and keeps each one for good, so the canvases handed out here are kept and repainted in place
+ // whenever the library changes (back to the game's own picture when there is no look). Walking frames b/d, the attack
+ // pose d (else b); drawn facing right, mirrored when it goes west.
+ const IMPK=new Map(),_isp=window.SQIMPSP;
+ function impPaint(c,fr,d,a){const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.imageSmoothingEnabled=false;const L=PETL.imp;
+  if(!L){const o=_isp&&_isp(fr,d,a);if(o){c.width=o.width;c.height=o.height;x.drawImage(o,0,0)}return}
+  const ok=f=>L[f]&&valid(L[f]),f=a?(ok('d')?'d':'b'):fr%2?(ok('d')?'d':ok('b')?'b':'a'):(ok('b')?'b':'a'),sp=ok(f)?L[f]:L.a;if(!sp)return;const im=render(sp);
+  c.width=24;c.height=27;x.imageSmoothingEnabled=false;if(d==='w'){x.translate(24,0);x.scale(-1,1)}x.drawImage(im,12+L.ox,22+L.oy,im.width/2,im.height/2)}
+ function impRepaint(){for(const[k,c]of IMPK){const[fr,d,a]=k.split('|');impPaint(c,+fr,d,a==='1')}}
+ if(_isp)window.SQIMPSP=(fr,d,a)=>{if(!PETL.imp)return _isp(fr,d,a);const k=fr+'|'+d+'|'+(a?1:0);let c=IMPK.get(k);if(!c){c=document.createElement('canvas');IMPK.set(k,c)}impPaint(c,fr,d,a);return c};
  function capturePet(k){const cvs=g.canvas,OX=200,OY=Math.min(300,cvs.height-60),keep=PETL[k],id='__cap_'+k;delete PETL[k];
   try{if(!window.LUX||typeof petFollow!=='function')return null;const s=petFollow(id,0,0,[1,0]);s.fl=false;s.mv=0;
-   g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cvs.width,cvs.height);g.setTransform(2,0,0,2,OX,OY);LUX.drawPeerPet({pet:k,x:0,y:0,d:2,fl:false,uid:id},0);g.restore();
+   g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cvs.width,cvs.height);g.setTransform(2,0,0,2,OX,OY);if(k==='imp'&&_isp){const o=_isp(0,'e',false);if(o){g.imageSmoothingEnabled=false;g.drawImage(o,-12,-22)}}else LUX.drawPeerPet({pet:k,x:0,y:0,d:2,fl:false,uid:id},0);g.restore();
    const W=Math.min(cvs.width,OX+140),H=Math.min(cvs.height,OY+100),d=g.getImageData(0,0,W,H).data;let x0=W,y0=H,x1=-1,y1=-1;
    for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>=128){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
    if(x1<x0)return null;x0-=x0%2?1:0;y0-=y0%2?1:0;const c=document.createElement('canvas');c.width=x1-x0+1+((x1-x0+1)%2);c.height=y1-y0+1+((y1-y0+1)%2);c.getContext('2d').drawImage(cvs,x0,y0,c.width,c.height,0,0,c.width,c.height);
@@ -184,7 +195,7 @@ var SQA=(()=>{
   for(const k in ICO)delete ICO[k];for(const k in WORN)delete WORN[k];ver++;wcache.clear();
   const icons=lib.icons||{};for(const k in icons)if(valid(icons[k]))ICO[k]=icons[k];
   try{applyIslands(lib.islands)}catch(e){console.warn('islands:',e)}
-  for(const k in PETL)delete PETL[k];pcache.clear();const pets=lib.pets||{};for(const k in pets)if(k!=='imp'&&validPet(pets[k]))PETL[k]=pets[k];
+  for(const k in PETL)delete PETL[k];pcache.clear();const pets=lib.pets||{};for(const k in pets)if(validPet(pets[k]))PETL[k]=pets[k];try{impRepaint()}catch(e){}
   const worn=lib.worn||{};for(const k in worn)if(EQ[k]&&WSLOTS.includes(EQ[k].slot)&&validWorn(worn[k]))WORN[k]=worn[k];
   const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){}}}
   applied={stats:st};

@@ -12845,19 +12845,30 @@ var SQA=(()=>{
  // ---- pet looks: replace how a pet is drawn following its owner (yours and other players') ----
  const PETL={},pcache=new Map();
  const validPet=L=>L&&L.w>0&&L.h>0&&L.w<=96&&L.h<=96&&L.s>=1&&L.s<=8&&isFinite(L.ox)&&isFinite(L.oy)&&['a','b','c','d'].some(f=>L[f]&&L[f].w===L.w&&L[f].h===L.h&&valid(L[f]));
- const petKinds=()=>[...new Set(INVK)].filter(k=>EQ[k]&&EQ[k].slot==='pet'&&EQ[k].pet&&EQ[k].pet!=='imp');
+ const petKinds=()=>[...new Set(INVK)].filter(k=>EQ[k]&&EQ[k].slot==='pet'&&EQ[k].pet);
  function petCan(k,f){const L=PETL[k];if(!L)return null;const sp=L[f]&&valid(L[f])?L[f]:L.a&&valid(L.a)?L.a:L.b;const key=k+'@'+ver+f;let c=pcache.get(key);if(!c){c=render(sp);pcache.set(key,c)}return c}
  function drawPetLook(k,s,lib){const L=lib||PETL[k];if(!L||!s)return false;const ok=f=>L[f]&&valid(L[f]),mv=s.mv>0,f=mv?(Math.floor(s.t)%2?(ok('d')?'d':'a'):'b'):(Math.floor(performance.now()/500)%2&&ok('c')?'c':'a');const c=lib?render(L[f]&&valid(L[f])?L[f]:L.a):petCan(k,f);if(!c)return false;
   const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2;try{shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;
   if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,x+L.ox,y+L.oy,w,h);g.restore();return true}
- {const _pPL=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!PETL[k])return _pPL(tm);
+ {const _pPL=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||k==='imp'||!PETL[k])return _pPL(tm);
    if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on)&&typeof petFollow==='function')drawPetLook(k,petFollow('me',P.x,P.y,face));
    C.pet=null;try{return _pPL(tm)}finally{C.pet=k}}}
- if(window.LUX){const _dpp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&PETL[r.pet]&&typeof petFollow==='function'){if(r.sl)return;drawPetLook(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]));return}return _dpp&&_dpp(r,tm)}}
+ if(window.LUX){const _dpp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&r.pet!=='imp'&&PETL[r.pet]&&typeof petFollow==='function'){if(r.sl)return;drawPetLook(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]));return}return _dpp&&_dpp(r,tm)}}
  // the game's own look of a pet (for the editor to start from): drawn by the game onto its hidden screen canvas at 2x
+ // the Imp (it fights, so it isn't a follower): 085 asks window.SQIMPSP(frame, 'n'|'s'|'e'|'w', attacking) for a 24 x 27
+ // picture (feet at 12,22) and keeps each one for good, so the canvases handed out here are kept and repainted in place
+ // whenever the library changes (back to the game's own picture when there is no look). Walking frames b/d, the attack
+ // pose d (else b); drawn facing right, mirrored when it goes west.
+ const IMPK=new Map(),_isp=window.SQIMPSP;
+ function impPaint(c,fr,d,a){const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.imageSmoothingEnabled=false;const L=PETL.imp;
+  if(!L){const o=_isp&&_isp(fr,d,a);if(o){c.width=o.width;c.height=o.height;x.drawImage(o,0,0)}return}
+  const ok=f=>L[f]&&valid(L[f]),f=a?(ok('d')?'d':'b'):fr%2?(ok('d')?'d':ok('b')?'b':'a'):(ok('b')?'b':'a'),sp=ok(f)?L[f]:L.a;if(!sp)return;const im=render(sp);
+  c.width=24;c.height=27;x.imageSmoothingEnabled=false;if(d==='w'){x.translate(24,0);x.scale(-1,1)}x.drawImage(im,12+L.ox,22+L.oy,im.width/2,im.height/2)}
+ function impRepaint(){for(const[k,c]of IMPK){const[fr,d,a]=k.split('|');impPaint(c,+fr,d,a==='1')}}
+ if(_isp)window.SQIMPSP=(fr,d,a)=>{if(!PETL.imp)return _isp(fr,d,a);const k=fr+'|'+d+'|'+(a?1:0);let c=IMPK.get(k);if(!c){c=document.createElement('canvas');IMPK.set(k,c)}impPaint(c,fr,d,a);return c};
  function capturePet(k){const cvs=g.canvas,OX=200,OY=Math.min(300,cvs.height-60),keep=PETL[k],id='__cap_'+k;delete PETL[k];
   try{if(!window.LUX||typeof petFollow!=='function')return null;const s=petFollow(id,0,0,[1,0]);s.fl=false;s.mv=0;
-   g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cvs.width,cvs.height);g.setTransform(2,0,0,2,OX,OY);LUX.drawPeerPet({pet:k,x:0,y:0,d:2,fl:false,uid:id},0);g.restore();
+   g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cvs.width,cvs.height);g.setTransform(2,0,0,2,OX,OY);if(k==='imp'&&_isp){const o=_isp(0,'e',false);if(o){g.imageSmoothingEnabled=false;g.drawImage(o,-12,-22)}}else LUX.drawPeerPet({pet:k,x:0,y:0,d:2,fl:false,uid:id},0);g.restore();
    const W=Math.min(cvs.width,OX+140),H=Math.min(cvs.height,OY+100),d=g.getImageData(0,0,W,H).data;let x0=W,y0=H,x1=-1,y1=-1;
    for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>=128){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
    if(x1<x0)return null;x0-=x0%2?1:0;y0-=y0%2?1:0;const c=document.createElement('canvas');c.width=x1-x0+1+((x1-x0+1)%2);c.height=y1-y0+1+((y1-y0+1)%2);c.getContext('2d').drawImage(cvs,x0,y0,c.width,c.height,0,0,c.width,c.height);
@@ -12949,7 +12960,7 @@ var SQA=(()=>{
   for(const k in ICO)delete ICO[k];for(const k in WORN)delete WORN[k];ver++;wcache.clear();
   const icons=lib.icons||{};for(const k in icons)if(valid(icons[k]))ICO[k]=icons[k];
   try{applyIslands(lib.islands)}catch(e){console.warn('islands:',e)}
-  for(const k in PETL)delete PETL[k];pcache.clear();const pets=lib.pets||{};for(const k in pets)if(k!=='imp'&&validPet(pets[k]))PETL[k]=pets[k];
+  for(const k in PETL)delete PETL[k];pcache.clear();const pets=lib.pets||{};for(const k in pets)if(validPet(pets[k]))PETL[k]=pets[k];try{impRepaint()}catch(e){}
   const worn=lib.worn||{};for(const k in worn)if(EQ[k]&&WSLOTS.includes(EQ[k].slot)&&validWorn(worn[k]))WORN[k]=worn[k];
   const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){}}}
   applied={stats:st};
@@ -13295,9 +13306,10 @@ window.SQA=SQA;
   return'<div class="dv-card" style="margin:8px 0"><b>How tough it is</b>'+(M?' <span class="dv-mut">(the game gives it '+M.hp+' health where it lives)</span>':'')+'<div class="dv-row" style="flex-wrap:wrap;margin-top:6px">'+
    '<label class="dv-mut">Health %<br><input type="number" data-mr="hp" min="10" max="1000" value="'+(r.hp||100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Speed %<br><input type="number" data-mr="spd" min="10" max="400" value="'+(r.spd||100)+'" style="width:80px"></label>'+
+   '<label class="dv-mut">Damage %<br><input type="number" data-mr="dmg" min="0" max="1000" value="'+(r.dmg!=null?r.dmg:100)+'" style="width:80px"></label>'+
    '<label class="dv-mut">Extra gold<br><input type="number" data-mr="gold" min="0" max="100000" value="'+(r.gold||0)+'" style="width:90px"></label>'+
    '</div>'+mrDrops(r,items)+
-   '<div class="dv-row"><button class="dv-b dv-pri" data-a="mrsave">Save rules to draft</button><button class="dv-b dv-bad" data-a="mrclear">Use the game\'s own rules</button><span class="dv-mut">100% = unchanged. Its damage stays the game\'s own.</span></div></div>'}
+   '<div class="dv-row"><button class="dv-b dv-pri" data-a="mrsave">Save rules to draft</button><button class="dv-b dv-bad" data-a="mrclear">Use the game\'s own rules</button><span class="dv-mut">100% = unchanged.</span></div></div>'}
  const HINT=k=>/^f:.*:[ewns]$/.test(k)?'This is the part drawn towards a neighbouring piece on that side, on top of the post or block (draw only what joins them; the editor starts from what the game adds there). Draw the post too, or the game keeps drawing its own fence.':
   /^f:/.test(k)?'A fence or wall piece is built from this post or block plus a part for each side that has another piece next to it.':/^x:/.test(k)?'What players see on the spot while it grows back (the game normally shows nothing). The picture starts one tile big at the tile it stood on.':
   /^v:sail_/.test(k)?'Your boat is drawn in two parts so you sit in it: the part behind you is drawn first, then you, then the part in front of you. Sailing west uses the east picture, mirrored.':/^c:/.test(k)?'A farm plot is drawn as soil, then the crop on top.':'';
@@ -13649,9 +13661,9 @@ window.SQA=SQA;
   if(a==='pflip'){const ed=S.ed;snapEd();const L=ed.layers[ed.dir];for(let y=0;y<ed.h;y++){for(let x=0;x<ed.w>>1;x++){const i=y*ed.w+x,j=y*ed.w+ed.w-1-x,t2=L[i];L[i]=L[j];L[j]=t2}}paint();return}
   if(a==='fradd'&&S.ed&&S.ed.kind==='prop'){propFrames(true);return}if(a==='frdel'&&S.ed&&S.ed.kind==='prop'){propFrames(false);return}
   if(a==='pak'&&S.ed){S.ed.ak=t.checked;S.ed.dirty=true;draw();return}if(a==='pfw'&&S.ed){S.ed.fw=t.checked;S.ed.dirty=true;draw();return}
-  if((a==='mrsave'||a==='mrclear')&&S.ed){const k=S.ed.base;let r=null;if(a==='mrsave'){const v=f=>{const i=root.querySelector('[data-mr="'+f+'"]');return i?i.value:''};r={hp:Math.max(10,Math.min(1000,+v('hp')||100)),spd:Math.max(10,Math.min(400,+v('spd')||100)),gold:Math.max(0,Math.min(100000,v('gold')|0))};
+  if((a==='mrsave'||a==='mrclear')&&S.ed){const k=S.ed.base;let r=null;if(a==='mrsave'){const v=f=>{const i=root.querySelector('[data-mr="'+f+'"]');return i?i.value:''};r={hp:Math.max(10,Math.min(1000,+v('hp')||100)),spd:Math.max(10,Math.min(400,+v('spd')||100)),dmg:Math.max(0,Math.min(1000,v('dmg')===''?100:+v('dmg'))),gold:Math.max(0,Math.min(100000,v('gold')|0))};
     const dr=[];for(let i=0;i<MRN;i++){const k=v('dk'+i);if(!k||!INAME[k])continue;const n=Math.max(1,Math.min(1000,v('dn'+i)|0||1)),x=Math.max(n,Math.min(1000,v('dx'+i)|0||n)),c=Math.max(0,Math.min(100,+v('dc'+i)));dr.push({k,n,x,c:isFinite(c)?c:100})}
-    if(dr.length)r.dr=dr;const rp=root.querySelector('[data-mr="rep"]');if(rp&&rp.checked)r.rep=1;if(r.hp===100&&r.spd===100&&!r.gold&&!r.dr&&!r.rep)r=null}
+    if(dr.length)r.dr=dr;const rp=root.querySelector('[data-mr="rep"]');if(rp&&rp.checked)r.rep=1;if(!(r.dmg>=0))r.dmg=100;if(r.dmg===100)delete r.dmg;if(r.hp===100&&r.spd===100&&!r.gold&&!r.dr&&!r.rep&&r.dmg==null)r=null}
    if(r)S.draft.mobs[k]=r;else delete S.draft.mobs[k];try{await dset('draft/mobs/'+key(k),r);toast(r?'Rules saved to draft.':'Back to the game\'s own rules (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw();return}
   if(a==='psy'&&S.ed){S.ed.sy=t.checked;S.ed.dirty=true;draw();return}
   if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true,S.ed&&S.ed.night);return}
@@ -14894,6 +14906,8 @@ window.SQA=SQA;
 // mobs.<key> in the asset library, keyed like monster looks (SQPROPS.mkey: 'm:wolf:briar'):
 //   hp  health in % of the game's own (100 = unchanged), applied once when the monster first appears
 //   spd speed in % of the game's own: each frame its movement is scaled (knockback too)
+//   dmg damage in % of the game's own: health you lose in a frame is scaled when a monster with a rule is within 40 px
+//       (monsters hurt you in many places, so it goes by who is standing next to you)
 //   gold extra gold when it's beaten; dr = drops [{k item, n..x how many, c chance %}] (older rules: one drop dk/dn/dc)
 //   rep  instead of the game's own drops: what the game gave at the kill (items, gold, a dungeon boss's golden chest) is
 //        taken back before the rule's drops are given. XP and quest progress are left alone.
@@ -14903,7 +14917,7 @@ window.SQA=SQA;
 (()=>{if(!window.SQA||!window.SQPROPS)return;const A=SQA,MR={};
  const num=(v,lo,hi,d)=>{v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):d};
  A.onApply(lib=>{for(const k in MR)delete MR[k];const M=lib&&lib.mobs||{};for(const k in M){const r=M[k];if(!r||typeof r!=='object')continue;
-  const o={hp:num(r.hp,10,1000,100),spd:num(r.spd,10,400,100),gold:num(r.gold,0,100000,0)|0,dr:[],rep:!!r.rep};
+  const o={hp:num(r.hp,10,1000,100),spd:num(r.spd,10,400,100),dmg:num(r.dmg,0,1000,100),gold:num(r.gold,0,100000,0)|0,dr:[],rep:!!r.rep};
   const L=Array.isArray(r.dr)?r.dr:(r.dr&&typeof r.dr==='object'?Object.values(r.dr):r.dk?[{k:r.dk,n:r.dn,x:r.dn,c:r.dc}]:[]);
   for(const d of L.slice(0,8)){if(!d||typeof d.k!=='string'||!INAME[d.k])continue;const n=num(d.n,1,1000,1)|0;o.dr.push({k:d.k,n,x:Math.max(n,num(d.x,1,1000,n)|0),c:num(d.c,0,100,100)})}MR[k]=o}});
  const rule=n=>n&&!n._rp?MR[SQPROPS.mkey(n)]:null;
@@ -14917,7 +14931,10 @@ window.SQA=SQA;
    if(!n._mrd&&!n.dead&&n.hp>0)(watch=watch||[]).push([n,r]);
    if(!n._mr){n._mr=1;if(r.hp!==100){n.hp=Math.max(1,Math.round(n.hp*r.hp/100));if(n.mhp)n.mhp=Math.max(1,Math.round(n.mhp*r.hp/100))}}if(r.spd!==100)pos.push([n,n.x,n.y,r.spd/100])}}
   if(watch&&watch.some(w=>w[1].rep))s0=snapInv();
+  const hp0=P.hp,cand=[];if(Object.keys(MR).length)for(const n of en){if(!n||n.dead)continue;const r=rule(n);if(r&&r.dmg!==100)cand.push([n,r])}// (the frame may clear monsters out of en)
   const out=_u.apply(this,arguments);
+  try{if(P.hp<hp0&&!dead&&Object.keys(MR).length){let best=null,bd=40;for(const[n,r]of cand){const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=r}}
+   if(best){const loss=hp0-P.hp,want=loss*best.dmg/100,k=Math.floor(want)+(Math.random()<want%1?1:0);P.hp=hp0-k}}}catch(e){}
   if(watch)for(const[n,r]of watch){if(n._mrd||!(n.type==='thorn'||n.type==='emberl')||!n._rew)continue;if(r.rep&&s0)takeBack(s0);give(n,r)}
   if(pos)for(const[n,x,y,k]of pos){if(n.dead)continue;const nx=x+(n.x-x)*k,ny=y+(n.y-y)*k;if(!solid(nx,n.y))n.x=nx;if(!solid(n.x,ny))n.y=ny}return out};
  const _ed=enemyDrop;enemyDrop=function(n){const r=rule(n);if(!r||n._mrd)return _ed.apply(this,arguments);const s0=r.rep?snapInv():null;const out=_ed.apply(this,arguments);
