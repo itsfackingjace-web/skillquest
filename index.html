@@ -9380,6 +9380,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-20',d:'Nov 13, 2026',t:'Fixed: packed-up island castles coming back',n:['Fixed: packing up a house or castle on an island (or anything you built there) could put it back up the next time you played, while you also kept the packed one. What you pack up now stays packed.']},
  {v:'2026.11.13-19',d:'Nov 13, 2026',t:'Better tools behind the scenes',n:['New developer tools for tuning XP rates and perks, writing music and rolling back changes quickly. Expect more frequent balance tweaks and new songs, and faster fixes if an update goes wrong.']},
  {v:'2026.11.13-18',d:'Nov 13, 2026',t:'New shops, quests and treasure on the islands (coming soon)',n:['The islands are getting busier: islanders can now run their own shops and hand out quests. Talk to them to see what they sell or need; their quests show up in your quest log with the reward.','Some new items, recipes, monsters and loot will start appearing over the next updates.']},
  {v:'2026.11.13-17',d:'Nov 13, 2026',t:'Developer gifts, announcements and XP events',n:['Gifts from the developer: if something went wrong (a lost item, a bug), you can now be sent items, gold and a note. They land in your bag the next time you play, or right away if you\'re on.','Replies to your bug reports now reach you in the game.','Announcements show as a banner at the top of the screen. Tap × to close it.','XP events (like Double XP weekends): while one runs, a small purple tag in the top corner shows how long is left, and all XP you earn is multiplied.','World Market: fixed a way to put items and gold into the collection box that hadn\'t really been traded. Filled offers now stay up a few seconds longer behind the scenes so every sale is paid out.']},
@@ -18103,6 +18104,24 @@ window.SQA=SQA;
  SQSUITE.addTab('songs','Songs',{render,after(){setTimeout(roll,0)},dirty:()=>ST.dirty,leave(){stop();ST.dirty=false},changes(L,D){const out=[],a=L&&L.songs||{},b=D&&D.songs||{};
    for(const k of new Set([...Object.keys(a),...Object.keys(b)]))if(JSON.stringify(a[k])!==JSON.stringify(b[k]))out.push({kind:'ext',html:'🎵 Song '+E((b[k]||a[k]).n||k)+': '+(b[k]?(a[k]?'changed':ORIG[k]?'replaced':'new'):(ORIG[k]?'back to the game\'s song':'removed'))});
    const x=L&&L.songmap||{},y=D&&D.songmap||{};for(const r of new Set([...Object.keys(x),...Object.keys(y)]))if(x[r]!==y[r])out.push({kind:'ext',html:'🎵 Song on '+E((typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[r]||{}).name||r)+': '+(y[r]?E(songName(y[r])):'the game\'s')});return out}})})();
+// ---- 172. Saves never bring back things you removed (the castle dupe) ----
+// 049 keeps save fields it doesn't know (SAVE_EXTRA) and writes them back into every later save, so data from a newer
+// version isn't lost. It learned which fields are "known" from the first save it made in a session, so a field that a
+// section only writes when it has something (rh = houses/castles on the islands, and others) counted as unknown if it
+// was empty at that moment. Then the old copy from the loaded save was written back after you emptied it: pack your
+// island castle, and the next load had it standing again with the packed one still in your bag (and the one-home rule
+// could pack the extra into the bag again). Now every field the game writes is known: the ones the sections write
+// (listed here), plus any field a save ever had in this session; and a known field is never taken from SAVE_EXTRA.
+(()=>{if(typeof KNOWN49==='undefined')return;
+ const KEYS='rh str rb rfarm rh houses home farm cus jw ach dly wev chr gd tfx ultp cq ibk hsc qv cos petItems ohat offh wbk wbc thd sld emd fcr stk ss pvpk chb sf ign bw as wt seen cave dl dun rare perks phx sideQuests xdun qdone qhold plant wreck sail cls wand mp jobs gmd tomb chess name bsp yf yp yw'.split(' ');
+ for(const k of KEYS)KNOWN49.add(k);
+ const learn=s=>{if(!s||typeof s!=='object')return;for(const k of Object.keys(s))if(!(k in SAVE_EXTRA)||s[k]!==SAVE_EXTRA[k])KNOWN49.add(k)};
+ const prune=()=>{try{for(const k of Object.keys(SAVE_EXTRA))if(KNOWN49.has(k))delete SAVE_EXTRA[k]}catch(e){}};
+ {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{
+   // a known field that only came from SAVE_EXTRA (same object) is stale: leave it out
+   for(const k in SAVE_EXTRA)if(KNOWN49.has(k)&&s[k]===SAVE_EXTRA[k])delete s[k];learn(s);prune()}catch(e){}return s}}
+ {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);prune();return out}}
+ window.SQSAVEKEYS={KEYS,prune}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

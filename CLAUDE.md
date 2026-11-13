@@ -416,3 +416,8 @@
   (+ `vol`); built-in keys replace that song, `su_<id>` are new; `songmap.<region>` = song key (155's `REGION_SONG`). `check()`
   validates chords/notes/bar lengths/order and builds it; originals restored when removed. 155 exposes `VOL`, `force` (play a song
   regardless of `wantSong`; the editor plays its working copy as `__ed`), `restart()`, `step`, `len`. Write only original melodies.
+- **Save keys** (`core/166-s172-save-keys.js`, `SQSAVEKEYS`): 049 keeps unknown save fields (`SAVE_EXTRA`) and writes them back; it
+  used to learn "known" fields only from the first snap of a session, so fields written only when non-empty (`rh` island
+  houses/castles, `rb`, `rfarm`, ...) came back stale after being emptied (the island castle dupe). 166 lists those fields in
+  `KNOWN49`, learns every field a snap writes, and drops known fields from `SAVE_EXTRA`. **A new save field written only when
+  non-empty must be added to `KNOWN49`** (or to 166's `KEYS`).
