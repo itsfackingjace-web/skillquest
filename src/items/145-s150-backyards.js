@@ -57,10 +57,10 @@
    const[x,y]=frontTile(),i=yi(R,x,y),p=Y.plots.get(i);
    if(Y.ro){if(p||Y.furn.has(i)){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}return _a.apply(this,arguments)}
    // keyboard and mouse: Space / left-click is melee only, the hoe and can work from X (140); a tool in the bag is swapped in
-   const melee=isPC&&!(typeof GPON!=='undefined'&&GPON)&&!(window.SQOFFVIA&&SQOFFVIA()),off=()=>!TL.bow&&!WAND;
+   const melee=!(window.SQOFFVIA&&SQOFFVIA()),off=()=>!TL.bow&&!WAND;
    const want=k=>{if(melee)return false;const has=k==='eq_can'?TL.can:TL.hoe;if(has)return true;if((inv[k]|0)<1||!off()&&!(TL.hoe||TL.can))return false;try{equipItem(k)}catch(e){}return k==='eq_can'?!!TL.can:!!TL.hoe};
    if(p){swing=.25;if(ripe(p)){harvest(-1,p);saveLocal(true);pub();return}
-    if(p.c&&!wet(p)){if(!want('eq_can')){say(melee?'Press X (or right-click) to water it with your watering can.':'Put your watering can in your off-hand to water it.');try{sfx('swish')}catch(e){}return}
+    if(p.c&&!wet(p)){if(!want('eq_can')){say(melee?(window.SQOFFHINT?SQOFFHINT('water it with your watering can')+'.':'Use your off-hand to water it.'):'Put your watering can in your off-hand to water it.');try{sfx('swish')}catch(e){}return}
      p.w=CLK+WATER_FOR;addXp(11,3);say('Watered the '+CROPS[p.c].n.toLowerCase()+'.');try{sfx('splash')}catch(e){}saveLocal();return}
     if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');try{sfx('swish')}catch(e){}return}
     const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');try{sfx('swish')}catch(e){}return}

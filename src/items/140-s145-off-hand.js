@@ -31,7 +31,7 @@
   try{const was=occ('off');equipItem(k);if(occ('off')!==k)return false;say('Swapped to your '+EQ[k].n.toLowerCase()+(was&&EQ[was]?' (your '+EQ[was].n.toLowerCase()+' is in your bag)':'')+'.');setTimeout(()=>{try{if(!dead&&!pnOpen)viaOff(()=>attack())}catch(e){}},0);return true}catch(e){return false}};
  {const _s=say;say=function(s){if(typeof s==='string'){
    if(!TL.hoe&&(inv.eq_hoe|0)>0&&/^You need tilled soil\. Craft a hoe/.test(s)){if(swapTo('eq_hoe'))return;s='Put your hoe in your off-hand to till soil (Bag > hoe > EQUIP).'}
-   if(HID&&HID.c&&/^Buy a watering can/.test(s))s='Press X (or right-click) to water it with your watering can.';
+   if(HID&&HID.c&&/^Buy a watering can/.test(s))s=offHint('water it with your watering can')+'.';
    else if(!TL.can&&(inv.eq_can|0)>0&&/^Buy a watering can/.test(s)){if(swapTo('eq_can'))return;s='Put your watering can in your off-hand to water crops (Bag > watering can > EQUIP).'}}
   return _s.apply(this,arguments.length>1?[s,...[].slice.call(arguments,1)]:[s])}}
  // ---- X: use the off-hand ----
@@ -64,8 +64,13 @@
  // reach), and the hoe / watering can don't till or water from it; X or right-click uses the off-hand. For that call the
  // off-hand tools are hidden (TL.hoe/TL.can 0, bowTarget null); 122 already keeps wands from casting on HIT. Touch screens
  // and controllers are unchanged.
- {const _a=attack;attack=function(){if(VIA||!isPC||(typeof GPON!=='undefined'&&GPON))return _a.apply(this,arguments);
-   const h=TL.hoe,c=TL.can,bt=bowTarget;HID={h,c};TL.hoe=0;TL.can=0;bowTarget=()=>null;
+ // Since 2026.11.13-8 this goes for every input: the hoe and can are used with the off-hand button (X / right-click,
+ // controller R1, the touch TILL / WATER button), never with HIT. Only keyboard and mouse also keep HIT from shooting.
+ {const _a=attack;attack=function(){if(VIA)return _a.apply(this,arguments);const pc=isPC&&!(typeof GPON!=='undefined'&&GPON);
+   const h=TL.hoe,c=TL.can,bt=bowTarget;HID={h,c};TL.hoe=0;TL.can=0;if(pc)bowTarget=()=>null;
    try{return _a.apply(this,arguments)}finally{TL.hoe=h;TL.can=c;bowTarget=bt;HID=null}}}
+ // the off-hand button's name on this device, for hints
+ function offHint(what){return(typeof GPON!=='undefined'&&GPON?'Press R1 to ':isPC?'Press X (or right-click) to ':'Tap '+(TL.can||/water/.test(what)?'WATER':'TILL')+' to ')+what}
+ window.SQOFFHINT=offHint;
  window.SQOFFVIA=()=>VIA;// true while the off-hand is being used (X, R1, a farming swap), for later HIT handlers
  window.SQOFFHAND={use:down,stop:up}})();

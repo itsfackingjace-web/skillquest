@@ -258,8 +258,8 @@
   `shootAim` (controller R1) uses hoe/can when that's the off-hand.
 - **Message box on phones** (010's `drawHUD`): touch screens held upright (`H>=W`) draw the text box in the strip above the status
   box (`ty=top-th-3U`, 44U tall, `MSGBOX.top`); the players-online pill (139) skips drawing while it's there.
-- **HIT on PC** (140, outermost `attack`): with keyboard/mouse (`isPC`, no `GPON`) HIT is melee only: for that call `TL.hoe`/`TL.can` are 0 and
-  `bowTarget` returns null (`HID`). Off-hand use goes through `viaOff` (X, R1, the farming swaps) which skips the hiding.
+- **HIT never farms** (140, outermost `attack`): on every input HIT hides `TL.hoe`/`TL.can` for that call (`HID`); keyboard/mouse (`isPC`, no `GPON`) also gets
+  `bowTarget` null. Touch: 082's `#aimb` shows TILL/WATER for a hoe/can off-hand (also in yards), a tap = `SQOFFHAND.use()`; hints via `SQOFFHINT(what)`. Off-hand use goes through `viaOff` (X, R1, the farming swaps) which skips the hiding.
 - **Dev Suite copy/paste** (111b `pxCopy`/`pxPaste`, Copy/Paste buttons, Ctrl+C/V): the clipboard is colours per pixel in
   localStorage `sq_dev_clip`, pasted bottom-middle aligned into any editor, colours added to the palette.
 - **Castle hall symmetry** (077 `ROOMS.castle.ex=10.5`, 093's castle `ROOMBG`/`c_throne`): the hall stays 22 wide (furniture is keyed
@@ -319,4 +319,11 @@
   room items so they draw and sort, 083's `drawFurn`). No hunger drain inside a house/castle (`SCENE.id==='home'`, not a yard):
   the outermost `upd` adds 3x the drain first and takes it back, so starving can't trigger; eating still counts. The
   wardrobe opens the character screen, so it gets its own `#cwpk` PICK UP WARDROBE button (`pickFurn`/`pickStruct`).
+- **Deposit bag** (`items/149-s155-deposit-bag.js`, `SQDEPOSIT`): a DEPOSIT BAG button in 011's `chestHTML` (YOUR BAG header);
+  own chests move everything (not `chest`) and save once; a friend's shared chest (`CHEST_H._sh`, 072) goes per item through `chestMove`.
+- **Controllers everywhere** (`ui/150-s156-controller-everywhere.js`, `SQOSK`): `navRoot` also returns the request popups
+  (#trpop/#ptpop/#dlpop/#updbar, 0.5 s after they appear) and #sqlost/#sqsess; ○ there clicks `.no`. `navItems` adds textarea/select;
+  `navPress` with `GPON`: text inputs/textareas open the on-screen keyboard #sqosk (number inputs get digits), checkboxes tick,
+  selects cycle. The keyboard's ○/△/□/R1/Options are taken in the outermost `pollPad` before 023 (marked held in `GPPREV`).
+  OK writes the value (input/change events) and submits a one-line input's form (chat #mpf, name). New text boxes need nothing.
 

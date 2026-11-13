@@ -9378,6 +9378,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-8',d:'Nov 13, 2026',t:'Controllers everywhere, deposit bag',n:['Controller players can now answer trade, party and duel requests: after a moment the request is highlighted, ✕ picks TRADE (or JOIN, DUEL, PLAY) and ○ says no. The update bar works the same way.','Controllers reach every part of every menu, including text boxes, dropdowns and checkboxes.','New on-screen keyboard for controllers, like the one in Pokemon: pick a text box and press ✕. ✕ types, ○ deletes, △ adds a space, □ switches capitals, R1 shows symbols and Options (START) is OK. In chat, OK sends your message.','HIT no longer tills or waters on any device: the hoe and watering can are off-hand tools. Use X or right-click on a computer, R1 on a controller, or the new TILL / WATER button on touch screens.','Chests have a DEPOSIT BAG button that puts everything in your bag into the chest at once.']},
  {v:'2026.11.13-7',d:'Nov 13, 2026',t:'Home comforts',n:['Light campfires in your backyard or courtyard (FIRE, 3 wood and a stone, like anywhere outdoors). Cook at them, warm up, and they keep burning there while you\'re inside.','No more getting hungry at home: your food doesn\'t go down while you\'re inside your house or castle. Sleeping in your bed still uses up some food overnight.','Wardrobes can now be picked up: open the wardrobe and tap PICK UP WARDROBE at the bottom.']},
  {v:'2026.11.13-6',d:'Nov 13, 2026',t:'One save: your Google account',n:['You now sign in with Google to play. Your character lives in your Google account, so it\'s the same on your phone, your computer and the Windows app.','Only one device or tab can play your account at a time. Open the game somewhere else and the old one stops with a PLAY HERE INSTEAD button; tap it to take your game back with your latest progress.','No more "Which save do you want?" questions. The first time you sign in after this update, the game keeps whichever save has more progress (this device\'s or your account\'s) and backs up the other one in Options > Backups.','If your connection drops, you\'ll see "Not saved: reconnecting..." at the top. Your progress saves again as soon as you\'re back online.']},
  {v:'2026.11.13-5',d:'Nov 13, 2026',t:'Placing your castle',n:['Fixed: after packing up your house, the game could still say "You already have a house" and refuse to place your castle (or a new house) while other players\' houses were nearby. Only your own home counts now.']},
@@ -10206,8 +10207,8 @@ window.SQMP=MP;
   // the touch cluster: FIRE no longer overlaps HIT, ROLL / ULT moved out a little to make room
   '#f{right:120px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 130px)!important}#rl,#ub{right:190px!important}';document.head.appendChild(st);
  // find a free spot next to the other touch buttons (never on top of one): try above / beside each button, nearest to HIT first
- function placeBtn(){const hit=document.getElementById('a');const show=!isPC&&offhand()&&!(typeof GPON!=='undefined'&&GPON)&&!menuOpen&&!pnOpen&&!dead&&hit&&hit.getBoundingClientRect().width>0&&getComputedStyle(hit).display!=='none'&&!(SCENE&&!SCENE.room.cave&&!SCENE.room.region);
-  tb.style.display=show?'flex':'none';if(!show)return;tb.textContent=WAND?'CAST':'BOW';const S=64,G=8,vw=innerWidth,vh=innerHeight;
+ function placeBtn(){const hit=document.getElementById('a');const farm=()=>!WAND&&!TL.bow&&!!(TL.hoe||TL.can),yd=SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court);const show=!isPC&&(offhand()||farm())&&!(typeof GPON!=='undefined'&&GPON)&&!menuOpen&&!pnOpen&&!dead&&hit&&hit.getBoundingClientRect().width>0&&getComputedStyle(hit).display!=='none'&&(yd||!(SCENE&&!SCENE.room.cave&&!SCENE.room.region));
+  tb.style.display=show?'flex':'none';if(!show)return;tb.textContent=WAND?'CAST':TL.bow?'BOW':TL.can?'WATER':'TILL';const S=64,G=8,vw=innerWidth,vh=innerHeight;
   const rects=[...document.querySelectorAll('.b,#mpb,#mpbug,#mb,#pb2,#cb')].filter(e=>e!==tb&&e.offsetWidth>0&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden').map(e=>e.getBoundingClientRect()).filter(r=>r.width>0);
   // the USE / TALK / SAIL button pops up above HIT now and then: keep its spot free even while it's hidden
   {const t=document.getElementById('tk');if(t){const cs=getComputedStyle(t),w=parseFloat(cs.width)+8,hh=parseFloat(cs.height)+8,r=parseFloat(cs.right),bt=parseFloat(cs.bottom);if(isFinite(w)&&isFinite(r)&&isFinite(bt))rects.push({left:vw-r-w,right:vw-r,top:vh-bt-hh,bottom:vh-bt})}}
@@ -10219,7 +10220,10 @@ window.SQMP=MP;
   const near=p=>Math.hypot(p[0]+S/2-hx,p[1]+S/2-hy)<260,k=tb.dataset.k,cur=k?k.split(',').map(Number):null;let pick=cur&&free(cur[0],cur[1])&&near(cur)?cur:(c.find(p=>near(p)&&free(p[0],p[1]))||c.find(p=>free(p[0],p[1])));
   if(!pick)pick=[h.left+h.width/2-S/2,Math.max(G,h.top-S-10)];pick=pick.map(Math.round);tb.dataset.k=pick.join(',');tb.style.left=pick[0]+'px';tb.style.top=pick[1]+'px'}
  setInterval(placeBtn,300);
- tb.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();const t=e.changedTouches[0];AIMX.touch={id:t.identifier,x:t.clientX,y:t.clientY,drag:false};AIMX.tHeld=0;tb.classList.add('on')},{passive:false});
+ tb.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();
+  // a hoe or watering can in the off-hand: one tap = till / water (140's off-hand use)
+  if(!WAND&&!TL.bow&&(TL.hoe||TL.can)){tb.classList.add('on');setTimeout(()=>tb.classList.remove('on'),150);try{window.SQOFFHAND&&SQOFFHAND.use()}catch(_){}return}
+ const t=e.changedTouches[0];AIMX.touch={id:t.identifier,x:t.clientX,y:t.clientY,drag:false};AIMX.tHeld=0;tb.classList.add('on')},{passive:false});
  tb.addEventListener('touchmove',e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;for(const t of e.changedTouches){if(t.identifier!==T.id)continue;
   const dx=t.clientX-T.x,dy=t.clientY-T.y;if(Math.hypot(dx,dy)>14){T.drag=true;const l=Math.hypot(dx,dy);AIM.v=[dx/l,dy/l];AIM.t=performance.now()}}},{passive:false});
  const tEnd=e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;tb.classList.remove('on');AIMX.touch=null;
@@ -16325,7 +16329,7 @@ window.SQA=SQA;
   try{const was=occ('off');equipItem(k);if(occ('off')!==k)return false;say('Swapped to your '+EQ[k].n.toLowerCase()+(was&&EQ[was]?' (your '+EQ[was].n.toLowerCase()+' is in your bag)':'')+'.');setTimeout(()=>{try{if(!dead&&!pnOpen)viaOff(()=>attack())}catch(e){}},0);return true}catch(e){return false}};
  {const _s=say;say=function(s){if(typeof s==='string'){
    if(!TL.hoe&&(inv.eq_hoe|0)>0&&/^You need tilled soil\. Craft a hoe/.test(s)){if(swapTo('eq_hoe'))return;s='Put your hoe in your off-hand to till soil (Bag > hoe > EQUIP).'}
-   if(HID&&HID.c&&/^Buy a watering can/.test(s))s='Press X (or right-click) to water it with your watering can.';
+   if(HID&&HID.c&&/^Buy a watering can/.test(s))s=offHint('water it with your watering can')+'.';
    else if(!TL.can&&(inv.eq_can|0)>0&&/^Buy a watering can/.test(s)){if(swapTo('eq_can'))return;s='Put your watering can in your off-hand to water crops (Bag > watering can > EQUIP).'}}
   return _s.apply(this,arguments.length>1?[s,...[].slice.call(arguments,1)]:[s])}}
  // ---- X: use the off-hand ----
@@ -16358,9 +16362,14 @@ window.SQA=SQA;
  // reach), and the hoe / watering can don't till or water from it; X or right-click uses the off-hand. For that call the
  // off-hand tools are hidden (TL.hoe/TL.can 0, bowTarget null); 122 already keeps wands from casting on HIT. Touch screens
  // and controllers are unchanged.
- {const _a=attack;attack=function(){if(VIA||!isPC||(typeof GPON!=='undefined'&&GPON))return _a.apply(this,arguments);
-   const h=TL.hoe,c=TL.can,bt=bowTarget;HID={h,c};TL.hoe=0;TL.can=0;bowTarget=()=>null;
+ // Since 2026.11.13-8 this goes for every input: the hoe and can are used with the off-hand button (X / right-click,
+ // controller R1, the touch TILL / WATER button), never with HIT. Only keyboard and mouse also keep HIT from shooting.
+ {const _a=attack;attack=function(){if(VIA)return _a.apply(this,arguments);const pc=isPC&&!(typeof GPON!=='undefined'&&GPON);
+   const h=TL.hoe,c=TL.can,bt=bowTarget;HID={h,c};TL.hoe=0;TL.can=0;if(pc)bowTarget=()=>null;
    try{return _a.apply(this,arguments)}finally{TL.hoe=h;TL.can=c;bowTarget=bt;HID=null}}}
+ // the off-hand button's name on this device, for hints
+ function offHint(what){return(typeof GPON!=='undefined'&&GPON?'Press R1 to ':isPC?'Press X (or right-click) to ':'Tap '+(TL.can||/water/.test(what)?'WATER':'TILL')+' to ')+what}
+ window.SQOFFHINT=offHint;
  window.SQOFFVIA=()=>VIA;// true while the off-hand is being used (X, R1, a farming swap), for later HIT handlers
  window.SQOFFHAND={use:down,stop:up}})();
 // ---- 146. Mithril and adamant axes and pickaxes ----
@@ -16599,10 +16608,10 @@ window.SQA=SQA;
    const[x,y]=frontTile(),i=yi(R,x,y),p=Y.plots.get(i);
    if(Y.ro){if(p||Y.furn.has(i)){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}return _a.apply(this,arguments)}
    // keyboard and mouse: Space / left-click is melee only, the hoe and can work from X (140); a tool in the bag is swapped in
-   const melee=isPC&&!(typeof GPON!=='undefined'&&GPON)&&!(window.SQOFFVIA&&SQOFFVIA()),off=()=>!TL.bow&&!WAND;
+   const melee=!(window.SQOFFVIA&&SQOFFVIA()),off=()=>!TL.bow&&!WAND;
    const want=k=>{if(melee)return false;const has=k==='eq_can'?TL.can:TL.hoe;if(has)return true;if((inv[k]|0)<1||!off()&&!(TL.hoe||TL.can))return false;try{equipItem(k)}catch(e){}return k==='eq_can'?!!TL.can:!!TL.hoe};
    if(p){swing=.25;if(ripe(p)){harvest(-1,p);saveLocal(true);pub();return}
-    if(p.c&&!wet(p)){if(!want('eq_can')){say(melee?'Press X (or right-click) to water it with your watering can.':'Put your watering can in your off-hand to water it.');try{sfx('swish')}catch(e){}return}
+    if(p.c&&!wet(p)){if(!want('eq_can')){say(melee?(window.SQOFFHINT?SQOFFHINT('water it with your watering can')+'.':'Use your off-hand to water it.'):'Put your watering can in your off-hand to water it.');try{sfx('swish')}catch(e){}return}
      p.w=CLK+WATER_FOR;addXp(11,3);say('Watered the '+CROPS[p.c].n.toLowerCase()+'.');try{sfx('splash')}catch(e){}saveLocal();return}
     if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');try{sfx('swish')}catch(e){}return}
     const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');try{sfx('swish')}catch(e){}return}
@@ -16873,6 +16882,91 @@ window.SQA=SQA;
  pb.onclick=()=>{const o=WR;if(!o)return;WR=null;pb.style.display='none';try{go.onclick()}catch(e){}
   setTimeout(()=>{try{if(o.inside)pickFurn(o.i);else pickStruct(o.i);saveLocal(true)}catch(e){console.warn(e)}},0)};
  window.SQHOME={indoors,yard}})();
+// ---- 155. Chests: DEPOSIT BAG ----
+// One button on the chest screen (011's chestHTML) puts everything in your bag into the chest (not other chests). Your own
+// chests take it all at once and save once; a friend's shared chest (072, CHEST_H._sh) goes item by item through its
+// database transaction (chestMove), like moving them one at a time.
+(()=>{const chest=()=>{const s=CHEST_H||STR.get(CHEST_AT);return s&&s.t==='chest'&&s.items?s:null};
+ const bagKeys=()=>BAG_ORDER().filter(k=>(inv[k]|0)>0&&k!=='chest');
+ function depositBag(){const s=chest();if(!s)return;if(s._sh&&!s.ok){say('The chest is still opening...');return}const ks=bagKeys();if(!ks.length){say('Your bag is empty.');return}
+  let n=0;for(const k of ks)n+=inv[k]|0;
+  if(s._sh){for(const k of ks)chestMove(k,'d')}
+  else{for(const k of ks){s.items[k]=(s.items[k]|0)+(inv[k]|0);inv[k]=0}try{sfx('pickup')}catch(e){}saveLocal(true);try{saveCloud(true)}catch(e){}}
+  CHCARD=null;say('Put '+n+' item'+(n===1?'':'s')+' from your bag into the chest.');rPn()}
+ {const _h=chestHTML;chestHTML=function(){const h=_h.apply(this,arguments),mark='<div class="tl" style="margin-top:12px">YOUR BAG</div>';if(!chest()||h.indexOf(mark)<0)return h;
+   const btn='<div class="tl" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px">YOUR BAG'+(bagKeys().length?'<button class="sb chdep" style="width:auto;margin:0;padding:6px 12px;font-size:13px">DEPOSIT BAG</button>':'')+'</div>';
+   return h.replace(mark,btn)}}
+ pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.chdep');if(!b||ptab!==7)return;e.stopPropagation();e.preventDefault();depositBag()},true);
+ window.SQDEPOSIT=depositBag})();
+// ---- 156. Controllers everywhere: popups, every control, and a Pokemon-style keyboard ----
+// - Requests that pop up while you play (trade 062 #trpop, party 136 #ptpop, duel/chess 130 #dlpop, the update bar 125
+//   #updbar) and the account boxes (#sqlost, 072's #sqsess) become the controller's screen (023's navRoot) half a second after
+//   they appear (so a ✕ you were already pressing can't accept by accident): ✕ picks, ○ = its NO / LATER button.
+// - Menus reach every control (023's navItems only took buttons and inputs): text boxes, dropdowns (✕ = next choice) and
+//   checkboxes (✕ ticks).
+// - Text boxes open an on-screen keyboard instead of the device's own (#sqosk): D-pad / stick move, ✕ types the key,
+//   ○ deletes (closes it when empty, nothing changed), △ space, □ upper/lower case, R1 symbols, Options = OK. Number
+//   boxes get digits only. OK writes the text into the box (input/change events); a one-line box in a form (chat, a name)
+//   is sent, like pressing Enter.
+// The keyboard's own buttons are taken in our pollPad wrapper before 023's (marked as held in GPPREV, so 023 ignores them).
+(()=>{const vis=e=>!!(e&&e.isConnected&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden'&&e.getBoundingClientRect().width>0);
+ const $=id=>document.getElementById(id),POPS=['trpop','ptpop','dlpop','updbar'],BOX=['sqlost','sqsess'],since={};
+ setInterval(()=>{const t=performance.now();for(const id of POPS)if(vis($(id))){if(!since[id])since[id]=t}else delete since[id]},100);
+ const popRoot=()=>{if(!GPON)return null;for(const id of BOX){const e=$(id);if(vis(e))return e}const t=performance.now();for(const id of POPS){const e=$(id);if(vis(e)&&since[id]&&t-since[id]>500)return e}return null};
+ // ---- the keyboard ----
+ const PAGES={up:['ABCDEFGHIJ','KLMNOPQRST','UVWXYZ.,\'-','1234567890'],lo:['abcdefghij','klmnopqrst','uvwxyz.,\'-','1234567890'],sym:['!?:;"()/&+','@#%*=_<>[]','~^$€£{}|\\`','1234567890'],num:['123','456','789','0']};
+ const K={open:false,el:null,buf:'',page:'up',num:false,max:0,lbl:''};
+ const box=document.createElement('div');box.id='sqosk';document.body.appendChild(box);
+ const st=document.createElement('style');st.textContent=`#sqosk{position:fixed;inset:0;z-index:300;display:none;align-items:flex-end;justify-content:center;background:rgba(8,12,24,.55)}
+#sqosk .kb{width:min(100%,640px);margin:0 6px calc(env(safe-area-inset-bottom,0px) + 8px);background:#f8f8f8;border:4px solid #485870;box-shadow:inset 0 0 0 3px #a8c0e0;padding:10px;box-sizing:border-box;font:700 16px ${typeof PF!=='undefined'?PF:'monospace'};color:#404040}
+#sqosk .kl{font-size:12px;letter-spacing:1px;color:#3058c8;margin-bottom:4px}#sqosk .kf{background:#fff;border:3px solid #485870;padding:8px 10px;min-height:22px;font-size:18px;word-break:break-all;white-space:pre-wrap}
+#sqosk .kf i{display:inline-block;width:10px;height:3px;background:#404040;margin-left:1px;animation:kbl 1s steps(2) infinite}@keyframes kbl{50%{opacity:0}}
+#sqosk .kg{display:grid;gap:4px;margin-top:8px}#sqosk button{font:700 16px inherit;font-family:inherit;padding:8px 0;background:#fff;border:2px solid #a8b8d0;color:#404040;min-width:0}
+#sqosk .kr{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px}#sqosk .kr button{font-size:12px}#sqosk .kh{font-size:11px;font-weight:500;opacity:.7;margin-top:6px;text-align:center}
+#sqosk button.gpf{background:#f8e0a8}#sqosk .kc{font-size:11px;font-weight:500;opacity:.6;text-align:right}`;document.head.appendChild(st);
+ for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])box.addEventListener(ev,e=>e.stopPropagation());
+ const esc2=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+ function draw(keep){const rows=PAGES[K.num?'num':K.page],cols=rows[0].length;
+  box.innerHTML='<div class="kb"><div class="kl">'+esc2(K.lbl)+'</div><div class="kf">'+esc2(K.buf)+'<i></i></div>'+(K.max?'<div class="kc">'+K.buf.length+' / '+K.max+'</div>':'')+
+   '<div class="kg" style="grid-template-columns:repeat('+cols+',1fr)">'+rows.map(r=>[...r].map(c=>'<button data-ch="'+esc2(c)+'">'+esc2(c)+'</button>').join('')).join('')+'</div>'+
+   '<div class="kr">'+(K.num?'':'<button data-op="case">'+(K.page==='up'?'abc':'ABC')+'</button><button data-op="sym">'+(K.page==='sym'?'ABC':'#+=')+'</button><button data-op="space">SPACE</button>')+'<button data-op="del">DEL</button><button data-op="ok">OK</button></div>'+
+   '<div class="kh">✕ type · ○ delete · '+(K.num?'':'△ space · □ abc/ABC · R1 symbols · ')+'Options OK</div></div>';
+  if(keep){const b=[...box.querySelectorAll('button')].find(x=>(x.dataset.ch||x.dataset.op)===keep);if(b)setFocus(b)}}
+ const typeCh=c=>{if(K.max&&K.buf.length>=K.max)return;K.buf+=c;if(K.page==='up'&&!K.num&&K.buf.length===1&&/[A-Z]/.test(c)){}draw(c)};
+ function op(o,keep){if(o==='del')K.buf=K.buf.slice(0,-1);else if(o==='space'){if(!K.num)typeCh(' ');return}else if(o==='case')K.page=K.page==='up'?'lo':'up';else if(o==='sym')K.page=K.page==='sym'?'up':'sym';else if(o==='ok'){done(true);return}
+  draw(keep||o)}
+ box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.ch!=null)typeCh(b.dataset.ch);else op(b.dataset.op)});
+ function open(el){K.open=true;K.el=el;K.num=el.type==='number'||el.inputMode==='numeric';K.buf=String(el.value||'');K.max=el.maxLength>0?el.maxLength:0;K.page=K.buf&&/[a-z]$/.test(K.buf)?'lo':'up';
+  const lab=el.labels&&el.labels[0]?el.labels[0].textContent:el.getAttribute('aria-label')||el.placeholder||'';K.lbl=String(lab).trim().slice(0,40).toUpperCase()||'TYPE';
+  box.style.display='flex';draw();const f=box.querySelector('button');if(f)setFocus(f);try{sfx('talk')}catch(e){}}
+ function done(ok){const el=K.el;K.open=false;box.style.display='none';box.innerHTML='';K.el=null;if(!el)return;
+  if(ok){let v=K.buf;if(K.num){const n=parseFloat(v);v=isFinite(n)?String(n):el.value}el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));
+   if(el.tagName==='INPUT'&&el.type!=='number'&&el.form&&v){try{el.form.requestSubmit?el.form.requestSubmit():el.form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))}catch(e){}}}
+  setTimeout(()=>{const r=navRoot();if(r&&r.contains(el)&&navItems(r).includes(el))setFocus(el);else setFocus(null)},0);try{sfx(ok?'pickup':'swish')}catch(e){}}
+ window.SQOSK={open,done,state:K};
+ // ---- 023's controller code: where the highlight lives, what it can reach, what ✕ does ----
+ {const _nr=navRoot;navRoot=function(){if(K.open)return box;return popRoot()||_nr()}}
+ {const _ni=navItems;navItems=function(root){const base=_ni(root);if(!root||root===box)return base;
+   const more=[...root.querySelectorAll('textarea,select')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility!=='hidden'&&!e.disabled});
+   if(!more.length)return base;const all=new Set(base.concat(more));return[...root.querySelectorAll('button,input,textarea,select')].filter(e=>all.has(e))}}
+ const texty=e=>e&&(e.tagName==='TEXTAREA'||e.tagName==='INPUT'&&/^(text|search|number|email|url|tel|password|)$/.test(e.type||''));
+ {const _np=navPress;navPress=function(){const el=GPF;if(GPON&&el&&!el.disabled){
+    if(texty(el)){open(el);return}
+    if(el.tagName==='INPUT'&&(el.type==='checkbox'||el.type==='radio')){el.click();el.dispatchEvent(new Event('change',{bubbles:true}));try{sfx('talk')}catch(e){}return}
+    if(el.tagName==='SELECT'){const n=el.options.length;if(n){el.selectedIndex=(el.selectedIndex+1)%n;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));try{sfx('talk')}catch(e){}}return}}
+   return _np.apply(this,arguments)}}
+ // ---- the keyboard's own buttons, and ○ on popups (taken before 023 sees them) ----
+ const B={X:0,O:1,SQ:2,TRI:3,L1:4,R1:5,OPT:9};let prev=[];
+ {const _pp=pollPad;pollPad=function(dt){let gp=null;try{const a=navigator.getGamepads?navigator.getGamepads():[];gp=(GPI!=null&&a[GPI])||[...a].find(g=>g&&g.connected)||null}catch(e){}
+   if(gp&&GPON){const down=i=>!!(gp.buttons[i]&&(gp.buttons[i].pressed||gp.buttons[i].value>.5)),pr=i=>down(i)&&!prev[i]&&!GPPREV[i],take=i=>{GPPREV[i]=true};
+    if(K.open){if(pr(B.O)){take(B.O);if(K.buf)op('del',GPF&&(GPF.dataset.ch||GPF.dataset.op));else done(false)}
+     if(pr(B.TRI)&&!K.num){take(B.TRI);op('space')}if(pr(B.SQ)&&!K.num){take(B.SQ);op('case',GPF&&(GPF.dataset.ch||GPF.dataset.op))}
+     if(pr(B.R1)&&!K.num){take(B.R1);op('sym',GPF&&(GPF.dataset.ch||GPF.dataset.op))}if(pr(B.OPT)){take(B.OPT);done(true)}if(down(B.L1))take(B.L1)}
+    else{const r=popRoot();if(r&&pr(B.O)){take(B.O);const no=r.querySelector('.no');if(no)no.click()}if(r&&pr(B.OPT))take(B.OPT)}
+    prev=gp.buttons.map(b=>b.pressed||b.value>.5)}
+   return _pp.apply(this,arguments)}}
+ // a keyboard or a tap closes the on-screen keyboard (keeping what was typed so far in it is not wanted: nothing changes)
+ addEventListener('keydown',e=>{if(K.open&&e.isTrusted&&!GPON)done(false)},true)})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
