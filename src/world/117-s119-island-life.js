@@ -55,7 +55,7 @@
  let bub=null;
  const npcs=()=>{const R=here();return R&&isl(R.region)?R.items.filter(it=>it.t==='lm'&&it.k==='npc'):[]};
  const near=()=>{let best=null,bd=26;for(const it of npcs()){const d=Math.hypot(it.x*16+8-P.x,it.y*16+10-P.y);if(d<bd){bd=d;best=it}}return best};
- function talkTo(it){const R=here();if(!R)return;const L=it.lines&&it.lines.length?it.lines:['...'],k=R.region+':'+it.ni,i=(SAID[k]|0)%L.length;SAID[k]=i+1;
+ function talkTo(it){const R=here();if(!R)return;try{if(window.SQNPCROLE&&SQNPCROLE(it,R))return}catch(e){console.warn(e)}const L=it.lines&&it.lines.length?it.lines:['...'],k=R.region+':'+it.ni,i=(SAID[k]|0)%L.length;SAID[k]=i+1;
   say(it.name+': "'+L[i]+'"');msgT=Math.max(4,Math.min(9,L[i].length/14));bub={it,tx:L[i],at:performance.now()};try{sfx('talk')}catch(e){}}
  const _uf=useFurn;useFurn=function(it){if(it&&it.use==='npc'){talkTo(it);return}return _uf.apply(this,arguments)};
  const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=near();if(n){talkTo(n);return}}return _t.apply(this,arguments)};

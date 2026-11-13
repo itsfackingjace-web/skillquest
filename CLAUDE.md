@@ -394,3 +394,11 @@
   else and tied to an offer of the owner's for that item. So the offer must still exist when the box is written: filled offers
   are removed by their owner after `HOLD` (30 s, `sweep()`), and cancelling an offer that already traded keeps it as `x:1`
   with `q=f` (removed by the same sweep). Offers with `f>=q` don't count toward the caps and aren't listed.
+- **Content without code** (`dev/162-s168-content.js`, `window.SQCONTENT`, Dev Suite > Content): library `content` =
+  {items it_, recipes r_, shops gen/bw/af/cs_, quests q_, mobs cm_, loot lt_} (field list in the file header). Applied through
+  `SQA.onApply`: everything it adds to the game's lists (INVK, FOODS, GOODS, SM, COOKS, GEN/SHOPBW/SHOPAF, SQISLIFE.MOBS) is
+  taken back out before the next apply. New items keep counts while not loaded (`PEND`, like 111a2): never rename a published
+  `it_` key. Island-builder people have a job `ro` ('shop:cs_x' or 'quest:q_a,q_b'), passed through 111a/111g's npc items; 117's
+  `talkTo` asks `SQNPCROLE(it)` first. Custom quests are in the quest log via `SQQEXTRA`, saved as `cq`. Kill quests and loot
+  tables count in the outermost `enemyDrop` (monster key = `SQPROPS.mkey` without `m:`). Island chests can list a loot table
+  (`lt_` key, count = rolls; 111a's chest code). New monsters `cm:<letters>` are built by the outermost `rgMake` from `base`.

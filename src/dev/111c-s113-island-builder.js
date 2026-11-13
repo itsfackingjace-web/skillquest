@@ -23,7 +23,7 @@
   const lm=(Array.isArray(d.lm)?d.lm:Object.values(d.lm||{})).filter(L=>L&&LM[L.k]).map(L=>({k:L.k,x:L.x|0,y:L.y|0,n:L.n||'',tx:L.tx||'',loot:L.loot?{...L.loot}:undefined}));
   const cl=d.c?A.unpack(d.c):'',c=new Uint8Array(N).fill(NONE);for(let i=0;i<N;i++){const ch=cl[i];if(ch&&ch!=='.'){const k=HEX.indexOf(ch);if(k>=0)c[i]=k}}
   const arr=v=>Array.isArray(v)?v:Object.values(v||{});
-  const npc=arr(d.npc).filter(Boolean).map(Q=>({x:Q.x|0,y:Q.y|0,n:Q.n||'',lk:Object.assign({sk:0,hs:0,hc:1,sh:2,pn:1,ht:0,hcol:0,so:0},Q.lk||{}),s:arr(Q.s).join('\n')}));
+  const npc=arr(d.npc).filter(Boolean).map(Q=>({x:Q.x|0,y:Q.y|0,n:Q.n||'',lk:Object.assign({sk:0,hs:0,hc:1,sh:2,pn:1,ht:0,hcol:0,so:0},Q.lk||{}),s:arr(Q.s).join('\n'),ro:Q.ro||''}));
   const cv=arr(d.cv).filter(Boolean).map(V=>({x:V.x|0,y:V.y|0,n:V.n||'',st:V.st||'rock',f:V.f|0||3,m:arr(V.m).slice()}));
   const zn=arr(d.zn).filter(Boolean).map(Z=>({x:Z.x|0,y:Z.y|0,w:Math.max(1,Z.w|0),h:Math.max(1,Z.h|0),n:Z.n|0||4,m:arr(Z.m).slice(),hp:Z.hp|0}));
   const ct=arr(d.ct).filter(T=>T&&LIFE().okUrl(T.p)).slice(0,8).map(T=>({n:T.n||'Tile',p:T.p}));
@@ -34,7 +34,7 @@
   if(ed.lm.length)d.lm=ed.lm.map(L=>{const r={k:L.k,x:L.x,y:L.y};if(L.n&&L.n.trim())r.n=L.n.trim().slice(0,40);if(L.tx&&L.tx.trim())r.tx=L.tx.trim().slice(0,300);
    if(L.k==='chest'){const lo={};for(const k in L.loot||{}){const n=Math.max(0,Math.min(100000,L.loot[k]|0));if(n)lo[k]=n}r.loot=lo}return r});
   if(m.mx!=null&&m.my!=null){d.mx=Math.round(m.mx);d.my=Math.round(m.my)}
-  if(ed.npc.length)d.npc=ed.npc.map(Q=>{const r={x:Q.x,y:Q.y,n:(Q.n||'').trim().slice(0,24)||'Islander',lk:{...Q.lk}};const ls=String(Q.s||'').split('\n').map(l=>l.trim().slice(0,160)).filter(Boolean).slice(0,8);if(ls.length)r.s=ls;return r});
+  if(ed.npc.length)d.npc=ed.npc.map(Q=>{const r={x:Q.x,y:Q.y,n:(Q.n||'').trim().slice(0,24)||'Islander',lk:{...Q.lk}};const ls=String(Q.s||'').split('\n').map(l=>l.trim().slice(0,160)).filter(Boolean).slice(0,8);if(ls.length)r.s=ls;if(Q.ro)r.ro=String(Q.ro).slice(0,120);return r});
   if(ed.cv.length)d.cv=ed.cv.map(V=>({x:V.x,y:V.y,n:(V.n||'').trim().slice(0,40)||'Hidden Cave',st:V.st,f:Math.max(1,Math.min(6,V.f|0)),m:V.m.slice(0,6)}));
   if(ed.zn.length)d.zn=ed.zn.map(Z=>({x:Z.x,y:Z.y,w:Z.w,h:Z.h,n:Math.max(1,Math.min(12,Z.n|0)),m:Z.m.slice(0,6),hp:Math.max(0,Math.min(3,Z.hp|0))}));
   if(ed.ct.length){d.ct=ed.ct.map(T=>({n:(T.n||'Tile').slice(0,24),p:T.p}));let c='',any2=false;for(let i=0;i<ed.c.length;i++){const v=ed.c[i];if(v!==NONE&&v<ed.ct.length){c+=HEX[v];any2=true}else c+='.'}if(any2)d.c=A.pack(c)}
@@ -122,7 +122,7 @@
    scatter:'Scattering '+what+' ('+ed.dens+'%)',line:'Drawing a line of '+what,rect:'Drawing a box of '+what,ellipse:'Drawing an oval of '+what,paint:ed.pal==='lm'||ed.pal==='npc'||ed.pal==='cv'?'Tap to place a '+what.toLowerCase():'Painting '+what};
   h.textContent=(T[ed.tool]||'')+(ed.dirty?'  ·  unsaved changes':'')}
  // ---- the selected building / sign / chest ----
- const itemOpts=()=>['gold',...A.itemKeys()].map(k=>[k,k==='gold'?'Gold':INAME[k]]).sort((a,b)=>a[0]==='gold'?-1:b[0]==='gold'?1:a[1].localeCompare(b[1]));
+ const itemOpts=()=>['gold',...A.itemKeys()].map(k=>[k,k==='gold'?'Gold':INAME[k]]).sort((a,b)=>a[0]==='gold'?-1:b[0]==='gold'?1:a[1].localeCompare(b[1])).concat(window.SQCONTENT?SQCONTENT.tables().map(([k,n])=>[k,'🎲 '+n+' (loot table, rolls)']):[]);
  function selPanel(){const box=document.getElementById('dvisel'),ed=I.ed;if(!box)return;if(ed&&ed.sk!=='lm'&&ed.sel>=0){box.innerHTML=xPanel(ed);if(ed.sk==='npc')lookPrev();return}const L=ed&&ed.lm[ed.sel];if(!L){box.innerHTML='';return}
   let h='<div class="dv-card" style="margin:6px 0"><div class="dv-row"><b>'+E(LM[L.k][0])+'</b><span class="dv-mut">at '+L.x+', '+L.y+'</span><span class="dv-sp1"></span><button class="dv-b dv-bad" data-ia="lmdel">Remove</button><button class="dv-b" data-ia="lmdone">Done</button></div>';
   if(L.k==='sign')h+='<p><label class="dv-mut">Sign title<input type="text" data-ilf="n" maxlength="40" value="'+E(L.n)+'" placeholder="Welcome"></label></p><p><label class="dv-mut">What it says<textarea data-ilf="tx" maxlength="300" style="height:60px">'+E(L.tx)+'</textarea></label></p>';
@@ -137,7 +137,7 @@
   if(k==='npc')return head('🧑 Person','at '+X.x+', '+X.y)+'<div class="dv-row" style="align-items:flex-start"><canvas id="dvinpc" width="64" height="80" style="width:64px;height:80px;image-rendering:pixelated;background:#2a3a2a;border-radius:6px"></canvas><div style="flex:1">'+
    '<p><label class="dv-mut">Name<input type="text" data-ixf="n" maxlength="24" value="'+E(X.n)+'" placeholder="Old Mara"></label></p><div class="dv-row" style="flex-wrap:wrap">'+
    LOOKF.map(([f,n,max])=>'<label class="dv-mut" style="font-size:11px">'+n+'<br><select data-ixl="'+f+'">'+Array.from({length:max},(_,i)=>'<option value="'+i+'"'+((X.lk[f]|0)===i?' selected':'')+'>'+(f==='hs'?HNAME[i]:f==='ht'?HATN[i]:i+1)+'</option>').join('')+'</select></label>').join('')+
-   '</div></div></div><p><label class="dv-mut">What they say <small>(one line each time you talk to them, up to 8 lines)</small><textarea data-ixf="s" maxlength="1300" style="height:80px">'+E(X.s)+'</textarea></label></p></div>';
+   '</div></div></div><p><label class="dv-mut">What they say <small>(one line each time you talk to them, up to 8 lines)</small><textarea data-ixf="s" maxlength="1300" style="height:80px">'+E(X.s)+'</textarea></label></p>'+(window.SQCONTENT?'<p><label class="dv-mut">Job <small>(shops and quests are made in the Content tab)</small><br><select data-ixf="ro">'+SQCONTENT.roleOpts(X.ro)+'</select></label></p>':'')+'</div>';
   if(k==='cv')return head('🕳 Dungeon entrance','at '+X.x+', '+X.y)+'<p><label class="dv-mut">Name<input type="text" data-ixf="n" maxlength="40" value="'+E(X.n)+'" placeholder="Batroost Cave"></label></p>'+
    '<div class="dv-row"><label class="dv-mut">Looks like<br><select data-ixf="st">'+CAVES.map(([v,n])=>'<option value="'+v+'"'+(X.st===v?' selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
    '<label class="dv-mut">Floors<br><select data-ixf="f">'+[1,2,3,4,5,6].map(n=>'<option'+((X.f|0)===n?' selected':'')+'>'+n+'</option>').join('')+'</select></label></div>'+

@@ -23,7 +23,7 @@
    const ex={};if(v!==undefined)ex.v=v;if(L.k==='chest'){ex.use='loot';ex.ci=1000+ci;ex.loot=L.loot||{};ex.name=clean(L.n,40)||'Chest'}else if(L.k==='sign'||L.tx){ex.use='look';ex.name=clean(L.n,40)||A.ISL_LM[L.k][0];ex.text=clean(L.tx,300)||ex.name}
    for(let b=0;b<h;b++)for(let a=0;a<w;a++)O[(y+b)*W+x+a]=null;rgLm(C,L.k.split(':')[0],x,y,w,h,ex)});
   arr(E.npc).slice(0,40).forEach((Q,k)=>{if(!Q)return;const x=Q.x|0,y=Q.y|0;if(!free(x,y,1,1))return;O[y*W+x]=null;
-   rgLm(C,'npc',x,y,1,1,{use:'npc',ni:k,name:clean(Q.n,24)||'Islander',look:look(Q.lk),lines:arr(Q.s).map(l=>clean(l,160)).filter(Boolean).slice(0,8)})});
+   rgLm(C,'npc',x,y,1,1,{use:'npc',ni:k,name:clean(Q.n,24)||'Islander',look:look(Q.lk),lines:arr(Q.s).map(l=>clean(l,160)).filter(Boolean).slice(0,8),ro:clean(Q.ro,120)})});
   arr(E.cv).slice(0,6).forEach((V,k)=>{if(!V)return;const x=V.x|0,y=V.y|0;if(x<1||y<1||x>=W-1||y>=H-1||!free(x-1,y-1,3,2))return;
    for(let b=-1;b<=1;b++)for(let a=-1;a<=1;a++){const j=(y+b)*W+x+a;O[j]=null;if(!RG_WALK[T[j]])T[j]=11}for(const[a,b]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1]])C.lmSolid[(y+b)*W+x+a]=1;
    C.items.push({t:'icvdoor',kind:caveKind(C.D.id,k),x,y,name:clean(V.n,40)||'Hidden Cave',use:'icv',w:1,h:1})})}

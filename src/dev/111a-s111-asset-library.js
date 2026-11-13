@@ -136,7 +136,7 @@ var SQA=(()=>{
    const nearPier=(x,y,r)=>C.pier.concat([C.spawn,C.shore||C.spawn]).some(([px,py])=>Math.abs(px-x)<=r&&Math.abs(py-y)<=r);
    // people: stand on their tile and talk when you come close
    (Array.isArray(I.npc)?I.npc:[]).slice(0,40).forEach((Q,k)=>{if(!Q)return;const x=(Q.x|0)+P,y=(Q.y|0)+P;if(Q.x<0||Q.y<0||Q.x>=I.w||Q.y>=I.h||nearPier(x,y,1))return;
-    rgLm(C,'npc',x,y,1,1,{use:'npc',ni:k,name:clean(Q.n,24)||'Islander',look:npcLook(Q.lk),lines:(Array.isArray(Q.s)?Q.s:[]).map(l=>clean(l,160)).filter(Boolean).slice(0,8)})});
+    rgLm(C,'npc',x,y,1,1,{use:'npc',ni:k,name:clean(Q.n,24)||'Islander',look:npcLook(Q.lk),lines:(Array.isArray(Q.s)?Q.s:[]).map(l=>clean(l,160)).filter(Boolean).slice(0,8),ro:clean(Q.ro,120)})});
    // dungeon entrances: a rock face with a dark opening; walk up into it to go down
    (Array.isArray(I.cv)?I.cv:[]).slice(0,6).forEach((V,k)=>{if(!V)return;const x=(V.x|0)+P,y=(V.y|0)+P;if(V.x<1||V.y<1||V.x>=I.w-1||V.y>=I.h-1||nearPier(x,y,2))return;
     for(let b=-1;b<=1;b++)for(let a=-1;a<=1;a++)clear1(x+a,y+b);for(const[a,b]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1]])C.lmSolid[(y+b)*W+x+a]=1;
@@ -180,7 +180,7 @@ var SQA=(()=>{
  const _dfI=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='lm'&&it.k==='chest'){try{shd(it.x*16+8,it.y*16+15,14);hdPut(hdChestS(),it.x*16,it.y*16)}catch(e){}return}return _dfI(it,tm)};
  const _ufI=useFurn;useFurn=function(it){if(it&&it.use==='loot'){const id=here(),W=WORLD_STATE[id]=WORLD_STATE[id]||{},got=W.loot=W.loot||[];
    if(got.includes(it.ci)){say('The chest is empty. You already took what was inside.');msgT=4;sfx('swish');return}
-   const parts=[];for(const k in it.loot||{}){const n=Math.max(0,Math.min(100000,it.loot[k]|0));if(!n)continue;if(k==='gold'){GLD+=n;parts.push(n+' gold')}else if(INAME[k]){inv[k]=(inv[k]|0)+n;parts.push(n+' '+(n>1?(SN[k]||INAME[k]):INAME[k]).toLowerCase())}}
+   const parts=[],G={};for(const k in it.loot||{}){const n=Math.max(0,Math.min(100000,it.loot[k]|0));if(!n)continue;if(/^lt_/.test(k)){if(window.SQCONTENT)for(let i=0;i<Math.min(n,20);i++){const r=SQCONTENT.roll(k);for(const q in r)G[q]=(G[q]|0)+r[q]}}else G[k]=(G[k]|0)+n}for(const k in G){const n=G[k];if(k==='gold'){GLD+=n;parts.push(n+' gold')}else if(INAME[k]){inv[k]=(inv[k]|0)+n;parts.push(n+' '+(n>1?(SN[k]||INAME[k]):INAME[k]).toLowerCase())}}
    got.push(it.ci);say(parts.length?'You open the '+(it.name||'chest').toLowerCase()+': '+parts.join(', ')+'!':'The chest is empty.');msgT=6;try{sfx(parts.length?'coin':'swish');saveNow();svg()}catch(e){}return}
   return _ufI(it)};
  // custom islands are open as soon as they're published (no voyage needed)
