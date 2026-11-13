@@ -402,3 +402,8 @@
   `talkTo` asks `SQNPCROLE(it)` first. Custom quests are in the quest log via `SQQEXTRA`, saved as `cq`. Kill quests and loot
   tables count in the outermost `enemyDrop` (monster key = `SQPROPS.mkey` without `m:`). Island chests can list a loot table
   (`lt_` key, count = rolls; 111a's chest code). New monsters `cm:<letters>` are built by the outermost `rgMake` from `base`.
+- **Balance** (`dev/163-s169-balance.js`, `window.SQBAL`, Dev Suite > Balance): library `balance` = {xp:{skill:%}, act:{'<TABLE>:<key>':xp},
+  perk:{'<TABLE>:<perk id>':%}}. `act` edits the xp field of COOKS/SM/GOODS/BREC/FREC/FISH_T/SQTIER entries in place (not `_cu`);
+  `perk` edits the [id,value] pairs of 038/039's GSPD/GEXT/GRAR/GDBL/STAYP/FOODP/PSPD (one id can sit in two tables, hence the
+  table in the key) and swaps the % in the perk's description. Originals captured at load. Perks written into code have no
+  table and aren't editable. `sim()` = actions/time between two levels from XT.
