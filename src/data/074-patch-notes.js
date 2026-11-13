@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-21',d:'Nov 13, 2026',t:'Gifts arrive',n:['Fixed: gifts from the developer (like replacement pets) could get stuck and never reach your bag. They now arrive within a few seconds of starting the game.','World Market: COLLECT is more reliable too.']},
  {v:'2026.11.13-20',d:'Nov 13, 2026',t:'Fixed: packed-up island castles coming back',n:['Fixed: packing up a house or castle on an island (or anything you built there) could put it back up the next time you played, while you also kept the packed one. What you pack up now stays packed.']},
  {v:'2026.11.13-19',d:'Nov 13, 2026',t:'Better tools behind the scenes',n:['New developer tools for tuning XP rates and perks, writing music and rolling back changes quickly. Expect more frequent balance tweaks and new songs, and faster fixes if an update goes wrong.']},
  {v:'2026.11.13-18',d:'Nov 13, 2026',t:'New shops, quests and treasure on the islands (coming soon)',n:['The islands are getting busier: islanders can now run their own shops and hand out quests. Talk to them to see what they sell or need; their quests show up in your quest log with the reward.','Some new items, recipes, monsters and loot will start appearing over the next updates.']},

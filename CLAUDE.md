@@ -421,3 +421,6 @@
   houses/castles, `rb`, `rfarm`, ...) came back stale after being emptied (the island castle dupe). 166 lists those fields in
   `KNOWN49`, learns every field a snap writes, and drops known fields from `SAVE_EXTRA`. **A new save field written only when
   non-empty must be added to `KNOWN49`** (or to 166's `KEYS`).
+- **Transactions that take something once** (161 gifts, 079 market COLLECT): the update function must return the new value even
+  when it's handed null (`cur=>{got=cur;return null}`), never abort on null: the real SDK often calls it first with a stale
+  "nothing" before it has the server's value, and aborting there means it never retries. 161 also polls `gifts/<uid>` every 15 s.

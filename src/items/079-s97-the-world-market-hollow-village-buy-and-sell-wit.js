@@ -103,7 +103,7 @@
  async function cancel(id,why){const d=FB.db;let last=null;const r=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{last=cur?{...cur}:cur;if(!cur||cur.u!==me()||cur.x||cur.f>=cur.q)return;if(!cur.f)return null;cur.q=cur.f;cur.x=1;return cur}).catch(e=>{mpErr(e);return null});
   if(!r||!r.committed||!last)return;const left=Math.max(0,last.q-last.f);if(last.s==='s')inv[last.k]=(inv[last.k]|0)+left;else GLD+=left*last.p;delete WMK.offers[id];
   say((why==='exp'?'World Market: your offer for '+nm(last.k,2).toLowerCase()+' expired after 7 days.':'Offer cancelled.')+(left?' Back to you: '+(last.s==='s'?left+' '+nm(last.k,left).toLowerCase():left*last.p+' gold')+'.':''));sfx('coin');saveNow();try{svg()}catch(e){}}
- async function collect(){const d=FB.db;let items=0,gold=0;for(const bid of Object.keys(WMK.box)){let got=null;const r=await d.runTransaction(d.ref(FB.D,'market/box/'+me()+'/'+bid),cur=>{got=cur;if(!cur)return;return null}).catch(()=>null);
+ async function collect(){const d=FB.db;let items=0,gold=0;for(const bid of Object.keys(WMK.box)){let got=null;const r=await d.runTransaction(d.ref(FB.D,'market/box/'+me()+'/'+bid),cur=>{got=cur;return null}).catch(()=>null);
    if(!r||!r.committed||!got||!(got.n>0))continue;if(got.k==='gold'){GLD+=got.n;gold+=got.n}else if((sqBookReg(got.k),INAME[got.k])){inv[got.k]=(inv[got.k]|0)+got.n;items+=got.n}}
   if(items||gold){say('Collected'+(gold?' '+gold+' gold':'')+(gold&&items?' and':'')+(items?' '+items+' item'+(items>1?'s':''):'')+' from the market.');sfx('coin');saveNow();try{svg()}catch(e){}}}
  // ---- the panel ----

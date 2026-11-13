@@ -18,12 +18,14 @@
   d.onValue(d.ref(F.D,'gifts/'+u),s=>{const v=s.val()||{};for(const id of Object.keys(v))claim(id)},()=>{giftsOn=null})}
  const busy=new Set();
  async function claim(id){if(busy.has(id))return;busy.add(id);const F=FBx(),u=uid();if(!F||!u){busy.delete(id);return}const d=F.db;let got=null;
-  try{const r=await d.runTransaction(d.ref(F.D,'gifts/'+u+'/'+id),cur=>{got=cur;if(!cur)return;return null});
+  try{const r=await d.runTransaction(d.ref(F.D,'gifts/'+u+'/'+id),cur=>{got=cur;return null});LOG.push([id,r&&r.committed,!!got]);
    if(r&&r.committed&&got){const parts=[];if(got.k&&INAME[got.k]&&got.n>0){inv[got.k]=(inv[got.k]|0)+(got.n|0);parts.push((got.n|0)+' × '+INAME[got.k])}
     if(got.g>0){GLD+=got.g|0;parts.push((got.g|0)+' gold')}
     const msg=(got.m?String(got.m).slice(0,500):'')+(parts.length?(got.m?' ':'')+'You received '+parts.join(' and ')+'.':'');
     if(msg){try{mpLog('game','📬 From the developer: '+msg)}catch(e){}say('📬 '+msg);msgT=8;try{sfx('quest')}catch(e){}}
-    try{saveLocal(true);saveCloud(true)}catch(e){}}}catch(e){console.warn('gift',e)}busy.delete(id)}
+    try{saveLocal(true);saveCloud(true)}catch(e){}}}catch(e){console.warn('gift',e);LOG.push([id,'error',String(e&&e.message||e)])}busy.delete(id)}
+ // also look for waiting gifts every 15 s (in case the listener never delivered them)
+ const LOG=[];setInterval(async()=>{try{const F=FBx(),u=uid();if(!F||!u)return;const d=F.db,s=await d.get(d.ref(F.D,'gifts/'+u)),v=s.val()||{};for(const id of Object.keys(v))claim(id)}catch(e){LOG.push(['poll','error',String(e&&e.message||e)])}},15000);
  // ---- news banner ----
  const nb=document.createElement('div');nb.id='sqnews';nb.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 44px);z-index:30;display:none;max-width:min(560px,calc(100vw - 24px));box-sizing:border-box;background:#f8f0d8;color:#403018;border:3px solid #806028;box-shadow:inset 0 0 0 2px #e8c878;padding:7px 34px 7px 12px;font:600 14px '+PF+';line-height:1.35;pointer-events:auto';
  nb.innerHTML='<span></span><button aria-label="Close" style="position:absolute;right:4px;top:3px;border:0;background:none;font:700 18px system-ui;color:#806028;cursor:pointer">×</button>';document.body.appendChild(nb);
@@ -40,7 +42,7 @@
  let wired=false;function wire(){const F=FBx();if(!F||wired||!uid())return;wired=true;const d=F.db;
   d.onValue(d.ref(F.D,'news'),s=>{NEWS=s.val();showNews()},()=>{});d.onValue(d.ref(F.D,'events'),s=>{EV=s.val();showEv()},()=>{})}
  setInterval(()=>{try{wire();giftsWatch();showNews();showEv()}catch(e){}},2000);
- window.SQADMIN={claim,get news(){return NEWS},get event(){return EV},evOn,lvFromXp};
+ window.SQADMIN={claim,LOG,get news(){return NEWS},get event(){return EV},evOn,lvFromXp};
  // ======================= the Dev Suite tab =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,toast,fail}=API;
  const T={view:'bugs',bugs:null,bf:'open',shot:null,lb:null,q:'',pl:null,plS:null,eco:null,busy:false};
@@ -48,7 +50,7 @@
  const ago=t=>{if(!t)return'';const s=(Date.now()-t)/1000;return s<3600?Math.round(s/60)+' min ago':s<86400*2?Math.round(s/3600)+' h ago':Math.round(s/86400)+' days ago'};
  async function loadBugs(){T.busy=true;API.draw();try{T.bugs=await get('bugs')||{}}catch(e){fail(e);T.bugs={}}T.busy=false;API.draw()}
  async function loadLb(){T.busy=true;API.draw();try{T.lb=await get('lb')||{}}catch(e){fail(e);T.lb={}}T.busy=false;API.draw()}
- async function loadPlayer(u){T.pl=u;T.plS=null;API.draw();try{const v=await get('saves/'+u);T.plS=v&&v.json?JSON.parse(v.json):{none:1}}catch(e){fail(e);T.plS={none:1}}API.draw()}
+ async function loadPlayer(u){T.pl=u;T.plS=null;T.plG=null;API.draw();get('gifts/'+u).then(v=>{T.plG=v||{};API.draw()}).catch(()=>{});try{const v=await get('saves/'+u);T.plS=v&&v.json?JSON.parse(v.json):{none:1}}catch(e){fail(e);T.plS={none:1}}API.draw()}
  const nameOf=u=>{const r=T.lb&&T.lb[u];return r&&r.n||u.slice(0,8)};
  function bugsView(){if(!T.bugs){if(!T.busy)loadBugs();return'<p class="dv-mut">Loading reports…</p>'}
   const L=Object.entries(T.bugs).filter(([,b])=>b&&b.t).sort((a,b)=>b[1].t-a[1].t),st=b=>b.st||'';
@@ -76,8 +78,9 @@
     '<p class="dv-mut" style="margin:6px 0">Uid: <code>'+esc2(T.pl)+'</code></p>'+
     '<details><summary class="dv-mut">Bag ('+items.length+' kinds)</summary><p style="font-size:12px">'+items.map(([k,n])=>esc2(INAME[k]||k)+' ×'+n).join(', ')+'</p></details>'+giftForm()+'</div>'}
   return h+'</div></div>'}
+ const waiting=()=>{const G=T.plG;if(!G)return'';const L=Object.values(G).filter(Boolean);return'<p class="dv-mut" style="margin:6px 0">'+(L.length?'⏳ Waiting to be picked up: '+L.map(g=>(g.k?(g.n||1)+' × '+esc2(INAME[g.k]||g.k):'')+(g.g?' '+g.g+' gold':'')+(!g.k&&!g.g?'a message':'')).join(', ')+' (it arrives the next time their game is online).':'No gifts waiting: everything sent has been picked up.')+'</p>'};
  function giftForm(){const opts=Object.keys(INAME).filter(k=>!/^eq_cu_/.test(k)||INAME[k]).sort((a,b)=>INAME[a].localeCompare(INAME[b])).map(k=>'<option value="'+k+'">'+esc2(INAME[k])+'</option>').join('');
-  return'<div class="dv-card" style="margin-top:10px"><b>Send a gift</b><div class="dv-row" style="flex-wrap:wrap;margin-top:6px"><label class="dv-mut">Item<br><select data-gf="k"><option value="">(none)</option>'+opts+'</select></label>'+
+  return'<div class="dv-card" style="margin-top:10px"><b>Send a gift</b>'+waiting()+'<div class="dv-row" style="flex-wrap:wrap;margin-top:6px"><label class="dv-mut">Item<br><select data-gf="k"><option value="">(none)</option>'+opts+'</select></label>'+
    '<label class="dv-mut">How many<br><input type="number" data-gf="n" min="1" max="1000000" value="1" style="width:80px"></label><label class="dv-mut">Gold<br><input type="number" data-gf="g" min="0" max="100000000" value="0" style="width:100px"></label></div>'+
    '<label class="dv-mut" style="display:block;margin-top:6px">Message<br><textarea data-gf="m" maxlength="500" rows="2" style="width:100%" placeholder="Sorry about the lost pet! Here\'s a new one."></textarea></label>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-adm="gift">Send</button><span class="dv-mut">Each gift is taken once, by the player\'s own game.</span></div></div>'}
