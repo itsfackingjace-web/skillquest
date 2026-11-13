@@ -109,7 +109,7 @@ const DHSHOP={
 const DHSHOPQ={zahra:['Shade\'s free. Everything else costs.','Fresh from the caravans!'],kellan:['Hot work, hot steel.','Bars, blades, nails. Name it.'],mira:['Sit down before you fall down.','Water first, then stew.'],doran:['Mind the ore samples, they\'re older than you.','Pull up a crate.']};
 function dhShopHTML(S){let h='<div class="tl" style="margin-top:10px">Gold: '+GLD+'</div><div class="tl" style="font-size:13px">BUY</div>';
  S.items.forEach(([k,n,c])=>{h+=row('dhb_'+k+'_1',n,c+' gold (you have '+(inv[k]|0)+')',GLD>=c);if(c<=20)h+=row('dhb_'+k+'_10','10 × '+n,c*10+' gold',GLD>=c*10)});return h}
-function doranNotes(){const pk=['no pickaxe','a wooden pickaxe','a stone pickaxe','an iron pickaxe','a steel pickaxe'][Math.min(4,TL.pick|0)],t=[];
+function doranNotes(){const pk=['no pickaxe','a wooden pickaxe','a stone pickaxe','an iron pickaxe','a steel pickaxe','a steel pickaxe','a mithril pickaxe','an adamant pickaxe'][Math.min(7,TL.pick|0)],t=[];
  t.push('Mining '+lvOf(2)+' with '+pk+'. '+(TL.pick<2?'Iron veins need a stone pickaxe or better.':TL.pick<3?'An iron pickaxe from the Hollow blacksmith digs twice as fast.':TL.pick<4?'Kellan can\'t make steel tools, but Brann in Saltmere can.':'A steel pick! Now you\'re a real excavator.'));
  t.push('Iron veins show up from Mining 5; ordinary rocks give iron too from Mining 15. Every rock has a small chance of a gem as your Mining grows.');
  t.push('The yard just west of the hall has stone and iron to practise on. The furnace and anvil in here are yours to use.');

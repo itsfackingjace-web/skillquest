@@ -147,6 +147,7 @@ ui/137-s142-discord-button.js
 ui/138-s143-world-boss-on-maps.js
 ui/139-s144-players-online.js
 items/140-s145-off-hand.js
+items/141-s146-mithril-adamant-tools.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

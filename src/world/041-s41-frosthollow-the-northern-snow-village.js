@@ -123,7 +123,7 @@ const FHSHOP={
 const FHSHOPQ={bram:['Fresh-cut pine, dry as a bone.','Need timber? You\'ve come to the right place.'],elowen:['Sit by the fire and thaw out.','Hot food and a soft bed. What more is there?'],nessa:['Nails, bars, bricks. Whatever you\'re building.','Mind the anvil, it bites.'],torren:['Shut the door, you\'re letting the cold in.','Sit. Warm up. Then we talk wolves.']};
 function fhShopHTML(S){let h='<div class="tl" style="margin-top:10px">Gold: '+GLD+'</div><div class="tl" style="font-size:13px">BUY</div>';
  S.items.forEach(([k,n,c])=>{const have=k==='firekit'?'':' (you have '+(inv[k]|0)+')';h+=row('fhb_'+k+'_1',n,c+' gold'+have,GLD>=c);if(c<=20)h+=row('fhb_'+k+'_10','10 × '+n,c*10+' gold',GLD>=c*10)});return h}
-function torrenNotes(){const tips=[];const ax=['no axe','a wooden axe','a stone axe','an iron axe','a steel axe'][Math.min(4,TL.axe|0)];
+function torrenNotes(){const tips=[];const ax=['no axe','a wooden axe','a stone axe','an iron axe','a steel axe','a steel axe','a mithril axe','an adamant axe'][Math.min(7,TL.axe|0)];
  tips.push('Woodcutting '+lvOf(1)+' with '+ax+'. '+(TL.axe<3?'An iron axe from the Hollow blacksmith fells pines twice as fast.':TL.axe<4?'Brann in Saltmere turns an iron axe into steel.':'That steel axe will outlast us both.'));
  tips.push('Wolves come out on the snow at night. They crouch before they lunge: when you see the red eyes, roll aside.');
  tips.push(FHDEN?'Frostfang Den is up the trail north of the village. Three floors deep; the Alpha waits at the bottom. Attack 12, Defence 10 and a little Magic would help.':'');

@@ -162,7 +162,7 @@ function saltForgeHTML(){let h=head('Saltmere Forge','Brann',TALKQ)+'<div class=
  const TN2={axe:'axe',pick:'pickaxe',sword:'sword'};
  for(const k of['axe','pick','sword']){const t=TL[k];if(t>=4)h+='<div class="qc" style="margin:6px 0"><b>✓ Steel '+TN2[k]+'</b></div>';
   else if(t<3)h+=row('st_'+k,'Steel '+TN2[k],'Bring me an iron '+TN2[k]+' first (from the Hollow blacksmith)',false);
-  else h+=row('st_'+k,'Steel '+TN2[k],STEELC.b+' steel bars + '+STEELC.g+' gold · the best there is',(inv.sbar|0)>=STEELC.b&&GLD>=STEELC.g)}
+  else h+=row('st_'+k,'Steel '+TN2[k],STEELC.b+' steel bars + '+STEELC.g+' gold · mithril and adamant are forged at an anvil',(inv.sbar|0)>=STEELC.b&&GLD>=STEELC.g)}
  h+='<div class="tl" style="font-size:13px;margin-top:10px">BUY</div>'+row('bibar','Iron bar','30 gold',GLD>=30)+row('bsbar','Steel bar','90 gold',GLD>=90);
  h+='<div class="tl" style="font-size:13px;margin-top:10px">SELL (Brann pays extra for metalwork)</div>';let any=0;
  for(const k in FORGE_P){const c=inv[k]|0;if(c>0){any=1;h+=row('sm_'+k,'Sell all '+esc(iname(k))+' ('+c+')','+'+c*FORGE_P[k]+' gold',true)}}

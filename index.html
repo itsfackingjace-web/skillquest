@@ -1958,7 +1958,7 @@ function saltForgeHTML(){let h=head('Saltmere Forge','Brann',TALKQ)+'<div class=
  const TN2={axe:'axe',pick:'pickaxe',sword:'sword'};
  for(const k of['axe','pick','sword']){const t=TL[k];if(t>=4)h+='<div class="qc" style="margin:6px 0"><b>✓ Steel '+TN2[k]+'</b></div>';
   else if(t<3)h+=row('st_'+k,'Steel '+TN2[k],'Bring me an iron '+TN2[k]+' first (from the Hollow blacksmith)',false);
-  else h+=row('st_'+k,'Steel '+TN2[k],STEELC.b+' steel bars + '+STEELC.g+' gold · the best there is',(inv.sbar|0)>=STEELC.b&&GLD>=STEELC.g)}
+  else h+=row('st_'+k,'Steel '+TN2[k],STEELC.b+' steel bars + '+STEELC.g+' gold · mithril and adamant are forged at an anvil',(inv.sbar|0)>=STEELC.b&&GLD>=STEELC.g)}
  h+='<div class="tl" style="font-size:13px;margin-top:10px">BUY</div>'+row('bibar','Iron bar','30 gold',GLD>=30)+row('bsbar','Steel bar','90 gold',GLD>=90);
  h+='<div class="tl" style="font-size:13px;margin-top:10px">SELL (Brann pays extra for metalwork)</div>';let any=0;
  for(const k in FORGE_P){const c=inv[k]|0;if(c>0){any=1;h+=row('sm_'+k,'Sell all '+esc(iname(k))+' ('+c+')','+'+c*FORGE_P[k]+' gold',true)}}
@@ -4515,7 +4515,7 @@ const FHSHOP={
 const FHSHOPQ={bram:['Fresh-cut pine, dry as a bone.','Need timber? You\'ve come to the right place.'],elowen:['Sit by the fire and thaw out.','Hot food and a soft bed. What more is there?'],nessa:['Nails, bars, bricks. Whatever you\'re building.','Mind the anvil, it bites.'],torren:['Shut the door, you\'re letting the cold in.','Sit. Warm up. Then we talk wolves.']};
 function fhShopHTML(S){let h='<div class="tl" style="margin-top:10px">Gold: '+GLD+'</div><div class="tl" style="font-size:13px">BUY</div>';
  S.items.forEach(([k,n,c])=>{const have=k==='firekit'?'':' (you have '+(inv[k]|0)+')';h+=row('fhb_'+k+'_1',n,c+' gold'+have,GLD>=c);if(c<=20)h+=row('fhb_'+k+'_10','10 × '+n,c*10+' gold',GLD>=c*10)});return h}
-function torrenNotes(){const tips=[];const ax=['no axe','a wooden axe','a stone axe','an iron axe','a steel axe'][Math.min(4,TL.axe|0)];
+function torrenNotes(){const tips=[];const ax=['no axe','a wooden axe','a stone axe','an iron axe','a steel axe','a steel axe','a mithril axe','an adamant axe'][Math.min(7,TL.axe|0)];
  tips.push('Woodcutting '+lvOf(1)+' with '+ax+'. '+(TL.axe<3?'An iron axe from the Hollow blacksmith fells pines twice as fast.':TL.axe<4?'Brann in Saltmere turns an iron axe into steel.':'That steel axe will outlast us both.'));
  tips.push('Wolves come out on the snow at night. They crouch before they lunge: when you see the red eyes, roll aside.');
  tips.push(FHDEN?'Frostfang Den is up the trail north of the village. Three floors deep; the Alpha waits at the bottom. Attack 12, Defence 10 and a little Magic would help.':'');
@@ -4933,7 +4933,7 @@ const DHSHOP={
 const DHSHOPQ={zahra:['Shade\'s free. Everything else costs.','Fresh from the caravans!'],kellan:['Hot work, hot steel.','Bars, blades, nails. Name it.'],mira:['Sit down before you fall down.','Water first, then stew.'],doran:['Mind the ore samples, they\'re older than you.','Pull up a crate.']};
 function dhShopHTML(S){let h='<div class="tl" style="margin-top:10px">Gold: '+GLD+'</div><div class="tl" style="font-size:13px">BUY</div>';
  S.items.forEach(([k,n,c])=>{h+=row('dhb_'+k+'_1',n,c+' gold (you have '+(inv[k]|0)+')',GLD>=c);if(c<=20)h+=row('dhb_'+k+'_10','10 × '+n,c*10+' gold',GLD>=c*10)});return h}
-function doranNotes(){const pk=['no pickaxe','a wooden pickaxe','a stone pickaxe','an iron pickaxe','a steel pickaxe'][Math.min(4,TL.pick|0)],t=[];
+function doranNotes(){const pk=['no pickaxe','a wooden pickaxe','a stone pickaxe','an iron pickaxe','a steel pickaxe','a steel pickaxe','a mithril pickaxe','an adamant pickaxe'][Math.min(7,TL.pick|0)],t=[];
  t.push('Mining '+lvOf(2)+' with '+pk+'. '+(TL.pick<2?'Iron veins need a stone pickaxe or better.':TL.pick<3?'An iron pickaxe from the Hollow blacksmith digs twice as fast.':TL.pick<4?'Kellan can\'t make steel tools, but Brann in Saltmere can.':'A steel pick! Now you\'re a real excavator.'));
  t.push('Iron veins show up from Mining 5; ordinary rocks give iron too from Mining 15. Every rock has a small chance of a gem as your Mining grows.');
  t.push('The yard just west of the hall has stone and iron to practise on. The furnace and anvil in here are yours to use.');
@@ -9308,6 +9308,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.12-14',d:'Nov 12, 2026',t:'Mithril and adamant tools',n:['Forge mithril and adamant axes and pickaxes at an anvil: 2 bars and a log each (Smithing 52 for mithril, 67 for adamant).','They hit much harder than steel, so trees and rocks come down in fewer swings. A mithril tool needs Woodcutting or Mining 30, an adamant one 45.']},
  {v:'2026.11.12-13',d:'Nov 12, 2026',t:'Off-hand key, hoe in the off-hand',n:['Keyboard and mouse: press X to use your off-hand. With a bow or wand it shoots or casts toward your mouse pointer (hold to keep firing); with the hoe it tills the ground in front of you. Right-click still works, and you can change the key in Options > Controls.','The hoe is now an off-hand item, so there\'s no separate HOE slot any more. Equip it in place of your bow or wand to farm. If you had both, your hoe is waiting in your bag.','The players-online count now sits right above the day box.']},
  {v:'2026.11.12-12',d:'Nov 12, 2026',t:'World bosses on the map, players online, fewer pop-ups',n:['World bosses now show on the map: a red ring with the boss\'s icon on the world map (with its name and time left), on the island map and on your minimap, right where it is. The map also says which island it\'s on.','Far fewer pop-up boxes: most short messages now float over your head instead. The big box is kept for quests, level-ups, rare finds and people talking to you.','The top corner of your minimap now shows how many players are online, next to a green dot.']},
  {v:'2026.11.12-11',d:'Nov 12, 2026',t:'Tidier screen',n:['Eating ("Ate cooked meat") no longer opens the big text box: it floats over your head.','XP and food numbers over your head are smaller.','On phones, your party list now sits on the left under the quest box instead of covering the CHAT button.']},
@@ -16054,6 +16055,21 @@ window.SQA=SQA;
   if(e.repeat){if(held)e.preventDefault();return}if(down())e.preventDefault()});
  addEventListener('keyup',e=>{if(e.key==='x'||e.key==='X')up()});addEventListener('blur',up);
  window.SQOFFHAND={use:down,stop:up}})();
+// ---- 146. Mithril and adamant axes and pickaxes ----
+// Tool tiers 6 (mithril) and 7 (adamant), the same tier numbers (and colours, TCOL) as the mithril and adamant swords.
+// A tool's tier is how hard each chop or swing hits (1 + tier) and what trees / veins it can work (083's TIER), so these
+// cut and mine faster than steel (tier 4). Forged at an anvil from mithril / adamant bars; they go in the bag and need
+// Woodcutting / Mining 30 (mithril) or 45 (adamant) to equip.
+(()=>{const T={6:{n:'Mithril',col:'#7888e0',v:320,bar:'mbar',sm:52,xp:260,lv:30},7:{n:'Adamant',col:'#48b060',v:640,bar:'abar',sm:67,xp:400,lv:45}};
+ TIT[6]=TIT[6]||'Mithril';TIT[7]=TIT[7]||'Adamant';
+ const add=(k,e,d)=>{EQ[k]=e;if(!EQK.includes(k))EQK.push(k);if(!INVK.includes(k))INVK.push(k);if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=e.v;SN[k]=e.n+'s';try{SHORT[k]=e.n.toLowerCase()}catch(x){}IDESC[k]=d};
+ for(const t of[6,7]){const M=T[t];
+  add('eq_axe'+t,{slot:'axe',tier:t,n:M.n+' axe',ic:'axe',col:M.col,v:M.v,req:{s:1,l:M.lv}},(t===7?'An ':'A ')+M.n.toLowerCase()+' axe: each chop hits for '+(1+t)+' (steel: 5), so trees come down fast. Needs Woodcutting '+M.lv+'.');
+  add('eq_pick'+t,{slot:'pick',tier:t,n:M.n+' pickaxe',ic:'pick',col:M.col,v:M.v,req:{s:2,l:M.lv}},(t===7?'An ':'A ')+M.n.toLowerCase()+' pickaxe: each swing hits for '+(1+t)+' (steel: 5), so rocks and veins break fast. Needs Mining '+M.lv+'.');
+  SM.push({k:'eq_axe'+t,n:M.n+' axe',c:{[M.bar]:2,wood:1},lv:M.sm,xp:M.xp},{k:'eq_pick'+t,n:M.n+' pickaxe',c:{[M.bar]:2,wood:1},lv:M.sm,xp:M.xp})}
+ // the skill needed to use them
+ const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.req&&(inv[k]|0)>0&&lvOf(e.req.s)<e.req.l){say('You need '+SKN[e.req.s]+' '+e.req.l+' to use the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){}return}return _eq.apply(this,arguments)};
+ window.SQTOOLS67=T})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
