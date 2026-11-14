@@ -425,7 +425,7 @@
    '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+Y redo · Ctrl+C / Ctrl+V copy and paste a picture · Ctrl+S save</p>';
   return h+'</div></div>'}
  // "How it works": numbers are shown as they are for your character now; what's saved is the change from the game's own number
- const FXH={ls:'Chance to heal 1 heart when you hit',burn:'Chance to set what you hit on fire',slow:'Chance to slow what you hit',crit:'Chance to hit again for the same damage',spd:'Walk and run faster',xp:'More XP from everything'};
+ const FXH={ls:'Chance to heal 1 heart when you hit',burn:'Chance to set what you hit on fire',slow:'Chance to slow what you hit',crit:'Chance to hit again for the same damage',spd:'Walk and run faster',xp:'More XP from everything',mel:'More sword / melee damage',arc:'More arrow damage',mag:'More spell damage',mreg:'Mana refills faster',hreg:'Heals 1 heart every 600 ÷ this many seconds (10 = every minute, 100 = every 6 s)',hun:'Food lasts longer: hunger drops this much slower',gold:'More gold from monsters'};
  function rulesHtml(k){const G=window.SQGEAR;if(!G)return'<p class="dv-mut">Gear rules aren\'t available.</p>';
   const b=G.base(k),d=S.draft.gear[k]||{},t=b.kind,ng=S.draft.newgear[k],lab=(n,f,val,orig,hint)=>{const chg=val!==orig;
    return'<label class="dv-gf"><span>'+n+'</span><input type="number" data-g="'+f+'" value="'+val+'"'+(chg?' class="dv-chg"':'')+'><small class="dv-mut">Game\'s own: '+orig+(hint||'')+'</small></label>'};

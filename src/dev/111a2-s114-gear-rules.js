@@ -17,7 +17,8 @@
  const ngKey=k=>/^eq_cu_[a-z0-9_]{1,30}$/.test(k);
  const gearKeys=()=>[...new Set(INVK)].filter(k=>EQ[k]&&SLOTS.includes(EQ[k].slot)&&INAME[k]);
  const kindOf=k=>{const e=EQ[k];if(!e)return'';if(e.kind==='bow')return'bow';if(e.kind==='wand')return'wand';if(e.slot==='main')return'melee';if(e.slot==='helm'||e.slot==='body'||e.slot==='legs')return'armour';return'other'};
- const FXN={ls:'Life steal',burn:'Burn',slow:'Slow',crit:'Critical hit',spd:'Move speed',xp:'Bonus XP'},FXMAX={ls:100,burn:100,slow:100,crit:100,spd:50,xp:100};
+ const FXN={ls:'Life steal',burn:'Burn',slow:'Slow',crit:'Critical hit',spd:'Move speed',xp:'Bonus XP',mel:'Melee damage',arc:'Arrow damage',mag:'Magic damage',mreg:'Mana regen',hreg:'Health regen',hun:'Less hunger',gold:'More gold'},
+  FXMAX={ls:100,burn:100,slow:100,crit:100,spd:50,xp:100,mel:100,arc:100,mag:100,mreg:300,hreg:100,hun:90,gold:200};// mel..gold run in 179 (items/179-s186-gear-effects.js)
  function clean(o,k){const e=EQ[k],t=kindOf(k);if(!e||!SLOTS.includes(e.slot)||!o||typeof o!=='object')return null;const r={};
   if(t==='melee'||t==='bow'||t==='wand'){const d=num(o.dmg,-50,50);if(d)r.dmg=d}
   if(t==='bow'){const v=num(o.rng,-200,300);if(v)r.rng=v}
@@ -110,7 +111,7 @@
    else if(t==='bow')L.push('Arrow damage '+arrowDmg(),'Range '+bowRange());
    else if(t==='wand'){L.push((e.el[0].toUpperCase()+e.el.slice(1))+' spells','Damage '+spellDmg(e.el),'Costs '+(r.mp!=null?r.mp:WSP0[e.el])+' mana')}
    if(t==='armour'||r.blk){const b=(t==='armour'?(ARM[e.slot]|0)*.05:0)+(r.blk||0)/100;if(b)L.push('Block '+(b>0?'+':'')+pct(b))}});
-  if(r.fx)for(const x in FXN)if(r.fx[x])L.push(FXN[x]+' '+(x==='spd'||x==='xp'?'+':'')+r.fx[x]+'%');
+  if(r.fx)for(const x in FXN)if(r.fx[x])L.push(x==='hreg'?'Heals 1 heart every '+Math.round(600/r.fx[x])+' s':x==='hun'?'Hunger '+r.fx[x]+'% slower':FXN[x]+' '+(['spd','xp','mel','arc','mag','mreg','gold'].includes(x)?'+':'')+r.fx[x]+'%');
   const q=r.rq||defReq(k);if(q&&q.l)L.push('Needs '+SKN[q.s]+' '+q.l);return L.join(' · ')}
  function hookDesc(k){if(D0[k])return;const d=Object.getOwnPropertyDescriptor(IDESC,k)||{value:IDESC[k],writable:true};D0[k]=d;let plain=d.get?null:d.value;
   const own=()=>{if(NG[k])return(NG[k].d?NG[k].d+' ':'')+'Equip it from your Bag or the equipment screen.';if(!d.get)return window.SQSTRIPSTATS?SQSTRIPSTATS(plain||''):plain||'';let s=d.get.call(IDESC);try{s=window.SQSTRIPSTATS?SQSTRIPSTATS(s):s}catch(e){}return s};

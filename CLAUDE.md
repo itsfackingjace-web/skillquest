@@ -35,7 +35,7 @@
   mana cost, rq replaces the requirement (skill index, level; 0 = none). Applied through `SQA.onApply`, by the outermost
   `meleeFlat`, `arrowDmg`, `bowRange`, `spellDmg`, `blockBonus`, `setSlot` and `equipItem` wrappers. The editor shows numbers
   for the developer's character (`SQGEAR.base`) and saves the difference.
-  `fx` = special effects in % ({ls,burn,slow,crit,spd,xp}), summed over everything worn; on-hit ones run from the
+  `fx` = special effects in % ({ls,burn,slow,crit,spd,xp} plus, run by `items/179-s186-gear-effects.js`: mel/arc/mag damage %, mreg mana regen %, hreg = 1 heart every 600/v s, hun = hunger v% slower, gold = kill gold % via the outermost `killEnemy`), summed over everything worn (new effect keys go in 111a2's `FXN`/`FXMAX`, or `clean` drops them); on-hit ones run from the
   outermost `attack` (hp diff on `en`), `arrowHit` and `spellHit`; `spd` nudges movement in `upd` (outdoors only).
 - **New gear items**: `newgear.eq_cu_<name>` = {n,b,v,d,sm} in the library. `b` is an existing item it works like: the
   game holds it as b's tier (TL/ARM/CLS) and `CUS[slot]` remembers the new key (outermost `occ`/`setSlot`). Saves store
