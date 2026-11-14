@@ -127,10 +127,10 @@ async function mpLinkSave(uid,adapter){const r=await adapter.get(),linked=lsGet(
   const d=syncDecide(L,S);if(d==='adopt'){mpBackup('device',L);applySave(S);hideCreator();say('Synced progress from your account');saveLocal(true);lastCloud=keyOf(snap());syncMark(S);done();return}
   if(d==='push'){saveCloud(true);done();return}
   // both changed, or the account save is behind this one: the player picks (the other is backed up)
-  mpChooseSave(L,S,pick=>{if(pick==='account'){mpBackup('device',L);applySave(S);hideCreator();say('Loaded your account save. This device\'s save is backed up (Options → Backups).');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
-   else{mpBackup('account',S);lastWid=wOf(S);LOCAL_AT=Date.now();done();saveCloud(true);say('Kept this device\'s save. The other one is backed up (Options → Backups).');return}done()});return}
+  mpChooseSave(L,S,pick=>{if(pick==='account'){mpBackup('device',L);applySave(S);hideCreator();say('Loaded your account save. This device\'s save is backed up.');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
+   else{mpBackup('account',S);lastWid=wOf(S);LOCAL_AT=Date.now();done();saveCloud(true);say('Kept this device\'s save. The other one is backed up.');return}done()});return}
  // first time this device meets this account and both have different progress: ask
- mpChooseSave(L,S,pick=>{if(pick==='account'){mpBackup('device',L);applySave(S);hideCreator();say('Loaded your account save. This device\'s old save is backed up (Options → Backups).');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
+ mpChooseSave(L,S,pick=>{if(pick==='account'){mpBackup('device',L);applySave(S);hideCreator();say('Loaded your account save. This device\'s old save is backed up.');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
   else{mpBackup('account',S);LOCAL_AT=Date.now();lastWid=wOf(S);done();saveCloud(true);say('Kept this device\'s save. It is now your account save.');return}done()})}
 function mpChooseSave(L,S,cb){const a=saveInfo(L),b=saveInfo(S);const box=el('div','mpsave','g3');
  const card=(k,t,i)=>'<button class="sv" data-k="'+k+'"><b>'+t+'</b><span>Player</span><span>'+esc(i.name)+'</span><span>Total level</span><span>'+i.tl+'</span><span>Quest</span><span>'+i.q+' / '+QS.length+'</span><span>Gold</span><span>'+i.gold+'</span><span>Saved</span><span>'+ago(i.at)+'</span></button>';

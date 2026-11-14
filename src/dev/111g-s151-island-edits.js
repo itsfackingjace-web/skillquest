@@ -53,7 +53,7 @@
    if(E.lay===undefined){E.lay=null;try{const s2=A.unpack(E.c);if(s2.length===R2.w*R2.h)E.lay=s2}catch(e){}}const L=E.lay;if(!L)return out;const ct=arr(E.ct),ok=window.SQISLIFE&&SQISLIFE.okUrl||(()=>false);
    const v=rgView(),x0=Math.max(0,Math.floor(v.x0/16)),x1=Math.min(R2.w-1,Math.ceil(v.x1/16)),y0=Math.max(0,Math.floor(v.y0/16)),y1=Math.min(R2.h-1,Math.ceil(v.y1/16));g.imageSmoothingEnabled=false;
    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const ch=L[y*R2.w+x];if(!ch||ch==='.')continue;const T2=ct[HEX.indexOf(ch)];if(!T2||!ok(T2.p))continue;const m=img(T2.p);if(m)g.drawImage(m,x*16,y*16,16,16)}}catch(e){}return out}}
- A.onApply(lib=>{const L=lib&&lib.islands||{},want={};for(const k in L){const E=L[k];if(!/^ed_[a-z0-9_]{1,30}$/.test(k)||!E||typeof E!=='object')continue;const id=k.slice(3);if(!WORLD_REGIONS[id]||WORLD_REGIONS[id].custom||E.bi!==id)continue;want[id]=E}
+ A.onApply(lib=>{const L=lib&&lib.islands||{},want={};for(const k in L){const E=L[k];if(!/^ed_[a-z0-9_]{1,30}$/.test(k)||!E||typeof E!=='object')continue;const id=k.slice(3);if(id==='hollow')continue;if(!WORLD_REGIONS[id]||WORLD_REGIONS[id].custom||E.bi!==id)continue;want[id]=E}
   for(const id in PATCH)if(!want[id]){delete PATCH[id];try{regCaves(id,null)}catch(e){}drop(id);refresh(id)}
   for(const id in want){const s=JSON.stringify(want[id]);if(PATCH[id]&&PATCH[id]._s===s)continue;PATCH[id]=Object.assign({},want[id],{_s:s,cells:null,lay:undefined});try{regCaves(id,PATCH[id])}catch(e){}drop(id);refresh(id)}});
  // the builder's starting point: the island exactly as the game generates it, without its patch

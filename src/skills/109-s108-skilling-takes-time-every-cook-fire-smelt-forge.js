@@ -32,7 +32,7 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;//
  const _dh=drawHUD;drawHUD=function(){_dh();const D=SQDO;if(!D||menuOpen)return;const U=(HUDL&&HUDL.U)||1,sx=W/2,sy=H/2,tm=performance.now()/1000,[fx0,fy0]=front(14),fx=W/2+(fx0-P.x)*Z,fy=H/2+(fy0-P.y)*Z,z=Z,pr=Math.min(1,D.t/D.d);
   // no progress bar: the character's own animation shows the work (fire, cooking and fishing: section 116)
   g.save();g.setTransform(1,0,0,1,0,0);const by=sy-28*z+6*z;
-  if(D.n>1&&D.n<900){g.font='700 '+Math.round(5*z)+'px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2*U;g.strokeStyle='#302818';g.strokeText(D.n+' left',sx,by-z);g.fillStyle='#f8f0d8';g.fillText(D.n+' left',sx,by-z)}
+  {const nl=D.tot?Math.min(D.n,D.tot-D.done):D.n;if(nl>1&&nl<900){g.font='700 '+Math.round(5*z)+'px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2*U;g.strokeStyle='#302818';g.strokeText(nl+' left',sx,by-z);g.fillStyle='#f8f0d8';g.fillText(nl+' left',sx,by-z)}}
   const P2=(x,y,s,c)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.max(1,s*z),Math.max(1,s*z))};
   if(window.SQSKFX){}// drawn on the character (section 116)
   else if(D.kind==='fire'){// kindling, flint sparks, then the first wisps of smoke

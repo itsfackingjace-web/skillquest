@@ -579,3 +579,12 @@
   skips players' bubbles (yours too) when it's on. **Island people's speech bubbles** (117) are handed to 187 through `window.SQNPCSAY`
   {x,y,said:{m,at},seen} (refreshed while 117 draws the person) so they get the same HUD-avoiding placement; 117's own world-space bubble
   is only drawn when 187 didn't place one last frame (`SQBUBBLES.last.npc`, e.g. offline).
+- **Backups in Options** (106): players no longer restore backups themselves (restoring after a trade duplicated items/gold); Options
+  shows one line pointing to Report a bug, devs restore via Admin > Players (161 `fixes` restore). Backups are still made (061/008).
+- **"N left" for make-all** (`skills/192-s200-make-all-count.js`): the outermost smithAct/makeGood/makeBuild work out how many the
+  materials allow when `all`; the wrapped `sqDo` keeps it as `SQDO.tot` and 109 shows `min(n, tot-done)` (display only).
+- **Editing Hollow** (`dev/193-s201-hollow-edits.js`, `SQHOLLOWED`): `islands.ed_hollow` (111g's format, skipped by 111g's own
+  onApply) applied onto 001's `tile`/`obj` (ground 0-5 only; objects in `HOLOBJ`). `ORIG` copies are taken when the script has run;
+  each apply puts the previous patch's cells back first, then clears `HDCK` and 052's `HMAP`. `HARD` (solid() disagrees with
+  ground/objects = buildings, walls, bridges, piers, +1 tile) is never changed; `SOFT` (gold/mith/adam veins, boulders, obsidian...)
+  only with Unlock. The builder lists Hollow via `A.islandEdits.hollowOK` and hides people/buildings/caves/zones/own tiles for it.

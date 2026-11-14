@@ -54,8 +54,8 @@ function syncDecide(L,S){// 'push' (the account hasn't changed since we synced),
  if((localSame||!rec)&&sqXpSum(S)>=sqXpSum(L))return'adopt';return'ask'}
 function adoptRemote(rs){const S=JSON.parse(JSON.stringify(rs));const L=snap();L.savedAt=LOCAL_AT;try{mpBackup('device',L)}catch(e){}applySave(S);FISH=null;hideCreator();closePanel();say('Synced progress from your other device');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
 function syncAsk(rs){if(window.SQMP&&SQMP.choose)return;const L=snap();L.savedAt=LOCAL_AT;const S=JSON.parse(JSON.stringify(rs));
- mpChooseSave(L,S,pick=>{if(pick==='account'){adoptRemote(S);say('Loaded your account save. This device\'s save is backed up (Options → Backups).')}
-  else{mpBackup('account',S);lastWid=wOf(S);LOCAL_AT=Date.now();saveCloud(true);say('Kept this device\'s save. The other one is backed up (Options → Backups).')}})}
+ mpChooseSave(L,S,pick=>{if(pick==='account'){adoptRemote(S);say('Loaded your account save. This device\'s save is backed up.')}
+  else{mpBackup('account',S);lastWid=wOf(S);LOCAL_AT=Date.now();saveCloud(true);say('Kept this device\'s save. The other one is backed up.')}})}
 function syncCheck(rs){if(!(rs&&rs.v==1&&lastWid!==null))return false;const L=snap();if(keyOf(L)===keyOf(rs)){lastWid=wOf(rs);syncMark(rs);return false}
  const d=syncDecide(L,rs);if(d==='push')return false;if(d==='adopt')adoptRemote(rs);else syncAsk(rs);return true}
 saveCloud=async function(force){if(!cloud||cloudBusy||dead||(window.SQMP&&SQMP.choose))return;if(keyOf(snap())===lastCloud&&!force)return;cloudBusy=true;

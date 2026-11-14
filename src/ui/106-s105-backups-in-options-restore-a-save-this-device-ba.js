@@ -4,7 +4,10 @@
 // that save back (and on your account), after backing up what you have now.
 {let armed=null,ACC=null,ACC_LOAD=0;const ago=t=>{if(!t)return'a while ago';const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
  const list=()=>{try{return Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort().reverse()}catch(e){return[]}};
- const _o=optionsHTML;optionsHTML=function(){const h=_o(),L=list();let b='<div class="tl" style="margin-top:16px">BACKUPS</div><div class="tl" style="margin-top:4px;font-size:15px">ON THIS DEVICE</div>';
+ // Since Nov 14 players don't restore backups themselves (restoring after trading duplicated items/gold): Options shows one
+ // line instead, and devs restore through Dev Suite > Admin > Players (161's `fixes` restore). The old list is kept below, unused.
+ {const _o2=optionsHTML;optionsHTML=function(){return _o2()+'<div class="tl" style="margin-top:16px">BACKUPS</div><div class="qc" style="font-size:13px;line-height:1.45;padding:8px 12px;margin:6px 0">Your game is backed up every day you play, and before big changes. Lost progress? Use <b>Report a bug</b> and we\'ll restore it from a backup.</div>'}}
+ const _o=()=>'';const OLD=function(){const h=_o(),L=list();let b='<div class="tl" style="margin-top:16px">BACKUPS</div><div class="tl" style="margin-top:4px;font-size:15px">ON THIS DEVICE</div>';
   if(!L.length)b+='<div class="qc" style="font-size:13px;line-height:1.4;padding:8px 12px;margin:6px 0">No backups on this device. The game makes one whenever it replaces this device\'s save with another one.</div>';
   for(const k of L){let S=null;try{S=JSON.parse(localStorage.getItem(k))}catch(e){}if(!S)continue;const i=saveInfo(S),tag=k.split('_').pop(),when=+k.split('_')[2]||i.at;
    b+='<div class="qc" style="font-size:13px;line-height:1.45;padding:8px 12px;margin:6px 0"><b>'+esc(i.name)+'</b> · total level '+i.tl+' · quest '+i.q+' · '+i.gold+' gold<br><small style="opacity:.75">'+(tag==='account'?'Account save':'This device\'s save')+', backed up '+ago(when)+'</small><br>'+
