@@ -199,6 +199,7 @@ multiplayer/187-s195-chat-bubbles.js
 ui/188-s196-dev-suite-controller.js
 dev/189-s197-dungeon-builder.js
 ui/190-s198-menu-leaderboard.js
+ui/191-s199-hide-chat.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

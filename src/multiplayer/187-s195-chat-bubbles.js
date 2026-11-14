@@ -22,8 +22,11 @@
   const list=[];const add=(x,y,said,named,who)=>{if(!said||!said.m)return;const age=now-said.at,d=dur(said.m);if(age<0||age>d)return;const p=T.transformPoint({x,y:y-27});
    list.push({p,said,age,d,top:p.y-(named?sz+u:0)-u,feet:T.transformPoint({x,y:y+9}).y,who})};
   const loc=typeof mpLoc==='function'?mpLoc():'hollow';
-  for(const r of M.players.values()){if(!r.said||!r.loc||(loc&&r.loc!==loc)||performance.now()-r.seen>20000)continue;if(Math.abs(r.x-P.x)>W/Z+48||Math.abs(r.y-P.y)>H/Z+64)continue;add(r.x,r.y,r.said,!!r.n,r.uid)}
-  if(ss&&(loc||SCENE)&&!dead)add(P.x,P.y,ss,!!M.selfName,'me');
+  const hc=window.SQHIDECHAT&&SQHIDECHAT();
+  if(!hc)for(const r of M.players.values()){if(!r.said||!r.loc||(loc&&r.loc!==loc)||performance.now()-r.seen>20000)continue;if(Math.abs(r.x-P.x)>W/Z+48||Math.abs(r.y-P.y)>H/Z+64)continue;add(r.x,r.y,r.said,!!r.n,r.uid)}
+  if(!hc&&ss&&(loc||SCENE)&&!dead)add(P.x,P.y,ss,!!M.selfName,'me');
+  // island people talking (117 sets SQNPCSAY while it draws them): placed like chat so it never covers the HUD
+  {const q=window.SQNPCSAY;if(q&&now-q.seen<250){const n0=list.length;add(q.x,q.y,q.said,true,'npc');if(list.length>n0)st.npc=now}}
   if(!list.length)return;list.sort((a,b)=>(b.who==='me')-(a.who==='me')||b.said.at-a.said.at);const cap=Math.min(W,H)<900?4:5,show=list.slice(0,cap),dots=list.slice(cap);// more dots are added by placement
   g.save();g.setTransform(1,0,0,1,0,0);const fs=Math.round(sz*(phone?.92:.95));g.font='700 '+fs+'px '+PF;g.textBaseline='alphabetic';g.textAlign='left';
   const maxW=Math.round(Math.min(W*(phone?.42:.28),fs*16)),pad=Math.round(fs*.45),lh=Math.round(fs*1.18),tail=Math.round(fs*.55),edge=u*3,placed=[];

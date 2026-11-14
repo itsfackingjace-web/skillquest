@@ -68,7 +68,8 @@
   if(it&&it.t==='lm'&&it.k==='npc'){const x=it.x*16+8,y=it.y*16+10,cl=Math.hypot(x-P.x,y-P.y)<60,dir=cl?(Math.abs(P.x-x)>Math.abs(P.y-y)?2:P.y<y?1:0):0,fl=cl&&P.x<x;
    try{shd(x,y+6,12)}catch(e){}GC=g;try{cP(it.look||{},dir,0,x,y,fl)}catch(e){}
    g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.lineJoin='round';g.strokeStyle='#181018';g.strokeText(it.name,x,y-22);g.fillStyle='#e8ffe0';g.fillText(it.name,x,y-22);
-   if(bub&&bub.it===it&&performance.now()-bub.at<5000){const ls=wrap(bub.tx,26),w=Math.ceil(Math.max(...ls.map(l=>g.measureText(l).width)))+10,h=ls.length*8+6,bx=Math.round(x-w/2),by=y-35-h;
+   if(bub&&bub.it===it){const now=performance.now();window.SQNPCSAY={x,y,said:{m:bub.tx,at:bub.at},seen:now}}
+   if(bub&&bub.it===it&&performance.now()-bub.at<5000&&!(window.SQBUBBLES&&SQBUBBLES.last&&SQBUBBLES.last.npc&&performance.now()-SQBUBBLES.last.npc<250)){const ls=wrap(bub.tx,26),w=Math.ceil(Math.max(...ls.map(l=>g.measureText(l).width)))+10,h=ls.length*8+6,bx=Math.round(x-w/2),by=y-35-h;
     g.fillStyle='#181018';g.fillRect(bx-1,by-1,w+2,h+2);g.fillStyle='#fffaf0';g.fillRect(bx,by,w,h);g.fillStyle='#181018';g.fillRect(x-2,by+h+1,4,2);g.fillStyle='#fffaf0';g.fillRect(x-1,by+h,2,2);
     g.fillStyle='#2a1a10';g.textBaseline='top';ls.forEach((l,j)=>g.fillText(l,x,by+3+j*8))}g.restore();return}
   // dungeon entrances on custom islands, in their own style

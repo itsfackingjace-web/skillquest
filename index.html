@@ -9391,6 +9391,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-21',d:'Nov 14, 2026',t:'Hide chat, tidier speech bubbles',n:['New in Options: Chat: SHOWN / HIDDEN. Hidden removes chat bubbles over players and the CHAT button from the screen. You can still open chat from the menu (START → Chat).','When you talk to someone on an island, their speech bubble no longer slides under the quest box, the BUG and CHAT buttons or the minimap. If there is no room above them it shows below them instead, and the whole line is always in the text box.']},
  {v:'2026.11.14-20',d:'Nov 14, 2026',t:'Leaderboards in the menu',n:['New: Leaderboards is now in the START menu, right after Achievements. The game pauses while you look, and closing it takes you back to the menu.','Phones held sideways: the START menu now shows three columns so every item fits on screen (Options, Save & quit and Exit used to be cut off), and it scrolls if your screen is even shorter.']},
  {v:'2026.11.14-19',d:'Nov 14, 2026',t:'Emote fix',n:['Cheer, wave, dance and Hmm no longer show an extra pair of arms: the arm you raise is the one that was hanging.']},
  {v:'2026.11.14-18',d:'Nov 14, 2026',t:'Bone bow fix and livelier emotes',n:['Fixed: a Bone bow in your hands turned into a Longbow every time you loaded the game. If that happened to you, your Bone bow is back in your hands.','Emotes have new animations: a real wave, a deeper bow, dancing with arms up, a jumping cheer with confetti, a shaking laugh, a beating heart for Love, a check or cross over your head for Yes and No, a thinking bubble with a question mark, and sleeping now lies you down on the ground.']},
@@ -14837,7 +14838,8 @@ window.SQA=SQA;
   if(it&&it.t==='lm'&&it.k==='npc'){const x=it.x*16+8,y=it.y*16+10,cl=Math.hypot(x-P.x,y-P.y)<60,dir=cl?(Math.abs(P.x-x)>Math.abs(P.y-y)?2:P.y<y?1:0):0,fl=cl&&P.x<x;
    try{shd(x,y+6,12)}catch(e){}GC=g;try{cP(it.look||{},dir,0,x,y,fl)}catch(e){}
    g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.lineJoin='round';g.strokeStyle='#181018';g.strokeText(it.name,x,y-22);g.fillStyle='#e8ffe0';g.fillText(it.name,x,y-22);
-   if(bub&&bub.it===it&&performance.now()-bub.at<5000){const ls=wrap(bub.tx,26),w=Math.ceil(Math.max(...ls.map(l=>g.measureText(l).width)))+10,h=ls.length*8+6,bx=Math.round(x-w/2),by=y-35-h;
+   if(bub&&bub.it===it){const now=performance.now();window.SQNPCSAY={x,y,said:{m:bub.tx,at:bub.at},seen:now}}
+   if(bub&&bub.it===it&&performance.now()-bub.at<5000&&!(window.SQBUBBLES&&SQBUBBLES.last&&SQBUBBLES.last.npc&&performance.now()-SQBUBBLES.last.npc<250)){const ls=wrap(bub.tx,26),w=Math.ceil(Math.max(...ls.map(l=>g.measureText(l).width)))+10,h=ls.length*8+6,bx=Math.round(x-w/2),by=y-35-h;
     g.fillStyle='#181018';g.fillRect(bx-1,by-1,w+2,h+2);g.fillStyle='#fffaf0';g.fillRect(bx,by,w,h);g.fillStyle='#181018';g.fillRect(x-2,by+h+1,4,2);g.fillStyle='#fffaf0';g.fillRect(x-1,by+h,2,2);
     g.fillStyle='#2a1a10';g.textBaseline='top';ls.forEach((l,j)=>g.fillText(l,x,by+3+j*8))}g.restore();return}
   // dungeon entrances on custom islands, in their own style
@@ -19887,8 +19889,11 @@ window.SQA=SQA;
   const list=[];const add=(x,y,said,named,who)=>{if(!said||!said.m)return;const age=now-said.at,d=dur(said.m);if(age<0||age>d)return;const p=T.transformPoint({x,y:y-27});
    list.push({p,said,age,d,top:p.y-(named?sz+u:0)-u,feet:T.transformPoint({x,y:y+9}).y,who})};
   const loc=typeof mpLoc==='function'?mpLoc():'hollow';
-  for(const r of M.players.values()){if(!r.said||!r.loc||(loc&&r.loc!==loc)||performance.now()-r.seen>20000)continue;if(Math.abs(r.x-P.x)>W/Z+48||Math.abs(r.y-P.y)>H/Z+64)continue;add(r.x,r.y,r.said,!!r.n,r.uid)}
-  if(ss&&(loc||SCENE)&&!dead)add(P.x,P.y,ss,!!M.selfName,'me');
+  const hc=window.SQHIDECHAT&&SQHIDECHAT();
+  if(!hc)for(const r of M.players.values()){if(!r.said||!r.loc||(loc&&r.loc!==loc)||performance.now()-r.seen>20000)continue;if(Math.abs(r.x-P.x)>W/Z+48||Math.abs(r.y-P.y)>H/Z+64)continue;add(r.x,r.y,r.said,!!r.n,r.uid)}
+  if(!hc&&ss&&(loc||SCENE)&&!dead)add(P.x,P.y,ss,!!M.selfName,'me');
+  // island people talking (117 sets SQNPCSAY while it draws them): placed like chat so it never covers the HUD
+  {const q=window.SQNPCSAY;if(q&&now-q.seen<250){const n0=list.length;add(q.x,q.y,q.said,true,'npc');if(list.length>n0)st.npc=now}}
   if(!list.length)return;list.sort((a,b)=>(b.who==='me')-(a.who==='me')||b.said.at-a.said.at);const cap=Math.min(W,H)<900?4:5,show=list.slice(0,cap),dots=list.slice(cap);// more dots are added by placement
   g.save();g.setTransform(1,0,0,1,0,0);const fs=Math.round(sz*(phone?.92:.95));g.font='700 '+fs+'px '+PF;g.textBaseline='alphabetic';g.textAlign='left';
   const maxW=Math.round(Math.min(W*(phone?.42:.28),fs*16)),pad=Math.round(fs*.45),lh=Math.round(fs*1.18),tail=Math.round(fs*.55),edge=u*3,placed=[];
@@ -20109,6 +20114,18 @@ window.SQA=SQA;
  '#sm{max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow-y:auto;scrollbar-width:none}#sm::-webkit-scrollbar{display:none}'+
  '@media (max-height:520px) and (min-width:560px){#sm{width:min(600px,calc(100vw - 20px))}#sm button{width:33.333%;font-size:16px!important;padding:6px 4px 6px 24px!important}#sm button.on::before{left:8px}}';
  document.head.appendChild(st)})();
+// ---- 199. Hide chat (Options) ----
+// "Chat: SHOWN/HIDDEN" in Options, kept in localStorage sq_hidechat. Hidden = no chat bubbles over players (yours too;
+// 187 skips them via SQHIDECHAT()) and no CHAT button on screen (body.sqnochat). Chat still works from START > Chat
+// (and Enter on a keyboard); island people's lines still show.
+(()=>{let on=false;try{on=localStorage.getItem('sq_hidechat')==='1'}catch(e){}
+ const set=v=>{on=!!v;try{localStorage.setItem('sq_hidechat',on?'1':'0')}catch(e){}document.body.classList.toggle('sqnochat',on)};
+ const st=document.createElement('style');st.textContent='body.sqnochat #mpb{display:none!important}';document.head.appendChild(st);set(on);
+ window.SQHIDECHAT=()=>on;
+ const _o=optionsHTML;optionsHTML=function(){const h=_o(),add='<button class="sb sqhc">Chat: '+(on?'HIDDEN':'SHOWN')+'</button>'+
+   (on?'<div class="qc" style="font-size:13px;line-height:1.4;padding:6px 12px;margin:4px 0 8px">No chat bubbles over players and no CHAT button. You can still open chat from the menu (START → Chat).</div>':'');
+  let k=h.indexOf('<div class="tl" style="margin-top:16px">CONTROLLER</div>');if(k<0)k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
+ pbd.addEventListener('click',e=>{if(!e.target.closest('.sqhc'))return;e.stopPropagation();set(!on);try{sfx('talk')}catch(err){}try{rPn()}catch(err){}},true)})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

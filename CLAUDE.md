@@ -575,3 +575,7 @@
   the outermost `showScreen('leaderboard')` closes the menu and calls 068's `lbOpen()`; pnOpen is held true while `SQLB.open`, and
   closing returns to the START menu when opened from it. Same file: `#sm` gets a max-height + scrolling, and three tighter columns on
   short wide screens (`max-height:520px` and `min-width:560px`, phones held sideways).
+- **Hide chat** (`ui/191-s199-hide-chat.js`, `SQHIDECHAT()`): Options button, localStorage `sq_hidechat`; `body.sqnochat` hides `#mpb`, and 187
+  skips players' bubbles (yours too) when it's on. **Island people's speech bubbles** (117) are handed to 187 through `window.SQNPCSAY`
+  {x,y,said:{m,at},seen} (refreshed while 117 draws the person) so they get the same HUD-avoiding placement; 117's own world-space bubble
+  is only drawn when 187 didn't place one last frame (`SQBUBBLES.last.npc`, e.g. offline).
