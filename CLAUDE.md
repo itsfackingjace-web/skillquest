@@ -457,3 +457,7 @@
 - **Controller highlight ring** (`ui/172-s178-controller-highlight.js`, `#sqgpr`): a fixed overlay (top z-index, pointer-events none)
   follows `GPF`'s rect every frame while `GPON`, so pixel frames can't clip it (081's inset ring stays underneath). Side arrows
   only on items 300 px wide or more. Nothing needed for new screens: anything `setFocus` highlights gets the ring.
+- **Building only at home** (`items/173-s179-build-at-home-only.js`, `SQHOMEBUILD`): the outermost `startBuild`/`placeBuild` refuse every
+  piece outside a `home` scene (house, castle, yard/courtyard) except house/castle and seeds (`FREE`). On load (outermost `applySave`)
+  Hollow's `STR` and the islands' `RB` (065's `window.SQRB`) are packed into the bag and saved. 061's `buildSync` no longer adds other
+  players' `build/<uid>.s` and 065's `rbForeign` returns nothing (island houses `r._h` still go through `rhForeign`).

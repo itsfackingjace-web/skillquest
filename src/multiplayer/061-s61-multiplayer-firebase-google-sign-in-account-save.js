@@ -734,7 +734,8 @@ const ownerOfTile=i=>{const s=STR.get(i);if(s&&s._foreign)return s._foreign;cons
 function notYours(owner){const n=performance.now();if(n-BLDS.msgAt>1500){BLDS.msgAt=n;say('That belongs to '+fname(owner)+'.');sfx('swish')}swing=.25}
 function buildSync(){if(!MP.on)return;const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);const wantS=new Map(),wantF=new Map();
  for(const owner in BLDS.data){if(MP.user&&owner===MP.user.uid)continue;const rec=BLDS.data[owner];if(!rec)continue;
-  for(const e0 of arr(rec.s)){const e=arr(e0);const i=e[0]|0,t=e[1];if(i<0||i>=N*N||!BK.includes(t)||t==='house'||tile[i]===0)continue;if(!wantS.has(i))wantS.set(i,{owner,t})}
+  // (since 179 nothing is built outside homes any more: other players' old Hollow builds aren't shown)
+  for(const e0 of []){const e=arr(e0);const i=e[0]|0,t=e[1];if(i<0||i>=N*N||!BK.includes(t)||t==='house'||tile[i]===0)continue;if(!wantS.has(i))wantS.set(i,{owner,t})}
   for(const e0 of []){const e=arr(e0);const i=e[0]|0;if(i<0||i>=N*N||tile[i]===0)continue;if(!e[1]&&+e[4]&&nowS()-e[4]>TILL_LIFE)continue;if(!wantF.has(i))wantF.set(i,{owner,c:CROPS[e[1]]?e[1]:null,g:+e[2]||0,w:+e[3]||0})}}
  // structures
  for(const[i,s]of[...STR])if(s._foreign){const w=wantS.get(i);if(!w||w.owner!==s._foreign||w.t!==s.t)STR.delete(i);else wantS.delete(i)}

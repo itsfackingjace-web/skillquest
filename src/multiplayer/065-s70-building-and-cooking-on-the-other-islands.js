@@ -9,7 +9,8 @@ const rbR=()=>{const R=SCENE&&SCENE.room;return R&&R.region?R:null};
 const rbMap=id=>RB[id]||(RB[id]=new Map());
 const rbK=(x,y)=>x+','+y,rbXY=k=>k.split(',').map(Number);
 const rbIdx=(R,x,y)=>1e7+(Object.keys(WORLD_REGIONS).indexOf(R.region)+1)*1e5+y*R.w+x;   // a station's id (for daily berries and pick-up)
-function rbForeign(id){const out=[];for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const rec=BLDS.data[o],r=rec&&rec.r&&rec.r[id];if(!r)continue;
+// (since 179 nothing is built outside homes any more, so other players' old island builds aren't shown)
+function rbForeign(id){return[];const out=[];for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const rec=BLDS.data[o],r=rec&&rec.r&&rec.r[id];if(!r)continue;
   const arr=Array.isArray(r)?r:Object.values(r);for(const e0 of arr){const e=Array.isArray(e0)?e0:Object.values(e0||{});const x=e[0]|0,y=e[1]|0,t=e[2];if(BK.includes(t)&&t!=='house')out.push({x,y,t,owner:o})}}return out}
 const rbForeignAt=(id,x,y)=>rbForeign(id).find(f=>f.x===x&&f.y===y)||null;
 function rbOpen(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y*R.w+x;if(R.solid.has(i)||solid(x*16+8,y*16+8))return false;if(rgObjAt(R,x,y))return false;

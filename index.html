@@ -7937,7 +7937,8 @@ const ownerOfTile=i=>{const s=STR.get(i);if(s&&s._foreign)return s._foreign;cons
 function notYours(owner){const n=performance.now();if(n-BLDS.msgAt>1500){BLDS.msgAt=n;say('That belongs to '+fname(owner)+'.');sfx('swish')}swing=.25}
 function buildSync(){if(!MP.on)return;const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);const wantS=new Map(),wantF=new Map();
  for(const owner in BLDS.data){if(MP.user&&owner===MP.user.uid)continue;const rec=BLDS.data[owner];if(!rec)continue;
-  for(const e0 of arr(rec.s)){const e=arr(e0);const i=e[0]|0,t=e[1];if(i<0||i>=N*N||!BK.includes(t)||t==='house'||tile[i]===0)continue;if(!wantS.has(i))wantS.set(i,{owner,t})}
+  // (since 179 nothing is built outside homes any more: other players' old Hollow builds aren't shown)
+  for(const e0 of []){const e=arr(e0);const i=e[0]|0,t=e[1];if(i<0||i>=N*N||!BK.includes(t)||t==='house'||tile[i]===0)continue;if(!wantS.has(i))wantS.set(i,{owner,t})}
   for(const e0 of []){const e=arr(e0);const i=e[0]|0;if(i<0||i>=N*N||tile[i]===0)continue;if(!e[1]&&+e[4]&&nowS()-e[4]>TILL_LIFE)continue;if(!wantF.has(i))wantF.set(i,{owner,c:CROPS[e[1]]?e[1]:null,g:+e[2]||0,w:+e[3]||0})}}
  // structures
  for(const[i,s]of[...STR])if(s._foreign){const w=wantS.get(i);if(!w||w.owner!==s._foreign||w.t!==s.t)STR.delete(i);else wantS.delete(i)}
@@ -8391,7 +8392,8 @@ const rbR=()=>{const R=SCENE&&SCENE.room;return R&&R.region?R:null};
 const rbMap=id=>RB[id]||(RB[id]=new Map());
 const rbK=(x,y)=>x+','+y,rbXY=k=>k.split(',').map(Number);
 const rbIdx=(R,x,y)=>1e7+(Object.keys(WORLD_REGIONS).indexOf(R.region)+1)*1e5+y*R.w+x;   // a station's id (for daily berries and pick-up)
-function rbForeign(id){const out=[];for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const rec=BLDS.data[o],r=rec&&rec.r&&rec.r[id];if(!r)continue;
+// (since 179 nothing is built outside homes any more, so other players' old island builds aren't shown)
+function rbForeign(id){return[];const out=[];for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const rec=BLDS.data[o],r=rec&&rec.r&&rec.r[id];if(!r)continue;
   const arr=Array.isArray(r)?r:Object.values(r);for(const e0 of arr){const e=Array.isArray(e0)?e0:Object.values(e0||{});const x=e[0]|0,y=e[1]|0,t=e[2];if(BK.includes(t)&&t!=='house')out.push({x,y,t,owner:o})}}return out}
 const rbForeignAt=(id,x,y)=>rbForeign(id).find(f=>f.x===x&&f.y===y)||null;
 function rbOpen(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y*R.w+x;if(R.solid.has(i)||solid(x*16+8,y*16+8))return false;if(rgObjAt(R,x,y))return false;
@@ -9382,6 +9384,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-29',d:'Nov 13, 2026',t:'Build at home',n:['Fences, walls, gates, chests, beds, stations and furniture can now only be placed inside your own house or castle, or in its backyard or courtyard. Houses, castles and farm plots still go outside.','Anything you had built outside (on Hollow or on other islands) has been packed into your bag, chests with everything inside. Place it again at home.','Builds other players left outside no longer appear in the world.']},
  {v:'2026.11.13-28',d:'Nov 13, 2026',t:'Clearer controller highlight',n:['With a controller, the button you have selected now gets a thick glowing gold ring, so it is easy to see in every menu, chest and item card.']},
  {v:'2026.11.13-27',d:'Nov 13, 2026',t:'Controller fixes',n:['The player name button no longer flashes when you stand next to someone with a controller.','D-pad in menus and item cards: at the end of a row or column the highlight now wraps to the other end of that same row or column, instead of jumping to a different button.']},
  {v:'2026.11.13-26',d:'Nov 13, 2026',t:'Emote commands in chat',n:['Typing an emote in chat works again: /wave, /bow, /dance, /cheer, /laugh, /love, /yes, /no, /think, /sit and /sleep act it out instead of posting the word.']},
@@ -18451,6 +18454,34 @@ window.SQA=SQA;
      if(k!==last){last=k;R.style.transform='translate('+x+'px,'+y+'px)';R.style.width=w+'px';R.style.height=h+'px';R.classList.toggle('sm',sm)}show=true}}
    if(show!==(R.style.display==='block')){R.style.display=show?'block':'none';if(!show)last=''}}catch(e){}requestAnimationFrame(tick)}
  requestAnimationFrame(tick);window.SQGPRING=R})();
+// ---- 179. Building only at home ----
+// Walls, fences, gates, chests, beds, stations, benches and furniture can only be placed inside your own house or castle
+// and in its backyard/courtyard (013's home scenes: SCENE.id==='home', which yards are too). Houses and castles themselves,
+// and seeds (farm plots), still go outside. What a save still has built outside (Hollow's STR, the islands' RB from 065,
+// window.SQRB) is packed into the bag once on load, chests with everything inside, and saved; the message says
+// what came back. 061's buildSync and 065's rbForeign no longer show other players' old outdoor builds, so builds of
+// players who don't come back disappear for everyone too (build/<uid>.s/.r stay in the database but nothing reads them).
+(()=>{const FREE=k=>k==='house'||k==='castle'||(typeof isSeed==='function'&&isSeed(k))||(typeof SEED2CROP!=='undefined'&&!!SEED2CROP[k]);
+ const atHome=()=>!!(SCENE&&SCENE.id==='home'&&SCENE.house);
+ const MSG='You can only build inside your own house or castle, or in its backyard. Walk in through your door first.';
+ {const _sb=startBuild;startBuild=function(k){if(!FREE(k)&&!atHome()&&(inv[k]|0)>0){say(MSG);msgT=6;try{sfx('swish')}catch(e){}try{closePanel()}catch(e){}return}return _sb.apply(this,arguments)}}
+ // a build mode started at home that somehow carries outside stops there
+ {const _pb=placeBuild;placeBuild=function(){if(BUILD&&!FREE(BUILD.k)&&!atHome()){endBuild(MSG);return}return _pb.apply(this,arguments)}}
+ // descriptions that still said "or outside"
+ for(const k of BK)if(typeof IDESC[k]==='string')IDESC[k]=IDESC[k].replace('Place it in your house or outside,','Place it in your house, castle or backyard,');
+ // ---- packing what is still built outside ----
+ function back(s,got){inv[s.t]=(inv[s.t]|0)+1;got[s.t]=(got[s.t]|0)+1;let any=false;if(s.items)for(const k in s.items){const n=s.items[k]|0;if(n>0){inv[k]=(inv[k]|0)+n;any=true}}return any}
+ function packAll(){const got={};let inside=false,n=0;
+  for(const[i,s]of[...STR]){if(!s||s._foreign||FREE(s.t))continue;STR.delete(i);if(BEDSP===i)BEDSP=-1;if(back(s,got))inside=true;n++}
+  const R=window.SQRB;if(R)for(const id in R){const m=R[id];for(const[key,s]of[...m]){if(!s||FREE(s.t))continue;m.delete(key);if(back(s,got))inside=true;n++}}
+  if(n){try{rbSolidSync()}catch(e){}
+   const nm=k=>String(INAME[k]||k).toLowerCase(),pl=k=>(typeof SN!=='undefined'&&SN[k])?SN[k].toLowerCase():nm(k).replace(/(ch|sh|s|x)$/,'$1e')+'s';
+   const list=Object.entries(got).map(([k,c])=>c+' '+(c>1?pl(k):nm(k))).join(', ');
+   const m='Building outside isn\'t allowed any more, so what you had built outside was packed into your bag: '+list+(inside?' (with everything that was inside)':'')+'. Place them in your house, castle or backyard.';
+   setTimeout(()=>{try{say(m);msgT=10;try{mpLog('game',m)}catch(e){}saveLocal(true);saveCloud(true)}catch(e){}},3000)}
+  return n}
+ {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{packAll()}catch(e){console.warn(e)}return out}}
+ window.SQHOMEBUILD={packAll,atHome,FREE}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
