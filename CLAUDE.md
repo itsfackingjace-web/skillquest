@@ -424,3 +424,13 @@
 - **Transactions that take something once** (161 gifts, 079 market COLLECT): the update function must return the new value even
   when it's handed null (`cur=>{got=cur;return null}`), never abort on null: the real SDK often calls it first with a stale
   "nothing" before it has the server's value, and aborting there means it never retries. 161 also polls `gifts/<uid>` every 15 s.
+- **Fixing a player's game** (161, Admin > Players): `fixes/<uid>/<id>` {op:'take'|'restore'|'home', k, n, b, m, t, f}, written by devs,
+  taken once by the player's game (same transaction pattern as gifts, poll every 15 s): take = remove up to n of k from the bag
+  (`gold` = gold); restore = `applySave` of `bak/<uid>/<b>` (061's cloud backups: daily + before big changes, 8 kept; devs can read
+  them now); home = `applySave` of the current save at SPX/SPY on Hollow. Rules: `fixes`, `bak.read` (publish them).
+- **Testers** (`dev/168-s174-testers.js`, `SQBETA`, Dev Suite > Testers): `testers/<uid>` = true; `assets/beta` = the draft sent to them
+  with `base` = the live `v` it was made from. A tester's game applies it through `SQA.preview` (the stored live copy is untouched)
+  only while `beta.base === live.v`; tag `#sqbeta`. Rules: `testers`, `assets/beta` (publish them).
+- **Checks** (`dev/169-s175-checks.js`, `SQCHECKS.run(lib)`, Dev Suite > Checks): broken references in the draft (items, monsters,
+  quests, shops, songs, loot tables, islands' people/zones/caves/chests, monster drops, bosses, new gear), quests/shops nobody
+  runs, missing sprites; problems also head the Publish list. Add a check there when a new library section refers to others.
