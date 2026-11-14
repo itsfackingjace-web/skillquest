@@ -31,6 +31,9 @@
    if(q.t==='visit'&&!(typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[q.k])&&!(D.islands||{})[q.k])bad(w,'sends you to "'+q.k+'", which isn\'t an island.',go('quests',id));
    if(q.rk&&!item(q.rk))bad(w,'rewards "'+q.rk+'", which isn\'t an item.',go('quests',id));
    if(q.after&&!quests[q.after])bad(w,'comes after a quest that doesn\'t exist.',go('quests',id));
+   for(const st of Array.isArray(q.steps)?q.steps:[]){if(!st)continue;if(st.t==='kill'?!mobs.has(st.k):st.t==='visit'?!(typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[st.k]):!item(st.k))bad(w,'has a step with nothing picked (or something that doesn\'t exist): "'+(st.k||'')+'".',go('quests',id))}
+   for(const c of Array.isArray(q.ch)?q.ch:[])if(c&&c.rk&&!item(c.rk))bad(w,'choice "'+(c.l||'')+'" rewards "'+c.rk+'", which isn\'t an item.',go('quests',id));
+   if(q.after&&quests[q.after]&&q.ac!=null&&+q.ac>=0&&!((quests[q.after].ch||[])[+q.ac]))bad(w,'needs a choice in "'+(quests[q.after].n||q.after)+'" that isn\'t there any more.',go('quests',id));
    const root=(()=>{let x=id,n=0;while(quests[x]&&quests[x].after&&n++<20)x=quests[x].after;return x})();if(!roles.has(id)&&!roles.has(root))warn(w,'nobody gives it: give an island person the job "Quest giver".',go('quests',id))}
   for(const id in C.mobs||{}){const m=C.mobs[id]||{};if(!MOBS[m.base])bad('Monster '+(m.n||id),'moves like "'+m.base+'", which isn\'t a monster.',go('mobs',id))}
   for(const id in C.loot||{}){const T=C.loot[id]||{},w='Loot '+(T.n||id);const e=arr(T.e).filter(Boolean);if(!e.length&&!(arr(T.g)[1]>0))warn(w,'gives nothing.',go('loot',id));

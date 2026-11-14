@@ -10,7 +10,8 @@
 //                   craft -> GOODS (crafting menu), smith/smelt -> SM (anvil/furnace; 039's ulSmith rebuilt), cook -> COOKS.
 //   shops.<id>      {n, add:[{k,m,c}]}: ids gen (Hollow general store, GEN), bw (Briarwood, SHOPBW), af (Ashfall, SHOPAF) add
 //                   stock to those shops; cs_<id> are new shops, run by island-builder people whose job is shop:cs_<id>.
-//   quests.q_<id>   {n, d, t:'gather'|'kill'|'visit', k (item / monster key / region), amt, take, g, xs skill, xp, rk, rn, after}
+//   quests.q_<id>   {n, d, t:'gather'|'kill'|'visit', k (item / monster key / region), amt, take, g, xs skill, xp, rk, rn, after,
+//                   ac (choice of `after` needed), steps [{t,k,amt,take,say}], ch [{l,say,g,xs,xp,rk,rn}] choices, lp, ld lines, rq {s,l}}
 //                   given by island-builder people whose job is quest:<ids> (comma separated: the first one open is offered).
 //                   Shown in the quest log through SQQEXTRA. Saved as `cq` {id: 1 active | 99 done, id+'#': kills so far}.
 //   mobs.cm_<id>    {n, base, hp}: a new normal monster kind cm:<letters> (SQISLIFE.MOBS) that moves like `base`; its look,
@@ -51,7 +52,7 @@
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){}return s}}
  {const _ap=applySave;applySave=function(S){for(const k in PEND)delete PEND[k];const out=_ap.apply(this,arguments);
    try{if(S&&S.inv)for(const k in S.inv)if(/^it_/.test(k)&&+S.inv[k]>0){if(REG.has(k))inv[k]=Math.min(1e6,+S.inv[k]|0);else PEND[k]=Math.min(1e6,+S.inv[k]|0)}}catch(e){}
-   for(const k in CQ)delete CQ[k];try{if(S&&S.cq&&typeof S.cq==='object')for(const k in S.cq){const v=+S.cq[k];if(/^q_[a-z0-9_]{1,30}#?$/.test(k)&&isFinite(v))CQ[k]=Math.max(0,Math.min(1e6,v|0))}}catch(e){}return out}}
+   for(const k in CQ)delete CQ[k];try{if(S&&S.cq&&typeof S.cq==='object')for(const k in S.cq){const v=+S.cq[k];if(/^q_[a-z0-9_]{1,30}[#@!]?$/.test(k)&&isFinite(v))CQ[k]=Math.max(0,Math.min(1e6,v|0))}}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];for(const k in CQ)delete CQ[k];return _ng.apply(this,arguments)}}
  try{KNOWN49.add('cq')}catch(e){}
  // ======================= recipes =======================
@@ -89,39 +90,73 @@
      else{const k=a.slice(1),c=inv[k]|0;if(c>0&&SELLP[k]){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){}saveLocal(true);rPn();return}}return _oc(e)}}
  {const _cp=closePanel;closePanel=function(){if(shop==='cshop'){CS=null;shop=null}return _cp.apply(this,arguments)}}
  // ======================= quests =======================
- const CQ={};
- function quests(L){const out={};for(const id in L){const q=L[id];if(!/^q_[a-z0-9_]{1,30}$/.test(id)||!q||typeof q!=='object')continue;const t=['gather','kill','visit'].includes(q.t)?q.t:'gather';
-   const o={n:clean(q.n,40)||'A favour',d:clean(q.d,400),t,k:clean(q.k,40),amt:t==='visit'?1:num(q.amt,1,10000,1)|0,take:!!q.take&&t==='gather',g:num(q.g,0,1e6,0)|0,
-    xs:num(q.xs,-1,40,-1)|0,xp:num(q.xp,0,1e6,0)|0,rk:isItem(q.rk)?q.rk:'',rn:num(q.rn,1,1e5,1)|0,after:/^q_[a-z0-9_]{1,30}$/.test(q.after)?q.after:''};
-   if(t==='gather'&&!isItem(o.k))continue;if(t==='visit'&&!(typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[o.k]))continue;if(t==='kill'&&!o.k)continue;out[id]=o}
+ // A quest is one or more steps handed in to the giver one after another (step 0 = the quest's own t/k/amt/take/d, then
+ // `steps` [{t,k,amt,take,say}]). `ch` = choices at the end [{l,say,g,xs,xp,rk,rn}]: the player picks one reward, kept as
+ // CQ[id+'!']; a later quest with `after` + `ac` (choice index) only opens after that pick (branches). `ld` = line when done,
+ // `lp` = reminder line while working, `rq` {s,l} = skill level needed before it's offered. State: CQ[id] 1 active / 99 done,
+ // CQ[id+'@'] step, CQ[id+'#'] kills / arrival of the current step.
+ const CQ={},QT=['gather','kill','visit'];
+ const tgtOk=(t,k)=>t==='gather'?isItem(k):t==='visit'?!!(typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[k]):!!k;
+ const stepOf=(q,i)=>{const t=QT.includes(q.t)?q.t:'gather';return{t,k:clean(q.k,40),amt:t==='visit'?1:num(q.amt,1,10000,1)|0,take:!!q.take&&t==='gather',say:clean(i?q.say:q.d,300)}};
+ function quests(L){const out={};for(const id in L){const q=L[id];if(!/^q_[a-z0-9_]{1,30}$/.test(id)||!q||typeof q!=='object')continue;
+   const o={n:clean(q.n,40)||'A favour',d:clean(q.d,400),g:num(q.g,0,1e6,0)|0,xs:num(q.xs,-1,40,-1)|0,xp:num(q.xp,0,1e6,0)|0,rk:isItem(q.rk)?q.rk:'',rn:num(q.rn,1,1e5,1)|0,
+    after:/^q_[a-z0-9_]{1,30}$/.test(q.after)?q.after:'',ac:q.after&&q.ac!==''&&q.ac!=null?num(q.ac,-1,3,-1)|0:-1,ld:clean(q.ld,300),lp:clean(q.lp,300),
+    rq:q.rq&&+q.rq.l>1&&+q.rq.s>=0?{s:num(q.rq.s,0,40,0)|0,l:num(q.rq.l,1,99,1)|0}:null};
+   const S0=stepOf(q,0);if(!tgtOk(S0.t,S0.k))continue;o.S=[S0];for(const r of arr(q.steps).slice(0,6)){if(!r||typeof r!=='object')continue;const st=stepOf(r,1);if(tgtOk(st.t,st.k))o.S.push(st)}
+   o.ch=arr(q.ch).slice(0,4).map(c=>c&&typeof c==='object'&&clean(c.l,40)?{l:clean(c.l,40),say:clean(c.say,300),g:num(c.g,0,1e6,0)|0,xs:num(c.xs,-1,40,-1)|0,xp:num(c.xp,0,1e6,0)|0,rk:isItem(c.rk)?c.rk:'',rn:num(c.rn,1,1e5,1)|0}:null).filter(Boolean);
+   Object.assign(o,o.S[0]);out[id]=o}// t/k/amt/take of step 0 stay on the quest (older code and checks read them)
   C.quests=out;GIVERS=findGivers()}
  let LIB={},GIVERS={};// quest id -> {area, x, y, name}
+ // a giver's job lists quest ids; quests added later after one of them ("comes after") belong to the same giver
+ const chainOf=root=>{const ch=[root];for(let i=0;i<ch.length&&ch.length<20;i++)for(const q in C.quests)if(C.quests[q].after===ch[i]&&!ch.includes(q))ch.push(q);return ch};
+ const expand=list=>{const out=[];for(const id of String(list).split(','))for(const q of chainOf(id))if(!out.includes(q))out.push(q);return out};
  function findGivers(){const G={},I=LIB.islands||{};for(const iid in I){const isl=I[iid];if(!isl)continue;const area=/^cu_/.test(iid)?iid:/^ed_/.test(iid)?iid.slice(3):null;if(!area)continue;
-   for(const Q of arr(isl.npc)){if(!Q||typeof Q.ro!=='string')continue;const m=/^quest:(.*)$/.exec(Q.ro);if(!m)continue;for(const qid of m[1].split(','))if(!G[qid])G[qid]={area,x:(Q.x|0)*16+8,y:(Q.y|0)*16+8,name:clean(Q.n,24)||'Islander'}}}return G}
+   for(const Q of arr(isl.npc)){if(!Q||typeof Q.ro!=='string')continue;const m=/^quest:(.*)$/.exec(Q.ro);if(!m)continue;for(const qid of expand(m[1]))if(!G[qid])G[qid]={area,x:(Q.x|0)*16+8,y:(Q.y|0)*16+8,name:clean(Q.n,24)||'Islander'}}}return G}
  const mkeyOf=n=>{try{return window.SQPROPS?SQPROPS.mkey(n).replace(/^m:/,''):n.type}catch(e){return n.type}};
- const prog=(id,q)=>q.t==='gather'?Math.min(q.amt,inv[q.k]|0):q.t==='kill'?Math.min(q.amt,CQ[id+'#']|0):(CQ[id+'#']|0)?1:0;
- const ready=(id,q)=>prog(id,q)>=q.amt;
- const open=(id,q)=>CQ[id]!==99&&(!q.after||CQ[q.after]===99);
- const rewTxt=q=>{const p=[];if(q.g)p.push(q.g+' gold');if(q.xp&&q.xs>=0)p.push(q.xp+' '+(SKN[q.xs]||'')+' XP');if(q.rk)p.push((q.rn>1?q.rn+' × ':'')+INAME[q.rk]);return p.join(' · ')};
- const stepTxt=q=>q.t==='gather'?'Bring '+q.amt+' '+((q.amt>1?SN[q.k]:INAME[q.k])||q.k).toLowerCase():q.t==='kill'?'Defeat '+q.amt+' '+mobName(q.k)+(q.amt>1?'s':''):'Travel to '+(WORLD_REGIONS[q.k]&&WORLD_REGIONS[q.k].name||q.k);
+ const si=(id,q)=>Math.min(q.S.length-1,CQ[id+'@']|0),cur=(id,q)=>q.S[si(id,q)];
+ const prog=(id,q)=>{const s=cur(id,q);return s.t==='gather'?Math.min(s.amt,inv[s.k]|0):s.t==='kill'?Math.min(s.amt,CQ[id+'#']|0):(CQ[id+'#']|0)?1:0};
+ const ready=(id,q)=>prog(id,q)>=cur(id,q).amt;
+ const lvOk=q=>!q.rq||(typeof lvOf==='function'?lvOf(q.rq.s):1)>=q.rq.l;
+ const open=(id,q)=>CQ[id]!==99&&(CQ[id]===1||((!q.after||(CQ[q.after]===99&&(q.ac<0||CQ[q.after+'!']===q.ac)))&&lvOk(q)));
+ const rw=r=>{const p=[];if(r.g)p.push(r.g+' gold');if(r.xp&&r.xs>=0)p.push(r.xp+' '+(SKN[r.xs]||'')+' XP');if(r.rk)p.push((r.rn>1?r.rn+' × ':'')+INAME[r.rk]);return p.join(' · ')};
+ const rewTxt=q=>{const b=rw(q);if(!q.ch.length)return b;return(b?b+' + ':'')+'your pick: '+q.ch.map(c=>c.l+(rw(c)?' ('+rw(c)+')':'')).join(' or ')};
+ const stepTxt=s=>s.t==='gather'?'Bring '+s.amt+' '+((s.amt>1?SN[s.k]:INAME[s.k])||s.k).toLowerCase():s.t==='kill'?'Defeat '+s.amt+' '+mobName(s.k)+(s.amt>1?'s':''):'Travel to '+(WORLD_REGIONS[s.k]&&WORLD_REGIONS[s.k].name||s.k);
  const mobName=k=>{const m=MOBS()[k];return(m&&m.n||k.replace(/^.*:/,'')).toLowerCase()};
+ const ofN=(id,q)=>q.S.length>1?' (step '+(si(id,q)+1)+'/'+q.S.length+')':'';
  (window.SQQEXTRA=window.SQQEXTRA||[]).push(()=>{const out=[];for(const id in C.quests){const q=C.quests[id],G=GIVERS[id];if(!G)continue;const e={id:'cq:'+id,cat:G.name,area:G.area,name:q.n,rew:rewTxt(q),at:G};
-   if(CQ[id]===99){out.push({...e,st:'done'});continue}if(!open(id,q))continue;const on=CQ[id]===1,r=on&&ready(id,q);
-   out.push({...e,desc:q.d,st:on?'active':'avail',kind:'side',step:on?(r?'Return to '+G.name:stepTxt(q)):'Talk to '+G.name,prog:on?prog(id,q)+'/'+q.amt:'',ready:r,at:on&&!r?null:G})}return out});
- function finish(id,q,who){if(q.take)inv[q.k]=Math.max(0,(inv[q.k]|0)-q.amt);CQ[id]=99;delete CQ[id+'#'];if(q.g)GLD+=q.g;if(q.xp&&q.xs>=0)addXp(q.xs,q.xp);if(q.rk)inv[q.rk]=(inv[q.rk]|0)+q.rn;
-  say(who+': "Thank you!" Quest complete: '+q.n+(rewTxt(q)?' ('+rewTxt(q)+')':'')+'.');msgT=7;try{sfx('quest');svg()}catch(e){}saveLocal(true)}
+   if(CQ[id]===99){const c=q.ch[CQ[id+'!']];out.push({...e,st:'done',rew:c?'You chose: '+c.l:rw(q)});continue}if(!open(id,q))continue;const on=CQ[id]===1,r=on&&ready(id,q),s=cur(id,q);
+   out.push({...e,desc:q.d,st:on?'active':'avail',kind:'side',step:on?(r?'Return to '+G.name+ofN(id,q):stepTxt(s)+ofN(id,q)):'Talk to '+G.name,prog:on&&s.t!=='visit'?prog(id,q)+'/'+s.amt:'',ready:r,at:on&&!r?null:G})}return out});
+ function finish(id,q,who,ci){const s=cur(id,q);if(s.take)inv[s.k]=Math.max(0,(inv[s.k]|0)-s.amt);CQ[id]=99;delete CQ[id+'#'];delete CQ[id+'@'];
+  const c=ci!=null&&q.ch[ci]||null;if(c)CQ[id+'!']=ci;for(const r of c?[q,c]:[q]){if(r.g)GLD+=r.g;if(r.xp&&r.xs>=0)addXp(r.xs,r.xp);if(r.rk)inv[r.rk]=(inv[r.rk]|0)+r.rn}
+  const R=[rw(q),c?rw(c):''].filter(Boolean).join(' · ');
+  say(who+': "'+((c&&c.say)||q.ld||'Thank you!')+'" Quest complete: '+q.n+(R?' ('+R+')':'')+'.');msgT=7;try{sfx('quest');svg()}catch(e){}saveLocal(true)}
+ function advance(id,q,who){const s=cur(id,q);if(s.take)inv[s.k]=Math.max(0,(inv[s.k]|0)-s.amt);CQ[id+'@']=si(id,q)+1;CQ[id+'#']=0;const n=cur(id,q);
+  say(who+': "'+(n.say||'Good. There\'s more.')+'" Next'+ofN(id,q)+': '+stepTxt(n)+'.');msgT=Math.min(10,4+(n.say||'').length/20);try{sfx('quest');svg()}catch(e){}saveLocal(true)}
+ // ---- the choice card (ptab 42) ----
+ const CTAB=42;let CH=null;// {id, who}
+ function openChoice(id,who){CH={id,who};pnOpen=true;ptab=CTAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){}}
+ function choiceHTML(){const q=CH&&C.quests[CH.id];if(!q)return'';let h='<div class="tl">'+esc(CH.who.toUpperCase())+'</div><div class="qc" style="font-size:13px"><b>'+esc(q.n)+'</b><br>'+esc(q.ld||'You did it. What would you like as thanks?')+'</div>';
+  if(rw(q))h+='<div class="qc" style="font-size:12px;opacity:.8">Reward: '+esc(rw(q))+'</div>';
+  q.ch.forEach((c,i)=>{h+='<button class="sb" data-qch="'+i+'" style="display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px"><b>'+esc(c.l)+'</b>'+(rw(c)?'<br><small>'+esc(rw(c))+'</small>':'')+'</button>'});
+  return h+'<div class="qc" style="font-size:11px;opacity:.7">Your choice is final and can change what comes next.</div><div class="pmb"><button class="sb no" data-qch="x">NOT YET</button></div>'}
+ {const _r=rPn;rPn=function(){if(ptab!==CTAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){}const q=CH&&C.quests[CH.id];if(!q||CQ[CH.id]!==1){closePanel();return}pbd.innerHTML=choiceHTML()}}
+ pbd.addEventListener('click',e=>{if(ptab!==CTAB||!pnOpen)return;const b=e.target.closest('[data-qch]');if(!b)return;e.stopPropagation();e.preventDefault();const v=b.dataset.qch,c=CH;closePanel();
+  if(v==='x'||!c)return;const q=C.quests[c.id];if(q&&CQ[c.id]===1&&ready(c.id,q))finish(c.id,q,c.who,+v)},true);
  // ======================= island people with a job =======================
  window.SQNPCROLE=function(it){const ro=String(it&&it.ro||'');let m=/^shop:(cs_[a-z0-9_]+)$/.exec(ro);if(m)return openShop(m[1],it.name);
   m=/^quest:(.+)$/.exec(ro);if(!m)return false;const who=it.name||'Islander';
-  for(const id of m[1].split(',')){const q=C.quests[id];if(!q||!open(id,q))continue;
-   if(CQ[id]===1){if(ready(id,q)){finish(id,q,who);return true}say(who+': "'+stepTxt(q)+(q.t==='visit'?'':' ('+prog(id,q)+'/'+q.amt+')')+'."');msgT=6;try{sfx('talk')}catch(e){}return true}
-   CQ[id]=1;if(q.t==='kill')CQ[id+'#']=0;say(who+': "'+(q.d||q.n)+'" New quest: '+q.n+'. '+stepTxt(q)+'.');msgT=Math.min(10,4+(q.d||'').length/20);try{sfx('quest')}catch(e){}saveLocal(true);return true}
+  for(const id of expand(m[1])){const q=C.quests[id];if(!q||!open(id,q))continue;
+   if(CQ[id]===1){if(ready(id,q)){if(si(id,q)<q.S.length-1)advance(id,q,who);else if(q.ch.length)openChoice(id,who);else finish(id,q,who);return true}
+    const s=cur(id,q);say(who+': "'+(q.lp?q.lp+' ':'')+stepTxt(s)+(s.t==='visit'?'':' ('+prog(id,q)+'/'+s.amt+')')+'."');msgT=6;try{sfx('talk')}catch(e){}return true}
+   CQ[id]=1;CQ[id+'@']=0;CQ[id+'#']=0;say(who+': "'+(q.d||q.n)+'" New quest: '+q.n+ofN(id,q)+'. '+stepTxt(q.S[0])+'.');msgT=Math.min(10,4+(q.d||'').length/20);try{sfx('quest')}catch(e){}saveLocal(true);return true}
+  // nothing open: a quest that needs a level says so
+  for(const id of expand(m[1])){const q=C.quests[id];if(q&&CQ[id]!==99&&q.rq&&!lvOk(q)&&(!q.after||CQ[q.after]===99)){say(who+': "Come back when your '+(SKN[q.rq.s]||'skill')+' is level '+q.rq.l+'."');msgT=5;return true}}
   return false};
  // kills and visits
  {const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{if(n&&!n._rp){const k=mkeyOf(n);
-   for(const id in C.quests){const q=C.quests[id];if(CQ[id]===1&&q.t==='kill'&&(q.k===k||q.k===n.type||q.k===n.rk)){CQ[id+'#']=(CQ[id+'#']|0)+1;if(CQ[id+'#']===q.amt){say('Quest: '+q.n+' — done! Go back to '+(GIVERS[id]?GIVERS[id].name:'them')+'.');msgT=5}}}
+   for(const id in C.quests){const q=C.quests[id];if(CQ[id]!==1)continue;const s=cur(id,q);if(s.t==='kill'&&(s.k===k||s.k===n.type||s.k===n.rk)){CQ[id+'#']=(CQ[id+'#']|0)+1;if(CQ[id+'#']===s.amt){say('Quest: '+q.n+ofN(id,q)+' — done! Go back to '+(GIVERS[id]?GIVERS[id].name:'them')+'.');msgT=5}}}
    for(const tid in C.loot){const T=C.loot[tid];if(T.on.length&&(T.on.includes(k)||T.on.includes(n.type))&&Math.random()*100<T.p)give(roll(tid),'Loot')}}}catch(e){console.warn('content',e)}return out}}
- setInterval(()=>{try{const r=typeof curRegion==='function'?curRegion():'hollow';for(const id in C.quests){const q=C.quests[id];if(CQ[id]===1&&q.t==='visit'&&q.k===r&&!CQ[id+'#']){CQ[id+'#']=1;say('Quest: '+q.n+' — you made it! Go back to '+(GIVERS[id]?GIVERS[id].name:'them')+'.');msgT=5}}}catch(e){}},1000);
+ setInterval(()=>{try{const r=typeof curRegion==='function'?curRegion():'hollow';for(const id in C.quests){const q=C.quests[id];if(CQ[id]!==1)continue;const s=cur(id,q);if(s.t==='visit'&&s.k===r&&!CQ[id+'#']){CQ[id+'#']=1;say('Quest: '+q.n+ofN(id,q)+' — you made it! Go back to '+(GIVERS[id]?GIVERS[id].name:'them')+'.');msgT=5}}}catch(e){}},1000);
  // ======================= monsters =======================
  const keyOf=id=>'cm:'+id.slice(3).replace(/_/g,'').replace(/[0-9]/g,d=>'abcdefghij'[d]);const CM={};
  function mobs(L){for(const k in CM){delete MOBS()[k];delete CM[k]}const out={};for(const id in L){const m=L[id];if(!/^cm_[a-z0-9_]{1,24}$/.test(id)||!m||typeof m!=='object')continue;
@@ -142,9 +177,9 @@
  SQA.onApply(lib=>{LIB=lib||{};const L=LIB.content||{};try{items(L.items||{})}catch(e){console.warn('content items',e)}try{recipes(L.recipes||{})}catch(e){console.warn('content recipes',e)}
   try{shops(L.shops||{})}catch(e){console.warn('content shops',e)}try{mobs(L.mobs||{})}catch(e){console.warn('content mobs',e)}try{loot(L.loot||{})}catch(e){console.warn('content loot',e)}try{quests(L.quests||{})}catch(e){console.warn('content quests',e)}});
  const roleOpts=v=>{v=v||'';let h='<option value="">Just talks</option>';for(const id in C.shops)if(/^cs_/.test(id))h+='<option value="shop:'+id+'"'+(v==='shop:'+id?' selected':'')+'>🛒 Shopkeeper: '+esc(C.shops[id].n)+'</option>';
-  const qs=Object.keys(C.quests);for(const id of qs){const ch=[id];let cur=id;for(let i=0;i<10;i++){const nx=qs.find(q=>C.quests[q].after===cur);if(!nx)break;ch.push(nx);cur=nx}if(C.quests[id].after)continue;const val='quest:'+ch.join(',');h+='<option value="'+val+'"'+(v===val?' selected':'')+'>❗ Quest giver: '+esc(ch.map(q=>C.quests[q].n).join(' → '))+'</option>'}
+  const qs=Object.keys(C.quests);for(const id of qs){if(C.quests[id].after&&C.quests[C.quests[id].after])continue;const ch=chainOf(id);const val='quest:'+ch.join(',');h+='<option value="'+val+'"'+(v===val?' selected':'')+'>❗ Quest giver: '+esc(ch.map(q=>C.quests[q].n).join(' → '))+'</option>'}
   if(v&&!h.includes('value="'+v+'"'))h+='<option value="'+esc(v)+'" selected>'+esc(v)+' (not found)</option>';return h};
- window.SQCONTENT={C,CQ,PEND,roll,give,roleOpts,openShop,tables:()=>Object.entries(C.loot).map(([k,T])=>[k,T.n]),keyOf,SHOPN};
+ window.SQCONTENT={C,CQ,PEND,roll,give,roleOpts,chainOf,openChoice,qready:ready,openShop,tables:()=>Object.entries(C.loot).map(([k,T])=>[k,T.n]),keyOf,SHOPN};
  // ======================= Dev Suite > Content =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;
  const itemList=()=>SQA.itemKeys().map(k=>[k,INAME[k]]).sort((a,b)=>a[1].localeCompare(b[1]));
@@ -171,7 +206,12 @@
     {f:'amt',l:'How many',t:'num',min:1,max:10000,if:o=>o.t!=='visit'},{f:'take',l:'Takes the items',t:'chk',if:o=>o.t==='gather'},
     {f:'g',l:'Reward: gold',t:'num',min:0,max:1e6},{f:'xs',l:'Reward: XP in',t:'sel',o:()=>[['-1','(none)'],...skillList()]},{f:'xp',l:'XP',t:'num',min:0,max:1e6},
     {f:'rk',l:'Reward: item',t:'sel',o:()=>[['','(none)'],...itemList()]},{f:'rn',l:'How many',t:'num',min:1,max:1e5,if:o=>o.rk},
-    {f:'after',l:'Comes after',t:'sel',o:(o,id)=>[['','(nothing)'],...Object.entries(sec('quests')).filter(([q])=>q!==id).map(([q,v])=>[q,v.n||q])]}]},
+    {f:'steps',l:'More steps (one after another; each is handed in to the giver, who says the line)',t:'rows',cols:[{f:'t',l:'Task',t:'sel',o:()=>[['gather','Bring items'],['kill','Defeat monsters'],['visit','Go somewhere']]},{f:'k',l:'What',t:'tgt'},{f:'amt',l:'How many',t:'num',min:1,max:10000},{f:'take',l:'Takes',t:'chk'},{f:'say',l:'What they say',t:'text',max:300}]},
+    {f:'lp',l:'Reminder line while you work on it (optional)',t:'text',max:300},{f:'ld',l:'What they say when it\'s done',t:'long'},
+    {f:'ch',l:'Choices at the end (the player picks one extra reward; later quests can depend on the pick)',t:'rows',cols:[{f:'l',l:'Choice',t:'text',max:40},{f:'say',l:'Their answer',t:'text',max:300},{f:'g',l:'Gold',t:'num',min:0,max:1e6},{f:'rk',l:'Item',t:'item'},{f:'rn',l:'How many',t:'num',min:1,max:1e5}]},
+    {f:'rq',l:'Only offered from skill level',t:'rq'},
+    {f:'after',l:'Comes after',t:'sel',o:(o,id)=>[['','(nothing)'],...Object.entries(sec('quests')).filter(([q])=>q!==id).map(([q,v])=>[q,v.n||q])]},
+    {f:'ac',l:'…and only if they picked',t:'sel',if:o=>o.after,o:o=>[['-1','(any choice)'],...arr((sec('quests')[o.after]||{}).ch).map((c,i)=>[String(i),(c&&c.l)||'Choice '+(i+1)])]}]},
   mobs:{l:'👾 Monsters',pre:'cm_',blank:()=>({n:'New monster',base:'wolf',hp:12}),hint:'A new kind of monster that moves like one the game has. Draw its look, set its damage, speed and drops in Monsters; put it in island monster zones or dungeons.',
    F:[{f:'n',l:'Name',t:'text',max:30},{f:'base',l:'Moves like',t:'sel',o:()=>mobList().filter(([k])=>!/^c[bm]:/.test(k))},{f:'hp',l:'Health',t:'num',min:1,max:3000}]},
   loot:{l:'🎲 Loot',pre:'lt_',blank:()=>({n:'New loot table',r:1,g:[0,0],e:[{k:'wood',a:1,b:3,w:10}],on:[],p:100}),hint:'Rolled when one of its monsters is beaten (with its chance), and by island chests that list it.',
@@ -183,7 +223,16 @@
  const slug=(pre,n)=>pre+(String(n).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,20)||'x');
  const titleOf=(s,id,o)=>{const T=SECS[s].title;return T?T(o||{},id):(o&&o.n)||id};
  const opt=(L,v)=>L.map(([k,n])=>'<option value="'+E(k)+'"'+(String(v)===String(k)?' selected':'')+'>'+E(n)+'</option>').join('');
+ const tgtList=t=>t==='kill'?mobList():t==='visit'?Object.values(WORLD_REGIONS).map(r=>[r.id,r.name]):itemList();
+ function cellHTML(F,c,r,i){const p='data-cf="'+F.f+'.'+i+'.'+c.f+'"',v=r[c.f];
+  if(c.t==='item')return'<select '+p+'><option value="">(pick)</option>'+opt(itemList(),v)+'</select>';
+  if(c.t==='tgt')return'<select '+p+' style="max-width:170px"><option value="">(pick)</option>'+opt(tgtList(r.t||'gather'),v)+'</select>';
+  if(c.t==='sel')return'<select '+p+'>'+opt(c.o(),v==null||v===''?c.o()[0][0]:v)+'</select>';
+  if(c.t==='chk')return'<input type="checkbox" '+p+(v?' checked':'')+'>';
+  if(c.t==='text')return'<input type="text" '+p+' maxlength="'+(c.max||40)+'" value="'+E(v||'')+'" style="width:150px">';
+  return'<input type="number" '+p+' min="'+c.min+'" max="'+c.max+'" value="'+(v!=null?E(v):'')+'" style="width:80px">'}
  function fieldHTML(F,o,id){const v=o[F.f],p='data-cf="'+F.f+'"';
+  if(F.t==='rq'){const r=v&&typeof v==='object'?v:{};return'<select data-cf="rq.s"><option value="-1">(no level needed)</option>'+opt(skillList(),r.s==null?'':r.s)+'</select> level <input type="number" data-cf="rq.l" min="1" max="99" value="'+(r.l||1)+'" style="width:70px">'}
   if(F.t==='text')return'<input type="text" '+p+' maxlength="'+(F.max||40)+'" value="'+E(v||'')+'">';
   if(F.t==='long')return'<textarea '+p+' maxlength="400" rows="2" style="width:100%">'+E(v||'')+'</textarea>';
   if(F.t==='num')return'<input type="number" '+p+' min="'+F.min+'" max="'+F.max+'" value="'+(v==null?'':E(v))+'" style="width:110px">';
@@ -193,8 +242,19 @@
   if(F.t==='pair'){const a=arr(v);return'<input type="number" data-cf="'+F.f+'.0" min="'+F.min+'" max="'+F.max+'" value="'+(a[0]|0)+'" style="width:90px"> – <input type="number" data-cf="'+F.f+'.1" min="'+F.min+'" max="'+F.max+'" value="'+(a[1]|0)+'" style="width:90px">'}
   if(F.t==='multi'){const a=arr(v);return'<div>'+a.map((k,i)=>'<span class="dv-b" style="display:inline-flex;gap:4px;margin:2px">'+E((MOBS()[k]||{}).n||k)+'<a href="#" data-cfx="mdel:'+F.f+':'+i+'">×</a></span>').join('')+'<select data-cfm="'+F.f+'"><option value="">+ add</option>'+opt(F.o(),'')+'</select></div>'}
   if(F.t==='rows'){const a=arr(v);let h='<table style="border-collapse:collapse"><tr>'+F.cols.map(c=>'<th class="dv-mut" style="text-align:left;font-weight:400;padding:2px 4px">'+c.l+'</th>').join('')+'<th></th></tr>';
-   a.forEach((r,i)=>{h+='<tr>'+F.cols.map(c=>'<td style="padding:2px 4px">'+(c.t==='item'?'<select data-cf="'+F.f+'.'+i+'.'+c.f+'"><option value="">(pick)</option>'+opt(itemList(),r&&r[c.f])+'</select>':'<input type="number" data-cf="'+F.f+'.'+i+'.'+c.f+'" min="'+c.min+'" max="'+c.max+'" value="'+(r&&r[c.f]!=null?E(r[c.f]):'')+'" style="width:80px">')+'</td>').join('')+'<td><button class="dv-b" data-cfx="rdel:'+F.f+':'+i+'">×</button></td></tr>'});
+   a.forEach((r,i)=>{h+='<tr>'+F.cols.map(c=>'<td style="padding:2px 4px">'+cellHTML(F,c,r||{},i)+'</td>').join('')+'<td><button class="dv-b" data-cfx="rdel:'+F.f+':'+i+'">×</button></td></tr>'});
    return h+'</table><button class="dv-b" data-cfx="radd:'+F.f+'">+ Add a row</button>'}return''}
+ // ---- quest map: every chain drawn as a tree (arrows = "comes after", labels = the choice it needs) ----
+ function questMap(selId){const Q=sec('quests'),ids=Object.keys(Q).filter(k=>Q[k]&&typeof Q[k]==='object');if(!ids.length||(selId&&!Q[selId]))return'';
+  const kids=p=>ids.filter(q=>Q[q]&&Q[q].after===p);let roots=ids.filter(q=>!Q[q].after||!Q[Q[q].after]);if(selId){let r=selId;for(let i=0;i<20&&Q[r]&&Q[r].after&&Q[Q[r].after];i++)r=Q[r].after;roots=[r]}
+  const tsk={gather:'🎒',kill:'⚔️',visit:'⛵'};
+  const node=(id,seen,lab)=>{const q=Q[id],steps=[q,...arr(q.steps)],chs=arr(q.ch).filter(c=>c&&c.l);
+   let h='<div class="dv-qn"><div class="dv-qb'+(id===selId?' dv-on':'')+'" data-cfs="'+E(id)+'">'+(lab?'<div class="dv-ql">if they picked “'+E(lab)+'”</div>':'')+'<b>'+E(q.n||id)+'</b><div class="dv-qs">'+steps.map(t=>tsk[t.t||'gather']||'•').join(' → ')+(steps.length>1?' · '+steps.length+' steps':'')+(q.rq&&q.rq.l>1?' · '+E((SKN[q.rq.s]||'')+' '+q.rq.l):'')+'</div>'+
+    (chs.length?'<div class="dv-qc">'+chs.map(c=>'<span>'+E(c.l)+'</span>').join('')+'</div>':'')+(GIVERS[id]||!C.quests[id]?'':'<div class="dv-ql" style="color:#e88">nobody gives it</div>')+'</div>';
+   const K=seen.has(id)?[]:kids(id);seen.add(id);
+   if(K.length)h+='<div class="dv-qk">'+K.map(k=>{const ac=Q[k].ac;const lb=ac!=null&&ac!==''&&+ac>=0?((chs[+ac]||{}).l||'choice '+(+ac+1)):'';return node(k,seen,lb)}).join('')+'</div>';return h+'</div>'};
+  const seen=new Set();return'<div class="dv-card"><b>'+(selId?'This quest\'s chain':'Quest chains')+'</b><p class="dv-mut" style="font-size:12px">Tap a quest to edit it. 🎒 bring items · ⚔️ defeat monsters · ⛵ go somewhere. Branches open only after the pick above them.</p><div class="dv-qm">'+roots.map(r=>node(r,seen,'')).join('')+'</div></div>'}
+ if(!document.getElementById('dvqmcss')){const st=document.createElement('style');st.id='dvqmcss';st.textContent='.dv-qm{display:flex;flex-direction:column;gap:14px;overflow-x:auto;padding:4px 0}.dv-qn{display:flex;flex-direction:column;align-items:center}.dv-qb{border:2px solid #6a5a88;background:#241c34;border-radius:8px;padding:6px 10px;min-width:130px;max-width:220px;text-align:center;cursor:pointer;font-size:13px}.dv-qb.dv-on{border-color:#f8d048;box-shadow:0 0 0 2px #f8d04855}.dv-qs{font-size:11px;opacity:.75;margin-top:2px}.dv-qc{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:4px}.dv-qc span{background:#3a2e52;border-radius:10px;padding:1px 7px;font-size:11px}.dv-ql{font-size:10px;color:#f8d048;margin-bottom:2px}.dv-qk{display:flex;gap:12px;align-items:flex-start;padding-top:18px;position:relative}.dv-qk>.dv-qn{position:relative}.dv-qk>.dv-qn:before{content:"";position:absolute;top:-18px;left:50%;height:18px;border-left:2px solid #6a5a88}.dv-qk:before{content:"";position:absolute;top:0;left:50%;height:0}.dv-qk>.dv-qn:not(:only-child):after{content:"";position:absolute;top:-18px;left:-6px;right:-6px;border-top:2px solid #6a5a88}.dv-qk>.dv-qn:first-child:after{left:50%}.dv-qk>.dv-qn:last-child:after{right:50%}';document.head.appendChild(st)}
  function render(){const s=ST.sec,D=SECS[s],L=sec(s),Lv=S.live&&S.live.content&&S.live.content[s]||{};
   let h='<div class="dv-row" style="flex-wrap:wrap;margin-bottom:8px">'+Object.entries(SECS).map(([k,d])=>'<button class="dv-b'+(ST.sec===k?' dv-tl dv-on':'')+'" data-cfx="sec:'+k+'">'+d.l+'</button>').join('')+'</div>';
   const ids=[...(D.fixed||[]),...Object.keys(L).filter(k=>!(D.fixed||[]).includes(k)).sort()];
@@ -202,10 +262,10 @@
   for(const id of ids){const o=L[id],same=JSON.stringify(o)===JSON.stringify(Lv[id]);h+='<button class="dv-it'+(ST.sel===id?' dv-on':'')+'" data-cfs="'+E(id)+'" style="flex-direction:row;justify-content:flex-start;padding:8px 10px">'+(o?'<i class="dv-bd dv-'+(same?'live':'draft')+'">'+(same?'LIVE':'DRAFT')+'</i>':'')+
    (s==='items'&&o?'<img src="'+iconURL(id)+'" style="width:20px;height:20px;image-rendering:pixelated;margin-right:6px" alt="">':'')+'<span style="font-size:13px;text-align:left">'+E(titleOf(s,id,o))+'</span></button>'}
   if(!ids.length)h+='<p class="dv-mut">Nothing yet.</p>';h+='</div></div><div class="dv-ed">';
-  if(!ST.sel||!ST.w)h+='<div class="dv-card"><b>'+D.l+'</b><p class="dv-mut">'+D.hint+'</p></div>';
+  if(!ST.sel||!ST.w)h+='<div class="dv-card"><b>'+D.l+'</b><p class="dv-mut">'+D.hint+'</p></div>'+(s==='quests'?questMap(null):'');
   else{const o=ST.w,id=ST.sel;h+='<div class="dv-card"><div class="dv-row"><b style="font-size:16px">'+E(titleOf(s,id,o))+'</b><span class="dv-mut">'+E(s==='mobs'?'monster key '+keyOf(id):id)+'</span></div>';
    for(const F of D.F){if(F.if&&!F.if(o,id))continue;h+='<div style="margin:8px 0"><label class="dv-mut" style="display:block;margin-bottom:2px">'+F.l+'</label>'+fieldHTML(F,o,id)+'</div>'}
-   if(s==='quests'){const G=GIVERS[id];h+='<p class="dv-mut">'+(G?'Given by '+E(G.name)+' on '+E((WORLD_REGIONS[G.area]||{}).name||G.area)+'.':'Nobody gives it yet: in the island builder, pick a person and set their job to this quest (save the island).')+'</p>'}
+   if(s==='quests'){h+=questMap(id);const G=GIVERS[id];h+='<p class="dv-mut">'+(G?'Given by '+E(G.name)+' on '+E((WORLD_REGIONS[G.area]||{}).name||G.area)+'.':'Nobody gives it yet: in the island builder, pick a person and set their job to this quest (save the island).')+'</p>'}
    if(s==='shops'&&/^cs_/.test(id))h+='<p class="dv-mut">Shopkeepers: in the island builder, pick a person and set their job to this shop. Players can also sell anything with a sell price there.</p>';
    h+='<div class="dv-row" style="margin-top:10px;flex-wrap:wrap"><button class="dv-b dv-pri" data-cfx="save">Save to draft</button>'+(s==='items'?'<button class="dv-b" data-cfx="icon">Draw its icon</button>':'')+(s==='mobs'?'<button class="dv-b" data-cfx="look">Its look, damage and drops (Monsters)</button>':'')+
     (s==='loot'?'<button class="dv-b" data-cfx="try">Roll it 10 times</button>':'')+((D.fixed||[]).includes(id)&&!sec(s)[id]?'':'<button class="dv-b '+(S.arm==='cfdel'?'dv-arm':'dv-bad')+'" data-cfx="del">'+(S.arm==='cfdel'?'Tap again to delete':(D.fixed||[]).includes(id)?'Remove added stock':'Delete')+'</button>')+'</div>'+
@@ -215,7 +275,10 @@
  function fieldFor(f){return SECS[ST.sec].F.find(F=>F.f===f.split('.')[0])}
  function onEdit(t){const path=t.dataset.cf,F=fieldFor(path);if(!F||!ST.w)return;let v=t.type==='checkbox'?(t.checked?1:0):t.value;
   const sub=path.split('.');const col=F.t==='rows'?F.cols.find(c=>c.f===sub[2]):null;const ty=col?col.t:F.t;
-  if(ty==='num'||ty==='pair'||(F.f==='xs'))v=v===''?'':+v;setPath(ST.w,path,v);if(F.t==='sel'||F.t==='item'||F.t==='chk'||F.f==='t')API.draw()}
+  if(ty==='num'||ty==='pair'||ty==='rq'||(F.f==='xs')||F.f==='ac')v=v===''?'':+v;setPath(ST.w,path,v);
+  if(F.t==='rq'&&ST.w.rq&&+ST.w.rq.s<0)delete ST.w.rq;
+  if(col&&col.f==='t'&&ST.w[F.f]&&ST.w[F.f][+sub[1]])ST.w[F.f][+sub[1]].k='';
+  if(F.t==='sel'||F.t==='item'||F.t==='chk'||F.f==='t'||F.t==='rq'||(col&&(col.t==='sel'||col.t==='chk')))API.draw()}
  document.addEventListener('change',e=>{if(S.tab!=='content')return;const t=e.target;if(!document.getElementById('dvs').contains(t))return;
   if(t.dataset.cf)onEdit(t);else if(t.dataset.cfm&&t.value){const a=arr(ST.w[t.dataset.cfm]);if(!a.includes(t.value))a.push(t.value);ST.w[t.dataset.cfm]=a;API.draw()}},true);
  document.addEventListener('input',e=>{if(S.tab!=='content')return;const t=e.target;if(t.dataset&&t.dataset.cf&&(t.type==='text'||t.type==='number'||t.tagName==='TEXTAREA')){const F=fieldFor(t.dataset.cf);if(F&&F.t!=='sel')onEdit(t)}},true);
@@ -228,7 +291,7 @@
   if(a==='sec'){ST.sec=b;ST.sel=null;ST.w=null;API.draw();return}
   if(a==='new'){const D=SECS[ST.sec],o=D.blank();const nm=o.n||'recipe';let id=slug(D.pre,nm+' '+(Object.keys(sec(ST.sec)).length+1)),k=2;while(sec(ST.sec)[id]||(ST.sec==='items'&&INAME[id]))id=slug(D.pre,nm+' '+(Object.keys(sec(ST.sec)).length+(k++)));
    ST.sel=id;ST.w=o;API.draw();setTimeout(()=>{const f=document.querySelector('#dvs [data-cf="n"]');if(f){f.focus();f.select()}},50);return}
-  if(a==='radd'){const L=arr(ST.w[b]);const F=fieldFor(b);const r={};for(const c2 of F.cols)r[c2.f]=c2.t==='num'?c2.min:'';L.push(r);ST.w[b]=L;API.draw();return}
+  if(a==='radd'){const L=arr(ST.w[b]);const F=fieldFor(b);const r={};for(const c2 of F.cols)r[c2.f]=c2.t==='num'?c2.min:c2.t==='sel'?c2.o()[0][0]:c2.t==='chk'?0:'';L.push(r);ST.w[b]=L;API.draw();return}
   if(a==='rdel'){const L=arr(ST.w[b]);L.splice(+c,1);ST.w[b]=L;API.draw();return}
   if(a==='mdel'){const L=arr(ST.w[b]);L.splice(+c,1);ST.w[b]=L;API.draw();return}
   if(a==='save'){if(ST.sec==='items'&&!/^it_/.test(ST.sel))return;save();return}

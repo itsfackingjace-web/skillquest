@@ -525,3 +525,8 @@
   111a's `apply` keeps a copy of the applied stats (`applied`), so a row deleted from the draft is still put back.
 - **Material names in recipe lists**: `matN(k)` (004, global) = `SHORT[k]` or the item's name lowercased; 004/006/007/011 use it (they printed
   raw keys, so Content items showed as `it_...`). Use it in any new list of materials.
+- **Quest chains** (162): a content quest is step 0 (its own t/k/amt/take, line `d`) plus `steps` [{t,k,amt,take,say}], each handed in to
+  the giver (CQ[id+'@'] = step, CQ[id+'#'] = kills/arrival of that step). `ch` = up to 4 end choices [{l,say,g,xs,xp,rk,rn}] shown on a
+  card (`ptab` 42); the pick is kept as CQ[id+'!'] and a quest with `after` + `ac` (choice index, -1 any) only opens after that pick.
+  `lp` reminder line, `ld` done line, `rq` {s,l} skill level before it's offered. A giver's `quest:` list is expanded with every quest
+  that comes after one of them (`chainOf`), so new branches need no change to the island. Content > Quests draws the chains as a tree.
