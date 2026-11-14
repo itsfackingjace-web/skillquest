@@ -9388,6 +9388,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-2',d:'Nov 14, 2026',t:'Controller highlight fix',n:['The gold controller highlight no longer floats over windows opened on top of a menu.']},
  {v:'2026.11.14-1',d:'Nov 14, 2026',t:'Smarter eating, pet powers, new crops',n:['EAT now picks food for you: when you\'re hurt it uses the smallest food that heals what\'s missing, and at full health it saves your good food. Potions and special meals stay in your Bag for you to USE.','Want a favourite? Select a food in your Bag and tap ☆ EAT FIRST: EAT will always use it first.','Cooking at a campfire with more than one kind of raw food now asks what to cook: one, all of one kind, or everything. You can also eat instead.','Pets can have new powers: some pets may now fight beside you (melee, arrows, magic or a burst), heal you, bring you things, find extra loot, give more XP or gold, or block hits. A pet\'s description in your Bag says what it does.','New crops can now be added to farms, with their own seeds at the general store.','Bandits, cacticus and some bosses can now have special shots.']},
  {v:'2026.11.13-38',d:'Nov 13, 2026',t:'Dev Suite: Erase all',n:['Picture editors in the Dev Suite have an Erase all button that clears the picture (or frame/layer) you are on. Undo brings it back.']},
  {v:'2026.11.13-37',d:'Nov 13, 2026',t:'New gear effects',n:['Gear can now give more melee, arrow or magic damage, faster mana and health regeneration, slower hunger and more gold from monsters. Check an item\'s description to see what it gives.']},
@@ -18579,7 +18580,8 @@ window.SQA=SQA;
 // anything drawn outside; on the light menus a thin orange line inside a bordered button was hard to spot. This draws a
 // separate ring on its own layer (fixed, on top of everything, never clipped) around whatever GPF is: a thick gold ring with a
 // dark edge, so it shows on light and dark screens, gently pulsing. It follows the element every frame (scrolling, cards
-// opening, screens redrawing) and hides when the controller isn't in use or nothing is highlighted.
+// opening, screens redrawing) and hides when the controller isn't in use, nothing is highlighted, or the highlighted thing is covered
+// (the Dev Suite or a popup over the menu).
 (()=>{const st=document.createElement('style');st.textContent=`
 #sqgpr{position:fixed;left:0;top:0;width:0;height:0;z-index:2147483000;pointer-events:none;display:none;box-sizing:border-box;
  border:4px solid #ffc020;border-radius:8px;box-shadow:0 0 0 2px #1c2440,inset 0 0 0 2px #1c2440,0 0 14px 4px rgba(255,190,30,.75);
@@ -18594,9 +18596,12 @@ window.SQA=SQA;
 .gpf.gpf.gpf{filter:brightness(1.07)}`;document.head.appendChild(st);
  const R=document.createElement('div');R.id='sqgpr';document.body.appendChild(R);
  let last='';
+ // hidden when something else (the Dev Suite, a popup) covers the highlighted button: test a few points inside it
+ function covered(el,r){const pts=[[.5,.5],[.2,.5],[.8,.5],[.5,.25],[.5,.75]];for(const[fx,fy]of pts){const x=Math.min(innerWidth-1,Math.max(0,r.left+r.width*fx)),y=Math.min(innerHeight-1,Math.max(0,r.top+r.height*fy));
+   const h=document.elementFromPoint(x,y);if(!h||h===el||el.contains(h)||h.contains(el))return false}return true}
  function tick(){try{const el=typeof GPF!=='undefined'?GPF:null,on=typeof GPON!=='undefined'&&GPON;
    let show=false;if(on&&el&&el.isConnected){const r=el.getBoundingClientRect();
-    if(r.width>0&&r.height>0&&r.bottom>0&&r.right>0&&r.top<innerHeight&&r.left<innerWidth&&getComputedStyle(el).visibility!=='hidden'){
+    if(r.width>0&&r.height>0&&r.bottom>0&&r.right>0&&r.top<innerHeight&&r.left<innerWidth&&getComputedStyle(el).visibility!=='hidden'&&!covered(el,r)){
      const p=r.width<60||r.height<24?3:4,x=Math.round(r.left-p-1),y=Math.round(r.top-p-1),w=Math.round(r.width+2*p+2),h=Math.round(r.height+2*p+2),
       sm=r.width<300||r.left<24||innerWidth-r.right<24,k=x+','+y+','+w+','+h+','+sm;
      if(k!==last){last=k;R.style.transform='translate('+x+'px,'+y+'px)';R.style.width=w+'px';R.style.height=h+'px';R.classList.toggle('sm',sm)}show=true}}
