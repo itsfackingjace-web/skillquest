@@ -555,3 +555,8 @@
   `MP.selfSaid` for the inner call (061 then draws names only) and draws speech bubbles itself: wrapped (3 lines), 4 s + 70 ms a
   character, newest first (your own always first), stacked upward, else under the speaker's feet, else a "…" dot; never over the
   HUD corners (`hudLayout`) or the touch buttons / ONLINE / BUG / event pills (DOM rects, keep-out list `KO`). Cap 4 (5 on big screens).
+- **Controller in the Dev Suite** (`ui/188-s196-dev-suite-controller.js`, `window.SQDVPAD`): outermost `navRoot` returns `#dvs` while the
+  suite is open (the on-screen keyboard and request popups still win); `navItems` adds `.dv-qb,.dv-evr,[data-simrow],[data-simsort],#dvc`
+  (add new clickable non-buttons there). Outermost `pollPad`: ○ = the open card's `[data-a="back"]` / drop the item / close, L1/R1 =
+  tabs; ✕ on `#dvc` = draw mode (pixel cursor, ✕ held = a real pointer stroke with pointerType 'pen', △ tool, □ undo, L1/R1 colour,
+  ○ done), which owns the pad and writes GPPREV itself.

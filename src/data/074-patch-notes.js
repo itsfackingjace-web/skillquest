@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-15',d:'Nov 14, 2026',t:'Behind the scenes: controller in the Dev Suite',n:['The developer\'s tools now work with a controller too, including drawing sprites with the D-pad.']},
  {v:'2026.11.14-14',d:'Nov 14, 2026',t:'Chat bubbles',n:['What players say now shows in speech bubbles over their heads instead of long yellow lines, wrapped to a few short lines.','Bubbles keep out of each other\'s way, never cover your status box, map or buttons, and stay up a little longer for longer messages.','When lots of people talk at once, older messages shrink to a small … bubble. The full chat is always in the chat window.']},
  {v:'2026.11.14-13',d:'Nov 14, 2026',t:'Room for new perks',n:['Skill trees can now get new perks, including a third choice at some levels and choices at levels that had none. New perks show up in each skill\'s tree as they arrive.']},
  {v:'2026.11.14-12',d:'Nov 14, 2026',t:'Behind the scenes: fairer rewards',n:['The developer can now measure exactly how much gold and loot every monster gives per hour, so rewards can be balanced across the islands.']},
