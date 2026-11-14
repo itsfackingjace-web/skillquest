@@ -203,9 +203,15 @@
   scenes. Cooking (`nearFire(P.x,P.y,45)`) needs a real fire, not a castle. Boats can't enter `BRIDGE` tiles. Hollow's
   generator in 001 pushes land down within 18 tiles of the map edge (open sea); saves with builds/houses/farm there get
   them packed into the bag on load.
-- **Voyages** (051): Sera (`n.id==='sera'`, Tidewatch) runs every voyage: `navCards()` on her `twPanel`, `nav_acc/rep/hand`
-  through `xAct` → `voyAct(a,true)`. Harbor posts keep routes and boat upgrades. `navSpot()` = the Navigator's House door
-  (102's tracker uses it).
+- **Voyages** (051): Sera (`n.id==='sera'`, Tidewatch) runs every voyage and both boat upgrades: `navCards()` on her `twPanel`
+  (under way, upgrades she can fit, new voyages, "Coming later" with what opens each), `nav_acc/rep/hand/craft` through `xAct` →
+  `voyAct(a,true)`. Harbor posts (`routesHTML`) are fast travel only: charted routes, locked ones say "Not charted yet" + a line
+  pointing to Sera. `post` on VOYS/UPGRADES is no longer shown anywhere. `navSpot()` = the Navigator's House door (102's tracker,
+  also for upgrades).
+- **Wiki** (075, inside the MP block: edit in place): `start` tab is "Home" (next steps from `QS[Q.i]`/VOYS, `.hub` buttons to
+  every tab, controls, tips); `wkGrid` puts runs of `.c` cards in a 2-column `.cg` grid at ≥900px (panel max 1100px); patch notes
+  show 12 until `WK.allp` (`data-wkm`); islands say how to get there via `wkRoute(id)` (charted / which voyage); the voyage guide
+  lists each voyage with the player's own progress.
 - **Descriptions**: `SQSTRIPSTATS` (084) removes a leading stats line from saved description text, so library items saved
   with their stats in them don't show them twice. `SQPROPS.mkey` uses `rv` or `vr` (dungeon monsters keep variants in `vr`);
   the Monsters tab lists dungeon-only variants. The wiki (075, inside the MP block) redraws monster pictures on every open
