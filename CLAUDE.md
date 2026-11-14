@@ -593,3 +593,11 @@
   `WORLD_STATE.hollow.loot`), people through 117's `npcs()`/`talkTo` (pseudo region `SQHOLLOWP.R`), entrances = kinds `cv_hollow_e<k>`
   (walk up into them, `icvEnter`; `dg` designs too), zones spawn with `rgMake` and are kept in `KEEP` (daylight melt healed back,
   re-added to `en` like 184's EVM), own tiles drawn in `GROUNDHOOK`. Placement never on HARD (or SOFT without Unlock).
+- **Talking to sleepers** (`world/194-s202-talk-to-sleepers.js`, `SQSLEEPTALK`): folk asleep (`n.scene` = room+'#bed') are found by bed
+  position; the outermost `talk` puts the sleeper in the room's scene at the bed for that call (005's `nearNpc` then finds them), TALK
+  button + `SQPADUSE`. 085's imp drops a target that's no longer in `en` (and isn't the world boss) or has no health left.
+- **Game feel** (`combat/195-s203-game-feel.js`, `SQFEEL`): end of the outermost `upd` compares nearby monsters' health with last frame:
+  hit = sparks, killed (hp<=0 or `_kp` from the outermost `killEnemy`) = smoke puff in `COL` colours; shake = CSS transform on `cv`
+  (Options "Screen shake", localStorage `sq_shake`, also gates 015's `shakeScreen`). Monsters inside a solid tile for 0.75 s are moved
+  to the nearest free spot (skips big/boss/cb/under/_rp/ghost/wisp). 192 now counts make-all materials when `sqDo` is called (after
+  039's station merge).

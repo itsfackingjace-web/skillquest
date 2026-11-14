@@ -202,6 +202,8 @@ ui/190-s198-menu-leaderboard.js
 ui/191-s199-hide-chat.js
 skills/192-s200-make-all-count.js
 dev/193-s201-hollow-edits.js
+world/194-s202-talk-to-sleepers.js
+combat/195-s203-game-feel.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

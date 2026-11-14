@@ -90,7 +90,7 @@ var LUX={};
    if(!(window.SQPETOFF&&SQPETOFF('imp'))&&(P.hp<hp0||(hurt>0&&h0<=0))){let best=null,bd=48;for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y)-(n.big?24:0);if(d<bd){bd=d;best=n}}
     if(!best&&WB_ENT())best=WB_ENT();if(best){IMP.tgt=best;IMP.ptgt=null}}
    let tx=P.x-(face[0]?face[0]*16:10),ty=P.y+(face[1]?-face[1]*10:4)+2,goal=null;
-   const T=IMP.tgt;if(T&&(T.dead||Math.hypot(T.x-P.x,T.y-P.y)>180))IMP.tgt=null;
+   const T=IMP.tgt;if(T&&(T.dead||T.hp<=0||(!en.includes(T)&&T!==WB_ENT())||Math.hypot(T.x-P.x,T.y-P.y)>180))IMP.tgt=null;// a boss that's gone from en (shared island boss beaten, world boss left) isn't a target any more
    const PT=IMP.ptgt&&window.SQIMPPVP?SQIMPPVP.pos(IMP.ptgt):null;if(IMP.ptgt&&!PT)IMP.ptgt=null;
    if(IMP.tgt){goal=IMP.tgt;tx=goal.x+(IMP.x<goal.x?-10:10)*(goal.big?2.2:1);ty=goal.y+2}else if(PT){goal=PT;tx=PT.x+(IMP.x<PT.x?-9:9);ty=PT.y}
    const dx=tx-IMP.x,dy=ty-IMP.y,dd=Math.hypot(dx,dy);if(dd>220){IMP.x=tx;IMP.y=ty}else if(dd>3){const sp=Math.min(dd,(goal?120:dd>40?110:60)*dt);IMP.x+=dx/dd*sp;IMP.y+=dy/dd*sp;IMP.t+=dt*8}
