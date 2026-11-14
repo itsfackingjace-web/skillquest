@@ -19,7 +19,7 @@
 //   gname/<lowercase name> = g, gmem/<uid> = g, ginv/<uid>/<g> {gn,tag,by,bn,t}
 // Saved on the device (localStorage sq_guild): the guild id/name/colour and what's planted, so the island is registered at
 // start-up and a save made on it loads back there. Presence carries `gt` (tag) and `gc` (colour index) for others' name tags.
-(()=>{const Mp=()=>window.SQMP,Fm=()=>window.SQFB,on=()=>!!(Mp()&&Mp().on&&Mp().user&&Fm()),me=()=>Mp().user.uid,ref=p=>Fm().db.ref(Fm().D,p),DB=()=>Fm().db;
+(()=>{const Mp=()=>window.SQMP,Fm=()=>window.SQFB,on=()=>!!(Mp()&&Mp().on&&Mp().user&&Fm()),me=()=>Mp().user.uid,ref=p=>p?Fm().db.ref(Fm().D,p):Fm().db.ref(Fm().D),DB=()=>Fm().db;
  const LSG=k=>{try{return localStorage.getItem(k)}catch(e){return null}},LSS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const myN=()=>{let n='';try{n=(typeof PNAME!=='undefined'&&PNAME)||((Mp().user&&Mp().user.displayName)||'').split(' ')[0]}catch(e){}return String(n||'Adventurer').replace(/[<>]/g,'').slice(0,12)};
@@ -107,7 +107,7 @@
  function stopDB(){started=false;stopAll();if(meOff){meOff();meOff=null}if(invOff){invOff();invOff=null}}
  function leftGuild(msg){const id=G.id;stopAll();G.id='';G.info=null;G.m={};G.q=null;G.isl={};G.bank={i:{},v:0};G.ready=false;keep();
   if(onIsle()){try{routeGo('hollow')}catch(e){}}setTimeout(unregister,1500);try{if(on())DB().set(ref('gmem/'+me()),null).catch(()=>{})}catch(e){}if(msg){say(msg);msgT=5}redraw()}
- const fail=e=>{const m=String(e&&(e.code||e.message)||e);say(/permission/i.test(m)?'Someone else in the guild changed this at the same moment. Try again.':'Could not reach the server. Try again.');sfx('swish')};
+ const fail=e=>{try{console.warn('guild',e)}catch(x){}const m=String(e&&(e.code||e.message)||e);say(/permission/i.test(m)?'Someone else in the guild changed this at the same moment. Try again.':'Could not reach the server. Try again.');sfx('swish')};
  const uid8=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
  // every bank change: the new counts, v+1 and a log entry, in one update (the rules refuse it if v moved meanwhile)
  function bankUpdate(changes,entry,extra){const B=G.bank||{i:{},v:0},i=Object.assign({},B.i||{}),up={},lid=uid8();
