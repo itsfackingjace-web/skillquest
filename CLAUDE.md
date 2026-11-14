@@ -622,3 +622,10 @@
   (`it._gn`; void sapling = tree with `v:'dark'`). Board/bank use `use:'gboard'|'gbank'` (outermost `useFurn`); banner `gflag` drawn in the outermost `drawFurn`.
   Presence carries `gt`/`gc` (061, both ends); `[TAG]` drawn via `SQPEERFX`. Player menu (130) asks `SQGUILDPM(u)`/`SQGUILDINVITE(u)`. Rules: `guilds`,
   `glog`, `gname`, `gmem`, `ginv` (publish them). Rules were tested with a local evaluator (scratchpad `rulesdb.cjs`/`rulestest.cjs`), not the real emulator. The real SDK's `ref(db,'')` throws (empty path): use `ref(db)` for the root (197's `ref` helper does). **RTDB rules have no `numChildren()`** (the console refused it): the 30-member cap is the game's (`MAXM`), and the rules let the leader delete the whole guild.
+  Guild screen classes are all prefixed `gd` (`gdgr`, `gdgi`, ...): 011/007/022/... already use `.gr`/`.gi` (crafting/anvil/furnace rows), and
+  197's first `#pn .gr` rules restyled every station screen. **Prefix the CSS classes of new panels** (check `grep 'class="name"'` first).
+- **Yards count as outdoors for weather and fighting** (`items/198-s206-yard-weather-and-training.js`, `SQYARDOUT`): `ROOMS.yard/court.cave`
+  is a getter that is true only while the outermost `castSpell`/`shootAim`/`castUlt`/`drawCrosshair` run in a yard (the "Not indoors!" checks
+  read `SCENE.room.cave`; everything else still sees a normal room: no cave darkness/music/caveAttack). The outermost `drawHUD` draws 021's
+  `drawWeather` in yards, and `biomeHere` in a yard = the Hollow biome around the house door (`SCENE.ret`), grass for island homes.
+

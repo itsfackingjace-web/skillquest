@@ -33,7 +33,7 @@
   gs_tree:['Tree sapling','tree','🌱'],gs_oak:['Oak sapling','oak','🌱'],gs_willow:['Willow sapling','willow','🌱'],gs_maple:['Maple sapling','maple','🌱'],gs_yew:['Yew sapling','yew','🌱'],gs_void:['Void sapling','tree','🌱','dark'],
   gf_bush:['Berry bush','bush','🌿'],gf_nut:['Nut bush','nutbush','🌰'],gf_cactus:['Cactus seed','cactus','🌵'],gf_shroom:['Mushroom spores','shroom','🍄']};
  const nm=k=>NODE[k]?NODE[k][0]:(INAME[k]||(typeof iname==='function'?iname(k):k));
- const ic=k=>NODE[k]?'<span class="gi">'+NODE[k][2]+'</span>':(typeof iconURL==='function'?'<img class="gi" alt="" src="'+iconURL(k)+'">':'');
+ const ic=k=>NODE[k]?'<span class="gdgi">'+NODE[k][2]+'</span>':(typeof iconURL==='function'?'<img class="gdgi" alt="" src="'+iconURL(k)+'">':'');
  // ---- Guild Quests: one skill each; goals grow with the guild's size and level; rewards go into the bank ----
  // ---- Guild Quests: enormous shared goals (the whole guild, for weeks); when one is done the leader or an officer picks ONE
  // reward from its list, and it goes into the bank ----
@@ -189,14 +189,14 @@
  const redraw=()=>{if(pnOpen&&ptab===GT)rPn()};
  SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'guild',l:()=>G.id&&G.info?'Guild ['+(G.info.tag||'')+']':'Guild'});
  {const _ss=showScreen;showScreen=function(id){if(id==='guild'){open(G.id?'home':'home');return}return _ss.apply(this,arguments)}}
- const st=document.createElement('style');st.textContent=`#pn .gtb{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}#pn .gtb button{flex:1 1 auto;font:700 13px ${PF};padding:7px 8px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#pn .gtb button.on{background:#485870;color:#fff}
-#pn .gh{display:flex;align-items:center;gap:10px;padding:10px;border:3px solid #485870;background:#fff;margin-bottom:6px}#pn .gh .fl{width:26px;height:34px;flex:none;clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)}
-#pn .gh b{font-size:17px;color:#283c68}#pn .gr{display:flex;align-items:center;gap:8px;padding:7px 6px;border-bottom:1px solid #d8e0f0;color:#404040}#pn .gr .tx{flex:1;min-width:0;text-align:left}#pn .gr b{color:#283c68}#pn .gr .gi{flex:none}#pn .gr{text-align:left;justify-content:flex-start}#pn .gr small{display:block;font-size:12px;opacity:.75}
-#pn .gr button{font:700 12px ${PF};padding:5px 8px;border:2px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#pn .gr button:disabled{opacity:.45}
-#pn .gbar{height:12px;border:2px solid #485870;background:#d8e0f0;margin:6px 0}#pn .gbar i{display:block;height:100%;background:#48b868}
-#pn .gi{display:inline-block;width:20px;height:20px;text-align:center;font-size:16px;line-height:20px;image-rendering:pixelated;vertical-align:middle}
-#pn .gcl{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#pn .gcl button{width:30px;height:30px;border:3px solid #485870;cursor:pointer}#pn .gcl button.on{outline:3px solid #f8a020}
-#pn .gf input{font:600 15px ${PF};padding:6px;border:3px solid #485870;width:100%;box-sizing:border-box;margin:4px 0 8px}
+ const st=document.createElement('style');st.textContent=`#pn .gdgtb{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}#pn .gdgtb button{flex:1 1 auto;font:700 13px ${PF};padding:7px 8px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#pn .gdgtb button.on{background:#485870;color:#fff}
+#pn .gdgh{display:flex;align-items:center;gap:10px;padding:10px;border:3px solid #485870;background:#fff;margin-bottom:6px}#pn .gdgh .gdfl{width:26px;height:34px;flex:none;clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)}
+#pn .gdgh b{font-size:17px;color:#283c68}#pn .gdgr{display:flex;align-items:center;gap:8px;padding:7px 6px;border-bottom:1px solid #d8e0f0;color:#404040}#pn .gdgr .gdtx{flex:1;min-width:0;text-align:left}#pn .gdgr b{color:#283c68}#pn .gdgr .gdgi{flex:none}#pn .gdgr{text-align:left;justify-content:flex-start}#pn .gdgr small{display:block;font-size:12px;opacity:.75}
+#pn .gdgr button{font:700 12px ${PF};padding:5px 8px;border:2px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#pn .gdgr button:disabled{opacity:.45}
+#pn .gdgbar{height:12px;border:2px solid #485870;background:#d8e0f0;margin:6px 0}#pn .gdgbar i{display:block;height:100%;background:#48b868}
+#pn .gdgi{display:inline-block;width:20px;height:20px;text-align:center;font-size:16px;line-height:20px;image-rendering:pixelated;vertical-align:middle}
+#pn .gdgcl{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#pn .gdgcl button{width:30px;height:30px;border:3px solid #485870;cursor:pointer}#pn .gdgcl button.on{outline:3px solid #f8a020}
+#pn .gdgf input{font:600 15px ${PF};padding:6px;border:3px solid #485870;width:100%;box-sizing:border-box;margin:4px 0 8px}
 #gipop{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 150px);z-index:31;display:none;align-items:center;gap:8px;padding:8px 10px;max-width:calc(100vw - 24px);box-sizing:border-box;font:600 14px ${PF};background:#f8f0d8;color:#404040;border:4px solid #485870}
 #gipop span{flex:1;min-width:0}#gipop button{font:700 13px ${PF};padding:7px 12px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#gipop .ok{background:#38a050;border-color:#185828;color:#fff}`;document.head.appendChild(st);
  let newCol=5;
@@ -204,26 +204,26 @@
   if(!G.id){let h='<div class="tl">GUILD</div>';const inv=Object.entries(G.inv||{});
    for(const[gid,v]of inv)h+='<div class="qc"><b>Invite: '+esc(v.gn)+' ['+esc(v.tag)+']</b><p>'+esc(v.bn||'Someone')+' invited you to their guild.</p><button class="qb" data-g="acc:'+gid+'">Join</button> <button class="qb" data-g="dec:'+gid+'">No thanks</button></div>';
    h+='<div class="qc"><b>Found a guild</b><p>Your guild gets its own island that only members can sail to. Do Guild Quests together to fill the guild bank with ore veins, saplings, bushes and bait, then plant them to grow your island.</p>'+
-    '<div class="gf"><small>Name (3-20 letters)</small><input id="gfn" maxlength="20" placeholder="The Hollow Wardens"><small>Tag (2-4 letters, shown next to your names)</small><input id="gft" maxlength="4" placeholder="HOLW" style="text-transform:uppercase"><small>Colour</small><div class="gcl">'+
+    '<div class="gdgf"><small>Name (3-20 letters)</small><input id="gfn" maxlength="20" placeholder="The Hollow Wardens"><small>Tag (2-4 letters, shown next to your names)</small><input id="gft" maxlength="4" placeholder="HOLW" style="text-transform:uppercase"><small>Colour</small><div class="gdgcl">'+
     COLS.map((c,i)=>'<button data-g="col:'+i+'" class="'+(i===newCol?'on':'')+'" style="background:'+c+'" aria-label="Colour '+(i+1)+'"></button>').join('')+'</div></div>'+
     '<button class="qb" data-g="create"'+(GLD<COST?' disabled style="opacity:.5"':'')+'>Found it for '+COST.toLocaleString()+' gold</button>'+(GLD<COST?' <small>(you have '+GLD.toLocaleString()+')</small>':'')+'</div>'+
     '<div class="qc"><p>Or ask a guild\'s leader or an officer to invite you: walk up to them and they can pick INVITE TO GUILD.</p></div>';return h}
   if(!G.ready)return'<div class="tl">GUILD</div><div class="qc"><p>Loading your guild…</p></div>';
   const I=G.info||{},L=members(),lv=glv(G.prog.qd),r=role();
-  let h='<div class="tl">GUILD</div><div class="gh"><div class="fl" style="background:'+col()+'"></div><div style="flex:1"><b>'+esc(I.n)+' ['+esc(I.tag)+']</b><br><small>Level '+lv+' · '+L.length+' member'+(L.length===1?'':'s')+' · you are '+ROLE[r]+'</small></div></div>';
+  let h='<div class="tl">GUILD</div><div class="gdgh"><div class="gdfl" style="background:'+col()+'"></div><div style="flex:1"><b>'+esc(I.n)+' ['+esc(I.tag)+']</b><br><small>Level '+lv+' · '+L.length+' member'+(L.length===1?'':'s')+' · you are '+ROLE[r]+'</small></div></div>';
   const T=[['home','Members'],['quest','Quest'],['bank','Bank']].concat(boss()?[['log','Log']]:[]).concat(r==='l'?[['set','Settings']]:[]);
-  h+='<div class="gtb">'+T.map(([k,n])=>'<button data-g="tab:'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
+  h+='<div class="gdgtb">'+T.map(([k,n])=>'<button data-g="tab:'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
   if(tab==='home'){const P=Mp()&&Mp().players;
    for(const m of L){const rr=P&&P.get(m.u),onl=m.u===me()||(rr&&performance.now()-rr.seen<20000),where=m.u===me()?'You':onl?(rr.ar&&WORLD_REGIONS[rr.ar]?WORLD_REGIONS[rr.ar].name:'Online'):'Offline';
     let b='';if(m.u!==me()){if(r==='l'){b+=m.r==='m'?'<button data-g="role:'+m.u+':o">Make officer</button>':m.r==='o'?'<button data-g="role:'+m.u+':m">Make member</button>':'';b+=' <button data-g="role:'+m.u+':lead">Make leader</button>'}
      if(r==='l'||(r==='o'&&m.r==='m'))b+=' <button data-g="role:'+m.u+':kick">Remove</button>'}
-    h+='<div class="gr"><span style="color:'+(onl?'#38a050':'#a0a8b8')+'">●</span><div class="tx"><b>'+esc(m.n||'Player')+'</b><small>'+ROLE[m.r]+' · '+esc(where)+'</small></div>'+b+'</div>'}
+    h+='<div class="gdgr"><span style="color:'+(onl?'#38a050':'#a0a8b8')+'">●</span><div class="gdtx"><b>'+esc(m.n||'Player')+'</b><small>'+ROLE[m.r]+' · '+esc(where)+'</small></div>'+b+'</div>'}
    h+='<p style="font-size:13px;opacity:.85">'+(boss()?'Invite players by walking up to them and choosing INVITE TO GUILD.':'Leaders and officers can invite new members.')+' Your guild island: sail there from any harbor post.</p><button class="qb" data-g="leave">Leave guild</button>'}
   else if(tab==='quest'){const q=G.q;
    if(q&&QK[q.k]){const K=QK[q.k],c=q.c||{},top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,8),p=q.p|0;
-    h+='<div class="qc"><b>'+K.n+(q.done?' ✓':'')+'</b><p>'+K.verb+'. Everyone in the guild counts, anywhere you play.</p><div class="gbar"><i style="width:'+Math.min(100,100*p/q.goal)+'%"></i></div><small>'+p.toLocaleString()+' / '+q.goal.toLocaleString()+' · you: '+((c[me()]|0)+PEND).toLocaleString()+'</small>'+
+    h+='<div class="qc"><b>'+K.n+(q.done?' ✓':'')+'</b><p>'+K.verb+'. Everyone in the guild counts, anywhere you play.</p><div class="gdgbar"><i style="width:'+Math.min(100,100*p/q.goal)+'%"></i></div><small>'+p.toLocaleString()+' / '+q.goal.toLocaleString()+' · you: '+((c[me()]|0)+PEND).toLocaleString()+'</small>'+
      (top.length?'<p><small>Top helpers: '+top.map(([u,n])=>esc((G.m[u]&&G.m[u].n)||'Player')+' '+n.toLocaleString()).join(' · ')+'</small></p>':'');
-    if(q.done){h+='<p><b>Done! '+(boss()?'Pick one reward for the guild bank:':'The leader or an officer picks one of these rewards:')+'</b></p>';K.rw.forEach((r,i)=>{h+='<div class="gr">'+ic(Object.keys(r)[0])+'<div class="tx"><b>'+esc(rewTxt(r))+'</b></div>'+(boss()?'<button data-g="claim:'+i+'">Take this</button>':'')+'</div>'})}
+    if(q.done){h+='<p><b>Done! '+(boss()?'Pick one reward for the guild bank:':'The leader or an officer picks one of these rewards:')+'</b></p>';K.rw.forEach((r,i)=>{h+='<div class="gdgr">'+ic(Object.keys(r)[0])+'<div class="gdtx"><b>'+esc(rewTxt(r))+'</b></div>'+(boss()?'<button data-g="claim:'+i+'">Take this</button>':'')+'</div>'})}
     else h+='<p><small>When it\'s done, the leader or an officer picks one reward: '+esc(K.rw.map(rewTxt).join(' or '))+'.</small></p>'+(r==='l'?'<button class="qb" data-g="cancelq" style="margin-top:8px">Give up this quest</button>':'');
     h+='</div>'}
    else{h+='<div class="qc"><p>'+(boss()?'Pick the next Guild Quest. They are huge: the whole guild works on one together, and finishing it lets you pick a reward to plant on your island.':'Waiting for the leader or an officer to pick the next Guild Quest.')+'</p></div>';
@@ -232,22 +232,22 @@
    h+='<p style="font-size:12px;opacity:.75">Quests done: '+(G.prog.qd|0)+' · guild level '+glv(G.prog.qd)+'.</p>'}
   else if(tab==='bank'){const B=G.bank.i||{},keys=Object.keys(B).filter(k=>B[k]>0),nodes=keys.filter(k=>NODE[k]),items=keys.filter(k=>!NODE[k]),chest=nearChest(),lim=wdLimit();
    h+='<div class="qc"><b>To plant</b>'+(nodes.length?'':'<p>Nothing yet. Finish Guild Quests to get ore veins, saplings and bushes.</p>');
-   for(const k of nodes)h+='<div class="gr">'+ic(k)+'<div class="tx"><b>'+nm(k)+' × '+B[k]+'</b><small>Grows into: '+NODE[k][1].replace('nutbush','nut bush')+'</small></div>'+(boss()?'<button data-g="plant:'+k+'">Plant in front of me</button>':'')+'</div>';
+   for(const k of nodes)h+='<div class="gdgr">'+ic(k)+'<div class="gdtx"><b>'+nm(k)+' × '+B[k]+'</b><small>Grows into: '+NODE[k][1].replace('nutbush','nut bush')+'</small></div>'+(boss()?'<button data-g="plant:'+k+'">Plant in front of me</button>':'')+'</div>';
    h+=(boss()?'<p style="font-size:12px;opacity:.8">Stand on your guild island facing open ground, then tap Plant. <button class="qb" data-g="dig">Dig up what I\'m facing</button></p>':'<p style="font-size:12px;opacity:.8">The leader and officers plant these on the island.</p>')+'</div>';
    h+='<div class="qc"><b>Items</b>'+(chest?'':'<p style="font-size:12px;opacity:.8">Use the bank chest on your guild island to put things in or take them out.</p>')+
     (chest?'<p style="font-size:12px;opacity:.8">You can take out '+(lim<0?'any amount':lim===0?'nothing (your rank)':(Math.max(0,lim-wdToday()))+' more today')+'.</p>':'');
-   for(const k of items)h+='<div class="gr">'+ic(k)+'<div class="tx"><b>'+esc(nm(k))+' × '+B[k]+'</b></div>'+(chest&&lim!==0?'<button data-g="wd:'+k+':1">Take 1</button><button data-g="wd:'+k+':10">10</button>':'')+'</div>';
+   for(const k of items)h+='<div class="gdgr">'+ic(k)+'<div class="gdtx"><b>'+esc(nm(k))+' × '+B[k]+'</b></div>'+(chest&&lim!==0?'<button data-g="wd:'+k+':1">Take 1</button><button data-g="wd:'+k+':10">10</button>':'')+'</div>';
    if(!items.length)h+='<p>Empty.</p>';
    if(chest){h+='<b style="display:block;margin-top:10px">Your bag</b>';const bag=Object.keys(inv).filter(k=>(inv[k]|0)>0&&INAME[k]&&!/^pet_|^eq_/.test(k)).sort((a,b)=>String(INAME[a]).localeCompare(INAME[b]));
-    for(const k of bag)h+='<div class="gr">'+ic(k)+'<div class="tx"><b>'+esc(nm(k))+' × '+inv[k]+'</b></div><button data-g="dep:'+k+':1">Put in 1</button><button data-g="dep:'+k+':all">All</button></div>'}
+    for(const k of bag)h+='<div class="gdgr">'+ic(k)+'<div class="gdtx"><b>'+esc(nm(k))+' × '+inv[k]+'</b></div><button data-g="dep:'+k+':1">Put in 1</button><button data-g="dep:'+k+':all">All</button></div>'}
    h+='</div>'}
   else if(tab==='log'&&boss()){h+='<div class="qc"><b>Bank log</b><p style="font-size:12px;opacity:.8">Every deposit, withdrawal, planting and quest reward. Only the leader and officers see this.</p>';
    if(G.log===null)h+='<p>The log needs the latest database rules.</p>';else if(!G.log.length)h+='<p>Nothing yet.</p>';
    for(const e of (G.log||[]).slice(0,120)){const W={dep:'put in',wd:'took',plant:'planted',dig:'dug up',quest:'quest reward:'}[e.w]||e.w;const when=e.t?new Date(e.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
-    h+='<div class="gr"><div class="tx"><b>'+esc(e.n||'Player')+'</b> '+W+' '+(e.w==='quest'?esc(e.d):esc(e.d)+' × '+esc(nm(e.k)))+'<small>'+esc(when)+'</small></div></div>'}h+='</div>'}
+    h+='<div class="gdgr"><div class="gdtx"><b>'+esc(e.n||'Player')+'</b> '+W+' '+(e.w==='quest'?esc(e.d):esc(e.d)+' × '+esc(nm(e.k)))+'<small>'+esc(when)+'</small></div></div>'}h+='</div>'}
   else if(tab==='set'&&r==='l'){const opt=(rk,vals)=>vals.map(v=>'<button data-g="perm:'+rk+':'+v+'" class="'+((G.perm[rk]==null?(rk==='o'?-1:20):G.perm[rk])===v?'on':'')+'">'+(v<0?'No limit':v===0?'None':v+' a day')+'</button>').join('');
-   h+='<div class="qc"><b>Taking from the bank</b><p style="font-size:13px">How many items each rank can take out of the guild bank per day. Everything is in the log.</p><small>Officers</small><div class="gtb">'+opt('o',[-1,100,20,0])+'</div><small>Members</small><div class="gtb">'+opt('m',[50,20,5,0])+'</div></div>'+
-    '<div class="qc"><b>Colour</b><div class="gcl">'+COLS.map((c,i)=>'<button data-g="scol:'+i+'" class="'+(i===(I.col|0)?'on':'')+'" style="background:'+c+'" aria-label="Colour '+(i+1)+'"></button>').join('')+'</div></div>'}
+   h+='<div class="qc"><b>Taking from the bank</b><p style="font-size:13px">How many items each rank can take out of the guild bank per day. Everything is in the log.</p><small>Officers</small><div class="gdgtb">'+opt('o',[-1,100,20,0])+'</div><small>Members</small><div class="gdgtb">'+opt('m',[50,20,5,0])+'</div></div>'+
+    '<div class="qc"><b>Colour</b><div class="gdgcl">'+COLS.map((c,i)=>'<button data-g="scol:'+i+'" class="'+(i===(I.col|0)?'on':'')+'" style="background:'+c+'" aria-label="Colour '+(i+1)+'"></button>').join('')+'</div></div>'}
   return h}
  {const _r=rPn;rPn=function(){if(ptab===GT){try{panelChrome('')}catch(e){}pbd.innerHTML=html();return}return _r.apply(this,arguments)}}
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab!==GT)return _oc(e);const b=e.target.closest('[data-g]');if(!b||b.disabled)return;const[a,x,y]=b.dataset.g.split(':');
