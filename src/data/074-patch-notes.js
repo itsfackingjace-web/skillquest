@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-7',d:'Nov 14, 2026',t:'Behind the scenes: recipe tools',n:['The developer now has one place to see and change every recipe in the game, so expect recipe tweaks and new recipes.']},
  {v:'2026.11.14-6',d:'Nov 14, 2026',t:'Small fixes',n:['Behind-the-scenes tools fixes for the developer.']},
  {v:'2026.11.14-5',d:'Nov 14, 2026',t:'Campfires in friends\' yards',n:['Campfires in someone\'s backyard or courtyard now show for friends visiting it, and you can warm up and cook at them.']},
  {v:'2026.11.14-4',d:'Nov 14, 2026',t:'Behind the scenes: a music composer',n:['The developer can now write the game\'s music on a piano roll, so expect new songs on the islands soon.']},

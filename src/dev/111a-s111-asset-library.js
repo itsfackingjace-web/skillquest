@@ -201,7 +201,7 @@ var SQA=(()=>{
   // would be dropped on every normal load (only the Dev Suite's re-apply kept it). drawWorn/hideFor check the slot when drawing.
   const worn=lib.worn||{};for(const k in worn)if(/^eq_[a-z0-9_]{1,40}$/.test(k)&&validWorn(worn[k]))WORN[k]=worn[k];
   const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){}}}
-  applied={stats:st};
+  applied={stats:JSON.parse(JSON.stringify(st))};// a copy: the draft's own object changes under us (a row taken out of it must still be put back next time)
   for(const f of HOOKS)try{f(lib)}catch(e){console.warn(e)}
   try{if(pnOpen)rPn()}catch(e){}}
  let live=null,preview=null;

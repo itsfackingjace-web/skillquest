@@ -191,6 +191,7 @@ items/179-s186-gear-effects.js
 skills/180-s187-pet-powers.js
 ui/181-s188-better-eating.js
 ui/182-s189-tidy-screen.js
+dev/183-s191-recipes.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

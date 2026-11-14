@@ -517,3 +517,9 @@
   `window.SQHUDBTN` = the row's bottom). 115's guide hint is drawn under the quest box (and under that row), 11 units, left aligned.
   131's floating words go under your feet (`q.hi`) while XP numbers (`drops`) rise over your head. 118's HIT says TALK only when
   the TALK button (`tk`) isn't already showing TALK. Fixed elements have no `offsetParent`: test visibility with `offsetWidth`.
+- **Recipes tab** (`dev/183-s191-recipes.js`, `SQRECIPES`, Dev Suite > Recipes): one list of every recipe (161b's `SQDATA.RREF` game
+  recipes, Content `r_` recipes, newgear `sm`, Gathering fish/crop cooking), filter by station, search = "makes it" / "uses it".
+  One editor saves each change where it lives: game rows to `stats.recipe.<key>` (mats written as item keys, so same-named items
+  stay apart) + XP to `balance.act` (ids `<TABLE>:<key>`, originals `SQBAL.OA`), content to `content.recipes`, gear to
+  `newgear.<k>.sm` (via `SQGEAR.ngClean`), fish/crops to `gather`. The game's cooking recipes keep their single raw food.
+  111a's `apply` keeps a copy of the applied stats (`applied`), so a row deleted from the draft is still put back.
