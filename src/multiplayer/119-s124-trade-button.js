@@ -12,18 +12,21 @@
  function nearest(){if(!ok()||SQTRADE.st!=='idle'||(window.SQDUEL&&SQDUEL.st!=='idle'))return null;let best=null,bd=CLOSE;const foes=!!(window.SQPVP&&SQPVP.on);
   for(const u of SQTRNEAR()){const r=SQMP.players.get(u);if(!r||(foes&&r.pk))continue;const d=Math.hypot(r.tx-P.x,r.ty-P.y);if(d<bd){bd=d;best=u}}return best}
  const short=u=>{const r=SQMP.players.get(u),n=String((r&&r.n)||'PLAYER').toUpperCase();return n.length>8?n.slice(0,7)+'…':n};
- const label=()=>esc(short(who))+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));
+ const pad=()=>typeof GPON!=='undefined'&&GPON,label=()=>esc(short(who))+(pad()?'<small>✕</small>':isPC?'<small>T</small>':'');
+ // only the word counts: the key hint after it (T / ✕) is rewritten by the controller labels (023/124), and treating that as
+ // someone else's label made the button let go and grab it again every 0.15 s (it flashed on controllers)
+ const word=h=>String(h||'').split('<small')[0];
  const ask=()=>{const u=who;if(!u)return false;try{if(window.SQPLAYERMENU)SQPLAYERMENU(u);else{SQTRREQ(u);sfx('talk')}}catch(e){}return true};
  // the button is ours only while nothing else wants it: hide it before the game's own code runs each frame; if that
  // code shows it again (a person, a chest, a boat...), it's theirs, and their word goes back on it
- const giveBack=()=>{mine=false;who=null;tk.classList.remove('sqpn');if(tk.innerHTML===lab){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
+ const giveBack=()=>{mine=false;who=null;tk.classList.remove('sqpn');if(word(tk.innerHTML)===word(lab)){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
  const _u=upd;upd=function(dt){if(mine)tk.style.display='none';const out=_u.apply(this,arguments);
-  if(mine&&(tk.style.display!=='none'||tk.innerHTML!==lab))giveBack();
+  if(mine&&(tk.style.display!=='none'||word(tk.innerHTML)!==word(lab)))giveBack();
   if(mine&&!pnOpen&&!menuOpen&&!dead)tk.style.display='flex';
   if((t-=dt)>0)return out;t=.15;
   const busy=pnOpen||menuOpen||dead||BUILD||(tk.style.display!=='none'&&!mine);
   const u=busy?null:nearest();
-  if(u){who=u;lab=label();if(tk.innerHTML!==lab)tk.innerHTML=lab;tk.classList.add('sqpn');tk.style.display='flex';mine=true}
+  if(u){who=u;lab=label();if(word(tk.innerHTML)!==word(lab))tk.innerHTML=lab;tk.classList.add('sqpn');tk.style.display='flex';mine=true}
   else if(mine){giveBack();tk.style.display='none'}
   return out};
  tk.addEventListener('touchstart',e=>{if(!mine||pnOpen||menuOpen||dead)return;e.preventDefault();e.stopImmediatePropagation();ask()},{passive:false,capture:true});

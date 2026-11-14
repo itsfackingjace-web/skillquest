@@ -451,3 +451,6 @@
 - **Chat commands after the MP block**: 061's chat box calls `window.mpSend`; 080 (end of the block) sets `window.mpSend=mpSend`
   (the block's chain: 062 /trade, 070 /ignore, 072 dev commands). Sections after the block (111b /suite, 136 emotes) wrap
   the global `mpSend`; before this, the box called the block's own binding and those commands were sent as plain chat.
+- **Controller wrap / name button** (158, 119): with nothing in the d-pad's direction, `navMove` wraps to the far item that overlaps
+  the current one on the cross axis (same row/column), or stays put. 119 compares only the word before `<small>` on `tk` (the
+  key hint is rewritten by 023/124's controller labels; comparing the whole label made the name button flash).

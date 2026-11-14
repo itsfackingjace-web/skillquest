@@ -9382,6 +9382,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-27',d:'Nov 13, 2026',t:'Controller fixes',n:['The player name button no longer flashes when you stand next to someone with a controller.','D-pad in menus and item cards: at the end of a row or column the highlight now wraps to the other end of that same row or column, instead of jumping to a different button.']},
  {v:'2026.11.13-26',d:'Nov 13, 2026',t:'Emote commands in chat',n:['Typing an emote in chat works again: /wave, /bow, /dance, /cheer, /laugh, /love, /yes, /no, /think, /sit and /sleep act it out instead of posting the word.']},
  {v:'2026.11.13-25',d:'Nov 13, 2026',t:'Reporting and ignoring',n:['Reports made by tapping a name in chat now reach the developer properly.','Reporting someone no longer ignores them unless you tick "Also ignore them".','Ignored someone by mistake? Walk up to them, tap their name and choose UNIGNORE, or find them under IGNORED at the bottom of Chat > Friends.']},
  {v:'2026.11.13-24',d:'Nov 13, 2026',t:'Small fixes',n:['Fixed a couple of developer tools that didn\'t work in the Windows app.']},
@@ -15156,18 +15157,21 @@ window.SQA=SQA;
  function nearest(){if(!ok()||SQTRADE.st!=='idle'||(window.SQDUEL&&SQDUEL.st!=='idle'))return null;let best=null,bd=CLOSE;const foes=!!(window.SQPVP&&SQPVP.on);
   for(const u of SQTRNEAR()){const r=SQMP.players.get(u);if(!r||(foes&&r.pk))continue;const d=Math.hypot(r.tx-P.x,r.ty-P.y);if(d<bd){bd=d;best=u}}return best}
  const short=u=>{const r=SQMP.players.get(u),n=String((r&&r.n)||'PLAYER').toUpperCase();return n.length>8?n.slice(0,7)+'…':n};
- const label=()=>esc(short(who))+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));
+ const pad=()=>typeof GPON!=='undefined'&&GPON,label=()=>esc(short(who))+(pad()?'<small>✕</small>':isPC?'<small>T</small>':'');
+ // only the word counts: the key hint after it (T / ✕) is rewritten by the controller labels (023/124), and treating that as
+ // someone else's label made the button let go and grab it again every 0.15 s (it flashed on controllers)
+ const word=h=>String(h||'').split('<small')[0];
  const ask=()=>{const u=who;if(!u)return false;try{if(window.SQPLAYERMENU)SQPLAYERMENU(u);else{SQTRREQ(u);sfx('talk')}}catch(e){}return true};
  // the button is ours only while nothing else wants it: hide it before the game's own code runs each frame; if that
  // code shows it again (a person, a chest, a boat...), it's theirs, and their word goes back on it
- const giveBack=()=>{mine=false;who=null;tk.classList.remove('sqpn');if(tk.innerHTML===lab){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
+ const giveBack=()=>{mine=false;who=null;tk.classList.remove('sqpn');if(word(tk.innerHTML)===word(lab)){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
  const _u=upd;upd=function(dt){if(mine)tk.style.display='none';const out=_u.apply(this,arguments);
-  if(mine&&(tk.style.display!=='none'||tk.innerHTML!==lab))giveBack();
+  if(mine&&(tk.style.display!=='none'||word(tk.innerHTML)!==word(lab)))giveBack();
   if(mine&&!pnOpen&&!menuOpen&&!dead)tk.style.display='flex';
   if((t-=dt)>0)return out;t=.15;
   const busy=pnOpen||menuOpen||dead||BUILD||(tk.style.display!=='none'&&!mine);
   const u=busy?null:nearest();
-  if(u){who=u;lab=label();if(tk.innerHTML!==lab)tk.innerHTML=lab;tk.classList.add('sqpn');tk.style.display='flex';mine=true}
+  if(u){who=u;lab=label();if(word(tk.innerHTML)!==word(lab))tk.innerHTML=lab;tk.classList.add('sqpn');tk.style.display='flex';mine=true}
   else if(mine){giveBack();tk.style.display='none'}
   return out};
  tk.addEventListener('touchstart',e=>{if(!mine||pnOpen||menuOpen||dead)return;e.preventDefault();e.stopImmediatePropagation();ask()},{passive:false,capture:true});
@@ -17382,7 +17386,8 @@ window.SQA=SQA;
 // ---- 164. Controller: better d-pad moves, and item cards give the highlight back ----
 // - 023's navMove aimed at button centres, so a wide button (the chest card's "Take all") was skipped and the d-pad
 //   jumped past it or wrapped around. Now it measures to the nearest edge: the next button in that direction is the one
-//   with the smallest gap, preferring buttons that line up with the current one. If nothing is that way, it still wraps.
+//   with the smallest gap, preferring buttons that line up with the current one. If nothing is that way, it wraps
+//   to the far end of the same row/column.
 // - Closing a card (011's chest item card, any [role=dialog] in a panel) with ○ put the highlight back on the chest's
 //   first item; now it goes back to the item whose card you opened.
 (()=>{
@@ -17394,7 +17399,13 @@ window.SQA=SQA;
    if(dy){d=dy>0?r.top-a.bottom:a.top-r.bottom;if(d<-Math.min(a.height,r.height)/2)continue;gap=Math.max(0,r.left-a.right,a.left-r.right);off=Math.abs(cx-ax)}
    else{d=dx>0?r.left-a.right:a.left-r.right;if(d<-Math.min(a.width,r.width)/2)continue;gap=Math.max(0,r.top-a.bottom,a.top-r.bottom);off=Math.abs(cy-ay)}
    const s=Math.max(0,d)+gap*3+off*.15;if(s<bs){bs=s;best=e}}
-  if(!best){const i=items.indexOf(GPF);best=items[(i+(dx+dy>0?1:items.length-1))%items.length]}setFocus(best);try{sfx('talk')}catch(e){}};
+  // nothing that way: wrap around within the same row / column (the far end that lines up with this one); with nothing
+  // lined up, stay put. (It used to jump to the next button in page order, so down from the chest card's number box
+  // landed on the button beside it, and right from "Take all" went to the row below.)
+  if(!best){let far=null,fv=1e9;for(const e of items){if(e===GPF)continue;const r=e.getBoundingClientRect();if(!r.width||!r.height)continue;
+    const ov=dy?Math.min(a.right,r.right)-Math.max(a.left,r.left):Math.min(a.bottom,r.bottom)-Math.max(a.top,r.top);if(ov<=0)continue;
+    const v=dy?(dy>0?r.top:-r.bottom):(dx>0?r.left:-r.right);if(v<fv){fv=v;far=e}}
+   if(!far)return;best=far}setFocus(best);try{sfx('talk')}catch(e){}};
  // remember the thing a card was opened from, and go back to it when the card closes
  const key=e=>e&&e.dataset?(e.dataset.k||'')+'|'+(e.dataset.a||'')+'|'+(e.dataset.cm||''):'';
  let from=null,wasCard=false;
