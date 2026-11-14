@@ -337,6 +337,10 @@
       "hist": {
         ".read": "auth != null && root.child('devs').child(auth.uid).val() === true",
         ".write": "auth != null && root.child('devs').child(auth.uid).val() === true"
+      },
+      "beta": {
+        ".read": "auth != null && (root.child('devs').child(auth.uid).val() === true || root.child('testers').child(auth.uid).val() === true)",
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true"
       }
     },
     "dreq": {
@@ -472,6 +476,14 @@
           }
         }
       }
+    },
+    "testers": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('devs').child(auth.uid).val() === true)",
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true",
+        ".validate": "newData.isBoolean()"
+      },
+      ".read": "auth != null && root.child('devs').child(auth.uid).val() === true"
     }
   }
 }
