@@ -87,7 +87,7 @@ var LUX={};
    if(!IMP.seen){IMP.seen=true;IMP.x=P.x-14;IMP.y=P.y+4}
    if(IMP.dead>0){IMP.dead-=dt;if(IMP.dead<=0){IMP.hp=IMP.max;IMP.x=P.x-12;IMP.y=P.y+4;impPoof(IMP.x,IMP.y);say('Your imp is back!')}return}
    // something hurt you: the imp goes for it
-   if(P.hp<hp0||(hurt>0&&h0<=0)){let best=null,bd=48;for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y)-(n.big?24:0);if(d<bd){bd=d;best=n}}
+   if(!(window.SQPETOFF&&SQPETOFF('imp'))&&(P.hp<hp0||(hurt>0&&h0<=0))){let best=null,bd=48;for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y)-(n.big?24:0);if(d<bd){bd=d;best=n}}
     if(!best&&WB_ENT())best=WB_ENT();if(best){IMP.tgt=best;IMP.ptgt=null}}
    let tx=P.x-(face[0]?face[0]*16:10),ty=P.y+(face[1]?-face[1]*10:4)+2,goal=null;
    const T=IMP.tgt;if(T&&(T.dead||Math.hypot(T.x-P.x,T.y-P.y)>180))IMP.tgt=null;

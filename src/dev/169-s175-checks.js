@@ -39,6 +39,11 @@
    for(const c of arr(I.cv))for(const k of arr(c&&c.m))if(!mobs.has(k))bad(w,'a dungeon entrance has "'+k+'", which isn\'t a monster.',g);
    for(const L of arr(I.lm))if(L&&L.loot)for(const k in L.loot)if(k!=='gold'&&!item(k)&&!loot.has(k))bad(w,'a chest holds "'+k+'", which isn\'t an item or loot table.',g)}
   // Gathering: what trees/rocks/fish give
+  {const Gd=D.gather||{};for(const id in Gd.crops||{}){const o=Gd.crops[id]||{},w='Crop '+(o.n||id),g={tab:'gather'};
+    if(!o.item||!item(o.item))bad(w,'harvests "'+(o.item||'nothing')+'", which isn\'t an item. Use "Make seed + crop items".',g);
+    if(!o.seed||!item(o.seed))bad(w,'grows from "'+(o.seed||'nothing')+'", which isn\'t an item.',g);
+    if(o.ck&&!item(o.ck))bad(w,'cooks into "'+o.ck+'", which isn\'t an item.',g);
+    if(o.item&&typeof CROPS!=='undefined'&&CROPS[o.item]&&!CROPS[o.item]._g)bad(w,'uses one of the game\'s own crops as its harvest.',g);}}
   {const Gd=D.gather||{};for(const k of['nodes','fish'])for(const id in Gd[k]||{}){const o=Gd[k][id]||{},w=(k==='fish'?'Fish ':'')+(o.n||id),g={tab:'gather'};
     if(!o.item||!item(o.item))bad(w,'gives "'+(o.item||'nothing')+'", which isn\'t an item. Pick one or use "Make its item".',g);
     if(k==='fish'&&o.ck&&!item(o.ck))bad(w,'cooks into "'+o.ck+'", which isn\'t an item.',g);

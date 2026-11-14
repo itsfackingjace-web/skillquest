@@ -30,7 +30,7 @@
  if(typeof buildFloor==='function'){const _bf=buildFloor;buildFloor=function(kind,f){const R=_bf.apply(this,arguments);try{const K=DKIND[kind];if(R&&R.mobs&&K&&/^cv_/.test(kind)){
    const bs=R.mobs.filter(m=>m&&m.cb);if(bs.length){R.mobs=R.mobs.filter(m=>!m.cb);if(f>=(K.floors||3)){const far=bs.sort((a,b)=>b.y-a.y||0)[bs.length-1];R.mobs.push(far)}}}}catch(e){console.warn(e)}return R}}
  // ---- fighting ----
- const SH=[],TG=[];// fire bolts, slam marks
+ const SH=[],TG=[];window.SQCBSH=SH;// fire bolts, slam marks (SQCBSH: 166 tags shots and draws Dev Suite looks)
  const canHurt=()=>!dead&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)&&!(window.SQDUEL&&SQDUEL.chess);
  const hit=(d,why)=>{if(!canHurt())return;P.hp-=d;hurt=1;try{sfx('hurt')}catch(e){}};
  function act(n,B,dt){const dx=P.x-n.x,dy=(P.y-2)-(n.y-4),dist=Math.hypot(dx,dy);
@@ -42,14 +42,14 @@
   if(n.cbc){const c=n.cbc;c.t-=dt;if(c.t>0&&c.ph===0){/* winding up */}else if(c.ph===0){c.ph=1;c.t=.45;try{sfx('roar')}catch(e){}}
    else if(c.t>0){try{stepTo(n,c.vx*260*dt,c.vy*260*dt)}catch(e){}if(dist<14+6*B.sz)hit(B.dmg+1)}else n.cbc=null;return}
   n.cbt-=dt;if(n.cbt>0||!B.atk.length||dist>190)return;n.cbt=B.cd*(.8+Math.random()*.4);const a=B.atk[Math.floor(Math.random()*B.atk.length)];
-  if(a==='ring'){const k=10,o=Math.random()*6.28;for(let i=0;i<k;i++){const ang=o+i/k*6.283;SH.push({x:n.x,y:n.y-6*B.sz,vx:Math.cos(ang)*95,vy:Math.sin(ang)*95,t:2.4,d:B.dmg})}try{sfx('swish')}catch(e){}}
+  if(a==='ring'){const k=10,o=Math.random()*6.28;for(let i=0;i<k;i++){const ang=o+i/k*6.283;SH.push({x:n.x,y:n.y-6*B.sz,vx:Math.cos(ang)*95,vy:Math.sin(ang)*95,t:2.4,d:B.dmg,_n:n})}try{sfx('swish')}catch(e){}}
   else if(a==='charge'){const l=dist||1;n.cbc={vx:dx/l,vy:dy/l,t:.65,ph:0}}
   else if(a==='slam'){TG.push({x:P.x,y:P.y,r:26,t:1.05,d:B.dmg+1});try{sfx('talk')}catch(e){}}
   else if(a==='summon'){const have=en.filter(m=>!m.dead&&m._cbs===n).length;for(let i=0;i<Math.min(2,4-have);i++){let sx=n.x+(i?18:-18),sy=n.y+8;if(solid(sx,sy)){sx=n.x;sy=n.y}const m=rgMake(B.sk,Math.max(4,Math.round(B.hp/12)),sx,sy);m._cbs=n;delete m.night;if(n.zc)m.zc=n.zc;try{RG_OWN.add(m)}catch(e){}en.push(m)}}}
  {const _u=upd;upd=function(dt){let pos=null;const L=[];try{if(!menuOpen&&!pnOpen&&!dead)for(const n of en){if(!n||!n.cb||n.dead||n._rp)continue;const B=CB[n.cb];if(!B)continue;if(away(B)){n.dead=1;n.dropped=1;continue}L.push([n,B,n.x,n.y])}}catch(e){}
    const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;
    try{for(const[n,B,x,y]of L){if(n.dead)continue;act(n,B,dt)}
-    for(let i=SH.length-1;i>=0;i--){const s=SH[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.t-=dt;if(s.t<=0||solid(s.x,s.y)){SH.splice(i,1);continue}if(Math.hypot(s.x-P.x,s.y-(P.y-4))<8){hit(s.d);SH.splice(i,1)}}
+    for(let i=SH.length-1;i>=0;i--){const s=SH[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.t-=dt;if(s.t<=0||solid(s.x,s.y)){SH.splice(i,1);continue}if(Math.hypot(s.x-P.x,s.y-(P.y-4))<8){const h0=P.hp;hit(s.d);if(P.hp<h0&&window.SQSHOTHIT)SQSHOTHIT(s);SH.splice(i,1)}}
     for(let i=TG.length-1;i>=0;i--){const q=TG[i];q.t-=dt;if(q.t<=0){if(Math.hypot(q.x-P.x,(q.y-P.y)*1.6)<q.r)hit(q.d);TG.splice(i,1)}}
     if(!L.length&&!en.some(n=>n&&n.cb&&!n.dead)){SH.length=0;TG.length=0}}catch(e){console.warn(e)}return out}}
  // beaten: remembered, announced
@@ -63,7 +63,7 @@
    g.save();g.font='700 6px "Pixelify Sans",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(B.n,x,top-2);g.fillStyle='#ffd8c8';g.fillText(B.n,x,top-2);g.restore()}}
  {const _pP=pP;pP=function(tm){try{for(const q of TG){const p=1-q.t/1.05;g.fillStyle='rgba(255,60,30,'+(.15+.25*p)+')';g.strokeStyle='rgba(255,70,40,.85)';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,q.r,q.r/1.6,0,0,6.283);g.fill();g.stroke();
      g.beginPath();g.ellipse(q.x,q.y,q.r*p,q.r*p/1.6,0,0,6.283);g.stroke()}
-    for(const s of SH){g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(s.x,s.y,5,0,6.283);g.fill();Rg(Math.round(s.x)-2,Math.round(s.y)-2,4,4,'#181018');Rg(Math.round(s.x)-1,Math.round(s.y)-1,2,2,'#ffd060')}}catch(e){}return _pP.apply(this,arguments)}}
+    for(const s of SH){if(window.SQSHOTDRAW&&SQSHOTDRAW(s))continue;g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(s.x,s.y,5,0,6.283);g.fill();Rg(Math.round(s.x)-2,Math.round(s.y)-2,4,4,'#181018');Rg(Math.round(s.x)-1,Math.round(s.y)-1,2,2,'#ffd060')}}catch(e){}return _pP.apply(this,arguments)}}
  window.SQBOSSES={CB,read,get dead(){return DEAD},clear(){DEAD={};try{localStorage.removeItem(LSK)}catch(e){}}};
  // ---- Dev Suite > Bosses ----
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;const ST={sel:null,f:null};

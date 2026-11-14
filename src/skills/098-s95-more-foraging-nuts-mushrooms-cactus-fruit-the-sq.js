@@ -71,7 +71,7 @@
  for(const k in PETS){window.SQNPET[k]={n:PETS[k].n,src:PETS[k].src};if(window.LUX&&LUX.PETS&&!LUX.PETS.some(p=>p.k===k))LUX.PETS.push({k,n:PETS[k].n,v:0,rare:1,c:['#888','#666','#aaa']})}
  window.SQFETCH=PETS;
  let fetchT=null,fetchK=null;
- {const _u=upd;upd=function(dt){_u(dt);const k=window.LUX&&LUX.COS&&LUX.COS.pet,P2=PETS[k];if(!P2||dead||menuOpen||pnOpen){return}if(k!==fetchK){fetchK=k;fetchT=P2.every*.6}
+ {const _u=upd;upd=function(dt){_u(dt);const k=window.LUX&&LUX.COS&&LUX.COS.pet,P2=PETS[k];if(!P2||dead||menuOpen||pnOpen||(window.SQPETOFF&&SQPETOFF(k))){return}if(k!==fetchK){fetchK=k;fetchT=P2.every*.6}
    if(SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave)))return;fetchT-=dt;if(fetchT>0)return;fetchT=P2.every*(.8+Math.random()*.4);
    const got=P2.bring(),txt=[];for(const[it,n]of got){if(it==='$'){GLD+=n;try{svg()}catch(e){}txt.push(n+' gold')}else{inv[it]=(inv[it]|0)+n;txt.push(n+' '+(n>1?(SN[it]||INAME[it]):INAME[it]).toLowerCase())}}
    say('Your '+P2.n.toLowerCase()+' brings you '+txt.join(' and ')+'!');try{const s=PST&&PST.get&&PST.get('me');gTxt(s?s.x:P.x,(s?s.y:P.y)-18,'+'+txt[0],'#f8d048');sfx('pickup')}catch(e){}saveLocal()}}

@@ -15,7 +15,7 @@
  const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;let o=null;
    if(R&&R.region){const it=rgObjAt(R,tx,ty);o=it&&it.o}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N)o=obj[ty*N+tx];return o}catch(e){return null}};
  const kinOf=o=>{if(!o)return'';if(o.v==='dark')return'dark';if(o.v==='dead')return'dead';const t=String(o.t||'');for(const k of['oak','willow','maple','yew','pine'])if(t.indexOf(k)===0)return k;return/tree/.test(t)?'tree':''};
- const _a=attack;attack=function(){const k=pet(),T=TREEL[k];if(!T)return _a.apply(this,arguments);const o=treeAt(),before={};for(const i in inv)if(isLog(i))before[i]=inv[i]|0;
+ const _a=attack;attack=function(){const k=pet(),T=TREEL[k];if(!T||(window.SQPETOFF&&SQPETOFF(k)))return _a.apply(this,arguments);const o=treeAt(),before={};for(const i in inv)if(isLog(i))before[i]=inv[i]|0;
   const out=_a.apply(this,arguments);try{for(const i in inv){if(!isLog(i))continue;const d=(inv[i]|0)-(before[i]|0);if(d<=0)continue;
     const ch=T.ch*(kinOf(o)===T.kin?2:1);if(Math.random()<ch){inv[i]=(inv[i]|0)+1;const n=(NP[k]&&NP[k].n)||'treeling';pop('+1 '+(INAME[i]||i).toLowerCase(),'#7cd060');
      if(Math.random()<.35)say('Your '+n.toLowerCase()+' shakes loose an extra '+(INAME[i]||i).toLowerCase()+'!');try{sfx('rustle')}catch(e){}}break}}catch(e){}return out};
@@ -27,13 +27,13 @@
  const _a2=attack;attack=function(){let o=null;try{o=treeAt()}catch(e){}const s0=inv.shroom|0;const out=_a2.apply(this,arguments);
   try{if(o&&o.t==='shroom'&&(inv.shroom|0)>s0)for(const k in MP)if(Math.random()<MP[k].odds||window.SQMUSHDROP===k){SQGIVEPET(k);break}}catch(e){}return out};
  // the Mushling: heals you, or brings mushrooms
- let mT=40;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(pet()!=='pmush'||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen))return;mT-=dt;if(mT>0)return;
+ let mT=40;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(pet()!=='pmush'||(window.SQPETOFF&&SQPETOFF('pmush'))||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen))return;mT-=dt;if(mT>0)return;
   if(P.hp<6){P.hp=Math.min(6,P.hp+1);mT=45+Math.random()*20;say('Your mushling puffs healing spores at you. +1 heart');pop('+1 heart','#f86868');
    const p=petPos();for(let k=0;k<12;k++)part(p.x,p.y-4,(Math.random()-.5)*50,-30-Math.random()*40,.7,k%2?'#f8b0b0':'#fff0f0',40,1);try{sfx('eat')}catch(e){}}
   else{mT=110+Math.random()*40;const n=1+(Math.random()<.4?1:0);inv.shroom=(inv.shroom|0)+n;say('Your mushling brings you '+n+' mushroom'+(n>1?'s':'')+'!');pop('+'+n+' mushroom'+(n>1?'s':''));try{sfx('pickup')}catch(e){}}
   try{saveLocal()}catch(e){}};
  // the Glowcap: a spore cloud slows everything around you when you get hit
- let gCd=0,lastHp=null;const _u2=upd;upd=function(dt){const h0=lastHp;_u2.apply(this,arguments);lastHp=P.hp;try{if(pet()!=='pglow'||dead||h0===null||!(P.hp<h0)||performance.now()<gCd||Math.random()>=.45)return;gCd=performance.now()+6000;let n=0;
+ let gCd=0,lastHp=null;const _u2=upd;upd=function(dt){const h0=lastHp;_u2.apply(this,arguments);lastHp=P.hp;try{if(pet()!=='pglow'||(window.SQPETOFF&&SQPETOFF('pglow'))||dead||h0===null||!(P.hp<h0)||performance.now()<gCd||Math.random()>=.45)return;gCd=performance.now()+6000;let n=0;
    for(const e of en)if(!e.dead&&!e._rp&&!e._pet&&Math.hypot(e.x-P.x,e.y-P.y)<56){e.slow=Math.max(e.slow||0,3);n++}
    for(let k=0;k<26;k++){const an=k/26*6.283;part(P.x,P.y-2,Math.cos(an)*70,Math.sin(an)*40-10,.8,k%2?'#78b0f8':'#c8f8ff',30,2)}
    if(n)say('Your glowcap bursts into spores! '+n+' monster'+(n>1?'s are':' is')+' slowed.');try{sfx('rustle')}catch(e){}}catch(e){}};

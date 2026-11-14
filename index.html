@@ -9388,6 +9388,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-1',d:'Nov 14, 2026',t:'Smarter eating, pet powers, new crops',n:['EAT now picks food for you: when you\'re hurt it uses the smallest food that heals what\'s missing, and at full health it saves your good food. Potions and special meals stay in your Bag for you to USE.','Want a favourite? Select a food in your Bag and tap ☆ EAT FIRST: EAT will always use it first.','Cooking at a campfire with more than one kind of raw food now asks what to cook: one, all of one kind, or everything. You can also eat instead.','Pets can have new powers: some pets may now fight beside you (melee, arrows, magic or a burst), heal you, bring you things, find extra loot, give more XP or gold, or block hits. A pet\'s description in your Bag says what it does.','New crops can now be added to farms, with their own seeds at the general store.','Bandits, cacticus and some bosses can now have special shots.']},
  {v:'2026.11.13-38',d:'Nov 13, 2026',t:'Dev Suite: Erase all',n:['Picture editors in the Dev Suite have an Erase all button that clears the picture (or frame/layer) you are on. Undo brings it back.']},
  {v:'2026.11.13-37',d:'Nov 13, 2026',t:'New gear effects',n:['Gear can now give more melee, arrow or magic damage, faster mana and health regeneration, slower hunger and more gold from monsters. Check an item\'s description to see what it gives.']},
  {v:'2026.11.13-36',d:'Nov 13, 2026',t:'Fletching fixes',n:['Arrows, bows and ranger gear now take time to make, like every other craft. "All" keeps going until you run out of materials.','Making ranger gear no longer says "Made 10 arrows".']},
@@ -10523,7 +10524,7 @@ var LUX={};
    if(!IMP.seen){IMP.seen=true;IMP.x=P.x-14;IMP.y=P.y+4}
    if(IMP.dead>0){IMP.dead-=dt;if(IMP.dead<=0){IMP.hp=IMP.max;IMP.x=P.x-12;IMP.y=P.y+4;impPoof(IMP.x,IMP.y);say('Your imp is back!')}return}
    // something hurt you: the imp goes for it
-   if(P.hp<hp0||(hurt>0&&h0<=0)){let best=null,bd=48;for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y)-(n.big?24:0);if(d<bd){bd=d;best=n}}
+   if(!(window.SQPETOFF&&SQPETOFF('imp'))&&(P.hp<hp0||(hurt>0&&h0<=0))){let best=null,bd=48;for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y)-(n.big?24:0);if(d<bd){bd=d;best=n}}
     if(!best&&WB_ENT())best=WB_ENT();if(best){IMP.tgt=best;IMP.ptgt=null}}
    let tx=P.x-(face[0]?face[0]*16:10),ty=P.y+(face[1]?-face[1]*10:4)+2,goal=null;
    const T=IMP.tgt;if(T&&(T.dead||Math.hypot(T.x-P.x,T.y-P.y)>180))IMP.tgt=null;
@@ -11857,7 +11858,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  for(const k in PETS){window.SQNPET[k]={n:PETS[k].n,src:PETS[k].src};if(window.LUX&&LUX.PETS&&!LUX.PETS.some(p=>p.k===k))LUX.PETS.push({k,n:PETS[k].n,v:0,rare:1,c:['#888','#666','#aaa']})}
  window.SQFETCH=PETS;
  let fetchT=null,fetchK=null;
- {const _u=upd;upd=function(dt){_u(dt);const k=window.LUX&&LUX.COS&&LUX.COS.pet,P2=PETS[k];if(!P2||dead||menuOpen||pnOpen){return}if(k!==fetchK){fetchK=k;fetchT=P2.every*.6}
+ {const _u=upd;upd=function(dt){_u(dt);const k=window.LUX&&LUX.COS&&LUX.COS.pet,P2=PETS[k];if(!P2||dead||menuOpen||pnOpen||(window.SQPETOFF&&SQPETOFF(k))){return}if(k!==fetchK){fetchK=k;fetchT=P2.every*.6}
    if(SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave)))return;fetchT-=dt;if(fetchT>0)return;fetchT=P2.every*(.8+Math.random()*.4);
    const got=P2.bring(),txt=[];for(const[it,n]of got){if(it==='$'){GLD+=n;try{svg()}catch(e){}txt.push(n+' gold')}else{inv[it]=(inv[it]|0)+n;txt.push(n+' '+(n>1?(SN[it]||INAME[it]):INAME[it]).toLowerCase())}}
    say('Your '+P2.n.toLowerCase()+' brings you '+txt.join(' and ')+'!');try{const s=PST&&PST.get&&PST.get('me');gTxt(s?s.x:P.x,(s?s.y:P.y)-18,'+'+txt[0],'#f8d048');sfx('pickup')}catch(e){}saveLocal()}}
@@ -11992,9 +11993,9 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   if(n.st==='sleep'){n.x=ox;n.y=oy;n.kx=n.ky=0;if(d<56||n.hp<n.mhp){n.st='wake';n.wt=.5;sfx('rustle')}return}
   if(n.st==='wake'){n.x=ox;n.y=oy;if((n.wt-=dt)<=0)n.st='walk';return}
   n.x=ox+n.kx*.4;n.y=oy+n.ky*.4;if(n.frozen>0)return;if(d>12&&d<200)stepTo(n,dx/d*22*dt,dy/d*22*dt);
-  if((n.cd-=dt)<=0&&d<150){n.cd=2.8+Math.random()*.8;n.puff=.25;for(let k=0;k<8;k++){const a=k/8*6.283+(n.t2=(n.t2||0)+.2);NMP.push({x:n.x,y:n.y-10,vx:Math.cos(a)*95,vy:Math.sin(a)*95,t:1.6,k:'needle'})}sfx('swish')}}
+  if((n.cd-=dt)<=0&&d<150){n.cd=2.8+Math.random()*.8;n.puff=.25;for(let k=0;k<8;k++){const a=k/8*6.283+(n.t2=(n.t2||0)+.2);NMP.push({x:n.x,y:n.y-10,vx:Math.cos(a)*95,vy:Math.sin(a)*95,t:1.6,k:'needle',_n:n})}sfx('swish')}}
  function banditAI(n,ox,oy,dt){const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;n.x=ox+n.kx*.4;n.y=oy+n.ky*.4;if(n.frozen>0)return;n.fl=dx<0;n.mv=0;
-  if(n.aim>0){n.aim-=dt;if(n.aim<=0){const a=Math.atan2(dy+4,dx)+(Math.random()-.5)*.12;NMP.push({x:n.x+Math.cos(a)*10,y:n.y-8+Math.sin(a)*6,vx:Math.cos(a)*165,vy:Math.sin(a)*165,t:1.4,k:'bullet'});n.flash=.08;sfx('swish')}return}
+  if(n.aim>0){n.aim-=dt;if(n.aim<=0){const a=Math.atan2(dy+4,dx)+(Math.random()-.5)*.12;NMP.push({x:n.x+Math.cos(a)*10,y:n.y-8+Math.sin(a)*6,vx:Math.cos(a)*165,vy:Math.sin(a)*165,t:1.4,k:'bullet',_n:n});n.flash=.08;sfx('swish')}return}
   if((n.swap-=dt)<=0){n.swap=1.5+Math.random()*2;n.side=-n.side}
   let mx=0,my=0;if(d>130){mx=dx/d;my=dy/d}else if(d<72){mx=-dx/d;my=-dy/d}mx+=-dy/d*.7*n.side;my+=dx/d*.7*n.side;const l=Math.hypot(mx,my)||1;stepTo(n,mx/l*36*dt,my/l*36*dt);n.mv=1;
   if((n.cd-=dt)<=0&&d<175){n.cd=1.7+Math.random()*.7;n.aim=.4}}
@@ -12002,7 +12003,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
    for(const[n,ox,oy]of pos){if(n.dead)continue;n.t=(n.t||0)+dt;if(n.flash>0)n.flash-=dt;if(n.puff>0)n.puff-=dt;
     if(n.type==='gscorp')gscorpAI(n,ox,oy,dt);else if(n.type==='cacti')cactiAI(n,ox,oy,dt);else if(n.type==='bandit')banditAI(n,ox,oy,dt)}
    for(const b of NMP){b.t-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(solid(b.x,b.y+4)){b.t=0;continue}
-    if(Math.hypot(P.x-b.x,P.y-6-b.y)<8&&!roll()&&!dead){b.t=0;hurtP(1,b.k==='bullet'?'A bandit\'s bullet hits you!':'Cactus needles!')}}
+    if(Math.hypot(P.x-b.x,P.y-6-b.y)<8&&!roll()&&!dead){b.t=0;const h0=P.hp;hurtP(1,b.k==='bullet'?'A bandit\'s bullet hits you!':'Cactus needles!');if(P.hp<h0&&window.SQSHOTHIT)SQSHOTHIT(b)}}
    for(let i=NMP.length-1;i>=0;i--)if(NMP[i].t<=0)NMP.splice(i,1)}}
  {const _lr=leaveRegion;leaveRegion=function(...a){NMP.length=0;return _lr(...a)}}
  // ---- how they look ----
@@ -12035,7 +12036,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  function drawGScorp(n,tm){const x=n.x,y=n.y;g.save();g.translate(x,y);g.scale(1.8,1.8);g.translate(-x,-y);try{drawScorp(n,tm)}finally{g.restore()}nmBar(n,Math.round(x),Math.round(y)-34)}
  function nmBar(n,x,y){if(!(n.hp<n.mhp))return;const w=24,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-1,w+2,4,K);Rg(x-w/2,y,Math.round(w*f),2,'#e04848')}
  {const _ps=pS;pS=function(n,tm){if(n){if(n.type==='cacti')return drawCacti(n,tm);if(n.type==='bandit')return drawBandit(n,tm);if(n.type==='gscorp')return drawGScorp(n,tm)}return _ps(n,tm)}}
- {const _pp=pP;pP=function(tm){_pp(tm);if(!nmR())return;for(const b of NMP){if(b.k==='bullet'){Rg(b.x-2,b.y-2,4,4,K);Rg(b.x-1,b.y-1,2,2,'#f8e070')}else{const a=Math.atan2(b.vy,b.vx);for(let i=0;i<5;i++)Rg(Math.round(b.x-Math.cos(a)*i),Math.round(b.y-Math.sin(a)*i),1,1,i?'#e8e0b0':'#ffffff')}}}}
+ {const _pp=pP;pP=function(tm){_pp(tm);if(!nmR())return;for(const b of NMP){if(window.SQSHOTDRAW&&SQSHOTDRAW(b))continue;if(b.k==='bullet'){Rg(b.x-2,b.y-2,4,4,K);Rg(b.x-1,b.y-1,2,2,'#f8e070')}else{const a=Math.atan2(b.vy,b.vx);for(let i=0;i<5;i++)Rg(Math.round(b.x-Math.cos(a)*i),Math.round(b.y-Math.sin(a)*i),1,1,i?'#e8e0b0':'#ffffff')}}}}
  // what they drop
  {const _ed=enemyDrop;enemyDrop=function(n){if(!n||!(n.type==='bandit'||n.type==='cacti'||n.type==='gscorp'))return _ed(n);const got=[];
    if(n.type==='bandit'){const gd=20+Math.floor(Math.random()*41);GLD+=gd;got.push(gd+' gold');if(Math.random()<.25){inv.iarrow=(inv.iarrow|0)+5;got.push('5 iron arrows')}if(Math.random()<.06){inv.pot_heal=(inv.pot_heal|0)+1;got.push('a healing potion')}try{sqEvent('kill','bandit')}catch(e){}}
@@ -14673,7 +14674,7 @@ window.SQA=SQA;
  const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;let o=null;
    if(R&&R.region){const it=rgObjAt(R,tx,ty);o=it&&it.o}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N)o=obj[ty*N+tx];return o}catch(e){return null}};
  const kinOf=o=>{if(!o)return'';if(o.v==='dark')return'dark';if(o.v==='dead')return'dead';const t=String(o.t||'');for(const k of['oak','willow','maple','yew','pine'])if(t.indexOf(k)===0)return k;return/tree/.test(t)?'tree':''};
- const _a=attack;attack=function(){const k=pet(),T=TREEL[k];if(!T)return _a.apply(this,arguments);const o=treeAt(),before={};for(const i in inv)if(isLog(i))before[i]=inv[i]|0;
+ const _a=attack;attack=function(){const k=pet(),T=TREEL[k];if(!T||(window.SQPETOFF&&SQPETOFF(k)))return _a.apply(this,arguments);const o=treeAt(),before={};for(const i in inv)if(isLog(i))before[i]=inv[i]|0;
   const out=_a.apply(this,arguments);try{for(const i in inv){if(!isLog(i))continue;const d=(inv[i]|0)-(before[i]|0);if(d<=0)continue;
     const ch=T.ch*(kinOf(o)===T.kin?2:1);if(Math.random()<ch){inv[i]=(inv[i]|0)+1;const n=(NP[k]&&NP[k].n)||'treeling';pop('+1 '+(INAME[i]||i).toLowerCase(),'#7cd060');
      if(Math.random()<.35)say('Your '+n.toLowerCase()+' shakes loose an extra '+(INAME[i]||i).toLowerCase()+'!');try{sfx('rustle')}catch(e){}}break}}catch(e){}return out};
@@ -14685,13 +14686,13 @@ window.SQA=SQA;
  const _a2=attack;attack=function(){let o=null;try{o=treeAt()}catch(e){}const s0=inv.shroom|0;const out=_a2.apply(this,arguments);
   try{if(o&&o.t==='shroom'&&(inv.shroom|0)>s0)for(const k in MP)if(Math.random()<MP[k].odds||window.SQMUSHDROP===k){SQGIVEPET(k);break}}catch(e){}return out};
  // the Mushling: heals you, or brings mushrooms
- let mT=40;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(pet()!=='pmush'||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen))return;mT-=dt;if(mT>0)return;
+ let mT=40;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(pet()!=='pmush'||(window.SQPETOFF&&SQPETOFF('pmush'))||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen))return;mT-=dt;if(mT>0)return;
   if(P.hp<6){P.hp=Math.min(6,P.hp+1);mT=45+Math.random()*20;say('Your mushling puffs healing spores at you. +1 heart');pop('+1 heart','#f86868');
    const p=petPos();for(let k=0;k<12;k++)part(p.x,p.y-4,(Math.random()-.5)*50,-30-Math.random()*40,.7,k%2?'#f8b0b0':'#fff0f0',40,1);try{sfx('eat')}catch(e){}}
   else{mT=110+Math.random()*40;const n=1+(Math.random()<.4?1:0);inv.shroom=(inv.shroom|0)+n;say('Your mushling brings you '+n+' mushroom'+(n>1?'s':'')+'!');pop('+'+n+' mushroom'+(n>1?'s':''));try{sfx('pickup')}catch(e){}}
   try{saveLocal()}catch(e){}};
  // the Glowcap: a spore cloud slows everything around you when you get hit
- let gCd=0,lastHp=null;const _u2=upd;upd=function(dt){const h0=lastHp;_u2.apply(this,arguments);lastHp=P.hp;try{if(pet()!=='pglow'||dead||h0===null||!(P.hp<h0)||performance.now()<gCd||Math.random()>=.45)return;gCd=performance.now()+6000;let n=0;
+ let gCd=0,lastHp=null;const _u2=upd;upd=function(dt){const h0=lastHp;_u2.apply(this,arguments);lastHp=P.hp;try{if(pet()!=='pglow'||(window.SQPETOFF&&SQPETOFF('pglow'))||dead||h0===null||!(P.hp<h0)||performance.now()<gCd||Math.random()>=.45)return;gCd=performance.now()+6000;let n=0;
    for(const e of en)if(!e.dead&&!e._rp&&!e._pet&&Math.hypot(e.x-P.x,e.y-P.y)<56){e.slow=Math.max(e.slow||0,3);n++}
    for(let k=0;k<26;k++){const an=k/26*6.283;part(P.x,P.y-2,Math.cos(an)*70,Math.sin(an)*40-10,.8,k%2?'#78b0f8':'#c8f8ff',30,2)}
    if(n)say('Your glowcap bursts into spores! '+n+' monster'+(n>1?'s are':' is')+' slowed.');try{sfx('rustle')}catch(e){}}catch(e){}};
@@ -15013,7 +15014,7 @@ window.SQA=SQA;
     for(const m of R&&R.mobs||[]){if(!m||!m.vr||m.rk||m.rv)continue;const k=(m.type||'slime')+':'+m.vr;if(have.has(k))continue;have.add(k);const tpl={...m,x:0,y:0};
      add('m:'+k,VN[m.vr]||pretty(m.vr+' '+m.type),'Monsters',null,null,()=>({...tpl}))}}}}
   // projectile looks for monsters that shoot (160 draws them): j:<monster key>, captured from the game's own projectile
-  try{const SH=window.SQMOBATK&&SQMOBATK.SHOOT||{};for(const q of out.slice())if(q.grp==='Monsters'&&/^m:/.test(q.k)){const t=q.k.slice(2).split(':')[0];if(SH[t])add('j:'+q.k.slice(2),q.n+' · projectile','Monsters',()=>drawProj({x:0,y:0,vx:1,vy:0,t:0,k:SH[t],sc:curScene()}))}}catch(e){}
+  try{const SH=window.SQMOBATK&&SQMOBATK.SHOOT||{};for(const q of out.slice())if(q.grp==='Monsters'&&/^m:/.test(q.k)){const t=q.k.slice(2).split(':')[0];if(SH[t])add('j:'+q.k.slice(2),q.n+' · projectile','Monsters',()=>{if(SQMOBATK.capDraw)SQMOBATK.capDraw(t);else drawProj({x:0,y:0,vx:1,vy:0,t:0,k:SH[t],sc:curScene()})})}}catch(e){}
   // island props
   for(const kk in A.ISL_LM){const[k,v]=kk.split(':'),L=A.ISL_LM[kk];add('l:'+kk,L[0],'Island props',()=>drawFurn({t:'lm',k,v:L[3],x:0,y:0,w:L[1],h:L[2],sh:L[2],name:L[0]},0))}
   return CAT=out}
@@ -16887,7 +16888,7 @@ window.SQA=SQA;
  if(typeof buildFloor==='function'){const _bf=buildFloor;buildFloor=function(kind,f){const R=_bf.apply(this,arguments);try{const K=DKIND[kind];if(R&&R.mobs&&K&&/^cv_/.test(kind)){
    const bs=R.mobs.filter(m=>m&&m.cb);if(bs.length){R.mobs=R.mobs.filter(m=>!m.cb);if(f>=(K.floors||3)){const far=bs.sort((a,b)=>b.y-a.y||0)[bs.length-1];R.mobs.push(far)}}}}catch(e){console.warn(e)}return R}}
  // ---- fighting ----
- const SH=[],TG=[];// fire bolts, slam marks
+ const SH=[],TG=[];window.SQCBSH=SH;// fire bolts, slam marks (SQCBSH: 166 tags shots and draws Dev Suite looks)
  const canHurt=()=>!dead&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)&&!(window.SQDUEL&&SQDUEL.chess);
  const hit=(d,why)=>{if(!canHurt())return;P.hp-=d;hurt=1;try{sfx('hurt')}catch(e){}};
  function act(n,B,dt){const dx=P.x-n.x,dy=(P.y-2)-(n.y-4),dist=Math.hypot(dx,dy);
@@ -16899,14 +16900,14 @@ window.SQA=SQA;
   if(n.cbc){const c=n.cbc;c.t-=dt;if(c.t>0&&c.ph===0){/* winding up */}else if(c.ph===0){c.ph=1;c.t=.45;try{sfx('roar')}catch(e){}}
    else if(c.t>0){try{stepTo(n,c.vx*260*dt,c.vy*260*dt)}catch(e){}if(dist<14+6*B.sz)hit(B.dmg+1)}else n.cbc=null;return}
   n.cbt-=dt;if(n.cbt>0||!B.atk.length||dist>190)return;n.cbt=B.cd*(.8+Math.random()*.4);const a=B.atk[Math.floor(Math.random()*B.atk.length)];
-  if(a==='ring'){const k=10,o=Math.random()*6.28;for(let i=0;i<k;i++){const ang=o+i/k*6.283;SH.push({x:n.x,y:n.y-6*B.sz,vx:Math.cos(ang)*95,vy:Math.sin(ang)*95,t:2.4,d:B.dmg})}try{sfx('swish')}catch(e){}}
+  if(a==='ring'){const k=10,o=Math.random()*6.28;for(let i=0;i<k;i++){const ang=o+i/k*6.283;SH.push({x:n.x,y:n.y-6*B.sz,vx:Math.cos(ang)*95,vy:Math.sin(ang)*95,t:2.4,d:B.dmg,_n:n})}try{sfx('swish')}catch(e){}}
   else if(a==='charge'){const l=dist||1;n.cbc={vx:dx/l,vy:dy/l,t:.65,ph:0}}
   else if(a==='slam'){TG.push({x:P.x,y:P.y,r:26,t:1.05,d:B.dmg+1});try{sfx('talk')}catch(e){}}
   else if(a==='summon'){const have=en.filter(m=>!m.dead&&m._cbs===n).length;for(let i=0;i<Math.min(2,4-have);i++){let sx=n.x+(i?18:-18),sy=n.y+8;if(solid(sx,sy)){sx=n.x;sy=n.y}const m=rgMake(B.sk,Math.max(4,Math.round(B.hp/12)),sx,sy);m._cbs=n;delete m.night;if(n.zc)m.zc=n.zc;try{RG_OWN.add(m)}catch(e){}en.push(m)}}}
  {const _u=upd;upd=function(dt){let pos=null;const L=[];try{if(!menuOpen&&!pnOpen&&!dead)for(const n of en){if(!n||!n.cb||n.dead||n._rp)continue;const B=CB[n.cb];if(!B)continue;if(away(B)){n.dead=1;n.dropped=1;continue}L.push([n,B,n.x,n.y])}}catch(e){}
    const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;
    try{for(const[n,B,x,y]of L){if(n.dead)continue;act(n,B,dt)}
-    for(let i=SH.length-1;i>=0;i--){const s=SH[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.t-=dt;if(s.t<=0||solid(s.x,s.y)){SH.splice(i,1);continue}if(Math.hypot(s.x-P.x,s.y-(P.y-4))<8){hit(s.d);SH.splice(i,1)}}
+    for(let i=SH.length-1;i>=0;i--){const s=SH[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.t-=dt;if(s.t<=0||solid(s.x,s.y)){SH.splice(i,1);continue}if(Math.hypot(s.x-P.x,s.y-(P.y-4))<8){const h0=P.hp;hit(s.d);if(P.hp<h0&&window.SQSHOTHIT)SQSHOTHIT(s);SH.splice(i,1)}}
     for(let i=TG.length-1;i>=0;i--){const q=TG[i];q.t-=dt;if(q.t<=0){if(Math.hypot(q.x-P.x,(q.y-P.y)*1.6)<q.r)hit(q.d);TG.splice(i,1)}}
     if(!L.length&&!en.some(n=>n&&n.cb&&!n.dead)){SH.length=0;TG.length=0}}catch(e){console.warn(e)}return out}}
  // beaten: remembered, announced
@@ -16920,7 +16921,7 @@ window.SQA=SQA;
    g.save();g.font='700 6px "Pixelify Sans",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(B.n,x,top-2);g.fillStyle='#ffd8c8';g.fillText(B.n,x,top-2);g.restore()}}
  {const _pP=pP;pP=function(tm){try{for(const q of TG){const p=1-q.t/1.05;g.fillStyle='rgba(255,60,30,'+(.15+.25*p)+')';g.strokeStyle='rgba(255,70,40,.85)';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,q.r,q.r/1.6,0,0,6.283);g.fill();g.stroke();
      g.beginPath();g.ellipse(q.x,q.y,q.r*p,q.r*p/1.6,0,0,6.283);g.stroke()}
-    for(const s of SH){g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(s.x,s.y,5,0,6.283);g.fill();Rg(Math.round(s.x)-2,Math.round(s.y)-2,4,4,'#181018');Rg(Math.round(s.x)-1,Math.round(s.y)-1,2,2,'#ffd060')}}catch(e){}return _pP.apply(this,arguments)}}
+    for(const s of SH){if(window.SQSHOTDRAW&&SQSHOTDRAW(s))continue;g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(s.x,s.y,5,0,6.283);g.fill();Rg(Math.round(s.x)-2,Math.round(s.y)-2,4,4,'#181018');Rg(Math.round(s.x)-1,Math.round(s.y)-1,2,2,'#ffd060')}}catch(e){}return _pP.apply(this,arguments)}}
  window.SQBOSSES={CB,read,get dead(){return DEAD},clear(){DEAD={};try{localStorage.removeItem(LSK)}catch(e){}}};
  // ---- Dev Suite > Bosses ----
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;const ST={sel:null,f:null};
@@ -17522,9 +17523,11 @@ window.SQA=SQA;
 //   fx    a status effect with a chance: slow (half speed), burn (1 heart every 1.5 s), poison (1 heart every 3 s),
 //         freeze (can't move). Timers in ST, run in the outermost upd.
 // Looks: props j:<monster key without m:> (e.g. j:skel:dust), drawn by the outermost drawProj turned the way it flies
-// (draw it facing right). Monsters that shoot with their own systems (bandits, cacti, Dev Suite bosses) aren't covered.
+// (draw it facing right). Bandits and cacti (099's SQNMP) and Dev Suite bosses' fire rings (146's SQCBSH) push shots
+// tagged with _n (the monster): tagged here too, hits reported through SQSHOTHIT(shot), looks drawn through SQSHOTDRAW(shot).
+// cb bosses only shoot with the "ring" attack. SQMOBATK.capDraw(type) draws a type's own shot at (0,0) for 111d's capture.
 (()=>{if(!window.SQA||!window.SQPROPS)return;const A=SQA,R={};
- const SHOOT={skel:'bone',bonelord:'bone',guard:'water',tidek:'water'};
+ const SHOOT={skel:'bone',bonelord:'bone',guard:'water',tidek:'water',bandit:'bullet',cacti:'needle',cb:'fire'};
  const num=(v,lo,hi,d)=>{v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):d};
  const FX=['slow','burn','freeze','poison'];
  A.onApply(lib=>{for(const k in R)delete R[k];const M=lib&&lib.mobs||{};for(const k in M){const j=M[k]&&M[k].pj;if(!j||typeof j!=='object')continue;
@@ -17536,6 +17539,15 @@ window.SQA=SQA;
     if(best){const k=mk(best);p._mk=k;p._jk='j:'+k.slice(2);best._shotAt=performance.now();const r=R[k];
      if(r&&r.rate!==100&&best._rateF!==FRAME){best._rateF=FRAME;for(const f of['tcd','gcd'])if(best[f]>0)best[f]=best[f]*100/r.rate}}}}catch(e){}
   return _push.apply(this,ps)};
+ // ---- the other shot lists: bandits / cacti (099) and Dev Suite bosses (146) ----
+ const tagN=(p)=>{const n=p&&p._n;if(!n||p._mk)return;const k=mk(n);p._mk=k;p._jk='j:'+k.slice(2);n._shotAt=performance.now();const r=R[k];
+  if(r&&r.rate!==100&&n._rateF!==FRAME){n._rateF=FRAME;for(const f of['cd','cbt','tcd','gcd'])if(n[f]>0)n[f]=n[f]*100/r.rate}};
+ for(const L of[window.SQNMP,window.SQCBSH]){if(!L)continue;const _p=L.push;L.push=function(...ps){for(const p of ps)try{tagN(p)}catch(e){}return _p.apply(this,ps)}}
+ window.SQSHOTHIT=p=>{try{const r=p&&p._mk&&R[p._mk];if(r&&!dead)apply(r)}catch(e){}};
+ window.SQSHOTDRAW=p=>{if(!p||!p._jk||!SQPROPS.looks||!SQPROPS.looks[p._jk])return false;const a=Math.atan2(p.vy||0,p.vx||1);g.save();g.translate(Math.round(p.x),Math.round(p.y));g.rotate(Math.round(a/(Math.PI/8))*(Math.PI/8));try{SQPROPS.drawLook(p._jk,0,0,null,0,false)}catch(e){}g.restore();return true};
+ const capDraw=t=>{const k=SHOOT[t];if(k==='bullet'){Rg(-2,-2,4,4,'#181018');Rg(-1,-1,2,2,'#f8e070');return}if(k==='needle'){for(let i=0;i<5;i++)Rg(-i,0,1,1,i?'#e8e0b0':'#ffffff');return}
+  if(k==='fire'){g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(0,0,5,0,6.283);g.fill();Rg(-2,-2,4,4,'#181018');Rg(-1,-1,2,2,'#ffd060');return}
+  drawProj({x:0,y:0,vx:1,vy:0,t:0,k,sc:curScene()})};
  // ---- drawing a shot with its look ----
  {const _dp=drawProj;drawProj=function(p){if(p&&p._jk&&SQPROPS.looks){const L=SQPROPS.looks[p._jk];if(L){const a=Math.atan2(p.vy||0,p.vx||1);g.save();g.translate(Math.round(p.x),Math.round(p.y));g.rotate(Math.round(a/(Math.PI/8))*(Math.PI/8));try{SQPROPS.drawLook(p._jk,0,0,null,0,false)}catch(e){}g.restore();return}}return _dp.apply(this,arguments)}}
  // ---- hits and status effects ----
@@ -17553,7 +17565,7 @@ window.SQA=SQA;
      for(const f of FX)if(ST[f]>0){ST[f]=Math.max(0,ST[f]-dt);if(Math.random()<dt*8&&typeof part==='function')part(P.x+(Math.random()-.5)*10,P.y-8-Math.random()*10,(Math.random()-.5)*16,-24,.5,COL[f],f==='freeze'?0:-40,1)}
      if(ST.burn<=0)ST.bt=0;if(ST.poison<=0)ST.pt=0}}catch(e){console.warn('monster attacks',e)}
    return out}}
- window.SQMOBATK={SHOOT,FX,get rules(){return R},status:ST,shoots:k=>!!SHOOT[String(k||'').replace(/^[mj]:/,'').split(':')[0]],clear(){for(const f of FX)ST[f]=0}};
+ window.SQMOBATK={SHOOT,FX,capDraw,get rules(){return R},status:ST,shoots:k=>!!SHOOT[String(k||'').replace(/^[mj]:/,'').split(':')[0]],clear(){for(const f of FX)ST[f]=0}};
  try{SQPROPS.recat()}catch(e){}})();
 // ---- 167. Dev Suite > Admin: bug inbox, players and gifts, news and events, economy (+ the game side of them) ----
 // Database (rules in database.rules.json; devs = uids under devs/):
@@ -18396,6 +18408,11 @@ window.SQA=SQA;
    for(const c of arr(I.cv))for(const k of arr(c&&c.m))if(!mobs.has(k))bad(w,'a dungeon entrance has "'+k+'", which isn\'t a monster.',g);
    for(const L of arr(I.lm))if(L&&L.loot)for(const k in L.loot)if(k!=='gold'&&!item(k)&&!loot.has(k))bad(w,'a chest holds "'+k+'", which isn\'t an item or loot table.',g)}
   // Gathering: what trees/rocks/fish give
+  {const Gd=D.gather||{};for(const id in Gd.crops||{}){const o=Gd.crops[id]||{},w='Crop '+(o.n||id),g={tab:'gather'};
+    if(!o.item||!item(o.item))bad(w,'harvests "'+(o.item||'nothing')+'", which isn\'t an item. Use "Make seed + crop items".',g);
+    if(!o.seed||!item(o.seed))bad(w,'grows from "'+(o.seed||'nothing')+'", which isn\'t an item.',g);
+    if(o.ck&&!item(o.ck))bad(w,'cooks into "'+o.ck+'", which isn\'t an item.',g);
+    if(o.item&&typeof CROPS!=='undefined'&&CROPS[o.item]&&!CROPS[o.item]._g)bad(w,'uses one of the game\'s own crops as its harvest.',g);}}
   {const Gd=D.gather||{};for(const k of['nodes','fish'])for(const id in Gd[k]||{}){const o=Gd[k][id]||{},w=(k==='fish'?'Fish ':'')+(o.n||id),g={tab:'gather'};
     if(!o.item||!item(o.item))bad(w,'gives "'+(o.item||'nothing')+'", which isn\'t an item. Pick one or use "Make its item".',g);
     if(k==='fish'&&o.ck&&!item(o.ck))bad(w,'cooks into "'+o.ck+'", which isn\'t an item.',g);
@@ -18685,6 +18702,11 @@ window.SQA=SQA;
 //          Kinds that go away are turned back into what they replaced; their SQTIER entry stays until reload (harmless).
 //   fish   {n, item (raw), lv, xp, where [regions] (empty = everywhere), p chance % per catch, ck cooked item, clv, cxp}
 //          -> window.SQGFISH (093b's catch hook) and a COOKS entry (_g) when ck is set.
+//   crops  {n, item (the crop: CROPS is keyed by the crop item, since harvesting adds inv[p.c]), seed, lv, gm watered minutes
+//          to grow, y0..y1 harvest, xp, sh look (grain/root/round/bush/flower/tall), col [3 hex], buy (gold for 5 seeds at the
+//          general store, 0 = not sold), ck/clv/cxp cooking} -> CROPS[item] (_g) + SEED2CROP[seed] + a GEN entry (_gc) + COOKS (_gc).
+//          A removed crop keeps its CROPS entry (plots and saves still name it) but its seed stops planting. Ripe look made
+//          by the wrapped hdCropS (stages 0-2 are the game's own sprouts); Props > c:<item>:<stage> looks still go on top.
 // Items come from the game or the Content tab (it_); "Make its item" writes a Content item into the draft.
 (()=>{if(!window.SQA||!window.SQTIER)return;const TIER=window.SQTIER;
  const REG=()=>['hollow',...Object.keys(WORLD_REGIONS).filter(k=>k!=='hollow')],regName=k=>k==='hollow'?'Hollow Island':(WORLD_REGIONS[k]&&WORLD_REGIONS[k].name)||k;
@@ -18699,6 +18721,24 @@ window.SQA=SQA;
   if(rep==='tree')r.col=[0,1,2,3].map(i=>col[i]||['#3f8a2c','#5aa83a','#7cc650','#2a6420'][i]);else r.ore=hex(o.ore)||'#e05878';return r}
  function cleanFish(o){if(!o||typeof o!=='object')return null;return{n:txt(o.n,30)||'New fish',item:txt(o.item,40),lv:num(o.lv,1,99,1),xp:num(o.xp,0,5000,30),
   where:(Array.isArray(o.where)?o.where:[]).filter(k=>k==='hollow'||WORLD_REGIONS[k]).slice(0,20),p:num(o.p,1,100,15),ck:txt(o.ck,40),clv:num(o.clv,1,99,1),cxp:num(o.cxp,0,5000,40)}}
+ const NATIVE=new Set(Object.keys(CROPS)),NSEED=new Set(Object.values(CROPS).map(c=>c.seed));
+ const SHAPES=[['grain','Grain (like wheat)'],['root','Root (like carrots)'],['round','Round (like pumpkins)'],['bush','Berry bush'],['flower','Flowers'],['tall','Tall stalks (like corn)']];
+ function cleanCrop(o){if(!o||typeof o!=='object')return null;const col=Array.isArray(o.col)?o.col.map(hex):[];const y0=num(o.y0,1,20,2);
+  return{n:txt(o.n,30)||'New crop',item:txt(o.item,40),seed:txt(o.seed,40),lv:num(o.lv,1,99,1),gm:num(o.gm,1,180,3),y0,y1:Math.max(y0,num(o.y1,1,20,3)),xp:num(o.xp,0,5000,40),
+   sh:SHAPES.some(q=>q[0]===o.sh)?o.sh:'round',col:[0,1,2].map(i=>col[i]||['#d83838','#f87868','#8a1818'][i]),buy:num(o.buy,0,99999,10),ck:txt(o.ck,40),clv:num(o.clv,1,99,1),cxp:num(o.cxp,0,5000,40)}}
+ const LF=['#1e5a2c','#2e7a34','#48a040','#70c058'];
+ function cropRipe(r){const c=document.createElement('canvas');c.width=16;c.height=24;const x=c.getContext('2d'),F=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b+8,w,h)},[A,B,D]=r.col;
+  if(r.sh==='grain'){for(let k=0;k<7;k++){const X=2+k*2,top=5-((k*5)%3);F(X,top+3,1,12-top,D);F(X,top,1,3,A);F(X-(k%2),top+1,1,2,B)}}
+  else if(r.sh==='root'){for(const X of[4,11]){F(X-2,7,4,4,A);F(X-2,7,4,1,B);F(X-1,11,2,1,D);F(X-1,3,1,4,LF[2]);F(X+1,2,1,5,LF[3]);F(X-2,4,1,2,LF[1])}}
+  else if(r.sh==='bush'){F(2,3,12,11,LF[1]);F(3,2,10,13,LF[1]);F(4,3,6,4,LF[2]);F(5,3,3,2,LF[3]);for(const[a,b]of[[4,6],[9,4],[11,9],[6,10],[8,7],[3,11]]){F(a,b,2,2,A);F(a,b,1,1,B);F(a+1,b+1,1,1,D)}}
+  else if(r.sh==='flower'){for(const[a,b]of[[3,4],[8,2],[12,6],[6,8]]){F(a+1,b+3,1,13-b-3+2,LF[1]);F(a+2,b+6,2,1,LF[2]);F(a,b,3,3,A);F(a+1,b-1,1,1,A);F(a+1,b+3,1,0,A);F(a-1,b+1,1,1,A);F(a+3,b+1,1,1,A);F(a+1,b+1,1,1,B);F(a,b,1,1,D)}}
+  else if(r.sh==='tall'){for(const X of[3,8,12]){F(X,-6,1,21,LF[1]);F(X+1,-5,1,20,LF[2]);F(X-2,0,2,1,LF[3]);F(X+2,4,2,1,LF[3]);F(X+1,1,2,6,A);F(X+1,1,1,3,B);F(X+2,6,1,1,D);F(X+1,-1,1,2,'#e8d888')}}
+  else{F(2,4,12,10,A);F(3,3,10,12,A);F(3,4,4,2,B);for(const X of[5,8,11])F(X,4,1,10,D);F(7,0,2,4,'#5a8a28');F(9,1,3,2,LF[2])}
+  // outline (the game's crops have a dark 1px edge)
+  const im=x.getImageData(0,0,16,24),d=im.data,o=new Uint8ClampedArray(d),op=i=>d[i*4+3]===255;for(let y=0;y<24;y++)for(let X=0;X<16;X++){const i=y*16+X;if(d[i*4+3])continue;
+   if((X>0&&op(i-1))||(X<15&&op(i+1))||(y>0&&op(i-16))||(y<23&&op(i+16))){o[i*4]=42;o[i*4+1]=26;o[i*4+2]=8;o[i*4+3]=255}}im.data.set(o);x.putImageData(im,0,0);return{c,ox:0,oy:-8,ww:16,hh:24}}
+ const CROPSP=new Map();const cropSp=r=>{const k=JSON.stringify([r.sh,r.col]);let v=CROPSP.get(k);if(!v){v=cropRipe(r);CROPSP.set(k,v)}return v};
+ {const _hc=hdCropS;hdCropS=function(c,st,rp){const C=CROPS[c];if(C&&C._g&&rp)return cropSp(C);return _hc.apply(this,arguments)}}
  // ---------- hashing (same on every device) ----------
  const hs=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
  const roll=(a,b,k)=>{const v=Math.sin(a*12.9898+b*78.233+(hs(k)%9973)*.731)*43758.5453;return v-Math.floor(v)};
@@ -18736,25 +18776,36 @@ window.SQA=SQA;
   for(const id in fish){if(!/^gf_[a-z0-9_]{1,30}$/.test(id))continue;const r=cleanFish(fish[id]);if(!r||!INAME[r.item])continue;
    F.push({k:r.item,n:r.n,lv:r.lv,xp:r.xp,where:r.where.length?r.where:null,p:r.p/100});
    if(r.ck&&INAME[r.ck]&&!COOKS.some(c=>c.raw===r.item))COOKS.push({raw:r.item,ck:r.ck,n:r.n.toLowerCase(),lv:r.clv,xp:r.cxp,_g:1})}
-  F.sort((a,b)=>b.lv-a.lv)}
+  F.sort((a,b)=>b.lv-a.lv);
+  // crops
+  const crops=G.crops||{};for(const sd in SEED2CROP){const c=SEED2CROP[sd];if(CROPS[c]&&CROPS[c]._g)delete SEED2CROP[sd]}
+  for(const c in CROPS)if(CROPS[c]._g)CROPS[c]._off=1;for(let i=GEN.length-1;i>=0;i--)if(GEN[i]._gc)GEN.splice(i,1);for(let i=COOKS.length-1;i>=0;i--)if(COOKS[i]._gc)COOKS.splice(i,1);
+  for(const id in crops){if(!/^gc_[a-z0-9_]{1,30}$/.test(id))continue;const r=cleanCrop(crops[id]);if(!r||!INAME[r.item]||!INAME[r.seed]||r.item===r.seed||NATIVE.has(r.item)||NSEED.has(r.seed)||NATIVE.has(r.seed)||SEED2CROP[r.seed])continue;
+   if(CROPS[r.item]&&!CROPS[r.item]._g)continue;CROPS[r.item]={n:r.n,seed:r.seed,lv:r.lv,st:r.gm*20,max:3,yield:[r.y0,r.y1],xp:r.xp,_g:1,sh:r.sh,col:r.col,id};SEED2CROP[r.seed]=r.item;
+   if(r.buy>0){const sd=r.seed,lv=r.lv;GEN.push({n:'5 '+(INAME[sd]||sd).toLowerCase(),c:r.buy,f:()=>{inv[sd]=(inv[sd]|0)+5},hide:()=>lvOf(11)<lv,_gc:1})}
+   if(r.ck&&INAME[r.ck]&&!COOKS.some(c=>c.raw===r.item))COOKS.push({raw:r.item,ck:r.ck,n:r.n.toLowerCase(),lv:r.clv,xp:r.cxp,_gc:1})}
+  try{if(window.SQPROPS)SQPROPS.recat()}catch(e){}}
  {const _lr=loadRegion;loadRegion=function(){const out=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region)placeRegion(R)}catch(e){}return out}}
  SQA.onApply(lib=>{try{apply(lib)}catch(e){console.warn('gather',e)}});
- window.SQGATHER={cleanNode,cleanFish,kindOf,spritesFor,REG,regName,TOOLS,get active(){return ACT}};
+ window.SQGATHER={cleanNode,cleanFish,cleanCrop,cropSp,SHAPES,kindOf,spritesFor,REG,regName,TOOLS,get active(){return ACT}};
  // ======================= Dev Suite > Gathering =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;
- const T={sel:null,kind:null,w:null};
+ const T={sel:null,kind:null,w:null};const SECK={node:'nodes',fish:'fish',crop:'crops'},CLEAN={node:cleanNode,fish:cleanFish,crop:cleanCrop};
  const sec=k=>{S.draft.gather=S.draft.gather||{};return S.draft.gather[k]=S.draft.gather[k]||{}};
  const allItems=()=>{const o=new Map();for(const k of INVK)if(INAME[k]&&!o.has(k))o.set(k,INAME[k]);const ci=(S.draft.content||{}).items||{};for(const k in ci)if(!o.has(k))o.set(k,(ci[k].n||k)+' (draft)');return[...o].sort((a,b)=>a[1].localeCompare(b[1]))};
  const itemSel=(f,v,none)=>'<select data-gw="'+f+'" style="max-width:240px">'+(none?'<option value="">'+none+'</option>':'')+allItems().map(([k,n])=>'<option value="'+E(k)+'"'+(k===v?' selected':'')+'>'+E(n)+'</option>').join('')+'</select>';
  const whereBox=w=>'<div class="dv-row" style="flex-wrap:wrap;gap:4px 12px">'+REG().map(k=>'<label class="dv-mut"><input type="checkbox" data-gwhere="'+k+'"'+(w.includes(k)?' checked':'')+'> '+E(regName(k))+'</label>').join('')+'</div>';
  const fld=(l,h)=>'<label class="dv-gf"><span>'+l+'</span>'+h+'</label>';
- function preview(){const c=document.querySelector('#dvs #gtprev');if(!c||!T.w||T.kind!=='node')return;const S2=hdSprites();if(!S2)return;const r=cleanNode(T.w),TT={base:r.rep==='tree'?'tree':'ore',col:r.col,ore:r.ore};
+ function preview(){const c=document.querySelector('#dvs #gtprev');if(!c||!T.w)return;
+  if(T.kind==='crop'){const r=cleanCrop(T.w),x=c.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,c.width,c.height);const L=[0,1,2].map(s=>hdCropS('wheat',s,false)).concat([cropSp(r)]);
+   L.forEach((sp,i)=>{const X=10+i*62,Y=c.height-6-24*3;x.fillStyle='#6a4428';x.fillRect(X,Y+8*3,48,48);x.drawImage(sp.c,X,Y,48,72)});return}
+  if(T.kind!=='node')return;const S2=hdSprites();if(!S2)return;const r=cleanNode(T.w),TT={base:r.rep==='tree'?'tree':'ore',col:r.col,ore:r.ore};
   const L=spritesFor(S2,TT),x=c.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,c.width,c.height);let px=6;for(const sp of L.slice(0,4)){const z=Math.max(.5,Math.min(2,(c.height-10)/sp.height));x.drawImage(sp,px,c.height-sp.height*z-5,sp.width*z,sp.height*z);px+=sp.width*z+10}}
- function render(){const G=S.draft.gather||{},nd=G.nodes||{},fs=G.fish||{};
+ function render(){const G=S.draft.gather||{},nd=G.nodes||{},fs=G.fish||{},cr=G.crops||{};
   let h='<div class="dv-card"><b>Gathering</b><p class="dv-mut">New trees, rocks and ore veins (they replace a share of the existing ones where you choose, the same spots for every player) and new fish. What they give is an item from the game or one you made in the Content tab; "Make its item" makes one for you. Draw its icon in Sprites.</p>'+
-   '<div class="dv-row" style="flex-wrap:wrap;gap:6px"><button class="dv-b dv-pri" data-gx="newnode">+ New tree / rock</button><button class="dv-b dv-pri" data-gx="newfish">+ New fish</button></div>';
+   '<div class="dv-row" style="flex-wrap:wrap;gap:6px"><button class="dv-b dv-pri" data-gx="newnode">+ New tree / rock</button><button class="dv-b dv-pri" data-gx="newfish">+ New fish</button><button class="dv-b dv-pri" data-gx="newcrop">+ New crop</button></div>';
   const li=(sec,id,o,lab)=>'<button class="dv-b'+(T.sel===id?' dv-on dv-tl':'')+'" data-gx="open:'+sec+':'+id+'">'+lab+' '+E(o.n||id)+'</button>';
-  h+='<div class="dv-row" style="flex-wrap:wrap;gap:6px;margin-top:8px">'+Object.keys(nd).map(id=>li('nodes',id,nd[id],nd[id].rep==='tree'?'🌳':'🪨')).join('')+Object.keys(fs).map(id=>li('fish',id,fs[id],'🐟')).join('')+'</div></div>';
+  h+='<div class="dv-row" style="flex-wrap:wrap;gap:6px;margin-top:8px">'+Object.keys(nd).map(id=>li('nodes',id,nd[id],nd[id].rep==='tree'?'🌳':'🪨')).join('')+Object.keys(fs).map(id=>li('fish',id,fs[id],'🐟')).join('')+Object.keys(cr).map(id=>li('crops',id,cr[id],'🌱')).join('')+'</div></div>';
   if(!T.w)return h;const w=T.w;
   if(T.kind==='node'){const r=cleanNode(w),tree=r.rep==='tree',sk=tree?'Woodcutting':'Mining';
    h+='<div class="dv-card dv-rules" style="margin-top:10px"><b>'+E(r.n)+'</b> <small class="dv-mut">'+T.sel+' · '+kindOf(T.sel)+'</small>'+
@@ -18770,6 +18821,22 @@ window.SQA=SQA;
     '<canvas id="gtprev" width="260" height="110" style="background:#3a7a3a;border-radius:6px;image-rendering:pixelated"></canvas>'+
     fld('Where','')+whereBox(r.where)+
     fld('How common','<span><input type="number" min="0" max="100" data-gw="pct" value="'+r.pct+'" style="width:70px"> % of the '+(r.rep==='tree'?'trees':r.rep==='rock'?'plain rocks':'iron ore veins')+' there</span>')}
+  else if(T.kind==='crop'){const r=cleanCrop(w),dup=r.item&&CROPS[r.item]&&!CROPS[r.item]._g?'That item is already one of the game\'s own crops.':r.seed&&(NSEED.has(r.seed)||NATIVE.has(r.seed))?'That seed already grows one of the game\'s own crops.':r.item&&r.item===r.seed?'The seed and the crop must be different items.':'';
+   h+='<div class="dv-card dv-rules" style="margin-top:10px"><b>'+E(r.n)+'</b> <small class="dv-mut">'+T.sel+'</small>'+
+    fld('Name','<input type="text" maxlength="30" data-gw="n" value="'+E(w.n||'')+'">')+
+    fld('Crop (harvest)','<span>'+itemSel('item',r.item,'— pick an item —')+' <button class="dv-b" data-gx="mkcrop">Make seed + crop items</button></span>')+
+    fld('Seed','<span>'+itemSel('seed',r.seed,'— pick an item —')+'</span>')+
+    fld('Farming level','<input type="number" min="1" max="99" data-gw="lv" value="'+r.lv+'">')+
+    fld('Grows in','<span><input type="number" min="1" max="180" data-gw="gm" value="'+r.gm+'" style="width:70px"> minutes of watered time (wheat 2, carrots 3, pumpkins 4.5)</span>')+
+    fld('Harvest','<span><input type="number" min="1" max="20" data-gw="y0" value="'+r.y0+'" style="width:60px"> to <input type="number" min="1" max="20" data-gw="y1" value="'+r.y1+'" style="width:60px"> per plant (more often the higher Farming is)</span>')+
+    fld('XP per harvest','<input type="number" min="0" max="5000" data-gw="xp" value="'+r.xp+'">')+
+    fld('Seeds in the general store','<span><input type="number" min="0" max="99999" data-gw="buy" value="'+r.buy+'" style="width:80px"> gold for 5 (0 = not sold; harvests also give seeds back)</span>')+
+    fld('Ripe look','<select data-gw="sh">'+SHAPES.map(([k,l])=>'<option value="'+k+'"'+(r.sh===k?' selected':'')+'>'+l+'</option>').join('')+'</select>')+
+    fld('Colours','<span>'+['Main','Light','Dark'].map((l,i)=>l+' <input type="color" data-gwc="'+i+'" value="'+r.col[i]+'"> <input data-gwh="'+i+'" value="'+r.col[i]+'" maxlength="7" style="width:72px;font-family:monospace">').join(' ')+'</span>')+
+    '<canvas id="gtprev" width="260" height="90" style="background:#3a7a3a;border-radius:6px;image-rendering:pixelated"></canvas><p class="dv-mut" style="margin:0">Planted, sprouting, growing and ripe. To draw each stage yourself, use Props (Farming: '+E(r.n)+') once it\'s saved.</p>'+
+    fld('Cooks into','<span>'+itemSel('ck',r.ck,'— not cookable —')+'</span>')+
+    (r.ck?fld('Cooking level','<input type="number" min="1" max="99" data-gw="clv" value="'+r.clv+'">')+fld('Cooking XP','<input type="number" min="0" max="5000" data-gw="cxp" value="'+r.cxp+'">'):'')+
+    (dup?'<p style="color:#e88">'+dup+'</p>':'')}
   else{const r=cleanFish(w);
    h+='<div class="dv-card dv-rules" style="margin-top:10px"><b>'+E(r.n)+'</b> <small class="dv-mut">'+T.sel+'</small>'+
     fld('Name','<input type="text" maxlength="30" data-gw="n" value="'+E(w.n||'')+'">')+
@@ -18779,25 +18846,27 @@ window.SQA=SQA;
     fld('Cooks into','<span>'+itemSel('ck',r.ck,'— not cookable —')+'</span>')+
     (r.ck?fld('Cooking level','<input type="number" min="1" max="99" data-gw="clv" value="'+r.clv+'">')+fld('Cooking XP','<input type="number" min="0" max="5000" data-gw="cxp" value="'+r.cxp+'">'):'')+
     fld('Where','')+'<p class="dv-mut" style="margin:0">None ticked = every water.</p>'+whereBox(r.where)}
-  const missing=!INAME[(T.kind==='node'?cleanNode(w):cleanFish(w)).item]&&!(((S.draft.content||{}).items||{})[w.item]);
-  h+=(missing?'<p style="color:#e88">Pick what it gives (or make its item) before saving: without an item it does nothing.</p>':'')+
+  const has=k=>!!(INAME[k]||((S.draft.content||{}).items||{})[k]),missing=!has(CLEAN[T.kind](w).item)||(T.kind==='crop'&&!has(CLEAN.crop(w).seed));
+  h+=(missing?'<p style="color:#e88">Pick '+(T.kind==='crop'?'its crop and seed items':'what it gives')+' (or make them) before saving: without them it does nothing.</p>':'')+
    '<div class="dv-row" style="gap:6px"><button class="dv-b dv-pri" data-gx="save">Save to draft</button><button class="dv-b dv-bad" data-gx="del">Delete</button><button class="dv-b" data-gx="close">Close</button></div></div>';
   return h}
  function set(f,v){if(!T.w)return;T.w[f]=v;T.dirty=true}
- async function save(){const k=T.kind==='node'?'nodes':'fish',r=T.kind==='node'?cleanNode(T.w):cleanFish(T.w);sec(k)[T.sel]=r;
+ async function save(){const k=SECK[T.kind],r=CLEAN[T.kind](T.w);sec(k)[T.sel]=r;
   try{await dset('draft/gather/'+k+'/'+T.sel,r);T.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}try{if(SQA.previewing)SQA.preview(S.draft)}catch(e){}API.draw()}
  async function mkItem(key,o){const ci=(S.draft.content=S.draft.content||{}).items=(S.draft.content.items||{});if(ci[key]){toast('That item already exists in the Content tab.');return key}
   ci[key]=o;try{await dset('draft/content/items/'+key,o)}catch(e){fail(e)}return key}
  const idOf=n=>String(n||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,24)||'new';
  document.addEventListener('click',async e=>{if(S.tab!=='gather')return;const t=e.target.closest('[data-gx]');if(!t)return;e.preventDefault();const a=t.dataset.gx;
-  if(a==='newnode'||a==='newfish'){const pre=a==='newnode'?'gn_':'gf_',base=a==='newnode'?'tree':'fish';let id=pre+base,i=2;const s=sec(a==='newnode'?'nodes':'fish');while(s[id])id=pre+base+(i++);
-   T.sel=id;T.kind=a==='newnode'?'node':'fish';T.w=a==='newnode'?cleanNode({n:'New tree',where:['hollow']}):cleanFish({n:'New fish'});T.dirty=true;API.draw();return}
-  if(a.startsWith('open:')){const[,s,id]=a.split(':');T.sel=id;T.kind=s==='nodes'?'node':'fish';T.w=JSON.parse(JSON.stringify(sec(s)[id]));T.dirty=false;API.draw();return}
+  if(a==='newnode'||a==='newfish'||a==='newcrop'){const kd=a.slice(3),pre={node:'gn_',fish:'gf_',crop:'gc_'}[kd],base={node:'tree',fish:'fish',crop:'crop'}[kd];let id=pre+base,i=2;const s=sec(SECK[kd]);while(s[id])id=pre+base+(i++);
+   T.sel=id;T.kind=kd;T.w=kd==='node'?cleanNode({n:'New tree',where:['hollow']}):kd==='fish'?cleanFish({n:'New fish'}):cleanCrop({n:'New crop'});T.dirty=true;API.draw();return}
+  if(a.startsWith('open:')){const[,s,id]=a.split(':');T.sel=id;T.kind=s==='nodes'?'node':s==='crops'?'crop':'fish';T.w=JSON.parse(JSON.stringify(sec(s)[id]));T.dirty=false;API.draw();return}
   if(a==='close'){T.sel=T.w=null;API.draw();return}
   if(a==='save'){await save();return}
-  if(a==='del')return arm('gdel',async()=>{const k=T.kind==='node'?'nodes':'fish';delete sec(k)[T.sel];try{await dset('draft/gather/'+k+'/'+T.sel,null);toast('Deleted from your draft.')}catch(e2){fail(e2)}T.sel=T.w=null;try{if(SQA.previewing)SQA.preview(S.draft)}catch(x){}API.draw()});
+  if(a==='del')return arm('gdel',async()=>{const k=SECK[T.kind];delete sec(k)[T.sel];try{await dset('draft/gather/'+k+'/'+T.sel,null);toast('Deleted from your draft.')}catch(e2){fail(e2)}T.sel=T.w=null;try{if(SQA.previewing)SQA.preview(S.draft)}catch(x){}API.draw()});
   if(a==='mkitem'){const r=cleanNode(T.w),tree=r.rep==='tree',nm=tree?r.n.replace(/ tree$/i,'')+' logs':r.n.replace(/ (rock|vein)s?$/i,'')+' ore';
    const key='it_'+idOf(nm);await mkItem(key,{n:nm,pl:nm,d:tree?'Logs from a '+r.n.toLowerCase()+'.':'Ore from a '+r.n.toLowerCase()+'.',v:Math.max(2,Math.round(r.lv*1.2)),t:'mat'});T.w.item=key;T.dirty=true;toast('Made "'+nm+'" in the Content tab. Draw its icon in Sprites.');API.draw();return}
+  if(a==='mkcrop'){const r=cleanCrop(T.w),b=idOf(r.n);const sd=await mkItem('it_'+b+'_seeds',{n:r.n+' seeds',pl:r.n+' seeds',d:'Plant on tilled soil'+(r.lv>1?' (Farming '+r.lv+')':'')+', then water. Grows into '+r.n.toLowerCase()+'.',v:Math.max(1,Math.round(r.buy/5)||1),t:'mat'});
+   const it=await mkItem('it_'+b,{n:r.n,pl:r.n,d:'Freshly harvested '+r.n.toLowerCase()+'.',v:Math.max(2,Math.round(r.lv*1.2)+2),t:'mat'});T.w.item=it;T.w.seed=sd;T.dirty=true;toast('Made the seed and crop items in the Content tab. Draw their icons in Sprites.');API.draw();return}
   if(a==='mkfish'){const r=cleanFish(T.w),b=idOf(r.n);const raw=await mkItem('it_raw_'+b,{n:'Raw '+r.n.toLowerCase(),pl:'Raw '+r.n.toLowerCase(),d:'Cook it at a campfire.',v:Math.max(2,Math.round(r.lv*.8)),t:'mat'});
    const ck=await mkItem('it_cooked_'+b,{n:'Cooked '+r.n.toLowerCase(),pl:'Cooked '+r.n.toLowerCase(),d:'A tasty fish.',v:Math.max(4,Math.round(r.lv*1.6)),t:'food',heal:Math.min(6,1+Math.floor(r.lv/15)),hun:Math.min(100,30+r.lv)});
    T.w.item=raw;T.w.ck=ck;T.dirty=true;toast('Made the raw and cooked items in the Content tab. Draw their icons in Sprites.');API.draw();return}},true);
@@ -18805,8 +18874,8 @@ window.SQA=SQA;
   if(t.dataset.gw){const f=t.dataset.gw;set(f,t.type==='number'?+t.value:t.value);API.draw();return}
   if(t.dataset.gwhere){const k=t.dataset.gwhere,w=new Set(T.w.where||[]);if(t.checked)w.add(k);else w.delete(k);set('where',[...w]);return}
   if(t.dataset.gwc!=null||t.dataset.gwh!=null){const i=t.dataset.gwc!=null?t.dataset.gwc:t.dataset.gwh,v=hex(t.value);if(!v){toast('That isn\'t a hex colour (try #c89858).');API.draw();return}
-   if(i==='o')set('ore',v);else{const c=(cleanNode(T.w).col||[]).slice();c[+i]=v;set('col',c)}API.draw()}},true);
- const changes=(L,D)=>{const out=[];for(const k of['nodes','fish']){const l=((L||{}).gather||{})[k]||{},d=((D||{}).gather||{})[k]||{};for(const id of new Set([...Object.keys(l),...Object.keys(d)]))if(JSON.stringify(l[id])!==JSON.stringify(d[id]))out.push({kind:'ext',html:(k==='fish'?'🐟 ':'🌳 ')+E((d[id]||l[id]).n||id)+(d[id]?(l[id]?' (changed)':' (new)'):' (removed)')})}return out};
+   if(i==='o')set('ore',v);else{const c=(CLEAN[T.kind](T.w).col||[]).slice();c[+i]=v;set('col',c)}API.draw()}},true);
+ const changes=(L,D)=>{const out=[];for(const k of['nodes','fish','crops']){const l=((L||{}).gather||{})[k]||{},d=((D||{}).gather||{})[k]||{};for(const id of new Set([...Object.keys(l),...Object.keys(d)]))if(JSON.stringify(l[id])!==JSON.stringify(d[id]))out.push({kind:'ext',html:(k==='fish'?'🐟 ':k==='crops'?'🌱 ':'🌳 ')+E((d[id]||l[id]).n||id)+(d[id]?(l[id]?' (changed)':' (new)'):' (removed)')})}return out};
  SQSUITE.addTab('gather','Gathering',{render,changes,after(){preview()},dirty:()=>!!(T.w&&T.dirty),leave(){T.sel=T.w=null}})})();
 // ---- 184. Meals with buffs, and two new buffs ----
 // window.SQFOODBUFF {foodKey:{b,s}} = eating that food (EAT at no fire, or USE from the bag) starts buff b for s seconds,
@@ -18869,6 +18938,221 @@ window.SQA=SQA;
    const hu=fx('hun'),dh=h0-hunger;if(hu&&dh>0&&dh<2)hunger=Math.min(100,hunger+dh*Math.min(90,hu)/100);
    const hg=fx('hreg');if(hg&&!dead&&P.hp<6){hr+=dt;if(hr>=600/hg){hr=0;P.hp=Math.min(6,P.hp+1)}}else hr=0}catch(e){}return out}}
  window.SQGEARFX={fx}})();
+// ---- 187. Pet powers from the Dev Suite (Dev Suite > Pet powers) ----
+// Library petab.<pet kind> = {own, at, ag, dmg, gr, cd, rng, fx, col, heal, fetch, ex, xp, gold, guard}:
+//   own   1 = keep the pet's own ability (treeling logs, mushling, glowcap, squirrel/golem fetching, the imp's dagger),
+//         0 = turn it off (window.SQPETOFF(kind), asked by 085, 098 and 116)
+//   at    fighting: '' (doesn't fight) | melee (dashes at it) | ranged (arrows) | magic (homing orbs) | aoe (a burst around it)
+//   ag    when it fights: hurt (something hurt you) | near (any monster near you) | yours (what you're fighting)
+//   dmg   damage per hit; gr 1 = +1 per 25 levels of Attack (melee) / Archery (ranged) / Magic (magic, aoe); cd seconds
+//         between attacks; rng reach (melee), range (ranged, magic) or burst radius (aoe) in px; col its colour
+//   fx    on the monster: {slow, burn, poison, freeze: [chance %, seconds]} (the game's own n.slow/burn/poison/frozen)
+//   heal  {h hearts, e every s} while you're hurt; fetch {k item, n, e every s}; ex {s skill index (-1 = any gathering), c %}
+//         = a chance of +1 of what you just gathered (items arriving in a frame with that skill's XP, like 120)
+//   xp    % more XP (outermost addXp); gold % more kill gold (outermost killEnemy); guard % chance to stop a hit
+// The pet attacks from where it's drawn (093's PST 'me', the imp's own state); a melee pet dashes next to the monster and
+// 093's petFollow walks it back. Pets can't be hurt (the imp keeps its own health). Other players see the attacks: fx
+// event 'pa' {s,x,y,tx,ty,c,r} through SQPVSEND / SQFXH (looks only). Item descriptions (pet_<kind>) list the powers.
+(()=>{if(!window.SQA||!window.LUX)return;const A=SQA;
+ const STY=['','melee','ranged','magic','aoe'],AG=['hurt','near','yours'],FXK=['slow','burn','poison','freeze'];
+ const DEFR={melee:40,ranged:140,magic:120,aoe:48},DEFC={melee:'#f8f0d0',ranged:'#c8a060',magic:'#a070f0',aoe:'#f87830'};
+ const num=(v,a,b,d)=>{v=Number(v);return isFinite(v)?Math.max(a,Math.min(b,v)):d};
+ const hex=v=>{v=String(v||'').trim().toLowerCase().replace(/^#?/,'#');return/^#[0-9a-f]{6}$/.test(v)?v:null};
+ function clean(o){if(!o||typeof o!=='object')return null;const at=STY.includes(o.at)?o.at:'';const r={own:o.own===0?0:1};
+  if(at){r.at=at;r.ag=AG.includes(o.ag)?o.ag:'hurt';r.dmg=Math.round(num(o.dmg,1,50,2));r.gr=o.gr===0?0:1;r.cd=Math.round(num(o.cd,.3,10,1.2)*10)/10;
+   r.rng=Math.round(num(o.rng,16,200,DEFR[at]));r.col=hex(o.col)||DEFC[at];const fx={};for(const f of FXK){const e=o.fx&&o.fx[f];if(Array.isArray(e)){const c=Math.round(num(e[0],0,100,0)),t=num(e[1],.5,30,3);if(c>0)fx[f]=[c,t]}}if(Object.keys(fx).length)r.fx=fx}
+  if(o.heal&&+o.heal.h>0)r.heal={h:Math.round(num(o.heal.h,1,6,1)),e:Math.round(num(o.heal.e,5,600,45))};
+  if(o.fetch&&o.fetch.k&&typeof o.fetch.k==='string')r.fetch={k:o.fetch.k.slice(0,40),n:Math.round(num(o.fetch.n,1,99,1)),e:Math.round(num(o.fetch.e,10,3600,120))};
+  if(o.ex&&+o.ex.c>0)r.ex={s:Math.round(num(o.ex.s,-1,40,-1)),c:Math.round(num(o.ex.c,1,100,10))};
+  for(const[k,mx]of[['xp',100],['gold',200],['guard',50]]){const v=Math.round(num(o[k],0,mx,0));if(v)r[k]=v}
+  return Object.keys(r).length>1||r.own===0?r:null}
+ let RU={};const rule=()=>{const k=LUX.COS&&LUX.COS.pet;return k&&RU[k]||null};
+ window.SQPETOFF=k=>!!(RU[k]&&RU[k].own===0);
+ const SKI=n=>SKN.indexOf(n),GATHER=()=>['Woodcutting','Mining','Foraging','Fishing','Farming'].map(SKI).filter(i=>i>=0);
+ const growSk=at=>at==='melee'?0:at==='ranged'?SKI('Archery'):SKI('Magic');
+ const dmgOf=r=>r.dmg+(r.gr&&growSk(r.at)>=0?Math.floor(lvOf(growSk(r.at))/25):0);
+ // ---- item descriptions ----
+ const D0={};
+ function describe(k,r){if(!r)return'';const t=[];if(r.at){const w={melee:'dashes in and bites',ranged:'shoots arrows',magic:'casts homing magic',aoe:'bursts, hitting everything around it'}[r.at],
+   when={hurt:'when something hurts you',near:'at monsters near you',yours:'at what you\'re fighting'}[r.ag];t.push('Fights '+when+': it '+w+' for '+r.dmg+(r.gr?'+':'')+' damage');
+   const fx=Object.entries(r.fx||{}).map(([f,[c]])=>c+'% '+({slow:'slow',burn:'burn',poison:'poison',freeze:'freeze'}[f]));if(fx.length)t.push('Its hits can '+fx.join(', '))}
+  if(r.heal)t.push('Heals you '+r.heal.h+' heart'+(r.heal.h>1?'s':'')+' every '+r.heal.e+' s when you\'re hurt');if(r.fetch&&INAME[r.fetch.k])t.push('Brings you '+r.fetch.n+' '+INAME[r.fetch.k].toLowerCase()+' every '+r.fetch.e+' s');
+  if(r.ex)t.push(r.ex.c+'% chance of an extra '+(r.ex.s<0?'item when you gather':(SKN[r.ex.s]||'').toLowerCase()+' item'));if(r.xp)t.push(r.xp+'% more XP');if(r.gold)t.push(r.gold+'% more gold from monsters');if(r.guard)t.push(r.guard+'% chance to stop a hit');
+  return t.length?' Powers: '+t.join('. ')+'.':''}
+ A.onApply(lib=>{const L=(lib&&lib.petab)||{};RU={};for(const k in L){if(!/^[a-z0-9_]{1,30}$/.test(k))continue;const r=clean(L[k]);if(r)RU[k]=r}
+  for(const p of LUX.PETS||[]){const ik='pet_'+p.k;if(!(ik in IDESC))continue;if(!(ik in D0))D0[ik]=IDESC[ik];IDESC[ik]=D0[ik]+describe(p.k,RU[p.k])}});
+ // ---- where the pet is ----
+ function petPos(k){try{if(k==='imp'){const I=window.SQIMP&&SQIMP.state;if(I&&I.seen&&!(I.dead>0))return{x:I.x,y:I.y,s:I}}
+   const s=typeof PST!=='undefined'&&PST.get('me');if(s&&performance.now()-(s.lt||0)<400)return{x:s.x,y:s.y,s}}catch(e){}return{x:P.x-12,y:P.y+4,s:null}}
+ const pop=(x,y,t,c)=>{try{gTxt(x,y-18,t,c||'#f8d048')}catch(e){}};
+ // ---- fighting ----
+ const SH=[],FX=[];let TGT=null,cdT=0,hT=0,fT=null,fK=null;const HP=new WeakMap();
+ const alive=n=>n&&!n.dead&&n.hp>0&&!n._pet;
+ const mobs=()=>{const L=en.filter(alive);try{const W=window.SQWB;if(W&&W.ent&&alive(W.ent)&&!L.includes(W.ent))L.push(W.ent)}catch(e){}return L};
+ function nearest(x,y,r){let b=null,bd=r;for(const n of mobs()){const d=Math.hypot(n.x-x,n.y-y)-(n.big?16:0);if(d<bd){bd=d;b=n}}return b}
+ function hitMob(n,r,d){if(!alive(n))return;n.hp-=d;n._pethit=1;HP.set(n,n.hp);const big=n.type==='boss'||n.big;try{DMGS.push({x:n.x,y:n.y-(big?30:14),v:String(d),t:0,c:r.col,sc:curScene()})}catch(e){}
+  for(const f in r.fx||{}){const[c,t]=r.fx[f];if(Math.random()*100>=c)continue;if(f==='freeze')n.frozen=Math.max(n.frozen||0,t);else n[f]=Math.max(n[f]||0,t)}
+  for(let k=0;k<5;k++)try{part(n.x,n.y-6,(Math.random()-.5)*70,-Math.random()*60,.35,k%2?r.col:'#ffffff',120)}catch(e){}try{sfx('hit')}catch(e){}if(n.hp<=0&&!n._wb)try{killEnemy(n,'pet')}catch(e){}}
+ const send=e=>{try{if(window.SQPVSEND)SQPVSEND({k:'pa',...e})}catch(x){}};
+ function strike(r,p,t){const d=dmgOf(r),R2=Math.round;
+  if(r.at==='melee'){if(p.s&&p.s!==(window.SQIMP&&SQIMP.state)){const fx=p.x,fy=p.y;p.s.x=t.x+(p.x<t.x?-9:9)*(t.big?2:1);p.s.y=t.y+2;p.s.fl=t.x<p.s.x;for(let k=0;k<6;k++)try{part(fx+(p.s.x-fx)*k/6,fy-4+(p.s.y-fy)*k/6,0,-10,.25,r.col,0,1)}catch(e){}}
+   FX.push({s:'slash',x:t.x,y:t.y-6,t:.22,T:.22,c:r.col,f:p.x>t.x});hitMob(t,r,d);send({s:'melee',x:R2(p.x),y:R2(p.y),tx:R2(t.x),ty:R2(t.y),c:r.col})}
+  else if(r.at==='aoe'){FX.push({s:'ring',x:p.x,y:p.y,t:.45,T:.45,c:r.col,r:r.rng});for(const n of mobs())if(Math.hypot(n.x-p.x,(n.y-p.y)*1.3)<r.rng+(n.big?16:0))hitMob(n,r,d);try{sfx('swish')}catch(e){}send({s:'aoe',x:R2(p.x),y:R2(p.y),r:r.rng,c:r.col})}
+  else{SH.push({x:p.x,y:p.y-6,n:t,v:r.at==='magic'?150:230,s:r.at,c:r.col,life:2.5,r,d});try{sfx('swish')}catch(e){}send({s:r.at,x:R2(p.x),y:R2(p.y-6),tx:R2(t.x),ty:R2(t.y-6),c:r.col})}}
+ // the extra-item power: items that arrive in a frame where a gathering skill got XP
+ const XPF=new Set();let INV0=null;
+ {const _ax=addXp;addXp=function(i,x){const r=rule();if(r&&r.xp&&x>0)x=Math.round(x*(1+r.xp/100));XPF.add(i);return _ax.call(this,i,x)}}
+ {const _ke=killEnemy;killEnemy=function(){const r=rule(),g0=GLD,out=_ke.apply(this,arguments);try{if(r&&r.gold&&GLD>g0){GLD+=Math.round((GLD-g0)*r.gold/100);try{svg()}catch(e){}}}catch(e){}return out}}
+ {const _u=upd;upd=function(dt){const hp0=P.hp,out=_u.apply(this,arguments);try{tick(dt,hp0)}catch(e){console.warn('pet powers',e)}return out}}
+ function tick(dt,hp0){const k=LUX.COS&&LUX.COS.pet,r=k&&RU[k];
+  for(let i=FX.length-1;i>=0;i--)if((FX[i].t-=dt)<=0)FX.splice(i,1);
+  const paused=dead||menuOpen||pnOpen||(typeof SAILING!=='undefined'&&SAILING);
+  if(!paused)for(let i=SH.length-1;i>=0;i--){const s=SH[i];s.life-=dt;const n=s.n;if(!n||!alive(n)&&!s.free||s.life<=0){SH.splice(i,1);continue}
+   const tx=s.free?s.tx:n.x,ty=s.free?s.ty:n.y-6,dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy)||1;s.a=Math.atan2(dy,dx);if(d<6||d<s.v*dt){if(!s.free)hitMob(n,s.r,s.d);SH.splice(i,1);continue}s.x+=dx/d*s.v*dt;s.y+=dy/d*s.v*dt;
+   if(s.s==='magic'&&Math.random()<dt*20)try{part(s.x,s.y,(Math.random()-.5)*10,(Math.random()-.5)*10,.3,s.c,0,1)}catch(e){}}
+  const inv1={};if(r&&r.ex){for(const q in inv)inv1[q]=inv[q]|0}
+  if(!r||paused){INV0=r&&r.ex?inv1:null;XPF.clear();return}
+  // guard: stop a hit
+  if(r.guard&&P.hp<hp0&&!dead&&Math.random()*100<r.guard){P.hp=hp0;const p=petPos(k);pop(p.x,p.y,'Blocked!','#c8f0ff');FX.push({s:'ring',x:P.x,y:P.y,t:.3,T:.3,c:'#c8f0ff',r:14})}
+  // heal
+  if(r.heal){if(P.hp<6){hT-=dt;if(hT<=0){hT=r.heal.e;P.hp=Math.min(6,P.hp+r.heal.h);const p=petPos(k);pop(p.x,p.y,'+'+r.heal.h+' heart'+(r.heal.h>1?'s':''),'#f86868');for(let q=0;q<10;q++)try{part(P.x,P.y-6,(Math.random()-.5)*40,-20-Math.random()*30,.6,q%2?'#f8b0b0':'#fff0f0',30,1)}catch(e){}try{sfx('eat')}catch(e){}}}else hT=Math.min(hT,r.heal.e*.5)}
+  // fetch
+  if(r.fetch&&INAME[r.fetch.k]){if(fK!==k){fK=k;fT=r.fetch.e*.6}fT-=dt;if(fT<=0){fT=r.fetch.e*(.85+Math.random()*.3);const it=r.fetch.k,n=r.fetch.n;inv[it]=(inv[it]|0)+n;const p=petPos(k),nm=(n>1?(SN[it]||INAME[it]):INAME[it]).toLowerCase();
+    say('Your '+((LUX.PETS.find(q=>q.k===k)||{}).n||'pet').toLowerCase()+' brings you '+n+' '+nm+'!');pop(p.x,p.y,'+'+n+' '+nm);try{sfx('pickup')}catch(e){}try{saveLocal()}catch(e){}inv1[it]=inv[it]|0}}
+  // extra items while gathering
+  if(r.ex&&INV0){const sk=r.ex.s<0?GATHER():[r.ex.s];if(sk.some(i=>XPF.has(i)))for(const q in inv1){if(inv1[q]>(INV0[q]|0)&&INAME[q]&&!/^pet_|^eq_/.test(q)){if(Math.random()*100<r.ex.c){inv[q]=(inv[q]|0)+1;inv1[q]++;const p=petPos(k);pop(p.x,p.y,'+1 '+INAME[q].toLowerCase(),'#7cd060');try{sfx('rustle')}catch(e){}}break}}}
+  INV0=r.ex?inv1:null;XPF.clear();
+  // fighting
+  if(!r.at)return;const p=petPos(k);
+  for(const n of mobs()){const h=HP.get(n);if(h!=null&&n.hp<h&&!n._pethit&&r.ag==='yours')TGT=n;n._pethit=0;HP.set(n,n.hp)}
+  if(TGT&&(!alive(TGT)||Math.hypot(TGT.x-P.x,TGT.y-P.y)>200))TGT=null;
+  if(r.ag==='hurt'&&P.hp<hp0)TGT=nearest(P.x,P.y,70)||TGT;
+  if(r.ag==='near'&&!TGT)TGT=nearest(P.x,P.y,r.at==='melee'?90:Math.max(80,r.rng));
+  cdT-=dt;if(cdT>0||!TGT)return;
+  const reach=r.at==='aoe'?r.rng+(TGT.big?16:0):r.rng+(TGT.big?20:0);if(Math.hypot(TGT.x-p.x,TGT.y-p.y)>reach)return;cdT=r.cd;strike(r,p,TGT)}
+ // ---- drawing ----
+ function drawFx(){for(const s of SH){const x=Math.round(s.x),y=Math.round(s.y),a=s.a||0;
+   if(s.s==='ranged'){const cx=Math.cos(a),cy=Math.sin(a);for(let i=0;i<7;i++)Rg(Math.round(x-cx*i),Math.round(y-cy*i),1,1,i<2?'#e8e8f0':i>4?'#f8f0e0':s.c)}
+   else{g.save();g.globalAlpha=.35;g.fillStyle=s.c;g.beginPath();g.arc(x,y,5,0,6.283);g.fill();g.restore();Rg(x-2,y-2,4,4,s.c);Rg(x-1,y-1,2,2,'#ffffff')}}
+  for(const f of FX){const p=1-f.t/f.T;g.save();g.strokeStyle=f.c;g.globalAlpha=Math.max(0,1-p);
+   if(f.s==='ring'){g.lineWidth=2;g.beginPath();g.ellipse(f.x,f.y,Math.max(1,f.r*(.3+.7*p)),Math.max(1,f.r*(.3+.7*p)/1.3),0,0,6.283);g.stroke();g.globalAlpha*=.25;g.fillStyle=f.c;g.fill()}
+   else{g.lineWidth=2;g.beginPath();const a0=f.f?0:Math.PI;g.arc(f.x,f.y,9,a0-1.1,a0-1.1+2.2*Math.min(1,p*2),false);g.stroke()}g.restore()}}
+ {const _p=pP;pP=function(tm){const out=_p.apply(this,arguments);try{if(SH.length||FX.length)drawFx()}catch(e){}return out}}
+ // other players' pets
+ window.SQFXH=window.SQFXH||{};SQFXH.pa=(pl,v)=>{const c=hex(v.c)||'#ffffff',x=+v.x||0,y=+v.y||0;if(v.s==='aoe')FX.push({s:'ring',x,y,t:.45,T:.45,c,r:num(v.r,16,200,48)});
+  else if(v.s==='melee')FX.push({s:'slash',x:+v.tx||x,y:(+v.ty||y)-6,t:.22,T:.22,c,f:x>(+v.tx||x)});
+  else if(v.s==='ranged'||v.s==='magic')SH.push({x,y,tx:+v.tx||x,ty:+v.ty||y,n:{},free:1,v:v.s==='magic'?150:230,s:v.s,c,life:2})};
+ window.SQPETPOW={clean,describe,dmgOf,get rules(){return RU},STY,AG,FXK,DEFR,DEFC,get target(){return TGT},shots:SH};
+ // ======================= Dev Suite > Pet powers =======================
+ if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;
+ const T={sel:null,w:null,dirty:false,q:''};
+ const sec=()=>S.draft.petab||(S.draft.petab={});
+ const petName=k=>((LUX.PETS||[]).find(p=>p.k===k)||{}).n||k;
+ function own(k){const TR=window.SQPETAB&&SQPETAB.TREEL,F=window.SQFETCH,src=window.SQNPET&&SQNPET[k]&&SQNPET[k].src;
+  if(k==='imp')return['🗡','Fights: when something hurts you it runs at it and stabs with a poison dagger (1 damage + 1 per 25 Attack levels, poison for 4 s). Monsters can beat it; it comes back after a minute.'];
+  if(TR&&TR[k])return['🪵','When you chop trees it can shake loose an extra log ('+Math.round(TR[k].ch*100)+'%, twice as often on its own kind of tree).'];
+  if(F&&F[k])return['🎁','Brings you things about every '+F[k].every+' s: '+(k==='psquir'?'berries, nuts, mushrooms, cactus fruit, a little gold or a healing potion.':(INAME[F[k].ore]||'ore').toLowerCase()+'.')];
+  if(k==='pmush')return['💗','Heals you 1 heart every 45-65 s when you\'re hurt; otherwise brings you mushrooms now and then.'];
+  if(k==='pglow')return['✨','When something hits you, 45% chance to burst into spores that slow every monster near you (once every 6 s). Glows in the dark.'];
+  return['','No ability of its own: it just follows you'+(src?' (found from '+src+')':'')+'.']}
+ const badges=k=>{const r=(S.draft.petab||{})[k]&&clean(S.draft.petab[k]),o=own(k)[0],b=[];if(o&&!(r&&r.own===0))b.push(o);if(r){if(r.at)b.push({melee:'⚔',ranged:'🏹',magic:'🔮',aoe:'💥'}[r.at]);if(r.heal)b.push('💗');if(r.fetch)b.push('🎁');if(r.ex)b.push('🍀');if(r.xp)b.push('📘');if(r.gold)b.push('🪙');if(r.guard)b.push('🛡')}return b.join('')};
+ const fld=(l,h)=>'<label class="dv-gf"><span>'+l+'</span><span>'+h+'</span></label>';
+ const n_=(f,v,a,b,st,w)=>'<input type="number" data-pw="'+f+'" value="'+v+'" min="'+a+'" max="'+b+'"'+(st?' step="'+st+'"':'')+' style="width:'+(w||70)+'px">';
+ const items=()=>{const o=new Map();for(const k of INVK)if(INAME[k]&&!/^pet_|^eq_/.test(k))o.set(k,INAME[k]);const ci=(S.draft.content||{}).items||{};for(const k in ci)if(!o.has(k))o.set(k,(ci[k].n||k)+' (draft)');return[...o].sort((a,b)=>a[1].localeCompare(b[1]))};
+ function render(){const L=sec(),P2=(LUX.PETS||[]).slice(),q=T.q.toLowerCase();
+  let h='<div class="dv-card"><b>Pet powers</b><p class="dv-mut">What every pet does. Keep or turn off its own ability, and give it more: fighting (melee, ranged, magic or a burst), healing, bringing items, extra loot when you gather, more XP or gold, or blocking hits. Players see the powers in the pet\'s description. Draw how pets look in the Pets tab.</p>'+
+   '<input type="search" data-pwq placeholder="Search pets" value="'+E(T.q)+'" style="max-width:240px"></div>';
+  h+='<div class="dv-spr'+(T.sel?' dv-has':'')+'"><div class="dv-ls"><div class="dv-grid" style="grid-template-columns:1fr">';
+  for(const p of P2){if(q&&!p.n.toLowerCase().includes(q)&&!p.k.includes(q))continue;const live=JSON.stringify((S.live&&S.live.petab||{})[p.k]||null)===JSON.stringify(L[p.k]||null);
+   h+='<button class="dv-it'+(T.sel===p.k?' dv-on':'')+'" data-pws="'+p.k+'" style="flex-direction:row;justify-content:flex-start;gap:8px;padding:6px 8px">'+(L[p.k]?'<i class="dv-bd dv-'+(live?'live':'draft')+'">'+(live?'LIVE':'DRAFT')+'</i>':'')+
+    '<img src="'+iconURL('pet_'+p.k)+'" style="width:28px;height:28px;image-rendering:pixelated"><span style="font-size:13px;text-align:left;flex:1">'+E(p.n)+'</span><span style="font-size:12px">'+badges(p.k)+'</span></button>'}
+  h+='</div></div><div class="dv-ed">';if(!T.sel)return h+'<p class="dv-mut">Pick a pet.</p></div></div>';
+  const k=T.sel,w=T.w||{},r=clean(w)||{own:1},[oi,ot]=own(k),at=r.at||'';
+  h+='<div class="dv-card dv-rules"><div class="dv-row" style="gap:10px;align-items:center"><img src="'+iconURL('pet_'+k)+'" style="width:48px;height:48px;image-rendering:pixelated"><div><b>'+E(petName(k))+'</b><br><small class="dv-mut">'+k+' · item pet_'+k+'</small></div></div>'+
+   '<p style="margin:8px 0 4px"><b>Its own ability</b></p><p class="dv-mut" style="margin:0 0 4px">'+(oi?oi+' ':'')+E(ot)+'</p>'+(oi?'<label class="dv-mut"><input type="checkbox" data-pwc="own"'+(r.own!==0?' checked':'')+'> Keep it</label>':'')+
+   '<p style="margin:12px 0 4px"><b>Fighting</b></p><div class="dv-chips">'+[['','Doesn\'t fight'],['melee','⚔ Melee'],['ranged','🏹 Ranged'],['magic','🔮 Magic'],['aoe','💥 Burst (all around)']].map(([v,l])=>'<button class="dv-b'+(at===v?' dv-tl dv-on':'')+'" data-pwa="'+v+'">'+l+'</button>').join('')+'</div>';
+  if(at){const sk=SKN[growSk(at)]||'';h+=fld('Fights','<select data-pw="ag">'+[['hurt','when something hurts you'],['near','any monster near you'],['yours','what you\'re fighting']].map(([v,l])=>'<option value="'+v+'"'+(r.ag===v?' selected':'')+'>'+l+'</option>').join('')+'</select>')+
+   fld('Damage',n_('dmg',r.dmg,1,50)+' <label class="dv-mut"><input type="checkbox" data-pwc="gr"'+(r.gr?' checked':'')+'> +1 per 25 '+E(sk)+' levels</label> <span class="dv-mut">(you now: '+dmgOf(r)+')</span>')+
+   fld('Every',n_('cd',r.cd,.3,10,.1)+' s')+
+   fld(at==='aoe'?'Burst size':at==='melee'?'Reach':'Range',n_('rng',r.rng,16,200)+' px <span class="dv-mut">('+(at==='aoe'?'48 ≈ 3 tiles around it':at==='melee'?'40 ≈ next to you':'140 ≈ a bow')+')</span>')+
+   fld('Colour','<span><input type="color" data-pw="col" value="'+r.col+'"> <input data-pw="col" value="'+r.col+'" maxlength="7" style="width:72px;font-family:monospace"></span>')+
+   '<p class="dv-mut" style="margin:6px 0 2px">Effects on the monster (chance %, seconds):</p><div class="dv-row" style="flex-wrap:wrap;gap:6px 14px">'+FXK.map(f=>{const e=(r.fx||{})[f]||[0,3];return'<span>'+({slow:'Slow',burn:'Burn',poison:'Poison',freeze:'Freeze'}[f])+' '+n_('fx_'+f+'_c',e[0],0,100,1,52)+'% '+n_('fx_'+f+'_t',e[1],.5,30,.5,52)+'s</span>'}).join('')+'</div>'}
+  const hl=r.heal||{h:0,e:45},ft=r.fetch||{k:'',n:1,e:120},ex=r.ex||{s:-1,c:0};
+  h+='<p style="margin:12px 0 4px"><b>Helping</b></p>'+
+   fld('💗 Heals you',n_('heal_h',hl.h,0,6,1,52)+' hearts every '+n_('heal_e',hl.e,5,600)+' s while you\'re hurt <span class="dv-mut">(0 = no)</span>')+
+   fld('🎁 Brings you','<span>'+n_('fetch_n',ft.n,1,99,1,52)+' <select data-pw="fetch_k" style="max-width:200px"><option value="">— nothing —</option>'+items().map(([q,n])=>'<option value="'+E(q)+'"'+(q===ft.k?' selected':'')+'>'+E(n)+'</option>').join('')+'</select> every '+n_('fetch_e',ft.e,10,3600)+' s</span>')+
+   fld('🍀 Extra loot',n_('ex_c',ex.c,0,100,1,52)+'% chance of +1 when you gather with <select data-pw="ex_s"><option value="-1"'+(ex.s<0?' selected':'')+'>any gathering skill</option>'+SKN.map((n,i)=>'<option value="'+i+'"'+(ex.s===i?' selected':'')+'>'+E(n)+'</option>').join('')+'</select>')+
+   fld('📘 More XP',n_('xp',r.xp||0,0,100,1,52)+' %')+fld('🪙 More gold',n_('gold',r.gold||0,0,200,1,52)+' % from monsters')+fld('🛡 Blocks hits',n_('guard',r.guard||0,0,50,1,52)+' % chance to stop a hit');
+  h+='<p class="dv-mut" style="margin-top:10px"><b>Players read:</b> '+E((D0['pet_'+k]||IDESC['pet_'+k]||'').trim())+E(describe(k,clean(w)))+'</p>'+
+   '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><button class="dv-b dv-pri" data-pwx="save">Save to draft</button><button class="dv-b" data-pwx="try" title="Puts the draft on your own game and gives you this pet">Try it (preview + give me the pet)</button><button class="dv-b dv-bad" data-pwx="reset">Back to the game\'s own</button></div></div>';
+  return h+'</div></div>'}
+ const setW=(f,v)=>{T.w=T.w||{own:1};const w=T.w;T.dirty=true;
+  if(f.startsWith('fx_')){const[,x,p]=f.split('_');w.fx=w.fx||{};const e=w.fx[x]||[0,3];e[p==='c'?0:1]=+v;w.fx[x]=e;return}
+  if(f.startsWith('heal_')){w.heal=w.heal||{h:0,e:45};w.heal[f.slice(5)]=+v;return}
+  if(f.startsWith('fetch_')){w.fetch=w.fetch||{k:'',n:1,e:120};const q=f.slice(6);w.fetch[q]=q==='k'?v:+v;return}
+  if(f.startsWith('ex_')){w.ex=w.ex||{s:-1,c:0};w.ex[f.slice(3)]=+v;return}
+  if(f==='col'){const c=hex(v);if(!c){toast('That isn\'t a hex colour (try #a070f0).');return}w.col=c;return}
+  w[f]=f==='ag'?v:+v};
+ async function save(){const k=T.sel,r=clean(T.w);if(r)sec()[k]=r;else delete sec()[k];try{await dset('draft/petab/'+k,r||null);T.dirty=false;T.w=r?JSON.parse(JSON.stringify(r)):{own:1};toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}try{if(A.previewing)A.preview(S.draft)}catch(e){}API.draw()}
+ document.addEventListener('click',async e=>{if(S.tab!=='petpow')return;const t=e.target.closest('[data-pws],[data-pwa],[data-pwx]');if(!t)return;e.preventDefault();
+  if(t.dataset.pws!=null){if(T.dirty&&T.sel&&T.sel!==t.dataset.pws&&!confirmLeave())return;T.sel=t.dataset.pws;T.w=JSON.parse(JSON.stringify(sec()[T.sel]||{own:1}));T.dirty=false;API.draw();return}
+  if(t.dataset.pwa!=null){T.w=T.w||{own:1};const v=t.dataset.pwa;if(v){T.w.at=v;T.w.rng=DEFR[v];T.w.col=T.w.col&&T.w.at===v?T.w.col:DEFC[v];T.w.ag=T.w.ag||'hurt'}else delete T.w.at;T.dirty=true;API.draw();return}
+  const a=t.dataset.pwx;if(a==='save')return save();
+  if(a==='reset')return arm('pwreset',async()=>{T.w={own:1};await save()});
+  if(a==='try'){await save();try{A.preview(S.draft)}catch(x){}const ik='pet_'+T.sel;if(EQ[ik]){inv[ik]=(inv[ik]|0)+1;try{equipItem(ik)}catch(x){}}toast('Your draft is on (preview) and the '+petName(T.sel).toLowerCase()+' follows you. Spawn monsters in the Test tab.');API.draw()}},true);
+ const confirmLeave=()=>{toast('Unsaved changes dropped.');return true};
+ document.addEventListener('change',e=>{if(S.tab!=='petpow'||!T.sel)return;const t=e.target;if(t.dataset.pw){setW(t.dataset.pw,t.value);API.draw();return}if(t.dataset.pwc){T.w=T.w||{own:1};T.w[t.dataset.pwc]=t.checked?1:0;T.dirty=true;API.draw()}},true);
+ document.addEventListener('input',e=>{if(S.tab!=='petpow')return;const t=e.target;if(t.hasAttribute&&t.hasAttribute('data-pwq')){T.q=t.value;const pos=t.selectionStart;API.draw();const i=document.querySelector('#dvs [data-pwq]');if(i){i.focus();try{i.setSelectionRange(pos,pos)}catch(x){}}}},true);
+ const changes=(L,D)=>{const l=(L||{}).petab||{},d=(D||{}).petab||{},out=[];for(const k of new Set([...Object.keys(l),...Object.keys(d)]))if(JSON.stringify(l[k])!==JSON.stringify(d[k]))out.push({kind:'ext',html:'🐾 '+E(petName(k))+' powers'+(d[k]?(l[k]?' (changed)':' (new)'):' (back to the game\'s own)')});return out};
+ SQSUITE.addTab('petpow','Pet powers',{render,changes,dirty:()=>!!(T.sel&&T.dirty),leave(){T.sel=null;T.w=null;T.dirty=false}})})();
+// ---- 188. Eating and campfire cooking pick what you want ----
+// EAT used to take the first food in FOODS (the best healer) and, next to a fire, cook the first raw food in COOKS.
+//   Eating: a food pinned in the bag (★ EAT FIRST, saved as `eatp`) goes first; otherwise when hurt the smallest food that
+//           heals what's missing (else the biggest), and at full health the food that heals least (saving the good ones).
+//           Potions and buff meals (SQFOODBUFF) are left for USE in the bag; raw meat only when nothing else is there.
+//           Full health and food 95+ with nothing pinned: "You're full." The choice is put first in FOODS for the call.
+//   Cooking: next to a fire with two or more kinds of raw food, EAT opens a picker (ptab 41): cook 1 / all of one kind,
+//           everything, or eat instead. A chosen kind runs as 109's timed 'cook' job whose steps call eat() with that
+//           COOKS entry moved to the front for the call.
+(()=>{const TAB=41;let PIN='',BYPASS=0;
+ const isPot=f=>!f||/^pot_/.test(f.k)||f.pot;
+ const buff=k=>!!(window.SQFOODBUFF&&SQFOODBUFF[k]);
+ function pick(){const have=FOODS.filter(f=>(inv[f.k]|0)>0&&!isPot(f));if(!have.length)return null;
+  if(PIN){const f=have.find(q=>q.k===PIN);if(f)return f}
+  let L=have.filter(f=>!buff(f.k)&&f.k!=='meat');if(!L.length)L=have.filter(f=>!buff(f.k));if(!L.length)return null;
+  const miss=6-P.hp,val=f=>SELLP[f.k]||0;
+  if(miss>0){const H=L.filter(f=>f.heal>0);if(H.length){const fit=H.filter(f=>f.heal>=miss).sort((a,b)=>a.heal-b.heal||val(a)-val(b));return fit[0]||H.sort((a,b)=>b.heal-a.heal||val(a)-val(b))[0]}}
+  return L.slice().sort((a,b)=>a.heal-b.heal||Math.abs(100-hunger-a.hun)-Math.abs(100-hunger-b.hun)||val(a)-val(b))[0]}
+ const front=(arr,e,fn)=>{const i=arr.indexOf(e);if(i<=0)return fn();arr.splice(i,1);arr.unshift(e);try{return fn()}finally{const j=arr.indexOf(e);if(j>=0){arr.splice(j,1);arr.splice(Math.min(i,arr.length),0,e)}}};
+ const cookable=()=>{const cl=lvOf(4),seen=new Set(),out=[];for(const c of COOKS){if(c.st||(inv[c.raw]|0)<1||seen.has(c.raw))continue;seen.add(c.raw);out.push({c,ok:cl>=c.lv})}return out};
+ const atFire=()=>{try{return nearFire(P.x,P.y,45)}catch(e){return false}};
+ {const _e=eat;eat=function(){if(BYPASS||dead||menuOpen||pnOpen||window.SQDO_STEP||(typeof SQDO!=='undefined'&&SQDO)||(typeof BUILD!=='undefined'&&BUILD))return _e.apply(this,arguments);
+   if(atFire()){const L=cookable();if(L.filter(q=>q.ok).length>=2){openPick();return}if(L.length)return _e.apply(this,arguments)}
+   const f=pick();if(!f){const any=FOODS.some(q=>(inv[q.k]|0)>0);if(!any)return _e.apply(this,arguments);say('Use potions and special meals from your Bag.');return}
+   if(!PIN&&P.hp>=6&&hunger>=95){say('You\'re full.');try{sfx('swish')}catch(e){}return}
+   return front(FOODS,f,()=>_e.apply(this,arguments))}}
+ // ---- the cooking picker ----
+ function cook(raw,n){const e=COOKS.find(c=>c.raw===raw&&!c.st);if(!e)return;closePanel();const all=n==='all',cnt=all?(inv[raw]|0):1;
+  const step=()=>{if((inv[raw]|0)<1)return;BYPASS++;try{front(COOKS,e,()=>eat())}finally{BYPASS--}};
+  if(typeof sqDo==='function'&&sqDo('cook',Math.max(1,cnt),step))return;step()}
+ function cookAll(){closePanel();BYPASS++;try{eat()}finally{BYPASS--}}
+ function eatNow(){closePanel();const f=pick();if(!f){say('Nothing to eat');return}BYPASS++;try{useFood(f.k)}finally{BYPASS--}}
+ function openPick(){pnOpen=true;ptab=TAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){}}
+ function html(){const L=cookable();let h='<div class="tl">COOK AT THE FIRE</div><div class="qc" style="font-size:13px">What do you want to cook? (Cooking '+lvOf(4)+')</div>';
+  for(const{c,ok}of L){const n=inv[c.raw]|0;h+='<div class="qc" style="display:flex;align-items:center;gap:8px"><img src="'+iconURL(c.raw)+'" style="width:28px;height:28px;image-rendering:pixelated"><div style="flex:1"><b>'+(INAME[c.raw]||c.raw)+'</b> ×'+n+'<br><small>→ '+(INAME[c.ck]||c.ck)+(ok?'':' · needs Cooking '+c.lv)+'</small></div>'+
+   (ok?'<button class="sb" data-ck1="'+c.raw+'" style="min-width:0;padding:8px 10px">COOK 1</button>'+(n>1?'<button class="sb" data-cka="'+c.raw+'" style="min-width:0;padding:8px 10px">ALL '+n+'</button>':''):'')+'</div>'}
+  return h+'<div class="pmb"><button class="sb" data-ckx="every">COOK EVERYTHING</button><button class="sb" data-ckx="eat">EAT INSTEAD</button><button class="sb no" data-ckx="close">CLOSE</button></div>'}
+ {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){}if(!cookable().length){closePanel();return}pbd.innerHTML=html()}}
+ pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen)return;const b=e.target.closest('[data-ck1],[data-cka],[data-ckx]');if(!b)return;e.stopPropagation();e.preventDefault();
+  if(b.dataset.ck1)return cook(b.dataset.ck1,1);if(b.dataset.cka)return cook(b.dataset.cka,'all');const a=b.dataset.ckx;if(a==='every')return cookAll();if(a==='eat')return eatNow();closePanel()},true);
+ // ---- pinning a food in the bag ----
+ {const _b=bagGridHTML;bagGridHTML=function(){let h=_b.apply(this,arguments);try{const k=invSel;if(k&&(inv[k]|0)>0&&FOODS.some(f=>f.k===k&&!isPot(f))){const on=PIN===k;
+    h=h.replace('<button class="use" data-k="'+k+'">USE</button>','<button class="use" data-k="'+k+'">USE</button><button class="use" data-eatpin="'+k+'" title="EAT uses this food first"'+(on?' style="background:#f8d048;color:#181018"':'')+'>'+(on?'★ EATS FIRST':'☆ EAT FIRST')+'</button>')}}catch(e){}return h}}
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-eatpin]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.eatpin;PIN=PIN===k?'':k;
+  say(PIN?'EAT will use '+(INAME[k]||k).toLowerCase()+' first.':'EAT picks food for you again.');try{sfx('talk');saveLocal()}catch(x){}try{rPn()}catch(x){}},true);
+ {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{s.eatp=PIN}catch(e){}return s}}
+ {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{PIN=S&&typeof S.eatp==='string'&&INAME[S.eatp]?S.eatp:''}catch(e){}return out}}
+ window.SQEAT={pick,cookable,get pin(){return PIN},set pin(v){PIN=v||''},open:openPick,cook}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

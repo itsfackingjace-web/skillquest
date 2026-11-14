@@ -382,7 +382,9 @@
   timers in the outermost `upd`. 111d lists `j:` looks for shooters (captured from `drawProj`). Look frames: `af` = last N frames
   are the attack animation (111d `mobDraw`: within 20 px, 450 ms after a shot, or `n.cast`; `ak` = old one-frame form).
   Pets: the pet editor has Attack 1/2 frames (`k`/`l`), used by the Imp while it fights (111a `impPaint`).
-  Bandits, cacti and Dev Suite bosses shoot through their own lists and aren't covered yet.
+  Bandits/cacti (099's `SQNMP`) and Dev Suite bosses' fire rings (146's `SQCBSH`) push shots tagged `_n` (the monster); 160 tags them,
+  099/146 call `SQSHOTHIT(shot)` when one hurts you and skip drawing when `SQSHOTDRAW(shot)` drew a look. `SQMOBATK.capDraw(type)`
+  draws a type's own shot for 111d's j: capture.
 
 - **Admin tab** (`dev/161-s167-admin.js`, `window.SQADMIN`, Dev Suite > Admin): Bug reports (`bugs`, devs read; `st` status and
   `re` reply are dev-only children, a reply also goes to the player as a gift message), Players (`lb` list + dev read of
@@ -479,6 +481,9 @@
   (outermost `loadRegion`, and the current island on every apply); sprites recoloured in the outermost `hdSprites`. Removed kinds
   turn back into what they replaced. `gather.fish.gf_<id>` = {n, item, lv, xp, where[], p %, ck, clv, cxp} -> `window.SQGFISH`
   + a `COOKS` entry (`_g`). Items are game items or Content `it_` items ("Make its item" writes them into the draft).
+  `gather.crops.gc_<id>` = {n, item, seed, lv, gm (watered minutes), y0,y1, xp, sh, col[3], buy, ck, clv, cxp} -> `CROPS[item]` (keyed by
+  the crop item: 016's harvest adds `inv[p.c]`; `_g`), `SEED2CROP[seed]`, a `GEN` seed pack (`_gc`) and `COOKS` (`_gc`). A removed crop
+  keeps its CROPS entry (plots/saves name it), only its seed stops planting. Ripe look from the wrapped `hdCropS` (shapes in `SHAPES`).
 - **Meals and food buffs** (`items/177-s184-meals.js`, `SQMEALS`): `window.SQFOODBUFF` {food:{b,s}} = eating it (outermost `eat`/`useFood`,
   by bag count drop) starts buff b for s s in 085's `LUX.BUFF` (085 lists/pills: str, iron, swift, wis, regen; wis = +20% XP in the
   outermost `addXp`, regen = 1 heart / 10 s in the outermost `upd`). Filled by 162 (Content food items' `buff`/`bs`) and 161b (Stats >
@@ -491,3 +496,14 @@
   16x32 title hero draws the whole character through `cP` (kit at (16,19) of the 48x56 box; size/position set with `!important`).
 - **Fletching** (021 `makeFletch`): timed through 109's `sqDo('craft',n)` ("All" = as many as the materials allow); the generic
   "Made ..." line only when the recipe's own `f` didn't say anything (arrows say the arrow count, gear its name).
+- **Pet powers** (`skills/180-s187-pet-powers.js`, `SQPETPOW`, Dev Suite > Pet powers): library `petab.<pet kind>` = {own (0 = its built-in
+  ability off: `window.SQPETOFF(k)`, asked by 085's imp aggro, 098's fetchers, 116's treelings/mushling/glowcap), at
+  melee|ranged|magic|aoe, ag hurt|near|yours, dmg, gr (+1 per 25 Attack/Archery/Magic), cd, rng, col, fx {slow,burn,poison,freeze:
+  [%,s]} (the game's own n.slow/burn/poison/frozen), heal {h,e}, fetch {k,n,e}, ex {s skill (-1 any gathering),c}, xp, gold, guard}.
+  Attacks come from where the pet is drawn (093's `PST.get('me')`, the imp's state); a melee pet is moved next to the monster and
+  093's `petFollow` walks it back. Peers see the attacks via fx `pa` (`SQFXH.pa`, looks only). Powers are appended to `IDESC.pet_<k>`.
+  A new pet with a built-in ability should check `SQPETOFF` and get a line in the tab's `own()`.
+- **Eating / campfire cooking** (`ui/181-s188-better-eating.js`, `SQEAT`): the outermost `eat` moves the chosen food to the front of
+  `FOODS` for the call (pinned `eatp` in the save, else smallest heal that covers what's missing, else least healing; potions and
+  `SQFOODBUFF` meals left for USE; "You're full." at full health + food 95). At a fire with 2+ cookable kinds it opens a picker
+  (`ptab` 41); a picked kind runs as 109's `sqDo('cook')` whose steps call `eat()` (BYPASS) with that COOKS entry moved first.

@@ -90,9 +90,9 @@
   if(n.st==='sleep'){n.x=ox;n.y=oy;n.kx=n.ky=0;if(d<56||n.hp<n.mhp){n.st='wake';n.wt=.5;sfx('rustle')}return}
   if(n.st==='wake'){n.x=ox;n.y=oy;if((n.wt-=dt)<=0)n.st='walk';return}
   n.x=ox+n.kx*.4;n.y=oy+n.ky*.4;if(n.frozen>0)return;if(d>12&&d<200)stepTo(n,dx/d*22*dt,dy/d*22*dt);
-  if((n.cd-=dt)<=0&&d<150){n.cd=2.8+Math.random()*.8;n.puff=.25;for(let k=0;k<8;k++){const a=k/8*6.283+(n.t2=(n.t2||0)+.2);NMP.push({x:n.x,y:n.y-10,vx:Math.cos(a)*95,vy:Math.sin(a)*95,t:1.6,k:'needle'})}sfx('swish')}}
+  if((n.cd-=dt)<=0&&d<150){n.cd=2.8+Math.random()*.8;n.puff=.25;for(let k=0;k<8;k++){const a=k/8*6.283+(n.t2=(n.t2||0)+.2);NMP.push({x:n.x,y:n.y-10,vx:Math.cos(a)*95,vy:Math.sin(a)*95,t:1.6,k:'needle',_n:n})}sfx('swish')}}
  function banditAI(n,ox,oy,dt){const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;n.x=ox+n.kx*.4;n.y=oy+n.ky*.4;if(n.frozen>0)return;n.fl=dx<0;n.mv=0;
-  if(n.aim>0){n.aim-=dt;if(n.aim<=0){const a=Math.atan2(dy+4,dx)+(Math.random()-.5)*.12;NMP.push({x:n.x+Math.cos(a)*10,y:n.y-8+Math.sin(a)*6,vx:Math.cos(a)*165,vy:Math.sin(a)*165,t:1.4,k:'bullet'});n.flash=.08;sfx('swish')}return}
+  if(n.aim>0){n.aim-=dt;if(n.aim<=0){const a=Math.atan2(dy+4,dx)+(Math.random()-.5)*.12;NMP.push({x:n.x+Math.cos(a)*10,y:n.y-8+Math.sin(a)*6,vx:Math.cos(a)*165,vy:Math.sin(a)*165,t:1.4,k:'bullet',_n:n});n.flash=.08;sfx('swish')}return}
   if((n.swap-=dt)<=0){n.swap=1.5+Math.random()*2;n.side=-n.side}
   let mx=0,my=0;if(d>130){mx=dx/d;my=dy/d}else if(d<72){mx=-dx/d;my=-dy/d}mx+=-dy/d*.7*n.side;my+=dx/d*.7*n.side;const l=Math.hypot(mx,my)||1;stepTo(n,mx/l*36*dt,my/l*36*dt);n.mv=1;
   if((n.cd-=dt)<=0&&d<175){n.cd=1.7+Math.random()*.7;n.aim=.4}}
@@ -100,7 +100,7 @@
    for(const[n,ox,oy]of pos){if(n.dead)continue;n.t=(n.t||0)+dt;if(n.flash>0)n.flash-=dt;if(n.puff>0)n.puff-=dt;
     if(n.type==='gscorp')gscorpAI(n,ox,oy,dt);else if(n.type==='cacti')cactiAI(n,ox,oy,dt);else if(n.type==='bandit')banditAI(n,ox,oy,dt)}
    for(const b of NMP){b.t-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(solid(b.x,b.y+4)){b.t=0;continue}
-    if(Math.hypot(P.x-b.x,P.y-6-b.y)<8&&!roll()&&!dead){b.t=0;hurtP(1,b.k==='bullet'?'A bandit\'s bullet hits you!':'Cactus needles!')}}
+    if(Math.hypot(P.x-b.x,P.y-6-b.y)<8&&!roll()&&!dead){b.t=0;const h0=P.hp;hurtP(1,b.k==='bullet'?'A bandit\'s bullet hits you!':'Cactus needles!');if(P.hp<h0&&window.SQSHOTHIT)SQSHOTHIT(b)}}
    for(let i=NMP.length-1;i>=0;i--)if(NMP[i].t<=0)NMP.splice(i,1)}}
  {const _lr=leaveRegion;leaveRegion=function(...a){NMP.length=0;return _lr(...a)}}
  // ---- how they look ----
@@ -133,7 +133,7 @@
  function drawGScorp(n,tm){const x=n.x,y=n.y;g.save();g.translate(x,y);g.scale(1.8,1.8);g.translate(-x,-y);try{drawScorp(n,tm)}finally{g.restore()}nmBar(n,Math.round(x),Math.round(y)-34)}
  function nmBar(n,x,y){if(!(n.hp<n.mhp))return;const w=24,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-1,w+2,4,K);Rg(x-w/2,y,Math.round(w*f),2,'#e04848')}
  {const _ps=pS;pS=function(n,tm){if(n){if(n.type==='cacti')return drawCacti(n,tm);if(n.type==='bandit')return drawBandit(n,tm);if(n.type==='gscorp')return drawGScorp(n,tm)}return _ps(n,tm)}}
- {const _pp=pP;pP=function(tm){_pp(tm);if(!nmR())return;for(const b of NMP){if(b.k==='bullet'){Rg(b.x-2,b.y-2,4,4,K);Rg(b.x-1,b.y-1,2,2,'#f8e070')}else{const a=Math.atan2(b.vy,b.vx);for(let i=0;i<5;i++)Rg(Math.round(b.x-Math.cos(a)*i),Math.round(b.y-Math.sin(a)*i),1,1,i?'#e8e0b0':'#ffffff')}}}}
+ {const _pp=pP;pP=function(tm){_pp(tm);if(!nmR())return;for(const b of NMP){if(window.SQSHOTDRAW&&SQSHOTDRAW(b))continue;if(b.k==='bullet'){Rg(b.x-2,b.y-2,4,4,K);Rg(b.x-1,b.y-1,2,2,'#f8e070')}else{const a=Math.atan2(b.vy,b.vx);for(let i=0;i<5;i++)Rg(Math.round(b.x-Math.cos(a)*i),Math.round(b.y-Math.sin(a)*i),1,1,i?'#e8e0b0':'#ffffff')}}}}
  // what they drop
  {const _ed=enemyDrop;enemyDrop=function(n){if(!n||!(n.type==='bandit'||n.type==='cacti'||n.type==='gscorp'))return _ed(n);const got=[];
    if(n.type==='bandit'){const gd=20+Math.floor(Math.random()*41);GLD+=gd;got.push(gd+' gold');if(Math.random()<.25){inv.iarrow=(inv.iarrow|0)+5;got.push('5 iron arrows')}if(Math.random()<.06){inv.pot_heal=(inv.pot_heal|0)+1;got.push('a healing potion')}try{sqEvent('kill','bandit')}catch(e){}}

@@ -203,7 +203,7 @@
     for(const m of R&&R.mobs||[]){if(!m||!m.vr||m.rk||m.rv)continue;const k=(m.type||'slime')+':'+m.vr;if(have.has(k))continue;have.add(k);const tpl={...m,x:0,y:0};
      add('m:'+k,VN[m.vr]||pretty(m.vr+' '+m.type),'Monsters',null,null,()=>({...tpl}))}}}}
   // projectile looks for monsters that shoot (160 draws them): j:<monster key>, captured from the game's own projectile
-  try{const SH=window.SQMOBATK&&SQMOBATK.SHOOT||{};for(const q of out.slice())if(q.grp==='Monsters'&&/^m:/.test(q.k)){const t=q.k.slice(2).split(':')[0];if(SH[t])add('j:'+q.k.slice(2),q.n+' · projectile','Monsters',()=>drawProj({x:0,y:0,vx:1,vy:0,t:0,k:SH[t],sc:curScene()}))}}catch(e){}
+  try{const SH=window.SQMOBATK&&SQMOBATK.SHOOT||{};for(const q of out.slice())if(q.grp==='Monsters'&&/^m:/.test(q.k)){const t=q.k.slice(2).split(':')[0];if(SH[t])add('j:'+q.k.slice(2),q.n+' · projectile','Monsters',()=>{if(SQMOBATK.capDraw)SQMOBATK.capDraw(t);else drawProj({x:0,y:0,vx:1,vy:0,t:0,k:SH[t],sc:curScene()})})}}catch(e){}
   // island props
   for(const kk in A.ISL_LM){const[k,v]=kk.split(':'),L=A.ISL_LM[kk];add('l:'+kk,L[0],'Island props',()=>drawFurn({t:'lm',k,v:L[3],x:0,y:0,w:L[1],h:L[2],sh:L[2],name:L[0]},0))}
   return CAT=out}
