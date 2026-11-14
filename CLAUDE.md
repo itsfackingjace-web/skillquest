@@ -571,3 +571,7 @@
 - **Emote animations** (136 `act`): the body is redrawn from `OFF` with dx/dy (hop/sway), `hx/hy` (the head, rows 0-39, moved on its own),
   `sq` (a torso row dropped on landing) and `arms` ([[side,sway]] → `armUp`, which clears the kit's hanging arm at columns 17-18 / 29-30, rows 42-48, and re-outlines the torso edge at 19 / 28); sleep draws the whole OFF rotated -90° on the ground.
   Effects use pixel glyphs (`GL`: heart, check, cross, ?, note, star, spark, z) through `glyph(C,k,x,y,col,outline)`.
+- **Leaderboards in the menu** (`ui/190-s198-menu-leaderboard.js`, `window.SQMENULB`): SMI item `leaderboard` after Achievements;
+  the outermost `showScreen('leaderboard')` closes the menu and calls 068's `lbOpen()`; pnOpen is held true while `SQLB.open`, and
+  closing returns to the START menu when opened from it. Same file: `#sm` gets a max-height + scrolling, and three tighter columns on
+  short wide screens (`max-height:520px` and `min-width:560px`, phones held sideways).

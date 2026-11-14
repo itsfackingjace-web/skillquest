@@ -9391,6 +9391,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-20',d:'Nov 14, 2026',t:'Leaderboards in the menu',n:['New: Leaderboards is now in the START menu, right after Achievements. The game pauses while you look, and closing it takes you back to the menu.','Phones held sideways: the START menu now shows three columns so every item fits on screen (Options, Save & quit and Exit used to be cut off), and it scrolls if your screen is even shorter.']},
  {v:'2026.11.14-19',d:'Nov 14, 2026',t:'Emote fix',n:['Cheer, wave, dance and Hmm no longer show an extra pair of arms: the arm you raise is the one that was hanging.']},
  {v:'2026.11.14-18',d:'Nov 14, 2026',t:'Bone bow fix and livelier emotes',n:['Fixed: a Bone bow in your hands turned into a Longbow every time you loaded the game. If that happened to you, your Bone bow is back in your hands.','Emotes have new animations: a real wave, a deeper bow, dancing with arms up, a jumping cheer with confetti, a shaking laugh, a beating heart for Love, a check or cross over your head for Yes and No, a thinking bubble with a question mark, and sleeping now lies you down on the ground.']},
  {v:'2026.11.14-17',d:'Nov 14, 2026',t:'Party list fix',n:['On phones indoors, your party members\' health bars no longer hide behind the CHAT and BUG buttons.']},
@@ -20088,6 +20089,26 @@ window.SQA=SQA;
   if(a==='walk'){const o=JSON.parse(JSON.stringify(T.w));D0()[T.sel]=o;SQA.preview(S.draft);const f=T.f+1;if(window.SQTEST&&SQTEST.goDun){SQTEST.goDun(T.sel,f)}else toast('Test tools aren\'t loaded.');return}
   if(a==='del')return arm('dgdel',async()=>{delete D0()[T.sel];try{await dset('draft/dungeons/'+T.sel,null);toast('Deleted from your draft.')}catch(x){fail(x)}T.sel=T.w=null;T.dirty=false;if(SQA.previewing)SQA.preview(S.draft);API.draw()})},true);
  SQSUITE.addTab('dungeons','Dungeons',{render,after(){paint()},dirty:()=>T.dirty,leave(){T.sel=T.w=null;T.dirty=false},changes(L,Dr){const out=[],a=L&&L.dungeons||{},b=Dr&&Dr.dungeons||{};for(const id of new Set([...Object.keys(a),...Object.keys(b)]))if(JSON.stringify(a[id])!==JSON.stringify(b[id]))out.push({kind:'ext',html:'🏰 Dungeon '+E((b[id]||a[id]).n||id)+': '+(b[id]?(a[id]?'changed':'new'):'removed')});return out}})})();
+// ---- 198. Leaderboards in the START menu ----
+// 068's leaderboard overlay (#sqlb, lbOpen/lbClose, SQLB.open) was only reachable from the title and chat. This adds a
+// "Leaderboards" item after Achievements. While it is open the game is paused (pnOpen held true); closing it goes back to
+// the menu when it was opened from there (like backScreen).
+(()=>{if(typeof SMI==='undefined'||typeof lbOpen!=='function')return;let OURS=false,FROM=false;
+ const at=SMI.findIndex(x=>x.id==='achievements');SMI.splice(at>=0?at+1:SMI.findIndex(x=>x.id==='options'),0,{id:'leaderboard',l:()=>'Leaderboards'});
+ {const _ss=showScreen;showScreen=function(id){if(id!=='leaderboard')return _ss.apply(this,arguments);
+   FROM=typeof fromMenu!=='undefined'&&fromMenu;try{if(typeof smOpen!=='undefined'&&smOpen)closeSM()}catch(e){}
+   pnOpen=true;jx=jy=0;OURS=true;lbOpen()}}
+ setInterval(()=>{if(!OURS||!window.SQLB)return;
+  if(SQLB.open){pnOpen=true;return}
+  OURS=false;if(FROM){FROM=false;try{fromMenu=false}catch(e){}if(!dead&&!menuOpen){openSM();return}}
+  if(pn.style.display==='none'&&!(typeof smOpen!=='undefined'&&smOpen))pnOpen=false},100);
+ window.SQMENULB={get open(){return OURS}}})();
+// Landscape phones (short screens): the START menu's 20 items in two columns ran off the bottom (Options, Save & quit
+// and Exit couldn't be reached). Three tighter columns there, and the menu scrolls if it still doesn't fit.
+(()=>{const st=document.createElement('style');st.textContent=
+ '#sm{max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow-y:auto;scrollbar-width:none}#sm::-webkit-scrollbar{display:none}'+
+ '@media (max-height:520px) and (min-width:560px){#sm{width:min(600px,calc(100vw - 20px))}#sm button{width:33.333%;font-size:16px!important;padding:6px 4px 6px 24px!important}#sm button.on::before{left:8px}}';
+ document.head.appendChild(st)})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
