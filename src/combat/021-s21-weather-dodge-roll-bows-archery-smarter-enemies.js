@@ -146,9 +146,12 @@ const fname=k=>({wood:'wood',stone:'stone',ibar:'iron bar'})[k]||k;
 function fletchHTML(){let h='<div class="tl" style="margin-top:18px">Arrows &amp; bows</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.7;margin-top:-6px">Archery level '+lvOf(FL)+' · Arrows: '+(inv.arrow|0)+' · Iron arrows: '+(inv.iarrow|0)+'</div>';
  FREC.forEach((r,i)=>{if(r.hide&&r.hide())return;const can=lvOf(FL)>=r.lv&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b);
   h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(r.k==='bow1'||r.k==='bow2'?'bow':r.k)+'"><div class="gi"><b>'+r.n+'</b><br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+fname(a)).join(', ')+' · Archery '+r.lv+' · '+r.xp+' xp</small></div><button class="gc fc" data-i="'+i+'">Make</button>'+(r.hide?'':'<button class="gc fc" data-i="'+i+'" data-all="1">All</button>')+'</div>'});return h}
-function makeFletch(i,all){const r=FREC[i];if(!r||(r.hide&&r.hide()))return;if(lvOf(FL)<r.lv){say('Need Archery '+r.lv);return}let n=0;const mx=all?999:1;
- while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];r.f();n++;if(r.hide)break}
- if(!n){say('Missing materials');return}addXp(FL,r.xp*n);if(!r.hide)say('Made '+(n*10)+' '+(r.k==='iarrow'?'iron arrows':'arrows')+'.');sfx('chop');saveLocal(true);rPn()}
+function makeFletch(i,all){const r=FREC[i];if(!r||(r.hide&&r.hide()))return;if(lvOf(FL)<r.lv){say('Need Archery '+r.lv);return}
+ // takes time like every other craft (109's sqDo), one at a time; "All" queues as many as the materials allow
+ {const can=Math.min(...Object.entries(r.c).map(([a,b])=>Math.floor((inv[a]|0)/b)));if(can<1){say('Missing materials');return}if(typeof sqDo==='function'&&sqDo('craft',all&&!r.hide?can:1,()=>makeFletch(i,false)))return}
+ let n=0;const mx=all?999:1;
+ let spoke=false;while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];{const _s=say;say=function(){spoke=true;return _s.apply(this,arguments)};try{r.f()}finally{say=_s}}n++;if(r.hide)break}
+ if(!n){say('Missing materials');return}addXp(FL,r.xp*n);if(!r.hide&&!spoke)say(r.k==='arrow'||r.k==='iarrow'?'Made '+(n*10)+' '+(r.k==='iarrow'?'iron arrows':'arrows')+'.':'Made '+(n>1?n+' × ':'')+(INAME[r.k]||r.n)+'.');sfx('chop');saveLocal(true);rPn()}
 const _r21=rPn;rPn=function(){_r21();if(ptab===1&&pn.style.display!=='none')pbd.insertAdjacentHTML('beforeend',fletchHTML())};
 const _oc21=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.fc');if(b){makeFletch(+b.dataset.i,!!b.dataset.all);return}_oc21(e)};
 // equipment card: bow + arrows
