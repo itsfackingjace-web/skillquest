@@ -77,7 +77,7 @@
  const _wu=watchUpgrades;watchUpgrades=function(){const was={...CUS},b0={};for(const s in was)if(was[s])b0[s]=inv[EQ[was[s]].base]|0;_wu.apply(this,arguments);
   for(const s in was){const c=was[s];if(!c||!EQ[c])continue;if(_occ(s)!==EQ[c].base){if((inv[EQ[c].base]|0)>b0[s]){inv[EQ[c].base]--;inv[c]=(inv[c]|0)+1}CUS[s]=null}}};
  // ---- special effects ----
- const fxSum=x=>{let t=0;for(const s of SLOTS){const r=rule(occ(s));if(r&&r.fx&&r.fx[x])t+=r.fx[x]}return t};
+ const fxSum=x=>{let t=0;for(const s of SLOTS){const r=rule(occ(s));if(r&&r.fx&&r.fx[x])t+=r.fx[x]}if(window.SQFXEXTRA)for(const f of SQFXEXTRA){try{t+=+f(x)||0}catch(e){}}return t};// SQFXEXTRA: more sources (186's perks)
  const roll=p=>p>0&&Math.random()*100<p;
  function onHit(n,dealt,how){if(!n||!(dealt>0))return;
   if(!n.dead&&roll(fxSum('crit'))){try{drops.push({x:n.x,y:n.y-26,t:0,tx:'CRIT',c:'#ff70a0'})}catch(e){}hitE(n,dealt,'#ff70a0',how)}

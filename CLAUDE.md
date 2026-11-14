@@ -546,3 +546,8 @@
   `sandbox(fn)` (snap + localStorage `sq_*` + `kills` kept, `applySave` after; say/sfx/saves/`SQPVSEND` muted), so every drop source
   counts. Per hour: hits = health ÷ (1+TL.sword+Attack/15+meleeFlat) at 2 a second + walk seconds. Loot tables roll `SQCONTENT.roll`.
   Bosses (cb:/ib/wb) are left out. Anything new that a kill changes outside the save must be put back in `sandbox` too.
+- **Perks editor** (`dev/186-s194-perk-editor.js`, `window.SQPERKED`, Dev Suite > Perks): library `ptree` = {txt:{'<skill>:<id>':{n,d}},
+  add:{'<skill>':{'<level>':[{id:'cp_<x>',n,d,fx}]}}}. txt renames built-in perks (effect stays the code's); add appends choices
+  (max 3 a level: PERKS letters a/b/c) marked `_cp`, at any level, making a tree for a skill without one. New perks' `fx` use 111a2's
+  FXN keys and count through `window.SQFXEXTRA` (hook in 111a2's `fxSum`, so 179's effects too) while chosen and the level is reached.
+  Everything is taken back out before each apply (texts only if still what 186 set, so 163 Balance's rewritten descriptions win).

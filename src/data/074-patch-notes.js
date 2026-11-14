@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-13',d:'Nov 14, 2026',t:'Room for new perks',n:['Skill trees can now get new perks, including a third choice at some levels and choices at levels that had none. New perks show up in each skill\'s tree as they arrive.']},
  {v:'2026.11.14-12',d:'Nov 14, 2026',t:'Behind the scenes: fairer rewards',n:['The developer can now measure exactly how much gold and loot every monster gives per hour, so rewards can be balanced across the islands.']},
  {v:'2026.11.14-11',d:'Nov 14, 2026',t:'Events',n:['Events can now run on a schedule: bonus XP weekends, a skill\'s happy hour, extra gold from monsters, special monsters roaming an island and pop-up shops.','While an event runs you\'ll see a green pill at the top of the screen with the time left. Tap it to see what the event gives, open its shop, and what\'s coming up next.']},
  {v:'2026.11.14-10',d:'Nov 14, 2026',t:'Gear that walks with you',n:['Redrawn trousers and leg armour now step with your legs when you walk, instead of standing still over them.','Hats and helmets no longer sit half a pixel off your head while walking.','Gear can now have its own walking frames, so capes, tails and robes can swing as you move (you\'ll see these as new gear looks arrive).']},
