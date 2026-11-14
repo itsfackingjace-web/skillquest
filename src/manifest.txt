@@ -186,6 +186,7 @@ ui/174-s180-live-updates.js
 dev/175-s182-gear-table.js
 dev/176-s183-gathering.js
 items/177-s184-meals.js
+ui/178-s185-title-hero-looks.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

@@ -485,3 +485,7 @@
   Food & potions `buff`/`bs`). `window.SQSTOVE` = multi-ingredient stove meals (Content recipes `sk:'stove'`), listed under "Meals" in
   the outermost `stationHTML` and made by `stationAct('sv_<i>')`. COOKS entries with `st` are stove-only: 007's fire loop, 109, 110 and
   118 skip them (Stats > Recipes "Stove only"). Stats table fields can be `sel` [f,label,'sel',options|()=>options].
+- **Worn looks for new gear** (111a apply): `WORN` takes every valid `worn.<eq_...>` without checking `EQ` (newgear items are registered
+  by 111a2's onApply hook *after* the worn loop, so their looks used to be dropped on every normal load; drawWorn/hideFor check slots).
+- **Title hero looks** (`ui/178-s185-title-hero-looks.js`): when `gearCH().wr` is set, a 96x112 `hd2` canvas (2x transform) over 061's
+  16x32 title hero draws the whole character through `cP` (kit at (16,19) of the 48x56 box; size/position set with `!important`).

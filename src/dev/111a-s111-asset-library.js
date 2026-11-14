@@ -197,7 +197,9 @@ var SQA=(()=>{
   const icons=lib.icons||{};for(const k in icons)if(valid(icons[k]))ICO[k]=icons[k];
   try{applyIslands(lib.islands)}catch(e){console.warn('islands:',e)}
   for(const k in PETL)delete PETL[k];pcache.clear();const pets=lib.pets||{};for(const k in pets)if(validPet(pets[k]))PETL[k]=pets[k];try{impRepaint()}catch(e){}
-  const worn=lib.worn||{};for(const k in worn)if(EQ[k]&&WSLOTS.includes(EQ[k].slot)&&validWorn(worn[k]))WORN[k]=worn[k];
+  // no EQ check here: new gear items (newgear, 111a2) are registered by an onApply hook that runs after this, so a look for one
+  // would be dropped on every normal load (only the Dev Suite's re-apply kept it). drawWorn/hideFor check the slot when drawing.
+  const worn=lib.worn||{};for(const k in worn)if(/^eq_[a-z0-9_]{1,40}$/.test(k)&&validWorn(worn[k]))WORN[k]=worn[k];
   const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){}}}
   applied={stats:st};
   for(const f of HOOKS)try{f(lib)}catch(e){console.warn(e)}

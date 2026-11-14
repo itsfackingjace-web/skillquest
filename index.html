@@ -9385,6 +9385,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-35',d:'Nov 13, 2026',t:'New gear looks fixed',n:['New gear with its own look (like the Mushroom Hat) now looks the same to everyone. Before, other players often saw the item it was based on.','Your character on the title screen now wears those looks too.']},
  {v:'2026.11.13-34',d:'Nov 13, 2026',t:'Stove meals and food buffs',n:['Cooking stoves can now have their own meals made from several ingredients. Look under "Meals" on your stove.','Some food can give a temporary buff when you eat it. Two new buffs: Wisdom (+20% XP) and Regeneration (heal over time).','Some dishes can only be cooked on a stove, not on a campfire.']},
  {v:'2026.11.13-33',d:'Nov 13, 2026',t:'Bigger recipes',n:['New gear can now be made in the Craft list and at a crafting bench, not just at the anvil, and recipes can ask for many more materials.']},
  {v:'2026.11.13-32',d:'Nov 13, 2026',t:'Ready for new trees, ores and fish',n:['The world can now get new kinds of trees, ore veins and fish without a game update: when they arrive they simply start appearing while you play.']},
@@ -13088,7 +13089,9 @@ var SQA=(()=>{
   const icons=lib.icons||{};for(const k in icons)if(valid(icons[k]))ICO[k]=icons[k];
   try{applyIslands(lib.islands)}catch(e){console.warn('islands:',e)}
   for(const k in PETL)delete PETL[k];pcache.clear();const pets=lib.pets||{};for(const k in pets)if(validPet(pets[k]))PETL[k]=pets[k];try{impRepaint()}catch(e){}
-  const worn=lib.worn||{};for(const k in worn)if(EQ[k]&&WSLOTS.includes(EQ[k].slot)&&validWorn(worn[k]))WORN[k]=worn[k];
+  // no EQ check here: new gear items (newgear, 111a2) are registered by an onApply hook that runs after this, so a look for one
+  // would be dropped on every normal load (only the Dev Suite's re-apply kept it). drawWorn/hideFor check the slot when drawing.
+  const worn=lib.worn||{};for(const k in worn)if(/^eq_[a-z0-9_]{1,40}$/.test(k)&&validWorn(worn[k]))WORN[k]=worn[k];
   const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){}}}
   applied={stats:st};
   for(const f of HOOKS)try{f(lib)}catch(e){console.warn(e)}
@@ -18826,6 +18829,24 @@ window.SQA=SQA;
    for(const[k,n]of need)inv[k]-=n;inv[r.k]=(inv[r.k]|0)+1;addXp(4,r.xp);try{if(Q.on&&QS[Q.i]&&QS[Q.i].type==='cook')Q.k++}catch(e){}
    say('Cooked '+INAME[r.k].toLowerCase()+'.');sfx('sizzle');saveLocal(true);rPn()}}
  window.SQMEALS={give,on,SV}})();
+// ---- 185. The title screen shows gear with its own look ----
+// 061's title hero is a 16x32 canvas drawn from kitSprite(gearCH()), so worn looks from the Dev Suite (ch.wr, drawn by 111a's
+// outermost cP) never showed there. When you wear such a piece, a bigger canvas (48x56 world px at 2x, flagged hd2 so 111a
+// draws on it) is laid over the hero and the whole character is drawn through cP like in the game; the kit sits at (16,19)
+// inside it, so the overlay is placed that much up and left and sized from the hero's on-screen size. Without such gear
+// the original hero shows as before.
+(()=>{const st=document.createElement('style');st.textContent='#sqts .tshero canvas.sqtwh{position:absolute!important;image-rendering:pixelated;pointer-events:none;animation:tsbob 1.2s steps(2) infinite}';document.head.appendChild(st);
+ let ov=null,last='';
+ function draw(){const hero=document.querySelector('#sqts .tshero canvas:not(.sqtwh)');if(!hero)return;const vis=!(typeof SQTITLE==='function')||SQTITLE();
+  let ch=null;try{ch=gearCH()}catch(e){}const want=vis&&ch&&Array.isArray(ch.wr)&&ch.wr.length;
+  if(!want){if(ov)ov.style.setProperty('display','none','important');hero.style.visibility='';last='';return}
+  if(!ov){ov=document.createElement('canvas');ov.className='sqtwh';ov.width=96;ov.height=112;ov.hd2=1;hero.parentElement.appendChild(ov)}
+  const k=hero.clientWidth/16||5,S=(p,v)=>ov.style.setProperty(p,v,'important');// 061's '.tshero canvas' rule forces size/position with !important
+  S('width',48*k+'px');S('height',56*k+'px');S('position','absolute');S('inset','auto');S('left',hero.offsetLeft-16*k+'px');S('top',hero.offsetTop-19*k+'px');S('display','block');
+  const key=JSON.stringify(ch)+'|'+(window.SQA&&SQA.live&&SQA.live.v);if(key!==last){last=key;const x=ov.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,96,112);x.imageSmoothingEnabled=false;x.setTransform(2,0,0,2,0,0);
+   const C=GC;GC=x;try{cP(ch,0,0,24,44,false)}catch(e){}finally{GC=C}}
+  hero.style.visibility='hidden'}
+ setInterval(()=>{try{draw()}catch(e){}},400);window.SQTITLEHERO={draw}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
