@@ -77,8 +77,8 @@
    '<p style="margin:6px 0;white-space:pre-wrap">'+esc2(b.what||'(no text)')+'</p>'+(b.exp?'<p class="dv-mut" style="margin:4px 0">Expected: '+esc2(b.exp)+'</p>':'')+(i.last?'<p class="dv-mut" style="margin:4px 0;font-size:12px">Last messages: '+esc2(i.last)+'</p>':'')+(b.re?'<p style="margin:4px 0;color:#9bf">↩ Your reply: '+esc2(b.re)+'</p>':'')+
    '<div class="dv-row" style="flex-wrap:wrap">'+(b.shot?'<button class="dv-b" data-adm="shot:'+id+'">'+(T.shot===id?'Hide':'Show')+' screenshot</button>':'')+
    '<button class="dv-b" data-adm="st:'+id+':'+(st(b)?'':'fixed')+'">'+(st(b)?'Reopen':'Mark fixed')+'</button>'+(st(b)?'':'<button class="dv-b" data-adm="st:'+id+':wont">Won\'t fix</button>')+
-   '<button class="dv-b" data-adm="rep:'+id+'">Reply…</button>'+(i.where&&isFinite(i.x)?'<button class="dv-b" data-adm="go:'+id+'">Go there</button>':'')+(b.u?'<button class="dv-b" data-adm="pl:'+esc2(b.u)+'">Player</button>':'')+'</div>'+
-   (T.shot===id&&b.shot?'<img alt="Screenshot" src="'+esc2(b.shot)+'" style="max-width:100%;margin-top:8px;border:1px solid #333">':'')+'</div>'}
+   '<button class="dv-b" data-adm="rep:'+id+'">'+(T.repOpen===id?'Cancel reply':'Reply…')+'</button>'+(i.where&&isFinite(i.x)?'<button class="dv-b" data-adm="go:'+id+'">Go there</button>':'')+(b.u?'<button class="dv-b" data-adm="pl:'+esc2(b.u)+'">Player</button>':'')+'</div>'+
+   (T.repOpen===id?'<div style="margin-top:8px"><textarea data-rpt="1" maxlength="500" rows="2" style="width:100%">'+esc2(b.re||'Thanks! This is fixed in the latest update.')+'</textarea><button class="dv-b dv-pri" data-adm="repsend:'+id+'">Send reply</button> <small class="dv-mut">They get it in the game.</small></div>':'')+(T.shot===id&&b.shot?'<img alt="Screenshot" src="'+esc2(b.shot)+'" style="max-width:100%;margin-top:8px;border:1px solid #333">':'')+'</div>'}
   if(!shown.length)h+='<p class="dv-mut">Nothing here.</p>';return h}
  function playersView(){if(!T.lb){if(!T.busy)loadLb();return'<p class="dv-mut">Loading players…</p>'}
   const q=T.q.toLowerCase(),L=Object.entries(T.lb).filter(([,r])=>r&&r.n&&(!q||String(r.n).toLowerCase().includes(q))).sort((a,b)=>(b[1].t||0)-(a[1].t||0));
@@ -148,7 +148,8 @@
    else if(a==='bf'){T.bf=b;API.draw()}else if(a==='rbugs'){T.bugs=null;API.draw()}
    else if(a==='shot'){T.shot=T.shot===b?null:b;API.draw()}
    else if(a==='st'){await D().set(ref('bugs/'+b+'/st'),c||null);T.bugs[b].st=c||undefined;toast(c?'Marked '+c+'.':'Reopened.');API.draw()}
-   else if(a==='rep'){const bug=T.bugs[b];const m=prompt('Reply to '+(bug.n||'the player')+' (they get it in the game):',bug.re||'Thanks! This is fixed in the latest update.');if(!m)return;
+   else if(a==='rep'){T.repOpen=T.repOpen===b?null:b;API.draw();setTimeout(()=>{const x=document.querySelector('#dvs [data-rpt]');if(x)x.focus()},50)}
+   else if(a==='repsend'){const bug=T.bugs[b];const m=gv('[data-rpt]').trim();if(!m){toast('Write a reply first.');return}T.repOpen=null;
     await D().set(ref('bugs/'+b+'/re'),m.slice(0,500));if(bug.u)await D().set(ref('gifts/'+bug.u+'/r'+Date.now().toString(36)),{m:('About your bug report (“'+String(bug.what||'').slice(0,60)+'”): '+m).slice(0,500),t:Date.now(),f:uid()});bug.re=m;toast('Reply sent.');API.draw()}
    else if(a==='go'){const i=(T.bugs[b]||{}).info||{};SQSUITE.close();try{if(i.region&&i.region!=='hollow'&&window.SQTEST)SQTEST.goIsland(i.region);setTimeout(()=>{P.x=+i.x;P.y=+i.y},i.region&&i.region!=='hollow'?1500:0)}catch(e2){}toast('Moved to where it was reported.')}
    else if(a==='pl'){T.view='players';if(!T.lb)await loadLb();loadPlayer(b)}

@@ -443,3 +443,5 @@
   every 5 min), `stats/f/<uid>` first day, `stats/dz/<day>/<where~monster>` deaths (+1 transactions). The tab shows players per
   day, new players and next-day / week returns, deaths, and (reading saves) the quest/guide step/total level of players who
   stopped. Rules: `stats` (publish them).
+- **No `prompt()`**: the Windows app (Electron) doesn't support it ("Prompt () is and will not be supported"). Ask for text with an
+  input on the page instead (Moderation's reason box, Admin's reply box).

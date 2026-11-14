@@ -9380,6 +9380,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-24',d:'Nov 13, 2026',t:'Small fixes',n:['Fixed a couple of developer tools that didn\'t work in the Windows app.']},
  {v:'2026.11.13-23',d:'Nov 13, 2026',t:'Report players',n:['Someone being mean in chat, cheating or scamming? Walk up to them, tap their name and choose REPORT. The developer sees it along with their recent chat.','Players who break the rules can now be muted or suspended for a while.']},
  {v:'2026.11.13-22',d:'Nov 13, 2026',t:'Faster help when something goes wrong',n:['If your game gets stuck or something goes missing, the developer can now fix it for you: send you back to the start of Hollow, put back a recent backup of your game, or tidy up items left over from a bug. You\'ll see a note in your game when it happens.','Some players may see a small TEST VERSION tag while they help try out new content before everyone gets it.']},
  {v:'2026.11.13-21',d:'Nov 13, 2026',t:'Gifts arrive',n:['Fixed: gifts from the developer (like replacement pets) could get stuck and never reach your bag. They now arrive within a few seconds of starting the game.','World Market: COLLECT is more reliable too.']},
@@ -17546,8 +17547,8 @@ window.SQA=SQA;
    '<p style="margin:6px 0;white-space:pre-wrap">'+esc2(b.what||'(no text)')+'</p>'+(b.exp?'<p class="dv-mut" style="margin:4px 0">Expected: '+esc2(b.exp)+'</p>':'')+(i.last?'<p class="dv-mut" style="margin:4px 0;font-size:12px">Last messages: '+esc2(i.last)+'</p>':'')+(b.re?'<p style="margin:4px 0;color:#9bf">↩ Your reply: '+esc2(b.re)+'</p>':'')+
    '<div class="dv-row" style="flex-wrap:wrap">'+(b.shot?'<button class="dv-b" data-adm="shot:'+id+'">'+(T.shot===id?'Hide':'Show')+' screenshot</button>':'')+
    '<button class="dv-b" data-adm="st:'+id+':'+(st(b)?'':'fixed')+'">'+(st(b)?'Reopen':'Mark fixed')+'</button>'+(st(b)?'':'<button class="dv-b" data-adm="st:'+id+':wont">Won\'t fix</button>')+
-   '<button class="dv-b" data-adm="rep:'+id+'">Reply…</button>'+(i.where&&isFinite(i.x)?'<button class="dv-b" data-adm="go:'+id+'">Go there</button>':'')+(b.u?'<button class="dv-b" data-adm="pl:'+esc2(b.u)+'">Player</button>':'')+'</div>'+
-   (T.shot===id&&b.shot?'<img alt="Screenshot" src="'+esc2(b.shot)+'" style="max-width:100%;margin-top:8px;border:1px solid #333">':'')+'</div>'}
+   '<button class="dv-b" data-adm="rep:'+id+'">'+(T.repOpen===id?'Cancel reply':'Reply…')+'</button>'+(i.where&&isFinite(i.x)?'<button class="dv-b" data-adm="go:'+id+'">Go there</button>':'')+(b.u?'<button class="dv-b" data-adm="pl:'+esc2(b.u)+'">Player</button>':'')+'</div>'+
+   (T.repOpen===id?'<div style="margin-top:8px"><textarea data-rpt="1" maxlength="500" rows="2" style="width:100%">'+esc2(b.re||'Thanks! This is fixed in the latest update.')+'</textarea><button class="dv-b dv-pri" data-adm="repsend:'+id+'">Send reply</button> <small class="dv-mut">They get it in the game.</small></div>':'')+(T.shot===id&&b.shot?'<img alt="Screenshot" src="'+esc2(b.shot)+'" style="max-width:100%;margin-top:8px;border:1px solid #333">':'')+'</div>'}
   if(!shown.length)h+='<p class="dv-mut">Nothing here.</p>';return h}
  function playersView(){if(!T.lb){if(!T.busy)loadLb();return'<p class="dv-mut">Loading players…</p>'}
   const q=T.q.toLowerCase(),L=Object.entries(T.lb).filter(([,r])=>r&&r.n&&(!q||String(r.n).toLowerCase().includes(q))).sort((a,b)=>(b[1].t||0)-(a[1].t||0));
@@ -17617,7 +17618,8 @@ window.SQA=SQA;
    else if(a==='bf'){T.bf=b;API.draw()}else if(a==='rbugs'){T.bugs=null;API.draw()}
    else if(a==='shot'){T.shot=T.shot===b?null:b;API.draw()}
    else if(a==='st'){await D().set(ref('bugs/'+b+'/st'),c||null);T.bugs[b].st=c||undefined;toast(c?'Marked '+c+'.':'Reopened.');API.draw()}
-   else if(a==='rep'){const bug=T.bugs[b];const m=prompt('Reply to '+(bug.n||'the player')+' (they get it in the game):',bug.re||'Thanks! This is fixed in the latest update.');if(!m)return;
+   else if(a==='rep'){T.repOpen=T.repOpen===b?null:b;API.draw();setTimeout(()=>{const x=document.querySelector('#dvs [data-rpt]');if(x)x.focus()},50)}
+   else if(a==='repsend'){const bug=T.bugs[b];const m=gv('[data-rpt]').trim();if(!m){toast('Write a reply first.');return}T.repOpen=null;
     await D().set(ref('bugs/'+b+'/re'),m.slice(0,500));if(bug.u)await D().set(ref('gifts/'+bug.u+'/r'+Date.now().toString(36)),{m:('About your bug report (“'+String(bug.what||'').slice(0,60)+'”): '+m).slice(0,500),t:Date.now(),f:uid()});bug.re=m;toast('Reply sent.');API.draw()}
    else if(a==='go'){const i=(T.bugs[b]||{}).info||{};SQSUITE.close();try{if(i.region&&i.region!=='hollow'&&window.SQTEST)SQTEST.goIsland(i.region);setTimeout(()=>{P.x=+i.x;P.y=+i.y},i.region&&i.region!=='hollow'?1500:0)}catch(e2){}toast('Moved to where it was reported.')}
    else if(a==='pl'){T.view='players';if(!T.lb)await loadLb();loadPlayer(b)}
@@ -18332,15 +18334,17 @@ window.SQA=SQA;
   return'<p class="dv-mut">Accounts muted or suspended right now.</p>'+(L.map(([u,m])=>'<div class="dv-hl" style="flex-wrap:wrap"><span><b>'+E(nm(u))+'</b> '+st(u)+(m.r?' <small class="dv-mut">('+E(m.r)+')</small>':'')+'</span><button class="dv-b" data-md="clr:'+E(u)+'">Lift</button></div>').join('')||'<p class="dv-mut">Nobody.</p>')}
  function render(){if(!T.rep){if(!T.busy)load();return'<p class="dv-mut">Loading…</p>'}const n=Object.values(T.rep).filter(r=>r&&!r.st).length;
   return'<div class="dv-row" style="flex-wrap:wrap;margin-bottom:8px">'+[['rep','🚩 Reports'+(n?' ('+n+')':'')],['chat','💬 Recent chat'],['mod','🛡 Muted & suspended']].map(([k,l])=>'<button class="dv-b'+(T.v===k?' dv-tl dv-on':'')+'" data-md="v:'+k+'">'+l+'</button>').join('')+'<button class="dv-b" data-md="reload">↻ Refresh</button></div>'+
+   '<label class="dv-mut" style="display:block;margin-bottom:8px">Reason for a mute or suspension <small>(shown to them, optional)</small><input type="text" data-mr="1" maxlength="120" value="'+E(T.reason||'')+'" placeholder="Rude chat" style="width:100%"></label>'+
    (T.v==='rep'?repView():T.v==='chat'?chatView():modView())}
  document.addEventListener('click',async e=>{if(S.tab!=='mod')return;const t=e.target.closest('[data-md]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();e.stopPropagation();
   const[a,b,c]=t.dataset.md.split(':');
   try{if(a==='v'){T.v=b}else if(a==='rf'){T.rf=b}else if(a==='reload'){T.rep=null}else if(a==='who'){T.who=T.who===b?null:b}
    else if(a==='del'){await D().set(ref('chat/'+b),null);T.chat=T.chat.filter(m=>m.id!==b);toast('Message deleted.')}
    else if(a==='rst'){await D().update(ref('reports/'+b),{st:c||null});T.rep[b].st=c||undefined;toast(c?'Marked '+c+'.':'Reopened.')}
-   else if(a==='mu'||a==='ba'){const r=(prompt('Reason (shown to them, optional):','')||'').slice(0,120);const o={...(T.mod[b]||{}),[a]:Date.now()+(+c)*3600e3,by:uid(),t:Date.now()};if(r)o.r=r;else delete o.r;
-    await D().set(ref('mod/'+b),o);T.mod[b]=o;toast(nm(b)+(a==='mu'?' muted.':' suspended.'))}
+   else if(a==='mu'||a==='ba'){const r=String(T.reason||'').trim().slice(0,120);const o={...(T.mod[b]||{}),[a]:Date.now()+(+c)*3600e3,by:uid(),t:Date.now()};if(r)o.r=r;else delete o.r;
+    await D().set(ref('mod/'+b),o);T.mod[b]=o;T.reason='';toast(nm(b)+(a==='mu'?' muted.':' suspended.'))}
    else if(a==='clr'){await D().set(ref('mod/'+b),null);delete T.mod[b];toast('Lifted for '+nm(b)+'.')}}catch(e2){fail(e2)}API.draw()},true);
+ document.addEventListener('input',e=>{if(S.tab==='mod'&&e.target.dataset&&e.target.dataset.mr)T.reason=e.target.value},true);
  SQSUITE.addTab('mod','Moderation',{render});
  window.SQMODADMIN={load}})();
 // ---- 177. Player stats (Dev Suite > Stats) ----

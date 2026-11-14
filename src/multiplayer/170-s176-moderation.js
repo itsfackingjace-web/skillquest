@@ -61,14 +61,16 @@
   return'<p class="dv-mut">Accounts muted or suspended right now.</p>'+(L.map(([u,m])=>'<div class="dv-hl" style="flex-wrap:wrap"><span><b>'+E(nm(u))+'</b> '+st(u)+(m.r?' <small class="dv-mut">('+E(m.r)+')</small>':'')+'</span><button class="dv-b" data-md="clr:'+E(u)+'">Lift</button></div>').join('')||'<p class="dv-mut">Nobody.</p>')}
  function render(){if(!T.rep){if(!T.busy)load();return'<p class="dv-mut">Loading…</p>'}const n=Object.values(T.rep).filter(r=>r&&!r.st).length;
   return'<div class="dv-row" style="flex-wrap:wrap;margin-bottom:8px">'+[['rep','🚩 Reports'+(n?' ('+n+')':'')],['chat','💬 Recent chat'],['mod','🛡 Muted & suspended']].map(([k,l])=>'<button class="dv-b'+(T.v===k?' dv-tl dv-on':'')+'" data-md="v:'+k+'">'+l+'</button>').join('')+'<button class="dv-b" data-md="reload">↻ Refresh</button></div>'+
+   '<label class="dv-mut" style="display:block;margin-bottom:8px">Reason for a mute or suspension <small>(shown to them, optional)</small><input type="text" data-mr="1" maxlength="120" value="'+E(T.reason||'')+'" placeholder="Rude chat" style="width:100%"></label>'+
    (T.v==='rep'?repView():T.v==='chat'?chatView():modView())}
  document.addEventListener('click',async e=>{if(S.tab!=='mod')return;const t=e.target.closest('[data-md]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();e.stopPropagation();
   const[a,b,c]=t.dataset.md.split(':');
   try{if(a==='v'){T.v=b}else if(a==='rf'){T.rf=b}else if(a==='reload'){T.rep=null}else if(a==='who'){T.who=T.who===b?null:b}
    else if(a==='del'){await D().set(ref('chat/'+b),null);T.chat=T.chat.filter(m=>m.id!==b);toast('Message deleted.')}
    else if(a==='rst'){await D().update(ref('reports/'+b),{st:c||null});T.rep[b].st=c||undefined;toast(c?'Marked '+c+'.':'Reopened.')}
-   else if(a==='mu'||a==='ba'){const r=(prompt('Reason (shown to them, optional):','')||'').slice(0,120);const o={...(T.mod[b]||{}),[a]:Date.now()+(+c)*3600e3,by:uid(),t:Date.now()};if(r)o.r=r;else delete o.r;
-    await D().set(ref('mod/'+b),o);T.mod[b]=o;toast(nm(b)+(a==='mu'?' muted.':' suspended.'))}
+   else if(a==='mu'||a==='ba'){const r=String(T.reason||'').trim().slice(0,120);const o={...(T.mod[b]||{}),[a]:Date.now()+(+c)*3600e3,by:uid(),t:Date.now()};if(r)o.r=r;else delete o.r;
+    await D().set(ref('mod/'+b),o);T.mod[b]=o;T.reason='';toast(nm(b)+(a==='mu'?' muted.':' suspended.'))}
    else if(a==='clr'){await D().set(ref('mod/'+b),null);delete T.mod[b];toast('Lifted for '+nm(b)+'.')}}catch(e2){fail(e2)}API.draw()},true);
+ document.addEventListener('input',e=>{if(S.tab==='mod'&&e.target.dataset&&e.target.dataset.mr)T.reason=e.target.value},true);
  SQSUITE.addTab('mod','Moderation',{render});
  window.SQMODADMIN={load}})();
