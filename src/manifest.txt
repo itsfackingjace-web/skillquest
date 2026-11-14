@@ -94,6 +94,7 @@ combat/090-s81-monsters-keep-a-little-distance-dungeon-exits.js
 combat/091-s83-the-flame-crown-a-rare-drop-from-the-flame-wisp.js
 items/092-s85-better-boats.js
 world/093-s88-islands-update-part-2.js
+world/093b-s183-gather-fish-hook.js
 skills/094-s90-a-new-anvil-and-the-trash-can.js
 world/095-s91-briarwood-the-village-of-thornbrook-and-thornroo.js
 world/096-s92-ashfall-s-forge-camp-and-cinderdeep-the-stone-sl.js
@@ -182,6 +183,8 @@ ui/171-s177-player-stats.js
 ui/172-s178-controller-highlight.js
 items/173-s179-build-at-home-only.js
 ui/174-s180-live-updates.js
+dev/175-s182-gear-table.js
+dev/176-s183-gathering.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

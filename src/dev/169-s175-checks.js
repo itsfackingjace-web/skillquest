@@ -38,6 +38,12 @@
    for(const z of arr(I.zn))for(const k of arr(z&&z.m))if(!mobs.has(k))bad(w,'a monster zone has "'+k+'", which isn\'t a monster.',g);
    for(const c of arr(I.cv))for(const k of arr(c&&c.m))if(!mobs.has(k))bad(w,'a dungeon entrance has "'+k+'", which isn\'t a monster.',g);
    for(const L of arr(I.lm))if(L&&L.loot)for(const k in L.loot)if(k!=='gold'&&!item(k)&&!loot.has(k))bad(w,'a chest holds "'+k+'", which isn\'t an item or loot table.',g)}
+  // Gathering: what trees/rocks/fish give
+  {const Gd=D.gather||{};for(const k of['nodes','fish'])for(const id in Gd[k]||{}){const o=Gd[k][id]||{},w=(k==='fish'?'Fish ':'')+(o.n||id),g={tab:'gather'};
+    if(!o.item||!item(o.item))bad(w,'gives "'+(o.item||'nothing')+'", which isn\'t an item. Pick one or use "Make its item".',g);
+    if(k==='fish'&&o.ck&&!item(o.ck))bad(w,'cooks into "'+o.ck+'", which isn\'t an item.',g);
+    if(k==='nodes'&&!(o.where||[]).length)warn(w,'isn\'t placed anywhere: tick at least one island.',g);
+    if(k==='nodes'&&!(o.pct>0))warn(w,'replaces 0% of '+(o.rep==='tree'?'trees':'rocks')+', so it never appears.',g)}}
   // recipe edits in Stats > Recipes: materials that aren't items are skipped by the game
   if(window.SQDATA)for(const k in ((D.stats||{}).recipe||{})){const o=D.stats.recipe[k];if(!o||o.mats==null)continue;const p=SQDATA.parseMats(o.mats);const nm=(SQA.TABLES.recipe.orig(k)||{}).n||k;
    if(p.bad)bad('Recipe '+nm,'has materials the game doesn\'t know ("'+String(o.mats).slice(0,60)+'"). Use item names like "Wood 4, Stone 2".',{tab:'stats'});

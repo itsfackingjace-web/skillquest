@@ -471,3 +471,11 @@
   Content's bw/af stock work), `recipe` (SM/GOODS/BREC/FREC/REC/COOKS: `mats` text parsed by `SQDATA.parseMats`, level, off = taken
   out of its list and put back in place). Table fields may be `bool` (111a `merged`, 111b checkbox); tables can set `note`, `col`,
   `label(k)`, `sub(k)`. Tables registered after 111a apply their part through `SQA.onApply`.
+- **Gear stats tab** (`dev/175-s182-gear-table.js`, Dev Suite > Gear stats): every weapon/armour piece in one table, final numbers
+  for the developer's character (`SQGEAR.base` + draft rule); edits save the difference into `gear.<k>` (same as the Gear tab).
+- **Gathering** (`dev/176-s183-gathering.js`, `SQGATHER`, Dev Suite > Gathering; catch hook `world/093b-s183-gather-fish-hook.js`
+  before 109 so new fish get the reel): library `gather.nodes.gn_<id>` = {n, rep tree|rock|ore, lv, hp, tool, item, xp, col[4]|ore,
+  where[], pct} -> 083 tier kind `g_<id>` in `SQTIER` (+OHP/SKOF), placed by a fixed hash on Hollow (obj + REM) and on islands
+  (outermost `loadRegion`, and the current island on every apply); sprites recoloured in the outermost `hdSprites`. Removed kinds
+  turn back into what they replaced. `gather.fish.gf_<id>` = {n, item, lv, xp, where[], p %, ck, clv, cxp} -> `window.SQGFISH`
+  + a `COOKS` entry (`_g`). Items are game items or Content `it_` items ("Make its item" writes them into the draft).
