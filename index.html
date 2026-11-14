@@ -9391,6 +9391,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-10',d:'Nov 14, 2026',t:'Gear that walks with you',n:['Redrawn trousers and leg armour now step with your legs when you walk, instead of standing still over them.','Hats and helmets no longer sit half a pixel off your head while walking.','Gear can now have its own walking frames, so capes, tails and robes can swing as you move (you\'ll see these as new gear looks arrive).']},
  {v:'2026.11.14-9',d:'Nov 14, 2026',t:'Quest chains with choices',n:['Island quests can now have several steps: hand in each step to the person who gave it and they\'ll tell you what\'s next. The quest log shows which step you\'re on.','Some quests end with a choice of reward. Pick carefully: what you choose can decide which quest comes next.','Some quests are only offered once a skill is high enough; the quest giver tells you which level you need.']},
  {v:'2026.11.14-8',d:'Nov 14, 2026',t:'Clearer recipes',n:['Recipe lists (crafting, building, tools, smithing) now show every material by its name, like "25 cotton" instead of a code.']},
  {v:'2026.11.14-7',d:'Nov 14, 2026',t:'Behind the scenes: recipe tools',n:['The developer now has one place to see and change every recipe in the game, so expect recipe tweaks and new recipes.']},
@@ -12976,14 +12977,22 @@ var SQA=(()=>{
   dy.forEach((h,i)=>{const f=L[i]/avg;out[String(h).toLowerCase()]='#'+D.map(v=>Math.round(Math.max(0,Math.min(255,f<=1?v*f:v+(255-v)*Math.min(1,f-1))))).map(v=>v.toString(16).padStart(2,'0')).join('')});return out}
  const dyeOf=(ch,k)=>{const sl=EQ[k]&&EQ[k].slot,f=DYK[sl],i=ch&&f?ch[f]|0:0,D=window.LUX&&LUX.EMP&&LUX.EMP.DYES;return i&&D&&D[i-1]?D[i-1].c:null};
  const recol=(sp,M)=>({...sp,p:String(sp.p).split(',').map(c=>M[c.toLowerCase()]||c).join(',')});
- function wornCanvas(w,k,dir,fl,dc){const M=dc&&w.dy?dyeMap(w.dy,dc):null,key=k+'@'+ver+dir+(fl?1:0)+(M?dc:'');let c=wcache.get(key);if(c!==undefined)return c;let sp=w[WDIR[dir]];c=null;
-  if(sp&&valid(sp)){if(M)sp=recol(sp,M);const r=render(sp);if(fl){c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0)}else c=r}
-  if(wcache.size>300)wcache.clear();wcache.set(key,c);return c}
- // draw a character's worn layers; same placement and walking bob as the character sprite (legs don't bob)
+ // walking: st 1/2 (the character's two steps) use the look's own step frames (w.f1 b1 s1 f2 b2 s2, drawn over the stepping
+ // character) or frames made from the standing one (autoStep). The game's character only moves its legs when walking (no bob, no
+ // arm swing), so only leg pieces change: from the front/back the lifted leg's lower part moves up a pixel (st 1 right, st 2 left);
+ // from the side legs stay as drawn (draw own step frames for that). Everything else keeps its standing look.
+ function autoStep(d,sl,dir,st){if(sl!=='legs'||dir===2)return d;const W=WW,H=WH,at=(x,y)=>y>=0&&y<H?d[y*W+x]||'.':'.',o=d.split('');const L=st===2;
+  for(let x=0;x<W;x++){if((x<48)!==L)continue;for(let y=94;y<H;y++)o[y*W+x]=at(x,y+2)}return o.join('')}
+ const frameOf=(w,k,dir,st)=>{const b=w[WDIR[dir]];if(!st)return b&&valid(b)?b:null;const own=w[WDIR[dir]+st];if(own&&valid(own))return own;if(!b||!valid(b))return null;
+  const sl=EQ[k]&&EQ[k].slot||'body';return{w:b.w,h:b.h,s:b.s,p:b.p,d:autoStep(pix(b),sl,dir,st)}};
+ function wornCanvas(w,k,dir,fl,dc,st){st=st|0;const M=dc&&w.dy?dyeMap(w.dy,dc):null,key=k+'@'+ver+dir+(fl?1:0)+st+(M?dc:'');let c=wcache.get(key);if(c!==undefined)return c;let sp=frameOf(w,k,dir,st);c=null;
+  if(sp){if(M)sp=recol(sp,M);const r=render(sp);if(fl){c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0)}else c=r}
+  if(wcache.size>400)wcache.clear();wcache.set(key,c);return c}
+ // draw a character's worn layers at the character sprite's placement; walking frames come from frameOf
  function drawWorn(C,keys,dir,st,ox,oy,fl,lib,ch){if(!keys||!keys.length)return;const src=lib||WORN;
-  for(const sl of WSLOTS)for(const k of keys){if(!EQ[k]||EQ[k].slot!==sl||!src[k])continue;const dc=dyeOf(ch,k),c=lib?wornCanvasFrom(src[k],dir,fl,dc):wornCanvas(src[k],k,dir,fl,dc);if(!c)continue;
-   C.drawImage(c,Math.round(ox)-24,Math.round(oy)-44+(st&&sl!=='legs'?-.5:0),48,56)}}
- const wornCanvasFrom=(w,dir,fl,dc)=>{let sp=w[WDIR[dir]];if(!sp||!valid(sp))return null;if(dc&&w.dy)sp=recol(sp,dyeMap(w.dy,dc));const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
+  for(const sl of WSLOTS)for(const k of keys){if(!EQ[k]||EQ[k].slot!==sl||!src[k])continue;const dc=dyeOf(ch,k),c=lib?wornCanvasFrom(src[k],dir,fl,dc,k,st):wornCanvas(src[k],k,dir,fl,dc,st);if(!c)continue;
+   C.drawImage(c,Math.round(ox)-24,Math.round(oy)-44,48,56)}}
+ const wornCanvasFrom=(w,dir,fl,dc,k,st)=>{let sp=frameOf(w,k,dir,st|0);if(!sp)return null;if(dc&&w.dy)sp=recol(sp,dyeMap(w.dy,dc));const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
  // what you have on travels with your look (ch.wr) so other players' games draw it too
  const _gch=gearCH;gearCH=function(){const c=_gch();const wr=[];
   for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){}if(!k||!WORN[k])continue;wr.push(k)}
@@ -13128,7 +13137,7 @@ var SQA=(()=>{
    if(JSON.stringify(L)===JSON.stringify(live))return;live=L;try{if(L)localStorage.setItem(LS,JSON.stringify(L));else localStorage.removeItem(LS)}catch(e){}
    if(!preview)apply(live)}catch(e){}}
  setTimeout(refresh,400);
- return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,
+ return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,autoStep,frameOf,
   ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,ISL_POS,CAVE_ST,caveKind,npcLook,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
   get live(){return live},hasIcon:k=>!!ICO[k],hideFor,
   // a section that reads its own part of the library: called now with the current library and after every change
@@ -13341,7 +13350,7 @@ window.SQA=SQA;
   return{w:ed.w,h:ed.h,s:ed.s,p:used.map(i=>ed.pal[i]).join(','),d:[...px].map(v=>v===255?'.':PXC[map.get(v)]).join('')}}
  const toSp=ed=>toSpPx(ed,ed.px);
  // ---- worn looks: one 96 x 112 layer per facing, painted over the character ----
- const WDN=['Front','Back','Side'],WK=A.WDIR,SLN={helm:'Head',body:'Body',legs:'Legs',main:'Main hand',off:'Off hand'};
+ const WDN=['Front','Back','Side'],WK=A.WDIR,WKS=d=>WK[d%3]+(d>=3?Math.floor(d/3):''),STN=['Standing','Step 1','Step 2'],SLN={helm:'Head',body:'Body',legs:'Legs',main:'Main hand',off:'Off hand'};
  // the character is drawn exactly as the game draws it (the 16 x 32 kit sprite), at the worn layer's 2x scale: world (-24,-44) is layer (0,0)
  const CHC=new Map(),KS=(L,dir,st,fl)=>{try{return typeof kitSprite==='function'?kitSprite(L,dir,st,fl):null}catch(e){console.warn('kit',e);return null}};
  const bare=(c,sl)=>{if(sl==='helm'){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.fc;delete c.oh}else if(sl==='body'){c.sh=CH.sh;delete c.mr}else if(sl==='legs')c.pn=CH.pn;return c};
@@ -13368,20 +13377,20 @@ window.SQA=SQA;
  function fillFromGame(ed,L){const pal=ed.pal,idx=new Map(pal.map((c,i)=>[c,i]));const near=v=>{let bi=0,bd=1e9;pal.forEach((c,i)=>{const n=parseInt(c.slice(1),16),dd=((n>>16)-(v>>16))**2+((n>>8&255)-(v>>8&255))**2+((n&255)-(v&255))**2;if(dd<bd){bd=dd;bi=i}});return bi};
   for(let d=0;d<3;d++){const lay=ed.layers[d];lay.fill(255);for(let i=0;i<L[d].length;i++){const v=L[d][i];if(v<0)continue;const h=hex(v>>16,v>>8&255,v&255);let j=idx.get(h);if(j==null){if(pal.length<MAXC){pal.push(h);j=pal.length-1;idx.set(h,j)}else j=near(v)}lay[i]=j}}
   ed.dyi=new Set();if(L.dy)for(const h of L.dy){const j=idx.get(h);if(j!=null)ed.dyi.add(j)}
-  ed.px=ed.layers[ed.dir];ed.rcd=[1,1,1];ed.undo=[];ed.redo=[]}
+  ed.px=ed.layers[ed.dir];ed.rcd=ed.layers.map(()=>1);ed.undo=[];ed.redo=[]}
  let CBB=null;function charBox(){if(CBB)return CBB;let x0=96,y0=112,x1=0,y1=0;for(const d of[0,1,2]){const c=charCan(d,0,false);if(!c)continue;const a=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
   for(let i=0;i<a.length;i+=4)if(a[i+3]>0){const X=(i/4)%c.width,Y=Math.floor(i/4/c.width);if(X<x0)x0=X;if(X>x1)x1=X;if(Y<y0)y0=Y;if(Y>y1)y1=Y}}
   if(x1<x0)return{x0:0,y0:0,x1:95,y1:111};return CBB={x0:Math.max(0,x0-10),y0:Math.max(0,y0-16),x1:Math.min(95,x1+10),y1:Math.min(111,y1+4)}}
- function openWorn(k){S.sel=k;CBB=null;const w=S.draft.worn[k],pal=[],N=A.WW*A.WH,layers=[0,1,2].map(()=>new Uint8Array(N).fill(255));
-  if(w)for(let d=0;d<3;d++){const sp=w[WK[d]];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});
+ function openWorn(k){S.sel=k;CBB=null;const w=S.draft.worn[k],pal=[],N=A.WW*A.WH,layers=[0,1,2,3,4,5,6,7,8].map(()=>new Uint8Array(N).fill(255));
+  if(w)for(let d=0;d<9;d++){const sp=w[WKS(d)];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});
    const dd=A.pix(sp);for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')layers[d][i]=map[PXC.indexOf(ch)]}}
   const fresh=!pal.length;if(fresh)pal.push('#2a1c24','#4a5060','#7a8496','#a8b2c4','#d8e0ec','#f8d848','#b83838');
-  const ed=S.ed={kind:'worn',k,w:A.WW,h:A.WH,s:1,dir:0,layers,px:layers[0],pal,col:0,tool:'pen',undo:[],redo:[],dirty:false,hide:!!(w&&w.h),zoom:0,under:true,rc:[null,null,null],rcd:[1,1,1],pvd:0,dyi:new Set((w&&Array.isArray(w.dy)?w.dy:[]).map(h=>pal.findIndex(c=>c.toLowerCase()===String(h).toLowerCase())).filter(i=>i>=0))};draw();
+  const ed=S.ed={kind:'worn',k,w:A.WW,h:A.WH,s:1,dir:0,layers,px:layers[0],pal,col:0,tool:'pen',undo:[],redo:[],dirty:false,hide:!!(w&&w.h),zoom:0,under:true,rc:new Array(9).fill(null),rcd:new Array(9).fill(1),pvd:0,dyi:new Set((w&&Array.isArray(w.dy)?w.dy:[]).map(h=>pal.findIndex(c=>c.toLowerCase()===String(h).toLowerCase())).filter(i=>i>=0))};draw();
   if(!w)startFromGame(ed,true)}
  async function startFromGame(ed,auto){const L=await gameLook(ed.k);if(S.ed!==ed)return;if(!L){if(!auto)toast('The game draws nothing for this item on a standing character.');return}
   if(auto)ed.pal.length=0;fillFromGame(ed,L);const sl=EQ[ed.k]&&EQ[ed.k].slot;if(sl==='helm'||sl==='body'||sl==='legs')ed.hide=true;ed.fromGame=1;if(!auto)ed.dirty=true;CBB=null;ed.recenter=1;draw();
   toast(sl==='main'||sl==='off'?'Started from its icon held in the hand (weapons only show in the game while swinging). Edit it and save.':'This is how the game draws it now. Edit it and save to make it its own look.')}
- function wornOut(ed){const o={};if(ed.hide)o.h=1;let any=false;const used=new Set(ed.layers.flatMap(L=>[...L]));const dy=[...(ed.dyi||[])].filter(i=>used.has(i)&&ed.pal[i]).map(i=>ed.pal[i].toLowerCase());if(dy.length&&DYK[EQ[ed.k]&&EQ[ed.k].slot])o.dy=[...new Set(dy)];for(let d=0;d<3;d++){const px=ed.layers[d];if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[WK[d]]={w:sp.w,h:sp.h,s:1,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
+ function wornOut(ed){const o={};if(ed.hide)o.h=1;let any=false;const used=new Set(ed.layers.flatMap(L=>[...L]));const dy=[...(ed.dyi||[])].filter(i=>used.has(i)&&ed.pal[i]).map(i=>ed.pal[i].toLowerCase());if(dy.length&&DYK[EQ[ed.k]&&EQ[ed.k].slot])o.dy=[...new Set(dy)];for(let d=0;d<ed.layers.length;d++){const px=ed.layers[d];if(!px.some(v=>v!==255))continue;if(d<3)any=true;const sp=toSpPx(ed,px);o[WKS(d)]={w:sp.w,h:sp.h,s:1,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
  async function saveWorn(){const ed=S.ed;if(!ed)return;const o=wornOut(ed);if(o)S.draft.worn[ed.k]=o;else delete S.draft.worn[ed.k];
   try{await dset('draft/worn/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this item keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const b=it.querySelector('.dv-bd'),s2=wState(ed.k);if(b)b.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
@@ -13527,10 +13536,16 @@ window.SQA=SQA;
    const S2=3,ph=walkT%60,goR=ph<30,px=goR?60+ph*10:340-(ph-30)*10,py=86,f=(walkT%2)&&(ph%30<28)?3:2,L=ed.rc[f]||ed.rc[2]||ed.rc[0];
    const still=(Math.floor(walkT/3)%2&&ed.rc[1])||ed.rc[0];if(still){x.drawImage(still,20,py+ed.oy*S2,still.width/2*S2,still.height/2*S2)}
    if(L){x.save();if(!goR){x.translate(px*2,0);x.scale(-1,1)}x.drawImage(L,px+ed.ox*S2,py+ed.oy*S2,L.width/2*S2,L.height/2*S2);x.restore()}return}
-  for(let d=0;d<3;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):null}
-  const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,c.width,c.height);const st=[1,0,2,0][walkT%4],bob=st&&EQ[ed.k]&&EQ[ed.k].slot!=='legs'?-1:0;
-  [[0,0],[1,0],[2,1],[2,0]].forEach(([d,fl],i)=>{const ox=i*100+2;const ch=charCan(d,st,!!fl);if(ch)x.drawImage(ch,ox,0);const L=ed.rc[d];if(!L)return;
-   if(fl){x.save();x.translate(ox+A.WW,0);x.scale(-1,1);x.drawImage(L,0,bob);x.restore()}else x.drawImage(L,ox,bob)})},170);
+  for(let d=0;d<3;d++)if(ed.rcd[d]){ed.rcd[d+3]=ed.rcd[d+6]=1}
+  for(let d=0;d<ed.layers.length;d++)if(ed.rcd[d]){ed.rcd[d]=0;ed.rc[d]=ed.layers[d].some(v=>v!==255)?A.render(toSpPx(ed,ed.layers[d])):d>=3?wornAuto(ed,d):null}
+  const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,c.width,c.height);const st=[1,0,2,0][walkT%4];
+  [[0,0],[1,0],[2,1],[2,0]].forEach(([d,fl],i)=>{const ox=i*100+2;const ch=charCan(d,st,!!fl);if(ch)x.drawImage(ch,ox,0);const L=ed.rc[d+st*3];if(!L)return;
+   if(fl){x.save();x.translate(ox+A.WW,0);x.scale(-1,1);x.drawImage(L,0,0);x.restore()}else x.drawImage(L,ox,0)})},170);
+ // a step frame made from the standing one (what the game draws when the look has no own step frame)
+ function wornAuto(ed,d){const b=ed.layers[d%3];if(!b||!b.some(v=>v!==255))return null;const sp=toSpPx(ed,b);return A.render({...sp,d:A.autoStep(sp.d,EQ[ed.k]&&EQ[ed.k].slot||'body',d%3,Math.floor(d/3))})}
+ function autoInto(ed,d){const b=ed.layers[d%3];if(!b.some(v=>v!==255))return false;const sp=toSpPx(ed,b),used=[...new Set([...b].filter(v=>v!==255))].sort((a,c)=>a-c),au=A.autoStep(sp.d,EQ[ed.k]&&EQ[ed.k].slot||'body',d%3,Math.floor(d/3));
+  const L=ed.layers[d];for(let i=0;i<L.length;i++){const ch=au[i];L[i]=ch==='.'?255:used[PXC.indexOf(ch)]}ed.rcd[d]=1;return true}
+ function wornAutoFill(ed){const d=ed.dir;if(d<3)return;if(!ed.layers[d%3].some(v=>v!==255)){toast('Draw the standing look first.');return}snapEd();if(ed.px.some(v=>v!==255))autoInto(ed,d);paint();draw()}
  const thumb=k=>{const sp=S.draft&&S.draft.icons[k];return sp&&A.valid(sp)?A.render(sp).toDataURL():A.origIcon(k)};
  async function openSprite(k){S.sel=k;S.ed=null;draw();const sp=S.draft.icons[k];let ed;
   try{ed=sp&&A.valid(sp)?fromSp(sp):await bake(A.origIcon(k))}catch(e){toast('Could not read that sprite.');return}
@@ -13544,13 +13559,14 @@ window.SQA=SQA;
  function paint(){const c=document.getElementById('dvc'),ed=S.ed;if(!c||!ed)return;const z=down&&ed.z?ed.z:(ed.z=cell());if(c.width!==ed.w*z)c.width=ed.w*z;if(c.height!==ed.h*z)c.height=ed.h*z;const x=c.getContext('2d');
   if(LAY(ed.kind)){if(ed.kind!=='worn')ed.rcd=ed.layers.map(()=>1);else ed.rcd[ed.dir]=1;x.imageSmoothingEnabled=false;x.fillStyle='#2c323e';x.fillRect(0,0,c.width,c.height);
    if(ed.kind!=='worn'){x.fillStyle='rgba(255,255,255,.04)';for(let yy=0;yy<ed.h;yy++)for(let xx=(yy&1);xx<ed.w;xx+=2)x.fillRect(xx*z,yy*z,z,z)}
-   if(ed.kind==='worn'&&ed.under){const u=charCan(ed.dir,0,false);if(u){x.globalAlpha=.8;x.drawImage(u,0,0,c.width,c.height);x.globalAlpha=1}}
+   if(ed.kind==='worn'&&ed.under){const u=charCan(ed.dir%3,Math.floor(ed.dir/3),false);if(u){x.globalAlpha=.8;x.drawImage(u,0,0,c.width,c.height);x.globalAlpha=1}}
+   if(ed.kind==='worn'&&ed.dir>=3&&!ed.px.some(v=>v!==255)){const au=wornAuto(ed,ed.dir);if(au){x.globalAlpha=.45;x.drawImage(au,0,0,c.width,c.height);x.globalAlpha=1}}
    const DM=ed.kind==='worn'&&ed.pvd&&ed.dyi&&ed.dyi.size&&DYES()[ed.pvd-1]?A.dyeMap([...ed.dyi].map(i=>ed.pal[i]),DYES()[ed.pvd-1].c):null;
    for(let i=0;i<ed.px.length;i++){const v=ed.px[i];if(v===255)continue;x.fillStyle=DM&&ed.dyi.has(v)?DM[ed.pal[v].toLowerCase()]||ed.pal[v]:ed.pal[v];x.fillRect((i%ed.w)*z,Math.floor(i/ed.w)*z,z,z)}
    if(ed.recenter&&ed.kind==='worn'){ed.recenter=0;const cv=c.parentElement,B=charBox();cv.scrollLeft=((B.x0+B.x1)/2)*z-cv.clientWidth/2;cv.scrollTop=((B.y0+B.y1)/2)*z-cv.clientHeight/2}
    if(z>=8){x.strokeStyle='rgba(255,255,255,.07)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
    const n=new Set(ed.layers.flatMap(L=>[...L].filter(v=>v!==255))).size,st=document.querySelector('#dvs .dv-st');
-   if(st)st.textContent=(ed.kind==='prop'?'Frame '+(ed.dir+1)+' of '+ed.layers.length:ed.kind==='pet'?PFN[ed.dir]+' frame':WDN[ed.dir]+' layer')+' · '+ed.w+' × '+ed.h+' · '+n+' colours'+(ed.dirty?'  ·  unsaved changes':'');return}
+   if(st)st.textContent=(ed.kind==='prop'?'Frame '+(ed.dir+1)+' of '+ed.layers.length:ed.kind==='pet'?PFN[ed.dir]+' frame':WDN[ed.dir%3]+(ed.dir>=3?' · '+STN[Math.floor(ed.dir/3)]+(ed.px.some(v=>v!==255)?' (own frame)':' (automatic, shown faded: draw to make it your own)'):'')+' layer')+' · '+ed.w+' × '+ed.h+' · '+n+' colours'+(ed.dirty?'  ·  unsaved changes':'');return}
   for(let y=0;y<ed.h;y++)for(let X=0;X<ed.w;X++){const v=ed.px[y*ed.w+X];x.fillStyle=v===255?((X+y)%2?'#3a4150':'#2c323e'):ed.pal[v];x.fillRect(X*z,y*z,z,z)}
   if(z>=8){x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
   const sp=toSp(ed),u=A.render(sp).toDataURL();for(const im of document.querySelectorAll('#dvs .dv-pv img')){im.src=u;const k=im.dataset.x2?2:1;im.style.width=Math.min(220,sp.w*sp.s*k)+'px';im.style.height=Math.min(220,sp.h*sp.s*k)+'px'}
@@ -13566,7 +13582,9 @@ window.SQA=SQA;
   for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){const col=c.p[y*c.w+x];if(!col)continue;const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=ed.w||Y>=ed.h)continue;
    let i=ed.pal.findIndex(q=>String(q).toLowerCase()===col.toLowerCase());if(i<0){if(ed.pal.length>=255)continue;ed.pal.push(col);i=ed.pal.length-1}ed.px[Y*ed.w+X]=i;n++}
   if(ed.rcd)ed.rcd=ed.rcd.map(()=>1);ed.dirty=true;drawPal();paint();toast(n?'Pasted'+(c.w!==ed.w||c.h!==ed.h?' (lined up at the bottom middle; this picture is '+ed.w+' × '+ed.h+', the copy '+c.w+' × '+c.h+')':'')+'. Undo takes it back.':'The copy was empty.')}
- const snapEd=()=>{const ed=S.ed;ed.undo.push({px:ed.px.slice(),pal:ed.pal.slice(),dir:ed.dir});if(ed.undo.length>80)ed.undo.shift();ed.redo=[];ed.dirty=true};
+ const snapEd=()=>{const ed=S.ed;ed.undo.push({px:ed.px.slice(),pal:ed.pal.slice(),dir:ed.dir});if(ed.undo.length>80)ed.undo.shift();ed.redo=[];ed.dirty=true;
+  // the first change to an empty (automatic) walking step starts from what the game would draw there, so the armour isn't lost
+  if(ed.kind==='worn'&&ed.dir>=3&&!ed.px.some(v=>v!==255))autoInto(ed,ed.dir)};
  function undo(r){const ed=S.ed;if(!ed)return;const a=r?ed.redo:ed.undo,b=r?ed.undo:ed.redo,s=a.pop();if(!s)return;
   if(LAY(ed.kind)){b.push({px:ed.layers[s.dir].slice(),pal:ed.pal.slice(),dir:s.dir});ed.layers[s.dir]=s.px;ed.rcd=ed.layers.map(()=>1);const sw=ed.dir!==s.dir;ed.dir=s.dir;ed.px=ed.layers[ed.dir];ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;if(sw){draw();return}drawPal();paint();return}
   b.push({px:ed.px.slice(),pal:ed.pal.slice()});ed.px=s.px;ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;drawPal();paint()}
@@ -13683,7 +13701,9 @@ window.SQA=SQA;
    '<div class="dv-pvw dv-pv"><figure><span class="dv-pvl"><img alt=""></span>light</figure><figure><span class="dv-pvd"><img alt=""></span>dark</figure><figure><span class="dv-pvd"><img alt="" data-x2="1"></span>2× size</figure><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s original</button></div>'+
    '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · Ctrl+Z undo · Ctrl+Y redo · Ctrl+C / Ctrl+V copy and paste a picture · Ctrl+S save</p></div></div>';
-  const ed=S.ed;h+='<div class="dv-row">'+WDN.map((n,d)=>'<button class="dv-b'+(ed.dir===d?' dv-tl dv-on':'')+'" data-dir="'+d+'">'+n+(ed.layers[d].some(v=>v!==255)?' •':'')+'</button>').join('')+'<span class="dv-mut">'+(ed.dir===2?'Side faces right; facing left is mirrored for you.':'')+'</span></div>'+
+  const ed=S.ed,fc=ed.dir%3,sn=Math.floor(ed.dir/3);h+='<div class="dv-row">'+WDN.map((n,d)=>'<button class="dv-b'+(fc===d?' dv-tl dv-on':'')+'" data-dir="'+(d+sn*3)+'">'+n+(ed.layers[d].some(v=>v!==255)?' •':'')+'</button>').join('')+'<span class="dv-mut">'+(fc===2?'Side faces right; facing left is mirrored for you.':'')+'</span></div>'+
+   '<div class="dv-row"><span class="dv-mut">Walking:</span>'+STN.map((n,k)=>'<button class="dv-b'+(sn===k?' dv-tl dv-on':'')+'" data-dir="'+(fc+k*3)+'">'+n+(k&&ed.layers[fc+k*3].some(v=>v!==255)?' •':'')+'</button>').join('')+
+   (sn?'<button class="dv-b" data-a="wauto">Start this step from the standing look</button><span class="dv-mut">An empty step uses the standing look (shown faded); trousers lift with the stepping leg by themselves. Draw here for capes, tails or anything that should swing.</span>':'<span class="dv-mut">Step 1 and 2 are the two walking poses; the preview below walks.</span>')+'</div>'+
    '<div class="dv-row dv-tools"></div><div class="dv-cv dv-cvw'+(ed.tool==='pan'?' dv-pan':'')+'"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw"><canvas id="dvwalk" width="400" height="112"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><label class="dv-chk"><input type="checkbox" data-a="under"'+(ed.under?' checked':'')+'> Show the character wearing it underneath</label>'+
@@ -13691,7 +13711,7 @@ window.SQA=SQA;
    (DYK[sl]?'<div class="dv-row"><span class="dv-mut">Dyes:</span><button class="dv-b'+(ed.dyi&&ed.dyi.has(ed.col)?' dv-tl dv-on':'')+'" data-a="dytog">'+(ed.dyi&&ed.dyi.has(ed.col)?'✓ Selected colour takes dye':'Make selected colour dyeable')+'</button>'+
     '<label class="dv-mut">Preview a dye <select data-in="pvd"><option value="0">None</option>'+DYES().map((d,i)=>'<option value="'+(i+1)+'"'+(ed.pvd===i+1?' selected':'')+'>'+E(d.n)+'</option>').join('')+'</select></label>'+
     '<span class="dv-mut">Dyeable colours (marked D) take a player\'s dye and keep your light and dark shades.</span></div>':'')+
-   '<div class="dv-row"><span class="dv-mut">Copy into this layer from:</span>'+WDN.map((n,d)=>d===ed.dir?'':'<button class="dv-b" data-copy="'+d+'">'+n+'</button>').join('')+'<button class="dv-b dv-bad" data-a="clr">Clear this layer</button><button class="dv-b '+(S.arm==='wcap'?'dv-arm':'')+'" data-a="wcap">'+(S.arm==='wcap'?'Tap again: replaces all three layers':'Start again from the game\'s look')+'</button></div>'+
+   '<div class="dv-row"><span class="dv-mut">Copy into this layer from:</span>'+WDN.map((n,d)=>d+sn*3===ed.dir?'':'<button class="dv-b" data-copy="'+(d+sn*3)+'">'+n+'</button>').join('')+(sn?'<button class="dv-b" data-copy="'+fc+'">'+WDN[fc]+' standing</button>':'')+'<button class="dv-b dv-bad" data-a="clr">Clear this layer</button><button class="dv-b '+(S.arm==='wcap'?'dv-arm':'')+'" data-a="wcap">'+(S.arm==='wcap'?'Tap again: replaces all three layers':'Start again from the game\'s look')+'</button></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s own look</button></div>'+
    '<p class="dv-mut">Keys: P pen · E eraser · F fill · I pick a colour · M move · + / − zoom · Ctrl+Z undo · Ctrl+Y redo · Ctrl+C / Ctrl+V copy and paste a picture · Ctrl+S save</p>';
   return h+'</div></div>'}
@@ -13877,6 +13897,7 @@ window.SQA=SQA;
   if(a==='hide'){S.ed.hide=t.checked;S.ed.dirty=true;paint();return}
   if(a==='zin'||a==='zout'){const ed=S.ed,cv=root.querySelector('.dv-cvw'),c=document.getElementById('dvc');const fx=cv&&c.width?(cv.scrollLeft+cv.clientWidth/2)/c.width:.5,fy=cv&&c.height?(cv.scrollTop+cv.clientHeight/2)/c.height:.5;
    ed.zoom=Math.max(1,Math.min(12,(ed.zoom||1)*(a==='zin'?1.5:1/1.5)));if(a==='zin'&&ed.tool!=='pan')toast('Tip: use Move (M) to look around.');ed.z=0;paint();if(cv){cv.scrollLeft=fx*c.width-cv.clientWidth/2;cv.scrollTop=fy*c.height-cv.clientHeight/2}return}
+  if(a==='wauto'&&S.ed&&S.ed.kind==='worn')return wornAutoFill(S.ed);
   if(a==='clr'){snapEd();S.ed.px.fill(255);paint();draw();return}
   if(a==='dytog'&&S.ed&&S.ed.kind==='worn'){const ed=S.ed;ed.dyi=ed.dyi||new Set();if(ed.dyi.has(ed.col))ed.dyi.delete(ed.col);else ed.dyi.add(ed.col);ed.dirty=true;draw();return}
   if(a==='wcap'&&S.ed&&S.ed.kind==='worn'){const ed=S.ed;return arm('wcap',()=>startFromGame(ed,false))}

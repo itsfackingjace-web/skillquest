@@ -60,14 +60,22 @@ var SQA=(()=>{
   dy.forEach((h,i)=>{const f=L[i]/avg;out[String(h).toLowerCase()]='#'+D.map(v=>Math.round(Math.max(0,Math.min(255,f<=1?v*f:v+(255-v)*Math.min(1,f-1))))).map(v=>v.toString(16).padStart(2,'0')).join('')});return out}
  const dyeOf=(ch,k)=>{const sl=EQ[k]&&EQ[k].slot,f=DYK[sl],i=ch&&f?ch[f]|0:0,D=window.LUX&&LUX.EMP&&LUX.EMP.DYES;return i&&D&&D[i-1]?D[i-1].c:null};
  const recol=(sp,M)=>({...sp,p:String(sp.p).split(',').map(c=>M[c.toLowerCase()]||c).join(',')});
- function wornCanvas(w,k,dir,fl,dc){const M=dc&&w.dy?dyeMap(w.dy,dc):null,key=k+'@'+ver+dir+(fl?1:0)+(M?dc:'');let c=wcache.get(key);if(c!==undefined)return c;let sp=w[WDIR[dir]];c=null;
-  if(sp&&valid(sp)){if(M)sp=recol(sp,M);const r=render(sp);if(fl){c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0)}else c=r}
-  if(wcache.size>300)wcache.clear();wcache.set(key,c);return c}
- // draw a character's worn layers; same placement and walking bob as the character sprite (legs don't bob)
+ // walking: st 1/2 (the character's two steps) use the look's own step frames (w.f1 b1 s1 f2 b2 s2, drawn over the stepping
+ // character) or frames made from the standing one (autoStep). The game's character only moves its legs when walking (no bob, no
+ // arm swing), so only leg pieces change: from the front/back the lifted leg's lower part moves up a pixel (st 1 right, st 2 left);
+ // from the side legs stay as drawn (draw own step frames for that). Everything else keeps its standing look.
+ function autoStep(d,sl,dir,st){if(sl!=='legs'||dir===2)return d;const W=WW,H=WH,at=(x,y)=>y>=0&&y<H?d[y*W+x]||'.':'.',o=d.split('');const L=st===2;
+  for(let x=0;x<W;x++){if((x<48)!==L)continue;for(let y=94;y<H;y++)o[y*W+x]=at(x,y+2)}return o.join('')}
+ const frameOf=(w,k,dir,st)=>{const b=w[WDIR[dir]];if(!st)return b&&valid(b)?b:null;const own=w[WDIR[dir]+st];if(own&&valid(own))return own;if(!b||!valid(b))return null;
+  const sl=EQ[k]&&EQ[k].slot||'body';return{w:b.w,h:b.h,s:b.s,p:b.p,d:autoStep(pix(b),sl,dir,st)}};
+ function wornCanvas(w,k,dir,fl,dc,st){st=st|0;const M=dc&&w.dy?dyeMap(w.dy,dc):null,key=k+'@'+ver+dir+(fl?1:0)+st+(M?dc:'');let c=wcache.get(key);if(c!==undefined)return c;let sp=frameOf(w,k,dir,st);c=null;
+  if(sp){if(M)sp=recol(sp,M);const r=render(sp);if(fl){c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0)}else c=r}
+  if(wcache.size>400)wcache.clear();wcache.set(key,c);return c}
+ // draw a character's worn layers at the character sprite's placement; walking frames come from frameOf
  function drawWorn(C,keys,dir,st,ox,oy,fl,lib,ch){if(!keys||!keys.length)return;const src=lib||WORN;
-  for(const sl of WSLOTS)for(const k of keys){if(!EQ[k]||EQ[k].slot!==sl||!src[k])continue;const dc=dyeOf(ch,k),c=lib?wornCanvasFrom(src[k],dir,fl,dc):wornCanvas(src[k],k,dir,fl,dc);if(!c)continue;
-   C.drawImage(c,Math.round(ox)-24,Math.round(oy)-44+(st&&sl!=='legs'?-.5:0),48,56)}}
- const wornCanvasFrom=(w,dir,fl,dc)=>{let sp=w[WDIR[dir]];if(!sp||!valid(sp))return null;if(dc&&w.dy)sp=recol(sp,dyeMap(w.dy,dc));const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
+  for(const sl of WSLOTS)for(const k of keys){if(!EQ[k]||EQ[k].slot!==sl||!src[k])continue;const dc=dyeOf(ch,k),c=lib?wornCanvasFrom(src[k],dir,fl,dc,k,st):wornCanvas(src[k],k,dir,fl,dc,st);if(!c)continue;
+   C.drawImage(c,Math.round(ox)-24,Math.round(oy)-44,48,56)}}
+ const wornCanvasFrom=(w,dir,fl,dc,k,st)=>{let sp=frameOf(w,k,dir,st|0);if(!sp)return null;if(dc&&w.dy)sp=recol(sp,dyeMap(w.dy,dc));const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
  // what you have on travels with your look (ch.wr) so other players' games draw it too
  const _gch=gearCH;gearCH=function(){const c=_gch();const wr=[];
   for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){}if(!k||!WORN[k])continue;wr.push(k)}
@@ -212,7 +220,7 @@ var SQA=(()=>{
    if(JSON.stringify(L)===JSON.stringify(live))return;live=L;try{if(L)localStorage.setItem(LS,JSON.stringify(L));else localStorage.removeItem(LS)}catch(e){}
    if(!preview)apply(live)}catch(e){}}
  setTimeout(refresh,400);
- return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,
+ return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,autoStep,frameOf,
   ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,ISL_POS,CAVE_ST,caveKind,npcLook,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
   get live(){return live},hasIcon:k=>!!ICO[k],hideFor,
   // a section that reads its own part of the library: called now with the current library and after every change

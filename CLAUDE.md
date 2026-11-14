@@ -530,3 +530,9 @@
   card (`ptab` 42); the pick is kept as CQ[id+'!'] and a quest with `after` + `ac` (choice index, -1 any) only opens after that pick.
   `lp` reminder line, `ld` done line, `rq` {s,l} skill level before it's offered. A giver's `quest:` list is expanded with every quest
   that comes after one of them (`chainOf`), so new branches need no change to the island. Content > Quests draws the chains as a tree.
+- **Walking gear** (111a `frameOf`/`autoStep`, 111b worn editor): a worn look can hold step frames `f1 b1 s1 f2 b2 s2` (cP's `st` 1/2),
+  drawn instead of the standing layer while walking. Without one, `autoStep` makes it: the game's kit only moves its legs (no bob,
+  no arm swing), so only `legs` pieces change (front/back: the lifted leg's part below layer row 94 moves up 2; st 1 = right half,
+  st 2 = left half); side legs and other slots keep the standing look. drawWorn no longer adds the old half-pixel bob. Editor:
+  ed.layers has 9 entries (index = facing + step*3, `WKS(d)` = key), an empty step is shown faded (automatic) and the first change
+  to it starts from that automatic frame (`snapEd` → `autoInto`).

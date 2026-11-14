@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-10',d:'Nov 14, 2026',t:'Gear that walks with you',n:['Redrawn trousers and leg armour now step with your legs when you walk, instead of standing still over them.','Hats and helmets no longer sit half a pixel off your head while walking.','Gear can now have its own walking frames, so capes, tails and robes can swing as you move (you\'ll see these as new gear looks arrive).']},
  {v:'2026.11.14-9',d:'Nov 14, 2026',t:'Quest chains with choices',n:['Island quests can now have several steps: hand in each step to the person who gave it and they\'ll tell you what\'s next. The quest log shows which step you\'re on.','Some quests end with a choice of reward. Pick carefully: what you choose can decide which quest comes next.','Some quests are only offered once a skill is high enough; the quest giver tells you which level you need.']},
  {v:'2026.11.14-8',d:'Nov 14, 2026',t:'Clearer recipes',n:['Recipe lists (crafting, building, tools, smithing) now show every material by its name, like "25 cotton" instead of a code.']},
  {v:'2026.11.14-7',d:'Nov 14, 2026',t:'Behind the scenes: recipe tools',n:['The developer now has one place to see and change every recipe in the game, so expect recipe tweaks and new recipes.']},
