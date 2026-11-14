@@ -28,7 +28,7 @@
  async function goLive(L,msg){T.busy=true;API.draw();try{const old=S.live;if(old&&old.v)await dset('hist/'+old.v,old);
    const next={...body(L),v:((old&&old.v)|0)+1,at:Date.now()};await dset('live',next);S.live=next;A.setLive(next);S.hist=null;T.hist=null;
    try{const H=await dget('hist');if(H){const ks=Object.keys(H).map(Number).sort((a,b)=>b-a);for(const k of ks.slice(20))await dset('hist/'+k,null)}}catch(e){}
-   toast(msg+' Players get v'+next.v+' on their next load.')}catch(e){fail(e)}T.busy=false;S.arm=null;API.draw()}
+   toast(msg+' Players get v'+next.v+' within about 30 seconds.')}catch(e){fail(e)}T.busy=false;S.arm=null;API.draw()}
  async function loadHist(){if(T.lh)return;T.lh=1;try{const H=await dget('hist');T.hist=H?Object.values(H).filter(x=>x&&x.v).sort((a,b)=>b.v-a.v):[]}catch(e){T.hist=[]}T.lh=0;API.draw()}
  // ---- search ----
  function search(q){q=q.trim().toLowerCase();if(q.length<2)return[];const R=[],D=S.draft||{},add=(ic,name,where,go)=>{if(R.length<60)R.push({ic,name,where,go})};const hit=s=>String(s||'').toLowerCase().includes(q);

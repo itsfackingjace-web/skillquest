@@ -1,7 +1,7 @@
 // ---- 112. Dev Suite (developer only): edit item sprites, worn looks and game stats, then publish them to every player ----
 // Open it from Options > Dev Suite, or type /suite in chat. Only shows for the developer's account, and the database
 // only accepts writes to assets/ from accounts listed under devs/ (added by hand in the Firebase console).
-// Edits go to assets/draft first. "Publish" copies the draft to assets/live (players get it on their next load) and
+// Edits go to assets/draft first. "Publish" copies the draft to assets/live (players get it within ~30 s, section 180) and
 // keeps the version it replaced in assets/hist, so any earlier version can be restored.
 (()=>{const A=window.SQA,PXC=A.PXC,MAXC=PXC.length;
  const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
@@ -509,7 +509,7 @@
   else{h+='<p>'+ch.length+' change'+(ch.length>1?'s':'')+' waiting to publish:</p><ul class="dv-cl">'+ch.map(c=>'<li>'+(c.kind==='ext'?c.html:(c.kind==='sprite'||c.kind==='worn'||c.kind==='pet'||c.kind==='gear'?'<img alt="" src="'+thumb(c.k)+'" style="width:22px;height:22px;image-rendering:pixelated;vertical-align:middle;margin-right:6px">'+E(INAME[c.k]||c.k)+': ':E((A.TABLES[c.t].label(c.k)))+': ')+E(c.what))+'</li>').join('')+'</ul>'+
    '<div class="dv-row"><button class="dv-b '+(S.arm==='pub'?'dv-arm':'dv-pri')+'" data-a="pub"'+(S.busy?' disabled':'')+'>'+(S.arm==='pub'?'Tap again to publish to every player':'Publish to every player')+'</button>'+
    '<button class="dv-b '+(S.arm==='disc'?'dv-arm':'dv-bad')+'" data-a="disc"'+(S.busy?' disabled':'')+'>'+(S.arm==='disc'?'Tap again to throw away these changes':'Discard draft changes')+'</button></div>'+
-   '<p class="dv-mut">Players get a published version the next time they load the game. The version it replaces is kept below, so you can always go back.</p>'}
+   '<p class="dv-mut">Players who are playing get a published version within about 30 seconds, without restarting; everyone else gets it when they start the game. The version it replaces is kept below, so you can always go back.</p>'}
   h+='</div><div class="dv-card"><b>Earlier versions</b>';
   if(S.hist==null){h+='<p class="dv-mut">Loading...</p>';loadHist()}
   else if(!S.hist.length)h+='<p class="dv-mut">None yet. Each time you publish, the version it replaces is saved here.</p>';
@@ -522,7 +522,7 @@
    const next={...body(L),v:((old&&old.v)|0)+1,at:Date.now()};await dset('live',next);S.live=next;A.setLive(next);
    if(S.hist)S.hist=null;// prune: keep the 20 newest earlier versions
    try{const H=await dget('hist');if(H){const ks=Object.keys(H).map(Number).sort((a,b)=>b-a);for(const k of ks.slice(20))await dset('hist/'+k,null)}}catch(e){}
-   toast(label+' Players get v'+next.v+' on their next load.')}catch(e){fail(e)}S.busy=false;S.arm=null;draw()}
+   toast(label+' Players get v'+next.v+' within about 30 seconds.')}catch(e){fail(e)}S.busy=false;S.arm=null;draw()}
  // ---- input ----
  const arm=(k,fn)=>{if(S.arm===k){S.arm=null;fn();return}S.arm=k;draw();clearTimeout(arm.t);arm.t=setTimeout(()=>{if(S.arm===k){S.arm=null;draw()}},4000)};
  root.addEventListener('click',async e=>{const t=e.target.closest('[data-tab],[data-a],[data-k],[data-tool],[data-col],[data-stat],[data-dir],[data-copy]');if(!t)return;

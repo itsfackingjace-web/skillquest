@@ -461,3 +461,6 @@
   piece outside a `home` scene (house, castle, yard/courtyard) except house/castle and seeds (`FREE`). On load (outermost `applySave`)
   Hollow's `STR` and the islands' `RB` (065's `window.SQRB`) are packed into the bag and saved. 061's `buildSync` no longer adds other
   players' `build/<uid>.s` and 065's `rbForeign` returns nothing (island houses `r._h` still go through `rhForeign`).
+- **Live publishes** (`ui/174-s180-live-updates.js`, `SQLIVEUPD`): the game watches `assets/live/v` (realtime listener once `SQFB` is up,
+  plus a fetch of `assets/live/v.json` every 30 s and on returning to the tab); a new `v` runs `SQA.refresh()` (full library, applied
+  in place) and `SQBETA.check()`. Anything a library section sets must therefore be safe to re-apply mid-game (`SQA.onApply` hooks).
