@@ -9388,6 +9388,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-6',d:'Nov 14, 2026',t:'Small fixes',n:['Behind-the-scenes tools fixes for the developer.']},
  {v:'2026.11.14-5',d:'Nov 14, 2026',t:'Campfires in friends\' yards',n:['Campfires in someone\'s backyard or courtyard now show for friends visiting it, and you can warm up and cook at them.']},
  {v:'2026.11.14-4',d:'Nov 14, 2026',t:'Behind the scenes: a music composer',n:['The developer can now write the game\'s music on a piano roll, so expect new songs on the islands soon.']},
  {v:'2026.11.14-3',d:'Nov 14, 2026',t:'A tidier screen on phones',n:['The getting-started hint now sits under your quest box instead of in the middle of the screen.','The ONLINE and BUG buttons are smaller and sit side by side, out of the way.','Short messages like "Got 3 wood" no longer pile up on your XP numbers: while XP is rising over your head they show under your feet.','Holding your phone sideways, the minimap no longer hides under the HIT button.','When you can talk to someone there is now one TALK button instead of two.']},
@@ -18957,8 +18958,12 @@ window.SQA=SQA;
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;
  const T={sel:null,kind:null,w:null};const SECK={node:'nodes',fish:'fish',crop:'crops'},CLEAN={node:cleanNode,fish:cleanFish,crop:cleanCrop};
  const sec=k=>{S.draft.gather=S.draft.gather||{};return S.draft.gather[k]=S.draft.gather[k]||{}};
- const allItems=()=>{const o=new Map();for(const k of INVK)if(INAME[k]&&!o.has(k))o.set(k,INAME[k]);const ci=(S.draft.content||{}).items||{};for(const k in ci)if(!o.has(k))o.set(k,(ci[k].n||k)+' (draft)');return[...o].sort((a,b)=>a[1].localeCompare(b[1]))};
- const itemSel=(f,v,none)=>'<select data-gw="'+f+'" style="max-width:240px">'+(none?'<option value="">'+none+'</option>':'')+allItems().map(([k,n])=>'<option value="'+E(k)+'"'+(k===v?' selected':'')+'>'+E(n)+'</option>').join('')+'</select>';
+ // item lists: two items with the same name show their ids, and which ones have an icon (191)
+ const hasIco=k=>!!((S.draft.icons||{})[k]||(SQA.hasIcon&&SQA.hasIcon(k)));
+ const allItems=()=>{const o=new Map();for(const k of INVK)if(INAME[k]&&!o.has(k)&&!/^pet_/.test(k))o.set(k,INAME[k]);const ci=(S.draft.content||{}).items||{};for(const k in ci)if(!o.has(k))o.set(k,(ci[k].n||k)+' (draft)');
+  const cnt={};for(const[,n]of o){const t=n.replace(/ \(draft\)$/,'').toLowerCase();cnt[t]=(cnt[t]||0)+1}
+  return[...o].map(([k,n])=>[k,cnt[n.replace(/ \(draft\)$/,'').toLowerCase()]>1?n+' · '+k+(hasIco(k)?' · has icon':' · no icon'):n]).sort((a,b)=>a[1].localeCompare(b[1]))};
+ const itemSel=(f,v,none)=>'<select data-gw="'+f+'" style="max-width:300px">'+(none?'<option value="">'+none+'</option>':'')+allItems().map(([k,n])=>'<option value="'+E(k)+'"'+(k===v?' selected':'')+'>'+E(n)+'</option>').join('')+'</select>'+(v&&(INAME[v]||((S.draft.content||{}).items||{})[v])?' <img src="'+iconURL(v)+'" title="'+E(v)+'" style="width:24px;height:24px;image-rendering:pixelated;vertical-align:middle;background:#0003;border-radius:4px">':'');
  const whereBox=w=>'<div class="dv-row" style="flex-wrap:wrap;gap:4px 12px">'+REG().map(k=>'<label class="dv-mut"><input type="checkbox" data-gwhere="'+k+'"'+(w.includes(k)?' checked':'')+'> '+E(regName(k))+'</label>').join('')+'</div>';
  const fld=(l,h)=>'<label class="dv-gf"><span>'+l+'</span>'+h+'</label>';
  function preview(){const c=document.querySelector('#dvs #gtprev');if(!c||!T.w)return;

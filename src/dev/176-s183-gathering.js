@@ -99,8 +99,12 @@
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;
  const T={sel:null,kind:null,w:null};const SECK={node:'nodes',fish:'fish',crop:'crops'},CLEAN={node:cleanNode,fish:cleanFish,crop:cleanCrop};
  const sec=k=>{S.draft.gather=S.draft.gather||{};return S.draft.gather[k]=S.draft.gather[k]||{}};
- const allItems=()=>{const o=new Map();for(const k of INVK)if(INAME[k]&&!o.has(k))o.set(k,INAME[k]);const ci=(S.draft.content||{}).items||{};for(const k in ci)if(!o.has(k))o.set(k,(ci[k].n||k)+' (draft)');return[...o].sort((a,b)=>a[1].localeCompare(b[1]))};
- const itemSel=(f,v,none)=>'<select data-gw="'+f+'" style="max-width:240px">'+(none?'<option value="">'+none+'</option>':'')+allItems().map(([k,n])=>'<option value="'+E(k)+'"'+(k===v?' selected':'')+'>'+E(n)+'</option>').join('')+'</select>';
+ // item lists: two items with the same name show their ids, and which ones have an icon (191)
+ const hasIco=k=>!!((S.draft.icons||{})[k]||(SQA.hasIcon&&SQA.hasIcon(k)));
+ const allItems=()=>{const o=new Map();for(const k of INVK)if(INAME[k]&&!o.has(k)&&!/^pet_/.test(k))o.set(k,INAME[k]);const ci=(S.draft.content||{}).items||{};for(const k in ci)if(!o.has(k))o.set(k,(ci[k].n||k)+' (draft)');
+  const cnt={};for(const[,n]of o){const t=n.replace(/ \(draft\)$/,'').toLowerCase();cnt[t]=(cnt[t]||0)+1}
+  return[...o].map(([k,n])=>[k,cnt[n.replace(/ \(draft\)$/,'').toLowerCase()]>1?n+' · '+k+(hasIco(k)?' · has icon':' · no icon'):n]).sort((a,b)=>a[1].localeCompare(b[1]))};
+ const itemSel=(f,v,none)=>'<select data-gw="'+f+'" style="max-width:300px">'+(none?'<option value="">'+none+'</option>':'')+allItems().map(([k,n])=>'<option value="'+E(k)+'"'+(k===v?' selected':'')+'>'+E(n)+'</option>').join('')+'</select>'+(v&&(INAME[v]||((S.draft.content||{}).items||{})[v])?' <img src="'+iconURL(v)+'" title="'+E(v)+'" style="width:24px;height:24px;image-rendering:pixelated;vertical-align:middle;background:#0003;border-radius:4px">':'');
  const whereBox=w=>'<div class="dv-row" style="flex-wrap:wrap;gap:4px 12px">'+REG().map(k=>'<label class="dv-mut"><input type="checkbox" data-gwhere="'+k+'"'+(w.includes(k)?' checked':'')+'> '+E(regName(k))+'</label>').join('')+'</div>';
  const fld=(l,h)=>'<label class="dv-gf"><span>'+l+'</span>'+h+'</label>';
  function preview(){const c=document.querySelector('#dvs #gtprev');if(!c||!T.w)return;

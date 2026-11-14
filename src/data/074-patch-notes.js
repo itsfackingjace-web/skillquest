@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-6',d:'Nov 14, 2026',t:'Small fixes',n:['Behind-the-scenes tools fixes for the developer.']},
  {v:'2026.11.14-5',d:'Nov 14, 2026',t:'Campfires in friends\' yards',n:['Campfires in someone\'s backyard or courtyard now show for friends visiting it, and you can warm up and cook at them.']},
  {v:'2026.11.14-4',d:'Nov 14, 2026',t:'Behind the scenes: a music composer',n:['The developer can now write the game\'s music on a piano roll, so expect new songs on the islands soon.']},
  {v:'2026.11.14-3',d:'Nov 14, 2026',t:'A tidier screen on phones',n:['The getting-started hint now sits under your quest box instead of in the middle of the screen.','The ONLINE and BUG buttons are smaller and sit side by side, out of the way.','Short messages like "Got 3 wood" no longer pile up on your XP numbers: while XP is rising over your head they show under your feet.','Holding your phone sideways, the minimap no longer hides under the HIT button.','When you can talk to someone there is now one TALK button instead of two.']},

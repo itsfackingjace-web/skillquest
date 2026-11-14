@@ -406,7 +406,8 @@
   (`lt_` key, count = rolls; 111a's chest code). New monsters `cm:<letters>` are built by the outermost `rgMake` from `base`.
   Items can set `mv` (merge into another item): copies in the bag turn into it (`merge()` on apply, load and every 2 s); the way to
   retire a duplicate without deleting a published item. 176's "Make its item" buttons reuse an item with the same name (`sameName`),
-  and 169 warns about two items with one name.
+  and 169 warns about two items with one name. 176's item lists label same-named items with their id and icon state, and show
+  the picked item's icon.
 - **Balance** (`dev/163-s169-balance.js`, `window.SQBAL`, Dev Suite > Balance): library `balance` = {xp:{skill:%}, act:{'<TABLE>:<key>':xp},
   perk:{'<TABLE>:<perk id>':%}}. `act` edits the xp field of COOKS/SM/GOODS/BREC/FREC/FISH_T/SQTIER entries in place (not `_cu`);
   `perk` edits the [id,value] pairs of 038/039's GSPD/GEXT/GRAR/GDBL/STAYP/FOODP/PSPD (one id can sit in two tables, hence the
