@@ -587,4 +587,9 @@
   onApply) applied onto 001's `tile`/`obj` (ground 0-5 only; objects in `HOLOBJ`). `ORIG` copies are taken when the script has run;
   each apply puts the previous patch's cells back first, then clears `HDCK` and 052's `HMAP`. `HARD` (solid() disagrees with
   ground/objects = buildings, walls, bridges, piers, +1 tile) is never changed; `SOFT` (gold/mith/adam veins, boulders, obsidian...)
-  only with Unlock. The builder lists Hollow via `A.islandEdits.hollowOK` and hides people/buildings/caves/zones/own tiles for it.
+  only with Unlock. The builder lists Hollow via `A.islandEdits.hollowOK` (ground palette 0-5, `HOLOBJ` objects only).
+  Also lm/npc/cv/zn/ct+c (`places()` → `SQHOLLOWP`): room-style `ITEMS` drawn by `drawFurn` through 002's `LHOOK`, walls in `SOL`
+  (outermost `solid` outdoors), signs/chests used by the outermost `talk` + tk (READ/OPEN) + `SQPADUSE` via `useFurn` (chest loot in
+  `WORLD_STATE.hollow.loot`), people through 117's `npcs()`/`talkTo` (pseudo region `SQHOLLOWP.R`), entrances = kinds `cv_hollow_e<k>`
+  (walk up into them, `icvEnter`; `dg` designs too), zones spawn with `rgMake` and are kept in `KEEP` (daylight melt healed back,
+  re-added to `en` like 184's EVM), own tiles drawn in `GROUNDHOOK`. Placement never on HARD (or SOFT without Unlock).

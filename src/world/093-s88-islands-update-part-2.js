@@ -87,7 +87,7 @@ window.fireKey64=()=>SCENE&&SCENE.room&&SCENE.room.icv?'icv:'+SCENE.id:curRegion
 {const _es=enterScene;enterScene=function(id,house,ret){const carry=SCENE&&SCENE.prev&&SCENE.room&&SCENE.room.icv?SCENE.prev:null;_es(id,house,ret);if(carry&&SCENE&&!SCENE.prev&&SCENE.room&&SCENE.room.icv)SCENE.prev=carry}}
 {const _ls=leaveScene;leaveScene=function(){const R=SCENE&&SCENE.room;if(R&&R.icv&&R.dun&&R.dun.f>1){dGo(R.dun.kind,R.dun.f-1,'below');return}return _ls()}}
 function icvEnter(it){if(dead||TRAVEL49)return;const kind=it.kind,R=dFloor(kind,1);enterScene(dKey(kind,1),null,{x:it.x*16+8,y:(it.y+1)*16+8});dArrive(R,null);
- say('You enter '+ICV[kind].name+'. Six floors deep'+(ICV[kind].noboss?', rich in ore':', and something old waits at the bottom')+'. Campfires work down here.');msgT=5}
+ const nf=+ICV[kind].floors||6,NW=['','One floor','Two floors','Three floors','Four floors','Five floors','Six floors'];say('You enter '+ICV[kind].name+'. '+(NW[nf]||nf+' floors')+(nf>1?' deep':'')+(ICV[kind].noboss?', rich in ore':', and something old waits at the bottom')+'. Campfires work down here.');msgT=5}
 // the entrances on Ironcrest
 function icvPlace(R){if(R._icv||!R.region)return;R._icv=1;const W=R.w,walk=(x,y)=>x>1&&y>1&&x<W-2&&y<R.h-2&&RG_WALK[R.tiles[y*W+x]]&&!R.solid.has(y*W+x);
  const fit=(x,y)=>{for(let dy=-1;dy<=2;dy++)for(let dx=-1;dx<=1;dx++)if(!walk(x+dx,y+dy))return false;return true};
