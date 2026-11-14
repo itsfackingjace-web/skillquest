@@ -27,7 +27,7 @@
  function routeStep(rg){try{if(typeof routeOpen!=='function'||routeOpen(rg)||typeof VOYS==='undefined')return null;const D=WORLD_REGIONS[rg],V=VQ();
    const unlocker=id=>VOYS.find(v=>(v.unlock||[]).includes(id));let goal=D&&D.unlock&&unlocker(D.unlock);const seen=new Set();
    while(goal&&!seen.has(goal.id)){seen.add(goal.id);const miss=goal.needs.find(n=>!vDone(n));if(!miss)break;
-    if(miss[0]==='@'){const u=(typeof UPGRADES!=='undefined'?UPGRADES:[]).find(o=>o.id===miss.slice(1));if(u&&u.needs.every(vDone)){const post=HARBOR_POSTS.find(p=>p.id===u.post);return{step:'Upgrade your boat: '+u.name+' at the '+(post?post.name:'')+' harbor post',e:{kind:'voyAvail',q:{post:u.post}}}}goal=u?VOYS.find(v=>u.needs.includes(v.id)&&!vDone(v.id)):null;continue}
+    if(miss[0]==='@'){const u=(typeof UPGRADES!=='undefined'?UPGRADES:[]).find(o=>o.id===miss.slice(1));if(u&&u.needs.every(vDone)){const post=HARBOR_POSTS.find(p=>p.id===u.post);return{step:'Boat upgrade: '+u.name+' (Sera, the Navigator in Tidewatch, fits it)',e:{kind:'voyAvail',q:{id:'up_'+u.id,post:u.post}}}}goal=u?VOYS.find(v=>u.needs.includes(v.id)&&!vDone(v.id)):null;continue}
     goal=VOYS.find(v=>v.id===miss)}
    if(!goal)return null;const st=V[goal.id];
    if(st&&st!==99)return{step:goal.name+': '+goal.steps[st-1],e:{kind:'voy',q:goal,step:goal.steps[st-1]}};

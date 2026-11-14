@@ -74,7 +74,7 @@ function worldHTML52(){const sel=WSEL||curRegion(),D=WORLD_REGIONS[sel],known=wm
   if(sel==='hollow'){h+='<br>Towns: '+TOWN_REG.filter(t=>t.on).map(t=>t.name).join(', ')+'<br>Dungeons: '+DUNGEON_REG.filter(d=>d.on).map(d=>d.name).join(', ')+'<br>Harbor posts: '+HARBOR_POSTS.map(p=>p.name).join(', ')}
   else{const seen=(WORLD_STATE[sel]&&WORLD_STATE[sel].seen)||[],names=[...new Set(seen.map(lmName))];
    h+='<br>'+(known?'Landmarks found: '+seen.length+' / '+(RG_LMCOUNT[sel]||'?')+(names.length?' ('+names.join(', ')+')':''):'Not yet visited');
-   h+='<br>Route: '+(routeOpen(sel)?'open from every harbor post (departs '+WM_ROUTE[sel].from+')':'locked · '+routeReq(sel).filter(r=>!r.ok).map(r=>r.t).join(', '))}}
+   h+='<br>Route: '+(routeOpen(sel)?'open from every harbor post (departs '+WM_ROUTE[sel].from+')':'not charted yet · ask Sera, the Navigator in Tidewatch')}}
  h+='</small></div><div style="text-align:center;font-size:12px;opacity:.7">Tap an area for details. The map is for planning: sail from a harbor post.</div>';return h}
 const LM_NAMES={elder_grove:'The Elder Grove',whispering_ruins:'Whispering Ruins',thornwater:'Thornwater Lake',camp:'Abandoned Camp',emberfield:'Emberfield',black_lighthouse:'The Black Lighthouse',fallen_bastion:'The Fallen Bastion',
  observatory:'The Broken Observatory',silverfall:'Silverfall Valley',giants_stair:'The Giant\'s Stair',mcamp:'Abandoned Mining Camp',tower0:'North Watchtower',tower1:'East Watchtower',tower2:'South Watchtower',fractured_temple:'The Fractured Temple',spire:'A Silent Spire',crystal_basin:'The Crystal Basin'};
