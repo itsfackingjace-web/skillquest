@@ -641,12 +641,13 @@ const _u6=upd;upd=function(dt){const hp0=P.hp;_u6(dt);if(menuOpen||pnOpen||!FISH
 const COOKS=[{raw:'meat',ck:'cooked',n:'meat',lv:1,xp:30},...FISH_T.map(f=>({raw:f.k,ck:'c'+f.k,n:f.k=='shrimp'?'shrimp':f.n.toLowerCase(),lv:f.cook,xp:f.cxp}))];
 const FOODS=[...FISH_T.map(f=>({k:'c'+f.k,n:'cooked '+f.n.toLowerCase(),heal:f.heal,hun:f.hun})),{k:'cooked',n:'cooked meat',heal:2,hun:60},{k:'berry',n:'berries',heal:0,hun:18},{k:'meat',n:'raw meat',heal:0,hun:20}].sort((a,b)=>b.heal-a.heal||b.hun-a.hun);
 eat=function(){if(dead||menuOpen||pnOpen)return;
- if(nearFire(P.x,P.y,45)){const cl=lvOf(4);let blk=null;
-  for(const c of COOKS){if((inv[c.raw]|0)<1)continue;if(cl<c.lv){blk=blk||c;continue}
+ if(nearFire(P.x,P.y,45)){const cl=lvOf(4);let blk=null,stv=null;
+  for(const c of COOKS){if((inv[c.raw]|0)<1)continue;if(c.st){stv=stv||c;continue}/* st: stove-only meal (Dev Suite) */if(cl<c.lv){blk=blk||c;continue}
    inv[c.raw]--;if(Math.random()<Math.max(.03,.4-(cl-c.lv)*.02-cl*.004)){say('You burn the '+c.n+'!');addXp(4,5);sfx('swish')}
    else{inv[c.ck]=(inv[c.ck]|0)+1;say('Cooked '+c.n);addXp(4,c.xp);sfx('sizzle');if(Q.on&&QS[Q.i]&&QS[Q.i].type=='cook')Q.k++}
    saveLocal(true);return}
-  if(blk){say('Need Cooking '+blk.lv+' to cook '+blk.n);return}}
+  if(blk){say('Need Cooking '+blk.lv+' to cook '+blk.n);return}
+  if(stv){say('You need a cooking stove to make '+stv.n+'. Build one in your house.');return}}
  const f=FOODS.find(x=>(inv[x.k]|0)>0);if(!f){say('Nothing to eat');return}
  inv[f.k]--;hunger=Math.min(100,hunger+f.hun);P.hp=Math.min(6,P.hp+f.heal);sfx('eat');
  say(f.k=='meat'?'Raw meat... cook it at a fire next time':'Ate '+f.n+(f.heal?' (+'+f.heal+' heart'+(f.heal>1?'s':'')+')':''))};
@@ -9384,6 +9385,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-34',d:'Nov 13, 2026',t:'Stove meals and food buffs',n:['Cooking stoves can now have their own meals made from several ingredients. Look under "Meals" on your stove.','Some food can give a temporary buff when you eat it. Two new buffs: Wisdom (+20% XP) and Regeneration (heal over time).','Some dishes can only be cooked on a stove, not on a campfire.']},
  {v:'2026.11.13-33',d:'Nov 13, 2026',t:'Bigger recipes',n:['New gear can now be made in the Craft list and at a crafting bench, not just at the anvil, and recipes can ask for many more materials.']},
  {v:'2026.11.13-32',d:'Nov 13, 2026',t:'Ready for new trees, ores and fish',n:['The world can now get new kinds of trees, ore veins and fish without a game update: when they arrive they simply start appearing while you play.']},
  {v:'2026.11.13-31',d:'Nov 13, 2026',t:'Behind the scenes',n:['New developer tools for tuning recipes, food, shop prices and art, so balance changes and new content can arrive faster.']},
@@ -10460,9 +10462,9 @@ var LUX={};
  const _eat=eat;eat=function(){const keep={};for(const p of POTS){keep[p.k]=inv[p.k]|0;inv[p.k]=0}try{_eat()}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}};
  // buff timers on screen
  const bx=document.createElement('div');bx.id='luxbuff';bx.style.cssText='position:fixed;left:8px;top:calc(52% + 48px);z-index:29;display:flex;flex-direction:column;gap:3px;pointer-events:none;font:700 12px '+PF;document.body.appendChild(bx);
- setInterval(()=>{const now=performance.now(),L=[['str','STRENGTH','#c83040'],['iron','IRON SKIN','#6878a8'],['swift','SWIFTNESS','#2aa098']].filter(([k])=>BUFF[k]>now);
+ setInterval(()=>{const now=performance.now(),L=[['str','STRENGTH','#c83040'],['iron','IRON SKIN','#6878a8'],['swift','SWIFTNESS','#2aa098'],['wis','WISDOM','#8848c8'],['regen','REGENERATION','#38a048']].filter(([k])=>BUFF[k]>now);
   bx.style.display=(pnOpen||menuOpen)?'none':'flex';bx.innerHTML=L.map(([k,n,c])=>{const s=Math.ceil((BUFF[k]-now)/1000);return'<span style="background:#f8f8f8;border:2px solid #485870;padding:2px 6px;color:'+c+'">'+n+' '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+'</span>'}).join('');
-  for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength potion wore off.',iron:'Your iron skin potion wore off.',swift:'Your swiftness potion wore off.'}[k]||'')}},500);
+  for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength wore off.',iron:'Your iron skin wore off.',swift:'Your swiftness wore off.',wis:'Your wisdom wore off.',regen:'Your regeneration wore off.'}[k]||'')}},500);
  // ---- saves ----
  const _sn=snap;snap=function(){const s=_sn();s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};return s};
  const _ap=applySave;applySave=function(S){_ap(S);const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);
@@ -12830,7 +12832,7 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;//
  say({fire:'Lighting a fire...',cook:'Cooking...',smelt:'Smelting...',smith:'Hammering at the anvil...',craft:'Crafting...',reel:'Reeling it in...'}[kind]||'Working...');return true}
 {const _f=fire;fire=function(){if(sqDo('fire',1,()=>_f()))return;return _f()};
  const _e=eat;eat=function(){if(dead||menuOpen||pnOpen)return _e();// cooking at a fire takes time; eating doesn't
-  if(nearFire(P.x,P.y,45)&&(typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv)||(inv.meat|0)>0&&nearFire(P.x,P.y,45))){let n=0;for(const c of COOKS)if(lvOf(4)>=c.lv)n+=inv[c.raw]|0;if(sqDo('cook',Math.max(1,n),()=>_e()))return}return _e()};
+  if(nearFire(P.x,P.y,45)&&(typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st)||(inv.meat|0)>0&&nearFire(P.x,P.y,45))){let n=0;for(const c of COOKS)if(lvOf(4)>=c.lv&&!c.st)n+=inv[c.raw]|0;if(sqDo('cook',Math.max(1,n),()=>_e()))return}return _e()};
  const _cf=catchFish;catchFish=function(){if(window.SQDO_STEP||!FISH)return _cf();FISH.t=-999;FISH.bite=0;sqDo('reel',1,()=>{if(FISH)_cf()});};
  const xpSum=()=>XPS.reduce((a,v)=>a+v,0),invSum=()=>Object.values(inv).reduce((a,v)=>a+(+v||0),0);
  const _u=upd;upd=function(dt){_u(dt);const D=SQDO;if(!D)return;
@@ -12876,7 +12878,7 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;//
  // eating: once every 3 seconds (cooking at a fire isn't eating)
  var EATCD=0;window.SQEATCD=()=>EATCD;
  const _e=eat;eat=function(){if(dead||menuOpen||pnOpen||window.SQDO_STEP||SQDO)return _e();
-  const cooking=nearFire(P.x,P.y,45)&&typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv);if(cooking)return _e();
+  const cooking=nearFire(P.x,P.y,45)&&typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st);if(cooking)return _e();
   if(EATCD>0){say('Still chewing... ('+EATCD.toFixed(1)+'s)');return}const h0=P.hp,u0=hunger,i0=JSON.stringify(inv);_e();if(P.hp!==h0||hunger!==u0||JSON.stringify(inv)!==i0)EATCD=3}}
 // ---- 110. Phones: ONLINE/CHAT and BUG move under the minimap, out of the middle of the screen ----
 // On narrow screens they sat over the left side of the world, right where Elder Rowan stands at the start.
@@ -12925,7 +12927,8 @@ var SQA=(()=>{
   wb:{name:'World bosses',fields:[['n','Name','text'],['hp','HP','num'],['dmg','Damage per hit','num'],['g0','Gold (min)','num'],['g1','Gold (max)','num']],keys:()=>Object.keys(WB),label:k=>ORIG.wb[k].n,orig:k=>ORIG.wb[k],
    set(k,o){const T=WB[k];T.n=o.n;T.hp=o.hp;T.dmg=o.dmg;T.gold=[o.g0,Math.max(o.g0,o.g1)]}}};
  // a stat override only holds the fields that differ; fill the rest from the original, and keep types safe
- const merged=(t,k,o)=>{const base=TABLES[t].orig(k),r={...base};for(const[f,,ty]of TABLES[t].fields)if(o&&o[f]!=null){
+ const merged=(t,k,o)=>{const base=TABLES[t].orig(k),r={...base};for(const[f,,ty,op]of TABLES[t].fields)if(o&&o[f]!=null){
+   if(ty==='sel'){const L=typeof op==='function'?op():op||[];r[f]=L.some(x=>String(x[0])===String(o[f]))?String(o[f]):base[f];continue}
    if(ty==='num'){const n=Number(o[f]);if(isFinite(n))r[f]=Math.max(0,Math.round(n))}else if(ty==='bool')r[f]=o[f]&&o[f]!=='0'?1:0;else r[f]=String(o[f]).slice(0,ty==='long'?600:40)}return r};
  // ---- sprites ----
  const ICO={},cache={};let ver=0;
@@ -13767,11 +13770,12 @@ window.SQA=SQA;
   h+='<table><thead><tr><th>'+(T.col||(S.statT==='items'?'Item':'Boss'))+'</th>'+T.fields.map(f=>'<th>'+f[1]+'</th>').join('')+'<th></th></tr></thead><tbody>';
   for(const k of T.keys()){const o=T.orig(k);if(q&&!String(T.label?T.label(k):o.n).toLowerCase().includes(q)&&!String(o.n).toLowerCase().includes(q)&&!k.toLowerCase().includes(q))continue;const cur=A.merged(S.statT,k,d[k]);
    h+='<tr data-row="'+E(k)+'"><td class="dv-k">'+E(T.label?T.label(k):o.n)+'<small>'+E(T.sub?T.sub(k):k)+'</small></td>'+T.fields.map(([f,l,ty])=>{const chg=cur[f]!==o[f]?' dv-chg':'';if(ty==='bool')return'<td data-l="'+E(l)+'"><input type="checkbox" class="'+chg+'" data-f="'+f+'"'+(cur[f]?' checked':'')+'></td>';
+    if(ty==='sel'){const fd=T.fields.find(x=>x[0]===f),L=typeof fd[3]==='function'?fd[3]():fd[3]||[];return'<td data-l="'+E(l)+'"><select class="'+chg+'" data-f="'+f+'">'+L.map(([v,n])=>'<option value="'+E(v)+'"'+(String(v)===String(cur[f])?' selected':'')+'>'+E(n)+'</option>').join('')+'</select></td>'}
     return'<td data-l="'+E(l)+'">'+(ty==='long'?'<textarea class="'+chg+'" data-f="'+f+'">'+E(cur[f])+'</textarea>':'<input class="'+chg+'" type="'+(ty==='num'?'number" min="0':'text')+'" data-f="'+f+'" value="'+E(cur[f])+'">')+'</td>'}).join('')+
     '<td>'+(d[k]?'<button class="dv-b" data-a="rowreset" title="Back to original">↺</button>':'')+'</td></tr>'}
   return h+'</tbody></table>'}
  async function statSet(t,k,f,val){const T=A.TABLES[t],o=T.orig(k),fd=T.fields.find(x=>x[0]===f);if(!fd)return;
-  const v=fd[2]==='num'?Math.max(0,Math.round(Number(val)||0)):fd[2]==='bool'?(val&&val!=='0'?1:0):String(val);
+  const v=fd[2]==='num'?Math.max(0,Math.round(Number(val)||0)):fd[2]==='bool'?(val&&val!=='0'?1:0):fd[2]==='sel'?String(val):String(val);
   const all=S.draft.stats[t]=S.draft.stats[t]||{},row={...(all[k]||{})};if(v===o[f])delete row[f];else row[f]=v;
   if(Object.keys(row).length)all[k]=row;else delete all[k];
   try{await dset('draft/stats/'+t+'/'+k,all[k]||null);toast('Saved to draft.')}catch(e){fail(e)}
@@ -15186,7 +15190,7 @@ window.SQA=SQA;
   try{const th=frontThing();if(th&&th.read)return'READ';const w=th&&objWord(th.t);if(w)return w}catch(e){}
   return'HIT'}
  function eatWord(){if(BUILD)return'DONE';
-  try{if(nearFire(P.x,P.y,45)&&((inv.meat|0)>0||typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv)))return'COOK'}catch(e){}
+  try{if(nearFire(P.x,P.y,45)&&((inv.meat|0)>0||typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st)))return'COOK'}catch(e){}
   return'EAT'}
  function useWord(){try{if(typeof nearFurn==='function'){const it=nearFurn();if(it){if(it.use&&USEW[it.use])return USEW[it.use];const f=it.f;if(f)return f.t==='bed'?'SLEEP':f.t==='chest'?'OPEN':STW[f.t]||null}}}catch(e){}
   try{if(typeof nearStruct==='function'){const i=nearStruct();if(i!=null){const s=STR.get(i);if(s)return s.t==='bed'?'SLEEP':s.t==='chest'?'OPEN':STW[s.t]||null}}}catch(e){}return null}
@@ -17722,10 +17726,11 @@ window.SQA=SQA;
 (()=>{if(!window.SQA||!SQA.TABLES)return;const A=SQA,TB=A.TABLES;
  const nm=k=>INAME[k]||k;
  // ---------- food ----------
- const FREF={},FORIG={};for(const f of FOODS){if(!f||!f.k||/^it_/.test(f.k)||FREF[f.k])continue;FREF[f.k]=f;FORIG[f.k]={n:nm(f.k),heal:f.heal|0,hun:f.hun|0}}
+ const FREF={},FORIG={};for(const f of FOODS){if(!f||!f.k||/^it_/.test(f.k)||FREF[f.k])continue;FREF[f.k]=f;FORIG[f.k]={n:nm(f.k),heal:f.heal|0,hun:f.hun|0,buff:'',bs:120}}
+ const BUFFS=()=>[['','None'],...(window.SQBUFFK||[])];// meal buffs (184): eating it starts the buff
  TB.food={name:'Food & potions',col:'Food',note:'How much each food heals (in hearts, 6 = full health) and fills you up (food 0-100). Potions heal when used from the bag.',
-  fields:[['heal','Heals (hearts)','num'],['hun','Fills (food)','num']],keys:()=>Object.keys(FREF),orig:k=>FORIG[k],label:k=>FORIG[k].n,
-  set(k,o){const f=FREF[k];if(!f)return;f.heal=Math.min(6,o.heal|0);f.hun=Math.min(100,o.hun|0)}};
+  fields:[['heal','Heals (hearts)','num'],['hun','Fills (food)','num'],['buff','Buff when eaten','sel',BUFFS],['bs','Buff lasts (s)','num']],keys:()=>Object.keys(FREF),orig:k=>FORIG[k],label:k=>FORIG[k].n,
+  set(k,o){const f=FREF[k];if(!f)return;f.heal=Math.min(6,o.heal|0);f.hun=Math.min(100,o.hun|0);const FB=window.SQFOODBUFF=window.SQFOODBUFF||{};if(o.buff&&!f.pot)FB[k]={b:o.buff,s:Math.max(10,Math.min(1800,o.bs|0||120))};else if(!/^it_/.test(k))delete FB[k]}};
  // ---------- stable lists: entries can be taken out (off) and put back where they were ----------
  function lister(arr,refs){return{off(e){const i=arr.indexOf(e);if(i>=0)arr.splice(i,1)},
   on(e){if(arr.includes(e))return;const j=refs.indexOf(e);for(let q=j+1;q<refs.length;q++){const i=arr.indexOf(refs[q]);if(i>=0){arr.splice(i,0,e);return}}
@@ -17749,13 +17754,14 @@ window.SQA=SQA;
   return{c:out,bad}}
  for(const L in RL){let arr;try{arr=eval(L)}catch(e){continue}if(!Array.isArray(arr))continue;const refs=arr.filter(r=>r&&!r._cu);RLIST[L]=lister(arr,refs);const seen={};
   for(const r of refs){let b=L+':'+(L==='COOKS'?r.raw:r.k)+(r.t?r.t:'');if(seen[b])b+='_'+(++seen[b]);else seen[b]=1;const lvF=RL[L][1];
-   RREF[b]={L,r,lvF};RORIG[b]={n:L==='COOKS'?'Cook '+nm(r.raw):(r.n||r.name||nm(r.k)),mats:L==='COOKS'?'':matTxt(r.c),lv:r[lvF]|0,off:0,c0:{...(r.c||{})}}}}
+   RREF[b]={L,r,lvF};RORIG[b]={n:L==='COOKS'?'Cook '+nm(r.raw):(r.n||r.name||nm(r.k)),mats:L==='COOKS'?'':matTxt(r.c),lv:r[lvF]|0,off:0,stove:r.st?1:0,c0:{...(r.c||{})}}}}
  let ulT=0;const rebuildUL=()=>{if(ulT)return;ulT=setTimeout(()=>{ulT=0;try{const o=UL39(SM,r=>r.lv,r=>(r.smelt?'Smelt ':'Forge ')+r.n.toLowerCase()+(r.def?' (wear at Defence '+r.def+')':''));for(const k in ulSmith)delete ulSmith[k];Object.assign(ulSmith,o)}catch(e){}
    try{const o=UL39(COOKS,c=>c.lv,ckName);for(const l in o)o[l]='Cook '+o[l];for(const k in ulCook)delete ulCook[k];Object.assign(ulCook,o)}catch(e){}try{if(pnOpen)rPn()}catch(e){}},0)};
- TB.recipe={name:'Recipes',col:'Recipe',note:'Every recipe already in the game. Materials: write them like <b>Wood 4, Stone 2</b> (item names or keys). Level = the skill level needed. Tick "Off" and it can\'t be made any more. Experience is in the Balance tab; new recipes go in the Content tab.',
-  fields:[['mats','Materials','long'],['lv','Level','num'],['off','Off','bool']],keys:()=>Object.keys(RREF),orig:k=>RORIG[k],label:k=>RORIG[k].n,sub:k=>RL[RREF[k].L][0]+' · '+k,
+ TB.recipe={name:'Recipes',col:'Recipe',note:'Every recipe already in the game. Materials: write them like <b>Wood 4, Stone 2</b> (item names or keys). Level = the skill level needed. Tick "Off" and it can\'t be made any more. "Stove only" (cooking recipes) means it can\'t be cooked on a campfire. Experience is in the Balance tab; new recipes go in the Content tab.',
+  fields:[['mats','Materials','long'],['lv','Level','num'],['off','Off','bool'],['stove','Stove only (cooking)','bool']],keys:()=>Object.keys(RREF),orig:k=>RORIG[k],label:k=>RORIG[k].n,sub:k=>RL[RREF[k].L][0]+' · '+k,
   set(k,o){const R=RREF[k];if(!R)return;const r=R.r,O=RORIG[k];r[R.lvF]=Math.max(1,o.lv|0);
    if(R.L!=='COOKS'){if(o.mats===O.mats)r.c={...O.c0};else{const p=parseMats(o.mats);r.c=Object.keys(p.c).length?p.c:{...O.c0}}}
+   if(R.L==='COOKS'){if(o.stove)r.st=1;else delete r.st}
    if(o.off)RLIST[R.L].off(r);else RLIST[R.L].on(r);rebuildUL()}};
  // 111a applied the library before these tables existed: apply their part now (and on every change; 111a's own loop
  // also covers them from now on, and puts originals back when an override goes away)
@@ -17789,20 +17795,20 @@ window.SQA=SQA;
  // ======================= items =======================
  const REG=new Set(),PEND={},POT={};
  function unregItem(k){if(inv[k]|0)PEND[k]=(PEND[k]|0)+(inv[k]|0);delete inv[k];for(const L of[INVK,typeof EXTRA_BAG!=='undefined'?EXTRA_BAG:[]]){let i;while((i=L.indexOf(k))>=0)L.splice(i,1)}
-  for(let i=FOODS.length-1;i>=0;i--)if(FOODS[i].k===k)FOODS.splice(i,1);delete INAME[k];delete IDESC[k];delete SELLP[k];delete SN[k];if(typeof SHORT!=='undefined')delete SHORT[k];delete POT[k];REG.delete(k)}
+  for(let i=FOODS.length-1;i>=0;i--)if(FOODS[i].k===k)FOODS.splice(i,1);delete INAME[k];delete IDESC[k];delete SELLP[k];delete SN[k];if(typeof SHORT!=='undefined')delete SHORT[k];delete POT[k];if(window.SQFOODBUFF)delete SQFOODBUFF[k];REG.delete(k)}
  function regItem(k,o){if(INAME[k]&&!REG.has(k))return;// never take over one of the game's own items
   if(REG.has(k))unregItem(k);REG.add(k);INVK.push(k);if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push(k);
   INAME[k]=o.n;IDESC[k]=o.d;SELLP[k]=o.v;SN[k]=o.pl;if(typeof SHORT!=='undefined')SHORT[k]=o.n.toLowerCase();
-  if(o.t==='food')FOODS.push({k,n:o.n.toLowerCase(),heal:o.heal,hun:o.hun});
+  if(o.t==='food'){FOODS.push({k,n:o.n.toLowerCase(),heal:o.heal,hun:o.hun});if(o.buff)(window.SQFOODBUFF=window.SQFOODBUFF||{})[k]={b:o.buff,s:o.bs}}// meal buffs: 184
   if(o.t==='pot'){FOODS.push({k,n:o.n.toLowerCase(),heal:o.heal,hun:0,pot:1});POT[k]=o}
   FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);if(PEND[k]){inv[k]=(inv[k]|0)+PEND[k];delete PEND[k]}else inv[k]=inv[k]|0}
  function items(L){const want={};for(const id in L){const o=L[id];if(!/^it_[a-z0-9_]{1,30}$/.test(id)||!o||typeof o!=='object')continue;const n=clean(o.n,30);if(!n)continue;
    const t=['food','pot'].includes(o.t)?o.t:'mat';want[id]={n,pl:clean(o.pl,32)||n,d:clean(o.d,300),v:num(o.v,0,1e7,1)|0,t,heal:num(o.heal,0,6,0)|0,hun:num(o.hun,0,100,t==='food'?20:0)|0,
-    mana:num(o.mana,0,50,0)|0,buff:['str','iron','swift'].includes(o.buff)?o.buff:'',bs:num(o.bs,10,1800,120)|0}}
+    mana:num(o.mana,0,50,0)|0,buff:['str','iron','swift','wis','regen'].includes(o.buff)?o.buff:'',bs:num(o.bs,10,1800,120)|0}}
   for(const k of[...REG])if(!want[k])unregItem(k);for(const k in want)if(JSON.stringify(C.items[k])!==JSON.stringify(want[k])||!REG.has(k))regItem(k,want[k]);C.items=want}
  {const _uf=useFood;useFood=function(k){const o=POT[k];if(!o)return _uf.apply(this,arguments);if((inv[k]|0)<1)return;inv[k]--;const got=[];
    if(o.heal){P.hp=Math.min(6,P.hp+o.heal);got.push('+'+o.heal+' HP')}if(o.mana){MANA=Math.min(typeof maxMP==='function'?maxMP():10,MANA+o.mana);got.push('+'+o.mana+' mana')}
-   if(o.buff&&window.LUX&&LUX.BUFF){LUX.BUFF[o.buff]=performance.now()+o.bs*1000;got.push({str:'stronger hits',iron:'better blocks',swift:'free sprinting'}[o.buff]+' for '+(o.bs>=120?Math.round(o.bs/60)+' min':o.bs+' s'))}
+   if(o.buff&&window.LUX&&LUX.BUFF){LUX.BUFF[o.buff]=performance.now()+o.bs*1000;got.push({str:'stronger hits',iron:'better blocks',swift:'free sprinting',wis:'+20% XP',regen:'regeneration'}[o.buff]+' for '+(o.bs>=120?Math.round(o.bs/60)+' min':o.bs+' s'))}
    say('You drink the '+o.n.toLowerCase()+(got.length?': '+got.join(', '):'')+'.');try{sfx('quest')}catch(e){}saveLocal(true);if(pnOpen)rPn()}}
  {const _e=eat;eat=function(){const keep={};for(const k in POT){keep[k]=inv[k]|0;inv[k]=0}try{return _e.apply(this,arguments)}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}}}
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){}return s}}
@@ -17812,13 +17818,14 @@ window.SQA=SQA;
  {const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];for(const k in CQ)delete CQ[k];return _ng.apply(this,arguments)}}
  try{KNOWN49.add('cq')}catch(e){}
  // ======================= recipes =======================
- const ADDED={GOODS:[],SM:[],COOKS:[]};
+ const ADDED={GOODS:[],SM:[],COOKS:[],STOVE:[]};
  const takeOut=(L,name)=>{for(const r of ADDED[name]){const i=L.indexOf(r);if(i>=0)L.splice(i,1)}ADDED[name]=[]};
- function recipes(L){takeOut(GOODS,'GOODS');takeOut(SM,'SM');takeOut(COOKS,'COOKS');const out={};
-  for(const id in L){const r=L[id];if(!/^r_[a-z0-9_]{1,30}$/.test(id)||!r||typeof r!=='object')continue;const sk=['craft','smith','smelt','cook'].includes(r.sk)?r.sk:'craft';
+ function recipes(L){takeOut(GOODS,'GOODS');takeOut(SM,'SM');takeOut(COOKS,'COOKS');const SVL=window.SQSTOVE=window.SQSTOVE||[];takeOut(SVL,'STOVE');const out={};
+  for(const id in L){const r=L[id];if(!/^r_[a-z0-9_]{1,30}$/.test(id)||!r||typeof r!=='object')continue;const sk=['craft','smith','smelt','cook','stove'].includes(r.sk)?r.sk:'craft';
    if(!isItem(r.out))continue;const c={};for(const q of arr(r.c)){if(q&&isItem(q.k)&&q.k!==r.out){const n=num(q.n,1,9999,1)|0;c[q.k]=(c[q.k]|0)+n}}if(!Object.keys(c).length)continue;
    const lv=num(r.lv,1,99,1)|0,xp=num(r.xp,0,5000,10)|0,n=INAME[r.out];out[id]={sk,out:r.out,c,lv,xp};
    if(sk==='craft'){const g={k:r.out,n,c,req:lv,xp,v:SELLP[r.out]|0,_cu:id};GOODS.push(g);ADDED.GOODS.push(g)}
+   else if(sk==='stove'){const g={k:r.out,n,c,lv,xp,_cu:id};SVL.push(g);ADDED.STOVE.push(g)}// a meal on the cooking stove (184)
    else if(sk==='cook'){const raw=Object.keys(c)[0];const g={raw,ck:r.out,n:(INAME[raw]||raw).toLowerCase(),lv,xp,_cu:id};COOKS.push(g);ADDED.COOKS.push(g)}
    else{const g={k:r.out,n,c,lv,xp,_cu:id};if(sk==='smelt')g.smelt=1;SM.push(g);ADDED.SM.push(g)}}
   try{if(typeof UL39==='function'&&typeof ulSmith!=='undefined'){const o=UL39(SM,r=>r.lv,r=>(r.smelt?'Smelt ':'Forge ')+r.n.toLowerCase()+(r.def?' (wear at Defence '+r.def+')':''));for(const k in ulSmith)delete ulSmith[k];Object.assign(ulSmith,o)}}catch(e){}
@@ -17911,12 +17918,12 @@ window.SQA=SQA;
    F:[{f:'n',l:'Name',t:'text',max:30},{f:'pl',l:'Plural (for "Sell all …")',t:'text',max:32},{f:'d',l:'Description',t:'long'},{f:'v',l:'Sell price (gold)',t:'num',min:0,max:1e7},
     {f:'t',l:'Kind',t:'sel',o:()=>[['mat','Material'],['food','Food (EAT / USE)'],['pot','Potion (USE from the bag)']]},
     {f:'heal',l:'Hearts healed (0-6)',t:'num',min:0,max:6,if:o=>o.t!=='mat'},{f:'hun',l:'Food restored (0-100)',t:'num',min:0,max:100,if:o=>o.t==='food'},
-    {f:'mana',l:'Mana restored',t:'num',min:0,max:50,if:o=>o.t==='pot'},{f:'buff',l:'Effect',t:'sel',o:()=>[['','None'],['str','+2 melee damage'],['iron','+15% block'],['swift','Sprint for free']],if:o=>o.t==='pot'},
-    {f:'bs',l:'Effect lasts (seconds)',t:'num',min:10,max:1800,if:o=>o.t==='pot'&&o.buff}]},
-  recipes:{l:'🔨 Recipes',pre:'r_',blank:()=>({sk:'craft',out:'',c:[{k:'wood',n:2}],lv:1,xp:20}),hint:'Crafting recipes show in the crafting menu, smithing at the anvil, smelting at the furnace, cooking at a fire (cooking takes the first material as the raw food).',
-   F:[{f:'sk',l:'Skill',t:'sel',o:()=>[['craft','Crafting'],['smith','Smithing (anvil)'],['smelt','Smithing (furnace)'],['cook','Cooking (fire)']]},{f:'out',l:'Makes',t:'item'},
+    {f:'mana',l:'Mana restored',t:'num',min:0,max:50,if:o=>o.t==='pot'},{f:'buff',l:'Buff (temporary)',t:'sel',o:()=>[['','None'],...(window.SQBUFFK||[['str','+2 melee damage'],['iron','+15% block'],['swift','Sprint for free']])],if:o=>o.t==='pot'||o.t==='food'},
+    {f:'bs',l:'Buff lasts (seconds)',t:'num',min:10,max:1800,if:o=>(o.t==='pot'||o.t==='food')&&o.buff}]},
+  recipes:{l:'🔨 Recipes',pre:'r_',blank:()=>({sk:'craft',out:'',c:[{k:'wood',n:2}],lv:1,xp:20}),hint:'Crafting recipes show in the crafting menu, smithing at the anvil, smelting at the furnace, cooking at a fire or stove (it takes the first material as the raw food). "Cooking (stove only)" makes a meal from all its ingredients, only on a cooking stove.',
+   F:[{f:'sk',l:'Skill',t:'sel',o:()=>[['craft','Crafting'],['smith','Smithing (anvil)'],['smelt','Smithing (furnace)'],['cook','Cooking (fire or stove)'],['stove','Cooking (stove only)']]},{f:'out',l:'Makes',t:'item'},
     {f:'c',l:'Materials',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'n',l:'How many',t:'num',min:1,max:9999}]},{f:'lv',l:'Level needed',t:'num',min:1,max:99},{f:'xp',l:'XP each',t:'num',min:0,max:5000}],
-   title:o=>(o.out&&INAME[o.out]||'(pick what it makes)')+' · '+({craft:'Crafting',smith:'Anvil',smelt:'Furnace',cook:'Cooking'}[o.sk]||'Crafting')},
+   title:o=>(o.out&&INAME[o.out]||'(pick what it makes)')+' · '+({craft:'Crafting',smith:'Anvil',smelt:'Furnace',cook:'Cooking',stove:'Stove'}[o.sk]||'Crafting')},
   shops:{l:'🛒 Shops',pre:'cs_',fixed:['gen','bw','af'],blank:()=>({n:'New shop',add:[]}),hint:'Add stock to the game\'s shops, or make new shops: give an island-builder person the job "Shopkeeper".',
    F:[{f:'n',l:'Shop name',t:'text',max:40,if:(o,id)=>/^cs_/.test(id)},{f:'add',l:'For sale',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'m',l:'How many',t:'num',min:1,max:1000},{f:'c',l:'Price (gold)',t:'num',min:0,max:1e7}]}],
    title:(o,id)=>SHOPN[id]||o.n},
@@ -18791,6 +18798,34 @@ window.SQA=SQA;
    if(i==='o')set('ore',v);else{const c=(cleanNode(T.w).col||[]).slice();c[+i]=v;set('col',c)}API.draw()}},true);
  const changes=(L,D)=>{const out=[];for(const k of['nodes','fish']){const l=((L||{}).gather||{})[k]||{},d=((D||{}).gather||{})[k]||{};for(const id of new Set([...Object.keys(l),...Object.keys(d)]))if(JSON.stringify(l[id])!==JSON.stringify(d[id]))out.push({kind:'ext',html:(k==='fish'?'🐟 ':'🌳 ')+E((d[id]||l[id]).n||id)+(d[id]?(l[id]?' (changed)':' (new)'):' (removed)')})}return out};
  SQSUITE.addTab('gather','Gathering',{render,changes,after(){preview()},dirty:()=>!!(T.w&&T.dirty),leave(){T.sel=T.w=null}})})();
+// ---- 184. Meals with buffs, and two new buffs ----
+// window.SQFOODBUFF {foodKey:{b,s}} = eating that food (EAT at no fire, or USE from the bag) starts buff b for s seconds,
+// like 085's potions (LUX.BUFF[kind] = end time; 085 shows the pill and the "wore off" message). Filled by 162 (Content
+// food items) and 161b (Stats > Food & potions for the game's own food). Buffs: str (+2 melee, 085), iron (+15% block, 085),
+// swift (free sprinting, 085), wis (+20% XP, outermost addXp here), regen (1 heart every 10 s, outermost upd here).
+(()=>{const FB=window.SQFOODBUFF=window.SQFOODBUFF||{};
+ window.SQBUFFK=[['str','Strength: +2 melee damage'],['iron','Iron skin: +15% block'],['swift','Swiftness: sprint for free'],['wis','Wisdom: +20% XP'],['regen','Regeneration: heal 1 heart every 10 s']];
+ const NAME={str:'stronger hits',iron:'better blocks',swift:'free sprinting',wis:'+20% XP',regen:'regeneration'};
+ const B=()=>window.LUX&&LUX.BUFF,on=k=>{const b=B();return!!(b&&b[k]&&b[k]>performance.now())};
+ function give(k){const f=FB[k],b=B();if(!f||!b||!NAME[f.b])return;b[f.b]=Math.max(b[f.b]||0,performance.now()+f.s*1000);
+  const t=f.s>=120?Math.round(f.s/60)+' min':f.s+' s';try{say('Yum! '+NAME[f.b][0].toUpperCase()+NAME[f.b].slice(1)+' for '+t+'.')}catch(e){}}
+ function watch(fn){return function(){const ks=Object.keys(FB),b0=ks.map(k=>inv[k]|0);const out=fn.apply(this,arguments);ks.forEach((k,i)=>{if((inv[k]|0)<b0[i])give(k)});return out}}
+ eat=watch(eat);if(typeof useFood==='function')useFood=watch(useFood);
+ {const _ax=addXp;addXp=function(i,n){if(n>0&&on('wis'))n=Math.round(n*1.2);return _ax.call(this,i,n)}}
+ let rg=0;{const _u=upd;upd=function(dt){const o=_u.apply(this,arguments);try{if(on('regen')&&!dead&&P.hp<6){rg+=dt;if(rg>=10){rg=0;P.hp=Math.min(6,P.hp+1)}}else rg=0}catch(e){}return o}}
+ // ---- meals made on a cooking stove (Content recipes "Cooking (stove only)"): several ingredients, shown on the stove ----
+ const SV=window.SQSTOVE=window.SQSTOVE||[];// {k out, n, c {item:count}, lv, xp}
+ {const _sh=stationHTML;stationHTML=function(o){let h=_sh.apply(this,arguments);if(!o||o.t!=='stove'||!SV.length)return h;
+   let m='<div class="tl" style="margin-top:12px">Meals</div>';SV.forEach((r,i)=>{if(!INAME[r.k])return;const need=Object.entries(r.c),ok=lvOf(4)>=r.lv&&need.every(([a,b])=>(inv[a]|0)>=b);
+    m+=row22('sv_'+i,'Cook '+esc(INAME[r.k])+' <small>(have '+(inv[r.k]|0)+')</small>',need.map(([a,b])=>b+' '+esc(iname(a))+' ('+(inv[a]|0)+')').join(', ')+' · '+(lvOf(4)>=r.lv?r.xp+' xp':'Needs Cooking '+r.lv),ok)});
+   const at=h.indexOf('<button class="ng stb" data-a="pickup"');return at>=0?h.slice(0,at)+m+h.slice(at):h+m}}
+ {const _sa=stationAct;stationAct=function(a){if(typeof a!=='string'||!a.startsWith('sv_'))return _sa.apply(this,arguments);const r=SV[+a.slice(3)];if(!r||!INAME[r.k])return;
+   if(lvOf(4)<r.lv){say('You need Cooking '+r.lv+' to cook '+INAME[r.k].toLowerCase()+'.');return}
+   const need=Object.entries(r.c);if(!need.every(([k,n])=>(inv[k]|0)>=n)){say('Missing ingredients for '+INAME[r.k].toLowerCase()+'.');sfx('swish');return}
+   if(typeof sqDo==='function'&&sqDo('cook',1,()=>stationAct(a)))return;
+   for(const[k,n]of need)inv[k]-=n;inv[r.k]=(inv[r.k]|0)+1;addXp(4,r.xp);try{if(Q.on&&QS[Q.i]&&QS[Q.i].type==='cook')Q.k++}catch(e){}
+   say('Cooked '+INAME[r.k].toLowerCase()+'.');sfx('sizzle');saveLocal(true);rPn()}}
+ window.SQMEALS={give,on,SV}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

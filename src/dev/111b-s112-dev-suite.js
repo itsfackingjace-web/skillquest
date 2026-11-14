@@ -527,11 +527,12 @@
   h+='<table><thead><tr><th>'+(T.col||(S.statT==='items'?'Item':'Boss'))+'</th>'+T.fields.map(f=>'<th>'+f[1]+'</th>').join('')+'<th></th></tr></thead><tbody>';
   for(const k of T.keys()){const o=T.orig(k);if(q&&!String(T.label?T.label(k):o.n).toLowerCase().includes(q)&&!String(o.n).toLowerCase().includes(q)&&!k.toLowerCase().includes(q))continue;const cur=A.merged(S.statT,k,d[k]);
    h+='<tr data-row="'+E(k)+'"><td class="dv-k">'+E(T.label?T.label(k):o.n)+'<small>'+E(T.sub?T.sub(k):k)+'</small></td>'+T.fields.map(([f,l,ty])=>{const chg=cur[f]!==o[f]?' dv-chg':'';if(ty==='bool')return'<td data-l="'+E(l)+'"><input type="checkbox" class="'+chg+'" data-f="'+f+'"'+(cur[f]?' checked':'')+'></td>';
+    if(ty==='sel'){const fd=T.fields.find(x=>x[0]===f),L=typeof fd[3]==='function'?fd[3]():fd[3]||[];return'<td data-l="'+E(l)+'"><select class="'+chg+'" data-f="'+f+'">'+L.map(([v,n])=>'<option value="'+E(v)+'"'+(String(v)===String(cur[f])?' selected':'')+'>'+E(n)+'</option>').join('')+'</select></td>'}
     return'<td data-l="'+E(l)+'">'+(ty==='long'?'<textarea class="'+chg+'" data-f="'+f+'">'+E(cur[f])+'</textarea>':'<input class="'+chg+'" type="'+(ty==='num'?'number" min="0':'text')+'" data-f="'+f+'" value="'+E(cur[f])+'">')+'</td>'}).join('')+
     '<td>'+(d[k]?'<button class="dv-b" data-a="rowreset" title="Back to original">↺</button>':'')+'</td></tr>'}
   return h+'</tbody></table>'}
  async function statSet(t,k,f,val){const T=A.TABLES[t],o=T.orig(k),fd=T.fields.find(x=>x[0]===f);if(!fd)return;
-  const v=fd[2]==='num'?Math.max(0,Math.round(Number(val)||0)):fd[2]==='bool'?(val&&val!=='0'?1:0):String(val);
+  const v=fd[2]==='num'?Math.max(0,Math.round(Number(val)||0)):fd[2]==='bool'?(val&&val!=='0'?1:0):fd[2]==='sel'?String(val):String(val);
   const all=S.draft.stats[t]=S.draft.stats[t]||{},row={...(all[k]||{})};if(v===o[f])delete row[f];else row[f]=v;
   if(Object.keys(row).length)all[k]=row;else delete all[k];
   try{await dset('draft/stats/'+t+'/'+k,all[k]||null);toast('Saved to draft.')}catch(e){fail(e)}

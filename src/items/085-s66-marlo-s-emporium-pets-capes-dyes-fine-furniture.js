@@ -33,9 +33,9 @@ var LUX={};
  const _eat=eat;eat=function(){const keep={};for(const p of POTS){keep[p.k]=inv[p.k]|0;inv[p.k]=0}try{_eat()}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}};
  // buff timers on screen
  const bx=document.createElement('div');bx.id='luxbuff';bx.style.cssText='position:fixed;left:8px;top:calc(52% + 48px);z-index:29;display:flex;flex-direction:column;gap:3px;pointer-events:none;font:700 12px '+PF;document.body.appendChild(bx);
- setInterval(()=>{const now=performance.now(),L=[['str','STRENGTH','#c83040'],['iron','IRON SKIN','#6878a8'],['swift','SWIFTNESS','#2aa098']].filter(([k])=>BUFF[k]>now);
+ setInterval(()=>{const now=performance.now(),L=[['str','STRENGTH','#c83040'],['iron','IRON SKIN','#6878a8'],['swift','SWIFTNESS','#2aa098'],['wis','WISDOM','#8848c8'],['regen','REGENERATION','#38a048']].filter(([k])=>BUFF[k]>now);
   bx.style.display=(pnOpen||menuOpen)?'none':'flex';bx.innerHTML=L.map(([k,n,c])=>{const s=Math.ceil((BUFF[k]-now)/1000);return'<span style="background:#f8f8f8;border:2px solid #485870;padding:2px 6px;color:'+c+'">'+n+' '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+'</span>'}).join('');
-  for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength potion wore off.',iron:'Your iron skin potion wore off.',swift:'Your swiftness potion wore off.'}[k]||'')}},500);
+  for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength wore off.',iron:'Your iron skin wore off.',swift:'Your swiftness wore off.',wis:'Your wisdom wore off.',regen:'Your regeneration wore off.'}[k]||'')}},500);
  // ---- saves ----
  const _sn=snap;snap=function(){const s=_sn();s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};return s};
  const _ap=applySave;applySave=function(S){_ap(S);const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);

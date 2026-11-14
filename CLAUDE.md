@@ -479,3 +479,9 @@
   (outermost `loadRegion`, and the current island on every apply); sprites recoloured in the outermost `hdSprites`. Removed kinds
   turn back into what they replaced. `gather.fish.gf_<id>` = {n, item, lv, xp, where[], p %, ck, clv, cxp} -> `window.SQGFISH`
   + a `COOKS` entry (`_g`). Items are game items or Content `it_` items ("Make its item" writes them into the draft).
+- **Meals and food buffs** (`items/177-s184-meals.js`, `SQMEALS`): `window.SQFOODBUFF` {food:{b,s}} = eating it (outermost `eat`/`useFood`,
+  by bag count drop) starts buff b for s s in 085's `LUX.BUFF` (085 lists/pills: str, iron, swift, wis, regen; wis = +20% XP in the
+  outermost `addXp`, regen = 1 heart / 10 s in the outermost `upd`). Filled by 162 (Content food items' `buff`/`bs`) and 161b (Stats >
+  Food & potions `buff`/`bs`). `window.SQSTOVE` = multi-ingredient stove meals (Content recipes `sk:'stove'`), listed under "Meals" in
+  the outermost `stationHTML` and made by `stationAct('sv_<i>')`. COOKS entries with `st` are stove-only: 007's fire loop, 109, 110 and
+  118 skip them (Stats > Recipes "Stove only"). Stats table fields can be `sel` [f,label,'sel',options|()=>options].

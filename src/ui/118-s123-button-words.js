@@ -29,7 +29,7 @@
   try{const th=frontThing();if(th&&th.read)return'READ';const w=th&&objWord(th.t);if(w)return w}catch(e){}
   return'HIT'}
  function eatWord(){if(BUILD)return'DONE';
-  try{if(nearFire(P.x,P.y,45)&&((inv.meat|0)>0||typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv)))return'COOK'}catch(e){}
+  try{if(nearFire(P.x,P.y,45)&&((inv.meat|0)>0||typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st)))return'COOK'}catch(e){}
   return'EAT'}
  function useWord(){try{if(typeof nearFurn==='function'){const it=nearFurn();if(it){if(it.use&&USEW[it.use])return USEW[it.use];const f=it.f;if(f)return f.t==='bed'?'SLEEP':f.t==='chest'?'OPEN':STW[f.t]||null}}}catch(e){}
   try{if(typeof nearStruct==='function'){const i=nearStruct();if(i!=null){const s=STR.get(i);if(s)return s.t==='bed'?'SLEEP':s.t==='chest'?'OPEN':STW[s.t]||null}}}catch(e){}return null}

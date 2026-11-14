@@ -26,20 +26,20 @@
  // ======================= items =======================
  const REG=new Set(),PEND={},POT={};
  function unregItem(k){if(inv[k]|0)PEND[k]=(PEND[k]|0)+(inv[k]|0);delete inv[k];for(const L of[INVK,typeof EXTRA_BAG!=='undefined'?EXTRA_BAG:[]]){let i;while((i=L.indexOf(k))>=0)L.splice(i,1)}
-  for(let i=FOODS.length-1;i>=0;i--)if(FOODS[i].k===k)FOODS.splice(i,1);delete INAME[k];delete IDESC[k];delete SELLP[k];delete SN[k];if(typeof SHORT!=='undefined')delete SHORT[k];delete POT[k];REG.delete(k)}
+  for(let i=FOODS.length-1;i>=0;i--)if(FOODS[i].k===k)FOODS.splice(i,1);delete INAME[k];delete IDESC[k];delete SELLP[k];delete SN[k];if(typeof SHORT!=='undefined')delete SHORT[k];delete POT[k];if(window.SQFOODBUFF)delete SQFOODBUFF[k];REG.delete(k)}
  function regItem(k,o){if(INAME[k]&&!REG.has(k))return;// never take over one of the game's own items
   if(REG.has(k))unregItem(k);REG.add(k);INVK.push(k);if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push(k);
   INAME[k]=o.n;IDESC[k]=o.d;SELLP[k]=o.v;SN[k]=o.pl;if(typeof SHORT!=='undefined')SHORT[k]=o.n.toLowerCase();
-  if(o.t==='food')FOODS.push({k,n:o.n.toLowerCase(),heal:o.heal,hun:o.hun});
+  if(o.t==='food'){FOODS.push({k,n:o.n.toLowerCase(),heal:o.heal,hun:o.hun});if(o.buff)(window.SQFOODBUFF=window.SQFOODBUFF||{})[k]={b:o.buff,s:o.bs}}// meal buffs: 184
   if(o.t==='pot'){FOODS.push({k,n:o.n.toLowerCase(),heal:o.heal,hun:0,pot:1});POT[k]=o}
   FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);if(PEND[k]){inv[k]=(inv[k]|0)+PEND[k];delete PEND[k]}else inv[k]=inv[k]|0}
  function items(L){const want={};for(const id in L){const o=L[id];if(!/^it_[a-z0-9_]{1,30}$/.test(id)||!o||typeof o!=='object')continue;const n=clean(o.n,30);if(!n)continue;
    const t=['food','pot'].includes(o.t)?o.t:'mat';want[id]={n,pl:clean(o.pl,32)||n,d:clean(o.d,300),v:num(o.v,0,1e7,1)|0,t,heal:num(o.heal,0,6,0)|0,hun:num(o.hun,0,100,t==='food'?20:0)|0,
-    mana:num(o.mana,0,50,0)|0,buff:['str','iron','swift'].includes(o.buff)?o.buff:'',bs:num(o.bs,10,1800,120)|0}}
+    mana:num(o.mana,0,50,0)|0,buff:['str','iron','swift','wis','regen'].includes(o.buff)?o.buff:'',bs:num(o.bs,10,1800,120)|0}}
   for(const k of[...REG])if(!want[k])unregItem(k);for(const k in want)if(JSON.stringify(C.items[k])!==JSON.stringify(want[k])||!REG.has(k))regItem(k,want[k]);C.items=want}
  {const _uf=useFood;useFood=function(k){const o=POT[k];if(!o)return _uf.apply(this,arguments);if((inv[k]|0)<1)return;inv[k]--;const got=[];
    if(o.heal){P.hp=Math.min(6,P.hp+o.heal);got.push('+'+o.heal+' HP')}if(o.mana){MANA=Math.min(typeof maxMP==='function'?maxMP():10,MANA+o.mana);got.push('+'+o.mana+' mana')}
-   if(o.buff&&window.LUX&&LUX.BUFF){LUX.BUFF[o.buff]=performance.now()+o.bs*1000;got.push({str:'stronger hits',iron:'better blocks',swift:'free sprinting'}[o.buff]+' for '+(o.bs>=120?Math.round(o.bs/60)+' min':o.bs+' s'))}
+   if(o.buff&&window.LUX&&LUX.BUFF){LUX.BUFF[o.buff]=performance.now()+o.bs*1000;got.push({str:'stronger hits',iron:'better blocks',swift:'free sprinting',wis:'+20% XP',regen:'regeneration'}[o.buff]+' for '+(o.bs>=120?Math.round(o.bs/60)+' min':o.bs+' s'))}
    say('You drink the '+o.n.toLowerCase()+(got.length?': '+got.join(', '):'')+'.');try{sfx('quest')}catch(e){}saveLocal(true);if(pnOpen)rPn()}}
  {const _e=eat;eat=function(){const keep={};for(const k in POT){keep[k]=inv[k]|0;inv[k]=0}try{return _e.apply(this,arguments)}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}}}
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){}return s}}
@@ -49,13 +49,14 @@
  {const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];for(const k in CQ)delete CQ[k];return _ng.apply(this,arguments)}}
  try{KNOWN49.add('cq')}catch(e){}
  // ======================= recipes =======================
- const ADDED={GOODS:[],SM:[],COOKS:[]};
+ const ADDED={GOODS:[],SM:[],COOKS:[],STOVE:[]};
  const takeOut=(L,name)=>{for(const r of ADDED[name]){const i=L.indexOf(r);if(i>=0)L.splice(i,1)}ADDED[name]=[]};
- function recipes(L){takeOut(GOODS,'GOODS');takeOut(SM,'SM');takeOut(COOKS,'COOKS');const out={};
-  for(const id in L){const r=L[id];if(!/^r_[a-z0-9_]{1,30}$/.test(id)||!r||typeof r!=='object')continue;const sk=['craft','smith','smelt','cook'].includes(r.sk)?r.sk:'craft';
+ function recipes(L){takeOut(GOODS,'GOODS');takeOut(SM,'SM');takeOut(COOKS,'COOKS');const SVL=window.SQSTOVE=window.SQSTOVE||[];takeOut(SVL,'STOVE');const out={};
+  for(const id in L){const r=L[id];if(!/^r_[a-z0-9_]{1,30}$/.test(id)||!r||typeof r!=='object')continue;const sk=['craft','smith','smelt','cook','stove'].includes(r.sk)?r.sk:'craft';
    if(!isItem(r.out))continue;const c={};for(const q of arr(r.c)){if(q&&isItem(q.k)&&q.k!==r.out){const n=num(q.n,1,9999,1)|0;c[q.k]=(c[q.k]|0)+n}}if(!Object.keys(c).length)continue;
    const lv=num(r.lv,1,99,1)|0,xp=num(r.xp,0,5000,10)|0,n=INAME[r.out];out[id]={sk,out:r.out,c,lv,xp};
    if(sk==='craft'){const g={k:r.out,n,c,req:lv,xp,v:SELLP[r.out]|0,_cu:id};GOODS.push(g);ADDED.GOODS.push(g)}
+   else if(sk==='stove'){const g={k:r.out,n,c,lv,xp,_cu:id};SVL.push(g);ADDED.STOVE.push(g)}// a meal on the cooking stove (184)
    else if(sk==='cook'){const raw=Object.keys(c)[0];const g={raw,ck:r.out,n:(INAME[raw]||raw).toLowerCase(),lv,xp,_cu:id};COOKS.push(g);ADDED.COOKS.push(g)}
    else{const g={k:r.out,n,c,lv,xp,_cu:id};if(sk==='smelt')g.smelt=1;SM.push(g);ADDED.SM.push(g)}}
   try{if(typeof UL39==='function'&&typeof ulSmith!=='undefined'){const o=UL39(SM,r=>r.lv,r=>(r.smelt?'Smelt ':'Forge ')+r.n.toLowerCase()+(r.def?' (wear at Defence '+r.def+')':''));for(const k in ulSmith)delete ulSmith[k];Object.assign(ulSmith,o)}}catch(e){}
@@ -148,12 +149,12 @@
    F:[{f:'n',l:'Name',t:'text',max:30},{f:'pl',l:'Plural (for "Sell all …")',t:'text',max:32},{f:'d',l:'Description',t:'long'},{f:'v',l:'Sell price (gold)',t:'num',min:0,max:1e7},
     {f:'t',l:'Kind',t:'sel',o:()=>[['mat','Material'],['food','Food (EAT / USE)'],['pot','Potion (USE from the bag)']]},
     {f:'heal',l:'Hearts healed (0-6)',t:'num',min:0,max:6,if:o=>o.t!=='mat'},{f:'hun',l:'Food restored (0-100)',t:'num',min:0,max:100,if:o=>o.t==='food'},
-    {f:'mana',l:'Mana restored',t:'num',min:0,max:50,if:o=>o.t==='pot'},{f:'buff',l:'Effect',t:'sel',o:()=>[['','None'],['str','+2 melee damage'],['iron','+15% block'],['swift','Sprint for free']],if:o=>o.t==='pot'},
-    {f:'bs',l:'Effect lasts (seconds)',t:'num',min:10,max:1800,if:o=>o.t==='pot'&&o.buff}]},
-  recipes:{l:'🔨 Recipes',pre:'r_',blank:()=>({sk:'craft',out:'',c:[{k:'wood',n:2}],lv:1,xp:20}),hint:'Crafting recipes show in the crafting menu, smithing at the anvil, smelting at the furnace, cooking at a fire (cooking takes the first material as the raw food).',
-   F:[{f:'sk',l:'Skill',t:'sel',o:()=>[['craft','Crafting'],['smith','Smithing (anvil)'],['smelt','Smithing (furnace)'],['cook','Cooking (fire)']]},{f:'out',l:'Makes',t:'item'},
+    {f:'mana',l:'Mana restored',t:'num',min:0,max:50,if:o=>o.t==='pot'},{f:'buff',l:'Buff (temporary)',t:'sel',o:()=>[['','None'],...(window.SQBUFFK||[['str','+2 melee damage'],['iron','+15% block'],['swift','Sprint for free']])],if:o=>o.t==='pot'||o.t==='food'},
+    {f:'bs',l:'Buff lasts (seconds)',t:'num',min:10,max:1800,if:o=>(o.t==='pot'||o.t==='food')&&o.buff}]},
+  recipes:{l:'🔨 Recipes',pre:'r_',blank:()=>({sk:'craft',out:'',c:[{k:'wood',n:2}],lv:1,xp:20}),hint:'Crafting recipes show in the crafting menu, smithing at the anvil, smelting at the furnace, cooking at a fire or stove (it takes the first material as the raw food). "Cooking (stove only)" makes a meal from all its ingredients, only on a cooking stove.',
+   F:[{f:'sk',l:'Skill',t:'sel',o:()=>[['craft','Crafting'],['smith','Smithing (anvil)'],['smelt','Smithing (furnace)'],['cook','Cooking (fire or stove)'],['stove','Cooking (stove only)']]},{f:'out',l:'Makes',t:'item'},
     {f:'c',l:'Materials',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'n',l:'How many',t:'num',min:1,max:9999}]},{f:'lv',l:'Level needed',t:'num',min:1,max:99},{f:'xp',l:'XP each',t:'num',min:0,max:5000}],
-   title:o=>(o.out&&INAME[o.out]||'(pick what it makes)')+' · '+({craft:'Crafting',smith:'Anvil',smelt:'Furnace',cook:'Cooking'}[o.sk]||'Crafting')},
+   title:o=>(o.out&&INAME[o.out]||'(pick what it makes)')+' · '+({craft:'Crafting',smith:'Anvil',smelt:'Furnace',cook:'Cooking',stove:'Stove'}[o.sk]||'Crafting')},
   shops:{l:'🛒 Shops',pre:'cs_',fixed:['gen','bw','af'],blank:()=>({n:'New shop',add:[]}),hint:'Add stock to the game\'s shops, or make new shops: give an island-builder person the job "Shopkeeper".',
    F:[{f:'n',l:'Shop name',t:'text',max:40,if:(o,id)=>/^cs_/.test(id)},{f:'add',l:'For sale',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'m',l:'How many',t:'num',min:1,max:1000},{f:'c',l:'Price (gold)',t:'num',min:0,max:1e7}]}],
    title:(o,id)=>SHOPN[id]||o.n},

@@ -15,7 +15,7 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;//
  say({fire:'Lighting a fire...',cook:'Cooking...',smelt:'Smelting...',smith:'Hammering at the anvil...',craft:'Crafting...',reel:'Reeling it in...'}[kind]||'Working...');return true}
 {const _f=fire;fire=function(){if(sqDo('fire',1,()=>_f()))return;return _f()};
  const _e=eat;eat=function(){if(dead||menuOpen||pnOpen)return _e();// cooking at a fire takes time; eating doesn't
-  if(nearFire(P.x,P.y,45)&&(typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv)||(inv.meat|0)>0&&nearFire(P.x,P.y,45))){let n=0;for(const c of COOKS)if(lvOf(4)>=c.lv)n+=inv[c.raw]|0;if(sqDo('cook',Math.max(1,n),()=>_e()))return}return _e()};
+  if(nearFire(P.x,P.y,45)&&(typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st)||(inv.meat|0)>0&&nearFire(P.x,P.y,45))){let n=0;for(const c of COOKS)if(lvOf(4)>=c.lv&&!c.st)n+=inv[c.raw]|0;if(sqDo('cook',Math.max(1,n),()=>_e()))return}return _e()};
  const _cf=catchFish;catchFish=function(){if(window.SQDO_STEP||!FISH)return _cf();FISH.t=-999;FISH.bite=0;sqDo('reel',1,()=>{if(FISH)_cf()});};
  const xpSum=()=>XPS.reduce((a,v)=>a+v,0),invSum=()=>Object.values(inv).reduce((a,v)=>a+(+v||0),0);
  const _u=upd;upd=function(dt){_u(dt);const D=SQDO;if(!D)return;

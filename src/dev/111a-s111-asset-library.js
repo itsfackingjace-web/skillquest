@@ -36,7 +36,8 @@ var SQA=(()=>{
   wb:{name:'World bosses',fields:[['n','Name','text'],['hp','HP','num'],['dmg','Damage per hit','num'],['g0','Gold (min)','num'],['g1','Gold (max)','num']],keys:()=>Object.keys(WB),label:k=>ORIG.wb[k].n,orig:k=>ORIG.wb[k],
    set(k,o){const T=WB[k];T.n=o.n;T.hp=o.hp;T.dmg=o.dmg;T.gold=[o.g0,Math.max(o.g0,o.g1)]}}};
  // a stat override only holds the fields that differ; fill the rest from the original, and keep types safe
- const merged=(t,k,o)=>{const base=TABLES[t].orig(k),r={...base};for(const[f,,ty]of TABLES[t].fields)if(o&&o[f]!=null){
+ const merged=(t,k,o)=>{const base=TABLES[t].orig(k),r={...base};for(const[f,,ty,op]of TABLES[t].fields)if(o&&o[f]!=null){
+   if(ty==='sel'){const L=typeof op==='function'?op():op||[];r[f]=L.some(x=>String(x[0])===String(o[f]))?String(o[f]):base[f];continue}
    if(ty==='num'){const n=Number(o[f]);if(isFinite(n))r[f]=Math.max(0,Math.round(n))}else if(ty==='bool')r[f]=o[f]&&o[f]!=='0'?1:0;else r[f]=String(o[f]).slice(0,ty==='long'?600:40)}return r};
  // ---- sprites ----
  const ICO={},cache={};let ver=0;

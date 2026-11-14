@@ -42,12 +42,13 @@ const _u6=upd;upd=function(dt){const hp0=P.hp;_u6(dt);if(menuOpen||pnOpen||!FISH
 const COOKS=[{raw:'meat',ck:'cooked',n:'meat',lv:1,xp:30},...FISH_T.map(f=>({raw:f.k,ck:'c'+f.k,n:f.k=='shrimp'?'shrimp':f.n.toLowerCase(),lv:f.cook,xp:f.cxp}))];
 const FOODS=[...FISH_T.map(f=>({k:'c'+f.k,n:'cooked '+f.n.toLowerCase(),heal:f.heal,hun:f.hun})),{k:'cooked',n:'cooked meat',heal:2,hun:60},{k:'berry',n:'berries',heal:0,hun:18},{k:'meat',n:'raw meat',heal:0,hun:20}].sort((a,b)=>b.heal-a.heal||b.hun-a.hun);
 eat=function(){if(dead||menuOpen||pnOpen)return;
- if(nearFire(P.x,P.y,45)){const cl=lvOf(4);let blk=null;
-  for(const c of COOKS){if((inv[c.raw]|0)<1)continue;if(cl<c.lv){blk=blk||c;continue}
+ if(nearFire(P.x,P.y,45)){const cl=lvOf(4);let blk=null,stv=null;
+  for(const c of COOKS){if((inv[c.raw]|0)<1)continue;if(c.st){stv=stv||c;continue}/* st: stove-only meal (Dev Suite) */if(cl<c.lv){blk=blk||c;continue}
    inv[c.raw]--;if(Math.random()<Math.max(.03,.4-(cl-c.lv)*.02-cl*.004)){say('You burn the '+c.n+'!');addXp(4,5);sfx('swish')}
    else{inv[c.ck]=(inv[c.ck]|0)+1;say('Cooked '+c.n);addXp(4,c.xp);sfx('sizzle');if(Q.on&&QS[Q.i]&&QS[Q.i].type=='cook')Q.k++}
    saveLocal(true);return}
-  if(blk){say('Need Cooking '+blk.lv+' to cook '+blk.n);return}}
+  if(blk){say('Need Cooking '+blk.lv+' to cook '+blk.n);return}
+  if(stv){say('You need a cooking stove to make '+stv.n+'. Build one in your house.');return}}
  const f=FOODS.find(x=>(inv[x.k]|0)>0);if(!f){say('Nothing to eat');return}
  inv[f.k]--;hunger=Math.min(100,hunger+f.hun);P.hp=Math.min(6,P.hp+f.heal);sfx('eat');
  say(f.k=='meat'?'Raw meat... cook it at a fire next time':'Ate '+f.n+(f.heal?' (+'+f.heal+' heart'+(f.heal>1?'s':'')+')':''))};

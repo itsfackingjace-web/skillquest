@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-34',d:'Nov 13, 2026',t:'Stove meals and food buffs',n:['Cooking stoves can now have their own meals made from several ingredients. Look under "Meals" on your stove.','Some food can give a temporary buff when you eat it. Two new buffs: Wisdom (+20% XP) and Regeneration (heal over time).','Some dishes can only be cooked on a stove, not on a campfire.']},
  {v:'2026.11.13-33',d:'Nov 13, 2026',t:'Bigger recipes',n:['New gear can now be made in the Craft list and at a crafting bench, not just at the anvil, and recipes can ask for many more materials.']},
  {v:'2026.11.13-32',d:'Nov 13, 2026',t:'Ready for new trees, ores and fish',n:['The world can now get new kinds of trees, ore veins and fish without a game update: when they arrive they simply start appearing while you play.']},
  {v:'2026.11.13-31',d:'Nov 13, 2026',t:'Behind the scenes',n:['New developer tools for tuning recipes, food, shop prices and art, so balance changes and new content can arrive faster.']},

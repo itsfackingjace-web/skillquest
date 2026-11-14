@@ -12,5 +12,5 @@
  // eating: once every 3 seconds (cooking at a fire isn't eating)
  var EATCD=0;window.SQEATCD=()=>EATCD;
  const _e=eat;eat=function(){if(dead||menuOpen||pnOpen||window.SQDO_STEP||SQDO)return _e();
-  const cooking=nearFire(P.x,P.y,45)&&typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv);if(cooking)return _e();
+  const cooking=nearFire(P.x,P.y,45)&&typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st);if(cooking)return _e();
   if(EATCD>0){say('Still chewing... ('+EATCD.toFixed(1)+'s)');return}const h0=P.hp,u0=hunger,i0=JSON.stringify(inv);_e();if(P.hp!==h0||hunger!==u0||JSON.stringify(inv)!==i0)EATCD=3}}
