@@ -165,7 +165,8 @@ var SQA=(()=>{
  function regCaves(id,I){const IC=window.SQICV;if(!IC||typeof DKIND==='undefined')return;for(const k in CAVES)if(CAVES[k]===id){delete IC[k];delete DKIND[k];delete CAVES[k]}
   (Array.isArray(I&&I.cv)?I.cv:[]).slice(0,6).forEach((V,k)=>{if(!V)return;const st=CAVE_ST[V.st]||CAVE_ST.rock,kind=caveKind(id,k),keys=(Array.isArray(V.m)?V.m:[]).filter(m=>typeof m==='string'&&/^[a-z]+(:[a-z]+)?$/.test(m)).slice(0,6);
    const mob=keys.length?keys.map((m,j)=>[m,(j+1)/keys.length]):[['bat',.5],['slime',1]];
-   IC[kind]=DKIND[kind]=Object.assign({},st,{name:clean(V.n,40)||'Hidden Cave',rg:id,floors:Math.max(1,Math.min(6,V.f|0||3)),noboss:1,mob,ore:V.st==='mine'?null:4});if(V.st!=='mine')delete IC[kind].mine;CAVES[kind]=id})}
+   IC[kind]=DKIND[kind]=Object.assign({},st,{name:clean(V.n,40)||'Hidden Cave',rg:id,floors:Math.max(1,Math.min(6,V.f|0||3)),noboss:1,mob,ore:V.st==='mine'?null:4});if(typeof V.dg==='string'&&/^dg_[a-z0-9_]{1,30}$/.test(V.dg))IC[kind].dgw=V.dg;// a drawn layout (189)
+   if(V.st!=='mine')delete IC[kind].mine;CAVES[kind]=id})}
  const hashId=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h};
  const ISL={};// id -> the island data currently registered
  const here=()=>{try{return curRegion()}catch(e){return null}};

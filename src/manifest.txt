@@ -197,6 +197,7 @@ dev/185-s193-simulator.js
 dev/186-s194-perk-editor.js
 multiplayer/187-s195-chat-bubbles.js
 ui/188-s196-dev-suite-controller.js
+dev/189-s197-dungeon-builder.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

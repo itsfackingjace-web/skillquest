@@ -560,3 +560,8 @@
   (add new clickable non-buttons there). Outermost `pollPad`: ○ = the open card's `[data-a="back"]` / drop the item / close, L1/R1 =
   tabs; ✕ on `#dvc` = draw mode (pixel cursor, ✕ held = a real pointer stroke with pointerType 'pen', △ tool, □ undo, L1/R1 colour,
   ○ done), which owns the pad and writes GPPREV itself.
+- **Dungeon builder** (`dev/189-s197-dungeon-builder.js`, `window.SQDUNGEONS`, Dev Suite > Dungeons): library `dungeons.dg_<id>` =
+  {n, st (rock/mine/ice/root/sand/tomb), fl:[{w,h,g ('#'/'.' per cell),it:[{t,x,y,o}],m:[{k,x,y,hp,b}]}]}. Each design is an island-cave
+  kind `dg_<id>` in SQICV/DKIND; island-builder entrances can point at one (`cv[].dg` → 111a sets `dgw` on that cave kind). The outermost
+  `buildFloor` builds designed floors exactly (entrance bottom middle, stairs as placed or put far away automatically, none on the
+  last floor; bosses = `big`, 4× health). Floors cached in `DUN.floors` are dropped on apply (not the one you're in).

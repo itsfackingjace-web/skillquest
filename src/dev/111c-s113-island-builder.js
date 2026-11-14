@@ -24,7 +24,7 @@
   const cl=d.c?A.unpack(d.c):'',c=new Uint8Array(N).fill(NONE);for(let i=0;i<N;i++){const ch=cl[i];if(ch&&ch!=='.'){const k=HEX.indexOf(ch);if(k>=0)c[i]=k}}
   const arr=v=>Array.isArray(v)?v:Object.values(v||{});
   const npc=arr(d.npc).filter(Boolean).map(Q=>({x:Q.x|0,y:Q.y|0,n:Q.n||'',lk:Object.assign({sk:0,hs:0,hc:1,sh:2,pn:1,ht:0,hcol:0,so:0},Q.lk||{}),s:arr(Q.s).join('\n'),ro:Q.ro||''}));
-  const cv=arr(d.cv).filter(Boolean).map(V=>({x:V.x|0,y:V.y|0,n:V.n||'',st:V.st||'rock',f:V.f|0||3,m:arr(V.m).slice()}));
+  const cv=arr(d.cv).filter(Boolean).map(V=>({x:V.x|0,y:V.y|0,n:V.n||'',st:V.st||'rock',f:V.f|0||3,m:arr(V.m).slice(),dg:V.dg||''}));
   const zn=arr(d.zn).filter(Boolean).map(Z=>({x:Z.x|0,y:Z.y|0,w:Math.max(1,Z.w|0),h:Math.max(1,Z.h|0),n:Z.n|0||4,m:arr(Z.m).slice(),hp:Z.hp|0}));
   const ct=arr(d.ct).filter(T=>T&&LIFE().okUrl(T.p)).slice(0,8).map(T=>({n:T.n||'Tile',p:T.p}));
   return{id,w:d.w,h:d.h,t,o,lm,c,npc,cv,zn,ct,cti:0,sk:'lm',meta:{mx:isFinite(d.mx)?+d.mx:null,my:isFinite(d.my)?+d.my:null,n:d.n||'',b:d.b||'',lv:d.lv||'',dir:d.dir||'e',pier:d.pier||'e',mob:d.mob||'',max:d.max==null?12:d.max},
@@ -35,7 +35,7 @@
    if(L.k==='chest'){const lo={};for(const k in L.loot||{}){const n=Math.max(0,Math.min(100000,L.loot[k]|0));if(n)lo[k]=n}r.loot=lo}return r});
   if(m.mx!=null&&m.my!=null){d.mx=Math.round(m.mx);d.my=Math.round(m.my)}
   if(ed.npc.length)d.npc=ed.npc.map(Q=>{const r={x:Q.x,y:Q.y,n:(Q.n||'').trim().slice(0,24)||'Islander',lk:{...Q.lk}};const ls=String(Q.s||'').split('\n').map(l=>l.trim().slice(0,160)).filter(Boolean).slice(0,8);if(ls.length)r.s=ls;if(Q.ro)r.ro=String(Q.ro).slice(0,120);return r});
-  if(ed.cv.length)d.cv=ed.cv.map(V=>({x:V.x,y:V.y,n:(V.n||'').trim().slice(0,40)||'Hidden Cave',st:V.st,f:Math.max(1,Math.min(6,V.f|0)),m:V.m.slice(0,6)}));
+  if(ed.cv.length)d.cv=ed.cv.map(V=>Object.assign({x:V.x,y:V.y,n:(V.n||'').trim().slice(0,40)||'Hidden Cave',st:V.st,f:Math.max(1,Math.min(6,V.f|0)),m:V.m.slice(0,6)},V.dg?{dg:V.dg}:{}));
   if(ed.zn.length)d.zn=ed.zn.map(Z=>({x:Z.x,y:Z.y,w:Z.w,h:Z.h,n:Math.max(1,Math.min(12,Z.n|0)),m:Z.m.slice(0,6),hp:Math.max(0,Math.min(3,Z.hp|0))}));
   if(ed.ct.length){d.ct=ed.ct.map(T=>({n:(T.n||'Tile').slice(0,24),p:T.p}));let c='',any2=false;for(let i=0;i<ed.c.length;i++){const v=ed.c[i];if(v!==NONE&&v<ed.ct.length){c+=HEX[v];any2=true}else c+='.'}if(any2)d.c=A.pack(c)}
   return d}
@@ -140,7 +140,8 @@
    '</div></div></div><p><label class="dv-mut">What they say <small>(one line each time you talk to them, up to 8 lines)</small><textarea data-ixf="s" maxlength="1300" style="height:80px">'+E(X.s)+'</textarea></label></p>'+(window.SQCONTENT?'<p><label class="dv-mut">Job <small>(shops and quests are made in the Content tab)</small><br><select data-ixf="ro">'+SQCONTENT.roleOpts(X.ro)+'</select></label></p>':'')+'</div>';
   if(k==='cv')return head('🕳 Dungeon entrance','at '+X.x+', '+X.y)+'<p><label class="dv-mut">Name<input type="text" data-ixf="n" maxlength="40" value="'+E(X.n)+'" placeholder="Batroost Cave"></label></p>'+
    '<div class="dv-row"><label class="dv-mut">Looks like<br><select data-ixf="st">'+CAVES.map(([v,n])=>'<option value="'+v+'"'+(X.st===v?' selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
-   '<label class="dv-mut">Floors<br><select data-ixf="f">'+[1,2,3,4,5,6].map(n=>'<option'+((X.f|0)===n?' selected':'')+'>'+n+'</option>').join('')+'</select></label></div>'+
+   '<label class="dv-mut">Floors<br><select data-ixf="f">'+[1,2,3,4,5,6].map(n=>'<option'+((X.f|0)===n?' selected':'')+'>'+n+'</option>').join('')+'</select></label></div>'
+   '<p><label class="dv-mut">Layout <small>(drawn dungeons are made in the Dungeons tab)</small><br><select data-ixf="dg"><option value="">Random, new every day</option>'+Object.entries(S.draft.dungeons||{}).map(([k,d])=>'<option value="'+E(k)+'"'+(X.dg===k?' selected':'')+'>🏰 '+E((d&&d.n)||k)+'</option>').join('')+'</select></label></p>'+
    '<div class="dv-mut" style="margin-top:6px">Monsters inside <small>(up to 6; none picked = bats and slimes)</small></div>'+mobPick(X.m,'data-ixm')+'<p class="dv-mut">Players walk up into the opening to go down. Each floor is rebuilt every day, with ore and chests; the deeper floors are tougher. A mine has lots of ore.</p></div>';
   return head('👾 Monster zone',X.w+' × '+X.h+' at '+X.x+', '+X.y)+'<div class="dv-row"><label class="dv-mut">How many at once<input type="number" data-ixf="n" min="1" max="12" value="'+X.n+'" style="width:70px"></label>'+
    '<label class="dv-mut">How tough<br><select data-ixf="hp">'+TOUGHN.map((n,i)=>'<option value="'+i+'"'+((X.hp|0)===i?' selected':'')+'>'+n+'</option>').join('')+'</select></label></div>'+
