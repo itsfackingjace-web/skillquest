@@ -316,7 +316,7 @@
   (`.info/connected`). Rules: `sess`, `saves.sid` (publish them).
 - **Home comforts** (`items/148-s154-home-comforts.js`, `window.SQHOME`): yard campfires (012's indoors check and 049's
   "too windy" let yards through; `fireKey64` gives each yard its own fire stash `yard:<house id>`; the fires are kept as `_fire`
-  room items so they draw and sort, 083's `drawFurn`). No hunger drain inside a house/castle (`SCENE.id==='home'`, not a yard):
+  room items so they draw and sort, 083's `drawFurn`; other players' shared fires (`_rp`) are included, or visitors never saw them). No hunger drain inside a house/castle (`SCENE.id==='home'`, not a yard):
   the outermost `upd` adds 3x the drain first and takes it back, so starving can't trigger; eating still counts. The
   wardrobe opens the character screen, so it gets its own `#cwpk` PICK UP WARDROBE button (`pickFurn`/`pickStruct`).
 - **Deposit bag** (`items/149-s155-deposit-bag.js`, `SQDEPOSIT`): a DEPOSIT BAG button in 011's `chestHTML` (YOUR BAG header);
@@ -404,6 +404,9 @@
   `talkTo` asks `SQNPCROLE(it)` first. Custom quests are in the quest log via `SQQEXTRA`, saved as `cq`. Kill quests and loot
   tables count in the outermost `enemyDrop` (monster key = `SQPROPS.mkey` without `m:`). Island chests can list a loot table
   (`lt_` key, count = rolls; 111a's chest code). New monsters `cm:<letters>` are built by the outermost `rgMake` from `base`.
+  Items can set `mv` (merge into another item): copies in the bag turn into it (`merge()` on apply, load and every 2 s); the way to
+  retire a duplicate without deleting a published item. 176's "Make its item" buttons reuse an item with the same name (`sameName`),
+  and 169 warns about two items with one name.
 - **Balance** (`dev/163-s169-balance.js`, `window.SQBAL`, Dev Suite > Balance): library `balance` = {xp:{skill:%}, act:{'<TABLE>:<key>':xp},
   perk:{'<TABLE>:<perk id>':%}}. `act` edits the xp field of COOKS/SM/GOODS/BREC/FREC/FISH_T/SQTIER entries in place (not `_cu`);
   `perk` edits the [id,value] pairs of 038/039's GSPD/GEXT/GRAR/GDBL/STAYP/FOODP/PSPD (one id can sit in two tables, hence the

@@ -160,7 +160,9 @@
  function set(f,v){if(!T.w)return;T.w[f]=v;T.dirty=true}
  async function save(){const k=SECK[T.kind],r=CLEAN[T.kind](T.w);sec(k)[T.sel]=r;
   try{await dset('draft/gather/'+k+'/'+T.sel,r);T.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}try{if(SQA.previewing)SQA.preview(S.draft)}catch(e){}API.draw()}
- async function mkItem(key,o){const ci=(S.draft.content=S.draft.content||{}).items=(S.draft.content.items||{});if(ci[key]){toast('That item already exists in the Content tab.');return key}
+ // an item with the same name already (the game's or the draft's)? use it instead of making a second one (191)
+ const sameName=n=>{const t=String(n).trim().toLowerCase(),ci=((S.draft.content||{}).items)||{};for(const k in ci)if(String(ci[k].n||'').trim().toLowerCase()===t)return k;for(const k of INVK)if(String(INAME[k]||'').trim().toLowerCase()===t&&!/^pet_|^eq_/.test(k))return k;return null};
+ async function mkItem(key,o){const same=sameName(o.n);if(same){toast('Using the item +o.n+ you already have ('+same+').');return same}const ci=(S.draft.content=S.draft.content||{}).items=(S.draft.content.items||{});if(ci[key]){toast('That item already exists in the Content tab.');return key}
   ci[key]=o;try{await dset('draft/content/items/'+key,o)}catch(e){fail(e)}return key}
  const idOf=n=>String(n||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,24)||'new';
  document.addEventListener('click',async e=>{if(S.tab!=='gather')return;const t=e.target.closest('[data-gx]');if(!t)return;e.preventDefault();const a=t.dataset.gx;

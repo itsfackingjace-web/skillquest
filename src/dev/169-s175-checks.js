@@ -16,6 +16,10 @@
   // content
   for(const id in C.items||{}){const o=C.items[id]||{};if(!(D.icons||{})[id])warn('Item '+(o.n||id),'has no sprite yet (it shows as a blank square). Draw it in Sprites.',{tab:'sprites',sel:'.dv-it[data-k="'+id+'"]'});
    if(o.t==='food'&&!(o.heal>0)&&!(o.hun>0))warn('Item '+(o.n||id),'is food but heals nothing and fills nothing.',go('items',id))}
+  // two items with the same name (191): players can't tell them apart; merge one into the other
+  {const by={};for(const k of items){const n=String(nmI(k)).trim().toLowerCase();if(!n||/^(pet_|eq_)/.test(k))continue;(by[n]=by[n]||[]).push(k)}
+   for(const n in by){const L=by[n].filter(k=>!(C.items&&C.items[k]&&C.items[k].mv));if(L.length>1&&L.some(k=>C.items&&C.items[k]))warn('Item "'+nmI(L[0])+'"','there are '+L.length+' items with this name ('+L.join(', ')+'). Keep one and set "Merge into" on the others in Content > Items.',go('items',L.find(k=>C.items&&C.items[k])))}}
+  for(const id in C.items||{}){const o=C.items[id]||{};if(o.mv&&!item(o.mv))bad('Item '+(o.n||id),'merges into "'+o.mv+'", which isn\'t an item.',go('items',id))}
   for(const id in C.recipes||{}){const r=C.recipes[id]||{},w='Recipe '+(r.out?nmI(r.out):id);if(!item(r.out))bad(w,'makes "'+(r.out||'nothing')+'", which isn\'t an item.',go('recipes',id));
    const c=arr(r.c).filter(q=>q&&q.k);if(!c.length)bad(w,'has no materials.',go('recipes',id));for(const q of c)if(!item(q.k))bad(w,'needs "'+q.k+'", which isn\'t an item.',go('recipes',id))}
   const roles=new Set();for(const iid in D.islands||{})for(const Q of arr((D.islands[iid]||{}).npc))if(Q&&Q.ro)for(const p of String(Q.ro).replace(/^(shop|quest):/,m=>m).split(/[:,]/))roles.add(p);

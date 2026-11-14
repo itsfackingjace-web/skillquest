@@ -11,7 +11,7 @@
  {const _fk=window.fireKey64;window.fireKey64=function(){if(yard())return'yard:'+(SCENE.house.id||'?');return _fk?_fk():curRegion()}}
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&(R.yard||R.court)){
     // the room's fire items follow the current fires (only in your yard scene; another yard has its own list)
-    const want=yard()?fires.filter(f=>f.life>0&&!f._rp&&!f._glow):[];const have=R.items.filter(it=>it.t==='_fire');
+    const want=yard()?fires.filter(f=>f.life>0&&!f._glow):[];/* 191: other players' fires (_rp, 061's shared fires) too */const have=R.items.filter(it=>it.t==='_fire');
     if(have.length!==want.length||have.some((it,k)=>it.f!==want[k])){R.items=R.items.filter(it=>it.t!=='_fire');for(const f of want)R.items.push({t:'_fire',f,x:f.x/16,y:(f.y+3)/16-1})}}}catch(e){}return out}}
  // ---- no hunger drain at home ----
  {const _u=upd;upd=function(dt){if(!indoors()||dead||menuOpen||pnOpen||typeof hunger!=='number')return _u.apply(this,arguments);

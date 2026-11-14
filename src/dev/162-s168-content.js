@@ -1,7 +1,8 @@
 // ---- 168. Content without code: Dev Suite > Content (items, recipes, shops, quests, monsters, loot tables) ----
 // Library section content = {items, recipes, shops, quests, mobs, loot}; every entry is a plain record, checked here before
 // it touches the game, and taken back out of the game's lists when it changes or goes away (so preview/publish can redo it).
-//   items.it_<id>   {n, pl, d, v sell price, t:'mat'|'food'|'pot', heal hearts, hun food 0-100, mana, buff 'str'|'iron'|'swift', bs seconds}
+//   items.it_<id>   {n, pl, d, v sell price, t:'mat'|'food'|'pot', heal hearts, hun food 0-100, mana, buff 'str'|'iron'|'swift', bs seconds,
+//                   mv = merge into another item: every copy in a bag turns into that item (checked on load and every 2 s)}
 //                   new bag items (INVK/INAME/IDESC/SELLP/SN/SHORT, EXTRA_BAG); food goes in FOODS (EAT/USE), potions in
 //                   FOODS with pot:1 (USE from the bag only; EAT skips them). Icons: Sprites tab (same key). Saves keep counts
 //                   of items that haven't loaded yet (PEND, like 111a2's new gear), so never rename a published item.
@@ -35,8 +36,13 @@
   FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);if(PEND[k]){inv[k]=(inv[k]|0)+PEND[k];delete PEND[k]}else inv[k]=inv[k]|0}
  function items(L){const want={};for(const id in L){const o=L[id];if(!/^it_[a-z0-9_]{1,30}$/.test(id)||!o||typeof o!=='object')continue;const n=clean(o.n,30);if(!n)continue;
    const t=['food','pot'].includes(o.t)?o.t:'mat';want[id]={n,pl:clean(o.pl,32)||n,d:clean(o.d,300),v:num(o.v,0,1e7,1)|0,t,heal:num(o.heal,0,6,0)|0,hun:num(o.hun,0,100,t==='food'?20:0)|0,
-    mana:num(o.mana,0,50,0)|0,buff:['str','iron','swift','wis','regen'].includes(o.buff)?o.buff:'',bs:num(o.bs,10,1800,120)|0}}
-  for(const k of[...REG])if(!want[k])unregItem(k);for(const k in want)if(JSON.stringify(C.items[k])!==JSON.stringify(want[k])||!REG.has(k))regItem(k,want[k]);C.items=want}
+    mana:num(o.mana,0,50,0)|0,buff:['str','iron','swift','wis','regen'].includes(o.buff)?o.buff:'',bs:num(o.bs,10,1800,120)|0,mv:typeof o.mv==='string'&&/^[a-z0-9_]{1,40}$/.test(o.mv)&&o.mv!==id?o.mv:''}}
+  for(const k of[...REG])if(!want[k])unregItem(k);for(const k in want)if(JSON.stringify(C.items[k])!==JSON.stringify(want[k])||!REG.has(k))regItem(k,want[k]);C.items=want;
+  for(const k in MV)delete MV[k];for(const k in want)if(want[k].mv)MV[k]=want[k].mv;merge()}
+ const MV={};// merged items: key -> the item it turns into
+ function merge(){for(const k in MV){const t=MV[k];if(t===k||!INAME[t]||MV[t])continue;const n=inv[k]|0;if(n>0){inv[t]=(inv[t]|0)+n;inv[k]=0}}}
+ {let mt=0;const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if((mt+=dt)>2){mt=0;try{merge()}catch(e){}}return out}}
+ {const _ap=applySave;applySave=function(){const out=_ap.apply(this,arguments);try{merge()}catch(e){}return out}}
  {const _uf=useFood;useFood=function(k){const o=POT[k];if(!o)return _uf.apply(this,arguments);if((inv[k]|0)<1)return;inv[k]--;const got=[];
    if(o.heal){P.hp=Math.min(6,P.hp+o.heal);got.push('+'+o.heal+' HP')}if(o.mana){MANA=Math.min(typeof maxMP==='function'?maxMP():10,MANA+o.mana);got.push('+'+o.mana+' mana')}
    if(o.buff&&window.LUX&&LUX.BUFF){LUX.BUFF[o.buff]=performance.now()+o.bs*1000;got.push({str:'stronger hits',iron:'better blocks',swift:'free sprinting',wis:'+20% XP',regen:'regeneration'}[o.buff]+' for '+(o.bs>=120?Math.round(o.bs/60)+' min':o.bs+' s'))}
@@ -150,7 +156,8 @@
     {f:'t',l:'Kind',t:'sel',o:()=>[['mat','Material'],['food','Food (EAT / USE)'],['pot','Potion (USE from the bag)']]},
     {f:'heal',l:'Hearts healed (0-6)',t:'num',min:0,max:6,if:o=>o.t!=='mat'},{f:'hun',l:'Food restored (0-100)',t:'num',min:0,max:100,if:o=>o.t==='food'},
     {f:'mana',l:'Mana restored',t:'num',min:0,max:50,if:o=>o.t==='pot'},{f:'buff',l:'Buff (temporary)',t:'sel',o:()=>[['','None'],...(window.SQBUFFK||[['str','+2 melee damage'],['iron','+15% block'],['swift','Sprint for free']])],if:o=>o.t==='pot'||o.t==='food'},
-    {f:'bs',l:'Buff lasts (seconds)',t:'num',min:10,max:1800,if:o=>(o.t==='pot'||o.t==='food')&&o.buff}]},
+    {f:'bs',l:'Buff lasts (seconds)',t:'num',min:10,max:1800,if:o=>(o.t==='pot'||o.t==='food')&&o.buff},
+    {f:'mv',l:'Merge into another item (every copy players have turns into it; for duplicates)',t:'sel',o:()=>[['','— keep it its own item —'],...[...INVK.filter(k=>INAME[k]&&!/^pet_|^eq_/.test(k)).map(k=>[k,INAME[k]+' ('+k+')']),...Object.entries(((window.SQSUITE&&SQSUITE.state.draft||{}).content||{}).items||{}).filter(([k])=>!INAME[k]).map(([k,o])=>[k,(o.n||k)+' ('+k+', draft)'])].sort((a,b)=>a[1].localeCompare(b[1]))]}]},
   recipes:{l:'🔨 Recipes',pre:'r_',blank:()=>({sk:'craft',out:'',c:[{k:'wood',n:2}],lv:1,xp:20}),hint:'Crafting recipes show in the crafting menu, smithing at the anvil, smelting at the furnace, cooking at a fire or stove (it takes the first material as the raw food). "Cooking (stove only)" makes a meal from all its ingredients, only on a cooking stove.',
    F:[{f:'sk',l:'Skill',t:'sel',o:()=>[['craft','Crafting'],['smith','Smithing (anvil)'],['smelt','Smithing (furnace)'],['cook','Cooking (fire or stove)'],['stove','Cooking (stove only)']]},{f:'out',l:'Makes',t:'item'},
     {f:'c',l:'Materials',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'n',l:'How many',t:'num',min:1,max:9999}]},{f:'lv',l:'Level needed',t:'num',min:1,max:99},{f:'xp',l:'XP each',t:'num',min:0,max:5000}],
