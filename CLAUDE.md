@@ -564,4 +564,4 @@
   {n, st (rock/mine/ice/root/sand/tomb), fl:[{w,h,g ('#'/'.' per cell),it:[{t,x,y,o}],m:[{k,x,y,hp,b}]}]}. Each design is an island-cave
   kind `dg_<id>` in SQICV/DKIND; island-builder entrances can point at one (`cv[].dg` → 111a sets `dgw` on that cave kind). The outermost
   `buildFloor` builds designed floors exactly (entrance bottom middle, stairs as placed or put far away automatically, none on the
-  last floor; bosses = `big`, 4× health). Floors cached in `DUN.floors` are dropped on apply (not the one you're in).
+  last floor; bosses = `big`, 4× health, a bar drawn in the outermost `pS`). Floors cached in `DUN.floors` are dropped on apply (not the one you're in).

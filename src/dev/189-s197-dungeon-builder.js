@@ -41,6 +41,8 @@
   for(const q of F.m){const T=M[q.k];if(!T)continue;const hp=q.hp||(q.b?Math.round(T.hp*4):T.hp);let m=null;try{m=rgMake(q.k,hp,q.x*16+8,q.y*16+8)}catch(e){}if(!m)continue;m.mhp=hp;m.icv=1;if(q.b){m.big=1;m._dgb=1}R.mobs.push(m)}
   for(let i=0;i<W*H;i++)if(G[i])R.solid.add(i);return R}
  {const _bf=buildFloor;buildFloor=function(kind,f){if(designOf(kind)){try{return build(kind,f)}catch(e){console.warn('dungeon builder',e)}}return _bf.apply(this,arguments)}}
+ // designed bosses: a health bar over them
+ {const _ps=pS;pS=function(n){const out=_ps.apply(this,arguments);try{if(n&&n._dgb&&n.hp>0){const w=28,x=Math.round(n.x-w/2),y=Math.round(n.y-24);g.fillStyle='#000';g.fillRect(x-1,y-1,w+2,5);g.fillStyle='#c82828';g.fillRect(x,y,Math.round(w*Math.max(0,n.hp)/(n.mhp||n.hp)),3)}}catch(e){}return out}}
  window.SQDUNGEONS={get list(){return DG},ST,ITEMS,ORES,build,designOf};
  // ======================= Dev Suite > Dungeons =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;
@@ -82,7 +84,7 @@
    '<span class="dv-mut">'+E(T.sel)+'</span></div>'+
    '<div class="dv-row" style="flex-wrap:wrap;margin-top:6px"><span class="dv-mut">Floors:</span>'+w.fl.map((_,i)=>'<button class="dv-b'+(T.f===i?' dv-tl dv-on':'')+'" data-dgfl="'+i+'">'+(i+1)+'</button>').join('')+(w.fl.length<8?'<button class="dv-b" data-dgx="addfl">+ Floor</button>':'')+(w.fl.length>1?'<button class="dv-b '+(S.arm==='dgdelfl'?'dv-arm':'dv-bad')+'" data-dgx="delfl">'+(S.arm==='dgdelfl'?'Tap again':'Remove this floor')+'</button>':'')+'</div>'+
    '<div class="dv-row dv-dgtools" style="flex-wrap:wrap;margin-top:6px">'+TOOLS.map(([k,l])=>'<button class="dv-b'+(T.tool===k?' dv-tl dv-on':'')+'" data-dgt="'+k+'">'+l+'</button>').join('')+'</div>'+
-   ((T.tool==='mob'||T.tool==='boss')?'<div class="dv-row"><span class="dv-mut">Monster</span><select data-dgf="mob">'+mobList().map(([k,n])=>'<option value="'+E(k)+'"'+(T.mob===k?' selected':'')+'>'+E(n)+'</option>').join('')+'</select>'+(T.tool==='boss'?'<span class="dv-mut">A boss has 4× health and boss music.</span>':'')+'</div>':'')+
+   ((T.tool==='mob'||T.tool==='boss')?'<div class="dv-row"><span class="dv-mut">Monster</span><select data-dgf="mob">'+mobList().map(([k,n])=>'<option value="'+E(k)+'"'+(T.mob===k?' selected':'')+'>'+E(n)+'</option>').join('')+'</select>'+(T.tool==='boss'?'<span class="dv-mut">A boss has 4× health, a health bar and boss music.</span>':'')+'</div>':'')+
    (T.tool==='ore'?'<div class="dv-row"><span class="dv-mut">Ore</span><select data-dgf="ore">'+ORES.map(o=>'<option'+(T.ore===o?' selected':'')+'>'+o+'</option>').join('')+'</select></div>':'')+
    '<div class="dv-cv" style="overflow:auto;max-height:66vh;background:#0c0e12;border-radius:8px"><canvas id="dvdg" style="display:block;margin:0 auto;touch-action:none;cursor:crosshair"></canvas></div><p class="dv-mut" id="dvdgst"></p>'+
    '<div class="dv-row" style="flex-wrap:wrap"><span class="dv-mut">Size</span><input type="number" data-dgsz="w" min="12" max="72" value="'+fl.w+'" style="width:64px">×<input type="number" data-dgsz="h" min="10" max="56" value="'+fl.h+'" style="width:64px"><button class="dv-b" data-dgx="resize">Resize</button>'+
