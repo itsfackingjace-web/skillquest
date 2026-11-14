@@ -310,7 +310,7 @@ function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.se
  const m=v.m.slice(0,80),n=String(v.n||'?').replace(/[<>]/g,'').slice(0,12);
  const e={me:mine,n,uid:v.u,t:typeof v.t==='number'?v.t:0};mpLog('pub',m,e);const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
  if(fresh){if(mine)MP.selfSaid={m,at:performance.now()};else{const r=MP.players.get(v.u);if(r)r.said={m,at:performance.now()}}if(!MP.open&&!mine){MP.unread++;mpRBtn()}}}
-function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)return;if(!MP.on){mpOpenChat();return}
+function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)return;if(!MP.on){mpOpenChat();return}if(window.SQMOD&&SQMOD.blockChat())return;
  const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;
  const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}
 // ---- Options: show your own name (and crown) over your head ----
@@ -611,7 +611,7 @@ mpSend=function(t){t=String(t||'').replace(/\s+/g,' ').trim();if(!t)return;if(!M
  let to=null,msg=t;const w=t.match(/^\/(?:w|msg|pm)\s+(\S+)\s+(.+)$/i);
  if(w){const nl=w[1].toLowerCase();to=Object.keys(MP.friends).find(u=>fname(u).toLowerCase()===nl)||[...MP.players.keys()].find(u=>(MP.players.get(u).n||'').toLowerCase()===nl);msg=w[2];if(!to){mpLog('game','No friend or nearby player called '+w[1]+'.');return}}
  else if(MP.tab==='pm'){to=MP.pmTo;if(!to){mpLog('game','Pick a friend in the Friends tab to message.');return}}
- msg=msg.slice(0,80);const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;const d=FB.db;
+ msg=msg.slice(0,80);if(window.SQMOD&&SQMOD.blockChat())return;const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;const d=FB.db;
  if(to){d.push(d.ref(FB.D,'pm/'+to),{f:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).then(()=>{mpLog('pm',msg,{dir:'to',n:fname(to),uid:to,t:mpNow()});MP.pmTo=to}).catch(e=>{mpLog('game','Could not send that message.');mpErr(e)});return}
  d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).catch(mpErr)};
 // the overlay shows private messages to you too

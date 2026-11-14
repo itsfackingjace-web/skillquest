@@ -434,3 +434,12 @@
 - **Checks** (`dev/169-s175-checks.js`, `SQCHECKS.run(lib)`, Dev Suite > Checks): broken references in the draft (items, monsters,
   quests, shops, songs, loot tables, islands' people/zones/caves/chests, monster drops, bosses, new gear), quests/shops nobody
   runs, missing sprites; problems also head the Publish list. Add a check there when a new library section refers to others.
+- **Moderation** (`multiplayer/170-s176-moderation.js`, `SQMOD`, Dev Suite > Moderation): `mod/<uid>` {mu, ba (until, ms), r, by, t};
+  the rules refuse chat/pm from muted or suspended accounts and presence/market offers from suspended ones (a missing `mu`/`ba`
+  must pass: the rules use `!exists() || val() < now`). Game side: `#sqban` notice + `upd` stopped while suspended; 061's
+  `mpSend`/pm send ask `SQMOD.blockChat()`. `reports/<id>` from the player menu's REPORT (130 → `SQREPORT(u,name)`, `ptab` 40).
+  Devs can delete chat messages. Rules: `mod`, `reports`, `chat`, `pm`, `presence`, `market/offers` (publish them).
+- **Player stats** (`ui/171-s177-player-stats.js`, `SQSTATS`, Dev Suite > Player stats): `stats/d/<UTC day>/<uid>` minutes played (sent
+  every 5 min), `stats/f/<uid>` first day, `stats/dz/<day>/<where~monster>` deaths (+1 transactions). The tab shows players per
+  day, new players and next-day / week returns, deaths, and (reading saves) the quest/guide step/total level of players who
+  stopped. Rules: `stats` (publish them).
