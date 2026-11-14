@@ -60,7 +60,7 @@
   const maxW=L?L.qw:Math.min(W-32*U,360*U),words=txt.split(' '),lines=[];let cur='';for(const w of words){const tt=cur?cur+' '+w:w;if(g.measureText(tt).width>maxW-24*U&&cur){lines.push(cur);cur=w}else cur=tt}if(cur)lines.push(cur);
   const bw=Math.min(maxW,Math.max(...lines.map(l=>g.measureText(l).width))+24*U),lh=fs*1.35,bh=lines.length*lh+(stuck?28:18)*U,bx=L?L.ins:(W-bw)/2;let by=L?L.stackBottom+4*U:Math.min(H-bh-120*U,H/2+30*Z);
   if(L&&window.SQHUDBTN){const r=cv.getBoundingClientRect();by=Math.max(by,(SQHUDBTN-r.top)*W/r.width+4*U)}const tx=L?bx+12*U:W/2,al=L?'left':'center';
-  g3box(bx,by,bw,bh,U,'#f8f0d8');let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',tx,y,11,U,'#b06010',al,700);y+=lh}
+  g3box(bx,by,bw,bh,U,'#f8f0d8');if(L)window.SQHINTB={b:by+bh,f:performance.now()};let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',tx,y,11,U,'#b06010',al,700);y+=lh}
   lines.forEach(l=>{g3text(l,tx,y,11,U,'#404040',al,600);y+=lh});g.restore()};
  // tapping the quest box opens the quest log
  cv.addEventListener('pointerdown',e=>{if(menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)||typeof HUDL==='undefined'||!HUDL||(window.SQTRKOFF&&SQTRKOFF()))return;const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*(cv.width/r.width),sy=(e.clientY-r.top)*(cv.height/r.height),L=HUDL;

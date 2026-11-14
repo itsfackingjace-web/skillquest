@@ -565,3 +565,6 @@
   kind `dg_<id>` in SQICV/DKIND; island-builder entrances can point at one (`cv[].dg` → 111a sets `dgw` on that cave kind). The outermost
   `buildFloor` builds designed floors exactly (entrance bottom middle, stairs as placed or put far away automatically, none on the
   last floor; bosses = `big`, 4× health, a bar drawn in the outermost `pS`). Floors cached in `DUN.floors` are dropped on apply (not the one you're in).
+- **Party list placement** (136's HUD): starts under the left HUD stack, then under 111's CHAT/BUG row when that row is in the left
+  column (`SQHUDBTN`, phones without a minimap, e.g. indoors) and under 115's guide hint (`window.SQHINTB` {b,f}, its bottom in canvas
+  px this frame). Anything else drawn in that column should record its bottom the same way.

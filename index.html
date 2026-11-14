@@ -9391,6 +9391,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-17',d:'Nov 14, 2026',t:'Party list fix',n:['On phones indoors, your party members\' health bars no longer hide behind the CHAT and BUG buttons.']},
  {v:'2026.11.14-16',d:'Nov 14, 2026',t:'Hand-made dungeons',n:['Dungeons can now be designed room by room, with chests, ore, stairs and a boss waiting on the last floor. Look out for new dungeon entrances on the islands.']},
  {v:'2026.11.14-15',d:'Nov 14, 2026',t:'Behind the scenes: controller in the Dev Suite',n:['The developer\'s tools now work with a controller too, including drawing sprites with the D-pad.']},
  {v:'2026.11.14-14',d:'Nov 14, 2026',t:'Chat bubbles',n:['What players say now shows in speech bubbles over their heads instead of long yellow lines, wrapped to a few short lines.','Bubbles keep out of each other\'s way, never cover your status box, map or buttons, and stay up a little longer for longer messages.','When lots of people talk at once, older messages shrink to a small … bubble. The full chat is always in the chat window.']},
@@ -14684,7 +14685,7 @@ window.SQA=SQA;
   const maxW=L?L.qw:Math.min(W-32*U,360*U),words=txt.split(' '),lines=[];let cur='';for(const w of words){const tt=cur?cur+' '+w:w;if(g.measureText(tt).width>maxW-24*U&&cur){lines.push(cur);cur=w}else cur=tt}if(cur)lines.push(cur);
   const bw=Math.min(maxW,Math.max(...lines.map(l=>g.measureText(l).width))+24*U),lh=fs*1.35,bh=lines.length*lh+(stuck?28:18)*U,bx=L?L.ins:(W-bw)/2;let by=L?L.stackBottom+4*U:Math.min(H-bh-120*U,H/2+30*Z);
   if(L&&window.SQHUDBTN){const r=cv.getBoundingClientRect();by=Math.max(by,(SQHUDBTN-r.top)*W/r.width+4*U)}const tx=L?bx+12*U:W/2,al=L?'left':'center';
-  g3box(bx,by,bw,bh,U,'#f8f0d8');let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',tx,y,11,U,'#b06010',al,700);y+=lh}
+  g3box(bx,by,bw,bh,U,'#f8f0d8');if(L)window.SQHINTB={b:by+bh,f:performance.now()};let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',tx,y,11,U,'#b06010',al,700);y+=lh}
   lines.forEach(l=>{g3text(l,tx,y,11,U,'#404040',al,600);y+=lh});g.restore()};
  // tapping the quest box opens the quest log
  cv.addEventListener('pointerdown',e=>{if(menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)||typeof HUDL==='undefined'||!HUDL||(window.SQTRKOFF&&SQTRKOFF()))return;const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*(cv.width/r.width),sy=(e.clientY-r.top)*(cv.height/r.height),L=HUDL;
@@ -16403,6 +16404,10 @@ window.SQA=SQA;
  {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!PT.id)return out;const L=others().slice(0,3);if(!L.length)return out;const H=hudLayout(),U=H.U,w=100*U,x0=H.ins;
    // left column, under the quest box and its chips (the right side has the minimap, CHAT and BUG)
    let y=(H.stackBottom||H.qy+30*U)+6*U;try{const wb=document.getElementById('wbb');if(wb&&wb.style.display==='block'){const r=wb.getBoundingClientRect(),k=cv.width/(cv.clientWidth||innerWidth);if(r.left*k<x0+w&&r.bottom>0)y=Math.max(y,r.bottom*k+6*U)}}catch(e){}
+   // phones without a minimap (indoors) put CHAT and BUG in this column too (111's sqPlaceBtns, SQHUDBTN = their bottom in CSS px)
+   try{if(window.SQHUDBTN>0){const rc=cv.getBoundingClientRect(),k=cv.width/(rc.width||innerWidth);y=Math.max(y,(SQHUDBTN-rc.top)*k+6*U)}}catch(e){}
+   // and under the getting-started hint when it was drawn this moment (115 records its bottom in canvas px)
+   try{const hb=window.SQHINTB;if(hb&&performance.now()-hb.f<100)y=Math.max(y,hb.b+6*U)}catch(e){}
    g.save();g.setTransform(1,0,0,1,0,0);for(const r of L){g3box(x0,y,w,26*U,U,'#eef8e8');g.font='700 '+9*U+'px '+PF;g.textAlign='left';g.textBaseline='middle';g.fillStyle='#284028';g.fillText(fitText('★ '+r.n,w-12*U),x0+6*U,y+9*U);
     const f=Math.max(0,Math.min(1,(r.hpv||0)/6));g.fillStyle='#485870';g.fillRect(x0+6*U,y+16*U,w-12*U,5*U);g.fillStyle=f>.5?'#48c878':f>.2?'#f8c030':'#f05030';g.fillRect(x0+7*U,y+17*U,(w-14*U)*f,3*U);y+=29*U}g.restore()}catch(e){}return out}}
  // ---- the map and the minimap: party members in green ----

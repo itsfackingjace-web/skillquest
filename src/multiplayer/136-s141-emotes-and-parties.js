@@ -137,6 +137,10 @@
  {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!PT.id)return out;const L=others().slice(0,3);if(!L.length)return out;const H=hudLayout(),U=H.U,w=100*U,x0=H.ins;
    // left column, under the quest box and its chips (the right side has the minimap, CHAT and BUG)
    let y=(H.stackBottom||H.qy+30*U)+6*U;try{const wb=document.getElementById('wbb');if(wb&&wb.style.display==='block'){const r=wb.getBoundingClientRect(),k=cv.width/(cv.clientWidth||innerWidth);if(r.left*k<x0+w&&r.bottom>0)y=Math.max(y,r.bottom*k+6*U)}}catch(e){}
+   // phones without a minimap (indoors) put CHAT and BUG in this column too (111's sqPlaceBtns, SQHUDBTN = their bottom in CSS px)
+   try{if(window.SQHUDBTN>0){const rc=cv.getBoundingClientRect(),k=cv.width/(rc.width||innerWidth);y=Math.max(y,(SQHUDBTN-rc.top)*k+6*U)}}catch(e){}
+   // and under the getting-started hint when it was drawn this moment (115 records its bottom in canvas px)
+   try{const hb=window.SQHINTB;if(hb&&performance.now()-hb.f<100)y=Math.max(y,hb.b+6*U)}catch(e){}
    g.save();g.setTransform(1,0,0,1,0,0);for(const r of L){g3box(x0,y,w,26*U,U,'#eef8e8');g.font='700 '+9*U+'px '+PF;g.textAlign='left';g.textBaseline='middle';g.fillStyle='#284028';g.fillText(fitText('★ '+r.n,w-12*U),x0+6*U,y+9*U);
     const f=Math.max(0,Math.min(1,(r.hpv||0)/6));g.fillStyle='#485870';g.fillRect(x0+6*U,y+16*U,w-12*U,5*U);g.fillStyle=f>.5?'#48c878':f>.2?'#f8c030':'#f05030';g.fillRect(x0+7*U,y+17*U,(w-14*U)*f,3*U);y+=29*U}g.restore()}catch(e){}return out}}
  // ---- the map and the minimap: party members in green ----
