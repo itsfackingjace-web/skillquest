@@ -45,12 +45,12 @@
  const st=u=>{const m=(T.mod||{})[u]||{},n=Date.now(),o=[];if(m.ba>n)o.push('🚫 suspended until '+until(m.ba));if(m.mu>n)o.push('🔇 muted until '+until(m.mu));return o.join(' · ')};
  const acts=u=>'<span class="dv-row" style="flex-wrap:wrap;gap:4px"><button class="dv-b" data-md="mu:'+E(u)+':1">Mute 1 h</button><button class="dv-b" data-md="mu:'+E(u)+':24">Mute 1 day</button><button class="dv-b dv-bad" data-md="ba:'+E(u)+':168">Suspend 7 days</button><button class="dv-b dv-bad" data-md="ba:'+E(u)+':876000">Suspend for good</button>'+(((T.mod||{})[u]||{}).mu>Date.now()||((T.mod||{})[u]||{}).ba>Date.now()?'<button class="dv-b" data-md="clr:'+E(u)+'">Lift</button>':'')+'</span>';
  const chatOf=u=>(T.chat||[]).filter(m=>m.u===u).slice(0,12);
- const WN=Object.fromEntries(WHY);
+ const WN={...Object.fromEntries(WHY),spam:'Spam'};
  function repView(){const L=Object.entries(T.rep).filter(([,r])=>r&&r.t).sort((a,b)=>b[1].t-a[1].t),open=([,r])=>!r.st;
   const sh=L.filter(x=>T.rf==='all'||(T.rf==='open'?open(x):!open(x)));
   let h='<div class="dv-row" style="flex-wrap:wrap">'+[['open','Open'],['done','Handled'],['all','All']].map(([k,n])=>'<button class="dv-b'+(T.rf===k?' dv-tl dv-on':'')+'" data-md="rf:'+k+'">'+n+' ('+L.filter(x=>k==='all'||(k==='open'?open(x):!open(x))).length+')</button>').join('')+'</div>';
   for(const[id,r]of sh){const c=chatOf(r.u);h+='<div class="dv-card" style="margin:8px 0"><div class="dv-row" style="flex-wrap:wrap"><b>'+E((T.lb&&T.lb[r.u]&&T.lb[r.u].n)||r.n||nm(r.u))+'</b><span class="dv-mut">reported by '+E(r.byn||nm(r.by))+' · '+ago(r.t)+(r.loc?' · '+E(r.loc):'')+'</span>'+(r.st?'<span style="color:#7c6">✔ '+E(r.st)+'</span>':'')+'</div>'+
-   '<p style="margin:6px 0">'+E(WN[r.why]||r.why)+(r.x?': “'+E(r.x)+'”':'')+'</p>'+(st(r.u)?'<p class="dv-mut">'+st(r.u)+'</p>':'')+
+   '<p style="margin:6px 0">'+E(WN[r.why]||r.why)+(r.x?': “'+E(r.x)+'”':'')+'</p>'+(r.m?'<p class="dv-mut" style="margin:4px 0;font-size:13px">What they said (seen by the reporter): '+E(r.m)+'</p>':'')+(st(r.u)?'<p class="dv-mut">'+st(r.u)+'</p>':'')+
    '<details><summary class="dv-mut">Their recent chat ('+c.length+')</summary>'+(c.map(m=>'<div style="font-size:13px">'+E(m.m)+' <small class="dv-mut">'+ago(m.t)+'</small></div>').join('')||'<p class="dv-mut">Nothing in the last 300 messages.</p>')+'</details>'+
    '<div style="margin-top:6px">'+acts(r.u)+'</div><div class="dv-row" style="margin-top:6px"><button class="dv-b" data-md="rst:'+id+':'+(r.st?'':'handled')+'">'+(r.st?'Reopen':'Mark handled')+'</button>'+(r.st?'':'<button class="dv-b" data-md="rst:'+id+':no action">No action needed</button>')+'</div></div>'}
   return h+(sh.length?'':'<p class="dv-mut">Nothing here.</p>')}

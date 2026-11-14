@@ -445,3 +445,6 @@
   stopped. Rules: `stats` (publish them).
 - **No `prompt()`**: the Windows app (Electron) doesn't support it ("Prompt () is and will not be supported"). Ask for text with an
   input on the page instead (Moderation's reason box, Admin's reply box).
+- **Two player menus**: tapping a name in chat opens 070's `#mppm` (message/friend/trade/IGNORE/REPORT); walking up to someone opens
+  130's panel menu (now with IGNORE/UNIGNORE via `SQIGNSET`/`SQIGNORED` and REPORT via 170). Both REPORTs write `reports/<id>`
+  (070 adds `m` = their recent messages). The ignore list is 070's `IGN` (saved as `ign`), shown under IGNORED in Chat > Friends.

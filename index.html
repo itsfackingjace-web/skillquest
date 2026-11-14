@@ -8704,7 +8704,7 @@ function pmOpen(u){if(!MP.on||!MP.user||!u||u===MP.user.uid)return;IGN.pm=u;IGN.
 function pmClose(){pmEl.style.display='none';IGN.pm=null;IGN.rep=null;setFocus(null)}
 function pmDraw(){const u=IGN.pm,nm=esc(trName(u));if(IGN.rep){const R=IGN.rep;
   pmEl.innerHTML='<div class="h">REPORT '+nm.toUpperCase()+'</div><div class="rs">'+['Harassment','Spam','Cheating','Bad name','Other'].map(r=>'<button data-pm="why" data-v="'+r+'" class="'+(R.why===r?'on':'')+'">'+r+'</button>').join('')+'</div>'+
-   '<textarea id="pmtx" maxlength="600" placeholder="What happened? (optional)">'+esc(R.txt||'')+'</textarea><label style="font-size:13px"><input type="checkbox" id="pmig" '+(ignored(u)?'checked disabled':'checked')+'> Also ignore them</label>'+
+   '<textarea id="pmtx" maxlength="600" placeholder="What happened? (optional)">'+esc(R.txt||'')+'</textarea><label style="font-size:13px"><input type="checkbox" id="pmig" '+(ignored(u)?'checked disabled':'')+'> Also ignore them (hide their chat; undo in Chat > Friends)</label>'+
    '<button data-pm="send" style="background:#485870;color:#f8f8f8">SEND REPORT</button><button data-pm="back">BACK</button><div class="st" id="pmst"></div>';return}
  const fr=isFriend(u),near=typeof trNear==='function'&&trNear(u),ig=ignored(u);let h='<div class="h">'+(isOG(u)?'<img src="'+crownURL+'" alt="OG" style="width:18px;height:14px;image-rendering:pixelated">':'')+nm+(fr?' <small>friend</small>':'')+'</div>';
  if(fr)h+='<button data-pm="msg">MESSAGE</button>';else if(!ig)h+='<button data-pm="add">ADD FRIEND</button>';
@@ -8717,21 +8717,23 @@ pmEl.addEventListener('click',async e=>{const b=e.target.closest('[data-pm]');if
  if(a==='why'){IGN.rep.txt=($('pmtx')||{}).value||'';IGN.rep.why=b.dataset.v;pmDraw();return}
  if(a==='send'){const R=IGN.rep;R.txt=($('pmtx')||{}).value||'';if(!R.why){$('pmst').textContent='Pick a reason first.';return}const also=$('pmig')&&$('pmig').checked;
   const msgs=MP.log.filter(m=>m.uid===u&&(m.k==='pub'||m.k==='pm')).slice(-10).map(m=>m.m).join(' | ').slice(0,800);
-  const r={what:('PLAYER REPORT: '+trName(u)+' ('+u+') · '+R.why+(R.txt?' · '+R.txt:'')).slice(0,1500),exp:('Their recent messages: '+(msgs||'(none seen)')).slice(0,600),info:Object.assign(bugInfo(),{reported:u,reportedName:trName(u)}),shot:''};
-  $('pmst').textContent='Sending...';try{await bugSendNow(r);if(also&&!ignored(u))ignSet(u,true);pmClose();say('Report sent. Thank you for keeping SkillQuest friendly.');mpLog('game','You reported '+trName(u)+'.')}
+  // to the Moderation inbox (reports/<id>, 170), with what they said lately
+  const WK={Harassment:'chat',Spam:'spam',Cheating:'cheat','Bad name':'name',Other:'other'};let loc='';try{loc=SCENE&&SCENE.room&&SCENE.room.region||((typeof curRegion==='function')?curRegion():'')}catch(_){}
+  $('pmst').textContent='Sending...';try{const F=window.SQFB||FB,d=F.db;await d.push(d.ref(F.D,'reports'),{u,n:String(trName(u)).slice(0,12),by:MP.user.uid,byn:String(myName()).slice(0,12),why:WK[R.why]||'other',x:String(R.txt||'').slice(0,200),m:msgs.slice(0,800),loc:String(loc||'').slice(0,40),t:d.serverTimestamp()});
+   if(also&&!ignored(u))ignSet(u,true);pmClose();say('Report sent. Thank you for keeping SkillQuest friendly.');mpLog('game','You reported '+trName(u)+'.')}
   catch(err){$('pmst').textContent='Could not send. Try again in a moment.';mpErr(err)}}});
 // tapping a name in chat opens the menu (instead of jumping straight to messages)
 lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;e.stopImmediatePropagation();pmOpen(b.dataset.u)},true);
 {const _nr=navRoot;navRoot=function(){if(pmEl.style.display==='flex')return pmEl;return _nr()}}
 // Friends tab: the ignore list
-{const _fv=friendsView;friendsView=function(){_fv();if(!IGN.m.size)return;const h=document.createElement('div');h.className='fh';h.textContent='IGNORED';lst.appendChild(h);
+{const _fv=friendsView;friendsView=function(){_fv();if(!IGN.m.size)return;const h=document.createElement('div');h.className='fh';h.textContent='IGNORED: you don\'t see their chat. Tap UNIGNORE to see it again.';lst.appendChild(h);
   for(const[u,n]of IGN.m){const row=document.createElement('div');row.className='fr';const nm=document.createElement('div');nm.className='fn';const b=document.createElement('b');b.textContent=n;nm.append(b);
    const un=document.createElement('button');un.textContent='UNIGNORE';un.onclick=()=>ignSet(u,false);row.append(nm,un);lst.appendChild(row)}}}
 // /ignore name, /unignore name
 {const _s=mpSend;mpSend=function(t){const m=String(t||'').trim().match(/^\/(ignore|unignore|block|unblock)\s+(\S+)\s*$/i);if(!m)return _s(t);const nl=m[2].toLowerCase(),on=/^(ignore|block)$/i.test(m[1]);
   let u=[...MP.players.keys()].find(k=>(MP.players.get(k).n||'').toLowerCase()===nl)||Object.keys(MP.prof||{}).find(k=>MP.prof[k]&&MP.prof[k].nl===nl)||[...IGN.m].find(([k,n])=>n.toLowerCase()===nl)?.[0];
   if(!u){mpLog('game','No player called '+m[2]+'.');return}ignSet(u,on)}}
-window.SQIGN=IGN;
+window.SQIGN=IGN;window.SQIGNSET=ignSet;window.SQIGNORED=ignored;
 // other players' Flame Aura glows on your screen too
 {const _dh=drawHUD;drawHUD=function(){try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
   if(dk>.05&&MP.on){const cx=camX(),cy=camY();let st=false;
@@ -9380,6 +9382,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-25',d:'Nov 13, 2026',t:'Reporting and ignoring',n:['Reports made by tapping a name in chat now reach the developer properly.','Reporting someone no longer ignores them unless you tick "Also ignore them".','Ignored someone by mistake? Walk up to them, tap their name and choose UNIGNORE, or find them under IGNORED at the bottom of Chat > Friends.']},
  {v:'2026.11.13-24',d:'Nov 13, 2026',t:'Small fixes',n:['Fixed a couple of developer tools that didn\'t work in the Windows app.']},
  {v:'2026.11.13-23',d:'Nov 13, 2026',t:'Report players',n:['Someone being mean in chat, cheating or scamming? Walk up to them, tap their name and choose REPORT. The developer sees it along with their recent chat.','Players who break the rules can now be muted or suspended for a while.']},
  {v:'2026.11.13-22',d:'Nov 13, 2026',t:'Faster help when something goes wrong',n:['If your game gets stuck or something goes missing, the developer can now fix it for you: send you back to the start of Hollow, put back a recent backup of your game, or tidy up items left over from a bug. You\'ll see a note in your game when it happens.','Some players may see a small TEST VERSION tag while they help try out new content before everyone gets it.']},
@@ -15804,7 +15807,7 @@ window.SQA=SQA;
   h+='<button class="sb" data-pm="friend"'+(fr?' disabled style="opacity:.55"':'')+'>'+(fr?'FRIENDS ✓':'ADD FRIEND')+'</button>';
   h+='<button class="sb" data-pm="duel"'+(dSent&&!dIn?' disabled style="opacity:.55"':'')+'>'+(dIn?'ACCEPT DUEL':dSent?'DUEL ASKED…':'DUEL')+'</button>';
   if(window.SQPARTY){const inP=SQPARTY.has(u),inv=SQPARTY.invited(u);h+='<button class="sb" data-pm="party"'+(inP||inv?' disabled style="opacity:.55"':'')+'>'+(inP?'IN YOUR PARTY ✓':inv?'PARTY INVITE SENT…':'INVITE TO PARTY')+'</button>'}
-  h+='<button class="sb" data-pm="chess"'+(cSent&&!cIn?' disabled style="opacity:.55"':'')+'>'+(cIn?'ACCEPT CHESS':cSent?'CHESS ASKED…':'CHESS')+'</button>'+(window.SQREPORT?'<button class="sb" data-pm="report" style="color:#a04040">REPORT</button>':'')+'<button class="sb" data-pm="close">CLOSE</button></div>';
+  h+='<button class="sb" data-pm="chess"'+(cSent&&!cIn?' disabled style="opacity:.55"':'')+'>'+(cIn?'ACCEPT CHESS':cSent?'CHESS ASKED…':'CHESS')+'</button>'+(window.SQIGNSET?'<button class="sb" data-pm="ignore">'+(SQIGNORED(u)?'UNIGNORE (see their chat again)':'IGNORE (hide their chat)')+'</button>':'')+(window.SQREPORT?'<button class="sb" data-pm="report" style="color:#a04040">REPORT</button>':'')+'<button class="sb" data-pm="close">CLOSE</button></div>';
   return h}
  // ---- duel requests ----
  const WHAT=k=>k==='chess'?'game of chess':'duel';
@@ -15909,7 +15912,7 @@ window.SQA=SQA;
  const _r=rPn;rPn=function(){if(ptab===MTAB){try{panelChrome('')}catch(e){}pbd.innerHTML=menuHTML();return}if(ptab===DTAB){try{panelChrome('')}catch(e){}pbd.innerHTML=D.st==='idle'?'<div class="tl">DUEL</div>':stakeHTML();return}return _r.apply(this,arguments)};
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab===DTAB){const b=e.target.closest('[data-dl]');if(b&&!b.disabled)click(b);return}
    if(ptab===MTAB){const b=e.target.closest('[data-pm]');if(!b||b.disabled)return;const a=b.dataset.pm,u=MU;
-    if(a==='close'){closePanel();return}if(a==='report'){try{SQREPORT(u,nameOf(u))}catch(x){}return}if(a==='trade'){closePanel();try{SQTRREQ(u)}catch(x){}return}
+    if(a==='close'){closePanel();return}if(a==='report'){try{SQREPORT(u,nameOf(u))}catch(x){}return}if(a==='ignore'){try{SQIGNSET(u,!SQIGNORED(u))}catch(x){}draw();return}if(a==='trade'){closePanel();try{SQTRREQ(u)}catch(x){}return}
     if(a==='friend'){try{SQADDFRIEND(u);say(nameOf(u)+' is now on your friends list.')}catch(x){}setTimeout(draw,600);return}
     if(a==='party'){try{SQPARTY.invite(u)}catch(x){}setTimeout(draw,400);return}
     if(a==='duel'||a==='chess'){if(D.inbox[u]&&D.inbox[u].k===a){closePanel();answer(u,true);return}ask(u,a);setTimeout(draw,300);return}return}
@@ -18318,12 +18321,12 @@ window.SQA=SQA;
  const st=u=>{const m=(T.mod||{})[u]||{},n=Date.now(),o=[];if(m.ba>n)o.push('🚫 suspended until '+until(m.ba));if(m.mu>n)o.push('🔇 muted until '+until(m.mu));return o.join(' · ')};
  const acts=u=>'<span class="dv-row" style="flex-wrap:wrap;gap:4px"><button class="dv-b" data-md="mu:'+E(u)+':1">Mute 1 h</button><button class="dv-b" data-md="mu:'+E(u)+':24">Mute 1 day</button><button class="dv-b dv-bad" data-md="ba:'+E(u)+':168">Suspend 7 days</button><button class="dv-b dv-bad" data-md="ba:'+E(u)+':876000">Suspend for good</button>'+(((T.mod||{})[u]||{}).mu>Date.now()||((T.mod||{})[u]||{}).ba>Date.now()?'<button class="dv-b" data-md="clr:'+E(u)+'">Lift</button>':'')+'</span>';
  const chatOf=u=>(T.chat||[]).filter(m=>m.u===u).slice(0,12);
- const WN=Object.fromEntries(WHY);
+ const WN={...Object.fromEntries(WHY),spam:'Spam'};
  function repView(){const L=Object.entries(T.rep).filter(([,r])=>r&&r.t).sort((a,b)=>b[1].t-a[1].t),open=([,r])=>!r.st;
   const sh=L.filter(x=>T.rf==='all'||(T.rf==='open'?open(x):!open(x)));
   let h='<div class="dv-row" style="flex-wrap:wrap">'+[['open','Open'],['done','Handled'],['all','All']].map(([k,n])=>'<button class="dv-b'+(T.rf===k?' dv-tl dv-on':'')+'" data-md="rf:'+k+'">'+n+' ('+L.filter(x=>k==='all'||(k==='open'?open(x):!open(x))).length+')</button>').join('')+'</div>';
   for(const[id,r]of sh){const c=chatOf(r.u);h+='<div class="dv-card" style="margin:8px 0"><div class="dv-row" style="flex-wrap:wrap"><b>'+E((T.lb&&T.lb[r.u]&&T.lb[r.u].n)||r.n||nm(r.u))+'</b><span class="dv-mut">reported by '+E(r.byn||nm(r.by))+' · '+ago(r.t)+(r.loc?' · '+E(r.loc):'')+'</span>'+(r.st?'<span style="color:#7c6">✔ '+E(r.st)+'</span>':'')+'</div>'+
-   '<p style="margin:6px 0">'+E(WN[r.why]||r.why)+(r.x?': “'+E(r.x)+'”':'')+'</p>'+(st(r.u)?'<p class="dv-mut">'+st(r.u)+'</p>':'')+
+   '<p style="margin:6px 0">'+E(WN[r.why]||r.why)+(r.x?': “'+E(r.x)+'”':'')+'</p>'+(r.m?'<p class="dv-mut" style="margin:4px 0;font-size:13px">What they said (seen by the reporter): '+E(r.m)+'</p>':'')+(st(r.u)?'<p class="dv-mut">'+st(r.u)+'</p>':'')+
    '<details><summary class="dv-mut">Their recent chat ('+c.length+')</summary>'+(c.map(m=>'<div style="font-size:13px">'+E(m.m)+' <small class="dv-mut">'+ago(m.t)+'</small></div>').join('')||'<p class="dv-mut">Nothing in the last 300 messages.</p>')+'</details>'+
    '<div style="margin-top:6px">'+acts(r.u)+'</div><div class="dv-row" style="margin-top:6px"><button class="dv-b" data-md="rst:'+id+':'+(r.st?'':'handled')+'">'+(r.st?'Reopen':'Mark handled')+'</button>'+(r.st?'':'<button class="dv-b" data-md="rst:'+id+':no action">No action needed</button>')+'</div></div>'}
   return h+(sh.length?'':'<p class="dv-mut">Nothing here.</p>')}

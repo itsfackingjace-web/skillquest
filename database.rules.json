@@ -544,6 +544,9 @@
         },
         "$other": {
           ".validate": false
+        },
+        "m": {
+          ".validate": "newData.isString() && newData.val().length <= 800"
         }
       }
     },

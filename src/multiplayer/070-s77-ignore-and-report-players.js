@@ -26,7 +26,7 @@ function pmOpen(u){if(!MP.on||!MP.user||!u||u===MP.user.uid)return;IGN.pm=u;IGN.
 function pmClose(){pmEl.style.display='none';IGN.pm=null;IGN.rep=null;setFocus(null)}
 function pmDraw(){const u=IGN.pm,nm=esc(trName(u));if(IGN.rep){const R=IGN.rep;
   pmEl.innerHTML='<div class="h">REPORT '+nm.toUpperCase()+'</div><div class="rs">'+['Harassment','Spam','Cheating','Bad name','Other'].map(r=>'<button data-pm="why" data-v="'+r+'" class="'+(R.why===r?'on':'')+'">'+r+'</button>').join('')+'</div>'+
-   '<textarea id="pmtx" maxlength="600" placeholder="What happened? (optional)">'+esc(R.txt||'')+'</textarea><label style="font-size:13px"><input type="checkbox" id="pmig" '+(ignored(u)?'checked disabled':'checked')+'> Also ignore them</label>'+
+   '<textarea id="pmtx" maxlength="600" placeholder="What happened? (optional)">'+esc(R.txt||'')+'</textarea><label style="font-size:13px"><input type="checkbox" id="pmig" '+(ignored(u)?'checked disabled':'')+'> Also ignore them (hide their chat; undo in Chat > Friends)</label>'+
    '<button data-pm="send" style="background:#485870;color:#f8f8f8">SEND REPORT</button><button data-pm="back">BACK</button><div class="st" id="pmst"></div>';return}
  const fr=isFriend(u),near=typeof trNear==='function'&&trNear(u),ig=ignored(u);let h='<div class="h">'+(isOG(u)?'<img src="'+crownURL+'" alt="OG" style="width:18px;height:14px;image-rendering:pixelated">':'')+nm+(fr?' <small>friend</small>':'')+'</div>';
  if(fr)h+='<button data-pm="msg">MESSAGE</button>';else if(!ig)h+='<button data-pm="add">ADD FRIEND</button>';
@@ -39,21 +39,23 @@ pmEl.addEventListener('click',async e=>{const b=e.target.closest('[data-pm]');if
  if(a==='why'){IGN.rep.txt=($('pmtx')||{}).value||'';IGN.rep.why=b.dataset.v;pmDraw();return}
  if(a==='send'){const R=IGN.rep;R.txt=($('pmtx')||{}).value||'';if(!R.why){$('pmst').textContent='Pick a reason first.';return}const also=$('pmig')&&$('pmig').checked;
   const msgs=MP.log.filter(m=>m.uid===u&&(m.k==='pub'||m.k==='pm')).slice(-10).map(m=>m.m).join(' | ').slice(0,800);
-  const r={what:('PLAYER REPORT: '+trName(u)+' ('+u+') · '+R.why+(R.txt?' · '+R.txt:'')).slice(0,1500),exp:('Their recent messages: '+(msgs||'(none seen)')).slice(0,600),info:Object.assign(bugInfo(),{reported:u,reportedName:trName(u)}),shot:''};
-  $('pmst').textContent='Sending...';try{await bugSendNow(r);if(also&&!ignored(u))ignSet(u,true);pmClose();say('Report sent. Thank you for keeping SkillQuest friendly.');mpLog('game','You reported '+trName(u)+'.')}
+  // to the Moderation inbox (reports/<id>, 170), with what they said lately
+  const WK={Harassment:'chat',Spam:'spam',Cheating:'cheat','Bad name':'name',Other:'other'};let loc='';try{loc=SCENE&&SCENE.room&&SCENE.room.region||((typeof curRegion==='function')?curRegion():'')}catch(_){}
+  $('pmst').textContent='Sending...';try{const F=window.SQFB||FB,d=F.db;await d.push(d.ref(F.D,'reports'),{u,n:String(trName(u)).slice(0,12),by:MP.user.uid,byn:String(myName()).slice(0,12),why:WK[R.why]||'other',x:String(R.txt||'').slice(0,200),m:msgs.slice(0,800),loc:String(loc||'').slice(0,40),t:d.serverTimestamp()});
+   if(also&&!ignored(u))ignSet(u,true);pmClose();say('Report sent. Thank you for keeping SkillQuest friendly.');mpLog('game','You reported '+trName(u)+'.')}
   catch(err){$('pmst').textContent='Could not send. Try again in a moment.';mpErr(err)}}});
 // tapping a name in chat opens the menu (instead of jumping straight to messages)
 lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;e.stopImmediatePropagation();pmOpen(b.dataset.u)},true);
 {const _nr=navRoot;navRoot=function(){if(pmEl.style.display==='flex')return pmEl;return _nr()}}
 // Friends tab: the ignore list
-{const _fv=friendsView;friendsView=function(){_fv();if(!IGN.m.size)return;const h=document.createElement('div');h.className='fh';h.textContent='IGNORED';lst.appendChild(h);
+{const _fv=friendsView;friendsView=function(){_fv();if(!IGN.m.size)return;const h=document.createElement('div');h.className='fh';h.textContent='IGNORED: you don\'t see their chat. Tap UNIGNORE to see it again.';lst.appendChild(h);
   for(const[u,n]of IGN.m){const row=document.createElement('div');row.className='fr';const nm=document.createElement('div');nm.className='fn';const b=document.createElement('b');b.textContent=n;nm.append(b);
    const un=document.createElement('button');un.textContent='UNIGNORE';un.onclick=()=>ignSet(u,false);row.append(nm,un);lst.appendChild(row)}}}
 // /ignore name, /unignore name
 {const _s=mpSend;mpSend=function(t){const m=String(t||'').trim().match(/^\/(ignore|unignore|block|unblock)\s+(\S+)\s*$/i);if(!m)return _s(t);const nl=m[2].toLowerCase(),on=/^(ignore|block)$/i.test(m[1]);
   let u=[...MP.players.keys()].find(k=>(MP.players.get(k).n||'').toLowerCase()===nl)||Object.keys(MP.prof||{}).find(k=>MP.prof[k]&&MP.prof[k].nl===nl)||[...IGN.m].find(([k,n])=>n.toLowerCase()===nl)?.[0];
   if(!u){mpLog('game','No player called '+m[2]+'.');return}ignSet(u,on)}}
-window.SQIGN=IGN;
+window.SQIGN=IGN;window.SQIGNSET=ignSet;window.SQIGNORED=ignored;
 // other players' Flame Aura glows on your screen too
 {const _dh=drawHUD;drawHUD=function(){try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
   if(dk>.05&&MP.on){const cx=camX(),cy=camY();let st=false;

@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-25',d:'Nov 13, 2026',t:'Reporting and ignoring',n:['Reports made by tapping a name in chat now reach the developer properly.','Reporting someone no longer ignores them unless you tick "Also ignore them".','Ignored someone by mistake? Walk up to them, tap their name and choose UNIGNORE, or find them under IGNORED at the bottom of Chat > Friends.']},
  {v:'2026.11.13-24',d:'Nov 13, 2026',t:'Small fixes',n:['Fixed a couple of developer tools that didn\'t work in the Windows app.']},
  {v:'2026.11.13-23',d:'Nov 13, 2026',t:'Report players',n:['Someone being mean in chat, cheating or scamming? Walk up to them, tap their name and choose REPORT. The developer sees it along with their recent chat.','Players who break the rules can now be muted or suspended for a while.']},
  {v:'2026.11.13-22',d:'Nov 13, 2026',t:'Faster help when something goes wrong',n:['If your game gets stuck or something goes missing, the developer can now fix it for you: send you back to the start of Hollow, put back a recent backup of your game, or tidy up items left over from a bug. You\'ll see a note in your game when it happens.','Some players may see a small TEST VERSION tag while they help try out new content before everyone gets it.']},
