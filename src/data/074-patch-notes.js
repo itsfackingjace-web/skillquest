@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-31',d:'Nov 13, 2026',t:'Behind the scenes',n:['New developer tools for tuning recipes, food, shop prices and art, so balance changes and new content can arrive faster.']},
  {v:'2026.11.13-30',d:'Nov 13, 2026',t:'Updates arrive while you play',n:['New art, items, islands and other content from the developers now appear within about 30 seconds while you play. No need to close and reopen the game. A message tells you when the world was updated.']},
  {v:'2026.11.13-29',d:'Nov 13, 2026',t:'Build at home',n:['Fences, walls, gates, chests, beds, stations and furniture can now only be placed inside your own house or castle, or in its backyard or courtyard. Houses, castles and farm plots still go outside.','Anything you had built outside (on Hollow or on other islands) has been packed into your bag, chests with everything inside. Place it again at home.','Builds other players left outside no longer appear in the world.']},
  {v:'2026.11.13-28',d:'Nov 13, 2026',t:'Clearer controller highlight',n:['With a controller, the button you have selected now gets a thick glowing gold ring, so it is easy to see in every menu, chest and item card.']},

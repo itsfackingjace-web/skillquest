@@ -484,20 +484,52 @@
  function drawPal(){const p=root.querySelector('.dv-pal'),ed=S.ed;if(!p||!ed)return;
   p.innerHTML=ed.pal.map((c,i)=>'<button class="dv-sw'+(i===ed.col?' dv-on':'')+(ed.dyi&&ed.dyi.has(i)?' dv-dy':'')+'" data-col="'+i+'" style="background:'+c+'" title="'+c+(ed.dyi&&ed.dyi.has(i)?' (dyeable)':'')+'"></button>').join('')+
    '<label class="dv-mut" style="margin-left:8px">Change this colour <input type="color" data-in="recol" value="'+(ed.pal[ed.col]||'#000000')+'"></label>'+
-   (ed.pal.length<MAXC?'<label class="dv-mut" style="margin-left:8px">Add a colour <input type="color" data-in="addcol" value="#ffffff"></label>':'')}
+   (ed.pal.length<MAXC?'<label class="dv-mut" style="margin-left:8px">Add a colour <input type="color" data-in="addcol" value="#ffffff"></label>':'')+palExtra(ed)}
+ // ---- palette tools: hex codes, copy / paste a whole palette, saved palettes (localStorage sq_dev_pals {name:[hex...]}) ----
+ const HEXRE=/#?\b([0-9a-f]{6}|[0-9a-f]{3})\b/gi,normHex=h=>{h=String(h).replace('#','').toLowerCase();if(h.length===3)h=h.split('').map(c=>c+c).join('');return/^[0-9a-f]{6}$/.test(h)?'#'+h:null};
+ const hexesIn=t=>{const out=[];for(const m of String(t||'').matchAll(HEXRE)){const h=normHex(m[1]);if(h&&!out.includes(h))out.push(h)}return out};
+ const PALS=()=>{try{return JSON.parse(localStorage.getItem('sq_dev_pals')||'{}')||{}}catch(e){return{}}},setPALS=o=>{try{localStorage.setItem('sq_dev_pals',JSON.stringify(o))}catch(e){}};
+ let PALUI=null;// null | 'paste' | 'save'
+ function palExtra(ed){const cur=ed.pal[ed.col]||'',sv=Object.keys(PALS());
+  return'<div class="dv-row" style="flex-basis:100%;flex-wrap:wrap;gap:6px;margin-top:6px">'+
+   '<label class="dv-mut">Hex <input data-hex="cur" value="'+E(cur)+'" maxlength="7" spellcheck="false" style="width:86px;font-family:monospace" title="Type a hex code (like #c89858) to change this colour"></label>'+
+   (ed.pal.length<MAXC?'<label class="dv-mut">Add hex <input data-hex="add" placeholder="#rrggbb" maxlength="7" spellcheck="false" style="width:86px;font-family:monospace"></label>':'')+
+   '<button class="dv-b" data-pa="copy" title="Copies every colour as hex codes">Copy palette</button><button class="dv-b" data-pa="paste">Paste palette…</button><button class="dv-b" data-pa="save">Save palette…</button>'+
+   (sv.length?'<select data-hex="saved" style="max-width:170px"><option value="">Saved palettes…</option>'+sv.map(n=>'<option value="'+E(n)+'">'+E(n)+' ('+PALS()[n].length+')</option>').join('')+'</select>':'')+'</div>'+
+   (PALUI==='paste'?'<div class="dv-row" style="flex-basis:100%;flex-wrap:wrap;gap:6px"><textarea data-hex="ptext" rows="2" style="flex:1;min-width:220px;font-family:monospace" placeholder="Paste hex codes here (any text with #rrggbb codes works: a list, a palette from a website…)"></textarea><button class="dv-b dv-pri" data-pa="pasteok">Add these colours</button><button class="dv-b" data-pa="x">Cancel</button></div>':'')+
+   (PALUI==='save'?'<div class="dv-row" style="flex-basis:100%;flex-wrap:wrap;gap:6px"><input data-hex="pname" placeholder="Name for this palette" maxlength="30" style="max-width:220px"><button class="dv-b dv-pri" data-pa="saveok">Save</button><button class="dv-b" data-pa="x">Cancel</button>'+(sv.length?'<span class="dv-mut">Saved: '+sv.map(n=>E(n)+' <button class="dv-b" data-pa="del:'+E(n)+'" title="Delete">×</button>').join(' ')+'</span>':'')+'</div>':'')}
+ // add colours to the open picture's palette (skips ones it has; stops at the palette's limit)
+ function palAdd(list){const ed=S.ed;if(!ed)return 0;let n=0;snapEd();for(const h of list){if(ed.pal.length>=MAXC)break;if(ed.pal.some(c=>c.toLowerCase()===h))continue;ed.pal.push(h);n++}
+  if(n){ed.col=ed.pal.length-1;ed.tool='pen'}drawPal();drawTools();paint();return n}
+ async function palCopy(){const ed=S.ed;if(!ed)return;const t=ed.pal.join(' ');let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(e){}
+  try{localStorage.setItem('sq_dev_palclip',t)}catch(e){}toast(ok?'Copied '+ed.pal.length+' colours: '+t.slice(0,60)+(t.length>60?'…':''):'Copied '+ed.pal.length+' colours (Paste palette in another picture adds them).')}
+ root.addEventListener('click',async e=>{const t=e.target.closest('[data-pa]');if(!t||!S.ed)return;e.preventDefault();e.stopPropagation();const a=t.dataset.pa;
+  if(a==='copy'){palCopy();return}
+  if(a==='paste'){PALUI='paste';drawPal();const ta=root.querySelector('[data-hex="ptext"]');let clip='';try{clip=await navigator.clipboard.readText()}catch(e2){}if(!hexesIn(clip).length)try{clip=localStorage.getItem('sq_dev_palclip')||''}catch(e2){}
+   if(ta){ta.value=hexesIn(clip).join(' ');ta.focus()}return}
+  if(a==='pasteok'){const ta=root.querySelector('[data-hex="ptext"]'),L=hexesIn(ta&&ta.value);PALUI=null;if(!L.length){toast('No hex codes found (they look like #c89858).');drawPal();return}const n=palAdd(L);toast(n?'Added '+n+' colour'+(n===1?'':'s')+(n<L.length?' ('+(L.length-n)+' already there or no room)':'')+'.':'Those colours are already in this palette'+(S.ed.pal.length>=MAXC?' (or it\'s full)':'')+'.');return}
+  if(a==='save'){PALUI='save';drawPal();const i=root.querySelector('[data-hex="pname"]');if(i)i.focus();return}
+  if(a==='saveok'){const i=root.querySelector('[data-hex="pname"]'),nm=(i&&i.value||'').trim().slice(0,30);if(!nm){toast('Give the palette a name.');return}const o=PALS();o[nm]=S.ed.pal.slice();setPALS(o);PALUI=null;drawPal();toast('Saved the palette "'+nm+'" on this device.');return}
+  if(a.startsWith('del:')){const o=PALS();delete o[a.slice(4)];setPALS(o);drawPal();return}
+  if(a==='x'){PALUI=null;drawPal();return}},true);
+ root.addEventListener('change',e=>{const t=e.target,h=t.dataset&&t.dataset.hex;if(!h||!S.ed)return;
+  if(h==='cur'){const v=normHex(t.value);if(!v){toast('That isn\'t a hex colour (try #c89858).');t.value=S.ed.pal[S.ed.col]||'';return}if(S.ed.pal[S.ed.col]==null)return;snapEd();S.ed.pal[S.ed.col]=v;S.ed.dirty=true;drawPal();paint();return}
+  if(h==='add'){const v=normHex(t.value);if(!v){toast('That isn\'t a hex colour (try #c89858).');return}const n=palAdd([v]);if(!n)toast('That colour is already in the palette'+(S.ed.pal.length>=MAXC?' (or it\'s full)':'')+'.');return}
+  if(h==='saved'&&t.value){const L=PALS()[t.value]||[];const n=palAdd(L.map(normHex).filter(Boolean));toast(n?'Added '+n+' colour'+(n===1?'':'s')+' from "'+t.value+'".':'Every colour from "'+t.value+'" is already here.');return}},true);
+ root.addEventListener('keydown',e=>{const t=e.target;if(t&&t.dataset&&(t.dataset.hex==='cur'||t.dataset.hex==='add')&&e.key==='Enter'){e.preventDefault();t.dispatchEvent(new Event('change',{bubbles:true}))}},true);
  // ---- stats ----
  function stats(){const T=A.TABLES[S.statT],q=S.statQ.toLowerCase(),d=((S.draft.stats||{})[S.statT])||{};
   let h='<div class="dv-row" style="margin-bottom:10px"><div class="dv-chips">'+Object.keys(A.TABLES).map(t=>'<button class="dv-b'+(S.statT===t?' dv-tl dv-on':'')+'" data-stat="'+t+'">'+A.TABLES[t].name+'</button>').join('')+'</div>'+
-   (S.statT==='items'?'<input type="search" style="max-width:260px" placeholder="Search items" value="'+E(S.statQ)+'" data-in="sq">':'')+'</div>'+
+   (T.keys().length>8?'<input type="search" style="max-width:260px" placeholder="Search '+E(T.name.toLowerCase())+'" value="'+E(S.statQ)+'" data-in="sq">':'')+'</div>'+(T.note?'<p class="dv-mut">'+T.note+'</p>':'')+
    '<p class="dv-mut">Changes save to your draft as you go. Changed fields are highlighted; ↺ puts a row back to the game\'s original.'+(S.statT==='ib'?' Island bosses also hit harder than normal monsters; HP here is their full HP.':'')+(S.statT==='wb'?' Damage is in hearts per hit.':'')+'</p>';
-  h+='<table><thead><tr><th>'+(S.statT==='items'?'Item':'Boss')+'</th>'+T.fields.map(f=>'<th>'+f[1]+'</th>').join('')+'<th></th></tr></thead><tbody>';
-  for(const k of T.keys()){const o=T.orig(k);if(q&&!String(o.n).toLowerCase().includes(q)&&!k.includes(q))continue;const cur=A.merged(S.statT,k,d[k]);
-   h+='<tr data-row="'+E(k)+'"><td class="dv-k">'+E(o.n)+'<small>'+E(k)+'</small></td>'+T.fields.map(([f,l,ty])=>{const chg=cur[f]!==o[f]?' dv-chg':'';
+  h+='<table><thead><tr><th>'+(T.col||(S.statT==='items'?'Item':'Boss'))+'</th>'+T.fields.map(f=>'<th>'+f[1]+'</th>').join('')+'<th></th></tr></thead><tbody>';
+  for(const k of T.keys()){const o=T.orig(k);if(q&&!String(T.label?T.label(k):o.n).toLowerCase().includes(q)&&!String(o.n).toLowerCase().includes(q)&&!k.toLowerCase().includes(q))continue;const cur=A.merged(S.statT,k,d[k]);
+   h+='<tr data-row="'+E(k)+'"><td class="dv-k">'+E(T.label?T.label(k):o.n)+'<small>'+E(T.sub?T.sub(k):k)+'</small></td>'+T.fields.map(([f,l,ty])=>{const chg=cur[f]!==o[f]?' dv-chg':'';if(ty==='bool')return'<td data-l="'+E(l)+'"><input type="checkbox" class="'+chg+'" data-f="'+f+'"'+(cur[f]?' checked':'')+'></td>';
     return'<td data-l="'+E(l)+'">'+(ty==='long'?'<textarea class="'+chg+'" data-f="'+f+'">'+E(cur[f])+'</textarea>':'<input class="'+chg+'" type="'+(ty==='num'?'number" min="0':'text')+'" data-f="'+f+'" value="'+E(cur[f])+'">')+'</td>'}).join('')+
     '<td>'+(d[k]?'<button class="dv-b" data-a="rowreset" title="Back to original">↺</button>':'')+'</td></tr>'}
   return h+'</tbody></table>'}
  async function statSet(t,k,f,val){const T=A.TABLES[t],o=T.orig(k),fd=T.fields.find(x=>x[0]===f);if(!fd)return;
-  const v=fd[2]==='num'?Math.max(0,Math.round(Number(val)||0)):String(val);
+  const v=fd[2]==='num'?Math.max(0,Math.round(Number(val)||0)):fd[2]==='bool'?(val&&val!=='0'?1:0):String(val);
   const all=S.draft.stats[t]=S.draft.stats[t]||{},row={...(all[k]||{})};if(v===o[f])delete row[f];else row[f]=v;
   if(Object.keys(row).length)all[k]=row;else delete all[k];
   try{await dset('draft/stats/'+t+'/'+k,all[k]||null);toast('Saved to draft.')}catch(e){fail(e)}
@@ -602,7 +634,7 @@
   if(t.dataset.gn&&S.sel){ngSet(S.sel,t.dataset.gn,t.value);return}
   if(t.dataset.gr&&S.sel){ngRecipe(S.sel);return}
   if(t.dataset.gs&&S.sel){statSet('items',S.sel,t.dataset.gs,t.value).then(()=>{try{if(A.previewing)A.preview(S.draft)}catch(e2){}draw()});return}
-  if(t.dataset.f){const k=t.closest('[data-row]').dataset.row;statSet(S.statT,k,t.dataset.f,t.value).then(()=>{const o=A.TABLES[S.statT].orig(k),cur=A.merged(S.statT,k,(S.draft.stats[S.statT]||{})[k]);t.classList.toggle('dv-chg',cur[t.dataset.f]!==o[t.dataset.f]);
+  if(t.dataset.f){const k=t.closest('[data-row]').dataset.row;statSet(S.statT,k,t.dataset.f,t.type==='checkbox'?t.checked:t.value).then(()=>{const o=A.TABLES[S.statT].orig(k),cur=A.merged(S.statT,k,(S.draft.stats[S.statT]||{})[k]);t.classList.toggle('dv-chg',cur[t.dataset.f]!==o[t.dataset.f]);
    const last=t.closest('tr').lastElementChild;if(last)last.innerHTML=(S.draft.stats[S.statT]||{})[k]?'<button class="dv-b" data-a="rowreset" title="Back to original">↺</button>':''})}});
  let pan=null;
  root.addEventListener('pointerdown',e=>{if(e.target.id!=='dvc'||!S.ed)return;e.preventDefault();try{e.target.setPointerCapture(e.pointerId)}catch(_){}

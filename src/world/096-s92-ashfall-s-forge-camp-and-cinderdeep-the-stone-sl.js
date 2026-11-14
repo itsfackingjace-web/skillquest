@@ -247,6 +247,7 @@ tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=af
   if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mine=true}else if(mine){mine=false;if(!pnOpen)tk.style.display='none'}
   if(afR()&&AF.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&afIn(m.x,m.y)){m.dead=1;m.dropped=1}}}
 const SHOPAF=[{n:'Healing potion',c:180,k:'pot_heal',m:1},{n:'20 iron arrows',c:70,k:'iarrow',m:20},{n:'10 bait',c:15,k:'bait',m:10},{n:'5 stone',c:10,k:'stone',m:5},{n:'Fire kit (3 wood + 1 stone)',c:12,kit:1},{n:'Iron bar',c:60,k:'ibar',m:1}];
+window.SHOPAF=SHOPAF;// (161b/162 edit and add to it from the Dev Suite)
 function afHTML(){const n=AF.npc;if(!n)return'';const L=AFSAYS[n.id],line=L[Math.floor(performance.now()/7000)%L.length];
  let h='<div class="tl">'+esc(n.id)+'</div><div class="qc"><p>"'+esc(line)+'"</p><small>'+(n.role==='shop'?'Forgemaster of Emberwatch':n.role==='quests'?'Warden of Emberwatch':'Camp cook')+'</small></div>';
  try{h+=sideCard(n)}catch(e){}

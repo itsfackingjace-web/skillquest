@@ -38,6 +38,10 @@
    for(const z of arr(I.zn))for(const k of arr(z&&z.m))if(!mobs.has(k))bad(w,'a monster zone has "'+k+'", which isn\'t a monster.',g);
    for(const c of arr(I.cv))for(const k of arr(c&&c.m))if(!mobs.has(k))bad(w,'a dungeon entrance has "'+k+'", which isn\'t a monster.',g);
    for(const L of arr(I.lm))if(L&&L.loot)for(const k in L.loot)if(k!=='gold'&&!item(k)&&!loot.has(k))bad(w,'a chest holds "'+k+'", which isn\'t an item or loot table.',g)}
+  // recipe edits in Stats > Recipes: materials that aren't items are skipped by the game
+  if(window.SQDATA)for(const k in ((D.stats||{}).recipe||{})){const o=D.stats.recipe[k];if(!o||o.mats==null)continue;const p=SQDATA.parseMats(o.mats);const nm=(SQA.TABLES.recipe.orig(k)||{}).n||k;
+   if(p.bad)bad('Recipe '+nm,'has materials the game doesn\'t know ("'+String(o.mats).slice(0,60)+'"). Use item names like "Wood 4, Stone 2".',{tab:'stats'});
+   if(!Object.keys(p.c).length&&!/^COOKS:/.test(k))bad('Recipe '+nm,'has no materials left, so it keeps its old ones.',{tab:'stats'})}
   // monster drops, bosses, new gear, songs
   for(const k in D.mobs||{})for(const d of arr((D.mobs[k]||{}).dr))if(d&&d.k&&!item(d.k))bad('Monster rules '+k,'drops "'+d.k+'", which isn\'t an item.',{tab:'monsters',sel:'[data-k="'+k+'"]'});
   for(const id in D.bosses||{}){const b=D.bosses[id]||{};if(b.base&&!MOBS[b.base])bad('Boss '+(b.n||id),'is built on "'+b.base+'", which isn\'t a monster.',{tab:'bosses',sel:'[data-cbs="'+id+'"]'})}

@@ -464,3 +464,10 @@
 - **Live publishes** (`ui/174-s180-live-updates.js`, `SQLIVEUPD`): the game watches `assets/live/v` (realtime listener once `SQFB` is up,
   plus a fetch of `assets/live/v.json` every 30 s and on returning to the tab); a new `v` runs `SQA.refresh()` (full library, applied
   in place) and `SQBETA.check()`. Anything a library section sets must therefore be safe to re-apply mid-game (`SQA.onApply` hooks).
+- **Palette tools** (111b `palExtra`, every picture editor): hex box for the selected colour, "Add hex", Copy palette (clipboard +
+  localStorage `sq_dev_palclip`), Paste palette (any text: every #rrggbb / #rgb code in it), saved palettes in localStorage `sq_dev_pals`.
+- **More Stats tables** (`dev/161b-s181-data-tables.js`, `SQDATA`, before 162 so its snapshots hold only the game's own entries):
+  `food` (FOODS heal/hun), `shop` (GEN/SHOPBW/SHOPAF price, amount, off; 095/096 now expose `window.SHOPBW/SHOPAF`, which also made
+  Content's bw/af stock work), `recipe` (SM/GOODS/BREC/FREC/REC/COOKS: `mats` text parsed by `SQDATA.parseMats`, level, off = taken
+  out of its list and put back in place). Table fields may be `bool` (111a `merged`, 111b checkbox); tables can set `note`, `col`,
+  `label(k)`, `sub(k)`. Tables registered after 111a apply their part through `SQA.onApply`.

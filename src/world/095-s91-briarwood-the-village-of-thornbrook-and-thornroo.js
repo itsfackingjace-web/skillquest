@@ -66,6 +66,7 @@ let tkMine=false;{const _u=upd;upd=function(dt){_u(dt);const n=!pnOpen&&!menuOpe
   // monsters keep out of the village
   const R=bwR();if(R&&BW.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&inTown(m.x,m.y)){m.dead=1;m.dropped=1}}}
 const SHOPBW=[{n:'Healing potion',c:180,k:'pot_heal',m:1},{n:'20 arrows',c:30,k:'arrow',m:20},{n:'10 bait',c:15,k:'bait',m:10},{n:'5 wheat seeds',c:6,k:'wheatseed',m:5},{n:'5 carrot seeds',c:14,k:'carrotseed',m:5,lv:[11,5]},{n:'Fire kit (3 wood + 1 stone)',c:12,kit:1}];
+window.SHOPBW=SHOPBW;// (161b/162 edit and add to it from the Dev Suite)
 function bwHTML(){const n=BW.npc;if(!n)return'';const line=SAYS[n.id][Math.floor(performance.now()/7000)%SAYS[n.id].length];
  let h='<div class="tl">'+esc(n.id)+'</div><div class="qc"><p>"'+esc(n.role==='shop'?line:n.role==='quests'?line:line)+'"</p><small>'+(n.role==='shop'?'Trader of Thornbrook':n.role==='quests'?'Ranger of Thornbrook':'Village elder')+'</small></div>';
  try{h+=sideCard(n)}catch(e){}
