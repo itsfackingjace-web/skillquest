@@ -313,7 +313,7 @@
     },
     "bak": {
       "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
+        ".read": "auth != null && (auth.uid === $uid || root.child('devs').child(auth.uid).val() === true)",
         ".write": "auth != null && auth.uid === $uid",
         "$k": {
           ".validate": "newData.hasChildren(['json', 'at', 'tag']) && newData.child('json').isString() && newData.child('json').val().length < 3000000 && newData.child('at').isNumber() && newData.child('tag').isString() && newData.child('tag').val().length < 20"
@@ -439,6 +439,39 @@
     "events": {
       ".read": "auth != null",
       ".write": "auth != null && root.child('devs').child(auth.uid).val() === true"
+    },
+    "fixes": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('devs').child(auth.uid).val() === true)",
+        "$id": {
+          ".write": "auth != null && (root.child('devs').child(auth.uid).val() === true || (auth.uid === $uid && !newData.exists()))",
+          ".validate": "newData.hasChildren(['op', 't']) && newData.child('t').isNumber() && (newData.child('op').val() === 'take' || newData.child('op').val() === 'restore' || newData.child('op').val() === 'home')",
+          "k": {
+            ".validate": "newData.isString() && newData.val().length < 40"
+          },
+          "n": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "b": {
+            ".validate": "newData.isString() && newData.val().length < 60"
+          },
+          "m": {
+            ".validate": "newData.isString() && newData.val().length <= 500"
+          },
+          "f": {
+            ".validate": "newData.isString() && newData.val().length < 64"
+          },
+          "op": {
+            ".validate": "newData.isString()"
+          },
+          "t": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
     }
   }
 }

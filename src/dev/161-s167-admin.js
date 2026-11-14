@@ -26,6 +26,23 @@
     try{saveLocal(true);saveCloud(true)}catch(e){}}}catch(e){console.warn('gift',e);LOG.push([id,'error',String(e&&e.message||e)])}busy.delete(id)}
  // also look for waiting gifts every 15 s (in case the listener never delivered them)
  const LOG=[];setInterval(async()=>{try{const F=FBx(),u=uid();if(!F||!u)return;const d=F.db,s=await d.get(d.ref(F.D,'gifts/'+u)),v=s.val()||{};for(const id of Object.keys(v))claim(id)}catch(e){LOG.push(['poll','error',String(e&&e.message||e)])}},15000);
+ // ---- fixes from the developer: fixes/<uid>/<id> {op, k, n, b, m, t, f}, taken once like gifts ----
+ //   take  remove n of item k from the bag (k 'gold' = gold)    restore  load backup bak/<uid>/<b>    home  go back to Hollow's spawn
+ let fixOn=null;const fbusy=new Set();
+ function fixesWatch(){const F=FBx(),u=uid();if(!F||!u||fixOn===u)return;fixOn=u;const d=F.db;d.onValue(d.ref(F.D,'fixes/'+u),s=>{for(const id of Object.keys(s.val()||{}))applyFix(id)},()=>{fixOn=null})}
+ async function applyFix(id){if(fbusy.has(id)||(window.SQSTRICT&&SQSTRICT.lost))return;fbusy.add(id);const F=FBx(),u=uid();if(!F||!u){fbusy.delete(id);return}const d=F.db;let got=null;
+  try{const r=await d.runTransaction(d.ref(F.D,'fixes/'+u+'/'+id),cur=>{got=cur;return null});LOG.push(['fix:'+id,r&&r.committed,!!got]);
+   if(r&&r.committed&&got){let what='';const n=Math.max(0,Math.min(1e8,+got.n||0));
+    if(got.op==='take'){if(got.k==='gold'){const t=Math.min(GLD,n);GLD-=t;what='The developer removed '+t+' gold.'}
+     else if(got.k&&INAME[got.k]){const t=Math.min(inv[got.k]|0,n);inv[got.k]=(inv[got.k]|0)-t;what=t?'The developer removed '+t+' × '+INAME[got.k]+' from your bag.':''}}
+    else if(got.op==='restore'&&typeof got.b==='string'){const s2=await d.get(d.ref(F.D,'bak/'+u+'/'+got.b));let S=null;try{S=JSON.parse(s2.val().json)}catch(e){}
+     if(S&&S.v==1){try{if(SCENE&&typeof leaveScene==='function')leaveScene()}catch(e){}applySave(S);try{hideCreator()}catch(e){}what='The developer restored your game to '+new Date(+s2.val().at||0).toLocaleString()+'.'}else what=''}
+    else if(got.op==='home'){const S=snap();S.p={...S.p,x:SPX,y:SPY};delete S.region;try{if(SCENE&&typeof leaveScene==='function')leaveScene()}catch(e){}applySave(S);what='The developer moved you back to the start of Hollow.'}
+    const msg=[what,got.m?String(got.m).slice(0,500):''].filter(Boolean).join(' ');
+    if(msg){try{mpLog('game','📬 '+msg)}catch(e){}say('📬 '+msg);msgT=8;try{sfx('quest')}catch(e){}}
+    try{svg()}catch(e){}try{saveLocal(true);saveCloud(true)}catch(e){}}}catch(e){console.warn('fix',e);LOG.push(['fix:'+id,'error',String(e&&e.message||e)])}fbusy.delete(id)}
+ setInterval(async()=>{try{fixesWatch();const F=FBx(),u=uid();if(!F||!u)return;const d=F.db,s=await d.get(d.ref(F.D,'fixes/'+u));for(const id of Object.keys(s.val()||{}))applyFix(id)}catch(e){}},15000);
+ setTimeout(()=>{try{fixesWatch()}catch(e){}},3000);setInterval(()=>{try{fixesWatch()}catch(e){}},2000);
  // ---- news banner ----
  const nb=document.createElement('div');nb.id='sqnews';nb.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 44px);z-index:30;display:none;max-width:min(560px,calc(100vw - 24px));box-sizing:border-box;background:#f8f0d8;color:#403018;border:3px solid #806028;box-shadow:inset 0 0 0 2px #e8c878;padding:7px 34px 7px 12px;font:600 14px '+PF+';line-height:1.35;pointer-events:auto';
  nb.innerHTML='<span></span><button aria-label="Close" style="position:absolute;right:4px;top:3px;border:0;background:none;font:700 18px system-ui;color:#806028;cursor:pointer">×</button>';document.body.appendChild(nb);
@@ -42,7 +59,7 @@
  let wired=false;function wire(){const F=FBx();if(!F||wired||!uid())return;wired=true;const d=F.db;
   d.onValue(d.ref(F.D,'news'),s=>{NEWS=s.val();showNews()},()=>{});d.onValue(d.ref(F.D,'events'),s=>{EV=s.val();showEv()},()=>{})}
  setInterval(()=>{try{wire();giftsWatch();showNews();showEv()}catch(e){}},2000);
- window.SQADMIN={claim,LOG,get news(){return NEWS},get event(){return EV},evOn,lvFromXp};
+ window.SQADMIN={claim,applyFix,LOG,get news(){return NEWS},get event(){return EV},evOn,lvFromXp};
  // ======================= the Dev Suite tab =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,toast,fail}=API;
  const T={view:'bugs',bugs:null,bf:'open',shot:null,lb:null,q:'',pl:null,plS:null,eco:null,busy:false};
@@ -50,7 +67,7 @@
  const ago=t=>{if(!t)return'';const s=(Date.now()-t)/1000;return s<3600?Math.round(s/60)+' min ago':s<86400*2?Math.round(s/3600)+' h ago':Math.round(s/86400)+' days ago'};
  async function loadBugs(){T.busy=true;API.draw();try{T.bugs=await get('bugs')||{}}catch(e){fail(e);T.bugs={}}T.busy=false;API.draw()}
  async function loadLb(){T.busy=true;API.draw();try{T.lb=await get('lb')||{}}catch(e){fail(e);T.lb={}}T.busy=false;API.draw()}
- async function loadPlayer(u){T.pl=u;T.plS=null;T.plG=null;API.draw();get('gifts/'+u).then(v=>{T.plG=v||{};API.draw()}).catch(()=>{});try{const v=await get('saves/'+u);T.plS=v&&v.json?JSON.parse(v.json):{none:1}}catch(e){fail(e);T.plS={none:1}}API.draw()}
+ async function loadPlayer(u){T.pl=u;T.plS=null;T.plG=null;T.plF=null;T.plB=null;API.draw();get('gifts/'+u).then(v=>{T.plG=v||{};API.draw()}).catch(()=>{});get('fixes/'+u).then(v=>{T.plF=v||{};API.draw()}).catch(()=>{});get('bak/'+u).then(v=>{T.plB=v||{};API.draw()}).catch(e=>{T.plB={_err:String(e.message||e)};API.draw()});try{const v=await get('saves/'+u);T.plS=v&&v.json?JSON.parse(v.json):{none:1}}catch(e){fail(e);T.plS={none:1}}API.draw()}
  const nameOf=u=>{const r=T.lb&&T.lb[u];return r&&r.n||u.slice(0,8)};
  function bugsView(){if(!T.bugs){if(!T.busy)loadBugs();return'<p class="dv-mut">Loading reports…</p>'}
   const L=Object.entries(T.bugs).filter(([,b])=>b&&b.t).sort((a,b)=>b[1].t-a[1].t),st=b=>b.st||'';
@@ -76,9 +93,28 @@
    h+='<div class="dv-card"><div class="dv-row" style="flex-wrap:wrap"><b style="font-size:16px">'+esc2(nm)+'</b><span class="dv-mut">total level '+tot+' · '+(S2.gold|0).toLocaleString()+' gold · on '+esc2(reg)+' · saved '+ago(S2.savedAt)+'</span></div>'+
     '<p class="dv-mut" style="margin:6px 0">'+lv.map((L,i)=>esc2((typeof SKN!=='undefined'&&SKN[i])||'Skill '+i)+' '+L).join(' · ')+'</p>'+
     '<p class="dv-mut" style="margin:6px 0">Uid: <code>'+esc2(T.pl)+'</code></p>'+
-    '<details><summary class="dv-mut">Bag ('+items.length+' kinds)</summary><p style="font-size:12px">'+items.map(([k,n])=>esc2(INAME[k]||k)+' ×'+n).join(', ')+'</p></details>'+giftForm()+'</div>'}
+    homesLine(S2)+'<details><summary class="dv-mut">Bag ('+items.length+' kinds)</summary><p style="font-size:12px">'+items.map(([k,n])=>esc2(INAME[k]||k)+' ×'+n).join(', ')+'</p></details>'+giftForm()+fixForm(items)+bakView()+'</div>'}
   return h+'</div></div>'}
  const waiting=()=>{const G=T.plG;if(!G)return'';const L=Object.values(G).filter(Boolean);return'<p class="dv-mut" style="margin:6px 0">'+(L.length?'⏳ Waiting to be picked up: '+L.map(g=>(g.k?(g.n||1)+' × '+esc2(INAME[g.k]||g.k):'')+(g.g?' '+g.g+' gold':'')+(!g.k&&!g.g?'a message':'')).join(', ')+' (it arrives the next time their game is online).':'No gifts waiting: everything sent has been picked up.')+'</p>'};
+ const homesLine=S2=>{const L=[];for(const h of[...(S2.houses||[]),...(S2.rh||[])])if(h)L.push((h.c||h.castle?'castle':'house')+(h.rg?' on '+((typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[h.rg]||{}).name||h.rg):' on Hollow'));const cas=(S2.inv&&S2.inv.castle)|0,hou=(S2.inv&&S2.inv.house)|0;
+  return'<p class="dv-mut" style="margin:6px 0">Homes built: '+(L.length?L.map(esc2).join(', '):'none')+(cas||hou?' · in the bag: '+[cas?cas+' castle'+(cas>1?'s':''):'',hou?hou+' house'+(hou>1?'s':''):''].filter(Boolean).join(', '):'')+'</p>'};
+ const OPN={take:'take away',restore:'restore a backup',home:'send to the start of Hollow'};
+ function fixForm(items){const F=T.plF;const pend=F?Object.values(F).filter(Boolean):[];
+  return'<div class="dv-card" style="margin-top:10px"><b>Fix their game</b><p class="dv-mut" style="margin:4px 0">Applied once by their own game: right away if they\'re playing, otherwise the next time they do. A note below is shown to them with it.</p>'+
+   (pend.length?'<p class="dv-mut">⏳ Waiting: '+pend.map(x=>esc2(OPN[x.op]||x.op)+(x.op==='take'?' '+(x.n||0)+' '+esc2(x.k==='gold'?'gold':INAME[x.k]||x.k):'')).join(', ')+'</p>':'')+
+   '<div class="dv-row" style="flex-wrap:wrap;margin-top:6px"><label class="dv-mut">Take away<br><select data-fx="k"><option value="gold">Gold</option>'+items.map(([k,n])=>'<option value="'+esc2(k)+'">'+esc2(INAME[k]||k)+' (has '+n+')</option>').join('')+'</select></label>'+
+   '<label class="dv-mut">How many<br><input type="number" data-fx="n" min="1" max="100000000" value="1" style="width:100px"></label><button class="dv-b dv-bad" data-adm="take" style="align-self:flex-end">Take away</button></div>'+
+   '<label class="dv-mut" style="display:block;margin-top:6px">Note to them <small>(optional)</small><input type="text" data-fx="m" maxlength="300" style="width:100%" placeholder="Removed the extra castle from the castle bug. Thanks for understanding!"></label>'+
+   '<div class="dv-row" style="margin-top:6px"><button class="dv-b '+(S.arm==='fxhome'?'dv-arm':'')+'" data-adm="home">'+(S.arm==='fxhome'?'Tap again to send them to the start':'Send them to the start of Hollow (stuck)')+'</button></div></div>'}
+ function bakView(){const B=T.plB;if(!B)return'<p class="dv-mut">Loading backups…</p>';if(B._err)return'<p class="dv-mut">Backups can\'t be read: '+esc2(B._err)+'</p>';
+  const L=Object.entries(B).filter(([,v])=>v&&v.json).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
+  let h='<div class="dv-card" style="margin-top:10px"><b>Backups</b><p class="dv-mut" style="margin:4px 0">Their game keeps its own copies (a daily one and before big changes). Restoring replaces their whole game with that copy.</p>';
+  if(!L.length)h+='<p class="dv-mut">None yet.</p>';
+  for(const[k,v]of L){let S3=null;try{S3=JSON.parse(v.json)}catch(e){}const lv=S3&&Array.isArray(S3.xp)?S3.xp.map(lvFromXp).reduce((a,b)=>a+b,0):0;
+   h+='<div class="dv-hl" style="flex-wrap:wrap"><span>'+esc2(new Date(v.at||0).toLocaleString())+' <small class="dv-mut">('+esc2(v.tag||'')+') · total level '+lv+' · '+((S3&&S3.gold)|0).toLocaleString()+' gold'+(S3&&S3.inv?' · '+Object.values(S3.inv).filter(n=>n>0).length+' kinds of items':'')+'</small></span>'+
+    '<button class="dv-b '+(S.arm==='fxr'+k?'dv-arm':'')+'" data-adm="restore:'+esc2(k)+'">'+(S.arm==='fxr'+k?'Tap again to restore':'Restore this')+'</button></div>'}
+  return h+'</div>'}
+ async function sendFix(o){o.t=Date.now();o.f=uid();const m=gv('[data-fx="m"]').trim().slice(0,300);if(m)o.m=m;await D().set(ref('fixes/'+T.pl+'/x'+Date.now().toString(36)),o);T.plF=await get('fixes/'+T.pl)||{};API.draw()}
  function giftForm(){const opts=Object.keys(INAME).filter(k=>!/^eq_cu_/.test(k)||INAME[k]).sort((a,b)=>INAME[a].localeCompare(INAME[b])).map(k=>'<option value="'+k+'">'+esc2(INAME[k])+'</option>').join('');
   return'<div class="dv-card" style="margin-top:10px"><b>Send a gift</b>'+waiting()+'<div class="dv-row" style="flex-wrap:wrap;margin-top:6px"><label class="dv-mut">Item<br><select data-gf="k"><option value="">(none)</option>'+opts+'</select></label>'+
    '<label class="dv-mut">How many<br><input type="number" data-gf="n" min="1" max="1000000" value="1" style="width:80px"></label><label class="dv-mut">Gold<br><input type="number" data-gf="g" min="0" max="100000000" value="0" style="width:100px"></label></div>'+
@@ -116,6 +152,9 @@
     await D().set(ref('bugs/'+b+'/re'),m.slice(0,500));if(bug.u)await D().set(ref('gifts/'+bug.u+'/r'+Date.now().toString(36)),{m:('About your bug report (“'+String(bug.what||'').slice(0,60)+'”): '+m).slice(0,500),t:Date.now(),f:uid()});bug.re=m;toast('Reply sent.');API.draw()}
    else if(a==='go'){const i=(T.bugs[b]||{}).info||{};SQSUITE.close();try{if(i.region&&i.region!=='hollow'&&window.SQTEST)SQTEST.goIsland(i.region);setTimeout(()=>{P.x=+i.x;P.y=+i.y},i.region&&i.region!=='hollow'?1500:0)}catch(e2){}toast('Moved to where it was reported.')}
    else if(a==='pl'){T.view='players';if(!T.lb)await loadLb();loadPlayer(b)}
+   else if(a==='take'){const k=gv('[data-fx="k"]'),n=Math.max(1,Math.min(1e8,+gv('[data-fx="n"]')||1));await sendFix({op:'take',k,n});toast('Queued: take away '+n+' '+(k==='gold'?'gold':INAME[k]||k)+'.')}
+   else if(a==='home'){API.arm('fxhome',async()=>{try{await sendFix({op:'home'});toast('Queued: back to the start of Hollow.')}catch(e3){fail(e3)}});return}
+   else if(a==='restore'){const k=t.dataset.adm.slice(8);API.arm('fxr'+k,async()=>{try{await sendFix({op:'restore',b:k});toast('Queued: restore that backup.')}catch(e3){fail(e3)}});return}
    else if(a==='gift'){const k=gv('[data-gf="k"]'),n=Math.max(1,Math.min(1e6,gv('[data-gf="n"]')|0)),g=Math.max(0,Math.min(1e8,gv('[data-gf="g"]')|0)),m=gv('[data-gf="m"]').slice(0,500);
     if(!k&&!g&&!m){toast('Pick an item, some gold or write a message.');return}const o={t:Date.now(),f:uid()};if(k){o.k=k;o.n=n}if(g)o.g=g;if(m)o.m=m;
     await D().set(ref('gifts/'+T.pl+'/g'+Date.now().toString(36)),o);toast('Gift sent to '+nameOf(T.pl)+'.')}
