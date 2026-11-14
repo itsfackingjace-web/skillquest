@@ -23,11 +23,11 @@
  const OFF=document.createElement('canvas');OFF.width=48;OFF.height=56;OFF.hd2=true;const OX=OFF.getContext('2d');
  const INK='#282030';
  const shirtOf=ch=>{try{return OPT.shirt[ch.sh]}catch(e){return'#48a048'}},skinOf=ch=>{try{return OPT.skin[ch.sk][0]}catch(e){return'#f0c8a0'}};
- // a raised arm at column cx (the arm's own column), swaying by sw
- // a raised arm on the right (side 1) or left (side -1) of the body: the hanging hand is taken away, a 2-wide arm goes up
- // from the shoulder (sleeve, then the hand), outlined; sw sways the hand
- function armUp(ch,side,sw){const e=side>0?30:17,x0=side>0?31:15;OX.clearRect(side>0?30:16,41,2,6);OX.fillStyle=INK;OX.fillRect(e,41,1,5);
-  OX.fillRect(x0-1+sw,32,4,6);OX.fillRect(x0-1,37,4,6);OX.fillStyle=shirtOf(ch);OX.fillRect(x0,38,2,4);OX.fillStyle=skinOf(ch);OX.fillRect(x0+sw,33,2,4)}
+ // The kit's arms hang at columns 17-18 (left) and 29-30 (right), rows 42-47, with the torso's edge at 19 / 28. armUp clears the
+ // hanging arm (outlining the torso edge again) and raises a 2-wide arm beside the head from the shoulder (sleeve, then the hand,
+ // outlined) on the right (side 1) or left (side -1); sw sways the hand.
+ function armUp(ch,side,sw){const L=side<0,ax=L?17:29,edge=L?19:28,x0=L?15:31;OX.clearRect(ax,42,2,7);OX.fillStyle=INK;OX.fillRect(edge,42,1,5);
+  OX.fillRect(x0-1,37,4,6);OX.fillRect(x0-1+sw,32,4,6);OX.fillStyle=shirtOf(ch);OX.fillRect(x0,38,2,4);OX.fillStyle=skinOf(ch);OX.fillRect(x0+sw,33,2,4)}
  const R=(C,x,y,w,h,c)=>{C.fillStyle=c;C.fillRect(Math.round(x),Math.round(y),w,h)};
  // Body rows in OFF (the 48x56 box, anchor 24,44): head 28-39, shoulders/torso 40-46, legs 47-50, x 17-30.
  // Tiny pixel glyphs for the effects: '#' fill, 'o' outline.
@@ -64,7 +64,7 @@
   // ---- effects ----
   const cx=Math.round(ox)+dx,top=Math.round(oy)-20+dy,E=EM[k],fade=Math.max(0,Math.min(1,(E.d-t)/.4));C.save();C.globalAlpha=fade;
   const rise=(i,n,sp)=>((t*sp+i/n)%1),pop=(a)=>Math.min(1,Math.max(0,(t-a)/.12));
-  if(k==='wave'&&Math.floor(t*10)%2){C.fillStyle='#ffffff';const hx2=cx+11;C.fillRect(hx2,top-8,1,2);C.fillRect(hx2+1,top-10,1,2);C.fillRect(hx2-6,top-10,1,2);C.fillRect(hx2-7,top-8,1,2)}
+  if(k==='wave'&&Math.floor(t*10)%2){C.fillStyle='#ffffff';const hx2=cx+8,hy2=top+9;C.fillRect(hx2+4,hy2,1,2);C.fillRect(hx2+5,hy2-2,1,2);C.fillRect(hx2-3,hy2-2,1,2);C.fillRect(hx2-4,hy2,1,2)}
   if(k==='bow'&&t>1.9)glyph(C,'star',cx+9,top-6-(t-1.9)*6,'#f8e070',INK);
   if(k==='love'){const b=Math.floor(t*4)%2;glyph(C,'heart',cx,top-8-b,'#f04870',INK);C.fillStyle='#ffd0dc';C.fillRect(cx-2,top-10-b,1,1);
    for(let i=0;i<4;i++){const u=rise(i,4,.6),x=cx+Math.sin(i*2.3+t*2)*12,y=top-4-u*18;C.globalAlpha=fade*(1-u);glyph(C,'sheart',x,y,'#f87898')}}

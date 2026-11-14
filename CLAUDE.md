@@ -569,5 +569,5 @@
   column (`SQHUDBTN`, phones without a minimap, e.g. indoors) and under 115's guide hint (`window.SQHINTB` {b,f}, its bottom in canvas
   px this frame). Anything else drawn in that column should record its bottom the same way.
 - **Emote animations** (136 `act`): the body is redrawn from `OFF` with dx/dy (hop/sway), `hx/hy` (the head, rows 0-39, moved on its own),
-  `sq` (a torso row dropped on landing) and `arms` ([[side,sway]] → `armUp`); sleep draws the whole OFF rotated -90° on the ground.
+  `sq` (a torso row dropped on landing) and `arms` ([[side,sway]] → `armUp`, which clears the kit's hanging arm at columns 17-18 / 29-30, rows 42-48, and re-outlines the torso edge at 19 / 28); sleep draws the whole OFF rotated -90° on the ground.
   Effects use pixel glyphs (`GL`: heart, check, cross, ?, note, star, spark, z) through `glyph(C,k,x,y,col,outline)`.
