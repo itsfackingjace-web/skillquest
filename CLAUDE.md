@@ -507,3 +507,9 @@
   `FOODS` for the call (pinned `eatp` in the save, else smallest heal that covers what's missing, else least healing; potions and
   `SQFOODBUFF` meals left for USE; "You're full." at full health + food 95). At a fire with 2+ cookable kinds it opens a picker
   (`ptab` 41); a picked kind runs as 109's `sqDo('cook')` whose steps call `eat()` (BYPASS) with that COOKS entry moved first.
+- **Tidy phone screen** (`ui/182-s189-tidy-screen.js` + edits): every minimap drawer uses `L.mw||L.dw` (right-aligned to the day box);
+  182's outermost `hudLayout` sets `mw` on sideways touch screens so the minimap ends above the action buttons under it. 111's
+  `sqPlaceBtns`: ONLINE/BUG are 30px and in a row (upright phones: under the minimap; sideways touch: under the left HUD stack,
+  `window.SQHUDBTN` = the row's bottom). 115's guide hint is drawn under the quest box (and under that row), 11 units, left aligned.
+  131's floating words go under your feet (`q.hi`) while XP numbers (`drops`) rise over your head. 118's HIT says TALK only when
+  the TALK button (`tk`) isn't already showing TALK. Fixed elements have no `offsetParent`: test visibility with `offsetWidth`.

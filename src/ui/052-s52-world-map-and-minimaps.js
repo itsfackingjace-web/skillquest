@@ -44,7 +44,7 @@ function hollowMapCanvas(){const now=performance.now()/1000,k=REM.length+'/'+BS.
  x.putImageData(im,0,0);return HMAP=c}
 // --- the HUD minimap (all five areas) ---
 function miniTarget(){if(menuOpen||dead||TRAVEL49)return null;const R=SCENE&&SCENE.room;if(R&&R.region)return{k:'region',R,w:R.w,h:R.h};if(!SCENE)return{k:'hollow',w:N,h:N};return null}
-function drawMini52(){const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
+function drawMini52(){const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
  g.fillStyle='rgba(10,8,16,.72)';g.fillRect(x0-3*U,y0-3*U,w+6*U,hh+6*U);g.drawImage(t.k==='region'?rgFogCanvas(t.R):hollowMapCanvas(),x0,y0,w,hh);
  const m=(tx,ty,c,s)=>{g.fillStyle=c;g.fillRect(x0+(tx+.5)/t.w*w-s*U/2,y0+(ty+.5)/t.h*hh-s*U/2,s*U,s*U)};
  if(t.k==='region'){const R=t.R;m(R.dock[0],R.dock[1],'#f8d848',3);for(const l of R.lms)if(rgSeen(R.region,l.id))m(l.x,l.y,'#f8f8f8',2)}

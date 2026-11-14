@@ -12,6 +12,6 @@
  {const _mh=mapHTML;mapHTML=function(){const h=_mh.apply(this,arguments);return h.replace('<div class="lg">','<div class="lg"><span><i style="background:#d8a030"></i>Your house</span>'+(theirs().length?'<span><i style="background:#7890b0"></i>Other players\' houses</span>':''))}}
  // the HUD minimap
  if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{const t=miniTarget();if(!t)return out;
-   const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U,s=Math.max(1,U*.7);g.save();g.setTransform(1,0,0,1,0,0);
+   const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U,s=Math.max(1,U*.7);g.save();g.setTransform(1,0,0,1,0,0);
    const list=t.k==='region'?isle(t.R.region).map(h=>[h,true]):mineH().map(h=>[h,true]);draw(g,list,t.w,s,v=>x0+v/t.w*w,v=>y0+v/t.h*hh);g.restore()}catch(e){}return out}}
  window.SQHOUSEMAP={glyph}})();

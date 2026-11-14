@@ -13,7 +13,7 @@
  window.SQGRVMAP={grvWhere,mine};
  // HUD minimap
  {const _dm=drawMini52;drawMini52=function(){_dm();const t=miniTarget();if(!t)return;const area=t.k==='region'?t.R.region:'hollow',M=mine().filter(o=>o.w.ar===area);if(!M.length)return;
-   const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
+   const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
    for(const o of M)tomb(g,x0+(o.w.x/16)/t.w*w,y0+(o.w.y/16)/t.h*hh,Math.max(1,Math.round(U*.9)),blink());g.restore()}}
  // the map: HERE (1 pixel per tile) and WORLD
  {const _dm=drawMap;drawMap=function(){_dm();if(MAPVIEW==='world')return;const c=document.getElementById('mpc');if(!c)return;const R=SCENE&&SCENE.room,area=R&&R.region?R.region:'hollow',[aw]=areaSize(area);if(c.width!==aw)return;

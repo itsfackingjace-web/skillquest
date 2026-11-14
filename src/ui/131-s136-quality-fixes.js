@@ -36,9 +36,9 @@
  // drawn small (4.5 world px, a little smaller than XP numbers), following you, fading out over 1.8 s
  function drawQL(){if(!QL.length)return;g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.3;g.lineJoin='round';
   const lines=t=>{if(t.length<=30)return[t];const w=t.split(' ');let a='',L=[];for(const x of w){if(a&&(a+' '+x).length>30){L.push(a);a=x}else a=a?a+' '+x:x}L.push(a);return L.slice(0,2)};
-  let off=0;
-  for(let i=QL.length-1;i>=0;i--){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));const L=lines(q.tx),x=Math.round(P.x);
-   for(let j=L.length-1;j>=0;j--){const y=Math.round(P.y-28-off-q.t*4);g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(L[j],x,y);g.fillStyle='#fff';g.fillText(L[j],x,y);off+=5.5}off+=1}
+  let off=0,off2=0;// 189: while XP numbers rise over your head, the words go under your feet
+  for(let i=QL.length-1;i>=0;i--){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));if(!q.hi&&drops.some(d=>d.t<1.1))q.hi=1;const L=lines(q.tx),x=Math.round(P.x);
+   for(let j=L.length-1;j>=0;j--){const y=q.hi?Math.round(P.y+12+off2+q.t*2):Math.round(P.y-28-off-q.t*4);g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(L[j],x,y);g.fillStyle='#fff';g.fillText(L[j],x,y);if(q.hi)off2+=5.5;else off+=5.5}if(q.hi)off2+=1;else off+=1}
   g.restore();for(let i=QL.length-1;i>=0;i--)if(QL[i].t>=1.8)QL.splice(i,1)}
 
  {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}try{drawQL()}catch(e){}return out}}

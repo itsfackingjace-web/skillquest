@@ -149,7 +149,7 @@ const _dh35=drawHUD;drawHUD=function(){_dh35();const R=SCENE&&SCENE.room;if(!R||
  if(!D.mm){D.mm=document.createElement('canvas');D.mm.width=R.w;D.mm.height=R.h;D.mmDirty=1}
  if(D.mmDirty){D.mmDirty=0;const x=D.mm.getContext('2d'),im=x.createImageData(R.w,R.h),u=new Uint32Array(im.data.buffer);for(let i=0;i<R.w*R.h;i++)if(D.seen[i])u[i]=D.G[i]?hdC('#3a3448'):hdC(R.tomb?'#c8a870':'#8a8070');
   for(const it of R.items){const i=it.y*R.w+it.x;if(!D.seen[i])continue;if(it.t==='stairs')u[i]=hdC('#f8f8f8');else if(it.t==='dchest'&&!it.open)u[i]=hdC('#f8d848')}x.putImageData(im,0,0)}
- const L=HUDL||hudLayout(),U=L.U,w=L.dw,hh=w*R.h/R.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
+ const L=HUDL||hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*R.h/R.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
  g.fillStyle='rgba(10,8,16,.72)';g.fillRect(x0-3*U,y0-3*U,w+6*U,hh+16*U);g.drawImage(D.mm,x0,y0,w,hh);
  const px=x0+P.x/16/R.w*w,py=y0+P.y/16/R.h*hh;g.fillStyle=(performance.now()/300|0)%2?'#ff4060':'#ffffff';g.fillRect(px-1.5*U,py-1.5*U,3*U,3*U);
  if(D.boss&&D.seen[D.boss[1]*R.w+D.boss[0]]&&!D.bossDone){g.fillStyle='#ff3030';g.fillRect(x0+(D.boss[0]+.5)/R.w*w-2*U,y0+(D.boss[1]+.5)/R.h*hh-2*U,4*U,4*U)}

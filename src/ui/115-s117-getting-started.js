@@ -56,11 +56,12 @@
   const st=S[GD.s],t=now(),stuck=t-LASTP>40,fresh=t-SHOW<9;let near=true;try{near=st.near?st.near():true}catch(e){}
   light(stuck||fresh||(st.near&&near)?st.btn:null);if(!stuck&&!fresh)return;
   let txt='';try{txt=st.how()}catch(e){}if(!txt)return;
-  g.save();g.setTransform(1,0,0,1,0,0);const U=(typeof HUDL!=='undefined'&&HUDL&&HUDL.U)||1,fs=12*U;g.font='600 '+fs+'px '+PF;
-  const maxW=Math.min(W-32*U,360*U),words=txt.split(' '),lines=[];let cur='';for(const w of words){const tt=cur?cur+' '+w:w;if(g.measureText(tt).width>maxW-24*U&&cur){lines.push(cur);cur=w}else cur=tt}if(cur)lines.push(cur);
-  const bw=Math.min(maxW,Math.max(...lines.map(l=>g.measureText(l).width))+24*U),lh=fs*1.35,bh=lines.length*lh+(stuck?28:18)*U,bx=(W-bw)/2,by=Math.min(H-bh-120*U,H/2+30*Z);
-  g3box(bx,by,bw,bh,U,'#f8f0d8');let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',W/2,y,11,U,'#b06010','center',700);y+=lh}
-  lines.forEach(l=>{g3text(l,W/2,y,12,U,'#404040','center',600);y+=lh});g.restore()};
+  g.save();g.setTransform(1,0,0,1,0,0);const L=typeof HUDL!=='undefined'&&HUDL,U=(L&&L.U)||1,fs=11*U;g.font='600 '+fs+'px '+PF;
+  const maxW=L?L.qw:Math.min(W-32*U,360*U),words=txt.split(' '),lines=[];let cur='';for(const w of words){const tt=cur?cur+' '+w:w;if(g.measureText(tt).width>maxW-24*U&&cur){lines.push(cur);cur=w}else cur=tt}if(cur)lines.push(cur);
+  const bw=Math.min(maxW,Math.max(...lines.map(l=>g.measureText(l).width))+24*U),lh=fs*1.35,bh=lines.length*lh+(stuck?28:18)*U,bx=L?L.ins:(W-bw)/2;let by=L?L.stackBottom+4*U:Math.min(H-bh-120*U,H/2+30*Z);
+  if(L&&window.SQHUDBTN){const r=cv.getBoundingClientRect();by=Math.max(by,(SQHUDBTN-r.top)*W/r.width+4*U)}const tx=L?bx+12*U:W/2,al=L?'left':'center';
+  g3box(bx,by,bw,bh,U,'#f8f0d8');let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',tx,y,11,U,'#b06010',al,700);y+=lh}
+  lines.forEach(l=>{g3text(l,tx,y,11,U,'#404040',al,600);y+=lh});g.restore()};
  // tapping the quest box opens the quest log
  cv.addEventListener('pointerdown',e=>{if(menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)||typeof HUDL==='undefined'||!HUDL||(window.SQTRKOFF&&SQTRKOFF()))return;const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*(cv.width/r.width),sy=(e.clientY-r.top)*(cv.height/r.height),L=HUDL;
   if(sx>=L.ins&&sx<=L.ins+L.qw&&sy>=L.qy&&sy<=L.qy+42*L.U){e.stopImmediatePropagation();e.preventDefault();try{openPanel(6)}catch(x){}}},true);

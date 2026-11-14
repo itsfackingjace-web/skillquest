@@ -263,7 +263,7 @@ function rgMiniCanvas(R){if(R.mm)return R.mm;const c=document.createElement('can
  for(let i=0;i<R.w*R.h;i++)u[i]=COL[R.tiles[i]]||COL[2];for(const it of R.items){if(it.t==='_obj')u[it.y*R.w+it.x]=hdC(RG_OBJCOL[it.o.v||it.o.t]||'#2c7c30');else if(it.t==='lm')for(let b=0;b<(it.h||1);b++)for(let a=0;a<(it.w||1);a++)u[(it.y+b)*R.w+it.x+a]=hdC('#d8d0c0')}
  for(const[a,b]of R.pier)u[b*R.w+a]=hdC('#a87850');
  x.putImageData(im,0,0);R.mm=c;return c}
-function rgMini(R){const L=HUDL||hudLayout(),U=L.U,w=L.dw,hh=w*R.h/R.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
+function rgMini(R){const L=HUDL||hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*R.h/R.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
  g.fillStyle='rgba(10,8,16,.72)';g.fillRect(x0-3*U,y0-3*U,w+6*U,hh+6*U);g.drawImage(rgMiniCanvas(R),x0,y0,w,hh);
  const m=(tx,ty,c,s)=>{g.fillStyle=c;g.fillRect(x0+(tx+.5)/R.w*w-s*U/2,y0+(ty+.5)/R.h*hh-s*U/2,s*U,s*U)};m(R.dock[0],R.dock[1],'#f8d848',3);
  for(const l of R.lms)if(rgSeen(R.region,l.id))m(l.x,l.y,'#f8f8f8',2);

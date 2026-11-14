@@ -806,7 +806,7 @@ setInterval(()=>{nameCheck().catch(()=>{})},1000);
 // shows everyone in the same area: friends in green, other players in blue.
 const outdoorPos=()=>{if(SCENE&&SCENE.room&&SCENE.room.region)return[P.x,P.y];if(SCENE&&SCENE.ret)return[SCENE.ret.x,SCENE.ret.y];return[P.x,P.y]};
 {const _dm=drawMini52;drawMini52=function(){_dm();if(!MP.on)return;const t=miniTarget();if(!t)return;const area=t.k==='region'?t.R.region:'hollow';
-  const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
+  const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
   const m=(tx,ty,c,s)=>{g.fillStyle=c;g.fillRect(Math.round(x0+(tx+.5)/t.w*w-s*U/2),Math.round(y0+(ty+.5)/t.h*hh-s*U/2),Math.round(s*U),Math.round(s*U))};
   for(const[u,r]of MP.players){if(!live(r)||r.ar!==area||typeof r.ax!=='number')continue;const tx=r.ax/16-.5,ty=r.ay/16-.5;m(tx,ty,'#101018',3.6);m(tx,ty,MP.friends&&MP.friends[u]?'#60e860':'#60c0ff',2.4)}
   g.restore()}}

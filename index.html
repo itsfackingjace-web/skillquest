@@ -3814,7 +3814,7 @@ const _dh35=drawHUD;drawHUD=function(){_dh35();const R=SCENE&&SCENE.room;if(!R||
  if(!D.mm){D.mm=document.createElement('canvas');D.mm.width=R.w;D.mm.height=R.h;D.mmDirty=1}
  if(D.mmDirty){D.mmDirty=0;const x=D.mm.getContext('2d'),im=x.createImageData(R.w,R.h),u=new Uint32Array(im.data.buffer);for(let i=0;i<R.w*R.h;i++)if(D.seen[i])u[i]=D.G[i]?hdC('#3a3448'):hdC(R.tomb?'#c8a870':'#8a8070');
   for(const it of R.items){const i=it.y*R.w+it.x;if(!D.seen[i])continue;if(it.t==='stairs')u[i]=hdC('#f8f8f8');else if(it.t==='dchest'&&!it.open)u[i]=hdC('#f8d848')}x.putImageData(im,0,0)}
- const L=HUDL||hudLayout(),U=L.U,w=L.dw,hh=w*R.h/R.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
+ const L=HUDL||hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*R.h/R.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
  g.fillStyle='rgba(10,8,16,.72)';g.fillRect(x0-3*U,y0-3*U,w+6*U,hh+16*U);g.drawImage(D.mm,x0,y0,w,hh);
  const px=x0+P.x/16/R.w*w,py=y0+P.y/16/R.h*hh;g.fillStyle=(performance.now()/300|0)%2?'#ff4060':'#ffffff';g.fillRect(px-1.5*U,py-1.5*U,3*U,3*U);
  if(D.boss&&D.seen[D.boss[1]*R.w+D.boss[0]]&&!D.bossDone){g.fillStyle='#ff3030';g.fillRect(x0+(D.boss[0]+.5)/R.w*w-2*U,y0+(D.boss[1]+.5)/R.h*hh-2*U,4*U,4*U)}
@@ -5854,7 +5854,7 @@ function rgMiniCanvas(R){if(R.mm)return R.mm;const c=document.createElement('can
  for(let i=0;i<R.w*R.h;i++)u[i]=COL[R.tiles[i]]||COL[2];for(const it of R.items){if(it.t==='_obj')u[it.y*R.w+it.x]=hdC(RG_OBJCOL[it.o.v||it.o.t]||'#2c7c30');else if(it.t==='lm')for(let b=0;b<(it.h||1);b++)for(let a=0;a<(it.w||1);a++)u[(it.y+b)*R.w+it.x+a]=hdC('#d8d0c0')}
  for(const[a,b]of R.pier)u[b*R.w+a]=hdC('#a87850');
  x.putImageData(im,0,0);R.mm=c;return c}
-function rgMini(R){const L=HUDL||hudLayout(),U=L.U,w=L.dw,hh=w*R.h/R.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
+function rgMini(R){const L=HUDL||hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*R.h/R.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
  g.fillStyle='rgba(10,8,16,.72)';g.fillRect(x0-3*U,y0-3*U,w+6*U,hh+6*U);g.drawImage(rgMiniCanvas(R),x0,y0,w,hh);
  const m=(tx,ty,c,s)=>{g.fillStyle=c;g.fillRect(x0+(tx+.5)/R.w*w-s*U/2,y0+(ty+.5)/R.h*hh-s*U/2,s*U,s*U)};m(R.dock[0],R.dock[1],'#f8d848',3);
  for(const l of R.lms)if(rgSeen(R.region,l.id))m(l.x,l.y,'#f8f8f8',2);
@@ -6427,7 +6427,7 @@ function hollowMapCanvas(){const now=performance.now()/1000,k=REM.length+'/'+BS.
  x.putImageData(im,0,0);return HMAP=c}
 // --- the HUD minimap (all five areas) ---
 function miniTarget(){if(menuOpen||dead||TRAVEL49)return null;const R=SCENE&&SCENE.room;if(R&&R.region)return{k:'region',R,w:R.w,h:R.h};if(!SCENE)return{k:'hollow',w:N,h:N};return null}
-function drawMini52(){const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
+function drawMini52(){const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
  g.fillStyle='rgba(10,8,16,.72)';g.fillRect(x0-3*U,y0-3*U,w+6*U,hh+6*U);g.drawImage(t.k==='region'?rgFogCanvas(t.R):hollowMapCanvas(),x0,y0,w,hh);
  const m=(tx,ty,c,s)=>{g.fillStyle=c;g.fillRect(x0+(tx+.5)/t.w*w-s*U/2,y0+(ty+.5)/t.h*hh-s*U/2,s*U,s*U)};
  if(t.k==='region'){const R=t.R;m(R.dock[0],R.dock[1],'#f8d848',3);for(const l of R.lms)if(rgSeen(R.region,l.id))m(l.x,l.y,'#f8f8f8',2)}
@@ -8013,7 +8013,7 @@ setInterval(()=>{nameCheck().catch(()=>{})},1000);
 // shows everyone in the same area: friends in green, other players in blue.
 const outdoorPos=()=>{if(SCENE&&SCENE.room&&SCENE.room.region)return[P.x,P.y];if(SCENE&&SCENE.ret)return[SCENE.ret.x,SCENE.ret.y];return[P.x,P.y]};
 {const _dm=drawMini52;drawMini52=function(){_dm();if(!MP.on)return;const t=miniTarget();if(!t)return;const area=t.k==='region'?t.R.region:'hollow';
-  const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
+  const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
   const m=(tx,ty,c,s)=>{g.fillStyle=c;g.fillRect(Math.round(x0+(tx+.5)/t.w*w-s*U/2),Math.round(y0+(ty+.5)/t.h*hh-s*U/2),Math.round(s*U),Math.round(s*U))};
   for(const[u,r]of MP.players){if(!live(r)||r.ar!==area||typeof r.ax!=='number')continue;const tx=r.ax/16-.5,ty=r.ay/16-.5;m(tx,ty,'#101018',3.6);m(tx,ty,MP.friends&&MP.friends[u]?'#60e860':'#60c0ff',2.4)}
   g.restore()}}
@@ -9388,6 +9388,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-3',d:'Nov 14, 2026',t:'A tidier screen on phones',n:['The getting-started hint now sits under your quest box instead of in the middle of the screen.','The ONLINE and BUG buttons are smaller and sit side by side, out of the way.','Short messages like "Got 3 wood" no longer pile up on your XP numbers: while XP is rising over your head they show under your feet.','Holding your phone sideways, the minimap no longer hides under the HIT button.','When you can talk to someone there is now one TALK button instead of two.']},
  {v:'2026.11.14-2',d:'Nov 14, 2026',t:'Controller highlight fix',n:['The gold controller highlight no longer floats over windows opened on top of a menu.']},
  {v:'2026.11.14-1',d:'Nov 14, 2026',t:'Smarter eating, pet powers, new crops',n:['EAT now picks food for you: when you\'re hurt it uses the smallest food that heals what\'s missing, and at full health it saves your good food. Potions and special meals stay in your Bag for you to USE.','Want a favourite? Select a food in your Bag and tap ☆ EAT FIRST: EAT will always use it first.','Cooking at a campfire with more than one kind of raw food now asks what to cook: one, all of one kind, or everything. You can also eat instead.','Pets can have new powers: some pets may now fight beside you (melee, arrows, magic or a burst), heal you, bring you things, find extra loot, give more XP or gold, or block hits. A pet\'s description in your Bag says what it does.','New crops can now be added to farms, with their own seeds at the general store.','Bandits, cacticus and some bosses can now have special shots.']},
  {v:'2026.11.13-38',d:'Nov 13, 2026',t:'Dev Suite: Erase all',n:['Picture editors in the Dev Suite have an Erase all button that clears the picture (or frame/layer) you are on. Undo brings it back.']},
@@ -9789,7 +9790,7 @@ addEventListener('keydown',e=>{if(WK.open&&e.key==='Escape'&&!TS.open){e.prevent
  window.SQGRVMAP={grvWhere,mine};
  // HUD minimap
  {const _dm=drawMini52;drawMini52=function(){_dm();const t=miniTarget();if(!t)return;const area=t.k==='region'?t.R.region:'hollow',M=mine().filter(o=>o.w.ar===area);if(!M.length)return;
-   const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
+   const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
    for(const o of M)tomb(g,x0+(o.w.x/16)/t.w*w,y0+(o.w.y/16)/t.h*hh,Math.max(1,Math.round(U*.9)),blink());g.restore()}}
  // the map: HERE (1 pixel per tile) and WORLD
  {const _dm=drawMap;drawMap=function(){_dm();if(MAPVIEW==='world')return;const c=document.getElementById('mpc');if(!c)return;const R=SCENE&&SCENE.room,area=R&&R.region?R.region:'hollow',[aw]=areaSize(area);if(c.width!==aw)return;
@@ -12748,8 +12749,8 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
 {let MINIBOX=null;const R2=()=>W/innerWidth;
  const _dh=drawHUD;drawHUD=function(){MINIBOX=null;_dh()};
  const keep=(x,y,w,h)=>{const r=R2();MINIBOX={x:x/r,y:y/r,w:w/r,h:h/r}};
- const _m52=drawMini52;drawMini52=function(){_m52();const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w;keep(L.dx-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+6*U)};
- const _u=upd;upd=function(dt){_u(dt);const R=SCENE&&SCENE.room;if(R&&R.dun&&!menuOpen&&!dead){const L=HUDL||hudLayout(),U=L.U,w=L.dw,hh=w*R.h/R.w;keep(L.dx-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+16*U)}};
+ const _m52=drawMini52;drawMini52=function(){_m52();const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w;keep(L.dx+L.dw-w-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+6*U)};
+ const _u=upd;upd=function(dt){_u(dt);const R=SCENE&&SCENE.room;if(R&&R.dun&&!menuOpen&&!dead){const L=HUDL||hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*R.h/R.w;keep(L.dx+L.dw-w-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+16*U)}};
  window.SQMINIBOX=()=>MINIBOX;
  const hit=(x,y)=>{const b=MINIBOX;return b&&!pnOpen&&!menuOpen&&!dead&&x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h};
  const open=()=>{fromMenu=false;showScreen('map')};
@@ -12889,12 +12890,18 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;//
  const _e=eat;eat=function(){if(dead||menuOpen||pnOpen||window.SQDO_STEP||SQDO)return _e();
   const cooking=nearFire(P.x,P.y,45)&&typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st);if(cooking)return _e();
   if(EATCD>0){say('Still chewing... ('+EATCD.toFixed(1)+'s)');return}const h0=P.hp,u0=hunger,i0=JSON.stringify(inv);_e();if(P.hp!==h0||hunger!==u0||JSON.stringify(inv)!==i0)EATCD=3}}
-// ---- 110. Phones: ONLINE/CHAT and BUG move under the minimap, out of the middle of the screen ----
+// ---- 110. Phones: ONLINE/CHAT and BUG move under the minimap, out of the middle of the screen (189: smaller, in a row) ----
 // On narrow screens they sat over the left side of the world, right where Elder Rowan stands at the start.
-setInterval(()=>{const a=document.getElementById('mpb'),b=document.getElementById('mpbug');if(!a)return;const B=window.SQMINIBOX&&SQMINIBOX();
- if(innerWidth<700&&B&&B.h>20){const t=Math.round(B.y+B.h+8);a.style.left='auto';a.style.right=Math.max(8,Math.round(innerWidth-(B.x+B.w)))+'px';a.style.top=t+'px';
-  if(b){b.style.left='auto';b.style.right=a.style.right;b.style.top=(t+48)+'px'}}
- else{a.style.left=a.style.right=a.style.top='';if(b)b.style.left=b.style.right=b.style.top=''}},400);
+// Since 189: smaller, side by side. Phones held upright: under the minimap. Touch screens held sideways: under the status /
+// quest boxes on the left (window.SQHUDBTN = the row's bottom in CSS px, so 115's guide hint goes under it). PC: where 061 put them.
+function sqPlaceBtns(){const a=document.getElementById('mpb'),b=document.getElementById('mpbug');if(!a)return;const B=window.SQMINIBOX&&SQMINIBOX();window.SQHUDBTN=0;
+ const set=(e,l,r,t)=>{if(!e)return;e.style.left=l;e.style.right=r;e.style.top=t};
+ if(innerWidth<700&&B&&B.h>20){const t=Math.round(B.y+B.h+6)+'px',R=Math.max(8,Math.round(innerWidth-(B.x+B.w)));set(a,'auto',R+'px',t);set(b,'auto',(R+a.offsetWidth+6)+'px',t)}
+ else if(typeof isPC!=='undefined'&&!isPC&&typeof HUDL!=='undefined'&&HUDL&&cv){const r=cv.getBoundingClientRect(),k=r.width/W,t=Math.round(r.top+HUDL.stackBottom*k+6),l=Math.round(r.left+HUDL.ins*k);
+  set(a,l+'px','auto',t+'px');set(b,(l+a.offsetWidth+6)+'px','auto',t+'px');if(a.offsetWidth)window.SQHUDBTN=t+a.offsetHeight}
+ else{set(a,'','','');set(b,'','','')}}
+setInterval(sqPlaceBtns,400);
+{const st=document.createElement('style');st.textContent='#mpb,#mpbug{height:30px!important;min-width:0!important;padding:0 8px!important;font-size:12px!important;letter-spacing:.5px!important}';document.head.appendChild(st)}
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
 {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
@@ -14635,11 +14642,12 @@ window.SQA=SQA;
   const st=S[GD.s],t=now(),stuck=t-LASTP>40,fresh=t-SHOW<9;let near=true;try{near=st.near?st.near():true}catch(e){}
   light(stuck||fresh||(st.near&&near)?st.btn:null);if(!stuck&&!fresh)return;
   let txt='';try{txt=st.how()}catch(e){}if(!txt)return;
-  g.save();g.setTransform(1,0,0,1,0,0);const U=(typeof HUDL!=='undefined'&&HUDL&&HUDL.U)||1,fs=12*U;g.font='600 '+fs+'px '+PF;
-  const maxW=Math.min(W-32*U,360*U),words=txt.split(' '),lines=[];let cur='';for(const w of words){const tt=cur?cur+' '+w:w;if(g.measureText(tt).width>maxW-24*U&&cur){lines.push(cur);cur=w}else cur=tt}if(cur)lines.push(cur);
-  const bw=Math.min(maxW,Math.max(...lines.map(l=>g.measureText(l).width))+24*U),lh=fs*1.35,bh=lines.length*lh+(stuck?28:18)*U,bx=(W-bw)/2,by=Math.min(H-bh-120*U,H/2+30*Z);
-  g3box(bx,by,bw,bh,U,'#f8f0d8');let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',W/2,y,11,U,'#b06010','center',700);y+=lh}
-  lines.forEach(l=>{g3text(l,W/2,y,12,U,'#404040','center',600);y+=lh});g.restore()};
+  g.save();g.setTransform(1,0,0,1,0,0);const L=typeof HUDL!=='undefined'&&HUDL,U=(L&&L.U)||1,fs=11*U;g.font='600 '+fs+'px '+PF;
+  const maxW=L?L.qw:Math.min(W-32*U,360*U),words=txt.split(' '),lines=[];let cur='';for(const w of words){const tt=cur?cur+' '+w:w;if(g.measureText(tt).width>maxW-24*U&&cur){lines.push(cur);cur=w}else cur=tt}if(cur)lines.push(cur);
+  const bw=Math.min(maxW,Math.max(...lines.map(l=>g.measureText(l).width))+24*U),lh=fs*1.35,bh=lines.length*lh+(stuck?28:18)*U,bx=L?L.ins:(W-bw)/2;let by=L?L.stackBottom+4*U:Math.min(H-bh-120*U,H/2+30*Z);
+  if(L&&window.SQHUDBTN){const r=cv.getBoundingClientRect();by=Math.max(by,(SQHUDBTN-r.top)*W/r.width+4*U)}const tx=L?bx+12*U:W/2,al=L?'left':'center';
+  g3box(bx,by,bw,bh,U,'#f8f0d8');let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',tx,y,11,U,'#b06010',al,700);y+=lh}
+  lines.forEach(l=>{g3text(l,tx,y,11,U,'#404040',al,600);y+=lh});g.restore()};
  // tapping the quest box opens the quest log
  cv.addEventListener('pointerdown',e=>{if(menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)||typeof HUDL==='undefined'||!HUDL||(window.SQTRKOFF&&SQTRKOFF()))return;const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*(cv.width/r.width),sy=(e.clientY-r.top)*(cv.height/r.height),L=HUDL;
   if(sx>=L.ins&&sx<=L.ins+L.qw&&sy>=L.qy&&sy<=L.qy+42*L.U){e.stopImmediatePropagation();e.preventDefault();try{openPanel(6)}catch(x){}}},true);
@@ -15192,7 +15200,7 @@ window.SQA=SQA;
   if(R.region){for(const l of R.useItems||[])if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1))return{read:1};const it=rgObjAt(R,tx,ty);return it&&!it.gone&&it.o?{t:it.o.t}:null}
   const it=(R.items||[]).find(q=>q.x===tx&&q.y===ty&&!q.gone&&(q.t==='_obj'||q.t==='boulder'));return it?{t:it.t==='boulder'?(it.ore||'boulder'):it.o&&it.o.t}:null}
  function hitWord(){if(BUILD)return'PLACE';
-  try{if(typeof facingNpc==='function'&&facingNpc())return'TALK'}catch(e){}
+  try{const tk=document.getElementById('tk');if(typeof facingNpc==='function'&&facingNpc()&&!(tk&&tk.offsetWidth&&/^\s*TALK/.test(tk.textContent)))return'TALK'}catch(e){}/* 189: no second TALK when the TALK button already shows it */
   if(typeof FISH!=='undefined'&&FISH)return'REEL';
   try{const st=typeof frontStation==='function'&&frontStation();if(st)return STW[st.t]||'USE'}catch(e){}
   try{if(SCENE&&typeof inHome==='function'&&inHome()){const R=SCENE.room,[x,y]=frontTile(),f=SCENE.house.furn.get(y*R.w+x);if(f)return f.t==='bed'?'SLEEP':f.t==='chest'?'OPEN':'MOVE'}
@@ -16054,9 +16062,9 @@ window.SQA=SQA;
  // drawn small (4.5 world px, a little smaller than XP numbers), following you, fading out over 1.8 s
  function drawQL(){if(!QL.length)return;g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.3;g.lineJoin='round';
   const lines=t=>{if(t.length<=30)return[t];const w=t.split(' ');let a='',L=[];for(const x of w){if(a&&(a+' '+x).length>30){L.push(a);a=x}else a=a?a+' '+x:x}L.push(a);return L.slice(0,2)};
-  let off=0;
-  for(let i=QL.length-1;i>=0;i--){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));const L=lines(q.tx),x=Math.round(P.x);
-   for(let j=L.length-1;j>=0;j--){const y=Math.round(P.y-28-off-q.t*4);g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(L[j],x,y);g.fillStyle='#fff';g.fillText(L[j],x,y);off+=5.5}off+=1}
+  let off=0,off2=0;// 189: while XP numbers rise over your head, the words go under your feet
+  for(let i=QL.length-1;i>=0;i--){const q=QL[i];q.t+=.016;g.globalAlpha=Math.max(0,Math.min(1,(1.8-q.t)/.5));if(!q.hi&&drops.some(d=>d.t<1.1))q.hi=1;const L=lines(q.tx),x=Math.round(P.x);
+   for(let j=L.length-1;j>=0;j--){const y=q.hi?Math.round(P.y+12+off2+q.t*2):Math.round(P.y-28-off-q.t*4);g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(L[j],x,y);g.fillStyle='#fff';g.fillText(L[j],x,y);if(q.hi)off2+=5.5;else off+=5.5}if(q.hi)off2+=1;else off+=1}
   g.restore();for(let i=QL.length-1;i>=0;i--)if(QL[i].t>=1.8)QL.splice(i,1)}
 
  {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}try{drawQL()}catch(e){}return out}}
@@ -16102,7 +16110,7 @@ window.SQA=SQA;
  {const _mh=mapHTML;mapHTML=function(){const h=_mh.apply(this,arguments);return h.replace('<div class="lg">','<div class="lg"><span><i style="background:#d8a030"></i>Your house</span>'+(theirs().length?'<span><i style="background:#7890b0"></i>Other players\' houses</span>':''))}}
  // the HUD minimap
  if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{const t=miniTarget();if(!t)return out;
-   const L=hudLayout(),U=L.U,w=L.dw,hh=w*t.h/t.w,x0=L.dx,y0=L.top+L.dh+46*U,s=Math.max(1,U*.7);g.save();g.setTransform(1,0,0,1,0,0);
+   const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U,s=Math.max(1,U*.7);g.save();g.setTransform(1,0,0,1,0,0);
    const list=t.k==='region'?isle(t.R.region).map(h=>[h,true]):mineH().map(h=>[h,true]);draw(g,list,t.w,s,v=>x0+v/t.w*w,v=>y0+v/t.h*hh);g.restore()}catch(e){}return out}}
  window.SQHOUSEMAP={glyph}})();
 // ---- 138. Smith your own tools, and sell anything you craft ----
@@ -19158,6 +19166,17 @@ window.SQA=SQA;
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{s.eatp=PIN}catch(e){}return s}}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{PIN=S&&typeof S.eatp==='string'&&INAME[S.eatp]?S.eatp:''}catch(e){}return out}}
  window.SQEAT={pick,cookable,get pin(){return PIN},set pin(v){PIN=v||''},open:openPick,cook}})();
+// ---- 189. A tidier screen on phones ----
+// The minimap is drawn by many sections (052, 049, 035, 061, 076, 132, 105) at hudLayout()'s dx/dw; they now use L.mw (the
+// minimap's width, right-aligned to the day box) when set. On touch screens held sideways the minimap would run under the
+// action buttons (HIT/TALK, FIRE): mw shrinks it to end above the highest button below its top (at least 56 units wide).
+(()=>{let C=null,CT=0;
+ function limit(){const t=performance.now();if(C&&t-CT<300)return C;CT=t;C=null;try{if(typeof isPC!=='undefined'&&isPC||innerWidth<=innerHeight)return C;const r=cv.getBoundingClientRect(),k=W/r.width;
+   const B=[];for(const id of['a','tk','f','e','rl','aimb']){const e=document.getElementById(id);if(!e||!e.offsetWidth)continue;const b=e.getBoundingClientRect();if(b.width<4)continue;B.push({l:(b.left-r.left)*k,r:(b.right-r.left)*k,t:(b.top-r.top)*k})}
+   C={B}}catch(e){}return C}
+ {const _h=hudLayout;hudLayout=function(){const L=_h.apply(this,arguments);try{const c=limit();if(c){const U=L.U,y0=L.top+L.dh+46*U;let low=1e9;
+    for(const b of c.B)if(b.r>L.dx&&b.l<L.dx+L.dw&&b.t>y0+20*U&&b.t<low)low=b.t;const room=low-y0-10*U;if(room<L.dw)L.mw=Math.max(56*U,room)}}catch(e){}return L}}
+})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
