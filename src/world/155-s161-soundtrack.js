@@ -217,5 +217,7 @@
  setInterval(tick,100);
  // credit for the instrument samples (CC BY 3.0 asks for it), at the bottom of Options
  {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div style="margin:14px 0 4px;font-size:11px;opacity:.6;text-align:center">Music instruments: FluidR3_GM SoundFont by Frank Wen (CC BY 3.0)</div>'}}
- window.SQMUSIC={S,SONGS:SONGS2,INST,VOL,build,render,load,loadSong,get cur(){return cur},REGION_SONG,tick,get force(){return FORCE},set force(v){FORCE=v||null;cur=null},restart(){cur=null},get step(){return step},get len(){return song?song.len:0}};
+ // one note on its own (the Dev Suite's composer: tapping a note or a key plays it)
+ const note=(inst,m,d)=>{try{if(!setup())return;if(ACX.state!=='running')ACX.resume();load(inst).then(()=>{try{sample('lead',{i:inst,m:fit(inst,m)},ctx.currentTime+.02,d||.35)}catch(e){}}).catch(()=>{})}catch(e){}};
+ window.SQMUSIC={S,SONGS:SONGS2,INST,VOL,build,render,load,loadSong,note,chord,midi,get cur(){return cur},REGION_SONG,tick,get force(){return FORCE},set force(v){FORCE=v||null;cur=null},restart(){cur=null},get step(){return step},get len(){return song?song.len:0}};
 })();

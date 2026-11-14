@@ -416,7 +416,7 @@
   names, skills; results open the tab (Content through `SQCONTENT.edit(section,id)`).
 - **Song editor** (`dev/165-s171-song-editor.js`, `window.SQSONGS`, Dev Suite > Songs): library `songs.<key>` = a song in 155's format
   (+ `vol`); built-in keys replace that song, `su_<id>` are new; `songmap.<region>` = song key (155's `REGION_SONG`). `check()`
-  validates chords/notes/bar lengths/order and builds it; originals restored when removed. 155 exposes `VOL`, `force` (play a song
+  validates chords/notes/bar lengths/order and builds it; originals restored when removed. The tab is a composer (since 190, `window.SQCOMPOSER`): per part a chord lane + a 16th-step piano roll (one note at a time); grid edits go back to text through `melText`/`parseMel` (round trip keeps every built-in melody's pitches; flats in flat keys), songs may carry `key` (scale rows, the key's chords in the picker), band presets `PRE`, 💡 `idea()` writes a melody over the chords, undo/redo, Space plays the part. `SQMUSIC.note(inst,midi,dur)` (155) plays one note; 155 also exposes `chord`/`midi`. Redraws go through `redraw()` (API.draw doesn't run the tab's `after`). 155 exposes `VOL`, `force` (play a song
   regardless of `wantSong`; the editor plays its working copy as `__ed`), `restart()`, `step`, `len`. Write only original melodies.
 - **Save keys** (`core/166-s172-save-keys.js`, `SQSAVEKEYS`): 049 keeps unknown save fields (`SAVE_EXTRA`) and writes them back; it
   used to learn "known" fields only from the first snap of a session, so fields written only when non-empty (`rh` island
