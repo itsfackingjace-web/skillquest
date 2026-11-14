@@ -523,3 +523,5 @@
   stay apart) + XP to `balance.act` (ids `<TABLE>:<key>`, originals `SQBAL.OA`), content to `content.recipes`, gear to
   `newgear.<k>.sm` (via `SQGEAR.ngClean`), fish/crops to `gather`. The game's cooking recipes keep their single raw food.
   111a's `apply` keeps a copy of the applied stats (`applied`), so a row deleted from the draft is still put back.
+- **Material names in recipe lists**: `matN(k)` (004, global) = `SHORT[k]` or the item's name lowercased; 004/006/007/011 use it (they printed
+  raw keys, so Content items showed as `it_...`). Use it in any new list of materials.

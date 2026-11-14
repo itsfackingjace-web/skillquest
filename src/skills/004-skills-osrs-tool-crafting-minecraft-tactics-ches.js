@@ -47,8 +47,8 @@ let ptab=0;const pbd=document.getElementById('pbd');
 function rPn(){document.getElementById('t0').className=ptab?'':'on';document.getElementById('t1').className=ptab?'on':'';let h='';
  if(!ptab){let tot=0,s='';for(let i=0;i<SKN.length;i++){const l=lvOf(i);tot+=l;const b=XT[l-1],n=l<99?XT[l]:b+1,p=l<99?Math.min(100,(XPS[i]-b)/(n-b)*100):100;s+='<div class="sk"><div style="color:'+SKC[i]+'">'+SKN[i]+'</div><b>'+l+'<small>/99</small></b><div class="br"><i style="width:'+p+'%;background:'+SKC[i]+'"></i></div><small>'+Math.floor(XPS[i])+' xp</small></div>'}h='<div class="tl">Total level: '+tot+'</div><div class="sg">'+s+'</div>'}
  else{h='<div class="tl">Wood '+inv.wood+' · Stone '+inv.stone+' · Iron '+(inv.iron||0)+'</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.8">Axe: '+tierName('axe')+' · Pickaxe: '+tierName('pick')+' · Sword: '+tierName('sword')+'<br>Crafting level '+lvOf(6)+'</div>';
-  for(const k of['axe','pick','sword']){const t=TL[k]+1;if(t>3)continue;const i=REC.findIndex(x=>x.k==k&&x.t==t),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+'</small></button>'}
-  for(const k of['hoe','can','rod']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · '+(k==='rod'?'for fishing':'for farming')+'</small></button>'}
+  for(const k of['axe','pick','sword']){const t=TL[k]+1;if(t>3)continue;const i=REC.findIndex(x=>x.k==k&&x.t==t),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+matN(a)).join(', ')+' · Crafting '+r.req+'</small></button>'}
+  for(const k of['hoe','can','rod']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+matN(a)).join(', ')+' · Crafting '+r.req+' · '+(k==='rod'?'for fishing':'for farming')+'</small></button>'}
   h+='<div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:14px">Better tools hit harder. Rocks need a pickaxe; iron ore needs Mining 15 + a stone pickaxe.</div>'}
  pbd.innerHTML=h}
 pbd.onclick=e=>{const b=e.target.closest('.rc');if(b)craft(REC[+b.dataset.i])};
@@ -60,3 +60,6 @@ function drawDrops(){g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-m
  for(const d of drops){d.t+=.016;g.globalAlpha=Math.max(0,1-d.t/1.6);const y=Math.round(P.y-16-d.t*14-(d.y-P.y+16)*0),x=Math.round(d.x);g.strokeStyle='#000';g.strokeText(d.tx,x,Math.round(d.y-d.t*14));g.fillStyle=d.c;g.fillText(d.tx,x,Math.round(d.y-d.t*14))}
  g.restore();drops=drops.filter(d=>d.t<1.6)}
 const _nd=NEWDRAW;NEWDRAW=function(...a){_nd(...a);drawDrops()};
+
+// a material's name in recipe lists (191): the short name if there is one, else the item's name, else its key
+function matN(k){try{if(typeof SHORT!=='undefined'&&SHORT[k])return SHORT[k]}catch(e){}return INAME[k]?String(INAME[k]).toLowerCase():k}

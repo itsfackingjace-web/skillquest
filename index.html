@@ -384,8 +384,8 @@ let ptab=0;const pbd=document.getElementById('pbd');
 function rPn(){document.getElementById('t0').className=ptab?'':'on';document.getElementById('t1').className=ptab?'on':'';let h='';
  if(!ptab){let tot=0,s='';for(let i=0;i<SKN.length;i++){const l=lvOf(i);tot+=l;const b=XT[l-1],n=l<99?XT[l]:b+1,p=l<99?Math.min(100,(XPS[i]-b)/(n-b)*100):100;s+='<div class="sk"><div style="color:'+SKC[i]+'">'+SKN[i]+'</div><b>'+l+'<small>/99</small></b><div class="br"><i style="width:'+p+'%;background:'+SKC[i]+'"></i></div><small>'+Math.floor(XPS[i])+' xp</small></div>'}h='<div class="tl">Total level: '+tot+'</div><div class="sg">'+s+'</div>'}
  else{h='<div class="tl">Wood '+inv.wood+' · Stone '+inv.stone+' · Iron '+(inv.iron||0)+'</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.8">Axe: '+tierName('axe')+' · Pickaxe: '+tierName('pick')+' · Sword: '+tierName('sword')+'<br>Crafting level '+lvOf(6)+'</div>';
-  for(const k of['axe','pick','sword']){const t=TL[k]+1;if(t>3)continue;const i=REC.findIndex(x=>x.k==k&&x.t==t),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+'</small></button>'}
-  for(const k of['hoe','can','rod']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · '+(k==='rod'?'for fishing':'for farming')+'</small></button>'}
+  for(const k of['axe','pick','sword']){const t=TL[k]+1;if(t>3)continue;const i=REC.findIndex(x=>x.k==k&&x.t==t),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+matN(a)).join(', ')+' · Crafting '+r.req+'</small></button>'}
+  for(const k of['hoe','can','rod']){if(TL[k]||(inv['eq_'+k]|0)>0)continue;const i=REC.findIndex(x=>x.k==k),r=REC[i];h+='<button class="rc" data-i="'+i+'" style="opacity:'+(canC(r)?1:.45)+'">'+r.name+'<br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+matN(a)).join(', ')+' · Crafting '+r.req+' · '+(k==='rod'?'for fishing':'for farming')+'</small></button>'}
   h+='<div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:14px">Better tools hit harder. Rocks need a pickaxe; iron ore needs Mining 15 + a stone pickaxe.</div>'}
  pbd.innerHTML=h}
 pbd.onclick=e=>{const b=e.target.closest('.rc');if(b)craft(REC[+b.dataset.i])};
@@ -397,6 +397,9 @@ function drawDrops(){g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-m
  for(const d of drops){d.t+=.016;g.globalAlpha=Math.max(0,1-d.t/1.6);const y=Math.round(P.y-16-d.t*14-(d.y-P.y+16)*0),x=Math.round(d.x);g.strokeStyle='#000';g.strokeText(d.tx,x,Math.round(d.y-d.t*14));g.fillStyle=d.c;g.fillText(d.tx,x,Math.round(d.y-d.t*14))}
  g.restore();drops=drops.filter(d=>d.t<1.6)}
 const _nd=NEWDRAW;NEWDRAW=function(...a){_nd(...a);drawDrops()};
+
+// a material's name in recipe lists (191): the short name if there is one, else the item's name, else its key
+function matN(k){try{if(typeof SHORT!=='undefined'&&SHORT[k])return SHORT[k]}catch(e){}return INAME[k]?String(INAME[k]).toLowerCase():k}
 // ===== Hollow Village: shops + gold =====
 cb.remove();
 let GLD=0,shop=null,gsv=0;try{GLD=+localStorage.getItem('hw_g')||0}catch(e){}
@@ -456,7 +459,7 @@ function makeGood(i,all){const r=GOODS[i];if(!r)return;if(sqDo('craft',all?999:1
  while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];inv[r.k]=(inv[r.k]|0)+1;n++}
  if(!n){say('Missing materials');return}addXp(6,r.xp*n);say('Made '+n+' '+r.n+(n>1?'s':''));sfx('pickup');saveLocal(true);rPn()}
 function goodsHTML(){let h='<div class="tl" style="margin-top:18px">Goods</div><div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:-6px">Repeatable. Trains Crafting. Sell them at the general store.</div>';
- GOODS.forEach((r,i)=>{const can=lvOf(6)>=r.req&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b);h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><div class="gi"><b>'+r.n+'</b> <small>(have '+(inv[r.k]|0)+')</small><br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · '+r.xp+' xp · sells '+r.v+'g</small></div><button class="gc" data-i="'+i+'" data-a="1">Make</button><button class="gc" data-i="'+i+'" data-a="all">All</button></div>'});return h}
+ GOODS.forEach((r,i)=>{const can=lvOf(6)>=r.req&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b);h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><div class="gi"><b>'+r.n+'</b> <small>(have '+(inv[r.k]|0)+')</small><br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+matN(a)).join(', ')+' · Crafting '+r.req+' · '+r.xp+' xp · sells '+r.v+'g</small></div><button class="gc" data-i="'+i+'" data-a="1">Make</button><button class="gc" data-i="'+i+'" data-a="all">All</button></div>'});return h}
 // --- armor visuals (extra palette slots; creator keeps its own swatches) ---
 RD.forEach(r=>{if(Array.isArray(r[3]))r[3]=r[3].slice()});
 const AC3=['#9a6438','#b8c0c8','#6c84b0'],HB=OPT.hatc.length,SB=OPT.shirt.length,PB=OPT.pants.length;
@@ -660,7 +663,7 @@ function smithAct(i,all){const r=SM[i];if(!r)return;if(sqDo(r.smelt?'smelt':'smi
  addXp(10,r.xp*n);sfx(r.smelt?'smelt':'anvil');saveLocal(true);rPn()}
 function forgeHTML(){let h='<div class="tl" style="margin-top:18px">Furnace &amp; Anvil</div><div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:-6px">Smithing level '+lvOf(10)+'. Smelt ore into bars, then forge them.</div>';
  SM.forEach((r,i)=>{if(r.arm&&ARM[r.arm[0]]>=r.arm[1])return;const need=Object.entries(r.c),can=lvOf(10)>=r.lv&&!(r.def>lvOf(8))&&need.every(([a,b])=>(inv[a]|0)>=b);
-  h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><div class="gi"><b>'+r.n+'</b>'+(r.k?' <small>(have '+(inv[r.k]|0)+')</small>':'')+'<br><small>'+need.map(([a,b])=>b+' '+(IN[a]||a)).join(', ')+' · Smithing '+r.lv+(r.def?' · wear: Defence '+r.def:'')+' · '+r.xp+' xp'+(SELLP[r.k]?' · sells '+SELLP[r.k]+'g':'')+'</small></div><button class="fg" data-i="'+i+'" data-a="1">'+(r.arm?'Forge':'Make')+'</button>'+(r.arm?'':'<button class="fg" data-i="'+i+'" data-a="all">All</button>')+'</div>'});
+  h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><div class="gi"><b>'+r.n+'</b>'+(r.k?' <small>(have '+(inv[r.k]|0)+')</small>':'')+'<br><small>'+need.map(([a,b])=>b+' '+(IN[a]||matN(a))).join(', ')+' · Smithing '+r.lv+(r.def?' · wear: Defence '+r.def:'')+' · '+r.xp+' xp'+(SELLP[r.k]?' · sells '+SELLP[r.k]+'g':'')+'</small></div><button class="fg" data-i="'+i+'" data-a="1">'+(r.arm?'Forge':'Make')+'</button>'+(r.arm?'':'<button class="fg" data-i="'+i+'" data-a="all">All</button>')+'</div>'});
  return h}
 const _r6=rPn;rPn=function(){_r6();if(ptab==2&&shop=='smith')pbd.insertAdjacentHTML('beforeend',forgeHTML())};
 const _oc6=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.fg');if(b){smithAct(+b.dataset.i,b.dataset.a=='all');return}_oc6(e)};
@@ -1253,7 +1256,7 @@ function equipHTML(){const TC=['','#b07838','#a8a8b0','#d8e0e8','#88a8d8'],an=s=
  +'<div class="qc" style="margin-top:12px">'+[['Attack damage',dmg],['Block chance',Math.round(blockCh()*100)+'%'],['Defence',lvOf(8)],['Total level',lvTot()]].map(([a,b])=>'<div class="tc-r"><span>'+a+'</span><b>'+b+'</b></div>').join('')+'</div>'}
 // --- building recipes in the Craft tab ---
 function buildHTML(){let h='<div class="tl" style="margin-top:18px">Building</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.7;margin-top:-6px">Make pieces here, then place them from your Bag.</div>';
- BREC.forEach((r,i)=>{const can=lvOf(6)>=r.req&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b);h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(r.k)+'"><div class="gi"><b>'+r.n+'</b> <small>(have '+(inv[r.k]|0)+')</small><br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+a).join(', ')+' · Crafting '+r.req+' · '+r.xp+' xp</small></div><button class="gc bc" data-i="'+i+'" data-a="1">Make</button><button class="gc bc" data-i="'+i+'" data-a="all">All</button></div>'});return h}
+ BREC.forEach((r,i)=>{const can=lvOf(6)>=r.req&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b);h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(r.k)+'"><div class="gi"><b>'+r.n+'</b> <small>(have '+(inv[r.k]|0)+')</small><br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+matN(a)).join(', ')+' · Crafting '+r.req+' · '+r.xp+' xp</small></div><button class="gc bc" data-i="'+i+'" data-a="1">Make</button><button class="gc bc" data-i="'+i+'" data-a="all">All</button></div>'});return h}
 function makeBuild(i,all){const r=BREC[i];if(!r)return;if(sqDo('craft',all?999:1,()=>makeBuild(i,false)))return;if(lvOf(6)<r.req){say('Need Crafting '+r.req);return}let n=0;const mx=all?999:1;
  while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];inv[r.k]=(inv[r.k]|0)+1;n++}if(!n){say('Missing materials');return}
  addXp(6,r.xp*n);say('Made '+n+' '+r.n.toLowerCase()+(n>1?'s':'')+'.');sfx('chop');saveLocal(true);rPn()}
@@ -9388,6 +9391,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-8',d:'Nov 14, 2026',t:'Clearer recipes',n:['Recipe lists (crafting, building, tools, smithing) now show every material by its name, like "25 cotton" instead of a code.']},
  {v:'2026.11.14-7',d:'Nov 14, 2026',t:'Behind the scenes: recipe tools',n:['The developer now has one place to see and change every recipe in the game, so expect recipe tweaks and new recipes.']},
  {v:'2026.11.14-6',d:'Nov 14, 2026',t:'Small fixes',n:['Behind-the-scenes tools fixes for the developer.']},
  {v:'2026.11.14-5',d:'Nov 14, 2026',t:'Campfires in friends\' yards',n:['Campfires in someone\'s backyard or courtyard now show for friends visiting it, and you can warm up and cook at them.']},
