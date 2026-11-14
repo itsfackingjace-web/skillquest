@@ -66,6 +66,11 @@
   for(const k in D.newgear||{}){const o=D.newgear[k]||{};if(!INAME[o.b])bad('Gear '+(o.n||k),'works like "'+o.b+'", which isn\'t an item.',{tab:'worn'});if(!(D.icons||{})[k])warn('Gear '+(o.n||k),'has no sprite yet.',{tab:'sprites',sel:'.dv-it[data-k="'+k+'"]'})}
   if(window.SQSONGS){for(const k in D.songs||{}){const c=SQSONGS.check(D.songs[k]);if(c.errs.length)bad('Song '+((D.songs[k]||{}).n||k),c.errs[0],{tab:'songs',sel:'[data-sgs="'+k+'"]'})}
    const songs=new Set([...Object.keys(SQSONGS.ORIG),...Object.keys(D.songs||{})]);for(const r in D.songmap||{})if(!songs.has(D.songmap[r]))bad('Island songs',r+' plays a song that doesn\'t exist.',{tab:'songs'})}
+  // scheduled events (184)
+  for(const id in D.sched||{}){const e=D.sched[id]||{},w='Event '+(e.n||id),g={tab:'sched',sel:'[data-evs="'+id+'"]'};
+   if(!(+e.to>+e.from))bad(w,'ends before it starts.',g);else if(e.rep&&+e.to-+e.from>=(e.rep==='day'?864e5:6048e5))bad(w,'is longer than the '+e.rep+' it repeats every, so it never runs.',g);
+   else if(!e.rep&&+e.to<Date.now()&&!e.off)warn(w,'is over (it ended '+new Date(+e.to).toLocaleDateString()+').',g);
+   if(e.mob&&e.mob.k&&!MOBS[e.mob.k])bad(w,'brings "'+e.mob.k+'", which isn\'t a monster.',g);if(e.shop&&!shops[e.shop])bad(w,'sells from a shop that doesn\'t exist.',g)}
   return out}
  const goTo=g=>{if(!g)return;if(g.content&&window.SQCONTENT&&SQCONTENT.edit){SQCONTENT.edit(g.content[0],g.content[1]);return}S.tab=g.tab;API.draw();if(g.sel)setTimeout(()=>{const x=document.querySelector('#dvs '+g.sel);if(x){x.scrollIntoView({block:'center'});x.click()}},250)};
  let LAST=[];

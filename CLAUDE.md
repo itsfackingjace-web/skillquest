@@ -536,3 +536,9 @@
   st 2 = left half); side legs and other slots keep the standing look. drawWorn no longer adds the old half-pixel bob. Editor:
   ed.layers has 9 entries (index = facing + step*3, `WKS(d)` = key), an empty step is shown faded (automatic) and the first change
   to it starts from that automatic frame (`snapEd` → `autoInto`).
+- **Scheduled events** (`ui/184-s192-scheduled-events.js`, `window.SQEVENTS`, Dev Suite > Events, `ptab` 43): library `sched.ev_<id>` =
+  {n, msg, from, to (ms), rep ''|'day'|'week', xp 1-5, xs skill (-1 all), gold %, mob {k,n,r}, shop cs_<id>, off}. Published with the
+  library, switched on by the clock (`win`/`next`), no database writes. XP in the outermost `addXp` (on top of 161's database
+  `events`), gold in the outermost `killEnemy`, monsters tagged `_ev` kept near you outdoors (`EVM`, like 121's DEVM), the shop is a
+  Content shop opened from the event card (pill `#sqsev`, below 161's `#sqevp` when that shows). `SQEVENTS.force(id,min)` = run it
+  in your own game only. Start messages are remembered per window in localStorage `sq_evseen`.
