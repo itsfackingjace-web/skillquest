@@ -9384,6 +9384,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-33',d:'Nov 13, 2026',t:'Bigger recipes',n:['New gear can now be made in the Craft list and at a crafting bench, not just at the anvil, and recipes can ask for many more materials.']},
  {v:'2026.11.13-32',d:'Nov 13, 2026',t:'Ready for new trees, ores and fish',n:['The world can now get new kinds of trees, ore veins and fish without a game update: when they arrive they simply start appearing while you play.']},
  {v:'2026.11.13-31',d:'Nov 13, 2026',t:'Behind the scenes',n:['New developer tools for tuning recipes, food, shop prices and art, so balance changes and new content can arrive faster.']},
  {v:'2026.11.13-30',d:'Nov 13, 2026',t:'Updates arrive while you play',n:['New art, items, islands and other content from the developers now appear within about 30 seconds while you play. No need to close and reopen the game. A message tells you when the world was updated.']},
@@ -13138,7 +13139,8 @@ window.SQA=SQA;
  const CUS={},PEND={},PCUS={};// the new item worn in each slot; bag counts and worn pieces waiting for their item to load
  function ngClean(o,k){if(!ngKey(k)||!o||typeof o!=='object')return null;const b=String(o.b||''),e=EQ[b];if(!e||e.custom||!SLOTS.includes(e.slot)||e.slot==='pet')return null;
   const r={n:txt(o.n,40).trim()||'New gear',b,v:num(o.v,0,1000000),d:txt(o.d,300)};
-  if(o.sm&&typeof o.sm==='object'&&o.sm.c&&typeof o.sm.c==='object'){const c={};for(const m in o.sm.c){const q=num(o.sm.c[m],0,99);if(q&&INAME[m]&&!ngKey(m))c[m]=q}if(Object.keys(c).length)r.sm={c,lv:num(o.sm.lv,1,99)}}
+  if(o.sm&&typeof o.sm==='object'&&o.sm.c&&typeof o.sm.c==='object'){const c={};for(const m in o.sm.c){if(Object.keys(c).length>=12)break;const q=num(o.sm.c[m],0,9999);if(q&&INAME[m]&&m!==k)c[m]=q}
+   if(Object.keys(c).length){r.sm={c,lv:num(o.sm.lv,1,99)};if(o.sm.st==='craft')r.sm.st='craft'}}// st: 'craft' = Craft list (and crafting bench, Crafting level), else anvil (Smithing)
   return r}
  const _occ=occ;occ=function(slot){const k=_occ(slot),c=CUS[slot];return c&&EQ[c]&&k===EQ[c].base?c:k};
  function regNG(k,d){const fresh=!EQ[k];const e={...EQ[d.b],n:d.n,v:d.v,custom:1,base:d.b};delete e.pet;EQ[k]=e;
@@ -13146,12 +13148,12 @@ window.SQA=SQA;
   INAME[k]=d.n;SN[k]=/s$/i.test(d.n)?d.n:d.n+'s';SHORT[k]=d.n.toLowerCase();SELLP[k]=d.v;hookDesc(k);
   if(PEND[k]){inv[k]=(inv[k]|0)+PEND[k];delete PEND[k]}
   for(const s in PCUS)if(PCUS[s]===k){if(_occ(s)===d.b)CUS[s]=k;delete PCUS[s]}
-  for(let i=SM.length-1;i>=0;i--)if(SM[i]._cu&&SM[i].k===k)SM.splice(i,1);
-  if(d.sm){const br=SM.find(r=>r.k===d.b);SM.push({k,n:d.n,c:{...d.sm.c},lv:d.sm.lv,xp:br&&br.xp||d.sm.lv*6,_cu:1})}}
+  for(let i=SM.length-1;i>=0;i--)if(SM[i]._cu&&SM[i].k===k)SM.splice(i,1);for(let i=GOODS.length-1;i>=0;i--)if(GOODS[i]._cu===1&&GOODS[i].k===k)GOODS.splice(i,1);
+  if(d.sm){const br=SM.find(r=>r.k===d.b),xp=br&&br.xp||d.sm.lv*6;if(d.sm.st==='craft')GOODS.push({k,n:d.n,c:{...d.sm.c},req:d.sm.lv,xp,v:d.v|0,_cu:1});else SM.push({k,n:d.n,c:{...d.sm.c},lv:d.sm.lv,xp,_cu:1})}}
  function unregNG(k){if(!EQ[k]||!EQ[k].custom)return;if(inv[k]|0)PEND[k]=(PEND[k]|0)+(inv[k]|0);delete inv[k];
   for(const s of SLOTS)if(CUS[s]===k){PCUS[s]=k;CUS[s]=null}
   for(const A of[INVK,EXTRA_BAG])for(let i=A.length-1;i>=0;i--)if(A[i]===k)A.splice(i,1);try{const i=EQK.indexOf(k);if(i>=0)EQK.splice(i,1)}catch(x){}
-  for(let i=SM.length-1;i>=0;i--)if(SM[i]._cu&&SM[i].k===k)SM.splice(i,1);delete EQ[k];delete INAME[k];delete SN[k];delete SHORT[k];delete SELLP[k]}
+  for(let i=SM.length-1;i>=0;i--)if(SM[i]._cu&&SM[i].k===k)SM.splice(i,1);for(let i=GOODS.length-1;i>=0;i--)if(GOODS[i]._cu===1&&GOODS[i].k===k)GOODS.splice(i,1);delete EQ[k];delete INAME[k];delete SN[k];delete SHORT[k];delete SELLP[k]}
  // wear an item for a moment (to read its numbers or its look), then put back what was there
  function wearing(k,f){const e=EQ[k];if(!e||!SLOTS.includes(e.slot))return f();const sl=e.slot,old=occ(sl);if(old===k)return f();
   setSlot(sl,k);try{return f()}finally{setSlot(sl,old)}}
@@ -13687,11 +13689,12 @@ window.SQA=SQA;
   if(ng)h+=ngHtml(k,ng);
   return h}
  // a new gear item: how players get it, a test copy for you, and removing it before it's published
- const mats=()=>{const m=new Set();for(const r of SM)if(!r._cu)for(const c in r.c||{})if(INAME[c])m.add(c);return[...m].sort((a,b)=>(INAME[a]>INAME[b]?1:-1))};
- function ngHtml(k,ng){const sm=ng.sm||{c:{},lv:1},rows=Object.entries(sm.c);while(rows.length<2)rows.push(['',0]);const M=mats(),pub=S.live&&S.live.newgear&&S.live.newgear[k];
-  let h='<div class="dv-card dv-rules" style="margin-top:12px"><b>Getting it</b><p class="dv-mut" style="margin:0">Players can find it in island loot chests (pick it in the island builder) and, if you give it a recipe, make it at an anvil.</p>';
-  rows.slice(0,3).forEach(([m,c],i)=>{h+='<label class="dv-gf"><span>'+(i?'and':'Anvil recipe')+'</span><span class="dv-gq"><select data-gr="m'+i+'"><option value="">'+(i?'(nothing else)':'(no recipe)')+'</option>'+M.map(x=>'<option value="'+x+'"'+(x===m?' selected':'')+'>'+E(INAME[x])+'</option>').join('')+'</select><input type="number" min="0" max="99" data-gr="c'+i+'" value="'+(c|0)+'"></span></label>'});
-  h+='<label class="dv-gf"><span>Smithing level</span><input type="number" min="1" max="99" data-gr="lv" value="'+(sm.lv|0||1)+'"></label>';
+ const mats=k=>[...new Set(INVK)].filter(x=>INAME[x]&&x!==k).sort((a,b)=>String(INAME[a]).localeCompare(String(INAME[b])));// any item can be a material
+ function ngHtml(k,ng){const sm=ng.sm||{c:{},lv:1},rows=Object.entries(sm.c);if(rows.length<12)rows.push(['',0]);const M=mats(k),pub=S.live&&S.live.newgear&&S.live.newgear[k],craft=(ng.sm?sm.st:NGST[k])==='craft';
+  let h='<div class="dv-card dv-rules" style="margin-top:12px"><b>Getting it</b><p class="dv-mut" style="margin:0">Players can find it in island loot chests (pick it in the island builder) and, if you give it a recipe, make it at an anvil or in the Craft list (also at a crafting bench). Up to 12 different materials, up to 9,999 of each.</p>';
+  h+='<label class="dv-gf"><span>Made at</span><select data-gr="st"><option value="anvil"'+(craft?'':' selected')+'>Anvil (Smithing)</option><option value="craft"'+(craft?' selected':'')+'>Craft list / crafting bench (Crafting)</option></select></label>';
+  rows.forEach(([m,c],i)=>{h+='<label class="dv-gf"><span>'+(i?'and':'Recipe')+'</span><span class="dv-gq"><select data-gr="m'+i+'"><option value="">'+(i?'(nothing else)':'(no recipe)')+'</option>'+M.map(x=>'<option value="'+x+'"'+(x===m?' selected':'')+'>'+E(INAME[x])+'</option>').join('')+'</select><input type="number" min="0" max="9999" data-gr="c'+i+'" value="'+(c|0)+'" style="width:80px"></span></label>'});
+  h+='<label class="dv-gf"><span>'+(craft?'Crafting':'Smithing')+' level</span><input type="number" min="1" max="99" data-gr="lv" value="'+(sm.lv|0||1)+'"></label>';
   h+='<div class="dv-row"><button class="dv-b" data-a="nggive">Put one in my bag (to test)</button>'+(pub?'':'<button class="dv-b '+(S.arm==='ngdel'?'dv-arm':'dv-bad')+'" data-a="ngdel">'+(S.arm==='ngdel'?'Tap again to delete it':'Delete this item')+'</button>')+'</div>'+
    (pub?'<p class="dv-mut">Published items can\'t be deleted, because players may already have one.</p>':'<p class="dv-mut">It only exists in your game until you publish it.</p>')+'</div>';
   return h}
@@ -13712,8 +13715,9 @@ window.SQA=SQA;
  async function ngSave(k,o){const G=window.SQGEAR,r=o&&G.ngClean(o,k);if(r)S.draft.newgear[k]=r;else delete S.draft.newgear[k];syncNG();
   try{await dset('draft/newgear/'+k,r||null);toast(r?'Saved to draft. Publish it from the Publish tab.':'Deleted.')}catch(e){fail(e)}if(A.previewing)A.preview(S.draft);draw()}
  function ngSet(k,f,v){const o={...S.draft.newgear[k]};if(f==='v')o.v=Math.max(0,Math.round(Number(v))||0);else o[f]=v;return ngSave(k,o)}
- function ngRecipe(k){const o={...S.draft.newgear[k]},c={};for(let i=0;i<3;i++){const m=root.querySelector('[data-gr="m'+i+'"]'),n=root.querySelector('[data-gr="c'+i+'"]');if(m&&m.value)c[m.value]=(c[m.value]|0)+Math.max(1,+(n&&n.value)||1)}
-  const lv=+(root.querySelector('[data-gr="lv"]')||{}).value||1;if(Object.keys(c).length)o.sm={c,lv};else delete o.sm;return ngSave(k,o)}
+ const NGST={};// the station picked before any materials (an empty recipe isn't saved)
+ function ngRecipe(k){const o={...S.draft.newgear[k]},c={};for(let i=0;i<12;i++){const m=root.querySelector('[data-gr="m'+i+'"]'),n=root.querySelector('[data-gr="c'+i+'"]');if(m&&m.value)c[m.value]=Math.min(9999,(c[m.value]|0)+Math.max(1,Math.round(+(n&&n.value))||1))}
+  const lv=+(root.querySelector('[data-gr="lv"]')||{}).value||1,st=(root.querySelector('[data-gr="st"]')||{}).value;NGST[k]=st;if(Object.keys(c).length){o.sm={c,lv};if(st==='craft')o.sm.st='craft'}else delete o.sm;return ngSave(k,o)}
  function drawTools(){const t=root.querySelector('.dv-tools');if(!t||!S.ed)return;const T=[['pen','Pen'],['erase','Eraser'],['fill','Fill'],['pick','Pick colour']];
   if(LAY(S.ed.kind))T.push(['pan','Move']);
   t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button><button class="dv-b" data-a="pxcopy" title="Copy this picture (Ctrl+C)">Copy</button><button class="dv-b" data-a="pxpaste" title="Paste a copied picture here (Ctrl+V)">Paste</button>'+
@@ -17812,7 +17816,7 @@ window.SQA=SQA;
  const takeOut=(L,name)=>{for(const r of ADDED[name]){const i=L.indexOf(r);if(i>=0)L.splice(i,1)}ADDED[name]=[]};
  function recipes(L){takeOut(GOODS,'GOODS');takeOut(SM,'SM');takeOut(COOKS,'COOKS');const out={};
   for(const id in L){const r=L[id];if(!/^r_[a-z0-9_]{1,30}$/.test(id)||!r||typeof r!=='object')continue;const sk=['craft','smith','smelt','cook'].includes(r.sk)?r.sk:'craft';
-   if(!isItem(r.out))continue;const c={};for(const q of arr(r.c)){if(q&&isItem(q.k)&&q.k!==r.out){const n=num(q.n,1,999,1)|0;c[q.k]=(c[q.k]|0)+n}}if(!Object.keys(c).length)continue;
+   if(!isItem(r.out))continue;const c={};for(const q of arr(r.c)){if(q&&isItem(q.k)&&q.k!==r.out){const n=num(q.n,1,9999,1)|0;c[q.k]=(c[q.k]|0)+n}}if(!Object.keys(c).length)continue;
    const lv=num(r.lv,1,99,1)|0,xp=num(r.xp,0,5000,10)|0,n=INAME[r.out];out[id]={sk,out:r.out,c,lv,xp};
    if(sk==='craft'){const g={k:r.out,n,c,req:lv,xp,v:SELLP[r.out]|0,_cu:id};GOODS.push(g);ADDED.GOODS.push(g)}
    else if(sk==='cook'){const raw=Object.keys(c)[0];const g={raw,ck:r.out,n:(INAME[raw]||raw).toLowerCase(),lv,xp,_cu:id};COOKS.push(g);ADDED.COOKS.push(g)}
@@ -17911,7 +17915,7 @@ window.SQA=SQA;
     {f:'bs',l:'Effect lasts (seconds)',t:'num',min:10,max:1800,if:o=>o.t==='pot'&&o.buff}]},
   recipes:{l:'🔨 Recipes',pre:'r_',blank:()=>({sk:'craft',out:'',c:[{k:'wood',n:2}],lv:1,xp:20}),hint:'Crafting recipes show in the crafting menu, smithing at the anvil, smelting at the furnace, cooking at a fire (cooking takes the first material as the raw food).',
    F:[{f:'sk',l:'Skill',t:'sel',o:()=>[['craft','Crafting'],['smith','Smithing (anvil)'],['smelt','Smithing (furnace)'],['cook','Cooking (fire)']]},{f:'out',l:'Makes',t:'item'},
-    {f:'c',l:'Materials',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'n',l:'How many',t:'num',min:1,max:999}]},{f:'lv',l:'Level needed',t:'num',min:1,max:99},{f:'xp',l:'XP each',t:'num',min:0,max:5000}],
+    {f:'c',l:'Materials',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'n',l:'How many',t:'num',min:1,max:9999}]},{f:'lv',l:'Level needed',t:'num',min:1,max:99},{f:'xp',l:'XP each',t:'num',min:0,max:5000}],
    title:o=>(o.out&&INAME[o.out]||'(pick what it makes)')+' · '+({craft:'Crafting',smith:'Anvil',smelt:'Furnace',cook:'Cooking'}[o.sk]||'Crafting')},
   shops:{l:'🛒 Shops',pre:'cs_',fixed:['gen','bw','af'],blank:()=>({n:'New shop',add:[]}),hint:'Add stock to the game\'s shops, or make new shops: give an island-builder person the job "Shopkeeper".',
    F:[{f:'n',l:'Shop name',t:'text',max:40,if:(o,id)=>/^cs_/.test(id)},{f:'add',l:'For sale',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'m',l:'How many',t:'num',min:1,max:1000},{f:'c',l:'Price (gold)',t:'num',min:0,max:1e7}]}],

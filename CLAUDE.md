@@ -41,7 +41,7 @@
   game holds it as b's tier (TL/ARM/CLS) and `CUS[slot]` remembers the new key (outermost `occ`/`setSlot`). Saves store
   `cus` and keep counts/worn pieces of not-yet-loaded new items (`PEND`/`PCUS`), so never rename or delete a published
   one (the suite only deletes unpublished ones). Unpublished new items exist only on the developer's device
-  (`SQGEAR.devItems`). They get loot-chest entries automatically and an anvil recipe (`SM` entry with `_cu`) if `sm` is set.
+  (`SQGEAR.devItems`). They get loot-chest entries automatically and a recipe if `sm` is set: `sm` = {c (up to 12 materials, any item, up to 9999 each), lv, st}; `st:'craft'` = a `GOODS` entry (`_cu:1`; Craft list and crafting bench, Crafting level), else an anvil `SM` entry (`_cu`, Smithing).
 - **Pet looks** (Dev Suite > Pets): `pets.<kind>` = {w,h,s,ox,oy,a,c,b,d} (standing frames a/c, idling every 0.5 s;
   walking frames b/d, stepping with the pet's own walk clock; older looks with only a/b walk a/b), drawn facing right, mirrored
   when walking left. `SQA` draws them in place of the pet's own look through the outermost `pP` wrapper and

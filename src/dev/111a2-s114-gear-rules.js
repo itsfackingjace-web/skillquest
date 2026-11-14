@@ -30,7 +30,8 @@
  const CUS={},PEND={},PCUS={};// the new item worn in each slot; bag counts and worn pieces waiting for their item to load
  function ngClean(o,k){if(!ngKey(k)||!o||typeof o!=='object')return null;const b=String(o.b||''),e=EQ[b];if(!e||e.custom||!SLOTS.includes(e.slot)||e.slot==='pet')return null;
   const r={n:txt(o.n,40).trim()||'New gear',b,v:num(o.v,0,1000000),d:txt(o.d,300)};
-  if(o.sm&&typeof o.sm==='object'&&o.sm.c&&typeof o.sm.c==='object'){const c={};for(const m in o.sm.c){const q=num(o.sm.c[m],0,99);if(q&&INAME[m]&&!ngKey(m))c[m]=q}if(Object.keys(c).length)r.sm={c,lv:num(o.sm.lv,1,99)}}
+  if(o.sm&&typeof o.sm==='object'&&o.sm.c&&typeof o.sm.c==='object'){const c={};for(const m in o.sm.c){if(Object.keys(c).length>=12)break;const q=num(o.sm.c[m],0,9999);if(q&&INAME[m]&&m!==k)c[m]=q}
+   if(Object.keys(c).length){r.sm={c,lv:num(o.sm.lv,1,99)};if(o.sm.st==='craft')r.sm.st='craft'}}// st: 'craft' = Craft list (and crafting bench, Crafting level), else anvil (Smithing)
   return r}
  const _occ=occ;occ=function(slot){const k=_occ(slot),c=CUS[slot];return c&&EQ[c]&&k===EQ[c].base?c:k};
  function regNG(k,d){const fresh=!EQ[k];const e={...EQ[d.b],n:d.n,v:d.v,custom:1,base:d.b};delete e.pet;EQ[k]=e;
@@ -38,12 +39,12 @@
   INAME[k]=d.n;SN[k]=/s$/i.test(d.n)?d.n:d.n+'s';SHORT[k]=d.n.toLowerCase();SELLP[k]=d.v;hookDesc(k);
   if(PEND[k]){inv[k]=(inv[k]|0)+PEND[k];delete PEND[k]}
   for(const s in PCUS)if(PCUS[s]===k){if(_occ(s)===d.b)CUS[s]=k;delete PCUS[s]}
-  for(let i=SM.length-1;i>=0;i--)if(SM[i]._cu&&SM[i].k===k)SM.splice(i,1);
-  if(d.sm){const br=SM.find(r=>r.k===d.b);SM.push({k,n:d.n,c:{...d.sm.c},lv:d.sm.lv,xp:br&&br.xp||d.sm.lv*6,_cu:1})}}
+  for(let i=SM.length-1;i>=0;i--)if(SM[i]._cu&&SM[i].k===k)SM.splice(i,1);for(let i=GOODS.length-1;i>=0;i--)if(GOODS[i]._cu===1&&GOODS[i].k===k)GOODS.splice(i,1);
+  if(d.sm){const br=SM.find(r=>r.k===d.b),xp=br&&br.xp||d.sm.lv*6;if(d.sm.st==='craft')GOODS.push({k,n:d.n,c:{...d.sm.c},req:d.sm.lv,xp,v:d.v|0,_cu:1});else SM.push({k,n:d.n,c:{...d.sm.c},lv:d.sm.lv,xp,_cu:1})}}
  function unregNG(k){if(!EQ[k]||!EQ[k].custom)return;if(inv[k]|0)PEND[k]=(PEND[k]|0)+(inv[k]|0);delete inv[k];
   for(const s of SLOTS)if(CUS[s]===k){PCUS[s]=k;CUS[s]=null}
   for(const A of[INVK,EXTRA_BAG])for(let i=A.length-1;i>=0;i--)if(A[i]===k)A.splice(i,1);try{const i=EQK.indexOf(k);if(i>=0)EQK.splice(i,1)}catch(x){}
-  for(let i=SM.length-1;i>=0;i--)if(SM[i]._cu&&SM[i].k===k)SM.splice(i,1);delete EQ[k];delete INAME[k];delete SN[k];delete SHORT[k];delete SELLP[k]}
+  for(let i=SM.length-1;i>=0;i--)if(SM[i]._cu&&SM[i].k===k)SM.splice(i,1);for(let i=GOODS.length-1;i>=0;i--)if(GOODS[i]._cu===1&&GOODS[i].k===k)GOODS.splice(i,1);delete EQ[k];delete INAME[k];delete SN[k];delete SHORT[k];delete SELLP[k]}
  // wear an item for a moment (to read its numbers or its look), then put back what was there
  function wearing(k,f){const e=EQ[k];if(!e||!SLOTS.includes(e.slot))return f();const sl=e.slot,old=occ(sl);if(old===k)return f();
   setSlot(sl,k);try{return f()}finally{setSlot(sl,old)}}

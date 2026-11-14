@@ -449,11 +449,12 @@
   if(ng)h+=ngHtml(k,ng);
   return h}
  // a new gear item: how players get it, a test copy for you, and removing it before it's published
- const mats=()=>{const m=new Set();for(const r of SM)if(!r._cu)for(const c in r.c||{})if(INAME[c])m.add(c);return[...m].sort((a,b)=>(INAME[a]>INAME[b]?1:-1))};
- function ngHtml(k,ng){const sm=ng.sm||{c:{},lv:1},rows=Object.entries(sm.c);while(rows.length<2)rows.push(['',0]);const M=mats(),pub=S.live&&S.live.newgear&&S.live.newgear[k];
-  let h='<div class="dv-card dv-rules" style="margin-top:12px"><b>Getting it</b><p class="dv-mut" style="margin:0">Players can find it in island loot chests (pick it in the island builder) and, if you give it a recipe, make it at an anvil.</p>';
-  rows.slice(0,3).forEach(([m,c],i)=>{h+='<label class="dv-gf"><span>'+(i?'and':'Anvil recipe')+'</span><span class="dv-gq"><select data-gr="m'+i+'"><option value="">'+(i?'(nothing else)':'(no recipe)')+'</option>'+M.map(x=>'<option value="'+x+'"'+(x===m?' selected':'')+'>'+E(INAME[x])+'</option>').join('')+'</select><input type="number" min="0" max="99" data-gr="c'+i+'" value="'+(c|0)+'"></span></label>'});
-  h+='<label class="dv-gf"><span>Smithing level</span><input type="number" min="1" max="99" data-gr="lv" value="'+(sm.lv|0||1)+'"></label>';
+ const mats=k=>[...new Set(INVK)].filter(x=>INAME[x]&&x!==k).sort((a,b)=>String(INAME[a]).localeCompare(String(INAME[b])));// any item can be a material
+ function ngHtml(k,ng){const sm=ng.sm||{c:{},lv:1},rows=Object.entries(sm.c);if(rows.length<12)rows.push(['',0]);const M=mats(k),pub=S.live&&S.live.newgear&&S.live.newgear[k],craft=(ng.sm?sm.st:NGST[k])==='craft';
+  let h='<div class="dv-card dv-rules" style="margin-top:12px"><b>Getting it</b><p class="dv-mut" style="margin:0">Players can find it in island loot chests (pick it in the island builder) and, if you give it a recipe, make it at an anvil or in the Craft list (also at a crafting bench). Up to 12 different materials, up to 9,999 of each.</p>';
+  h+='<label class="dv-gf"><span>Made at</span><select data-gr="st"><option value="anvil"'+(craft?'':' selected')+'>Anvil (Smithing)</option><option value="craft"'+(craft?' selected':'')+'>Craft list / crafting bench (Crafting)</option></select></label>';
+  rows.forEach(([m,c],i)=>{h+='<label class="dv-gf"><span>'+(i?'and':'Recipe')+'</span><span class="dv-gq"><select data-gr="m'+i+'"><option value="">'+(i?'(nothing else)':'(no recipe)')+'</option>'+M.map(x=>'<option value="'+x+'"'+(x===m?' selected':'')+'>'+E(INAME[x])+'</option>').join('')+'</select><input type="number" min="0" max="9999" data-gr="c'+i+'" value="'+(c|0)+'" style="width:80px"></span></label>'});
+  h+='<label class="dv-gf"><span>'+(craft?'Crafting':'Smithing')+' level</span><input type="number" min="1" max="99" data-gr="lv" value="'+(sm.lv|0||1)+'"></label>';
   h+='<div class="dv-row"><button class="dv-b" data-a="nggive">Put one in my bag (to test)</button>'+(pub?'':'<button class="dv-b '+(S.arm==='ngdel'?'dv-arm':'dv-bad')+'" data-a="ngdel">'+(S.arm==='ngdel'?'Tap again to delete it':'Delete this item')+'</button>')+'</div>'+
    (pub?'<p class="dv-mut">Published items can\'t be deleted, because players may already have one.</p>':'<p class="dv-mut">It only exists in your game until you publish it.</p>')+'</div>';
   return h}
@@ -474,8 +475,9 @@
  async function ngSave(k,o){const G=window.SQGEAR,r=o&&G.ngClean(o,k);if(r)S.draft.newgear[k]=r;else delete S.draft.newgear[k];syncNG();
   try{await dset('draft/newgear/'+k,r||null);toast(r?'Saved to draft. Publish it from the Publish tab.':'Deleted.')}catch(e){fail(e)}if(A.previewing)A.preview(S.draft);draw()}
  function ngSet(k,f,v){const o={...S.draft.newgear[k]};if(f==='v')o.v=Math.max(0,Math.round(Number(v))||0);else o[f]=v;return ngSave(k,o)}
- function ngRecipe(k){const o={...S.draft.newgear[k]},c={};for(let i=0;i<3;i++){const m=root.querySelector('[data-gr="m'+i+'"]'),n=root.querySelector('[data-gr="c'+i+'"]');if(m&&m.value)c[m.value]=(c[m.value]|0)+Math.max(1,+(n&&n.value)||1)}
-  const lv=+(root.querySelector('[data-gr="lv"]')||{}).value||1;if(Object.keys(c).length)o.sm={c,lv};else delete o.sm;return ngSave(k,o)}
+ const NGST={};// the station picked before any materials (an empty recipe isn't saved)
+ function ngRecipe(k){const o={...S.draft.newgear[k]},c={};for(let i=0;i<12;i++){const m=root.querySelector('[data-gr="m'+i+'"]'),n=root.querySelector('[data-gr="c'+i+'"]');if(m&&m.value)c[m.value]=Math.min(9999,(c[m.value]|0)+Math.max(1,Math.round(+(n&&n.value))||1))}
+  const lv=+(root.querySelector('[data-gr="lv"]')||{}).value||1,st=(root.querySelector('[data-gr="st"]')||{}).value;NGST[k]=st;if(Object.keys(c).length){o.sm={c,lv};if(st==='craft')o.sm.st='craft'}else delete o.sm;return ngSave(k,o)}
  function drawTools(){const t=root.querySelector('.dv-tools');if(!t||!S.ed)return;const T=[['pen','Pen'],['erase','Eraser'],['fill','Fill'],['pick','Pick colour']];
   if(LAY(S.ed.kind))T.push(['pan','Move']);
   t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button><button class="dv-b" data-a="pxcopy" title="Copy this picture (Ctrl+C)">Copy</button><button class="dv-b" data-a="pxpaste" title="Paste a copied picture here (Ctrl+V)">Paste</button>'+

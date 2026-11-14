@@ -53,7 +53,7 @@
  const takeOut=(L,name)=>{for(const r of ADDED[name]){const i=L.indexOf(r);if(i>=0)L.splice(i,1)}ADDED[name]=[]};
  function recipes(L){takeOut(GOODS,'GOODS');takeOut(SM,'SM');takeOut(COOKS,'COOKS');const out={};
   for(const id in L){const r=L[id];if(!/^r_[a-z0-9_]{1,30}$/.test(id)||!r||typeof r!=='object')continue;const sk=['craft','smith','smelt','cook'].includes(r.sk)?r.sk:'craft';
-   if(!isItem(r.out))continue;const c={};for(const q of arr(r.c)){if(q&&isItem(q.k)&&q.k!==r.out){const n=num(q.n,1,999,1)|0;c[q.k]=(c[q.k]|0)+n}}if(!Object.keys(c).length)continue;
+   if(!isItem(r.out))continue;const c={};for(const q of arr(r.c)){if(q&&isItem(q.k)&&q.k!==r.out){const n=num(q.n,1,9999,1)|0;c[q.k]=(c[q.k]|0)+n}}if(!Object.keys(c).length)continue;
    const lv=num(r.lv,1,99,1)|0,xp=num(r.xp,0,5000,10)|0,n=INAME[r.out];out[id]={sk,out:r.out,c,lv,xp};
    if(sk==='craft'){const g={k:r.out,n,c,req:lv,xp,v:SELLP[r.out]|0,_cu:id};GOODS.push(g);ADDED.GOODS.push(g)}
    else if(sk==='cook'){const raw=Object.keys(c)[0];const g={raw,ck:r.out,n:(INAME[raw]||raw).toLowerCase(),lv,xp,_cu:id};COOKS.push(g);ADDED.COOKS.push(g)}
@@ -152,7 +152,7 @@
     {f:'bs',l:'Effect lasts (seconds)',t:'num',min:10,max:1800,if:o=>o.t==='pot'&&o.buff}]},
   recipes:{l:'🔨 Recipes',pre:'r_',blank:()=>({sk:'craft',out:'',c:[{k:'wood',n:2}],lv:1,xp:20}),hint:'Crafting recipes show in the crafting menu, smithing at the anvil, smelting at the furnace, cooking at a fire (cooking takes the first material as the raw food).',
    F:[{f:'sk',l:'Skill',t:'sel',o:()=>[['craft','Crafting'],['smith','Smithing (anvil)'],['smelt','Smithing (furnace)'],['cook','Cooking (fire)']]},{f:'out',l:'Makes',t:'item'},
-    {f:'c',l:'Materials',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'n',l:'How many',t:'num',min:1,max:999}]},{f:'lv',l:'Level needed',t:'num',min:1,max:99},{f:'xp',l:'XP each',t:'num',min:0,max:5000}],
+    {f:'c',l:'Materials',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'n',l:'How many',t:'num',min:1,max:9999}]},{f:'lv',l:'Level needed',t:'num',min:1,max:99},{f:'xp',l:'XP each',t:'num',min:0,max:5000}],
    title:o=>(o.out&&INAME[o.out]||'(pick what it makes)')+' · '+({craft:'Crafting',smith:'Anvil',smelt:'Furnace',cook:'Cooking'}[o.sk]||'Crafting')},
   shops:{l:'🛒 Shops',pre:'cs_',fixed:['gen','bw','af'],blank:()=>({n:'New shop',add:[]}),hint:'Add stock to the game\'s shops, or make new shops: give an island-builder person the job "Shopkeeper".',
    F:[{f:'n',l:'Shop name',t:'text',max:40,if:(o,id)=>/^cs_/.test(id)},{f:'add',l:'For sale',t:'rows',cols:[{f:'k',l:'Item',t:'item'},{f:'m',l:'How many',t:'num',min:1,max:1000},{f:'c',l:'Price (gold)',t:'num',min:0,max:1e7}]}],
