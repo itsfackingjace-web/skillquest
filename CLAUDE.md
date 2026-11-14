@@ -611,3 +611,14 @@
   gesture, so 006's `ac()` never woke `ACX` for controller-only players. A newly pressed button (own `PREV` after the outermost
   `pollPad`) calls `ac()`; if `ACX` is still not running while `GPON` (and not muted), bar `#sqsnd` asks for a click/key after 1.5 s;
   any trusted pointer/key/touch event wakes it.
+- **Guilds** (`multiplayer/197-s205-guilds.js`, `window.SQGUILD`, START > Guild, `ptab` 44): found for `COST` (5,000,000) gold. Database:
+  `guilds/<g>/{info{n,tag,col,lead,t}, m/<uid>{r l|o|m,n,j}, q{k,goal,p,c,t,by,done}, prog{qd}, perm{o,m} (withdrawals a day, -1 none), bank{i,v,lid},
+  isl/<cell>=node key, wd/<uid>{d,n}}`, `glog/<g>/<id>` (create-only, read by leader/officers), `gname`, `gmem/<uid>`, `ginv/<uid>/<g>`. Every bank change
+  is one multi-path update (`bankUpdate`): counts + `v` exactly +1 + `lid` naming a new glog entry in the same write, so the rules refuse stale/duplicate
+  changes and unlogged ones. Quests `QK` (fixed goals, the rules check them: wood/mine/forage 100,000, fish 50,000); progress counts like 120's dailies
+  (items arriving in a frame with that skill's XP) and is added with a transaction every 8 s (max +5,000 a write); when `done`, a leader/officer `claim(i)`s
+  one of `QK[k].rw` (prog/qd +1 with q removed). Island = region `gi_<g>` registered only on members' games (`register`, cached in localStorage
+  `sq_guild`; `routeOpen` wrapped, other `gi_` ids closed); the outermost `loadRegion` removes stray objects and plants `NODE` items from `isl`
+  (`it._gn`; void sapling = tree with `v:'dark'`). Board/bank use `use:'gboard'|'gbank'` (outermost `useFurn`); banner `gflag` drawn in the outermost `drawFurn`.
+  Presence carries `gt`/`gc` (061, both ends); `[TAG]` drawn via `SQPEERFX`. Player menu (130) asks `SQGUILDPM(u)`/`SQGUILDINVITE(u)`. Rules: `guilds`,
+  `glog`, `gname`, `gmem`, `ginv` (publish them). Rules were tested with a local evaluator (scratchpad `rulesdb.cjs`/`rulestest.cjs`), not the real emulator.

@@ -28,6 +28,7 @@
   h+='<button class="sb" data-pm="trade">'+(tIn?'ACCEPT TRADE':'TRADE')+'</button>';
   h+='<button class="sb" data-pm="friend"'+(fr?' disabled style="opacity:.55"':'')+'>'+(fr?'FRIENDS ✓':'ADD FRIEND')+'</button>';
   h+='<button class="sb" data-pm="duel"'+(dSent&&!dIn?' disabled style="opacity:.55"':'')+'>'+(dIn?'ACCEPT DUEL':dSent?'DUEL ASKED…':'DUEL')+'</button>';
+  if(window.SQGUILDPM)h+=SQGUILDPM(u);
   if(window.SQPARTY){const inP=SQPARTY.has(u),inv=SQPARTY.invited(u);h+='<button class="sb" data-pm="party"'+(inP||inv?' disabled style="opacity:.55"':'')+'>'+(inP?'IN YOUR PARTY ✓':inv?'PARTY INVITE SENT…':'INVITE TO PARTY')+'</button>'}
   h+='<button class="sb" data-pm="chess"'+(cSent&&!cIn?' disabled style="opacity:.55"':'')+'>'+(cIn?'ACCEPT CHESS':cSent?'CHESS ASKED…':'CHESS')+'</button>'+(window.SQIGNSET?'<button class="sb" data-pm="ignore">'+(SQIGNORED(u)?'UNIGNORE (see their chat again)':'IGNORE (hide their chat)')+'</button>':'')+(window.SQREPORT?'<button class="sb" data-pm="report" style="color:#a04040">REPORT</button>':'')+'<button class="sb" data-pm="close">CLOSE</button></div>';
   return h}
@@ -136,6 +137,7 @@
    if(ptab===MTAB){const b=e.target.closest('[data-pm]');if(!b||b.disabled)return;const a=b.dataset.pm,u=MU;
     if(a==='close'){closePanel();return}if(a==='report'){try{SQREPORT(u,nameOf(u))}catch(x){}return}if(a==='ignore'){try{SQIGNSET(u,!SQIGNORED(u))}catch(x){}draw();return}if(a==='trade'){closePanel();try{SQTRREQ(u)}catch(x){}return}
     if(a==='friend'){try{SQADDFRIEND(u);say(nameOf(u)+' is now on your friends list.')}catch(x){}setTimeout(draw,600);return}
+    if(a==='guild'){try{SQGUILDINVITE(u)}catch(x){}setTimeout(draw,400);return}
     if(a==='party'){try{SQPARTY.invite(u)}catch(x){}setTimeout(draw,400);return}
     if(a==='duel'||a==='chess'){if(D.inbox[u]&&D.inbox[u].k===a){closePanel();answer(u,true);return}ask(u,a);setTimeout(draw,300);return}return}
    return _oc(e)}}
