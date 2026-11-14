@@ -480,7 +480,7 @@
   const lv=+(root.querySelector('[data-gr="lv"]')||{}).value||1,st=(root.querySelector('[data-gr="st"]')||{}).value;NGST[k]=st;if(Object.keys(c).length){o.sm={c,lv};if(st==='craft')o.sm.st='craft'}else delete o.sm;return ngSave(k,o)}
  function drawTools(){const t=root.querySelector('.dv-tools');if(!t||!S.ed)return;const T=[['pen','Pen'],['erase','Eraser'],['fill','Fill'],['pick','Pick colour']];
   if(LAY(S.ed.kind))T.push(['pan','Move']);
-  t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button><button class="dv-b" data-a="pxcopy" title="Copy this picture (Ctrl+C)">Copy</button><button class="dv-b" data-a="pxpaste" title="Paste a copied picture here (Ctrl+V)">Paste</button>'+
+  t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button><button class="dv-b" data-a="pxcopy" title="Copy this picture (Ctrl+C)">Copy</button><button class="dv-b" data-a="pxpaste" title="Paste a copied picture here (Ctrl+V)">Paste</button><button class="dv-b dv-bad" data-a="eraseall" title="Erase every pixel of this picture (Undo brings it back)">Erase all</button>'+
    (S.ed.kind==='worn'||S.ed.kind==='pet'?'<button class="dv-b" data-a="zout" title="Zoom out">−</button><button class="dv-b" data-a="zin" title="Zoom in">+</button>':'');
   const cv=root.querySelector('.dv-cvw');if(cv)cv.classList.toggle('dv-pan',S.ed.tool==='pan')}
  function drawPal(){const p=root.querySelector('.dv-pal'),ed=S.ed;if(!p||!ed)return;
@@ -584,7 +584,7 @@
   if(a==='gm'){const m=t.dataset.m;if(m===S.gm)return;if(S.ed&&S.ed.dirty&&!confirmLeave())return;if(S.ed)S.ed.dirty=false;S.gm=m;S.ed=null;openGear(S.sel);return}
   if(a==='grst'){const k=S.sel;return arm('grst',async()=>{delete S.draft.gear[k];try{await dset('draft/gear/'+k,null);toast('Back to how the game made it work (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw()})}
   if(a==='back'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;S.sel=null;S.ed=null;draw();return}
-  if(a==='undo')return undo(false);if(a==='redo')return undo(true);if(a==='pxcopy')return pxCopy();if(a==='pxpaste')return pxPaste();
+  if(a==='undo')return undo(false);if(a==='redo')return undo(true);if(a==='pxcopy')return pxCopy();if(a==='eraseall'){const ed=S.ed;if(!ed)return;snapEd();if(LAY(ed.kind))ed.undo[ed.undo.length-1].dir=ed.dir;ed.px.fill(255);if(ed.rcd)ed.rcd[ed.dir|0]=1;if(ed.rc)ed.rc[ed.dir|0]=null;paint();return}if(a==='pxpaste')return pxPaste();
   if(a==='save')return S.ed&&S.ed.kind==='worn'?saveWorn():S.ed&&S.ed.kind==='pet'?savePet():S.ed&&S.ed.kind==='prop'?saveProp():saveSprite();
   if(a==='revert'){S.ed.dirty=false;if(S.ed.kind==='worn')openWorn(S.sel);else if(S.ed.kind==='pet')openPet(S.sel);else if(S.ed.kind==='prop')openProp(S.sel,false,S.ed.night);else openSprite(S.sel);return}
   if(a==='pcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openPet(S.sel,true);return}

@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-38',d:'Nov 13, 2026',t:'Dev Suite: Erase all',n:['Picture editors in the Dev Suite have an Erase all button that clears the picture (or frame/layer) you are on. Undo brings it back.']},
  {v:'2026.11.13-37',d:'Nov 13, 2026',t:'New gear effects',n:['Gear can now give more melee, arrow or magic damage, faster mana and health regeneration, slower hunger and more gold from monsters. Check an item\'s description to see what it gives.']},
  {v:'2026.11.13-36',d:'Nov 13, 2026',t:'Fletching fixes',n:['Arrows, bows and ranger gear now take time to make, like every other craft. "All" keeps going until you run out of materials.','Making ranger gear no longer says "Made 10 arrows".']},
  {v:'2026.11.13-35',d:'Nov 13, 2026',t:'New gear looks fixed',n:['New gear with its own look (like the Mushroom Hat) now looks the same to everyone. Before, other players often saw the item it was based on.','Your character on the title screen now wears those looks too.']},
