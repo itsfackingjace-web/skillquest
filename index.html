@@ -9391,6 +9391,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-25',d:'Nov 14, 2026',t:'Sound with a controller',n:['Playing only with a controller could leave the game silent: browsers keep a page quiet until you click or press a key, and controller buttons don\'t count. Pressing a controller button now turns the sound on wherever the browser allows it. If the browser still blocks it, a small bar at the top asks for one click or key press.']},
  {v:'2026.11.14-24',d:'Nov 14, 2026',t:'Punchier fights and bug fixes',n:['Hits land harder: sparks fly when you strike a monster, beaten monsters burst into a puff of smoke, and big hits give the screen a little shake. Don\'t like the shake? Turn it off in Options (Screen shake).','You can now talk to villagers while they sleep: stand by their bed and tap TALK. Quests that send you to someone at night work again (like Corin in Tidewatch).','Fixed: monsters (like bats in Thornroot Hollow) could get knocked into a wall and become impossible to hit. They now pop back out.','Fixed: your imp could keep attacking empty air after an island boss was beaten.','Smith all and Smelt all show the right count when using materials from nearby chests.']},
  {v:'2026.11.14-23',d:'Nov 14, 2026',t:'Hollow can grow',n:['Hollow Island can now get new people to talk to, signs, loot chests, camps and ruins, hidden dungeon entrances and monster hideouts, just like the other islands. Keep an eye out for new places around the island.','A dungeon entrance now says how many floors it really has.']},
  {v:'2026.11.14-22',d:'Nov 14, 2026',t:'Smithing count, backups',n:['Smith all, Smelt all and Make all now show how many are left over your head, like cooking does.','Your game is still backed up every day you play and before big changes, but restoring a backup is now done for you: if you ever lose progress, use Report a bug and we\'ll put it back. (The Backups list is gone from Options.)']},
@@ -20302,6 +20303,28 @@ window.SQA=SQA;
   let k=h.indexOf('<div class="tl" style="margin-top:16px">CONTROLLER</div>');if(k<0)k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
  pbd.addEventListener('click',e=>{if(!e.target.closest('.sqshk'))return;e.stopPropagation();on=!on;try{localStorage.setItem('sq_shake',on?'1':'0')}catch(err){}if(!on){SH=0;cv.style.transform=''}else shake(3,.2);try{sfx('talk')}catch(err){}try{rPn()}catch(err){}},true);
  window.SQFEEL={shake,puff,spark,get on(){return on}}})();
+// ---- 204. Sound for controller players ----
+// Browsers keep a page silent until a click, tap or key press (006's ac() resumes ACX on touchstart/pointerdown, 153 on
+// keydown), and a controller button doesn't count. Someone who only uses a controller never woke the audio.
+// - Every newly pressed controller button calls ac() (enough where the browser allows it: the Windows app, or after any
+//   earlier click/key).
+// - If the audio is still asleep while a controller is in use, a small bar asks for one click or key press (#sqsnd); any
+//   trusted pointer/key event resumes and hides it. Not shown while muted (MUTE) or with music and sounds both off.
+(()=>{const bar=document.createElement('div');bar.id='sqsnd';bar.setAttribute('role','button');bar.tabIndex=0;
+ bar.textContent='🔇 Your browser keeps the game silent until you click or press a key once. Click here for sound.';
+ const st=document.createElement('style');st.textContent='#sqsnd{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:9998;display:none;max-width:min(92vw,560px);padding:9px 14px;background:#fff8e6;color:#3a2a18;border:3px solid #3a2a18;box-shadow:0 3px 0 #3a2a18;font:600 14px/1.35 system-ui,sans-serif;cursor:pointer;text-align:center}';
+ document.head.appendChild(st);document.body.appendChild(bar);
+ const wake=()=>{try{ac()}catch(e){}};
+ bar.addEventListener('click',e=>{e.stopPropagation();wake();bar.style.display='none'});
+ for(const ev of['pointerdown','keydown','touchstart'])addEventListener(ev,e=>{if(e.isTrusted&&!document.hidden){wake();if(bar.style.display!=='none')setTimeout(chk,50)}},{capture:true,passive:true});
+ const asleep=()=>{try{const a=ac();return !!a&&a.state!=='running'}catch(e){return false}};
+ const wanted=()=>!(typeof MUTE!=='undefined'&&MUTE)&&!((typeof MUSIC!=='undefined'&&!MUSIC)&&(typeof SFXV==='number'&&SFXV<=0));
+ let since=0;function chk(){const show=GPON&&!document.hidden&&wanted()&&asleep();if(!show){since=0;bar.style.display='none';return}
+  if(!since)since=performance.now();if(performance.now()-since>1500)bar.style.display='block'}
+ // a newly pressed button wakes the audio where that's allowed
+ let PREV=[];{const _pp=pollPad;pollPad=function(dt){const out=_pp.apply(this,arguments);try{const gp=GPI!=null?navigator.getGamepads()[GPI]:null;
+   if(gp){const now=gp.buttons.map(b=>!!b.pressed);if(now.some((p,i)=>p&&!PREV[i]))wake();PREV=now}}catch(e){}return out}}
+ setInterval(chk,500);window.SQPADSND={chk,asleep}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

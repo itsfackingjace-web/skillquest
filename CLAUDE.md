@@ -601,3 +601,7 @@
   (Options "Screen shake", localStorage `sq_shake`, also gates 015's `shakeScreen`). Monsters inside a solid tile for 0.75 s are moved
   to the nearest free spot (skips big/boss/cb/under/_rp/ghost/wisp). 192 now counts make-all materials when `sqDo` is called (after
   039's station merge).
+- **Sound for controller players** (`core/196-s204-controller-sound.js`, `SQPADSND`): browsers don't count gamepad buttons as a user
+  gesture, so 006's `ac()` never woke `ACX` for controller-only players. A newly pressed button (own `PREV` after the outermost
+  `pollPad`) calls `ac()`; if `ACX` is still not running while `GPON` (and not muted), bar `#sqsnd` asks for a click/key after 1.5 s;
+  any trusted pointer/key/touch event wakes it.
