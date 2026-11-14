@@ -578,7 +578,7 @@
     "guilds": {
       "$g": {
         ".read": "auth != null && root.child('guilds').child($g).child('m').child(auth.uid).exists()",
-        ".write": "auth != null && !newData.exists() && root.child('guilds').child($g).child('info').child('lead').val()===auth.uid && data.child('m').numChildren()===1",
+        ".write": "auth != null && !newData.exists() && root.child('guilds').child($g).child('info').child('lead').val()===auth.uid",
         "info": {
           ".write": "auth != null && (root.child('guilds').child($g).child('info').child('lead').val()===auth.uid || (!data.exists() && newData.child('lead').val()===auth.uid))",
           ".validate": "newData.hasChildren(['n','tag','col','lead'])",
@@ -603,7 +603,7 @@
         },
         "m": {
           "$uid": {
-            ".write": "auth != null && ((root.child('guilds').child($g).child('info').child('lead').val()===auth.uid && (newData.exists() || auth.uid!==$uid || newData.parent().parent().child('info').child('lead').val()!==auth.uid)) || (auth.uid===$uid && !data.exists() && newData.child('r').val()==='m' && root.child('ginv').child($uid).child($g).exists() && root.child('guilds').child($g).child('m').numChildren()<30) || (auth.uid===$uid && !data.exists() && newData.child('r').val()==='l' && !root.child('guilds').child($g).child('info').exists() && newData.parent().parent().child('info').child('lead').val()===auth.uid) || (auth.uid===$uid && !newData.exists() && newData.parent().parent().child('info').child('lead').val()!==auth.uid) || (root.child('guilds').child($g).child('m').child(auth.uid).child('r').val()==='o' && data.child('r').val()==='m' && !newData.exists()))",
+            ".write": "auth != null && ((root.child('guilds').child($g).child('info').child('lead').val()===auth.uid && (newData.exists() || auth.uid!==$uid || newData.parent().parent().child('info').child('lead').val()!==auth.uid)) || (auth.uid===$uid && !data.exists() && newData.child('r').val()==='m' && root.child('ginv').child($uid).child($g).exists()) || (auth.uid===$uid && !data.exists() && newData.child('r').val()==='l' && !root.child('guilds').child($g).child('info').exists() && newData.parent().parent().child('info').child('lead').val()===auth.uid) || (auth.uid===$uid && !newData.exists() && newData.parent().parent().child('info').child('lead').val()!==auth.uid) || (root.child('guilds').child($g).child('m').child(auth.uid).child('r').val()==='o' && data.child('r').val()==='m' && !newData.exists()))",
             ".validate": "newData.hasChildren(['r','n'])",
             "r": {
               ".validate": "(newData.val()==='l' || newData.val()==='o' || newData.val()==='m') && (newData.val()==='l') === (newData.parent().parent().parent().child('info').child('lead').val()===$uid)"
@@ -691,7 +691,7 @@
     "glog": {
       "$g": {
         ".read": "auth != null && (root.child('guilds').child($g).child('m').child(auth.uid).child('r').val()==='l' || root.child('guilds').child($g).child('m').child(auth.uid).child('r').val()==='o')",
-        ".write": "auth != null && !newData.exists() && root.child('guilds').child($g).child('info').child('lead').val()===auth.uid && root.child('guilds').child($g).child('m').numChildren()===1",
+        ".write": "auth != null && !newData.exists() && root.child('guilds').child($g).child('info').child('lead').val()===auth.uid",
         "$id": {
           ".write": "auth != null && !data.exists() && root.child('guilds').child($g).child('m').child(auth.uid).exists() && newData.child('u').val()===auth.uid",
           ".validate": "newData.hasChildren(['u','n','w','k','t']) && newData.child('t').val()===now",
