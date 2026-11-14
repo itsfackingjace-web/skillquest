@@ -178,6 +178,7 @@ dev/168-s174-testers.js
 dev/169-s175-checks.js
 multiplayer/170-s176-moderation.js
 ui/171-s177-player-stats.js
+ui/172-s178-controller-highlight.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

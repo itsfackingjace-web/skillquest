@@ -454,3 +454,6 @@
 - **Controller wrap / name button** (158, 119): with nothing in the d-pad's direction, `navMove` wraps to the far item that overlaps
   the current one on the cross axis (same row/column), or stays put. 119 compares only the word before `<small>` on `tk` (the
   key hint is rewritten by 023/124's controller labels; comparing the whole label made the name button flash).
+- **Controller highlight ring** (`ui/172-s178-controller-highlight.js`, `#sqgpr`): a fixed overlay (top z-index, pointer-events none)
+  follows `GPF`'s rect every frame while `GPON`, so pixel frames can't clip it (081's inset ring stays underneath). Side arrows
+  only on items 300 px wide or more. Nothing needed for new screens: anything `setFocus` highlights gets the ring.

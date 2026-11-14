@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-28',d:'Nov 13, 2026',t:'Clearer controller highlight',n:['With a controller, the button you have selected now gets a thick glowing gold ring, so it is easy to see in every menu, chest and item card.']},
  {v:'2026.11.13-27',d:'Nov 13, 2026',t:'Controller fixes',n:['The player name button no longer flashes when you stand next to someone with a controller.','D-pad in menus and item cards: at the end of a row or column the highlight now wraps to the other end of that same row or column, instead of jumping to a different button.']},
  {v:'2026.11.13-26',d:'Nov 13, 2026',t:'Emote commands in chat',n:['Typing an emote in chat works again: /wave, /bow, /dance, /cheer, /laugh, /love, /yes, /no, /think, /sit and /sleep act it out instead of posting the word.']},
  {v:'2026.11.13-25',d:'Nov 13, 2026',t:'Reporting and ignoring',n:['Reports made by tapping a name in chat now reach the developer properly.','Reporting someone no longer ignores them unless you tick "Also ignore them".','Ignored someone by mistake? Walk up to them, tap their name and choose UNIGNORE, or find them under IGNORED at the bottom of Chat > Friends.']},
