@@ -301,7 +301,7 @@
   kill it stays away `rs` minutes (localStorage `sq_cbdead`). Drops = the Monsters tab rules for `m:cb:...`.
 - **Top-tier gear on load** (`items/147-s153-keep-top-tier-gear.js`, `window.SQTFX`): 020's `applySave` clamps sword/axe/pick tiers
   to 4; later sections restore only their own tiers (035: 5, 084: 6/7). 147 restores any tier above 4 that has an `eq_<slot><tier>`
-  item, from the save's `tl`, after every clamp. **A new tier above 4 needs nothing more, but never clamp again.** Saves without
+  item, from the save's `tl`, after every clamp. **A new tier above 4 needs nothing more, but never clamp again.** Bows too: 021 clamps `TL.bow` to 2, so 147 restores any `tl.bow` above 2 with an `eq_bow<t>` (the Bone bow, 3, became a Longbow on every load until Nov 14); `tfx` 2 saves get a lost Bone bow back once (in hand in place of the clamp's Longbow, else in the bag). Saves without
   `tfx` get a one-time return of `LOST` items that are in `ach.col` but nowhere in the save and not in hand.
 - **Account-only saves** (061, on skillquestmmo.com and the Windows app; `window.SQSTRICT`, tests opt in with localStorage
   `sq_strict=1`): signing in is required to play (the title has no PLAY until `SQSTRICT.ready`). Each page load claims
@@ -568,3 +568,6 @@
 - **Party list placement** (136's HUD): starts under the left HUD stack, then under 111's CHAT/BUG row when that row is in the left
   column (`SQHUDBTN`, phones without a minimap, e.g. indoors) and under 115's guide hint (`window.SQHINTB` {b,f}, its bottom in canvas
   px this frame). Anything else drawn in that column should record its bottom the same way.
+- **Emote animations** (136 `act`): the body is redrawn from `OFF` with dx/dy (hop/sway), `hx/hy` (the head, rows 0-39, moved on its own),
+  `sq` (a torso row dropped on landing) and `arms` ([[side,sway]] → `armUp`); sleep draws the whole OFF rotated -90° on the ground.
+  Effects use pixel glyphs (`GL`: heart, check, cross, ?, note, star, spark, z) through `glyph(C,k,x,y,col,outline)`.

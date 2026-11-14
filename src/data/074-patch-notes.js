@@ -1,5 +1,6 @@
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-18',d:'Nov 14, 2026',t:'Bone bow fix and livelier emotes',n:['Fixed: a Bone bow in your hands turned into a Longbow every time you loaded the game. If that happened to you, your Bone bow is back in your hands.','Emotes have new animations: a real wave, a deeper bow, dancing with arms up, a jumping cheer with confetti, a shaking laugh, a beating heart for Love, a check or cross over your head for Yes and No, a thinking bubble with a question mark, and sleeping now lies you down on the ground.']},
  {v:'2026.11.14-17',d:'Nov 14, 2026',t:'Party list fix',n:['On phones indoors, your party members\' health bars no longer hide behind the CHAT and BUG buttons.']},
  {v:'2026.11.14-16',d:'Nov 14, 2026',t:'Hand-made dungeons',n:['Dungeons can now be designed room by room, with chests, ore, stairs and a boss waiting on the last floor. Look out for new dungeon entrances on the islands.']},
  {v:'2026.11.14-15',d:'Nov 14, 2026',t:'Behind the scenes: controller in the Dev Suite',n:['The developer\'s tools now work with a controller too, including drawing sprites with the D-pad.']},

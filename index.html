@@ -9391,6 +9391,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-18',d:'Nov 14, 2026',t:'Bone bow fix and livelier emotes',n:['Fixed: a Bone bow in your hands turned into a Longbow every time you loaded the game. If that happened to you, your Bone bow is back in your hands.','Emotes have new animations: a real wave, a deeper bow, dancing with arms up, a jumping cheer with confetti, a shaking laugh, a beating heart for Love, a check or cross over your head for Yes and No, a thinking bubble with a question mark, and sleeping now lies you down on the ground.']},
  {v:'2026.11.14-17',d:'Nov 14, 2026',t:'Party list fix',n:['On phones indoors, your party members\' health bars no longer hide behind the CHAT and BUG buttons.']},
  {v:'2026.11.14-16',d:'Nov 14, 2026',t:'Hand-made dungeons',n:['Dungeons can now be designed room by room, with chests, ore, stairs and a boss waiting on the last floor. Look out for new dungeon entrances on the islands.']},
  {v:'2026.11.14-15',d:'Nov 14, 2026',t:'Behind the scenes: controller in the Dev Suite',n:['The developer\'s tools now work with a controller too, including drawing sprites with the D-pad.']},
@@ -16296,30 +16297,58 @@ window.SQA=SQA;
  function armUp(ch,side,sw){const e=side>0?30:17,x0=side>0?31:15;OX.clearRect(side>0?30:16,41,2,6);OX.fillStyle=INK;OX.fillRect(e,41,1,5);
   OX.fillRect(x0-1+sw,32,4,6);OX.fillRect(x0-1,37,4,6);OX.fillStyle=shirtOf(ch);OX.fillRect(x0,38,2,4);OX.fillStyle=skinOf(ch);OX.fillRect(x0+sw,33,2,4)}
  const R=(C,x,y,w,h,c)=>{C.fillStyle=c;C.fillRect(Math.round(x),Math.round(y),w,h)};
- function act(ch,dir,st,ox,oy,fl,k,t,inner){const C=GC||g,X=Math.round(ox)-24,Y=Math.round(oy)-44;let d=dir,f=fl,s=0,dy=0,dx=0;
-  if(k==='dance'){const ph=Math.floor(t*4)%4;d=[0,2,1,2][ph];f=ph===3;s=ph%2?1:2;dy=-Math.round(Math.abs(Math.sin(t*Math.PI*4))*2)}
-  if(k==='cheer')dy=-Math.round(Math.abs(Math.sin(t*Math.PI*3))*4);
-  if(k==='laugh')dy=Math.floor(t*10)%2?-1:0;
-  if(k==='love')dx=Math.round(Math.sin(t*4));
+ // Body rows in OFF (the 48x56 box, anchor 24,44): head 28-39, shoulders/torso 40-46, legs 47-50, x 17-30.
+ // Tiny pixel glyphs for the effects: '#' fill, 'o' outline.
+ const GL={heart:['.##.##.','#######','#######','.#####.','..###..','...#...'],sheart:['##.##','#####','.###.','..#..'],check:['.....#','....##','#..##.','####..','.##...'],
+  cross:['##..##','.####.','..##..','.####.','##..##'],q:['.###.','##.##','...##','..##.','.....','..##.'],star:['.#.','###','.#.'],spark:['#.#','.#.','#.#'],
+  note:['.###','.#.#','.#..','##..','##..'],z:['####','..#.','.#..','####'],ha:['#.#.###','#.#.#.#','###.###','#.#.#.#','#.#.#.#']};
+ function glyph(C,k,x,y,col,ol){const G=GL[k],h=G.length,w=G[0].length;x=Math.round(x-w/2);y=Math.round(y-h/2);
+  if(ol){C.fillStyle=ol;for(let j=0;j<h;j++)for(let i=0;i<w;i++)if(G[j][i]==='#')C.fillRect(x+i-1,y+j-1,3,3)}
+  C.fillStyle=col;for(let j=0;j<h;j++)for(let i=0;i<w;i++)if(G[j][i]==='#')C.fillRect(x+i,y+j,1,1)}
+ const ease=u=>u<0?0:u>1?1:u*u*(3-2*u);
+ function act(ch,dir,st,ox,oy,fl,k,t,inner){const C=GC||g,X=Math.round(ox)-24,Y=Math.round(oy)-44;let d=dir,f=fl,s=0,dy=0,dx=0,hy=0,hx=0,sq=0,arms=null;
+  // ---- body motion ----
+  if(k==='wave'){dy=t<.3?-Math.round(Math.sin(t/.3*Math.PI)*2):0;arms=[[1,[-1,0,1,0][Math.floor(t*10)%4]]]}
+  if(k==='dance'){const ph=Math.floor(t*4)%4;d=[0,2,1,2][ph];f=ph===3;s=ph%2?1:2;dy=-Math.round(Math.abs(Math.sin(t*Math.PI*4))*3);if(d!==2)arms=[[ph===0?1:-1,0]]}
+  if(k==='cheer'){const u=(t*1.6)%1,air=u<.7;dy=air?-Math.round(Math.sin(u/.7*Math.PI)*7):0;sq=!air&&u<.85?1:0;arms=[[1,Math.floor(t*8)%2],[-1,-(Math.floor(t*8)%2)]]}
+  if(k==='laugh'){dx=Math.floor(t*14)%2?1:-1;dy=-(Math.floor(t*7)%2);hy=-1}
+  if(k==='love'){dx=Math.round(Math.sin(t*3)*1.4);dy=-Math.round(Math.abs(Math.sin(t*3))*1)}
+  if(k==='bow'){const dn=t<.35?ease(t/.35):t<1.6?1:1-ease((t-1.6)/.35);hy=Math.round(dn*5);sq=dn>.5?1:0}
+  if(k==='yes'){hy=[0,1,3,1][Math.floor(t*8)%4]}
+  if(k==='no'){hx=[0,-2,0,2][Math.floor(t*9)%4]}
+  if(k==='think'){hx=t>.4?1:0;arms=[[1,-2]]}
+  if(k==='sit')dy=0;
   OX.setTransform(1,0,0,1,0,0);OX.clearRect(0,0,48,56);OX.imageSmoothingEnabled=false;GC=OX;try{inner(ch,d,s,24,44,f)}finally{GC=C}
-  if(k==='wave')armUp(ch,1,Math.floor(t*5)%2?1:-1);
-  if(k==='cheer'){armUp(ch,1,0);armUp(ch,-1,0)}
+  if(arms)for(const[side,sw]of arms)armUp(ch,side,sw);
   const sm=C.imageSmoothingEnabled;C.imageSmoothingEnabled=false;
-  if(k==='bow'||k==='yes'||k==='no'){// the head moves: rows above the shoulders
-   const hy=k==='bow'?(t<2?Math.min(4,Math.round(t*8)):0):k==='yes'?(Math.floor(t*5)%2?2:0):0,hx=k==='no'?(Math.floor(t*6)%2?2:-1):0;
-   C.drawImage(OFF,0,40,48,16,X+dx,Y+40+dy,48,16);C.drawImage(OFF,0,0,48,40,X+dx+hx,Y+dy+hy,48,40)}
-  else if(k==='sit'||k==='sleep'){C.drawImage(OFF,0,0,48,41,X,Y+4,48,41);C.drawImage(OFF,0,41,48,11,X,Y+45,48,6)}
+  // ---- draw the body ----
+  if(k==='sleep'){// lying on the ground, breathing; head to the left
+   const br=Math.floor(t*1.2)%2;C.save();C.translate(Math.round(ox),Math.round(oy)+br);C.rotate(-Math.PI/2);C.drawImage(OFF,-22,-39);C.restore()}
+  else if(k==='sit'){const br=Math.floor(t*.8)%2;C.drawImage(OFF,0,0,48,41,X,Y+4+br,48,41);C.drawImage(OFF,0,41,48,11,X,Y+45,48,6)}
+  else if(hy||hx||sq){// head (rows 0-39) moves on its own; a squash drops a torso row
+   C.drawImage(OFF,0,40+sq,48,16-sq,X+dx,Y+40+sq+dy,48,16-sq);C.drawImage(OFF,0,0,48,40,X+dx+hx,Y+dy+hy+sq,48,40)}
   else C.drawImage(OFF,X+dx,Y+dy);
   C.imageSmoothingEnabled=sm;
-  // effects
-  const hx0=Math.round(ox),hy0=Math.round(oy)-20,E=EM[k],fade=Math.min(1,(E.d-t)/.4);C.save();C.globalAlpha=Math.max(0,fade);
-  const rise=(i,n,sp)=>((t*sp+i/n)%1);
-  if(k==='love')for(let i=0;i<4;i++){const u=rise(i,4,.7),x=hx0+Math.sin(i*2.3+t*2)*9,y=hy0-u*16;C.globalAlpha=Math.max(0,fade*(1-u));R(C,x-2,y,2,2,'#f04870');R(C,x+1,y,2,2,'#f04870');R(C,x-1,y+2,3,1,'#f04870');R(C,x,y+3,1,1,'#f04870')}
-  if(k==='dance')for(let i=0;i<3;i++){const u=rise(i,3,.8),x=hx0+(i-1)*9+Math.sin(t*5+i)*2,y=hy0-u*14;C.globalAlpha=Math.max(0,fade*(1-u));R(C,x,y-4,1,5,'#3848b8');R(C,x+1,y-4,2,1,'#3848b8');R(C,x-2,y,2,2,'#3848b8')}
-  if(k==='cheer')for(let i=0;i<10;i++){const u=rise(i,10,.9),x=hx0+Math.sin(i*1.7)*14,y=hy0-14+u*18;C.globalAlpha=Math.max(0,fade*(1-u));R(C,x,y,2,1+(i%2),['#f8d048','#48c8f8','#f86878','#78e070'][i%4])}
-  if(k==='sleep')for(let i=0;i<3;i++){const u=rise(i,3,.4),x=hx0+5+u*8,y=hy0+2-u*14,z=u<.4?2:3;C.globalAlpha=Math.max(0,fade*(1-u));C.fillStyle='#4858c0';C.fillRect(x,y,z+1,1);C.fillRect(x+z-1,y+1,1,1);C.fillRect(x,y+2,z+1,1)}
-  if(k==='think'){const n=1+Math.floor(t*2)%3;for(let i=0;i<n;i++){R(C,hx0+6+i*4-1,hy0-2-i*3-1,4,4,INK);R(C,hx0+6+i*4,hy0-2-i*3,2,2,'#f8f8f8')}}
-  if(k==='laugh'&&Math.floor(t*3)%2===0){C.font='700 5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';C.textAlign='center';C.lineWidth=1.2;C.strokeStyle=INK;C.strokeText('ha!',hx0+9,hy0);C.fillStyle='#f8e070';C.fillText('ha!',hx0+9,hy0)}
+  // ---- effects ----
+  const cx=Math.round(ox)+dx,top=Math.round(oy)-20+dy,E=EM[k],fade=Math.max(0,Math.min(1,(E.d-t)/.4));C.save();C.globalAlpha=fade;
+  const rise=(i,n,sp)=>((t*sp+i/n)%1),pop=(a)=>Math.min(1,Math.max(0,(t-a)/.12));
+  if(k==='wave'&&Math.floor(t*10)%2){C.fillStyle='#ffffff';const hx2=cx+11;C.fillRect(hx2,top-8,1,2);C.fillRect(hx2+1,top-10,1,2);C.fillRect(hx2-6,top-10,1,2);C.fillRect(hx2-7,top-8,1,2)}
+  if(k==='bow'&&t>1.9)glyph(C,'star',cx+9,top-6-(t-1.9)*6,'#f8e070',INK);
+  if(k==='love'){const b=Math.floor(t*4)%2;glyph(C,'heart',cx,top-8-b,'#f04870',INK);C.fillStyle='#ffd0dc';C.fillRect(cx-2,top-10-b,1,1);
+   for(let i=0;i<4;i++){const u=rise(i,4,.6),x=cx+Math.sin(i*2.3+t*2)*12,y=top-4-u*18;C.globalAlpha=fade*(1-u);glyph(C,'sheart',x,y,'#f87898')}}
+  if(k==='dance'){const COL=['#3858d8','#d84898','#28a868'];for(let i=0;i<4;i++){const u=rise(i,4,.7),x=cx+(i-1.5)*8+Math.sin(t*5+i)*3,y=top-2-u*16;C.globalAlpha=fade*(1-u);glyph(C,'note',x,y,COL[i%3],'#ffffff')}
+   C.globalAlpha=fade;if(Math.floor(t*8)%2)for(const sx of[-9,9])glyph(C,'spark',cx+sx,Math.round(oy)+6,'#f8f0a0')}
+  if(k==='cheer'){for(let i=0;i<18;i++){const u=rise(i,18,.7),a=i*2.4,v=10+(i%5)*3,x=cx+Math.cos(a)*u*v*1.4,y=top-6-Math.sin(a*.5+1)*u*v+u*u*20;C.globalAlpha=fade*(1-u*.8);R(C,x,y,(i%3)?2:1,(i%2)?1:2,['#f8d048','#48c8f8','#f86878','#78e070','#c878f8'][i%5])}
+   C.globalAlpha=fade;if(Math.floor(t*6)%2)glyph(C,'star',cx-12,top-6,'#f8e070',INK);else glyph(C,'star',cx+12,top-8,'#f8e070',INK)}
+  if(k==='laugh'){C.font='700 6px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';C.textAlign='center';C.lineWidth=2;C.strokeStyle=INK;C.lineJoin='round';for(let i=0;i<3;i++){const u=rise(i,3,.9),side=i%2?1:-1,x=Math.round(cx+side*(10+u*4)),y=Math.round(top-u*12);C.globalAlpha=fade*Math.min(1,(1-u)*2);C.strokeText('HA',x,y);C.fillStyle='#f8e070';C.fillText('HA',x,y)}
+   C.globalAlpha=fade;if(Math.floor(t*3)%2){C.fillStyle='#78c8f8';C.fillRect(cx-6,top+6,1,2);C.fillRect(cx+5,top+6,1,2)}}
+  if(k==='yes'){const s2=pop(.05);if(s2>0)glyph(C,'check',cx,top-8-Math.round((1-s2)*3),'#58d870',INK)}
+  if(k==='no'){const s2=pop(.05);if(s2>0)glyph(C,'cross',cx,top-8-Math.round((1-s2)*3),'#f05050',INK)}
+  if(k==='think'){const n=Math.min(3,1+Math.floor(t*2.2));const pts=[[6,-2,2],[9,-6,3],[13,-11,0]];
+   for(let i=0;i<Math.min(n,2);i++){const[px,py,r]=pts[i];R(C,cx+px-1,top+py-1,r+2,r+2,INK);R(C,cx+px,top+py,r,r,'#f8f8f8')}
+   if(n>=3){const bx=cx+15,by=top-14;R(C,bx-6,by-5,13,10,INK);R(C,bx-5,by-6,11,12,INK);R(C,bx-5,by-4,11,8,'#f8f8f8');R(C,bx-4,by-5,9,10,'#f8f8f8');glyph(C,'q',bx,by,'#5048c0')}}
+  if(k==='sleep'){for(let i=0;i<3;i++){const u=rise(i,3,.35),x=cx-12+Math.sin(t*2+i)*2+u*6,y=Math.round(oy)-10-u*18;C.globalAlpha=fade*(1-u);glyph(C,'z',x,y,u<.5?'#6070e0':'#8890f0','#ffffff')}}
+  if(k==='sit'&&t<.5){C.globalAlpha=fade*(1-t/.5);for(const sx of[-8,8]){C.fillStyle='#d8d0c0';C.fillRect(cx+sx-1+Math.sign(sx)*Math.round(t*8),Math.round(oy)+5,3,2)}}
   C.restore()}
  let SELF=false;const pkey=(x,y)=>Math.round(x)+','+Math.round(y);
  {const _cP=cP;cP=function(ch,dir,st,ox,oy,fl){try{let k=null,at=0;
@@ -17017,19 +17046,25 @@ window.SQA=SQA;
 // This restores any tier the game has an item for (eq_<slot><tier>) from the save's tl, after all the clamps.
 // Saves made before this (no `tfx`) get one-time help: an item from that list that is in the collection log (129's
 // ach.col) but nowhere in the save (bag, chests, houses, yards, builds) and not in hand goes back into the bag.
-(()=>{const SL=['sword','axe','pick'],LOST=['eq_sword8','eq_axe6','eq_axe7','eq_pick6','eq_pick7'];let back=[];
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);back=[];try{
+// Bows: TL.bow above 2 (the Bone bow, 3) is restored too; saves before tfx 2 that lost a Bone bow this way get it back in hand
+// (in place of the Longbow the clamp gave them) or in the bag.
+(()=>{const SL=['sword','axe','pick'],LOST=['eq_sword8','eq_axe6','eq_axe7','eq_pick6','eq_pick7'],LOST2=['eq_bow3'];let back=[],hand=[];
+ {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);back=[];hand=[];try{
    for(const k of SL){const v=+(S&&S.tl&&S.tl[k])|0;if(v>4&&EQ['eq_'+k+v]&&TL[k]!==v&&!(k==='sword'&&window.SLEDGE))TL[k]=v}
-   if(S&&!S.tfx&&S.ach&&Array.isArray(S.ach.col)){const js=JSON.stringify(Object.assign({},S,{ach:null,rare:null}));
-    for(const key of LOST){if(!S.ach.col.includes(key))continue;const e=EQ[key];if(!e)continue;
+   // bows: 021 clamps TL.bow to 2 and 088 puts back only 4/5, so the Bone bow (3) in hand became a Longbow on every load
+   {const v=+(S&&S.tl&&S.tl.bow)|0;if(v>2&&EQ['eq_bow'+v]&&TL.bow!==v&&!WAND)TL.bow=v}
+   const tf=+(S&&S.tfx)|0,keys=[...(tf<1?LOST:[]),...(tf<2?LOST2:[])];
+   if(S&&keys.length&&S.ach&&Array.isArray(S.ach.col)){const js=JSON.stringify(Object.assign({},S,{ach:null,rare:null}));
+    for(const key of keys){if(!S.ach.col.includes(key))continue;const e=EQ[key];if(!e)continue;
      const sl=e.slot==='main'?'sword':e.slot,inHand=TL[sl]===e.tier,anywhere=new RegExp('"'+key+'"\\s*[:,]\\s*"?[1-9]').test(js)||(inv[key]|0)>0;
-     if(!inHand&&!anywhere){inv[key]=(inv[key]|0)+1;back.push(key)}}}
+     if(!inHand&&!anywhere){if(key==='eq_bow3'&&TL.bow===2&&!WAND){TL.bow=3;hand.push(key)}else{inv[key]=(inv[key]|0)+1;back.push(key)}}}}
    if(typeof snapEq==='function')snapEq()}catch(e){console.warn(e)}return out}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.tfx=1;return s}}
+ {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.tfx=2;return s}}
  // tell the player once play is running (upd only runs in play)
- let wait=0;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(back.length&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;
-   const n=back.map(k=>INAME[k]).join(', ');back=[];say('Sorry about that! A bug swapped your '+n+' for a steel one. It\'s back in your Bag.');msgT=8;try{saveLocal(true)}catch(e){}}return out}}
- window.SQTFX={LOST}})();
+ let wait=0;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if((back.length||hand.length)&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;
+   if(hand.length){hand=[];say('Sorry about that! A bug swapped your Bone bow for a Longbow. It\'s back in your hands.')}
+   else{const n=back.map(k=>INAME[k]).join(', ');back=[];say('Sorry about that! A bug swapped your '+n+' for a weaker one. It\'s back in your Bag.')}msgT=8;try{saveLocal(true)}catch(e){}}return out}}
+ window.SQTFX={LOST,LOST2}})();
 // ---- 154. Home comforts: campfires in yards, no hunger indoors at home, picking up a wardrobe ----
 // - Campfires in backyards and courtyards (150): 012 (indoors) and 049 (too windy off Hollow) let yards through, so FIRE
 //   runs the game's own campfire (perks, timed lighting, cooking at it). Each yard keeps its own fires (083's per-place
