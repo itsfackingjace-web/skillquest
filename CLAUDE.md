@@ -448,3 +448,6 @@
 - **Two player menus**: tapping a name in chat opens 070's `#mppm` (message/friend/trade/IGNORE/REPORT); walking up to someone opens
   130's panel menu (now with IGNORE/UNIGNORE via `SQIGNSET`/`SQIGNORED` and REPORT via 170). Both REPORTs write `reports/<id>`
   (070 adds `m` = their recent messages). The ignore list is 070's `IGN` (saved as `ign`), shown under IGNORED in Chat > Friends.
+- **Chat commands after the MP block**: 061's chat box calls `window.mpSend`; 080 (end of the block) sets `window.mpSend=mpSend`
+  (the block's chain: 062 /trade, 070 /ignore, 072 dev commands). Sections after the block (111b /suite, 136 emotes) wrap
+  the global `mpSend`; before this, the box called the block's own binding and those commands were sent as plain chat.

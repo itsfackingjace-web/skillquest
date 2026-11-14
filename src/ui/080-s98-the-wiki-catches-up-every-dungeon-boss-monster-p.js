@@ -39,4 +39,7 @@
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
 window.SQMP=MP;
+// The chat box sends through window.mpSend: hand it the block's mpSend with every wrapper above (062/070/072), so
+// sections after the block (111b's /suite, 136's emotes and /p) wrap the full chain instead of the bare original.
+window.mpSend=mpSend;
 }

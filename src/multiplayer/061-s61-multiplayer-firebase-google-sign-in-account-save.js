@@ -65,10 +65,10 @@ $('mpgo').onclick=()=>{sg.style.display='none';mpSignIn()};
 $('mpso').onclick=async()=>{mpCloseChat();if(STRICT)try{await saveCloud(true)}catch(e){}await mpStop(true);try{await FB.auth.signOut(FB.A)}catch(e){}say(STRICT?'Signed out.':'Signed out. Playing offline.')};
 pc.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{MP.tab=b.dataset.t;mpRList()});
 // the game's keyboard handlers (capture phase on document) would swallow Enter, so the chat box gets the key first
-addEventListener('keydown',e=>{if(e.target!==inp){const t=e.target;if(t&&t.tagName==='INPUT'&&t.closest&&t.closest('#mpchat')){e.stopImmediatePropagation();if(e.key==='Enter'&&!e.isComposing){e.preventDefault();const f=t.closest('form');if(f)f.requestSubmit()}else if(e.key==='Escape'){e.preventDefault();mpCloseChat()}}return}e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();mpCloseChat()}else if(e.key==='Enter'&&!e.isComposing){e.preventDefault();mpSend(inp.value);inp.value=''}},true);
+addEventListener('keydown',e=>{if(e.target!==inp){const t=e.target;if(t&&t.tagName==='INPUT'&&t.closest&&t.closest('#mpchat')){e.stopImmediatePropagation();if(e.key==='Enter'&&!e.isComposing){e.preventDefault();const f=t.closest('form');if(f)f.requestSubmit()}else if(e.key==='Escape'){e.preventDefault();mpCloseChat()}}return}e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();mpCloseChat()}else if(e.key==='Enter'&&!e.isComposing){e.preventDefault();(window.mpSend||mpSend)(inp.value);inp.value=''}},true);
 addEventListener('keyup',e=>{if(e.target===inp)e.stopImmediatePropagation()},true);
 inp.addEventListener('focus',mpClearKeys);
-$('mpf').onsubmit=e=>{e.preventDefault();mpSend(inp.value);inp.value=''};
+$('mpf').onsubmit=e=>{e.preventDefault();(window.mpSend||mpSend)(inp.value);inp.value=''};
 // PC: Enter opens the chat
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||MP.open||!MP.on)return;const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'))return;if(pnOpen||menuOpen||chessOpen)return;e.preventDefault();mpOpenChat()});
 function mpRBtn(){const n=[...MP.players.values()].filter(live).length+1;btn.innerHTML=MP.on?'CHAT<i>'+n+'</i>':'ONLINE';btn.classList.toggle('unr',MP.on&&MP.unread>0&&!MP.open);

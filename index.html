@@ -7268,10 +7268,10 @@ $('mpgo').onclick=()=>{sg.style.display='none';mpSignIn()};
 $('mpso').onclick=async()=>{mpCloseChat();if(STRICT)try{await saveCloud(true)}catch(e){}await mpStop(true);try{await FB.auth.signOut(FB.A)}catch(e){}say(STRICT?'Signed out.':'Signed out. Playing offline.')};
 pc.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{MP.tab=b.dataset.t;mpRList()});
 // the game's keyboard handlers (capture phase on document) would swallow Enter, so the chat box gets the key first
-addEventListener('keydown',e=>{if(e.target!==inp){const t=e.target;if(t&&t.tagName==='INPUT'&&t.closest&&t.closest('#mpchat')){e.stopImmediatePropagation();if(e.key==='Enter'&&!e.isComposing){e.preventDefault();const f=t.closest('form');if(f)f.requestSubmit()}else if(e.key==='Escape'){e.preventDefault();mpCloseChat()}}return}e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();mpCloseChat()}else if(e.key==='Enter'&&!e.isComposing){e.preventDefault();mpSend(inp.value);inp.value=''}},true);
+addEventListener('keydown',e=>{if(e.target!==inp){const t=e.target;if(t&&t.tagName==='INPUT'&&t.closest&&t.closest('#mpchat')){e.stopImmediatePropagation();if(e.key==='Enter'&&!e.isComposing){e.preventDefault();const f=t.closest('form');if(f)f.requestSubmit()}else if(e.key==='Escape'){e.preventDefault();mpCloseChat()}}return}e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();mpCloseChat()}else if(e.key==='Enter'&&!e.isComposing){e.preventDefault();(window.mpSend||mpSend)(inp.value);inp.value=''}},true);
 addEventListener('keyup',e=>{if(e.target===inp)e.stopImmediatePropagation()},true);
 inp.addEventListener('focus',mpClearKeys);
-$('mpf').onsubmit=e=>{e.preventDefault();mpSend(inp.value);inp.value=''};
+$('mpf').onsubmit=e=>{e.preventDefault();(window.mpSend||mpSend)(inp.value);inp.value=''};
 // PC: Enter opens the chat
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||MP.open||!MP.on)return;const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'))return;if(pnOpen||menuOpen||chessOpen)return;e.preventDefault();mpOpenChat()});
 function mpRBtn(){const n=[...MP.players.values()].filter(live).length+1;btn.innerHTML=MP.on?'CHAT<i>'+n+'</i>':'ONLINE';btn.classList.toggle('unr',MP.on&&MP.unread>0&&!MP.open);
@@ -9382,6 +9382,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.13-26',d:'Nov 13, 2026',t:'Emote commands in chat',n:['Typing an emote in chat works again: /wave, /bow, /dance, /cheer, /laugh, /love, /yes, /no, /think, /sit and /sleep act it out instead of posting the word.']},
  {v:'2026.11.13-25',d:'Nov 13, 2026',t:'Reporting and ignoring',n:['Reports made by tapping a name in chat now reach the developer properly.','Reporting someone no longer ignores them unless you tick "Also ignore them".','Ignored someone by mistake? Walk up to them, tap their name and choose UNIGNORE, or find them under IGNORED at the bottom of Chat > Friends.']},
  {v:'2026.11.13-24',d:'Nov 13, 2026',t:'Small fixes',n:['Fixed a couple of developer tools that didn\'t work in the Windows app.']},
  {v:'2026.11.13-23',d:'Nov 13, 2026',t:'Report players',n:['Someone being mean in chat, cheating or scamming? Walk up to them, tap their name and choose REPORT. The developer sees it along with their recent chat.','Players who break the rules can now be muted or suspended for a while.']},
@@ -10193,6 +10194,9 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
 mpRBtn();
 if(MP_OK)mpLoad().catch(e=>{console.warn('[online] could not load',e);btn.style.display='none'});else btn.remove(),ov.remove();
 window.SQMP=MP;
+// The chat box sends through window.mpSend: hand it the block's mpSend with every wrapper above (062/070/072), so
+// sections after the block (111b's /suite, 136's emotes and /p) wrap the full chain instead of the bare original.
+window.mpSend=mpSend;
 }
 // ---------------------------------------------------------------- 62. Controller pass
 // - The highlight is drawn inside each button (an inset ring), because the Gen 3 pixel frames clip anything drawn outside.
