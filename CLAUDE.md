@@ -551,3 +551,7 @@
   (max 3 a level: PERKS letters a/b/c) marked `_cp`, at any level, making a tree for a skill without one. New perks' `fx` use 111a2's
   FXN keys and count through `window.SQFXEXTRA` (hook in 111a2's `fxSum`, so 179's effects too) while chosen and the level is reached.
   Everything is taken back out before each apply (texts only if still what 186 set, so 163 Balance's rewritten descriptions win).
+- **Chat bubbles** (`multiplayer/187-s195-chat-bubbles.js`, `window.SQBUBBLES`): the outermost `drawHUD` nulls every `r.said` and
+  `MP.selfSaid` for the inner call (061 then draws names only) and draws speech bubbles itself: wrapped (3 lines), 4 s + 70 ms a
+  character, newest first (your own always first), stacked upward, else under the speaker's feet, else a "…" dot; never over the
+  HUD corners (`hudLayout`) or the touch buttons / ONLINE / BUG / event pills (DOM rects, keep-out list `KO`). Cap 4 (5 on big screens).
