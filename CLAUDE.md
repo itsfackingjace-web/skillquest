@@ -542,3 +542,7 @@
   `events`), gold in the outermost `killEnemy`, monsters tagged `_ev` kept near you outdoors (`EVM`, like 121's DEVM), the shop is a
   Content shop opened from the event card (pill `#sqsev`, below 161's `#sqevp` when that shows). `SQEVENTS.force(id,min)` = run it
   in your own game only. Start messages are remembered per window in localStorage `sq_evseen`.
+- **Simulator** (`dev/185-s193-simulator.js`, `window.SQSIM`, Dev Suite > Simulator): runs the real `killEnemy` on `rgMake` monsters inside
+  `sandbox(fn)` (snap + localStorage `sq_*` + `kills` kept, `applySave` after; say/sfx/saves/`SQPVSEND` muted), so every drop source
+  counts. Per hour: hits = health ÷ (1+TL.sword+Attack/15+meleeFlat) at 2 a second + walk seconds. Loot tables roll `SQCONTENT.roll`.
+  Bosses (cb:/ib/wb) are left out. Anything new that a kill changes outside the save must be put back in `sandbox` too.
