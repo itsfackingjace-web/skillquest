@@ -87,7 +87,9 @@ var SQA=(()=>{
  const _cPw=cP;
  // the character as other code sees it (game kit + worn looks) drawn into any canvas: 201 measures capes against it
  window.SQCHDRAW=function(C,ch,dir,st,ox,oy,fl){const sv=GC;GC=C;try{_cPw(hideFor(ch),dir,st,ox,oy,fl);if(ch&&Array.isArray(ch.wr))drawWorn(C,ch.wr.slice(0,6),dir|0,st|0,ox,oy,!!fl,null,ch)}finally{GC=sv}};
- cP=function(ch,dir,st,ox,oy,fl){try{if(window.SQCAPEUNDER)SQCAPEUNDER(GC||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
+ cP=function(ch,dir,st,ox,oy,fl){try{if(window.SQCAPEUNDER)SQCAPEUNDER(GC||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch)return;const C=GC;
+  // capes over the shoulders/back (201), also on characters without worn looks
+  if(!ch.wr||!(C===g||C&&C.canvas&&C.canvas.hd2)){try{if(window.SQCAPETOP)SQCAPETOP(C||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}return}
   try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl,null,ch)}catch(e){}
   // a cape seen from behind goes over worn looks (201)
   try{if(window.SQCAPETOP)SQCAPETOP(C,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}};

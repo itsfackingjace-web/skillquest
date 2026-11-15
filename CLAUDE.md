@@ -670,12 +670,17 @@
   KNOWN49) like the Outlaw's hat; +3% block a piece, 2 pieces +5%, 3 pieces +5% and blockCap +5%; look = 084's plate recoloured (`ttk`).
 - **Guild bank deposit buttons** (197 `depositMany`, `GRP`): put in all void logs / raw fish / logs / ores, or everything (two taps), as one
   bank change with one log line (`k:'*'`, `d` text). Log lines with a text `d` show it as is.
-- **Capes** (`items/201-s209-guild-capes.js`, `SQGCAPE`): 201 paints every cape (Marlo's `ch.cape` and the guild cape), not 085: the outermost
-  `kitBuild` strips the cape fields, builds the bare kit and adds a cape layer (`layer`): on the back it widens to the body's own row edges (wizard
-  robes flare), composited on top. Front and side views are a separate 24 px wide layer (`wide`, cached in `WC`) drawn behind the character by
-  111a's cP wrapper through `window.SQCAPEUNDER` (before the inner cP; mirrored for `fl` on the side view), since the 16 px kit has no room. 111a's
-  cP wrapper calls `window.SQCAPETOP` after `drawWorn`, which repaints the back layer over Dev Suite worn looks. Guild cape: worn from the guild
-  screen's Members tab (`gcw`, KNOWN49); the leader's design is `info.cp` {c,s,p,t,e,x} (`PAL` 18 colours, `PAT` 5 patterns, trim on/off, `EM`
-  11 emblems; rules: those keys, numbers 0-31), drafted in Settings until Save; older guilds fall back to `info.col`/`info.em`. gearCH adds
-  gcp (c+1), gcs, gpt, gtr, gce, gex and drops `cape`; other players get them through `ch` (061's cleanCh keeps numbers 0-99).
-  Front/side capes (since -41): `wide()` is a 96x112 half-pixel picture of the 48x56 box (anchor 24,44), drawn at (ox-24,oy-44,48,56). Its width comes from the bare kit's torso (kit rows 21-27), never from worn looks (a wide hood made it a slab); rows run from `TOP` 80 (shoulders) to `HEM` 98 (ankles). 111a exposes `window.SQCHDRAW(C,ch,dir,st,ox,oy,fl)` (inner cP + drawWorn into any canvas); 201's `sil()` uses it to skip a side of a row where a robe/hood already reaches the cape's edge.
+- **Capes** (`items/201-s209-guild-capes.js`, `SQGCAPE`): 201 paints every cape (Marlo's `ch.cape` and the guild cape), not 085; the outermost
+  `kitBuild` strips the cape fields so the 16x32 kit never has one. `cloth(ch,dir,st,tick)` paints the cape as cloth at half-pixel detail in the
+  48x56 box (anchor 24,44; kit at (16,19); hd pixel (X,Y) = kit ((X+.5)/2-16, (Y+.5)/2-19)) from shape tests in kit pixels: back = collar rolling
+  over the shoulders, fanned folds (`fold`, nF), wavy hem at the ankles, swings sideways with `st` 1/2; side (facing right, back = left) = a dome
+  over the shoulder, wraps the back of the body, billows/ripples behind when walking; front = the same shape as a darker lining behind you plus
+  shoulder pieces, cords and a clasp on top. Width comes from the bare kit's torso (rows 22-26), never from worn looks. `tick` (650 ms, test
+  override `window.SQCAPETICK`) makes it stir while standing. 111a's cP wrapper calls `window.SQCAPEUNDER` before the character (front lining)
+  and `window.SQCAPETOP` after it and after drawWorn (everything else, for characters with or without worn looks). The top layer skips `cov`
+  pixels: `sil()` draws the character through 111a's `window.SQCHDRAW` (inner cP + drawWorn into any canvas) and marks where worn looks differ
+  from the bare kit, so hoods/robes stay over the cape. 2-half-pixel outline like the kit's; trim only along the hem. Emblems `EM`: 4x4 ones
+  drawn at 2x2 half pixels, 8x8 ones (Tree, Fish, Skull) at one half pixel each. Guild cape: worn from the guild screen's Members tab (`gcw`,
+  KNOWN49); the leader's design is `info.cp` {c,s,p,t,e,x} (`PAL` 18 colours, `PAT` 5 patterns, trim on/off, `EM` 14 emblems; rules: those keys,
+  numbers 0-31), drafted in Settings until Save; older guilds fall back to `info.col`/`info.em`. gearCH adds gcp (c+1), gcs, gpt, gtr, gce, gex
+  and drops `cape`; other players get them through `ch` (061's cleanCh keeps numbers 0-99). Guild screen pictures (`pic`) draw through cP.
