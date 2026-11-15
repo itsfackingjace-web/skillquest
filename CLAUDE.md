@@ -628,4 +628,13 @@
   is a getter that is true only while the outermost `castSpell`/`shootAim`/`castUlt`/`drawCrosshair` run in a yard (the "Not indoors!" checks
   read `SCENE.room.cave`; everything else still sees a normal room: no cave darkness/music/caveAttack). The outermost `drawHUD` draws 021's
   `drawWeather` in yards, and `biomeHere` in a yard = the Hollow biome around the house door (`SCENE.ret`), grass for island homes.
-
+- **Guild perks** (197, see its header): `prog/<wood|mine|forage|fish>` = skill ranks (claim adds 1 to the quest's skill; the rules
+  check it against `q.k`), +10% XP (outermost `addXp`, `arguments[1]` scaled) and 10%/rank extra items (upd, same frame rule as quests)
+  per rank (max `RMAX` 5). Buildings `BLD` by guild level, placed at runtime by `applyBuildings` (`_gb` lm items in `spots(R)`, kept free of
+  planting by `reserved`): horn (`routeGo(REG)`, 3 min cooldown in localStorage `sq_ghorn`), forge (`gstation` items drawn with
+  `drawStation`, TALK = `openStation`), shrine (`LUX.BUFF` wis+regen 20 min, once a day `sq_gshrine`), hall (`maxM` 40, +5% XP).
+  Planted nodes regrow after 60 s (`g2.at-=180` in upd); 061's `resSubRegion` skips `gi_` regions (not shared world-wide).
+  Guild chat: `gchat/<g>/<id>` {u,n,m,t}, 061 has chat tab `gd`, `/g`, `.gld` lines, `window.SQMPLOG(k,m,extra)` = the block's `mpLog`,
+  `window.SQGUILDSAY`. Leaderboard `glb/<g>` {n,tag,col,lv,m} (members write when it changes, `pubLB`). Rename: `info.rn`, cost
+  `RENAME` after the first, gname moved in one update. Panel messages: `tell()` = say + a note card on top of the guild screen (8 s).
+  Rules: `gchat`, `glb`, `guilds.prog`, `guilds.info.rn`, `gname` (publish them).

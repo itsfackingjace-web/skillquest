@@ -80,6 +80,7 @@ function mpROv(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||che
  ov.style.display=hide||TS.open?'none':'flex';btn.style.display=(pnOpen||menuOpen||chessOpen||TS.open)?'none':'block';
  const key=recent.map(m=>m.id).join(',');if(key!==ov.dataset.k){ov.dataset.k=key;ov.textContent='';for(const m of recent){const d=mpLine(m);d.dataset.at=m.at;ov.appendChild(d)}}
  for(const d of ov.children){const a=now-(+d.dataset.at);d.style.opacity=a>10000?'0':'1'}}
+window.SQMPLOG=(k,m,extra)=>mpLog(k,m,extra);
 function mpLog(k,m,extra){const e=Object.assign({k,m,at:performance.now(),id:Math.random().toString(36).slice(2)},extra||{});MP.log.push(e);
  // each tab keeps its own last 100 lines (game messages used to push public chat out of the history)
  {let n=0;for(let i=MP.log.length-1;i>=0;i--)if(MP.log[i].k===k&&++n>100){MP.log.splice(i,1);break}}if(MP.log.length>450)MP.log.shift();
@@ -466,7 +467,7 @@ function resSubHollow(){if(RES.unsubH)return;const d=FB.db,ref=d.ref(FB.D,'world
  const add=s=>{const i=+s.key,v=s.val();if(!v||!(i>=0&&i<N*N))return;RES.h[i]=v;if(obj[i]&&obj[i].t===v.t)obj[i]=null;for(let j=REM.length-1;j>=0;j--)if(REM[j].i===i)REM.splice(j,1)};
  const u1=d.onChildAdded(ref,add),u2=d.onChildChanged(ref,add),u3=d.onChildRemoved(ref,s=>{const i=+s.key,v=s.val()||RES.h[i];delete RES.h[i];if(v&&!obj[i]&&OHP[v.t])obj[i]={t:v.t,hp:OHP[v.t]}});
  RES.unsubH=()=>{u1();u2();u3()};MP.unsub.push(()=>{if(RES.unsubH){RES.unsubH();RES.unsubH=null}})}
-function resSubRegion(){const R=SCENE&&SCENE.room,loc=R&&R.region?'r_'+R.region:null;if(loc===RES.rloc)return;if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.r={};RES.rloc=loc;if(!loc||!MP.on)return;
+function resSubRegion(){const R=SCENE&&SCENE.room,loc=R&&R.region&&!/^gi_/.test(R.region)?'r_'+R.region:null;if(loc===RES.rloc)return;if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.r={};RES.rloc=loc;if(!loc||!MP.on)return;
  const d=FB.db,ref=d.ref(FB.D,'world/res/'+loc);
  const add=s=>{const R2=SCENE&&SCENE.room;if(!R2||'r_'+R2.region!==loc)return;const idx=+s.key,v=s.val();if(!v)return;RES.r[idx]=v;const x=idx%R2.w,y=Math.floor(idx/R2.w),it=rgObjAt(R2,x,y);
   if(it&&it.o&&it.o.t===v.t){it.gone=true;rgCellDel(R2,it);R2.solid.delete(idx);RES.stash[loc+':'+idx]=it}for(let j=R2.gone.length-1;j>=0;j--){const g2=R2.gone[j].it;if(g2.y*R2.w+g2.x===idx){RES.stash[loc+':'+idx]=g2;R2.gone.splice(j,1)}}};
@@ -551,18 +552,19 @@ function mobStop(){for(const p of FIRE.prox.values()){const j=fires.indexOf(p);i
 // - Tap a name in chat to add that player. Type "/w name message" to whisper from any tab.
 // - Friends' names show in green over their heads.
 MP.friends={};MP.prof={};MP.pmTo=null;
-{const st=document.createElement('style');st.textContent=`#mpchat .hd{flex-wrap:wrap}#mpchat .tb{padding:6px 8px}#mpchat .pmf b,#mpchat .pmt b{color:#1888a0!important}#mpchat .pmf,#mpchat .pmt{color:#1888a0}#mpchat .pty,#mpo .pty{color:#2a8a3a}#mpchat .pty b,#mpo .pty b{color:#1f7a2e!important}
+{const st=document.createElement('style');st.textContent=`#mpchat .hd{flex-wrap:wrap}#mpchat .tb{padding:6px 8px}#mpchat .pmf b,#mpchat .pmt b{color:#1888a0!important}#mpchat .pmf,#mpchat .pmt{color:#1888a0}#mpchat .pty,#mpo .pty{color:#2a8a3a}#mpchat .gld,#mpo .gld{color:#8a5a10}#mpchat .gld b,#mpo .gld b{color:#a06008!important}#mpchat .pty b,#mpo .pty b{color:#1f7a2e!important}
 #mpo .pmf,#mpo .pmt{color:#1888a0}#mpo .pmf b{color:#1888a0}#mpl b.nm{cursor:pointer}
 #mpl .fr{display:flex;align-items:center;gap:6px;padding:6px 4px;border-bottom:1px solid #e0e8f0}#mpl .fr .fn{flex:1;min-width:0}#mpl .fr small{display:block;color:#707070;font-size:11px}
 #mpl .fr .on{color:#28a048}#mpl .fr button,#mpl .fa button{font:700 12px ${PF};padding:5px 8px;border:2px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}
 #mpl .fa{display:flex;gap:6px;margin-bottom:8px}#mpl .fa input{background:#fff!important;color:#404040!important;flex:1;min-width:0;font:500 15px ${PF};padding:5px 7px;border:2px solid #485870}#mpl .fh{font-size:12px;color:#707070;margin:6px 0}`;document.head.appendChild(st)}
 // two more tabs
-{const g2=pc.querySelector('.tb[data-t="game"]');const mk=(t,l)=>{const b=document.createElement('button');b.className='tb';b.dataset.t=t;b.textContent=l;b.onclick=()=>{MP.tab=t;mpRList()};g2.before(b)};mk('pm','Private');mk('fr','Friends');mk('pt','Party')}
+{const g2=pc.querySelector('.tb[data-t="game"]');const mk=(t,l)=>{const b=document.createElement('button');b.className='tb';b.dataset.t=t;b.textContent=l;b.onclick=()=>{MP.tab=t;mpRList()};g2.before(b)};mk('pm','Private');mk('fr','Friends');mk('pt','Party');mk('gd','Guild')}
 const LOCN=l=>{if(!l)return'Somewhere private';if(l==='hollow')return'Hollow Island';if(l.startsWith('r:')){const R=WORLD_REGIONS[l.slice(2)];return R?R.name:'Overseas'}if(l.startsWith('in:dun')||l.startsWith('in:cave')||l.startsWith('in:tomb'))return'In a dungeon';if(l.startsWith('in:'))return'Indoors';if(l.startsWith('h:'))return'At a house';return'Online'};
 const fname=u=>{const r=MP.players.get(u);return(r&&r.n)||(MP.prof[u]&&MP.prof[u].n)||'Someone'};
 const isFriend=u=>!!(u&&MP.friends[u]);
 // chat lines: names are tappable; private messages read "From X:" / "To X:"
 mpLine=function(m){const d=document.createElement('div');if(m.k==='game'){d.className='gm';d.textContent=m.m;return d}
+ if(m.k==='gd'){d.className='gld';const b=document.createElement('b');b.className='nm';if(m.uid)b.dataset.u=m.uid;b.textContent='[Guild] '+m.n+': ';d.append(b,document.createTextNode(m.m));return d}
  if(m.k==='pt'){d.className='pty';const b=document.createElement('b');b.className='nm';if(m.uid)b.dataset.u=m.uid;b.textContent='[Party] '+m.n+': ';d.append(b,document.createTextNode(m.m));return d}
  if(m.k==='pm'){d.className=m.dir==='to'?'pmt':'pmf';const b=document.createElement('b');b.className='nm';b.dataset.u=m.uid;b.textContent=(m.dir==='to'?'To ':'From ')+m.n+': ';if(isOG(m.uid))d.append(crownImg());d.append(b,document.createTextNode(m.m));return d}
  if(m.me)d.className='me';const b=document.createElement('b');b.className='nm';b.dataset.u=m.uid||'';b.textContent=m.n+': ';if(isOG(m.uid))d.append(crownImg());d.append(b,document.createTextNode(m.m));return d};
@@ -585,7 +587,7 @@ function friendsView(){lst.textContent='';const fa=document.createElement('form'
   row.append(nm,msg,rm);lst.appendChild(row)}}
 const liveP=u=>{const r=MP.players.get(u);return r&&live(r)?r:null};
 mpRList=function(){pc.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on',b.dataset.t===MP.tab));
- inp.placeholder=MP.tab==='pt'?((window.SQPARTY&&SQPARTY.id&&SQPARTY.members().length)?'Say something to your party...':'Not in a party: tap a player\'s name to invite them'):MP.tab==='pm'?(MP.pmTo?'To '+fname(MP.pmTo)+'...':'Pick a friend in Friends, or type /w name message'):'Say something...';
+ inp.placeholder=MP.tab==='gd'?((window.SQGUILD&&SQGUILD.id)?'Say something to your guild...':'Not in a guild: START > Guild'):MP.tab==='pt'?((window.SQPARTY&&SQPARTY.id&&SQPARTY.members().length)?'Say something to your party...':'Not in a party: tap a player\'s name to invite them'):MP.tab==='pm'?(MP.pmTo?'To '+fname(MP.pmTo)+'...':'Pick a friend in Friends, or type /w name message'):'Say something...';
  if(MP.tab==='fr'){friendsView();mpRBtn();return}lst.textContent='';
  for(const m of MP.log)if(MP.tab==='all'||m.k===MP.tab)lst.appendChild(mpLine(m));lst.scrollTop=lst.scrollHeight;mpRBtn()};
 lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;const u=b.dataset.u;
@@ -607,6 +609,7 @@ function addFriendByName(name){name=String(name||'').trim();if(!name||!MP.on)ret
  MP.addHint=parts;mpRList()}
 // sending: Private tab or "/w name message"
 mpSend=function(t){t=String(t||'').replace(/\s+/g,' ').trim();if(!t)return;if(!MP.on){mpOpenChat();return}
+ {const gm=/^\/(?:g|guild)\s+(.+)$/i.exec(t);if((gm||MP.tab==='gd'&&t[0]!=='/')&&window.SQGUILDSAY){SQGUILDSAY(gm?gm[1]:t);return}}
  {const pm=/^\/(?:p|party)\s+(.+)$/i.exec(t);if((pm||MP.tab==='pt'&&t[0]!=='/')&&window.SQPARTYSAY){SQPARTYSAY(pm?pm[1]:t);return}}
  let to=null,msg=t;const w=t.match(/^\/(?:w|msg|pm)\s+(\S+)\s+(.+)$/i);
  if(w){const nl=w[1].toLowerCase();to=Object.keys(MP.friends).find(u=>fname(u).toLowerCase()===nl)||[...MP.players.keys()].find(u=>(MP.players.get(u).n||'').toLowerCase()===nl);msg=w[2];if(!to){mpLog('game','No friend or nearby player called '+w[1]+'.');return}}
@@ -615,7 +618,7 @@ mpSend=function(t){t=String(t||'').replace(/\s+/g,' ').trim();if(!t)return;if(!M
  if(to){d.push(d.ref(FB.D,'pm/'+to),{f:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).then(()=>{mpLog('pm',msg,{dir:'to',n:fname(to),uid:to,t:mpNow()});MP.pmTo=to}).catch(e=>{mpLog('game','Could not send that message.');mpErr(e)});return}
  d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).catch(mpErr)};
 // the overlay shows private messages to you too
-mpROv=function(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||chessOpen,recent=MP.log.filter(m=>(m.k==='pub'||m.k==='pt'&&!m.me||m.k==='pm'&&m.dir==='from')&&now-m.at<12000).slice(-3);
+mpROv=function(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||chessOpen,recent=MP.log.filter(m=>(m.k==='pub'||(m.k==='pt'||m.k==='gd')&&!m.me||m.k==='pm'&&m.dir==='from')&&now-m.at<12000).slice(-3);
  ov.style.display=hide||TS.open?'none':'flex';btn.style.display=(pnOpen||menuOpen||chessOpen||TS.open)?'none':'block';
  const key=recent.map(m=>m.id).join(',');if(key!==ov.dataset.k){ov.dataset.k=key;ov.textContent='';for(const m of recent){const d=mpLine(m);d.dataset.at=m.at;ov.appendChild(d)}}
  for(const d of ov.children){const a=now-(+d.dataset.at);d.style.opacity=a>10000?'0':'1'}};

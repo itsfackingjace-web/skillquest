@@ -597,6 +597,9 @@
           "t": {
             ".validate": "newData.isNumber()"
           },
+          "rn": {
+            ".validate": "newData.isNumber() && newData.val()>=0 && newData.val()<=100000"
+          },
           "$o": {
             ".validate": false
           }
@@ -632,12 +635,12 @@
           }
         },
         "prog": {
-          ".write": "auth != null && (((root.child('guilds').child($g).child('m').child(auth.uid).child('r').val()==='l' || root.child('guilds').child($g).child('m').child(auth.uid).child('r').val()==='o') && data.child('qd').exists() && newData.child('qd').val()===data.child('qd').val()+1 && root.child('guilds').child($g).child('q').child('done').val()===1 && !newData.parent().child('q').exists()) || (!data.exists() && !root.child('guilds').child($g).child('info').exists() && newData.parent().child('info').child('lead').val()===auth.uid && newData.child('qd').val()===0))",
+          ".write": "auth != null && (((root.child('guilds').child($g).child('m').child(auth.uid).child('r').val()==='l' || root.child('guilds').child($g).child('m').child(auth.uid).child('r').val()==='o') && data.child('qd').exists() && newData.child('qd').val()===data.child('qd').val()+1 && root.child('guilds').child($g).child('q').child('done').val()===1 && !newData.parent().child('q').exists() && newData.child(root.child('guilds').child($g).child('q').child('k').val()).val()===(data.child(root.child('guilds').child($g).child('q').child('k').val()).exists() ? data.child(root.child('guilds').child($g).child('q').child('k').val()).val() : 0)+1) || (!data.exists() && !root.child('guilds').child($g).child('info').exists() && newData.parent().child('info').child('lead').val()===auth.uid && newData.child('qd').val()===0))",
           "qd": {
             ".validate": "newData.isNumber()"
           },
-          "$o": {
-            ".validate": false
+          "$sk": {
+            ".validate": "($sk==='qd' || $sk==='wood' || $sk==='mine' || $sk==='forage' || $sk==='fish') && newData.isNumber() && newData.val()>=0 && newData.val()<=newData.parent().child('qd').val()"
           }
         },
         "perm": {
@@ -722,7 +725,7 @@
     "gname": {
       ".read": "auth != null",
       "$n": {
-        ".write": "auth != null && ((!data.exists() && newData.isString() && !root.child('guilds').child(newData.val()).exists() && newData.parent().parent().child('guilds').child(newData.val()).child('info').child('lead').val()===auth.uid) || (!newData.exists() && root.child('guilds').child(data.val()).child('info').child('lead').val()===auth.uid))"
+        ".write": "auth != null && ((!data.exists() && newData.isString() && newData.parent().parent().child('guilds').child(newData.val()).child('info').child('lead').val()===auth.uid) || (!newData.exists() && root.child('guilds').child(data.val()).child('info').child('lead').val()===auth.uid))"
       }
     },
     "gmem": {
@@ -756,6 +759,56 @@
           "$o": {
             ".validate": false
           }
+        }
+      }
+    },
+    "gchat": {
+      "$g": {
+        ".read": "auth != null && root.child('guilds').child($g).child('m').child(auth.uid).exists()",
+        ".write": "auth != null && !newData.exists() && root.child('guilds').child($g).child('info').child('lead').val()===auth.uid",
+        "$id": {
+          ".write": "auth != null && root.child('guilds').child($g).child('m').child(auth.uid).exists() && ((!data.exists() && newData.child('u').val()===auth.uid && (!root.child('mod').child(auth.uid).child('mu').exists() || root.child('mod').child(auth.uid).child('mu').val() < now) && (!root.child('mod').child(auth.uid).child('ba').exists() || root.child('mod').child(auth.uid).child('ba').val() < now)) || (!newData.exists() && (data.child('u').val()===auth.uid || data.child('t').val() < now - 86400000)))",
+          ".validate": "newData.hasChildren(['u','n','m','t']) && newData.child('t').val()===now",
+          "u": {
+            ".validate": "newData.isString()"
+          },
+          "n": {
+            ".validate": "newData.isString() && newData.val().length<=12"
+          },
+          "m": {
+            ".validate": "newData.isString() && newData.val().length>0 && newData.val().length<=80"
+          },
+          "t": {
+            ".validate": true
+          },
+          "$o": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "glb": {
+      ".read": "auth != null",
+      "$g": {
+        ".write": "auth != null && ((newData.exists() && root.child('guilds').child($g).child('m').child(auth.uid).exists()) || (!newData.exists() && (!root.child('guilds').child($g).exists() || root.child('guilds').child($g).child('info').child('lead').val()===auth.uid)))",
+        ".validate": "newData.hasChildren(['n','tag','lv','m'])",
+        "n": {
+          ".validate": "newData.isString() && newData.val().length<=20"
+        },
+        "tag": {
+          ".validate": "newData.isString() && newData.val().length<=4"
+        },
+        "col": {
+          ".validate": "newData.isNumber() && newData.val()>=0 && newData.val()<=9"
+        },
+        "lv": {
+          ".validate": "newData.isNumber() && newData.val()>=1 && newData.val()<=100000"
+        },
+        "m": {
+          ".validate": "newData.isNumber() && newData.val()>=1 && newData.val()<=100"
+        },
+        "$o": {
+          ".validate": false
         }
       }
     }

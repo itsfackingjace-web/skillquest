@@ -7300,6 +7300,7 @@ function mpROv(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||che
  ov.style.display=hide||TS.open?'none':'flex';btn.style.display=(pnOpen||menuOpen||chessOpen||TS.open)?'none':'block';
  const key=recent.map(m=>m.id).join(',');if(key!==ov.dataset.k){ov.dataset.k=key;ov.textContent='';for(const m of recent){const d=mpLine(m);d.dataset.at=m.at;ov.appendChild(d)}}
  for(const d of ov.children){const a=now-(+d.dataset.at);d.style.opacity=a>10000?'0':'1'}}
+window.SQMPLOG=(k,m,extra)=>mpLog(k,m,extra);
 function mpLog(k,m,extra){const e=Object.assign({k,m,at:performance.now(),id:Math.random().toString(36).slice(2)},extra||{});MP.log.push(e);
  // each tab keeps its own last 100 lines (game messages used to push public chat out of the history)
  {let n=0;for(let i=MP.log.length-1;i>=0;i--)if(MP.log[i].k===k&&++n>100){MP.log.splice(i,1);break}}if(MP.log.length>450)MP.log.shift();
@@ -7686,7 +7687,7 @@ function resSubHollow(){if(RES.unsubH)return;const d=FB.db,ref=d.ref(FB.D,'world
  const add=s=>{const i=+s.key,v=s.val();if(!v||!(i>=0&&i<N*N))return;RES.h[i]=v;if(obj[i]&&obj[i].t===v.t)obj[i]=null;for(let j=REM.length-1;j>=0;j--)if(REM[j].i===i)REM.splice(j,1)};
  const u1=d.onChildAdded(ref,add),u2=d.onChildChanged(ref,add),u3=d.onChildRemoved(ref,s=>{const i=+s.key,v=s.val()||RES.h[i];delete RES.h[i];if(v&&!obj[i]&&OHP[v.t])obj[i]={t:v.t,hp:OHP[v.t]}});
  RES.unsubH=()=>{u1();u2();u3()};MP.unsub.push(()=>{if(RES.unsubH){RES.unsubH();RES.unsubH=null}})}
-function resSubRegion(){const R=SCENE&&SCENE.room,loc=R&&R.region?'r_'+R.region:null;if(loc===RES.rloc)return;if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.r={};RES.rloc=loc;if(!loc||!MP.on)return;
+function resSubRegion(){const R=SCENE&&SCENE.room,loc=R&&R.region&&!/^gi_/.test(R.region)?'r_'+R.region:null;if(loc===RES.rloc)return;if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.r={};RES.rloc=loc;if(!loc||!MP.on)return;
  const d=FB.db,ref=d.ref(FB.D,'world/res/'+loc);
  const add=s=>{const R2=SCENE&&SCENE.room;if(!R2||'r_'+R2.region!==loc)return;const idx=+s.key,v=s.val();if(!v)return;RES.r[idx]=v;const x=idx%R2.w,y=Math.floor(idx/R2.w),it=rgObjAt(R2,x,y);
   if(it&&it.o&&it.o.t===v.t){it.gone=true;rgCellDel(R2,it);R2.solid.delete(idx);RES.stash[loc+':'+idx]=it}for(let j=R2.gone.length-1;j>=0;j--){const g2=R2.gone[j].it;if(g2.y*R2.w+g2.x===idx){RES.stash[loc+':'+idx]=g2;R2.gone.splice(j,1)}}};
@@ -7771,18 +7772,19 @@ function mobStop(){for(const p of FIRE.prox.values()){const j=fires.indexOf(p);i
 // - Tap a name in chat to add that player. Type "/w name message" to whisper from any tab.
 // - Friends' names show in green over their heads.
 MP.friends={};MP.prof={};MP.pmTo=null;
-{const st=document.createElement('style');st.textContent=`#mpchat .hd{flex-wrap:wrap}#mpchat .tb{padding:6px 8px}#mpchat .pmf b,#mpchat .pmt b{color:#1888a0!important}#mpchat .pmf,#mpchat .pmt{color:#1888a0}#mpchat .pty,#mpo .pty{color:#2a8a3a}#mpchat .pty b,#mpo .pty b{color:#1f7a2e!important}
+{const st=document.createElement('style');st.textContent=`#mpchat .hd{flex-wrap:wrap}#mpchat .tb{padding:6px 8px}#mpchat .pmf b,#mpchat .pmt b{color:#1888a0!important}#mpchat .pmf,#mpchat .pmt{color:#1888a0}#mpchat .pty,#mpo .pty{color:#2a8a3a}#mpchat .gld,#mpo .gld{color:#8a5a10}#mpchat .gld b,#mpo .gld b{color:#a06008!important}#mpchat .pty b,#mpo .pty b{color:#1f7a2e!important}
 #mpo .pmf,#mpo .pmt{color:#1888a0}#mpo .pmf b{color:#1888a0}#mpl b.nm{cursor:pointer}
 #mpl .fr{display:flex;align-items:center;gap:6px;padding:6px 4px;border-bottom:1px solid #e0e8f0}#mpl .fr .fn{flex:1;min-width:0}#mpl .fr small{display:block;color:#707070;font-size:11px}
 #mpl .fr .on{color:#28a048}#mpl .fr button,#mpl .fa button{font:700 12px ${PF};padding:5px 8px;border:2px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}
 #mpl .fa{display:flex;gap:6px;margin-bottom:8px}#mpl .fa input{background:#fff!important;color:#404040!important;flex:1;min-width:0;font:500 15px ${PF};padding:5px 7px;border:2px solid #485870}#mpl .fh{font-size:12px;color:#707070;margin:6px 0}`;document.head.appendChild(st)}
 // two more tabs
-{const g2=pc.querySelector('.tb[data-t="game"]');const mk=(t,l)=>{const b=document.createElement('button');b.className='tb';b.dataset.t=t;b.textContent=l;b.onclick=()=>{MP.tab=t;mpRList()};g2.before(b)};mk('pm','Private');mk('fr','Friends');mk('pt','Party')}
+{const g2=pc.querySelector('.tb[data-t="game"]');const mk=(t,l)=>{const b=document.createElement('button');b.className='tb';b.dataset.t=t;b.textContent=l;b.onclick=()=>{MP.tab=t;mpRList()};g2.before(b)};mk('pm','Private');mk('fr','Friends');mk('pt','Party');mk('gd','Guild')}
 const LOCN=l=>{if(!l)return'Somewhere private';if(l==='hollow')return'Hollow Island';if(l.startsWith('r:')){const R=WORLD_REGIONS[l.slice(2)];return R?R.name:'Overseas'}if(l.startsWith('in:dun')||l.startsWith('in:cave')||l.startsWith('in:tomb'))return'In a dungeon';if(l.startsWith('in:'))return'Indoors';if(l.startsWith('h:'))return'At a house';return'Online'};
 const fname=u=>{const r=MP.players.get(u);return(r&&r.n)||(MP.prof[u]&&MP.prof[u].n)||'Someone'};
 const isFriend=u=>!!(u&&MP.friends[u]);
 // chat lines: names are tappable; private messages read "From X:" / "To X:"
 mpLine=function(m){const d=document.createElement('div');if(m.k==='game'){d.className='gm';d.textContent=m.m;return d}
+ if(m.k==='gd'){d.className='gld';const b=document.createElement('b');b.className='nm';if(m.uid)b.dataset.u=m.uid;b.textContent='[Guild] '+m.n+': ';d.append(b,document.createTextNode(m.m));return d}
  if(m.k==='pt'){d.className='pty';const b=document.createElement('b');b.className='nm';if(m.uid)b.dataset.u=m.uid;b.textContent='[Party] '+m.n+': ';d.append(b,document.createTextNode(m.m));return d}
  if(m.k==='pm'){d.className=m.dir==='to'?'pmt':'pmf';const b=document.createElement('b');b.className='nm';b.dataset.u=m.uid;b.textContent=(m.dir==='to'?'To ':'From ')+m.n+': ';if(isOG(m.uid))d.append(crownImg());d.append(b,document.createTextNode(m.m));return d}
  if(m.me)d.className='me';const b=document.createElement('b');b.className='nm';b.dataset.u=m.uid||'';b.textContent=m.n+': ';if(isOG(m.uid))d.append(crownImg());d.append(b,document.createTextNode(m.m));return d};
@@ -7805,7 +7807,7 @@ function friendsView(){lst.textContent='';const fa=document.createElement('form'
   row.append(nm,msg,rm);lst.appendChild(row)}}
 const liveP=u=>{const r=MP.players.get(u);return r&&live(r)?r:null};
 mpRList=function(){pc.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on',b.dataset.t===MP.tab));
- inp.placeholder=MP.tab==='pt'?((window.SQPARTY&&SQPARTY.id&&SQPARTY.members().length)?'Say something to your party...':'Not in a party: tap a player\'s name to invite them'):MP.tab==='pm'?(MP.pmTo?'To '+fname(MP.pmTo)+'...':'Pick a friend in Friends, or type /w name message'):'Say something...';
+ inp.placeholder=MP.tab==='gd'?((window.SQGUILD&&SQGUILD.id)?'Say something to your guild...':'Not in a guild: START > Guild'):MP.tab==='pt'?((window.SQPARTY&&SQPARTY.id&&SQPARTY.members().length)?'Say something to your party...':'Not in a party: tap a player\'s name to invite them'):MP.tab==='pm'?(MP.pmTo?'To '+fname(MP.pmTo)+'...':'Pick a friend in Friends, or type /w name message'):'Say something...';
  if(MP.tab==='fr'){friendsView();mpRBtn();return}lst.textContent='';
  for(const m of MP.log)if(MP.tab==='all'||m.k===MP.tab)lst.appendChild(mpLine(m));lst.scrollTop=lst.scrollHeight;mpRBtn()};
 lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;const u=b.dataset.u;
@@ -7827,6 +7829,7 @@ function addFriendByName(name){name=String(name||'').trim();if(!name||!MP.on)ret
  MP.addHint=parts;mpRList()}
 // sending: Private tab or "/w name message"
 mpSend=function(t){t=String(t||'').replace(/\s+/g,' ').trim();if(!t)return;if(!MP.on){mpOpenChat();return}
+ {const gm=/^\/(?:g|guild)\s+(.+)$/i.exec(t);if((gm||MP.tab==='gd'&&t[0]!=='/')&&window.SQGUILDSAY){SQGUILDSAY(gm?gm[1]:t);return}}
  {const pm=/^\/(?:p|party)\s+(.+)$/i.exec(t);if((pm||MP.tab==='pt'&&t[0]!=='/')&&window.SQPARTYSAY){SQPARTYSAY(pm?pm[1]:t);return}}
  let to=null,msg=t;const w=t.match(/^\/(?:w|msg|pm)\s+(\S+)\s+(.+)$/i);
  if(w){const nl=w[1].toLowerCase();to=Object.keys(MP.friends).find(u=>fname(u).toLowerCase()===nl)||[...MP.players.keys()].find(u=>(MP.players.get(u).n||'').toLowerCase()===nl);msg=w[2];if(!to){mpLog('game','No friend or nearby player called '+w[1]+'.');return}}
@@ -7835,7 +7838,7 @@ mpSend=function(t){t=String(t||'').replace(/\s+/g,' ').trim();if(!t)return;if(!M
  if(to){d.push(d.ref(FB.D,'pm/'+to),{f:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).then(()=>{mpLog('pm',msg,{dir:'to',n:fname(to),uid:to,t:mpNow()});MP.pmTo=to}).catch(e=>{mpLog('game','Could not send that message.');mpErr(e)});return}
  d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).catch(mpErr)};
 // the overlay shows private messages to you too
-mpROv=function(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||chessOpen,recent=MP.log.filter(m=>(m.k==='pub'||m.k==='pt'&&!m.me||m.k==='pm'&&m.dir==='from')&&now-m.at<12000).slice(-3);
+mpROv=function(){const now=performance.now(),hide=MP.open||pnOpen||menuOpen||chessOpen,recent=MP.log.filter(m=>(m.k==='pub'||(m.k==='pt'||m.k==='gd')&&!m.me||m.k==='pm'&&m.dir==='from')&&now-m.at<12000).slice(-3);
  ov.style.display=hide||TS.open?'none':'flex';btn.style.display=(pnOpen||menuOpen||chessOpen||TS.open)?'none':'block';
  const key=recent.map(m=>m.id).join(',');if(key!==ov.dataset.k){ov.dataset.k=key;ov.textContent='';for(const m of recent){const d=mpLine(m);d.dataset.at=m.at;ov.appendChild(d)}}
  for(const d of ov.children){const a=now-(+d.dataset.at);d.style.opacity=a>10000?'0':'1'}};
@@ -9401,6 +9404,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-30',d:'Nov 14, 2026',t:'Guilds get serious',n:['Skill ranks: every finished Guild Quest ranks your guild up in that skill (up to rank 5). Each rank gives every member +10% XP and a 10% chance of an extra item when they gather with that skill, anywhere in the world. A woodcutting guild really does chop more.','Guild buildings appear on your island as the guild levels up: Guild horn at level 2 (travel to the island from anywhere outdoors), Guild forge at level 3 (furnace and anvil, +20% Smithing XP), Guild shrine at level 4 (a daily 20-minute blessing) and Guild hall at level 5 (+10 members and +5% XP in every skill).','Everything planted on your guild island grows back in one minute instead of four.','Guild chat: a new Guild tab in chat, or type /g and your message.','Top guilds: see how your guild ranks against the others (START > Guild > Top guilds).','Leaders can rename the guild in Settings. The first rename is free, after that it costs 1,000,000 gold.','Guild messages (like "use the bank chest") now show inside the guild screen instead of behind it.']},
  {v:'2026.11.14-29',d:'Nov 14, 2026',t:'Fixes: yards and crafting screens',n:['Anvils, furnaces, the crafting list and other station screens look right again (the guild update had squashed their layout).','It rains (and snows) in backyards and courtyards now, just like outside.','Bows, wands and ultimates work in your backyard: shoot or cast at your training dummy to train Archery and Magic there. No more "Not indoors!".']},
  {v:'2026.11.14-28',d:'Nov 14, 2026',t:'Guild fix',n:['Founding a guild works now: it used to stop with "Could not reach the server". Depositing, planting and quest rewards had the same problem and are fixed too.']},
  {v:'2026.11.14-27',d:'Nov 14, 2026',t:'Guilds and guild islands',n:['Found a guild from START > Guild for 5,000,000 gold: pick a name, a 2-4 letter tag and a colour. Your tag shows over your head for other players.','Every guild gets its own island that only its members can sail to (from any harbor post). It starts empty, with a guild board, a bank chest and your banner.','Guild Quests are huge goals the whole guild works on together, like cutting 100,000 trees or catching 50,000 fish. Everything members gather anywhere counts.','When a quest is done, the leader or an officer picks one reward for the guild bank: tree saplings (up to Void saplings), ore veins, berry and nut bushes, cactus seeds, mushroom spores or a mountain of bait.','Leaders and officers plant saplings, veins and bushes on the island, and every member can chop, mine and forage them.','The guild bank chest holds items for everyone. The leader sets how much each rank can take out per day, and the leader and officers can see a log of every deposit and withdrawal.','Leaders and officers invite players by walking up to them and choosing INVITE TO GUILD.']},
@@ -20388,6 +20392,17 @@ window.SQA=SQA;
 //   glog/<g>/<id> {u,n,w,k,d,t}              the bank log, written in the same update as the bank change; create-only;
 //                                            leader and officers read it
 //   gname/<lowercase name> = g, gmem/<uid> = g, ginv/<uid>/<g> {gn,tag,by,bn,t}
+//   prog/<wood|mine|forage|fish> = quests done of that skill = the guild's rank in it (claim adds one to the quest's skill)
+//   gchat/<g>/<id> {u,n,m,t} guild chat (members; anyone may delete lines older than a day), glb/<g> {n,tag,col,lv,m} the
+//   public guild leaderboard (members keep it current), info.rn = renames done (first free, then RENAME gold)
+// What a guild is FOR (perks, all in this file):
+//   - skill ranks: each finished quest ranks the guild up in that skill (max RMAX): members get +10% XP and a 10% chance per
+//     rank of one extra of each item they gather with that skill (outermost addXp / the upd item count);
+//   - buildings by guild level (BLD): L2 horn (travel to the island from anywhere outdoors), L3 forge (furnace + anvil on the
+//     island, +20% Smithing XP there), L4 shrine (a daily 20-minute blessing: wisdom + regeneration), L5 hall (+10 members,
+//     +5% XP in every skill); placed at runtime by applyBuildings, their spots are kept free of planting;
+//   - planted nodes on the island regrow in 60 s (240 s in the wild) and aren't shared world-wide (061 skips gi_ regions);
+//   - guild chat (chat tab Guild, /g) and the guild leaderboard (screen tab Top guilds).
 // Saved on the device (localStorage sq_guild): the guild id/name/colour and what's planted, so the island is registered at
 // start-up and a save made on it loads back there. Presence carries `gt` (tag) and `gc` (colour index) for others' name tags.
 (()=>{const Mp=()=>window.SQMP,Fm=()=>window.SQFB,on=()=>!!(Mp()&&Mp().on&&Mp().user&&Fm()),me=()=>Mp().user.uid,ref=p=>p?Fm().db.ref(Fm().D,p):Fm().db.ref(Fm().D),DB=()=>Fm().db;
@@ -20396,7 +20411,8 @@ window.SQA=SQA;
  const myN=()=>{let n='';try{n=(typeof PNAME!=='undefined'&&PNAME)||((Mp().user&&Mp().user.displayName)||'').split(' ')[0]}catch(e){}return String(n||'Adventurer').replace(/[<>]/g,'').slice(0,12)};
  const TS=()=>{try{return DB().serverTimestamp()}catch(e){return Date.now()}};
  const now=()=>Date.now()+((Mp()&&Mp().off)||0),day=()=>Math.floor(now()/864e5);
- const COST=5000000,MAXM=30,GT=44;
+ const COST=5000000,RENAME=1000000,GT=44,RMAX=5;
+ const maxM=()=>30+(glv(G.prog&&G.prog.qd)>=5?10:0);
  const COLS=['#d83a30','#e8862a','#e8c830','#48a848','#30a0a0','#3870d8','#8048c8','#d058a0','#e8e8e8','#404048'];
  const ROLE={l:'Leader',o:'Officer',m:'Member'};
  // ---- things the guild bank holds that can be planted on the island: key -> [name, object kind, icon] ----
@@ -20413,6 +20429,12 @@ window.SQA=SQA;
   forage:{sk:'Foraging',n:'Foraging quest',verb:'Forage 100,000 berries, nuts, mushrooms and cactus fruit',goal:100000,rw:[{gf_bush:50},{gf_nut:35},{gf_cactus:20},{gf_shroom:15}]},
   fish:{sk:'Fishing',n:'Fishing quest',verb:'Catch 50,000 fish',goal:50000,rw:[{bait:100000}]}};
  const glv=qd=>1+(qd|0);                                      // guild level: one per finished quest
+ const rank=k=>Math.min(RMAX,(G.prog&&G.prog[k])|0);
+ const BLD=[{k:'horn',lv:2,n:'Guild horn',d:'Travel to the guild island from anywhere outdoors (once every 3 minutes).'},
+  {k:'forge',lv:3,n:'Guild forge',d:'A furnace and an anvil on the island. Smithing there gives +20% XP.'},
+  {k:'shrine',lv:4,n:'Guild shrine',d:'Pray once a day for a 20-minute blessing: +20% XP (wisdom) and regeneration.'},
+  {k:'hall',lv:5,n:'Guild hall',d:'Room for 10 more members, and +5% XP in every skill for all members, anywhere.'}];
+ const has=k=>{const b=BLD.find(x=>x.k===k);return!!(b&&G.ready&&glv(G.prog&&G.prog.qd)>=b.lv)};
  const rewTxt=r=>Object.entries(r).map(([k,n])=>n.toLocaleString()+' × '+nm(k)).join(', ');
  const hash=s=>{let h=7;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h};
  const choices=()=>Object.keys(QK);
@@ -20456,11 +20478,24 @@ window.SQA=SQA;
   for(const[i,it]of have)if(want[i]!==it._gn){try{rgCellDel(R,it)}catch(e){}R.solid.delete(i);R.items.splice(R.items.indexOf(it),1);if(R.gone){const g=R.gone.findIndex(q=>q.it===it);if(g>=0)R.gone.splice(g,1)}}
   for(const k in want){const i=+k,key=want[k];if(!NODE[key]||have.get(i)&&have.get(i)._gn===key)continue;const x=i%W,y=(i/W)|0,t=NODE[key][1];
    const o={t,hp:OHP[t]||3};if(NODE[key][3])o.v=NODE[key][3];const it={t:'_obj',o,x,y,solid:true,_gn:key};R.items.push(it);R.solid.add(i);try{rgCellAdd(R,it)}catch(e){}}}
- {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){R._t64=1;applyNodes(R)}}catch(e){console.warn('guild isle',e)}return ok}}
+ // buildings: added at runtime by guild level (their spots are kept free of planting)
+ function spots(R){const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;
+  return{forge:[{x:bx-6,y:by+3,st:'furnace'},{x:bx-5,y:by+3,st:'anvil'}],shrine:[{x:bx+6,y:by+3}],hall:[{x:bx-1,y:by-6,w:3,h:2}]}}
+ function reserved(R,tx,ty){const S=spots(R);for(const k in S)for(const b of S[k])if(tx>=b.x-1&&tx<=b.x+(b.w||1)&&ty>=b.y-1&&ty<=b.y+(b.h||1))return true;return false}
+ function applyBuildings(R){if(!R||!R.region||R.region!==REG)return;const W=R.w;
+  for(let j=R.items.length-1;j>=0;j--){const it=R.items[j];if(!it._gb)continue;for(let b=0;b<(it.h||1);b++)for(let a=0;a<(it.w||1);a++)R.solid.delete((it.y+b)*W+it.x+a);
+   try{rgCellDel(R,it)}catch(e){}R.items.splice(j,1);const u=(R.useItems||[]).indexOf(it);if(u>=0)R.useItems.splice(u,1)}
+  const S=spots(R),add=it=>{it._gb=1;it.sh=it.h;R.items.push(it);(R.useItems=R.useItems||[]).push(it);for(let b=0;b<it.h;b++)for(let a=0;a<it.w;a++)R.solid.add((it.y+b)*W+it.x+a);try{rgCellAdd(R,it)}catch(e){}};
+  if(has('forge'))for(const f of S.forge)add({t:'lm',k:'gstation',st:f.st,x:f.x,y:f.y,w:1,h:1,use:'gstation',name:f.st==='furnace'?'Guild furnace':'Guild anvil'});
+  if(has('shrine'))add({t:'lm',k:'shrine',x:S.shrine[0].x,y:S.shrine[0].y,w:1,h:1,use:'gshrine',name:'Guild shrine'});
+  if(has('hall'))add({t:'lm',k:'vault',x:S.hall[0].x,y:S.hall[0].y,w:3,h:2,use:'ghall',name:'Guild hall'})}
+ let BLV=-1;
+ {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){R._t64=1;applyNodes(R);applyBuildings(R);BLV=glv(G.prog.qd)}}catch(e){console.warn('guild isle',e)}return ok}}
  // the banner: a pole and a flag in the guild's colour
  {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='lm'&&it.k==='gflag'){const x=it.x*16+8,y=it.y*16+16,w=Math.sin((tm||0)*3)*1.2,c=col();
    Rg(x-1,y-30,2,30,'#5a4028');Rg(x-2,y-2,4,2,'#3a2818');g.beginPath();g.moveTo(x+1,y-30);g.lineTo(x+17+w,y-29);g.lineTo(x+14+w,y-24.5);g.lineTo(x+17+w,y-19);g.lineTo(x+1,y-19);g.closePath();g.fillStyle=c;g.fill();g.lineWidth=1;g.strokeStyle='#202020';g.stroke();
    const tag=G.info&&G.info.tag||'';if(tag){g.save();g.font='700 4px '+PF;g.fillStyle=c==='#e8e8e8'?'#202020':'#fff';g.textAlign='center';g.fillText(tag,x+8+w/2,y-23);g.restore()}return}
+  if(it&&it.t==='lm'&&it.k==='gstation'){try{drawStation(it.st,it.x,it.y,{},tm)}catch(e){}return}
   return _df.apply(this,arguments)}}
  // ---- database ----
  let OFF=[];const stopAll=()=>{for(const f of OFF)try{f()}catch(e){}OFF=[]};
@@ -20469,7 +20504,8 @@ window.SQA=SQA;
   OFF.push(d.onValue(ref('guilds/'+gid),s=>{const v=s.val();
    if(!v||!v.m||!v.m[me()]){if(G.id===gid){const was=G.info&&G.info.n;leftGuild(was?'You are no longer in '+was+'.':'')}return}
    G.info=v.info||G.info;G.m=v.m||{};G.q=v.q||null;G.prog=v.prog||{qd:0};G.perm=Object.assign({o:-1,m:20},v.perm||{});G.bank=Object.assign({i:{},v:0},v.bank||{});G.bank.i=G.bank.i||{};G.isl=v.isl||{};G.wd=v.wd||{};G.ready=true;keep();register();
-   try{const R=SCENE&&SCENE.room;if(R&&R.region===REG)applyNodes(R)}catch(e){}
+   try{const R=SCENE&&SCENE.room;if(R&&R.region===REG){applyNodes(R);if(BLV!==glv(G.prog.qd)){BLV=glv(G.prog.qd);applyBuildings(R)}}}catch(e){}
+   pubLB();
    claimCheck();redraw()},e=>{}));
   OFF.push(d.onValue(ref('glog/'+gid),s=>{const v=s.val()||{};G.log=Object.entries(v).map(([id,o])=>Object.assign({id},o)).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,200);if(tab==='log')redraw()},()=>{G.log=null}))}
  function startDB(){if(started||!on())return;started=true;const d=DB();
@@ -20478,7 +20514,8 @@ window.SQA=SQA;
  function stopDB(){started=false;stopAll();if(meOff){meOff();meOff=null}if(invOff){invOff();invOff=null}}
  function leftGuild(msg){const id=G.id;stopAll();G.id='';G.info=null;G.m={};G.q=null;G.isl={};G.bank={i:{},v:0};G.ready=false;keep();
   if(onIsle()){try{routeGo('hollow')}catch(e){}}setTimeout(unregister,1500);try{if(on())DB().set(ref('gmem/'+me()),null).catch(()=>{})}catch(e){}if(msg){say(msg);msgT=5}redraw()}
- const fail=e=>{try{console.warn('guild',e)}catch(x){}const m=String(e&&(e.code||e.message)||e);say(/permission/i.test(m)?'Someone else in the guild changed this at the same moment. Try again.':'Could not reach the server. Try again.');sfx('swish')};
+ let NOTE=null;const tell=t=>{say(t);NOTE={t,at:performance.now()};redraw()};
+ const fail=e=>{try{console.warn('guild',e)}catch(x){}const m=String(e&&(e.code||e.message)||e);tell(/permission/i.test(m)?'Someone else in the guild changed this at the same moment. Try again.':'Could not reach the server. Try again.');sfx('swish')};
  const uid8=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
  // every bank change: the new counts, v+1 and a log entry, in one update (the rules refuse it if v moved meanwhile)
  function bankUpdate(changes,entry,extra){const B=G.bank||{i:{},v:0},i=Object.assign({},B.i||{}),up={},lid=uid8();
@@ -20487,73 +20524,108 @@ window.SQA=SQA;
   return DB().update(ref(''),up)}
  // ---- actions ----
  function create(n,tag,c){n=String(n||'').replace(/\s+/g,' ').trim();tag=String(tag||'').toUpperCase().replace(/[^A-Z0-9]/g,'');c=Math.max(0,Math.min(COLS.length-1,c|0));
-  if(!on()){say('Sign in to found a guild.');return}if(G.id){say('You are already in a guild.');return}
-  if(!/^[A-Za-z0-9' ]{3,20}$/.test(n)){say('Guild names are 3-20 letters, numbers or spaces.');sfx('swish');return}if(tag.length<2||tag.length>4){say('The tag is 2-4 letters or numbers.');sfx('swish');return}
-  if(GLD<COST){say('Founding a guild costs '+COST.toLocaleString()+' gold.');sfx('swish');return}
+  if(!on()){tell('Sign in to found a guild.');return}if(G.id){tell('You are already in a guild.');return}
+  if(!/^[A-Za-z0-9' ]{3,20}$/.test(n)){tell('Guild names are 3-20 letters, numbers or spaces.');sfx('swish');return}if(tag.length<2||tag.length>4){tell('The tag is 2-4 letters or numbers.');sfx('swish');return}
+  if(GLD<COST){tell('Founding a guild costs '+COST.toLocaleString()+' gold.');sfx('swish');return}
   const low=n.toLowerCase().replace(/[^a-z0-9]/g,'_'),gid=Math.random().toString(36).slice(2,12).replace(/[^a-z0-9]/g,'x');const d=DB();
-  d.get(ref('gname/'+low)).then(s=>{if(s.val()){say('A guild with that name already exists.');sfx('swish');return}
+  d.get(ref('gname/'+low)).then(s=>{if(s.val()){tell('A guild with that name already exists.');sfx('swish');return}
    const up={};up['guilds/'+gid+'/info']={n,tag,col:c,lead:me(),t:TS()};up['guilds/'+gid+'/m/'+me()]={r:'l',n:myN(),j:TS()};up['guilds/'+gid+'/perm']={o:-1,m:20};up['guilds/'+gid+'/prog']={qd:0};
    up['gname/'+low]=gid;up['gmem/'+me()]=gid;
-   return d.update(ref(''),up).then(()=>{GLD-=COST;G.id=gid;G.info={n,tag,col:c,lead:me()};G.isl={};keep();register();listen(gid);say('You founded '+n+' ['+tag+']! Your guild island is charted: sail there from any harbor post.');msgT=7;sfx('quest');try{saveNow()}catch(e){}redraw()})}).catch(fail)}
- function invite(u){if(!boss()){say('Only the leader and officers can invite.');return}if(G.m[u]){say('They are already in your guild.');return}if(Object.keys(G.m).length>=MAXM){say('Your guild is full ('+MAXM+').');return}
-  DB().set(ref('ginv/'+u+'/'+G.id),{gn:G.info.n,tag:G.info.tag,by:me(),bn:myN(),t:TS()}).then(()=>{say('Guild invite sent.');sfx('talk')}).catch(fail)}
- function accept(gid){if(G.id){say('Leave your guild first.');return}const v=G.inv&&G.inv[gid];if(!v)return;const up={};up['guilds/'+gid+'/m/'+me()]={r:'m',n:myN(),j:TS()};up['gmem/'+me()]=gid;up['ginv/'+me()+'/'+gid]=null;
-  DB().update(ref(''),up).then(()=>{G.id=gid;G.info={n:v.gn,tag:v.tag,col:0};keep();listen(gid);say('You joined '+v.gn+' ['+v.tag+']! Sail to your guild island from any harbor post.');msgT=6;sfx('quest');redraw()}).catch(fail)}
+   return d.update(ref(''),up).then(()=>{GLD-=COST;G.id=gid;G.info={n,tag,col:c,lead:me()};G.isl={};keep();register();listen(gid);tell('You founded '+n+' ['+tag+']! Your guild island is charted: sail there from any harbor post.');msgT=7;sfx('quest');try{saveNow()}catch(e){}redraw()})}).catch(fail)}
+ function invite(u){if(!boss()){tell('Only the leader and officers can invite.');return}if(G.m[u]){tell('They are already in your guild.');return}if(Object.keys(G.m).length>=maxM()){tell('Your guild is full ('+maxM()+').');return}
+  DB().set(ref('ginv/'+u+'/'+G.id),{gn:G.info.n,tag:G.info.tag,by:me(),bn:myN(),t:TS()}).then(()=>{tell('Guild invite sent.');sfx('talk')}).catch(fail)}
+ function accept(gid){if(G.id){tell('Leave your guild first.');return}const v=G.inv&&G.inv[gid];if(!v)return;const up={};up['guilds/'+gid+'/m/'+me()]={r:'m',n:myN(),j:TS()};up['gmem/'+me()]=gid;up['ginv/'+me()+'/'+gid]=null;
+  DB().update(ref(''),up).then(()=>{G.id=gid;G.info={n:v.gn,tag:v.tag,col:0};keep();listen(gid);tell('You joined '+v.gn+' ['+v.tag+']! Sail to your guild island from any harbor post.');msgT=6;sfx('quest');redraw()}).catch(fail)}
  function decline(gid){DB().set(ref('ginv/'+me()+'/'+gid),null).catch(()=>{});hidePop()}
  function leave(){if(!G.id)return;const L=members(),others=L.filter(x=>x.u!==me()),up={};
   if(role()==='l'&&others.length){const nx=others.find(x=>x.r==='o')||others[0];up['guilds/'+G.id+'/info/lead']=nx.u;up['guilds/'+G.id+'/m/'+nx.u+'/r']='l'}
-  if(!others.length){up['guilds/'+G.id]=null;up['glog/'+G.id]=null;up['gname/'+G.info.n.toLowerCase().replace(/[^a-z0-9]/g,'_')]=null}else up['guilds/'+G.id+'/m/'+me()]=null;
+  if(!others.length){up['guilds/'+G.id]=null;up['glog/'+G.id]=null;up['gchat/'+G.id]=null;up['glb/'+G.id]=null;up['gname/'+G.info.n.toLowerCase().replace(/[^a-z0-9]/g,'_')]=null}else up['guilds/'+G.id+'/m/'+me()]=null;
   up['gmem/'+me()]=null;const n=G.info&&G.info.n;DB().update(ref(''),up).then(()=>leftGuild(others.length?'You left '+n+'.':'You left, and '+n+' was disbanded.')).catch(fail)}
  function setRole(u,r){const L=G.m[u];if(!L||u===me())return;const rr=role();if(rr!=='l'&&!(rr==='o'&&L.r==='m'&&r==='kick'))return;
-  if(r==='kick'){DB().set(ref('guilds/'+G.id+'/m/'+u),null).then(()=>say((L.n||'They')+' was removed from the guild.')).catch(fail);return}
-  if(r==='lead'){const up={};up['guilds/'+G.id+'/info/lead']=u;up['guilds/'+G.id+'/m/'+u+'/r']='l';up['guilds/'+G.id+'/m/'+me()+'/r']='o';DB().update(ref(''),up).then(()=>say((L.n||'They')+' leads the guild now.')).catch(fail);return}
+  if(r==='kick'){DB().set(ref('guilds/'+G.id+'/m/'+u),null).then(()=>tell((L.n||'They')+' was removed from the guild.')).catch(fail);return}
+  if(r==='lead'){const up={};up['guilds/'+G.id+'/info/lead']=u;up['guilds/'+G.id+'/m/'+u+'/r']='l';up['guilds/'+G.id+'/m/'+me()+'/r']='o';DB().update(ref(''),up).then(()=>tell((L.n||'They')+' leads the guild now.')).catch(fail);return}
   DB().set(ref('guilds/'+G.id+'/m/'+u+'/r'),r).catch(fail)}
  function setPerm(rk,v){if(role()!=='l')return;DB().set(ref('guilds/'+G.id+'/perm/'+rk),v).catch(fail)}
  function setInfo(k,v){if(role()!=='l')return;DB().set(ref('guilds/'+G.id+'/info/'+k),v).catch(fail)}
  // quests
  function pick(k){if(!boss()||G.q||!QK[k])return;const goal=QK[k].goal;
-  DB().set(ref('guilds/'+G.id+'/q'),{k,goal,p:0,t:TS(),by:me()}).then(()=>{say('New Guild Quest: '+QK[k].verb+'! Everyone in the guild helps, anywhere you play.');msgT=5;sfx('quest')}).catch(fail)}
+  DB().set(ref('guilds/'+G.id+'/q'),{k,goal,p:0,t:TS(),by:me()}).then(()=>{tell('New Guild Quest: '+QK[k].verb+'! Everyone in the guild helps, anywhere you play.');msgT=5;sfx('quest')}).catch(fail)}
  function cancelQ(){if(role()!=='l'||!G.q)return;DB().set(ref('guilds/'+G.id+'/q'),null).catch(fail)}
  let PEND=0,PK='',flushT=0,claiming=false;
  function flush(){if(!PEND||!G.q||G.q.done||!on())return;const n=PEND,k=PK;PEND=0;
   DB().runTransaction(ref('guilds/'+G.id+'/q'),cur=>{if(!cur)return cur;if(cur.k!==k||cur.done)return cur;cur.p=(cur.p|0)+n;cur.c=cur.c||{};cur.c[me()]=(cur.c[me()]|0)+n;if(cur.p>=cur.goal){cur.p=cur.goal;cur.done=1}return cur}).catch(()=>{PEND+=n})}
  let doneSaid='';
- function claimCheck(){const q=G.q;if(!q||!q.done||!G.ready)return;const key=G.id+':'+(q.t||0);if(doneSaid!==key){doneSaid=key;say('Guild Quest complete! '+(boss()?'Pick the guild\'s reward in START > Guild.':'The leader or an officer picks the reward.'));msgT=6;try{sfx('quest')}catch(e){}}}
+ function claimCheck(){const q=G.q;if(!q||!q.done||!G.ready)return;const key=G.id+':'+(q.t||0);if(doneSaid!==key){doneSaid=key;tell('Guild Quest complete! '+(boss()?'Pick the guild\'s reward in START > Guild.':'The leader or an officer picks the reward.'));msgT=6;try{sfx('quest')}catch(e){}}}
  function claim(i){const q=G.q;if(!boss()||!q||!q.done||claiming||!on()||!QK[q.k])return;const r=QK[q.k].rw[i|0];if(!r)return;claiming=true;const qd=(G.prog.qd|0)+1,up={};
-  up['guilds/'+G.id+'/q']=null;up['guilds/'+G.id+'/prog/qd']=qd;
-  bankUpdate(r,{w:'quest',k:q.k,d:rewTxt(r)},up).then(()=>{say('The guild bank received '+rewTxt(r)+'. The guild is now level '+glv(qd)+'!');msgT=7;sfx('quest')}).catch(fail).finally(()=>{claiming=false})}
+  up['guilds/'+G.id+'/q']=null;up['guilds/'+G.id+'/prog/qd']=qd;up['guilds/'+G.id+'/prog/'+q.k]=((G.prog[q.k])|0)+1;
+  bankUpdate(r,{w:'quest',k:q.k,d:rewTxt(r)},up).then(()=>{const nb=BLD.find(b=>b.lv===glv(qd));tell('The guild bank received '+rewTxt(r)+'. The guild is now level '+glv(qd)+' and '+QK[q.k].sk+' rank '+Math.min(RMAX,((G.prog[q.k])|0)+1)+'!'+(nb?' New: '+nb.n+'.':''));msgT=7;sfx('quest')}).catch(fail).finally(()=>{claiming=false})}
  // what members gather counts toward the quest: items arriving in a frame where the quest's skill gained XP (like 120's dailies)
- let LASTINV=null,XPF=new Set();
- {const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(x>0)XPF.add(i);return out}}
+ let LASTINV=null,XPF=new Set(),BONUSSAID=0;
+ {const _ax=addXp;addXp=function(i,x){if(x>0&&G.id&&G.ready){let m=1;const k=Object.keys(QK).find(q=>SKN.indexOf(QK[q].sk)===i);if(k)m+=.1*rank(k);if(has('hall'))m+=.05;
+   if(has('forge')&&onIsle()&&SKN[i]==='Smithing')m+=.2;if(m>1){arguments[1]=Math.round(x*m*100)/100}}const out=_ax.apply(this,arguments);if(x>0)XPF.add(i);return out}}
  // bank
  const wdToday=()=>{const w=G.wd&&G.wd[me()];return w&&w.d===day()?w.n|0:0};
  const wdLimit=()=>{const r=role();return r==='l'?-1:r==='o'?(G.perm.o==null?-1:G.perm.o):(G.perm.m==null?20:G.perm.m)};
- function deposit(k,n){if(!G.ready||!nearChest()){say('Use the guild bank chest on your guild island.');return}n=Math.min(n,inv[k]|0);if(n<=0||NODE[k])return;
-  if(typeof EQK!=='undefined'&&EQK.includes(k)&&TLEQ(k)){say('Take it off first.');return}
-  inv[k]-=n;bankUpdate({[k]:n},{w:'dep',k,d:n}).then(()=>{say('Deposited '+n+' '+nm(k)+'.');sfx('pickup');try{saveLocal(true)}catch(e){}}).catch(e=>{inv[k]=(inv[k]|0)+n;fail(e)})}
+ function deposit(k,n){if(!G.ready||!nearChest()){tell('Use the guild bank chest on your guild island.');return}n=Math.min(n,inv[k]|0);if(n<=0||NODE[k])return;
+  if(typeof EQK!=='undefined'&&EQK.includes(k)&&TLEQ(k)){tell('Take it off first.');return}
+  inv[k]-=n;bankUpdate({[k]:n},{w:'dep',k,d:n}).then(()=>{tell('Deposited '+n+' '+nm(k)+'.');sfx('pickup');try{saveLocal(true)}catch(e){}}).catch(e=>{inv[k]=(inv[k]|0)+n;fail(e)})}
  const TLEQ=k=>false;
- function withdraw(k,n){if(!G.ready||!nearChest()){say('Use the guild bank chest on your guild island.');return}if(NODE[k]){say('Leaders and officers plant these on the island.');return}
-  const lim=wdLimit(),used=wdToday();if(lim===0){say('Your rank can\'t take things out of the guild bank.');sfx('swish');return}
-  n=Math.min(n,(G.bank.i[k]|0),lim<0?1e9:lim-used);if(n<=0){say(lim>0&&used>=lim?'You\'ve taken your '+lim+' for today.':'Nothing to take.');sfx('swish');return}
+ function withdraw(k,n){if(!G.ready||!nearChest()){tell('Use the guild bank chest on your guild island.');return}if(NODE[k]){tell('Leaders and officers plant these on the island.');return}
+  const lim=wdLimit(),used=wdToday();if(lim===0){tell('Your rank can\'t take things out of the guild bank.');sfx('swish');return}
+  n=Math.min(n,(G.bank.i[k]|0),lim<0?1e9:lim-used);if(n<=0){tell(lim>0&&used>=lim?'You\'ve taken your '+lim+' for today.':'Nothing to take.');sfx('swish');return}
   const extra={};extra['guilds/'+G.id+'/wd/'+me()]={d:day(),n:used+n};
-  bankUpdate({[k]:-n},{w:'wd',k,d:n},extra).then(()=>{inv[k]=(inv[k]|0)+n;say('Took '+n+' '+nm(k)+'.');sfx('pickup');try{saveLocal(true)}catch(e){}}).catch(fail)}
+  bankUpdate({[k]:-n},{w:'wd',k,d:n},extra).then(()=>{inv[k]=(inv[k]|0)+n;tell('Took '+n+' '+nm(k)+'.');sfx('pickup');try{saveLocal(true)}catch(e){}}).catch(fail)}
  // planting: the tile in front of you on the guild island
  function frontCell(){const R=SCENE&&SCENE.room;if(!R)return null;const fx=P.x+face[0]*14,fy=P.y+face[1]*14+(face[1]>0?2:0),tx=Math.floor(fx/16),ty=Math.floor(fy/16);return{R,tx,ty,i:ty*R.w+tx}}
  function canPlant(){if(!onIsle())return'Stand on your guild island, facing where it should grow.';const c=frontCell();if(!c)return'Nowhere to plant.';const{R,tx,ty,i}=c;
   if(tx<1||ty<1||tx>=R.w-1||ty>=R.h-1)return'Too close to the edge.';const t=R.tiles[i];if(!RG_WALK[t]||t===0)return'It needs open ground.';
   if(R.solid.has(i)||rgObjAt(R,tx,ty))return'Something is already there.';if(G.isl&&G.isl[i])return'Something is already planted there.';
   for(const it of R.items)if(it.t==='lm'&&tx>=it.x-1&&tx<=it.x+(it.w||1)&&ty>=it.y-1&&ty<=it.y+(it.h||1))return'Too close to the guild\'s things.';
+  if(reserved(R,tx,ty))return'That spot is kept free for guild buildings.';
   for(const[px,py]of R.pier||[])if(Math.abs(px-tx)<=2&&Math.abs(py-ty)<=2)return'Keep the pier clear.';
   if(Math.hypot(tx*16+8-P.x,ty*16+8-P.y)<6)return'Step back a little.';return''}
- function plant(k){if(!boss()){say('Only the leader and officers can plant.');return}if(!NODE[k]||(G.bank.i[k]|0)<1)return;const why=canPlant();if(why){say(why);sfx('swish');return}
+ function plant(k){if(!boss()){tell('Only the leader and officers can plant.');return}if(!NODE[k]||(G.bank.i[k]|0)<1)return;const why=canPlant();if(why){tell(why);sfx('swish');return}
   const{i}=frontCell(),extra={};extra['guilds/'+G.id+'/isl/'+i]=k;
-  bankUpdate({[k]:-1},{w:'plant',k,d:1},extra).then(()=>{say('You planted the '+nm(k).toLowerCase()+'. Everyone in the guild can gather it.');sfx('quest');closePanel()}).catch(fail)}
- function dig(){if(!boss()||!onIsle())return;const c=frontCell();const k=c&&G.isl&&G.isl[c.i];if(!k){say('Face something the guild planted.');sfx('swish');return}
-  const extra={};extra['guilds/'+G.id+'/isl/'+c.i]=null;bankUpdate({[k]:1},{w:'dig',k,d:1},extra).then(()=>{say('Dug up the '+nm(k).toLowerCase()+'. It\'s back in the guild bank.');sfx('pickup')}).catch(fail)}
+  bankUpdate({[k]:-1},{w:'plant',k,d:1},extra).then(()=>{tell('You planted the '+nm(k).toLowerCase()+'. Everyone in the guild can gather it.');sfx('quest');closePanel()}).catch(fail)}
+ function dig(){if(!boss()||!onIsle())return;const c=frontCell();const k=c&&G.isl&&G.isl[c.i];if(!k){tell('Face something the guild planted.');sfx('swish');return}
+  const extra={};extra['guilds/'+G.id+'/isl/'+c.i]=null;bankUpdate({[k]:1},{w:'dig',k,d:1},extra).then(()=>{tell('Dug up the '+nm(k).toLowerCase()+'. It\'s back in the guild bank.');sfx('pickup')}).catch(fail)}
+ // ---- guild horn, shrine, rename ----
+ const LSN=(k,v)=>{if(v===undefined){const x=+LSG(k);return isFinite(x)?x:0}LSS(k,String(v))};
+ function horn(){if(!has('horn')){tell('The guild horn comes with guild level 2.');return}if(onIsle()){tell('You are already on the guild island.');return}
+  const left=180000-(Date.now()-LSN('sq_ghorn'));if(left>0){tell('The guild horn needs '+Math.ceil(left/1000)+' s to recharge.');return}
+  if(dead||(typeof TRAVEL49!=='undefined'&&TRAVEL49)||(typeof SAILING!=='undefined'&&SAILING)||window.SQRSAIL&&SQRSAIL.on){tell('Not right now.');return}
+  if(SCENE&&!(SCENE.room&&SCENE.room.region)){tell('Go outside first, then blow the horn.');return}
+  register();LSN('sq_ghorn',Date.now());closePanel();say('You blow the guild horn...');try{sfx('quest')}catch(e){}routeGo(REG)}
+ function pray(){if(!has('shrine'))return;const d=day();if(LSN('sq_gshrine')===d){tell('The shrine has blessed you today. Come back tomorrow.');return}
+  LSN('sq_gshrine',d);const B=window.LUX&&LUX.BUFF;if(B){const t=performance.now()+20*60000;B.wis=Math.max(B.wis||0,t);B.regen=Math.max(B.regen||0,t)}
+  say('The guild shrine blesses you: wisdom and regeneration for 20 minutes.');msgT=6;try{sfx('quest')}catch(e){}
+  for(let k=0;k<24;k++){const a=k/24*6.283;try{part(P.x,P.y-8,Math.cos(a)*60,Math.sin(a)*40,.8,'#f8e070',-30,2)}catch(e){}}}
+ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').trim();if(!/^[A-Za-z0-9' ]{3,20}$/.test(n)){tell('Guild names are 3-20 letters, numbers or spaces.');return}
+  const I=G.info||{},cost=(I.rn|0)>0?RENAME:0;if(n===I.n){tell('That is already the name.');return}if(GLD<cost){tell('Renaming costs '+cost.toLocaleString()+' gold.');return}
+  const low=n.toLowerCase().replace(/[^a-z0-9]/g,'_'),old=String(I.n||'').toLowerCase().replace(/[^a-z0-9]/g,'_'),d=DB();
+  d.get(ref('gname/'+low)).then(sn=>{const cur=sn.val();if(cur&&cur!==G.id){tell('A guild with that name already exists.');return}
+   const up={};up['guilds/'+G.id+'/info/n']=n;up['guilds/'+G.id+'/info/rn']=(I.rn|0)+1;if(!cur)up['gname/'+low]=G.id;if(old!==low)up['gname/'+old]=null;
+   return d.update(ref(''),up).then(()=>{GLD-=cost;try{saveNow()}catch(e){}tell('Your guild is now called '+n+'.'+(cost?' ('+cost.toLocaleString()+' gold)':''));register();sfx('quest')})}).catch(fail)}
+ // ---- guild chat ----
+ const SEEN=new Set();let CHOFF=null,CHGID='';
+ function chatListen(){const gid=G.ready?G.id:'';if(gid===CHGID)return;if(CHOFF){try{CHOFF()}catch(e){}CHOFF=null}CHGID=gid;SEEN.clear();if(!gid||!on())return;let first=true;
+  CHOFF=DB().onValue(ref('gchat/'+gid),sn=>{const v=sn.val()||{},L=Object.entries(v).filter(([,o])=>o&&typeof o.m==='string').sort((a,b)=>(a[1].t||0)-(b[1].t||0));
+   for(const[id,o]of L){if(SEEN.has(id))continue;SEEN.add(id);try{window.SQMPLOG&&SQMPLOG('gd',String(o.m).slice(0,80),{n:String(o.n||'?').slice(0,12),uid:o.u,t:o.t||0,me:o.u===me()});
+     if(first){const lg=Mp().log;if(lg&&lg.length)lg[lg.length-1].at=-1e9}}catch(e){}}
+   first=false;if(boss()){const cut=now()-864e5;for(const[id,o]of L)if((o.t||0)<cut)DB().set(ref('gchat/'+gid+'/'+id),null).catch(()=>{})}},()=>{})}
+ window.SQGUILDSAY=t=>{t=String(t||'').trim().slice(0,80);if(!t)return;if(!G.id||!G.ready){try{SQMPLOG('game','You are not in a guild. Found or join one in START > Guild.')}catch(e){}return}
+  if(window.SQMOD&&SQMOD.blockChat&&SQMOD.blockChat())return;
+  DB().set(ref('gchat/'+G.id+'/'+uid8()),{u:me(),n:myN(),m:t,t:TS()}).catch(e=>{try{SQMPLOG('game','Guild message not sent. Try again.')}catch(x){}})};
+ // ---- the guild leaderboard ----
+ let LBK='';function pubLB(){if(!G.ready||!G.info||!on())return;const o={n:G.info.n,tag:G.info.tag,col:G.info.col|0,lv:glv(G.prog.qd),m:Object.keys(G.m).length},k=JSON.stringify(o);
+  if(k===LBK)return;LBK=k;DB().set(ref('glb/'+G.id),o).catch(()=>{LBK=''})}
+ let TOP=null,TOPAT=0;function loadTop(){if(!on()||performance.now()-TOPAT<15000&&TOP)return;TOPAT=performance.now();DB().get(ref('glb')).then(sn=>{const v=sn.val()||{};
+   TOP=Object.entries(v).map(([id,o])=>Object.assign({id},o)).filter(o=>o&&o.n).sort((a,b)=>(b.lv|0)-(a.lv|0)||(b.m|0)-(a.m|0)).slice(0,50);redraw()}).catch(()=>{TOP=[];redraw()})}
  // ---- the island's board and bank chest ----
  let atChest=false;
  const nearChest=()=>{if(!onIsle())return false;const R=SCENE.room;return R.items.some(it=>it.use==='gbank'&&Math.hypot(it.x*16+8-P.x,it.y*16+8-P.y)<40)};
- {const _uf=useFurn;useFurn=function(it){if(it&&it.use==='gboard'){open('quest');return}if(it&&it.use==='gbank'){open('bank');return}return _uf.apply(this,arguments)}}
+ {const _uf=useFurn;useFurn=function(it){if(it&&it.use==='gboard'){open('quest');return}if(it&&it.use==='gbank'){open('bank');return}if(it&&it.use==='ghall'){open('perks');return}
+  if(it&&it.use==='gshrine'){pray();return}if(it&&it.use==='gstation'){try{openStation({t:it.st,f:{}})}catch(e){}return}return _uf.apply(this,arguments)}}
  // ---- panel ----
  let tab='home',sel=-1;
  function open(t){tab=t||(G.id?'home':'home');pnOpen=true;ptab=GT;jx=jy=0;pn.style.display='block';rPn();sfx('talk');startDB()}
@@ -20582,8 +20654,10 @@ window.SQA=SQA;
   if(!G.ready)return'<div class="tl">GUILD</div><div class="qc"><p>Loading your guild…</p></div>';
   const I=G.info||{},L=members(),lv=glv(G.prog.qd),r=role();
   let h='<div class="tl">GUILD</div><div class="gdgh"><div class="gdfl" style="background:'+col()+'"></div><div style="flex:1"><b>'+esc(I.n)+' ['+esc(I.tag)+']</b><br><small>Level '+lv+' · '+L.length+' member'+(L.length===1?'':'s')+' · you are '+ROLE[r]+'</small></div></div>';
-  const T=[['home','Members'],['quest','Quest'],['bank','Bank']].concat(boss()?[['log','Log']]:[]).concat(r==='l'?[['set','Settings']]:[]);
+  if(NOTE&&performance.now()-NOTE.at<8000)h+='<div class="qc" style="border-color:#c89020;background:#fff8e0"><b>'+esc(NOTE.t)+'</b></div>';
+  const T=[['home','Members'],['quest','Quest'],['perks','Perks'],['bank','Bank']].concat(boss()?[['log','Log']]:[]).concat([['top','Top guilds']]).concat(r==='l'?[['set','Settings']]:[]);
   h+='<div class="gdgtb">'+T.map(([k,n])=>'<button data-g="tab:'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
+  if(tab==='home'&&has('horn'))h+='<div class="qc"><b>Guild horn</b><p style="font-size:13px">Travel to the guild island from anywhere outdoors.</p><button class="qb" data-g="horn">Blow the horn</button></div>';
   if(tab==='home'){const P=Mp()&&Mp().players;
    for(const m of L){const rr=P&&P.get(m.u),onl=m.u===me()||(rr&&performance.now()-rr.seen<20000),where=m.u===me()?'You':onl?(rr.ar&&WORLD_REGIONS[rr.ar]?WORLD_REGIONS[rr.ar].name:'Online'):'Offline';
     let b='';if(m.u!==me()){if(r==='l'){b+=m.r==='m'?'<button data-g="role:'+m.u+':o">Make officer</button>':m.r==='o'?'<button data-g="role:'+m.u+':m">Make member</button>':'';b+=' <button data-g="role:'+m.u+':lead">Make leader</button>'}
@@ -20612,12 +20686,20 @@ window.SQA=SQA;
    if(chest){h+='<b style="display:block;margin-top:10px">Your bag</b>';const bag=Object.keys(inv).filter(k=>(inv[k]|0)>0&&INAME[k]&&!/^pet_|^eq_/.test(k)).sort((a,b)=>String(INAME[a]).localeCompare(INAME[b]));
     for(const k of bag)h+='<div class="gdgr">'+ic(k)+'<div class="gdtx"><b>'+esc(nm(k))+' × '+inv[k]+'</b></div><button data-g="dep:'+k+':1">Put in 1</button><button data-g="dep:'+k+':all">All</button></div>'}
    h+='</div>'}
+  else if(tab==='perks'){h+='<div class="qc"><b>Skill ranks</b><p style="font-size:13px">Every finished Guild Quest ranks the guild up in that skill (up to '+RMAX+'). Each rank gives every member <b>+10% XP</b> and a <b>10% chance of an extra item</b> each time they gather with that skill, anywhere.</p>';
+   for(const k in QK){const rk=rank(k);h+='<div class="gdgr"><div class="gdtx"><b>'+QK[k].sk+' rank '+rk+' / '+RMAX+'</b><small>'+(rk?'+'+rk*10+'% XP · '+rk*10+'% chance of an extra item':'Finish a '+QK[k].sk.toLowerCase()+' quest to start ranking up')+'</small></div><div class="gdgbar" style="width:90px;flex:none"><i style="width:'+rk/RMAX*100+'%"></i></div></div>'}
+   h+='</div><div class="qc"><b>Buildings</b><p style="font-size:13px">The guild gains a level with every finished quest. Buildings appear on your guild island:</p>';
+   for(const b of BLD){const ok=has(b.k);h+='<div class="gdgr"><span style="font-size:18px">'+(ok?'✅':'🔒')+'</span><div class="gdtx"><b>'+b.n+'</b> <small>'+(ok?'Built':'Guild level '+b.lv)+' · '+b.d+'</small></div></div>'}
+   h+='</div><div class="qc"><b>Your island</b><p style="font-size:13px">Everything planted on the guild island grows back in a minute (four in the wild), and only your guild can use it.</p></div>'}
+  else if(tab==='top'){loadTop();h+='<div class="qc"><b>Top guilds</b>';if(!TOP)h+='<p>Loading…</p>';else if(!TOP.length)h+='<p>No guilds yet.</p>';
+   (TOP||[]).forEach((o,i)=>{h+='<div class="gdgr"'+(o.id===G.id?' style="background:#fff8e0"':'')+'><b style="width:26px">'+(i+1)+'</b><div class="gdfl" style="width:14px;height:18px;background:'+(COLS[o.col|0]||COLS[0])+';clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)"></div><div class="gdtx"><b>'+esc(o.n)+' ['+esc(o.tag)+']</b><small>Level '+(o.lv|0)+' · '+(o.m|0)+' member'+((o.m|0)===1?'':'s')+'</small></div></div>'});h+='</div>'}
   else if(tab==='log'&&boss()){h+='<div class="qc"><b>Bank log</b><p style="font-size:12px;opacity:.8">Every deposit, withdrawal, planting and quest reward. Only the leader and officers see this.</p>';
    if(G.log===null)h+='<p>The log needs the latest database rules.</p>';else if(!G.log.length)h+='<p>Nothing yet.</p>';
    for(const e of (G.log||[]).slice(0,120)){const W={dep:'put in',wd:'took',plant:'planted',dig:'dug up',quest:'quest reward:'}[e.w]||e.w;const when=e.t?new Date(e.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
     h+='<div class="gdgr"><div class="gdtx"><b>'+esc(e.n||'Player')+'</b> '+W+' '+(e.w==='quest'?esc(e.d):esc(e.d)+' × '+esc(nm(e.k)))+'<small>'+esc(when)+'</small></div></div>'}h+='</div>'}
   else if(tab==='set'&&r==='l'){const opt=(rk,vals)=>vals.map(v=>'<button data-g="perm:'+rk+':'+v+'" class="'+((G.perm[rk]==null?(rk==='o'?-1:20):G.perm[rk])===v?'on':'')+'">'+(v<0?'No limit':v===0?'None':v+' a day')+'</button>').join('');
    h+='<div class="qc"><b>Taking from the bank</b><p style="font-size:13px">How many items each rank can take out of the guild bank per day. Everything is in the log.</p><small>Officers</small><div class="gdgtb">'+opt('o',[-1,100,20,0])+'</div><small>Members</small><div class="gdgtb">'+opt('m',[50,20,5,0])+'</div></div>'+
+    '<div class="qc"><b>Name</b><p style="font-size:13px">'+((I.rn|0)>0?'Renaming costs '+RENAME.toLocaleString()+' gold.':'Your first rename is free.')+'</p><div class="gdgf"><input id="grn" maxlength="20" value="'+esc(I.n)+'"></div><button class="qb" data-g="rename">'+((I.rn|0)>0?'Rename for '+RENAME.toLocaleString()+' gold':'Rename (free)')+'</button></div>'+
     '<div class="qc"><b>Colour</b><div class="gdgcl">'+COLS.map((c,i)=>'<button data-g="scol:'+i+'" class="'+(i===(I.col|0)?'on':'')+'" style="background:'+c+'" aria-label="Colour '+(i+1)+'"></button>').join('')+'</div></div>'}
   return h}
  {const _r=rPn;rPn=function(){if(ptab===GT){try{panelChrome('')}catch(e){}pbd.innerHTML=html();return}return _r.apply(this,arguments)}}
@@ -20627,6 +20709,7 @@ window.SQA=SQA;
    if(a==='acc')return accept(x);if(a==='dec'){decline(x);return}if(a==='leave'){if(b.dataset.sure){leave();return}b.dataset.sure=1;b.textContent=role()==='l'&&members().length>1?'Sure? An officer will lead':'Tap again to leave';return}
    if(a==='role')return setRole(x,y);if(a==='pick')return pick(x);if(a==='claim')return claim(+x);if(a==='cancelq'){if(b.dataset.sure){cancelQ();return}b.dataset.sure=1;b.textContent='Tap again to give up';return}
    if(a==='plant')return plant(x);if(a==='dig')return dig();if(a==='dep')return deposit(x,y==='all'?(inv[x]|0):+y);if(a==='wd')return withdraw(x,+y);
+   if(a==='horn')return horn();if(a==='rename'){const v=document.getElementById('grn').value;if(b.dataset.sure||((G.info.rn|0)===0)){rename(v);return}b.dataset.sure=1;b.textContent='Tap again: '+RENAME.toLocaleString()+' gold';return}
    if(a==='perm')return setPerm(x,+y);if(a==='scol')return setInfo('col',+x)}}
  // ---- invites: the player menu button and the pop-up ----
  window.SQGUILDPM=u=>{if(!G.id||!boss())return'';const inG=!!G.m[u];return'<button class="sb" data-pm="guild"'+(inG?' disabled style="opacity:.55"':'')+'>'+(inG?'IN YOUR GUILD ✓':'INVITE TO GUILD')+'</button>'};
@@ -20640,15 +20723,19 @@ window.SQA=SQA;
  (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r||!r.gt)return;g.save();g.font='700 4px '+PF;g.textAlign='center';g.lineWidth=1.5;g.lineJoin='round';g.strokeStyle='#101418';const t='['+r.gt+']';
   g.strokeText(t,Math.round(r.x),Math.round(r.y-39));g.fillStyle=COLS[r.gc|0]||'#fff';g.fillText(t,Math.round(r.x),Math.round(r.y-39));g.restore()});
  window.SQGUILD={pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
-  test:{create,invite,accept,leave,pick,flush,deposit,withdraw,plant,dig,setRole,setPerm,claimCheck,claim,applyNodes,listen,startDB,stopDB,frontCell,canPlant}};
+  test:{horn,pray,rename,pubLB,loadTop,applyBuildings,has,rank,create,invite,accept,leave,pick,flush,deposit,withdraw,plant,dig,setRole,setPerm,claimCheck,claim,applyNodes,listen,startDB,stopDB,frontCell,canPlant}};
  // ---- every frame: start/stop with the connection, count quest progress, flush it, keep the island registered ----
  if(G.id)try{register()}catch(e){}
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{
    if(on()&&!started)startDB();else if(!on()&&started)stopDB();
    const q=G.q;if(q&&!q.done&&QK[q.k]&&LASTINV){const si=SKN.indexOf(QK[q.k].sk);if(XPF.has(si)){let n=0;for(const k in inv){const v=(inv[k]|0)-(LASTINV[k]|0);if(v>0&&!NODE[k])n+=v}if(n>0){PEND+=n;PK=q.k}}}
+   if(G.id&&G.ready&&LASTINV)for(const k in QK){const rk=rank(k);if(!rk||!XPF.has(SKN.indexOf(QK[k].sk)))continue;   // rank bonus: extra items
+    for(const it in inv){const v=(inv[it]|0)-(LASTINV[it]|0);if(v<=0||NODE[it]||/^eq_|^pet_/.test(it))continue;let ex=0;for(let j=0;j<Math.min(v,50);j++)if(Math.random()<.1*rk)ex++;
+     if(ex){inv[it]+=ex;if(!BONUSSAID||performance.now()-BONUSSAID>20000){BONUSSAID=performance.now();say('Guild bonus: +'+ex+' '+nm(it)+'!')}}}}
    XPF.clear();LASTINV=Object.assign({},inv);
+   if(onIsle()){const R=SCENE.room;for(const g2 of R.gone||[])if(g2.it&&g2.it._gn&&!g2._gf){g2._gf=1;g2.at-=180}}
    if(PEND&&(flushT-=dt)<=0){flushT=8;flush()}
-   if(G.id&&!REG)register()}catch(e){console.warn('guild',e)}return out}}
+   if(G.id&&!REG)register();chatListen();if(NOTE&&performance.now()-NOTE.at>8000&&NOTE.t){NOTE=null;redraw()}}catch(e){console.warn('guild',e)}return out}}
  // the guild pill on the HUD isn't needed: the tag sits over your name for others; the START menu shows Guild [TAG]
 })();
 // ---- 206. Backyards are outdoors: rain, bows, wands and ultimates ----
