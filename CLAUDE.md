@@ -158,7 +158,7 @@
   sledge swings, chop/mine (`ACTN`), casts (`CASTT`, `CASTD`) and shots (`BOWT`, `BOWD`), hiding swing/CASTT/BOWT/ACTN from
   the inner drawers for that call; pointing up it's drawn behind you. Icons are assumed to point up-right (grip bottom-left),
   bows to face right. `SQSWING` (other players' swings) is wrapped too. Library `swings` = {all (default on), k:{key:'icon'|'own'}}.
-- **Custom controls** (`ui/124-s129-custom-controls.js`, `window.SQKEYS`, Options > Controls, `ptab` 34): keyboard binds in
+- **Custom controls** (`ui/124-s129-custom-controls.js`, `window.SQKEYS`, Options > Controls, `ptab` 45): keyboard binds in
   localStorage `sq_keys` (action -> key, only changes), controller in `sq_pad` (PADB name -> button index). A window capture
   listener turns a trusted key into the game's own key for that action (new KeyboardEvent on the same target) and swallows a
   game key whose action moved; untrusted events (the controller's `gpKey`), text boxes, the Dev Suite and Ctrl/Alt/Meta
@@ -726,3 +726,6 @@
   read back by `rhForeign` → `buildForeign`). The outermost `drawStruct` draws the placard (text shrunk to fit, `fillText` maxWidth).
   010's document keydown (capture) stops every key typed into an input and blurs on Enter, so Enter/Escape for a panel input must be
   handled by a `window` capture listener (forms in panels never get `submit` from Enter).
+- **Panel numbers (`ptab`) must be unique**: 124's Custom Controls used 34, which is 064's PvP screen, so START > PvP opened Custom
+  Controls (Nov 15; now 45). In use: 0-8 (built-in screens), 31 style, 32 trade, 34 PvP, 35 achievements, 36/37 player menu/duel,
+  38 party, 39 emotes, 40 report, 41 eating, 42 quest choice, 43 events, 44 guild, 45 controls. Grep `TAB=` and `ptab=` before picking one.

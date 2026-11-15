@@ -68,7 +68,7 @@
  if(typeof setActionLabels==='function'){const _sl=setActionLabels;setActionLabels=function(){_sl.apply(this,arguments);labels()}}
  setTimeout(labels,0);
  // ---------- Options > Controls ----------
- const CTAB=34;let VIEW=null;
+ const CTAB=45;let VIEW=null;   // 34 is 064's PvP screen (sharing it made PvP open Custom Controls)
  {const st=document.createElement('style');st.textContent=`#pn .ctr{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #d8e0f0;font-size:14px;color:#404040}
 #pn .ctr span{flex:1;min-width:0;line-height:1.3}#pn .ctr b{flex:none;min-width:92px;text-align:center}
 #pn .ctc{flex:none;width:auto;padding:7px 12px;border:2px solid #485870;border-radius:6px;background:#fff;color:#304060;font:700 13px var(--pf,inherit);cursor:pointer}`;document.head.appendChild(st)}
