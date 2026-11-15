@@ -718,3 +718,10 @@
 - **Projectiles over water** (021's `projBlocked`, a top-level const, edited in place): any tile `fishWaterAt` counts as water (islands'
   `R.tiles===0`, Hollow's sea, 145's yard ponds) lets arrows, spells and other players' projectile ghosts through; before, scenes used
   `solid()` only, so on islands every shot stopped at the shore and a shot from a boat (`SQRSAIL.on`) died on its first frame.
+- **Chest tools** (`items/204-s212-chest-tools.js`, `window.SQCHEST`): chest screen header with the name, ✎ RENAME (inline form, owner only: not
+  `_sh`/`_foreign`), TAKE ALL (own chests at once + one save; shared chests through 072's `chestMove` per item) and SORT (type/name/amount/value,
+  localStorage `sq_chsort`; `gridHTML` is wrapped only during `chestHTML`). Name = `nm` on the chest object, `SQCHNAME` cleans it (max 12):
+  furniture rows are `[i,t,items,nm]` in 012/067/145 saves and `[i,t,0,nm]` in what 061 (`houses/`) and 145 (`yards/`) publish; 061's
+  `buildForeign` and 145's visitor read take it back. The outermost `drawStruct` draws the placard (text shrunk to fit, `fillText` maxWidth).
+  010's document keydown (capture) stops every key typed into an input and blurs on Enter, so Enter/Escape for a panel input must be
+  handled by a `window` capture listener (forms in panels never get `submit` from Enter).

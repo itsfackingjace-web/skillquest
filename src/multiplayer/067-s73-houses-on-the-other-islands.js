@@ -54,12 +54,12 @@ function rhSign(h){const nm=h._foreign?fname(h._owner):(MP.on?myName():pname());
 {const _dh=drawHUD;drawHUD=function(){const R=rbR();if(R&&BUILD&&BUILD.k==='house'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=rhFits(R,x,y),cx=camX(),cy=camY();
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drBld({...HOUSE_STYLE,w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}_dh()}}
 // ---- saving ----
-{const _sn=snap;snap=function(){const s=_sn();if(RH.length)s.rh=RH.map(h=>({id:h.id,rg:h.rg,x:h.x,y:h.y,f:[...h.furn].map(([i,f])=>[i,f.t,f.items||null])}));
+{const _sn=snap;snap=function(){const s=_sn();if(RH.length)s.rh=RH.map(h=>({id:h.id,rg:h.rg,x:h.x,y:h.y,f:[...h.furn].map(([i,f])=>f.nm?[i,f.t,f.items||null,f.nm]:[i,f.t,f.items||null])}));
   if(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region){const pr=SCENE.prev,R=pr.room;if(s.p&&pr.ret){s.p.x=Math.round(pr.ret.x);s.p.y=Math.round(pr.ret.y)}
    s.region={id:R.region,x:Math.max(0,Math.min(R.w-1,Math.floor(SCENE.ret.x/16))),y:Math.max(0,Math.min(R.h-1,Math.floor(SCENE.ret.y/16)))}}return s}}
 {const _ap=applySave;applySave=function(S){RH.length=0;const keepHome=S&&S.home;_ap(S);const RW=14,RHt=10,items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r};
   if(S&&Array.isArray(S.rh))for(const e of S.rh){if(!e||!WORLD_REGIONS[e.rg]||!isFinite(e.x)||!isFinite(e.y))continue;const h={id:String(e.id||'').slice(0,12)||Math.random().toString(36).slice(2,8),rg:e.rg,x:e.x|0,y:e.y|0,w:7,furn:new Map(),hp:12};
-   if(Array.isArray(e.f))for(const q of e.f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RHt||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?{t,items:items(q[2])}:{t})}RH.push(h)}
+   if(Array.isArray(e.f))for(const q of e.f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RHt||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:items(q[2])},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}RH.push(h)}
   if(keepHome&&RH.some(h=>h.id===keepHome))HOMESP=keepHome;try{rhSolidSync()}catch(e){}}}
 {const _ng=newGame;newGame=function(){RH.length=0;_ng()}}
 // shared: other players see where your island houses are

@@ -691,10 +691,10 @@ addEventListener('keydown',e=>{if(e.key==='Escape'&&bugF.style.display==='block'
 const HS={pubKey:'',pubAt:0,data:{},fr:{},frUnsub:{},unsub:null,msgAt:0};
 const isForeign=h=>!!(h&&h._foreign);
 function houseLocOf(h){if(!h||!MP.user)return'';return'h:'+(h._owner||MP.user.uid)+':'+(h._oid||h.id)}
-function myHousesData(){return HOUSES.filter(h=>!h._foreign).map(h=>({s2:1,id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>[i,f.t])}))}
+function myHousesData(){return HOUSES.filter(h=>!h._foreign).map(h=>({s2:1,id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>f.nm?[i,f.t,0,f.nm]:[i,f.t])}))}
 function canEnter(h){return!!(HS.fr[h._owner]&&MP.user&&HS.fr[h._owner][MP.user.uid])}
 function buildForeign(owner,e){const RW=14,RH=10,h={id:owner.slice(0,6)+'_'+String(e.id).slice(0,12),_oid:String(e.id).slice(0,12),_owner:owner,_foreign:true,x:e.x|0,y:e.y|0,w:e.w===7?7:5,furn:new Map(),hp:12};
- const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):null);const fl=arr(e.f);if(fl)for(const q0 of fl){const q=arr(q0);if(!q)continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RH||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?{t,items:{}}:{t})}return h}
+ const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):null);const fl=arr(e.f);if(fl)for(const q0 of fl){const q=arr(q0);if(!q)continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RH||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:{}},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}return h}
 function overlapsMine(h){const hw=((h.w||5)-1)/2;for(const o of HOUSES){if(o===h||o._foreign&&o._owner===h._owner&&o._oid===h._oid)continue;const ow=((o.w||5)-1)/2;if(Math.abs(o.x-h.x)<=hw+ow+1&&Math.abs(o.y-h.y)<=2)return true}
  for(let dy=-1;dy<=0;dy++)for(let dx=-hw;dx<=hw;dx++){const i=(h.y+dy)*N+h.x+dx;if(STR.has(i))return true}return false}
 function housesSync(){if(!MP.on)return;const want=new Map();

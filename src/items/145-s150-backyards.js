@@ -148,9 +148,9 @@
      if(stone){Rg(dx-8,5,16,1,'#b2aa9a');Rg(dx-1,5,2,27,K)}else{Rg(dx-8,16,16,1,'#5a3a1e')}Rg(dx+(stone?3:4),19,2,2,'#f8d048')}}}catch(e){}return out}}
  // ---- saving (next to each house's own furniture) ----
  const items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r};
- const outF=h=>h.yf&&h.yf.size?[...h.yf].map(([i,f])=>[i,f.t,f.items||null]):null;
+ const outF=h=>h.yf&&h.yf.size?[...h.yf].map(([i,f])=>f.nm?[i,f.t,f.items||null,f.nm]:[i,f.t,f.items||null]):null;
  const outP=h=>h.yp&&h.yp.size?[...h.yp].map(([i,p])=>[i,p.c||'',Math.round(p.g),Math.max(0,Math.round(p.w-CLK))]):null;
- function inF(h,a,R,ow){h.yf=new Map();if(Array.isArray(a))for(const q of a){if(!Array.isArray(q))continue;const i=mv(q[0]|0,ow,R),t=q[1];if(i<2*R.w||i>=R.w*R.h||!BK.includes(t)||t==='house'||t==='castle')continue;h.yf.set(i,t==='chest'?{t,items:items(q[2])}:{t})}}
+ function inF(h,a,R,ow){h.yf=new Map();if(Array.isArray(a))for(const q of a){if(!Array.isArray(q))continue;const i=mv(q[0]|0,ow,R),t=q[1];if(i<2*R.w||i>=R.w*R.h||!BK.includes(t)||t==='house'||t==='castle')continue;h.yf.set(i,t==='chest'?Object.assign({t,items:items(q[2])},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}}
  function inP(h,a,R,ow){h.yp=new Map();if(Array.isArray(a))for(const q of a){if(!Array.isArray(q))continue;const i=mv(q[0]|0,ow,R);if(i<2*R.w||i>=R.w*R.h)continue;const c=CROPS[q[1]]?q[1]:null;h.yp.set(i,{c,g:c?Math.max(0,+q[2]||0):0,w:CLK+Math.max(0,Math.min(WATER_FOR,+q[3]||0)),e:nowS2()})}}
  const RofH=h=>h.castle?ROOMS.court:ROOMS.yard;
  const OLDW=h=>h.castle?26:16;// widths before 2026.11.13-3
@@ -174,10 +174,10 @@
  {const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);KNOWN=new Set();return out}}
  // ---- what friends see: yards/<uid>/<house id> ----
  let pubKey='',pubAt=0;function pub(){pubAt=0}
- function yardsOut(){const o={};for(const h of mine()){const f=outF(h),p=h.yp&&h.yp.size?[...h.yp].map(([i,q])=>[i,q.c||'',q.c?Math.min(CROPS[q.c].max,Math.floor(q.g/CROPS[q.c].st)):0]):null;if(f||p)o[h.id]={f:f?f.map(e=>[e[0],e[1]]):[],p:p||[],w:RofH(h).w}}return o}
+ function yardsOut(){const o={};for(const h of mine()){const f=outF(h),p=h.yp&&h.yp.size?[...h.yp].map(([i,q])=>[i,q.c||'',q.c?Math.min(CROPS[q.c].max,Math.floor(q.g/CROPS[q.c].st)):0]):null;if(f||p)o[h.id]={f:f?f.map(e=>e[3]?[e[0],e[1],0,e[3]]:[e[0],e[1]]):[],p:p||[],w:RofH(h).w}}return o}
  setInterval(()=>{try{const M=window.SQMP,F=window.SQFB;if(!M||!M.on||!M.user||!F)return;const t=performance.now();if(t-pubAt<8000)return;pubAt=t;const o=yardsOut(),k=JSON.stringify(o);if(k===pubKey)return;pubKey=k;
    F.db.set(F.db.ref(F.D,'yards/'+M.user.uid),Object.keys(o).length?o:null).catch(()=>{pubKey=''})}catch(e){}},2000);
  function readYard(h,v){const R=RofH(h),ow=+(v&&v.w)||OLDW(h),arr=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.values(x):[]);h.yf=new Map();h.yp=new Map();
-  for(const q0 of arr(v&&v.f)){const q=arr(q0);const i=mv(q[0]|0,ow,R),t=q[1];if(i>=2*R.w&&i<R.w*R.h&&BK.includes(t))h.yf.set(i,{t})}
+  for(const q0 of arr(v&&v.f)){const q=arr(q0);const i=mv(q[0]|0,ow,R),t=q[1];if(i>=2*R.w&&i<R.w*R.h&&BK.includes(t))h.yf.set(i,Object.assign({t},t==='chest'?(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{}):{}))}
   for(const q0 of arr(v&&v.p)){const q=arr(q0);const i=mv(q[0]|0,ow,R),c=CROPS[q[1]]?q[1]:null;if(i>=2*R.w&&i<R.w*R.h)h.yp.set(i,{c,g:c?Math.max(0,Math.min(CROPS[c].max,q[2]|0))*CROPS[c].st:0,w:0,e:0})}settle(h,true);h._yd=null}
  window.SQYARD={isYard,goOut,goBack,yardOf,yardsOut,HDOOR,YDOOR}})();

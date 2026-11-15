@@ -36,10 +36,10 @@ function hitHouse(h){h.hp=(h.hp||12)-(1+TL.axe);sfx('chop');if(h.hp>0){if(h.hp<=
 function housesFromSave(a){for(const h of HOUSES)for(const i of houseTiles(h))BS.delete(i);HOUSES=[];if(!Array.isArray(a))return;const RW=14,RH=10;
  for(const e of a){if(!e||!isFinite(e.x)||!isFinite(e.y))continue;const h={id:String(e.id||Math.random().toString(36).slice(2,8)).slice(0,12),x:e.x|0,y:e.y|0,w:e.w===7?7:5,furn:new Map(),hp:12};if(h.x<4||h.y<3||h.x>N-5||h.y>N-3)continue;
   const items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r};
-  if(Array.isArray(e.f)){for(const q of e.f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RH||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?{t,items:items(q[2])}:{t})}}
+  if(Array.isArray(e.f)){for(const q of e.f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RH||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:items(q[2])},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}}
   else{h.furn.set(2*RW+1,{t:'bed'});h.furn.set(2*RW+12,{t:'chest',items:items(e.items)})}
   HOUSES.push(h);addHouseBS(h)}}
-const _sn12=snap;snap=function(){const s=_sn12();s.houses=HOUSES.map(h=>({id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>[i,f.t,f.items||null])}));s.home=HOMESP;if(SCENE){s.p.x=Math.round(SCENE.ret.x);s.p.y=Math.round(SCENE.ret.y)}return s};
+const _sn12=snap;snap=function(){const s=_sn12();s.houses=HOUSES.map(h=>({id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>f.nm?[i,f.t,f.items||null,f.nm]:[i,f.t,f.items||null])}));s.home=HOMESP;if(SCENE){s.p.x=Math.round(SCENE.ret.x);s.p.y=Math.round(SCENE.ret.y)}return s};
 const _ap12=applySave;applySave=function(S){SCENE=null;_ap12(S);housesFromSave(S.houses);HOMESP=HOUSES.some(h=>h.id===S.home)?S.home:null};
 
 // --- entering and leaving ---
