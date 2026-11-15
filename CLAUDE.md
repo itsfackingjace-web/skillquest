@@ -722,6 +722,7 @@
   `_sh`/`_foreign`), TAKE ALL (own chests at once + one save; shared chests through 072's `chestMove` per item) and SORT (type/name/amount/value,
   localStorage `sq_chsort`; `gridHTML` is wrapped only during `chestHTML`). Name = `nm` on the chest object, `SQCHNAME` cleans it (max 12):
   furniture rows are `[i,t,items,nm]` in 012/067/145 saves and `[i,t,0,nm]` in what 061 (`houses/`) and 145 (`yards/`) publish; 061's
-  `buildForeign` and 145's visitor read take it back. The outermost `drawStruct` draws the placard (text shrunk to fit, `fillText` maxWidth).
+  `buildForeign` and 145's visitor read take it back; island homes (incl. guild islands) go out through 067's `rbPub` `_h` (same `[i,t,0,nm]` rows,
+  read back by `rhForeign` → `buildForeign`). The outermost `drawStruct` draws the placard (text shrunk to fit, `fillText` maxWidth).
   010's document keydown (capture) stops every key typed into an input and blurs on Enter, so Enter/Escape for a panel input must be
   handled by a `window` capture listener (forms in panels never get `submit` from Enter).

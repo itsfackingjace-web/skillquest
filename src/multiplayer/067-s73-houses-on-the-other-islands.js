@@ -63,5 +63,5 @@ function rhSign(h){const nm=h._foreign?fname(h._owner):(MP.on?myName():pname());
   if(keepHome&&RH.some(h=>h.id===keepHome))HOMESP=keepHome;try{rhSolidSync()}catch(e){}}}
 {const _ng=newGame;newGame=function(){RH.length=0;_ng()}}
 // shared: other players see where your island houses are
-{const _rp=rbPub;rbPub=function(){const o=_rp()||{};if(RH.length)o._h=RH.map(h=>[h.rg,h.x,h.y,h.id,[...h.furn].map(([i,f])=>[i,f.t])]);return Object.keys(o).length?o:null}}
+{const _rp=rbPub;rbPub=function(){const o=_rp()||{};if(RH.length)o._h=RH.map(h=>[h.rg,h.x,h.y,h.id,[...h.furn].map(([i,f])=>f.nm?[i,f.t,0,f.nm]:[i,f.t])]);return Object.keys(o).length?o:null}}
 window.SQRH=RH;
