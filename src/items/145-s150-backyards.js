@@ -180,4 +180,7 @@
  function readYard(h,v){const R=RofH(h),ow=+(v&&v.w)||OLDW(h),arr=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.values(x):[]);h.yf=new Map();h.yp=new Map();
   for(const q0 of arr(v&&v.f)){const q=arr(q0);const i=mv(q[0]|0,ow,R),t=q[1];if(i>=2*R.w&&i<R.w*R.h&&BK.includes(t))h.yf.set(i,Object.assign({t},t==='chest'?(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{}):{}))}
   for(const q0 of arr(v&&v.p)){const q=arr(q0);const i=mv(q[0]|0,ow,R),c=CROPS[q[1]]?q[1]:null;if(i>=2*R.w&&i<R.w*R.h)h.yp.set(i,{c,g:c?Math.max(0,Math.min(CROPS[c].max,q[2]|0))*CROPS[c].st:0,w:0,e:0})}settle(h,true);h._yd=null}
+ // visiting: re-read the owner's yard every 8 s so their changes (chest names, new furniture, crops) show up without walking out and back
+ setInterval(()=>{try{if(!isYard()||busy)return;const Y=SCENE.house,h=Y&&Y.base,F=window.SQFB;if(!Y.ro||!h||!h._owner||!F)return;const S0=SCENE;
+   F.db.get(F.db.ref(F.D,'yards/'+h._owner+'/'+(h._oid||h.id))).then(s=>{if(SCENE!==S0)return;readYard(h,s.val());S0.house=yardOf(h,true)}).catch(()=>{})}catch(e){}},8000);
  window.SQYARD={isYard,goOut,goBack,yardOf,yardsOut,HDOOR,YDOOR}})();

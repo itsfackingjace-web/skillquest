@@ -737,6 +737,7 @@
   while a cook job runs; `body.sqpnup` hides `#mpb`/`#mpbug` (z 30) while a panel/menu is open; HIT never auto-shoots (`bowTarget`
   null for the call) when 118's `hitWord` is CHOP/MINE/PICK...; Saltmere's `BOATS` keep only water tiles; islands: after
   `loadRegion` a flood fill with the player box from where you stand removes `_obj` items no reachable tile touches (`R._rch`,
-  skipped if under half the land is reached; `window.SQREACHFIX`). Also: 077's castle loaders (save + visitor) keep chest `nm`
+  skipped if under half the land is reached; `window.SQREACHFIX`). 145 re-reads `yards/<owner>/<id>` every 8 s while you visit a yard
+  (read-only `_yd`), so the owner's renames/furniture show up live. Also: 077's castle loaders (save + visitor) keep chest `nm`
   (castle names were lost on every load); 013's scene ghost uses the whole `canPlace` chain (yard seeds); 138 hides a boss once
   `SQWB.fell === b.slot`.
