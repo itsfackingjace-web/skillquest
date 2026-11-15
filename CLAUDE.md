@@ -729,3 +729,14 @@
 - **Panel numbers (`ptab`) must be unique**: 124's Custom Controls used 34, which is 064's PvP screen, so START > PvP opened Custom
   Controls (Nov 15; now 45). In use: 0-8 (built-in screens), 31 style, 32 trade, 34 PvP, 35 achievements, 36/37 player menu/duel,
   38 party, 39 emotes, 40 report, 41 eating, 42 quest choice, 43 events, 44 guild, 45 controls. Grep `TAB=` and `ptab=` before picking one.
+- **Bug sweep Nov 15** (`items/205-s213-bug-sweep-nov15.js`): beds: a second USE within 013's `bedPick` window picks the bed up (118 says
+  PICK UP on HIT and TALK); rain (`rainingNow`) waters own yard plots `h.yp` like 021 waters `FARM`; jewelry Make/All at a furnace moves
+  exactly the gold bars/gems needed from `benchChests(STATION)` into the bag first (086's clicks run outside 033's merge, as a timed
+  job); `sqDo` is wrapped so every step runs with `pnOpen`/`menuOpen` false (actions like `eat()` bail while a panel is open, which
+  ended jobs when a menu opened) and campfire `cook` jobs (no `SQDO.st`) stop when `nearFire` fails; outermost `eat` ignores presses
+  while a cook job runs; `body.sqpnup` hides `#mpb`/`#mpbug` (z 30) while a panel/menu is open; HIT never auto-shoots (`bowTarget`
+  null for the call) when 118's `hitWord` is CHOP/MINE/PICK...; Saltmere's `BOATS` keep only water tiles; islands: after
+  `loadRegion` a flood fill with the player box from where you stand removes `_obj` items no reachable tile touches (`R._rch`,
+  skipped if under half the land is reached; `window.SQREACHFIX`). Also: 077's castle loaders (save + visitor) keep chest `nm`
+  (castle names were lost on every load); 013's scene ghost uses the whole `canPlace` chain (yard seeds); 138 hides a boss once
+  `SQWB.fell === b.slot`.

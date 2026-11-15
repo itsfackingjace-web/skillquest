@@ -22,8 +22,8 @@
   try{const tk=document.getElementById('tk');if(typeof facingNpc==='function'&&facingNpc()&&!(tk&&tk.offsetWidth&&/^\s*TALK/.test(tk.textContent)))return'TALK'}catch(e){}/* 189: no second TALK when the TALK button already shows it */
   if(typeof FISH!=='undefined'&&FISH)return'REEL';
   try{const st=typeof frontStation==='function'&&frontStation();if(st)return STW[st.t]||'USE'}catch(e){}
-  try{if(SCENE&&typeof inHome==='function'&&inHome()){const R=SCENE.room,[x,y]=frontTile(),f=SCENE.house.furn.get(y*R.w+x);if(f)return f.t==='bed'?'SLEEP':f.t==='chest'?'OPEN':'MOVE'}
-   if(!SCENE){const[x,y]=frontTile(),s=STR.get(y*N+x);if(s&&s.t==='chest')return'OPEN';if(s&&s.t==='bed')return'SLEEP'}}catch(e){}
+  try{if(SCENE&&typeof inHome==='function'&&inHome()){const R=SCENE.room,[x,y]=frontTile(),f=SCENE.house.furn.get(y*R.w+x);if(f)return f.t==='bed'?(typeof bedPick!=='undefined'&&bedPick&&bedPick.home&&bedPick.i===y*R.w+x&&performance.now()-bedPick.at<3000?'PICK UP':'SLEEP'):f.t==='chest'?'OPEN':'MOVE'}
+   if(!SCENE){const[x,y]=frontTile(),s=STR.get(y*N+x);if(s&&s.t==='chest')return'OPEN';if(s&&s.t==='bed')return typeof bedPick!=='undefined'&&bedPick&&!bedPick.home&&bedPick.i===y*N+x&&performance.now()-bedPick.at<3000?'PICK UP':'SLEEP'}}catch(e){}
   const[fx,fy]=front(13);if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16))return'HIT';
   try{const[f2x,f2y]=front(14);if(fishWaterAt(Math.floor(f2x/16),Math.floor(f2y/16)))return'FISH'}catch(e){}
   try{const th=frontThing();if(th&&th.read)return'READ';const w=th&&objWord(th.t);if(w)return w}catch(e){}
@@ -31,7 +31,7 @@
  function eatWord(){if(BUILD)return'DONE';
   try{if(nearFire(P.x,P.y,45)&&((inv.meat|0)>0||typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st)))return'COOK'}catch(e){}
   return'EAT'}
- function useWord(){try{if(typeof nearFurn==='function'){const it=nearFurn();if(it){if(it.use&&USEW[it.use])return USEW[it.use];const f=it.f;if(f)return f.t==='bed'?'SLEEP':f.t==='chest'?'OPEN':STW[f.t]||null}}}catch(e){}
+ function useWord(){try{if(typeof nearFurn==='function'){const it=nearFurn();if(it){if(it.use&&USEW[it.use])return USEW[it.use];const f=it.f;if(f)return f.t==='bed'?(typeof bedPick!=='undefined'&&bedPick&&bedPick.home&&bedPick.i===it.i&&performance.now()-bedPick.at<3000?'PICK UP':'SLEEP'):f.t==='chest'?'OPEN':STW[f.t]||null}}}catch(e){}
   try{if(typeof nearStruct==='function'){const i=nearStruct();if(i!=null){const s=STR.get(i);if(s)return s.t==='bed'?'SLEEP':s.t==='chest'?'OPEN':STW[s.t]||null}}}catch(e){}return null}
  // set a button's word, keeping whatever hint is under it
  function put(el,w){if(!el||!w)return;const h=el.innerHTML,i=h.indexOf('<small'),word=i<0?h:h.slice(0,i);if(word===w)return;el.innerHTML=w+(i<0?'':h.slice(i))}

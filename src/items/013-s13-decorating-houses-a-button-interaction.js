@@ -75,4 +75,4 @@ function drawRoom(tm){qm=Math.hypot(P.x-qL.x,P.y-qL.y)>.01;qL.x=P.x;qL.y=P.y;if(
  if(h)for(const[i,f]of h.furn)if(f.t!=='rug')L.push([(((i/R.w)|0)+1)*16-1,3,f,i]);
  for(const n of NPCS)if(n.scene===SCENE.id)L.push([n.y+6,1,n]);L.push([P.y+6,2]);L.sort((a,b)=>a[0]-b[0]);
  for(const e of L){if(e[1]===0)drawFurn(e[2],tm);else if(e[1]===3)drawPiece(e[2].t,e[3]%R.w,(e[3]/R.w)|0,e[2],false,tm);else if(e[1]===1){const n=e[2];shd(n.x,n.y+6,12);GC=g;cP(n.ch,0,0,Math.round(n.x),Math.round(n.y),false)}else if(!dead)pP(tm)}
- if(BUILD&&h){const[x,y]=frontTile(),ok=canPlaceIn(x,y);g.globalAlpha=.6;drawPiece(BUILD.k,x,y,{t:BUILD.k},true,tm);g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.35)':'rgba(240,60,60,.35)';g.fillRect(x*16,y*16,16,16)}};
+ if(BUILD&&h){const[x,y]=frontTile(),ok=canPlace(x,y);/* the whole canPlace chain (145: seeds on yard plots), not just furniture's canPlaceIn */g.globalAlpha=.6;drawPiece(BUILD.k,x,y,{t:BUILD.k},true,tm);g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.35)':'rgba(240,60,60,.35)';g.fillRect(x*16,y*16,16,16)}};

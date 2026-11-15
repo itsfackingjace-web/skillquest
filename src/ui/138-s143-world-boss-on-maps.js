@@ -3,7 +3,7 @@
 // name and time left (at its lair when that's known: always on Hollow, on an island once you're there); the area map and
 // the HUD minimap mark it where it is right now (071's wbPos, which every game works out from the shared clock); and the
 // area map says where it is when it's on another island.
-(()=>{const B=()=>{try{const b=window.SQWB&&SQWB.b;return b&&Date.now()<b.end+60000?b:null}catch(e){return null}};
+(()=>{const B=()=>{try{const b=window.SQWB&&SQWB.b;return b&&Date.now()<b.end+60000&&SQWB.fell!==b.slot?b:null}catch(e){return null}};
  const left=b=>{const now=(window.SQMP&&SQMP.on&&typeof mpNow==='function')?mpNow():Date.now(),s=Math.max(0,Math.round((b.end-now)/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
  const where=b=>b.where==='hollow'?'Hollow Island':(WORLD_REGIONS[b.where]?WORLD_REGIONS[b.where].name:b.where);
  // its lair (world px in its own area) if this game knows it
