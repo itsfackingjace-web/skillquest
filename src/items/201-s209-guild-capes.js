@@ -26,9 +26,9 @@
  {const _gc=gearCH;gearCH=function(){const c=_gc.apply(this,arguments);if(WEAR&&inGuild())toCh(c,design());return c}}
  const shade=(hex,f)=>'#'+[1,3,5].map(i=>Math.max(0,Math.min(255,Math.round(parseInt(hex.slice(i,i+2),16)*f))).toString(16).padStart(2,'0')).join('');
  // which cape a character wears: the guild's, a Marlo cape, or none
- function spec(ch){if(!ch)return null;if(ch.gcp>0)return{c:PAL[(ch.gcp-1)%PAL.length],s:PAL[(ch.gcs|0)%PAL.length],p:ch.gpt|0,t:!!ch.gtr,e:ch.gce|0,x:PAL[(ch.gex|0)%PAL.length]};
+ function spec(ch){if(!ch)return null;if(ch.fcp>0)return{c:'#c8300e',s:'#e8581a',p:0,t:false,e:0,x:'#f8c040',fire:1};if(ch.gcp>0)return{c:PAL[(ch.gcp-1)%PAL.length],s:PAL[(ch.gcs|0)%PAL.length],p:ch.gpt|0,t:!!ch.gtr,e:ch.gce|0,x:PAL[(ch.gex|0)%PAL.length]};
   const m=MARLO[(ch.cape|0)-1];return m?{c:m,s:m,p:0,t:false,e:0,x:m}:null}
- const strip=ch=>{const o=Object.assign({},ch);for(const k of['cape','gcp','gcs','gpt','gtr','gce','gex'])delete o[k];return o};
+ const strip=ch=>{const o=Object.assign({},ch);for(const k of['cape','gcp','gcs','gpt','gtr','gce','gex','fcp'])delete o[k];return o};
  // the body's left/right edge on each row (from the bare kit)
  function edges(base){const w=base.width,h=base.height,d=base.getContext('2d').getImageData(0,0,w,h).data,E=[];for(let y=0;y<h;y++){let a=w,b=-1;for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]>0){if(x<a)a=x;if(x>b)b=x}E.push([a,b])}return E}
  // the kit itself never gets a cape any more: every view is painted here at half-pixel detail
@@ -53,6 +53,9 @@
  // side: it rounds over the shoulder, wraps the back of the body and hangs/billows behind you.
  // Walking (st 1/2) swings it side to side from the back and makes it billow out from the side; standing, it stirs a little.
  const K='#181018',CC=new Map(),clamp=(v,a,b)=>v<a?a:v>b?b:v;
+ // the Patron fire cape's colours: dark embers at the collar, bright moving flames toward the hem
+ const FIRE=['#3a0a06','#7a160a','#b8280e','#e04a16','#f87a24','#f8b038','#f8e078','#fff8c8'];
+ function fireCol(X,Y,r,tk,lin){const t=tk*1.05;let v=.12+.66*r.dep+.26*Math.sin(X*.62+1.5*Math.sin(Y*.27+t*1.6))+.1*Math.sin(Y*.95+t*3.3+X*.25);if(r.top)v-=.15;if(lin)v-=.28;return FIRE[Math.max(0,Math.min(FIRE.length-1,Math.round(v*(FIRE.length-1))))]}
  function cloth(ch,dir,st,tick){const S=spec(ch);if(!S)return null;const bare=strip(ch),E=sil(bare,dir,st|0),KE=edges(kitSprite(bare,dir,st|0,false));
   const key=JSON.stringify(S)+JSON.stringify(bare)+'|'+dir+'|'+(st|0)+'|'+tick;let R=CC.get(key);if(R)return R;
   // width: the torso as drawn with body armour/robes (not hoods), so the cape covers a robe's shoulders and flares over its skirt
@@ -63,18 +66,20 @@
   const backAt=y=>{const Y=Math.round(2*(y+19));const e=E[Y];return e&&e[1]>=0?e[0]/2-16:99};
   const st1=st|0,walk=st1?1:0,ph=tick?.07:0,cov=E.cov,T=S.t?S.s:null;
   const fold=u=>Math.cos(2*Math.PI*(u+ph));
+  // Patron fire cape: flame tongues licking below the hem, moving with the fire's frame
+  const tongue=u=>1.3*Math.pow(Math.max(0,Math.sin(u*Math.PI*6.5+tick*1.9)),2)+.5*Math.max(0,Math.sin(u*Math.PI*11-tick*2.6));
   // --- shape tests: kit-pixel point -> {u,dep,ov} or null (ov: drawn over the body rather than behind it) ---
   let shape,nF;
   if(dir!==2){const cx=(L0+R0)/2,hs=(R0-L0)/2+.4,sk=(st1===1?.9:st1===2?-.9:tick?.15:-.15);nF=2.5;
    shape=(x,y)=>{if(y<20.8)return null;const d=clamp((y-22)/8.6,0,1),c=cx+sk*Math.pow(d,1.5);
     const fl=Math.max(1,lowHalf+.4-hs),hw=y<22.7?2.8+(hs-2.8)*Math.sin(Math.PI/2*clamp((y-20.8)/1.9,0,1)):hs+(y-22.7)/7.9*(fl+walk*.3);
-    if(Math.abs(x-c)>hw)return null;const u=(x-(c-hw))/(2*hw);if(y>30.55+.45*fold(u*nF))return null;
+    if(Math.abs(x-c)>hw)return null;const u=(x-(c-hw))/(2*hw);if(y>30.55+.45*fold(u*nF)+(S.fire?tongue(u):0))return null;
     return{u,dep:clamp((y-22)/6,0,1),top:y<22.9}}}
   else{const bx=L0,bill=walk?1.5:(tick?1:.9),lift=walk?.9:.15;nF=1.5;
    const xo=y=>y<21.9?bx+1.6-1.8*Math.sqrt(clamp((y-20.8)/1.1,0,1)):(d=>bx-.2-bill*3.6*Math.pow(d,.8)+(walk?.55*d*Math.sin(d*Math.PI*1.6+(st1===1?0:Math.PI)):.25*Math.sin(d*Math.PI)*(tick?1:-1)))(clamp((y-21.9)/8.7,0,1));
    const fe=y=>y<22.6?6.6+Math.sqrt(Math.max(0,6.76-(y-22.6)*(y-22.6))):9.2-.3*(y-22.6);
    shape=(x,y)=>{if(y<20.8)return null;const a=Math.min(xo(y),y>21.9?backAt(y)-.4:99),b=fe(y);if(x<a||x>b)return null;if(x>=4&&y<22.6&&(x-6.6)*(x-6.6)+(y-22.6)*(y-22.6)>6.76)return null;
-    const u=(x-a)/Math.max(.5,b-a);if(y>30.6-lift*Math.pow(1-u,1.5)+.5*fold(u*nF))return null;
+    const u=(x-a)/Math.max(.5,b-a);if(y>30.6-lift*Math.pow(1-u,1.5)+.5*fold(u*nF)+(S.fire?tongue(u):0))return null;
     return{u,dep:clamp((y-22)/6,0,1),top:y<22.4&&x>=4}}}
   // --- paint: mask, then outline (2 half pixels, like the kit's), trim, folds, roundness ---
   const M=new Array(96*112),kp=(X,Y)=>[(X+.5)/2-16,(Y+.5)/2-19];
@@ -88,6 +93,7 @@
   for(let Y=0;Y<112;Y++)for(let X=0;X<96;X++){const r=M[Y*96+X];if(!r)continue;const[,y]=kp(X,Y);let col;
    if(near(X,Y,2)){col=K}
    else if(T&&!r.top&&(!In(X,Y+3)||!In(X,Y+4)))col=lining?shade(T,.8):T;
+   else if(S.fire){col=fireCol(X,Y,r,tick,lining)}
    else{const b=base(r,y),f=r.dep>.15?fold(r.u*nF):0,edge=dir===2?(r.u>.8||r.u<.1):Math.abs(r.u-.5)>.42;
     col=r.top&&near(X,Y,3)?shade(b,1.22):f<-.8?shade(b,.68):f>.6&&r.dep>.3?shade(b,1.16):edge?shade(b,.82):b}
    bx.fillStyle=col;bx.fillRect(X,Y,1,1)}
@@ -113,8 +119,9 @@
  const put=(C,L,dir,ox,oy,fl)=>{const sm=C.imageSmoothingEnabled;C.imageSmoothingEnabled=false;const X=Math.round(ox)-24,Y=Math.round(oy)-44;
   if(fl&&dir===2){C.save();C.translate(X*2+48,0);C.scale(-1,1);C.drawImage(L,X,Y,48,56);C.restore()}else C.drawImage(L,X,Y,48,56);C.imageSmoothingEnabled=sm};
  // 111a's cP wrapper: SQCAPEUNDER before the character, SQCAPETOP after it (and after worn looks)
- window.SQCAPEUNDER=function(C,ch,dir,st,ox,oy,fl){if(!C||dir!==0||!spec(ch))return;try{const R=cloth(ch,0,st,tickNow());if(R&&R.under)put(C,R.under,0,ox,oy,fl)}catch(e){}};
- window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(!C||!spec(ch))return;try{const R=cloth(ch,dir|0,st,tickNow());if(R)put(C,R.over,dir|0,ox,oy,fl)}catch(e){}};
+ const tickFor=ch=>ch&&ch.fcp>0?(window.SQCAPETICK!=null?SQCAPETICK:Math.floor(performance.now()/110)%8):tickNow();
+ window.SQCAPEUNDER=function(C,ch,dir,st,ox,oy,fl){if(!C||dir!==0||!spec(ch))return;try{const R=cloth(ch,0,st,tickFor(ch));if(R&&R.under)put(C,R.under,0,ox,oy,fl)}catch(e){}};
+ window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(!C||!spec(ch))return;try{const R=cloth(ch,dir|0,st,tickFor(ch));if(R)put(C,R.over,dir|0,ox,oy,fl)}catch(e){}};
  // saving the choice to wear it
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(WEAR)s.gcw=1;return s}}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);WEAR=!!(S&&S.gcw);try{KITC.clear()}catch(e){}return out}}

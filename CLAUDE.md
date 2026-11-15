@@ -767,3 +767,19 @@
   privacy.html and done here: own pm > 90 days on sign-in; a dev's game once a day removes chat > 90 days, bugs/reports/stats days > 1 year
   (rules let devs delete bugs and stats/d days). `SECURITY-PROGRAM.md` = the COPPA written security program (review yearly).
   **If data handling changes, update privacy.html.**
+- **Patrons** (`multiplayer/210-s218-patrons.js`, `window.SQPATRON`): `patron/<uid>` {s,u (paid through, ms),c (fire cape, kept)} written
+  only by devs (Dev Suite > Art Room > Patrons; later the payment server), read by everyone signed in (onValue on the whole node, `PR`).
+  Active (u > now) = our own 9x11 pixel flame (`FL`, 2 frames; `SQFLAMEURL`) left of the name/OG crown over heads (outermost drawHUD,
+  same layout as 061's `one`) and before `b.nm[data-u]` in chat lines (MutationObserver on #mpl). Fire cape: Options > PATRON, save `fcw`
+  (always written), gearCH `fcp:1`; 201's `spec` gives `fire:1` (fireCol palette, flame tongues on the hem, 8 frames at 110 ms via
+  `tickFor`); peers' `ch.fcp` is deleted every frame unless their patron record has `c`. Credits = ptab 46 (Options > ABOUT > Credits):
+  `pcred/<uid>` {n,t} written by each patron's own game (opt-out `sq_pcred`; rules: patron record exists, not under 13), alphabetical,
+  no amounts; `artcred/<id>` {n,w} for approved art. **Don't name file-level consts `W`, `H`, `P`, `T`, `K`... : they hide the game's
+  globals (`W`/`H` = screen size, `P` = the player) inside the section** (the flame first drew nothing because of a colour named W).
+- **Art Room** (`ui/211-s219-art-room.js`, `window.SQARTROOM`, ptab 47): for active Patrons who aren't under 13. Pixel editor (up to
+  48x48, 8 frames, onion skin, preview, palette slot 0 = clear, draft in localStorage `sq_art_draft`); SEND writes `art/<uid>/<id>`
+  {n,k,w,h,f,ms,note,who,t} (f = JSON {p:[hex],fr:[one `CH` char per pixel, '.' clear]}); rules: create-only by active 13+ patrons, no
+  st/re from players, no deleting approved pieces. Dev Suite > Art Room (`artroom` tab): animated previews, Approve / Not this time (st,
+  re, a gift message, `artcred` on approval; separate `set`s, not a multi-path update), "Copy frame" = Dev Suite clipboard `sq_dev_clip`
+  {w,h,p:[hex|'']} for pasting into any picture editor, Patrons list with +1 month / End now and add-by-search. The game-wide CSS
+  `canvas{position:fixed;inset:0;width:100%;height:100%}` covers every canvas: panel canvases need `position:static` and sizes.

@@ -874,6 +874,73 @@
           ".validate": false
         }
       }
+    },
+    "patron": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true",
+        ".validate": "newData.hasChildren(['s','u']) && newData.child('s').isNumber() && newData.child('u').isNumber()",
+        "s": {
+          ".validate": "newData.isNumber()"
+        },
+        "u": {
+          ".validate": "newData.isNumber()"
+        },
+        "c": {
+          ".validate": "newData.isBoolean()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "pcred": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && ((auth.uid === $uid && (!newData.exists() || (root.child('patron').child($uid).exists() && root.child('age').child($uid).child('b').val() !== 'c'))) || root.child('devs').child(auth.uid).val() === true)",
+        ".validate": "newData.hasChildren(['n','t']) && newData.child('n').isString() && newData.child('n').val().length >= 1 && newData.child('n').val().length <= 12 && newData.child('t').isNumber()",
+        "n": {
+          ".validate": "newData.isString()"
+        },
+        "t": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "artcred": {
+      ".read": "auth != null",
+      "$id": {
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true",
+        ".validate": "newData.hasChildren(['n','w']) && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('w').isString() && newData.child('w').val().length <= 40"
+      }
+    },
+    "art": {
+      ".read": "auth != null && root.child('devs').child(auth.uid).val() === true",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('devs').child(auth.uid).val() === true)",
+        "$id": {
+          ".write": "auth != null && (root.child('devs').child(auth.uid).val() === true || (auth.uid === $uid && !data.exists() && root.child('patron').child($uid).child('u').val() > now && root.child('age').child($uid).child('b').exists() && root.child('age').child($uid).child('b').val() !== 'c') || (auth.uid === $uid && !newData.exists() && data.child('st').val() !== 'ok'))",
+          ".validate": "newData.hasChildren(['n','k','w','h','f','t']) && newData.child('n').isString() && newData.child('n').val().length >= 1 && newData.child('n').val().length <= 24 && (newData.child('k').val() === 'item' || newData.child('k').val() === 'pet' || newData.child('k').val() === 'prop' || newData.child('k').val() === 'anim' || newData.child('k').val() === 'other') && newData.child('w').isNumber() && newData.child('w').val() >= 4 && newData.child('w').val() <= 48 && newData.child('h').isNumber() && newData.child('h').val() >= 4 && newData.child('h').val() <= 48 && newData.child('f').isString() && newData.child('f').val().length < 60000 && newData.child('t').isNumber() && (root.child('devs').child(auth.uid).val() === true || (!newData.child('st').exists() && !newData.child('re').exists()))",
+          "who": {
+            ".validate": "newData.isString() && newData.val().length <= 12"
+          },
+          "note": {
+            ".validate": "newData.isString() && newData.val().length <= 300"
+          },
+          "ms": {
+            ".validate": "newData.isNumber() && newData.val() >= 40 && newData.val() <= 2000"
+          },
+          "st": {
+            ".validate": "newData.isString() && newData.val().length <= 8"
+          },
+          "re": {
+            ".validate": "newData.isString() && newData.val().length <= 300"
+          }
+        }
+      }
     }
   }
 }

@@ -218,6 +218,8 @@ items/206-s214-pets-at-home.js
 ui/207-s215-young-players.js
 multiplayer/208-s216-chat-filter.js
 ui/209-s217-account-and-privacy.js
+multiplayer/210-s218-patrons.js
+ui/211-s219-art-room.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js
