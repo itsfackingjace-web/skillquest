@@ -210,6 +210,7 @@ items/198-s206-yard-weather-and-training.js
 combat/199-s207-void-treant.js
 combat/200-s208-giant-turtle.js
 items/201-s209-guild-capes.js
+combat/202-s210-combat-balance.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

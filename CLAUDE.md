@@ -702,3 +702,8 @@
   (199/200) use the same arena, so they close too. Staying inside used to allow another fight without new shards.
 - **Wiki > Guilds** (075, `WK_TABS` `guild`, `WK2.guild`): founding, island, quests/ranks, buildings, bank, guild bosses (pictures from
   `SQGBOSS.K[k].spr()`, costs from `need`), Turtle armor and capes. Update it when guild features change.
+- **Combat balance** (`combat/202-s210-combat-balance.js`, `window.SQCOMBAT`): the outermost `attack` ignores a swing that would hit a
+  monster (`target()`: within 20 px of `front(13)`, 30 for big/boss) until `MELEE_GAP` (0.4 s) after the last swing that hurt one; the
+  game's own `swing` is 0.25 s, which holding R2 (023's repeat) or Space used fully. Gathering swings aren't affected. Measured sustained
+  damage per second vs one target (scratchpad `bal/dps.js`, levels 10/45/90 with that tier's best gear): melee 10/25/36 (52 with Tactics
+  at the same level), bow 6/24/34, wand 2/16/~12 (mana: cost 2-3, regen ~0.5-2/s, so a wand empties in seconds).
