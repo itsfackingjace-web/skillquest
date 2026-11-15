@@ -710,3 +710,6 @@
   Since Nov 15 the same file also makes `WSP[el].cost` an accessor (base - 1, at least 1; 111a2's setCosts and Dev Suite `mp` rules write
   the base), triples mana regen (small per-frame rises in the outermost `upd` get 2x more added; potions untouched), and adds +1 to
   `arrowDmg` and `spellDmg`. Measured after: melee 10/25/36, bow 8/28/35, wand 7/22/31 (mana holds).
+- **Arrows online** (`multiplayer/203-s211-arrows-seen-online.js`): 064 only sent fx 'ar' from its `shoot` wrapper (021's old HIT
+  auto-shot); every off-hand shot goes through `shootAim`, so the outermost `shootAim` now sends 'ar' for the arrows it added. A new way
+  to fire projectiles must send its own fx event (`SQPVSEND`), or other players won't see it and PvP can't count it.
