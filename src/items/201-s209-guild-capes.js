@@ -1,42 +1,81 @@
-// ---- 209. Guild capes ----
-// Every guild member can wear the guild's cape (START > Guild > Members): the guild colour, the emblem the leader picks in
-// Settings (info.em, 0-5; rules), and a gold trim from guild level 3. It replaces a Marlo cape while worn (saved as `gcw`).
-// It travels to other players inside the character (gearCH: gcp = colour index + 1, gce = emblem, gtr = trim; 061's cleanCh
-// keeps small numbers), and the outermost kitBuild paints it the way 085 paints Marlo's capes, with the emblem on the back.
+// ---- 209. Guild capes (and every cape's shape) ----
+// Every guild member can wear the guild's cape (START > Guild > Members, saved as `gcw`). The leader designs it in Settings:
+// main colour, second colour, pattern, trim, emblem and emblem colour, stored as guilds/<g>/info/cp {c,s,p,t,e,x} (rules: numbers
+// 0-31). It travels to other players inside the character (gearCH: gcp = main+1, gcs, gpt, gtr, gce, gex; 061's cleanCh keeps
+// small numbers) and replaces a Marlo cape while worn.
+// All capes (Marlo's too) are painted here, not by 085: as their own layer that covers the body's width on the back (wizard robes
+// flare out at the bottom, so the old tapered cape left robe sticking out on both sides), behind the body on the front and side,
+// and repainted on top of Dev Suite worn looks on the back (111a's cP wrapper calls window.SQCAPETOP after drawWorn), so a worn
+// robe no longer covers the cape.
 (()=>{const GS=()=>window.SQGUILD&&SQGUILD.state,A=()=>window.SQGUILD&&SQGUILD.api;
- const EM=[{n:'None',p:[]},{n:'Circle',p:['.XX.','XXXX','XXXX','.XX.']},{n:'Cross',p:['.XX.','XXXX','.XX.','.XX.']},{n:'Chevron',p:['X..X','XXXX','.XX.','....']},
-  {n:'Stripes',p:['XXXX','....','XXXX','....']},{n:'Crown',p:['X..X','XXXX','XXXX','....']}];
+ const PAL=['#d83a30','#e8862a','#e8c830','#48a848','#30a0a0','#3870d8','#8048c8','#d058a0','#e8e8e8','#404048',   // = the guild colours (197's COLS)
+  '#7a1c24','#283878','#1e5a30','#7a5030','#909098','#e8b830','#101014','#f4d8a8'];
+ const MARLO=['#c83040','#3858c8','#3a8a3a','#7848c0','#303038','#e8b830'];   // 085's CAPES colours, by ch.cape-1
+ const EM=[{n:'None',p:[]},{n:'Circle',p:['.XX.','XXXX','XXXX','.XX.']},{n:'Sword',p:['.XX.','XXXX','.XX.','.XX.']},{n:'Chevron',p:['X..X','XXXX','.XX.','....']},
+  {n:'Stripes',p:['XXXX','....','XXXX','....']},{n:'Crown',p:['X..X','XXXX','XXXX','....']},{n:'Diamond',p:['.XX.','XXXX','XXXX','.XX.'].map((r,i)=>i===1||i===2?'XXXX':'.XX.')},
+  {n:'Bars',p:['X..X','X..X','X..X','X..X']},{n:'Checks',p:['X.X.','.X.X','X.X.','.X.X']},{n:'Moon',p:['.XXX','XX..','XX..','.XXX']},{n:'Arrow',p:['.XX.','XXXX','X..X','....'].reverse()}];
+ const PAT=['Plain','Halves','Centre stripe','Bands','Quarters'];
  let WEAR=false;
  const inGuild=()=>{const G=GS();return!!(G&&G.id&&G.info)};
  const info=()=>{const G=GS();return G&&G.info||{}};
- const lvl=()=>{const G=GS();try{return SQGUILD.glv(G.prog&&G.prog.qd)}catch(e){return 1}};
- // the cape in the character (yours, and others' through their presence)
- {const _gc=gearCH;gearCH=function(){const c=_gc.apply(this,arguments);if(WEAR&&inGuild()){const I=info();c.gcp=((I.col|0)%10)+1;c.gce=Math.max(0,Math.min(EM.length-1,I.em|0));if(lvl()>=3)c.gtr=1;delete c.cape}return c}}
+ const clampI=(v,n)=>Math.max(0,Math.min(n-1,v|0));
+ // the guild's design (old guilds: their colour and the emblem picked before designs existed)
+ const design=()=>{const I=info(),d=I.cp&&typeof I.cp==='object'?I.cp:{};return{c:clampI(d.c!=null?d.c:(I.col|0),PAL.length),s:clampI(d.s!=null?d.s:15,PAL.length),p:clampI(d.p,PAT.length),t:d.t!=null?(d.t?1:0):0,e:clampI(d.e!=null?d.e:(I.em|0),EM.length),x:clampI(d.x!=null?d.x:8,PAL.length)}};
+ const toCh=(c,d)=>{c.gcp=d.c+1;c.gcs=d.s;c.gpt=d.p;if(d.t)c.gtr=1;else delete c.gtr;c.gce=d.e;c.gex=d.x;delete c.cape;return c};
+ {const _gc=gearCH;gearCH=function(){const c=_gc.apply(this,arguments);if(WEAR&&inGuild())toCh(c,design());return c}}
  const shade=(hex,f)=>'#'+[1,3,5].map(i=>Math.max(0,Math.min(255,Math.round(parseInt(hex.slice(i,i+2),16)*f))).toString(16).padStart(2,'0')).join('');
- const lum=h=>{const v=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));return .3*v[0]+.59*v[1]+.11*v[2]};
- {const _kb=kitBuild;kitBuild=function(ch,dir,st){if(!ch||!(ch.gcp>0))return _kb.apply(this,arguments);const ch2=Object.assign({},ch);delete ch2.cape;delete ch2.gcp;delete ch2.gce;delete ch2.gtr;
-   const base=_kb.call(this,ch2,dir,st);let C='#888888';try{C=SQGUILD.COLS[(ch.gcp-1)%10]}catch(e){}const Dk=shade(C,.7),Lt=shade(C,1.2),K='#181018',T=ch.gtr?'#e8c048':Dk,E=lum(C)>150?'#283048':'#f4f0e4',pat=(EM[ch.gce|0]||EM[0]).p;
-   const c=document.createElement('canvas');c.width=16;c.height=32;const x=c.getContext('2d'),px=(a,b,col)=>{x.fillStyle=col;x.fillRect(a,b,1,1)};
-   if(dir===1){x.drawImage(base,0,0);for(let y=21;y<=29;y++){const w=Math.min(6,2+((y-21)>>1)),a=7-w,b=8+w;px(a-1,y,K);px(b+1,y,K);for(let X=a;X<=b;X++)px(X,y,X===a||X===b?T:(X===7||X===8)&&y===22?Lt:C)}
-    for(let X=1;X<=14;X++)px(X,30,K);if(ch.gtr)for(let X=2;X<=13;X++)px(X,29,T);
-    pat.forEach((row,j)=>{for(let i=0;i<4;i++)if(row[i]==='X')px(6+i,24+j,E)})}
-   else if(dir===0){for(let y=22;y<=30;y++)for(const X of[0,1,14,15])if(y>23||X===1||X===14)px(X,y,X===0||X===15?K:(ch.gtr&&y===30?T:Dk));x.drawImage(base,0,0);px(3,22,ch.gtr?T:Lt);px(12,22,ch.gtr?T:Lt)}
-   else{for(let y=21;y<=30;y++){const w=y<24?1:y<27?2:3;for(let k=0;k<w;k++)px(11+k,y,k===w-1?T:C);px(11+w,y,K)}x.drawImage(base,0,0)}
-   return c}}
+ // which cape a character wears: the guild's, a Marlo cape, or none
+ function spec(ch){if(!ch)return null;if(ch.gcp>0)return{c:PAL[(ch.gcp-1)%PAL.length],s:PAL[(ch.gcs|0)%PAL.length],p:ch.gpt|0,t:!!ch.gtr,e:ch.gce|0,x:PAL[(ch.gex|0)%PAL.length]};
+  const m=MARLO[(ch.cape|0)-1];return m?{c:m,s:m,p:0,t:false,e:0,x:m}:null}
+ const strip=ch=>{const o=Object.assign({},ch);for(const k of['cape','gcp','gcs','gpt','gtr','gce','gex'])delete o[k];return o};
+ // the body's left/right edge on each row (from the bare kit), so the back of the cape covers what's there
+ function edges(base){const w=base.width,h=base.height,d=base.getContext('2d').getImageData(0,0,w,h).data,E=[];for(let y=0;y<h;y++){let a=w,b=-1;for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]>0){if(x<a)a=x;if(x>b)b=x}E.push([a,b])}return E}
+ const LC=new Map();
+ function layer(ch,dir,base){const S=spec(ch);if(!S)return null;const E=edges(base),key=JSON.stringify(S)+'|'+dir+'|'+E.slice(20,31).join(';');let c=LC.get(key);if(c)return c;
+  c=document.createElement('canvas');c.width=16;c.height=32;const x=c.getContext('2d'),px=(a,b,col)=>{x.fillStyle=col;x.fillRect(a,b,1,1)},K='#181018';
+  const col=(X,y,a,b)=>{const half=X<(a+b+1)/2;if(S.p===1)return half?S.c:S.s;if(S.p===2)return Math.abs(X-7.5)<1.6?S.s:S.c;if(S.p===3)return((y-21)>>1)%2?S.s:S.c;if(S.p===4)return(half?0:1)^(y>25?1:0)?S.s:S.c;return S.c};
+  const T=S.t?S.s:null;
+  if(dir===1){let a0=6,b0=9;for(let y=21;y<=29;y++){const w=Math.min(6,2+((y-21)>>1));let a=7-w,b=8+w;
+     if(y>=22){const[ea,eb]=E[y];if(eb>=0){a=Math.max(1,Math.min(a,ea));b=Math.min(14,Math.max(b,eb))}}a=Math.max(a,a0-1);b=Math.min(b,b0+1);a0=a;b0=b;
+     px(a-1,y,K);px(b+1,y,K);for(let X=a;X<=b;X++){const edge=X===a||X===b;const cc=col(X,y,a,b);px(X,y,edge?(T||shade(cc,.7)):(X===7||X===8)&&y===22?shade(cc,1.2):cc)}}
+   for(let X=Math.max(0,a0-1);X<=Math.min(15,b0+1);X++)px(X,30,K);if(T)for(let X=a0;X<=b0;X++)px(X,29,T);
+   const pat=(EM[S.e]||EM[0]).p;pat.forEach((row,j)=>{for(let i=0;i<4;i++)if(row[i]==='X')px(6+i,24+j,S.x)})}
+  // front: a strip of cape just outside the body's outline, hanging straight down from the shoulders (it never narrows again,
+  // so it reads as cloth behind a robe or the legs, not spikes beside the hands)
+  else if(dir===0){const cc=S.c,Dk=T||shade(cc,.7);let a=99,b=-1;for(let y=22;y<=30;y++){const[ea,eb]=E[y];if(eb>=0){a=Math.min(a,ea);b=Math.max(b,eb)}if(b<0)continue;
+    const L=Math.max(0,a-1),R=Math.min(15,b+1);if(y>23||y===22){px(L,y,y===30&&T?T:Dk);px(R,y,y===30&&T?T:Dk)}if(L>0&&y>23)px(L-1,y,K);if(R<15&&y>23)px(R+1,y,K)}}
+  else{for(let y=21;y<=30;y++){const w=y<24?1:y<27?2:3;for(let k=0;k<w;k++)px(11+k,y,k===w-1?(T||shade(S.c,.7)):col(11+k,y,11,13));px(11+w,y,K)}}
+  if(LC.size>400)LC.clear();LC.set(key,c);return c}
+ {const _kb=kitBuild;kitBuild=function(ch,dir,st){if(!spec(ch))return _kb.apply(this,arguments);const base=_kb.call(this,strip(ch),dir,st),L=layer(ch,dir,base);if(!L)return base;
+   const c=document.createElement('canvas');c.width=16;c.height=32;const x=c.getContext('2d');
+   if(dir===1){x.drawImage(base,0,0);x.drawImage(L,0,0)}else{x.drawImage(L,0,0);x.drawImage(base,0,0)}
+   if(dir===0){const S=spec(ch);x.fillStyle=S.t?S.s:shade(S.c,1.2);x.fillRect(3,22,1,1);x.fillRect(12,22,1,1)}return c}}
+ // on top of Dev Suite worn looks, from behind (called by 111a's cP wrapper after drawWorn)
+ window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(dir!==1||!spec(ch))return;try{const base=kitBuild(strip(ch),1,st),L=layer(ch,1,base);if(!L)return;const sm=C.imageSmoothingEnabled;C.imageSmoothingEnabled=false;C.drawImage(L,Math.round(ox)-8,Math.round(oy)-25);C.imageSmoothingEnabled=sm}catch(e){}};
  // saving the choice to wear it
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(WEAR)s.gcw=1;return s}}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);WEAR=!!(S&&S.gcw);try{KITC.clear()}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){WEAR=false;return _ng.apply(this,arguments)}}
  try{KNOWN49.add('gcw')}catch(e){}
- // a picture of the cape from behind, for the guild screen
- function preview(em){try{const ch=Object.assign({},gearCH());const I=info();ch.gcp=((I.col|0)%10)+1;ch.gce=em==null?(I.em|0):em;if(lvl()>=3)ch.gtr=1;else delete ch.gtr;delete ch.cape;
-   const s=kitSprite(ch,1,0,false),c=document.createElement('canvas');c.width=s.width*3;c.height=s.height*3;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(s,0,0,c.width,c.height);return c.toDataURL()}catch(e){return''}}
+ // pictures for the guild screen: the cape on your character, back and front
+ function pic(d,dir){try{const ch=toCh(Object.assign({},gearCH()),d),s=kitSprite(ch,dir,0,false),c=document.createElement('canvas');c.width=s.width*3;c.height=s.height*3;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(s,0,0,c.width,c.height);return c.toDataURL()}catch(e){return''}}
  const img=(u,w)=>u?'<img alt="" src="'+u+'" style="width:'+w+'px;image-rendering:pixelated;flex:none">':'';
- function card(){if(!inGuild())return'';return'<div class="qc"><div style="display:flex;gap:12px;align-items:center">'+img(preview(),48)+'<div style="flex:1"><b>Guild cape</b><p style="font-size:13px">In your guild\'s colour'+((info().em|0)?' with its emblem':'')+(lvl()>=3?' and a gold trim':', gold trim from guild level 3')+'. Everyone sees it. It replaces your Marlo cape while you wear it.</p>'+
+ function card(){if(!inGuild())return'';const d=design();return'<div class="qc"><div style="display:flex;gap:10px;align-items:center">'+img(pic(d,1),48)+img(pic(d,0),48)+'<div style="flex:1"><b>Guild cape</b><p style="font-size:13px">Designed by your guild\'s leader. Everyone sees it on you, and it takes the place of your Marlo cape while you wear it.</p>'+
    '<button class="qb" data-g="gcp:wear">'+(WEAR?'Take it off':'Wear the guild cape')+'</button></div></div></div>'}
- function setCard(){const cur=info().em|0;return'<div class="qc"><b>Cape emblem</b><p style="font-size:13px">Shown on the back of every member\'s guild cape (in the guild colour above).</p><div style="display:flex;gap:8px;flex-wrap:wrap">'+
-   EM.map((e,i)=>'<button data-g="gcp:em:'+i+'" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;border:3px solid '+(i===cur?'#f8a020':'#485870')+';background:#f8f8f8;cursor:pointer;font:700 11px '+PF+'">'+img(preview(i),32)+e.n+'</button>').join('')+'</div></div>'}
- function act(x,y){const a=A();if(x==='wear'){WEAR=!WEAR;try{KITC.clear()}catch(e){}try{saveLocal(true)}catch(e){}a&&a.tell(WEAR?'You put on the guild cape.':'You took off the guild cape.');return}
-  if(x==='em'){if(!a||a.role()!=='l')return;const v=Math.max(0,Math.min(EM.length-1,+y|0));a.DB().set(a.ref('guilds/'+SQGUILD.id+'/info/em'),v).then(()=>{try{KITC.clear()}catch(e){}a.tell('The guild cape now has the '+EM[v].n.toLowerCase()+' emblem.')}).catch(a.fail)}}
- window.SQGCAPE={card,setCard,act,EM,get wear(){return WEAR},set wear(v){WEAR=!!v;try{KITC.clear()}catch(e){}}};
+ // the designer (leader only): changes are a draft until Save
+ let DR=null;
+ function setCard(){const d=DR||design(),sw=(f,v)=>'<div style="display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 8px">'+PAL.map((c,i)=>'<button data-g="gcp:'+f+':'+i+'" aria-label="Colour '+(i+1)+'" style="width:26px;height:26px;background:'+c+';border:3px solid '+(i===v?'#f8a020':'#485870')+';cursor:pointer"></button>').join('')+'</div>',
+   btns=(f,L,v)=>'<div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px">'+L.map((n,i)=>'<button data-g="gcp:'+f+':'+i+'" style="padding:5px 8px;border:3px solid '+(i===v?'#f8a020':'#485870')+';background:#f8f8f8;color:#404040;cursor:pointer;font:700 12px '+PF+'">'+n+'</button>').join('')+'</div>';
+  return'<div class="qc"><b>Guild cape</b><p style="font-size:13px">Design the cape every member can wear. Nothing changes for them until you tap Save.</p>'+
+   '<div style="display:flex;gap:10px;justify-content:center;margin:6px 0">'+img(pic(d,1),64)+img(pic(d,0),64)+img(pic(d,2),64)+'</div>'+
+   '<small>Main colour</small>'+sw('c',d.c)+'<small>Second colour (pattern and trim)</small>'+sw('s',d.s)+'<small>Pattern</small>'+btns('p',PAT,d.p)+
+   '<small>Trim</small>'+btns('t',['No trim','Trim'],d.t)+'<small>Emblem (on the back)</small>'+btns('e',EM.map(e=>e.n),d.e)+'<small>Emblem colour</small>'+sw('x',d.x)+
+   '<button class="qb" data-g="gcp:save"'+(DR?'':' disabled style="opacity:.5"')+'>Save the cape</button>'+(DR?' <button class="qb" data-g="gcp:undo">Undo changes</button>':'')+'</div>'}
+ function act(x,y){const a=A();if(!a)return;
+  if(x==='wear'){WEAR=!WEAR;try{KITC.clear()}catch(e){}try{saveLocal(true)}catch(e){}a.tell(WEAR?'You put on the guild cape.':'You took off the guild cape.');return}
+  if(a.role()!=='l')return;
+  if('cspex'.includes(x)&&x.length===1||x==='t'){DR=Object.assign(DR||design(),{[x]:+y|0});a.redraw();return}
+  if(x==='undo'){DR=null;a.redraw();return}
+  if(x==='save'&&DR){const d=DR;a.DB().set(a.ref('guilds/'+SQGUILD.id+'/info/cp'),{c:d.c,s:d.s,p:d.p,t:d.t,e:d.e,x:d.x}).then(()=>{DR=null;try{KITC.clear()}catch(e){}a.tell('The guild cape is saved. Every member wearing it shows the new design.')}).catch(a.fail)}}
+ window.SQGCAPE={card,setCard,act,EM,PAL,PAT,design,spec,get wear(){return WEAR},set wear(v){WEAR=!!v;try{KITC.clear()}catch(e){}}};
 })();

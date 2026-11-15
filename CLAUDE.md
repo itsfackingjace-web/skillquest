@@ -670,6 +670,10 @@
   KNOWN49) like the Outlaw's hat; +3% block a piece, 2 pieces +5%, 3 pieces +5% and blockCap +5%; look = 084's plate recoloured (`ttk`).
 - **Guild bank deposit buttons** (197 `depositMany`, `GRP`): put in all void logs / raw fish / logs / ores, or everything (two taps), as one
   bank change with one log line (`k:'*'`, `d` text). Log lines with a text `d` show it as is.
-- **Guild capes** (`items/201-s209-guild-capes.js`, `SQGCAPE`): worn from the guild screen's Members tab (`gcw` in the save, KNOWN49); gearCH adds
-  `gcp` (guild colour index + 1), `gce` (emblem 0-5, leader's `info.em`; rules) and `gtr` (gold trim, guild level 3+) and drops `cape`; the outermost
-  `kitBuild` paints it like 085's Marlo capes (emblem 4x4 on the back view). Other players get it through `ch` (061's cleanCh keeps numbers 0-99).
+- **Capes** (`items/201-s209-guild-capes.js`, `SQGCAPE`): 201 paints every cape (Marlo's `ch.cape` and the guild cape), not 085: the outermost
+  `kitBuild` strips the cape fields, builds the bare kit and adds a cape layer (`layer`): on the back it widens to the body's own row edges (wizard
+  robes flare), on the front a strip just outside the body hanging straight down, then composited behind (front/side) or on top (back). 111a's
+  cP wrapper calls `window.SQCAPETOP` after `drawWorn`, which repaints the back layer over Dev Suite worn looks. Guild cape: worn from the guild
+  screen's Members tab (`gcw`, KNOWN49); the leader's design is `info.cp` {c,s,p,t,e,x} (`PAL` 18 colours, `PAT` 5 patterns, trim on/off, `EM`
+  11 emblems; rules: those keys, numbers 0-31), drafted in Settings until Save; older guilds fall back to `info.col`/`info.em`. gearCH adds
+  gcp (c+1), gcs, gpt, gtr, gce, gex and drops `cape`; other players get them through `ch` (061's cleanCh keeps numbers 0-99).

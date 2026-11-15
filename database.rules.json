@@ -603,6 +603,11 @@
           "em": {
             ".validate": "newData.isNumber() && newData.val()>=0 && newData.val()<=5"
           },
+          "cp": {
+            "$k": {
+              ".validate": "($k==='c' || $k==='s' || $k==='p' || $k==='t' || $k==='e' || $k==='x') && newData.isNumber() && newData.val()>=0 && newData.val()<=31"
+            }
+          },
           "$o": {
             ".validate": false
           }
