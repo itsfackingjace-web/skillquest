@@ -707,3 +707,6 @@
   game's own `swing` is 0.25 s, which holding R2 (023's repeat) or Space used fully. Gathering swings aren't affected. Measured sustained
   damage per second vs one target (scratchpad `bal/dps.js`, levels 10/45/90 with that tier's best gear): melee 10/25/36 (52 with Tactics
   at the same level), bow 6/24/34, wand 2/16/~12 (mana: cost 2-3, regen ~0.5-2/s, so a wand empties in seconds).
+  Since Nov 15 the same file also makes `WSP[el].cost` an accessor (base - 1, at least 1; 111a2's setCosts and Dev Suite `mp` rules write
+  the base), triples mana regen (small per-frame rises in the outermost `upd` get 2x more added; potions untouched), and adds +1 to
+  `arrowDmg` and `spellDmg`. Measured after: melee 10/25/36, bow 8/28/35, wand 7/22/31 (mana holds).
