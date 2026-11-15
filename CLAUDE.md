@@ -678,3 +678,4 @@
   screen's Members tab (`gcw`, KNOWN49); the leader's design is `info.cp` {c,s,p,t,e,x} (`PAL` 18 colours, `PAT` 5 patterns, trim on/off, `EM`
   11 emblems; rules: those keys, numbers 0-31), drafted in Settings until Save; older guilds fall back to `info.col`/`info.em`. gearCH adds
   gcp (c+1), gcs, gpt, gtr, gce, gex and drops `cape`; other players get them through `ch` (061's cleanCh keeps numbers 0-99).
+  Front/side capes (since -41): `wide()` is a 96x112 half-pixel picture of the 48x56 box (anchor 24,44), drawn at (ox-24,oy-44,48,56). Its width comes from the bare kit's torso (kit rows 21-27), never from worn looks (a wide hood made it a slab); rows run from `TOP` 80 (shoulders) to `HEM` 98 (ankles). 111a exposes `window.SQCHDRAW(C,ch,dir,st,ox,oy,fl)` (inner cP + drawWorn into any canvas); 201's `sil()` uses it to skip a side of a row where a robe/hood already reaches the cape's edge.

@@ -9405,6 +9405,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-41',d:'Nov 14, 2026',t:'Capes fixed from the front and side',n:['Sorry about the last update: from the front and side, capes looked like a big box behind you. Now they\'re slim: from the front you see the cape\'s edges beside your arms and legs, from the side it trails a little behind your back and swings as you walk, and it ends at your ankles instead of below your feet.','Hoods and robes now cover the cape where they\'re wider than you, so a cape no longer sticks out around them.']},
  {v:'2026.11.14-40',d:'Nov 14, 2026',t:'Capes you can see from every side',n:['Capes are much easier to see from the front and the side now: from the front the cape hangs out on both sides from your shoulders to your feet, and from the side it trails out behind your back. This goes for guild capes and Marlo\'s capes.']},
  {v:'2026.11.14-39',d:'Nov 14, 2026',t:'Design your guild cape',n:['Guild leaders can now design the guild cape in START > Guild > Settings: main colour, second colour, a pattern (halves, centre stripe, bands, quarters), a trim, and one of ten emblems in any colour. A preview shows it from the back, front and side, and nothing changes for members until you tap Save.','Capes look right over wizard robes and other long robes now: from behind, the cape covers the whole robe instead of leaving it sticking out on both sides, and it stays on top of special robes too. This goes for Marlo\'s capes as well as guild capes.']},
  {v:'2026.11.14-38',d:'Nov 14, 2026',t:'Guild capes',n:['Every guild member can now wear the guild cape: START > Guild > Members > Wear the guild cape. It\'s in your guild\'s colour, and everyone sees it on you.','Leaders pick an emblem for the back of the cape in Settings: circle, cross, chevron, stripes or crown.','Guilds at level 3 or higher get a gold trim on their capes.','The guild cape takes the place of your Marlo cape while you wear it; take it off any time to switch back.']},
@@ -13078,7 +13079,10 @@ var SQA=(()=>{
  // "hide" is decided by the game drawing you (it needs the look in its library), not by the game you play on
  const hideFor=ch=>{let o=null;if(!ch||!Array.isArray(ch.wr)||ch.wsh==null)return ch;for(const k of ch.wr){const w=WORN[k],sl=EQ[k]&&EQ[k].slot;if(!w||!w.h)continue;o=o||{...ch};
    if(sl==='helm'){o.ht=ch.wht;o.hcol=ch.whc;delete o.mh;delete o.fc;delete o.oh}else if(sl==='body'){o.sh=ch.wsh;delete o.mr}else if(sl==='legs')o.pn=ch.wpn}return o||ch};
- const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){try{if(window.SQCAPEUNDER)SQCAPEUNDER(GC||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
+ const _cPw=cP;
+ // the character as other code sees it (game kit + worn looks) drawn into any canvas: 201 measures capes against it
+ window.SQCHDRAW=function(C,ch,dir,st,ox,oy,fl){const sv=GC;GC=C;try{_cPw(hideFor(ch),dir,st,ox,oy,fl);if(ch&&Array.isArray(ch.wr))drawWorn(C,ch.wr.slice(0,6),dir|0,st|0,ox,oy,!!fl,null,ch)}finally{GC=sv}};
+ cP=function(ch,dir,st,ox,oy,fl){try{if(window.SQCAPEUNDER)SQCAPEUNDER(GC||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
   try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl,null,ch)}catch(e){}
   // a cape seen from behind goes over worn looks (201)
   try{if(window.SQCAPETOP)SQCAPETOP(C,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}};
@@ -21065,18 +21069,33 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
 // front and side: the 16 px kit has no room beside the body, so the cape is its own 24 px wide picture drawn behind the
  // character by 111a's cP wrapper (window.SQCAPEUNDER, before the character): from the front it hangs 2-4 px out on both
  // sides from the shoulders to the feet, from the side it trails 3-5 px out behind the back. Drawn facing right, mirrored for left.
- const WC=new Map();
- function wide(ch,dir,st){const S=spec(ch);if(!S||dir===1)return null;const base=kitSprite(strip(ch),dir,st|0,false),E=edges(base),key=JSON.stringify(S)+'|'+dir+'|'+E.slice(18,31).join(';');let c=WC.get(key);if(c)return c;
-  c=document.createElement('canvas');c.width=24;c.height=32;const x=c.getContext('2d'),px=(a,b,col)=>{if(a>=0&&a<24){x.fillStyle=col;x.fillRect(a,b,1,1)}},K='#181018',T=S.t?S.s:null,Dk=shade(S.c,.72),Lt=shade(S.c,1.18);
-  let a=99,b=-1;const top=20;
-  for(let y=top;y<=30;y++){const[ea,eb]=E[y]||[99,-1];if(eb>=0){a=Math.min(a,ea+4);b=Math.max(b,eb+4)}if(b<0)continue;const f=y<23?2:y<27?3:4;
-   if(dir===0){for(const sd of[-1,1]){const inner=sd<0?a+1:b-1,outer=sd<0?a-f:b+f;const lo=Math.min(inner,outer),hi=Math.max(inner,outer);
-      for(let X=lo;X<=hi;X++){const isOut=X===outer;px(X,y,isOut?(T||Dk):(X===outer-sd?Lt:S.c))}px(outer+sd,y,K)}}
-   else{const back=a,outer=back-f-1;for(let X=outer;X<=back+2;X++)px(X,y,X===outer?(T||Dk):X===outer+1?Lt:(S.p===1&&X>back-1?S.s:S.c));px(outer-1,y,K)}}
-  if(b>=0){if(dir===0){for(let X=a-5;X<=a+1;X++)px(X,31,K);for(let X=b-1;X<=b+5;X++)px(X,31,K)}else for(let X=a-6;X<=a+2;X++)px(X,31,K);}
+ // It is measured against what is really drawn (game kit + Dev Suite worn looks, via 111a's SQCHDRAW, at half-pixel detail
+ // in the 48x56 box, anchor 24,44), tapers from the shoulders and ends at the ankles, so wide robes don't turn it into a slab.
+ const WC=new Map(),SIL=new Map();let SC=null;
+ function sil(ch,dir,st){const key=JSON.stringify(ch)+'|'+dir+'|'+st;let E=SIL.get(key);if(E)return E;
+  if(!SC){SC=document.createElement('canvas');SC.width=96;SC.height=112;SC.hd2=true}
+  const x=SC.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,96,112);x.setTransform(2,0,0,2,0,0);x.imageSmoothingEnabled=false;
+  try{if(window.SQCHDRAW)SQCHDRAW(x,ch,dir,st,24,44,false);else x.drawImage(kitSprite(ch,dir,st|0,false),16,19)}finally{x.setTransform(1,0,0,1,0,0)}
+  const d=x.getImageData(0,0,96,112).data;E=[];for(let y=0;y<112;y++){let a=96,b=-1;for(let X=0;X<96;X++)if(d[(y*96+X)*4+3]>60){if(X<a)a=X;if(X>b)b=X}E.push([a,b])}
+  if(SIL.size>300)SIL.clear();SIL.set(key,E);return E}
+ const TOP=80,HEM=98; // shoulders and ankles, in half pixels of the 48x56 box
+ function wide(ch,dir,st){const S=spec(ch);if(!S||dir===1)return null;const bare=strip(ch),E=sil(bare,dir,st|0),KE=edges(kitSprite(bare,dir,st|0,false)),key=JSON.stringify(S)+'|'+dir+'|'+(st|0)+'|'+E.slice(TOP,HEM+1).join(';')+'|'+KE.slice(21,28).join(';');let c=WC.get(key);if(c)return c;
+  c=document.createElement('canvas');c.width=96;c.height=112;const x=c.getContext('2d'),px=(a,b,col)=>{if(a>=0&&a<96){x.fillStyle=col;x.fillRect(a,b,1,1)}},K='#181018',T=S.t?S.s:null,Dk=shade(S.c,.62),In=shade(S.c,.8),Lt=shade(S.c,1.15);
+  // the cape's width comes from the game's own body (shoulders/torso), not from robes or hoods over it: those just cover it
+  let ka=99,kb=-1;for(let y=21;y<=27;y++){const[ea,eb]=KE[y]||[99,-1];if(eb>=0){ka=Math.min(ka,ea);kb=Math.max(kb,eb)}}if(kb<0){WC.set(key,c);return c}
+  const a=(ka+16)*2,b=(kb+16)*2+1,sway=(st|0)?1:0;
+  for(let y=TOP;y<=HEM;y++){const[ea,eb]=E[y]||[99,-1],t=(y-TOP)/(HEM-TOP),last=y===HEM;
+   if(dir===0){// two edges peeking out beside you, 1 px at the shoulders to 2 px at the hem, the lining a shade darker
+    const f=Math.round(2+2*t)-(last?1:0);for(const sd of[-1,1]){const edge=sd<0?a:b,outer=edge+sd*f;
+     if(eb>=0&&(sd<0?ea<=outer+1:eb>=outer-1))continue; // a robe covers this side here
+     for(let X=edge-sd*4;X!==outer+sd;X+=sd){const o=Math.abs(X-outer);px(X,y,last?K:o===0?K:o===1?(T||Dk):In)}}
+    if(last)for(let X=a+2;X<=b-2;X++)px(X,y,K)}
+   else{// from the side it trails out behind your back, wider toward the hem and swinging a little while you walk
+    const f=Math.round(2+4*t+(t>.4?sway:0))-(last?1:0),outer=a-f;if(eb>=0&&ea<=outer+1)continue;
+    for(let X=outer;X<=a+5;X++){const o=X-outer;px(X,y,last||o===0?K:o===1?(T||Dk):o===2?Lt:(S.p===1&&X>a?S.s:S.c))}}}
   if(WC.size>400)WC.clear();WC.set(key,c);return c}
  window.SQCAPEUNDER=function(C,ch,dir,st,ox,oy,fl){if(dir===1||!C)return;let L=null;try{L=wide(ch,dir,st)}catch(e){}if(!L)return;const sm=C.imageSmoothingEnabled;C.imageSmoothingEnabled=false;
-  const X=Math.round(ox)-12,Y=Math.round(oy)-25;if(fl&&dir===2){C.save();C.translate(X*2+24,0);C.scale(-1,1);C.drawImage(L,X,Y);C.restore()}else C.drawImage(L,X,Y);C.imageSmoothingEnabled=sm};
+  const X=Math.round(ox)-24,Y=Math.round(oy)-44;if(fl&&dir===2){C.save();C.translate(X*2+48,0);C.scale(-1,1);C.drawImage(L,X,Y,48,56);C.restore()}else C.drawImage(L,X,Y,48,56);C.imageSmoothingEnabled=sm};
  // on top of Dev Suite worn looks, from behind (called by 111a's cP wrapper after drawWorn)
  window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(dir!==1||!spec(ch))return;try{const base=kitBuild(strip(ch),1,st),L=layer(ch,1,base);if(!L)return;const sm=C.imageSmoothingEnabled;C.imageSmoothingEnabled=false;C.drawImage(L,Math.round(ox)-8,Math.round(oy)-25);C.imageSmoothingEnabled=sm}catch(e){}};
  // saving the choice to wear it
@@ -21085,7 +21104,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  {const _ng=newGame;newGame=function(){WEAR=false;return _ng.apply(this,arguments)}}
  try{KNOWN49.add('gcw')}catch(e){}
  // pictures for the guild screen: the cape on your character, back and front
- function pic(d,dir){try{const ch=toCh(Object.assign({},gearCH()),d),s=kitSprite(ch,dir,0,false),L=wide(ch,dir,0),c=document.createElement('canvas');c.width=24*3;c.height=32*3;const x=c.getContext('2d');x.imageSmoothingEnabled=false;if(L)x.drawImage(L,0,0,c.width,c.height);x.drawImage(s,4*3,0,48,96);return c.toDataURL()}catch(e){return''}}
+ function pic(d,dir){try{const ch=toCh(Object.assign({},gearCH()),d),s=kitSprite(ch,dir,0,false),L=wide(ch,dir,0),c=document.createElement('canvas');c.width=24*3;c.height=32*3;const x=c.getContext('2d');x.imageSmoothingEnabled=false;if(L)x.drawImage(L,-12*3,-19*3,48*3,56*3);x.drawImage(s,4*3,0,48,96);return c.toDataURL()}catch(e){return''}}
  const img=(u,w)=>u?'<img alt="" src="'+u+'" style="width:'+w+'px;image-rendering:pixelated;flex:none">':'';
  function card(){if(!inGuild())return'';const d=design();return'<div class="qc"><div style="display:flex;gap:10px;align-items:center">'+img(pic(d,1),54)+img(pic(d,0),54)+'<div style="flex:1"><b>Guild cape</b><p style="font-size:13px">Designed by your guild\'s leader. Everyone sees it on you, and it takes the place of your Marlo cape while you wear it.</p>'+
    '<button class="qb" data-g="gcp:wear">'+(WEAR?'Take it off':'Wear the guild cape')+'</button></div></div></div>'}
