@@ -774,7 +774,7 @@
   (always written), gearCH `fcp:1`; 201's `spec` gives `fire:1` (fireCol palette, flame tongues on the hem, 8 frames at 110 ms via
   `tickFor`); peers' `ch.fcp` is deleted every frame unless their patron record has `c`. Credits = ptab 46 (Options > ABOUT > Credits):
   `pcred/<uid>` {n,t} written by each patron's own game (opt-out `sq_pcred`; rules: patron record exists, not under 13), alphabetical,
-  no amounts; `artcred/<id>` {n,w} for approved art. **Don't name file-level consts `W`, `H`, `P`, `T`, `K`... : they hide the game's
+  no amounts; `artcred/<id>` {n,w} for approved art. `PATREON` = the page URL; Options shows SUPPORT SKILLQUEST + a real `<a target=_blank>` (`.sqpatlink`) to signed-in players whose age band is known and not `c`, and who aren't active Patrons. Patreon membership isn't linked to accounts automatically yet: devs grant `patron/<uid>` by hand (Art Room > Patrons). terms/refund/privacy.html name Patreon. **Don't name file-level consts `W`, `H`, `P`, `T`, `K`... : they hide the game's
   globals (`W`/`H` = screen size, `P` = the player) inside the section** (the flame first drew nothing because of a colour named W).
 - **Art Room** (`ui/211-s219-art-room.js`, `window.SQARTROOM`, ptab 47): for active Patrons who aren't under 13. Pixel editor (up to
   48x48, 8 frames, onion skin, preview, palette slot 0 = clear, draft in localStorage `sq_art_draft`); SEND writes `art/<uid>/<id>`

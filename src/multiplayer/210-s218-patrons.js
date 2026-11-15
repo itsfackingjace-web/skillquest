@@ -8,7 +8,7 @@
 // Credits (Options > ABOUT > Credits, ptab 46): `pcred/<uid>` {n,t} written by each patron's game while "Show me in the
 // credits" is on (localStorage sq_pcred, default on; never for under-13, the rules check), listed alphabetically with no
 // amounts; `artcred/<id>` {n,w} = approved Art Room work (written by devs).
-(()=>{const myNm=()=>{try{const m=window.SQMP;return String((typeof PNAME!=='undefined'&&PNAME)||((m&&m.user&&m.user.displayName)||'').split(' ')[0]||'Adventurer').replace(/[<>]/g,'').slice(0,12)}catch(e){return'Adventurer'}};const mp=()=>window.SQMP,F=()=>window.SQFB,uid=()=>{const m=mp();return m&&m.user?m.user.uid:''};
+(()=>{const PATREON='https://www.patreon.com/cw/SKILLQUESTMMO';const myNm=()=>{try{const m=window.SQMP;return String((typeof PNAME!=='undefined'&&PNAME)||((m&&m.user&&m.user.displayName)||'').split(' ')[0]||'Adventurer').replace(/[<>]/g,'').slice(0,12)}catch(e){return'Adventurer'}};const mp=()=>window.SQMP,F=()=>window.SQFB,uid=()=>{const m=mp();return m&&m.user?m.user.uid:''};
  let PR={},listening='';
  const rec=u=>u&&PR[u]||null,active=u=>{const r=rec(u);return!!(r&&typeof r.u==='number'&&r.u>Date.now())},cape=u=>{const r=rec(u);return!!(r&&r.c)};
  function listen(){const m=mp(),Fb=F();if(!m||!m.on||!m.user||!Fb){return}if(listening===m.user.uid)return;listening=m.user.uid;
@@ -22,7 +22,7 @@
  const flameURL=(()=>{const c=document.createElement('canvas');c.width=18;c.height=22;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(FL[0],0,0,18,22);return c.toDataURL()})();
  const flameImg=()=>{const i=document.createElement('img');i.src=flameURL;i.alt='Patron';i.title='Patron';i.className='sqpf';return i};
  window.SQFLAMEURL=flameURL;
- {const st=document.createElement('style');st.textContent=`img.sqpf{width:.75em;height:.92em;image-rendering:pixelated;vertical-align:-.1em;margin-right:3px}
+ {const st=document.createElement('style');st.textContent=`#pn a.sqpatlink{display:block;text-align:center;text-decoration:none;color:inherit;box-sizing:border-box}img.sqpf{width:.75em;height:.92em;image-rendering:pixelated;vertical-align:-.1em;margin-right:3px}
 #pn .pcr{font:500 15px/1.5 ${PF}}#pn .pcr h3{font:700 17px ${PF};margin:16px 0 6px}#pn .pcr ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:4px 14px}
 #pn .pcr li{display:flex;align-items:center;gap:4px}#pn .pcr .muted{opacity:.7;font-size:13px}`;document.head.appendChild(st)}
  // over heads: left of the name (and left of the OG crown when there is one)
@@ -72,10 +72,15 @@
      (cape(u)?'<button class="sb" data-pcr="cape">Fire cape: '+(WEAR?'WEARING':'OFF')+'</button>':'')+
      (!kid?'<button class="sb" data-pcr="cred">Show me in the credits: '+(credPref?'ON':'OFF')+'</button>':'')+
      (art?'<button class="sb" data-pcr="art">Open the Art Room</button>':'')}
+   // the Patreon page, for signed-in players who aren't under 13 (and whose age band is known)
+   const kid2=!window.SQAGE||!SQAGE.known||!SQAGE.known()||SQAGE.child();
+   if(u&&!kid2&&!(r&&active(u)))h+='<div class="tl" style="margin-top:16px"><img class="sqpf" src="'+flameURL+'" alt="">SUPPORT SKILLQUEST</div>'+
+     '<div class="qc" style="font-size:14px;line-height:1.4;padding:8px 12px;margin:6px 0">Patrons get a flame next to their name, an animated fire cape that\'s theirs to keep, their name in the Credits and the Art Room. Ask a parent first if you\'re under 18. After you join, send us your character name in a Patreon message (or email support@skillquestmmo.com) and we\'ll switch your perks on.</div>'+
+     '<a class="sb sqpatlink" href="'+PATREON+'" target="_blank" rel="noopener">Become a Patron</a>';
    return h}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pcr]');if(!b)return;e.stopPropagation();e.preventDefault();const a=b.dataset.pcr;
   if(a==='credits'){ptab=CTAB;loadCredits();rPn()}else if(a==='back'){ptab=8;rPn()}
   else if(a==='cape'){WEAR=!WEAR;try{saveLocal(true)}catch(x){}say(WEAR?'You put on your fire cape.':'You take off your fire cape.');rPn()}
   else if(a==='cred'){credPref=!credPref;try{localStorage.setItem('sq_pcred',credPref?'1':'0')}catch(x){}credSent='';syncCred();rPn()}
   else if(a==='art'&&window.SQARTROOM)SQARTROOM.open()},true);
- window.SQPATRON={active,cape,rec,get all(){return PR},get wearing(){return WEAR},set wearing(v){WEAR=!!v},flameURL,syncCred,loadCredits,CTAB}})();
+ window.SQPATRON={PATREON,active,cape,rec,get all(){return PR},get wearing(){return WEAR},set wearing(v){WEAR=!!v},flameURL,syncCred,loadCredits,CTAB}})();
