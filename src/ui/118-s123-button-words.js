@@ -22,7 +22,7 @@
   try{const tk=document.getElementById('tk');if(typeof facingNpc==='function'&&facingNpc()&&!(tk&&tk.offsetWidth&&/^\s*TALK/.test(tk.textContent)))return'TALK'}catch(e){}/* 189: no second TALK when the TALK button already shows it */
   if(typeof FISH!=='undefined'&&FISH)return'REEL';
   try{const st=typeof frontStation==='function'&&frontStation();if(st)return STW[st.t]||'USE'}catch(e){}
-  try{if(SCENE&&typeof inHome==='function'&&inHome()){const R=SCENE.room,[x,y]=frontTile(),f=SCENE.house.furn.get(y*R.w+x);if(f)return f.t==='bed'?(typeof bedPick!=='undefined'&&bedPick&&bedPick.home&&bedPick.i===y*R.w+x&&performance.now()-bedPick.at<3000?'PICK UP':'SLEEP'):f.t==='chest'?'OPEN':'MOVE'}
+  try{if(SCENE&&typeof inHome==='function'&&inHome()){const R=SCENE.room,[x,y]=frontTile(),f=SCENE.house.furn.get(y*R.w+x);if(f&&window.SQHOMEPETS&&SQHOMEPETS.isPet(f.t)){const a=SQHOMEPETS.armed();return a&&a.i===y*R.w+x?'PICK UP':'PET'}if(f)return f.t==='bed'?(typeof bedPick!=='undefined'&&bedPick&&bedPick.home&&bedPick.i===y*R.w+x&&performance.now()-bedPick.at<3000?'PICK UP':'SLEEP'):f.t==='chest'?'OPEN':'MOVE'}
    if(!SCENE){const[x,y]=frontTile(),s=STR.get(y*N+x);if(s&&s.t==='chest')return'OPEN';if(s&&s.t==='bed')return typeof bedPick!=='undefined'&&bedPick&&!bedPick.home&&bedPick.i===y*N+x&&performance.now()-bedPick.at<3000?'PICK UP':'SLEEP'}}catch(e){}
   const[fx,fy]=front(13);if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16))return'HIT';
   try{const[f2x,f2y]=front(14);if(fishWaterAt(Math.floor(f2x/16),Math.floor(f2y/16)))return'FISH'}catch(e){}

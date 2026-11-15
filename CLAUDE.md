@@ -741,3 +741,9 @@
   (read-only `_yd`), so the owner's renames/furniture show up live. Also: 077's castle loaders (save + visitor) keep chest `nm`
   (castle names were lost on every load); 013's scene ghost uses the whole `canPlace` chain (yard seeds); 138 hides a boss once
   `SQWB.fell === b.slot`.
+- **Pets at home** (`items/206-s214-pets-at-home.js`, `window.SQHOMEPETS`): every pet item (`pet_<kind>`, 104) is pushed into `BK` (also on
+  `SQA.onApply`), so the bag shows PLACE and every home loader/publisher keeps rows `[i,'pet_<kind>']` like furniture (houses, castles,
+  island/guild homes, yards). The outermost `drawPiece` draws them through `LUX.drawPeerPet` (085/093/111a chain; side-facing call, anchor
+  = pet spot + (17,-6)) with a fake uid `ypet:<house>:<i>` and a wander target (`spot`), the Imp through `SQIMPDRAW`. The outermost `attack`:
+  HIT on a pet = hop + heart (`JOY`); the owner's second HIT within 3 s = `pickFurn`. 118's hitWord says PET / PICK UP. 145's yard
+  `canPlaceIn` refuses pond tiles (`fishWaterAt`). Old clients drop unknown furniture rows on load, so pets need this version.

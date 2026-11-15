@@ -76,7 +76,7 @@
    inv[k]--;p.c=c;p.g=0;addXp(11,5);try{sfx('rustle')}catch(e){}saveLocal(true);pub();if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
  {const _cp=canPlace;canPlace=function(x,y){if(isYard()&&BUILD&&SEED2CROP[BUILD.k]){const p=SCENE.house.plots.get(yi(SCENE.room,x,y));return!!p&&!p.c}return _cp.apply(this,arguments)}}
  // furniture: not on plots, the gate or a friend's yard
- {const _cp=canPlaceIn;canPlaceIn=function(x,y){if(isYard()){const R=SCENE.room,Y=SCENE.house;if(Y.ro||Y.plots.has(yi(R,x,y))||onDoorTile(R,x,y)||regrowing(R,yi(R,x,y)))return false}return _cp.apply(this,arguments)}}
+ {const _cp=canPlaceIn;canPlaceIn=function(x,y){if(isYard()){const R=SCENE.room,Y=SCENE.house;if(Y.ro||Y.plots.has(yi(R,x,y))||onDoorTile(R,x,y)||regrowing(R,yi(R,x,y)))return false;try{if(fishWaterAt(x,y))return false}catch(e){}/* ponds */}return _cp.apply(this,arguments)}}
  {const _t=talk;talk=function(){if(isYard()&&SCENE.house.ro&&!dead&&!pnOpen){try{if(nearFurn()){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;return}}catch(e){}}return _t.apply(this,arguments)}}
  // ---- drawing: the game's own ground (hdBakeR, like the islands), its trees, bushes and buildings ----
  // The ground comes from a small map of tile types (0 water, 2 grass, 7 forest floor, 11 paving), baked once per room.
