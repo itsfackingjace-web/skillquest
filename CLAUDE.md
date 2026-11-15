@@ -787,3 +787,11 @@
   loop runs on islands too now; both together made island campfires last half as long). 162's `regItem` builds `IDESC` for Content
   items as stats line (heal/food, pot mana) + own words, with a plain default when `d` is empty (`window.SQSTATS` is 171's `{day}`,
   not 084's stats function: don't call it). 086's equipment screen lists bag jewelry per slot (Put on / Swap to, `data-jw="wear"`).
+- **Database download traffic** (Nov 15): the database forwards every write to every listener, so download cost grows with players².
+  061's `mpTick` sends only the presence fields that changed (`MP.sent`), the whole record only after a reset (`MP.last=''`), and `t`
+  only with the 5 s heartbeat (peers' `seen` needs it within 20 s); `MP.pw/pb` count writes/bytes. 061's monster sharing sends the
+  whole `mobs/<loc>/<uid>` set once (`MOB.sentM`), then `update`s of changed paths only (`m/<id>/<field>`, removals as null; numbers
+  besides x/y/hp only when they move by 1+ or change sign; x/y rounded; `t` every 2 s, peers drop a set after 6 s); `MOB.mw/mb` count.
+  111a's `refresh()` reads `assets/live/v` first and skips the ~265 KB library when the device already has that version (`force` to skip
+  the check). **New presence fields or listeners on whole nodes cost download for every player online: keep them small and rare.**
+  Test harness: scratchpad fake3's `_update` now applies slash paths like the real SDK.

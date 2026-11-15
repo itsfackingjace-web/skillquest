@@ -272,7 +272,13 @@ function mpTick(){if(!MP.on||!MP.pref||MP.passive)return;const d=FB.db,now=perfo
  const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0,dg:(window.SQDF&&SQDF.on&&!dead)?1:0,br:(window.SQDF&&SQDF.br)?1:0,sid:MP.sid,s0:MP.s0,im:(window.SQIMP&&SQIMP.pres())||0,fw:(window.SQFW&&SQFW.pres())||0,ak:(window.SQACT&&SQACT())||0,pt:(window.SQPARTY&&SQPARTY.id)||'',hp:dead?0:Math.max(0,Math.min(99,Math.round(+P.hp||0))),em:(window.SQEMOTE&&SQEMOTE.pres())||'',gt:(window.SQGUILD&&SQGUILD.pres()&&SQGUILD.pres().t)||'',gc:(window.SQGUILD&&SQGUILD.pres()&&SQGUILD.pres().c)||0},k=JSON.stringify(st);
  let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){}const nm=myName();
  if(chk!==MP.lastCh||nm!==MP.lastN){MP.lastCh=chk;MP.lastN=nm;MP.last='';d.update(MP.pref,{ch:JSON.parse(chk),n:nm}).catch(()=>{MP.lastCh=''})}
- if(k!==MP.last||now-MP.beat>5000){MP.last=k;MP.beat=now;d.update(MP.pref,Object.assign(st,{t:d.serverTimestamp()})).catch(()=>{MP.last=''})}}
+ // only the fields that changed go out (the database forwards every write to every player online, so a whole record five
+ // times a second while walking was most of the game's download traffic); the whole record after a reset (MP.last ''),
+ // and the server time t only with the 5 s heartbeat (peers' "seen" needs it within 20 s)
+ if(k!==MP.last||now-MP.beat>5000){const full=!MP.last||!MP.sent,beat=now-MP.beat>5000,o=full?Object.assign({},st):{};
+  if(!full){const p0=MP.sent;for(const f in st)if(JSON.stringify(st[f])!==JSON.stringify(p0[f]))o[f]=st[f]}
+  if(full||beat){o.t=d.serverTimestamp();MP.beat=now}MP.last=k;MP.sent=st;
+  if(Object.keys(o).length){MP.pw=(MP.pw||0)+1;MP.pb=(MP.pb||0)+JSON.stringify(o).length;d.update(MP.pref,o).catch(()=>{MP.last='';MP.sent=null})}}}
 setInterval(()=>{mpTick();mpROv()},200);
 let mpLastF=performance.now();
 function mpStepAll(){const n=performance.now(),dt=Math.min(.1,(n-mpLastF)/1000);mpLastF=n;
@@ -518,7 +524,21 @@ function mobPost(dt){if(!MP.on||!FB)return;mobSubscribe();if(!MOB.loc)return;mob
  if(!othersHere()){if(MOB.pubbed){d.remove(ref).catch(()=>{});MOB.pubbed=false}return}
  const m={};let c=0;for(const n of en){if(n._rp||n._wb||n.dead||c>=24)continue;m[mid(n)]=mobPack(n);c++}
  // other sections can send extra state along with the monsters (island bosses: their attacks), read back by SQMOBRX
- let x=null;try{x=window.SQMOBX?SQMOBX():null}catch(e){}d.set(ref,x?{t:d.serverTimestamp(),m,x}:{t:d.serverTimestamp(),m}).catch(()=>{});MOB.pubbed=true;
+ let x=null;try{x=window.SQMOBX?SQMOBX():null}catch(e){}for(const id in m){m[id].x=Math.round(m[id].x);m[id].y=Math.round(m[id].y)}
+ // the whole set once, then only what changed (every write is forwarded to everyone in the area: re-sending every monster's
+ // name, kind and countdown timers four times a second was a large part of the game's download traffic). Timers and other
+ // numbers besides x/y/hp go out when they move by 1 or more or change sign; the time stamp every 2 s (peers drop a set after 6 s).
+ if(!MOB.pubbed||MOB.sentLoc!==MOB.loc||!MOB.sentM){MOB.sentM=JSON.parse(JSON.stringify(m));MOB.sentX=JSON.stringify(x);MOB.sentLoc=MOB.loc;MOB.tAt=now;
+  d.set(ref,x?{t:d.serverTimestamp(),m,x}:{t:d.serverTimestamp(),m}).catch(()=>{MOB.sentM=null})}
+ else{const u={},S=MOB.sentM;
+  for(const id in m){const a=m[id],b=S[id];if(!b){u['m/'+id]=a;S[id]=JSON.parse(JSON.stringify(a));continue}
+   for(const k in a){const v=a[k],w=b[k];if(v===w)continue;if(typeof v==='number'&&typeof w==='number'&&k!=='x'&&k!=='y'&&k!=='hp'&&Math.abs(v-w)<1&&Math.sign(v)===Math.sign(w))continue;u['m/'+id+'/'+k]=v;b[k]=v}
+   for(const k in b)if(!(k in a)){u['m/'+id+'/'+k]=null;delete b[k]}}
+  for(const id in S)if(!m[id]){u['m/'+id]=null;delete S[id]}
+  const xs=JSON.stringify(x);if(xs!==MOB.sentX){u.x=x||null;MOB.sentX=xs}
+  if(now-MOB.tAt>2000){u.t=d.serverTimestamp();MOB.tAt=now}
+  if(Object.keys(u).length){MOB.mw=(MOB.mw||0)+1;MOB.mb=(MOB.mb||0)+JSON.stringify(u).length;d.update(ref,u).catch(()=>{MOB.sentM=null})}}
+ MOB.pubbed=true;
  if(!MOB.odc||MOB.odc!==MOB.loc){MOB.odc=MOB.loc;d.onDisconnect(ref).remove().catch(()=>{})}}
 // hits other players land on your monsters
 function mobInbox(){if(MOB.inbox||!MP.user)return;const d=FB.db,ref=d.ref(FB.D,'hits/'+MP.user.uid);

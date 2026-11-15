@@ -225,7 +225,9 @@ var SQA=(()=>{
  try{live=JSON.parse(localStorage.getItem(LS)||'null')}catch(e){}
  if(live)try{apply(live)}catch(e){console.error(e)}
  // latest published copy (no sign-in needed); used now and kept for the next load
- async function refresh(){try{const r=await fetch(DBURL+'/assets/live.json',{cache:'no-store'});if(!r.ok)return;const L=await r.json();
+ // (the library is ~265 KB: ask for its version number first and skip the download when this device already has that version)
+ async function refresh(force){try{if(!force&&live&&live.v){const q=await fetch(DBURL+'/assets/live/v.json?t='+Date.now(),{cache:'no-store'});if(q.ok){const v=await q.json();if(v===live.v)return}}
+   const r=await fetch(DBURL+'/assets/live.json',{cache:'no-store'});if(!r.ok)return;const L=await r.json();
    if(JSON.stringify(L)===JSON.stringify(live))return;live=L;try{if(L)localStorage.setItem(LS,JSON.stringify(L));else localStorage.removeItem(LS)}catch(e){}
    if(!preview)apply(live)}catch(e){}}
  setTimeout(refresh,400);
