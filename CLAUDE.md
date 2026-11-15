@@ -10,9 +10,12 @@
   the manifest alone decides the order.
 - The build parses the game script and reports syntax errors with the source file and line.
 - Firebase rules are in `database.rules.json` and must be published in the Firebase console when they change.
-- **Every update to the game must add a patch note.** Put a new entry at the top of `PATCH_NOTES` in
-  `src/data/074-patch-notes.js` with a new version (`YYYY.MM.DD-N`), the date, a short title and player-friendly bullet points.
-  The version shown in Options and the wiki's "NEW!" badge both come from that first entry.
+- **Every update to the game must add a patch note, and there is one patch note entry per day.** In `PATCH_NOTES`
+  (`src/data/074-patch-notes.js`): if the top entry is today's, add your bullets to it (new features first, then "Fixed: ..."
+  lines), rewrite older bullets of that day if your change supersedes them (describe the final state, not the steps), keep
+  the title a short summary of the day, and bump its version's `-N` (`YYYY.MM.DD-N`). Otherwise put a new entry for today at
+  the top. The version shown in Options, the wiki's "NEW!" badge and the update check (125) all come from that first entry, so
+  any player-facing change must bump it. Leave out Dev Suite / developer-tool changes that don't change anything for players.
 - Write patch notes for players, not developers: what's new or fixed and how to use it.
 - **Dev Suite** (`src/dev/`): developer-only editor in the game (Options > Dev Suite, or `/suite` in chat). It edits item
   sprites, worn looks (gear drawn on the character: a 96x112 layer per facing f/b/s, run-length packed; equipped keys
