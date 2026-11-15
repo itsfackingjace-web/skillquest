@@ -54,6 +54,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  const kindOf=id=>{id=String(id||'');for(const k of ORDER)if(id.indexOf(K[k].pre)===0)return K[k];return null};
  const rec=k=>{const a=A();return a&&a.ready&&SQGUILD.state?SQGUILD.state[K[k].path]||null:null};
  const open=k=>{if(!k){return ORDER.some(x=>open(x))}const r=rec(k);return!!(r&&r.w===WEEK()&&!r.k)};
+ const prk=k=>{const P=SQGUILD.state&&SQGUILD.state.prog;return(P&&P[K[k].pk])|0};
  const beaten=k=>{const r=rec(k);return!!(r&&r.w===WEEK()&&r.k)};
  function regBoss(k){const B=K[k],id=GID()?B.pre+GID():'';if(!id||!window.SQIB)return'';if(!Object.prototype.hasOwnProperty.call(SQIB,id))Object.defineProperty(SQIB,id,{value:Object.assign({},B.DEF),enumerable:false,configurable:true,writable:true});
   if(typeof DKIND!=='undefined'&&!DKIND['ib_'+id])DKIND['ib_'+id]={name:B.DEF.n,floor:B.DEF.floor,wall:B.DEF.wall,trim:B.DEF.trim,W:30,H:24,floors:1,cavey:1};return id}
@@ -61,9 +62,11 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
   say(B.enterMsg||'You step through the portal...');try{sfx('roar')}catch(e){}SQIBENTER(id,it)}
  function summon(k){const a=A(),B=K[k];if(!a||!B||!a.on()||!a.ready)return;if(!a.boss()){a.tell('Only the leader and officers can summon '+B.DEF.n+'.');return}
   if(open(k)){a.tell(B.DEF.n+' is already awake. Its portal is on the guild island.');return}if(beaten(k)){a.tell('Your guild already beat '+B.DEF.n+' this week. It can be summoned again from Monday.');return}
+  // it also costs one rank in its skill (guilds/<g>/prog/<pk>; the rules check both in the same write)
+  const rk=prk(k);if(rk<1){a.tell('Summoning '+B.DEF.n+' costs 1 '+B.pkName+' rank, and your guild has none. Finish a '+B.pkName.toLowerCase()+' Guild Quest to earn one.');try{sfx('swish')}catch(e){}return}
   const bank=SQGUILD.state.bank.i||{},ch=B.pay(bank);if(!ch){a.tell('The guild bank needs '+B.costTxt+' (it has '+B.have(bank).toLocaleString()+').');try{sfx('swish')}catch(e){}return}
-  const ex={};ex['guilds/'+GID()+'/'+B.path]={w:WEEK(),t:a.TS(),by:a.me()};
-  a.bankUpdate(ch,{w:'boss',k:B.logK,d:B.costTxt},ex).then(()=>{a.tell(B.wakeMsg);msgT=7;try{sfx('roar')}catch(e){}}).catch(a.fail)}
+  const ex={};ex['guilds/'+GID()+'/'+B.path]={w:WEEK(),t:a.TS(),by:a.me()};ex['guilds/'+GID()+'/prog/'+B.pk]=rk-1;
+  a.bankUpdate(ch,{w:'boss',k:B.logK,d:B.costTxt+' + 1 '+B.pkName+' rank'},ex).then(()=>{a.tell(B.wakeMsg+' (The guild spent 1 '+B.pkName+' rank.)');msgT=7;try{sfx('roar')}catch(e){}}).catch(a.fail)}
  // when it falls: close its portal for the week (any fighter writes k; the first one wins)
  function kill(k){const a=A(),r=rec(k);if(!a||!a.on()||!r||r.k)return;try{a.DB().set(a.ref('guilds/'+GID()+'/'+K[k].path+'/k'),a.TS()).catch(()=>{})}catch(e){}}
  {const _se=sqEvent;sqEvent=function(type,item){const B=type==='islandboss'&&kindOf(item);if(B){try{kill(B.k);if(window.SQACH&&SQACH.add)SQACH.add('ibw')}catch(e){}return}return _se.apply(this,arguments)}}
@@ -91,7 +94,8 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
   if(open(k))h+='<p><b style="color:#2a7a50">It\'s awake!</b> '+B.awakeTxt+' It stays until it falls (this week).</p>';
   else if(beaten(k))h+='<p><b>Beaten this week ✓</b> It can be summoned again from Monday.</p>';
   else{h+='<div class="gdgbar"><i style="width:'+Math.min(100,100*have/B.need)+'%;background:'+B.DEF.col+'"></i></div><small>'+have.toLocaleString()+' / '+B.need.toLocaleString()+' '+B.unit+' in the guild bank</small><br>';
-   h+=a.boss()?'<button class="qb" data-g="gtb:sum:'+k+'"'+(have<B.need?' disabled style="opacity:.5"':'')+'>Summon it ('+B.costTxt+')</button>':'<p style="font-size:13px">The leader or an officer summons it once the bank has enough.</p>'}
+   const rk=prk(k),shown=Math.min(5,rk);h+='<small>Also costs <b>1 '+B.pkName+' rank</b> (your guild: rank '+shown+(rk>shown?', '+(rk-shown)+' more earned past the top':'')+')</small><br>';
+   h+=a.boss()?'<button class="qb" data-g="gtb:sum:'+k+'"'+(have<B.need||rk<1?' disabled style="opacity:.5"':'')+'>Summon it ('+B.costTxt+' + 1 '+B.pkName+' rank)</button>':'<p style="font-size:13px">The leader or an officer summons it once the bank has enough and the guild has a '+B.pkName+' rank to spend.</p>'}
   h+='<p style="font-size:13px"><b>Every fighter, every fight:</b> '+B.rewardTxt+'</p><p style="font-size:12px;opacity:.85">'+B.tip+'</p></div>';return h}
  function html(){return ORDER.map(card).join('')}
  function act(x,y){if(x==='sum')summon(y||'treant')}
@@ -102,7 +106,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
   DEF:{n:'The Void Treant',door:'',lm:'the void portal',hp:6000,col:'#9a5af0',shard:'',sc:['#c8a0ff','#5a3a8a'],
    floor:['#2a2236','#30283e'],wall:'#1c1626',trim:'#0a0810',gold:[1500,2500],loot:[[WV,1],[VL,150],['yewlog',25]],xp:6000,rare:['ptvoid','Void treeling (pet)'],
    atk:[['circles',3.4,{n:6,r:20,delay:1.1,k:'void'}],['fan',2.6,{n:5,spread:.3,sp:95,k:'void'}],['spiral',4.8,{n:14,sp:70,k:'void'}],['ring',6.5,{max:110}],['summon',13,{key:'wolf:void',n:2,cap:3,half:1}]]},
-  sk:1,bonus:()=>1+(TL.axe|0)+Math.floor(lvOf(1)/10),chip:['#56404e','#9a6ae0'],
+  sk:1,pk:'wood',pkName:'Woodcutting',bonus:()=>1+(TL.axe|0)+Math.floor(lvOf(1)/10),chip:['#56404e','#9a6ae0'],
   enterMsg:'You step through the void portal...',portalName:'Void portal',wakeMsg:'The Void Treant awakens! A void portal has opened on the guild island. Everyone who fights it gets a Void wand.',
   about:'An ancient tree swallowed by the void. Once a week the guild can feed it '+SUM.toLocaleString()+' void logs from the guild bank to wake it. A void portal opens on your guild island: go through together.',
   awakeTxt:'The void portal is in the middle of your guild island.',picW:75,

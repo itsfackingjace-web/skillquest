@@ -47,7 +47,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
   DEF:{n:'The Giant Turtle',door:'',lm:'the whirlpool',hp:7000,col:'#3c9a78',shard:'',sc:['#a8f0d0','#2c6a58'],
    floor:['#2a4a52','#30525a'],wall:'#1a3038',trim:'#0a1418',gold:[1500,2500],loot:[[FR,1],['swordfish',25]],xp:6000,rare:[FR,'an extra Turt fragment'],
    atk:[['fan',2.4,{n:5,spread:.3,sp:90,k:'bubble'}],['circles',3.8,{n:6,r:20,delay:1.1,k:'water'}],['charge',5.2,{}],['ring',6.6,{max:120}],['summon',12,{key:'crab',n:3,cap:4,half:1}]]},
-  sk:FI,bonus:()=>1+Math.floor(lvOf(FI)/10)+(TL.rod|0),chip:['#2c5a46','#a8f0d0'],bcol:'#80d8ff',tall:60,
+  sk:FI,pk:'fish',pkName:'Fishing',bonus:()=>1+Math.floor(lvOf(FI)/10)+(TL.rod|0),chip:['#2c5a46','#a8f0d0'],bcol:'#80d8ff',tall:60,
   enterMsg:'You dive into the whirlpool...',portalName:'Whirlpool',wakeMsg:'The Giant Turtle stirs! A whirlpool has opened by your guild island\'s pier. Everyone who fights it gets a Turt fragment.',
   about:'An ancient sea turtle the size of a house. Once a week the guild can lure it with '+NEED.toLocaleString()+' raw fish from the guild bank (any kinds, the cheapest are used first). A whirlpool opens by your guild island\'s pier: dive in together.',
   awakeTxt:'The whirlpool is by your guild island\'s pier.',picW:90,

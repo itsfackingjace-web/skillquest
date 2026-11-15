@@ -661,7 +661,10 @@
   DEF (the SQIB entry), sk, bonus(), spots(R), spr, draw(b,tm), drawPortal, texts...})`. Each kind = record `guilds/<g>/<path>` {w,t,by,k} (its own
   rules node), arena id `<pre><gid>`, a `gportal` lm item with `bk` = kind (197's applyBuildings adds `SQGBOSS.portals(R)`; spots must have dry
   open ground below, where `ibEnter` puts you back), the guild screen's **Bosses** tab (`data-g="gtb:sum:<kind>"`). 199's outermost `upd`
-  re-applies the island's buildings when `SQGBOSS.key()` differs from the room's `_bk` stamp. Kinds: `treant` (path `boss`, `gt_`),
+  re-applies the island's buildings when `SQGBOSS.key()` differs from the room's `_bk` stamp. A summon also spends 1 rank of the boss's skill
+  (`pk`: treant `wood`, turtle `fish`; `prog/<pk>` - 1 in the same update, `prk(k)` reads it): the boss/turt rules require
+  `prog/<pk>` >= 1 and exactly one less in the write, and `prog` has a matching branch (leader/officer, qd unchanged, only that skill
+  down by one, the boss record written with by = you and t = now). Ranks above RMAX are kept, so spending one there shows no change. Kinds: `treant` (path `boss`, `gt_`),
   `turtle` (200, path `turt`, `gu_`).
 - **Giant Turtle** (`combat/200-s208-giant-turtle.js`, `SQTURT`): 5,000 raw fish (`RAW`, 13 kinds, cheapest `SELLP` first; the rules sum the
   13 bank keys' decrease = 5000, none rising), whirlpool by the pier, attacks with 100's new `bubble` shots and `water` geysers (100's charge/
