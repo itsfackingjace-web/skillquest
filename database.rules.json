@@ -600,6 +600,9 @@
           "rn": {
             ".validate": "newData.isNumber() && newData.val()>=0 && newData.val()<=100000"
           },
+          "em": {
+            ".validate": "newData.isNumber() && newData.val()>=0 && newData.val()<=5"
+          },
           "$o": {
             ".validate": false
           }

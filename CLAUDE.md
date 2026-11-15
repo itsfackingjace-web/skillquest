@@ -670,3 +670,6 @@
   KNOWN49) like the Outlaw's hat; +3% block a piece, 2 pieces +5%, 3 pieces +5% and blockCap +5%; look = 084's plate recoloured (`ttk`).
 - **Guild bank deposit buttons** (197 `depositMany`, `GRP`): put in all void logs / raw fish / logs / ores, or everything (two taps), as one
   bank change with one log line (`k:'*'`, `d` text). Log lines with a text `d` show it as is.
+- **Guild capes** (`items/201-s209-guild-capes.js`, `SQGCAPE`): worn from the guild screen's Members tab (`gcw` in the save, KNOWN49); gearCH adds
+  `gcp` (guild colour index + 1), `gce` (emblem 0-5, leader's `info.em`; rules) and `gtr` (gold trim, guild level 3+) and drops `cape`; the outermost
+  `kitBuild` paints it like 085's Marlo capes (emblem 4x4 on the back view). Other players get it through `ch` (061's cleanCh keeps numbers 0-99).
