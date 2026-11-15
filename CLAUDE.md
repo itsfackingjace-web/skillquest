@@ -640,7 +640,7 @@
   Rules: `gchat`, `glb`, `guilds.prog`, `guilds.info.rn`, `gname` (publish them).
 - **Jewelry make-all** (086, edited in place): `data-jw="all"` → `jwMake(k,true)` = `sqDo('craft',jwCan(j),...)` and `SQDO.tot` for 109's "N left".
 - **Void Treant** (`combat/199-s207-void-treant.js`, `window.SQGTREANT`): a weekly guild boss. Void trees (`o.v==='dark'`) give `voidlog`
-  instead of plain logs (outermost `attack`, log deltas converted). The leader/an officer spends 5,000 void logs from the bank (197's
+  instead of plain logs (outermost `attack`, log deltas converted). The leader/an officer spends 50,000 void logs (`SUM`; the rules check the same number) from the bank (197's
   `bankUpdate`, log `w:'boss'`) and writes `guilds/<g>/boss` {w: week = floor((now-4 days)/7 days), t, by}; any member writes `k` when it
   falls (sqEvent 'islandboss' with a `gt_` id is swallowed there: no chapter-two `ibk`, achievements' `ibw` +1). While `w` is this week
   and no `k`, 197's applyBuildings adds a `gportal` lm item (use `gtreant`) on the guild island; the fight is 100's island-boss arena
