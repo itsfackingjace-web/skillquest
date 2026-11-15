@@ -64,7 +64,7 @@ var LUX={};
  function drawPet(k,s){const sp=petSprite(k,Math.floor(s.t)%2);if(!sp)return;const x=Math.round(s.x),y=Math.round(s.y);shd(x,y+5,9);g.save();if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.imageSmoothingEnabled=false;g.drawImage(sp,x-6,y-6);g.restore()}
  const _pP=pP;pP=function(tm){if(COS.pet==='imp'){if(impOn()&&IMP.dead<=0)impDraw(IMP.x,IMP.y,IMP.dir,Math.floor(IMP.t)%4,IMP.stab>0,IMP.hp,IMP.max)}else if(COS.pet&&!(typeof SAILING!=='undefined'&&SAILING)){const s=petStep('me',P.x,P.y,face);drawPet(COS.pet,s)}return _pP(tm)};
  LUX.drawPeerPet=(r,tm)=>{if(r.pet==='imp'){if(!r.sl)impDrawPeer(r,tm);return}if(!r.pet||!PETS.some(p=>p.k===r.pet)||r.sl)return;const s=petStep(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]);drawPet(r.pet,s)};
- LUX.pet=()=>COS.pet||'';LUX.PETS=PETS;LUX.EMP={PETS,CAPES,DYES,DYEV,FURN2,POTS};
+ LUX.pet=()=>COS.pet||'';LUX.PETS=PETS;LUX.drawPetS=(k,s)=>drawPet(k,s);LUX.impDrawS=(x,y,d,fr)=>impDraw(x,y,d,fr,false,10,10);/* 214: pets placed at home */LUX.EMP={PETS,CAPES,DYES,DYEV,FURN2,POTS};
  // ---- The Imp (a rare pet from the Demon world boss) ----
  // It follows you like any pet, but when something hurts you it runs at it and stabs with its poison dagger
  // (poison deals a little damage every second for a few seconds). Monsters can hurt it back; if it falls it comes

@@ -743,7 +743,10 @@
   `SQWB.fell === b.slot`.
 - **Pets at home** (`items/206-s214-pets-at-home.js`, `window.SQHOMEPETS`): every pet item (`pet_<kind>`, 104) is pushed into `BK` (also on
   `SQA.onApply`), so the bag shows PLACE and every home loader/publisher keeps rows `[i,'pet_<kind>']` like furniture (houses, castles,
-  island/guild homes, yards). The outermost `drawPiece` draws them through `LUX.drawPeerPet` (085/093/111a chain; side-facing call, anchor
-  = pet spot + (17,-6)) with a fake uid `ypet:<house>:<i>` and a wander target (`spot`), the Imp through `SQIMPDRAW`. The outermost `attack`:
-  HIT on a pet = hop + heart (`JOY`); the owner's second HIT within 3 s = `pickFurn`. 118's hitWord says PET / PICK UP. 145's yard
-  `canPlaceIn` refuses pond tiles (`fishWaterAt`). Old clients drop unknown furniture rows on load, so pets need this version.
+  island/guild homes, yards). The row is only the pet's home spot (not solid: the outermost `solid` treats it as a rug). Each pet is a local
+  simulation (`PS`, key `<house _oid|id>:<i>`, modes idle/walk/nap/chase/flee/zoom/greet/follow/petted, `choose`/`tick`, walls via
+  `solid`), run and drawn in the outermost `pP` (before the player when above, after when below) through the game's drawers with a state
+  {x,y,mv,t,fl}: 111a `window.SQPETLOOK`, 093 `SQDRAWNPET` (`SQNPET`/`SQSIDEMAP`), 085 `LUX.drawPetS`, Imp `LUX.impDrawS`. Nothing is sent;
+  visitors run their own copy. HIT finds the pet by where it stands (`front()`): pat = hop + heart; the owner's second HIT within 3 s =
+  `pickFurn`. 118's hitWord says PET / PICK UP. 145's yard `canPlaceIn` refuses pond tiles (`fishWaterAt`). Old clients drop unknown
+  furniture rows on load, so pets need this version.

@@ -174,7 +174,7 @@ function drawNPet(k,s,tm){if(window.SQDRAWTL&&k!=='ptree'&&SQDRAWTL(k,s,tm))retu
 {const _p=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!(NPET[k]||SIDEMAP[k]))return _p(tm);
   if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on))drawNPet(k,petFollow('me',P.x,P.y,face),tm);C.pet=null;try{return _p(tm)}finally{C.pet=k}}}
 if(window.LUX){const _dp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&(NPET[r.pet]||SIDEMAP[r.pet])){if(r.sl)return;drawNPet(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]),tm);return}return _dp&&_dp(r,tm)}}
-window.SQNPET=NPET;window.SQDRAWNPET=(k,s2,tm)=>drawNPet(k,s2,tm);
+window.SQNPET=NPET;window.SQSIDEMAP=SIDEMAP;window.SQDRAWNPET=(k,s2,tm)=>drawNPet(k,s2,tm);
 
 // ---- Sharks in the Shattered Expanse ----
 // A few sharks (never more than three around you) cruise the deep water. They leave healthy players alone, but if
