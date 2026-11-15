@@ -38,7 +38,7 @@ function bowTarget(){if(!TL.bow||((inv.arrow|0)+(inv.iarrow|0))<1)return null;co
 function shoot(){const ia=(inv.iarrow|0)>0;if(ia)inv.iarrow--;else inv.arrow--;swing=.35;if(typeof BOWT!=='undefined'){BOWT=.35;BOWD=[face[0],face[1]]}sfx('bow');
  PROJ.push({x:P.x+face[0]*8,y:P.y-2+face[1]*6,vx:face[0]*270,vy:face[1]*270,t:0,life:bowRange()/270,k:'arrow',dmg:arrowDmg(),sc:curScene(),iron:ia});
  if(((inv.arrow|0)+(inv.iarrow|0))===0)say('That was your last arrow!')}
-const projBlocked=(x,y)=>{if(SCENE)return solid(x,y);const tx=Math.floor(x/16),ty=Math.floor(y/16);if(tx<0||ty<0||tx>=N||ty>=N)return true;const i=ty*N+tx;return tile[i]!==0&&solid(x,y)&&!FARM.has(i)};
+const projBlocked=(x,y)=>{/* arrows and spells fly over any water you could fish in (islands, ponds, rivers), not just Hollow's sea */try{if(typeof fishWaterAt==='function'&&fishWaterAt(Math.floor(x/16),Math.floor(y/16)))return false}catch(e){}if(SCENE)return solid(x,y);const tx=Math.floor(x/16),ty=Math.floor(y/16);if(tx<0||ty<0||tx>=N||ty>=N)return true;const i=ty*N+tx;return tile[i]!==0&&solid(x,y)&&!FARM.has(i)};
 function killEnemy(n,how){if(n.dead)return;n.dead=1;n.dropped=1;kills++;GLD+=2+Math.floor(Math.random()*5);if(how==='arrow')addXp(FL,14);else addXp(0,12);
  if(n.type!=='boss'&&n.type!=='bonelord'&&Math.random()<.6)inv.meat=(inv.meat|0)+1;enemyDrop(n)}
 // --- the Bone Lord's tomb ---

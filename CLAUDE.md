@@ -713,3 +713,6 @@
 - **Arrows online** (`multiplayer/203-s211-arrows-seen-online.js`): 064 only sent fx 'ar' from its `shoot` wrapper (021's old HIT
   auto-shot); every off-hand shot goes through `shootAim`, so the outermost `shootAim` now sends 'ar' for the arrows it added. A new way
   to fire projectiles must send its own fx event (`SQPVSEND`), or other players won't see it and PvP can't count it.
+- **Projectiles over water** (021's `projBlocked`, a top-level const, edited in place): any tile `fishWaterAt` counts as water (islands'
+  `R.tiles===0`, Hollow's sea, 145's yard ponds) lets arrows, spells and other players' projectile ghosts through; before, scenes used
+  `solid()` only, so on islands every shot stopped at the shore and a shot from a boat (`SQRSAIL.on`) died on its first frame.
