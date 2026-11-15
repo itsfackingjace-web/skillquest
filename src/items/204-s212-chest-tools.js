@@ -28,7 +28,7 @@
   CHCARD=null;say('Took '+n+' item'+(n===1?'':'s')+' out of the chest.');rPn()}
  // ---- renaming ----
  let REN=null;   // {s, v}: the chest being renamed and the text typed so far
- function rename(v){const s=REN&&REN.s;REN=null;if(!s||!ownIt(s)){rPn();return}const n=clean(v);if(n)s.nm=n;else delete s.nm;
+ function rename(v){const s=REN&&REN.s;REN=null;if(!s||!ownIt(s)){rPn();return}const n=(window.SQCHNAME||clean)(v);if(n)s.nm=n;else delete s.nm;
   saveLocal(true);try{saveCloud(true)}catch(e){}say(n?'Chest named “'+n+'”.':'Chest name removed.');rPn()}
  // ---- the chest screen ----
  const CSS=document.createElement('style');CSS.textContent=

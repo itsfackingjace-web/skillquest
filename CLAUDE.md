@@ -750,3 +750,20 @@
   visitors run their own copy. HIT finds the pet by where it stands (`front()`): pat = hop + heart; the owner's second HIT within 3 s =
   `pickFurn`. 118's hitWord says PET / PICK UP. 145's yard `canPlaceIn` refuses pond tiles (`fishWaterAt`). Old clients drop unknown
   furniture rows on load, so pets need this version.
+- **Young players** (`ui/207-s215-young-players.js`, `window.SQAGE`): once per account a birth-year question (`#sqage`, pauses `upd`, owns
+  `navRoot`) stores only the age band in `age/<uid>` {b:'c'|'t'|'a',t} (player can write it once; devs can correct it) + localStorage
+  `sq_age_<uid>`. `c` (under 13): chat input read-only, PHRASES only (outermost `window.mpSend` checks `PHRASES`), `SQTRREQ` only to friends,
+  PNAME 'Adventurer' instead of the Google name. **The database rules enforce it too**: chat/gchat/pm text from a `c` account must match
+  the phrase regex (apostrophes are `.` in it), pm/treq/dreq to or from a `c` account need the child's `friends/<child>/<other>`.
+  **Keep `PHRASES` and the rules regex identical.** The PHRASES button (everyone) sits in 061's `#mpf`, list `#agpl`. Test harness:
+  mp3lib's `world(n,co,ages)` seeds `sq_age_<uid>`='a' unless `ages[uid]==='ask'` (fake3's db only enforces rules on guild paths: test
+  rules with `rulesdb.cjs` directly, scratchpad `kidrules.js`).
+- **Chat filter** (`multiplayer/208-s216-chat-filter.js`, `SQFILTER.clean/bad`): lists stored shifted by one letter (`un`); long words match
+  anywhere after letters-only + leetspeak + squashed repeats, short ones whole-word; emails, phone numbers and links (not skillquestmmo.com)
+  starred. Wraps window.mpSend, SQGUILDSAY, SQPARTYSAY, window.SQCHNAME (204's rename calls it), refuses names at 061's `#nmf`.
+- **Account and privacy** (`ui/209-s217-account-and-privacy.js`, `SQACCOUNT`): Options > ABOUT (links to `terms.html`, `privacy.html`,
+  `refund.html` + `legal.css` at the repo root, plain files, not built) and "Delete my account" (type DELETE; stops saveLocal/saveCloud,
+  removes the owner-deletable records, deleteUser, sign out, clears sq_* storage, reloads; guild members leave first). Retention promised in
+  privacy.html and done here: own pm > 90 days on sign-in; a dev's game once a day removes chat > 90 days, bugs/reports/stats days > 1 year
+  (rules let devs delete bugs and stats/d days). `SECURITY-PROGRAM.md` = the COPPA written security program (review yearly).
+  **If data handling changes, update privacy.html.**

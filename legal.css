@@ -1,0 +1,21 @@
+/* Shared look for the Terms, Privacy and Refund pages */
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&display=swap');
+:root{--bg:#f3efe2;--card:#fffdf6;--ink:#2a2418;--soft:#5e5440;--line:#d9cfb4;--accent:#2f6a3a;--link:#2c56b8;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#191a14;--card:#22241b;--ink:#ece6d4;--soft:#b5ad97;--line:#3a3c2e;--accent:#8fce8a;--link:#9cb8ff;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;padding:14px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px));border-bottom:2px solid var(--line);background:var(--card)}
+header .home{font:700 22px "Pixelify Sans",ui-monospace,monospace;color:var(--accent);text-decoration:none}
+header nav{display:flex;gap:16px}
+header nav a{color:var(--soft);text-decoration:none;font-weight:600}
+header nav a[aria-current]{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+main{max-width:720px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px))}
+h1{font:700 32px/1.2 "Pixelify Sans",ui-monospace,monospace;margin:8px 0 4px;text-wrap:balance}
+h2{font:700 21px/1.3 "Pixelify Sans",ui-monospace,monospace;margin:32px 0 8px;color:var(--accent)}
+.upd{color:var(--soft);margin-top:0}
+a{color:var(--link)}
+ul{padding-left:22px}
+li{margin:4px 0}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:15px;display:block;overflow-x:auto}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-weight:700;background:var(--card)}

@@ -49,7 +49,7 @@
   // napping is more likely at night
   if(Math.random()<(night()?.38:.1)){setMode(s,'nap',rnd(7,16));return}
   // another pet close by? play chase
-  const o=list.filter(q=>q!==s&&q.mode!=='nap'&&Math.hypot(q.x-s.x,q.y-s.y)<110);
+  const o=list.filter(q=>q!==s&&!['nap','greet','follow','petted'].includes(q.mode)&&Math.hypot(q.x-s.x,q.y-s.y)<110);
   if(o.length&&Math.random()<.3){const q=pick(o);setMode(s,'chase',rnd(3,5.5));s.tgt=q;s.rounds=0;setMode(q,'flee',rnd(3,5.5));q.tgt=s;q.until=s.until;return}
   if(Math.random()<.08){setMode(s,'zoom',rnd(2.2,3.5));s.ang=rnd(0,6.283);s.dirz=Math.random()<.5?-1:1;return}
   if(Math.random()<.42){const p=spotNear(s,5*16);if(p){setMode(s,'walk',9);s.tx=p[0];s.ty=p[1];s.spd=rnd(18,28);return}}
