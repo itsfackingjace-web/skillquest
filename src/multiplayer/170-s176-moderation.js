@@ -41,7 +41,7 @@
  const ago=t=>{const s=(Date.now()-t)/1000;return s<3600?Math.max(1,Math.round(s/60))+' min ago':s<86400*2?Math.round(s/3600)+' h ago':Math.round(s/86400)+' days ago'};
  async function load(){T.busy=1;API.draw();try{const d=D();const[rep,mod,lb,ch]=await Promise.all([get('reports'),get('mod'),get('lb'),d.get(d.query(ref('chat'),d.limitToLast(300)))]);
    T.rep=rep||{};T.mod=mod||{};T.lb=lb||{};T.chat=Object.entries(ch.val()||{}).map(([id,v])=>({id,...v})).filter(m=>m&&m.m).sort((a,b)=>(b.t||0)-(a.t||0))}catch(e){fail(e);T.rep=T.rep||{};T.mod=T.mod||{};T.lb=T.lb||{};T.chat=T.chat||[]}T.busy=0;API.draw()}
- const nm=u=>T.lb&&T.lb[u]&&T.lb[u].n||(T.chat||[]).find(m=>m.u===u)?.n||String(u).slice(0,8);
+ const nm=u=>T.lb&&T.lb[u]&&T.lb[u].n||(T.chat||[]).find(m=>m.u===u)?.n||(()=>{try{const r=SQMP.players.get(u);return r&&r.n}catch(e){}})()||String(u).slice(0,8);
  const st=u=>{const m=(T.mod||{})[u]||{},n=Date.now(),o=[];if(m.ba>n)o.push('🚫 suspended until '+until(m.ba));if(m.mu>n)o.push('🔇 muted until '+until(m.mu));return o.join(' · ')};
  const acts=u=>'<span class="dv-row" style="flex-wrap:wrap;gap:4px"><button class="dv-b" data-md="mu:'+E(u)+':1">Mute 1 h</button><button class="dv-b" data-md="mu:'+E(u)+':24">Mute 1 day</button><button class="dv-b dv-bad" data-md="ba:'+E(u)+':168">Suspend 7 days</button><button class="dv-b dv-bad" data-md="ba:'+E(u)+':876000">Suspend for good</button>'+(((T.mod||{})[u]||{}).mu>Date.now()||((T.mod||{})[u]||{}).ba>Date.now()?'<button class="dv-b" data-md="clr:'+E(u)+'">Lift</button>':'')+'</span>';
  const chatOf=u=>(T.chat||[]).filter(m=>m.u===u).slice(0,12);
@@ -59,10 +59,24 @@
   return h}
  function modView(){const L=Object.entries(T.mod).filter(([,m])=>m&&(m.mu>Date.now()||m.ba>Date.now()));
   return'<p class="dv-mut">Accounts muted or suspended right now.</p>'+(L.map(([u,m])=>'<div class="dv-hl" style="flex-wrap:wrap"><span><b>'+E(nm(u))+'</b> '+st(u)+(m.r?' <small class="dv-mut">('+E(m.r)+')</small>':'')+'</span><button class="dv-b" data-md="clr:'+E(u)+'">Lift</button></div>').join('')||'<p class="dv-mut">Nobody.</p>')}
+ // Find a player: anyone on the leaderboard list (every signed-in account) or online now, by name or account id, so a player can be
+ // muted or suspended without a report.
+ const online=()=>{const o={};try{for(const[k,r]of (window.SQMP&&SQMP.players)||[])if(r&&performance.now()-(r.seen||-1e9)<6e4)o[k]=r}catch(e){}return o};
+ const fishLv=u=>{try{const x=T.lb[u]&&T.lb[u].x;const i=SKN.indexOf('Fishing');if(!x||i<0)return 0;let L=1;while(L<XT.length&&x[i]>=XT[L])L++;return L}catch(e){return 0}};
+ function findView(){const q=String(T.q||'').trim().toLowerCase(),on=online(),ids=new Set([...Object.keys(T.lb||{}),...Object.keys(on)]);
+  let L=[...ids].map(u=>({u,n:(T.lb[u]&&T.lb[u].n)||(on[u]&&on[u].n)||'',tot:T.lb[u]&&T.lb[u].tot||0,t:T.lb[u]&&T.lb[u].t||0,on:!!on[u]}));
+  if(q)L=L.filter(r=>r.n.toLowerCase().includes(q)||r.u.toLowerCase()===q||r.u.toLowerCase().startsWith(q)&&q.length>=6);
+  L.sort((a,b)=>(b.on-a.on)||(b.t-a.t));const sh=L.slice(0,40);
+  let h='<label class="dv-mut" style="display:block;margin-bottom:8px">Name or account id<input type="text" data-mq="1" maxlength="40" value="'+E(T.q||'')+'" placeholder="Type part of a name" style="width:100%"></label>'+
+   '<p class="dv-mut">'+(q?L.length+' match'+(L.length===1?'':'es'):'Players online now first, then by last seen')+(L.length>sh.length?' (showing '+sh.length+')':'')+'. Names aren\'t unique, so check the level and last seen.</p>';
+  for(const r of sh){const f=fishLv(r.u);h+='<div class="dv-card" style="margin:6px 0"><div class="dv-row" style="flex-wrap:wrap"><b>'+E(r.n||'(no name)')+'</b>'+(r.on?'<span style="color:#7c6">● online</span>':'')+
+   '<span class="dv-mut">total level '+r.tot+(f?' · Fishing '+f:'')+(r.t?' · seen '+ago(r.t):'')+'</span><small class="dv-mut">'+E(r.u)+'</small></div>'+(st(r.u)?'<p class="dv-mut" style="margin:4px 0">'+st(r.u)+'</p>':'')+
+   '<div style="margin-top:6px">'+acts(r.u)+'</div></div>'}
+  return h+(sh.length?'':'<p class="dv-mut">Nobody found.</p>')}
  function render(){if(!T.rep){if(!T.busy)load();return'<p class="dv-mut">Loading…</p>'}const n=Object.values(T.rep).filter(r=>r&&!r.st).length;
-  return'<div class="dv-row" style="flex-wrap:wrap;margin-bottom:8px">'+[['rep','🚩 Reports'+(n?' ('+n+')':'')],['chat','💬 Recent chat'],['mod','🛡 Muted & suspended']].map(([k,l])=>'<button class="dv-b'+(T.v===k?' dv-tl dv-on':'')+'" data-md="v:'+k+'">'+l+'</button>').join('')+'<button class="dv-b" data-md="reload">↻ Refresh</button></div>'+
+  return'<div class="dv-row" style="flex-wrap:wrap;margin-bottom:8px">'+[['rep','🚩 Reports'+(n?' ('+n+')':'')],['find','🔎 Find a player'],['chat','💬 Recent chat'],['mod','🛡 Muted & suspended']].map(([k,l])=>'<button class="dv-b'+(T.v===k?' dv-tl dv-on':'')+'" data-md="v:'+k+'">'+l+'</button>').join('')+'<button class="dv-b" data-md="reload">↻ Refresh</button></div>'+
    '<label class="dv-mut" style="display:block;margin-bottom:8px">Reason for a mute or suspension <small>(shown to them, optional)</small><input type="text" data-mr="1" maxlength="120" value="'+E(T.reason||'')+'" placeholder="Rude chat" style="width:100%"></label>'+
-   (T.v==='rep'?repView():T.v==='chat'?chatView():modView())}
+   (T.v==='rep'?repView():T.v==='find'?findView():T.v==='chat'?chatView():modView())}
  document.addEventListener('click',async e=>{if(S.tab!=='mod')return;const t=e.target.closest('[data-md]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();e.stopPropagation();
   const[a,b,c]=t.dataset.md.split(':');
   try{if(a==='v'){T.v=b}else if(a==='rf'){T.rf=b}else if(a==='reload'){T.rep=null}else if(a==='who'){T.who=T.who===b?null:b}
@@ -71,6 +85,7 @@
    else if(a==='mu'||a==='ba'){const r=String(T.reason||'').trim().slice(0,120);const o={...(T.mod[b]||{}),[a]:Date.now()+(+c)*3600e3,by:uid(),t:Date.now()};if(r)o.r=r;else delete o.r;
     await D().set(ref('mod/'+b),o);T.mod[b]=o;T.reason='';toast(nm(b)+(a==='mu'?' muted.':' suspended.'))}
    else if(a==='clr'){await D().set(ref('mod/'+b),null);delete T.mod[b];toast('Lifted for '+nm(b)+'.')}}catch(e2){fail(e2)}API.draw()},true);
- document.addEventListener('input',e=>{if(S.tab==='mod'&&e.target.dataset&&e.target.dataset.mr)T.reason=e.target.value},true);
+ document.addEventListener('input',e=>{if(S.tab!=='mod'||!e.target.dataset)return;if(e.target.dataset.mr)T.reason=e.target.value;
+  if(e.target.dataset.mq){T.q=e.target.value;const el=e.target,pos=el.selectionStart;clearTimeout(T.qt);T.qt=setTimeout(()=>{API.draw();const n=document.querySelector('#dvs [data-mq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},250)}},true);
  SQSUITE.addTab('mod','Moderation',{render});
  window.SQMODADMIN={load}})();
