@@ -8,9 +8,10 @@
   nf.life=LONE;nf.mx=LONE;let out=0;for(const f of mine){const j=fires.indexOf(f);if(j>=0){fires.splice(j,1);out++}}
   const st=window.FIRESTASH;if(st)for(const k in st)if(Array.isArray(st[k])){const b=st[k].length;st[k]=st[k].filter(f=>f._rp);out+=b-st[k].length}
   if(out)say('Your old campfire goes out. The new one will burn for 30 minutes.');saveLocal(true)};
- const _u=upd;upd=function(dt){const h0=hunger;_u(dt);if(!dead&&hunger<h0&&perk(5,'fi_hearth')&&nearFire(P.x,P.y,50))hunger=h0;
-  // campfires on other islands burn down too (the Hollow loop doesn't run there)
-  const R=SCENE&&SCENE.room;if(R&&R.region&&!menuOpen&&!pnOpen){for(const f of fires)if(!f._rp)f.life-=dt;fires=fires.filter(f=>f._rp||f.life>0)}}
+ const _u=upd;upd=function(dt){const h0=hunger,L0=new Map();for(const f of fires)L0.set(f,f.life);_u(dt);if(!dead&&hunger<h0&&perk(5,'fi_hearth')&&nearFire(P.x,P.y,50))hunger=h0;
+  // campfires on other islands burn down too, but only the ones nothing else burned down this frame (001's loop runs on
+  // islands now as well; burning them here too made every island campfire last half as long)
+  const R=SCENE&&SCENE.room;if(R&&R.region&&!menuOpen&&!pnOpen){for(const f of fires)if(!f._rp&&L0.has(f)&&f.life===L0.get(f))f.life-=dt;fires=fires.filter(f=>f._rp||f.life>0)}}
  // Level 30, Flame Aura: you glow and light up everything around you at night and in Hollow's dark caves
  // (light only: it doesn't keep monsters away, heal you, or stop hunger)
  TREES[5].choices[30].push({id:'fi_aura',n:'Flame Aura',d:'You glow with firelight: at night and in dark caves you light up everything around you, and other players see it too. Light only: no healing, warmth or monster repelling.'});

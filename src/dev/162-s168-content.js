@@ -34,7 +34,12 @@
   INAME[k]=o.n;IDESC[k]=o.d;SELLP[k]=o.v;SN[k]=o.pl;if(typeof SHORT!=='undefined')SHORT[k]=o.n.toLowerCase();
   if(o.t==='food'){FOODS.push({k,n:o.n.toLowerCase(),heal:o.heal,hun:o.hun});if(o.buff)(window.SQFOODBUFF=window.SQFOODBUFF||{})[k]={b:o.buff,s:o.bs}}// meal buffs: 184
   if(o.t==='pot'){FOODS.push({k,n:o.n.toLowerCase(),heal:o.heal,hun:0,pot:1});POT[k]=o}
-  FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);if(PEND[k]){inv[k]=(inv[k]|0)+PEND[k];delete PEND[k]}else inv[k]=inv[k]|0}
+  FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);
+  // its description: the stats line (food: heals / food, like the game's own food) + its own words, or a plain line when
+  // it has none (an item saved with an empty description, or one that held only its stats, showed nothing at all)
+  try{const own=window.SQSTRIPSTATS?SQSTRIPSTATS(o.d):o.d,st=o.t==='mat'?'':[o.heal?'Heals '+o.heal+' HP':'',o.t==='food'&&o.hun?'Food +'+o.hun:''].filter(Boolean).join(' · '),mn=o.t==='pot'&&o.mana?'Restores '+o.mana+' mana':'';
+   IDESC[k]=[st,mn].filter(Boolean).map(x=>x+'. ').join('')+(own||(o.t==='food'?'Something good to eat. EAT it to heal and fill up.':o.t==='pot'?'A potion. USE it from your bag.':'Used to make things.'))}catch(e){}
+  if(PEND[k]){inv[k]=(inv[k]|0)+PEND[k];delete PEND[k]}else inv[k]=inv[k]|0}
  function items(L){const want={};for(const id in L){const o=L[id];if(!/^it_[a-z0-9_]{1,30}$/.test(id)||!o||typeof o!=='object')continue;const n=clean(o.n,30);if(!n)continue;
    const t=['food','pot'].includes(o.t)?o.t:'mat';want[id]={n,pl:clean(o.pl,32)||n,d:clean(o.d,300),v:num(o.v,0,1e7,1)|0,t,heal:num(o.heal,0,6,0)|0,hun:num(o.hun,0,100,t==='food'?20:0)|0,
     mana:num(o.mana,0,50,0)|0,buff:['str','iron','swift','wis','regen'].includes(o.buff)?o.buff:'',bs:num(o.bs,10,1800,120)|0,mv:typeof o.mv==='string'&&/^[a-z0-9_]{1,40}$/.test(o.mv)&&o.mv!==id?o.mv:''}}

@@ -29,7 +29,9 @@
  function jwWear(k){const j=JK[k];if(!j||(inv[k]|0)<1)return;const old=JW[j.s];if(old)inv[old]=(inv[old]|0)+1;inv[k]--;JW[j.s]=k;say('You put on the '+j.n.toLowerCase()+'. '+j.d);sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){}rPn()}
  function jwOff(s){const k=JW[s];if(!k)return;inv[k]=(inv[k]|0)+1;JW[s]=null;say('You take off the '+JK[k].n.toLowerCase()+'.');sfx('talk');saveLocal(true);rPn()}
  const _bg=bagGridHTML;bagGridHTML=function(){const h=_bg();const k=invSel;if(!k||!JK[k]||(inv[k]|0)<1)return h;return h.replace('<div class="bd">','<div class="bd"><button class="use" data-jw="wear" data-k="'+k+'">WEAR</button>')};
- const _eh=equipHTML;equipHTML=function(){const row=(s,lab)=>{const k=JW[s];return'<div class="tc-r"><span>'+lab+'</span><b>'+(k?esc(JK[k].n)+' <button class="gc" data-jw="off" data-s="'+s+'" style="margin-left:6px;padding:4px 8px">Take off</button>':'None')+'</b></div>'+(k?'<div style="font-size:11px;opacity:.75;margin:-2px 0 6px">'+esc(JK[k].d)+'</div>':'')};
+ const _eh=equipHTML;equipHTML=function(){const row=(s,lab)=>{const k=JW[s];return'<div class="tc-r"><span>'+lab+'</span><b>'+(k?esc(JK[k].n)+' <button class="gc" data-jw="off" data-s="'+s+'" style="margin-left:6px;padding:4px 8px">Take off</button>':'None')+'</b></div>'+(k?'<div style="font-size:11px;opacity:.75;margin:-2px 0 6px">'+esc(JK[k].d)+'</div>':'')+
+   /* jewelry in the bag for this slot can be put on right here (the slot used to offer only "Take off") */
+   JWL.filter(j=>j.s===s&&j.k!==k&&(inv[j.k]|0)>0).map(j=>'<button class="gc" data-jw="wear" data-k="'+j.k+'" style="margin:0 6px 6px 0;padding:4px 8px">'+(k?'Swap to ':'Put on ')+esc(j.n)+'</button>').join('')};
   return _eh()+'<div class="qc" style="margin-top:10px"><b>Jewelry</b>'+row('ring','Ring')+row('neck','Amulet')+'</div>'};
  // ---- making it at a furnace ----
  function jwRows(){let h='<div class="tl" style="margin-top:14px">Jewelry</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75;margin-top:-6px">Crafting level '+lvOf(6)+' · Gold bars: '+(inv.gbar|0)+'</div>';

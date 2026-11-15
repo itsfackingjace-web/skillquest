@@ -783,3 +783,7 @@
   re, a gift message, `artcred` on approval; separate `set`s, not a multi-path update), "Copy frame" = Dev Suite clipboard `sq_dev_clip`
   {w,h,p:[hex|'']} for pasting into any picture editor, Patrons list with +1 month / End now and add-by-search. The game-wide CSS
   `canvas{position:fixed;inset:0;width:100%;height:100%}` covers every canvas: panel canvases need `position:static` and sizes.
+- **Bug fixes Nov 15 (afternoon)**: 087's island fire loop only burns fires the inner `upd` didn't already burn this frame (001's
+  loop runs on islands too now; both together made island campfires last half as long). 162's `regItem` builds `IDESC` for Content
+  items as stats line (heal/food, pot mana) + own words, with a plain default when `d` is empty (`window.SQSTATS` is 171's `{day}`,
+  not 084's stats function: don't call it). 086's equipment screen lists bag jewelry per slot (Put on / Swap to, `data-jw="wear"`).
