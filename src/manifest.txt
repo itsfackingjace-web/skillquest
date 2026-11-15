@@ -207,6 +207,7 @@ combat/195-s203-game-feel.js
 core/196-s204-controller-sound.js
 multiplayer/197-s205-guilds.js
 items/198-s206-yard-weather-and-training.js
+combat/199-s207-void-treant.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

@@ -639,3 +639,17 @@
   `RENAME` after the first, gname moved in one update. Panel messages: `tell()` = say + a note card on top of the guild screen (8 s).
   Rules: `gchat`, `glb`, `guilds.prog`, `guilds.info.rn`, `gname` (publish them).
 - **Jewelry make-all** (086, edited in place): `data-jw="all"` → `jwMake(k,true)` = `sqDo('craft',jwCan(j),...)` and `SQDO.tot` for 109's "N left".
+- **Void Treant** (`combat/199-s207-void-treant.js`, `window.SQGTREANT`): a weekly guild boss. Void trees (`o.v==='dark'`) give `voidlog`
+  instead of plain logs (outermost `attack`, log deltas converted). The leader/an officer spends 5,000 void logs from the bank (197's
+  `bankUpdate`, log `w:'boss'`) and writes `guilds/<g>/boss` {w: week = floor((now-4 days)/7 days), t, by}; any member writes `k` when it
+  falls (sqEvent 'islandboss' with a `gt_` id is swallowed there: no chapter-two `ibk`, achievements' `ibw` +1). While `w` is this week
+  and no `k`, 197's applyBuildings adds a `gportal` lm item (use `gtreant`) on the guild island; the fight is 100's island-boss arena
+  under id `gt_<guild id>` (the `SQIB` entry is non-enumerable so 111a/111d don't list it; `DKIND['ib_'+id]` registered every frame),
+  drawn through `SQIBART` from the `TP`/`TR` pixel rows. Loot every fight: `eq_wvoid` (wand, element `void` in `WSP`, spellDmg +4,
+  Magic 50, every 4th void hit heals a heart; 029's storm branch becomes VOID RIFT for it). Melee hits on it add 1 + axe tier +
+  Woodcutting/10. 197 exposes `SQGUILD.api` (bankUpdate, tell, fail, boss, ref, DB, rec = G.boss, applyBuildings...). Rules: `guilds.$g.boss`.
+- **Homes on guild islands** (197): 067's applySave drops `rh` houses whose region isn't registered, and a save loads before the
+  database says which guild you're in, so a house on the guild island vanished on a device without `sq_guild`. 197's outermost
+  applySave registers the `gi_` island named in the save's `rh`/`region` first (adopting it as G.id when none is known); `rh` entries
+  on another guild's island are packed into the bag (`packRaw`: house/castle, furniture, chest and yard contents), and `leftGuild`
+  packs homes on the island being left (`packLeft`).

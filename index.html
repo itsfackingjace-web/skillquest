@@ -9404,6 +9404,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-32',d:'Nov 14, 2026',t:'The Void Treant',n:['A new guild boss: the Void Treant. Once a week your guild\'s leader or an officer can wake it from START > Guild > Void Treant by spending 5,000 void logs from the guild bank.','A void portal then opens on your guild island. Go through it together: the Treant gets tougher for every extra fighter, and it stays awake until your guild beats it (that week).','Everyone who fights it gets a Void wand, every time: the strongest wand in the game (Magic 50). Its purple void bolts hit harder than any adamant wand, and every fourth hit heals you a heart. Its ultimate is Void Rift.','Chop it! Your axe and Woodcutting level add extra damage to every melee hit on the Treant.','Void trees (on the Shattered Expanse, and void saplings planted on your guild island) now give Void logs instead of plain logs. Put them in the guild bank chest to save up for the next summon.','Fixed: a house or castle built on your guild island could disappear when you played on another device. It stays put now. A home on the island of a guild you\'ve left goes back into your bag, with everything that was inside it.']},
  {v:'2026.11.14-31',d:'Nov 14, 2026',t:'Make all jewelry',n:['Every ring and amulet at the furnace now has an All button next to Make: it keeps crafting until you run out of gold bars or gems, and shows how many are left over your head.']},
  {v:'2026.11.14-30',d:'Nov 14, 2026',t:'Guilds get serious',n:['Skill ranks: every finished Guild Quest ranks your guild up in that skill (up to rank 5). Each rank gives every member +10% XP and a 10% chance of an extra item when they gather with that skill, anywhere in the world. A woodcutting guild really does chop more.','Guild buildings appear on your island as the guild levels up: Guild horn at level 2 (travel to the island from anywhere outdoors), Guild forge at level 3 (furnace and anvil, +20% Smithing XP), Guild shrine at level 4 (a daily 20-minute blessing) and Guild hall at level 5 (+10 members and +5% XP in every skill).','Everything planted on your guild island grows back in one minute instead of four.','Guild chat: a new Guild tab in chat, or type /g and your message.','Top guilds: see how your guild ranks against the others (START > Guild > Top guilds).','Leaders can rename the guild in Settings. The first rename is free, after that it costs 1,000,000 gold.','Guild messages (like "use the bank chest") now show inside the guild screen instead of behind it.']},
  {v:'2026.11.14-29',d:'Nov 14, 2026',t:'Fixes: yards and crafting screens',n:['Anvils, furnaces, the crafting list and other station screens look right again (the guild update had squashed their layout).','It rains (and snows) in backyards and courtyards now, just like outside.','Bows, wands and ultimates work in your backyard: shoot or cast at your training dummy to train Archery and Magic there. No more "Not indoors!".']},
@@ -20473,7 +20474,26 @@ window.SQA=SQA;
  function unregister(){const id=REG;if(!id)return;let here='';try{here=curRegion()}catch(e){}if(here===id)return;
   const j=ROUTE_ORDER.indexOf(id);if(j>=0)ROUTE_ORDER.splice(j,1);delete RG_GEN[id];delete RG_GENS[id];try{delete RG_CACHE[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id]}catch(e){}delete WORLD_REGIONS[id];REG=''}
  {const _ro=routeOpen;routeOpen=function(id){if(id&&id===REG)return true;if(/^gi_/.test(id||''))return false;return _ro.apply(this,arguments)}}
- const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region===REG&&REG)}catch(e){return false}};
+ // Houses/castles on the guild island (067's SQRH, rg 'gi_<g>'): 067's applySave drops houses on regions it doesn't know, and a
+// save loads before the database says which guild you're in (on another device there's no sq_guild yet), so a house on the
+// guild island vanished on load and the next save lost it for good. Now the island in the save is registered before the
+// save is read. A house on the island of a guild you're no longer in is packed into the bag (house/castle, furniture, chest
+// and yard contents), here on load and when you leave.
+const GIRX=/^gi_([a-z0-9]{6,16})$/;
+function packRaw(e){const add=(k,n)=>{if(k&&INAME[k])inv[k]=(inv[k]|0)+(n|0)};add(e.c?'castle':'house',1);
+ for(const L of[e.f,e.yf])if(Array.isArray(L))for(const q of L){if(!Array.isArray(q)||typeof q[1]!=='string'||q[1]==='house'||q[1]==='castle')continue;add(q[1],1);
+  if(q[2]&&typeof q[2]==='object')for(const k in q[2])if(INVK.includes(k))add(k,Math.max(0,Math.min(1e6,+q[2][k]||0)))}}
+function packLeft(rg){const L=window.SQRH;if(!L)return 0;let n=0;for(let j=L.length-1;j>=0;j--){const h=L[j];if(h._foreign||h.rg!==rg)continue;
+  const f=[...h.furn].map(([i,v])=>[i,v.t,v.items||null]),yf=[...(h.yf||new Map())].map(([i,v])=>[i,v.t,v.items||null]);L.splice(j,1);h.yf=new Map();h.yp=new Map();packRaw({c:h.castle?1:0,f,yf});n++}
+ if(n){try{rhSolidSync()}catch(e){}}return n}
+{const _ap=applySave;applySave=function(S){let orphan=[];try{const want=new Set();if(S&&Array.isArray(S.rh))for(const e of S.rh){const m=e&&GIRX.exec(String(e.rg||''));if(m)want.add(m[1])}
+   const m2=S&&S.region&&GIRX.exec(String(S.region.id||''));if(m2)want.add(m2[1]);
+   for(const gid of want){if(!G.id){G.id=gid;G.isl={};keep()}if(G.id===gid)register()}
+   if(S&&Array.isArray(S.rh))orphan=S.rh.filter(e=>{const m=e&&GIRX.exec(String(e.rg||''));return m&&m[1]!==G.id})}catch(e){console.warn('guild load',e)}
+  const out=_ap.apply(this,arguments);
+  try{if(orphan.length){for(const e of orphan)packRaw(e);const m='Your '+(orphan.length>1?'homes':(orphan[0].c?'castle':'house'))+' on the island of a guild you left '+(orphan.length>1?'were':'was')+' packed into your bag with everything inside.';
+    setTimeout(()=>{try{say(m);msgT=8;saveLocal(true);saveCloud(true)}catch(e){}},2500)}}catch(e){console.warn('guild pack',e)}return out}}
+const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region===REG&&REG)}catch(e){return false}};
  // planted things in the room you stand in (and on every load of the island)
  function applyNodes(R){if(!R||!R.region||R.region!==REG)return;const W=R.w;
   for(let j=R.items.length-1;j>=0;j--){const it=R.items[j];if(it.t==='_obj'&&!it._gn){try{rgCellDel(R,it)}catch(e){}R.solid.delete(it.y*W+it.x);R.items.splice(j,1)}}// only what the guild planted grows here
@@ -20491,14 +20511,17 @@ window.SQA=SQA;
   const S=spots(R),add=it=>{it._gb=1;it.sh=it.h;R.items.push(it);(R.useItems=R.useItems||[]).push(it);for(let b=0;b<it.h;b++)for(let a=0;a<it.w;a++)R.solid.add((it.y+b)*W+it.x+a);try{rgCellAdd(R,it)}catch(e){}};
   if(has('forge'))for(const f of S.forge)add({t:'lm',k:'gstation',st:f.st,x:f.x,y:f.y,w:1,h:1,use:'gstation',name:f.st==='furnace'?'Guild furnace':'Guild anvil'});
   if(has('shrine'))add({t:'lm',k:'shrine',x:S.shrine[0].x,y:S.shrine[0].y,w:1,h:1,use:'gshrine',name:'Guild shrine'});
-  if(has('hall'))add({t:'lm',k:'vault',x:S.hall[0].x,y:S.hall[0].y,w:3,h:2,use:'ghall',name:'Guild hall'})}
- let BLV=-1;
- {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){R._t64=1;applyNodes(R);applyBuildings(R);BLV=glv(G.prog.qd)}}catch(e){console.warn('guild isle',e)}return ok}}
+  if(has('hall'))add({t:'lm',k:'vault',x:S.hall[0].x,y:S.hall[0].y,w:3,h:2,use:'ghall',name:'Guild hall'});
+  // the Void Treant's portal (199), while this week's summoned Treant is still standing: the first free spot near the middle
+  if(TRO()){const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;for(const[x,y]of[[bx+3,by+3],[bx-3,by+3],[bx,by+6],[bx+3,by+6],[bx-3,by+6],[bx,by+8]]){const i=y*W+x;if(R.solid.has(i)||rgObjAt(R,x,y)||!RG_WALK[R.tiles[i]])continue;add({t:'lm',k:'gportal',x,y,w:1,h:1,use:'gtreant',name:'Void portal'});break}}}
+ let BLV='';const TRO=()=>!!(window.SQGTREANT&&SQGTREANT.open()),bkey=()=>glv(G.prog&&G.prog.qd)+':'+(TRO()?1:0);
+ {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){R._t64=1;applyNodes(R);applyBuildings(R);BLV=bkey()}}catch(e){console.warn('guild isle',e)}return ok}}
  // the banner: a pole and a flag in the guild's colour
  {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='lm'&&it.k==='gflag'){const x=it.x*16+8,y=it.y*16+16,w=Math.sin((tm||0)*3)*1.2,c=col();
    Rg(x-1,y-30,2,30,'#5a4028');Rg(x-2,y-2,4,2,'#3a2818');g.beginPath();g.moveTo(x+1,y-30);g.lineTo(x+17+w,y-29);g.lineTo(x+14+w,y-24.5);g.lineTo(x+17+w,y-19);g.lineTo(x+1,y-19);g.closePath();g.fillStyle=c;g.fill();g.lineWidth=1;g.strokeStyle='#202020';g.stroke();
    const tag=G.info&&G.info.tag||'';if(tag){g.save();g.font='700 4px '+PF;g.fillStyle=c==='#e8e8e8'?'#202020':'#fff';g.textAlign='center';g.fillText(tag,x+8+w/2,y-23);g.restore()}return}
   if(it&&it.t==='lm'&&it.k==='gstation'){try{drawStation(it.st,it.x,it.y,{},tm)}catch(e){}return}
+  if(it&&it.t==='lm'&&it.k==='gportal'){try{SQGTREANT.drawPortal(it,tm)}catch(e){}return}
   return _df.apply(this,arguments)}}
  // ---- database ----
  let OFF=[];const stopAll=()=>{for(const f of OFF)try{f()}catch(e){}OFF=[]};
@@ -20506,8 +20529,8 @@ window.SQA=SQA;
  function listen(gid){stopAll();G.ready=false;if(!gid)return;const d=DB();
   OFF.push(d.onValue(ref('guilds/'+gid),s=>{const v=s.val();
    if(!v||!v.m||!v.m[me()]){if(G.id===gid){const was=G.info&&G.info.n;leftGuild(was?'You are no longer in '+was+'.':'')}return}
-   G.info=v.info||G.info;G.m=v.m||{};G.q=v.q||null;G.prog=v.prog||{qd:0};G.perm=Object.assign({o:-1,m:20},v.perm||{});G.bank=Object.assign({i:{},v:0},v.bank||{});G.bank.i=G.bank.i||{};G.isl=v.isl||{};G.wd=v.wd||{};G.ready=true;keep();register();
-   try{const R=SCENE&&SCENE.room;if(R&&R.region===REG){applyNodes(R);if(BLV!==glv(G.prog.qd)){BLV=glv(G.prog.qd);applyBuildings(R)}}}catch(e){}
+   G.info=v.info||G.info;G.m=v.m||{};G.q=v.q||null;G.prog=v.prog||{qd:0};G.perm=Object.assign({o:-1,m:20},v.perm||{});G.bank=Object.assign({i:{},v:0},v.bank||{});G.bank.i=G.bank.i||{};G.isl=v.isl||{};G.wd=v.wd||{};G.boss=v.boss||null;G.ready=true;keep();register();
+   try{const R=SCENE&&SCENE.room;if(R&&R.region===REG){applyNodes(R);if(BLV!==bkey()){BLV=bkey();applyBuildings(R)}}}catch(e){}
    pubLB();
    claimCheck();redraw()},e=>{}));
   OFF.push(d.onValue(ref('glog/'+gid),s=>{const v=s.val()||{};G.log=Object.entries(v).map(([id,o])=>Object.assign({id},o)).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,200);if(tab==='log')redraw()},()=>{G.log=null}))}
@@ -20515,7 +20538,7 @@ window.SQA=SQA;
   meOff=d.onValue(ref('gmem/'+me()),s=>{const gid=typeof s.val()==='string'?s.val():'';if(gid!==G.id||!G.ready){if(gid&&gid!==G.id){G.id=gid;G.isl={};keep()}if(!gid&&G.id){leftGuild('');return}if(gid)listen(gid)}redraw()});
   invOff=d.onValue(ref('ginv/'+me()),s=>{G.inv=s.val()||{};const ids=Object.keys(G.inv);if(ids.length&&!G.id)popInv(ids[0]);redraw()})}
  function stopDB(){started=false;stopAll();if(meOff){meOff();meOff=null}if(invOff){invOff();invOff=null}}
- function leftGuild(msg){const id=G.id;stopAll();G.id='';G.info=null;G.m={};G.q=null;G.isl={};G.bank={i:{},v:0};G.ready=false;keep();
+ function leftGuild(msg){const id=G.id;try{if(id&&packLeft('gi_'+id)){msg=(msg?msg+' ':'')+'Your home on the guild island was packed into your bag with everything inside.';setTimeout(()=>{try{saveLocal(true);saveCloud(true)}catch(e){}},1500)}}catch(e){}stopAll();G.id='';G.info=null;G.m={};G.q=null;G.isl={};G.bank={i:{},v:0};G.ready=false;keep();
   if(onIsle()){try{routeGo('hollow')}catch(e){}}setTimeout(unregister,1500);try{if(on())DB().set(ref('gmem/'+me()),null).catch(()=>{})}catch(e){}if(msg){say(msg);msgT=5}redraw()}
  let NOTE=null;const tell=t=>{say(t);NOTE={t,at:performance.now()};redraw()};
  const fail=e=>{try{console.warn('guild',e)}catch(x){}const m=String(e&&(e.code||e.message)||e);tell(/permission/i.test(m)?'Someone else in the guild changed this at the same moment. Try again.':'Could not reach the server. Try again.');sfx('swish')};
@@ -20628,7 +20651,7 @@ window.SQA=SQA;
  let atChest=false;
  const nearChest=()=>{if(!onIsle())return false;const R=SCENE.room;return R.items.some(it=>it.use==='gbank'&&Math.hypot(it.x*16+8-P.x,it.y*16+8-P.y)<40)};
  {const _uf=useFurn;useFurn=function(it){if(it&&it.use==='gboard'){open('quest');return}if(it&&it.use==='gbank'){open('bank');return}if(it&&it.use==='ghall'){open('perks');return}
-  if(it&&it.use==='gshrine'){pray();return}if(it&&it.use==='gstation'){try{openStation({t:it.st,f:{}})}catch(e){}return}return _uf.apply(this,arguments)}}
+  if(it&&it.use==='gshrine'){pray();return}if(it&&it.use==='gtreant'){try{SQGTREANT.enter(it)}catch(e){console.warn(e)}return}if(it&&it.use==='gstation'){try{openStation({t:it.st,f:{}})}catch(e){}return}return _uf.apply(this,arguments)}}
  // ---- panel ----
  let tab='home',sel=-1;
  function open(t){tab=t||(G.id?'home':'home');pnOpen=true;ptab=GT;jx=jy=0;pn.style.display='block';rPn();sfx('talk');startDB()}
@@ -20658,7 +20681,7 @@ window.SQA=SQA;
   const I=G.info||{},L=members(),lv=glv(G.prog.qd),r=role();
   let h='<div class="tl">GUILD</div><div class="gdgh"><div class="gdfl" style="background:'+col()+'"></div><div style="flex:1"><b>'+esc(I.n)+' ['+esc(I.tag)+']</b><br><small>Level '+lv+' · '+L.length+' member'+(L.length===1?'':'s')+' · you are '+ROLE[r]+'</small></div></div>';
   if(NOTE&&performance.now()-NOTE.at<8000)h+='<div class="qc" style="border-color:#c89020;background:#fff8e0"><b>'+esc(NOTE.t)+'</b></div>';
-  const T=[['home','Members'],['quest','Quest'],['perks','Perks'],['bank','Bank']].concat(boss()?[['log','Log']]:[]).concat([['top','Top guilds']]).concat(r==='l'?[['set','Settings']]:[]);
+  const T=[['home','Members'],['quest','Quest'],['perks','Perks'],['bank','Bank']].concat(window.SQGTREANT?[['boss','Void Treant']]:[]).concat(boss()?[['log','Log']]:[]).concat([['top','Top guilds']]).concat(r==='l'?[['set','Settings']]:[]);
   h+='<div class="gdgtb">'+T.map(([k,n])=>'<button data-g="tab:'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
   if(tab==='home'&&has('horn'))h+='<div class="qc"><b>Guild horn</b><p style="font-size:13px">Travel to the guild island from anywhere outdoors.</p><button class="qb" data-g="horn">Blow the horn</button></div>';
   if(tab==='home'){const P=Mp()&&Mp().players;
@@ -20694,11 +20717,12 @@ window.SQA=SQA;
    h+='</div><div class="qc"><b>Buildings</b><p style="font-size:13px">The guild gains a level with every finished quest. Buildings appear on your guild island:</p>';
    for(const b of BLD){const ok=has(b.k);h+='<div class="gdgr"><span style="font-size:18px">'+(ok?'✅':'🔒')+'</span><div class="gdtx"><b>'+b.n+'</b> <small>'+(ok?'Built':'Guild level '+b.lv)+' · '+b.d+'</small></div></div>'}
    h+='</div><div class="qc"><b>Your island</b><p style="font-size:13px">Everything planted on the guild island grows back in a minute (four in the wild), and only your guild can use it.</p></div>'}
+  else if(tab==='boss'&&window.SQGTREANT){h+=SQGTREANT.html()}
   else if(tab==='top'){loadTop();h+='<div class="qc"><b>Top guilds</b>';if(!TOP)h+='<p>Loading…</p>';else if(!TOP.length)h+='<p>No guilds yet.</p>';
    (TOP||[]).forEach((o,i)=>{h+='<div class="gdgr"'+(o.id===G.id?' style="background:#fff8e0"':'')+'><b style="width:26px">'+(i+1)+'</b><div class="gdfl" style="width:14px;height:18px;background:'+(COLS[o.col|0]||COLS[0])+';clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)"></div><div class="gdtx"><b>'+esc(o.n)+' ['+esc(o.tag)+']</b><small>Level '+(o.lv|0)+' · '+(o.m|0)+' member'+((o.m|0)===1?'':'s')+'</small></div></div>'});h+='</div>'}
   else if(tab==='log'&&boss()){h+='<div class="qc"><b>Bank log</b><p style="font-size:12px;opacity:.8">Every deposit, withdrawal, planting and quest reward. Only the leader and officers see this.</p>';
    if(G.log===null)h+='<p>The log needs the latest database rules.</p>';else if(!G.log.length)h+='<p>Nothing yet.</p>';
-   for(const e of (G.log||[]).slice(0,120)){const W={dep:'put in',wd:'took',plant:'planted',dig:'dug up',quest:'quest reward:'}[e.w]||e.w;const when=e.t?new Date(e.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
+   for(const e of (G.log||[]).slice(0,120)){const W={dep:'put in',wd:'took',plant:'planted',dig:'dug up',quest:'quest reward:',boss:'summoned the Void Treant with'}[e.w]||e.w;const when=e.t?new Date(e.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
     h+='<div class="gdgr"><div class="gdtx"><b>'+esc(e.n||'Player')+'</b> '+W+' '+(e.w==='quest'?esc(e.d):esc(e.d)+' × '+esc(nm(e.k)))+'<small>'+esc(when)+'</small></div></div>'}h+='</div>'}
   else if(tab==='set'&&r==='l'){const opt=(rk,vals)=>vals.map(v=>'<button data-g="perm:'+rk+':'+v+'" class="'+((G.perm[rk]==null?(rk==='o'?-1:20):G.perm[rk])===v?'on':'')+'">'+(v<0?'No limit':v===0?'None':v+' a day')+'</button>').join('');
    h+='<div class="qc"><b>Taking from the bank</b><p style="font-size:13px">How many items each rank can take out of the guild bank per day. Everything is in the log.</p><small>Officers</small><div class="gdgtb">'+opt('o',[-1,100,20,0])+'</div><small>Members</small><div class="gdgtb">'+opt('m',[50,20,5,0])+'</div></div>'+
@@ -20713,6 +20737,7 @@ window.SQA=SQA;
    if(a==='role')return setRole(x,y);if(a==='pick')return pick(x);if(a==='claim')return claim(+x);if(a==='cancelq'){if(b.dataset.sure){cancelQ();return}b.dataset.sure=1;b.textContent='Tap again to give up';return}
    if(a==='plant')return plant(x);if(a==='dig')return dig();if(a==='dep')return deposit(x,y==='all'?(inv[x]|0):+y);if(a==='wd')return withdraw(x,+y);
    if(a==='horn')return horn();if(a==='rename'){const v=document.getElementById('grn').value;if(b.dataset.sure||((G.info.rn|0)===0)){rename(v);return}b.dataset.sure=1;b.textContent='Tap again: '+RENAME.toLocaleString()+' gold';return}
+   if(a==='gtb'&&window.SQGTREANT)return SQGTREANT.act(x,y,b);
    if(a==='perm')return setPerm(x,+y);if(a==='scol')return setInfo('col',+x)}}
  // ---- invites: the player menu button and the pop-up ----
  window.SQGUILDPM=u=>{if(!G.id||!boss())return'';const inG=!!G.m[u];return'<button class="sb" data-pm="guild"'+(inG?' disabled style="opacity:.55"':'')+'>'+(inG?'IN YOUR GUILD ✓':'INVITE TO GUILD')+'</button>'};
@@ -20725,7 +20750,7 @@ window.SQA=SQA;
  // ---- others' tags: [TAG] over their heads in their guild colour (presence gt/gc) ----
  (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r||!r.gt)return;g.save();g.font='700 4px '+PF;g.textAlign='center';g.lineWidth=1.5;g.lineJoin='round';g.strokeStyle='#101418';const t='['+r.gt+']';
   g.strokeText(t,Math.round(r.x),Math.round(r.y-39));g.fillStyle=COLS[r.gc|0]||'#fff';g.fillText(t,Math.round(r.x),Math.round(r.y-39));g.restore()});
- window.SQGUILD={pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
+ window.SQGUILD={api:{on,bankUpdate,tell,fail,boss,role,redraw,onIsle,me,TS,now,ref,DB,applyBuildings:()=>{try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){applyBuildings(R);BLV=bkey()}}catch(e){}},get rec(){return G.boss||null},get ready(){return G.ready}},pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
   test:{horn,pray,rename,pubLB,loadTop,applyBuildings,has,rank,create,invite,accept,leave,pick,flush,deposit,withdraw,plant,dig,setRole,setPerm,claimCheck,claim,applyNodes,listen,startDB,stopDB,frontCell,canPlant}};
  // ---- every frame: start/stop with the connection, count quest progress, flush it, keep the island registered ----
  if(G.id)try{register()}catch(e){}
@@ -20764,6 +20789,113 @@ window.SQA=SQA;
     const x=Math.floor(r.x/16),y=Math.floor(r.y/16);let s=0,d=0;for(let dy=-4;dy<=4;dy+=2)for(let dx=-5;dx<=5;dx+=2){const t=tile[(y+dy)*N+x+dx];if(t===4)s++;else if(t===5)d++}
     return s>=10?'snow':d>=10?'desert':'grass'}}catch(e){}return'grass'}}
  window.SQYARDOUT={isYard,get fight(){return FIGHT}};
+})();
+// ---- 207. The Void Treant (a weekly guild boss), void logs and the Void wand ----
+// Void trees (o.v 'dark') give Void logs instead of plain logs. A guild's leader or an officer spends 5,000 void logs from the
+// guild bank (197's bankUpdate, with guilds/<g>/boss {w: week number (Monday 00:00 UTC, like 143), t, by, k: killed at}) to wake
+// the Void Treant once a week; a void portal (197's applyBuildings, use 'gtreant') stays on the guild island until it falls.
+// The fight is 100's island-boss arena under the id gt_<guild id>; every fighter gets a Void wand (eq_wvoid, element 'void',
+// spellDmg +4, Magic 50, every 4th void hit heals a heart; the void ultimate is 029's storm branch turned into VOID RIFT).
+// Melee hits on the Treant add 1 + axe tier + Woodcutting/10. Rules: guilds.$g.boss (publish them).
+(()=>{
+const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "#3e2e5a", "f": "#1c1428", "g": "#9c6ad8", "h": "#e8d0ff", "i": "#56404e", "j": "#725a68", "k": "#3c2a3c", "l": "#c8a0ff", "m": "#ffffff", "n": "#7a40c8", "o": "#9a6ae0", "p": "#221626", "q": "#5c3a8a"},TR=".............aaaaaabbbbbbbbcccaaaaaa..............|...........aabbbbbbbbddbcccccccbbbbbaa............|.........aabbbbbbbbbbbccccccccccbbbbccaa..........|........abbbbbbbbbbbcccccccccceebbcccccca.........|........abbbddbccccccccccccceeeecccccccca.........|.......abbbbbcccccfccccccceeeefcccccccccca........|....aaacbbbccccccccffcceeeeeffcggcccccceecaaa.....|...accccbccccccccccccfffffffccchhcccceeeecccca....|..acccccccccccccccceeeeeecccccccccceeeeecccceea...|.acccccccggcccccceeeeeffeffcccccceeeeeffcceeeeea..|.cccccccchhffcbbbbbbbfbbbbbfbbbbbbbeffcceeggeeeea.|.ccccbbbbbeebbbbbbbbbbbbbbbccbbbbbccccebbbhheeeea.|.ccbbbbbbbcbbbbbbbbbbddbccccccbbbcccccbbbbbbcceea.|.cbbddbccccbbbdggcbbbbccccggccccccccccddbccccccea.|.bbbbcccccbbbbbhhcbbcccccchhcceccccccccccccccccca.|.bbcccccccbbbccccccccccccccceeecccccceeccccccccea.|.cccccccccbccccccccfccccceeeefccccceeeecccccceeea.|.afccccceeecccccccceffceeeeffcccceeeeecccceeeefa..|..affceeeeffcccccceeeefffffccccceeeeeffceeeeffa...|...aafffffaaffeceeeeeffaaaffcceeeeefeaafffffaa....|.....aaaaa..aacffefffaaiiiaaffffeffaca.aaaaa......|.............aeaacaaaiiiiiiiaaaacaaaea............|..............a.aeaaaiiiiiiiiaaaea..a.............|................acajjaaiiiiaakkaca................|.................akjaaaaiiaaaakaea.....a..........|.................akjlmliiiilmlkka.aaa.aca.........|.............a...akjanaijjianakkaaiiiacba.........|............aca.aaooiiiikjiiikkoiiiiiiaa..........|...........abcaaiiojiiiiiiiiikooiikkkiia..........|............aaiiiikjaaaaaaaaaakkkkaaakiia.........|............aiiikkkaajppjppjpakkaa...akiia........|...........aiikkaakjanjnnjnnjaaka.....akia........|..........aiikaaakjiaaaaaaaaaakka......akia.......|.........aiika..akjiooooooooookkka......aiia......|........aiika...akjiqqqqqqqqqqkkka......akia......|........aika...akjiiooooooooiokkka......aaia......|.......aika....akjiiiqqqqqiqiiikkka....akakka.....|......aiia.....akjiiioioooioiiikkka...akaakaka....|......aika....akjiiiiiiqiqiipiikkka...akaakaaka...|.....aiia.....akjiiiiipoiiiipiiikkka...a.aka.a....|.....aika.....akjiiiiipiiiiipiiikkka......a.......|....akkaka...akjiiiiiipiiiiipiiikkka..............|...akakaaka..akjiiiiiipiiiiiipiiikkka.............|..akaakaaka..akjiiijiiipiiiipiiiikkka.............|...a.aka.a..akjooippiipiiiiipiipikkka.............|......a.....akjiiipiiipiiiiipiipiikkka............|...........akjiiiiiiiipiipiiiiipiikkka............|...........akjiiiiiiiipiipiiiiipiiiooka...........|..........akjiiiiiiiiiiiipiiiiiipiikkka...........|..........akjiiiiiiiiiiiipiiiiipiiiikkka..........|.........akjiiiiiiiiiiiiiipiiiipiiiikkka..........|........akjiiiiiiiiiiiiiipiiiiiiiiiiikkka.........|......aakjiiiiiiiiiiiiiiipiiiiiiiiiiiikkkaa.......|.....akjiiiiikkkaaaakjiiiiikkkaaaakjiiiikkka......|....akjiiikkkaaa....akjiiikkka....aaakjiikkka.....|...akjkkkkaaa........akjkkkka........aakjkkkka....|..akkkkaaa............akkkka...........aakkkkka...|.akkkaa................aaaa..............akkkkka..|.kkaa.....................................aakkkka.|.aa.........................................aaaa..";
+ // ---- void logs: void trees (o.v 'dark': the Shattered Expanse, guild void saplings) give these instead of plain logs ----
+ const VL='voidlog';INVK.push(VL);INAME[VL]='Void logs';SN[VL]='Void logs';SHORT[VL]='void logs';SELLP[VL]=30;inv[VL]=inv[VL]|0;
+ IDESC[VL]='Dark wood that hums faintly, from void trees. A guild spends '+(5000).toLocaleString()+' of them from the guild bank to summon the Void Treant.';
+ const isLog=k=>k==='wood'||/log$/.test(k);
+ const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);return it&&it.o}}catch(e){}return null};
+ {const _a=attack;attack=function(){let o=null;try{o=treeAt()}catch(e){}if(!o||o.v!=='dark'||SKOF[o.t]!==1)return _a.apply(this,arguments);
+   const b={};for(const k in inv)if(isLog(k))b[k]=inv[k]|0;const out=_a.apply(this,arguments);
+   try{let n=0;for(const k in inv){if(!isLog(k)||k===VL)continue;const d=(inv[k]|0)-(b[k]|0);if(d>0){inv[k]-=d;n+=d}}
+    if(n>0){inv[VL]=(inv[VL]|0)+n;addXp(1,15*n);say('+'+n+' void log'+(n>1?'s':''));try{gTxt(P.x,P.y-30,'+'+n+' void log'+(n>1?'s':''),'#c8a0ff')}catch(e){}}}catch(e){console.warn('voidlog',e)}return out}}
+ // ---- the Void wand: element 'void', the strongest wand; every 4th hit heals you one heart ----
+ const WV='eq_wvoid',VB=4;
+ WSP.void={cost:3,col:'#9a5af0',c2:'#e8d0ff',sfx:'cvoid'};
+ SFX.cvoid=()=>{noise(.14,.07,500);tone(170,.24,'sine',.045,-90);tone(340,.12,'triangle',.02,-200,.04)};
+ {const e={slot:'off',kind:'wand',el:'void',n:'Void wand',ic:'wvoid',col:'#7a40c8',v:20000,lv:50};EQ[WV]=e;EQK.push(WV);INVK.push(WV);EXTRA_BAG.push(WV);INAME[WV]=e.n;SELLP[WV]=8000;SN[WV]=e.n+'s';SHORT[WV]=e.n.toLowerCase();inv[WV]=inv[WV]|0;
+  const base='From the Void Treant. Casts void bolts that hit harder than any other wand, and every fourth hit drains life back to you (+1 heart). Needs Magic 50.';
+  Object.defineProperty(IDESC,WV,{configurable:true,enumerable:true,get(){let s='';try{s='Damage '+spellDmg('void')+' · Costs '+WSP.void.cost+' mana. '}catch(e){}return s+base},set(v){}})}
+ {const _sd=spellDmg;spellDmg=function(el){return _sd.apply(this,arguments)+(el==='void'?VB:0)}}
+ {const _ic=iconURL;iconURL=function(k,col){if(k!=='wvoid')return _ic(k,col);const key='g207wvoid';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+   for(let i=0;i<8;i++)r(2+i,11-i,2,2,i%3?'#3c2a3c':'#56404e');r(1,12,2,1,'#221626');r(8,0,6,6,'#0c0814');r(9,1,4,4,'#7a40c8');r(10,2,2,2,'#e8d0ff');r(13,3,1,1,'#c8a0ff');r(8,5,1,1,'#c8a0ff');return ICONC[key]=c.toDataURL()}}
+ let VD=0,VU=0;
+ {const _sh=spellHit;spellHit=function(s,n,dmg){if(VU&&s&&s.el==='storm')s=Object.assign({},s,{el:'void'});const out=_sh.call(this,s,n,dmg);
+   try{if(s&&s.el==='void'&&!s.sub&&!dead){for(let k=0;k<4;k++)part(n.x,n.y-8,(P.x-n.x)*(.8+Math.random()*.6),(P.y-8-n.y)*(.8+Math.random()*.6),.5,k%2?'#c8a0ff':'#7a40c8',0,1);
+     VD+=VU?1:.25;if(VD>=1){VD-=1;if(P.hp<6){P.hp=Math.min(6,P.hp+1);try{gTxt(P.x,P.y-26,'+1 heart','#d8b0ff')}catch(e){}}}}}catch(e){}return out}}
+ // the void ultimate: 029 has no case for 'void' and runs its storm branch; here that becomes VOID RIFT (purple, and it drains)
+ let VRF=null;
+ {const _cu=castUlt;castUlt=function(){const v=WAND==='void',cd=ULTCD;if(!v)return _cu.apply(this,arguments);VU=1;let out;try{out=_cu.apply(this,arguments)}finally{VU=0}
+   if(ULTCD>cd&&typeof ULTFX!=='undefined'&&ULTFX&&ULTFX.el==='storm'){VRF={t:0,pts:(ULTFX.bolts||[]).slice()};ULTFX=null;say('VOID RIFT!');try{sfx('cvoid');setTimeout(()=>sfx('cvoid'),120)}catch(e){}}return out}}
+ {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(VRF){VRF.t+=dt;if(VRF.t>.8)VRF=null}return out}}
+ {const _dh=drawHUD;drawHUD=function(){if(VRF&&!menuOpen)try{const cx=camX(),cy=camY(),p=VRF.t/.8;g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);
+    for(const[bx,by]of VRF.pts){g.globalAlpha=Math.max(0,1-p);const r=6+p*18;g.fillStyle='#0c0814';g.beginPath();g.ellipse(bx,by-4,r,r*.6,0,0,6.283);g.fill();g.strokeStyle='#b080f0';g.lineWidth=1.5;g.beginPath();g.ellipse(bx,by-4,r+2,r*.6+2,0,0,6.283);g.stroke();
+     for(let k=0;k<8;k++){const q=k/8*6.283+p*6;Rg(Math.round(bx+Math.cos(q)*(r+5)),Math.round(by-4+Math.sin(q)*(r*.6+3)),2,2,k%2?'#e8d0ff':'#9a5af0')}}
+    g.globalAlpha=1;g.restore()}catch(e){}return _dh.apply(this,arguments)}}
+
+ // ---- the Void Treant (a guild boss) ----
+ // The arena and the fight are 100's island-boss system (shared online, +60% health per extra fighter, every fighter in the
+ // arena when it falls gets the whole reward). Its id is per guild (`gt_<guild id>`), added to SQIB hidden from for..in
+ // (111a's Stats table and 111d's monster list only know the five island bosses).
+ const SUM=5000,WEEK=()=>Math.floor((((window.SQGUILD&&SQGUILD.api)?SQGUILD.api.now():Date.now())-345600000)/604800000);
+ const A=()=>window.SQGUILD&&SQGUILD.api,GID=()=>window.SQGUILD&&SQGUILD.id||'',TID=()=>GID()?'gt_'+GID():'';
+ const isT=id=>/^gt_/.test(String(id||''));
+ const DEF={n:'The Void Treant',door:'',lm:'the void portal',hp:6000,col:'#9a5af0',shard:'',sc:['#c8a0ff','#5a3a8a'],
+  floor:['#2a2236','#30283e'],wall:'#1c1626',trim:'#0a0810',gold:[1500,2500],loot:[[WV,1],[VL,150],['yewlog',25]],xp:6000,rare:['ptvoid','Void treeling (pet)'],
+  atk:[['circles',3.4,{n:6,r:20,delay:1.1,k:'void'}],['fan',2.6,{n:5,spread:.3,sp:95,k:'void'}],['spiral',4.8,{n:14,sp:70,k:'void'}],['ring',6.5,{max:110}],['summon',13,{key:'wolf:void',n:2,cap:3,half:1}]]};
+ function regBoss(){const id=TID();if(!id||!window.SQIB)return'';if(!Object.prototype.hasOwnProperty.call(SQIB,id))Object.defineProperty(SQIB,id,{value:Object.assign({},DEF),enumerable:false,configurable:true,writable:true});
+  if(typeof DKIND!=='undefined'&&!DKIND['ib_'+id])DKIND['ib_'+id]={name:DEF.n,floor:DEF.floor,wall:DEF.wall,trim:DEF.trim,W:30,H:24,floors:1,cavey:1};return id}
+ const rec=()=>{const a=A();return a&&a.ready?a.rec:null};
+ const open=()=>{const r=rec();return!!(r&&r.w===WEEK()&&!r.k)};
+ const beaten=()=>{const r=rec();return!!(r&&r.w===WEEK()&&r.k)};
+ function enter(it){if(!open()){A()&&A().tell('The portal has closed.');return}const id=regBoss();if(!id)return;
+  say('You step through the void portal...');try{sfx('roar')}catch(e){}SQIBENTER(id,it)}
+ function summon(){const a=A();if(!a||!a.on()||!a.ready)return;if(!a.boss()){a.tell('Only the leader and officers can summon the Void Treant.');return}
+  if(open()){a.tell('The Void Treant is already awake. Its portal is on the guild island.');return}if(beaten()){a.tell('Your guild already beat the Void Treant this week. It can be summoned again from Monday.');return}
+  const have=(SQGUILD.state.bank.i[VL]|0);if(have<SUM){a.tell('The guild bank needs '+SUM.toLocaleString()+' void logs (it has '+have.toLocaleString()+').');try{sfx('swish')}catch(e){}return}
+  const ex={};ex['guilds/'+GID()+'/boss']={w:WEEK(),t:a.TS(),by:a.me()};
+  a.bankUpdate({[VL]:-SUM},{w:'boss',k:VL,d:SUM},ex).then(()=>{a.tell('The Void Treant awakens! A void portal has opened on the guild island. Everyone who fights it gets a Void wand.');msgT=7;try{sfx('roar')}catch(e){}}).catch(a.fail)}
+ // when it falls: close the portal for the week (any fighter writes k; the first one wins)
+ function kill(){const a=A(),r=rec();if(!a||!a.on()||!r||r.k)return;try{a.DB().set(a.ref('guilds/'+GID()+'/boss/k'),a.TS()).catch(()=>{})}catch(e){}}
+ {const _se=sqEvent;sqEvent=function(type,item){if(type==='islandboss'&&isT(item)){try{kill();if(window.SQACH&&SQACH.add)SQACH.add('ibw')}catch(e){}return}return _se.apply(this,arguments)}}
+ // Woodcutting fights it too: every melee hit that lands on the Treant chops in extra damage (axe tier + Woodcutting/10)
+ {const _a=attack;attack=function(){const S=window.SQIBST,b=S&&S.boss;if(!b||!isT(b.ib)||b.dead)return _a.apply(this,arguments);const h0=b.hp,out=_a.apply(this,arguments);
+   try{if(b.hp<h0&&!b.dead){const ex=1+(TL.axe|0)+Math.floor(lvOf(1)/10);b.hp-=ex;addXp(1,ex*4);DMGS.push({x:b.x+10,y:b.y-70,v:'+'+ex,t:0,c:'#a8e070',sc:curScene()});
+     for(let k=0;k<5;k++)part(b.x+(Math.random()-.5)*20,b.y-30,(Math.random()-.5)*80,-30-Math.random()*50,.5,k%2?'#56404e':'#9a6ae0',160,2)}}catch(e){}return out}}
+ // ---- its look: the pixel sprite (TP palette, TR rows) at 1.5x, swaying; eyes flare on a wind-up, motes orbit it ----
+ let SPR=null,SPRW=null,EYE=[];
+ function sprite(white){if(SPR)return white?SPRW:SPR;const rows=TR.split('|'),h=rows.length,w=Math.max(...rows.map(r=>r.length));
+  const mk=wh=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');rows.forEach((r,y)=>{for(let i=0;i<r.length;i++){const ch=r[i];if(ch==='.')continue;x.fillStyle=wh?'#ffffff':TP[ch];x.fillRect(i,y,1,1);if(!wh&&TP[ch]==='#ffffff')EYE.push([i,y])}});return c};
+  SPR=mk(0);SPRW=mk(1);return white?SPRW:SPR}
+ function drawTreant(b,tm){const S=1.5,c=sprite(),w=c.width*S,h=c.height*S,x=Math.round(b.x),y=Math.round(b.y),pose=window.SQIBPOSE?SQIBPOSE(b):['idle',''],wind=pose[0]==='wind'||pose[0]==='strike',hit=Math.abs(b.kx||0)+Math.abs(b.ky||0)>.3;
+  g.fillStyle='rgba(150,90,240,'+(.1+.06*Math.sin(tm*2)+(wind?.14:0))+')';g.beginPath();g.ellipse(x,y-h*.45,w*.62,h*.55,0,0,6.283);g.fill();shd(b.x,b.y+6,Math.min(w*.55,60));
+  const sway=Math.round(Math.sin(tm*1.3)),bob=b.mv>0?-Math.round(Math.abs(Math.sin(tm*5))*2):0,left=Math.round(x-w/2+sway),top=Math.round(y+6-h+bob);
+  g.save();g.imageSmoothingEnabled=false;g.drawImage(c,left,top,Math.round(w),Math.round(h));if(hit){g.globalAlpha=.55;g.drawImage(sprite(1),left,top,Math.round(w),Math.round(h))}g.restore();
+  if(wind)for(const[ex,ey]of EYE){g.fillStyle='rgba(220,180,255,'+(.35+.25*Math.sin(tm*18))+')';g.beginPath();g.arc(left+(ex+.5)*S,top+(ey+.5)*S,4,0,6.283);g.fill()}
+  for(let k=0;k<7;k++){const q=tm*(wind?3.2:1.1)+k/7*6.283;Rg(Math.round(x+Math.cos(q)*w*.5),Math.round(y-h*.5+Math.sin(q)*12),2,2,k%2?'#c8a0ff':'#7a40c8')}}
+ {const _art=window.SQIBART;window.SQIBART=function(id,b,tm){if(isT(id)){try{drawTreant(b,tm)}catch(e){}return true}return _art?_art.apply(this,arguments):false}}
+ // the portal on the guild island
+ function drawPortal(it,tm){const x=it.x*16+8,y=it.y*16+12;shd(x,y+3,14);
+  g.fillStyle='#0c0814';g.beginPath();g.ellipse(x,y-10,8,13,0,0,6.283);g.fill();g.fillStyle='rgba(122,64,200,'+(.55+.25*Math.sin(tm*3))+')';g.beginPath();g.ellipse(x,y-10,5,10,0,0,6.283);g.fill();
+  g.strokeStyle='#b080f0';g.lineWidth=1.5;g.beginPath();g.ellipse(x,y-10,9,14,0,0,6.283);g.stroke();
+  for(let k=0;k<10;k++){const q=tm*2+k/10*6.283;Rg(Math.round(x+Math.cos(q)*11),Math.round(y-10+Math.sin(q)*16),k%3?1:2,k%3?1:2,k%2?'#e8d0ff':'#9a5af0')}
+  if(Math.random()<.2)try{part(x+(Math.random()-.5)*10,y-6,(Math.random()-.5)*10,-20-Math.random()*20,.8,'#c8a0ff',-10,1)}catch(e){}}
+ // ---- the guild screen's Void Treant tab (197) ----
+ let PIC='';const pic=()=>{if(!PIC)try{PIC=sprite().toDataURL()}catch(e){}return PIC};
+ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ function html(){const a=A(),G=SQGUILD.state,have=(G.bank&&G.bank.i&&G.bank.i[VL])|0;let h='<div class="qc"><div style="display:flex;gap:12px;align-items:center"><img alt="" src="'+pic()+'" style="width:75px;height:90px;image-rendering:pixelated;flex:none">'+
+   '<div><b>The Void Treant</b><p style="font-size:13px">An ancient tree swallowed by the void. Once a week the guild can feed it '+SUM.toLocaleString()+' void logs from the guild bank to wake it. A void portal opens on your guild island: go through together.</p></div></div>';
+  if(open())h+='<p><b style="color:#6a30b0">It\'s awake!</b> The void portal is on your guild island. It stays open until the Treant falls (this week).</p>';
+  else if(beaten())h+='<p><b>Beaten this week ✓</b> It can be summoned again from Monday.</p>';
+  else{h+='<div class="gdgbar"><i style="width:'+Math.min(100,100*have/SUM)+'%;background:#8050c0"></i></div><small>'+have.toLocaleString()+' / '+SUM.toLocaleString()+' void logs in the guild bank</small><br>';
+   h+=a.boss()?'<button class="qb" data-g="gtb:sum"'+(have<SUM?' disabled style="opacity:.5"':'')+'>Summon it ('+SUM.toLocaleString()+' void logs)</button>':'<p style="font-size:13px">The leader or an officer summons it once the bank has enough.</p>'}
+  h+='</div><div class="qc"><b>Rewards (every fighter, every fight)</b><p style="font-size:13px">A <b>Void wand</b>: the strongest wand, Magic 50. Its void bolts hit harder than any adamant wand and every fourth hit heals you a heart.<br>'+
+   DEF.gold[0].toLocaleString()+'-'+DEF.gold[1].toLocaleString()+' gold, '+DEF.loot[1][1]+' void logs, '+DEF.loot[2][1]+' yew logs, Attack and Defence XP. 5%: a Void treeling (pet).</p></div>'+
+   '<div class="qc"><b>Tips</b><p style="font-size:13px">Chop it! Your axe and Woodcutting level add damage to every melee hit. It gets 60% tougher for each extra fighter. Void logs come from void trees: on the Shattered Expanse, and void saplings planted on your guild island. Put them in the guild bank chest.</p></div>';
+  return h}
+ function act(x){if(x==='sum')summon()}
+ window.SQGTREANT={open,beaten,html,act,enter,drawPortal,summon,kill,regBoss,WEEK,DEF,SUM,sprite,drawTreant};
+ // keep the boss registered, and the portal in step with the week (the database listener covers summons and kills)
+ let WAS=null;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(GID())regBoss();const o=open();if(o!==WAS){WAS=o;const a=A();if(a)a.applyBuildings()}}catch(e){}return out}}
 })();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari

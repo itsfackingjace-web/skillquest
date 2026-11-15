@@ -95,7 +95,26 @@
  function unregister(){const id=REG;if(!id)return;let here='';try{here=curRegion()}catch(e){}if(here===id)return;
   const j=ROUTE_ORDER.indexOf(id);if(j>=0)ROUTE_ORDER.splice(j,1);delete RG_GEN[id];delete RG_GENS[id];try{delete RG_CACHE[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id]}catch(e){}delete WORLD_REGIONS[id];REG=''}
  {const _ro=routeOpen;routeOpen=function(id){if(id&&id===REG)return true;if(/^gi_/.test(id||''))return false;return _ro.apply(this,arguments)}}
- const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region===REG&&REG)}catch(e){return false}};
+ // Houses/castles on the guild island (067's SQRH, rg 'gi_<g>'): 067's applySave drops houses on regions it doesn't know, and a
+// save loads before the database says which guild you're in (on another device there's no sq_guild yet), so a house on the
+// guild island vanished on load and the next save lost it for good. Now the island in the save is registered before the
+// save is read. A house on the island of a guild you're no longer in is packed into the bag (house/castle, furniture, chest
+// and yard contents), here on load and when you leave.
+const GIRX=/^gi_([a-z0-9]{6,16})$/;
+function packRaw(e){const add=(k,n)=>{if(k&&INAME[k])inv[k]=(inv[k]|0)+(n|0)};add(e.c?'castle':'house',1);
+ for(const L of[e.f,e.yf])if(Array.isArray(L))for(const q of L){if(!Array.isArray(q)||typeof q[1]!=='string'||q[1]==='house'||q[1]==='castle')continue;add(q[1],1);
+  if(q[2]&&typeof q[2]==='object')for(const k in q[2])if(INVK.includes(k))add(k,Math.max(0,Math.min(1e6,+q[2][k]||0)))}}
+function packLeft(rg){const L=window.SQRH;if(!L)return 0;let n=0;for(let j=L.length-1;j>=0;j--){const h=L[j];if(h._foreign||h.rg!==rg)continue;
+  const f=[...h.furn].map(([i,v])=>[i,v.t,v.items||null]),yf=[...(h.yf||new Map())].map(([i,v])=>[i,v.t,v.items||null]);L.splice(j,1);h.yf=new Map();h.yp=new Map();packRaw({c:h.castle?1:0,f,yf});n++}
+ if(n){try{rhSolidSync()}catch(e){}}return n}
+{const _ap=applySave;applySave=function(S){let orphan=[];try{const want=new Set();if(S&&Array.isArray(S.rh))for(const e of S.rh){const m=e&&GIRX.exec(String(e.rg||''));if(m)want.add(m[1])}
+   const m2=S&&S.region&&GIRX.exec(String(S.region.id||''));if(m2)want.add(m2[1]);
+   for(const gid of want){if(!G.id){G.id=gid;G.isl={};keep()}if(G.id===gid)register()}
+   if(S&&Array.isArray(S.rh))orphan=S.rh.filter(e=>{const m=e&&GIRX.exec(String(e.rg||''));return m&&m[1]!==G.id})}catch(e){console.warn('guild load',e)}
+  const out=_ap.apply(this,arguments);
+  try{if(orphan.length){for(const e of orphan)packRaw(e);const m='Your '+(orphan.length>1?'homes':(orphan[0].c?'castle':'house'))+' on the island of a guild you left '+(orphan.length>1?'were':'was')+' packed into your bag with everything inside.';
+    setTimeout(()=>{try{say(m);msgT=8;saveLocal(true);saveCloud(true)}catch(e){}},2500)}}catch(e){console.warn('guild pack',e)}return out}}
+const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region===REG&&REG)}catch(e){return false}};
  // planted things in the room you stand in (and on every load of the island)
  function applyNodes(R){if(!R||!R.region||R.region!==REG)return;const W=R.w;
   for(let j=R.items.length-1;j>=0;j--){const it=R.items[j];if(it.t==='_obj'&&!it._gn){try{rgCellDel(R,it)}catch(e){}R.solid.delete(it.y*W+it.x);R.items.splice(j,1)}}// only what the guild planted grows here
@@ -113,14 +132,17 @@
   const S=spots(R),add=it=>{it._gb=1;it.sh=it.h;R.items.push(it);(R.useItems=R.useItems||[]).push(it);for(let b=0;b<it.h;b++)for(let a=0;a<it.w;a++)R.solid.add((it.y+b)*W+it.x+a);try{rgCellAdd(R,it)}catch(e){}};
   if(has('forge'))for(const f of S.forge)add({t:'lm',k:'gstation',st:f.st,x:f.x,y:f.y,w:1,h:1,use:'gstation',name:f.st==='furnace'?'Guild furnace':'Guild anvil'});
   if(has('shrine'))add({t:'lm',k:'shrine',x:S.shrine[0].x,y:S.shrine[0].y,w:1,h:1,use:'gshrine',name:'Guild shrine'});
-  if(has('hall'))add({t:'lm',k:'vault',x:S.hall[0].x,y:S.hall[0].y,w:3,h:2,use:'ghall',name:'Guild hall'})}
- let BLV=-1;
- {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){R._t64=1;applyNodes(R);applyBuildings(R);BLV=glv(G.prog.qd)}}catch(e){console.warn('guild isle',e)}return ok}}
+  if(has('hall'))add({t:'lm',k:'vault',x:S.hall[0].x,y:S.hall[0].y,w:3,h:2,use:'ghall',name:'Guild hall'});
+  // the Void Treant's portal (199), while this week's summoned Treant is still standing: the first free spot near the middle
+  if(TRO()){const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;for(const[x,y]of[[bx+3,by+3],[bx-3,by+3],[bx,by+6],[bx+3,by+6],[bx-3,by+6],[bx,by+8]]){const i=y*W+x;if(R.solid.has(i)||rgObjAt(R,x,y)||!RG_WALK[R.tiles[i]])continue;add({t:'lm',k:'gportal',x,y,w:1,h:1,use:'gtreant',name:'Void portal'});break}}}
+ let BLV='';const TRO=()=>!!(window.SQGTREANT&&SQGTREANT.open()),bkey=()=>glv(G.prog&&G.prog.qd)+':'+(TRO()?1:0);
+ {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){R._t64=1;applyNodes(R);applyBuildings(R);BLV=bkey()}}catch(e){console.warn('guild isle',e)}return ok}}
  // the banner: a pole and a flag in the guild's colour
  {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='lm'&&it.k==='gflag'){const x=it.x*16+8,y=it.y*16+16,w=Math.sin((tm||0)*3)*1.2,c=col();
    Rg(x-1,y-30,2,30,'#5a4028');Rg(x-2,y-2,4,2,'#3a2818');g.beginPath();g.moveTo(x+1,y-30);g.lineTo(x+17+w,y-29);g.lineTo(x+14+w,y-24.5);g.lineTo(x+17+w,y-19);g.lineTo(x+1,y-19);g.closePath();g.fillStyle=c;g.fill();g.lineWidth=1;g.strokeStyle='#202020';g.stroke();
    const tag=G.info&&G.info.tag||'';if(tag){g.save();g.font='700 4px '+PF;g.fillStyle=c==='#e8e8e8'?'#202020':'#fff';g.textAlign='center';g.fillText(tag,x+8+w/2,y-23);g.restore()}return}
   if(it&&it.t==='lm'&&it.k==='gstation'){try{drawStation(it.st,it.x,it.y,{},tm)}catch(e){}return}
+  if(it&&it.t==='lm'&&it.k==='gportal'){try{SQGTREANT.drawPortal(it,tm)}catch(e){}return}
   return _df.apply(this,arguments)}}
  // ---- database ----
  let OFF=[];const stopAll=()=>{for(const f of OFF)try{f()}catch(e){}OFF=[]};
@@ -128,8 +150,8 @@
  function listen(gid){stopAll();G.ready=false;if(!gid)return;const d=DB();
   OFF.push(d.onValue(ref('guilds/'+gid),s=>{const v=s.val();
    if(!v||!v.m||!v.m[me()]){if(G.id===gid){const was=G.info&&G.info.n;leftGuild(was?'You are no longer in '+was+'.':'')}return}
-   G.info=v.info||G.info;G.m=v.m||{};G.q=v.q||null;G.prog=v.prog||{qd:0};G.perm=Object.assign({o:-1,m:20},v.perm||{});G.bank=Object.assign({i:{},v:0},v.bank||{});G.bank.i=G.bank.i||{};G.isl=v.isl||{};G.wd=v.wd||{};G.ready=true;keep();register();
-   try{const R=SCENE&&SCENE.room;if(R&&R.region===REG){applyNodes(R);if(BLV!==glv(G.prog.qd)){BLV=glv(G.prog.qd);applyBuildings(R)}}}catch(e){}
+   G.info=v.info||G.info;G.m=v.m||{};G.q=v.q||null;G.prog=v.prog||{qd:0};G.perm=Object.assign({o:-1,m:20},v.perm||{});G.bank=Object.assign({i:{},v:0},v.bank||{});G.bank.i=G.bank.i||{};G.isl=v.isl||{};G.wd=v.wd||{};G.boss=v.boss||null;G.ready=true;keep();register();
+   try{const R=SCENE&&SCENE.room;if(R&&R.region===REG){applyNodes(R);if(BLV!==bkey()){BLV=bkey();applyBuildings(R)}}}catch(e){}
    pubLB();
    claimCheck();redraw()},e=>{}));
   OFF.push(d.onValue(ref('glog/'+gid),s=>{const v=s.val()||{};G.log=Object.entries(v).map(([id,o])=>Object.assign({id},o)).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,200);if(tab==='log')redraw()},()=>{G.log=null}))}
@@ -137,7 +159,7 @@
   meOff=d.onValue(ref('gmem/'+me()),s=>{const gid=typeof s.val()==='string'?s.val():'';if(gid!==G.id||!G.ready){if(gid&&gid!==G.id){G.id=gid;G.isl={};keep()}if(!gid&&G.id){leftGuild('');return}if(gid)listen(gid)}redraw()});
   invOff=d.onValue(ref('ginv/'+me()),s=>{G.inv=s.val()||{};const ids=Object.keys(G.inv);if(ids.length&&!G.id)popInv(ids[0]);redraw()})}
  function stopDB(){started=false;stopAll();if(meOff){meOff();meOff=null}if(invOff){invOff();invOff=null}}
- function leftGuild(msg){const id=G.id;stopAll();G.id='';G.info=null;G.m={};G.q=null;G.isl={};G.bank={i:{},v:0};G.ready=false;keep();
+ function leftGuild(msg){const id=G.id;try{if(id&&packLeft('gi_'+id)){msg=(msg?msg+' ':'')+'Your home on the guild island was packed into your bag with everything inside.';setTimeout(()=>{try{saveLocal(true);saveCloud(true)}catch(e){}},1500)}}catch(e){}stopAll();G.id='';G.info=null;G.m={};G.q=null;G.isl={};G.bank={i:{},v:0};G.ready=false;keep();
   if(onIsle()){try{routeGo('hollow')}catch(e){}}setTimeout(unregister,1500);try{if(on())DB().set(ref('gmem/'+me()),null).catch(()=>{})}catch(e){}if(msg){say(msg);msgT=5}redraw()}
  let NOTE=null;const tell=t=>{say(t);NOTE={t,at:performance.now()};redraw()};
  const fail=e=>{try{console.warn('guild',e)}catch(x){}const m=String(e&&(e.code||e.message)||e);tell(/permission/i.test(m)?'Someone else in the guild changed this at the same moment. Try again.':'Could not reach the server. Try again.');sfx('swish')};
@@ -250,7 +272,7 @@
  let atChest=false;
  const nearChest=()=>{if(!onIsle())return false;const R=SCENE.room;return R.items.some(it=>it.use==='gbank'&&Math.hypot(it.x*16+8-P.x,it.y*16+8-P.y)<40)};
  {const _uf=useFurn;useFurn=function(it){if(it&&it.use==='gboard'){open('quest');return}if(it&&it.use==='gbank'){open('bank');return}if(it&&it.use==='ghall'){open('perks');return}
-  if(it&&it.use==='gshrine'){pray();return}if(it&&it.use==='gstation'){try{openStation({t:it.st,f:{}})}catch(e){}return}return _uf.apply(this,arguments)}}
+  if(it&&it.use==='gshrine'){pray();return}if(it&&it.use==='gtreant'){try{SQGTREANT.enter(it)}catch(e){console.warn(e)}return}if(it&&it.use==='gstation'){try{openStation({t:it.st,f:{}})}catch(e){}return}return _uf.apply(this,arguments)}}
  // ---- panel ----
  let tab='home',sel=-1;
  function open(t){tab=t||(G.id?'home':'home');pnOpen=true;ptab=GT;jx=jy=0;pn.style.display='block';rPn();sfx('talk');startDB()}
@@ -280,7 +302,7 @@
   const I=G.info||{},L=members(),lv=glv(G.prog.qd),r=role();
   let h='<div class="tl">GUILD</div><div class="gdgh"><div class="gdfl" style="background:'+col()+'"></div><div style="flex:1"><b>'+esc(I.n)+' ['+esc(I.tag)+']</b><br><small>Level '+lv+' · '+L.length+' member'+(L.length===1?'':'s')+' · you are '+ROLE[r]+'</small></div></div>';
   if(NOTE&&performance.now()-NOTE.at<8000)h+='<div class="qc" style="border-color:#c89020;background:#fff8e0"><b>'+esc(NOTE.t)+'</b></div>';
-  const T=[['home','Members'],['quest','Quest'],['perks','Perks'],['bank','Bank']].concat(boss()?[['log','Log']]:[]).concat([['top','Top guilds']]).concat(r==='l'?[['set','Settings']]:[]);
+  const T=[['home','Members'],['quest','Quest'],['perks','Perks'],['bank','Bank']].concat(window.SQGTREANT?[['boss','Void Treant']]:[]).concat(boss()?[['log','Log']]:[]).concat([['top','Top guilds']]).concat(r==='l'?[['set','Settings']]:[]);
   h+='<div class="gdgtb">'+T.map(([k,n])=>'<button data-g="tab:'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
   if(tab==='home'&&has('horn'))h+='<div class="qc"><b>Guild horn</b><p style="font-size:13px">Travel to the guild island from anywhere outdoors.</p><button class="qb" data-g="horn">Blow the horn</button></div>';
   if(tab==='home'){const P=Mp()&&Mp().players;
@@ -316,11 +338,12 @@
    h+='</div><div class="qc"><b>Buildings</b><p style="font-size:13px">The guild gains a level with every finished quest. Buildings appear on your guild island:</p>';
    for(const b of BLD){const ok=has(b.k);h+='<div class="gdgr"><span style="font-size:18px">'+(ok?'✅':'🔒')+'</span><div class="gdtx"><b>'+b.n+'</b> <small>'+(ok?'Built':'Guild level '+b.lv)+' · '+b.d+'</small></div></div>'}
    h+='</div><div class="qc"><b>Your island</b><p style="font-size:13px">Everything planted on the guild island grows back in a minute (four in the wild), and only your guild can use it.</p></div>'}
+  else if(tab==='boss'&&window.SQGTREANT){h+=SQGTREANT.html()}
   else if(tab==='top'){loadTop();h+='<div class="qc"><b>Top guilds</b>';if(!TOP)h+='<p>Loading…</p>';else if(!TOP.length)h+='<p>No guilds yet.</p>';
    (TOP||[]).forEach((o,i)=>{h+='<div class="gdgr"'+(o.id===G.id?' style="background:#fff8e0"':'')+'><b style="width:26px">'+(i+1)+'</b><div class="gdfl" style="width:14px;height:18px;background:'+(COLS[o.col|0]||COLS[0])+';clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)"></div><div class="gdtx"><b>'+esc(o.n)+' ['+esc(o.tag)+']</b><small>Level '+(o.lv|0)+' · '+(o.m|0)+' member'+((o.m|0)===1?'':'s')+'</small></div></div>'});h+='</div>'}
   else if(tab==='log'&&boss()){h+='<div class="qc"><b>Bank log</b><p style="font-size:12px;opacity:.8">Every deposit, withdrawal, planting and quest reward. Only the leader and officers see this.</p>';
    if(G.log===null)h+='<p>The log needs the latest database rules.</p>';else if(!G.log.length)h+='<p>Nothing yet.</p>';
-   for(const e of (G.log||[]).slice(0,120)){const W={dep:'put in',wd:'took',plant:'planted',dig:'dug up',quest:'quest reward:'}[e.w]||e.w;const when=e.t?new Date(e.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
+   for(const e of (G.log||[]).slice(0,120)){const W={dep:'put in',wd:'took',plant:'planted',dig:'dug up',quest:'quest reward:',boss:'summoned the Void Treant with'}[e.w]||e.w;const when=e.t?new Date(e.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
     h+='<div class="gdgr"><div class="gdtx"><b>'+esc(e.n||'Player')+'</b> '+W+' '+(e.w==='quest'?esc(e.d):esc(e.d)+' × '+esc(nm(e.k)))+'<small>'+esc(when)+'</small></div></div>'}h+='</div>'}
   else if(tab==='set'&&r==='l'){const opt=(rk,vals)=>vals.map(v=>'<button data-g="perm:'+rk+':'+v+'" class="'+((G.perm[rk]==null?(rk==='o'?-1:20):G.perm[rk])===v?'on':'')+'">'+(v<0?'No limit':v===0?'None':v+' a day')+'</button>').join('');
    h+='<div class="qc"><b>Taking from the bank</b><p style="font-size:13px">How many items each rank can take out of the guild bank per day. Everything is in the log.</p><small>Officers</small><div class="gdgtb">'+opt('o',[-1,100,20,0])+'</div><small>Members</small><div class="gdgtb">'+opt('m',[50,20,5,0])+'</div></div>'+
@@ -335,6 +358,7 @@
    if(a==='role')return setRole(x,y);if(a==='pick')return pick(x);if(a==='claim')return claim(+x);if(a==='cancelq'){if(b.dataset.sure){cancelQ();return}b.dataset.sure=1;b.textContent='Tap again to give up';return}
    if(a==='plant')return plant(x);if(a==='dig')return dig();if(a==='dep')return deposit(x,y==='all'?(inv[x]|0):+y);if(a==='wd')return withdraw(x,+y);
    if(a==='horn')return horn();if(a==='rename'){const v=document.getElementById('grn').value;if(b.dataset.sure||((G.info.rn|0)===0)){rename(v);return}b.dataset.sure=1;b.textContent='Tap again: '+RENAME.toLocaleString()+' gold';return}
+   if(a==='gtb'&&window.SQGTREANT)return SQGTREANT.act(x,y,b);
    if(a==='perm')return setPerm(x,+y);if(a==='scol')return setInfo('col',+x)}}
  // ---- invites: the player menu button and the pop-up ----
  window.SQGUILDPM=u=>{if(!G.id||!boss())return'';const inG=!!G.m[u];return'<button class="sb" data-pm="guild"'+(inG?' disabled style="opacity:.55"':'')+'>'+(inG?'IN YOUR GUILD ✓':'INVITE TO GUILD')+'</button>'};
@@ -347,7 +371,7 @@
  // ---- others' tags: [TAG] over their heads in their guild colour (presence gt/gc) ----
  (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r||!r.gt)return;g.save();g.font='700 4px '+PF;g.textAlign='center';g.lineWidth=1.5;g.lineJoin='round';g.strokeStyle='#101418';const t='['+r.gt+']';
   g.strokeText(t,Math.round(r.x),Math.round(r.y-39));g.fillStyle=COLS[r.gc|0]||'#fff';g.fillText(t,Math.round(r.x),Math.round(r.y-39));g.restore()});
- window.SQGUILD={pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
+ window.SQGUILD={api:{on,bankUpdate,tell,fail,boss,role,redraw,onIsle,me,TS,now,ref,DB,applyBuildings:()=>{try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){applyBuildings(R);BLV=bkey()}}catch(e){}},get rec(){return G.boss||null},get ready(){return G.ready}},pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
   test:{horn,pray,rename,pubLB,loadTop,applyBuildings,has,rank,create,invite,accept,leave,pick,flush,deposit,withdraw,plant,dig,setRole,setPerm,claimCheck,claim,applyNodes,listen,startDB,stopDB,frontCell,canPlant}};
  // ---- every frame: start/stop with the connection, count quest progress, flush it, keep the island registered ----
  if(G.id)try{register()}catch(e){}
