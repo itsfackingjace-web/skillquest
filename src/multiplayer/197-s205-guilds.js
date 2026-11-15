@@ -152,6 +152,9 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
    if(!v||!v.m||!v.m[me()]){if(G.id===gid){const was=G.info&&G.info.n;leftGuild(was?'You are no longer in '+was+'.':'')}return}
    G.info=v.info||G.info;G.m=v.m||{};G.q=v.q||null;G.prog=v.prog||{qd:0};G.perm=Object.assign({o:-1,m:20},v.perm||{});G.bank=Object.assign({i:{},v:0},v.bank||{});G.bank.i=G.bank.i||{};G.isl=v.isl||{};G.wd=v.wd||{};G.boss=v.boss||null;G.turt=v.turt||null;G.ready=true;keep();register();
    try{const R=SCENE&&SCENE.room;if(R&&R.region===REG){applyNodes(R);if(BLV!==bkey()){BLV=bkey();applyBuildings(R)}}}catch(e){}
+   if(JOINCHK===gid){JOINCHK='';const cap=maxM(),L=Object.entries(G.m).map(([u,x])=>({u,j:x&&typeof x.j==='number'?x.j:Infinity})).sort((a,b)=>(a.j===b.j?0:a.j<b.j?-1:1)||(a.u<b.u?-1:1));
+    if(L.length>cap&&L.findIndex(x=>x.u===me())>=cap){const n=G.info&&G.info.n,up={};up['guilds/'+gid+'/m/'+me()]=null;up['gmem/'+me()]=null;
+     DB().update(ref(''),up).then(()=>leftGuild((n||'That guild')+' filled up just before you joined ('+cap+' members). Ask them to make room, then try again.')).catch(fail);return}}
    pubLB();
    claimCheck();redraw()},e=>{}));
   OFF.push(d.onValue(ref('glog/'+gid),s=>{const v=s.val()||{};G.log=Object.entries(v).map(([id,o])=>Object.assign({id},o)).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,200);if(tab==='log')redraw()},()=>{G.log=null}))}
@@ -181,8 +184,14 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
    return d.update(ref(''),up).then(()=>{GLD-=COST;G.id=gid;G.info={n,tag,col:c,lead:me()};G.isl={};keep();register();listen(gid);tell('You founded '+n+' ['+tag+']! Your guild island is charted: sail there from any harbor post.');msgT=7;sfx('quest');try{saveNow()}catch(e){}redraw()})}).catch(fail)}
  function invite(u){if(!boss()){tell('Only the leader and officers can invite.');return}if(G.m[u]){tell('They are already in your guild.');return}if(Object.keys(G.m).length>=maxM()){tell('Your guild is full ('+maxM()+').');return}
   DB().set(ref('ginv/'+u+'/'+G.id),{gn:G.info.n,tag:G.info.tag,by:me(),bn:myN(),t:TS()}).then(()=>{tell('Guild invite sent.');sfx('talk')}).catch(fail)}
- function accept(gid){if(G.id){tell('Leave your guild first.');return}const v=G.inv&&G.inv[gid];if(!v)return;const up={};up['guilds/'+gid+'/m/'+me()]={r:'m',n:myN(),j:TS()};up['gmem/'+me()]=gid;up['ginv/'+me()+'/'+gid]=null;
-  DB().update(ref(''),up).then(()=>{G.id=gid;G.info={n:v.gn,tag:v.tag,col:0};keep();listen(gid);tell('You joined '+v.gn+' ['+v.tag+']! Sail to your guild island from any harbor post.');msgT=6;sfx('quest');redraw()}).catch(fail)}
+ // The member limit (maxM: 30, 40 with the Guild hall) can't be checked by the database rules (no child counting), so it's checked
+ // here twice: before joining, from the guild's public leaderboard entry (glb/<g>: m = members, lv = level), and after joining,
+ // once the member list loads: if the guild is over its limit, the newest joiners (by `j`) step back out (JOINCHK, in listen).
+ const capOf=lv=>30+((lv|0)>=5?10:0);let JOINCHK='';
+ function accept(gid){if(G.id){tell('Leave your guild first.');return}const v=G.inv&&G.inv[gid];if(!v)return;
+  DB().get(ref('glb/'+gid)).then(sn=>{const L=sn.val();if(L&&(L.m|0)>=capOf(L.lv)){tell(v.gn+' is full ('+capOf(L.lv)+' members). Ask them to make room, then try again.');return}join(gid,v)}).catch(()=>join(gid,v))}
+ function join(gid,v){const up={};up['guilds/'+gid+'/m/'+me()]={r:'m',n:myN(),j:TS()};up['gmem/'+me()]=gid;up['ginv/'+me()+'/'+gid]=null;
+  DB().update(ref(''),up).then(()=>{G.id=gid;G.info={n:v.gn,tag:v.tag,col:0};JOINCHK=gid;keep();listen(gid);tell('You joined '+v.gn+' ['+v.tag+']! Sail to your guild island from any harbor post.');msgT=6;sfx('quest');redraw()}).catch(fail)}
  function decline(gid){DB().set(ref('ginv/'+me()+'/'+gid),null).catch(()=>{});hidePop()}
  function leave(){if(!G.id)return;const L=members(),others=L.filter(x=>x.u!==me()),up={};
   if(role()==='l'&&others.length){const nx=others.find(x=>x.r==='o')||others[0];up['guilds/'+G.id+'/info/lead']=nx.u;up['guilds/'+G.id+'/m/'+nx.u+'/r']='l'}

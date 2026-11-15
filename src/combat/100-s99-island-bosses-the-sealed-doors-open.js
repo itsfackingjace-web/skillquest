@@ -155,8 +155,17 @@
   let rare=null;if(Math.random()<.05||window.SQIBRARE){const[rk,rn]=B.rare;rare=rn;if(window.SQNPET&&SQNPET[rk])SQGIVEPET(rk);else inv[rk]=(inv[rk]|0)+1}
   if(!b._rp){b._deadAt2=performance.now();ST.done=b}ST.boss=null;try{sqEvent('islandboss',b.ib)}catch(e){}saveNow();try{svg()}catch(e){}
   say(B.n+' is defeated! '+got.join(', ')+(rare?'. RARE DROP: '+rare.toUpperCase()+'!':'.'));msgT=7;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){}
-  for(let k=0;k<30;k++){const q=k/30*6.283;part(b.x,b.y-16,Math.cos(q)*120,Math.sin(q)*90-30,.7,k%2?B.sc[0]:'#f8d048',120,2)}}
- window.SQIBREWARD=ibReward;window.SQIBENTER=ibEnter;
+  for(let k=0;k<30;k++){const q=k/30*6.283;part(b.x,b.y-16,Math.cos(q)*120,Math.sin(q)*90-30,.7,k%2?B.sc[0]:'#f8d048',120,2)}
+  ibKick(b.ib)}
+ // Once the boss falls, everyone in its lair is walked back out after a few seconds (time to read the reward). Staying inside
+ // used to let players fight it again without paying another set of sigil shards. Everyone in the arena gets ibReward, so
+ // every fighter's game schedules its own exit; a fight that is still going on (a new boss) doesn't stop it.
+ const KICK=6000;let kickT=0;
+ function ibKick(id){clearTimeout(kickT);kickT=setTimeout(()=>{try{const R=SCENE&&SCENE.room;if(!R||R.ib!==id)return;
+   if(P.hp<=0){ibKick(id);return}
+   if(pnOpen){try{closePanel()}catch(e){}}
+   ST.boss=null;ST.wait=0;ST.done=null;leaveScene();say('The way into the lair closes behind you. Bring more sigil shards to face it again.');msgT=4}catch(e){}},KICK)}
+ window.SQIBREWARD=ibReward;window.SQIBKICK=ibKick;window.SQIBENTER=ibEnter;
  // ---- the boss bar ----
  {const _dh=drawHUD;drawHUD=function(){_dh();const b=ST.boss,R=SCENE&&SCENE.room;if(!b||b.dead||!R||R.ib!==b.ib||menuOpen)return;const B=IB[b.ib],w=Math.min(W*.6,420),x=(W-w)/2,y=Math.max(70,H*.1),f=Math.max(0,b.hp/b.mhp);
    g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(20,16,24,.82)';g.fillRect(x-4,y-20,w+8,34);g.fillStyle='#3a1a1a';g.fillRect(x,y,w,10);g.fillStyle=b.hp<b.mhp/2?'#f05030':B.col;g.fillRect(x,y,w*f,10);g.strokeStyle='#f8f0e0';g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,9);

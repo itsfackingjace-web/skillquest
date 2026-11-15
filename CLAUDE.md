@@ -692,3 +692,11 @@
   KNOWN49); the leader's design is `info.cp` {c,s,p,t,e,x} (`PAL` 18 colours, `PAT` 5 patterns, trim on/off, `EM` 14 emblems; rules: those keys,
   numbers 0-31), drafted in Settings until Save; older guilds fall back to `info.col`/`info.em`. gearCH adds gcp (c+1), gcs, gpt, gtr, gce, gex
   and drops `cape`; other players get them through `ch` (061's cleanCh keeps numbers 0-99). Guild screen pictures (`pic`) draw through cP.
+- **Guild member limit** (197 `accept`/`join`): `maxM()` (30, 40 with the hall) is checked on invite, again before joining from the public
+  `glb/<g>` entry (`m` members, `lv`; `capOf(lv)`), and after joining (`JOINCHK` in `listen`): if the guild is over its limit, the newest
+  joiners by `m/<uid>/j` step back out (a pending server timestamp counts as newest). The database rules can't count members.
+- **Island boss lairs close after a win** (100 `ibKick`, `window.SQIBKICK`): `ibReward` (run on every fighter's game) schedules a
+  `leaveScene()` 6 s later if you're still in that boss's arena (`R.ib`), clearing `ST`; retried while you're at 0 health. Guild bosses
+  (199/200) use the same arena, so they close too. Staying inside used to allow another fight without new shards.
+- **Wiki > Guilds** (075, `WK_TABS` `guild`, `WK2.guild`): founding, island, quests/ranks, buildings, bank, guild bosses (pictures from
+  `SQGBOSS.K[k].spr()`, costs from `need`), Turtle armor and capes. Update it when guild features change.
