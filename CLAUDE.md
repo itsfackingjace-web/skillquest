@@ -795,3 +795,13 @@
   111a's `refresh()` reads `assets/live/v` first and skips the ~265 KB library when the device already has that version (`force` to skip
   the check). **New presence fields or listeners on whole nodes cost download for every player online: keep them small and rare.**
   Test harness: scratchpad fake3's `_update` now applies slash paths like the real SDK.
+- **Patreon link** (`functions/` + 210 + 211): Firebase Cloud Functions (v1, us-central1, Node 20; `firebase.json`/`.firebaserc` at
+  the root, deployed by hand, see `functions/README.md`): `patreonAuth` = OAuth redirect (state `<uid>.<nonce>` must match `plink/<uid>`
+  {n,t} written by the game on click, 20 min, used once), reads the membership (identity.memberships), keeps `pmap/<patreon user>` = uid
+  and `puser/<uid>` (no client access) and writes `patron/<uid>` {s,u,c} with the admin SDK; `patreonHook` = webhooks (HMAC-MD5 of the
+  raw body with `ws`) keep `u` in step. Decisions in `functions/lib.js` (`paidThrough`: active = next charge + 3 days; else last paid
+  charge + 31 days; `merge`: active never shortens, inactive never extends, cape kept), tested by `node functions/test.js`. Settings:
+  `cfg/patreon` {cid,cs,ws,camp} (write devs, read nobody: only the functions) and `cfgpub/patreon` {cid, cs/ws/camp booleans, t} (read
+  signed in), both written from Dev Suite > Art Room > "Patreon link". The game shows Link Patreon (a real `<a>` to Patreon's authorize
+  page, `data-plink`) only when `cfgpub/patreon.cid` is set, signed in, age band known and not `c`. `.sqpatlink` clicks are kept from the
+  panel's button handlers (they ran `shopAct`). Rules: `plink`, `cfg`, `cfgpub` (publish them).

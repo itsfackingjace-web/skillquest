@@ -131,7 +131,7 @@
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,toast,fail}=API;
  const T={list:null,lb:null,msg:{},q:'',pat:{}};
  const D=()=>F().db,ref=p=>D().ref(F().D,p);
- async function inbox(){try{const[a,l,p]=await Promise.all([D().get(ref('art')),D().get(ref('lb')),D().get(ref('patron'))]);const v=a.val()||{};T.lb=l.val()||{};T.pat=p.val()||{};
+ async function inbox(){try{const[a,l,p,pc]=await Promise.all([D().get(ref('art')),D().get(ref('lb')),D().get(ref('patron')),D().get(ref('cfgpub/patreon'))]);const v=a.val()||{};T.lb=l.val()||{};T.pat=p.val()||{};T.pc=pc.val()||{};
    T.list=[];for(const u in v)for(const id in v[u])T.list.push(Object.assign({u,id},v[u][id]));T.list.sort((x,y)=>(x.st?1:0)-(y.st?1:0)||(y.t||0)-(x.t||0))}catch(e){fail(e);T.list=[]}API.draw()}
  const nm=u=>T.lb&&T.lb[u]&&T.lb[u].n||u.slice(0,8);
  function render(){if(!T.list){inbox();return'<p class="dv-mut">Loading…</p>'}
@@ -145,6 +145,15 @@
     '<div class="dv-row" style="flex-wrap:wrap;gap:6px">'+fr.map((_,i)=>'<button class="dv-b" data-arx="clip:'+E(k)+':'+i+'">Copy frame '+(i+1)+'</button>').join('')+'</div>'+
     (x.st?'':'<input data-arq="'+E(k)+'" placeholder="Message to the artist (optional)" value="'+E(T.msg[k]||'')+'" style="width:100%;margin-top:6px"><div class="dv-row" style="gap:6px;margin-top:6px"><button class="dv-b dv-pri" data-arx="ok:'+E(k)+'">Approve</button><button class="dv-b dv-bad" data-arx="no:'+E(k)+'">Not this time</button></div>')+
     '</div></div></div>'}
+  // Patreon link settings: cfg/patreon (secrets; nobody can read them back, only the server functions) + cfgpub/patreon (client id, which ones are set)
+  const pc=T.pc||{},yes=b=>b?'✓ saved':'✗ not set';
+  h+='<div class="dv-card" style="margin-top:10px"><b>Patreon link</b><p class="dv-mut">From your Patreon developer portal (Clients &amp; API Keys). Secrets can\'t be read back once saved; paste them again to change them.</p>'+
+   '<p class="dv-mut">Redirect URI to give Patreon: <code>https://us-central1-skillquest-913e2.cloudfunctions.net/patreonAuth</code><br>Webhook URL: <code>https://us-central1-skillquest-913e2.cloudfunctions.net/patreonHook</code> (triggers: members:create, members:update, members:delete, members:pledge:create, members:pledge:update, members:pledge:delete)</p>'+
+   '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><input data-arpc="cid" placeholder="Client ID '+(pc.cid?'(saved)':'')+'" value="'+E(T.pcf&&T.pcf.cid||pc.cid||'')+'" style="flex:1;min-width:220px"> <span class="dv-mut">'+yes(pc.cid)+'</span></div>'+
+   '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><input type="password" autocomplete="off" data-arpc="cs" placeholder="Client secret" value="'+E(T.pcf&&T.pcf.cs||'')+'" style="flex:1;min-width:220px"> <span class="dv-mut">'+yes(pc.cs)+'</span></div>'+
+   '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><input type="password" autocomplete="off" data-arpc="ws" placeholder="Webhook secret" value="'+E(T.pcf&&T.pcf.ws||'')+'" style="flex:1;min-width:220px"> <span class="dv-mut">'+yes(pc.ws)+'</span></div>'+
+   '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><input data-arpc="camp" placeholder="Campaign ID (optional)" value="'+E(T.pcf&&T.pcf.camp||'')+'" style="flex:1;min-width:220px"> <span class="dv-mut">'+yes(pc.camp)+'</span></div>'+
+   '<button class="dv-b dv-pri" data-arx="pcsave" style="margin-top:6px">Save Patreon settings</button>'+(pc.t?' <span class="dv-mut">last saved '+new Date(pc.t).toLocaleString()+'</span>':'')+'</div>';
   // patrons
   const pats=Object.entries(T.pat||{}).sort((a,b)=>(b[1].u||0)-(a[1].u||0));
   h+='<div class="dv-card" style="margin-top:10px"><b><img src="'+(window.SQFLAMEURL||'')+'" alt="" style="width:12px;height:15px;image-rendering:pixelated"> Patrons ('+pats.length+')</b><p class="dv-mut">Until payments are connected, add or extend Patrons here. A Patron gets the flame while active, and keeps the fire cape for good.</p>'+
@@ -155,6 +164,7 @@
  // animate the inbox previews
  setInterval(()=>{if(S.tab!=='artroom'||!T.list)return;const now=performance.now();document.querySelectorAll('#dvs [data-arp]').forEach(cv=>{const[u,id]=cv.dataset.arp.split('/');const x=T.list.find(y=>y.u===u&&y.id===id);if(!x)return;const fr=unpack(x);if(!fr.length)return;const i=Math.floor(now/(x.ms||200))%fr.length;drawFrame(cv,fr[i].f,x.w,x.h,fr[i].pal)})},60);
  document.addEventListener('input',e=>{if(S.tab!=='artroom')return;const t=e.target;if(t.dataset&&t.dataset.arq)T.msg[t.dataset.arq]=t.value.slice(0,300);
+  if(t.dataset&&t.dataset.arpc){T.pcf=T.pcf||{};T.pcf[t.dataset.arpc]=t.value.trim().slice(0,200)}
   if(t.dataset&&t.dataset.arpq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-arpq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='artroom')return;const t=e.target.closest&&e.target.closest('[data-arx]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();
   const parts=t.dataset.arx.split(':'),a=parts[0];
@@ -168,6 +178,11 @@
     try{await D().set(ref('gifts/'+u+'/a'+Date.now().toString(36)),{m:m.slice(0,300),t:D().serverTimestamp(),f:'dev'})}catch(_){}
     x.st=a;if(re)x.re=re;toast(a==='ok'?'Approved.':'Answered.');API.draw()}
    else if(a==='pm'){const u=parts[1],r=T.pat[u]||{},now=Date.now(),from=Math.max(now,r.u||0);const nr={s:r.s||now,u:from+30*864e5,c:true};await D().set(ref('patron/'+u),nr);T.pat[u]=nr;T.q='';toast(nm(u)+' is a Patron until '+new Date(nr.u).toLocaleDateString()+'.');API.draw()}
+   else if(a==='pcsave'){const f=T.pcf||{},pc=T.pc||{};const up={};for(const k of['cid','cs','ws','camp'])if(f[k])up[k]=String(f[k]).trim().slice(0,k==='camp'?40:200);
+    if(!Object.keys(up).length){toast('Nothing to save.');return}if(up.camp&&!/^[0-9]{1,20}$/.test(up.camp)){toast('The campaign ID is a number.');return}
+    for(const k in up)await D().set(ref('cfg/patreon/'+k),up[k]);
+    const pub={cid:up.cid||pc.cid||'',cs:!!(up.cs||pc.cs),ws:!!(up.ws||pc.ws),camp:!!(up.camp||pc.camp),t:Date.now()};if(!pub.cid)delete pub.cid;await D().set(ref('cfgpub/patreon'),pub);
+    T.pc=pub;T.pcf={};toast('Patreon settings saved.');API.draw()}
    else if(a==='pend'){const u=parts[1],r=T.pat[u];if(!r)return;const nr=Object.assign({},r,{u:Date.now()-1000});await D().set(ref('patron/'+u),nr);T.pat[u]=nr;toast('Ended. They keep the fire cape.');API.draw()}
   }catch(err){fail(err)}},true);
  SQSUITE.addTab('artroom','Art Room',{render})})();

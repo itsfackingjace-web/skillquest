@@ -941,6 +941,67 @@
           }
         }
       }
+    },
+    "plink": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && root.child('age').child($uid).child('b').val() !== 'c'",
+        ".validate": "newData.hasChildren(['n','t']) && newData.child('n').isString() && newData.child('n').val().matches(/^[A-Za-z0-9]{16,40}$/) && newData.child('t').isNumber() && newData.child('t').val() <= now + 60000",
+        "n": {
+          ".validate": "newData.isString()"
+        },
+        "t": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "cfg": {
+      ".read": false,
+      "patreon": {
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true",
+        "cid": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
+        },
+        "cs": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
+        },
+        "ws": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
+        },
+        "camp": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "cfgpub": {
+      ".read": "auth != null",
+      "patreon": {
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true",
+        "cid": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
+        },
+        "cs": {
+          ".validate": "newData.isBoolean()"
+        },
+        "ws": {
+          ".validate": "newData.isBoolean()"
+        },
+        "camp": {
+          ".validate": "newData.isBoolean()"
+        },
+        "t": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
     }
   }
 }
