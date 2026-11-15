@@ -653,3 +653,6 @@
   applySave registers the `gi_` island named in the save's `rh`/`region` first (adopting it as G.id when none is known); `rh` entries
   on another guild's island are packed into the bag (`packRaw`: house/castle, furniture, chest and yard contents), and `leftGuild`
   packs homes on the island being left (`packLeft`).
+- **Bag listing**: the bag shows `BAG_ORDER()` (011) = fixed keys + `EXTRA_BAG`, and 086 copied every item known at that point into
+  `EXTRA_BAG`. **An item added by a later section must push itself into `EXTRA_BAG`** (199's `voidlog` didn't and was invisible), and give
+  `iconURL` a picture for it.
