@@ -678,8 +678,10 @@
   shoulder pieces, cords and a clasp on top. Width comes from the bare kit's torso (rows 22-26), never from worn looks. `tick` (650 ms, test
   override `window.SQCAPETICK`) makes it stir while standing. 111a's cP wrapper calls `window.SQCAPEUNDER` before the character (front lining)
   and `window.SQCAPETOP` after it and after drawWorn (everything else, for characters with or without worn looks). The top layer skips `cov`
-  pixels: `sil()` draws the character through 111a's `window.SQCHDRAW` (inner cP + drawWorn into any canvas) and marks where worn looks differ
-  from the bare kit, so hoods/robes stay over the cape. 2-half-pixel outline like the kit's; trim only along the hem. Emblems `EM`: 4x4 ones
+  pixels: `sil()` draws the character through 111a's `window.SQCHDRAW` (inner cP + drawWorn into any canvas) twice, with and without head-slot
+  worn looks, and marks where they differ: hoods/hats go over the cape, robes/armour (body/legs looks) go under it. Its edges (`E`) come from the
+  render without head pieces, and widen the cape to cover a robe's torso (hd rows 82-91) and flare over its skirt (92-99); side view keeps its back
+  edge behind the robe (`backAt`). 2-half-pixel outline like the kit's; trim only along the hem. Emblems `EM`: 4x4 ones
   drawn at 2x2 half pixels, 8x8 ones (Tree, Fish, Skull) at one half pixel each. Guild cape: worn from the guild screen's Members tab (`gcw`,
   KNOWN49); the leader's design is `info.cp` {c,s,p,t,e,x} (`PAL` 18 colours, `PAT` 5 patterns, trim on/off, `EM` 14 emblems; rules: those keys,
   numbers 0-31), drafted in Settings until Save; older guilds fall back to `info.col`/`info.em`. gearCH adds gcp (c+1), gcs, gpt, gtr, gce, gex

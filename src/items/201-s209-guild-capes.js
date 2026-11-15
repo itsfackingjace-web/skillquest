@@ -39,9 +39,12 @@
  function sil(ch,dir,st){const key=JSON.stringify(ch)+'|'+dir+'|'+st;let E=SIL.get(key);if(E)return E;
   if(!SC){SC=document.createElement('canvas');SC.width=96;SC.height=112;SC.hd2=true}
   const x=SC.getContext('2d'),grab=f=>{x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,96,112);x.setTransform(2,0,0,2,0,0);x.imageSmoothingEnabled=false;try{f()}finally{x.setTransform(1,0,0,1,0,0)}return x.getImageData(0,0,96,112).data};
-  const d=grab(()=>{if(window.SQCHDRAW)SQCHDRAW(x,ch,dir,st,24,44,false);else x.drawImage(kitSprite(ch,dir,st|0,false),16,19)}),k=grab(()=>x.drawImage(kitSprite(ch,dir,st|0,false),16,19));
+  // robes and armour are under the cape (it is worn over them), only head pieces (hoods) go over it
+  const isHead=k=>{try{return EQ[k]&&EQ[k].slot==='helm'}catch(e){return false}},body=Object.assign({},ch);if(Array.isArray(ch.wr)){body.wr=ch.wr.filter(k=>!isHead(k));if(!body.wr.length)delete body.wr}
+  const draw=c=>()=>{if(window.SQCHDRAW)SQCHDRAW(x,c,dir,st,24,44,false);else x.drawImage(kitSprite(c,dir,st|0,false),16,19)};
+  const d=grab(draw(ch)),k=grab(draw(body));
   E=[];const cov=new Uint8Array(96*112);
-  for(let y=0;y<112;y++){let a=96,b=-1;for(let X=0;X<96;X++){const i=y*96+X,j=i*4;if(d[j+3]>60){if(X<a)a=X;if(X>b)b=X;if(k[j+3]<=60||Math.abs(d[j]-k[j])+Math.abs(d[j+1]-k[j+1])+Math.abs(d[j+2]-k[j+2])>24)cov[i]=1}}E.push([a,b])}
+  for(let y=0;y<112;y++){let a=96,b=-1;for(let X=0;X<96;X++){const i=y*96+X,j=i*4;if(k[j+3]>60){if(X<a)a=X;if(X>b)b=X}if(d[j+3]>60){if(k[j+3]<=60||Math.abs(d[j]-k[j])+Math.abs(d[j+1]-k[j+1])+Math.abs(d[j+2]-k[j+2])>24)cov[i]=1}}E.push([a,b])}
   E.cov=cov;if(SIL.size>300)SIL.clear();SIL.set(key,E);return E}
  // ---- the cape as cloth ----
  // Shapes are worked out in kit pixels (16x32, head rows 9-20, neck 21, torso 22-26, legs 27-30) and painted per half pixel:
@@ -52,20 +55,25 @@
  const K='#181018',CC=new Map(),clamp=(v,a,b)=>v<a?a:v>b?b:v;
  function cloth(ch,dir,st,tick){const S=spec(ch);if(!S)return null;const bare=strip(ch),E=sil(bare,dir,st|0),KE=edges(kitSprite(bare,dir,st|0,false));
   const key=JSON.stringify(S)+JSON.stringify(bare)+'|'+dir+'|'+(st|0)+'|'+tick;let R=CC.get(key);if(R)return R;
+  // width: the torso as drawn with body armour/robes (not hoods), so the cape covers a robe's shoulders and flares over its skirt
+  const span=(y0,y1)=>{let a=96,b=-1;for(let Y=y0;Y<=y1;Y++){const[ea,eb]=E[Y]||[96,-1];if(eb>=0){a=Math.min(a,ea);b=Math.max(b,eb)}}return b<0?null:[a/2-16,(b+1)/2-16]};
   let L0=99,R0=-1;for(let y=22;y<=26;y++){const[ea,eb]=KE[y]||[99,-1];if(eb>=0){L0=Math.min(L0,ea);R0=Math.max(R0,eb+1)}}if(R0<0){CC.set(key,null);return null}
+  const tor=span(82,91),low=span(92,99);if(tor){L0=Math.max(L0-2.5,Math.min(L0,tor[0]));R0=Math.min(R0+2.5,Math.max(R0,tor[1]))}
+  const lowHalf=low?Math.min(10,Math.max(low[1]-(L0+R0)/2,(L0+R0)/2-low[0])):0;
+  const backAt=y=>{const Y=Math.round(2*(y+19));const e=E[Y];return e&&e[1]>=0?e[0]/2-16:99};
   const st1=st|0,walk=st1?1:0,ph=tick?.07:0,cov=E.cov,T=S.t?S.s:null;
   const fold=u=>Math.cos(2*Math.PI*(u+ph));
   // --- shape tests: kit-pixel point -> {u,dep,ov} or null (ov: drawn over the body rather than behind it) ---
   let shape,nF;
   if(dir!==2){const cx=(L0+R0)/2,hs=(R0-L0)/2+.4,sk=(st1===1?.9:st1===2?-.9:tick?.15:-.15);nF=2.5;
    shape=(x,y)=>{if(y<20.8)return null;const d=clamp((y-22)/8.6,0,1),c=cx+sk*Math.pow(d,1.5);
-    const hw=y<22.7?2.8+(hs-2.8)*Math.sin(Math.PI/2*clamp((y-20.8)/1.9,0,1)):hs+(y-22.7)/7.9*(1+walk*.3);
+    const fl=Math.max(1,lowHalf+.4-hs),hw=y<22.7?2.8+(hs-2.8)*Math.sin(Math.PI/2*clamp((y-20.8)/1.9,0,1)):hs+(y-22.7)/7.9*(fl+walk*.3);
     if(Math.abs(x-c)>hw)return null;const u=(x-(c-hw))/(2*hw);if(y>30.55+.45*fold(u*nF))return null;
     return{u,dep:clamp((y-22)/6,0,1),top:y<22.9}}}
   else{const bx=L0,bill=walk?1.5:(tick?1:.9),lift=walk?.9:.15;nF=1.5;
    const xo=y=>y<21.9?bx+1.6-1.8*Math.sqrt(clamp((y-20.8)/1.1,0,1)):(d=>bx-.2-bill*3.6*Math.pow(d,.8)+(walk?.55*d*Math.sin(d*Math.PI*1.6+(st1===1?0:Math.PI)):.25*Math.sin(d*Math.PI)*(tick?1:-1)))(clamp((y-21.9)/8.7,0,1));
    const fe=y=>y<22.6?6.6+Math.sqrt(Math.max(0,6.76-(y-22.6)*(y-22.6))):9.2-.3*(y-22.6);
-   shape=(x,y)=>{if(y<20.8)return null;const a=xo(y),b=fe(y);if(x<a||x>b)return null;if(x>=4&&y<22.6&&(x-6.6)*(x-6.6)+(y-22.6)*(y-22.6)>6.76)return null;
+   shape=(x,y)=>{if(y<20.8)return null;const a=Math.min(xo(y),y>21.9?backAt(y)-.4:99),b=fe(y);if(x<a||x>b)return null;if(x>=4&&y<22.6&&(x-6.6)*(x-6.6)+(y-22.6)*(y-22.6)>6.76)return null;
     const u=(x-a)/Math.max(.5,b-a);if(y>30.6-lift*Math.pow(1-u,1.5)+.5*fold(u*nF))return null;
     return{u,dep:clamp((y-22)/6,0,1),top:y<22.4&&x>=4}}}
   // --- paint: mask, then outline (2 half pixels, like the kit's), trim, folds, roundness ---
