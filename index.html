@@ -1226,7 +1226,8 @@ function iconURL(k,col){const key=k+(col||'');if(ICONC[key])return ICONC[key];co
  for(let j=0;j<14;j++)for(let i=0;i<14;i++)if(!on(i,j)&&(on(i-1,j)||on(i+1,j)||on(i,j-1)||on(i,j+1)))out.push([i,j]);x.fillStyle='#181018';for(const[i,j]of out)x.fillRect(i,j,1,1);
  return ICONC[key]=c.toDataURL()}
 // --- bag: one inventory grid ---
-const BAG_ORDER=()=>['wood','stone','iron','ibar','sbar','berry','meat','cooked',...FISH_T.map(f=>'c'+f.k),...FISH_T.map(f=>f.k),...GOODS.map(gd=>gd.k),'idag','sdag','pelt','bone',...BK,...(typeof EXTRA_BAG!=='undefined'?EXTRA_BAG:[])];
+// each item once: later sections put some build pieces (castle, trophies, paintings...) in both BK and EXTRA_BAG, which showed them twice
+const BAG_ORDER=()=>[...new Set(['wood','stone','iron','ibar','sbar','berry','meat','cooked',...FISH_T.map(f=>'c'+f.k),...FISH_T.map(f=>f.k),...GOODS.map(gd=>gd.k),'idag','sdag','pelt','bone',...BK,...(typeof EXTRA_BAG!=='undefined'?EXTRA_BAG:[])])];
 let invSel=null;
 // every slot shows the item's name under its picture, so you can tell things apart at a glance
 const slotName=k=>{let n=INAME[k]||k;n=n.replace(/ \(pet\)$/,'');return n.charAt(0).toUpperCase()+n.slice(1)};
@@ -9404,6 +9405,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.14-34',d:'Nov 14, 2026',t:'No more double items in the bag',n:['Castles, paintings, clocks, fireplaces, aquariums, trophies, statues and trash cans no longer show up twice in your bag. You never had double: it was the same stack listed two times.']},
  {v:'2026.11.14-33',d:'Nov 14, 2026',t:'Void logs in your bag',n:['Void logs now show up in your bag (with their own purple icon). You had them all along: every void log you chopped was saved, the bag just wasn\'t listing them.']},
  {v:'2026.11.14-32',d:'Nov 14, 2026',t:'The Void Treant',n:['A new guild boss: the Void Treant. Once a week your guild\'s leader or an officer can wake it from START > Guild > Void Treant by spending 5,000 void logs from the guild bank.','A void portal then opens on your guild island. Go through it together: the Treant gets tougher for every extra fighter, and it stays awake until your guild beats it (that week).','Everyone who fights it gets a Void wand, every time: the strongest wand in the game (Magic 50). Its purple void bolts hit harder than any adamant wand, and every fourth hit heals you a heart. Its ultimate is Void Rift.','Chop it! Your axe and Woodcutting level add extra damage to every melee hit on the Treant.','Void trees (on the Shattered Expanse, and void saplings planted on your guild island) now give Void logs instead of plain logs. Put them in the guild bank chest to save up for the next summon.','Fixed: a house or castle built on your guild island could disappear when you played on another device. It stays put now. A home on the island of a guild you\'ve left goes back into your bag, with everything that was inside it.']},
  {v:'2026.11.14-31',d:'Nov 14, 2026',t:'Make all jewelry',n:['Every ring and amulet at the furnace now has an All button next to Make: it keeps crafting until you run out of gold bars or gems, and shows how many are left over your head.']},

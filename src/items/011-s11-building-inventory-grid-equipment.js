@@ -120,7 +120,8 @@ function iconURL(k,col){const key=k+(col||'');if(ICONC[key])return ICONC[key];co
  for(let j=0;j<14;j++)for(let i=0;i<14;i++)if(!on(i,j)&&(on(i-1,j)||on(i+1,j)||on(i,j-1)||on(i,j+1)))out.push([i,j]);x.fillStyle='#181018';for(const[i,j]of out)x.fillRect(i,j,1,1);
  return ICONC[key]=c.toDataURL()}
 // --- bag: one inventory grid ---
-const BAG_ORDER=()=>['wood','stone','iron','ibar','sbar','berry','meat','cooked',...FISH_T.map(f=>'c'+f.k),...FISH_T.map(f=>f.k),...GOODS.map(gd=>gd.k),'idag','sdag','pelt','bone',...BK,...(typeof EXTRA_BAG!=='undefined'?EXTRA_BAG:[])];
+// each item once: later sections put some build pieces (castle, trophies, paintings...) in both BK and EXTRA_BAG, which showed them twice
+const BAG_ORDER=()=>[...new Set(['wood','stone','iron','ibar','sbar','berry','meat','cooked',...FISH_T.map(f=>'c'+f.k),...FISH_T.map(f=>f.k),...GOODS.map(gd=>gd.k),'idag','sdag','pelt','bone',...BK,...(typeof EXTRA_BAG!=='undefined'?EXTRA_BAG:[])])];
 let invSel=null;
 // every slot shows the item's name under its picture, so you can tell things apart at a glance
 const slotName=k=>{let n=INAME[k]||k;n=n.replace(/ \(pet\)$/,'');return n.charAt(0).toUpperCase()+n.slice(1)};

@@ -656,3 +656,4 @@
 - **Bag listing**: the bag shows `BAG_ORDER()` (011) = fixed keys + `EXTRA_BAG`, and 086 copied every item known at that point into
   `EXTRA_BAG`. **An item added by a later section must push itself into `EXTRA_BAG`** (199's `voidlog` didn't and was invisible), and give
   `iconURL` a picture for it.
+  `BAG_ORDER()` is de-duplicated (a key in both `BK` and `EXTRA_BAG` was listed twice), so pushing a key that's already listed is harmless.
