@@ -4,7 +4,7 @@
 //   rng  extra bow range (+/-), blk extra block chance in % points (+/-), mp a wand's mana cost per spell
 //   rq   what it needs instead of the game's own requirement: skill index s (SKN) at level l (l 0 = nothing needed)
 //   fx   special effects while it's worn, in %: ls life steal (chance to heal 1 heart on a hit), burn / slow (chance to
-//        set the target burning / slow it), crit (chance to hit again for the same damage), spd move speed, xp bonus XP.
+//        set the target burning / slow it), crit (chance of a critical hit: that hit does 1.5x-2x damage), spd move speed, xp bonus XP.
 //        Effects from every piece you wear add up; on-hit effects work for sword hits, arrows and spells.
 // The library's newgear section: {eq_cu_<name>:{n name, b the existing item it works like, v sell price, d description,
 //   sm:{c:{material:count}, lv} an anvil recipe (Smithing level)}}. A new item plays exactly like its base item (same slot,
@@ -80,11 +80,14 @@
  const fxSum=x=>{let t=0;for(const s of SLOTS){const r=rule(occ(s));if(r&&r.fx&&r.fx[x])t+=r.fx[x]}if(window.SQFXEXTRA)for(const f of SQFXEXTRA){try{t+=+f(x)||0}catch(e){}}return t};// SQFXEXTRA: more sources (186's perks)
  const roll=p=>p>0&&Math.random()*100<p;
  function onHit(n,dealt,how){if(!n||!(dealt>0))return;
-  if(!n.dead&&roll(fxSum('crit'))){try{drops.push({x:n.x,y:n.y-26,t:0,tx:'CRIT',c:'#ff70a0'})}catch(e){}hitE(n,dealt,'#ff70a0',how)}
+  // a critical hit makes this hit worth 1.5x to 2x: the extra lands at once and the hit's own number becomes the total, in pink
+  if(!n.dead&&roll(fxSum('crit'))){const extra=Math.max(1,Math.round(dealt*(.5+Math.random()*.5)));try{drops.push({x:n.x,y:n.y-26,t:0,tx:'CRIT',c:'#ff70a0'})}catch(e){}
+   let shown=null;try{for(let i=DMGS.length-1;i>=0&&i>=DMGS.length-8;i--){const d=DMGS[i];if(d&&d.t<.05&&Math.abs(d.x-n.x)<3&&String(d.v)===String(dealt)){shown=d;break}}}catch(e){}
+   if(shown){shown.v=String(dealt+extra);shown.c='#ff70a0';n.hp-=extra;if(n.hp<=0)killEnemy(n,how||'melee')}else hitE(n,extra,'#ff70a0',how)}
   if(!n.dead&&roll(fxSum('burn')))n.burn=Math.max(n.burn||0,3);
   if(!n.dead&&roll(fxSum('slow')))n.slow=Math.max(n.slow||0,3);
   if(P.hp<6&&roll(fxSum('ls')))healP(1,'life steal')}
- const anyFx=()=>{for(const s of SLOTS){const r=rule(occ(s));if(r&&r.fx)return true}return false};
+ const anyFx=()=>{for(const s of SLOTS){const r=rule(occ(s));if(r&&r.fx)return true}if(window.SQFXEXTRA&&SQFXEXTRA.length)for(const k of['crit','burn','slow','ls'])if(fxSum(k)>0)return true;return false};// perks (SQFXEXTRA) count too
  const _atk=attack;attack=function(){if(!anyFx())return _atk.apply(this,arguments);const hp0=new Map(en.map(n=>[n,n.hp])),np=PROJ.length,ns=SPELLS.length;const out=_atk.apply(this,arguments);
   if(PROJ.length===np&&SPELLS.length===ns)for(const[n,h]of hp0)if(n.hp<h)try{onHit(n,h-n.hp,'melee')}catch(e){}return out};
  const _ah=arrowHit;arrowHit=function(p,n){const out=_ah.apply(this,arguments);if(p&&!p.hostile&&p.k==='arrow'&&anyFx())try{onHit(n,p.dmg|0,'arrow')}catch(e){}return out};

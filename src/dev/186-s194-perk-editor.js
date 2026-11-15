@@ -9,7 +9,7 @@
  const num=(v,lo,hi,d)=>{v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):d};
  const clean=(v,n)=>String(v==null?'':v).replace(/[<>&"]/g,'').trim().slice(0,n);
  const G=()=>window.SQGEAR;const FXN=()=>G()?G().FXN:{},FXMAX=()=>G()?G().FXMAX:{};
- const FXU={ls:'% chance to heal a heart on a hit',burn:'% chance to burn what you hit',slow:'% chance to slow what you hit',crit:'% chance to hit twice',spd:'% faster walking',xp:'% more XP',mel:'% more melee damage',arc:'% more arrow damage',mag:'% more spell damage',mreg:'% faster mana regen',hreg:' health regen (1 heart every 600 ÷ this s)',hun:'% slower hunger',gold:'% more gold from monsters'};
+ const FXU={ls:'% chance to heal a heart on a hit',burn:'% chance to burn what you hit',slow:'% chance to slow what you hit',crit:'% chance of a critical hit (1.5x-2x damage)',spd:'% faster walking',xp:'% more XP',mel:'% more melee damage',arc:'% more arrow damage',mag:'% more spell damage',mreg:'% faster mana regen',hreg:' health regen (1 heart every 600 ÷ this s)',hun:'% slower hunger',gold:'% more gold from monsters'};
  const fxText=fx=>Object.entries(fx||{}).filter(([,v])=>v).map(([k,v])=>(k==='hreg'?'+'+v+' health regen':'+'+v+(FXU[k]||'% '+k))).join(', ');
  let TXT={},ADD={},MINE=new Map();// MINE: choice object -> {n,d} before we changed it
  const MADE=new Set();// skills we made a tree for
