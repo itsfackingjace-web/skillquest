@@ -34,13 +34,15 @@
  // ---- making it at a furnace ----
  function jwRows(){let h='<div class="tl" style="margin-top:14px">Jewelry</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75;margin-top:-6px">Crafting level '+lvOf(6)+' · Gold bars: '+(inv.gbar|0)+'</div>';
   for(const j of JWL){const need=[[ 'gbar',j.b]].concat(j.g?[[j.g,1]]:[]),can=lvOf(6)>=j.lv&&need.every(([a,b])=>(inv[a]|0)>=b);
-   h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(j.k)+'"><div class="gi"><b>'+j.n+'</b> <small>(have '+(inv[j.k]|0)+')</small><br><small>'+need.map(([a,b])=>b+' '+(INAME[a]||a).toLowerCase()).join(', ')+' · Crafting '+j.lv+' · '+j.xp+' xp<br>'+j.d+'</small></div><button class="fg" data-jw="make" data-k="'+j.k+'">Make</button></div>'}return h}
- function jwMake(k){const j=JK[k];if(!j)return;if(sqDo('craft',1,()=>jwMake(k)))return;if(lvOf(6)<j.lv){say('You need Crafting '+j.lv+' to make that.');sfx('swish');return}
+   h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(j.k)+'"><div class="gi"><b>'+j.n+'</b> <small>(have '+(inv[j.k]|0)+')</small><br><small>'+need.map(([a,b])=>b+' '+(INAME[a]||a).toLowerCase()).join(', ')+' · Crafting '+j.lv+' · '+j.xp+' xp<br>'+j.d+'</small></div><button class="fg" data-jw="make" data-k="'+j.k+'">Make</button><button class="fg" data-jw="all" data-k="'+j.k+'">All</button></div>'}return h}
+ function jwCan(j){return Math.min(Math.floor((inv.gbar|0)/j.b),j.g?(inv[j.g]|0):1e9)}
+ function jwMake(k,all){const j=JK[k];if(!j)return;const n=all?jwCan(j):1;if(all&&n<1){say('You need '+j.b+' gold bar'+(j.b>1?'s':'')+(j.g?' and a '+INAME[j.g].toLowerCase():'')+'.');sfx('swish');return}
+  if(sqDo('craft',n,()=>jwMake(k))){try{if(all&&SQDO)SQDO.tot=n}catch(e){}return}if(lvOf(6)<j.lv){say('You need Crafting '+j.lv+' to make that.');sfx('swish');return}
   if((inv.gbar|0)<j.b||(j.g&&(inv[j.g]|0)<1)){say('You need '+j.b+' gold bar'+(j.b>1?'s':'')+(j.g?' and a '+INAME[j.g].toLowerCase():'')+'.');sfx('swish');return}
   inv.gbar-=j.b;if(j.g)inv[j.g]--;inv[k]=(inv[k]|0)+1;addXp(6,j.xp);say('You made a '+j.n.toLowerCase()+'!');try{sfx('smelt')}catch(e){}saveLocal(true);rPn()}
  const _sh=stationHTML;stationHTML=function(o){const h=_sh(o);if(!o||o.t!=='furnace')return h;const i=h.lastIndexOf('<button class="ng stb"');return i<0?h+jwRows():h.slice(0,i)+jwRows()+h.slice(i)};
  if(typeof forgeHTML==='function'){const _fh=forgeHTML;forgeHTML=function(...a){return _fh(...a)+jwRows()}}
- const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-jw]');if(b){const a=b.dataset.jw;if(a==='wear')jwWear(b.dataset.k);else if(a==='off')jwOff(b.dataset.s);else if(a==='make')jwMake(b.dataset.k);return}_oc(e)};
+ const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-jw]');if(b){const a=b.dataset.jw;if(a==='wear')jwWear(b.dataset.k);else if(a==='off')jwOff(b.dataset.s);else if(a==='make')jwMake(b.dataset.k);else if(a==='all')jwMake(b.dataset.k,true);return}_oc(e)};
  // ---- hide helmet: your helmet / hood / wizard hat still counts (defence, class bonuses), it just isn't drawn,
  // for you or for anyone else. A checkbox on the Equipment screen; remembered with your save.
  {const _g=gearCH;gearCH=function(){const c=_g();if(HIDEH){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.dyh}return c};

@@ -638,3 +638,4 @@
   `window.SQGUILDSAY`. Leaderboard `glb/<g>` {n,tag,col,lv,m} (members write when it changes, `pubLB`). Rename: `info.rn`, cost
   `RENAME` after the first, gname moved in one update. Panel messages: `tell()` = say + a note card on top of the guild screen (8 s).
   Rules: `gchat`, `glb`, `guilds.prog`, `guilds.info.rn`, `gname` (publish them).
+- **Jewelry make-all** (086, edited in place): `data-jw="all"` → `jwMake(k,true)` = `sqDo('craft',jwCan(j),...)` and `SQDO.tot` for 109's "N left".
