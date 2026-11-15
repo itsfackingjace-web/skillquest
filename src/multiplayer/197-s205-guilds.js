@@ -254,7 +254,10 @@ function deposit(k,n){if(!G.ready||!nearChest()){tell('Use the guild bank chest 
   LSN('sq_gshrine',d);const B=window.LUX&&LUX.BUFF;if(B){const t=performance.now()+20*60000;B.wis=Math.max(B.wis||0,t);B.regen=Math.max(B.regen||0,t)}
   say('The guild shrine blesses you: wisdom and regeneration for 20 minutes.');msgT=6;try{sfx('quest')}catch(e){}
   for(let k=0;k<24;k++){const a=k/24*6.283;try{part(P.x,P.y-8,Math.cos(a)*60,Math.sin(a)*40,.8,'#f8e070',-30,2)}catch(e){}}}
- function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').trim();if(!/^[A-Za-z0-9' ]{3,20}$/.test(n)){tell('Guild names are 3-20 letters, numbers or spaces.');return}
+ function retag(t){if(role()!=='l')return;t=String(t||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(t.length<2||t.length>4){tell('The tag is 2-4 letters or numbers.');try{sfx('swish')}catch(e){}return}
+ if(t===(G.info&&G.info.tag)){tell('That is already the tag.');return}
+ DB().set(ref('guilds/'+G.id+'/info/tag'),t).then(()=>{G.info.tag=t;keep();tell('Your guild tag is now ['+t+'].');try{sfx('quest')}catch(e){}}).catch(fail)}
+function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').trim();if(!/^[A-Za-z0-9' ]{3,20}$/.test(n)){tell('Guild names are 3-20 letters, numbers or spaces.');return}
   const I=G.info||{},cost=(I.rn|0)>0?RENAME:0;if(n===I.n){tell('That is already the name.');return}if(GLD<cost){tell('Renaming costs '+cost.toLocaleString()+' gold.');return}
   const low=n.toLowerCase().replace(/[^a-z0-9]/g,'_'),old=String(I.n||'').toLowerCase().replace(/[^a-z0-9]/g,'_'),d=DB();
   d.get(ref('gname/'+low)).then(sn=>{const cur=sn.val();if(cur&&cur!==G.id){tell('A guild with that name already exists.');return}
@@ -357,6 +360,7 @@ function deposit(k,n){if(!G.ready||!nearChest()){tell('Use the guild bank chest 
   else if(tab==='set'&&r==='l'){const opt=(rk,vals)=>vals.map(v=>'<button data-g="perm:'+rk+':'+v+'" class="'+((G.perm[rk]==null?(rk==='o'?-1:20):G.perm[rk])===v?'on':'')+'">'+(v<0?'No limit':v===0?'None':v+' a day')+'</button>').join('');
    h+='<div class="qc"><b>Taking from the bank</b><p style="font-size:13px">How many items each rank can take out of the guild bank per day. Everything is in the log.</p><small>Officers</small><div class="gdgtb">'+opt('o',[-1,100,20,0])+'</div><small>Members</small><div class="gdgtb">'+opt('m',[50,20,5,0])+'</div></div>'+
     '<div class="qc"><b>Name</b><p style="font-size:13px">'+((I.rn|0)>0?'Renaming costs '+RENAME.toLocaleString()+' gold.':'Your first rename is free.')+'</p><div class="gdgf"><input id="grn" maxlength="20" value="'+esc(I.n)+'"></div><button class="qb" data-g="rename">'+((I.rn|0)>0?'Rename for '+RENAME.toLocaleString()+' gold':'Rename (free)')+'</button></div>'+
+    '<div class="qc"><b>Tag</b><p style="font-size:13px">2-4 letters or numbers, shown in [brackets] over every member\'s head. Changing it is free.</p><div class="gdgf"><input id="gtg" maxlength="4" value="'+esc(I.tag)+'" style="text-transform:uppercase"></div><button class="qb" data-g="retag">Change tag</button></div>'+
     '<div class="qc"><b>Colour</b><div class="gdgcl">'+COLS.map((c,i)=>'<button data-g="scol:'+i+'" class="'+(i===(I.col|0)?'on':'')+'" style="background:'+c+'" aria-label="Colour '+(i+1)+'"></button>').join('')+'</div></div>'}
   return h}
  {const _r=rPn;rPn=function(){if(ptab===GT){try{panelChrome('')}catch(e){}pbd.innerHTML=html();return}return _r.apply(this,arguments)}}
@@ -369,6 +373,7 @@ function deposit(k,n){if(!G.ready||!nearChest()){tell('Use the guild bank chest 
    if(a==='plant')return plant(x);if(a==='dig')return dig();if(a==='dep')return deposit(x,y==='all'?(inv[x]|0):+y);if(a==='wd')return withdraw(x,+y);
    if(a==='horn')return horn();if(a==='rename'){const v=document.getElementById('grn').value;if(b.dataset.sure||((G.info.rn|0)===0)){rename(v);return}b.dataset.sure=1;b.textContent='Tap again: '+RENAME.toLocaleString()+' gold';return}
    if(a==='gtb'&&window.SQGBOSS)return SQGBOSS.act(x,y,b);
+   if(a==='retag')return retag(document.getElementById('gtg').value);
    if(a==='perm')return setPerm(x,+y);if(a==='scol')return setInfo('col',+x)}}
  // ---- invites: the player menu button and the pop-up ----
  window.SQGUILDPM=u=>{if(!G.id||!boss())return'';const inG=!!G.m[u];return'<button class="sb" data-pm="guild"'+(inG?' disabled style="opacity:.55"':'')+'>'+(inG?'IN YOUR GUILD ✓':'INVITE TO GUILD')+'</button>'};
@@ -382,7 +387,7 @@ function deposit(k,n){if(!G.ready||!nearChest()){tell('Use the guild bank chest 
  (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r||!r.gt)return;g.save();g.font='700 4px '+PF;g.textAlign='center';g.lineWidth=1.5;g.lineJoin='round';g.strokeStyle='#101418';const t='['+r.gt+']';
   g.strokeText(t,Math.round(r.x),Math.round(r.y-39));g.fillStyle=COLS[r.gc|0]||'#fff';g.fillText(t,Math.round(r.x),Math.round(r.y-39));g.restore()});
  window.SQGUILD={api:{on,bankUpdate,tell,fail,boss,role,redraw,onIsle,me,TS,now,ref,DB,applyBuildings:()=>{try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){applyBuildings(R);BLV=bkey()}}catch(e){}},get rec(){return G.boss||null},get ready(){return G.ready}},pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
-  test:{depositMany,bagFor,horn,pray,rename,pubLB,loadTop,applyBuildings,has,rank,create,invite,accept,leave,pick,flush,deposit,withdraw,plant,dig,setRole,setPerm,claimCheck,claim,applyNodes,listen,startDB,stopDB,frontCell,canPlant}};
+  test:{retag,depositMany,bagFor,horn,pray,rename,pubLB,loadTop,applyBuildings,has,rank,create,invite,accept,leave,pick,flush,deposit,withdraw,plant,dig,setRole,setPerm,claimCheck,claim,applyNodes,listen,startDB,stopDB,frontCell,canPlant}};
  // ---- every frame: start/stop with the connection, count quest progress, flush it, keep the island registered ----
  if(G.id)try{register()}catch(e){}
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{

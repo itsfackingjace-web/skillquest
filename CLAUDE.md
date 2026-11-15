@@ -636,7 +636,7 @@
   Planted nodes regrow after 60 s (`g2.at-=180` in upd); 061's `resSubRegion` skips `gi_` regions (not shared world-wide).
   Guild chat: `gchat/<g>/<id>` {u,n,m,t}, 061 has chat tab `gd`, `/g`, `.gld` lines, `window.SQMPLOG(k,m,extra)` = the block's `mpLog`,
   `window.SQGUILDSAY`. Leaderboard `glb/<g>` {n,tag,col,lv,m} (members write when it changes, `pubLB`). Rename: `info.rn`, cost
-  `RENAME` after the first, gname moved in one update. Panel messages: `tell()` = say + a note card on top of the guild screen (8 s).
+  `RENAME` after the first, gname moved in one update. Tag: `retag` (leader, free) writes `info/tag` (rules: 2-4 A-Z0-9). Panel messages: `tell()` = say + a note card on top of the guild screen (8 s).
   Rules: `gchat`, `glb`, `guilds.prog`, `guilds.info.rn`, `gname` (publish them).
 - **Jewelry make-all** (086, edited in place): `data-jw="all"` → `jwMake(k,true)` = `sqDo('craft',jwCan(j),...)` and `SQDO.tot` for 109's "N left".
 - **Void Treant** (`combat/199-s207-void-treant.js`, `window.SQGTREANT`): a weekly guild boss. Void trees (`o.v==='dark'`) give `voidlog`
