@@ -81,15 +81,15 @@
  // another player's boss here: play its attacks against you
  function ibResolve(b,dt){const B=IB[b.ib];b.pr=b.pr||[];b.hz=b.hz||[];
   for(const p of b.pr){p.t-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;const R=SCENE&&SCENE.room;if(R&&R.solid.has(Math.floor((p.y+4)/16)*AW+Math.floor(p.x/16))){p.t=0;continue}
-   if(Math.hypot(P.x-p.x,P.y-6-p.y)<8&&!roll()){p.t=0;DONE.add('p'+p.id);if(hit(1,p.k==='web'?'You\'re caught in sticky web!':p.k==='ice'?'An icicle hits you!':p.k==='bullet'?'Black Jack\'s bullet hits you!':'A void orb hits you!')&&p.slow)SLOW43=2}}
+   if(Math.hypot(P.x-p.x,P.y-6-p.y)<8&&!roll()){p.t=0;DONE.add('p'+p.id);if(hit(1,p.k==='web'?'You\'re caught in sticky web!':p.k==='ice'?'An icicle hits you!':p.k==='bullet'?'Black Jack\'s bullet hits you!':p.k==='bubble'?'A bubble bursts on you!':'A void orb hits you!')&&p.slow)SLOW43=2}}
   b.pr=b.pr.filter(p=>p.t>0);
-  for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;DONE.add('h'+h.id);if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':'The void bursts under you!');
-     if(h.kind==='dyn'||h.kind==='fire')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){}}}
+  for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;DONE.add('h'+h.id);if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':h.kind==='water'?'A geyser bursts under you!':'The void bursts under you!');
+     if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){}}}
    else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;DONE.add('h'+h.id);if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
   b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<(h.max||60));
   const A=b.act;if(A){A.t+=dt;const pd=Math.hypot(P.x-b.x,P.y-b.y);
-   if(A.k==='leap'&&A.t>=A.d&&!A.mine){A.mine=1;if(pd<26)hit(2,'The Briar Queen lands on you!')}
-   else if(A.k==='charge'&&A.t>A.d&&A.t<A.d+.6&&!A.mine&&pd<22){A.mine=1;hit(2,'The Iron Warlord tramples you!')}
+   if(A.k==='leap'&&A.t>=A.d&&!A.mine){A.mine=1;if(pd<26)hit(2,IB[b.ib].n+' lands on you!')}
+   else if(A.k==='charge'&&A.t>A.d&&A.t<A.d+.6&&!A.mine&&pd<22){A.mine=1;hit(2,IB[b.ib].n+' tramples you!')}
    else if(A.k==='sweep'&&A.t>A.d&&!A.mine){A.mine=1;const q=Math.atan2(P.y-b.y,P.x-b.x),da=Math.abs(((q-A.an+Math.PI*3)%(Math.PI*2))-Math.PI);if(pd<64&&da<1.1)hit(2,'The great sword cleaves you!')}}
   if(b.wind){b.wind.t+=dt}}
  function ibShared(dt){const R=SCENE&&SCENE.room;if(!R||!R.ib){DONE.clear();ST.done=null;return}
@@ -131,19 +131,19 @@
    b.mv=0;if(b.cast>0)b.cast-=dt;if(b.wind){b.wind.t+=dt;if(b.wind.t>=b.wind.d){const w=b.wind;b.wind=null;b.cast=.4;b.castA=w.a;ibFire(b,w.a,w.o)}}
    // current action
    const A=b.act;if(A){A.t+=dt;
-    if(A.k==='leap'){const p=Math.min(1,A.t/A.d);b.x=A.ox+(A.tx-A.ox)*p;b.y=A.oy+(A.ty-A.oy)*p;b.jump=Math.sin(p*Math.PI)*30;if(p>=1){b.jump=0;b.act=null;b.hz.push({id:++IBN,k:'ring',x:b.x,y:b.y,r:8,max:56,hit:false,t:0});if(Math.hypot(P.x-b.x,P.y-b.y)<26)hit(2,'The Briar Queen lands on you!');try{sfx('mine')}catch(e){}}}
-    else if(A.k==='charge'){if(A.t>A.d){const sp=260*dt,nx=b.x+A.ax*sp,ny=b.y+A.ay*sp;if(!solid(nx,ny+6)&&A.run<.6){b.x=nx;b.y=ny;A.run+=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<22&&!A.hit){A.hit=1;hit(2,'The Iron Warlord tramples you!')}}else b.act=null}}
+    if(A.k==='leap'){const p=Math.min(1,A.t/A.d);b.x=A.ox+(A.tx-A.ox)*p;b.y=A.oy+(A.ty-A.oy)*p;b.jump=Math.sin(p*Math.PI)*30;if(p>=1){b.jump=0;b.act=null;b.hz.push({id:++IBN,k:'ring',x:b.x,y:b.y,r:8,max:56,hit:false,t:0});if(Math.hypot(P.x-b.x,P.y-b.y)<26)hit(2,IB[b.ib].n+' lands on you!');try{sfx('mine')}catch(e){}}}
+    else if(A.k==='charge'){if(A.t>A.d){const sp=260*dt,nx=b.x+A.ax*sp,ny=b.y+A.ay*sp;if(!solid(nx,ny+6)&&A.run<.6){b.x=nx;b.y=ny;A.run+=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<22&&!A.hit){A.hit=1;hit(2,IB[b.ib].n+' tramples you!')}}else b.act=null}}
     else if(A.k==='sweep'){if(A.t>A.d&&!A.done){A.done=1;const q=Math.atan2(P.y-b.y,P.x-b.x),da=Math.abs(((q-A.an+Math.PI*3)%(Math.PI*2))-Math.PI);if(pd<64&&da<1.1)hit(2,'The great sword cleaves you!');try{sfx('swish')}catch(e){}}if(A.t>A.d+.3)b.act=null}}
    else{// walk toward (or keep a little away from) you
     const want=b.ib==='nomans'||b.ib==='shattered'?90:30;if(!b.wind){if(d>want+10){stepTo(b,dx/d*(en2?34:26)*dt,dy/d*(en2?34:26)*dt);b.mv=1}else if(d<want-10){stepTo(b,-dx/d*24*dt,-dy/d*24*dt);b.mv=1}}
     for(let i=0;i<B.atk.length;i++){b.cds[i]-=dt*(en2?1.35:1);if(b.cds[i]<=0&&!b.act&&!b.wind){b.cds[i]=B.atk[i][1]*(.85+Math.random()*.3);start(b,B.atk[i][0],B.atk[i][2]);break}}}
    // projectiles
    for(const p of b.pr){p.t-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;if(R.solid.has(Math.floor((p.y+4)/16)*AW+Math.floor(p.x/16))){p.t=0;continue}
-    if(Math.hypot(P.x-p.x,P.y-6-p.y)<8&&!roll()){p.t=0;if(hit(1,p.k==='web'?'You\'re caught in sticky web!':p.k==='ice'?'An icicle hits you!':p.k==='bullet'?'Black Jack\'s bullet hits you!':'A void orb hits you!')&&p.slow)SLOW43=2}}
+    if(Math.hypot(P.x-p.x,P.y-6-p.y)<8&&!roll()){p.t=0;if(hit(1,p.k==='web'?'You\'re caught in sticky web!':p.k==='ice'?'An icicle hits you!':p.k==='bullet'?'Black Jack\'s bullet hits you!':p.k==='bubble'?'A bubble bursts on you!':'A void orb hits you!')&&p.slow)SLOW43=2}}
    b.pr=b.pr.filter(p=>p.t>0);
    // circles and rings
-   for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':'The void bursts under you!');
-       if(h.kind==='dyn'||h.kind==='fire')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){}}}
+   for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':h.kind==='water'?'A geyser bursts under you!':'The void bursts under you!');
+       if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){}}}
     else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
    b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<h.max);
    // the fight is over
@@ -163,12 +163,12 @@
    g.font='700 13px '+PF;g.fillStyle='#f8f0e0';g.textAlign='center';g.textBaseline='bottom';g.fillText(B.n.toUpperCase(),W/2,y-3);g.restore()}}
  // ---- how they look ----
  const R4=(a,b,w,h,c)=>Rg(Math.round(a),Math.round(b),w,h,c);
- function hzDraw(b,tm){for(const h of b.hz||[]){if(h.k==='circ'){const p=Math.min(1,h.t/h.d),c=h.kind==='ice'?'160,220,255':h.kind==='void'?'180,120,255':h.kind==='land'?'120,200,90':h.kind==='dyn'?'255,200,80':'255,120,40';
+ function hzDraw(b,tm){for(const h of b.hz||[]){if(h.k==='circ'){const p=Math.min(1,h.t/h.d),c=h.kind==='ice'?'160,220,255':h.kind==='void'?'180,120,255':h.kind==='water'?'90,190,255':h.kind==='land'?'120,200,90':h.kind==='dyn'?'255,200,80':'255,120,40';
     if(!h.done){g.strokeStyle='rgba('+c+','+(.5+.4*Math.sin(tm*16))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.7,0,0,6.283);g.stroke();g.fillStyle='rgba('+c+','+(.12+.25*p)+')';g.beginPath();g.ellipse(h.x,h.y,h.r*p,h.r*.7*p,0,0,6.283);g.fill();
      if(h.kind==='dyn'){const sx=h.x,sy=h.y-30*(1-p);R4(sx-2,sy-5,4,7,K);R4(sx-1,sy-4,2,5,'#d83020');R4(sx,sy-7,1,2,'#f8e060')}else if(h.kind==='ice'){const sy=h.y-60*(1-p);R4(h.x-2,sy-10,5,10,K);R4(h.x-1,sy-9,3,8,'#d8f4ff')}}
     else{g.fillStyle='rgba('+c+','+(.5*(1-(h.t-h.d)/.35))+')';g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.7,0,0,6.283);g.fill()}}
    else{g.strokeStyle='rgba(240,230,210,'+(.8*(1-h.r/h.max))+')';g.lineWidth=3;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.62,0,0,6.283);g.stroke()}}
-  for(const p of b.pr||[]){if(p.k==='bullet'){R4(p.x-2,p.y-2,4,4,K);R4(p.x-1,p.y-1,2,2,'#f8e070')}else{const c=p.k==='web'?['#f0f0f0','#c8c8c8']:p.k==='ice'?['#e8f8ff','#78c0f0']:['#d8b0ff','#7040c0'];g.fillStyle='rgba(0,0,0,0)';R4(p.x-3,p.y-3,6,6,K);R4(p.x-2,p.y-2,4,4,c[1]);R4(p.x-1,p.y-2,2,2,c[0])}}
+  for(const p of b.pr||[]){if(p.k==='bullet'){R4(p.x-2,p.y-2,4,4,K);R4(p.x-1,p.y-1,2,2,'#f8e070')}else{const c=p.k==='web'?['#f0f0f0','#c8c8c8']:p.k==='ice'?['#e8f8ff','#78c0f0']:p.k==='bubble'?['#f0fcff','#58b0e8']:['#d8b0ff','#7040c0'];g.fillStyle='rgba(0,0,0,0)';R4(p.x-3,p.y-3,6,6,K);R4(p.x-2,p.y-2,4,4,c[1]);R4(p.x-1,p.y-2,2,2,c[0])}}
   if(b.act&&b.act.k==='charge'&&b.act.t<b.act.d){g.strokeStyle='rgba(255,80,60,'+(.4+.4*Math.sin(tm*20))+')';g.lineWidth=10;g.beginPath();g.moveTo(b.x,b.y);g.lineTo(b.x+b.act.ax*160,b.y+b.act.ay*160);g.stroke()}
   if(b.act&&b.act.k==='sweep'&&!b.act.done){g.fillStyle='rgba(255,90,60,'+(.15+.2*(b.act.t/b.act.d))+')';g.beginPath();g.moveTo(b.x,b.y);g.arc(b.x,b.y,64,b.act.an-1.1,b.act.an+1.1);g.closePath();g.fill()}}
  const hitW=n=>Math.abs(n.kx)+Math.abs(n.ky)>.3;

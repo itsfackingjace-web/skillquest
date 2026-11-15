@@ -657,3 +657,16 @@
   `EXTRA_BAG`. **An item added by a later section must push itself into `EXTRA_BAG`** (199's `voidlog` didn't and was invisible), and give
   `iconURL` a picture for it.
   `BAG_ORDER()` is de-duplicated (a key in both `BK` and `EXTRA_BAG` was listed twice), so pushing a key that's already listed is harmless.
+- **Guild bosses framework** (199, `window.SQGBOSS`, alias `SQGTREANT`): `SQGBOSS.add(kind,{path,pre,need,unit,costTxt,have(bank),pay(bank)->changes,
+  DEF (the SQIB entry), sk, bonus(), spots(R), spr, draw(b,tm), drawPortal, texts...})`. Each kind = record `guilds/<g>/<path>` {w,t,by,k} (its own
+  rules node), arena id `<pre><gid>`, a `gportal` lm item with `bk` = kind (197's applyBuildings adds `SQGBOSS.portals(R)`; spots must have dry
+  open ground below, where `ibEnter` puts you back), the guild screen's **Bosses** tab (`data-g="gtb:sum:<kind>"`). 199's outermost `upd`
+  re-applies the island's buildings when `SQGBOSS.key()` differs from the room's `_bk` stamp. Kinds: `treant` (path `boss`, `gt_`),
+  `turtle` (200, path `turt`, `gu_`).
+- **Giant Turtle** (`combat/200-s208-giant-turtle.js`, `SQTURT`): 5,000 raw fish (`RAW`, 13 kinds, cheapest `SELLP` first; the rules sum the
+  13 bank keys' decrease = 5000, none rising), whirlpool by the pier, attacks with 100's new `bubble` shots and `water` geysers (100's charge/
+  leap lines now use the boss's own name), crab adds; melee + 1 + Fishing/10 + rod tier. Loot `turtfrag` ×1 + 25 swordfish. **Turtle armor**
+  `eq_thelm/eq_tbody/eq_tlegs`: anvil 1/2/2 fragments (Smithing 75/80/78), Defence 50, held as armor tier 5 with `TT` flags (save `tta`,
+  KNOWN49) like the Outlaw's hat; +3% block a piece, 2 pieces +5%, 3 pieces +5% and blockCap +5%; look = 084's plate recoloured (`ttk`).
+- **Guild bank deposit buttons** (197 `depositMany`, `GRP`): put in all void logs / raw fish / logs / ores, or everything (two taps), as one
+  bank change with one log line (`k:'*'`, `d` text). Log lines with a text `d` show it as is.

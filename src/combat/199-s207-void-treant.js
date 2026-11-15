@@ -44,68 +44,85 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
      for(let k=0;k<8;k++){const q=k/8*6.283+p*6;Rg(Math.round(bx+Math.cos(q)*(r+5)),Math.round(by-4+Math.sin(q)*(r*.6+3)),2,2,k%2?'#e8d0ff':'#9a5af0')}}
     g.globalAlpha=1;g.restore()}catch(e){}return _dh.apply(this,arguments)}}
 
- // ---- the Void Treant (a guild boss) ----
+ // ---- guild bosses (the Void Treant here; 200 adds the Giant Turtle through SQGBOSS.add) ----
  // The arena and the fight are 100's island-boss system (shared online, +60% health per extra fighter, every fighter in the
- // arena when it falls gets the whole reward). Its id is per guild (`gt_<guild id>`), added to SQIB hidden from for..in
- // (111a's Stats table and 111d's monster list only know the five island bosses).
- const SUM=5000,WEEK=()=>Math.floor((((window.SQGUILD&&SQGUILD.api)?SQGUILD.api.now():Date.now())-345600000)/604800000);
- const A=()=>window.SQGUILD&&SQGUILD.api,GID=()=>window.SQGUILD&&SQGUILD.id||'',TID=()=>GID()?'gt_'+GID():'';
- const isT=id=>/^gt_/.test(String(id||''));
- const DEF={n:'The Void Treant',door:'',lm:'the void portal',hp:6000,col:'#9a5af0',shard:'',sc:['#c8a0ff','#5a3a8a'],
-  floor:['#2a2236','#30283e'],wall:'#1c1626',trim:'#0a0810',gold:[1500,2500],loot:[[WV,1],[VL,150],['yewlog',25]],xp:6000,rare:['ptvoid','Void treeling (pet)'],
-  atk:[['circles',3.4,{n:6,r:20,delay:1.1,k:'void'}],['fan',2.6,{n:5,spread:.3,sp:95,k:'void'}],['spiral',4.8,{n:14,sp:70,k:'void'}],['ring',6.5,{max:110}],['summon',13,{key:'wolf:void',n:2,cap:3,half:1}]]};
- function regBoss(){const id=TID();if(!id||!window.SQIB)return'';if(!Object.prototype.hasOwnProperty.call(SQIB,id))Object.defineProperty(SQIB,id,{value:Object.assign({},DEF),enumerable:false,configurable:true,writable:true});
-  if(typeof DKIND!=='undefined'&&!DKIND['ib_'+id])DKIND['ib_'+id]={name:DEF.n,floor:DEF.floor,wall:DEF.wall,trim:DEF.trim,W:30,H:24,floors:1,cavey:1};return id}
- const rec=()=>{const a=A();return a&&a.ready?a.rec:null};
- const open=()=>{const r=rec();return!!(r&&r.w===WEEK()&&!r.k)};
- const beaten=()=>{const r=rec();return!!(r&&r.w===WEEK()&&r.k)};
- function enter(it){if(!open()){A()&&A().tell('The portal has closed.');return}const id=regBoss();if(!id)return;
-  say('You step through the void portal...');try{sfx('roar')}catch(e){}SQIBENTER(id,it)}
- function summon(){const a=A();if(!a||!a.on()||!a.ready)return;if(!a.boss()){a.tell('Only the leader and officers can summon the Void Treant.');return}
-  if(open()){a.tell('The Void Treant is already awake. Its portal is on the guild island.');return}if(beaten()){a.tell('Your guild already beat the Void Treant this week. It can be summoned again from Monday.');return}
-  const have=(SQGUILD.state.bank.i[VL]|0);if(have<SUM){a.tell('The guild bank needs '+SUM.toLocaleString()+' void logs (it has '+have.toLocaleString()+').');try{sfx('swish')}catch(e){}return}
-  const ex={};ex['guilds/'+GID()+'/boss']={w:WEEK(),t:a.TS(),by:a.me()};
-  a.bankUpdate({[VL]:-SUM},{w:'boss',k:VL,d:SUM},ex).then(()=>{a.tell('The Void Treant awakens! A void portal has opened on the guild island. Everyone who fights it gets a Void wand.');msgT=7;try{sfx('roar')}catch(e){}}).catch(a.fail)}
- // when it falls: close the portal for the week (any fighter writes k; the first one wins)
- function kill(){const a=A(),r=rec();if(!a||!a.on()||!r||r.k)return;try{a.DB().set(a.ref('guilds/'+GID()+'/boss/k'),a.TS()).catch(()=>{})}catch(e){}}
- {const _se=sqEvent;sqEvent=function(type,item){if(type==='islandboss'&&isT(item)){try{kill();if(window.SQACH&&SQACH.add)SQACH.add('ibw')}catch(e){}return}return _se.apply(this,arguments)}}
- // Woodcutting fights it too: every melee hit that lands on the Treant chops in extra damage (axe tier + Woodcutting/10)
- {const _a=attack;attack=function(){const S=window.SQIBST,b=S&&S.boss;if(!b||!isT(b.ib)||b.dead)return _a.apply(this,arguments);const h0=b.hp,out=_a.apply(this,arguments);
-   try{if(b.hp<h0&&!b.dead){const ex=1+(TL.axe|0)+Math.floor(lvOf(1)/10);b.hp-=ex;addXp(1,ex*4);DMGS.push({x:b.x+10,y:b.y-70,v:'+'+ex,t:0,c:'#a8e070',sc:curScene()});
-     for(let k=0;k<5;k++)part(b.x+(Math.random()-.5)*20,b.y-30,(Math.random()-.5)*80,-30-Math.random()*50,.5,k%2?'#56404e':'#9a6ae0',160,2)}}catch(e){}return out}}
- // ---- its look: the pixel sprite (TP palette, TR rows) at 1.5x, swaying; eyes flare on a wind-up, motes orbit it ----
- let SPR=null,SPRW=null,EYE=[];
- function sprite(white){if(SPR)return white?SPRW:SPR;const rows=TR.split('|'),h=rows.length,w=Math.max(...rows.map(r=>r.length));
-  const mk=wh=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');rows.forEach((r,y)=>{for(let i=0;i<r.length;i++){const ch=r[i];if(ch==='.')continue;x.fillStyle=wh?'#ffffff':TP[ch];x.fillRect(i,y,1,1);if(!wh&&TP[ch]==='#ffffff')EYE.push([i,y])}});return c};
-  SPR=mk(0);SPRW=mk(1);return white?SPRW:SPR}
- function drawTreant(b,tm){const S=1.5,c=sprite(),w=c.width*S,h=c.height*S,x=Math.round(b.x),y=Math.round(b.y),pose=window.SQIBPOSE?SQIBPOSE(b):['idle',''],wind=pose[0]==='wind'||pose[0]==='strike',hit=Math.abs(b.kx||0)+Math.abs(b.ky||0)>.3;
-  g.fillStyle='rgba(150,90,240,'+(.1+.06*Math.sin(tm*2)+(wind?.14:0))+')';g.beginPath();g.ellipse(x,y-h*.45,w*.62,h*.55,0,0,6.283);g.fill();shd(b.x,b.y+6,Math.min(w*.55,60));
-  const sway=Math.round(Math.sin(tm*1.3)),bob=b.mv>0?-Math.round(Math.abs(Math.sin(tm*5))*2):0,left=Math.round(x-w/2+sway),top=Math.round(y+6-h+bob);
-  g.save();g.imageSmoothingEnabled=false;g.drawImage(c,left,top,Math.round(w),Math.round(h));if(hit){g.globalAlpha=.55;g.drawImage(sprite(1),left,top,Math.round(w),Math.round(h))}g.restore();
-  if(wind)for(const[ex,ey]of EYE){g.fillStyle='rgba(220,180,255,'+(.35+.25*Math.sin(tm*18))+')';g.beginPath();g.arc(left+(ex+.5)*S,top+(ey+.5)*S,4,0,6.283);g.fill()}
-  for(let k=0;k<7;k++){const q=tm*(wind?3.2:1.1)+k/7*6.283;Rg(Math.round(x+Math.cos(q)*w*.5),Math.round(y-h*.5+Math.sin(q)*12),2,2,k%2?'#c8a0ff':'#7a40c8')}}
- {const _art=window.SQIBART;window.SQIBART=function(id,b,tm){if(isT(id)){try{drawTreant(b,tm)}catch(e){}return true}return _art?_art.apply(this,arguments):false}}
- // the portal on the guild island
- function drawPortal(it,tm){const x=it.x*16+8,y=it.y*16+12;shd(x,y+3,14);
-  g.fillStyle='#0c0814';g.beginPath();g.ellipse(x,y-10,8,13,0,0,6.283);g.fill();g.fillStyle='rgba(122,64,200,'+(.55+.25*Math.sin(tm*3))+')';g.beginPath();g.ellipse(x,y-10,5,10,0,0,6.283);g.fill();
-  g.strokeStyle='#b080f0';g.lineWidth=1.5;g.beginPath();g.ellipse(x,y-10,9,14,0,0,6.283);g.stroke();
-  for(let k=0;k<10;k++){const q=tm*2+k/10*6.283;Rg(Math.round(x+Math.cos(q)*11),Math.round(y-10+Math.sin(q)*16),k%3?1:2,k%3?1:2,k%2?'#e8d0ff':'#9a5af0')}
-  if(Math.random()<.2)try{part(x+(Math.random()-.5)*10,y-6,(Math.random()-.5)*10,-20-Math.random()*20,.8,'#c8a0ff',-10,1)}catch(e){}}
- // ---- the guild screen's Void Treant tab (197) ----
- let PIC='';const pic=()=>{if(!PIC)try{PIC=sprite().toDataURL()}catch(e){}return PIC};
+ // arena when it falls gets the whole reward). Each kind has its own weekly record guilds/<g>/<path> {w,t,by,k} and arena id
+ // `<pre><guild id>`, added to SQIB hidden from for..in (111a's Stats table and 111d's monster list only know the five island bosses).
+ const WEEK=()=>Math.floor((((window.SQGUILD&&SQGUILD.api)?SQGUILD.api.now():Date.now())-345600000)/604800000);
+ const A=()=>window.SQGUILD&&SQGUILD.api,GID=()=>window.SQGUILD&&SQGUILD.id||'';
+ const K={},ORDER=[];
+ const kindOf=id=>{id=String(id||'');for(const k of ORDER)if(id.indexOf(K[k].pre)===0)return K[k];return null};
+ const rec=k=>{const a=A();return a&&a.ready&&SQGUILD.state?SQGUILD.state[K[k].path]||null:null};
+ const open=k=>{if(!k){return ORDER.some(x=>open(x))}const r=rec(k);return!!(r&&r.w===WEEK()&&!r.k)};
+ const beaten=k=>{const r=rec(k);return!!(r&&r.w===WEEK()&&r.k)};
+ function regBoss(k){const B=K[k],id=GID()?B.pre+GID():'';if(!id||!window.SQIB)return'';if(!Object.prototype.hasOwnProperty.call(SQIB,id))Object.defineProperty(SQIB,id,{value:Object.assign({},B.DEF),enumerable:false,configurable:true,writable:true});
+  if(typeof DKIND!=='undefined'&&!DKIND['ib_'+id])DKIND['ib_'+id]={name:B.DEF.n,floor:B.DEF.floor,wall:B.DEF.wall,trim:B.DEF.trim,W:30,H:24,floors:1,cavey:1};return id}
+ function enter(it){const k=it&&it.bk||'treant',B=K[k];if(!B)return;if(!open(k)){A()&&A().tell('The portal has closed.');return}const id=regBoss(k);if(!id)return;
+  say(B.enterMsg||'You step through the portal...');try{sfx('roar')}catch(e){}SQIBENTER(id,it)}
+ function summon(k){const a=A(),B=K[k];if(!a||!B||!a.on()||!a.ready)return;if(!a.boss()){a.tell('Only the leader and officers can summon '+B.DEF.n+'.');return}
+  if(open(k)){a.tell(B.DEF.n+' is already awake. Its portal is on the guild island.');return}if(beaten(k)){a.tell('Your guild already beat '+B.DEF.n+' this week. It can be summoned again from Monday.');return}
+  const bank=SQGUILD.state.bank.i||{},ch=B.pay(bank);if(!ch){a.tell('The guild bank needs '+B.costTxt+' (it has '+B.have(bank).toLocaleString()+').');try{sfx('swish')}catch(e){}return}
+  const ex={};ex['guilds/'+GID()+'/'+B.path]={w:WEEK(),t:a.TS(),by:a.me()};
+  a.bankUpdate(ch,{w:'boss',k:B.logK,d:B.costTxt},ex).then(()=>{a.tell(B.wakeMsg);msgT=7;try{sfx('roar')}catch(e){}}).catch(a.fail)}
+ // when it falls: close its portal for the week (any fighter writes k; the first one wins)
+ function kill(k){const a=A(),r=rec(k);if(!a||!a.on()||!r||r.k)return;try{a.DB().set(a.ref('guilds/'+GID()+'/'+K[k].path+'/k'),a.TS()).catch(()=>{})}catch(e){}}
+ {const _se=sqEvent;sqEvent=function(type,item){const B=type==='islandboss'&&kindOf(item);if(B){try{kill(B.k);if(window.SQACH&&SQACH.add)SQACH.add('ibw')}catch(e){}return}return _se.apply(this,arguments)}}
+ // each boss has a skill that fights it too: every melee hit that lands adds B.bonus() (the Treant: 1 + axe tier + Woodcutting/10)
+ {const _a=attack;attack=function(){const S=window.SQIBST,b=S&&S.boss,B=b&&kindOf(b.ib);if(!B||b.dead||!B.bonus)return _a.apply(this,arguments);const h0=b.hp,out=_a.apply(this,arguments);
+   try{if(b.hp<h0&&!b.dead){const ex=B.bonus();b.hp-=ex;addXp(B.sk,ex*4);DMGS.push({x:b.x+10,y:b.y-(B.tall||70),v:'+'+ex,t:0,c:B.bcol||'#a8e070',sc:curScene()});
+     for(let k=0;k<5;k++)part(b.x+(Math.random()-.5)*20,b.y-30,(Math.random()-.5)*80,-30-Math.random()*50,.5,B.chip[k%2],160,2)}}catch(e){}return out}}
+ // pixel sprites from palette rows ('.' = empty), plus an all-white copy for the hit flash
+ function mkSprite(TPAL,ROWS){const rows=ROWS.split('|'),h=rows.length,w=Math.max(...rows.map(r=>r.length)),eyes=[];
+  const mk=wh=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');rows.forEach((r,y)=>{for(let i=0;i<r.length;i++){const ch=r[i];if(ch==='.')continue;x.fillStyle=wh?'#ffffff':TPAL[ch];x.fillRect(i,y,1,1);if(!wh&&TPAL[ch]==='#ffffff')eyes.push([i,y])}});return c};
+  const c=mk(0);return{c,w:mk(1),eyes}}
+ {const _art=window.SQIBART;window.SQIBART=function(id,b,tm){const B=kindOf(id);if(B){try{B.draw(b,tm)}catch(e){}return true}return _art?_art.apply(this,arguments):false}}
+ // the portals on the guild island (197's applyBuildings adds what this returns)
+ function portals(R){const out=[],W=R.w,ok1=(x,y)=>{const i=y*W+x;return x>0&&y>0&&x<W-1&&y<R.h-1&&!R.solid.has(i)&&!rgObjAt(R,x,y)&&RG_WALK[R.tiles[i]]&&R.tiles[i]!==0},
+  // the tile below is where you come back out (100's ibEnter), so it must be dry, open ground too
+  free=(x,y)=>ok1(x,y)&&ok1(x,y+1)&&!out.some(o=>Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2);
+  for(const k of ORDER){if(!open(k))continue;const B=K[k];for(const[x,y]of B.spots(R))if(free(x,y)){out.push({t:'lm',k:'gportal',bk:k,x,y,w:1,h:1,use:'gtreant',name:B.portalName});break}}return out}
+ function drawPortal(it,tm){const B=K[it.bk||'treant'];if(B&&B.drawPortal)B.drawPortal(it,tm)}
+ const key=()=>ORDER.map(k=>open(k)?1:0).join('');
+ // ---- the guild screen's Bosses tab (197) ----
  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
- function html(){const a=A(),G=SQGUILD.state,have=(G.bank&&G.bank.i&&G.bank.i[VL])|0;let h='<div class="qc"><div style="display:flex;gap:12px;align-items:center"><img alt="" src="'+pic()+'" style="width:75px;height:90px;image-rendering:pixelated;flex:none">'+
-   '<div><b>The Void Treant</b><p style="font-size:13px">An ancient tree swallowed by the void. Once a week the guild can feed it '+SUM.toLocaleString()+' void logs from the guild bank to wake it. A void portal opens on your guild island: go through together.</p></div></div>';
-  if(open())h+='<p><b style="color:#6a30b0">It\'s awake!</b> The void portal is on your guild island. It stays open until the Treant falls (this week).</p>';
-  else if(beaten())h+='<p><b>Beaten this week ✓</b> It can be summoned again from Monday.</p>';
-  else{h+='<div class="gdgbar"><i style="width:'+Math.min(100,100*have/SUM)+'%;background:#8050c0"></i></div><small>'+have.toLocaleString()+' / '+SUM.toLocaleString()+' void logs in the guild bank</small><br>';
-   h+=a.boss()?'<button class="qb" data-g="gtb:sum"'+(have<SUM?' disabled style="opacity:.5"':'')+'>Summon it ('+SUM.toLocaleString()+' void logs)</button>':'<p style="font-size:13px">The leader or an officer summons it once the bank has enough.</p>'}
-  h+='</div><div class="qc"><b>Rewards (every fighter, every fight)</b><p style="font-size:13px">A <b>Void wand</b>: the strongest wand, Magic 50. Its void bolts hit harder than any adamant wand and every fourth hit heals you a heart.<br>'+
-   DEF.gold[0].toLocaleString()+'-'+DEF.gold[1].toLocaleString()+' gold, '+DEF.loot[1][1]+' void logs, '+DEF.loot[2][1]+' yew logs, Attack and Defence XP. 5%: a Void treeling (pet).</p></div>'+
-   '<div class="qc"><b>Tips</b><p style="font-size:13px">Chop it! Your axe and Woodcutting level add damage to every melee hit. It gets 60% tougher for each extra fighter. Void logs come from void trees: on the Shattered Expanse, and void saplings planted on your guild island. Put them in the guild bank chest.</p></div>';
-  return h}
- function act(x){if(x==='sum')summon()}
- window.SQGTREANT={open,beaten,html,act,enter,drawPortal,summon,kill,regBoss,WEEK,DEF,SUM,sprite,drawTreant};
- // keep the boss registered, and the portal in step with the week (the database listener covers summons and kills)
- let WAS=null;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(GID())regBoss();const o=open();if(o!==WAS){WAS=o;const a=A();if(a)a.applyBuildings()}}catch(e){}return out}}
+ function card(k){const a=A(),B=K[k],bank=(SQGUILD.state.bank&&SQGUILD.state.bank.i)||{},have=B.have(bank);if(!B.pic)try{B.pic=B.spr().c.toDataURL()}catch(e){B.pic=''}
+  let h='<div class="qc"><div style="display:flex;gap:12px;align-items:center"><img alt="" src="'+B.pic+'" style="width:'+B.picW+'px;image-rendering:pixelated;flex:none">'+
+   '<div><b>'+esc(B.DEF.n.replace(/^The /,''))+'</b><p style="font-size:13px">'+B.about+'</p></div></div>';
+  if(open(k))h+='<p><b style="color:#2a7a50">It\'s awake!</b> '+B.awakeTxt+' It stays until it falls (this week).</p>';
+  else if(beaten(k))h+='<p><b>Beaten this week ✓</b> It can be summoned again from Monday.</p>';
+  else{h+='<div class="gdgbar"><i style="width:'+Math.min(100,100*have/B.need)+'%;background:'+B.DEF.col+'"></i></div><small>'+have.toLocaleString()+' / '+B.need.toLocaleString()+' '+B.unit+' in the guild bank</small><br>';
+   h+=a.boss()?'<button class="qb" data-g="gtb:sum:'+k+'"'+(have<B.need?' disabled style="opacity:.5"':'')+'>Summon it ('+B.costTxt+')</button>':'<p style="font-size:13px">The leader or an officer summons it once the bank has enough.</p>'}
+  h+='<p style="font-size:13px"><b>Every fighter, every fight:</b> '+B.rewardTxt+'</p><p style="font-size:12px;opacity:.85">'+B.tip+'</p></div>';return h}
+ function html(){return ORDER.map(card).join('')}
+ function act(x,y){if(x==='sum')summon(y||'treant')}
+ function add(k,B){B.k=k;K[k]=B;if(!ORDER.includes(k))ORDER.push(k)}
+ // ---- the Void Treant ----
+ const SUM=5000;
+ add('treant',{path:'boss',pre:'gt_',logK:VL,need:SUM,unit:'void logs',costTxt:SUM.toLocaleString()+' void logs',have:b=>b[VL]|0,pay:b=>(b[VL]|0)>=SUM?{[VL]:-SUM}:null,
+  DEF:{n:'The Void Treant',door:'',lm:'the void portal',hp:6000,col:'#9a5af0',shard:'',sc:['#c8a0ff','#5a3a8a'],
+   floor:['#2a2236','#30283e'],wall:'#1c1626',trim:'#0a0810',gold:[1500,2500],loot:[[WV,1],[VL,150],['yewlog',25]],xp:6000,rare:['ptvoid','Void treeling (pet)'],
+   atk:[['circles',3.4,{n:6,r:20,delay:1.1,k:'void'}],['fan',2.6,{n:5,spread:.3,sp:95,k:'void'}],['spiral',4.8,{n:14,sp:70,k:'void'}],['ring',6.5,{max:110}],['summon',13,{key:'wolf:void',n:2,cap:3,half:1}]]},
+  sk:1,bonus:()=>1+(TL.axe|0)+Math.floor(lvOf(1)/10),chip:['#56404e','#9a6ae0'],
+  enterMsg:'You step through the void portal...',portalName:'Void portal',wakeMsg:'The Void Treant awakens! A void portal has opened on the guild island. Everyone who fights it gets a Void wand.',
+  about:'An ancient tree swallowed by the void. Once a week the guild can feed it '+SUM.toLocaleString()+' void logs from the guild bank to wake it. A void portal opens on your guild island: go through together.',
+  awakeTxt:'The void portal is in the middle of your guild island.',picW:75,
+  rewardTxt:'a <b>Void wand</b> (the strongest wand, Magic 50: its void bolts hit harder than any adamant wand and every fourth hit heals you a heart), 1,500-2,500 gold, 150 void logs, 25 yew logs. 5%: a Void treeling (pet).',
+  tip:'Chop it! Your axe and Woodcutting level add damage to every melee hit. It gets 60% tougher for each extra fighter. Void logs come from void trees: on the Shattered Expanse, and void saplings planted on your guild island.',
+  spots:R=>{const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;return[[bx+3,by+3],[bx-3,by+3],[bx,by+6],[bx+3,by+6],[bx-3,by+6],[bx,by+8]]},
+  spr:()=>K.treant._s||(K.treant._s=mkSprite(TP,TR)),
+  draw(b,tm){const S=1.5,sp=K.treant.spr(),c=sp.c,w=c.width*S,h=c.height*S,x=Math.round(b.x),y=Math.round(b.y),pose=window.SQIBPOSE?SQIBPOSE(b):['idle',''],wind=pose[0]==='wind'||pose[0]==='strike',hit=Math.abs(b.kx||0)+Math.abs(b.ky||0)>.3;
+   g.fillStyle='rgba(150,90,240,'+(.1+.06*Math.sin(tm*2)+(wind?.14:0))+')';g.beginPath();g.ellipse(x,y-h*.45,w*.62,h*.55,0,0,6.283);g.fill();shd(b.x,b.y+6,Math.min(w*.55,60));
+   const sway=Math.round(Math.sin(tm*1.3)),bob=b.mv>0?-Math.round(Math.abs(Math.sin(tm*5))*2):0,left=Math.round(x-w/2+sway),top=Math.round(y+6-h+bob);
+   g.save();g.imageSmoothingEnabled=false;g.drawImage(c,left,top,Math.round(w),Math.round(h));if(hit){g.globalAlpha=.55;g.drawImage(sp.w,left,top,Math.round(w),Math.round(h))}g.restore();
+   if(wind)for(const[ex,ey]of sp.eyes){g.fillStyle='rgba(220,180,255,'+(.35+.25*Math.sin(tm*18))+')';g.beginPath();g.arc(left+(ex+.5)*S,top+(ey+.5)*S,4,0,6.283);g.fill()}
+   for(let k=0;k<7;k++){const q=tm*(wind?3.2:1.1)+k/7*6.283;Rg(Math.round(x+Math.cos(q)*w*.5),Math.round(y-h*.5+Math.sin(q)*12),2,2,k%2?'#c8a0ff':'#7a40c8')}},
+  drawPortal(it,tm){const x=it.x*16+8,y=it.y*16+12;shd(x,y+3,14);
+   g.fillStyle='#0c0814';g.beginPath();g.ellipse(x,y-10,8,13,0,0,6.283);g.fill();g.fillStyle='rgba(122,64,200,'+(.55+.25*Math.sin(tm*3))+')';g.beginPath();g.ellipse(x,y-10,5,10,0,0,6.283);g.fill();
+   g.strokeStyle='#b080f0';g.lineWidth=1.5;g.beginPath();g.ellipse(x,y-10,9,14,0,0,6.283);g.stroke();
+   for(let k=0;k<10;k++){const q=tm*2+k/10*6.283;Rg(Math.round(x+Math.cos(q)*11),Math.round(y-10+Math.sin(q)*16),k%3?1:2,k%3?1:2,k%2?'#e8d0ff':'#9a5af0')}
+   if(Math.random()<.2)try{part(x+(Math.random()-.5)*10,y-6,(Math.random()-.5)*10,-20-Math.random()*20,.8,'#c8a0ff',-10,1)}catch(e){}}});
+ window.SQGBOSS=window.SQGTREANT={add,K,open,beaten,html,act,enter,drawPortal,portals,key,summon,kill,regBoss,WEEK,mkSprite,kindOf,SUM,DEF:K.treant.DEF,drawTreant:(b,tm)=>K.treant.draw(b,tm)};
+ // keep the bosses registered, and the portals in step with the week (the database listener covers summons and kills)
+ // (stamped on the island's room: a portal that closed while you were in the arena is gone when you come back)
+ {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(GID())for(const k of ORDER)regBoss(k);const a=A();if(a&&a.onIsle()){const R=SCENE.room,o=key();if(R._bk!==o){R._bk=o;a.applyBuildings()}}}catch(e){}return out}}
 })();
