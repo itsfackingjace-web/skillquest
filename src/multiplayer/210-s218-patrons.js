@@ -56,7 +56,8 @@
    CR.a=Object.values(a.val()||{}).filter(x=>x&&x.n&&x.w).sort((x,y)=>x.n.localeCompare(y.n));CR.at=Date.now()}catch(e){}if(ptab===CTAB&&pnOpen)rPn()}
  const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  function creditsHTML(){const f='<img class="sqpf" src="'+flameURL+'" alt="">';
-  return '<div class="tl">CREDITS</div><div class="pcr"><p>SkillQuest is made by Jace, with help from the players who test it, report bugs and share ideas.</p>'+
+  return '<div class="tl">CREDITS</div><div class="pcr"><h3>Head Developer</h3><p>Jace Holman</p><h3>Lead Administrator</h3><p>Heather Holman</p>'+
+   '<h3>Special thanks</h3><p>To my kids and nephews, for inspiring me to make SkillQuest into something they would love. And to every player who tests the game, reports bugs and shares ideas.</p>'+
    '<h3>Patrons</h3>'+(!uid()?'<p class="muted">Sign in to see the Patrons.</p>':CR.at?(CR.p.length?'<p class="muted">Listed alphabetically. Thank you for keeping the game going.</p><ul>'+CR.p.map(n=>'<li>'+f+E(n)+'</li>').join('')+'</ul>':'<p class="muted">No Patrons yet.</p>'):'<p class="muted">Loading...</p>')+
    (CR.a.length?'<h3>Player art</h3><ul>'+CR.a.map(a=>'<li>'+E(a.w)+' by '+E(a.n)+'</li>').join('')+'</ul>':'')+
    '<h3>Music</h3><p>Instrument samples from the FluidR3_GM SoundFont by Frank Wen (CC BY 3.0).</p>'+
