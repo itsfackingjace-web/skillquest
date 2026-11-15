@@ -40,16 +40,25 @@
      px(a-1,y,K);px(b+1,y,K);for(let X=a;X<=b;X++){const edge=X===a||X===b;const cc=col(X,y,a,b);px(X,y,edge?(T||shade(cc,.7)):(X===7||X===8)&&y===22?shade(cc,1.2):cc)}}
    for(let X=Math.max(0,a0-1);X<=Math.min(15,b0+1);X++)px(X,30,K);if(T)for(let X=a0;X<=b0;X++)px(X,29,T);
    const pat=(EM[S.e]||EM[0]).p;pat.forEach((row,j)=>{for(let i=0;i<4;i++)if(row[i]==='X')px(6+i,24+j,S.x)})}
-  // front: a strip of cape just outside the body's outline, hanging straight down from the shoulders (it never narrows again,
-  // so it reads as cloth behind a robe or the legs, not spikes beside the hands)
-  else if(dir===0){const cc=S.c,Dk=T||shade(cc,.7);let a=99,b=-1;for(let y=22;y<=30;y++){const[ea,eb]=E[y];if(eb>=0){a=Math.min(a,ea);b=Math.max(b,eb)}if(b<0)continue;
-    const L=Math.max(0,a-1),R=Math.min(15,b+1);if(y>23||y===22){px(L,y,y===30&&T?T:Dk);px(R,y,y===30&&T?T:Dk)}if(L>0&&y>23)px(L-1,y,K);if(R<15&&y>23)px(R+1,y,K)}}
-  else{for(let y=21;y<=30;y++){const w=y<24?1:y<27?2:3;for(let k=0;k<w;k++)px(11+k,y,k===w-1?(T||shade(S.c,.7)):col(11+k,y,11,13));px(11+w,y,K)}}
   if(LC.size>400)LC.clear();LC.set(key,c);return c}
- {const _kb=kitBuild;kitBuild=function(ch,dir,st){if(!spec(ch))return _kb.apply(this,arguments);const base=_kb.call(this,strip(ch),dir,st),L=layer(ch,dir,base);if(!L)return base;
+ {const _kb=kitBuild;kitBuild=function(ch,dir,st){if(!spec(ch))return _kb.apply(this,arguments);if(dir!==1)return _kb.call(this,strip(ch),dir,st);const base=_kb.call(this,strip(ch),dir,st),L=layer(ch,dir,base);if(!L)return base;
    const c=document.createElement('canvas');c.width=16;c.height=32;const x=c.getContext('2d');
-   if(dir===1){x.drawImage(base,0,0);x.drawImage(L,0,0)}else{x.drawImage(L,0,0);x.drawImage(base,0,0)}
-   if(dir===0){const S=spec(ch);x.fillStyle=S.t?S.s:shade(S.c,1.2);x.fillRect(3,22,1,1);x.fillRect(12,22,1,1)}return c}}
+   x.drawImage(base,0,0);x.drawImage(L,0,0);return c}}
+// front and side: the 16 px kit has no room beside the body, so the cape is its own 24 px wide picture drawn behind the
+ // character by 111a's cP wrapper (window.SQCAPEUNDER, before the character): from the front it hangs 2-4 px out on both
+ // sides from the shoulders to the feet, from the side it trails 3-5 px out behind the back. Drawn facing right, mirrored for left.
+ const WC=new Map();
+ function wide(ch,dir,st){const S=spec(ch);if(!S||dir===1)return null;const base=kitSprite(strip(ch),dir,st|0,false),E=edges(base),key=JSON.stringify(S)+'|'+dir+'|'+E.slice(18,31).join(';');let c=WC.get(key);if(c)return c;
+  c=document.createElement('canvas');c.width=24;c.height=32;const x=c.getContext('2d'),px=(a,b,col)=>{if(a>=0&&a<24){x.fillStyle=col;x.fillRect(a,b,1,1)}},K='#181018',T=S.t?S.s:null,Dk=shade(S.c,.72),Lt=shade(S.c,1.18);
+  let a=99,b=-1;const top=20;
+  for(let y=top;y<=30;y++){const[ea,eb]=E[y]||[99,-1];if(eb>=0){a=Math.min(a,ea+4);b=Math.max(b,eb+4)}if(b<0)continue;const f=y<23?2:y<27?3:4;
+   if(dir===0){for(const sd of[-1,1]){const inner=sd<0?a+1:b-1,outer=sd<0?a-f:b+f;const lo=Math.min(inner,outer),hi=Math.max(inner,outer);
+      for(let X=lo;X<=hi;X++){const isOut=X===outer;px(X,y,isOut?(T||Dk):(X===outer-sd?Lt:S.c))}px(outer+sd,y,K)}}
+   else{const back=a,outer=back-f-1;for(let X=outer;X<=back+2;X++)px(X,y,X===outer?(T||Dk):X===outer+1?Lt:(S.p===1&&X>back-1?S.s:S.c));px(outer-1,y,K)}}
+  if(b>=0){if(dir===0){for(let X=a-5;X<=a+1;X++)px(X,31,K);for(let X=b-1;X<=b+5;X++)px(X,31,K)}else for(let X=a-6;X<=a+2;X++)px(X,31,K);}
+  if(WC.size>400)WC.clear();WC.set(key,c);return c}
+ window.SQCAPEUNDER=function(C,ch,dir,st,ox,oy,fl){if(dir===1||!C)return;let L=null;try{L=wide(ch,dir,st)}catch(e){}if(!L)return;const sm=C.imageSmoothingEnabled;C.imageSmoothingEnabled=false;
+  const X=Math.round(ox)-12,Y=Math.round(oy)-25;if(fl&&dir===2){C.save();C.translate(X*2+24,0);C.scale(-1,1);C.drawImage(L,X,Y);C.restore()}else C.drawImage(L,X,Y);C.imageSmoothingEnabled=sm};
  // on top of Dev Suite worn looks, from behind (called by 111a's cP wrapper after drawWorn)
  window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(dir!==1||!spec(ch))return;try{const base=kitBuild(strip(ch),1,st),L=layer(ch,1,base);if(!L)return;const sm=C.imageSmoothingEnabled;C.imageSmoothingEnabled=false;C.drawImage(L,Math.round(ox)-8,Math.round(oy)-25);C.imageSmoothingEnabled=sm}catch(e){}};
  // saving the choice to wear it
@@ -58,9 +67,9 @@
  {const _ng=newGame;newGame=function(){WEAR=false;return _ng.apply(this,arguments)}}
  try{KNOWN49.add('gcw')}catch(e){}
  // pictures for the guild screen: the cape on your character, back and front
- function pic(d,dir){try{const ch=toCh(Object.assign({},gearCH()),d),s=kitSprite(ch,dir,0,false),c=document.createElement('canvas');c.width=s.width*3;c.height=s.height*3;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(s,0,0,c.width,c.height);return c.toDataURL()}catch(e){return''}}
+ function pic(d,dir){try{const ch=toCh(Object.assign({},gearCH()),d),s=kitSprite(ch,dir,0,false),L=wide(ch,dir,0),c=document.createElement('canvas');c.width=24*3;c.height=32*3;const x=c.getContext('2d');x.imageSmoothingEnabled=false;if(L)x.drawImage(L,0,0,c.width,c.height);x.drawImage(s,4*3,0,48,96);return c.toDataURL()}catch(e){return''}}
  const img=(u,w)=>u?'<img alt="" src="'+u+'" style="width:'+w+'px;image-rendering:pixelated;flex:none">':'';
- function card(){if(!inGuild())return'';const d=design();return'<div class="qc"><div style="display:flex;gap:10px;align-items:center">'+img(pic(d,1),48)+img(pic(d,0),48)+'<div style="flex:1"><b>Guild cape</b><p style="font-size:13px">Designed by your guild\'s leader. Everyone sees it on you, and it takes the place of your Marlo cape while you wear it.</p>'+
+ function card(){if(!inGuild())return'';const d=design();return'<div class="qc"><div style="display:flex;gap:10px;align-items:center">'+img(pic(d,1),54)+img(pic(d,0),54)+'<div style="flex:1"><b>Guild cape</b><p style="font-size:13px">Designed by your guild\'s leader. Everyone sees it on you, and it takes the place of your Marlo cape while you wear it.</p>'+
    '<button class="qb" data-g="gcp:wear">'+(WEAR?'Take it off':'Wear the guild cape')+'</button></div></div></div>'}
  // the designer (leader only): changes are a draft until Save
  let DR=null;

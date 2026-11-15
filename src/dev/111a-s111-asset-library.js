@@ -84,7 +84,7 @@ var SQA=(()=>{
  // "hide" is decided by the game drawing you (it needs the look in its library), not by the game you play on
  const hideFor=ch=>{let o=null;if(!ch||!Array.isArray(ch.wr)||ch.wsh==null)return ch;for(const k of ch.wr){const w=WORN[k],sl=EQ[k]&&EQ[k].slot;if(!w||!w.h)continue;o=o||{...ch};
    if(sl==='helm'){o.ht=ch.wht;o.hcol=ch.whc;delete o.mh;delete o.fc;delete o.oh}else if(sl==='body'){o.sh=ch.wsh;delete o.mr}else if(sl==='legs')o.pn=ch.wpn}return o||ch};
- const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
+ const _cPw=cP;cP=function(ch,dir,st,ox,oy,fl){try{if(window.SQCAPEUNDER)SQCAPEUNDER(GC||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch||!ch.wr)return;const C=GC;if(!(C===g||C&&C.canvas&&C.canvas.hd2))return;
   try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl,null,ch)}catch(e){}
   // a cape seen from behind goes over worn looks (201)
   try{if(window.SQCAPETOP)SQCAPETOP(C,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}};

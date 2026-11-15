@@ -672,7 +672,8 @@
   bank change with one log line (`k:'*'`, `d` text). Log lines with a text `d` show it as is.
 - **Capes** (`items/201-s209-guild-capes.js`, `SQGCAPE`): 201 paints every cape (Marlo's `ch.cape` and the guild cape), not 085: the outermost
   `kitBuild` strips the cape fields, builds the bare kit and adds a cape layer (`layer`): on the back it widens to the body's own row edges (wizard
-  robes flare), on the front a strip just outside the body hanging straight down, then composited behind (front/side) or on top (back). 111a's
+  robes flare), composited on top. Front and side views are a separate 24 px wide layer (`wide`, cached in `WC`) drawn behind the character by
+  111a's cP wrapper through `window.SQCAPEUNDER` (before the inner cP; mirrored for `fl` on the side view), since the 16 px kit has no room. 111a's
   cP wrapper calls `window.SQCAPETOP` after `drawWorn`, which repaints the back layer over Dev Suite worn looks. Guild cape: worn from the guild
   screen's Members tab (`gcw`, KNOWN49); the leader's design is `info.cp` {c,s,p,t,e,x} (`PAL` 18 colours, `PAT` 5 patterns, trim on/off, `EM`
   11 emblems; rules: those keys, numbers 0-31), drafted in Settings until Save; older guilds fall back to `info.col`/`info.em`. gearCH adds
