@@ -6,7 +6,7 @@
 // ('slam' | 'dragon' | 'wand'; none = the old order). The choice is applied by hiding the others for the length of the
 // castUlt call (SLEDGE, SQJW.neck, WAND are put back right after).
 (()=>{let PICK=null;
- const WN={fire:'Inferno',ice:'Frost Nova',storm:'Thunderstorm'};
+ const WN={fire:'Inferno',ice:'Frost Nova',storm:'Thunderstorm',void:'Void Rift',meteor:'Meteor Fall'};
  const avail=()=>{const L=[];try{if(typeof SLEDGE!=='undefined'&&SLEDGE)L.push({k:'slam',n:'Ground Slam',from:'Stone Sledgehammer'})}catch(e){}
   try{if(window.SQJW&&SQJW.neck==='ja_dsoul')L.push({k:'dragon',n:'Dragon Form',from:'Dragonsoul amulet'})}catch(e){}
   try{if(WAND)L.push({k:'wand',n:WN[WAND]||'Wand ultimate',from:(INAME[occ('off')]||'your wand')})}catch(e){}return L};

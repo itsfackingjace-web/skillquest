@@ -849,3 +849,13 @@
   asks `window.SQHITWORD` first. Streak/flash/smoke in the outermost `drawHUD`, banner `#mtb`, minimap/area map markers. Items
   `meteorore`, `stardust`, `metbar` (SM smelt: 15 + 15 adamant ore + 3 stardust, Smithing 80). Library `meteor` overrides CFG.
   Test: `SQMETEOR.test(ms, tile)` starts a local strike.
+- **Meteorite gear** (`items/216-s224-meteorite-gear.js`, `window.SQMETGEAR`): all level 75 (`rq2` {s,l}, read first by 214's `reqOf`).
+  Armor `eq_mhelm9/eq_mbody9/eq_mlegs9` held as armor tier 5 with `MT` flags (save `mta`, KNOWN49), like 200's turtle armor: +5% block
+  a piece, 2 pieces +5%, 3 another +5% and blockCap +8%; look = gearCH `mtk` bits → kitLook recolour. Tools `eq_pick9/eq_axe9` = tier 9
+  (TIER_N/TCOL/TIT[9]). Bow `eq_bow6` (tier 6, +3 dmg, +30 range). Wand `eq_wmeteor`, element `meteor` (`WSP.meteor`, +6 dmg): the
+  outermost `drawSpells` draws meteor spells as rocks (their `sc` is hidden from the inner drawer for the call), 40% splash in
+  `spellHit`; ult METEOR FALL in the outermost `castUlt` when 159's `SQULT.chosen()` is the wand (`FALLS`, drawn in drawHUD, damage
+  spellDmg x3 within 48 px on impact; peers via fx `mf`). 159's `WN` names void/meteor ults. Meteorite arrows `marrow` (FREC, 25 per
+  bar + 2 void logs): the outermost `shoot`/`shootAim` lend them to `inv.iarrow` for the call (`LEND` adds +2 in `arrowDmg`) and take
+  back what was used; projectiles get `met:1`. 214 also lists SQTIER trees/ores, SQBOUL boulders and meteor cores/veins on the
+  Woodcutting/Mining trees.

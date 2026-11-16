@@ -224,6 +224,7 @@ ui/212-s220-one-cape-picker.js
 items/213-s221-paintings-and-gallery.js
 skills/214-s222-tree-unlocks-from-gear.js
 world/215-s223-meteor-strikes.js
+items/216-s224-meteorite-gear.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js
