@@ -69,7 +69,7 @@ homes and yards you can visit, and daily and weekly challenges.
 
 ## 6. Skills
 
-There are 14 skills. **No Strength skill, ever.** Attack and Tactics cover that role.
+There are 15 skills (Brewing, the 15th, came on Nov 16). **No Strength skill, ever.** Attack and Tactics cover that role.
 
 | Group | Skills |
 |---|---|

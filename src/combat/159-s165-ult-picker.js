@@ -9,7 +9,8 @@
  const WN={fire:'Inferno',ice:'Frost Nova',storm:'Thunderstorm',void:'Void Rift',meteor:'Meteor Fall'};
  const avail=()=>{const L=[];try{if(typeof SLEDGE!=='undefined'&&SLEDGE)L.push({k:'slam',n:'Ground Slam',from:'Stone Sledgehammer'})}catch(e){}
   try{if(window.SQJW&&SQJW.neck==='ja_dsoul')L.push({k:'dragon',n:'Dragon Form',from:'Dragonsoul amulet'})}catch(e){}
-  try{if(WAND)L.push({k:'wand',n:WN[WAND]||'Wand ultimate',from:(INAME[occ('off')]||'your wand')})}catch(e){}return L};
+  try{if(WAND)L.push({k:'wand',n:WN[WAND]||'Wand ultimate',from:(INAME[occ('off')]||'your wand')})}catch(e){}
+  try{for(const x of(window.SQULTX||[]))if(x.ok())L.push({k:x.k,n:x.n,from:x.from()})}catch(e){}return L};
  const chosen=()=>{const L=avail();if(!L.length)return null;return L.find(o=>o.k===PICK)||L[0]};
  {const _cu=castUlt;castUlt=function(){const L=avail(),c=chosen();if(L.length<2||!c)return _cu.apply(this,arguments);
    const sv={sl:SLEDGE,neck:window.SQJW&&SQJW.neck,w:WAND};
@@ -23,6 +24,6 @@
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ultp]');if(!b||ptab!==3)return;e.stopPropagation();e.preventDefault();PICK=b.dataset.ultp;
   const o=avail().find(x=>x.k===PICK);say('Your ULT button now uses '+(o?o.n:'that ultimate')+'.');try{sfx('talk')}catch(_){}try{saveLocal(true)}catch(_){}rPn()},true);
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(PICK)s.ultp=PICK;return s}}
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);PICK=S&&/^(slam|dragon|wand)$/.test(S.ultp)?S.ultp:null;return out}}
+ {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);PICK=S&&/^(slam|dragon|wand|dagger)$/.test(S.ultp)?S.ultp:null;return out}}
  try{KNOWN49.add('ultp')}catch(e){}
  window.SQULT={avail,chosen,get pick(){return PICK},set pick(v){PICK=v}}})();

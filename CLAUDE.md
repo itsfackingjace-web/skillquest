@@ -865,3 +865,13 @@
   `SCENE.ret`), and the outermost `leaveRegion` `rescue()`s a bad landing: in the sea → the Tidewatch harbor post (`RG_POST`), inside
   something/boxed in (`good()`: walkable + 25 reachable tiles) → nearest good land within 30 tiles. `/stuck` (`/unstuck`) in chat: out
   of rooms, island → `rgSpot(R)`, Hollow → harbor post; 2 min cooldown (`sq_stuck`), not while dead/travelling/duelling/near a boss.
+- **Brewing and daggers** (`skills/218-s226-brewing-and-daggers.js`, `window.SQBREW`/`SQDAGGER`): skill 14 = Brewing (`SQBREWSK`, pushed
+  onto SKN/AB/SKC/XPS/SKICON like 028's Magic; `PSK`/`pTree` tree, perks `br_long/wide/twice/thrift/venom/spark/quick/heal`, read with
+  `PK(id)` = 036's `perk`). Cauldron = 022 station `cauldron` (STNS/BREC/BK), the outermost `stationHTML`/`stationAct` (actions `cw_<pot>`/
+  `cwa_<pot>`: **station actions starting with `b` are taken as shop buys by 107**), timed with `sqDo('craft')`. Art drawn in the outermost
+  `drawStation` unless a Props look `p:cauldron` exists. Potions `pot_poison/napalm/zap` are `COAT` potions (not FOODS; USE coats).
+  Daggers `idag/sdag/mdag/adag/metdag` are EQ kind `dagger`, slot `off` (DAG, save `dag`), +tier in `meleeFlat`. Potion pin `dpin`
+  (bag button `data-dpin`). 159's `avail()` also lists `window.SQULTX` entries ({k,n,ok,from,run}); the outermost `castUlt` runs the
+  dagger ult (cooldown `DCD`, 20 s / 12 with br_quick). Helpful potions are drunk and shared with fx `dp` {p,to (uid list),x,y}:
+  receivers check party/friend + distance and drink without using their own. Coats apply on hp drops during the outermost `attack`.
+  HUD chips (coat time, dagger ULT) are added in the outermost `hudLayout`. Flames on every burning monster in the outermost `pS`.
