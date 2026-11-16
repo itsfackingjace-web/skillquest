@@ -824,7 +824,7 @@
   solid and is drawn on the wall band. Placing facing the wall row (`facingWall()`) hangs it (`wallOK`: not over windows/room wall items, not
   the back door, houses and castles only); HIT facing it picks it up. `applySave` first registers every `pt_/pw_` key found in the save
   (`scan`), so saves never lose them before the records arrive. Artist's free copy: `ptg` in the save (KNOWN49). Gallery: BLD `gallery`
-  placed by `spot()` (free 5x2 + a free row in front, nearest the village centre), sign, room `gallery` (wall frames `_ptw`, easels `_pte`,
+  placed at library `places.gallery` {tx,ty} (Dev Suite > Art Room "Put the gallery's door where I'm standing": you stand on the doorstep, `standHere`/`tryPlace`, saved to the draft; applied through `SQA.onApply` → `applyChosen`) or else `spot()` (free 5x2 + a free row in front, nearest the village centre, inside the village preferred, never on/against `HOUSES`); `place`/`unplace` record and undo everything a spot changes (obj, BS, PROT, sign), room `gallery` (wall frames `_ptw`, easels `_pte`,
   `fill()` = newest first), curator Iris (NPC kind `gallery`, shop on ptab 2 via the outermost `rPn`, `data-ptbuy`). A label naming the
   painting and artist is drawn in the outermost `drawHUD` when you face one. `SQPAINT.charLayer(dir,gear)` = your character as a 96x112
   worn layer (211 shadows `CH`, so it draws it). Rules: `paintings`, `art.k 'wear'`, `art.sl` (publish them).

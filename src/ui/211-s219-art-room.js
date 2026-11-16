@@ -223,6 +223,11 @@
     (x.st?'':'<input data-arq="'+E(k)+'" placeholder="Message to the artist (optional)" value="'+E(T.msg[k]||'')+'" style="width:100%;margin-top:6px"><div class="dv-row" style="gap:6px;margin-top:6px"><button class="dv-b dv-pri" data-arx="ok:'+E(k)+'">Approve</button><button class="dv-b dv-bad" data-arx="no:'+E(k)+'">Not this time</button></div>')+
     (wear?wearCtl(x,k):paintCtl(x,k))+
     '</div></div></div>'}
+  // where the Patron Art Gallery stands (213): library places.gallery {tx,ty}
+  {const PG=window.SQPAINT,dc=S.draft&&S.draft.places&&S.draft.places.gallery,lc=S.live&&S.live.places&&S.live.places.gallery;
+   h+='<div class="dv-card" style="margin-top:10px"><b>🖼️ Patron Art Gallery building</b><p class="dv-mut">'+(lc?'Published spot: placed by you.':'Published spot: picked by the game (inside the village).')+(dc&&JSON.stringify(dc)!==JSON.stringify(lc)?' Your draft moves it (publish to show everyone).':'')+'</p>'+
+    '<p class="dv-mut">To move it: close the Dev Suite, walk on Hollow to where its front door should open onto (stand on that doorstep tile, the building goes above you), open the Dev Suite again and press the button. It needs 5 tiles across and 2 up free above you.</p>'+
+    '<button class="dv-b dv-pri" data-arx="galhere">Put the gallery\'s door where I\'m standing</button>'+(dc?' <button class="dv-b" data-arx="galauto">Let the game pick again</button>':'')+'</div>'}
   // Patreon link settings: cfg/patreon (secrets; nobody can read them back, only the server functions) + cfgpub/patreon (client id, which ones are set)
   const pc=T.pc||{},yes=b=>b?'✓ saved':'✗ not set';
   h+='<div class="dv-card" style="margin-top:10px"><b>Patreon link</b><p class="dv-mut">From your Patreon developer portal (Clients &amp; API Keys). Secrets can\'t be read back once saved; paste them again to change them.</p>'+
@@ -277,6 +282,10 @@
   try{
    if(a==='clip'){const[u,id]=parts[1].split('/'),x=T.list.find(y=>y.u===u&&y.id===id),fr=unpack(x)[+parts[2]];if(!fr)return;const c={w:x.w,h:x.h,p:Array.from(fr.f,v=>v?fr.pal[v]||'':'')};
     try{localStorage.setItem('sq_dev_clip',JSON.stringify(c))}catch(_){}toast('Frame copied. Open a picture editor and press Paste.')}
+   else if(a==='galhere'){const PG=window.SQPAINT;if(!PG)return;const c=PG.standHere();if(!c){toast('Go outside on Hollow Island first, then come back here.');return}
+    if(!PG.tryPlace(c)){toast('Not enough room there: it needs 5 tiles across and 2 up clear of trees, rocks, houses and other buildings, above where you stand.');return}
+    S.draft.places=S.draft.places||{};S.draft.places.gallery=c;await API.dset('draft/places/gallery',c);toast('Moved in your game. Publish it from the Publish tab and everyone sees it there.');API.draw()}
+   else if(a==='galauto'){if(S.draft.places)delete S.draft.places.gallery;await API.dset('draft/places/gallery',null);try{SQPAINT.applyChosen(null)}catch(_){}toast('The game picks its spot again (after you publish).');API.draw()}
    else if(a==='paint'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id);if(!x||x.k==='wear')return;const p=Math.max(100,Math.min(1e6,T.pp[k]||2500));
     const rec={n:String(x.n||'Painting').slice(0,24),by:String(x.who||nm(u)).slice(0,12),u,w:x.w,h:x.h,f:x.f,ms:Math.max(40,Math.min(2000,x.ms|0||200)),p,t:D().serverTimestamp()};
     await D().set(ref('paintings/'+id),rec);if(x.st!=='ok'){await D().set(ref('art/'+u+'/'+id+'/st'),'ok');await D().set(ref('artcred/'+id),{n:rec.by,w:String(x.n||'Art').slice(0,40)});x.st='ok'}

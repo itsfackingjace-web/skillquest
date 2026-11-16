@@ -91,21 +91,40 @@
     g.fillStyle='rgba(32,20,24,.88)';g.fillRect(x,y,w,hh);g.fillStyle=GOLD;g.fillRect(x,y,w,Math.max(2,u));g.fillRect(x,y+hh-Math.max(2,u),w,Math.max(2,u));
     g.textAlign='center';g.textBaseline='middle';g.fillStyle='#f8ecd0';g.fillText(t1,W/2,y+hh*.36);g.font='500 '+Math.round(fs*.85)+'px '+PF;g.fillStyle='#e8c878';g.fillText(t2,W/2,y+hh*.7);g.restore()}catch(e){}return out}}
  // ---- the gallery building ----
- let SPOT=null;
- function spot(){if(typeof VX==='undefined')return null;const free=(x,y)=>{const i=y*N+x;return x>1&&y>1&&x<N-2&&y<N-2&&tile[i]!==0&&!obj[i]&&!BS.has(i)&&!(typeof STR!=='undefined'&&STR.has(i))&&!(typeof BRIDGE!=='undefined'&&BRIDGE.has(i))&&!(typeof SIGNS!=='undefined'&&SIGNS.has(i))};
-  const road=i=>(typeof ROADS!=='undefined'&&ROADS.has(i))||tile[i]===2;let best=null,bd=1e9;
-  for(let ty=VY-14;ty<=VY+12;ty++)for(let tx=VX-16;tx<=VX+12;tx++){let ok=true;
-   for(let y=ty;y<ty+2&&ok;y++)for(let x=tx;x<tx+5;x++){const i=y*N+x;if(!free(x,y)||road(i)){ok=false;break}}
-   // a free row in front of it, the door's tile walkable
-   for(let x=tx;x<tx+5&&ok;x++)if(!free(x,ty+2)&&!road((ty+2)*N+x))ok=false;if(!ok)continue;const di=(ty+2)*N+tx+2;if(!free(tx+2,ty+2)&&!road(di))continue;
-   if(NPCS.some(n=>!n.scene&&n.x>tx*16-8&&n.x<(tx+5)*16+8&&n.y>ty*16-8&&n.y<(ty+3)*16+8))continue;
-   const d=Math.abs(tx+2-VX)+Math.abs(ty-VY)*1.2-(road(di)?6:0);if(d<bd){bd=d;best={tx,ty}}}return best}
- try{SPOT=spot();if(SPOT){const b={k:'gallery',tx:SPOT.tx,ty:SPOT.ty,w:5,wall:'#f4ecf8',roof:'#7848c0',sc:'#e8b830',ic:'star',n:'Patron Art Gallery'};BLD.push(b);
-   for(let y=b.ty;y<b.ty+2;y++)for(let x=b.tx;x<b.tx+5;x++){const i=y*N+x;obj[i]=null;if(!(x===b.tx+2&&y===b.ty+1))BS.add(i);try{PROT.add(i)}catch(e){}}
-   try{const fi=(b.ty+2)*N+b.tx+2;obj[fi]=null;PROT.add(fi)}catch(e){}
-   // a signpost beside it
-   try{for(const[x,y]of[[b.tx+5,b.ty+1],[b.tx-1,b.ty+1],[b.tx+5,b.ty+2],[b.tx-1,b.ty+2]]){const i=y*N+x;if(tile[i]===0||obj[i]||BS.has(i)||SIGNS.has(i)||(typeof ROADS!=='undefined'&&ROADS.has(i)))continue;
-     SIGNS.set(i,'PATRON ART GALLERY - paintings by SkillQuest Patrons. Prints for sale inside.');BS.add(i);PROT.add(i);break}}catch(e){}}}catch(e){console.warn('gallery',e)}
+ // Its spot: the developer's choice (library `places.gallery` {tx,ty}, set in Dev Suite > Art Room with "Put the gallery
+ // where I'm standing") or else the nearest free spot inside the village (players can't build there). Moving it puts back
+ // everything the old spot changed (objects, blocked tiles, its signpost).
+ let SPOT=null,BL=null;const UNDO={obj:new Map(),bs:new Set(),prot:new Set(),sign:-1};
+ const inV=(x,y)=>typeof inVillage==='function'?inVillage(x,y):true;
+ const homeAt=(x,y)=>{try{return HOUSES.some(h=>{const hw=((h.w||5)-1)/2;return x>=h.x-hw-1&&x<=h.x+hw+1&&y>=h.y-2&&y<=h.y+1})}catch(e){return false}};
+ function fits(tx,ty,strict){const free=(x,y)=>{const i=y*N+x;return x>1&&y>1&&x<N-2&&y<N-2&&tile[i]!==0&&!obj[i]&&!BS.has(i)&&!(typeof STR!=='undefined'&&STR.has(i))&&!(typeof BRIDGE!=='undefined'&&BRIDGE.has(i))&&!(typeof SIGNS!=='undefined'&&SIGNS.has(i))&&!homeAt(x,y)};
+  const road=i=>(typeof ROADS!=='undefined'&&ROADS.has(i))||tile[i]===2;
+  for(let y=ty;y<ty+2;y++)for(let x=tx;x<tx+5;x++){const i=y*N+x;if(!free(x,y)||(strict&&road(i)))return false}
+  if(strict){for(let x=tx;x<tx+5;x++)if(!free(x,ty+2)&&!road((ty+2)*N+x))return false}else{const di=(ty+2)*N+tx+2;if(!free(tx+2,ty+2)&&!(road(di)&&!obj[di]&&!BS.has(di)))return false}
+  if(NPCS.some(n=>!n.scene&&n.x>tx*16-8&&n.x<(tx+5)*16+8&&n.y>ty*16-8&&n.y<(ty+3)*16+8))return false;return true}
+ function spot(){if(typeof VX==='undefined')return null;let best=null,bd=1e9;const road=i=>(typeof ROADS!=='undefined'&&ROADS.has(i))||tile[i]===2;
+  for(let ty=VY-14;ty<=VY+12;ty++)for(let tx=VX-16;tx<=VX+12;tx++){if(!fits(tx,ty,true))continue;let inside=true;for(let y=ty;y<ty+3;y++)for(let x=tx;x<tx+5;x++)if(!inV(x,y))inside=false;
+   const di=(ty+2)*N+tx+2;const d=Math.abs(tx+2-VX)+Math.abs(ty-VY)*1.2-(road(di)?6:0)+(inside?0:100);if(d<bd){bd=d;best={tx,ty}}}return best}
+ function unplace(){if(!BL)return;const i0=BLD.indexOf(BL);if(i0>=0)BLD.splice(i0,1);for(const[i,o]of UNDO.obj)if(!obj[i])obj[i]=o;for(const i of UNDO.bs)BS.delete(i);try{for(const i of UNDO.prot)PROT.delete(i)}catch(e){}
+  if(UNDO.sign>=0)try{SIGNS.delete(UNDO.sign)}catch(e){}UNDO.obj.clear();UNDO.bs.clear();UNDO.prot.clear();UNDO.sign=-1;BL=null;SPOT=null}
+ function place(tx,ty){unplace();const b={k:'gallery',tx,ty,w:5,wall:'#f4ecf8',roof:'#7848c0',sc:'#e8b830',ic:'star',n:'Patron Art Gallery'};BLD.push(b);BL=b;SPOT={tx,ty};
+  const clr=i=>{if(obj[i]&&!UNDO.obj.has(i))UNDO.obj.set(i,obj[i]);obj[i]=null},bs=i=>{if(!BS.has(i)){BS.add(i);UNDO.bs.add(i)}},pr=i=>{try{if(!PROT.has(i)){PROT.add(i);UNDO.prot.add(i)}}catch(e){}};
+  for(let y=ty;y<ty+2;y++)for(let x=tx;x<tx+5;x++){const i=y*N+x;clr(i);if(!(x===tx+2&&y===ty+1))bs(i);pr(i)}
+  const fi=(ty+2)*N+tx+2;clr(fi);pr(fi);
+  try{for(const[x,y]of[[tx+5,ty+1],[tx-1,ty+1],[tx+5,ty+2],[tx-1,ty+2]]){const i=y*N+x;if(tile[i]===0||obj[i]||BS.has(i)||SIGNS.has(i)||homeAt(x,y)||(typeof ROADS!=='undefined'&&ROADS.has(i)))continue;
+    SIGNS.set(i,'PATRON ART GALLERY - paintings by SkillQuest Patrons. Prints for sale inside.');UNDO.sign=i;bs(i);pr(i);break}}catch(e){}
+  try{if(typeof HMAP!=='undefined')HMAP=null}catch(e){}}
+ let CHOSEN=null;
+ try{const s0=spot();if(s0)place(s0.tx,s0.ty)}catch(e){console.warn('gallery',e)}
+ // the developer's spot, from the published library (or the draft while previewing)
+ function applyChosen(c){if(!c||!(c.tx>1&&c.ty>1&&c.tx<N-6&&c.ty<N-4)){if(CHOSEN){CHOSEN=null;try{const s0=spot();if(s0&&!(SPOT&&SPOT.tx===s0.tx&&SPOT.ty===s0.ty))place(s0.tx,s0.ty)}catch(e){}}return}
+  if(SPOT&&SPOT.tx===(c.tx|0)&&SPOT.ty===(c.ty|0))return;CHOSEN={tx:c.tx|0,ty:c.ty|0};if(SCENE&&SCENE.id==='gallery')return;place(CHOSEN.tx,CHOSEN.ty)}
+ try{if(window.SQA&&SQA.onApply)SQA.onApply(L=>{try{applyChosen(L&&L.places&&L.places.gallery)}catch(e){}})}catch(e){}
+ // where the developer is standing now, as the building's top-left (door just above the tile in front of you)
+ // where you stand = the gallery's doorstep (the tile in front of its door)
+ function standHere(){if(SCENE)return null;const x=Math.floor(P.x/16),y=Math.floor(P.y/16);return{tx:x-2,ty:y-2}}
+ // move it there if it fits (its own old spot doesn't count as taken); otherwise leave it where it was
+ function tryPlace(c){const old=SPOT;unplace();if(fits(c.tx,c.ty,false)){place(c.tx,c.ty);CHOSEN=c;return true}if(old)place(old.tx,old.ty);return false}
  // the room: frames along the wall, easels on the floor, a desk for Iris
  const GW=16,GH=10;
  ROOMS.gallery={w:GW,h:GH,ex:GW>>1,floor:['#d8c8b0','#ccbca4'],wall:'#f0e8f4',trim:'#7848c0',items:[],solid:new Set(),gallery:1};
@@ -150,4 +169,4 @@
   try{let ch=gear?gearCH():Object.assign({},CH);if(!gear){for(const f of['cape','gcp','fcp','wr','gcs','gpt','gtr','gce','gex','dyb','dyl','dyh'])delete ch[f]}
    c=document.createElement('canvas');c.width=96;c.height=112;c.hd2=true;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.setTransform(2,0,0,2,0,0);
    const sv=GC;GC=x;try{cP(ch,dir,0,24,44,false)}finally{GC=sv;x.setTransform(1,0,0,1,0,0)}}catch(e){c=null}CL.set(key,c);return c}
- window.SQPAINT={charLayer,PT,frames,setRec,fill,spot:()=>SPOT,nameOf,byOf,idOf,give,draw:{framed,hung,easel}}})();
+ window.SQPAINT={tryPlace,get chosen(){return CHOSEN},place,unplace,standHere,applyChosen,fits,charLayer,PT,frames,setRec,fill,spot:()=>SPOT,nameOf,byOf,idOf,give,draw:{framed,hung,easel}}})();
