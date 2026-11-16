@@ -56,4 +56,12 @@ const now=Date.now(),day=864e5,iso=t=>new Date(t).toISOString();
  // 16. an old pending notice (over 3 days) isn't used
  set('ppend/pu8',{a:{patron_status:'active_patron'},t:now-4*day});set('plink/uidGGGGGG',{n:'gggggggggggggggg1234',t:now});PAT={data:{id:'pu8'},included:[]};
  r=resp();await fn.patreonAuth({query:{code:'good',state:'uidGGGGGG.gggggggggggggggg1234'}},r);assert.match(r.body,/no active membership/);
- console.log('all 16 checks passed')})().catch(e=>{console.error('FAIL',e);process.exit(1)});
+ // 17. a Patreon account linked to the wrong player by mistake: relinking moves it and removes the new record from the first player
+ set('pmap/pu7','uidWRONGG');set('puser/uidWRONGG','pu7');set('patron/uidWRONGG',{s:now-3600e3,u:now+30*day,c:true});
+ set('plink/uidRIGHTT',{n:'rrrrrrrrrrrrrrrr1234',t:now});PAT={data:{id:'pu7'},included:[{type:'member',attributes:{patron_status:'active_patron',next_charge_date:iso(now+30*day)},relationships:{campaign:{data:{id:'777'}}}}]};
+ r=resp();await fn.patreonAuth({query:{code:'good',state:'uidRIGHTT.rrrrrrrrrrrrrrrr1234'}},r);assert.match(r.body,/Linked! /);
+ assert.equal(get('patron/uidWRONGG'),null);assert.ok(get('patron/uidRIGHTT').u>now+31*day);assert.equal(get('pmap/pu7'),'uidRIGHTT');assert.equal(get('puser/uidWRONGG'),null);
+ // 18. an older patron record on the previous player just ends (not deleted)
+ set('pmap/pu6','uidOLDOLD');set('patron/uidOLDOLD',{s:now-60*day,u:now+10*day,c:true});set('plink/uidNEWNEW',{n:'nnnnnnnnnnnnnnnn1234',t:now});PAT={data:{id:'pu6'},included:[]};
+ r=resp();await fn.patreonAuth({query:{code:'good',state:'uidNEWNEW.nnnnnnnnnnnnnnnn1234'}},r);const oo=get('patron/uidOLDOLD');assert.ok(oo&&oo.u<=Date.now()&&oo.c===true);
+ console.log('all 18 checks passed')})().catch(e=>{console.error('FAIL',e);process.exit(1)});

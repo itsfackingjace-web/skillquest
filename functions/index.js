@@ -27,7 +27,12 @@ exports.patreonAuth=functions.region('us-central1').https.onRequest(async(req,re
   if(!idr.ok){console.warn('identity',idr.status,await idr.text());return page(res,502,'Couldn\'t reach Patreon','Please try again in a minute.')}
   const id=await idr.json(),pu=id&&id.data&&String(id.data.id||'');if(!pu)return page(res,502,'Couldn\'t reach Patreon','Please try again in a minute.');
   // one Patreon account = one player: a relink moves it
-  const prev=(await db().ref('pmap/'+pu).get()).val();if(prev&&prev!==st.uid)await db().ref('puser/'+prev).remove();
+  // a relink moves the Patreon account to this player; the player it was linked to before loses what it gave them
+  // (a record started in the last 7 days is removed, cape included: a mix-up; an older one just ends now)
+  const prev=(await db().ref('pmap/'+pu).get()).val();
+  if(prev&&prev!==st.uid){await db().ref('puser/'+prev).remove();const pr=db().ref('patron/'+prev),po=(await pr.get()).val();
+   if(po){const now=Date.now();if(typeof po.s==='number'&&now-po.s<7*864e5)await pr.remove();else if(po.u>now)await pr.update({u:now})}
+   console.log('moved',JSON.stringify({from:prev,to:st.uid,had:!!po}))}
   await db().ref().update({['pmap/'+pu]:st.uid,['puser/'+st.uid]:pu});
   const m=L.pickMember(id,C.camp);let attrs=m&&m.attributes;
   // a join/renewal notice that arrived before this player linked (kept by patreonHook, signed by Patreon, 3 days at most)
