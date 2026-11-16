@@ -18,7 +18,7 @@
   if(!R)return null;
   if(R.region){for(const l of R.useItems||[])if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1))return{read:1};const it=rgObjAt(R,tx,ty);return it&&!it.gone&&it.o?{t:it.o.t}:null}
   const it=(R.items||[]).find(q=>q.x===tx&&q.y===ty&&!q.gone&&(q.t==='_obj'||q.t==='boulder'));return it?{t:it.t==='boulder'?(it.ore||'boulder'):it.o&&it.o.t}:null}
- function hitWord(){if(BUILD)return'PLACE';
+ function hitWord(){if(BUILD)return'PLACE';try{const xw=window.SQHITWORD&&SQHITWORD();if(xw)return xw}catch(e){}
   try{const tk=document.getElementById('tk');if(typeof facingNpc==='function'&&facingNpc()&&!(tk&&tk.offsetWidth&&/^\s*TALK/.test(tk.textContent)))return'TALK'}catch(e){}/* 189: no second TALK when the TALK button already shows it */
   if(typeof FISH!=='undefined'&&FISH)return'REEL';
   try{const st=typeof frontStation==='function'&&frontStation();if(st)return STW[st.t]||'USE'}catch(e){}

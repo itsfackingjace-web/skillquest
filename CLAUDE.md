@@ -837,3 +837,15 @@
   generated lines: wear/use requirements of every `EQ` item (library `gear.<k>.rq` first, then `e.tt` = Defence 50, 111a2's `defReq`, `e.req`)
   and making levels from SM (Smithing), GOODS/REC/BREC (Crafting), COOKS (Cooking). Skipped when the level's own text already names the item
   (or "<first word> armor"). Rebuilt on `SQA.onApply` and when those lists change size. A new requirement check elsewhere should be added to `reqOf`.
+- **Meteor strikes** (`world/215-s223-meteor-strikes.js`, `window.SQMETEOR`): Hollow-only shared event. Schedule from the clock (`sched`:
+  windows of `CFG.win` h, chance `CFG.per`, 1 h + up to win-6 h in, so 6+ h apart); dev `/meteorite [here|stop]` writes `events/met`
+  {t,x,y,id} (lands 60 s later). Spot = `ok(x,y)`: 11x7 tiles of open land (no water/tile 3/obj/solid/PROT/BS/TOWNZ/ROADS/BRIDGE/village)
+  and none of those or a `HOUSES` house within MARGIN; scheduled spots are agreed through `wb/mts<id>/d/<uid>` (smallest uid wins).
+  Shared numbers reuse the existing `wb/<slot>/d/<uid>` rule (no new rules): core damage `mtc<id>`, vein hits `mtv<id>_<i>`, sent at
+  most once a second. Core: any level, damage 1 + pick tier + Mining/10, health `CFG.hp`; when it breaks every game ranks the list and
+  pays itself once (`CFG.rew`, best ore by Mining 30/45/60 + a tenth in meteorite ore; save `mtp`). Veins: Mining `CFG.vlv`, pick 4+,
+  `CFG.vhp` hits, the breaking hit gets 1-3 meteorite ore. Stardust sparkles on the rim (HIT). Crater/veins/core drawn in `GROUNDHOOK`
+  (things in front redrawn after the outermost `pP`), solid via the outermost `solid`, HIT via the outermost `attack`, 118's `hitWord`
+  asks `window.SQHITWORD` first. Streak/flash/smoke in the outermost `drawHUD`, banner `#mtb`, minimap/area map markers. Items
+  `meteorore`, `stardust`, `metbar` (SM smelt: 15 + 15 adamant ore + 3 stardust, Smithing 80). Library `meteor` overrides CFG.
+  Test: `SQMETEOR.test(ms, tile)` starts a local strike.
