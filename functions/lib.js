@@ -27,4 +27,13 @@ const PAGE=(title,body)=>'<!doctype html><html lang="en"><head><meta charset="ut
  '</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#20283a;color:#f8f8f0;font:16px/1.5 system-ui,sans-serif}'+
  'main{max-width:440px;margin:16px;padding:24px;background:#2c3650;border:4px solid #485870;border-radius:6px}h1{margin:0 0 8px;font-size:22px}a{display:inline-block;margin-top:12px;padding:10px 16px;background:#3a8a4a;color:#fff;text-decoration:none;border-radius:4px}</style></head>'+
  '<body><main><h1>'+title+'</h1><p>'+body+'</p><a href="https://skillquestmmo.com/">Back to SkillQuest</a></main></body></html>';
-module.exports={paidThrough,pickMember,merge,verifySig,parseState,PAGE,DAY,MONTH,GRACE};
+// Members from one page of GET /campaigns/{id}/members (creator token): [{pu, email, attrs}] + the next page's URL.
+// Free followers (no patron_status) are left out.
+function memberPage(j){const out=[];for(const d of(j&&j.data)||[]){if(!d||d.type!=='member')continue;const a=d.attributes||{};if(!a.patron_status)continue;
+  const u=d.relationships&&d.relationships.user&&d.relationships.user.data;const pu=u&&String(u.id||'');if(!pu)continue;
+  out.push({pu,email:typeof a.email==='string'?a.email.trim().toLowerCase():'',attrs:{patron_status:a.patron_status,next_charge_date:a.next_charge_date||null,last_charge_date:a.last_charge_date||null,last_charge_status:a.last_charge_status||null}})}
+ return{list:out,next:(j&&j.links&&j.links.next)||null}}
+// May a member found by email be linked to this player? Only if the player isn't already linked to another Patreon account
+// that is an active member (a link made by mistake to an account with no membership is replaced).
+function mayRelink(pu,oldPu,activeSet){return!oldPu||oldPu===pu||!activeSet.has(oldPu)}
+module.exports={memberPage,mayRelink,paidThrough,pickMember,merge,verifySig,parseState,PAGE,DAY,MONTH,GRACE};

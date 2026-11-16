@@ -805,3 +805,8 @@
   signed in), both written from Dev Suite > Art Room > "Patreon link". The game shows Link Patreon (a real `<a>` to Patreon's authorize
   page, `data-plink`) only when `cfgpub/patreon.cid` is set, signed in, age band known and not `c`. `.sqpatlink` clicks are kept from the
   panel's button handlers (they ran `shopAct`). Rules: `plink`, `cfg`, `cfgpub` (publish them).
+  **Email matching** (Nov 15): `patreonSync` (every 6 h) / `patreonSyncNow` (database trigger on `cfg/patreon/go`, the Art Room's Sync now)
+  list the campaign's members with the creator token (`cfg/patreon/ct`/`crt`, renewed on a 401 and saved), and link members not in `pmap`
+  whose Patreon email = a verified Firebase Auth email (`getUserByEmail`); a player already linked to another *active* member is never taken
+  over (`mayRelink`); a link to an account with no membership is replaced. The webhook tries the same match before `ppend`. Emails are never
+  stored or logged. Result counts in `cfgpub/psync` (server-only write). Tests: `node functions/test.js` (24 checks).

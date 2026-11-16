@@ -974,6 +974,15 @@
         "camp": {
           ".validate": "newData.isString() && newData.val().length <= 40"
         },
+        "ct": {
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "crt": {
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "go": {
+          ".validate": "newData.isNumber()"
+        },
         "$other": {
           ".validate": false
         }
@@ -993,6 +1002,9 @@
           ".validate": "newData.isBoolean()"
         },
         "camp": {
+          ".validate": "newData.isBoolean()"
+        },
+        "ct": {
           ".validate": "newData.isBoolean()"
         },
         "t": {

@@ -131,7 +131,7 @@
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,toast,fail}=API;
  const T={list:null,lb:null,msg:{},q:'',pat:{}};
  const D=()=>F().db,ref=p=>D().ref(F().D,p);
- async function inbox(){try{const[a,l,p,pc]=await Promise.all([D().get(ref('art')),D().get(ref('lb')),D().get(ref('patron')),D().get(ref('cfgpub/patreon'))]);const v=a.val()||{};T.lb=l.val()||{};T.pat=p.val()||{};T.pc=pc.val()||{};
+ async function inbox(){try{const[a,l,p,pc,ps]=await Promise.all([D().get(ref('art')),D().get(ref('lb')),D().get(ref('patron')),D().get(ref('cfgpub/patreon')),D().get(ref('cfgpub/psync'))]);T.ps=ps.val()||null;const v=a.val()||{};T.lb=l.val()||{};T.pat=p.val()||{};T.pc=pc.val()||{};
    T.list=[];for(const u in v)for(const id in v[u])T.list.push(Object.assign({u,id},v[u][id]));T.list.sort((x,y)=>(x.st?1:0)-(y.st?1:0)||(y.t||0)-(x.t||0))}catch(e){fail(e);T.list=[]}API.draw()}
  const nm=u=>T.lb&&T.lb[u]&&T.lb[u].n||u.slice(0,8);
  function render(){if(!T.list){inbox();return'<p class="dv-mut">Loading…</p>'}
@@ -153,7 +153,11 @@
    '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><input type="password" autocomplete="off" data-arpc="cs" placeholder="Client secret" value="'+E(T.pcf&&T.pcf.cs||'')+'" style="flex:1;min-width:220px"> <span class="dv-mut">'+yes(pc.cs)+'</span></div>'+
    '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><input type="password" autocomplete="off" data-arpc="ws" placeholder="Webhook secret" value="'+E(T.pcf&&T.pcf.ws||'')+'" style="flex:1;min-width:220px"> <span class="dv-mut">'+yes(pc.ws)+'</span></div>'+
    '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><input data-arpc="camp" placeholder="Campaign ID (optional)" value="'+E(T.pcf&&T.pcf.camp||'')+'" style="flex:1;min-width:220px"> <span class="dv-mut">'+yes(pc.camp)+'</span></div>'+
-   '<button class="dv-b dv-pri" data-arx="pcsave" style="margin-top:6px">Save Patreon settings</button>'+(pc.t?' <span class="dv-mut">last saved '+new Date(pc.t).toLocaleString()+'</span>':'')+'</div>';
+   '<p class="dv-mut" style="margin-top:8px">Finding Patrons by themselves: paste the <b>Creator\'s Access Token</b> and <b>Creator\'s Refresh Token</b> from the same Patreon client page. Every 6 hours (and on Sync now) the server matches members whose Patreon email is their game account\'s email, so they don\'t need Link Patreon. Emails are only compared, never stored.</p>'+
+   '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><input type="password" autocomplete="off" data-arpc="ct" placeholder="Creator\'s Access Token" value="'+E(T.pcf&&T.pcf.ct||'')+'" style="flex:1;min-width:220px"> <span class="dv-mut">'+yes(pc.ct)+'</span></div>'+
+   '<div class="dv-row" style="gap:6px;flex-wrap:wrap"><input type="password" autocomplete="off" data-arpc="crt" placeholder="Creator\'s Refresh Token" value="'+E(T.pcf&&T.pcf.crt||'')+'" style="flex:1;min-width:220px"></div>'+
+   '<button class="dv-b dv-pri" data-arx="pcsave" style="margin-top:6px">Save Patreon settings</button> <button class="dv-b" data-arx="psync" style="margin-top:6px">Sync now</button>'+(pc.t?' <span class="dv-mut">last saved '+new Date(pc.t).toLocaleString()+'</span>':'')+
+   (T.ps?'<p class="dv-mut">Last sync '+new Date(T.ps.t).toLocaleString()+': '+(T.ps.ok?T.ps.n+' members ('+T.ps.act+' active), '+T.ps.lk+' already linked, '+T.ps.nw+' newly matched by email'+(T.ps.um?', '+T.ps.um+' active without a matching game account (they can use Link Patreon)':''):'didn\'t work: '+E(T.ps.e||'?'))+'</p>':'')+'</div>';
   // patrons
   const pats=Object.entries(T.pat||{}).sort((a,b)=>(b[1].u||0)-(a[1].u||0));
   h+='<div class="dv-card" style="margin-top:10px"><b><img src="'+(window.SQFLAMEURL||'')+'" alt="" style="width:12px;height:15px;image-rendering:pixelated"> Patrons ('+pats.length+')</b><p class="dv-mut">Patreon members who use Link Patreon appear here by themselves. You can also add or extend Patrons by hand. A Patron gets the flame while active, and keeps the fire cape for good.</p>'+
@@ -161,6 +165,11 @@
    '<p class="dv-mut" style="margin-top:8px">Add a Patron:</p><input type="search" data-arpq="1" placeholder="Search players" value="'+E(T.q)+'" style="width:100%">';
   const q=T.q.toLowerCase();if(q){const L=Object.entries(T.lb||{}).filter(([u,r])=>r&&r.n&&String(r.n).toLowerCase().includes(q)).slice(0,10);h+=L.map(([u,r])=>'<div class="dv-hl"><span>'+E(r.n)+'</span><button class="dv-b" data-arx="pm:'+E(u)+':1">Make Patron (1 month)</button></div>').join('')||'<p class="dv-mut">No match.</p>'}
   return h+'</div>'}
+ // Sync now: the server function patreonSyncNow runs when cfg/patreon/go changes and writes cfgpub/psync
+ async function psync(){const t0=Date.now();await D().set(ref('cfg/patreon/go'),t0);toast('Syncing with Patreon...');
+  for(let i=0;i<30;i++){await new Promise(r=>setTimeout(r,2000));const v=(await D().get(ref('cfgpub/psync'))).val();
+   if(v&&v.t>=t0-5000){T.ps=v;T.pat=(await D().get(ref('patron'))).val()||{};toast(v.ok?'Synced: '+v.nw+' newly matched.':'Sync didn\'t work: '+(v.e||'?'));API.draw();return}}
+  toast('No answer from the server yet. Check again in a minute.')}
  // animate the inbox previews
  setInterval(()=>{if(S.tab!=='artroom'||!T.list)return;const now=performance.now();document.querySelectorAll('#dvs [data-arp]').forEach(cv=>{const[u,id]=cv.dataset.arp.split('/');const x=T.list.find(y=>y.u===u&&y.id===id);if(!x)return;const fr=unpack(x);if(!fr.length)return;const i=Math.floor(now/(x.ms||200))%fr.length;drawFrame(cv,fr[i].f,x.w,x.h,fr[i].pal)})},60);
  document.addEventListener('input',e=>{if(S.tab!=='artroom')return;const t=e.target;if(t.dataset&&t.dataset.arq)T.msg[t.dataset.arq]=t.value.slice(0,300);
@@ -178,11 +187,12 @@
     try{await D().set(ref('gifts/'+u+'/a'+Date.now().toString(36)),{m:m.slice(0,300),t:D().serverTimestamp(),f:'dev'})}catch(_){}
     x.st=a;if(re)x.re=re;toast(a==='ok'?'Approved.':'Answered.');API.draw()}
    else if(a==='pm'){const u=parts[1],r=T.pat[u]||{},now=Date.now(),from=Math.max(now,r.u||0);const nr={s:r.s||now,u:from+30*864e5,c:true};await D().set(ref('patron/'+u),nr);T.pat[u]=nr;T.q='';toast(nm(u)+' is a Patron until '+new Date(nr.u).toLocaleDateString()+'.');API.draw()}
-   else if(a==='pcsave'){const f=T.pcf||{},pc=T.pc||{};const up={};for(const k of['cid','cs','ws','camp'])if(f[k])up[k]=String(f[k]).trim().slice(0,k==='camp'?40:200);
+   else if(a==='pcsave'){const f=T.pcf||{},pc=T.pc||{};const up={};for(const k of['cid','cs','ws','camp','ct','crt'])if(f[k])up[k]=String(f[k]).trim().slice(0,k==='camp'?40:k==='ct'||k==='crt'?500:200);
     if(!Object.keys(up).length){toast('Nothing to save.');return}if(up.camp&&!/^[0-9]{1,20}$/.test(up.camp)){toast('The campaign ID is a number.');return}
     for(const k in up)await D().set(ref('cfg/patreon/'+k),up[k]);
-    const pub={cid:up.cid||pc.cid||'',cs:!!(up.cs||pc.cs),ws:!!(up.ws||pc.ws),camp:!!(up.camp||pc.camp),t:Date.now()};if(!pub.cid)delete pub.cid;await D().set(ref('cfgpub/patreon'),pub);
-    T.pc=pub;T.pcf={};toast('Patreon settings saved.');API.draw()}
+    const pub={cid:up.cid||pc.cid||'',cs:!!(up.cs||pc.cs),ws:!!(up.ws||pc.ws),camp:!!(up.camp||pc.camp),ct:!!(up.ct||pc.ct),t:Date.now()};if(!pub.cid)delete pub.cid;await D().set(ref('cfgpub/patreon'),pub);
+    T.pc=pub;T.pcf={};toast('Patreon settings saved.');API.draw();if(up.ct)await psync()}
+   else if(a==='psync')await psync();
    else if(a==='pend'){const u=parts[1],r=T.pat[u];if(!r)return;const nr=Object.assign({},r,{u:Date.now()-1000});await D().set(ref('patron/'+u),nr);T.pat[u]=nr;toast('Ended. They keep the fire cape.');API.draw()}
   }catch(err){fail(err)}},true);
  SQSUITE.addTab('artroom','Art Room',{render})})();
