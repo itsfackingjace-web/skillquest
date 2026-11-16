@@ -132,8 +132,8 @@
   // the 24x32 part of the 48x56 box around the kit, at 3x
   x.setTransform(3,0,0,3,0,0);const sv=GC;GC=x;try{cP(ch,dir,0,12,25,false)}finally{GC=sv;x.setTransform(1,0,0,1,0,0)}return c.toDataURL()}catch(e){return''}}
  const img=(u,w)=>u?'<img alt="" src="'+u+'" style="width:'+w+'px;image-rendering:pixelated;flex:none">':'';
- function card(){if(!inGuild())return'';const d=design();return'<div class="qc"><div style="display:flex;gap:10px;align-items:center">'+img(pic(d,1),54)+img(pic(d,0),54)+'<div style="flex:1"><b>Guild cape</b><p style="font-size:13px">Designed by your guild\'s leader. Everyone sees it on you, and it takes the place of your Marlo cape while you wear it.</p>'+
-   '<button class="qb" data-g="gcp:wear">'+(WEAR?'Take it off':'Wear the guild cape')+'</button></div></div></div>'}
+ function card(){if(!inGuild())return'';const d=design();return'<div class="qc"><div style="display:flex;gap:10px;align-items:center">'+img(pic(d,1),54)+img(pic(d,0),54)+'<div style="flex:1"><b>Guild cape</b><p style="font-size:13px">Designed by your guild\'s leader. Everyone sees it on you. All your capes are chosen in one place: START > Style.</p>'+
+   '<button class="qb" data-g="gcp:style">'+(WEAR?'Wearing it · change in Style':'Wear it (START > Style)')+'</button></div></div></div>'}
  // the designer (leader only): changes are a draft until Save
  let DR=null;
  function setCard(){const d=DR||design(),sw=(f,v)=>'<div style="display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 8px">'+PAL.map((c,i)=>'<button data-g="gcp:'+f+':'+i+'" aria-label="Colour '+(i+1)+'" style="width:26px;height:26px;background:'+c+';border:3px solid '+(i===v?'#f8a020':'#485870')+';cursor:pointer"></button>').join('')+'</div>',
@@ -144,6 +144,7 @@
    '<small>Trim</small>'+btns('t',['No trim','Trim'],d.t)+'<small>Emblem (on the back)</small>'+btns('e',EM.map(e=>e.n),d.e)+'<small>Emblem colour</small>'+sw('x',d.x)+
    '<button class="qb" data-g="gcp:save"'+(DR?'':' disabled style="opacity:.5"')+'>Save the cape</button>'+(DR?' <button class="qb" data-g="gcp:undo">Undo changes</button>':'')+'</div>'}
  function act(x,y){const a=A();if(!a)return;
+  if(x==='style'){try{showScreen('style')}catch(e){}return}
   if(x==='wear'){WEAR=!WEAR;try{KITC.clear()}catch(e){}try{saveLocal(true)}catch(e){}a.tell(WEAR?'You put on the guild cape.':'You took off the guild cape.');return}
   if(a.role()!=='l')return;
   if('cspex'.includes(x)&&x.length===1||x==='t'){DR=Object.assign(DR||design(),{[x]:+y|0});a.redraw();return}

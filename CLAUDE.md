@@ -770,7 +770,7 @@
 - **Patrons** (`multiplayer/210-s218-patrons.js`, `window.SQPATRON`): `patron/<uid>` {s,u (paid through, ms),c (fire cape, kept)} written
   only by devs (Dev Suite > Art Room > Patrons; later the payment server), read by everyone signed in (onValue on the whole node, `PR`).
   Active (u > now) = our own 9x11 pixel flame (`FL`, 2 frames; `SQFLAMEURL`) left of the name/OG crown over heads (outermost drawHUD,
-  same layout as 061's `one`) and before `b.nm[data-u]` in chat lines (MutationObserver on #mpl). Fire cape: Options > PATRON, save `fcw`
+  same layout as 061's `one`) and before `b.nm[data-u]` in chat lines (MutationObserver on #mpl). Fire cape: worn from START > Style (212), save `fcw`
   (always written), gearCH `fcp:1`; 201's `spec` gives `fire:1` (fireCol palette, flame tongues on the hem, 8 frames at 110 ms via
   `tickFor`); peers' `ch.fcp` is deleted every frame unless their patron record has `c`. Credits = ptab 46 (Options > ABOUT > Credits):
   `pcred/<uid>` {n,t} written by each patron's own game (opt-out `sq_pcred`; rules: patron record exists, not under 13), alphabetical,
@@ -810,3 +810,11 @@
   whose Patreon email = a verified Firebase Auth email (`getUserByEmail`); a player already linked to another *active* member is never taken
   over (`mayRelink`); a link to an account with no membership is replaced. The webhook tries the same match before `ppend`. Emails are never
   stored or logged. Result counts in `cfgpub/psync` (server-only write). Tests: `node functions/test.js` (24 checks).
+- **One cape picker** (`ui/212-s220-one-cape-picker.js`, `window.SQCAPEX`): 085's Style screen (ptab 31) lists Marlo capes plus `SQCAPEX.opts()`
+  (guild cape while in a guild, fire cape when `patron/<uid>.c`), with a back/front picture (`preview()`, cP at 3x). Picking one takes the
+  others off (`pick(id)` sets 201's `SQGCAPE.wear` / 210's `SQPATRON.wearing`; 085 clears `COS.cape`). Saves unchanged (`gcw`, `fcw`, `cos.cape`).
+  The guild screen's cape card and Options > PATRON only link to Style (`gcp:style`, `data-pcr="style"`). A new cape goes in `opts()`/`pick()`.
+- **Art Room editor** (211, rebuilt Nov 15): sticky icon toolbar (pen/erase/fill/pick, move when zoomed, mirror, undo/redo, zoom 1-6, grid),
+  canvas sized by `fit()` (width, and half the screen height on phones) × `A.zoom` in `#arbox` (scrolls when zoomed; two fingers / move tool /
+  Space / middle button pan), palette strip + current colour (a colour input over it), frames strip with `+`, preview and speed, then a
+  separate `send` view (name, kind, note). `#pn.sqart` widens the panel to 980px; two columns at ≥760px. Keys: B E G I M, Ctrl+Z/Y, +/-.

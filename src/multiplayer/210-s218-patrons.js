@@ -3,7 +3,7 @@
 // inbox > Patrons, and later the payment server). Everyone signed in reads the whole node (`P`, onValue), like 061's OG list.
 // Active patron (u > now) = a flame emblem next to the name: over heads (outermost drawHUD, placed left of 061's name and
 // OG crown using the same layout as 061's `one`), in chat lines (a MutationObserver on #mpl adds an <img> before b.nm[data-u]).
-// Fire cape (c, kept forever): worn from Options > PATRON (`fcw` in the save, always written), sent as ch.fcp=1 through gearCH;
+// Fire cape (c, kept forever): worn from START > Style (212's SQCAPEX; Options > PATRON links there) (`fcw` in the save, always written), sent as ch.fcp=1 through gearCH;
 // 201 paints it (animated). Other players' ch.fcp is dropped every frame unless their own patron record has c (no spoofing).
 // Credits (Options > ABOUT > Credits, ptab 46): `pcred/<uid>` {n,t} written by each patron's game while "Show me in the
 // credits" is on (localStorage sq_pcred, default on; never for under-13, the rules check), listed alphabetically with no
@@ -79,7 +79,7 @@
    if(r){const act=active(u),kid=window.SQAGE&&SQAGE.child(),art=act&&!kid&&window.SQARTROOM;
     h+='<div class="tl" style="margin-top:16px"><img class="sqpf" src="'+flameURL+'" alt="">PATRON</div>'+
      '<div class="qc" style="font-size:14px;line-height:1.4;padding:8px 12px;margin:6px 0">'+(act?'Thank you for supporting SkillQuest! Your flame shows next to your name.':'Thank you for supporting SkillQuest. Your fire cape is yours to keep.')+'</div>'+
-     (cape(u)?'<button class="sb" data-pcr="cape">Fire cape: '+(WEAR?'WEARING':'OFF')+'</button>':'')+
+     (cape(u)?'<button class="sb" data-pcr="style">Fire cape: '+(WEAR?'WEARING':'OFF')+' · choose in Style</button>':'')+
      (!kid?'<button class="sb" data-pcr="cred">Show me in the credits: '+(credPref?'ON':'OFF')+'</button>':'')+
      (art?'<button class="sb" data-pcr="art">Open the Art Room</button>':'')}
    // the Patreon page, for signed-in players who aren't under 13 (and whose age band is known)
@@ -95,6 +95,7 @@
    return h}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pcr]');if(!b)return;e.stopPropagation();e.preventDefault();const a=b.dataset.pcr;
   if(a==='credits'){ptab=CTAB;loadCredits();rPn()}else if(a==='back'){ptab=8;rPn()}
+  else if(a==='style'){try{showScreen('style')}catch(x){}}
   else if(a==='cape'){WEAR=!WEAR;try{saveLocal(true)}catch(x){}say(WEAR?'You put on your fire cape.':'You take off your fire cape.');rPn()}
   else if(a==='cred'){credPref=!credPref;try{localStorage.setItem('sq_pcred',credPref?'1':'0')}catch(x){}credSent='';syncCred();rPn()}
   else if(a==='art'&&window.SQARTROOM)SQARTROOM.open()},true);

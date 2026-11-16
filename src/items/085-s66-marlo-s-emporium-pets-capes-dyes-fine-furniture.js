@@ -143,16 +143,18 @@ var LUX={};
   else if(c==='dye'){COS.dyes.push(+k);say('Bought the '+name+'. Use it on the Style screen.')}else{inv[k]=(inv[k]|0)+1;say('Bought a '+name+'.')}
   try{sfx('coin')}catch(e){try{sfx('pickup')}catch(e2){}}if(typeof svg==='function')svg();saveLocal(true);try{saveCloud(true)}catch(e){}rPn()}
  // ---- the Style screen ----
- const STAB=31;function styleHTML(){const pick=(lab,on,data)=>'<button class="gc sty'+(on?' on':'')+'" '+data+' style="margin:3px;'+(on?'background:#485870;color:#f8f8f8':'')+'">'+lab+'</button>';
+ const STAB=31;function styleHTML(){const pick=(lab,on,data)=>'<button class="gc sty'+(on?' on':'')+'" '+data+' aria-pressed="'+(on?'true':'false')+'" style="margin:3px;'+(on?'background:#f8d878;color:#303030;box-shadow:0 0 0 3px #c88010':'opacity:.85')+'">'+(on?'✓ ':'')+lab+'</button>';
   let h='<div class="tl">STYLE</div><div class="qc"><b>Pet</b><div>'+pick('None',!COS.pet,'data-s="pet" data-v=""');for(const k of COS.pets)h+=pick(PETS.find(p=>p.k===k).n,COS.pet===k,'data-s="pet" data-v="'+k+'"');
-  h+='</div></div><div class="qc"><b>Cape</b><div>'+pick('None',!COS.cape,'data-s="cape" data-v="0"');for(const i of COS.capes)h+=pick('<span style="color:'+CAPES[i-1].c+'">&#9632;</span> '+CAPES[i-1].n,COS.cape===i,'data-s="cape" data-v="'+i+'"');
+  const X=window.SQCAPEX,xw=X?X.wearing():'';
+  h+='</div></div><div class="qc"><b>Cape</b>'+(X?X.preview():'')+'<div>'+pick('None',!COS.cape&&!xw,'data-s="cape" data-v="0"');for(const i of COS.capes)h+=pick('<span style="color:'+CAPES[i-1].c+'">&#9632;</span> '+CAPES[i-1].n,COS.cape===i&&!xw,'data-s="cape" data-v="'+i+'"');
+  if(X)for(const o of X.opts())h+=pick(o.l,xw===o.id,'data-s="xcape" data-v="'+o.id+'"');
   for(const[slot,lab]of[['db','Top / chestplate dye'],['dl','Legs dye'],['dh','Hat / helmet dye']]){h+='</div></div><div class="qc"><b>'+lab+'</b><div>'+pick('Original',!COS[slot],'data-s="'+slot+'" data-v="0"');for(const i of COS.dyes)h+=pick('<span style="color:'+DYES[i-1].c+'">&#9632;</span> '+DYES[i-1].n,COS[slot]===i,'data-s="'+slot+'" data-v="'+i+'"')}
-  h+='</div></div>';if(!COS.pets.length&&!COS.capes.length&&!COS.dyes.length)h+='<div class="tl" style="font-size:13px;font-weight:400">Nothing here yet. Visit Marlo\'s Emporium in Hollow Village.</div>';return h}
+  h+='</div></div>';if(!COS.pets.length&&!COS.capes.length&&!COS.dyes.length&&!(X&&X.opts().length))h+='<div class="tl" style="font-size:13px;font-weight:400">Nothing here yet. Visit Marlo\'s Emporium in Hollow Village.</div>';return h}
  SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'style',l:()=>'Style'});
  const _ss=showScreen;showScreen=function(id){if(id!=='style')return _ss(id);pnOpen=true;ptab=STAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
  const _r=rPn;rPn=function(){if(ptab===STAB){panelChrome('');pbd.innerHTML=styleHTML();return}if(ptab===2&&shop==='emporium'){panelChrome("Marlo's Emporium");pbd.innerHTML=emporiumHTML();return}_r()};
  const _oc=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
   if((b=t.closest('.emt'))){EMT=b.dataset.t;rPn();return}if((b=t.closest('.emb'))){luxBuy(b.dataset.c,b.dataset.k);return}
-  if((b=t.closest('.sty'))){const s=b.dataset.s,v=b.dataset.v;if(s==='pet')COS.pet=v||null;else COS[s]=+v||0;KITC.clear();saveLocal(true);rPn();return}_oc(e)};
+  if((b=t.closest('.sty'))){const s=b.dataset.s,v=b.dataset.v;if(s==='xcape'){if(window.SQCAPEX)SQCAPEX.pick(v);COS.cape=0}else if(s==='pet')COS.pet=v||null;else{COS[s]=+v||0;if(s==='cape'&&window.SQCAPEX)SQCAPEX.pick('')}KITC.clear();saveLocal(true);rPn();return}_oc(e)};
  // talking to Marlo
  if(typeof LINES!=='undefined')LINES.marlo={d:['Finest goods on the island! Pets, capes, dyes, furniture, potions.','Gold burning a hole in your pocket? I can help with that.']}}
