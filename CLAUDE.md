@@ -831,3 +831,7 @@
 - **Art Room wearables** (211): mode "Something to wear" (`A.mode==='wear'`, own draft `sq_art_wear`; `sq_art_mode`): 48x76 pixels = the worn
   layer from (24,28), three frames = front/back/side, `sl` helm|body|legs, your character underneath (`under`). Sent as `k:'wear'`. Dev Suite >
   Art Room: "Put it in the Gear editor" builds `worn.<item>` (f/b/s, `h:1`) with `SQA.PXC`/`SQA.pack`, saves it to the draft and opens Gear on it.
+- **Skill trees list every item** (`skills/214-s222-tree-unlocks-from-gear.js`, `window.SQTREEAUTO`): the outermost `treeGains(sk,l)` appends
+  generated lines: wear/use requirements of every `EQ` item (library `gear.<k>.rq` first, then `e.tt` = Defence 50, 111a2's `defReq`, `e.req`)
+  and making levels from SM (Smithing), GOODS/REC/BREC (Crafting), COOKS (Cooking). Skipped when the level's own text already names the item
+  (or "<first word> armor"). Rebuilt on `SQA.onApply` and when those lists change size. A new requirement check elsewhere should be added to `reqOf`.
