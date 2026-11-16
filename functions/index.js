@@ -29,7 +29,12 @@ exports.patreonAuth=functions.region('us-central1').https.onRequest(async(req,re
   // one Patreon account = one player: a relink moves it
   const prev=(await db().ref('pmap/'+pu).get()).val();if(prev&&prev!==st.uid)await db().ref('puser/'+prev).remove();
   await db().ref().update({['pmap/'+pu]:st.uid,['puser/'+st.uid]:pu});
-  const m=L.pickMember(id,C.camp);const out=await apply(st.uid,m&&m.attributes,Date.now());
+  const m=L.pickMember(id,C.camp);let attrs=m&&m.attributes;
+  // a join/renewal notice that arrived before this player linked (kept by patreonHook, signed by Patreon, 3 days at most)
+  const pd=db().ref('ppend/'+pu),pend=(await pd.get()).val();
+  if(pend&&pend.a&&Date.now()-pend.t<3*864e5&&(!attrs||attrs.patron_status!=='active_patron'))attrs=pend.a;if(pend)await pd.remove();
+  console.log('link',JSON.stringify({members:((id.included||[]).filter(x=>x&&x.type==='member')).length,picked:!!m,status:m&&m.attributes&&m.attributes.patron_status||null,usedPending:!!(pend&&attrs===pend.a)}));
+  const out=await apply(st.uid,attrs,Date.now());
   if(out.active)return page(res,200,'Linked! 🔥','Thank you for supporting SkillQuest! Your Patron perks are on: the flame next to your name, the fire cape (Options > PATRON) and the Art Room. Go back to the game; it updates by itself.');
   return page(res,200,'Linked','Your Patreon account is linked, but there\'s no active membership on it yet. Join on Patreon and your perks switch on by themselves within a few minutes.')}
  catch(e){console.error(e);return page(res,500,'Something went wrong','Please try again, or report it with the bug button in the game.')}});
@@ -39,7 +44,9 @@ exports.patreonHook=functions.region('us-central1').https.onRequest(async(req,re
   const d=req.body&&req.body.data;if(!d||d.type!=='member')return res.status(200).send('ignored');
   const camp=d.relationships&&d.relationships.campaign&&d.relationships.campaign.data&&d.relationships.campaign.data.id;if(C.camp&&camp&&String(camp)!==String(C.camp))return res.status(200).send('other campaign');
   const pu=d.relationships&&d.relationships.user&&d.relationships.user.data&&String(d.relationships.user.data.id||'');if(!pu)return res.status(200).send('no user');
-  const uid=(await db().ref('pmap/'+pu).get()).val();if(!uid)return res.status(200).send('not linked');
   const ev=String(req.get('X-Patreon-Event')||'');const attrs=Object.assign({},d.attributes||{});if(ev==='members:delete'||ev==='members:pledge:delete')attrs.patron_status=attrs.patron_status==='active_patron'?'former_patron':(attrs.patron_status||'former_patron');
+  console.log('hook',ev,JSON.stringify({status:attrs.patron_status||null}));
+  const keep={patron_status:attrs.patron_status||null,next_charge_date:attrs.next_charge_date||null,last_charge_date:attrs.last_charge_date||null,last_charge_status:attrs.last_charge_status||null};
+  const uid=(await db().ref('pmap/'+pu).get()).val();if(!uid){await db().ref('ppend/'+pu).set({a:keep,t:Date.now()});return res.status(200).send('kept for linking')}
   await apply(uid,attrs,Date.now());return res.status(200).send('ok')}
  catch(e){console.error(e);return res.status(500).send('error')}});

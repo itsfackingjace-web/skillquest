@@ -39,7 +39,7 @@ const now=Date.now(),day=864e5,iso=t=>new Date(t).toISOString();
  // 9. declined payment: perks end now-ish
  r=await hook(mem('pu1',{patron_status:'declined_patron',last_charge_date:iso(now-40*day),last_charge_status:'Declined'}),'members:update');assert.ok(get('patron/uidAAAAAA').u<=now+1000);assert.equal(get('patron/uidAAAAAA').c,true);
  // 10. unknown Patreon user: ignored
- r=await hook(mem('pu404',{patron_status:'active_patron'}),'members:create');assert.match(r.body,/not linked/);
+ r=await hook(mem('pu404',{patron_status:'active_patron'}),'members:create');assert.match(r.body,/kept for linking/);
  // 11. relink moves the Patreon account to another player
  set('plink/uidCCCCCC',{n:'cccccccccccccccc1234',t:now});PAT={data:{id:'pu1'},included:[{type:'member',attributes:{patron_status:'active_patron',next_charge_date:iso(now+10*day)},relationships:{campaign:{data:{id:'777'}}}}]};
  r=resp();await fn.patreonAuth({query:{code:'good',state:'uidCCCCCC.cccccccccccccccc1234'}},r);assert.equal(get('pmap/pu1'),'uidCCCCCC');assert.equal(get('puser/uidAAAAAA'),null);
@@ -49,4 +49,11 @@ const now=Date.now(),day=864e5,iso=t=>new Date(t).toISOString();
  r=resp();await fn.patreonAuth({query:{error:'access_denied'}},r);assert.match(r.body,/didn't give access/);
  // 14. bad code from Patreon
  set('plink/uidEEEEEE',{n:'eeeeeeeeeeeeeeee1234',t:now});r=resp();await fn.patreonAuth({query:{code:'bad',state:'uidEEEEEE.eeeeeeeeeeeeeeee1234'}},r);assert.equal(r.code,502);
- console.log('all 14 checks passed')})().catch(e=>{console.error('FAIL',e);process.exit(1)});
+ // 15. a join notice that arrives before the player links is applied when they link (membership not active yet in identity)
+ r=await hook(mem('pu9',{patron_status:'active_patron',next_charge_date:iso(now+30*day)}),'members:create');assert.match(r.body,/kept for linking/);assert.ok(get('ppend/pu9'));
+ set('plink/uidFFFFFF',{n:'ffffffffffffffff1234',t:now});PAT={data:{id:'pu9'},included:[{type:'member',attributes:{patron_status:null},relationships:{campaign:{data:{id:'777'}}}}]};
+ r=resp();await fn.patreonAuth({query:{code:'good',state:'uidFFFFFF.ffffffffffffffff1234'}},r);assert.match(r.body,/Linked! /);assert.ok(get('patron/uidFFFFFF').u>now+31*day);assert.equal(get('ppend/pu9'),null);
+ // 16. an old pending notice (over 3 days) isn't used
+ set('ppend/pu8',{a:{patron_status:'active_patron'},t:now-4*day});set('plink/uidGGGGGG',{n:'gggggggggggggggg1234',t:now});PAT={data:{id:'pu8'},included:[]};
+ r=resp();await fn.patreonAuth({query:{code:'good',state:'uidGGGGGG.gggggggggggggggg1234'}},r);assert.match(r.body,/no active membership/);
+ console.log('all 16 checks passed')})().catch(e=>{console.error('FAIL',e);process.exit(1)});

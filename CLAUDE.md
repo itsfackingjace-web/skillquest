@@ -797,7 +797,7 @@
   Test harness: scratchpad fake3's `_update` now applies slash paths like the real SDK.
 - **Patreon link** (`functions/` + 210 + 211): Firebase Cloud Functions (v1, us-central1, Node 22; `firebase.json`/`.firebaserc` at
   the root, deployed by hand, see `functions/README.md`): `patreonAuth` = OAuth redirect (state `<uid>.<nonce>` must match `plink/<uid>`
-  {n,t} written by the game on click, 20 min, used once), reads the membership (identity.memberships), keeps `pmap/<patreon user>` = uid
+  {n,t} written by the game on click, 20 min, used once), reads the membership (identity.memberships), keeps `pmap/<patreon user>` = uid (webhooks for a Patreon user not linked yet are kept in `ppend/<patreon user>` {a,t} and used at link time within 3 days; both functions log statuses, no personal data)
   and `puser/<uid>` (no client access) and writes `patron/<uid>` {s,u,c} with the admin SDK; `patreonHook` = webhooks (HMAC-MD5 of the
   raw body with `ws`) keep `u` in step. Decisions in `functions/lib.js` (`paidThrough`: active = next charge + 3 days; else last paid
   charge + 31 days; `merge`: active never shortens, inactive never extends, cape kept), tested by `node functions/test.js`. Settings:
