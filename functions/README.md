@@ -16,8 +16,8 @@ button at the top right) and run:
 ```
 git clone https://github.com/itsfackingjace-web/skillquest
 cd skillquest
-npx -y firebase-tools@13 login --no-localhost
-npx -y firebase-tools@13 deploy --only functions --project skillquest-913e2
+npx -y firebase-tools@latest login --no-localhost
+npx -y firebase-tools@latest deploy --only functions --project skillquest-913e2
 ```
 
 The first deploy asks to turn on a few Google Cloud services (Cloud Functions, Cloud Build, Artifact Registry): answer yes.
