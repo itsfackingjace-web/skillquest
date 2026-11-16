@@ -859,3 +859,9 @@
   bar + 2 void logs): the outermost `shoot`/`shootAim` lend them to `inv.iarrow` for the call (`LEND` adds +2 in `arrowDmg`) and take
   back what was used; projectiles get `met:1`. 214 also lists SQTIER trees/ores, SQBOUL boulders and meteor cores/veins on the
   Woodcutting/Mining trees.
+- **Safe trips home and /stuck** (`core/217-s225-safe-travel-and-stuck.js`, `window.SQSTUCK`): 049's `travelCommit` took the island trip's
+  return point from `P` when standing in a house/yard/dungeon/lair (the guild horn works anywhere), so the trip home landed at room
+  coordinates on Hollow (the sea). The outermost `travelCommit` now `stepOut()`s first (follows `prev` like 067's leaveScene, else
+  `SCENE.ret`), and the outermost `leaveRegion` `rescue()`s a bad landing: in the sea → the Tidewatch harbor post (`RG_POST`), inside
+  something/boxed in (`good()`: walkable + 25 reachable tiles) → nearest good land within 30 tiles. `/stuck` (`/unstuck`) in chat: out
+  of rooms, island → `rgSpot(R)`, Hollow → harbor post; 2 min cooldown (`sq_stuck`), not while dead/travelling/duelling/near a boss.
