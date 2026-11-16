@@ -88,7 +88,7 @@
   h+=capePic;
   h+=perk('A flame next to your name','Over your head and in chat, while your membership is active.','',act);
   h+=perk('The fire cape','An animated cape of flames that\'s yours to keep.',cape(u)?'<button class="qb" data-pcr="style" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">Wear it</button>':'',cape(u));
-  h+=perk('The Art Room','Draw sprites and animations and send them in. Approved art goes into the game.',act&&!kid&&window.SQARTROOM?'<button class="qb" data-pcr="art" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">Open</button>':'',act&&!kid);
+  h+=perk('The Art Room','Draw pictures, animations and things to wear, and send them in. Approved pictures become paintings in the Patron Art Gallery, with your name on them.',act&&!kid&&window.SQARTROOM?'<button class="qb" data-pcr="art" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">Open</button>':'',act&&!kid);
   h+=perk('Your name in the Credits','Options &gt; About &gt; Credits.',r&&!kid?'<button class="qb" data-pcr="cred" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">'+(credPref?'Shown':'Hidden')+'</button>':'',!!(r&&credPref&&!kid));
   const kid2=!window.SQAGE||!SQAGE.known||!SQAGE.known()||SQAGE.child();
   if(u&&!kid2&&!act)h+='<a class="sb sqpatlink" href="'+PATREON+'" target="_blank" rel="noopener" style="margin-top:10px">'+f+'Become a Patron</a>'+

@@ -221,6 +221,7 @@ ui/209-s217-account-and-privacy.js
 multiplayer/210-s218-patrons.js
 ui/211-s219-art-room.js
 ui/212-s220-one-cape-picker.js
+items/213-s221-paintings-and-gallery.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

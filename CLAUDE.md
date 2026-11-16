@@ -818,3 +818,16 @@
   canvas sized by `fit()` (width, and half the screen height on phones) × `A.zoom` in `#arbox` (scrolls when zoomed; two fingers / move tool /
   Space / middle button pan), palette strip + current colour (a colour input over it), frames strip with `+`, preview and speed, then a
   separate `send` view (name, kind, note). `#pn.sqart` widens the panel to 980px; two columns at ≥760px. Keys: B E G I M, Ctrl+Z/Y, +/-.
+- **Paintings and the Patron Art Gallery** (`items/213-s221-paintings-and-gallery.js`, `window.SQPAINT`): `paintings/<id>` {n,by,u,w,h,f,ms,p,t,off}
+  (devs write via Dev Suite > Art Room "Approve as a painting"; signed-in read, onValue; cached in localStorage `sq_paint`). Items `pt_<id>` (bag/easel)
+  and `pw_<id>` (hung): a hung painting is stored on the floor tile under the wall (row 2) because every home loader drops rows 0-1; it isn't
+  solid and is drawn on the wall band. Placing facing the wall row (`facingWall()`) hangs it (`wallOK`: not over windows/room wall items, not
+  the back door, houses and castles only); HIT facing it picks it up. `applySave` first registers every `pt_/pw_` key found in the save
+  (`scan`), so saves never lose them before the records arrive. Artist's free copy: `ptg` in the save (KNOWN49). Gallery: BLD `gallery`
+  placed by `spot()` (free 5x2 + a free row in front, nearest the village centre), sign, room `gallery` (wall frames `_ptw`, easels `_pte`,
+  `fill()` = newest first), curator Iris (NPC kind `gallery`, shop on ptab 2 via the outermost `rPn`, `data-ptbuy`). A label naming the
+  painting and artist is drawn in the outermost `drawHUD` when you face one. `SQPAINT.charLayer(dir,gear)` = your character as a 96x112
+  worn layer (211 shadows `CH`, so it draws it). Rules: `paintings`, `art.k 'wear'`, `art.sl` (publish them).
+- **Art Room wearables** (211): mode "Something to wear" (`A.mode==='wear'`, own draft `sq_art_wear`; `sq_art_mode`): 48x76 pixels = the worn
+  layer from (24,28), three frames = front/back/side, `sl` helm|body|legs, your character underneath (`under`). Sent as `k:'wear'`. Dev Suite >
+  Art Room: "Put it in the Gear editor" builds `worn.<item>` (f/b/s, `h:1`) with `SQA.PXC`/`SQA.pack`, saves it to the draft and opens Gear on it.
