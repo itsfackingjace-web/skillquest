@@ -1,5 +1,7 @@
 # SkillQuest — notes for whoever updates the game
 
+**Read `GAME-BIBLE.md` first**: what the game is, its pillars and the rules every feature is checked against.
+
 - **Edit the files in `src/`, never `index.html` directly.** `index.html` is built from them:
   run `node tools/build.mjs` after every change and commit both. GitHub Pages serves `index.html` at skillquestmmo.com,
   and a check on GitHub fails if `index.html` doesn't match `src/` (`node tools/build.mjs --check`).
