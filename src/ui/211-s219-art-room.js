@@ -144,7 +144,7 @@
   else if(a==='send'){send();return}
   else if(a==='mine'){A.view='mine';A.mine=null;rPn();loadMine();return}
   else if(a==='draw')A.view='draw';
-  else if(a==='back'){ptab=8;rPn();return}
+  else if(a==='back'){ptab=window.SQPATRON&&SQPATRON.PTAB||8;rPn();return}
   keep();rPn()}
  pbd.addEventListener('click',e=>{if(ptab!==ATAB)return;const fc=e.target.closest&&e.target.closest('[data-arf]');if(fc){A.cur=+fc.dataset.arf;keep();rPn();return}
   const b=e.target.closest&&e.target.closest('[data-ar]');if(!b)return;e.stopPropagation();e.preventDefault();const[a,v]=b.dataset.ar.split(':');act(a,v,b)},true);

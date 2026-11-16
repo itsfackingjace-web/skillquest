@@ -12,8 +12,8 @@
  let PR={},listening='',PCFG={};
  const rec=u=>u&&PR[u]||null,active=u=>{const r=rec(u);return!!(r&&typeof r.u==='number'&&r.u>Date.now())},cape=u=>{const r=rec(u);return!!(r&&r.c)};
  function listen(){const m=mp(),Fb=F();if(!m||!m.on||!m.user||!Fb){return}if(listening===m.user.uid)return;listening=m.user.uid;
-  try{Fb.db.get(Fb.db.ref(Fb.D,'cfgpub/patreon')).then(s=>{PCFG=s.val()||{};try{if(ptab===8&&pnOpen)rPn()}catch(e){}}).catch(()=>{})}catch(e){}
-  try{Fb.db.onValue(Fb.db.ref(Fb.D,'patron'),s=>{const v=s.val()||{};PR={};for(const k in v)if(v[k]&&typeof v[k]==='object')PR[k]=v[k];syncCred();try{if(ptab===8&&pnOpen)rPn()}catch(e){}},()=>{})}catch(e){}}
+  try{Fb.db.get(Fb.db.ref(Fb.D,'cfgpub/patreon')).then(s=>{PCFG=s.val()||{};try{if((ptab===8||ptab===PTAB)&&pnOpen)rPn()}catch(e){}}).catch(()=>{})}catch(e){}
+  try{Fb.db.onValue(Fb.db.ref(Fb.D,'patron'),s=>{const v=s.val()||{};PR={};for(const k in v)if(v[k]&&typeof v[k]==='object')PR[k]=v[k];syncCred();try{if((ptab===8||ptab===PTAB)&&pnOpen)rPn()}catch(e){}},()=>{})}catch(e){}}
  setInterval(listen,1500);
  // ---- the flame emblem (our own pixel art: a 9x11 flame with a flickering tip) ----
  const FLC={K:'#2a0c06',R:'#c8300e',O:'#f07a20',Y:'#f8c838',W:'#fff2b0'};
@@ -73,30 +73,44 @@
   try{Fb.db.set(Fb.db.ref(Fb.D,'plink/'+u),{n,t:Fb.db.serverTimestamp()}).catch(()=>{say('Couldn\'t start the link. Check your connection and try again.')})}catch(err){}
   say('Opening Patreon... Allow access there, then come back here.')},true);
  // ---- Options: Credits for everyone, PATRON settings for patrons ----
- let pcAt=-1e9;const pcLoad=()=>{const Fb=F();if(!Fb||!uid()||performance.now()-pcAt<30000)return;pcAt=performance.now();try{Fb.db.get(Fb.db.ref(Fb.D,'cfgpub/patreon')).then(s=>{const v=s.val()||{};const was=PCFG.cid;PCFG=v;if(v.cid!==was)try{if(ptab===8&&pnOpen)rPn()}catch(e){}}).catch(()=>{})}catch(e){}};
- {const _o=optionsHTML;optionsHTML=function(){let h=_o();const u=uid(),r=rec(u);if(u&&!PCFG.cid)pcLoad();
-   h=h.replace('<div class="aclinks">','<button class="sb" data-pcr="credits">Credits</button><div class="aclinks">');
-   if(r){const act=active(u),kid=window.SQAGE&&SQAGE.child(),art=act&&!kid&&window.SQARTROOM;
-    h+='<div class="tl" style="margin-top:16px"><img class="sqpf" src="'+flameURL+'" alt="">PATRON</div>'+
-     '<div class="qc" style="font-size:14px;line-height:1.4;padding:8px 12px;margin:6px 0">'+(act?'Thank you for supporting SkillQuest! Your flame shows next to your name.':'Thank you for supporting SkillQuest. Your fire cape is yours to keep.')+'</div>'+
-     (cape(u)?'<button class="sb" data-pcr="style">Fire cape: '+(WEAR?'WEARING':'OFF')+' · choose in Style</button>':'')+
-     (!kid?'<button class="sb" data-pcr="cred">Show me in the credits: '+(credPref?'ON':'OFF')+'</button>':'')+
-     (art?'<button class="sb" data-pcr="art">Open the Art Room</button>':'')}
-   // the Patreon page, for signed-in players who aren't under 13 (and whose age band is known)
-   const kid2=!window.SQAGE||!SQAGE.known||!SQAGE.known()||SQAGE.child();
-   // Link Patreon: the server (functions/patreonAuth) turns perks on from the membership; a one-time link plink/<uid> {n,t}
-   // is written on click, and its nonce rides along in the OAuth state so only this player can claim it
-   if(u&&!kid2&&PCFG.cid){LNK=LNK&&LNK.u===u?LNK:{u,n:nonce()};const url='https://www.patreon.com/oauth2/authorize?response_type=code&client_id='+encodeURIComponent(PCFG.cid)+'&redirect_uri='+encodeURIComponent(REDIRECT)+'&scope='+encodeURIComponent('identity identity.memberships')+'&state='+encodeURIComponent(u+'.'+LNK.n);
-    h+='<div class="tl" style="margin-top:16px">PATREON</div><div class="qc" style="font-size:14px;line-height:1.4;padding:8px 12px;margin:6px 0">'+(r&&active(u)?'Your perks are on. Linking again only matters if you joined with a different Patreon account.':'Already a Patron? Link your Patreon account and your perks switch on by themselves, and stay in step when you renew or cancel.')+'</div>'+
-     '<a class="sb sqpatlink" data-plink="1" href="'+url+'" target="_blank" rel="noopener">Link Patreon</a>'}
-   if(u&&!kid2&&!(r&&active(u)))h+='<div class="tl" style="margin-top:16px"><img class="sqpf" src="'+flameURL+'" alt="">SUPPORT SKILLQUEST</div>'+
-     '<div class="qc" style="font-size:14px;line-height:1.4;padding:8px 12px;margin:6px 0">Patrons get a flame next to their name, an animated fire cape that\'s theirs to keep, their name in the Credits and the Art Room. Ask a parent first if you\'re under 18. After you join, send us your character name in a Patreon message (or email support@skillquestmmo.com) and we\'ll switch your perks on.</div>'+
-     '<a class="sb sqpatlink" href="'+PATREON+'" target="_blank" rel="noopener">Become a Patron</a>';
+ let pcAt=-1e9;const pcLoad=()=>{const Fb=F();if(!Fb||!uid()||performance.now()-pcAt<30000)return;pcAt=performance.now();try{Fb.db.get(Fb.db.ref(Fb.D,'cfgpub/patreon')).then(s=>{const v=s.val()||{};const was=PCFG.cid;PCFG=v;if(v.cid!==was)try{if((ptab===8||ptab===PTAB)&&pnOpen)rPn()}catch(e){}}).catch(()=>{})}catch(e){}};
+ // ---- the Patron screen (START > Patron, ptab 48; Options keeps a button to it): status, perks, Art Room, the Patreon buttons ----
+ const PTAB=48;
+ // who sees it: anyone signed in with a patron record, or signed in with a known age band that isn't under 13
+ const showMenu=()=>{const u=uid();if(!u)return false;if(rec(u))return true;const A=window.SQAGE;return!!(A&&A.known&&A.known()&&!A.child())};
+ const linkURL=u=>{LNK=LNK&&LNK.u===u?LNK:{u,n:nonce()};return'https://www.patreon.com/oauth2/authorize?response_type=code&client_id='+encodeURIComponent(PCFG.cid)+'&redirect_uri='+encodeURIComponent(REDIRECT)+'&scope='+encodeURIComponent('identity identity.memberships')+'&state='+encodeURIComponent(u+'.'+LNK.n)};
+ function perk(t,d,btn,on){return'<div class="qc" style="display:flex;gap:10px;align-items:center;padding:8px 12px;margin:6px 0"><div style="flex:1;font-size:14px;line-height:1.35"><b>'+(on?'✓ ':'')+t+'</b><br>'+d+'</div>'+(btn||'')+'</div>'}
+ function patronHTML(){const u=uid(),r=rec(u);if(u&&!PCFG.cid)pcLoad();const act=active(u),kid=window.SQAGE&&SQAGE.child(),f='<img class="sqpf" src="'+flameURL+'" alt="">';
+  const capePic=(()=>{try{const X=window.SQCAPEX;return X&&X.picWith?'<div style="display:flex;gap:8px;justify-content:center">'+X.picWith({fcp:1},1)+X.picWith({fcp:1},2)+'</div>':''}catch(e){return''}})();
+  let h='<div class="tl">'+f+'PATRON</div>';
+  if(r)h+='<div class="qc" style="font-size:15px;line-height:1.45;padding:10px 12px;margin:6px 0">'+(act?'<b>Thank you for supporting SkillQuest!</b> Your perks are on'+(r.u<9e12?' until '+new Date(r.u).toLocaleDateString()+', and renew by themselves while your Patreon membership is active':'')+'.':'<b>Thank you for supporting SkillQuest.</b> Your membership has ended, and your fire cape is yours to keep.')+'</div>';
+  else h+='<div class="qc" style="font-size:15px;line-height:1.45;padding:10px 12px;margin:6px 0"><b>Support SkillQuest on Patreon.</b> SkillQuest is made by a tiny team, and Patrons keep it running and growing. Every perk is just for looks: Patrons never get stronger than anyone else. Ask a parent first if you\'re under 18.</div>';
+  h+=capePic;
+  h+=perk('A flame next to your name','Over your head and in chat, while your membership is active.','',act);
+  h+=perk('The fire cape','An animated cape of flames that\'s yours to keep.',cape(u)?'<button class="qb" data-pcr="style" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">Wear it</button>':'',cape(u));
+  h+=perk('The Art Room','Draw sprites and animations and send them in. Approved art goes into the game.',act&&!kid&&window.SQARTROOM?'<button class="qb" data-pcr="art" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">Open</button>':'',act&&!kid);
+  h+=perk('Your name in the Credits','Options &gt; About &gt; Credits.',r&&!kid?'<button class="qb" data-pcr="cred" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">'+(credPref?'Shown':'Hidden')+'</button>':'',!!(r&&credPref&&!kid));
+  const kid2=!window.SQAGE||!SQAGE.known||!SQAGE.known()||SQAGE.child();
+  if(u&&!kid2&&!act)h+='<a class="sb sqpatlink" href="'+PATREON+'" target="_blank" rel="noopener" style="margin-top:10px">'+f+'Become a Patron</a>'+
+   '<p style="font-size:13px;line-height:1.4;opacity:.8;margin:6px 2px">Join with the same email you sign in to SkillQuest with, and your perks switch on by themselves within a few hours.</p>';
+  if(u&&!kid2&&PCFG.cid)h+='<div class="tl" style="margin-top:14px;font-size:15px">ALREADY A PATRON?</div><p style="font-size:13px;line-height:1.4;margin:4px 2px">'+(act?'Your perks are on. Linking only matters if you joined with a different Patreon account.':'If you joined with a different email, link your Patreon account and your perks switch on right away.')+'</p>'+
+   '<a class="sb sqpatlink" data-plink="1" href="'+linkURL(u)+'" target="_blank" rel="noopener">Link Patreon</a>';
+  if(!u)h+='<p>Sign in to see your Patron perks.</p>';
+  return h}
+ {const _r=rPn;rPn=function(){if(ptab===PTAB&&pnOpen){try{panelChrome('')}catch(e){}pbd.innerHTML=patronHTML();return}return _r.apply(this,arguments)}}
+ // START menu item, only for players who can see it (added/removed each time the menu is drawn)
+ const ITEM={id:'patron',l:()=>'Patron'};
+ if(typeof rSM==='function'){const _sm=rSM;rSM=function(){try{const at=SMI.indexOf(ITEM),want=showMenu();if(want&&at<0){const o=SMI.findIndex(x=>x.id==='options');SMI.splice(o>=0?o:SMI.length,0,ITEM)}else if(!want&&at>=0)SMI.splice(at,1)}catch(e){}return _sm.apply(this,arguments)}}
+ {const _ss=showScreen;showScreen=function(id){if(id!=='patron')return _ss.apply(this,arguments);pnOpen=true;ptab=PTAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){}}}
+ // Options: Credits for everyone, one button to the Patron screen
+ {const _o=optionsHTML;optionsHTML=function(){let h=_o();
+   h=h.replace('<div class="aclinks">','<button class="sb" data-pcr="credits">Credits</button>'+(showMenu()?'<button class="sb" data-pcr="open"><img class="sqpf" src="'+flameURL+'" alt="">Patron</button>':'')+'<div class="aclinks">');
    return h}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pcr]');if(!b)return;e.stopPropagation();e.preventDefault();const a=b.dataset.pcr;
   if(a==='credits'){ptab=CTAB;loadCredits();rPn()}else if(a==='back'){ptab=8;rPn()}
   else if(a==='style'){try{showScreen('style')}catch(x){}}
+  else if(a==='open'){try{showScreen('patron')}catch(x){}}
   else if(a==='cape'){WEAR=!WEAR;try{saveLocal(true)}catch(x){}say(WEAR?'You put on your fire cape.':'You take off your fire cape.');rPn()}
   else if(a==='cred'){credPref=!credPref;try{localStorage.setItem('sq_pcred',credPref?'1':'0')}catch(x){}credSent='';syncCred();rPn()}
   else if(a==='art'&&window.SQARTROOM)SQARTROOM.open()},true);
- window.SQPATRON={PATREON,active,cape,rec,get all(){return PR},get wearing(){return WEAR},set wearing(v){WEAR=!!v},flameURL,syncCred,loadCredits,CTAB}})();
+ window.SQPATRON={PTAB,open:()=>showScreen('patron'),PATREON,active,cape,rec,get all(){return PR},get wearing(){return WEAR},set wearing(v){WEAR=!!v},flameURL,syncCred,loadCredits,CTAB}})();

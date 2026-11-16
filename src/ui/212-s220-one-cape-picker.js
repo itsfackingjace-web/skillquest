@@ -18,10 +18,12 @@
  function pick(id){const p=PA(),g=G();if(p)p.wearing=id==='fire';if(g)g.wear=id==='guild';try{KITC.clear()}catch(e){}
   if(id)try{say(id==='fire'?'You put on your fire cape.':'You put on the guild cape.')}catch(e){}}
  // the character, at 3x, from the back and the front (the part of 201's 48x56 box around the kit)
- function pic(dir){try{const ch=gearCH(),c=document.createElement('canvas');c.width=72;c.height=78;c.hd2=true;const x=c.getContext('2d');x.imageSmoothingEnabled=false;
+ function pic(dir,over){try{const ch=Object.assign(gearCH(),over||{}),c=document.createElement('canvas');c.width=72;c.height=78;c.hd2=true;const x=c.getContext('2d');x.imageSmoothingEnabled=false;
    x.setTransform(3,0,0,3,0,-18);const sv=GC;GC=x;try{cP(ch,dir,0,12,25,false)}finally{GC=sv;x.setTransform(1,0,0,1,0,0)}return c.toDataURL()}catch(e){return''}}
  function preview(){const a=pic(1),b=pic(0);if(!a&&!b)return'';const im=u=>u?'<img alt="" src="'+u+'" style="width:60px;image-rendering:pixelated">':'';
   return'<div style="display:flex;gap:10px;justify-content:center;margin:4px 0 6px">'+im(a)+im(b)+'</div>'}
- window.SQCAPEX={opts,wearing,pick,preview};
+ // a picture with something changed (the Patron screen shows you in the fire cape): an <img> tag
+ function picWith(over,dir){const u=pic(dir==null?1:dir,over);return u?'<img alt="" src="'+u+'" style="width:60px;image-rendering:pixelated">':''}
+ window.SQCAPEX={opts,wearing,pick,preview,picWith};
  // the Style screen redraws itself on a pick, but the guild design or patron record can arrive later: refresh while open
  let last='';setInterval(()=>{try{if(!pnOpen||ptab!==31)return;const k=opts().map(o=>o.id).join()+'|'+wearing();if(k!==last){const was=last;last=k;if(was)rPn()}}catch(e){}},1000)})();
