@@ -311,4 +311,4 @@
    else if(a==='psync')await psync();
    else if(a==='pend'){const u=parts[1],r=T.pat[u];if(!r)return;const nr=Object.assign({},r,{u:Date.now()-1000});await D().set(ref('patron/'+u),nr);T.pat[u]=nr;toast('Ended. They keep the fire cape.');API.draw()}
   }catch(err){fail(err)}},true);
- SQSUITE.addTab('artroom','Art Room',{render})})();
+ SQSUITE.addTab('artroom','Art Room',{render,changes:(L,D)=>{const l=L&&L.places&&L.places.gallery,d=D&&D.places&&D.places.gallery;return JSON.stringify(l||null)===JSON.stringify(d||null)?[]:[{kind:'ext',html:'🖼️ Patron Art Gallery building: '+(d?'moved to where you chose':'back to the spot the game picks')}]}})})();
