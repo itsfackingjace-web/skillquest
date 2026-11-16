@@ -55,7 +55,7 @@
 #pn .arsub{display:flex;gap:10px;align-items:center;border-bottom:1px solid #c8c8c8;padding:8px 0}#pn .arsub canvas{width:48px;height:48px;image-rendering:pixelated;border:2px solid #485870;background:#fff;flex:none}
 #pn .arst{font-weight:700}#pn .arst.ok{color:#2a7a3a}#pn .arst.no{color:#a83232}
 #pn .arsend{display:grid;gap:12px}#pn .arsend .big{width:192px;height:192px;max-width:60vw;max-height:60vw;image-rendering:pixelated;border:3px solid #485870;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0 0/12px 12px;justify-self:center}
-@media (min-width:760px){#pn .armain{grid-template-columns:auto minmax(260px,330px);align-items:start}#pn .arside{display:grid;gap:10px;min-width:0}
+@media (min-width:760px){#pn .armain{grid-template-columns:auto minmax(260px,330px);align-items:start}#pn .arside{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;min-width:0}
  #pn .arpal{grid-auto-flow:row;grid-template-columns:repeat(8,32px);grid-template-rows:none;overflow:visible}#pn .arsend{grid-template-columns:auto 1fr;align-items:start}}`;document.head.appendChild(st)}
  // small pictures for the tool buttons (drawn as pixels, no emoji)
  const IC={pen:'M3 17l1-4 9-9 3 3-9 9zM12 5l3 3',erase:'M8 17h9M4 13l7-7 6 6-5 5H8z',fill:'M4 10l6-6 7 7-6 6zM17 13c0 2 1 3 1 4a1 1 0 01-2 0c0-1 1-2 1-4z',pick:'M10 2c3 4 6 7 6 10a6 6 0 01-12 0c0-3 3-6 6-10zM8 13a2 2 0 002 2',
