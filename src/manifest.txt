@@ -237,6 +237,7 @@ ui/225-s233-better-maps.js
 items/226-s234-guild-sails.js
 combat/227-s235-no-invisible-hits.js
 items/228-s236-market-prices.js
+ui/229-s237-gear-tab-cards-and-stats.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

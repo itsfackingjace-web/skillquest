@@ -969,4 +969,9 @@
   lists use it; 228 adds a line to the bag text (`bagGridHTML`) and the chest card (`chestCardHTML`). Tax: `taxOf(total)` = 1% (floored) of a
   fill worth 100+ gold, taken from the seller (the matcher's own GLD, or the gold box written to the seller). It is a gold sink; the buyer pays the
   full price. Enforcement is client-side like the rest of the market.
+- **Character tab cards and stats** (`ui/229-s237-gear-tab-cards-and-stats.js`): the outermost `equipHTML` puts an item card (`.sqgcard`: icon,
+  name, `IDESC` with 084/111a2's stats, `SQVALUELINE(k)` = shop pays + 079's market price) under the selected slot's header (028's
+  `EQSEL` panel), and extra rows after 028's "Block chance" row: health, `armorPts`, `blockCap`, `critCh`, every non-zero `SQGEAR.fxSum` effect
+  (`FXN` names), `SQTURT`/`SQMETGEAR.worn()` pieces, `LUX.BUFF` buffs with time left. A newly tapped slot scrolls its card into view.
+  The bag's item text (228) shows the full value line. New stats/effects worth showing go in `extraRows()`.
 
