@@ -61,7 +61,7 @@
  {const _sa=stationAct;stationAct=function(a){const o=STATION;if(!(o&&o.t==='cauldron'&&/^cwa?_/.test(a||'')))return _sa.apply(this,arguments);
    const all=a.startsWith('cwa_'),r=RECIPES.find(q=>q.k===a.replace(/^cwa?_/,''));if(!r)return;
    if(lvOf(BR)<r.lv){say('You need Brewing '+r.lv+' to brew that.');return}const m=canMake(r);if(m<1){say('You need '+Object.entries(r.c).map(([k,b])=>b+' '+matN(k)).join(', ')+'.');return}
-   const n=all?m:1;if(sqDo('craft',n,()=>{brewOne(r)})){try{SQDO.d=2.4/(1+spd());SQDO.tot=n}catch(e){}say('Brewing...');return}
+   const n=all?m:1;if(sqDo('craft',n,()=>{brewOne(r)})){try{SQDO.d=2.4/(1+spd());SQDO.tot=n;SQDO.brew=r.k;const[fx,fy]=front(16);BREWAT={k:r.k,tx:Math.floor(fx/16),ty:Math.floor(fy/16)}}catch(e){}say('Brewing...');return}
    brewOne(r);saveLocal(true);rPn()}}
  // the cauldron's look (world px; a Props look 'p:cauldron' wins when there is one)
  const CC={K:'#16121c',d:'#2b2937',m:'#434158',l:'#64627e',h:'#9c9ab8',s:'#d6d4ec',g:'#2f9a3e',G:'#62cc48',L:'#a8f070',W:'#e8ffd0',D:'#1f6a2c',b:'#5a3418',B:'#8c5a2c',n:'#b88850'};
@@ -70,7 +70,7 @@
  const FC={w:'#fffbe0',y:'#ffe04a',o:'#ff9a26',r:'#d8401c'};
  // a flame, bottom-centre at (x,y) in the current transform's units, s units per pixel
  function flame(x,y,s,f,flip){const R=FL[((f%4)+4)%4];R.forEach((r,j)=>{for(let i=0;i<r.length;i++){const k=r[flip?r.length-1-i:i];if(k!=='.'){g.fillStyle=FC[k];g.fillRect(x-3.5*s+i*s,y-10*s+j*s,s,s)}}})}
- function cauldronArt(cx,cy,tm){const P2=(x,y,c)=>{g.fillStyle=CC[c]||c;g.fillRect(cx+x,cy+y,1,1)};const f=Math.floor(tm*8);
+ function cauldronArt(cx,cy,tm,bc){const P2=(x,y,c)=>{g.fillStyle=CC[c]||c;g.fillRect(cx+x,cy+y,1,1)};const f=Math.floor(tm*8);
   for(let i=-12;i<=12;i++){const y1=-2+Math.round(i*.18),y2=-2-Math.round(i*.18);P2(i,y1,'b');P2(i,y1-1,i%3?'B':'b');P2(i,y2,'b');P2(i,y2-1,'B')}
   P2(-13,-5,'n');P2(-13,-4,'B');P2(13,-5,'n');P2(13,-4,'B');P2(-13,1,'n');P2(13,1,'n');
   for(const[x,k]of[[-5,0],[0,2],[5,1]])flame(cx+x,cy-3,1,f+k,k===1);
@@ -81,11 +81,21 @@
   const rcy=top+2,Rx=13.5,Ry=5,ix=11,iy=3.6;
   for(let y=rcy-6;y<=rcy+6;y++)for(let x=-15;x<=15;x++){const o=(x/Rx)**2+((y-rcy)/Ry)**2,i=(x/ix)**2+((y-rcy)/iy)**2;
    if(o<=1&&i>1){const edge=((x/(Rx-1))**2+((y-rcy)/(Ry-1))**2)>1;P2(x,y,edge?'K':(y<rcy?(x<0?'s':'h'):(x<-4?'l':x<5?'m':'d')))}
-   else if(i<=1){let c=y<rcy-2?'D':y<rcy?'g':'G';if(y===rcy+1&&Math.abs(x)<8&&x<4)c='L';if(y===rcy+2&&x>-6&&x<2)c='L';P2(x,y,c)}}
-  for(const[bx,ph0]of[[-5,0],[2,.4],[6,.75]]){const ph=(tm*.9+ph0)%1;if(ph<.35)P2(bx,rcy,'W');else if(ph<.6){P2(bx,rcy-1,'L');P2(bx-1,rcy,'L');P2(bx+1,rcy,'L');P2(bx,rcy,'W')}else if(ph<.7){P2(bx-1,rcy-1,'W');P2(bx+1,rcy-1,'W')}}
-  for(let i=0;i<5;i++){const ph=(tm*.45+i/5)%1,x=Math.round(-4+i*2+Math.sin(tm*1.7+i)*2),y=Math.round(rcy-3-ph*16);g.globalAlpha=.75*(1-ph);P2(x,y,'#d8f8c8');if(ph<.5){P2(x+1,y,'#d8f8c8');P2(x,y-1,'#d8f8c8')}g.globalAlpha=1}}
+   else if(i<=1){let c=y<rcy-2?'D':y<rcy?'g':'G';if(y===rcy+1&&Math.abs(x)<8&&x<4)c='L';if(y===rcy+2&&x>-6&&x<2)c='L';if(bc){c=bc[c];if(Math.sin(x*1.3+y*2.1+tm*9)>.86)c=bc.L}P2(x,y,c)}}
+  if(!bc){for(const[bx,ph0]of[[-5,0],[2,.4],[6,.75]]){const ph=(tm*.9+ph0)%1;if(ph<.35)P2(bx,rcy,'W');else if(ph<.6){P2(bx,rcy-1,'L');P2(bx-1,rcy,'L');P2(bx+1,rcy,'L');P2(bx,rcy,'W')}else if(ph<.7){P2(bx-1,rcy-1,'W');P2(bx+1,rcy-1,'W')}}
+   for(let i=0;i<5;i++){const ph=(tm*.45+i/5)%1,x=Math.round(-4+i*2+Math.sin(tm*1.7+i)*2),y=Math.round(rcy-3-ph*16);g.globalAlpha=.75*(1-ph);P2(x,y,'#d8f8c8');if(ph<.5){P2(x+1,y,'#d8f8c8');P2(x,y-1,'#d8f8c8')}g.globalAlpha=1}return}
+  // brewing: the brew takes the potion's colour and boils: bubbles swell and pop all over, droplets jump over the rim, coloured steam
+  for(const[bx,by,ph0]of[[-8,0,0],[-4,1,.55],[-1,-1,.2],[2,1,.7],[5,0,.35],[8,-1,.85],[0,2,.45]]){const ph=(tm*2.2+ph0)%1,X=bx,Y=rcy+by;
+   if(ph<.3)P2(X,Y,bc.W);else if(ph<.55){P2(X,Y-1,bc.L);P2(X-1,Y,bc.L);P2(X+1,Y,bc.L);P2(X,Y,bc.W)}else if(ph<.7){P2(X-1,Y-1,bc.W);P2(X+1,Y-1,bc.W);P2(X,Y-2,bc.L)}}
+  for(let i=0;i<4;i++){const ph=(tm*1.6+i/4)%1,x=Math.round(-6+i*4+Math.sin(i*2.3)*2),y=Math.round(rcy-1-Math.sin(ph*Math.PI)*7),dx=Math.round((i%2?1:-1)*ph*3);g.globalAlpha=ph<.85?1:0;P2(x+dx,y,ph<.5?bc.L:bc.G);g.globalAlpha=1}
+  for(let i=0;i<7;i++){const ph=(tm*.7+i/7)%1,x=Math.round(-6+i*2+Math.sin(tm*2.1+i)*2.5),y=Math.round(rcy-3-ph*20);g.globalAlpha=.8*(1-ph);P2(x,y,bc.S);if(ph<.55){P2(x+1,y,bc.S);P2(x,y-1,bc.S)}g.globalAlpha=1}}
+ let BREWAT=null;const PCOL={pot_heal:'#e03848',pot_str:'#f09030',pot_poison:'#58c048',pot_swift:'#40b0f0',pot_iron:'#a0a4bc',pot_napalm:'#f07020',pot_zap:'#58c8ff'};
+ const mix=(h,t,k)=>{const a=parseInt(h.slice(1),16),b=parseInt(t.slice(1),16),c=[16,8,0].map(s=>Math.round(((a>>s)&255)*(1-k)+((b>>s)&255)*k));return'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('')};
+ const PALC={};const palOf=k=>{if(PALC[k])return PALC[k];const h=PCOL[k]||'#62cc48';return PALC[k]={D:mix(h,'#000000',.45),g:mix(h,'#000000',.2),G:h,L:mix(h,'#ffffff',.45),W:mix(h,'#ffffff',.82),S:mix(h,'#ffffff',.7)}};
+ // the cauldron you're brewing at (the one in front of you when the job started), while the job runs
+ const brewing=(x,y)=>{const D=window.SQDO;if(!D||!D.brew||!BREWAT)return null;return x===BREWAT.tx&&y===BREWAT.ty?palOf(D.brew):null};
  const hasLook=()=>{try{return!!(window.SQPROPS&&SQPROPS.looks&&SQPROPS.looks['p:cauldron'])}catch(e){return false}};
- {const _ds=drawStation;drawStation=function(t,x,y,st,tm){if(t!=='cauldron'||hasLook())return _ds.apply(this,arguments);g.save();try{cauldronArt(x*16+8,y*16+15,(tm!=null?tm:performance.now()/1000))}catch(e){}g.restore()}}
+ {const _ds=drawStation;drawStation=function(t,x,y,st,tm){if(t!=='cauldron'||hasLook())return _ds.apply(this,arguments);g.save();try{cauldronArt(x*16+8,y*16+15,(tm!=null&&tm>0?tm:performance.now()/1000),brewing(x,y))}catch(e){}g.restore()}}
  // ---- icons ----
  const DAGS={idag:{t:1,c:'#c8ccd8',n:'Iron dagger'},sdag:{t:2,c:'#e0e4f0',n:'Steel dagger'},mdag:{t:3,c:'#70a8e0',n:'Mithril dagger',lv:30,bar:'mbar',sm:35},adag:{t:4,c:'#58c088',n:'Adamant dagger',lv:45,bar:'abar',sm:50},
   metdag:{t:6,c:'#a070f0',n:'Meteorite dagger',lv:75,bar:'metbar',sm:82}};

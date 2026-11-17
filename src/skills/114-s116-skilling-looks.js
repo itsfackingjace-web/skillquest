@@ -11,6 +11,7 @@
  const ACT={c:0,prev:0,at:0},CATCH={at:-9};
  const now=()=>performance.now()/1000;
  function localAct(){if(dead)return 0;if(now()-CATCH.at<.7&&FISH)return 6;const D=SQDO;
+  if(D&&D.brew)return 0;// brewing: the cauldron bubbles instead (218)
   if(D){if(D.kind==='fire')return 1;if(D.kind==='cook')return 2;if(D.kind==='reel')return FISH?5:0;if(D.kind==='smelt')return 7;if(D.kind==='smith')return 8;if(D.kind==='craft')return 9}
   if(FISH)return FISH.bite>0?4:3;return 0}
  window.SQACT=()=>ACT.c;
