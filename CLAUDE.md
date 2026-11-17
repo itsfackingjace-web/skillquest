@@ -833,6 +833,11 @@
 - **Art Room wearables** (211): mode "Something to wear" (`A.mode==='wear'`, own draft `sq_art_wear`; `sq_art_mode`): 48x76 pixels = the worn
   layer from (24,28), three frames = front/back/side, `sl` helm|body|legs, your character underneath (`under`). Sent as `k:'wear'`. Dev Suite >
   Art Room: "Put it in the Gear editor" builds `worn.<item>` (f/b/s, `h:1`) with `SQA.PXC`/`SQA.pack`, saves it to the draft and opens Gear on it.
+- **Art Room pets** (211): mode "A pet" (`A.mode==='pet'`, `PT()`, draft `sq_art_pet`): square 12-32 px (`PSZ`, resizing keeps the feet in
+  place), four fixed frames `PFN` Idle 1/Idle 2/Walk 1/Walk 2 = the pet look's a/c/b/d; onion shows Idle 1 (Walk 1 under Walk 2). Preview
+  (`petPv`) = a ground strip, standing (0.5 s) or walking to and fro (125 ms steps, mirrored going left) beside the character (`SQPAINT.charLayer`),
+  same frame fallbacks as 111a's `drawPetLook`. Sent as `k:'pet'` (rules unchanged). Dev Suite > Art Room: "Put it in the Pets editor" =
+  `petFrom` → `pets.<EQ[item].pet>` {w,h,s:2,ox:-w/2,oy:7-h} in the draft (one art pixel = one game pixel), then opens Pets on that item.
 - **Skill trees list every item** (`skills/214-s222-tree-unlocks-from-gear.js`, `window.SQTREEAUTO`): the outermost `treeGains(sk,l)` appends
   generated lines: wear/use requirements of every `EQ` item (library `gear.<k>.rq` first, then `e.tt` = Defence 50, 111a2's `defReq`, `e.req`)
   and making levels from SM (Smithing), GOODS/REC/BREC (Crafting), COOKS (Cooking). Skipped when the level's own text already names the item

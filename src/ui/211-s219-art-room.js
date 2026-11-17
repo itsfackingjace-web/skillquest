@@ -21,14 +21,18 @@
  // wearables: 48x76 pixels of the 96x112 worn layer (origin WO), one frame per facing (front, back, side), drawn over your character
  const WO=[24,28],WSL=[['helm','Hat or helmet'],['body','Top or chestplate'],['legs','Trousers or leg armour']],FACE=['Front','Back','Side'];
  function freshWear(){return Object.assign(fresh(),{mode:'wear',w:48,h:76,fr:[blank(48,76),blank(48,76),blank(48,76)],kind:'wear',sl:'helm',mirror:true,onion:false,under:1,gear:0})}
- const DR={pic:null,wear:null};
+ // pets: four frames (Idle 1, Idle 2, Walk 1, Walk 2 = the pet look's a, c, b, d), drawn facing right, one pixel = one game pixel
+ const PFN=['Idle 1','Idle 2','Walk 1','Walk 2'],PSZ=[12,16,20,24,32];
+ function freshPet(){return Object.assign(fresh(),{mode:'pet',w:16,h:16,fr:[blank(16,16),blank(16,16),blank(16,16),blank(16,16)],kind:'pet',mirror:false,onion:true,pvm:'idle',scale:1})}
+ const DR={pic:null,wear:null,pet:null};
+ const mk=m=>m==='wear'?freshWear():m==='pet'?freshPet():fresh();
  function fresh(){return{mode:'pic',w:16,h:16,fr:[blank(16,16)],cur:0,pal:PAL0.slice(),col:1,tool:'pen',ms:200,onion:true,mirror:false,zoom:1,grid:true,name:'',kind:'item',note:'',undo:[],redo:[],view:'draw',mine:null,sent:''}}
- const LSK=m=>m==='wear'?'sq_art_wear':'sq_art_draft';
- function loadOne(m){try{const d=JSON.parse(localStorage.getItem(LSK(m))||'null');if(d&&d.w&&d.fr){const o=Object.assign(m==='wear'?freshWear():fresh(),d,{mode:m,fr:d.fr.map(s=>Uint8Array.from(s)),undo:[],redo:[],view:'draw',mine:null,sent:''});if(m!=='wear'||o.fr.length===3&&o.w===48&&o.h===76)return o}}catch(e){}return m==='wear'?freshWear():fresh()}
- function load(){if(A)return;DR.pic=loadOne('pic');DR.wear=loadOne('wear');let m='pic';try{m=localStorage.getItem('sq_art_mode')==='wear'?'wear':'pic'}catch(e){}A=DR[m]}
- const W=()=>A&&A.mode==='wear';
+ const LSK=m=>m==='wear'?'sq_art_wear':m==='pet'?'sq_art_pet':'sq_art_draft';
+ function loadOne(m){try{const d=JSON.parse(localStorage.getItem(LSK(m))||'null');if(d&&d.w&&d.fr){const o=Object.assign(mk(m),d,{mode:m,fr:d.fr.map(s=>Uint8Array.from(s)),undo:[],redo:[],view:'draw',mine:null,sent:''});if(m==='pic'&&o.kind==='pet')o.kind='item';if(m==='pet'){o.kind='pet';if(o.fr.length!==4||o.w!==o.h||!PSZ.includes(o.w))return mk(m)}if(m!=='wear'||o.fr.length===3&&o.w===48&&o.h===76)return o}}catch(e){}return mk(m)}
+ function load(){if(A)return;DR.pic=loadOne('pic');DR.wear=loadOne('wear');DR.pet=loadOne('pet');let m='pic';try{const v=localStorage.getItem('sq_art_mode');m=v==='wear'||v==='pet'?v:'pic'}catch(e){}A=DR[m]}
+ const W=()=>A&&A.mode==='wear',PT=()=>A&&A.mode==='pet';
  let saveT=0;function keep(){clearTimeout(saveT);saveT=setTimeout(keepNow,400)}
- function keepNow(){clearTimeout(saveT);if(!A)return;try{localStorage.setItem(LSK(A.mode),JSON.stringify({w:A.w,h:A.h,fr:A.fr.map(f=>Array.from(f)),cur:A.cur,pal:A.pal,col:A.col,tool:A.tool,ms:A.ms,onion:A.onion,mirror:A.mirror,zoom:A.zoom,grid:A.grid,name:A.name,kind:A.kind,note:A.note,sl:A.sl,under:A.under,gear:A.gear}));localStorage.setItem('sq_art_mode',A.mode)}catch(e){}}
+ function keepNow(){clearTimeout(saveT);if(!A)return;try{localStorage.setItem(LSK(A.mode),JSON.stringify({w:A.w,h:A.h,fr:A.fr.map(f=>Array.from(f)),cur:A.cur,pal:A.pal,col:A.col,tool:A.tool,ms:A.ms,onion:A.onion,mirror:A.mirror,zoom:A.zoom,grid:A.grid,name:A.name,kind:A.kind,note:A.note,sl:A.sl,under:A.under,gear:A.gear,pvm:A.pvm,scale:A.scale}));localStorage.setItem('sq_art_mode',A.mode)}catch(e){}}
  const snapU=()=>{A.undo.push({fr:A.fr.map(f=>f.slice()),cur:A.cur,w:A.w,h:A.h});if(A.undo.length>60)A.undo.shift();A.redo=[]};
  // ---- the panel: tools on top, the canvas, the colours right under it, frames under those; name and sending on their own page ----
  {const st=document.createElement('style');st.textContent=`#pn.sqart .pc{max-width:980px}
@@ -76,26 +80,32 @@
    tb('undo','undo','Undo (Ctrl+Z)',0,!A.undo.length)+tb('redo','redo','Redo (Ctrl+Y)',0,!A.redo.length)+tb('zout','zout','Zoom out',0,A.zoom<=1)+tb('zin','zin','Zoom in',0,A.zoom>=6)+tb('grid','grid','Grid lines',A.grid)+'</div>';
   const pal='<div class="arpalw"><label class="arcur'+(A.col?'':' clr')+'" style="'+(A.col?'background:'+A.pal[A.col]:'')+'" title="'+(A.col?'Tap to change this colour':'Clear (see-through)')+'">'+(A.col?'<input type="color" id="arcc" value="'+A.pal[A.col]+'" aria-label="Change this colour">':'')+'</label>'+
    '<div class="arpal">'+A.pal.map((h,i)=>'<button class="'+(i===A.col?'on ':'')+(i?'':'clr')+'" data-ar="col:'+i+'" style="'+(i?'background:'+h:'')+'" aria-label="'+(i?'Colour '+i:'See-through')+'"></button>').join('')+'</div></div>';
-  const modes='<div class="arrow" role="tablist" style="margin:0 0 4px"><button class="arb'+(W()?'':' on')+'" data-ar="mode:pic" role="tab" aria-selected="'+!W()+'">Picture or sprite</button><button class="arb'+(W()?' on':'')+'" data-ar="mode:wear" role="tab" aria-selected="'+W()+'">Something to wear</button></div>';
+  const mb=(m,l)=>'<button class="arb'+(A.mode===m?' on':'')+'" data-ar="mode:'+m+'" role="tab" aria-selected="'+(A.mode===m)+'">'+l+'</button>';
+  const modes='<div class="arrow" role="tablist" style="margin:0 0 4px">'+mb('pic','Picture or sprite')+mb('wear','Something to wear')+mb('pet','A pet')+'</div>';
   const wearSide='<div class="arfrw"><canvas class="arpv" id="arpv" width="'+A.w+'" height="'+A.h+'" title="Preview" style="width:48px;height:76px"></canvas><div style="flex:1;min-width:0"><div class="arfr">'+A.fr.map((_,i)=>'<button class="arb'+(i===A.cur?' on':'')+'" data-arf="'+i+'" style="flex:none">'+FACE[i]+'</button>').join('')+'</div>'+
    '<label class="arsm" style="display:block;margin-top:4px">It\'s a <select id="arsl" class="arin" style="width:auto;padding:4px;font-size:14px">'+WSL.map(([k,l])=>'<option value="'+k+'"'+(A.sl===k?' selected':'')+'>'+l+'</option>').join('')+'</select></label>'+
    '<div class="arrow"><button class="arb'+(A.under?' on':'')+'" data-ar="under">Show my character</button>'+(A.under?'<button class="arb'+(A.gear?' on':'')+'" data-ar="gear">With my gear</button>':'')+(A.cur>0?'<button class="arb" data-ar="cpf">Copy the front</button>':'')+'</div>'+
    '<p class="arsm" style="margin:2px 0">Draw it on your character from the front, the back and the side (facing right). The developer can turn it into real gear.</p></div></div>';
-  const frames=W()?wearSide:'<div class="arfrw"><canvas class="arpv" id="arpv" width="'+A.w+'" height="'+A.h+'" title="Preview"></canvas><div style="flex:1;min-width:0"><div class="arfr">'+A.fr.map((_,i)=>'<canvas width="'+A.w+'" height="'+A.h+'" data-arf="'+i+'" class="'+(i===A.cur?'on':'')+'" aria-label="Frame '+(i+1)+'"></canvas>').join('')+
+  const petSide='<div><canvas class="arpv" id="arpv" width="96" height="'+PVH()+'" title="Preview" style="width:'+192+'px;height:'+(2*PVH())+'px"></canvas>'+
+   '<div class="arrow" role="tablist"><button class="arb'+(A.pvm!=='walk'?' on':'')+'" data-ar="pvm:idle" role="tab">Standing</button><button class="arb'+(A.pvm==='walk'?' on':'')+'" data-ar="pvm:walk" role="tab">Walking</button><button class="arb'+(A.scale?' on':'')+'" data-ar="scale">Next to my character</button></div>'+
+   '<div class="arfr">'+A.fr.map((_,i)=>'<button class="arb arpf'+(i===A.cur?' on':'')+'" data-arf="'+i+'" style="flex:none;flex-direction:column;padding:3px 4px"><canvas width="'+A.w+'" height="'+A.h+'" data-arf="'+i+'" style="width:40px;height:40px;border:0;image-rendering:pixelated;background:#fff"></canvas><span class="lb">'+PFN[i]+'</span></button>').join('')+'</div>'+
+   '<div class="arrow">'+(A.cur>0?'<button class="arb" data-ar="cpi">Copy Idle 1</button>':'')+(A.cur===3?'<button class="arb" data-ar="cpw">Copy Walk 1</button>':'')+tb('onion','onion','Show Idle 1 faintly',A.onion)+'</div>'+
+   '<p class="arsm" style="margin:2px 0">Draw your pet facing right; it\'s turned around when it walks left. Idle 1 and 2 take turns while it stands (half a second each), Walk 1 and 2 while it follows you. One square here is one pixel in the game.</p></div>';
+  const frames=PT()?petSide:W()?wearSide:'<div class="arfrw"><canvas class="arpv" id="arpv" width="'+A.w+'" height="'+A.h+'" title="Preview"></canvas><div style="flex:1;min-width:0"><div class="arfr">'+A.fr.map((_,i)=>'<canvas width="'+A.w+'" height="'+A.h+'" data-arf="'+i+'" class="'+(i===A.cur?'on':'')+'" aria-label="Frame '+(i+1)+'"></canvas>').join('')+
     '<button class="add" data-ar="fadd" title="New frame"'+(f<MAXF?'':' disabled')+'>+</button></div>'+
    '<div class="arrow"><span class="arsm">Frame '+(A.cur+1)+' of '+f+'</span><button class="arb" data-ar="fdup"'+(f<MAXF?'':' disabled')+'>Copy</button><button class="arb" data-ar="fdel"'+(f>1?'':' disabled')+'>Delete</button>'+
    '<button class="arb" data-ar="fl" aria-label="Move frame left"'+(A.cur>0?'':' disabled')+'>◀</button><button class="arb" data-ar="fr" aria-label="Move frame right"'+(A.cur<f-1?'':' disabled')+'>▶</button>'+(f>1?tb('onion','onion','Show the previous frame faintly',A.onion):'')+'</div>'+
    (f>1?'<label class="arsm" style="display:block">Speed: <span id="arms">'+A.ms+'</span> ms a frame<input type="range" id="arsp" min="60" max="1000" step="20" value="'+A.ms+'" style="width:100%"></label>':'')+'</div></div>';
-  const more=W()?'<div class="arrow"><button class="arb" data-ar="clear">Clear this side</button><button class="arb" data-ar="new">Start over</button></div>':'<div class="arrow"><label class="arsm">Canvas <select id="arsz" class="arin" style="width:auto;padding:4px;font-size:14px">'+SIZES.map(n=>'<option value="'+n+'"'+(n===A.w&&n===A.h?' selected':'')+'>'+n+' x '+n+'</option>').join('')+(A.w!==A.h||!SIZES.includes(A.w)?'<option selected>'+A.w+' x '+A.h+'</option>':'')+'</select></label>'+
+  const more=PT()?'<div class="arrow"><label class="arsm">Size <select id="arsz" class="arin" style="width:auto;padding:4px;font-size:14px">'+PSZ.map(n=>'<option value="'+n+'"'+(n===A.w?' selected':'')+'>'+n+' x '+n+'</option>').join('')+'</select></label><button class="arb" data-ar="clear">Clear frame</button><button class="arb" data-ar="new">Start over</button></div>':W()?'<div class="arrow"><button class="arb" data-ar="clear">Clear this side</button><button class="arb" data-ar="new">Start over</button></div>':'<div class="arrow"><label class="arsm">Canvas <select id="arsz" class="arin" style="width:auto;padding:4px;font-size:14px">'+SIZES.map(n=>'<option value="'+n+'"'+(n===A.w&&n===A.h?' selected':'')+'>'+n+' x '+n+'</option>').join('')+(A.w!==A.h||!SIZES.includes(A.w)?'<option selected>'+A.w+' x '+A.h+'</option>':'')+'</select></label>'+
    '<button class="arb" data-ar="clear">Clear frame</button><button class="arb" data-ar="new">Start over</button></div>';
   return '<div class="arw"><div class="arhd"><div class="tl">ART ROOM</div><button class="arb" data-ar="mine">My art</button><button class="arb" data-ar="back">Back</button></div>'+modes+tools+
    '<div class="armain"><div class="arbox'+(A.zoom>1?' zm':'')+'" id="arbox"><canvas class="arcv" id="arcv" width="'+A.w*c+'" height="'+A.h*c+'" style="width:'+A.w*c+'px;height:'+A.h*c+'px" aria-label="Drawing canvas"></canvas></div>'+
    '<div class="arside">'+pal+frames+more+'<button class="arb pri wide" data-ar="next" style="width:100%;min-height:46px;font-size:15px">Done? Name it and send</button></div></div></div>'}
  function sendHTML(){return '<div class="arw"><div class="arhd"><div class="tl">SEND YOUR ART</div><button class="arb" data-ar="draw">Back to drawing</button></div>'+
-   '<div class="arsend"><canvas class="big" id="arpv" width="'+A.w+'" height="'+A.h+'"'+(W()?' style="width:120px;height:190px"':'')+'></canvas><div>'+
-   '<p class="arsm" style="margin:0">'+(W()?'Something to wear, from the front, back and side. Approved designs can become real gear.':A.w+' x '+A.h+', '+A.fr.length+' frame'+(A.fr.length>1?'s at '+A.ms+' ms':'')+'. Approved art goes into the game, with your name in the credits. Pictures can become paintings in the Patron Art Gallery.')+'</p>'+
+   '<div class="arsend">'+(PT()?'<canvas class="big" id="arpv" width="96" height="'+PVH()+'" style="width:192px;height:'+2*PVH()+'px"></canvas>':'<canvas class="big" id="arpv" width="'+A.w+'" height="'+A.h+'"'+(W()?' style="width:120px;height:190px"':'')+'></canvas>')+'<div>'+
+   '<p class="arsm" style="margin:0">'+(PT()?'A pet, '+A.w+' x '+A.h+', standing and walking. Approved pets can be given to a pet in the game, with your name in the credits.':W()?'Something to wear, from the front, back and side. Approved designs can become real gear.':A.w+' x '+A.h+', '+A.fr.length+' frame'+(A.fr.length>1?'s at '+A.ms+' ms':'')+'. Approved art goes into the game, with your name in the credits. Pictures can become paintings in the Patron Art Gallery.')+'</p>'+
    '<label class="arlb" for="arnm">Name</label><input class="arin" id="arnm" maxlength="24" value="'+E(A.name)+'" placeholder="e.g. Ember sword">'+
-   (W()?'<p class="arsm" style="margin:8px 0 0">'+(WSL.find(q=>q[0]===A.sl)||WSL[0])[1]+', drawn from the front, back and side.</p>':'<label class="arlb" for="arkd">What is it?</label><select class="arin" id="arkd">'+KINDS.map(([k,l])=>'<option value="'+k+'"'+(k===A.kind?' selected':'')+'>'+l+'</option>').join('')+'</select>')+
+   (PT()?'':W()?'<p class="arsm" style="margin:8px 0 0">'+(WSL.find(q=>q[0]===A.sl)||WSL[0])[1]+', drawn from the front, back and side.</p>':'<label class="arlb" for="arkd">What is it?</label><select class="arin" id="arkd">'+KINDS.filter(q=>q[0]!=='pet').map(([k,l])=>'<option value="'+k+'"'+(k===A.kind?' selected':'')+'>'+l+'</option>').join('')+'</select>')+
    '<label class="arlb" for="arnt">Note for the developer (optional)</label><textarea class="arin" id="arnt" maxlength="300" rows="3" placeholder="Where would you like to see it?">'+E(A.note)+'</textarea>'+
    '<div class="arrow" style="margin-top:12px"><button class="arb pri wide" data-ar="send" style="min-height:46px;font-size:15px">Send to the developer</button></div>'+
    (A.sent?'<p style="font-weight:700">'+E(A.sent)+'</p>':'')+'</div></div></div>'}
@@ -107,15 +117,26 @@
  function paint(){const cv=document.getElementById('arcv');if(!cv)return;const c=cell(),x=cv.getContext('2d');x.imageSmoothingEnabled=false;
   for(let j=0;j<A.h;j++)for(let i=0;i<A.w;i++){x.fillStyle=(i+j)%2?'#e8e8e8':'#ffffff';x.fillRect(i*c,j*c,c,c)}
   if(W()&&A.under){const u=under(A.cur);if(u){x.globalAlpha=.5;x.drawImage(u,0,0,A.w*c,A.h*c);x.globalAlpha=1}}
-  if(A.onion&&A.cur>0&&A.fr.length>1){const pf=A.fr[A.cur-1];x.globalAlpha=.28;for(let k=0;k<pf.length;k++)if(pf[k]){x.fillStyle=hex(pf[k]);x.fillRect((k%A.w)*c,((k/A.w)|0)*c,c,c)}x.globalAlpha=1}
+  if(A.onion&&A.cur>0&&A.fr.length>1){const pf=A.fr[PT()?(A.cur===3?2:0):A.cur-1];x.globalAlpha=.28;for(let k=0;k<pf.length;k++)if(pf[k]){x.fillStyle=hex(pf[k]);x.fillRect((k%A.w)*c,((k/A.w)|0)*c,c,c)}x.globalAlpha=1}
   const f=A.fr[A.cur];for(let k=0;k<f.length;k++)if(f[k]){x.fillStyle=hex(f[k]);x.fillRect((k%A.w)*c,((k/A.w)|0)*c,c,c)}
   if(A.grid&&c>=6){x.strokeStyle='rgba(0,0,0,.1)';x.lineWidth=1;x.beginPath();for(let i=1;i<A.w;i++){x.moveTo(i*c+.5,0);x.lineTo(i*c+.5,A.h*c)}for(let j=1;j<A.h;j++){x.moveTo(0,j*c+.5);x.lineTo(A.w*c,j*c+.5)}x.stroke()}
   if(A.mirror){x.strokeStyle='rgba(56,112,216,.7)';x.setLineDash([4,4]);x.beginPath();x.moveTo(A.w*c/2+.5,0);x.lineTo(A.w*c/2+.5,A.h*c);x.stroke();x.setLineDash([])}
   thumbs();pv()}
  // the character under a wearable (211 shadows the game's CH, so 213 draws it): the 48x76 part of the 96x112 worn layer
  const UC=new Map();function under(d){const key=d+':'+(A.gear?1:0);if(UC.has(key))return UC.get(key);let c=null;try{const L=window.SQPAINT&&SQPAINT.charLayer(d,!!A.gear);if(L){c=document.createElement('canvas');c.width=48;c.height=76;c.getContext('2d').drawImage(L,WO[0],WO[1],48,76,0,0,48,76)}}catch(e){}UC.set(key,c);return c}
- function pv(){const cv=document.getElementById('arpv');if(!cv)return;const i=W()?pvF%3:pvF%A.fr.length;if(!W())return drawFrame(cv,A.fr[i]||A.fr[0],A.w,A.h,A.pal);
+ function pv(){const cv=document.getElementById('arpv');if(!cv)return;if(PT())return petPv(cv);const i=W()?pvF%3:pvF%A.fr.length;if(!W())return drawFrame(cv,A.fr[i]||A.fr[0],A.w,A.h,A.pal);
   const x=cv.getContext('2d');x.clearRect(0,0,A.w,A.h);const u=under(i);if(u)x.drawImage(u,0,0);const t=document.createElement('canvas');t.width=A.w;t.height=A.h;drawFrame(t,A.fr[i],A.w,A.h,A.pal);x.drawImage(t,0,0)}
+ // the pet preview: a strip of ground, the pet standing (Idle 1/2 every 0.5 s) or walking to and fro (Walk 1/2 every 125 ms, the game's step clock)
+ const has=f=>f&&f.some(v=>v);
+ function petFrame(fr,walk,now){const ok=i=>has(fr[i]);if(walk)return Math.floor(now/125)%2?(ok(3)?3:0):(ok(2)?2:0);return Math.floor(now/500)%2&&ok(1)?1:0}
+ const PTC=document.createElement('canvas'),PVH=()=>Math.max(A.h,32)+8;
+ function petPv(cv){const now=performance.now(),walk=A.pvm==='walk',x=cv.getContext('2d'),gy=cv.height-4;x.imageSmoothingEnabled=false;x.clearRect(0,0,cv.width,cv.height);
+  x.fillStyle='#7cc05a';x.fillRect(0,gy,cv.width,4);x.fillStyle='#5a9a40';for(let i=0;i<cv.width;i+=6)x.fillRect(i+((i/6)%2?2:0),gy,1,1);
+  if(A.scale){try{const L=window.SQPAINT&&SQPAINT.charLayer(2,false);if(L){x.globalAlpha=.85;x.drawImage(L,0,0,96,112,4-16,gy-51,48,56);x.globalAlpha=1}}catch(e){}}
+  const i=petFrame(A.fr,walk,now),span=cv.width-A.w-(A.scale?22:4),per=span/24*1000,ph=walk?(now%(2*per))/per:0,right=ph<1;
+  const px=Math.round((A.scale?22:2)+(walk?(right?ph:2-ph)*span:span/2));
+  PTC.width=A.w;PTC.height=A.h;drawFrame(PTC,A.fr[i],A.w,A.h,A.pal);x.fillStyle='rgba(0,0,0,.18)';x.beginPath();x.ellipse(px+A.w/2,gy,Math.max(4,A.w*.35),2,0,0,7);x.fill();
+  x.save();if(walk&&!right){x.translate(px*2+A.w,0);x.scale(-1,1)}x.drawImage(PTC,px,gy-A.h);x.restore()}
  function drawFrame(cv,f,w,h,pal){if(!cv)return;const x=cv.getContext('2d');x.clearRect(0,0,w,h);for(let k=0;k<f.length;k++){const v=f[k];if(v&&pal[v]){x.fillStyle=pal[v];x.fillRect(k%w,(k/w)|0,1,1)}}}
  function thumbs(){document.querySelectorAll('#pn canvas[data-arf]').forEach(cv=>drawFrame(cv,A.fr[+cv.dataset.arf],A.w,A.h,A.pal))}
  function fill(f,k,to){const from=f[k];if(from===to)return;const q=[k];while(q.length){const p=q.pop();if(f[p]!==from)continue;f[p]=to;const x=p%A.w,y=(p/A.w)|0;if(x>0)q.push(p-1);if(x<A.w-1)q.push(p+1);if(y>0)q.push(p-A.w);if(y<A.h-1)q.push(p+A.w)}}
@@ -143,7 +164,7 @@
  // redraw buttons (undo state) without rebuilding the canvas mid-stroke
  function rPnSoft(){const u=document.querySelector('#pn [data-ar="undo"]'),r=document.querySelector('#pn [data-ar="redo"]');if(u)u.disabled=!A.undo.length;if(r)r.disabled=!A.redo.length}
  // ---- preview ----
- let pvF=0,pvT=0;setInterval(()=>{if(ptab!==ATAB||!pnOpen||!A||A.view==='mine')return;const now=performance.now();if(now-pvT<(W()?900:A.ms))return;pvT=now;pvF=(pvF+1)%(W()?3:A.fr.length);pv()},40);
+ let pvF=0,pvT=0;setInterval(()=>{if(ptab!==ATAB||!pnOpen||!A||A.view==='mine')return;const now=performance.now();if(PT()){pv();return}if(now-pvT<(W()?900:A.ms))return;pvT=now;pvF=(pvF+1)%(W()?3:A.fr.length);pv()},40);
  // ---- buttons and fields ----
  function act(a,v,b){
   if(a==='tool')A.tool=v;else if(a==='col'){A.col=+v;if(A.tool==='erase'||A.tool==='pick'||A.tool==='move')A.tool='pen'}
@@ -157,11 +178,13 @@
   else if(a==='fl'&&A.cur>0){snapU();[A.fr[A.cur-1],A.fr[A.cur]]=[A.fr[A.cur],A.fr[A.cur-1]];A.cur--}
   else if(a==='fr'&&A.cur<A.fr.length-1){snapU();[A.fr[A.cur+1],A.fr[A.cur]]=[A.fr[A.cur],A.fr[A.cur+1]];A.cur++}
   else if(a==='onion')A.onion=!A.onion;
-  else if(a==='mode'){if(A.mode!==v){keepNow();A=DR[v]||(DR[v]=v==='wear'?freshWear():fresh());A.view='draw';try{localStorage.setItem('sq_art_mode',v)}catch(x){}}}
+  else if(a==='mode'){if(A.mode!==v&&(v==='pic'||v==='wear'||v==='pet')){keepNow();A=DR[v]||(DR[v]=mk(v));A.view='draw';try{localStorage.setItem('sq_art_mode',v)}catch(x){}}}
   else if(a==='under'){A.under=A.under?0:1}else if(a==='gear'){A.gear=A.gear?0:1;UC.clear()}
   else if(a==='cpf'&&W()&&A.cur>0){snapU();A.fr[A.cur]=A.fr[0].slice()}
-  else if(a==='new'){if(b&&b.dataset.sure){const m=A.mode;A=DR[m]=m==='wear'?freshWear():fresh();try{localStorage.removeItem(LSK(m))}catch(x){}}else{if(b){b.dataset.sure=1;b.textContent='Sure? Tap again'}return}}
-  else if(a==='next'){if(!A.fr.some(f=>f.some(x=>x))){say('Draw something first.');return}A.view='send';A.sent=''}
+  else if(a==='cpi'&&PT()&&A.cur>0){snapU();A.fr[A.cur]=A.fr[0].slice()}else if(a==='cpw'&&PT()&&A.cur===3){snapU();A.fr[3]=A.fr[2].slice()}
+  else if(a==='pvm'&&PT())A.pvm=v==='walk'?'walk':'idle';else if(a==='scale'&&PT())A.scale=A.scale?0:1;
+  else if(a==='new'){if(b&&b.dataset.sure){const m=A.mode;A=DR[m]=mk(m);try{localStorage.removeItem(LSK(m))}catch(x){}}else{if(b){b.dataset.sure=1;b.textContent='Sure? Tap again'}return}}
+  else if(a==='next'){if(!A.fr.some(f=>f.some(x=>x))){say('Draw something first.');return}if(PT()&&!has(A.fr[0])){say('Draw Idle 1 first: it\'s how your pet looks when it stands still.');return}A.view='send';A.sent=''}
   else if(a==='send'){send();return}
   else if(a==='mine'){A.view='mine';A.mine=null;rPn();loadMine();return}
   else if(a==='draw')A.view='draw';
@@ -177,7 +200,7 @@
  pbd.addEventListener('change',e=>{if(ptab!==ATAB||!A)return;const t=e.target;
   if(t.id==='arkd'){A.kind=t.value;keep()}
   else if(t.id==='arsl'){A.sl=WSL.some(q=>q[0]===t.value)?t.value:'helm';keep()}
-  else if(t.id==='arsz'){const n=+t.value;if(!n||n===A.w&&n===A.h)return;snapU();A.fr=A.fr.map(f=>{const g2=blank(n,n);for(let y=0;y<Math.min(n,A.h);y++)for(let x=0;x<Math.min(n,A.w);x++)g2[y*n+x]=f[y*A.w+x];return g2});A.w=A.h=n;A.zoom=1;keep();rPn()}},true);
+  else if(t.id==='arsz'){const n=+t.value;if(!n||n===A.w&&n===A.h)return;snapU();const dx=PT()?Math.floor((n-A.w)/2):0,dy=PT()?n-A.h:0;A.fr=A.fr.map(f=>{const g2=blank(n,n);for(let y=0;y<A.h;y++)for(let x=0;x<A.w;x++){const X=x+dx,Y=y+dy;if(X>=0&&Y>=0&&X<n&&Y<n)g2[Y*n+X]=f[y*A.w+x]}return g2});A.w=A.h=n;A.zoom=1;keep();rPn()}},true);
  // keyboard on a computer: B/E/G/I tools, M mirror, Ctrl+Z / Ctrl+Y, +/- zoom, hold Space to move around
  addEventListener('keydown',e=>{if(ptab!==ATAB||!pnOpen||!A||A.view!=='draw')return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'))return;
   const k=e.key.toLowerCase(),c=e.ctrlKey||e.metaKey;let a=null,v;
@@ -191,8 +214,8 @@
   return JSON.stringify({p:used.map(v=>A.pal[v]),fr:A.fr.map(f=>Array.from(f,v=>v?map.get(v)||'.':'.').join(''))})}
  async function send(){const u=uid(),Fb=F();if(!u||!Fb){say('Sign in to send your art.');return}if(!can()){say('The Art Room is for Patrons aged 13 and up.');return}
   const clean=t=>window.SQFILTER?SQFILTER.clean(t):t;const name=clean(String(A.name||'').trim()).slice(0,24);if(!name){A.sent='Give your art a name first.';rPn();return}
-  if(!A.fr.some(f=>f.some(v=>v))){A.sent='Draw something first.';rPn();return}
-  const d={n:name,k:W()?'wear':(A.kind==='wear'?'item':A.kind),w:A.w,h:A.h,f:pack(),ms:Math.max(40,Math.min(2000,A.ms|0)),who:myNm().slice(0,12)||'Patron',t:Fb.db.serverTimestamp()};const nt=clean(String(A.note||'').trim()).slice(0,300);if(nt)d.note=nt;if(W())d.sl=A.sl;
+  if(!A.fr.some(f=>f.some(v=>v))||PT()&&!has(A.fr[0])){A.sent=PT()?'Draw Idle 1 first.':'Draw something first.';rPn();return}
+  const d={n:name,k:W()?'wear':PT()?'pet':(A.kind==='wear'||A.kind==='pet'?'item':A.kind),w:A.w,h:A.h,f:pack(),ms:Math.max(40,Math.min(2000,A.ms|0)),who:myNm().slice(0,12)||'Patron',t:Fb.db.serverTimestamp()};const nt=clean(String(A.note||'').trim()).slice(0,300);if(nt)d.note=nt;if(W())d.sl=A.sl;
   A.sent='Sending...';rPn();
   try{await Fb.db.push(Fb.db.ref(Fb.D,'art/'+u),d);A.sent='Sent! You\'ll get a message when the developer has looked at "'+name+'".';say('Your art was sent to the developer.')}
   catch(e){A.sent='That didn\'t send. Check your connection and try again.'}rPn()}
@@ -205,7 +228,7 @@
  window.SQARTROOM={open,unpack,pack:()=>pack(),get state(){return A},CH};
  // ======================= Dev Suite > Art Room inbox =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,toast,fail}=API;
- const T={list:null,lb:null,msg:{},q:'',pat:{},paint:{},pp:{},wk:{}};
+ const T={list:null,lb:null,msg:{},q:'',pat:{},paint:{},pp:{},wk:{},pk:{}};
  const D=()=>F().db,ref=p=>D().ref(F().D,p);
  async function inbox(){try{const[a,l,p,pc,ps]=await Promise.all([D().get(ref('art')),D().get(ref('lb')),D().get(ref('patron')),D().get(ref('cfgpub/patreon')),D().get(ref('cfgpub/psync'))]);T.ps=ps.val()||null;try{T.paint=(await D().get(ref('paintings'))).val()||{}}catch(_){T.paint={}}const v=a.val()||{};T.lb=l.val()||{};T.pat=p.val()||{};T.pc=pc.val()||{};
    T.list=[];for(const u in v)for(const id in v[u])T.list.push(Object.assign({u,id},v[u][id]));T.list.sort((x,y)=>(x.st?1:0)-(y.st?1:0)||(y.t||0)-(x.t||0))}catch(e){fail(e);T.list=[]}API.draw()}
@@ -215,13 +238,13 @@
   let h='<div class="dv-card"><b>🎨 Art Room inbox</b><p class="dv-mut">Pieces Patrons drew in the Art Room. Approve to thank them and add them to the credits; then copy a frame to the clipboard and paste it into any picture editor here.</p>'+
    '<p>'+waiting.length+' waiting, '+(T.list.length-waiting.length)+' answered.</p></div>';
   for(const x of T.list){const k=x.u+'/'+x.id,fr=unpack(x);
-   const wear=x.k==='wear';
+   const wear=x.k==='wear',pet=x.k==='pet'&&fr.length===4;
    h+='<div class="dv-card" style="margin-top:10px"><div class="dv-row" style="gap:12px;align-items:flex-start;flex-wrap:wrap"><canvas data-arp="'+E(k)+'" width="'+x.w+'" height="'+x.h+'" style="position:static;display:block;width:'+(wear?144:Math.min(192,x.w*6))+'px;height:'+(wear?228:Math.min(192,x.h*6))+'px;image-rendering:pixelated;background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/12px 12px;border:2px solid #485870"></canvas>'+
-    '<div style="flex:1;min-width:200px"><b>'+E(x.n)+'</b> <span class="dv-mut">by '+E(x.who||nm(x.u))+' · '+E(x.k)+' · '+x.w+'x'+x.h+' · '+fr.length+' frame'+(fr.length===1?'':'s')+(fr.length>1?' at '+(x.ms||200)+' ms':'')+(x.t?' · '+new Date(x.t).toLocaleDateString():'')+'</span>'+
+    '<div style="flex:1;min-width:200px"><b>'+E(x.n)+'</b> <span class="dv-mut">by '+E(x.who||nm(x.u))+' · '+E(x.k)+' · '+x.w+'x'+x.h+' · '+fr.length+' frame'+(fr.length===1?'':'s')+(fr.length>1&&!pet?' at '+(x.ms||200)+' ms':'')+(x.t?' · '+new Date(x.t).toLocaleDateString():'')+'</span>'+
     (x.note?'<p>'+E(x.note)+'</p>':'')+(x.st?'<p><b>'+(x.st==='ok'?'Approved':'Not this time')+'</b>'+(x.re?': '+E(x.re):'')+'</p>':'')+
-    '<div class="dv-row" style="flex-wrap:wrap;gap:6px">'+fr.map((_,i)=>'<button class="dv-b" data-arx="clip:'+E(k)+':'+i+'">Copy frame '+(i+1)+'</button>').join('')+'</div>'+
+    '<div class="dv-row" style="flex-wrap:wrap;gap:6px">'+fr.map((_,i)=>'<button class="dv-b" data-arx="clip:'+E(k)+':'+i+'">Copy '+(pet?PFN[i]:'frame '+(i+1))+'</button>').join('')+'</div>'+
     (x.st?'':'<input data-arq="'+E(k)+'" placeholder="Message to the artist (optional)" value="'+E(T.msg[k]||'')+'" style="width:100%;margin-top:6px"><div class="dv-row" style="gap:6px;margin-top:6px"><button class="dv-b dv-pri" data-arx="ok:'+E(k)+'">Approve</button><button class="dv-b dv-bad" data-arx="no:'+E(k)+'">Not this time</button></div>')+
-    (wear?wearCtl(x,k):paintCtl(x,k))+
+    (wear?wearCtl(x,k):pet?petCtl(x,k):paintCtl(x,k))+
     '</div></div></div>'}
   // where the Patron Art Gallery stands (213): library places.gallery {tx,ty}
   {const PG=window.SQPAINT,dc=S.draft&&S.draft.places&&S.draft.places.gallery,lc=S.live&&S.live.places&&S.live.places.gallery;
@@ -267,14 +290,23 @@
  function wornFrom(x){const fr=unpack(x);if(fr.length<3||x.w!==48||x.h!==76)return null;const PX=window.SQA&&SQA.PXC;if(!PX)return null;const pal=fr[0].pal.slice(1);if(pal.length>PX.length)return null;
   const o={h:1};['f','b','s'].forEach((d,i)=>{const a=new Array(96*112).fill('.');const f=fr[i].f;let any=false;for(let q=0;q<f.length;q++){const v=f[q];if(!v)continue;any=true;a[(28+((q/48)|0))*96+24+(q%48)]=PX[v-1]}
    if(any)o[d]={w:96,h:112,s:1,p:pal.join(','),r:SQA.pack(a.join(''))}});return o.f||o.b||o.s?o:null}
+ // a pet: becomes the look of a pet in the draft (pets.<kind>: frames a/c standing, b/d walking), then opens the Pets editor on it
+ function petCtl(x,k){const L=(window.SQA&&SQA.petKinds?SQA.petKinds():[]).slice().sort((a,b)=>String(INAME[a]||a).localeCompare(String(INAME[b]||b)));if(!T.pk[k])T.pk[k]=L[0]||'';
+  return'<p class="dv-mut" style="margin:8px 0 4px">'+'A pet: Idle 1 and 2 while it stands, Walk 1 and 2 while it walks (preview: walking, then standing).'+' Use it as the look of:</p><div class="dv-row" style="gap:6px;flex-wrap:wrap"><select data-arpk="'+E(k)+'">'+L.map(q=>'<option value="'+q+'"'+(T.pk[k]===q?' selected':'')+'>'+E(INAME[q]||q)+(S.draft&&S.draft.pets&&S.draft.pets[EQ[q].pet]?' (has a look)':'')+'</option>').join('')+'</select>'+
+   '<button class="dv-b dv-pri" data-arx="pet:'+E(k)+'">Put it in the Pets editor</button></div><p class="dv-mut" style="margin:4px 0 0">Saves it to the draft as that pet\'s look (replacing a draft look) and opens it, so you can finish it and publish.</p>'}
+ function petFrom(x){const fr=unpack(x);if(!fr.length||fr.length>8)return null;const PX=window.SQA&&SQA.PXC;if(!PX)return null;const pal=fr[0].pal.slice(1);if(pal.length>PX.length)return null;
+  const w=x.w,h=x.h,o={w,h,s:2,ox:-Math.floor(w/2),oy:7-h};['a','c','b','d'].forEach((d,i)=>{const f=fr[i]&&fr[i].f;if(!f||!f.some(v=>v))return;o[d]={w,h,s:2,p:pal.join(','),r:SQA.pack(Array.from(f,v=>v?PX[v-1]:'.').join(''))}});
+  return o.a?o:null}
  // a wearable preview: the facings in turn over the plain character
  function wearPv(cv,x,i){const fr=unpack(x);if(!fr[i])return;const c=cv.getContext('2d');c.clearRect(0,0,x.w,x.h);try{const L=window.SQPAINT&&SQPAINT.charLayer(i,false);if(L){c.globalAlpha=.55;c.drawImage(L,24,28,48,76,0,0,48,76);c.globalAlpha=1}}catch(e){}
   const t=document.createElement('canvas');t.width=x.w;t.height=x.h;drawFrame(t,fr[i].f,x.w,x.h,fr[i].pal);c.drawImage(t,0,0)}
  // animate the inbox previews
- setInterval(()=>{if(S.tab!=='artroom'||!T.list)return;const now=performance.now();document.querySelectorAll('#dvs [data-arp]').forEach(cv=>{const[u,id]=cv.dataset.arp.split('/');const x=T.list.find(y=>y.u===u&&y.id===id);if(!x)return;const fr=unpack(x);if(!fr.length)return;if(x.k==='wear'){wearPv(cv,x,Math.floor(now/900)%Math.min(3,fr.length));return}const i=Math.floor(now/(x.ms||200))%fr.length;drawFrame(cv,fr[i].f,x.w,x.h,fr[i].pal)})},60);
+ setInterval(()=>{if(S.tab!=='artroom'||!T.list)return;const now=performance.now();document.querySelectorAll('#dvs [data-arp]').forEach(cv=>{const[u,id]=cv.dataset.arp.split('/');const x=T.list.find(y=>y.u===u&&y.id===id);if(!x)return;const fr=unpack(x);if(!fr.length)return;if(x.k==='wear'){wearPv(cv,x,Math.floor(now/900)%Math.min(3,fr.length));return}
+   if(x.k==='pet'&&fr.length===4){const has=i=>fr[i].f.some(v=>v),walk=now%4000<2000,i=walk?(Math.floor(now/125)%2?(has(3)?3:0):(has(2)?2:0)):(Math.floor(now/500)%2&&has(1)?1:0);drawFrame(cv,fr[i].f,x.w,x.h,fr[i].pal);return}const i=Math.floor(now/(x.ms||200))%fr.length;drawFrame(cv,fr[i].f,x.w,x.h,fr[i].pal)})},60);
  document.addEventListener('input',e=>{if(S.tab!=='artroom')return;const t=e.target;if(t.dataset&&t.dataset.arq)T.msg[t.dataset.arq]=t.value.slice(0,300);
   if(t.dataset&&t.dataset.arpp)T.pp[t.dataset.arpp]=Math.max(100,Math.min(1e6,Math.round(+t.value||0)));
   if(t.dataset&&t.dataset.arwk)T.wk[t.dataset.arwk]=t.value;
+  if(t.dataset&&t.dataset.arpk)T.pk[t.dataset.arpk]=t.value;
   if(t.dataset&&t.dataset.arpc){T.pcf=T.pcf||{};T.pcf[t.dataset.arpc]=t.value.trim().slice(0,200)}
   if(t.dataset&&t.dataset.arpq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-arpq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='artroom')return;const t=e.target.closest&&e.target.closest('[data-arx]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();
@@ -296,6 +328,9 @@
    else if(a==='wear'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id),key=T.wk[k];if(!x||!key||!EQ[key]){toast('Pick an item first.');return}
     const o=wornFrom(x);if(!o){toast('This piece has nothing drawn.');return}S.draft.worn=S.draft.worn||{};S.draft.worn[key]=o;await API.dset('draft/worn/'+key,o);
     toast('Saved as the look of '+(INAME[key]||key)+' in the draft. Opening it...');const tb=document.querySelector('#dvs [data-tab="worn"]');if(tb){tb.click();setTimeout(()=>{const it=document.querySelector('#dvs [data-k="'+key+'"]');if(it)it.click()},150)}}
+   else if(a==='pet'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id),item=T.pk[k],e=item&&EQ[item];if(!x||!e||!e.pet){toast('Pick a pet first.');return}
+    const o=petFrom(x);if(!o||!(SQA.validPet&&SQA.validPet(o))){toast('This piece has nothing drawn in its first frame.');return}S.draft.pets=S.draft.pets||{};S.draft.pets[e.pet]=o;await API.dset('draft/pets/'+e.pet,o);
+    toast('Saved as the look of '+(INAME[item]||item)+' in the draft. Opening it...');const tb=document.querySelector('#dvs [data-tab="pets"]');if(tb){tb.click();setTimeout(()=>{const it=document.querySelector('#dvs [data-k="'+item+'"]');if(it)it.click()},150)}}
    else if(a==='ok'||a==='no'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id);const re=String(T.msg[k]||'').trim().slice(0,300);
     const up={['art/'+u+'/'+id+'/st']:a};if(re)up['art/'+u+'/'+id+'/re']=re;if(a==='ok')up['artcred/'+id]={n:String(x.who||nm(u)).slice(0,12),w:String(x.n||'Art').slice(0,40)};
     for(const pth of Object.keys(up))await D().set(ref(pth),up[pth]);
