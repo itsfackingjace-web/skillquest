@@ -18,10 +18,10 @@ support@skillquestmmo.com.
 | Google account ID, name, email | Firebase Authentication | The owner (Firebase console) |
 | Game saves and backups (`saves`, `bak`) | Firebase Realtime Database | The player and developer accounts (`devs/`) |
 | Age group (`age`) | Realtime Database | The player and developers |
-| Chat, private messages, guild and party chat | Realtime Database | Recipients; moderators (`mods/`, adults only) and developers for moderation (guild chat: members only) |
+| Chat, private messages, guild and party chat | Realtime Database | Recipients; moderators (`mods/`, adults only) and developers for moderation (guild chat: members, moderators, developers) |
 | Bug reports, play-time statistics | Realtime Database | Developers only |
 | Player reports, mute/suspend records (`reports`, `mod`) | Realtime Database | Moderators and developers |
-| Moderation log (`modlog`: who opened whose private messages, who muted whom) | Realtime Database | Developers only; moderators can only add entries |
+| Moderation log (`modlog`: who opened whose private messages or which guild's chat, who muted whom) | Realtime Database | Developers only; moderators can only add entries |
 | Public game state (presence, houses, leaderboard, market) | Realtime Database | Signed-in players |
 
 No payment details are ever stored; a payment provider handles them.

@@ -886,8 +886,11 @@
 - **Moderators** (`multiplayer/219-s227-moderators.js`, `window.SQMODS`, Options > MODERATION or `/mod`, `ptab` 49): `mods/<uid>` = true,
   written by devs only from the panel's Moderators tab (refused unless `age/<uid>/b==='a'`; the rules' `MOD` also needs it). Tabs: open
   reports (`reports`, Mark handled = `st:'done'`), public chat (delete), private messages (reads the whole `pm` node, filters to/from the
-  player), Muted, plus Moderators and Log for devs. Mute 1h/24h/7d, suspend 24h/7d, lift → `mod/<u>` {mu,ba,r,by,t}; the rules let a moderator
+  player), Guild chat (guilds from `glb`, last 150 of `gchat/<g>`, delete; rules let mods/devs read and delete gchat), Muted, plus Moderators and Log for devs. Mute 1h/24h/7d, suspend 24h/7d, lift → `mod/<u>` {mu,ba,r,by,t}; the rules let a moderator
   write only `by` = themselves, never self/devs/mods, at most now+7 days, and never change a longer (dev) mute/suspension. Every pm look
   and action pushes `modlog/<id>` {by,a,u,x,t} (create-only, devs read). Players see a notice in the Private chat tab. Disclosed in
   privacy.html (Moderation section), terms.html and SECURITY-PROGRAM.md: **keep them in step if what moderators can see changes.**
-  Rules: `mods`, `mod`, `reports`, `chat`, `pm`, `age`, `modlog` (publish them). Rules test: scratchpad `modrules.js`, panel `modui.js`.
+  Rules: `mods`, `mod`, `reports`, `chat`, `pm`, `gchat`, `age`, `modlog` (publish them).
+- **Peer monster timers** (061's monster sync): fields matching `CDK` (`tcd`, `scd`, `gcd`, `lcd`, `cd`, `cbt`, `cast`...) are only taken from
+  the owner when the copy is created; after that the copy keeps its own. Copying them on every update (the owner's skeleton timer runs
+  far below 0 when nobody is in range) made copies of skeletons throw on every database update. New reload timers: end the name in `cd`. Rules test: scratchpad `modrules.js`, panel `modui.js`.
