@@ -220,7 +220,7 @@ clearProt();
 // --- update: safe streets, welcome message ---
 let inTownPrev=false,protT=0;
 const _u20=upd;upd=function(dt){_u20(dt);if(!pnOpen)TALKN=null;if(menuOpen||pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inTownBox(x,y);
- if(inT&&!inTownPrev&&!dead){say('Welcome to Saltmere, the port of the east!');msgT=3}inTownPrev=inT;
+ /* no welcome message: towns are named on the map (Nov 16) */inTownPrev=inT;
  en=en.filter(n=>!inTownBox(Math.floor(n.x/16),Math.floor(n.y/16)));
  if((protT+=dt)>1){protT=0;for(let j=REM.length-1;j>=0;j--)if(PROT.has(REM[j].i))REM.splice(j,1)}};
 // --- drawing ---

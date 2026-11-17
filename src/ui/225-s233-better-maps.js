@@ -13,7 +13,7 @@
 // Names on the map: a label layer over #mpc (towns, dungeons, harbor posts on Hollow; the pier and found landmarks on islands),
 //   placed greedily so labels never overlap; legend entries that only named a labelled place are dropped.
 // Guild quests: the guild's current quest is a quest-log entry (102's SQQEXTRA, id `gq:<guild>:<t>`, category Guild) with its
-//   progress; tracking it points at the nearest tree / rock / bush for wood / mine / forage quests (102's SQNEAROBJ). The guild
+//   progress (no arrow: it counts anywhere). The guild
 //   screen's quest card has a Track button (`data-gqtrk`, via SQGQTRKBTN, 197).
 (()=>{const SPAN=48,PINK='#ff5a8a',GOLD='#f8d048',DARK='#302818';
  const areaNow=()=>{if(!SCENE)return'hollow';const R=SCENE.room;return R&&R.region?R.region:null};
@@ -97,15 +97,12 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
     h=h.replace('<div class="lg">','<div class="lg"><span><i style="background:'+PINK+'"></i>Pin</span><span><i style="background:'+GOLD+'"></i>Quest</span>')}catch(e){}return h}}
  // ---------------- guild quests in the quest log / tracker ----------------
  const GQ=()=>{try{const S=window.SQGUILD;if(!S||!S.id||!S.state)return null;const q=S.state.q;if(!q||!S.QK||!S.QK[q.k])return null;return{S,q,K:S.QK[q.k],id:'gq:'+S.id+':'+(q.t||0)}}catch(e){return null}};
- const SRCK={wood:['tree','pine','oak','willow','maple','yew'],mine:['rock','ore','gold','mith','adam'],forage:['bush','shroom','nut','cactus']};
  const kfmt=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e4?(Math.floor(n/100)/10).toFixed(n%1000?1:0)+'k':n.toLocaleString();
  const VERB={wood:'Cut trees anywhere',mine:'Mine rocks and ores anywhere',forage:'Forage anywhere',fish:'Catch fish anywhere'};
- (window.SQQEXTRA=window.SQQEXTRA||[]).push(()=>{const G=GQ();if(!G)return[];const{q,K,S,id}=G,p=Math.min(q.goal,q.p|0);let at=null;
-  if(!q.done&&SRCK[q.k]&&window.SQNEAROBJ)try{at=SQNEAROBJ(SRCK[q.k])}catch(e){}
-  const a=(window.SQCURAREA&&SQCURAREA())||'hollow',gn=(S.state.info&&S.state.info.n)||'your guild';
+ (window.SQQEXTRA=window.SQQEXTRA||[]).push(()=>{const G=GQ();if(!G)return[];const{q,K,S,id}=G,p=Math.min(q.goal,q.p|0);  const a=(window.SQCURAREA&&SQCURAREA())||'hollow',gn=(S.state.info&&S.state.info.n)||'your guild';
   return[{id,cat:'Guild',area:/^scene:/.test(a)?'hollow':a,name:K.n,desc:K.verb+' together with '+gn+'. Everything every member gathers anywhere counts.',st:'active',
    step:q.done?'Done! The leader or an officer picks the reward (START > Guild)':VERB[q.k]||K.verb,prog:kfmt(p)+' / '+kfmt(q.goal),ready:!!q.done,
-   rew:'One reward for the guild bank: '+K.rw.map(r=>Object.entries(r).map(([k,n])=>n.toLocaleString()+' '+((INAME[k]||k).toLowerCase())).join(', ')).join(' or '),at:at||null,kind:'guild'}]});
+   rew:'One reward for the guild bank: '+K.rw.map(r=>Object.entries(r).map(([k,n])=>n.toLocaleString()+' '+((INAME[k]||k).toLowerCase())).join(', ')).join(' or '),at:null,kind:'guild'}]});
  window.SQGQTRKBTN=()=>{const G=GQ();if(!G)return'';const on=window.SQTRKID&&SQTRKID()===G.id;
   return'<button class="qb" data-gqtrk="'+(on?'off':'on')+'" style="margin-top:8px">'+(on?'★ Tracking · tap to stop':'Track in the quest tracker')+'</button>'};
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-gqtrk]');if(!b)return;e.stopPropagation();e.preventDefault();const G=GQ();if(!G||!window.SQTRKSET)return;

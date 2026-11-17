@@ -115,7 +115,7 @@ const _es46=enterScene;enterScene=function(id,house,ret){_es46(id,house,ret);if(
  say({tw_tackle:'Silverhook Tackle. Nets, rods and the smell of the sea.',tw_kitchen:'The Seabreeze Kitchen. Something delicious is bubbling.',tw_post:'The Driftwood Trading Post. Half of it washed ashore.',tw_nav:'The Navigator\'s House: charts on every wall and a brass telescope by the window.'}[id]||('This is '+TWNAMES[id]+'.'))};
 let twPrev=false;
 const _u46=upd;upd=function(dt){_u46(dt);if(menuOpen||!TWON)return;townRoutine(TWN,dt,'luma');if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inTWBox(x,y);
- if(inT&&!twPrev&&!dead){say('Welcome to Tidewatch! Gulls cry over the harbor.');msgT=3}twPrev=inT;
+ /* no welcome message: towns are named on the map (Nov 16) */twPrev=inT;
  en=en.filter(n=>!inTWBox(Math.floor(n.x/16),Math.floor(n.y/16)))};
 // --- drawing: blue-and-white houses (the normal HD house with crisp white walls), drying nets, the lighthouse ---
 const _drb46=drBld;drBld=function(b,tm){_drb46(b,tm);if(!b.tw)return;const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16;

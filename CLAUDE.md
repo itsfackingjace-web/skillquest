@@ -941,5 +941,5 @@
   skips its frame/player dot when `t.fake`; 105's `SQMINIBOX` is set back to the real box. New minimap markers: keep using that formula.
   Pins: tap `#mpc` (HERE) = `PIN` {a,x,y tile} in localStorage `sq_pin`, on-screen arrow in drawHUD, cleared within 1.5 tiles. Map labels:
   the outermost `mapHTML` wraps `#mpc` in `.sqmpw` with a `.sqmpl` label layer (towns/dungeons/harbors on Hollow, pier + found landmarks on
-  islands, greedy no-overlap) and drops legend spans naming only labelled places. Guild quests: an `SQQEXTRA` entry `gq:<guild>:<t>` (102
-  exposes `SQTRKSET`, `SQTRKID`, `SQNEAROBJ`, `SQCURAREA`); 197's quest card shows `SQGQTRKBTN()` (`data-gqtrk`).
+  islands, greedy no-overlap) and drops legend spans naming only labelled places. Guild quests: an `SQQEXTRA` entry `gq:<guild>:<t>`, no arrow (102
+  exposes `SQTRKSET`, `SQTRKID`, `SQNEAROBJ`, `SQCURAREA`); towns no longer `say` a welcome on entry (020/041/044/046); 197's quest card shows `SQGQTRKBTN()` (`data-gqtrk`).

@@ -132,7 +132,7 @@ const _es44=enterScene;enterScene=function(id,house,ret){_es44(id,house,ret);if(
  say({dh_market:'The Sandstone Market. Spices and dust in the air.',dh_forge:'The Copper Sun Forge. Two furnaces glow orange.',dh_rest:'The Oasis Rest. Cool shade at last.',dh_hall:'The Excavator\'s Hall: ore samples on every shelf, a furnace and an anvil.'}[id]||('This is '+DHNAMES[id]+'.'))};
 let dhPrev=false;
 const _u44=upd;upd=function(dt){_u44(dt);if(menuOpen||!DHON)return;townRoutine(DHN,dt,'mira');if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inDHBox(x,y);
- if(inT&&!dhPrev&&!dead){say('Welcome to Dusthaven! The oasis shimmers in the heat.');msgT=3}dhPrev=inT;
+ /* no welcome message: towns are named on the map (Nov 16) */dhPrev=inT;
  en=en.filter(n=>!inDHBox(Math.floor(n.x/16),Math.floor(n.y/16)))};
 // --- drawing: sandstone flagstones, flat-roofed clay buildings with awnings, palms, the watchtower, the ruins ---
 let DHPAV=null;
