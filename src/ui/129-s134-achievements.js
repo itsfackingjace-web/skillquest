@@ -95,7 +95,7 @@
  // ---- counting ----
  const WHICH={1:'wc',2:'mine',3:'forage',9:'fish',4:'cook',11:'farm',6:'craft',10:'smith'},MIN1={craft:1,smith:1};
  let LAST=null,LK=null,XF=new Set(),t=0;
- const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(x>0){XF.add(i);if(i===SK('Firemaking'))C.fire=cnt('fire')+1}return out};
+ const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(x>0){XF.add(i);if(i===SK('Firemaking')&&!window.SQFIREXTRA)C.fire=cnt('fire')+1}return out};
  const _se=sqEvent;sqEvent=function(type,item){if(type==='islandboss')C.ibw=cnt('ibw')+1;return _se.apply(this,arguments)};
  const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(!READY){seed();READY=true;LK=typeof kills==='number'?kills:null}if(dead)return out;
    if(LAST){const got={};let tot=0;for(const k in inv){const v=(inv[k]|0)-(LAST[k]|0);if(v>0){got[k]=v;tot+=v;note(k)}}

@@ -40,7 +40,7 @@
   try{svg()}catch(e){}try{saveLocal(true)}catch(e){}}
  function add(id,k){if(!D||!(k>0))return;for(const q of D.q)if(q.t===id&&!q.c){q.p=Math.min(q.n,q.p+k);if(q.p>=q.n)pay(q);else if(pnOpen&&ptab===6)rPn()}}
  // XP gains mark the skill for this frame
- const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);XPN[i]=(XPN[i]|0)+1}return out};
+ const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);if(!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}return out};
  const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;
    if(!D||D.d!==today()){fresh();LASTINV=null;
     if(TOLD!==D.d){TOLD=D.d;let gd=null;try{gd=window.SQGUIDE&&SQGUIDE()}catch(e){}if(!gd)setTimeout(()=>{if(!dead){say('New daily challenges! Find them in your quest log.');msgT=4}},2500)}}

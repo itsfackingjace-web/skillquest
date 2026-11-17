@@ -891,7 +891,18 @@
   write only `by` = themselves, never self/devs/mods, at most now+7 days, and never change a longer (dev) mute/suspension. Every pm look
   and action pushes `modlog/<id>` {by,a,u,x,t} (create-only, devs read). Players see a notice in the Private chat tab. Disclosed in
   privacy.html (Moderation section), terms.html and SECURITY-PROGRAM.md: **keep them in step if what moderators can see changes.**
-  Rules: `mods`, `mod`, `reports`, `chat`, `pm`, `gchat`, `age`, `modlog` (publish them).
+  Rules: `mods`, `mod`, `reports`, `chat`, `pm`, `gchat`, `age`, `modlog` (publish them). Rules test: scratchpad `modrules.js`, panel `modui.js`.
 - **Peer monster timers** (061's monster sync): fields matching `CDK` (`tcd`, `scd`, `gcd`, `lcd`, `cd`, `cbt`, `cast`...) are only taken from
   the owner when the copy is created; after that the copy keeps its own. Copying them on every update (the owner's skeleton timer runs
-  far below 0 when nobody is in range) made copies of skeletons throw on every database update. New reload timers: end the name in `cd`. Rules test: scratchpad `modrules.js`, panel `modui.js`.
+  far below 0 when nobody is in range) made copies of skeletons throw on every database update. New reload timers: end the name in `cd`.
+- **Campfire logs and feeding** (`skills/220-s228-firemaking-logs.js`, `window.SQFIRELOGS`, `ptab` 50): tiers `T` (wood, oak 15, willow 30, maple 45,
+  yew 60, void 75: per-log XP `pl`, life multiplier `m`, feed seconds `fs`). The outermost `fire` opens the CAMPFIRE picker only when there's a choice
+  (a tier log you can burn, or your own fire next to you); plain wood with nothing near builds as before (`SQFIREDIRECT` skips the picker).
+  A tier build lends 3 wood to the game's own fire() (timed by 109) and `PEND` waits in the outermost `upd`: the new fire gets `lg`, life x`m`,
+  extra XP; no new fire and no job running = wood taken back, logs returned. Feeding: 1 log, +`fs` s (cap 30 min), `pl` XP, `lg` raised.
+  Extra/feed XP is added with `window.SQFIREXTRA` set, which 120/143/129 check so it doesn't count as another fire lit. `lg` is kept in
+  saved fires (061 snap, 006 load) and shared fires (061 FIRE sync, clamped 0-5); the outermost `pF` draws it in `PAL` colours unless a
+  `p:campfire` look exists. Skill tree lines via the outermost `treeGains`.
+- **Fishing 70/80/90** (`skills/221-s229-deep-fishing.js`, `window.SQDEEPFISH`): moonfin (70, night: `dark()>.25`), abyssal eel (80, shattered/
+  ironcrest), ancient koi (90, anywhere, 6%) through `window.SQFISHX`, which 093b's catch hook checks before the Dev Suite's `SQGFISH`
+  (entries may have `ok()`). Raw `k` + cooked `c<k>`, COOKS/FOODS/icons/tree lines. Not in 200's turtle `RAW` (fixed by the rules).

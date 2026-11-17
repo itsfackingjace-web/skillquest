@@ -171,7 +171,7 @@ const WK2={};
 // how to train each skill (what gives XP, and how much)
 const WK_TRAIN={Attack:[['Defeat monsters','12 XP each'],['Hit a training dummy (up to level 30)','4 XP per hit']],
  Woodcutting:[['Tree','25 XP'],['Pine','28 XP']],Mining:[['Rock (stone)','18 XP'],['Iron rock','40 XP']],Foraging:[['Berry bush','10 XP'],['Cactus','14 XP']],
- Firemaking:[['Build a campfire (3 wood + 1 stone)','40 XP']],Defence:[['Block a hit','10 XP'],['Quest rewards','see Quests']],Tactics:[['Fighting: earned alongside Attack','']],
+ Firemaking:[['Build a campfire (3 wood + 1 stone)','40 XP'],['Campfire from oak, willow, maple, yew or void logs (3 logs + 1 stone; Firemaking 15/30/45/60/75)','135 / 225 / 330 / 495 / 750 XP'],['Feed one log into your own fire (F next to it)','13 to 250 XP']],Defence:[['Block a hit','10 XP'],['Quest rewards','see Quests']],Tactics:[['Fighting: earned alongside Attack','']],
  Magic:[['Hit monsters with spells','4 XP per damage'],['Kill with a spell','14 XP']],Archery:[['Hit with arrows','3 XP per damage'],['Kill with an arrow','14 XP']],Chess:[['Play the chess club in Hollow Village','more for wins and harder opponents']]};
 function wkActions(skill){const A=[];const add=(n,xp,lv,c)=>{if(xp>0)A.push({n,xp,lv:lv||1,c})};
  for(const[n,x]of(WK_TRAIN[skill]||[])){const m=/^(\d+) XP/.exec(x);if(m)add(n,+m[1],1)}

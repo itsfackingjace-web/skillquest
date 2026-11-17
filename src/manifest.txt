@@ -228,6 +228,8 @@ items/216-s224-meteorite-gear.js
 core/217-s225-safe-travel-and-stuck.js
 skills/218-s226-brewing-and-daggers.js
 multiplayer/219-s227-moderators.js
+skills/220-s228-firemaking-logs.js
+skills/221-s229-deep-fishing.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

@@ -124,7 +124,7 @@ function applySave(S){
  for(const r of REM)if(!obj[r.i])obj[r.i]={t:r.t,hp:OHP[r.t]};REM=[];
  for(const r of(S.rm||[])){const i=r.i|0;if(i>=0&&i<N*N&&OHP[r.t]&&obj[i]&&obj[i].t==r.t){obj[i]=null;REM.push({i,t:r.t,at:+r.at||0})}}
  CLK=Math.max(0,+S.clk||0);time=Math.max(0,+S.time||0);hunger=Math.max(0,Math.min(100,+S.hunger||100));kills=Math.max(0,+S.kills||0);lastK=kills;
- fires=(S.fires||[]).filter(f=>isFinite(f.x)&&isFinite(f.y)&&f.life>0).map(f=>({x:+f.x,y:+f.y,life:+f.life}));
+ fires=(S.fires||[]).filter(f=>isFinite(f.x)&&isFinite(f.y)&&f.life>0).map(f=>({x:+f.x,y:+f.y,life:+f.life,lg:Math.max(0,Math.min(5,f.lg|0))}));
  if(S.p){const x=+S.p.x,y=+S.p.y;if(isFinite(x)&&isFinite(y)&&!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6))){P.x=x;P.y=y}else{P.x=SPX;P.y=SPY}P.hp=Math.max(1,Math.min(6,+S.p.hp||6))}
  MUTE=!!S.mute;mb.textContent=MUTE?'🔇':'🔊';en=[];dead=false;svs();svg()}
 function hideCreator(){menuOpen=false;cm.style.display='none'}

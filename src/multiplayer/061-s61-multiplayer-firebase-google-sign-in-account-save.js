@@ -554,14 +554,14 @@ function fireTick(){if(!MP.on||!FB||!MP.user)return;const l=mpLoc(),key=l?locKey
   for(const p of FIRE.prox.values()){const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}FIRE.prox.clear();FIRE.loc=key;
   if(key)FIRE.unsub=d.onValue(d.ref(FB.D,'fires/'+key),s=>{if(FIRE.loc!==key)return;const all=s.val()||{},seen=new Set(),cut=mpNow()-8000;
    for(const o in all){if(o===MP.user.uid)continue;const rec=all[o];if(!rec||!(rec.t>cut)||!rec.f||typeof rec.f!=='object')continue;
-    (Array.isArray(rec.f)?rec.f:Object.values(rec.f)).forEach((v,i)=>{if(!v||typeof v.x!=='number')return;const id=o+'_'+i;seen.add(id);let p=FIRE.prox.get(id);if(!p){p={x:v.x,y:v.y,life:v.life,_rp:1};FIRE.prox.set(id,p);fires.push(p)}else{p.x=v.x;p.y=v.y;p.life=v.life}})}
+    (Array.isArray(rec.f)?rec.f:Object.values(rec.f)).forEach((v,i)=>{if(!v||typeof v.x!=='number')return;const id=o+'_'+i;seen.add(id);let p=FIRE.prox.get(id);if(!p){p={x:v.x,y:v.y,life:v.life,_rp:1};FIRE.prox.set(id,p);fires.push(p)}else{p.x=v.x;p.y=v.y;p.life=v.life}p.lg=Math.max(0,Math.min(5,v.lg|0))})}
    for(const[id,p]of FIRE.prox)if(!seen.has(id)){FIRE.prox.delete(id);const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}})}
  if(!key)return;for(const p of FIRE.prox.values())if(p.life>0&&fires.indexOf(p)<0)fires.push(p);
  const now=performance.now();if(now-FIRE.pubAt<2000)return;FIRE.pubAt=now;const ref=d.ref(FB.D,'fires/'+key+'/'+MP.user.uid);
- const mine=fires.filter(f=>!f._rp&&f._loc===l&&f.life>0).slice(0,8).map(f=>({x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)}));
+ const mine=fires.filter(f=>!f._rp&&f._loc===l&&f.life>0).slice(0,8).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});
  if(!othersHere()||!mine.length){if(FIRE.pubbed){d.remove(ref).catch(()=>{});FIRE.pubbed=false}return}
  d.set(ref,{t:d.serverTimestamp(),f:mine}).catch(()=>{});if(!FIRE.pubbed)d.onDisconnect(ref).remove().catch(()=>{});FIRE.pubbed=true}
-{const _sn64=snap;snap=function(){const s=_sn64();s.fires=fires.filter(f=>!f._rp).map(f=>({x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)}));return s}}
+{const _sn64=snap;snap=function(){const s=_sn64();s.fires=fires.filter(f=>!f._rp).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});return s}}
 // the frame: shared clock first, then the game, then sharing
 {const _u64=upd;upd=function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick();fireTick();housesTick();buildTick()}catch(e){console.warn(e)}}}}
 // signing out: drop other players' monsters and stop sharing

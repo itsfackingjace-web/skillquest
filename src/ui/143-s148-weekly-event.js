@@ -55,7 +55,7 @@
   setTimeout(()=>{try{if(!dead&&on()){const e=E();mpLog('game','New weekly event: '+e.n+'! '+e.w(e.goal)+'. See your quest log.')}}catch(er){}},3000)}
  function add(k){if(!(k>0)||!on())return;const was=W.c;W.c+=k;W.q+=k;if(was<mins(E())&&W.c>=mins(E()))pay(E(),tierOf(TOT,E()));if(pnOpen&&ptab===6)rPn()}
  // ---- counting ----
- {const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);if(x<=200)XPN[i]=(XPN[i]|0)+1}return out}}// (big gains are rewards, not fires)
+ {const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);if(x<=200&&!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}return out}}// (big gains are rewards, not fires)
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;rollover();watch();const e=E(),si=SK(e.s);
    if(LASTINV&&!e.kill&&XPF.has(si)){if(e.xpc)add(XPN[si]|0);else{let tot=0;for(const k in inv){const v=(inv[k]|0)-(LASTINV[k]|0);if(v>0)tot+=v}add(e.min1?Math.max(1,tot):tot)}}
    if(typeof kills==='number'){if(e.kill&&kills>LASTK&&LASTINV)add(kills-LASTK);LASTK=kills}
