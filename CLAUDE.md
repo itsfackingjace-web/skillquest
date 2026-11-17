@@ -881,3 +881,5 @@
   sword gap while `window.SQSTABNOW` is set. The outermost `pP` answers `occ('main')` with the dagger and sets `SLEDGE` false while a stab shows (123 draws it; the sledge won
   otherwise), and the stab's attack also runs with `SLEDGE` false. Peers: 064's `sw` event takes `w` from `window.SQSWINGW()` when set
   (stabs send 20 + dagger tier); 218's outermost `SQSWING` draws that dagger's icon jabbing for `t` 20-29.
+- **Shattered Expanse sharks** (093, `SQSHK`): they hunt wounded players near the water but only bite when you're on the water
+  (`SQRSAIL.on` or standing on a water tile, `onW`); a lunging shark (`s.a>0`) is drawn after the player so it isn't hidden behind you.

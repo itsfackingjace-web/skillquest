@@ -178,7 +178,7 @@ window.SQNPET=NPET;window.SQSIDEMAP=SIDEMAP;window.SQDRAWNPET=(k,s2,tm)=>drawNPe
 
 // ---- Sharks in the Shattered Expanse ----
 // A few sharks (never more than three around you) cruise the deep water. They leave healthy players alone, but if
-// you're wounded (half your hearts or less) and close to the water, they come for you. You can fight back with your
+// you're wounded (half your hearts or less) and close to the water, they come for you (they only bite on the water: from a boat). You can fight back with your
 // sword from the shore or your boat; a shark is worth some gold and Fishing XP.
 const SHK={list:[],cd:0};const shkR=()=>{const R=SCENE&&SCENE.room;return R&&R.region==='shattered'?R:null};
 const deepW=(R,x,y)=>{const tx=Math.floor(x/16),ty=Math.floor(y/16);if(tx<1||ty<1||tx>=R.w-1||ty>=R.h-1)return false;for(let b=-1;b<=1;b++)for(let a=-1;a<=1;a++)if(R.tiles[(ty+b)*R.w+tx+a]!==0)return false;return true};
@@ -188,12 +188,12 @@ function nearWaterSpot(R){const sail=window.SQRSAIL&&SQRSAIL.on;if(sail)return[P
 {const _u=upd;upd=function(dt){_u(dt);const R=shkR();if(!R||dead||menuOpen||pnOpen){if(!R)SHK.list.length=0;return}
   SHK.list=SHK.list.filter(s=>!s.dead&&Math.hypot(s.x-P.x,s.y-P.y)<420);
   if((SHK.cd-=dt)<=0&&SHK.list.length<3){SHK.cd=9+Math.random()*8;for(let k=0;k<20;k++){const a=Math.random()*6.283,d=170+Math.random()*120,x=P.x+Math.cos(a)*d,y=P.y+Math.sin(a)*d;if(deepW(R,x,y)){SHK.list.push({x,y,hp:16,mhp:16,tx:x,ty:y,t:Math.random()*9,bite:0,hit:0,a:0});break}}}
-  const spot=nearWaterSpot(R),hunt=wounded()&&spot;
+  const spot=nearWaterSpot(R),hunt=wounded()&&spot,onW=!!(window.SQRSAIL&&SQRSAIL.on)||wetW(R,P.x,P.y);// they only bite you on the water (your boat); on land they just circle close
   for(const s of SHK.list){s.t+=dt;s.bite=Math.max(0,s.bite-dt);s.hit=Math.max(0,s.hit-dt);s.a=Math.max(0,s.a-dt);let tx=s.tx,ty=s.ty,sp=26;
    const dP=Math.hypot(s.x-P.x,s.y-P.y);
    if(hunt&&dP<220){tx=spot[0];ty=spot[1];sp=58}else if(Math.hypot(tx-s.x,ty-s.y)<8||Math.random()<dt*.15){for(let k=0;k<8;k++){const a=Math.random()*6.283,d=40+Math.random()*90,x=s.x+Math.cos(a)*d,y=s.y+Math.sin(a)*d;if(wetW(R,x,y)){s.tx=x;s.ty=y;break}}tx=s.tx;ty=s.ty}
    const dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy);if(d>2){const m=Math.min(d,sp*dt),nx=s.x+dx/d*m,ny=s.y+dy/d*m;if(wetW(R,nx,s.y))s.x=nx;if(wetW(R,s.x,ny))s.y=ny;s.fl=dx<0}
-   if(hunt&&dP<22&&s.bite<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){s.bite=2.2;s.a=.5;P.hp--;hurt=1.5;say('A shark bites!');try{sfx('hurt')}catch(e){}}}}}
+   if(hunt&&onW&&dP<22&&s.bite<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){s.bite=2.2;s.a=.5;P.hp--;hurt=1.5;say('A shark bites!');try{sfx('hurt')}catch(e){}}}}}
 {const _a=attack;attack=function(){const R=shkR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(14);const s=SHK.list.find(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<20);
    if(s){swing=.3;const dmg=1+(TL.sword|0)+(typeof meleeFlat==='function'?meleeFlat():0);s.hp-=dmg;s.hit=.25;try{DMGS.push({x:s.x,y:s.y-10,v:String(dmg),t:0,c:'#ffffff',sc:curScene()})}catch(e){}sfx('hit');
     if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){}saveLocal()}return}}return _a()}}
@@ -204,7 +204,7 @@ function drawShark(s,tm){const x=Math.round(s.x),y=Math.round(s.y),f=s.fl?-1:1,w
  // the fin cutting through the water, with a wake
  g.fillStyle='rgba(232,248,255,.75)';g.fillRect(x-f*10-2+w,y+1,4,1);g.fillRect(x-f*14-1,y+2,3,1);
  Rg(x-4,y,9,2,'#e8f8ff');const c=s.hit>0?'#ffffff':'#5a6878';Rg(x-3,y-8,1,8,'#181018');for(let k=0;k<7;k++){const h=8-k;Rg(x-3+(f>0?k:0)-(f<0?k-6:0)+(f<0?-6:0)+1,y-h,1,h,k===0?'#181018':c)}Rg(x-4,y-1,10,1,'#181018')}
-{const _p=pP;pP=function(tm){if(shkR())for(const s of SHK.list)if(!s.dead)try{drawShark(s,tm)}catch(e){}return _p(tm)}}
+{const _p=pP;pP=function(tm){const R=shkR();if(R)for(const s of SHK.list)if(!s.dead&&!(s.a>0))try{drawShark(s,tm)}catch(e){}const out=_p(tm);if(R)for(const s of SHK.list)if(!s.dead&&s.a>0)try{drawShark(s,tm)}catch(e){}return out}}// a lunging shark goes over you (and your boat)
 window.SQSHK=SHK;
 
 // ---- Castles: the outside (two towers, a gate and two torches), the great hall inside, and where it would go ----
