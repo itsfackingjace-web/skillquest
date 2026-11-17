@@ -90,6 +90,7 @@
   try{const gd=window.SQGUIDE&&SQGUIDE();if(gd){TGE=gd.e;TGT=gd.t;return}}catch(e){}
   try{TGE=tracked();TGT=target(TGE)}catch(e){TGT=null}}
  window.SQTRACK=()=>{refresh();return{e:TGE,t:TGT}};
+ window.SQTRKSET=id=>{TRK=id;try{localStorage.setItem('sq_trk',TRK)}catch(e){}TGT_AT=0};window.SQTRKID=()=>TRK;window.SQNEAROBJ=nearObj;window.SQCURAREA=curArea;// 225 (guild quests)
  window.SQTRKOFF=()=>{refresh();return TRK==='none'&&!TGE};
  // the hint shown when the place is somewhere else
  function where(e,t){const a=curArea(),par=a.startsWith('scene:')?((SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region)||'hollow'):a;

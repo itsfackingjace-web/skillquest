@@ -233,6 +233,7 @@ skills/221-s229-deep-fishing.js
 skills/222-s230-ponds-and-fishing-spots.js
 items/223-s231-bug-fixes-nov16.js
 items/224-s232-arrow-ladder.js
+ui/225-s233-better-maps.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

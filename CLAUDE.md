@@ -935,3 +935,11 @@
   `p.ah` (head colour, 021's drawProj). 021's fletch/equipment lines and 010's arrow chip list every arrow kind: a new arrow goes there too.
 - **Vessa's potion stall** (096, edited in place): NPC role `potions` at Emberwatch with an `afstall` item; `POTAF` (`window.SQPOTAF`) =
   potions she sells; she buys any of them for `potBuy(k)` = 1.5x SELLP, always below her own price (data-af `p<i>` buy, `q<key>` sell).
+- **Better maps** (`ui/225-s233-better-maps.js`, `window.SQPIN`): the outermost `drawMini52` shows `SPAN` (48) tiles around you. All older
+  minimap hooks map tiles as `x0 + u/t.w*w` from `hudLayout()`/`miniTarget()`, so for that call it swaps in a fake target (w/h = the window in
+  tiles, `rw/rh` real, `fake:1`) and a layout whose box origin is tile 0,0; everything is clipped to the box; 052 draws the terrain zoomed and
+  skips its frame/player dot when `t.fake`; 105's `SQMINIBOX` is set back to the real box. New minimap markers: keep using that formula.
+  Pins: tap `#mpc` (HERE) = `PIN` {a,x,y tile} in localStorage `sq_pin`, on-screen arrow in drawHUD, cleared within 1.5 tiles. Map labels:
+  the outermost `mapHTML` wraps `#mpc` in `.sqmpw` with a `.sqmpl` label layer (towns/dungeons/harbors on Hollow, pier + found landmarks on
+  islands, greedy no-overlap) and drops legend spans naming only labelled places. Guild quests: an `SQQEXTRA` entry `gq:<guild>:<t>` (102
+  exposes `SQTRKSET`, `SQTRKID`, `SQNEAROBJ`, `SQCURAREA`); 197's quest card shows `SQGQTRKBTN()` (`data-gqtrk`).
