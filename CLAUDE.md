@@ -972,6 +972,7 @@
 - **Character tab cards and stats** (`ui/229-s237-gear-tab-cards-and-stats.js`): the outermost `equipHTML` puts an item card (`.sqgcard`: icon,
   name, `IDESC` with 084/111a2's stats, `SQVALUELINE(k)` = shop pays + 079's market price) under the selected slot's header (028's
   `EQSEL` panel), and extra rows after 028's "Block chance" row: health, `armorPts`, `blockCap`, `critCh`, every non-zero `SQGEAR.fxSum` effect
-  (`FXN` names), `SQTURT`/`SQMETGEAR.worn()` pieces, `LUX.BUFF` buffs with time left. A newly tapped slot scrolls its card into view.
+  (`FXN` names), `SQTURT`/`SQMETGEAR.worn()` pieces, `LUX.BUFF` buffs with time left. A newly tapped slot scrolls its card into view. Worn jewelry names (086's rows) become `.sqjwn` buttons (`data-jwc`, `JWSEL`) that open the same card in place of 086's
+  description line. Mana regen = 028 base × (1 + 036's Magic level/perk share) + 086 sapphire .25, × (1 + `mreg`%) × 202's `MREG` (matches the measured rate).
   The bag's item text (228) shows the full value line. New stats/effects worth showing go in `extraRows()`.
 

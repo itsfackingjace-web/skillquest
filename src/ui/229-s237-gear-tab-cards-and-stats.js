@@ -10,7 +10,7 @@
   return(sp?'Shop pays '+fm(sp)+' gold':'Shops don\'t buy it')+' · '+(m?'Market price '+fm(m.p)+' gold ('+m.n+' recent trade'+(m.n>1?'s':'')+')':'Market price: no recent trades')};
  window.SQVALUELINE=valueLine;
  const icon=k=>{try{return EQ[k]&&typeof eqIcon==='function'?eqIcon(k):iconURL(k)}catch(e){try{return iconURL(k)}catch(e2){return''}}};
- function card(k){const e=EQ[k],n=(e&&e.n)||INAME[k]||k,d=IDESC[k]||'';
+ function card(k){const e=EQ[k],J=window.SQJK&&SQJK[k],n=(e&&e.n)||(J&&J.n)||INAME[k]||k,d=IDESC[k]||(J&&J.d)||'';
   return'<div class="sqgcard"><img alt="" src="'+icon(k)+'"><div><b>'+esc(n)+'</b>'+(d?'<div class="sqgcd">'+esc(d)+'</div>':'')+'<small>'+esc(valueLine(k))+'</small></div></div>'}
  function extraRows(){const R=[];const row=(a,b)=>R.push('<div class="tc-r"><span>'+a+'</span><b>'+b+'</b></div>');
   try{row('Health',Math.max(0,P.hp)+' / 6 hearts')}catch(e){}
@@ -19,18 +19,30 @@
   try{if(typeof critCh==='function'){const c=critCh(null);if(c>0)row('Critical hits',pc(Math.min(1,c))+' of hits')}}catch(e){}
   try{const G=window.SQGEAR;if(G&&G.fxSum&&G.FXN){for(const k in G.FXN){const v=+G.fxSum(k)||0;if(!v)continue;
     const t=k==='hreg'?'+1 heart every '+Math.max(1,Math.round(600/v))+'s':k==='hun'?v+'% slower hunger':(v>0?'+':'')+v+'%';row(G.FXN[k],t)}}}catch(e){}
+  // mana regen per second, the same steps as the game: 028 base, 036 Magic level/perk, 086 sapphire, 179 gear %, then 202's x3
+  try{if(typeof MANA==='number'&&typeof maxMP==='function'){const base=.5*(1+.4*(typeof nCls==='function'?nCls('m'):0));
+    let r=base;try{r+=base*(.01*(lvOf(ML)-1)+(perk(ML,'recovery')?.5:0))}catch(e){}
+    const J=window.SQJW;if(J&&(J.ring==='jr_sapphire'||J.neck==='jr_sapphire'))r+=.25;
+    try{const G=window.SQGEAR,mr=G&&G.fxSum?+G.fxSum('mreg')||0:0;r*=1+mr/100}catch(e){}
+    r*=(window.SQCOMBAT&&SQCOMBAT.MREG)||1;row('Mana regen',(Math.round(r*10)/10)+' a second')}}catch(e){}
   try{const T=window.SQTURT;if(T&&T.worn){const w=T.worn();if(w)row('Turtle armor',w+'/3 pieces')}}catch(e){}
   try{const M=window.SQMETGEAR;if(M&&M.worn){const w=M.worn();if(w)row('Meteorite armor',w+'/3 pieces')}}catch(e){}
   try{const B=window.LUX&&LUX.BUFF,now=performance.now(),N={str:'Strength',iron:'Iron skin',swift:'Swiftness',wis:'Wisdom (+20% XP)',regen:'Regeneration'};
    if(B)for(const k in N)if(B[k]>now){const s=Math.ceil((B[k]-now)/1000);row(N[k],Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' left')}}catch(e){}
   return R.join('')}
+ let JWSEL=null;
+ {const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest&&e.target.closest('[data-jwc]');if(b&&ptab===3){JWSEL=JWSEL===b.dataset.jwc?null:b.dataset.jwc;try{sfx('talk')}catch(x){}rPn();return}return _oc(e)}}
  const _e=equipHTML;equipHTML=function(){let h=_e.apply(this,arguments);
   try{const s=typeof EQSEL!=='undefined'&&EQSEL,k=s&&occ(s);if(k){const a=h.indexOf('<div class="qc" style="margin-top:10px"><b>');if(a>=0){const b=h.indexOf('</b>',a);if(b>=0)h=h.slice(0,b+4)+card(k)+h.slice(b+4)}}}catch(e){}
+  try{const J=window.SQJW,JK=window.SQJK;if(J&&JK)for(const[s2,lab]of[['ring','Ring'],['neck','Amulet']]){const k=J[s2];if(!k||!JK[k])continue;
+    const nm='<span>'+lab+'</span><b>'+esc(JK[k].n);const i=h.indexOf(nm);if(i<0)continue;
+    h=h.slice(0,i)+'<span>'+lab+'</span><b><button class="sqjwn" data-jwc="'+s2+'">'+esc(JK[k].n)+' ▾</button>'+h.slice(i+nm.length);
+    if(JWSEL===s2){const t=h.indexOf('data-s="'+s2+'"'),e2=t<0?-1:h.indexOf('</b></div>',t);if(e2>=0){let rest=h.slice(e2+10);const D='<div style="font-size:11px;opacity:.75;margin:-2px 0 6px">';if(rest.startsWith(D))rest=rest.slice(rest.indexOf('</div>')+6);h=h.slice(0,e2+10)+card(k)+rest}}}}catch(e){}
   try{const m=h.indexOf('<span>Block chance</span>');if(m>=0){const end=h.indexOf('</div>',m);if(end>=0)h=h.slice(0,end+6)+extraRows()+h.slice(end+6)}}catch(e){}
   return h};
  // a newly tapped slot scrolls its card into view (on phones it sits below the slot grid)
  {let last=null;const _r=rPn;rPn=function(){const out=_r.apply(this,arguments);try{const s=ptab===3&&pnOpen&&typeof EQSEL!=='undefined'?EQSEL:null;
    if(s&&s!==last){const c=pbd.querySelector('.sqgcard')||pbd.querySelector('.eqo,.equ');if(c&&c.scrollIntoView)c.scrollIntoView({block:'nearest',behavior:'smooth'})}last=s}catch(e){}return out}}
  const st=document.createElement('style');st.textContent='#pn .sqgcard{display:flex;gap:10px;align-items:flex-start;text-align:left;margin:8px 0 6px;padding:8px;background:#f6f3ea;border:2px solid #c8bfa8}'+
-  '#pn .sqgcard img{width:32px;height:32px;image-rendering:pixelated;flex:none}#pn .sqgcard b{display:block}#pn .sqgcard .sqgcd{font-size:13px;margin:2px 0 4px}#pn .sqgcard small{color:#7a5a20}';document.head.appendChild(st);
+  '#pn .sqjwn{font:inherit;font-weight:700;background:none;border:0;padding:0;color:inherit;text-decoration:underline dotted;cursor:pointer}#pn .sqgcard img{width:32px;height:32px;image-rendering:pixelated;flex:none}#pn .sqgcard b{display:block}#pn .sqgcard .sqgcd{font-size:13px;margin:2px 0 4px}#pn .sqgcard small{color:#7a5a20}';document.head.appendChild(st);
 })();
