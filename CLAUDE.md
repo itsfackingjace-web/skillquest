@@ -962,3 +962,11 @@
   for 0.4 s out of reach for that update (600 ms grace after it first appears; big/boss/ib/_wb/cb/under/_pet exempt). The first one a session
   sends an `[auto]` bug report with its fields (Admin > Bug reports) so the source can be found. Anything that draws a monster without
   going through `pS` must mark it in `SEEN` or be exempted here.
+- **Market prices and tax** (079, edited in place + `items/228-s236-market-prices.js`): `market/last/<k>` = {p,t,h} where `h` = the last `HMAX` (20)
+  trades as "price:count:seconds36" joined by commas (written in a transaction by `rec()` after every fill; the rules already allowed extra children).
+  `mkt(k)` = the quantity-weighted middle price of the last 30 days' in-band trades ({p,n,q,t,h}; falls back to `p` alone for older records);
+  `window.SQMKT` {price, info, hist, spark, TAX, taxOf}. 079's form shows it with an SVG chart of recent trades (`spark`), `guide()` and the
+  lists use it; 228 adds a line to the bag text (`bagGridHTML`) and the chest card (`chestCardHTML`). Tax: `taxOf(total)` = 1% (floored) of a
+  fill worth 100+ gold, taken from the seller (the matcher's own GLD, or the gold box written to the seller). It is a gold sink; the buyer pays the
+  full price. Enforcement is client-side like the rest of the market.
+

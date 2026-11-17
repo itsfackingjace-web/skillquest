@@ -13,6 +13,19 @@
  const expAt=o=>Math.max(o.t||0,RULES_AT)+LIFE,live=o=>!!o&&o.f<o.q&&Date.now()<expAt(o);
  const lo=k=>Math.max(1,Math.floor((SELLP[k]||1)*.5)),hi=k=>1e7/* no top price any more (Nov 13): a price nobody pays just doesn't sell */,inBand=(k,p)=>p>=lo(k)&&p<=hi(k);
  const clampP=(k,p)=>Math.min(hi(k),Math.max(lo(k),Math.round(p)));window.SQWMRULES={PERK,LIFE,lo,hi,expAt};
+ // ---- market prices come from trades (Nov 17): market/last/<k>.h = the last HMAX trades "price:count:seconds36", comma separated;
+ // the market price is the middle price of the last 30 days' trades, counted per item. 1% of every sale of 100+ gold is a tax (gold leaves the game).
+ const TAX=.01,taxOf=t=>t>=100?Math.floor(t*TAX):0,H30=30*DAY,HMAX=20;
+ function hist(k){const L=WMK.last[k],out=[];if(L&&typeof L.h==='string'&&L.h)for(const e of L.h.split(',')){const[a,b,c]=e.split(':'),p=+a,n=+b,t=parseInt(c,36)*1000;if(p>0&&n>0&&t>0&&inBand(k,p))out.push({p,n,t})}
+  if(!out.length&&L&&L.p>0&&inBand(k,L.p))out.push({p:L.p,n:1,t:L.t||0});return out}
+ function mkt(k){const now=Date.now(),h=hist(k).filter(x=>now-x.t<H30);if(!h.length)return null;const s=h.slice().sort((a,b)=>a.p-b.p),tot=s.reduce((a,x)=>a+x.n,0);let c=0,p=s[0].p;for(const x of s){c+=x.n;if(c*2>=tot){p=x.p;break}}
+  return{p,n:h.length,q:tot,t:Math.max(...h.map(x=>x.t)),h}}
+ function rec(k,p,n){const d=FB.db,now=Date.now(),e=p+':'+n+':'+Math.floor(now/1000).toString(36);
+  d.runTransaction(d.ref(FB.D,'market/last/'+k),cur=>{const h=cur&&typeof cur.h==='string'&&cur.h?cur.h.split(','):[];h.push(e);while(h.length>HMAX)h.shift();return{p,t:now,h:h.join(',')}}).catch(()=>{})}
+ // a small line chart of the recent trades (oldest left)
+ function spark(k){const m=mkt(k);if(!m||m.h.length<2)return'';const h=m.h.slice().sort((a,b)=>a.t-b.t),ps=h.map(x=>x.p),mn=Math.min(...ps),mx=Math.max(...ps),W=220,Hh=36,X=i=>28+i*(W-34)/(h.length-1),Y=p=>mx===mn?Hh/2:4+(mx-p)*(Hh-8)/(mx-mn);
+  return'<svg viewBox="0 0 '+W+' '+Hh+'" width="'+W+'" height="'+Hh+'" style="display:block;margin:4px auto 0;max-width:100%" role="img" aria-label="Recent trade prices"><polyline fill="none" stroke="#7a5a20" stroke-width="2" points="'+h.map((x,i)=>X(i).toFixed(1)+','+Y(x.p).toFixed(1)).join(' ')+'"/>'+h.map((x,i)=>'<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(x.p).toFixed(1)+'" r="2.5" fill="#d8a020"/>').join('')+'<text x="2" y="10" font-size="9" fill="#555">'+fmt(mx)+'</text><text x="2" y="'+(Hh-1)+'" font-size="9" fill="#555">'+fmt(mn)+'</text></svg>'}
+ window.SQMKT={price:k=>{const m=mkt(k);return m?m.p:null},info:mkt,hist,TAX,taxOf,spark:k=>spark(k)};
  // ---- where it stands: a market hall beside Hollow Village ----
  {const free=i=>{const x=i%N,y=(i/N)|0;return(tile[i]===2||tile[i]===1)&&!BS.has(i)&&!PROT.has(i)&&!BRIDGE.has(i)&&!STR.has(i)&&!(typeof inTownTiles==='function'&&inTownTiles(x,y))};
   let best=null,bd=1e9;for(let y=VY-26;y<VY+26;y++)for(let x=VX-26;x<VX+26;x++){const d=Math.hypot(x+4-VX,y-VY);if(d<11||d>26)continue;let ok=true;
@@ -73,7 +86,7 @@
  const HOLD=30000,FULL={};function sweep(){const d=FB.db,now=Date.now();for(const id in WMK.offers){const o=WMK.offers[id];if(!o||o.u!==me()||o.f<o.q||WMK.matching.has(id)){delete FULL[id];continue}
    if(!FULL[id])FULL[id]=now;else if(now-FULL[id]>=HOLD){delete FULL[id];d.remove(d.ref(FB.D,'market/offers/'+id)).catch(()=>{})}}}
  setInterval(()=>{try{if(online())sweep()}catch(e){}},5000);
- async function match1(id){const d=FB.db,o=WMK.offers[id];if(!o||!live(o))return;let traded=0,got=0,spent=0;
+ async function match1(id){const d=FB.db,o=WMK.offers[id];if(!o||!live(o))return;let traded=0,got=0,spent=0,taxed=0;
   const others=Object.entries(WMK.offers).filter(([oid,c])=>oid!==id&&live(c)&&inBand(c.k,c.p)&&c.k===o.k&&c.s!==o.s&&c.u!==o.u&&(o.s==='s'?c.p>=o.p:c.p<=o.p))
    .sort((a,b)=>o.s==='s'?(b[1].p-a[1].p||a[1].t-b[1].t):(a[1].p-b[1].p||a[1].t-b[1].t));
   for(const[cid,c]of others){// 1. reserve on my own offer
@@ -86,10 +99,11 @@
    if(m<want)await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{if(!cur)return;cur.f=Math.max(0,cur.f-(want-m));return cur});
    if(!m)continue;traded+=m;
    const bid='b'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);
-   if(o.s==='s'){GLD+=m*price;got+=m*price;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:o.k,n:m,o:cid,b:me()}).catch(e=>mpErr(e))}
-   else{inv[o.k]=(inv[o.k]|0)+m;GLD+=(o.p-price)*m;spent+=m*price;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:'gold',n:m*price,o:cid,b:me()}).catch(e=>mpErr(e))}
-   d.set(d.ref(FB.D,'market/last/'+o.k),{p:price,t:Date.now()}).catch(()=>{});saveNow()}
-  if(traded){say(o.s==='s'?'Sold '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+got+' gold!':'Bought '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+spent+' gold!');msgT=5;try{sfx('quest')}catch(e){}}}
+   const tot=m*price,tx=taxOf(tot);
+   if(o.s==='s'){GLD+=tot-tx;got+=tot-tx;taxed+=tx;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:o.k,n:m,o:cid,b:me()}).catch(e=>mpErr(e))}
+   else{inv[o.k]=(inv[o.k]|0)+m;GLD+=(o.p-price)*m;spent+=tot;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:'gold',n:tot-tx,o:cid,b:me()}).catch(e=>mpErr(e))}
+   rec(o.k,price,m);saveNow()}
+  if(traded){say(o.s==='s'?'Sold '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+got+' gold'+(taxed?' ('+taxed+' market tax)':'')+'!':'Bought '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+spent+' gold!');msgT=5;try{sfx('quest')}catch(e){}}}
  // two offers can end up crossed and waiting (one was put up before the other player's list had loaded, or both at once):
  // whoever owns the newer one matches it a moment later
  let rmT=0;function rematchSoon(){clearTimeout(rmT);rmT=setTimeout(rematch,1500)}
@@ -112,40 +126,41 @@
  window.SQWMOPEN=wmOpen;
  const ic=k=>{try{return'<img src="'+iconURL(k)+'" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:-2px;margin-right:4px">'}catch(e){return''}};
  function book(k){let bs=null,bb=null,qs=0,qb=0;for(const o of Object.values(WMK.offers)){if(!live(o)||o.k!==k||!inBand(k,o.p))continue;const r=o.q-o.f;if(o.s==='s'){qs+=r;if(bs==null||o.p<bs)bs=o.p}else{qb+=r;if(bb==null||o.p>bb)bb=o.p}}return{bs,bb,qs,qb}}
- const guide=k=>{const L=WMK.last[k];return clampP(k,L&&L.p>0?L.p:Math.max(1,Math.round((SELLP[k]||1)*1.3)))};
- const lastP=k=>{const L=WMK.last[k];return L&&L.p>0&&inBand(k,L.p)?L.p:null};
+ const guide=k=>{const M=mkt(k);if(M)return clampP(k,M.p);const L=WMK.last[k];return clampP(k,L&&L.p>0?L.p:Math.max(1,Math.round((SELLP[k]||1)*1.3)))};
+ const lastP=k=>{const M=mkt(k);return M?M.p:null};
  // a price far from the last trade asks for a second tap (a typo of one zero is easy to make)
  const odd=F=>{const g=guide(F.k);return F.p>=g*3||F.p*3<=g};
  const warnTxt=F=>!inBand(F.k,F.p)?'Prices for this item must be at least '+fmt(lo(F.k))+'.':odd(F)?'That\'s far from the usual '+fmt(guide(F.k))+' each'+(F.ok===F.p+':'+F.q?'. Tap again to place it.':'. Check the price.'):(F.s==='s'&&F.p<(SELLP[F.k]||0)?'The shop pays '+SELLP[F.k]+' each.':'');
  function formHTML(){const F=WMK.form,k=F.k,B=book(k),side=F.s;
-  let h='<div class="qc"><b>'+ic(k)+esc(INAME[k]||k)+'</b><small><br>Shop value '+(SELLP[k]||0)+' · last trade '+(lastP(k)!=null?lastP(k):'none')+(B.bs!=null?'<br>Cheapest for sale: '+B.bs+' ('+B.qs+' left)':'')+(B.bb!=null?'<br>Best buy offer: '+B.bb+' ('+B.qb+' wanted)':'')+(side==='s'?'<br>In your bag: '+(inv[k]|0):'<br>Your gold: '+GLD)+'<br>Allowed price: '+fmt(lo(k))+' to '+fmt(hi(k))+' each</small></div>';
+  let h='<div class="qc"><b>'+ic(k)+esc(INAME[k]||k)+'</b><small><br>'+(()=>{const M=mkt(k);return M?'Market price <b>'+fmt(M.p)+'</b> ('+M.n+' recent trade'+(M.n>1?'s':'')+')':'Market price: no recent trades'})()+' · shop pays '+(SELLP[k]||0)+(B.bs!=null?'<br>Cheapest for sale: '+B.bs+' ('+B.qs+' left)':'')+(B.bb!=null?'<br>Best buy offer: '+B.bb+' ('+B.qb+' wanted)':'')+(side==='s'?'<br>In your bag: '+(inv[k]|0):'<br>Your gold: '+GLD)+'<br>Allowed price: '+fmt(lo(k))+' to '+fmt(hi(k))+' each</small>'+spark(k)+'</div>';
   h+='<div class="tl" style="margin-top:8px">How many</div><div style="display:flex;gap:4px;align-items:center;justify-content:center"><button class="sb" data-w="q:-10">-10</button><button class="sb" data-w="q:-1">-1</button><input id="wmq" type="number" min="1" value="'+F.q+'" style="width:70px;font:600 15px '+PF+';text-align:center"><button class="sb" data-w="q:1">+1</button><button class="sb" data-w="q:10">+10</button>'+(side==='s'?'<button class="sb" data-w="q:all">All</button>':'')+'</div>';
   h+='<div class="tl" style="margin-top:8px">Price each (gold)</div><div style="display:flex;gap:4px;align-items:center;justify-content:center"><button class="sb" data-w="p:-10%">-10%</button><button class="sb" data-w="p:-1">-1</button><input id="wmp" type="number" min="1" value="'+F.p+'" style="width:80px;font:600 15px '+PF+';text-align:center"><button class="sb" data-w="p:1">+1</button><button class="sb" data-w="p:10%">+10%</button></div>';
   if(side==='b'&&B.bs!=null)h+='<div style="text-align:center"><button class="sb" data-w="p:match">Match the cheapest ('+B.bs+')</button></div>';if(side==='s'&&B.bb!=null)h+='<div style="text-align:center"><button class="sb" data-w="p:match">Match the best buyer ('+B.bb+')</button></div>';
   h+='<div id="wmwarn" style="text-align:center;font-size:12px;color:#a02020;min-height:14px">'+warnTxt(F)+'</div>';
-  const tot=F.q*F.p,ok=side==='s'?(inv[k]|0)>=F.q:GLD>=tot;h+='<button class="sb" data-w="go" style="width:100%;margin-top:10px;opacity:'+(ok?1:.45)+'"><b>'+(side==='s'?'SELL ':'BUY ')+F.q+' for '+fmt(tot)+' gold</b><br><small>'+(side==='s'?'Your items wait at the market until someone buys them.':'Your gold waits at the market until someone sells.')+'</small></button>';
+  const tot=F.q*F.p,ok=side==='s'?(inv[k]|0)>=F.q:GLD>=tot;h+='<button class="sb" data-w="go" style="width:100%;margin-top:10px;opacity:'+(ok?1:.45)+'"><b>'+(side==='s'?'SELL ':'BUY ')+F.q+' for '+fmt(tot)+' gold</b><br><small id="wmsub">'+(side==='s'?subTxt(F):'Your gold waits at the market until someone sells.')+'</small></button>';
   h+='<button class="sb" data-w="back" style="width:100%">Back</button>';return h}
  function wmHTML(){if(WMK.form)return'<div class="tl">WORLD MARKET</div>'+formHTML();
   const tabs=[['mine','My offers'],['browse','Browse'],['sell','Sell'],['buy','Buy']];let h='<div class="tl">WORLD MARKET</div><div style="display:flex;gap:4px;margin:4px 0">'+tabs.map(([t,l])=>'<button class="sb" data-w="tab:'+t+'" style="flex:1;opacity:'+(WMK.tab===t?1:.55)+'">'+l+'</button>').join('')+'</div>';
   const bx=Object.values(WMK.box);if(bx.length)h+='<button class="sb" data-w="collect" style="width:100%;background:#f8e8b0"><b>COLLECT</b> ('+bx.length+' waiting)</button>';
-  if(WMK.tab==='mine'){const L=mine().filter(([,o])=>o.f<o.q).sort((a,b)=>b[1].t-a[1].t);h+='<div class="qc"><small>Offers trade with other players automatically, even while you\'re away. Up to '+MAXO+' at once (2 per item). Offers last 7 days; then whatever hasn\'t traded comes back to you.</small></div>';
+  if(WMK.tab==='mine'){const L=mine().filter(([,o])=>o.f<o.q).sort((a,b)=>b[1].t-a[1].t);h+='<div class="qc"><small>Offers trade with other players automatically, even while you\'re away. Up to '+MAXO+' at once (2 per item). Offers last 7 days; then whatever hasn\'t traded comes back to you. Sales of 100 gold or more pay a 1% market tax.</small></div>';
    if(!L.length)h+='<div class="tl" style="font-weight:400;opacity:.6">No offers yet. Use Sell or Buy.</div>';
    for(const[id,o]of L){const pr=Math.round(o.f/o.q*100);h+='<div class="qc" style="display:flex;align-items:center;gap:6px;text-align:left"><div style="flex:1;min-width:0"><b>'+(o.s==='s'?'Selling':'Buying')+'</b> '+ic(o.k)+o.q+' '+esc(nm(o.k,o.q))+' @ '+fmt(o.p)+'<br><small>'+o.f+' / '+o.q+' done · '+left(o)+'</small><div style="height:5px;background:#ccc;margin-top:2px"><div style="height:5px;width:'+pr+'%;background:'+(o.s==='s'?'#d8a020':'#38a838')+'"></div></div></div><button class="sb" data-w="x:'+id+'" style="flex:0 0 auto;width:auto;min-width:0;padding:6px 10px">Cancel</button></div>'}}
   else if(WMK.tab==='browse'){const ks=[...new Set(Object.values(WMK.offers).filter(o=>live(o)&&inBand(o.k,o.p)).map(o=>o.k))].filter(tradeable).sort((a,b)=>(INAME[a]||a).localeCompare(INAME[b]||b));
    if(!ks.length)h+='<div class="tl" style="font-weight:400;opacity:.6">Nobody is trading anything right now. Be the first!</div>';
    for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:b:'+k+'" style="width:100%;text-align:left">'+ic(k)+'<b>'+esc(INAME[k])+'</b><br><small>'+(B.bs!=null?'For sale: '+B.qs+' from '+fmt(B.bs):'None for sale')+' · '+(B.bb!=null?'Wanted: '+B.qb+' up to '+fmt(B.bb):'Nobody buying')+'</small></button>'}}
   else if(WMK.tab==='sell'){const ks=INVK.filter(k=>(inv[k]|0)>0&&tradeable(k));h+='<div class="qc"><small>Pick something from your bag to sell.</small></div>';if(!ks.length)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing in your bag can be sold.</div>';
-   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:s:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+' ('+inv[k]+')<br><small>'+(B.bb!=null?'buyers up to '+fmt(B.bb):'last '+(lastP(k)!=null?fmt(lastP(k)):'-'))+'</small></button>'}}
+   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:s:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+' ('+inv[k]+')<br><small>'+(B.bb!=null?'buyers up to '+fmt(B.bb):'market '+(lastP(k)!=null?fmt(lastP(k)):'-'))+'</small></button>'}}
   else{h+='<input id="wmf" placeholder="Search for an item..." value="'+esc(WMK.filter)+'" style="width:100%;box-sizing:border-box;font:500 14px '+PF+';padding:6px;margin:4px 0">';const f=WMK.filter.toLowerCase();
    const ks=Object.keys(INAME).filter(k=>tradeable(k)&&(!f||(INAME[k]||'').toLowerCase().includes(f))).sort((a,b)=>{const A=book(a).bs!=null,Bb=book(b).bs!=null;return(Bb-A)||(INAME[a]||'').localeCompare(INAME[b]||'')}).slice(0,60);
-   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:b:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+'<br><small>'+(B.bs!=null?B.qs+' for sale from '+fmt(B.bs):'none for sale')+'</small></button>'}}
+   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:b:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+'<br><small>'+(B.bs!=null?B.qs+' for sale from '+fmt(B.bs):'none for sale')+(lastP(k)!=null?' · market '+fmt(lastP(k)):'')+'</small></button>'}}
   return h}
  {const _r=rPn;rPn=function(){if(ptab===2&&shop==='wmkt'){try{panelChrome('')}catch(e){}const fo=document.activeElement&&document.activeElement.id==='wmf';pbd.innerHTML=wmHTML();
    const fi=document.getElementById('wmf');if(fi){fi.oninput=()=>{WMK.filter=fi.value;const pos=fi.selectionStart;rPn();const f2=document.getElementById('wmf');if(f2){f2.focus();try{f2.setSelectionRange(pos,pos)}catch(e){}}};if(fo){fi.focus()}}
    // typing a number just updates the offer (no redraw: a redraw while typing ate your next tap, e.g. on SELL / BUY)
    for(const id of['wmq','wmp']){const el=document.getElementById(id);if(el)el.oninput=()=>{if(!WMK.form)return;const v=Math.max(1,Math.floor(+el.value||1));if(id==='wmq')WMK.form.q=v;else WMK.form.p=Math.min(1e7,v);wmTotal()}}return}_r()}}
  // keep the SELL/BUY button's total right while typing, without rebuilding the panel
- function wmTotal(){const F=WMK.form,b=pbd.querySelector('[data-w="go"]');if(!F||!b)return;const w=document.getElementById('wmwarn');if(w)w.textContent=warnTxt(F);const tot=F.q*F.p,ok=F.s==='s'?(inv[F.k]|0)>=F.q:GLD>=tot;b.style.opacity=ok?1:.45;const t=b.querySelector('b');if(t)t.textContent=(F.s==='s'?'SELL ':'BUY ')+F.q+' for '+fmt(tot)+' gold'}
+ function subTxt(F){const t=F.q*F.p,x=taxOf(t);return(x?'You get '+fmt(t-x)+' after the 1% market tax. ':'')+'Your items wait at the market until someone buys them.'}
+ function wmTotal(){const F=WMK.form,b=pbd.querySelector('[data-w="go"]');if(!F||!b)return;const w=document.getElementById('wmwarn');if(w)w.textContent=warnTxt(F);const tot=F.q*F.p,ok=F.s==='s'?(inv[F.k]|0)>=F.q:GLD>=tot;b.style.opacity=ok?1:.45;const t=b.querySelector('b');if(t)t.textContent=(F.s==='s'?'SELL ':'BUY ')+F.q+' for '+fmt(tot)+' gold';const sb=document.getElementById('wmsub');if(sb&&F.s==='s')sb.textContent=subTxt(F)}
  // other players' offers changing shouldn't redraw the panel under your fingers while you type
  const typing=()=>{const a=document.activeElement;return!!(a&&(a.id==='wmq'||a.id==='wmp'||a.id==='wmf'))};
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='wmkt'){const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w,F=WMK.form;

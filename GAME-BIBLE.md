@@ -101,6 +101,9 @@ Rules:
   houses, boats, guild founding (5,000,000), renames and prints.
 - The **World Market** (player-to-player): the floor price is half the shop value, there's no ceiling, offers last 7
   days, and there are caps on how many offers each player can list.
+- **Prices are set by players.** Each item's market price is the middle price of its last 30 days of World Market sales,
+  shown wherever players look. Shops are a safety net (a low floor and starter basics), not the price. A 1% tax on market
+  sales of 100+ gold is the sink that grows with trade.
 - **Never add a gold or item source without a matching sink** in mind. Use Admin > Economy to watch total gold.
 - Rare items should stay rare. Pets drop at 1 in 5,000 from a matching node. The boss pet chance is 5%.
 
