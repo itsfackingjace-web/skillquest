@@ -85,7 +85,7 @@ function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab](
  else if(tab==='start'){
   const D={guides:'How to get started, boats, voyages, gold',skills:'Every skill, its perks and unlocks',xp:'XP table and calculator',items:'Every item: price, recipe, uses',craft:'Furnace, anvil, cooking and crafting recipes',
    shops:'What every shop sells',mobs:'Monsters and where to find them',bosses:'World bosses and island bosses',dungeons:'Dungeons and their bosses',quests:'All quests and rewards',npcs:'Who lives where',maps:'Maps of every island',
-   world:'Islands, towns and how to reach them',guild:'Guilds, guild islands, quests, bosses and capes',pets:'Pets and rare drops',patch:'What changed in each update'};
+   world:'Islands, towns and how to reach them',guild:'Guilds, guild islands, quests, bosses, capes and sails',pets:'Pets and rare drops',patch:'What changed in each update'};
   // your next steps: the main quest and the next voyage (read from the game, so they follow the save)
   let nx='';try{const q=QS[Q.i];if(q)nx+='<p><b>Elder Rowan:</b> '+wkE(q.n)+(q.d?' · '+wkE(q.d):'')+'</p>'}catch(e){}
   try{const V=VQ(),act=VOYS.find(v=>V[v.id]&&V[v.id]!==99),nxt=VOYS.find(v=>!V[v.id]&&vNeedsOK(v));
@@ -240,7 +240,7 @@ WK2.guild=()=>{const out=[],G=(t,h,ic)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,'
  G('The Giant Turtle','<br><b>Cost:</b> '+n(tu?tu.need:5000)+' raw fish (any kinds; the cheapest are used first) and 1 Fishing rank.<br><b>Every fighter gets:</b> a <b>Turt fragment</b> and 25 swordfish. Its portal is a whirlpool by the guild island\'s pier. It fires bubbles, sets off geysers, charges in its shell (watch for the red line) and calls crabs when hurt.<br><b>Tip:</b> your Fishing level and fishing rod add damage to every melee hit.',tu?pic(tu):'');
  G('Turtle armor','<br>Smith it from Turt fragments at an anvil: <b>Turtle helm</b> (1 fragment, Smithing 75), <b>Turtle legs</b> (2, Smithing 78) and <b>Turtle chestplate</b> (2, Smithing 80). Defence 50 to wear. It\'s the best armor in the game: each piece adds 3% block chance, two pieces add another 5%, and the full set adds 5% more and raises the block limit.');
  H('Guild capes');
- G('Wearing the cape','<br>Every member can wear the guild cape: START &gt; Guild &gt; Members &gt; Wear the guild cape. Everyone sees it on you, and it takes the place of your Marlo cape while you wear it.');
+ G('Wearing the cape','<br>Every member can wear the guild cape: START &gt; Style &gt; Cape. Everyone sees it on you, and it takes the place of your Marlo cape while you wear it.');G('Guild sails','<br>Fly the guild\'s colours on your boat: START &gt; Style &gt; Boat &gt; Guild sails. The sails use the cape\'s design (colours, pattern, trim and emblem), and other players see them too.');
  G('Designing the cape','<br>The leader designs it in START &gt; Guild &gt; Settings: a main colour, a second colour, a pattern (plain, halves, centre stripe, bands or quarters), a trim, and one of '+((window.SQGCAPE&&SQGCAPE.EM.length-1)||13)+' emblems in any colour. Members see the new design once the leader taps Save.');
  return out};
 WK2.guides=()=>{const out=[];const G=(t,h)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,' '),h:'<div class="c"><div class="tx"><b>'+wkE(t)+'</b>'+h+'</div></div>'});

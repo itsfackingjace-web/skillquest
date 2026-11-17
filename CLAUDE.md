@@ -943,3 +943,8 @@
   the outermost `mapHTML` wraps `#mpc` in `.sqmpw` with a `.sqmpl` label layer (towns/dungeons/harbors on Hollow, pier + found landmarks on
   islands, greedy no-overlap) and drops legend spans naming only labelled places. Guild quests: an `SQQEXTRA` entry `gq:<guild>:<t>`, no arrow (102
   exposes `SQTRKSET`, `SQTRKID`, `SQNEAROBJ`, `SQCURAREA`); towns no longer `say` a welcome on entry (020/041/044/046); 197's quest card shows `SQGQTRKBTN()` (`data-gqtrk`).
+- **Guild sails** (`items/226-s234-guild-sails.js`, `window.SQSAILS`): START > Style gets a Boat section (added after 085's Style screen in the
+  outermost `rPn`, `#sqboatsec`, `data-bsail`); save `gsw` (always written). gearCH carries the guild cape design as `slc` (c+1) `sls slp slt
+  sle slx` while worn in a guild. The outermost `drawBoat26` finds whose boat it is (a sailing peer exactly at P, else you) and sets `CURD`;
+  `BOAT85.back` is wrapped to return a recoloured sail layer (SA colours → main colour, RD band/pennant → second colour, pattern by position,
+  trim on edges, emblem at the cloth's centroid), cached per canvas + design. Furled/moored boats stay plain. Wiki > Guilds mentions it.
