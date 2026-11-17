@@ -29,8 +29,8 @@
   // the touch cluster: FIRE no longer overlaps HIT, ROLL / ULT moved out a little to make room
   '#f{right:120px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 130px)!important}#rl,#ub{right:190px!important}';document.head.appendChild(st);
  // find a free spot next to the other touch buttons (never on top of one): try above / beside each button, nearest to HIT first
- function placeBtn(){const hit=document.getElementById('a');const farm=()=>!WAND&&!TL.bow&&!!(TL.hoe||TL.can),yd=SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court);const show=!isPC&&(offhand()||farm())&&!(typeof GPON!=='undefined'&&GPON)&&!menuOpen&&!pnOpen&&!dead&&hit&&hit.getBoundingClientRect().width>0&&getComputedStyle(hit).display!=='none'&&(yd||!(SCENE&&!SCENE.room.cave&&!SCENE.room.region));
-  tb.style.display=show?'flex':'none';if(!show)return;tb.textContent=WAND?'CAST':TL.bow?'BOW':TL.can?'WATER':'TILL';const S=64,G=8,vw=innerWidth,vh=innerHeight;
+ function placeBtn(){const hit=document.getElementById('a');const farm=()=>!WAND&&!TL.bow&&!!(TL.hoe||TL.can||(window.SQDAGGER&&SQDAGGER.dag)),yd=SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court);const show=!isPC&&(offhand()||farm())&&!(typeof GPON!=='undefined'&&GPON)&&!menuOpen&&!pnOpen&&!dead&&hit&&hit.getBoundingClientRect().width>0&&getComputedStyle(hit).display!=='none'&&(yd||!(SCENE&&!SCENE.room.cave&&!SCENE.room.region));
+  tb.style.display=show?'flex':'none';if(!show)return;tb.textContent=WAND?'CAST':TL.bow?'BOW':(window.SQDAGGER&&SQDAGGER.dag)?'STAB':TL.can?'WATER':'TILL';const S=64,G=8,vw=innerWidth,vh=innerHeight;
   const rects=[...document.querySelectorAll('.b,#mpb,#mpbug,#mb,#pb2,#cb')].filter(e=>e!==tb&&e.offsetWidth>0&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden').map(e=>e.getBoundingClientRect()).filter(r=>r.width>0);
   // the USE / TALK / SAIL button pops up above HIT now and then: keep its spot free even while it's hidden
   {const t=document.getElementById('tk');if(t){const cs=getComputedStyle(t),w=parseFloat(cs.width)+8,hh=parseFloat(cs.height)+8,r=parseFloat(cs.right),bt=parseFloat(cs.bottom);if(isFinite(w)&&isFinite(r)&&isFinite(bt))rects.push({left:vw-r-w,right:vw-r,top:vh-bt-hh,bottom:vh-bt})}}
@@ -44,7 +44,7 @@
  setInterval(placeBtn,300);
  tb.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();
   // a hoe or watering can in the off-hand: one tap = till / water (140's off-hand use)
-  if(!WAND&&!TL.bow&&(TL.hoe||TL.can)){tb.classList.add('on');setTimeout(()=>tb.classList.remove('on'),150);try{window.SQOFFHAND&&SQOFFHAND.use()}catch(_){}return}
+  if(!WAND&&!TL.bow&&(TL.hoe||TL.can||(window.SQDAGGER&&SQDAGGER.dag))){tb.classList.add('on');setTimeout(()=>tb.classList.remove('on'),150);try{window.SQOFFHAND&&SQOFFHAND.use()}catch(_){}return}
  const t=e.changedTouches[0];AIMX.touch={id:t.identifier,x:t.clientX,y:t.clientY,drag:false};AIMX.tHeld=0;tb.classList.add('on')},{passive:false});
  tb.addEventListener('touchmove',e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;for(const t of e.changedTouches){if(t.identifier!==T.id)continue;
   const dx=t.clientX-T.x,dy=t.clientY-T.y;if(Math.hypot(dx,dy)>14){T.drag=true;const l=Math.hypot(dx,dy);AIM.v=[dx/l,dy/l];AIM.t=performance.now()}}},{passive:false});

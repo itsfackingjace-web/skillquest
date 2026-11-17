@@ -39,8 +39,9 @@
  cv.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;inCv=true});cv.addEventListener('mouseleave',()=>{inCv=false});
  const playing=()=>!dead&&!menuOpen&&!pnOpen&&!(typeof chessOpen!=='undefined'&&chessOpen)&&!(window.SQPVC&&SQPVC.open);
  function down(){if(!playing())return false;
+  if(window.SQDAGGER&&SQDAGGER.dag&&!TL.bow&&!WAND){try{SQDAGGER.stab()}catch(e){}return true}
   if((TL.hoe||TL.can)&&!TL.bow&&!WAND){try{viaOff(()=>attack())}catch(e){}return true}
-  if(!TL.bow&&!WAND){say('Put a bow, a wand, a hoe or a watering can in your off-hand to use it with X.');try{sfx('swish')}catch(e){}return true}
+  if(!TL.bow&&!WAND){say('Put a bow, a wand, a dagger, a hoe or a watering can in your off-hand to use it with X.');try{sfx('swish')}catch(e){}return true}
   let x=mx,y=my;const r=cv.getBoundingClientRect();if(!inCv||x==null){x=r.left+r.width/2+face[0]*80;y=r.top+r.height/2+face[1]*80-6}
   cv.dispatchEvent(new MouseEvent('mousedown',{button:2,buttons:2,clientX:x,clientY:y,bubbles:true,cancelable:true}));held=true;return true}
  function up(){if(!held)return;held=false;window.dispatchEvent(new MouseEvent('mouseup',{button:2,bubbles:true}))}

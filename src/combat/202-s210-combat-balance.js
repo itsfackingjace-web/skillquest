@@ -7,7 +7,7 @@
  // the same reach as the game's swing (004/014: 16 px around the point 13 px in front; bigger monsters 24 px), a little wider
  const target=()=>{try{const[fx,fy]=front(13);for(const n of en){if(!n||n.dead)continue;const r=(n.type==='boss'||n.big||n._wb)?30:20;if(Math.hypot(n.x-fx,n.y-fy)<r)return n}}catch(e){}return null};
  const _a=attack;attack=function(){
-  if(target()){if(nowS()-lastHit<MELEE_GAP)return;const hp0=new Map(en.map(n=>[n,n.hp])),out=_a.apply(this,arguments);
+  if(target()&&!window.SQSTABNOW){if(nowS()-lastHit<MELEE_GAP)return;const hp0=new Map(en.map(n=>[n,n.hp])),out=_a.apply(this,arguments);
    for(const[n,h]of hp0)if(n.hp<h||n.dead&&h>0){lastHit=nowS();break}return out}
   return _a.apply(this,arguments)};
  // Magic: every spell costs 1 mana less (fire/ice 1, storm/void 2, never below 1). `cost` becomes an accessor, so 111a2's setCosts

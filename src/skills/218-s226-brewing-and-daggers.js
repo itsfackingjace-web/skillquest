@@ -192,3 +192,23 @@
    let c=null;try{c=window.SQULT&&SQULT.chosen()}catch(e){}if(c&&c.k==='dagger'&&!WAND&&L.chips.length<5){L.chips.push(['ult',DCD>0?'ULT '+Math.ceil(DCD)+'s':'ULT']);add=1}
    if(add&&L.stackBottom<L.cy+22*L.U)L.stackBottom=L.cy+22*L.U}catch(e){}return L}}
  window.SQDAGGER={get dag(){return DAG},get pin(){return DPIN},set pin(v){DPIN=v},get coat(){return COATK},coat,daggerUlt,DAGS,get cd(){return DCD},set cd(v){DCD=v},onStrike}})();
+// ---- dagger stabs: the off-hand button (X / right-click, controller R1, touch STAB) jabs with the dagger ----
+// SQDAGGER.stab() runs the game's own melee (the outermost attack, so PvP, shared monsters, bosses, coatings and XP all work)
+// with the sword set aside (TL.sword 0 for the call: 1 + Attack/15 + meleeFlat, which has the dagger's tier) on its own
+// STABGAP clock: 202's sword gap is skipped for it (window.SQSTABNOW) so stabs fit between sword swings. A stab at nothing just
+// plays. While a stab shows, the outermost pP draws the dagger in place of the sword (occ('main') answers the dagger for that call).
+(()=>{if(!window.SQDAGGER)return;const D=SQDAGGER,STABGAP=.28;let last=-1e9,VIS=0;
+ const nowS=()=>performance.now()/1000;
+ const tgt=()=>{try{const[fx,fy]=front(13);for(const n of en){if(!n||n.dead)continue;const r=(n.type==='boss'||n.big||n._wb)?30:20;if(Math.hypot(n.x-fx,n.y-fy)<r)return n}}catch(e){}
+  try{const M=window.SQPVP;if(M&&M.on&&typeof pvTarget==='function'&&pvTarget())return true}catch(e){}return null};
+ function stab(){if(!D.dag||dead||menuOpen||pnOpen||BUILD||FISH)return;const t=nowS();if(t-last<STABGAP)return;last=t;
+  const sw=TL.sword,s0=swing;VIS=performance.now()+260;
+  if(tgt()){window.SQSTABNOW=1;TL.sword=0;swing=0;try{attack()}catch(e){console.warn('stab',e)}finally{TL.sword=sw;window.SQSTABNOW=0}}
+  else{try{sfx('swish')}catch(e){}}
+  swing=Math.max(.25,s0)}
+ D.stab=stab;
+ {const _sa=shootAim;shootAim=function(first){if(D.dag&&!TL.bow&&!WAND){stab();return}return _sa.apply(this,arguments)}}
+ cv.addEventListener('mousedown',e=>{if(e.button===2&&e.isTrusted&&D.dag&&!TL.bow&&!WAND){e.preventDefault();e.stopImmediatePropagation();stab()}},true);
+ {const _pp=pP;pP=function(){if(!(D.dag&&performance.now()<VIS))return _pp.apply(this,arguments);const _o=occ;occ=function(s){return s==='main'?D.dag:_o.apply(this,arguments)};
+   try{return _pp.apply(this,arguments)}finally{occ=_o}}}
+ window.SQSTAB={stab,get gap(){return STABGAP}}})();

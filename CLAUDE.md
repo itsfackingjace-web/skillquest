@@ -876,3 +876,6 @@
   receivers check party/friend + distance and drink without using their own. Coats apply on hp drops during the outermost `attack`.
   While a brew job runs (`SQDO.brew` = potion, `BREWAT` = the tile in front when it started) that cauldron is drawn boiling in the
   potion's colour (`PCOL`/`palOf`), and 114's `localAct` returns 0 for `SQDO.brew` (no crafting saw). HUD chips (coat time, dagger ULT) are added in the outermost `hudLayout`. Flames on every burning monster in the outermost `pS`.
+  **Stabs** (`window.SQSTAB`, end of 218): the off-hand button (140's `down` → `SQDAGGER.stab()`, X; right-click capture on `cv`; outermost
+  `shootAim` for R1; 082's touch button shows STAB) runs the outermost `attack` with `TL.sword` 0 on its own 0.28 s clock; 202 skips its
+  sword gap while `window.SQSTABNOW` is set. The outermost `pP` answers `occ('main')` with the dagger while a stab shows (123 draws it).
