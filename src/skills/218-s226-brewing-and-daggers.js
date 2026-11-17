@@ -107,7 +107,7 @@
  // ---- daggers (off-hand) ----
  const ICK=k=>k;
  for(const k in DAGS){const o=DAGS[k];if(!INVK.includes(k))INVK.push(k);INAME[k]=o.n;SN[k]=o.n+'s';SHORT[k]=o.n.toLowerCase();inv[k]=inv[k]|0;if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k);
-  EQ[k]=Object.assign(EQ[k]||{},{slot:'off',kind:'dagger',dt:o.t,n:o.n,ic:ICK(k),v:SELLP[k]||o.t*400});if(o.lv)EQ[k].rq2={s:0,l:o.lv};if(typeof EQK!=='undefined'&&!EQK.includes(k))EQK.push(k);
+  EQ[k]=Object.assign(EQ[k]||{},{slot:'off',kind:'dagger',dt:o.t,n:o.n,ic:(k==='idag'||k==='sdag')?'dagger':k,col:(k==='idag'||k==='sdag')?o.c:undefined,v:SELLP[k]||o.t*400});if(o.lv)EQ[k].rq2={s:0,l:o.lv};if(typeof EQK!=='undefined'&&!EQK.includes(k))EQK.push(k);
   if(!SELLP[k])SELLP[k]=o.t*150;
   IDESC[k]=o.n+': an off-hand weapon. +'+o.t+' melee damage, and your ULT uses the potion you pin in your bag (★ DAGGER ULT).'+(o.lv?' Needs Attack '+o.lv+'.':'');
   if(o.bar&&!SM.some(r=>r.k===k))SM.push({k,n:o.n,c:{[o.bar]:2},lv:o.sm,xp:o.sm*6})}

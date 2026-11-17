@@ -870,7 +870,7 @@
   `PK(id)` = 036's `perk`). Cauldron = 022 station `cauldron` (STNS/BREC/BK), the outermost `stationHTML`/`stationAct` (actions `cw_<pot>`/
   `cwa_<pot>`: **station actions starting with `b` are taken as shop buys by 107**), timed with `sqDo('craft')`. Art drawn in the outermost
   `drawStation` unless a Props look `p:cauldron` exists. Potions `pot_poison/napalm/zap` are `COAT` potions (not FOODS; USE coats).
-  Daggers `idag/sdag/mdag/adag/metdag` are EQ kind `dagger`, slot `off` (DAG, save `dag`), +tier in `meleeFlat`. Potion pin `dpin`
+  Daggers `idag/sdag/mdag/adag/metdag` are EQ kind `dagger` (028's iconURL draws EQ items as `iconURL(EQ[k].ic)`: an `ic` equal to the item's own key recursed forever and broke every screen showing one, so idag/sdag use `ic:'dagger'`), slot `off` (DAG, save `dag`), +tier in `meleeFlat`. Potion pin `dpin`
   (bag button `data-dpin`). 159's `avail()` also lists `window.SQULTX` entries ({k,n,ok,from,run}); the outermost `castUlt` runs the
   dagger ult (cooldown `DCD`, 20 s / 12 with br_quick). Helpful potions are drunk and shared with fx `dp` {p,to (uid list),x,y}:
   receivers check party/friend + distance and drink without using their own. Coats apply on hp drops during the outermost `attack`.
