@@ -18,8 +18,10 @@ support@skillquestmmo.com.
 | Google account ID, name, email | Firebase Authentication | The owner (Firebase console) |
 | Game saves and backups (`saves`, `bak`) | Firebase Realtime Database | The player and developer accounts (`devs/`) |
 | Age group (`age`) | Realtime Database | The player and developers |
-| Chat, private messages, guild and party chat | Realtime Database | Recipients; developers for moderation |
-| Bug reports, player reports, play-time statistics | Realtime Database | Developers only |
+| Chat, private messages, guild and party chat | Realtime Database | Recipients; moderators (`mods/`, adults only) and developers for moderation (guild chat: members only) |
+| Bug reports, play-time statistics | Realtime Database | Developers only |
+| Player reports, mute/suspend records (`reports`, `mod`) | Realtime Database | Moderators and developers |
+| Moderation log (`modlog`: who opened whose private messages, who muted whom) | Realtime Database | Developers only; moderators can only add entries |
 | Public game state (presence, houses, leaderboard, market) | Realtime Database | Signed-in players |
 
 No payment details are ever stored; a payment provider handles them.
@@ -38,6 +40,11 @@ No payment details are ever stored; a payment provider handles them.
   read access to private data only for the owner and the accounts listed under `devs/`.
 - **Under-13 protections** are enforced by the database rules, not only by the game: phrase-only chat, and private
   messages and trade, duel and party requests only with the child's friends.
+- **Moderator accounts** (`mods/<uid>`) are added by developers from Dev Suite > Moderation / the game's Moderation screen, only for
+  accounts whose age group is adult (the rules also require `age/<uid>/b === 'a'`). Moderators can mute/suspend for at most 7
+  days, never developers or other moderators, and can't undo a developer's longer action. Every private-message lookup and
+  action is written to `modlog`. Each moderator should agree in writing to use what they see only for moderation. Review the
+  moderator list and the log monthly.
 - **Developer accounts** are added by hand in the Firebase console. Each must use two-step verification on its Google account.
 - **Supporter status** (when it launches) will be written only by a server function after the payment provider confirms
   a payment, never by the game itself.

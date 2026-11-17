@@ -35,7 +35,7 @@
     "chat": {
       ".read": "auth != null",
       "$id": {
-        ".write": "auth != null && ((!data.exists() && newData.child('u').val() === auth.uid && (!root.child('mod').child(auth.uid).child('ba').exists() || root.child('mod').child(auth.uid).child('ba').val() < now) && (!root.child('mod').child(auth.uid).child('mu').exists() || root.child('mod').child(auth.uid).child('mu').val() < now)) || (root.child('devs').child(auth.uid).val() === true && !newData.exists()))",
+        ".write": "auth != null && ((!data.exists() && newData.child('u').val() === auth.uid && (!root.child('mod').child(auth.uid).child('ba').exists() || root.child('mod').child(auth.uid).child('ba').val() < now) && (!root.child('mod').child(auth.uid).child('mu').exists() || root.child('mod').child(auth.uid).child('mu').val() < now)) || ((root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a')) && !newData.exists()))",
         ".validate": "newData.hasChildren(['u', 'n', 'm', 't']) && (root.child('age').child(auth.uid).child('b').val() !== 'c' || newData.child('m').val().matches(/^(\\[Party\\] )?(Hi!|Hello!|Bye!|See you later!|Thanks!|You.re welcome!|Good game!|Nice!|Well done!|Good luck!|Sorry!|OK|Yes|No|Maybe|LOL|Brb|Want to team up\\?|Want to be friends\\?|Follow me!|Wait for me!|Over here!|Help!|Let.s trade!|Let.s fight the boss!|Let.s go on an adventure!|I.m going fishing\\.|I.m going mining\\.|I.m going to chop trees\\.|I.m cooking\\.|I have to go now\\.|Cool house!|Cute pet!)$/))",
         "u": {
           ".validate": "newData.isString()"
@@ -109,10 +109,11 @@
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         "$id": {
-          ".write": "auth != null && ((!data.exists() && newData.child('f').val() === auth.uid && (!root.child('mod').child(auth.uid).child('ba').exists() || root.child('mod').child(auth.uid).child('ba').val() < now) && (!root.child('mod').child(auth.uid).child('mu').exists() || root.child('mod').child(auth.uid).child('mu').val() < now)) || (auth.uid === $uid && !newData.exists()))",
+          ".write": "auth != null && ((!data.exists() && newData.child('f').val() === auth.uid && (!root.child('mod').child(auth.uid).child('ba').exists() || root.child('mod').child(auth.uid).child('ba').val() < now) && (!root.child('mod').child(auth.uid).child('mu').exists() || root.child('mod').child(auth.uid).child('mu').val() < now)) || ((auth.uid === $uid || (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a'))) && !newData.exists()))",
           ".validate": "newData.hasChildren(['f', 'n', 'm', 't']) && newData.child('m').isString() && newData.child('m').val().length > 0 && newData.child('m').val().length <= 80 && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('t').val() === now && (root.child('age').child(auth.uid).child('b').val() !== 'c' || newData.child('m').val().matches(/^(\\[Party\\] )?(Hi!|Hello!|Bye!|See you later!|Thanks!|You.re welcome!|Good game!|Nice!|Well done!|Good luck!|Sorry!|OK|Yes|No|Maybe|LOL|Brb|Want to team up\\?|Want to be friends\\?|Follow me!|Wait for me!|Over here!|Help!|Let.s trade!|Let.s fight the boss!|Let.s go on an adventure!|I.m going fishing\\.|I.m going mining\\.|I.m going to chop trees\\.|I.m cooking\\.|I have to go now\\.|Cool house!|Cute pet!)$/)) && (root.child('age').child($uid).child('b').val() !== 'c' || root.child('friends').child($uid).child(auth.uid).val() === true)"
         }
-      }
+      },
+      ".read": "auth != null && (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a'))"
     },
     "fires": {
       ".read": "auth != null",
@@ -487,8 +488,8 @@
     },
     "mod": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('devs').child(auth.uid).val() === true)",
-        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true",
+        ".read": "auth != null && (auth.uid === $uid || (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a')))",
+        ".write": "(auth != null && root.child('devs').child(auth.uid).val() === true) || (auth != null && (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a') && $uid !== auth.uid && !root.child('devs').child($uid).exists() && !root.child('mods').child($uid).exists() && newData.exists() && newData.child('by').val() === auth.uid && (!newData.child('ba').exists() || newData.child('ba').val() <= now + 604800000) && (!newData.child('mu').exists() || newData.child('mu').val() <= now + 604800000) && (!data.child('ba').exists() || data.child('ba').val() <= now + 604800000 || newData.child('ba').val() === data.child('ba').val()) && (!data.child('mu').exists() || data.child('mu').val() <= now + 604800000 || newData.child('mu').val() === data.child('mu').val()))",
         "mu": {
           ".validate": "newData.isNumber()"
         },
@@ -508,12 +509,12 @@
           ".validate": false
         }
       },
-      ".read": "auth != null && root.child('devs').child(auth.uid).val() === true"
+      ".read": "auth != null && (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a'))"
     },
     "reports": {
-      ".read": "auth != null && root.child('devs').child(auth.uid).val() === true",
+      ".read": "auth != null && (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a'))",
       "$id": {
-        ".write": "auth != null && ((!data.exists() && newData.child('by').val() === auth.uid) || root.child('devs').child(auth.uid).val() === true)",
+        ".write": "auth != null && ((!data.exists() && newData.child('by').val() === auth.uid) || (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a')))",
         ".validate": "newData.hasChildren(['u', 'by', 'why', 't'])",
         "u": {
           ".validate": "newData.isString() && newData.val().length < 64"
@@ -540,7 +541,7 @@
           ".validate": "(data.exists() && newData.val() === data.val()) || newData.val() === now"
         },
         "st": {
-          ".validate": "newData.isString() && newData.val().length <= 20 && root.child('devs').child(auth.uid).val() === true"
+          ".validate": "newData.isString() && newData.val().length <= 20 && (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a'))"
         },
         "$other": {
           ".validate": false
@@ -861,7 +862,7 @@
     },
     "age": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('devs').child(auth.uid).val() === true)",
+        ".read": "auth != null && (auth.uid === $uid || (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a')))",
         ".write": "auth != null && ((auth.uid === $uid && !data.exists()) || root.child('devs').child(auth.uid).val() === true)",
         ".validate": "newData.hasChildren(['b','t']) && (newData.child('b').val() === 'c' || newData.child('b').val() === 't' || newData.child('b').val() === 'a') && newData.child('t').isNumber()",
         "b": {
@@ -1016,6 +1017,39 @@
         },
         "ct": {
           ".validate": "newData.isBoolean()"
+        },
+        "t": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "mods": {
+      ".read": "auth != null && root.child('devs').child(auth.uid).val() === true",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('devs').child(auth.uid).val() === true)",
+        ".write": "auth != null && root.child('devs').child(auth.uid).val() === true",
+        ".validate": "newData.val() === true"
+      }
+    },
+    "modlog": {
+      ".read": "auth != null && root.child('devs').child(auth.uid).val() === true",
+      "$id": {
+        ".write": "auth != null && !data.exists() && (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a')) && newData.child('by').val() === auth.uid",
+        ".validate": "newData.hasChildren(['by','a','t']) && newData.child('t').val() === now",
+        "by": {
+          ".validate": "newData.isString()"
+        },
+        "a": {
+          ".validate": "newData.isString() && newData.val().length <= 12"
+        },
+        "u": {
+          ".validate": "newData.isString() && newData.val().length < 64"
+        },
+        "x": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
         },
         "t": {
           ".validate": "newData.isNumber()"
