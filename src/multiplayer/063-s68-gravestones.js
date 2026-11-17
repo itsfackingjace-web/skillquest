@@ -9,6 +9,7 @@
 const GRV={list:{},local:{},unsub:null,lastSpot:null,lostN:0,hint:null,open:null,busy:false},GRAVE_LIFE=15*60*1000,GTAB=33;
 const grvNow=()=>MP.on?mpNow():Date.now();
 const grvLeft=g=>g.at+GRAVE_LIFE-grvNow();
+const GRAVE_LOCK=5*60*1000,grvLock=g=>Math.max(0,g.at+GRAVE_LOCK-grvNow());// only the owner can take from a grave for its first 5 minutes (the rules check it too)
 const grvItems=g=>{const o={};const s=g&&g.i;if(s&&typeof s==='object')for(const k in s){sqBookReg(k);const n=Math.floor(+s[k]||0);if(n>0&&INAME[k])o[k]=n}return o};
 const grvAll=()=>{const a=[];for(const id in GRV.list)a.push(GRV.list[id]);for(const id in GRV.local)a.push(GRV.local[id]);return a};
 // where a grave is shown: one made inside a dungeon, an island boss lair or another building (not a house) sits just
@@ -69,11 +70,12 @@ setInterval(()=>{const busy=dead||pnOpen||menuOpen||TS.open;const g=busy?null:gr
 {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const g=grvNear();if(g){GRV.open=g;pnOpen=true;ptab=GTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');return}}return _t()}}
 function graveHTML(){const g=GRV.open&&(GRV.open.local?GRV.local[GRV.open.id]:GRV.list[GRV.open.id]);if(!g)return'<div class="tl">GRAVE</div><div class="qc"><p>Nothing left here.</p></div>';
  const mine=g.local||(MP.user&&g.u===MP.user.uid),it=grvItems(g),ks=Object.keys(it);
- let h='<div class="tl">'+(mine?'YOUR GRAVE':esc(g.n).toUpperCase()+'\'S GRAVE')+'</div><div class="trst" style="text-align:center;font-size:13px;margin:4px 0 8px">Crumbles in '+mmss(grvLeft(g))+(mine?'':' · finders keepers!')+'</div>';
+ let h='<div class="tl">'+(mine?'YOUR GRAVE':esc(g.n).toUpperCase()+'\'S GRAVE')+'</div><div class="trst" style="text-align:center;font-size:13px;margin:4px 0 8px">Crumbles in '+mmss(grvLeft(g))+(mine?'':(grvLock(g)>0?' · locked to '+esc(g.n)+' for '+mmss(grvLock(g)):' · finders keepers!'))+'</div>';
  if(!ks.length)return h+'<div class="qc"><p>Someone got here first. It\'s empty.</p></div>';
+ if(!mine&&grvLock(g)>0)return h+'<div class="qc"><p>Only '+esc(g.n)+' can take from this grave for '+mmss(grvLock(g))+' more, so they have time to get back here.</p></div>'+ks.map(k=>'<div class="grl"><span>'+esc(INAME[k])+' <i style="font-style:normal;opacity:.65">×'+it[k]+'</i></span></div>').join('');
  for(const k of ks)h+='<div class="grl"><span>'+esc(INAME[k])+' <i style="font-style:normal;opacity:.65">×'+it[k]+'</i></span><button data-gr="one" data-k="'+k+'">TAKE</button></div>';
  return h+'<div class="gra"><button class="y" data-gr="all"'+(GRV.busy?' disabled':'')+'>TAKE ALL</button></div>'}
-async function grvTake(keys){const g0=GRV.open;if(!g0||GRV.busy)return;{const gp=grvPos(g0);if(Math.hypot(gp.x-P.x,gp.y-P.y)>40){closePanel();return}}GRV.busy=true;const got={};
+async function grvTake(keys){const g0=GRV.open;if(!g0||GRV.busy)return;{const g=g0.local?GRV.local[g0.id]:GRV.list[g0.id];if(g&&!g0.local&&!(MP.user&&g.u===MP.user.uid)&&grvLock(g)>0){say('Only '+g.n+' can take from this grave for '+mmss(grvLock(g))+' more.');return}}{const gp=grvPos(g0);if(Math.hypot(gp.x-P.x,gp.y-P.y)>40){closePanel();return}}GRV.busy=true;const got={};
  try{if(g0.local){const g=GRV.local[g0.id];if(!g)return;for(const k of keys){const n=grvItems(g)[k]|0;if(n>0){got[k]=n;delete g.i[k]}}grvSaveLocal()}
   else{const d=FB.db;for(const k of keys){let n=0;const ref=d.ref(FB.D,'graves/'+g0.id+'/i/'+k);
     if(d.runTransaction){const r=await d.runTransaction(ref,cur=>{n=0;if(!cur||cur<=0)return;n=cur;return null}).catch(e=>{mpErr(e);return null});if(!r||!r.committed)n=0}

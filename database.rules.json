@@ -209,7 +209,7 @@
         ".validate": "newData.hasChildren(['u', 'n', 'loc', 'x', 'y', 'at']) && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('loc').isString() && newData.child('loc').val().length <= 40 && newData.child('x').isNumber() && newData.child('y').isNumber()",
         "i": {
           "$k": {
-            ".write": "auth != null && data.exists() && (!newData.exists() || (newData.isNumber() && newData.val() < data.val()))",
+            ".write": "auth != null && data.exists() && (!newData.exists() || (newData.isNumber() && newData.val() < data.val())) && (root.child('graves').child($gid).child('u').val() === auth.uid || root.child('graves').child($gid).child('at').val() < now - 300000)",
             ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 1000000 && $k.length < 24"
           }
         }

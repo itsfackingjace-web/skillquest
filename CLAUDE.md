@@ -921,4 +921,6 @@
   do for plain rocks/trees. 067's `enterScene` wrapper never gives an island scene a `prev` (a region loaded while standing on a region, e.g.
   049's applySave or 111g's `refresh`, got the old island as `prev`, and 067's `leaveScene` then "sailed home" to it). 001's night fire glow is
   culled to the screen and merged per 32 px cell (max 24 glows a frame). Note: fishing (007's upd) pauses while a panel is open.
+- **Grave lock** (063, in the MP block, edited in place): `GRAVE_LOCK` 5 min from `g.at`, `grvLock(g)`; others see the items but no TAKE
+  buttons and `grvTake` refuses. The rules check it too: `graves/$gid/i/$k` writes need the grave's `u` or `at < now - 300000` (publish them).
 
