@@ -906,3 +906,14 @@
 - **Fishing 70/80/90** (`skills/221-s229-deep-fishing.js`, `window.SQDEEPFISH`): moonfin (70, night: `dark()>.25`), abyssal eel (80, shattered/
   ironcrest), ancient koi (90, anywhere, 6%) through `window.SQFISHX`, which 093b's catch hook checks before the Dev Suite's `SQGFISH`
   (entries may have `ok()`). Raw `k` + cooked `c<k>`, COOKS/FOODS/icons/tree lines. Not in 200's turtle `RAW` (fixed by the rules).
+- **Guild ponds and one angler per spot** (`skills/222-s230-ponds-and-fishing-spots.js`, `window.SQPONDS`): 197's `QK.fish.rw` = pond items
+  `gp_trout/salmon/sword/moon/koi` (+ bait); `NODE` has them (`PONDK`), `canPlant(k)` checks a 3x3 patch in front (middle = front cell +
+  facing) plus a ring of land around it, `plant` stores `isl/<middle>`, `dig`/`spotOK` find a pond by any of its cells (`pondAt`).
+  197's `applyNodes` calls `SQPONDS.apply(R,want,pondCells)`: those cells become water (`R.tiles` 0, originals in `R._pondO`, put back when
+  dug), `R._ponds`, and the island's `RGCK` chunks are dropped so the ground is rebaked. Pond fishing = entries at the front of
+  `window.SQFISHX` (093b, which now calls an entry's `got()` after a catch) whose `ok()` checks the bobber is in a pond of that kind with
+  stock left (per player, localStorage `sq_pond`, 30, +1 per 120 s); chances trout/salmon/sword .6, moon .4 any time, koi .15. Library
+  `ponds` {p,stock,refill} overrides. The rules needed no change (isl values are any short string, rewards aren't checked).
+  One angler per spot (everywhere): the outermost `attack` calls off a new cast whose bobber tile equals another player's (same `mpLoc()`,
+  presence `ak` 3-5, their bobber = tx/ty + facing x 24); two casts at once: the larger uid reels in within 3 s (outermost `upd`).
+

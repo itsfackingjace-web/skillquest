@@ -43,7 +43,11 @@
  // ---- things the guild bank holds that can be planted on the island: key -> [name, object kind, icon] ----
  const NODE={gv_rock:['Stone vein','rock','🪨'],gv_iron:['Iron vein','ore','⛏️'],gv_gold:['Gold vein','gold','⛏️'],gv_mith:['Mithril vein','mith','⛏️'],gv_adam:['Adamant vein','adam','⛏️'],
   gs_tree:['Tree sapling','tree','🌱'],gs_oak:['Oak sapling','oak','🌱'],gs_willow:['Willow sapling','willow','🌱'],gs_maple:['Maple sapling','maple','🌱'],gs_yew:['Yew sapling','yew','🌱'],gs_void:['Void sapling','tree','🌱','dark'],
-  gf_bush:['Berry bush','bush','🌿'],gf_nut:['Nut bush','nutbush','🌰'],gf_cactus:['Cactus seed','cactus','🌵'],gf_shroom:['Mushroom spores','shroom','🍄']};
+  gf_bush:['Berry bush','bush','🌿'],gf_nut:['Nut bush','nutbush','🌰'],gf_cactus:['Cactus seed','cactus','🌵'],gf_shroom:['Mushroom spores','shroom','🍄'],
+  gp_trout:['Trout pond','pond','🎣'],gp_salmon:['Salmon pond','pond','🎣'],gp_sword:['Swordfish pond','pond','🎣'],gp_moon:['Moonfin pond','pond','🌙'],gp_koi:['Koi pond','pond','🐟']};
+ // ponds: 3x3 water around the planted cell (window.SQPONDS, 222); the cell index is the middle
+ const PONDK=k=>typeof k==='string'&&k.slice(0,3)==='gp_',pondCells=(R,i)=>{const W=R.w,x=i%W,y=(i/W)|0,a=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)a.push((y+dy)*W+x+dx);return a};
+ const pondAt=(R,cell)=>{for(const k in (G.isl||{}))if(PONDK(G.isl[k])&&pondCells(R,+k).includes(cell))return +k;return -1};
  const nm=k=>NODE[k]?NODE[k][0]:(INAME[k]||(typeof iname==='function'?iname(k):k));
  const ic=k=>NODE[k]?'<span class="gdgi">'+NODE[k][2]+'</span>':(typeof iconURL==='function'?'<img class="gdgi" alt="" src="'+iconURL(k)+'">':'');
  // ---- Guild Quests: one skill each; goals grow with the guild's size and level; rewards go into the bank ----
@@ -52,7 +56,7 @@
  const QK={wood:{sk:'Woodcutting',n:'Woodcutting quest',verb:'Cut 100,000 trees',goal:100000,rw:[{gs_tree:50},{gs_oak:35},{gs_maple:20},{gs_yew:15},{gs_void:10}]},
   mine:{sk:'Mining',n:'Mining quest',verb:'Mine 100,000 rocks and ores',goal:100000,rw:[{gv_rock:50},{gv_iron:35},{gv_gold:20},{gv_mith:15},{gv_adam:10}]},
   forage:{sk:'Foraging',n:'Foraging quest',verb:'Forage 100,000 berries, nuts, mushrooms and cactus fruit',goal:100000,rw:[{gf_bush:50},{gf_nut:35},{gf_cactus:20},{gf_shroom:15}]},
-  fish:{sk:'Fishing',n:'Fishing quest',verb:'Catch 50,000 fish',goal:50000,rw:[{bait:100000}]}};
+  fish:{sk:'Fishing',n:'Fishing quest',verb:'Catch 50,000 fish',goal:50000,rw:[{gp_trout:4},{gp_salmon:3},{gp_sword:2},{gp_moon:1},{gp_koi:1},{bait:100000}]}};
  const glv=qd=>1+(qd|0);                                      // guild level: one per finished quest
  const rank=k=>Math.min(RMAX,(G.prog&&G.prog[k])|0);
  const BLD=[{k:'horn',lv:2,n:'Guild horn',d:'Travel to the guild island from anywhere outdoors (once every 3 minutes).'},
@@ -120,7 +124,8 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
   for(let j=R.items.length-1;j>=0;j--){const it=R.items[j];if(it.t==='_obj'&&!it._gn){try{rgCellDel(R,it)}catch(e){}R.solid.delete(it.y*W+it.x);R.items.splice(j,1)}}// only what the guild planted grows here
   const want=G.isl||{},have=new Map();for(const it of R.items)if(it._gn)have.set(it.y*W+it.x,it);
   for(const[i,it]of have)if(want[i]!==it._gn){try{rgCellDel(R,it)}catch(e){}R.solid.delete(i);R.items.splice(R.items.indexOf(it),1);if(R.gone){const g=R.gone.findIndex(q=>q.it===it);if(g>=0)R.gone.splice(g,1)}}
-  for(const k in want){const i=+k,key=want[k];if(!NODE[key]||have.get(i)&&have.get(i)._gn===key)continue;const x=i%W,y=(i/W)|0,t=NODE[key][1];
+  try{if(window.SQPONDS)SQPONDS.apply(R,want,pondCells)}catch(e){console.warn('ponds',e)}
+  for(const k in want){const i=+k,key=want[k];if(PONDK(key))continue;if(!NODE[key]||have.get(i)&&have.get(i)._gn===key)continue;const x=i%W,y=(i/W)|0,t=NODE[key][1];
    const o={t,hp:OHP[t]||3};if(NODE[key][3])o.v=NODE[key][3];const it={t:'_obj',o,x,y,solid:true,_gn:key};R.items.push(it);R.solid.add(i);try{rgCellAdd(R,it)}catch(e){}}}
  // buildings: added at runtime by guild level (their spots are kept free of planting)
  function spots(R){const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;
@@ -240,17 +245,21 @@ function deposit(k,n){if(!G.ready||!nearChest()){tell('Use the guild bank chest 
   bankUpdate({[k]:-n},{w:'wd',k,d:n},extra).then(()=>{inv[k]=(inv[k]|0)+n;tell('Took '+n+' '+nm(k)+'.');sfx('pickup');try{saveLocal(true)}catch(e){}}).catch(fail)}
  // planting: the tile in front of you on the guild island
  function frontCell(){const R=SCENE&&SCENE.room;if(!R)return null;const fx=P.x+face[0]*14,fy=P.y+face[1]*14+(face[1]>0?2:0),tx=Math.floor(fx/16),ty=Math.floor(fy/16);return{R,tx,ty,i:ty*R.w+tx}}
- function canPlant(){if(!onIsle())return'Stand on your guild island, facing where it should grow.';const c=frontCell();if(!c)return'Nowhere to plant.';const{R,tx,ty,i}=c;
+ function canPlant(k){if(!onIsle())return'Stand on your guild island, facing where it should grow.';const c0=frontCell();if(!c0)return'Nowhere to plant.';
+  if(PONDK(k)){const R=c0.R,ci=(c0.ty+face[1])*R.w+c0.tx+face[0];for(const j of pondCells(R,ci)){const why=spotOK(R,j%R.w,(j/R.w)|0,j);if(why)return why.replace('Something is already there.','The pond needs a 3x3 patch of open ground in front of you.')}
+   {const cx=ci%R.w,cy=(ci/R.w)|0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))<2)continue;const x=cx+dx,y=cy+dy;if(x<0||y<0||x>=R.w||y>=R.h||R.tiles[y*R.w+x]===0)return'Too close to the water: a pond needs land all around it.'}}return''}
+  return spotOK(c0.R,c0.tx,c0.ty,c0.i)}
+ function spotOK(R,tx,ty,i){
   if(tx<1||ty<1||tx>=R.w-1||ty>=R.h-1)return'Too close to the edge.';const t=R.tiles[i];if(!RG_WALK[t]||t===0)return'It needs open ground.';
   if(R.solid.has(i)||rgObjAt(R,tx,ty))return'Something is already there.';if(G.isl&&G.isl[i])return'Something is already planted there.';
   for(const it of R.items)if(it.t==='lm'&&tx>=it.x-1&&tx<=it.x+(it.w||1)&&ty>=it.y-1&&ty<=it.y+(it.h||1))return'Too close to the guild\'s things.';
-  if(reserved(R,tx,ty))return'That spot is kept free for guild buildings.';
+  if(reserved(R,tx,ty))return'That spot is kept free for guild buildings.';if(pondAt(R,i)>=0)return'Something is already there.';
   for(const[px,py]of R.pier||[])if(Math.abs(px-tx)<=2&&Math.abs(py-ty)<=2)return'Keep the pier clear.';
   if(Math.hypot(tx*16+8-P.x,ty*16+8-P.y)<6)return'Step back a little.';return''}
- function plant(k){if(!boss()){tell('Only the leader and officers can plant.');return}if(!NODE[k]||(G.bank.i[k]|0)<1)return;const why=canPlant();if(why){tell(why);sfx('swish');return}
-  const{i}=frontCell(),extra={};extra['guilds/'+G.id+'/isl/'+i]=k;
-  bankUpdate({[k]:-1},{w:'plant',k,d:1},extra).then(()=>{tell('You planted the '+nm(k).toLowerCase()+'. Everyone in the guild can gather it.');sfx('quest');closePanel()}).catch(fail)}
- function dig(){if(!boss()||!onIsle())return;const c=frontCell();const k=c&&G.isl&&G.isl[c.i];if(!k){tell('Face something the guild planted.');sfx('swish');return}
+ function plant(k){if(!boss()){tell('Only the leader and officers can plant.');return}if(!NODE[k]||(G.bank.i[k]|0)<1)return;const why=canPlant(k);if(why){tell(why);sfx('swish');return}
+  const c0=frontCell(),i=PONDK(k)?(c0.ty+face[1])*c0.R.w+c0.tx+face[0]:c0.i,extra={};extra['guilds/'+G.id+'/isl/'+i]=k;
+  bankUpdate({[k]:-1},{w:'plant',k,d:1},extra).then(()=>{tell(PONDK(k)?'You dug the '+nm(k).toLowerCase()+'. Everyone in the guild can fish in it.':'You planted the '+nm(k).toLowerCase()+'. Everyone in the guild can gather it.');sfx('quest');closePanel()}).catch(fail)}
+ function dig(){if(!boss()||!onIsle())return;const c=frontCell();if(c){const pi=pondAt(c.R,c.i);if(pi>=0)c.i=pi}const k=c&&G.isl&&G.isl[c.i];if(!k){tell('Face something the guild planted.');sfx('swish');return}
   const extra={};extra['guilds/'+G.id+'/isl/'+c.i]=null;bankUpdate({[k]:1},{w:'dig',k,d:1},extra).then(()=>{tell('Dug up the '+nm(k).toLowerCase()+'. It\'s back in the guild bank.');sfx('pickup')}).catch(fail)}
  // ---- guild horn, shrine, rename ----
  const LSN=(k,v)=>{if(v===undefined){const x=+LSG(k);return isFinite(x)?x:0}LSS(k,String(v))};
@@ -344,7 +353,7 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
    h+='<p style="font-size:12px;opacity:.75">Quests done: '+(G.prog.qd|0)+' · guild level '+glv(G.prog.qd)+'.</p>'}
   else if(tab==='bank'){const B=G.bank.i||{},keys=Object.keys(B).filter(k=>B[k]>0),nodes=keys.filter(k=>NODE[k]),items=keys.filter(k=>!NODE[k]),chest=nearChest(),lim=wdLimit();
    h+='<div class="qc"><b>To plant</b>'+(nodes.length?'':'<p>Nothing yet. Finish Guild Quests to get ore veins, saplings and bushes.</p>');
-   for(const k of nodes)h+='<div class="gdgr">'+ic(k)+'<div class="gdtx"><b>'+nm(k)+' × '+B[k]+'</b><small>Grows into: '+NODE[k][1].replace('nutbush','nut bush')+'</small></div>'+(boss()?'<button data-g="plant:'+k+'">Plant in front of me</button>':'')+'</div>';
+   for(const k of nodes)h+='<div class="gdgr">'+ic(k)+'<div class="gdtx"><b>'+nm(k)+' × '+B[k]+'</b><small>'+(PONDK(k)?'A 3x3 fishing pond, dug in front of you':'Grows into: '+NODE[k][1].replace('nutbush','nut bush'))+'</small></div>'+(boss()?'<button data-g="plant:'+k+'">Plant in front of me</button>':'')+'</div>';
    h+=(boss()?'<p style="font-size:12px;opacity:.8">Stand on your guild island facing open ground, then tap Plant. <button class="qb" data-g="dig">Dig up what I\'m facing</button></p>':'<p style="font-size:12px;opacity:.8">The leader and officers plant these on the island.</p>')+'</div>';
    h+='<div class="qc"><b>Items</b>'+(chest?'':'<p style="font-size:12px;opacity:.8">Use the bank chest on your guild island to put things in or take them out.</p>')+
     (chest?'<p style="font-size:12px;opacity:.8">You can take out '+(lim<0?'any amount':lim===0?'nothing (your rank)':(Math.max(0,lim-wdToday()))+' more today')+'.</p>':'');
