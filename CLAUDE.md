@@ -955,3 +955,10 @@
   sle slx` while worn in a guild. The outermost `drawBoat26` finds whose boat it is (a sailing peer exactly at P, else you) and sets `CURD`;
   `BOAT85.back` is wrapped to return a recoloured sail layer (SA colours → main colour, RD band/pennant → second colour, pattern by position,
   trim on edges, emblem as large as fits (4x4 at 3x/2x, 8x8 at 2x/1x) with a contrasting outline, on cloth outside the sailor's box x±9, y -38..2, nearest the free cloth's centroid; end-on sails (symmetric about the mast) put it on the centre line and only search its height), cached per canvas + design. Furled/moored boats stay plain. Wiki > Guilds mentions it.
+- **No hits from unseen monsters** (`combat/227-s235-no-invisible-hits.js`, `window.SQGHOSTHIT`): 001's touch damage counts anything in `en`
+  within 10 px, and a monster with a NaN position counts as 1 px away (`Math.hypot(NaN)||1`) while being drawn nowhere (Nov 16: two players
+  on the Shattered Expanse were hit every second by nothing visible). The outermost `upd` drops monsters without a finite position from `en`
+  (a shared copy `_rp` goes back to its owner's `tx/ty`), and moves one that is within 16 px and hasn't been drawn (outermost `pS`, `SEEN`)
+  for 0.4 s out of reach for that update (600 ms grace after it first appears; big/boss/ib/_wb/cb/under/_pet exempt). The first one a session
+  sends an `[auto]` bug report with its fields (Admin > Bug reports) so the source can be found. Anything that draws a monster without
+  going through `pS` must mark it in `SEEN` or be exempted here.
