@@ -939,7 +939,9 @@
   minimap hooks map tiles as `x0 + u/t.w*w` from `hudLayout()`/`miniTarget()`, so for that call it swaps in a fake target (w/h = the window in
   tiles, `rw/rh` real, `fake:1`) and a layout whose box origin is tile 0,0; everything is clipped to the box; 052 draws the terrain zoomed and
   skips its frame/player dot when `t.fake`; 105's `SQMINIBOX` is set back to the real box. New minimap markers: keep using that formula.
-  Pins: tap `#mpc` (HERE) = `PIN` {a,x,y tile} in localStorage `sq_pin`, on-screen arrow in drawHUD, cleared within 1.5 tiles. Map labels:
+  Pins: tap `#mpc` (HERE) = `PIN` {a,x,y tile} in localStorage `sq_pin`, on-screen arrow in drawHUD, cleared within 1.5 tiles. Party pins:
+  `pings/<party id>/<uid>` {a,x,y,t} (rules: own uid, party id [a-z0-9]{1,12}; publish them), written by `partyTick` (0.7 s) when PIN changes,
+  listened per party; members' pins (`PP`, only uids in `SQPARTY.members()`) drawn green on minimap/map (labels `c:'p'`)/ground, with a say on a new one. Map labels:
   the outermost `mapHTML` wraps `#mpc` in `.sqmpw` with a `.sqmpl` label layer (towns/dungeons/harbors on Hollow, pier + found landmarks on
   islands, greedy no-overlap) and drops legend spans naming only labelled places. Guild quests: an `SQQEXTRA` entry `gq:<guild>:<t>`, no arrow (102
   exposes `SQTRKSET`, `SQTRKID`, `SQNEAROBJ`, `SQCURAREA`); towns no longer `say` a welcome on entry (020/041/044/046); 197's quest card shows `SQGQTRKBTN()` (`data-gqtrk`).
@@ -947,4 +949,4 @@
   outermost `rPn`, `#sqboatsec`, `data-bsail`); save `gsw` (always written). gearCH carries the guild cape design as `slc` (c+1) `sls slp slt
   sle slx` while worn in a guild. The outermost `drawBoat26` finds whose boat it is (a sailing peer exactly at P, else you) and sets `CURD`;
   `BOAT85.back` is wrapped to return a recoloured sail layer (SA colours → main colour, RD band/pennant → second colour, pattern by position,
-  trim on edges, emblem at the cloth's centroid), cached per canvas + design. Furled/moored boats stay plain. Wiki > Guilds mentions it.
+  trim on edges, emblem as large as fits (4x4 at 3x/2x, 8x8 at 2x/1x) with a contrasting outline, on cloth outside the sailor's box x±9, y -38..2, nearest the free cloth's centroid), cached per canvas + design. Furled/moored boats stay plain. Wiki > Guilds mentions it.

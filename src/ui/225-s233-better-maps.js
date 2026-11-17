@@ -22,7 +22,19 @@
  const savePin=()=>{try{if(PIN)localStorage.setItem('sq_pin',JSON.stringify(PIN));else localStorage.removeItem('sq_pin')}catch(e){}};
  function setPin(a,x,y){PIN={a,x,y};savePin();try{sfx('pickup')}catch(e){}}
  function clearPin(msg){PIN=null;savePin();if(msg)try{say(msg)}catch(e){}}
- window.SQPIN={get:()=>PIN,set:setPin,clear:()=>clearPin()};
+ window.SQPIN={get:()=>PIN,set:setPin,clear:()=>clearPin(),party:()=>PP};
+ // ---------------- party pins: pings/<party id>/<uid> = {a,x,y,t} (rules: own uid only); members' pins show in green ----------------
+ const PCOL='#58e070';let PP=[],subP='',unsub=null,RAW={},lastSent='',LOADED=false;const seenK={};
+ function partyTick(){const PA=window.SQPARTY,pid=(PA&&PA.id)||'',F=window.SQFB,M=window.SQMP,u=M&&M.user?M.user.uid:'';if(!F||!u){PP=[];return}
+  const ref=k=>F.db.ref(F.D,'pings/'+k+'/'+u);
+  if(pid!==subP){if(unsub)try{unsub()}catch(e){}unsub=null;RAW={};LOADED=false;if(subP&&lastSent&&lastSent!=='-')try{F.db.set(ref(subP),null).catch(()=>{})}catch(e){}
+   subP=pid;lastSent='';if(pid)try{unsub=F.db.onValue(F.db.ref(F.D,'pings/'+pid),q=>{RAW=q.val()||{};LOADED=true},()=>{})}catch(e){}}
+  if(pid){const k=PIN?PIN.a+'|'+PIN.x+'|'+PIN.y:'-';if(k!==lastSent){const was=lastSent;lastSent=k;if(!(k==='-'&&was===''))try{F.db.set(ref(pid),PIN?{a:PIN.a,x:PIN.x|0,y:PIN.y|0,t:F.db.serverTimestamp()}:null).catch(()=>{lastSent='?'})}catch(e){lastSent='?'}}}
+  const L=[],mem=PA&&PA.members?PA.members():[];for(const r of mem){const v=RAW[r.uid];if(!v||typeof v.a!=='string'||!isFinite(v.x)||!isFinite(v.y)||(typeof v.t==='number'&&Date.now()-v.t>3*3600000)){if(LOADED)seenK[r.uid]='';continue}
+   const o={u:r.uid,n:String(r.n||'Party').slice(0,12),a:v.a,x:+v.x,y:+v.y};L.push(o);const key=o.a+'|'+o.x+'|'+o.y;if(seenK[o.u]!==undefined&&seenK[o.u]!==key)try{say('📍 '+o.n+' dropped a pin'+(o.a===areaNow()?'':' on '+(o.a==='hollow'?'Hollow Island':((window.WORLD_REGIONS||{})[o.a]||{}).name||o.a))+'. It\'s on your map.')}catch(e){}seenK[o.u]=key}
+  for(const k in seenK)if(!mem.some(r=>r.uid===k))delete seenK[k];
+  PP=L}
+ setInterval(()=>{try{partyTick()}catch(e){}},700);
  // ---------------- the minimap ----------------
  const tri=(x,y,an,s,fill,stroke,lw)=>{g.save();g.translate(x,y);g.rotate(an);g.beginPath();g.moveTo(s,0);g.lineTo(-s*.7,-s*.75);g.lineTo(-s*.35,0);g.lineTo(-s*.7,s*.75);g.closePath();g.lineWidth=lw;g.strokeStyle=stroke;g.stroke();g.fillStyle=fill;g.fill();g.restore()};
  let BOX=null;
@@ -45,11 +57,17 @@
   tri(cx+Math.cos(an)*s,cy+Math.sin(an)*s,an,4.5*U,col,DARK,1.5*U)}
  function overlay(t){const a=t.k==='region'?t.R.region:'hollow',B=BOX,U=B.U;
   try{const tr=window.SQTRACK&&SQTRACK(),q=tr&&tr.t;if(q&&q.x!=null&&q.area===a)mark(q.x/16,q.y/16,GOLD,2.4)}catch(e){}
+  for(const q of PP)if(q.a===a)mark(q.x+.5,q.y+.5,PCOL,2.1);
   if(PIN&&PIN.a===a)mark(PIN.x+.5,PIN.y+.5,PINK,2.4);
   // you, facing your way
   const an=Math.atan2(face[1]||0,face[0]||0);tri(B.x+B.w/2,B.y+B.h/2,an,4.2*U,'#ffffff',DARK,1.6*U)}
  // ---------------- the pin's on-screen arrow ----------------
- {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{const a=areaNow();if(!PIN||!a||PIN.a!==a||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen))return out;
+ {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{const a=areaNow();if(a&&PP.length&&!dead&&!menuOpen&&!(typeof pnOpen!=='undefined'&&pnOpen)){const U=(typeof HUDL!=='undefined'&&HUDL&&HUDL.U)||1;g.save();g.setTransform(1,0,0,1,0,0);
+    for(const q of PP){if(q.a!==a)continue;const sx=W/2+(q.x*16+8-P.x)*Z,sy=H/2+(q.y*16+8-P.y)*Z;if(sx<0||sx>W||sy<0||sy>H)continue;const r=4.5*U;
+     g.fillStyle=DARK;g.beginPath();g.arc(sx,sy-13*U,r+2*U,0,6.283);g.fill();g.beginPath();g.moveTo(sx-4*U,sy-10*U);g.lineTo(sx+4*U,sy-10*U);g.lineTo(sx,sy);g.closePath();g.fill();
+     g.fillStyle=PCOL;g.beginPath();g.arc(sx,sy-13*U,r,0,6.283);g.fill();g.beginPath();g.moveTo(sx-2.5*U,sy-10*U);g.lineTo(sx+2.5*U,sy-10*U);g.lineTo(sx,sy-2*U);g.closePath();g.fill();
+     g.font='700 '+10*U+'px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=3*U;g.strokeStyle=DARK;g.strokeText(q.n,sx,sy-20*U);g.fillStyle='#e0ffe4';g.fillText(q.n,sx,sy-20*U)}g.restore()}}catch(e){}
+   try{const a=areaNow();if(!PIN||!a||PIN.a!==a||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen))return out;
     const tx=PIN.x*16+8,ty=PIN.y*16+8,d=Math.hypot(tx-P.x,ty-P.y)/16;if(d<1.5){clearPin('📍 You reached your pin.');try{sfx('quest')}catch(e){}return out}
     const U=(typeof HUDL!=='undefined'&&HUDL&&HUDL.U)||1,tm=performance.now()/1000;g.save();g.setTransform(1,0,0,1,0,0);
     const sx=W/2+(tx-P.x)*Z,sy=H/2+(ty-P.y)*Z,m=44*U;
@@ -62,10 +80,11 @@
  // ---------------- the map screen: pin, labels, legend ----------------
  const mapArea=()=>{const R=SCENE&&SCENE.room;return R&&R.region?R.region:'hollow'};
  const isHere=()=>typeof MAPVIEW==='undefined'||MAPVIEW!=='world';
- {const _dmap=drawMap;drawMap=function(){const out=_dmap.apply(this,arguments);try{if(!isHere()||!PIN||PIN.a!==mapArea())return out;const c=document.getElementById('mpc');if(!c)return out;
-    const x=c.getContext('2d'),X=PIN.x,Y=PIN.y,S2=c.width>=200?2:1,r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(X+.5+(a-.5)*S2,Y+1+(b-1)*S2,w*S2,h*S2)},bob=(performance.now()/400|0)%2;
+ {const _dmap=drawMap;drawMap=function(){const out=_dmap.apply(this,arguments);try{if(!isHere())return out;const c=document.getElementById('mpc');if(!c)return out;
+    const list=PP.filter(q=>q.a===mapArea()).map(q=>[q.x,q.y,PCOL]);if(PIN&&PIN.a===mapArea())list.push([PIN.x,PIN.y,PINK]);
+    for(const[X,Y,COL]of list){const x=c.getContext('2d'),S2=c.width>=200?2:1,r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(X+.5+(a-.5)*S2,Y+1+(b-1)*S2,w*S2,h*S2)},bob=(performance.now()/400|0)%2;
     // a little pixel pin with its point on the tile
-    const ART=['.ooo.','oppwo','opppo','opppo','.opo.','..o..'],CL={o:DARK,p:PINK,w:'#fff'};ART.forEach((row,j)=>{for(let k=0;k<5;k++){const ch=row[k];if(ch!=='.')r(k-2,j-5-bob,1,1,CL[ch])}})}catch(e){}return out}}
+    const ART=['.ooo.','oppwo','opppo','opppo','.opo.','..o..'],CL={o:DARK,p:COL,w:'#fff'};ART.forEach((row,j)=>{for(let k=0;k<5;k++){const ch=row[k];if(ch!=='.')r(k-2,j-5-bob,1,1,CL[ch])}})}}catch(e){}return out}}
  pbd.addEventListener('click',e=>{const c=e.target;if(!c||c.id!=='mpc'||!isHere())return;const rc=c.getBoundingClientRect(),cw=c.clientWidth||rc.width,chh=c.clientHeight||rc.height;
   const tx=Math.floor((e.clientX-rc.left-(c.clientLeft||0))/cw*c.width),ty=Math.floor((e.clientY-rc.top-(c.clientTop||0))/chh*c.height);if(tx<0||ty<0||tx>=c.width||ty>=c.height)return;
   const a=mapArea(),near=Math.max(4,c.width/40);
@@ -77,16 +96,17 @@
    try{for(const p of HARBOR_POSTS)if(!out.some(o=>o.c==='t'&&o.n===p.name))out.push({n:p.name+' harbor',x:p.x,y:p.y,c:'h'})}catch(e){}}
   else{const R=SCENE.room;try{out.push({n:'Pier',x:R.dock[0],y:R.dock[1],c:'h'})}catch(e){}
    try{for(const l of R.lms)if(rgSeen(R.region,l.id))out.push({n:l.name||(typeof lmName==='function'?lmName(l.id):l.id),x:l.x,y:l.y,c:'l'})}catch(e){}}
+  for(const q of PP)if(q.a===a)out.push({n:q.n+'\'s pin',x:q.x,y:q.y-2,c:'p'});
   return out}
  const ESC=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  {const st=document.createElement('style');st.textContent=`#pn .sqmpw{position:relative;width:min(84vw,52vh,380px);margin:8px auto}#pn .sqmpw #mpc{margin:0;cursor:crosshair}
 #pn .sqmpl{position:absolute;inset:3px;pointer-events:none;overflow:hidden}#pn .sqmpl span{position:absolute;transform:translate(-50%,-125%);white-space:nowrap;font:700 10px var(--pf),monospace;color:#fff;letter-spacing:.2px;
 text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1a1420,-1px -1px #1a1420,1px -1px #1a1420,-1px 1px #1a1420;line-height:1}
-#pn .sqmpl span.d{color:#ffd8a0}#pn .sqmpl span.h{color:#a8e8ff;font-size:9px}#pn .sqmpl span.l{color:#f0f0f0;font-size:9px}#pn .sqmph{text-align:center;font:600 12px var(--pf);color:#485870;margin:-2px 0 4px}`;document.head.appendChild(st)}
+#pn .sqmpl span.d{color:#ffd8a0}#pn .sqmpl span.p{color:#a8ffb0;font-size:9px}#pn .sqmpl span.h{color:#a8e8ff;font-size:9px}#pn .sqmpl span.l{color:#f0f0f0;font-size:9px}#pn .sqmph{text-align:center;font:600 12px var(--pf);color:#485870;margin:-2px 0 4px}`;document.head.appendChild(st)}
  {const _mh=mapHTML;mapHTML=function(){let h=_mh.apply(this,arguments);try{if(!isHere())return h;const i=h.indexOf('<canvas id="mpc"');if(i<0)return h;const j=h.indexOf('</canvas>',i)+9;
     const m=/width="(\d+)" height="(\d+)"/.exec(h.slice(i,j));const CW=m?+m[1]:N,CH=m?+m[2]:N;
     // greedy placement: bigger places first, skip a label that would overlap one already placed (sizes in % of the map)
-    const L=labels().sort((p,q)=>'tdhl'.indexOf(p.c)-'tdhl'.indexOf(q.c)),placed=[],px=380;let sp='';
+    const L=labels().sort((p,q)=>'ptdhl'.indexOf(p.c)-'ptdhl'.indexOf(q.c)),placed=[],px=380;let sp='';
     for(const o of L){const lx=(o.x+.5)/CW*100,ly=o.y/CH*100,wd=(o.n.length*(o.c==='t'||o.c==='d'?6.2:5.6)+4)/px*100,ht=11/px*100*(CW/CH),bx={x0:lx-wd/2,x1:lx+wd/2,y0:ly-ht*1.35,y1:ly-ht*.2};
      if(bx.x0<-2||bx.x1>102)continue;if(placed.some(b=>b.x0<bx.x1&&bx.x0<b.x1&&b.y0<bx.y1&&bx.y0<b.y1))continue;placed.push(bx);o.on=1;
      sp+='<span class="'+o.c+'" style="left:'+lx.toFixed(2)+'%;top:'+ly.toFixed(2)+'%">'+ESC(o.n)+'</span>'}
@@ -94,7 +114,7 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
     // the legend: drop entries that only name labelled places
     const named=new Set(L.filter(o=>o.on).map(o=>o.n));
     h=h.replace(/<span><i style="background:[^"]*"><\/i>([^<]*)<\/span>/g,(all,txt)=>{const parts=txt.split(' · ').map(s=>s.trim()).filter(Boolean);return parts.length&&parts.every(p=>named.has(p))?'':all});
-    h=h.replace('<div class="lg">','<div class="lg"><span><i style="background:'+PINK+'"></i>Pin</span><span><i style="background:'+GOLD+'"></i>Quest</span>')}catch(e){}return h}}
+    h=h.replace('<div class="lg">','<div class="lg"><span><i style="background:'+PINK+'"></i>Pin</span><span><i style="background:'+GOLD+'"></i>Quest</span>'+(PP.length?'<span><i style="background:'+PCOL+'"></i>Party pin</span>':''))}catch(e){}return h}}
  // ---------------- guild quests in the quest log / tracker ----------------
  const GQ=()=>{try{const S=window.SQGUILD;if(!S||!S.id||!S.state)return null;const q=S.state.q;if(!q||!S.QK||!S.QK[q.k])return null;return{S,q,K:S.QK[q.k],id:'gq:'+S.id+':'+(q.t||0)}}catch(e){return null}};
  const kfmt=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e4?(Math.floor(n/100)/10).toFixed(n%1000?1:0)+'k':n.toLocaleString();

@@ -36,9 +36,21 @@
    if(kind[i]===1)col=mix(C2,RDF[lev[i]]);
    else{const edge=D.t&&(!sail(i-1)||!sail(i+1)||!sail(i-w)||!sail(i+w)||X===0||X===w-1);col=mix(edge||pat(X,Y)?C2:C1,SHF[lev[i]])}
    d[i*4]=col[0];d[i*4+1]=col[1];d[i*4+2]=col[2]}
-  // the emblem, centred on the bulk of the sail cloth
-  try{const E=GC().EM[D.e];if(E&&E.p&&E.p.length&&n>40){const big=E.p.length>=8,s=big?1:2,sz=E.p.length*s,ex=Math.round(cx/n-sz/2),ey=Math.round(cy/n-sz/2);
-    E.p.forEach((row,j)=>{for(let k=0;k<row.length;k++){if(row[k]!=='X')continue;for(let a=0;a<s;a++)for(let bb=0;bb<s;bb++){const X=ex+k*s+a,Y=ey+j*s+bb,i=Y*w+X;if(X<0||Y<0||X>=w||Y>=h||kind[i]!==0)continue;const col=mix(CX,SHF[lev[i]]*.5+.5);d[i*4]=col[0];d[i*4+1]=col[1];d[i*4+2]=col[2]}}})}}catch(e){}
+  // the emblem: as big as fits, on a patch of cloth the sailor doesn't cover (boat coords: x = X+ox, y = Y+oy), outlined so it
+  // stands out whatever the colours
+  try{const E=GC().EM[D.e];if(E&&E.p&&E.p.length){const pat=E.p,L=pat.length,ox=b.ox,oy=b.oy,onS=i=>kind[i]>=0;
+    const inMe=(X,Y)=>{const bx=X+ox,by=Y+oy;return bx>=-9&&bx<=9&&by>=-38&&by<=2};
+    let fx=0,fy=0,fn=0;for(let i=0;i<w*h;i++)if(kind[i]===0&&!inMe(i%w,(i/w)|0)){fx+=i%w;fy+=(i/w)|0;fn++}if(fn){fx/=fn;fy/=fn}else{fx=cx/n;fy=cy/n}
+    const fit=(s,avoid)=>{const sz=L*s+2;let best=null,bd=1e9;for(let Y=0;Y+sz<=h;Y++)for(let X=0;X+sz<=w;X++){let ok=true;
+       for(let b2=0;b2<sz&&ok;b2++)for(let a=0;a<sz;a++){const i=(Y+b2)*w+X+a;if(!onS(i)||(avoid&&inMe(X+a,Y+b2))){ok=false;break}}
+       if(!ok)continue;const d=(X+sz/2-fx)**2+(Y+sz/2-fy)**2;if(d<bd){bd=d;best={X,Y,s}}}return best};
+    let at=null;for(const s of(L>=8?[2,1]:[3,2]))if((at=fit(s,true)))break;if(!at)at=fit(L>=8?1:2,false)||fit(L>=8?1:1,false);
+    if(at){const s=at.s,lum=CX[0]*.3+CX[1]*.59+CX[2]*.11,OL=lum>110?mix(C1,.32):mix([240,236,224],1),em=new Uint8Array((L*s+2)**2),SZ=L*s+2;
+     pat.forEach((row,jj)=>{for(let k=0;k<row.length;k++)if(row[k]==='X')for(let a=0;a<s;a++)for(let bb=0;bb<s;bb++)em[(1+jj*s+bb)*SZ+1+k*s+a]=1});
+     for(let yy=0;yy<SZ;yy++)for(let xx=0;xx<SZ;xx++){const i=(at.Y+yy)*w+at.X+xx;let col=null;
+      if(em[yy*SZ+xx])col=mix(CX,.88+.12*lev[i]/3);
+      else{let nb=false;for(let dy=-1;dy<=1&&!nb;dy++)for(let dx=-1;dx<=1;dx++){const X2=xx+dx,Y2=yy+dy;if(X2>=0&&Y2>=0&&X2<SZ&&Y2<SZ&&em[Y2*SZ+X2]){nb=true;break}}if(nb)col=OL}
+      if(col){d[i*4]=col[0];d[i*4+1]=col[1];d[i*4+2]=col[2]}}}}}catch(e){}
   x.putImageData(im,0,0);r={c,ox:b.ox,oy:b.oy,ww:w,hh:h};M.set(dk,r);return r}
  {const _b=BOAT85.back;BOAT85.back=function(fc,sl,tm){const b=_b.apply(this,arguments);if(!CURD||!sl||!b)return b;try{return recolor(b,CURD)}catch(e){return b}}}
  // ---- whose boat ----
