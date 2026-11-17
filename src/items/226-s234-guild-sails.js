@@ -41,7 +41,9 @@
   try{const E=GC().EM[D.e];if(E&&E.p&&E.p.length){const pat=E.p,L=pat.length,ox=b.ox,oy=b.oy,onS=i=>kind[i]>=0;
     const inMe=(X,Y)=>{const bx=X+ox,by=Y+oy;return bx>=-9&&bx<=9&&by>=-38&&by<=2};
     let fx=0,fy=0,fn=0;for(let i=0;i<w*h;i++)if(kind[i]===0&&!inMe(i%w,(i/w)|0)){fx+=i%w;fy+=(i/w)|0;fn++}if(fn){fx/=fn;fy/=fn}else{fx=cx/n;fy=cy/n}
-    const fit=(s,avoid)=>{const sz=L*s+2;let best=null,bd=1e9;for(let Y=0;Y+sz<=h;Y++)for(let X=0;X+sz<=w;X++){let ok=true;
+    // sails seen end-on are symmetric: the emblem goes on their centre line (only its height is searched)
+    let sx0=w,sx1=-1;for(let i=0;i<w*h;i++)if(kind[i]===0){const X=i%w;if(X<sx0)sx0=X;if(X>sx1)sx1=X}const mid=(sx0+sx1+1)/2,sym=Math.abs(mid+ox)<=1.5;
+    const fit=(s,avoid)=>{const sz=L*s+2;let best=null,bd=1e9;const xs=sym?[Math.round(mid-sz/2)]:null;for(let Y=0;Y+sz<=h;Y++)for(const X of(xs||Array.from({length:Math.max(0,w-sz+1)},(_,k)=>k))){if(X<0||X+sz>w)continue;let ok=true;
        for(let b2=0;b2<sz&&ok;b2++)for(let a=0;a<sz;a++){const i=(Y+b2)*w+X+a;if(!onS(i)||(avoid&&inMe(X+a,Y+b2))){ok=false;break}}
        if(!ok)continue;const d=(X+sz/2-fx)**2+(Y+sz/2-fy)**2;if(d<bd){bd=d;best={X,Y,s}}}return best};
     let at=null;for(const s of(L>=8?[2,1]:[3,2]))if((at=fit(s,true)))break;if(!at)at=fit(L>=8?1:2,false)||fit(L>=8?1:1,false);

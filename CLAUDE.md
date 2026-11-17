@@ -949,4 +949,4 @@
   outermost `rPn`, `#sqboatsec`, `data-bsail`); save `gsw` (always written). gearCH carries the guild cape design as `slc` (c+1) `sls slp slt
   sle slx` while worn in a guild. The outermost `drawBoat26` finds whose boat it is (a sailing peer exactly at P, else you) and sets `CURD`;
   `BOAT85.back` is wrapped to return a recoloured sail layer (SA colours → main colour, RD band/pennant → second colour, pattern by position,
-  trim on edges, emblem as large as fits (4x4 at 3x/2x, 8x8 at 2x/1x) with a contrasting outline, on cloth outside the sailor's box x±9, y -38..2, nearest the free cloth's centroid), cached per canvas + design. Furled/moored boats stay plain. Wiki > Guilds mentions it.
+  trim on edges, emblem as large as fits (4x4 at 3x/2x, 8x8 at 2x/1x) with a contrasting outline, on cloth outside the sailor's box x±9, y -38..2, nearest the free cloth's centroid; end-on sails (symmetric about the mast) put it on the centre line and only search its height), cached per canvas + design. Furled/moored boats stay plain. Wiki > Guilds mentions it.
