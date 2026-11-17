@@ -5,7 +5,7 @@
 //   Abyssal eel  (Fishing 80): the Shattered Expanse and Ironcrest, 35% of bites. Heals 7.
 //   Moonfin      (Fishing 70): any water, only at night (dark() > .25), 40% of bites. Heals 6.
 // Each is raw `k` / cooked `c<k>` with a COOKS entry (Cooking = Fishing level, XP x1.3) and a FOODS entry, icons like 093's island
-// fish, and lines on the Fishing skill tree. The Giant Turtle's fish list (200's RAW) is fixed by the database rules: not added there.
+// fish, and lines on the Fishing skill tree. They count toward the Giant Turtle summon (200's RAW and the turt rule list them since Nov 16).
 (()=>{const F=[
   {k:'akoi',n:'Ancient koi',lv:90,xp:420,p:.06,where:null,heal:8,hun:100,raw:160,ckv:260,c:'#f0c040',cc:'#c89830',d:'An ancient golden koi. Very rarely bites, anywhere, for master anglers (Fishing 90).',w:'rarely, in any water'},
   {k:'abeel',n:'Abyssal eel',lv:80,xp:280,p:.35,where:['shattered','ironcrest'],heal:7,hun:100,raw:80,ckv:130,c:'#304878',cc:'#806048',d:'A long eel from the deep, cold waters of the Shattered Expanse and Ironcrest (Fishing 80).',w:'in the Shattered Expanse and Ironcrest'},

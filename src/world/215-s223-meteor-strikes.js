@@ -1,5 +1,5 @@
 // ---- 223. Meteor strikes ----
-// A rare shared event on Hollow (outdoors): a meteor falls at a random time and place, leaves a big crater with meteorite
+// A rare shared event outdoors on Hollow or one of the four big islands (since Nov 16; LOCS): a meteor falls at a random time and place, leaves a big crater with meteorite
 // veins and a glowing core, and everyone online races there.
 //   Timing: the clock is cut into windows of CFG.win hours; a hash of each window decides whether it has a strike (CFG.per)
 //     and when (1 h + up to win-6 h into it). A strike less than GAP (12 h) after the previous real one is skipped, and none comes
@@ -19,9 +19,20 @@
 //   Stardust: sparkles on the rim; HIT one for 1-2 stardust (once each per strike).
 //   Items: meteorore, stardust, metbar (furnace: 15 meteorite ore + 15 adamant ore + 3 stardust, Smithing 80).
 //   Library `meteor` = {per, win, hp, vhp, vlv, rew:[[ore,met]x4]} overrides CFG (SQA.onApply).
+//   Islands (since Nov 16): each scheduled window picks a place from LOCS by its hash (Hollow 3 in 7, else Ashfall, Briarwood,
+//     Ironcrest, the Shattered Expanse). Island strikes have ids 'i<k>' (Hollow keeps 's<k>'), their spot is a tile index
+//     y*R.w+x on that island, picked only by games standing on it (okR: open land, not rgQuiet, no roads) and agreed the same
+//     way through `wb/mts<id>`; games elsewhere see the banner ("on Ashfall Coast") until someone there picks the spot. Drawn
+//     from the outermost ROOMBG on that island (GROUNDHOOK on Hollow). `/meteorite here` works on an island too (rec.loc).
+//   Achievements (129's SQACH.A, group 'Meteors'): counters mtcore (cores you helped break), mttop (most damage), mtvein,
+//     mtdust, mtisl (a core on an island).
 (()=>{if(typeof attack!=='function'||typeof GROUNDHOOK==='undefined')return;
  const CFG={per:.85,win:24,hp:20000,vhp:40,vlv:70,rew:[[750,75],[500,50],[300,30],[100,10]]},DEF=JSON.parse(JSON.stringify(CFG));
  const WARN=60000,HOT=15*60000,MARGIN=8,RX=72,RY=38,MI=SKN.indexOf('Mining');
+ const LOCS=['hollow','hollow','hollow','ashfall','briarwood','ironcrest','shattered'];
+ const RNAME=l=>{try{return WORLD_REGIONS[l].name}catch(e){return l}};
+ const ROOM=()=>{const R=SCENE&&SCENE.room;return R&&R.region?R:null};
+ const at=loc=>loc==='hollow'?!SCENE:!!(ROOM()&&ROOM().region===loc);// standing outdoors where that strike is
  const VEINS=[[-44,-10],[38,-14],[-22,14],[46,10],[6,-24],[-52,6],[20,20]];
  const h01=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233)*43758.5453;return v-Math.floor(v)};
  const now=()=>{try{if(window.SQMP&&SQMP.on&&typeof mpNow==='function')return mpNow()}catch(e){}return Date.now()};
@@ -54,6 +65,12 @@
   // the crater itself: about 9 x 5 tiles of open land
   for(let b=y-3;b<=y+3;b++)for(let a=x-5;a<=x+5;a++){const i=b*N+a;if(tile[i]===0||tile[i]===3||obj[i]||hard(a,b,i)||solid(a*16+8,b*16+8))return false}
   if(near(x,y,MARGIN+4,hard))return false;if(houseNear(x,y))return false;return true}
+ function okR(R,x,y){const W=R.w;if(x<8||y<6||x>=W-8||y>=R.h-6)return false;
+  for(let b=y-3;b<=y+3;b++)for(let a=x-5;a<=x+5;a++){const i=b*W+a,t=R.tiles[i];if(t===0||t===14)return false;if(R.solid.has(i)){if(!rgObjAt(R,a,b))return false}else if(solid(a*16+8,b*16+8))return false}
+  for(let b=y-5;b<=y+5;b++)for(let a=x-8;a<=x+8;a++){if(a<0||b<0||a>=W||b>=R.h)return false;const t=R.tiles[b*W+a];if(t===14)return false;try{if(typeof rgQuiet==='function'&&rgQuiet(R,a,b))return false}catch(e){}}
+  return true}
+ function pickR(R,seed){for(let k=0;k<2500;k++){const x=8+Math.floor(h01(seed,k*1.7)*(R.w-16)),y=6+Math.floor(h01(seed+.37,k*2.3)*(R.h-12));if(okR(R,x,y))return y*R.w+x}return-1}
+ function nearestOkR(R,x,y){for(let r=0;r<40;r++)for(let b=y-r;b<=y+r;b++)for(let a=x-r;a<=x+r;a++){if(Math.max(Math.abs(a-x),Math.abs(b-y))!==r)continue;if(okR(R,a,b))return b*R.w+a}return-1}
  function pick(seed){// a hashed walk over the island until a good spot turns up
   for(let k=0;k<1500;k++){const x=12+Math.floor(h01(seed,k*1.7)*(N-24)),y=12+Math.floor(h01(seed+.37,k*2.3)*(N-24));if(ok(x,y))return y*N+x}return-1}
  function nearestOk(x,y){for(let r=0;r<40;r++)for(let b=y-r;b<=y+r;b++)for(let a=x-r;a<=x+r;a++){if(Math.max(Math.abs(a-x),Math.abs(b-y))!==r)continue;if(ok(a,b))return b*N+a}return-1}
@@ -62,9 +79,14 @@
  const GAP=12*3600000,SUMGAP=6*3600000;// at least 12 h between scheduled strikes, and none within 6 h of a summoned one
  function rawAt(k){const W=CFG.win*3600000;if(h01(k,9.1)>=CFG.per)return null;return k*W+3600000+h01(k,4.4)*(W-6*3600000)}
  function realAt(k,depth){const r=rawAt(k);if(r==null)return null;if(depth>0){for(let j=k-1;j>=k-4;j--){const p=realAt(j,depth-1);if(p!=null){if(r-p<GAP)return null;break}}}return r}
- function sched(t){const W=CFG.win*3600000,w=Math.floor(t/W);const out=[];for(const k of[w-1,w]){const at=realAt(k,4);if(at==null)continue;if(SUM&&Math.abs(at-SUM.t)<SUMGAP)continue;out.push({t:at,id:'s'+k,seed:k})}return out}
- function current(){const t=now(),L=[];if(SUM&&t>=SUM.t-WARN&&t<SUM.t+HOT)L.push({t:SUM.t,id:SUM.id,tile:SUM.y*N+SUM.x,sum:1});
+ function sched(t){const W=CFG.win*3600000,w=Math.floor(t/W);const out=[];for(const k of[w-1,w]){const a=realAt(k,4);if(a==null)continue;if(SUM&&Math.abs(a-SUM.t)<SUMGAP)continue;const loc=LOCS[Math.floor(h01(k,7.7)*LOCS.length)];out.push({t:a,id:(loc==='hollow'?'s':'i')+k,seed:k,loc})}return out}
+ function current(){const t=now(),L=[];if(SUM&&t>=SUM.t-WARN&&t<SUM.t+HOT)L.push({t:SUM.t,id:SUM.id,x:SUM.x,y:SUM.y,sum:1,loc:SUM.loc||'hollow'});
   for(const s of sched(t))if(t>=s.t-WARN&&t<s.t+HOT)L.push(s);return L.sort((a,b)=>a.t-b.t)[0]||null}
+ // ---- island craters flatten the trees, rocks and bushes (`_obj` items) under them while the strike lasts ----
+ let FLAT=[];// [R, item, cell]
+ function unflatten(){for(const[R,it,i]of FLAT){R._mtf=null;if(!it._mtf)continue;it._mtf=0;it.gone=false;R.solid.add(i);try{rgCellAdd(R,it)}catch(e){}}FLAT=[]}
+ function flatten(){if(!CUR||!CUR.known||CUR.loc==='hollow'||CUR.since<0||!at(CUR.loc)){if(FLAT.length)unflatten();return}const R=ROOM();if(FLAT.length&&FLAT[0][0]!==R)FLAT=[];if(R._mtf===CUR.s.id)return;R._mtf=CUR.s.id;
+  for(let b=CUR.ty-4;b<=CUR.ty+5;b++)for(let a=CUR.tx-6;a<=CUR.tx+6;a++){if(((a-CUR.tx)/6.5)**2+((b-CUR.ty-.5)/4.8)**2>1)continue;const it=rgObjAt(R,a,b);if(!it)continue;const i=b*R.w+a;it.gone=true;it._mtf=1;R.solid.delete(i);try{rgCellDel(R,it)}catch(e){}FLAT.push([R,it,i])}}
  // ---- shared numbers: wb/<slot>/d/<uid> ----
  const ST={id:'',tile:-1,spots:{},core:{},veins:VEINS.map(()=>({})),mine:{c:0,v:VEINS.map(()=>0)},sent:{},subs:[],star:new Set(),paid:false,broke:new Set(),done:false,told:{}};
  let PAID=[];// save field mtp: ids already paid
@@ -77,12 +99,18 @@
  const veinHits=i=>sumOf(ST.veins[i],ST.mine.v[i]);
  const veinGone=i=>veinHits(i)>=CFG.vhp;
  // the agreed tile for a scheduled strike: the smallest uid's choice, else ours
- function spotOf(s){if(s.sum)return s.tile;const ks=Object.keys(ST.spots).filter(k=>+ST.spots[k]>=0).sort();if(ks.length)return+ST.spots[ks[0]];if(ST.tile===-1){ST.tile=pick(s.seed+.123);if(ST.tile<0)ST.tile=-2;else if(me())send('mts'+s.id,ST.tile)}return ST.tile}
+ // a strike's tile as [tx,ty], or null while unknown (an island strike nobody standing there has placed yet)
+ function spotOf(s){if(s.sum)return[s.x,s.y];const isl=s.loc!=='hollow',R=ROOM(),W=isl?(R&&R.region===s.loc?R.w:0):N;
+  const ks=Object.keys(ST.spots).filter(k=>+ST.spots[k]>=0).sort();
+  if(ks.length){const v=+ST.spots[ks[0]];if(!isl)return[v%N,(v/N)|0];if(W)return[v%W,(v/W)|0];return null}
+  if(!W)return null;
+  if(ST.tile===-1){ST.tile=isl?pickR(R,s.seed+.123):pick(s.seed+.123);if(ST.tile<0)ST.tile=-2;else if(me())send('mts'+s.id,ST.tile)}
+  return ST.tile>=0?[ST.tile%W,(ST.tile/W)|0]:null}
  let CUR=null;// {s, x, y (world px of the centre), phase 'warn'|'hot'|'cold', at}
- function tick(){const s=current();if(!s){if(ST.id){reset('');CUR=null;hideBanner()}return}
+ function tick(){try{flatten()}catch(e){}const s=current();if(!s){if(ST.id){reset('');CUR=null;hideBanner()}return}
   if(ST.id!==s.id){reset(s.id);subscribe(s)}
-  const t=spotOf(s);if(t<0){CUR=null;return}const tx=t%N,ty=(t/N)|0,n=now();
-  CUR={s,x:tx*16+8,y:ty*16+8,tx,ty,phase:n<s.t?'warn':(coreLeft()<=0?'cold':'hot'),left:n<s.t?s.t-n:s.t+HOT-n,since:n-s.t};
+  const sp=spotOf(s),n=now();if(!sp&&s.loc==='hollow'){CUR=null;return}const tx=sp?sp[0]:-1,ty=sp?sp[1]:-1;
+  CUR={s,loc:s.loc,known:!!sp,x:tx*16+8,y:ty*16+8,tx,ty,phase:n<s.t?'warn':(coreLeft()<=0?'cold':'hot'),left:n<s.t?s.t-n:s.t+HOT-n,since:n-s.t};
   // chat once per strike
   if(!ST.told.w&&CUR.phase==='warn'){ST.told.w=1;tell('☄️ Something is burning across the sky... a meteor is coming down '+where(tx,ty)+'!')}
   if(!ST.told.h&&n>=s.t&&n<s.t+60000){ST.told.h=1;tell('☄️ A meteor crashed down '+where(tx,ty)+'! Mine its core and veins before it cools.')}
@@ -90,13 +118,13 @@
   if(n-(ST.lastSend||0)>1000){ST.lastSend=n;if(ST.mine.c>0)send('mtc'+s.id,Math.min(190000,ST.mine.c));ST.mine.v.forEach((v,i)=>{if(v>0)send('mtv'+s.id+'_'+i,Math.min(1000,v))})}
   if(CUR.phase==='cold'&&!ST.paid)payCore();
   banner()}
- function where(tx,ty){const dx=tx-VX,dy=ty-VY,d=Math.hypot(dx,dy);if(d<20)return'near Hollow village';const a=Math.atan2(dy,dx)*180/Math.PI;
+function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.loc);const dx=tx-VX,dy=ty-VY,d=Math.hypot(dx,dy);if(d<20)return'near Hollow village';const a=Math.atan2(dy,dx)*180/Math.PI;
   const dirs=['east','south-east','south','south-west','west','north-west','north','north-east'];return dirs[((Math.round(a/45)%8)+8)%8]+' of Hollow village'}
  function tell(m){try{if(typeof SQMPLOG==='function')SQMPLOG('game',m);else if(window.SQMPLOG)window.SQMPLOG('game',m)}catch(e){}try{say(m)}catch(e){}}
  // ---- rewards when the core breaks ----
  function bestOre(){const L=lv();return L>=60?'adamore':L>=45?'mithore':L>=30?'goldore':'iron'}
  function payCore(){if(ST.paid)return;ST.paid=true;const u=me()||'me',all=Object.assign({},ST.core);if(ST.mine.c>0)all[u]=ST.mine.c;
-  if(!(all[u]>0))return;const rank=Object.keys(all).filter(k=>all[k]>0).sort((a,b)=>(all[b]-all[a])||(a<b?-1:1)).indexOf(u);const r=CFG.rew[Math.min(3,rank)];
+  if(!(all[u]>0))return;try{SQACH.add('mtcore');if(CUR&&CUR.loc!=='hollow')SQACH.add('mtisl')}catch(e){}const rank=Object.keys(all).filter(k=>all[k]>0).sort((a,b)=>(all[b]-all[a])||(a<b?-1:1)).indexOf(u);const r=CFG.rew[Math.min(3,rank)];if(rank===0)try{SQACH.add('mttop')}catch(e){}
   const ore=bestOre();inv[ore]=(inv[ore]|0)+r[0];inv.meteorore=(inv.meteorore|0)+r[1];PAID.push(ST.id);PAID=PAID.slice(-20);
   try{addXp(MI,Math.round(800+r[1]*20))}catch(e){}
   const pl=['1st','2nd','3rd'][rank];try{sfx('coin')}catch(e){}
@@ -105,24 +133,25 @@
  {const _s=snap;snap=function(){const o=_s.apply(this,arguments);try{o.mtp=PAID.slice(-20)}catch(e){}return o}}
  {const _a=applySave;applySave=function(sv){const r=_a.apply(this,arguments);try{PAID=Array.isArray(sv&&sv.mtp)?sv.mtp.filter(x=>typeof x==='string').slice(-20):[];ST.paid=PAID.includes(ST.id)}catch(e){}return r}}
  // ---- hit boxes (world px) ----
- const active=()=>CUR&&!SCENE&&(CUR.phase==='hot'||CUR.phase==='cold')&&CUR.since>=0;
+ const here=()=>!!(CUR&&CUR.known&&at(CUR.loc));
+ const active=()=>here()&&(CUR.phase==='hot'||CUR.phase==='cold')&&CUR.since>=0;
  const inCore=(x,y)=>CUR&&CUR.phase==='hot'&&Math.abs(x-CUR.x)<14&&y>CUR.y-12&&y<CUR.y+8;
  const veinAt=(x,y)=>{if(!CUR)return-1;for(let i=0;i<VEINS.length;i++){if(veinGone(i))continue;const vx=CUR.x+VEINS[i][0],vy=CUR.y+VEINS[i][1];if(Math.abs(x-vx)<8&&y>vy-7&&y<vy+4)return i}return-1};
  const STAR=[];for(let i=0;i<14;i++){const a=i/14*6.283+.2,rr=1.03+((i*5)%3)*.04;STAR.push([Math.cos(a)*RX*rr,Math.sin(a)*RY*rr])}
  const starAt=(x,y)=>{if(!CUR)return-1;for(let i=0;i<STAR.length;i++){if(ST.star.has(i))continue;if(Math.hypot(x-(CUR.x+STAR[i][0]),y-(CUR.y+STAR[i][1]))<9)return i}return-1};
- {const _so=solid;solid=function(px,py){try{if(active()&&!SCENE&&(inCore(px,py)||veinAt(px,py)>=0))return true}catch(e){}return _so.apply(this,arguments)}}
+ {const _so=solid;solid=function(px,py){try{if(active()&&(inCore(px,py)||veinAt(px,py)>=0))return true}catch(e){}return _so.apply(this,arguments)}}
  function target(){if(!active())return null;const[fx,fy]=front(13);if(inCore(fx,fy))return{k:'core'};const v=veinAt(fx,fy);if(v>=0)return{k:'vein',i:v};const s=starAt(fx,fy);if(s>=0)return{k:'star',i:s};
   const[gx,gy]=front(6);const s2=starAt(gx,gy);if(s2>=0)return{k:'star',i:s2};return null}
  window.SQHITWORD=()=>{try{const t=target();if(!t)return'';return t.k==='star'?'PICK':'MINE'}catch(e){return''}};
  let LAST=0;
  {const _at=attack;attack=function(){let t=null;try{t=target()}catch(e){}if(!t||BUILD||pnOpen)return _at.apply(this,arguments);
    const n=performance.now();if(swing>0||n-LAST<330)return;LAST=n;
-   if(t.k==='star'){ST.star.add(t.i);const c=1+(Math.random()<.5?1:0);inv.stardust=(inv.stardust|0)+c;try{sfx('pickup')}catch(e){}try{gTxt(P.x,P.y-30,'+'+c+' stardust','#c8a8ff')}catch(e){say('+'+c+' stardust')}return}
+   if(t.k==='star'){ST.star.add(t.i);const c=1+(Math.random()<.5?1:0);inv.stardust=(inv.stardust|0)+c;try{SQACH.add('mtdust',c)}catch(e){}try{sfx('pickup')}catch(e){}try{gTxt(P.x,P.y-30,'+'+c+' stardust','#c8a8ff')}catch(e){say('+'+c+' stardust')}return}
    if(!(TL.pick>0)){say('You need a pickaxe.');return}
    if(t.k==='vein'){if(lv()<CFG.vlv){say('You need Mining '+CFG.vlv+' to mine meteorite veins.');return}if(TL.pick<4){say('You need a steel pickaxe or better for meteorite.');return}}
    swing=.25;try{ACTN={type:'mine',t:0,dur:.32,face:[face[0],face[1]],tx:Math.floor(CUR.x/16),ty:Math.floor(CUR.y/16),hit:false}}catch(e){}try{sfx('mine')}catch(e){}
    if(t.k==='vein'){const was=veinGone(t.i);ST.mine.v[t.i]++;try{addXp(MI,30)}catch(e){}
-    if(!was&&veinGone(t.i)&&!ST.broke.has(t.i)){ST.broke.add(t.i);const c=1+Math.floor(Math.random()*3);inv.meteorore=(inv.meteorore|0)+c;try{addXp(MI,400)}catch(e){}
+    if(!was&&veinGone(t.i)&&!ST.broke.has(t.i)){ST.broke.add(t.i);try{SQACH.add('mtvein')}catch(e){}const c=1+Math.floor(Math.random()*3);inv.meteorore=(inv.meteorore|0)+c;try{addXp(MI,400)}catch(e){}
      try{gTxt(P.x,P.y-30,'+'+c+' meteorite ore','#ff80d8')}catch(e){}say('The vein crumbles. +'+c+' meteorite ore!')}
     else{const left=Math.max(0,CFG.vhp-veinHits(t.i));if(left%10===0)say('The vein is cracking... ('+left+' hits left)')}}
    else{const d=1+(TL.pick|0)+Math.floor(lv()/10);ST.mine.c=Math.min(190000,ST.mine.c+d);try{addXp(MI,6+d)}catch(e){}try{gTxt(CUR.x,CUR.y-26,'-'+d,'#ffb060')}catch(e){}
@@ -155,10 +184,12 @@
   STAR.forEach(([a,b],i)=>{if(ST.star.has(i))return;const ph=(tm*2+i*.37)%1;if(ph>=.55)return;const X=sx(cx+a),Y=sy(cy+b),u=Z;px(X,Y,ph<.2?'#ffffff':'#c8a8ff',u);if(ph<.3){px(X-u,Y,'#8868d8',u);px(X+u,Y,'#8868d8',u);px(X,Y-u,'#8868d8',u);px(X,Y+u,'#8868d8',u)}})}
  const order=()=>{const L=VEINS.map((v,i)=>({y:CUR.y+v[1],f:tm=>drawVein(i,tm)}));L.push({y:CUR.y,f:drawCore});return L.sort((a,b)=>a.y-b.y)};
  const onScreen=()=>CUR&&Math.abs(CUR.x-P.x)<W/Z/2+RX+40&&Math.abs(CUR.y-P.y)<H/Z/2+RY+60;
- {const _gh=GROUNDHOOK;GROUNDHOOK=function(){if(_gh)_gh.apply(this,arguments);if(SCENE||!active()||!onScreen())return;const tm=performance.now()/1000;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
-   try{drawCrater(tm);for(const o of order())o.f(tm)}catch(e){}g.restore()}}
+ function drawGround(){if(!active()||!onScreen())return;const tm=performance.now()/1000;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
+   try{drawCrater(tm);for(const o of order())o.f(tm)}catch(e){}g.restore()}
+ {const _gh=GROUNDHOOK;GROUNDHOOK=function(){if(_gh)_gh.apply(this,arguments);if(!SCENE)drawGround()}}
+ if(typeof ROOMBG!=='undefined'){const _rb=ROOMBG;ROOMBG=function(R2){const out=_rb?_rb.apply(this,arguments):undefined;try{if(R2&&R2.region&&R2===ROOM())drawGround()}catch(e){}return out}}
  // veins and the core in front of you are drawn again over you
- {const _pp=pP;pP=function(){const out=_pp.apply(this,arguments);if(SCENE||!active()||!onScreen())return out;const tm=performance.now()/1000;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
+ {const _pp=pP;pP=function(){const out=_pp.apply(this,arguments);if(!active()||!onScreen())return out;const tm=performance.now()/1000;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
    try{for(const o of order())if(o.y>P.y+2&&Math.abs(o.y-P.y)<30)o.f(tm)}catch(e){}g.restore();return out}}
  // sky streak, impact flash and ring, smoke (screen space, over the world)
  function fireball(hx,hy,dx,dy,u,len){const cols=['#fff8d0','#ffe060','#ffa020','#f05818','#c02810','#702018','#504048','#383038'];
@@ -166,7 +197,7 @@
    for(let a=0;a<w;a++)for(let b=0;b<w;b++)px(hx-dx*i*u*1.1+(a-w/2+jx)*u,hy-dy*i*u*1.1+(b-w/2+jy)*u,cols[k],u)}
   for(let a=-2;a<=2;a++)for(let b=-2;b<=2;b++)if(a*a+b*b<=5)px(hx+a*u,hy+b*u,a*a+b*b<=1?'#ffffff':a*a+b*b<=2?'#fff8a0':'#ffc030',u)}
  let SHOOK='';
- {const _dh=drawHUD;drawHUD=function(){if(CUR&&!SCENE&&!dead){g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;try{const tm=performance.now()/1000;
+ {const _dh=drawHUD;drawHUD=function(){if(here()&&!dead){g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;try{const tm=performance.now()/1000;
    if(CUR.phase==='warn'&&CUR.left<10000){const p=1-CUR.left/10000,u=Math.max(2,Math.round(Z*1.1)),cx0=sx(CUR.x),cy0=sy(CUR.y),onS=cx0>0&&cx0<W&&cy0>0&&cy0<H,vx=cx0-W/2,vy=cy0-H/2,vl=Math.hypot(vx,vy)||1,ux=vx/vl,uy=vy/vl,ed=Math.min(W/2/Math.max(.01,Math.abs(ux)),H/2/Math.max(.01,Math.abs(uy)))*1.05,tx=onS?cx0:W/2+ux*ed,ty=onS?cy0:H/2+uy*ed,st={x:W/2-ux*W*.55,y:-H*.08};
     g.fillStyle='rgba(255,110,30,'+(.1+.2*p).toFixed(3)+')';g.fillRect(0,0,W,H);const hx=st.x+(tx-st.x)*p,hy=st.y+(ty-st.y)*p,d=Math.hypot(tx-st.x,ty-st.y);fireball(hx,hy,(tx-st.x)/d,(ty-st.y)/d,u,Math.round(20+40*p))}
    if(CUR.since>=0&&CUR.since<1600&&onScreen()){const k=CUR.since/1600;g.fillStyle='rgba(255,250,235,'+(.5*(1-k)).toFixed(3)+')';g.fillRect(0,0,W,H);const r=20+k*110,n=60;
@@ -175,9 +206,9 @@
    if(CUR.phase==='hot'&&onScreen())for(let i=0;i<7;i++){const ph=(tm*.35+i/7)%1,X=sx(CUR.x-2+Math.sin(i*2.1+tm)*4+ph*10),Y=sy(CUR.y-18-ph*60),s=Math.round(Z*(3+ph*5));g.fillStyle='rgba(90,84,96,'+(.55*(1-ph)).toFixed(3)+')';g.fillRect(Math.round(X-s/2),Math.round(Y-s/2),s,s)}
   }catch(e){}g.restore()}return _dh.apply(this,arguments)}}
  // knocked back from the landing spot, and never left inside a vein or the core
- function knock(){if(SCENE||!CUR)return;const d=Math.hypot(P.x-CUR.x,(P.y-CUR.y)*1.8);if(d>RX+10)return;const a=Math.atan2(P.y-CUR.y,P.x-CUR.x)||Math.PI/2;
+ function knock(){if(!here())return;const d=Math.hypot(P.x-CUR.x,(P.y-CUR.y)*1.8);if(d>RX+10)return;const a=Math.atan2(P.y-CUR.y,P.x-CUR.x)||Math.PI/2;
   for(let r=RX+14;r<RX+140;r+=8){const x=CUR.x+Math.cos(a)*r,y=CUR.y+Math.sin(a)*r*.6;if(!solid(x,y)){P.x=x;P.y=y;return}}}
- function unstick(){if(SCENE||!active())return;if(!(inCore(P.x,P.y)||veinAt(P.x,P.y)>=0))return;for(let r=6;r<60;r+=3)for(const[a,b]of[[0,1],[1,0],[-1,0],[0,-1]]){const x=P.x+a*r,y=P.y+b*r;if(!solid(x,y)){P.x=x;P.y=y;return}}}
+ function unstick(){if(!active())return;if(!(inCore(P.x,P.y)||veinAt(P.x,P.y)>=0))return;for(let r=6;r<60;r+=3)for(const[a,b]of[[0,1],[1,0],[-1,0],[0,-1]]){const x=P.x+a*r,y=P.y+b*r;if(!solid(x,y)){P.x=x;P.y=y;return}}}
  // ---- banner ----
  const css=document.createElement('style');css.textContent='#mtb{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 6px);z-index:9;display:none;width:min(340px,calc(100vw - 24px));box-sizing:border-box;padding:6px 10px 8px;font:700 13px "Pixelify Sans",monospace;pointer-events:none;text-align:center;background:#1e1830;color:#f0e8ff;border:2px solid #000;box-shadow:inset 0 0 0 2px #8868d8}#mtb .t{display:flex;justify-content:space-between;gap:8px}#mtb .bar{height:9px;margin-top:5px;background:#100c18;border:2px solid #000;position:relative}#mtb .bar i{position:absolute;left:0;top:0;bottom:0;background:#e04830}#mtb small{display:block;font-weight:500;font-size:11px;opacity:.85;margin-top:3px}body.sqmtb #wbb{top:calc(env(safe-area-inset-top,0px) + 74px)!important}';document.head.appendChild(css);
  const bn=document.createElement('div');bn.id='mtb';document.body.appendChild(bn);let BL='';
@@ -192,20 +223,25 @@
  // ---- maps ----
  function mark(x,cx,cy,s){const t=performance.now()/1000,pr=s*(1.1+.35*Math.abs(Math.sin(t*3)));x.save();x.lineWidth=Math.max(1.5,s*.18);x.strokeStyle='rgba(200,150,255,.95)';x.beginPath();x.arc(cx,cy,pr,0,6.283);x.stroke();
   x.fillStyle='rgba(20,12,32,.85)';x.beginPath();x.arc(cx,cy,s*.8,0,6.283);x.fill();x.font=Math.round(s*1.15)+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('☄️',cx,cy+s*.05);x.restore()}
- if(typeof drawMini52==='function'){const _dm=drawMini52;drawMini52=function(){const out=_dm.apply(this,arguments);try{if(!CUR||SCENE)return out;const t=miniTarget();if(!t||t.k!=='hollow')return out;const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;
+ if(typeof drawMini52==='function'){const _dm=drawMini52;drawMini52=function(){const out=_dm.apply(this,arguments);try{if(!here())return out;const t=miniTarget();if(!t||(t.k==='hollow')!==(CUR.loc==='hollow'))return out;const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;
    g.save();g.setTransform(1,0,0,1,0,0);mark(g,x0+CUR.tx/t.w*w,y0+CUR.ty/t.h*hh,4*U);g.restore()}catch(e){}return out}}
- if(typeof drawMap==='function'){const _dmp=drawMap;drawMap=function(){const out=_dmp.apply(this,arguments);try{if(!CUR||SCENE||(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world'))return out;const c=document.getElementById('mpc');if(!c)return out;mark(c.getContext('2d'),CUR.tx,CUR.ty,Math.max(3,c.width/45))}catch(e){}return out}}
+ if(typeof drawMap==='function'){const _dmp=drawMap;drawMap=function(){const out=_dmp.apply(this,arguments);try{if(!here()||CUR.loc!=='hollow'||(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world'))return out;const c=document.getElementById('mpc');if(!c)return out;mark(c.getContext('2d'),CUR.tx,CUR.ty,Math.max(3,c.width/45))}catch(e){}return out}}
  // ---- the dev command: /meteorite [here|stop] ----
  function summon(how){const F=Fb();if(!(window.SQDEV&&SQDEV()))return false;if(!F||!me()){say('Sign in first.');return true}
   if(how==='stop'){F.db.set(F.db.ref(F.D,'events/met'),null).then(()=>say('Meteor called off.')).catch(e=>say('Couldn\'t stop it: '+(e&&e.message||e)));return true}
-  let t=-1;if(how==='here'){if(SCENE){say('Go outside on Hollow first.');return true}t=nearestOk(Math.floor(P.x/16),Math.floor(P.y/16))}else t=pick(Math.random()*1000);
+  let t=-1,loc='hollow';const R=ROOM();if(how==='here'){if(SCENE&&!R){say('Go outside first.');return true}if(R){loc=R.region;t=nearestOkR(R,Math.floor(P.x/16),Math.floor(P.y/16))}else t=nearestOk(Math.floor(P.x/16),Math.floor(P.y/16))}else t=pick(Math.random()*1000);
   if(t<0){say('No clear spot for a crater there. Try somewhere more open.');return true}
-  const at=now()+WARN,rec={t:at,x:t%N,y:(t/N)|0,id:'d'+at};
-  F.db.set(F.db.ref(F.D,'events/met'),rec).then(()=>say('☄️ Meteor summoned: it lands '+where(rec.x,rec.y)+' in 60 seconds.')).catch(e=>say('Couldn\'t summon it: '+(e&&e.message||e)));return true}
+  const W0=loc==='hollow'?N:R.w,tt=now()+WARN,rec={t:tt,x:t%W0,y:(t/W0)|0,id:'d'+tt,loc};CUR=null;
+  F.db.set(F.db.ref(F.D,'events/met'),rec).then(()=>say('☄️ Meteor summoned: it lands '+(loc==='hollow'?where(rec.x,rec.y):'on '+RNAME(loc))+' in 60 seconds.')).catch(e=>say('Couldn\'t summon it: '+(e&&e.message||e)));return true}
  if(typeof window.mpSend==='function'){const _ms=window.mpSend;window.mpSend=function(t){const m=/^\/meteor(?:ite)?(?:\s+(here|stop))?\s*$/i.exec(String(t||'').trim());if(m&&summon((m[1]||'').toLowerCase()))return;return _ms.apply(this,arguments)}}
  // the summoned record
- let subbed=false;function watch(){if(subbed)return;const F=Fb();if(!F||!me())return;subbed=true;try{F.db.onValue(F.db.ref(F.D,'events/met'),s=>{const v=s.val();SUM=v&&typeof v.t==='number'&&v.x>=0&&v.y>=0&&v.x<N&&v.y<N?{t:v.t,x:v.x|0,y:v.y|0,id:String(v.id||('d'+v.t)).replace(/[^a-z0-9]/gi,'').slice(0,20)}:null},()=>{subbed=false})}catch(e){subbed=false}}
+ let subbed=false;function watch(){if(subbed)return;const F=Fb();if(!F||!me())return;subbed=true;try{F.db.onValue(F.db.ref(F.D,'events/met'),s=>{const v=s.val();const loc=v&&LOCS.includes(v.loc)?v.loc:'hollow';SUM=v&&typeof v.t==='number'&&v.x>=0&&v.y>=0&&v.x<400&&v.y<400&&(loc!=='hollow'||(v.x<N&&v.y<N))?{t:v.t,x:v.x|0,y:v.y|0,loc,id:String(v.id||('d'+v.t)).replace(/[^a-z0-9]/gi,'').slice(0,20)}:null},()=>{subbed=false})}catch(e){subbed=false}}
  let lastT=0;
  {const _u=upd;upd=function(){const out=_u.apply(this,arguments);const n=performance.now();if(n-lastT>250){lastT=n;try{watch();tick()}catch(e){console.warn('meteor',e)}}try{unstick()}catch(e){}return out}}
- window.SQMETEOR={CFG,ST,cur:()=>CUR,pick,ok,nearestOk,sched,current,summon,coreLeft,veinGone,
-  test:(dt,tile)=>{const at=now()+(dt==null?WARN:dt),t=tile!=null?tile:nearestOk(Math.floor(P.x/16),Math.floor(P.y/16));SUM={t:at,x:t%N,y:(t/N)|0,id:'t'+Math.round(at)};return SUM}}})();
+ // ---- achievements ----
+ try{const A=SQACH.A,c=k=>()=>SQACH.counters[k]|0,ad=(id,n,d,k,goal,gold)=>{if(!A.some(a=>a.id===id))A.push({g:'Meteors',id,n,d,val:c(k),goal,gold})};
+  ad('met1','Starfall','Help break a meteor core','mtcore',1,300);ad('met10','Meteor Chaser','Help break 10 meteor cores','mtcore',10,2500);
+  ad('mettop','Biggest Hitter','Do the most damage to a meteor core','mttop',1,1000);ad('metvein','Star Miner','Break 25 meteorite veins','mtvein',25,1500);
+  ad('metdust','Stardust Collector','Pick up 50 stardust','mtdust',50,500);ad('metisl','Far From Home','Help break a meteor core on an island','mtisl',1,750)}catch(e){}
+ window.SQMETEOR={CFG,ST,LOCS,flat:()=>FLAT.length,cur:()=>CUR,pick,ok,okR,pickR,nearestOk,sched,current,summon,coreLeft,veinGone,
+  test:(dt,tile)=>{const a=now()+(dt==null?WARN:dt),R=ROOM(),loc=R?R.region:'hollow',W0=R?R.w:N,t=tile!=null?tile:(R?nearestOkR(R,Math.floor(P.x/16),Math.floor(P.y/16)):nearestOk(Math.floor(P.x/16),Math.floor(P.y/16)));CUR=null;SUM={t:a,x:t%W0,y:(t/W0)|0,loc,id:'t'+Math.round(a)};return SUM}}})();

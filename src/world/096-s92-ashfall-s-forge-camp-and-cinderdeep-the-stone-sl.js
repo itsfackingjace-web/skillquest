@@ -5,7 +5,7 @@
 // - The purple-leaved trees of the Shattered Expanse are Void Trees.
 // - The Stone Sledgehammer (rare from the Stone Giant) is a main-hand weapon. With it in hand your ultimate is a Ground
 //   Slam, and you can break boulders (35-50 stone) and ore boulders (lots of ore) found on every island and in caves.
-// - Ashfall: the forge camp of Emberwatch on the old town site (Forgemaster Brann's shop, Warden Kesh and Old Pell give
+// - Ashfall: the forge camp of Emberwatch on the old town site (Forgemaster Brann's shop, Warden Kesh and Old Pell give; Vessa's potion stall sells potions and buys brewed ones for 1.5x
 //   the quests), and Cinderdeep: six floors of lava and ash ending at the Emberlord (rare: the Ember ring).
 // - Quest progress counts on the right island (killing briar wolves on Briarwood now counts toward Wren's quest).
 {
@@ -202,9 +202,10 @@ SIDE_QS.ashfall=[
  {n:'Cinder Beetles',d:'Defeat 10 cinder beetles on the Ashfall Coast.',type:'kill',item:'cinderbeetle',amt:10,r:{g:380,xp:[0,900]},giver:'Kesh',start:'Cinder beetles. They eat iron, they eat carts, and last week they ate a boot. With the foot still in it. Clear some out.',finish:'The carts made it through today. Well fought.'},
  {n:'Eels for the Camp',d:'Bring Old Pell 5 raw ember eels from Ashfall\'s waters.',type:'give',item:'eeel',amt:5,r:{g:340,xp:[9,800]},giver:'Old Pell',start:'Smiths eat like bears. Ember eels, grilled on a forge plate... that\'s the only thing that keeps them going.',finish:'Ha! They\'re still warm. The lads will be pleased.',req:[9,30]},
  {n:'The Emberlord',d:'Defeat the Emberlord at the bottom of Cinderdeep.',type:'dungeonboss',item:'emberlord',amt:1,r:{g:1200,xp:[0,2200]},giver:'Kesh',start:'Cinderdeep. Six floors of lava under the north-east hills, and at the bottom, the Emberlord. It wakes every day and burns anyone who gets close. End it, if only for a day.',finish:'The ground is cooler already. Emberwatch is in your debt.',note:'Attack 40 recommended. Bring food, and roll out of the fire.'}];
-const AFLOOK={Brann:{sk:3,hs:0,hc:6,sh:7,pn:0,ht:2,hcol:2,so:2},Kesh:{sk:1,hs:3,hc:0,sh:4,pn:2,ht:1,hcol:0,so:3},'Old Pell':{sk:2,hs:1,hc:6,sh:1,pn:3,ht:0,hcol:0,so:1}};
+const AFLOOK={Brann:{sk:3,hs:0,hc:6,sh:7,pn:0,ht:2,hcol:2,so:2},Kesh:{sk:1,hs:3,hc:0,sh:4,pn:2,ht:1,hcol:0,so:3},'Old Pell':{sk:2,hs:1,hc:6,sh:1,pn:3,ht:0,hcol:0,so:1},Vessa:{sk:0,hs:2,hc:3,sh:5,pn:1,ht:0,hcol:0,so:0}};
 const AFSAYS={Brann:['Iron, coal, fire. That\'s all a forge needs.','I\'ll buy anything that came out of the ground.','Mind the anvils.'],
  Kesh:['The beetles never sleep. Neither do I.','Cinderdeep is in the north-east hills.','Keep your water skin full out there.'],
+ Vessa:['Ash-bloom, ember salt... no, you can\'t have the recipe.','A good potion is worth ten swords out here.','Brewed something? I pay better than anyone for a good potion.'],
  'Old Pell':['I\'ve cooked for this camp for thirty years.','The lava? You get used to it.','Sit by the fire. Warm your bones.']};
 function afSetup(R){if(R.region!=='ashfall'||R._af)return;const site=(R.reserved||[]).find(q=>(q.kind||q.t||q.id)==='town');if(!site)return;R._af=1;
  const x0=site.x,y0=site.y,W=R.w,set=(x,y,t)=>{if(x>0&&y>0&&x<W-1&&y<R.h-1&&R.tiles[y*W+x]!==0)R.tiles[y*W+x]=t};
@@ -217,7 +218,8 @@ function afSetup(R){if(R.region!=='ashfall'||R._af)return;const site=(R.reserved
  for(const[x,y]of[[x0+11,y0+5],[x0+16,y0+5]]){add({t:'anvil',x,y});solidAt(x,y)}
  for(const[x,y]of[[x0+8,y0+5],[x0+11,y0+8],[x0+4,y0+12]]){add({t:'afbraz',x,y});solidAt(x,y)}
  add({t:'afsign',x:x0+8,y:y0+12});solidAt(x0+8,y0+12);
- AF.npcs=[{id:'Kesh',x:(x0+3)*16+8,y:(y0+5)*16+10,role:'quests'},{id:'Brann',x:(x0+14)*16+8,y:(y0+5)*16+10,role:'shop'},{id:'Old Pell',x:(x0+7)*16+8,y:(y0+11)*16+4,role:'elder'}];
+ add({t:'afstall',x:x0+14,y:y0+9});solidAt(x0+14,y0+9);solidAt(x0+15,y0+9);
+ AF.npcs=[{id:'Kesh',x:(x0+3)*16+8,y:(y0+5)*16+10,role:'quests'},{id:'Brann',x:(x0+14)*16+8,y:(y0+5)*16+10,role:'shop'},{id:'Old Pell',x:(x0+7)*16+8,y:(y0+11)*16+4,role:'elder'},{id:'Vessa',x:(x0+13)*16+8,y:(y0+9)*16+10,role:'potions'}];
  for(const n of AF.npcs){n.town='ashfall';n.hx=n.x;n.hy=n.y;add({t:'afnpc',n,x:n.x/16,y:n.y/16})}
  AF.town={x0,y0,w:site.w,h:site.h};R._doors=null;
  if(!R.lms.some(l=>l.id==='emberwatch'))R.lms.push({id:'emberwatch',name:'Emberwatch',x:x0+10,y:y0+6});LM_NAMES.emberwatch='Emberwatch';LM_NAMES.cinderdeep='Cinderdeep'}
@@ -234,6 +236,10 @@ window.SQAFNEAR=afNear;
   if(it.t==='afbraz'){shd(x+8,y+14,12);Rg(x+3,y+4,10,10,K);Rg(x+4,y+5,8,8,'#4a4040');Rg(x+4,y+5,8,2,'#6a5a50');Rg(x+5,y+13,2,3,K);Rg(x+9,y+13,2,3,K);
    for(let k=0;k<4;k++){const ph=(tm*1.6+k*.27)%1,fx=x+5+k*2+Math.round(Math.sin(tm*7+k)),fh=Math.round(6+4*(1-ph));Rg(fx,y+4-fh,2,fh,k%2?'#f86020':'#f8b030');Rg(fx,y+4-fh,1,2,'#fff0a0')}
    if(dark()>.12){g.fillStyle='rgba(255,150,60,.16)';g.beginPath();g.arc(x+8,y,28,0,6.283);g.fill()}return}
+  if(it.t==='afstall'){shd(x+16,y+14,30);Rg(x+1,y+4,30,9,K);Rg(x+2,y+5,28,7,'#6a4a30');Rg(x+2,y+5,28,1,'#8a6440');Rg(x+3,y+12,2,4,K);Rg(x+27,y+12,2,4,K);
+   Rg(x+1,y-14,2,18,K);Rg(x+29,y-14,2,18,K);Rg(x-1,y-19,34,6,K);for(let k=0;k<8;k++)Rg(x+k*4,y-18,4,4,k%2?'#f0e0c0':'#8a3a8a');for(let k=0;k<8;k++)Rg(x+k*4+1,y-14,2,2,k%2?'#f0e0c0':'#8a3a8a');
+   const PC=['#e04848','#e0a030','#58c048','#4890e0','#a060e0','#f08030','#f0e048'];for(let k=0;k<7;k++){const bx=x+3+k*4,h=k%2?5:4,c=PC[k],bub=Math.sin(tm*3+k)>.6;Rg(bx,y+4-h,3,h,K);Rg(bx+1,y+3-h,1,1,'#5a3418');Rg(bx+1,y+5-h,1,h-2,c);if(bub)Rg(bx+1,y+1-h-Math.round((tm*4+k)%3),1,1,c)}
+   if(dark()>.12){g.fillStyle='rgba(200,140,255,.10)';g.beginPath();g.arc(x+16,y+2,22,0,6.283);g.fill()}return}
   if(it.t==='afsign'){Rg(x+7,y-2,2,14,'#3a2414');Rg(x-4,y-12,24,11,K);Rg(x-3,y-11,22,9,'#8a6a48');Rg(x-3,y-11,22,1,'#b08860');g.save();g.font='700 5px '+PF;g.fillStyle='#f8e0b0';g.textAlign='center';g.textBaseline='middle';g.fillText('EMBERWATCH',x+8,y-6.5);g.restore();return}
   if(it.t==='afnpc'){const n=it.n,near=Math.hypot(n.x-P.x,n.y-P.y)<60,dir=near?(Math.abs(P.x-n.x)>Math.abs(P.y-n.y)?2:P.y<n.y?1:0):0,fl=near&&P.x<n.x;shd(n.x,n.y+6,12);GC=g;
    try{cP(AFLOOK[n.id],dir,0,Math.round(n.x),Math.round(n.y),fl)}catch(e){}
@@ -248,20 +254,30 @@ tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=af
 {let mine=false;const _u=upd;upd=function(dt){_u(dt);const n=!pnOpen&&!menuOpen&&!dead?afNear():null;
   if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mine=true}else if(mine){mine=false;if(!pnOpen)tk.style.display='none'}
   if(afR()&&AF.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&afIn(m.x,m.y)){m.dead=1;m.dropped=1}}}
+// Vessa's potion stall: sells potions, buys yours for 1.5x SELLP (always below her own price)
+const POTAF=[{k:'pot_heal',c:180},{k:'pot_str',c:320},{k:'pot_poison',c:260},{k:'pot_swift',c:280},{k:'pot_iron',c:320},{k:'pot_napalm',c:420},{k:'pot_zap',c:650}];window.SQPOTAF=POTAF;
+const potBuy=k=>{const it=POTAF.find(q=>q.k===k);return Math.min(Math.floor((SELLP[k]|0)*1.5),it?it.c-1:1e9)};
 const SHOPAF=[{n:'Healing potion',c:180,k:'pot_heal',m:1},{n:'20 iron arrows',c:70,k:'iarrow',m:20},{n:'10 bait',c:15,k:'bait',m:10},{n:'5 stone',c:10,k:'stone',m:5},{n:'Fire kit (3 wood + 1 stone)',c:12,kit:1},{n:'Iron bar',c:60,k:'ibar',m:1}];
 window.SHOPAF=SHOPAF;// (161b/162 edit and add to it from the Dev Suite)
 function afHTML(){const n=AF.npc;if(!n)return'';const L=AFSAYS[n.id],line=L[Math.floor(performance.now()/7000)%L.length];
- let h='<div class="tl">'+esc(n.id)+'</div><div class="qc"><p>"'+esc(line)+'"</p><small>'+(n.role==='shop'?'Forgemaster of Emberwatch':n.role==='quests'?'Warden of Emberwatch':'Camp cook')+'</small></div>';
+ let h='<div class="tl">'+esc(n.id)+'</div><div class="qc"><p>"'+esc(line)+'"</p><small>'+(n.role==='shop'?'Forgemaster of Emberwatch':n.role==='quests'?'Warden of Emberwatch':n.role==='potions'?'Potion seller':'Camp cook')+'</small></div>';
  try{h+=sideCard(n)}catch(e){}
  if(n.role==='elder'&&!(sqCur('ashfall')&&sqCur('ashfall').giver===n.id))h+='<div class="qc" style="margin-top:8px"><p>"Cinderdeep is up in the north-east hills. Six floors down, and the last one is all lava. The Emberlord lives there. It wakes every day, and it does not like visitors."</p></div>';
  if(n.role==='shop'){h+='<div class="tl" style="margin-top:12px">Buy</div><div class="qc"><small>Gold: '+GLD+'</small></div>';
   SHOPAF.forEach((it,i)=>{if(it.k&&!INAME[it.k]&&!it.kit)return;h+='<button class="sb" data-af="b'+i+'" style="opacity:'+(GLD>=it.c?1:.45)+'">'+esc(it.n)+'<br><small>'+it.c+' gold</small></button>'});
   h+='<div class="tl" style="margin-top:12px">Sell</div>';let any=0;for(const k in SELLP){const c=inv[k]|0;if(c<=0)continue;any=1;h+='<button class="sb" data-af="s'+k+'">Sell all '+esc(SN[k]||INAME[k]||k)+' ('+c+')<br><small>+'+c*SELLP[k]+' gold</small></button>'}
   if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing to sell</div>'}
+ if(n.role==='potions'){h+='<div class="tl" style="margin-top:12px">Buy potions</div><div class="qc"><small>Gold: '+GLD+'</small></div>';
+  POTAF.forEach((it,i)=>{if(!INAME[it.k])return;h+='<button class="sb" data-af="p'+i+'" style="opacity:'+(GLD>=it.c?1:.45)+'">'+esc(INAME[it.k])+' ('+(inv[it.k]|0)+')<br><small>'+it.c+' gold</small></button>'});
+  h+='<div class="tl" style="margin-top:12px">Sell your potions</div><div class="qc"><small>Vessa pays 1.5x the usual price for potions.</small></div>';let any=0;
+  for(const it of POTAF){const c=inv[it.k]|0;if(c<=0)continue;any=1;h+='<button class="sb" data-af="q'+it.k+'">Sell all '+esc(SN[it.k]||INAME[it.k])+' ('+c+')<br><small>+'+c*potBuy(it.k)+' gold</small></button>'}
+  if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">No potions to sell. Brew some at a cauldron (Brewing).</div>'}
  return h}
 {const _r=rPn;rPn=function(){if(ptab===2&&shop==='afnpc'&&AF.npc){try{panelChrome('')}catch(e){}pbd.innerHTML=afHTML();return}_r()}}
 {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='afnpc'&&AF.npc){const b=e.target.closest('[data-af]');if(b){const a=b.dataset.af;
     if(a[0]==='b'){const it=SHOPAF[+a.slice(1)];if(!it)return;if(GLD<it.c){say('Not enough gold');sfx('swish');return}GLD-=it.c;if(it.kit){inv.wood=(inv.wood|0)+3;inv.stone=(inv.stone|0)+1}else inv[it.k]=(inv[it.k]|0)+it.m;say('Bought '+it.n+'.');sfx('coin')}
+    else if(a[0]==='p'){const it=POTAF[+a.slice(1)];if(!it||!INAME[it.k])return;if(GLD<it.c){say('Not enough gold');sfx('swish');return}GLD-=it.c;inv[it.k]=(inv[it.k]|0)+1;say('Bought a '+INAME[it.k].toLowerCase()+'.');sfx('coin')}
+    else if(a[0]==='q'){const k=a.slice(1),c=inv[k]|0;if(c>0&&POTAF.some(q=>q.k===k)){const v=c*potBuy(k);GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}
     else{const k=a.slice(1),c=inv[k]|0;if(c>0){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){}saveLocal(true);rPn();return}
    const q=e.target.closest('.xb');if(q&&/^sq_/.test(q.dataset.a||'')){sideAct(q.dataset.a.slice(3),AF.npc);saveLocal(true);rPn();return}}return _oc(e)}}
 {const _cp=closePanel;closePanel=function(){if(shop==='afnpc'){AF.npc=null;shop=null}return _cp()}}

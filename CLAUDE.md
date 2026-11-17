@@ -675,8 +675,8 @@
   `prog/<pk>` >= 1 and exactly one less in the write, and `prog` has a matching branch (leader/officer, qd unchanged, only that skill
   down by one, the boss record written with by = you and t = now). Ranks above RMAX are kept, so spending one there shows no change. Kinds: `treant` (path `boss`, `gt_`),
   `turtle` (200, path `turt`, `gu_`).
-- **Giant Turtle** (`combat/200-s208-giant-turtle.js`, `SQTURT`): 5,000 raw fish (`RAW`, 13 kinds, cheapest `SELLP` first; the rules sum the
-  13 bank keys' decrease = 5000, none rising), whirlpool by the pier, attacks with 100's new `bubble` shots and `water` geysers (100's charge/
+- **Giant Turtle** (`combat/200-s208-giant-turtle.js`, `SQTURT`): 5,000 raw fish (`RAW`, 16 kinds incl. 221's moonfin/abeel/akoi since Nov 16, cheapest `SELLP` first; the rules sum the
+  16 bank keys' decrease = 5000, none rising; a new raw fish needs both RAW and the turt rule regenerated), whirlpool by the pier, attacks with 100's new `bubble` shots and `water` geysers (100's charge/
   leap lines now use the boss's own name), crab adds; melee + 1 + Fishing/10 + rod tier. Loot `turtfrag` ×1 + 25 swordfish. **Turtle armor**
   `eq_thelm/eq_tbody/eq_tlegs`: anvil 1/2/2 fragments (Smithing 75/80/78), Defence 50, held as armor tier 5 with `TT` flags (save `tta`,
   KNOWN49) like the Outlaw's hat; +3% block a piece, 2 pieces +5%, 3 pieces +5% and blockCap +5%; look = 084's plate recoloured (`ttk`).
@@ -849,7 +849,13 @@
   (things in front redrawn after the outermost `pP`), solid via the outermost `solid`, HIT via the outermost `attack`, 118's `hitWord`
   asks `window.SQHITWORD` first. Streak/flash/smoke in the outermost `drawHUD`, banner `#mtb`, minimap/area map markers. Items
   `meteorore`, `stardust`, `metbar` (SM smelt: 15 + 15 adamant ore + 3 stardust, Smithing 80). Library `meteor` overrides CFG.
-  Test: `SQMETEOR.test(ms, tile)` starts a local strike.
+  Test: `SQMETEOR.test(ms, tile)` starts a local strike (where you stand: Hollow or an island).
+  Islands (Nov 16): scheduled windows pick a place from `LOCS` (Hollow 3/7, ashfall/briarwood/ironcrest/shattered); island strikes
+  have ids `i<k>`, tile = y*R.w+x, picked only by games standing on that island (`okR`: crater cells may hold `_obj` items, which
+  `flatten()` hides (gone + rgCellDel + R.solid) while the strike lasts and puts back after) and agreed through the same `mts` slot;
+  games elsewhere see the banner "on <island>" (`CUR.known` false). Drawn from the outermost ROOMBG on islands; `here()` = standing
+  outdoors where it is. `events/met` takes `loc`. Achievements pushed into 129's `SQACH.A` (group Meteors, counters mtcore/mttop/
+  mtvein/mtdust/mtisl).
 - **Meteorite gear** (`items/216-s224-meteorite-gear.js`, `window.SQMETGEAR`): all level 75 (`rq2` {s,l}, read first by 214's `reqOf`).
   Armor `eq_mhelm9/eq_mbody9/eq_mlegs9` held as armor tier 5 with `MT` flags (save `mta`, KNOWN49), like 200's turtle armor: +5% block
   a piece, 2 pieces +5%, 3 another +5% and blockCap +8%; look = gearCH `mtk` bits → kitLook recolour. Tools `eq_pick9/eq_axe9` = tier 9
@@ -871,7 +877,7 @@
   `PK(id)` = 036's `perk`). Cauldron = 022 station `cauldron` (STNS/BREC/BK), the outermost `stationHTML`/`stationAct` (actions `cw_<pot>`/
   `cwa_<pot>`: **station actions starting with `b` are taken as shop buys by 107**), timed with `sqDo('craft')`. Art drawn in the outermost
   `drawStation` unless a Props look `p:cauldron` exists. Potions `pot_poison/napalm/zap` are `COAT` potions (not FOODS; USE coats).
-  Daggers `idag/sdag/mdag/adag/metdag` are EQ kind `dagger` (028's iconURL draws EQ items as `iconURL(EQ[k].ic)`: an `ic` equal to the item's own key recursed forever and broke every screen showing one, so idag/sdag use `ic:'dagger'`), slot `off` (DAG, save `dag`), +tier in `meleeFlat`. Potion pin `dpin`
+  Daggers `idag/sdag/mdag/adag/stdag/metdag` (stdag = Starsteel, tier 5, `mc` = its own anvil materials) are EQ kind `dagger` (028's iconURL draws EQ items as `iconURL(EQ[k].ic)`: an `ic` equal to the item's own key recursed forever and broke every screen showing one, so idag/sdag use `ic:'dagger'`), slot `off` (DAG, save `dag`), +tier in `meleeFlat`. Potion pin `dpin`
   (bag button `data-dpin`). 159's `avail()` also lists `window.SQULTX` entries ({k,n,ok,from,run}); the outermost `castUlt` runs the
   dagger ult (cooldown `DCD`, 20 s / 12 with br_quick). Helpful potions are drunk and shared with fx `dp` {p,to (uid list),x,y}:
   receivers check party/friend + distance and drink without using their own. Coats apply on hp drops during the outermost `attack`.
@@ -923,4 +929,9 @@
   culled to the screen and merged per 32 px cell (max 24 glows a frame). Note: fishing (007's upd) pauses while a panel is open.
 - **Grave lock** (063, in the MP block, edited in place): `GRAVE_LOCK` 5 min from `g.at`, `grvLock(g)`; others see the items but no TAKE
   buttons and `grvTake` refuses. The rules check it too: `graves/$gid/i/$k` writes need the grave's `u` or `at < now - 300000` (publish them).
-
+- **Arrow ladder** (`items/224-s232-arrow-ladder.js`, `window.SQARROWS`): `mitharrow` (Archery 40) and `adarrow` (55), 15 a fletch; damage over
+  plain arrows iron +1, mithril +2, adamant +3, meteorite +4 (216's LEND bonus is 3). The outermost shoot/shootAim lend the best special
+  arrows to `inv.iarrow` for the call (meteorite left to 216's own lend) with `BON` added in `arrowDmg`; `bowTarget` counts them; shots get
+  `p.ah` (head colour, 021's drawProj). 021's fletch/equipment lines and 010's arrow chip list every arrow kind: a new arrow goes there too.
+- **Vessa's potion stall** (096, edited in place): NPC role `potions` at Emberwatch with an `afstall` item; `POTAF` (`window.SQPOTAF`) =
+  potions she sells; she buys any of them for `potBuy(k)` = 1.5x SELLP, always below her own price (data-af `p<i>` buy, `q<key>` sell).

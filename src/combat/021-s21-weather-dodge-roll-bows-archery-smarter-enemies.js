@@ -105,7 +105,7 @@ const _u21=upd;upd=function(dt){const paused=menuOpen||pnOpen;const pos=paused?n
 const _atk21=attack;attack=function(){if(!(typeof GPON!=='undefined'&&GPON)&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!(SCENE&&!SCENE.room.cave)&&!facingNpc()){const t=bowTarget();if(t){shoot();return}}_atk21()};  // with a controller, R1 is the bow and R2 is always the sword
 // --- drawing ---
 function drawProj(p){const x=Math.round(p.x),y=Math.round(p.y);
- if(p.k==='arrow'){const l=Math.hypot(p.vx,p.vy)||1,ux=p.vx/l,uy=p.vy/l,hd=p.iron?'#c8d0dc':'#9898a8';shd(x,y+9,6);
+ if(p.k==='arrow'){const l=Math.hypot(p.vx,p.vy)||1,ux=p.vx/l,uy=p.vy/l,hd=p.ah||(p.iron?'#c8d0dc':'#9898a8');shd(x,y+9,6);
   for(let i=2;i<11;i++)Rg(Math.round(p.x-ux*i),Math.round(p.y-uy*i),1,1,'#8a5a30');for(let i=10;i<13;i++){Rg(Math.round(p.x-ux*i-uy),Math.round(p.y-uy*i+ux),1,1,'#f0f0f0');Rg(Math.round(p.x-ux*i+uy),Math.round(p.y-uy*i-ux),1,1,'#f0f0f0')}
   Rg(x-1,y-1,3,3,O);Rg(x,y,1,1,hd);Rg(Math.round(p.x-ux),Math.round(p.y-uy),1,1,hd)}
  else{const a=Math.floor(p.t*12)%2;shd(x,y+10,6);if(a){Rg(x-4,y-1,8,2,O);Rg(x-3,y-1,6,1,'#f0ece0');Rg(x-5,y-2,2,3,'#f0ece0');Rg(x+3,y-2,2,3,'#f0ece0')}else{Rg(x-1,y-4,2,8,O);Rg(x-1,y-3,1,6,'#f0ece0');Rg(x-2,y-5,3,2,'#f0ece0');Rg(x-2,y+3,3,2,'#f0ece0')}}}
@@ -143,7 +143,7 @@ const FREC=[{k:'arrow',n:'10 arrows',c:{wood:1,stone:1},lv:1,xp:12,f:()=>inv.arr
  {k:'iarrow',n:'10 iron arrows',c:{ibar:1,wood:2},lv:15,xp:45,f:()=>inv.iarrow=(inv.iarrow|0)+10},
  {k:'bow2',n:'Longbow',c:{wood:10,ibar:2},lv:20,xp:150,hide:()=>TL.bow>=2,f:()=>{TL.bow=2;say('You made a longbow! Longer range, harder hits.')}}];
 const fname=k=>({wood:'wood',stone:'stone',ibar:'iron bar'})[k]||(typeof matN==='function'?matN(k):k);
-function fletchHTML(){let h='<div class="tl" style="margin-top:18px">Arrows &amp; bows</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.7;margin-top:-6px">Archery level '+lvOf(FL)+' · Arrows: '+(inv.arrow|0)+' · Iron arrows: '+(inv.iarrow|0)+''+((inv.marrow|0)?' · Meteorite arrows: '+(inv.marrow|0):'')+'</div>';
+function fletchHTML(){let h='<div class="tl" style="margin-top:18px">Arrows &amp; bows</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.7;margin-top:-6px">Archery level '+lvOf(FL)+' · Arrows: '+(inv.arrow|0)+' · Iron arrows: '+(inv.iarrow|0)+''+((inv.mitharrow|0)?' · Mithril arrows: '+(inv.mitharrow|0):'')+((inv.adarrow|0)?' · Adamant arrows: '+(inv.adarrow|0):'')+((inv.marrow|0)?' · Meteorite arrows: '+(inv.marrow|0):'')+'</div>';
  FREC.forEach((r,i)=>{if(r.hide&&r.hide())return;const can=lvOf(FL)>=r.lv&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b);
   h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(r.k==='bow1'||r.k==='bow2'?'bow':r.k)+'"><div class="gi"><b>'+r.n+'</b><br><small>'+Object.entries(r.c).map(([a,b])=>b+' '+fname(a)).join(', ')+' · Archery '+r.lv+' · '+r.xp+' xp</small></div><button class="gc fc" data-i="'+i+'">Make</button>'+(r.hide?'':'<button class="gc fc" data-i="'+i+'" data-all="1">All</button>')+'</div>'});return h}
 function makeFletch(i,all){const r=FREC[i];if(!r||(r.hide&&r.hide()))return;if(lvOf(FL)<r.lv){say('Need Archery '+r.lv);return}
@@ -156,7 +156,7 @@ const _r21=rPn;rPn=function(){_r21();if(ptab===1&&pn.style.display!=='none')pbd.
 const _oc21=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.fc');if(b){makeFletch(+b.dataset.i,!!b.dataset.all);return}_oc21(e)};
 // equipment card: bow + arrows
 const _eq21=equipHTML;equipHTML=function(){const h=_eq21(),k='<div class="qc" style="margin-top:12px">',i=h.indexOf(k);if(i<0)return h;
- return h.slice(0,i)+'<div class="eqg" style="margin-top:6px">'+eqSlot('BOW','bow','',TL.bow?(TL.bow>=2?'Longbow':'Shortbow'):'')+eqSlot('ARROWS','arrow','',((inv.arrow|0)+(inv.iarrow|0)+(inv.marrow|0))?((inv.marrow|0)?(inv.marrow|0)+' meteorite · ':'')+((inv.iarrow|0)?(inv.iarrow|0)+' iron · ':'')+(inv.arrow|0)+' arrows':'')+'</div>'+h.slice(i)};
+ return h.slice(0,i)+'<div class="eqg" style="margin-top:6px">'+eqSlot('BOW','bow','',TL.bow?(TL.bow>=2?'Longbow':'Shortbow'):'')+eqSlot('ARROWS','arrow','',((inv.arrow|0)+(inv.iarrow|0)+(inv.marrow|0)+(inv.adarrow|0)+(inv.mitharrow|0))?((inv.marrow|0)?(inv.marrow|0)+' meteorite · ':'')+((inv.adarrow|0)?(inv.adarrow|0)+' adamant · ':'')+((inv.mitharrow|0)?(inv.mitharrow|0)+' mithril · ':'')+((inv.iarrow|0)?(inv.iarrow|0)+' iron · ':'')+(inv.arrow|0)+' arrows':'')+'</div>'+h.slice(i)};
 const _icon21=iconURL;iconURL=function(k,col){if(k!=='bow'&&k!=='arrow'&&k!=='iarrow')return _icon21(k,col);const key='g21'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  if(k==='bow'){for(let i=0;i<10;i++){const xx=3+Math.round(Math.sin(i/9*Math.PI)*5);r(xx,2+i,2,1,'#a86830')}r(3,2,1,10,'#e8e8e8');r(2,1,2,2,'#7a4a20');r(2,11,2,2,'#7a4a20')}
  else{for(let i=0;i<9;i++)r(3+i,10-i,1,1,'#8a5a30');r(10,2,3,1,k==='iarrow'?'#c8d0dc':'#9898a8');r(11,2,1,3,k==='iarrow'?'#c8d0dc':'#9898a8');r(2,10,2,2,'#f0f0f0');r(3,11,1,2,'#e05040')}

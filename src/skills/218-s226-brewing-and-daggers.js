@@ -4,7 +4,7 @@
 //   with Brewing's own speed (D shortened like pSpeed). Skill tree TREES[BR] built with 039's pTree (PSK[BR]): every level
 //   +0.5% brewing speed, ingredient-saving and extra-potion chances (exAt/raAt below, same formulas as pTree's lines), and
 //   perk choices at 20/40/60/80 (perk(BR,id)).
-// Daggers: off-hand items (EQ kind 'dagger'): the old idag/sdag plus mdag/adag/metdag. DAG = the key in the off-hand (saved as
+// Daggers: off-hand items (EQ kind 'dagger'): the old idag/sdag plus mdag/adag/stdag (Starsteel, tier 5: 2 adamant bars + 4 stardust, Smithing 66, Attack 60)/metdag. DAG = the key in the off-hand (saved as
 //   `dag`, always written); the outermost occ/setSlot handle it (028's own setSlot clears TL.bow/WAND, 140's TL.hoe/can).
 //   +dagger tier to meleeFlat. Your melee hits (HIT, hp drops on monsters during the outermost attack) are "dagger strikes".
 // Dagger ULT: a potion pinned in the bag (★ DAGGER ULT, saved as `dpin`) is used by the ULT button when the dagger is the chosen
@@ -98,7 +98,7 @@
  {const _ds=drawStation;drawStation=function(t,x,y,st,tm){if(t!=='cauldron'||hasLook())return _ds.apply(this,arguments);g.save();try{cauldronArt(x*16+8,y*16+15,(tm!=null&&tm>0?tm:performance.now()/1000),brewing(x,y))}catch(e){}g.restore()}}
  // ---- icons ----
  const DAGS={idag:{t:1,c:'#c8ccd8',n:'Iron dagger'},sdag:{t:2,c:'#e0e4f0',n:'Steel dagger'},mdag:{t:3,c:'#70a8e0',n:'Mithril dagger',lv:30,bar:'mbar',sm:35},adag:{t:4,c:'#58c088',n:'Adamant dagger',lv:45,bar:'abar',sm:50},
-  metdag:{t:6,c:'#a070f0',n:'Meteorite dagger',lv:75,bar:'metbar',sm:82}};
+  stdag:{t:5,c:'#f0d8ff',n:'Starsteel dagger',lv:60,bar:'abar',mc:{abar:2,stardust:4},sm:66},metdag:{t:6,c:'#a070f0',n:'Meteorite dagger',lv:75,bar:'metbar',sm:82}};
  {const _ic=iconURL;iconURL=function(k,col){const key='g226'+k;if(ICONC[key])return ICONC[key];let draw=null;
    if(k==='brew'||k==='cauldron')draw=r=>{r(3,5,8,7,'#16121c');r(2,6,10,5,'#16121c');r(3,6,8,5,'#434158');r(4,6,2,3,'#64627e');r(2,4,10,2,'#16121c');r(3,4,8,1,'#62cc48');r(5,2,1,1,'#a8f070');r(8,1,1,1,'#a8f070');r(3,12,1,1,'#16121c');r(10,12,1,1,'#16121c')};
    else if(COAT[k]){const c=COAT[k].ic;draw=r=>{r(6,1,2,1,'#5a3418');r(5,2,4,1,'#16121c');r(6,3,2,2,'#16121c');r(4,5,6,7,'#16121c');r(3,6,8,5,'#16121c');r(4,6,6,5,c);r(5,7,1,2,'#ffffff');r(4,10,6,1,'rgba(0,0,0,.25)');if(k==='pot_zap'){r(7,7,1,1,'#ffffff');r(6,8,1,1,'#ffffff');r(7,9,1,1,'#ffffff')}}}
@@ -110,7 +110,7 @@
   EQ[k]=Object.assign(EQ[k]||{},{slot:'off',kind:'dagger',dt:o.t,n:o.n,ic:(k==='idag'||k==='sdag')?'dagger':k,col:(k==='idag'||k==='sdag')?o.c:undefined,v:SELLP[k]||o.t*400});if(o.lv)EQ[k].rq2={s:0,l:o.lv};if(typeof EQK!=='undefined'&&!EQK.includes(k))EQK.push(k);
   if(!SELLP[k])SELLP[k]=o.t*150;
   IDESC[k]=o.n+': an off-hand weapon. +'+o.t+' melee damage, and your ULT uses the potion you pin in your bag (★ DAGGER ULT).'+(o.lv?' Needs Attack '+o.lv+'.':'');
-  if(o.bar&&!SM.some(r=>r.k===k))SM.push({k,n:o.n,c:{[o.bar]:2},lv:o.sm,xp:o.sm*6})}
+  if(o.bar&&!SM.some(r=>r.k===k))SM.push({k,n:o.n,c:o.mc||{[o.bar]:2},lv:o.sm,xp:o.sm*6})}
  let DAG=null,DPIN='',COATK=null,COATU=0,DCD=0;
  {const _occ=occ;occ=function(slot){if(slot==='off'&&DAG)return DAG;return _occ.apply(this,arguments)}}
  {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot==='off')DAG=k&&EQ[k]&&EQ[k].kind==='dagger'?k:null;return out}}

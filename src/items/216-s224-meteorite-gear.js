@@ -10,7 +10,7 @@
 //     a meteor drops on the nearest monster ahead (or 70 px ahead) and explodes: spellDmg x3 to everything within 48 px.
 //     Other players see it through fx 'mf'.
 //   Meteorite arrows (marrow, fletched: 1 bar + 2 void logs = 25, Archery 75): used before iron/wood arrows by any bow,
-//     +2 damage over iron arrows. 021/023's shoot code only knows arrow/iarrow, so the outermost shoot/shootAim lend the
+//     +3 damage over iron arrows (since Nov 16; 224 adds mithril +1 and adamant +2 between them). 021/023's shoot code only knows arrow/iarrow, so the outermost shoot/shootAim lend the
 //     meteorite arrows to inv.iarrow for the call and take back what was used.
 (()=>{const COL='#6a48b8',LIT='#e0a8ff',DK='#3a2c60';
  TIER_N[9]=TIER_N[9]||'Meteorite';TCOL[9]=TCOL[9]||'#8a60e0';try{TIT[9]=TIT[9]||'Meteorite'}catch(e){}
@@ -39,12 +39,12 @@
    if(b&2&&o.body==='plate'){o.bc=COL;o.ba=LIT}if(b&4&&o.legs==='greaves'){o.lc=COL;o.la=LIT}if(b&1&&o.head==='helm'){o.hc=COL;o.ha=LIT}return o};try{KITC.clear()}catch(e){}}
  // ---- bow ----
  add('eq_bow6',{slot:'off',kind:'bow',tier:6,n:'Meteorite bow',ic:'bow',col:'#8a60e0',v:16000,arch:L75,rq2:{s:FL,l:L75}},'A meteorite bow: the hardest-hitting, furthest-shooting bow there is. Needs Archery 75.');
- {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+(TL.bow===6?3:0)+(LEND?2:0)}}
+ {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+(TL.bow===6?3:0)+(LEND?3:0)}}
  {const _br=bowRange;bowRange=function(){return _br.apply(this,arguments)+(TL.bow===6?30:0)}}
  {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(TL.bow===6){s.tl=s.tl||{};s.tl.bow=6}return s}}
  // ---- meteorite arrows ----
  const MA='marrow';INVK.includes(MA)||INVK.push(MA);INAME[MA]='Meteorite arrows';SN[MA]='Meteorite arrows';SHORT[MA]='meteorite arrows';SELLP[MA]=60;inv[MA]=inv[MA]|0;
- IDESC[MA]='Arrows tipped with meteorite: +2 damage over iron arrows. Any bow shoots these first.';
+ IDESC[MA]='Arrows tipped with meteorite: +3 damage over iron arrows (+4 over plain arrows). Any bow shoots these first.';
  {const j=EXTRA_BAG.indexOf('iarrow');if(!EXTRA_BAG.includes(MA))EXTRA_BAG.splice(j>=0?j+1:EXTRA_BAG.length,0,MA)}
  try{FREC.push({k:MA,n:'25 meteorite arrows',c:{metbar:1,voidlog:2},lv:L75,xp:900,f:()=>{inv[MA]=(inv[MA]|0)+25;say('Made 25 meteorite arrows.')}})}catch(e){}
  let LEND=false;

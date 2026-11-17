@@ -38,7 +38,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
    if(b&2&&o.body==='plate'){o.bc=TCOL;o.ba=TLIT}if(b&4&&o.legs==='greaves'){o.lc=TCOL;o.la=TLIT}if(b&1&&o.head==='helm'){o.hc=TCOL;o.ha=TLIT}return o};if(typeof KITC!=='undefined')KITC.clear()}
 
  // ---- the Giant Turtle (guild fishing boss, 199's SQGBOSS) ----
- const RAW=['shrimp','trout','salmon','swordfish','rainbow','pike','gcarp','eeel','lsnap','icod','gchar','vray','cangl'],NEED=5000;
+ const RAW=['shrimp','trout','salmon','swordfish','rainbow','pike','gcarp','eeel','lsnap','icod','gchar','vray','cangl','moonfin','abeel','akoi'],NEED=5000;
  const cheap=()=>RAW.slice().sort((a,b)=>(SELLP[a]||0)-(SELLP[b]||0));
  const have=b=>RAW.reduce((n,k)=>n+(b[k]|0),0);
  let SPR=null;const spr=()=>SPR||(SPR=SQGBOSS.mkSprite(TTP,TTR));
