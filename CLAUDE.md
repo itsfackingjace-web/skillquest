@@ -878,4 +878,6 @@
   potion's colour (`PCOL`/`palOf`), and 114's `localAct` returns 0 for `SQDO.brew` (no crafting saw). HUD chips (coat time, dagger ULT) are added in the outermost `hudLayout`. Flames on every burning monster in the outermost `pS`.
   **Stabs** (`window.SQSTAB`, end of 218): the off-hand button (140's `down` → `SQDAGGER.stab()`, X; right-click capture on `cv`; outermost
   `shootAim` for R1; 082's touch button shows STAB) runs the outermost `attack` with `TL.sword` 0 on its own 0.28 s clock; 202 skips its
-  sword gap while `window.SQSTABNOW` is set. The outermost `pP` answers `occ('main')` with the dagger while a stab shows (123 draws it).
+  sword gap while `window.SQSTABNOW` is set. The outermost `pP` answers `occ('main')` with the dagger and sets `SLEDGE` false while a stab shows (123 draws it; the sledge won
+  otherwise), and the stab's attack also runs with `SLEDGE` false. Peers: 064's `sw` event takes `w` from `window.SQSWINGW()` when set
+  (stabs send 20 + dagger tier); 218's outermost `SQSWING` draws that dagger's icon jabbing for `t` 20-29.

@@ -26,7 +26,7 @@ const r2=v=>Math.round(v*100)/100;
 {const _c=castSpell;castSpell=function(first){const n0=SPELLS.length;const r=_c(first);const a=SPELLS.slice(n0).map(s=>[Math.round(s.x),Math.round(s.y),Math.round(s.vx),Math.round(s.vy),r2(s.life),s.el]);if(a.length)pvSend({k:'sp',a});return r}}
 {const _a=attack;attack=function(){const s0=swing,p0=PROJ.length,c0=SPELLS.length;_a();
   const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
-  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH&&!window.SQPVQUIET){pvSend({k:'sw',d:[face[0],face[1]],w:(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}}}
+  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH&&!window.SQPVQUIET){pvSend({k:'sw',d:[face[0],face[1]],w:window.SQSWINGW?SQSWINGW():(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}}}
 // ---- what the others do ----
 function pvFx(u,v){if(!v||typeof v!=='object'||!MP.user||u===MP.user.uid)return;const s=+v.s||0;if(PV.seen[u]&&s<=PV.seen[u])return;PV.seen[u]=s;
  if(typeof v.t==='number'&&mpNow()-v.t>2500)return;if(v.loc!==mpLoc())return;const AR=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]):null);v.d=AR(v.d);v.a=AR(v.a);const r=MP.players.get(u);if(!r)return;const sc=curScene();

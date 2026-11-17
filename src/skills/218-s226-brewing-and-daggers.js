@@ -203,12 +203,19 @@
   try{const M=window.SQPVP;if(M&&M.on&&typeof pvTarget==='function'&&pvTarget())return true}catch(e){}return null};
  function stab(){if(!D.dag||dead||menuOpen||pnOpen||BUILD||FISH)return;const t=nowS();if(t-last<STABGAP)return;last=t;
   const sw=TL.sword,s0=swing;VIS=performance.now()+260;
-  if(tgt()){window.SQSTABNOW=1;TL.sword=0;swing=0;try{attack()}catch(e){console.warn('stab',e)}finally{TL.sword=sw;window.SQSTABNOW=0}}
-  else{try{sfx('swish')}catch(e){}}
+  const W=20+((D.DAGS[D.dag]||{}).t|0);window.SQSWINGW=()=>W;
+  try{if(tgt()){window.SQSTABNOW=1;const sl=SLEDGE;SLEDGE=false;TL.sword=0;swing=0;try{attack()}catch(e){console.warn('stab',e)}finally{TL.sword=sw;SLEDGE=sl;window.SQSTABNOW=0}}
+   else{try{sfx('swish')}catch(e){}try{SQPVSEND({k:'sw',d:[face[0],face[1]],w:W})}catch(e){}}}finally{window.SQSWINGW=null}
   swing=Math.max(.25,s0)}
  D.stab=stab;
  {const _sa=shootAim;shootAim=function(first){if(D.dag&&!TL.bow&&!WAND){stab();return}return _sa.apply(this,arguments)}}
  cv.addEventListener('mousedown',e=>{if(e.button===2&&e.isTrusted&&D.dag&&!TL.bow&&!WAND){e.preventDefault();e.stopImmediatePropagation();stab()}},true);
- {const _pp=pP;pP=function(){if(!(D.dag&&performance.now()<VIS))return _pp.apply(this,arguments);const _o=occ;occ=function(s){return s==='main'?D.dag:_o.apply(this,arguments)};
-   try{return _pp.apply(this,arguments)}finally{occ=_o}}}
+ {const _pp=pP;pP=function(){if(!(D.dag&&performance.now()<VIS))return _pp.apply(this,arguments);const _o=occ,sl=SLEDGE;SLEDGE=false;occ=function(s){return s==='main'?D.dag:_o.apply(this,arguments)};
+   try{return _pp.apply(this,arguments)}finally{occ=_o;SLEDGE=sl}}}
+ // other players' stabs: 064 sends the swing with w = 20 + dagger tier; draw that dagger's icon jabbing out instead of a sword
+ const BYT={};for(const k in D.DAGS)BYT[D.DAGS[k].t]=k;const IMG={};
+ const img=k=>{if(!IMG[k]){const i=new Image();try{i.src=eqIcon(k)}catch(e){i.src=iconURL(k)}IMG[k]=i}return IMG[k]};
+ if(window.SQSWING){const _sw=SQSWING;window.SQSWING=function(x,y,fx,fy,pr,t,tm){if(!(t>=20&&t<30))return _sw.apply(this,arguments);
+   const k=BYT[t-20]||'idag',im=img(k);if(!im.complete)return;pr=Math.max(0,Math.min(1,pr));const a=Math.atan2(fy,fx),reach=2+Math.sin(pr*Math.PI)*5;
+   g.save();g.imageSmoothingEnabled=false;g.translate(Math.round(x+fx*reach),Math.round(y-4+fy*reach));g.rotate(a+Math.PI/4);g.drawImage(im,-1,-11,12,12);g.restore()}}
  window.SQSTAB={stab,get gap(){return STABGAP}}})();
