@@ -2,7 +2,8 @@
 // A rare shared event on Hollow (outdoors): a meteor falls at a random time and place, leaves a big crater with meteorite
 // veins and a glowing core, and everyone online races there.
 //   Timing: the clock is cut into windows of CFG.win hours; a hash of each window decides whether it has a strike (CFG.per)
-//     and when (1 h + up to win-6 h into it, so two strikes are always 6+ h apart). Dev command /meteorite (or /meteorite here,
+//     and when (1 h + up to win-6 h into it). A strike less than GAP (12 h) after the previous real one is skipped, and none comes
+//     within 6 h of a summoned one (SUM), so strikes are never back to back (since Nov 16: win 24, per .85 = about 0.8 a day). Dev command /meteorite (or /meteorite here,
 //     /meteorite stop) writes `events/met` {t,x,y,id} (dev-only write, signed-in read, already in the rules) for a strike
 //     60 s later, at the chosen tile. Every game works the same strike out, so nothing else needs to be sent.
 //   Where: an open patch of wild Hollow ground (no water, roads, bridges, protected/town/village tiles, buildings, objects)
@@ -19,7 +20,7 @@
 //   Items: meteorore, stardust, metbar (furnace: 15 meteorite ore + 15 adamant ore + 3 stardust, Smithing 80).
 //   Library `meteor` = {per, win, hp, vhp, vlv, rew:[[ore,met]x4]} overrides CFG (SQA.onApply).
 (()=>{if(typeof attack!=='function'||typeof GROUNDHOOK==='undefined')return;
- const CFG={per:.65,win:12,hp:20000,vhp:40,vlv:70,rew:[[750,75],[500,50],[300,30],[100,10]]},DEF=JSON.parse(JSON.stringify(CFG));
+ const CFG={per:.85,win:24,hp:20000,vhp:40,vlv:70,rew:[[750,75],[500,50],[300,30],[100,10]]},DEF=JSON.parse(JSON.stringify(CFG));
  const WARN=60000,HOT=15*60000,MARGIN=8,RX=72,RY=38,MI=SKN.indexOf('Mining');
  const VEINS=[[-44,-10],[38,-14],[-22,14],[46,10],[6,-24],[-52,6],[20,20]];
  const h01=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233)*43758.5453;return v-Math.floor(v)};
@@ -58,7 +59,10 @@
  function nearestOk(x,y){for(let r=0;r<40;r++)for(let b=y-r;b<=y+r;b++)for(let a=x-r;a<=x+r;a++){if(Math.max(Math.abs(a-x),Math.abs(b-y))!==r)continue;if(ok(a,b))return b*N+a}return-1}
  // ---- the strike happening now (scheduled or summoned) ----
  let SUM=null;// summoned record {t,x,y,id}
- function sched(t){const W=CFG.win*3600000,w=Math.floor(t/W);const out=[];for(const k of[w-1,w]){if(h01(k,9.1)>=CFG.per)continue;const off=3600000+h01(k,4.4)*(W-6*3600000);out.push({t:k*W+off,id:'s'+k,seed:k})}return out}
+ const GAP=12*3600000,SUMGAP=6*3600000;// at least 12 h between scheduled strikes, and none within 6 h of a summoned one
+ function rawAt(k){const W=CFG.win*3600000;if(h01(k,9.1)>=CFG.per)return null;return k*W+3600000+h01(k,4.4)*(W-6*3600000)}
+ function realAt(k,depth){const r=rawAt(k);if(r==null)return null;if(depth>0){for(let j=k-1;j>=k-4;j--){const p=realAt(j,depth-1);if(p!=null){if(r-p<GAP)return null;break}}}return r}
+ function sched(t){const W=CFG.win*3600000,w=Math.floor(t/W);const out=[];for(const k of[w-1,w]){const at=realAt(k,4);if(at==null)continue;if(SUM&&Math.abs(at-SUM.t)<SUMGAP)continue;out.push({t:at,id:'s'+k,seed:k})}return out}
  function current(){const t=now(),L=[];if(SUM&&t>=SUM.t-WARN&&t<SUM.t+HOT)L.push({t:SUM.t,id:SUM.id,tile:SUM.y*N+SUM.x,sum:1});
   for(const s of sched(t))if(t>=s.t-WARN&&t<s.t+HOT)L.push(s);return L.sort((a,b)=>a.t-b.t)[0]||null}
  // ---- shared numbers: wb/<slot>/d/<uid> ----

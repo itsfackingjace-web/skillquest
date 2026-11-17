@@ -838,7 +838,8 @@
   and making levels from SM (Smithing), GOODS/REC/BREC (Crafting), COOKS (Cooking). Skipped when the level's own text already names the item
   (or "<first word> armor"). Rebuilt on `SQA.onApply` and when those lists change size. A new requirement check elsewhere should be added to `reqOf`.
 - **Meteor strikes** (`world/215-s223-meteor-strikes.js`, `window.SQMETEOR`): Hollow-only shared event. Schedule from the clock (`sched`:
-  windows of `CFG.win` h, chance `CFG.per`, 1 h + up to win-6 h in, so 6+ h apart); dev `/meteorite [here|stop]` writes `events/met`
+  windows of `CFG.win` h (24), chance `CFG.per` (.85), 1 h + up to win-6 h in; `realAt` skips a strike under `GAP` 12 h after the previous
+  real one, and `sched` skips any within 6 h of a summoned `SUM`); dev `/meteorite [here|stop]` writes `events/met`
   {t,x,y,id} (lands 60 s later). Spot = `ok(x,y)`: 11x7 tiles of open land (no water/tile 3/obj/solid/PROT/BS/TOWNZ/ROADS/BRIDGE/village)
   and none of those or a `HOUSES` house within MARGIN; scheduled spots are agreed through `wb/mts<id>/d/<uid>` (smallest uid wins).
   Shared numbers reuse the existing `wb/<slot>/d/<uid>` rule (no new rules): core damage `mtc<id>`, vein hits `mtv<id>_<i>`, sent at
