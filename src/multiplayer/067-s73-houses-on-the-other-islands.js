@@ -36,7 +36,7 @@ function rhPack(h){const j=RH.indexOf(h);if(j<0)return;RH.splice(j,1);rhSolidSyn
    const h=rhAt(rhHere(),x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;h.hp=(h.hp||12)-(1+TL.axe);sfx('chop');if(h.hp<=0)rhPack(h);else if(h.hp<=4)say('The house is about to come down...');return}
    const f=rhAt(rhForeign(R.region),x,y);if(f){notYours(f._owner);return}}return _a()}}
 // ---- going in and coming out ----
-{const _es=enterScene;enterScene=function(id,house,ret){const prev=SCENE&&SCENE.room&&SCENE.room.region?SCENE:null;_es(id,house,ret);if(prev&&SCENE)SCENE.prev=prev}}
+{const _es=enterScene;enterScene=function(id,house,ret){const prev=SCENE&&SCENE.room&&SCENE.room.region?SCENE:null;_es(id,house,ret);if(prev&&SCENE&&!(SCENE.room&&SCENE.room.region))SCENE.prev=prev}}// an island never gets another island as `prev` (leaving an island always goes home; with one, sailing to Hollow could drop you back on the old island)
 {const _ls=leaveScene;leaveScene=function(){const S=SCENE;if(!S||!S.prev)return _ls();if(typeof BUILD!=='undefined'&&BUILD)endBuild();const r=S.ret;SCENE=S.prev;P.x=r.x;P.y=r.y;face=[0,1];FADE_AT=performance.now();sfx('door');rhSolidSync()}}
 {const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen||dead)return;const R=rbR();if(!R||face[1]>=0)return;
   for(const h of rhHere()){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+6&&P.y>h.y*16-4){enterScene('home',h,{x:cx,y:(h.y+1)*16+7});return}}

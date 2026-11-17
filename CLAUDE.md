@@ -916,4 +916,9 @@
   `ponds` {p,stock,refill} overrides. The rules needed no change (isl values are any short string, rewards aren't checked).
   One angler per spot (everywhere): the outermost `attack` calls off a new cast whose bobber tile equals another player's (same `mpLoc()`,
   presence `ak` 3-5, their bobber = tx/ty + facing x 24); two casts at once: the larger uid reels in within 3 s (outermost `upd`).
+- **Nov 16 report fixes** (`items/223-s231-bug-fixes-nov16.js` + edits): the cauldron is in 033's `STCH` (uses house/nearby chests; 223 adds the
+  chest line 218's `stationHTML` skips). 083's `tierHit` and 096's `boulderHit` roll 038's `STAYP` (`sumP(sk,STAYP)`) before `done()`, like 038/050
+  do for plain rocks/trees. 067's `enterScene` wrapper never gives an island scene a `prev` (a region loaded while standing on a region, e.g.
+  049's applySave or 111g's `refresh`, got the old island as `prev`, and 067's `leaveScene` then "sailed home" to it). 001's night fire glow is
+  culled to the screen and merged per 32 px cell (max 24 glows a frame). Note: fishing (007's upd) pauses while a panel is open.
 

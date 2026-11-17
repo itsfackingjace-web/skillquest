@@ -175,7 +175,9 @@ function boulderHit(o,x,y,done){const B=BOUL[o.t];if(!B)return false;
  if(o.hp>0)return true;
  const got=B.give(),txt=[];for(const[k,n]of got){inv[k]=(inv[k]|0)+n;txt.push('+'+n+' '+(k==='stone'?'stone':INAME[k].toLowerCase()))}addXp(2,B.xp);
  say('The '+B.n+' cracks apart! '+txt.join(', '));try{gTxt(x*16+8,y*16-30,txt[0],'#e8d8b8');if(typeof rumble==='function')rumble(200,.7,.4);setTimeout(()=>sfx('pickup'),90)}catch(e){}
- for(let k=0;k<18;k++){const an=k/18*6.283;part(x*16+8,y*16+6,Math.cos(an)*90,Math.sin(an)*60-30,.55,k%2?'#948a80':'#5a524a',200,2)}done();saveLocal();return true}
+ for(let k=0;k<18;k++){const an=k/18*6.283;part(x*16+8,y*16+6,Math.cos(an)*90,Math.sin(an)*60-30,.55,k%2?'#948a80':'#5a524a',200,2)}
+ let stay=false;try{stay=Math.random()<sumP(2,STAYP)}catch(e){}// Mining's "stays standing" perks work on boulders too
+ if(stay){o.hp=OHP[o.t]||40;try{gTxt(x*16+8,y*16-44,'Still standing!',SKC[2])}catch(e){}}else done();saveLocal();return true}
 window.SQBOULDERHIT=boulderHit;
 {const BROKE=[];
  const _a=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();

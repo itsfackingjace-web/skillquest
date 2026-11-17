@@ -66,7 +66,9 @@
   const sk=T?T.sk:o.t==='rock'||o.t==='ore'?2:1;swing=.25/(1+(typeof gSpeed==='function'?gSpeed(sk):0));o.hp-=sk===1?1+TL.axe:Math.max(1,TL.pick);o.shake=.15;sfx(sk===1?'chop':'mine');if(o.hp>0)return;
   if(T){const n=1+(Math.random()<lvOf(sk)*.006?1:0);inv[T.item]=(inv[T.item]|0)+n;if(sk===1)inv.wood=(inv.wood|0)+1;say('+'+n+' '+INAME[T.item].toLowerCase()+(sk===1?' and +1 wood':''));addXp(sk,T.xp)}
   else if(o.t==='rock'){const n=2;inv.stone=(inv.stone|0)+n;say('+2 stone');addXp(2,18)}else{inv.iron=(inv.iron|0)+1;say('+1 iron ore');addXp(2,40)}
-  done();setTimeout(()=>sfx('pickup'),90);saveLocal()}
+  // the Woodcutting/Mining "stays standing" perks (038's STAYP) work on these too
+  let stay=false;try{stay=Math.random()<sumP(sk,STAYP)}catch(e){}
+  if(stay){o.hp=OHP[o.t]||3;try{gTxt(P.x+face[0]*16,P.y-40,'Still standing!',SKC[sk])}catch(e){}}else done();setTimeout(()=>sfx('pickup'),90);saveLocal()}
  const _atk64=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){
     if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const i=ty*N+tx,o=obj[i];if(o&&TIER[o.t]){tierHit(o,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})});return}}
