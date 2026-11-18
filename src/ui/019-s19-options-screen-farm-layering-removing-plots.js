@@ -31,7 +31,7 @@ setInterval(()=>{try{if(MG)MG.gain.value=MUSIC?.5*MUSV:0}catch(e){}},60);
 const _gh19=GROUNDHOOK;GROUNDHOOK=function(x0,y0,x1,y1,tm){if(!SCENE&&FARM.size)for(const[i,p]of FARM){const x=i%N,y=(i/N)|0;if(x<x0-1||x>x1+1||y<y0-1||y>y1+1)continue;drawPlot(i,p,tm)}if(_gh19)_gh19(x0,y0,x1,y1,tm)};
 // --- removing plots: with the hoe, press HIT twice on a plot to fill it back in ---
 let fillArm=null;
-const _atk19=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH||facingNpc())return _atk19();
+SQHIT.wrap('019 options screen farm layering removing plots',_atk19=>function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH||facingNpc())return _atk19();
  const[fx,fy]=front(13),i=Math.floor(fy/T)*N+Math.floor(fx/T),p=FARM.get(i);
  if(!p||ripe(p)||(p.c&&!wet(p)&&TL.can)||en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _atk19();
  if(!TL.hoe)return _atk19();
@@ -40,4 +40,4 @@ const _atk19=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||s
   FARM.delete(i);sfx('chop');saveLocal(true);return}
  swing=.25;sfx('swish');fillArm={i,t:CLK,c:p.c};
  if(p.c){const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing'+(wet(p)?', about '+Math.ceil(left/60)+' min left':'')+'. Press HIT again to dig it up.')}
- else say('Ready for seeds (plant from your Bag). Press HIT again to fill it in.')};
+ else say('Ready for seeds (plant from your Bag). Press HIT again to fill it in.')});

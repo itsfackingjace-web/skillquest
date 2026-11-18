@@ -13,6 +13,8 @@ function sqSteps(label,base,install){const steps=[];let built=null;
   wrap:(name,w)=>add(name,w,'wrap'),list:()=>steps.map(s=>s.kind+' '+s.name),
   run(){return(built||(built=steps.reduce((f,st)=>st.w(f),base))).apply(this,arguments)}};
  install(function(){return L.run.apply(this,arguments)});(window.SQSTEPS=window.SQSTEPS||{})[label]=L;return L}
+// HIT button (attack): the game's own HIT is in 004; every section after it adds a named step (window.SQHIT).
+const SQHIT=sqSteps('attack',attack,f=>{attack=f});window.SQHIT=SQHIT;
 SKN.push('Defence');AB.push('DEF');SKC.push('#7aa0e0');while(XPS.length<SKN.length)XPS.push(0);
 let ARM={helm:0,body:0,legs:0},Q={i:0,on:false,k:0,qp:0},REM=[],CLK=0,MUTE=false,lastK=kills,cloud=null,cloudBusy=false,lastLocal='',lastCloud='',saveT=0,cloudT=0,cloudOk=-9,LOCAL_AT=0,ngArm=false;
 const AT=['Leather','Iron','Steel'],OHP={tree:3,rock:4,bush:1},LS='sq_save';
@@ -89,11 +91,11 @@ function roamNPCs(dt){for(const n of NPCS){if(n.scene||SCENE)continue;if(n.hx==n
  n.x=nx;n.y=ny;if(Math.abs(dx)>Math.abs(dy)){n.dir=2;n.fl=dx<0}else{n.dir=dy<0?1:0;n.fl=false}
  n.ph+=dt*7;n.st=[1,0,2,0][Math.floor(n.ph)%4]}}
 // --- action wrappers: sounds, quest counters, world tracking ---
-const _atk5=attack;attack=function(){if(swing>0||dead||menuOpen||pnOpen)return;
+SQHIT.wrap('006 skillquest saving quests armor defence sound',_atk5=>function(){if(swing>0||dead||menuOpen||pnOpen)return;
  const[fx,fy]=front(13),tx=Math.floor(fx/T),ty=Math.floor(fy/T),okk=tx>=0&&ty>=0&&tx<N&&ty<N,ti=ty*N+tx,o=okk?obj[ti]:null,oh=o?o.hp:0,eh=en.reduce((a,n)=>a+n.hp,0);
  _atk5();
  if(en.reduce((a,n)=>a+n.hp,0)<eh)sfx('hit');else if(o&&o.hp<oh)sfx(o.t=='tree'?'chop':o.t=='rock'?'mine':'rustle');else sfx('swish');
- if(o&&okk&&!obj[ti]){REM.push({i:ti,t:o.t,at:CLK});setTimeout(()=>sfx('pickup'),90)}};
+ if(o&&okk&&!obj[ti]){REM.push({i:ti,t:o.t,at:CLK});setTimeout(()=>sfx('pickup'),90)}});
 /* 006's EAT wrapper (cooking sound + quest count) was removed Nov 18: 007 replaces eat() entirely and does both itself, so it never ran. */
 const _fi5=fire;fire=function(){const n0=fires.length;_fi5();if(fires.length>n0)sfx('fire')};
 const _ax5=addXp;addXp=function(i,x){const b=lvOf(i);_ax5(i,x);if(lvOf(i)>b)sfx('level')};

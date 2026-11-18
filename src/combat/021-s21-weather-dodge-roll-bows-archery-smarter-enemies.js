@@ -102,7 +102,7 @@ const _u21=upd;upd=function(dt){const paused=menuOpen||pnOpen;const pos=paused?n
  if((wTick+=dt)>1){wTick=0;rainAudio();
   if(wet){if(FARM.size){for(const p of FARM.values())p.w=Math.max(p.w,CLK+90);if(!rainTip&&!rainWasOn){rainTip=true;say('It\'s raining! Your crops are getting watered.')}}}rainWasOn=wet}};
 // --- HIT: shoot when an enemy is in front and out of sword reach ---
-const _atk21=attack;attack=function(){if(!(typeof GPON!=='undefined'&&GPON)&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!(SCENE&&!SCENE.room.cave)&&!facingNpc()){const t=bowTarget();if(t){shoot();return}}_atk21()};  // with a controller, R1 is the bow and R2 is always the sword
+SQHIT.before('021 weather dodge roll bows archery smarter',()=>{if(!(typeof GPON!=='undefined'&&GPON)&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!(SCENE&&!SCENE.room.cave)&&!facingNpc()){const t=bowTarget();if(t){shoot();return}}});  // with a controller, R1 is the bow and R2 is always the sword
 // --- drawing ---
 function drawProj(p){const x=Math.round(p.x),y=Math.round(p.y);
  if(p.k==='arrow'){const l=Math.hypot(p.vx,p.vy)||1,ux=p.vx/l,uy=p.vy/l,hd=p.ah||(p.iron?'#c8d0dc':'#9898a8');shd(x,y+9,6);

@@ -17,7 +17,7 @@ const _u15=upd;upd=function(dt){const hp0=P.hp,x0=P.x,y0=P.y;_u15(dt);if(menuOpe
  FLASH=Math.max(0,FLASH-dt);
  if(!dead&&P.hp===1){if((lowT-=dt)<=0){lowT=.9;tone(988,.07,'square',.035);tone(784,.07,'square',.035,0,.09)}}else lowT=0};
 // damage numbers on the enemies you hit
-const _atk15=attack;attack=function(){const before=en.map(n=>[n,n.hp]);_atk15();for(const[n,h]of before){const d=h-n.hp;if(d>0)DMGS.push({x:n.x,y:n.y-(n.type==='boss'?30:14),v:String(Math.round(d)),t:0,c:n.dead?'#f8d848':'#ffffff',sc:curScene()})}};
+SQHIT.wrap('015 sprinting and game feel',_atk15=>function(){const before=en.map(n=>[n,n.hp]);_atk15();for(const[n,h]of before){const d=h-n.hp;if(d>0)DMGS.push({x:n.x,y:n.y-(n.type==='boss'?30:14),v:String(Math.round(d)),t:0,c:n.dead?'#f8d848':'#ffffff',sc:curScene()})}});
 function drawFx(){const sc=curScene();for(const d of DUST){if(d.sc!==sc)continue;const a=1-d.t/.45;g.globalAlpha=a*.8;Rg(d.x-1,d.y-d.t*10,2+Math.round(d.t*4),2,d.c)}g.globalAlpha=1;
  g.save();g.font='700 9px '+PF;g.textAlign='center';g.textBaseline='middle';g.lineWidth=3;g.lineJoin='round';
  for(const d of DMGS){if(d.sc!==sc)continue;g.globalAlpha=Math.max(0,1-d.t/.9);const y=Math.round(d.y-d.t*16);g.strokeStyle='#181018';g.strokeText(d.v,Math.round(d.x),y);g.fillStyle=d.c;g.fillText(d.v,Math.round(d.x),y)}g.restore()}

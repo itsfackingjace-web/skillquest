@@ -32,9 +32,9 @@ setInterval(rhSolidSync,500);
 function rhPack(h){const j=RH.indexOf(h);if(j<0)return;RH.splice(j,1);rhSolidSync();inv.house=(inv.house|0)+1;
  for(const f of h.furn.values()){inv[f.t]=(inv[f.t]|0)+1;if(f.items)for(const k in f.items)inv[k]=(inv[k]|0)+f.items[k]}if(HOMESP===h.id)HOMESP=null;
  say('You packed up your house and everything inside it.');setTimeout(()=>sfx('pickup'),90);saveLocal(true);saveCloud(true)}
-{const _a=attack;attack=function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile();
+{SQHIT.before('067 houses on the other islands',()=>{const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile();
    const h=rhAt(rhHere(),x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;h.hp=(h.hp||12)-(1+TL.axe);sfx('chop');if(h.hp<=0)rhPack(h);else if(h.hp<=4)say('The house is about to come down...');return}
-   const f=rhAt(rhForeign(R.region),x,y);if(f){notYours(f._owner);return}}return _a()}}
+   const f=rhAt(rhForeign(R.region),x,y);if(f){notYours(f._owner);return}}})}
 // ---- going in and coming out ----
 {const _es=enterScene;enterScene=function(id,house,ret){const prev=SCENE&&SCENE.room&&SCENE.room.region?SCENE:null;_es(id,house,ret);if(prev&&SCENE&&!(SCENE.room&&SCENE.room.region))SCENE.prev=prev}}// an island never gets another island as `prev` (leaving an island always goes home; with one, sailing to Hollow could drop you back on the old island)
 {const _ls=leaveScene;leaveScene=function(){const S=SCENE;if(!S||!S.prev)return _ls();if(typeof BUILD!=='undefined'&&BUILD)endBuild();const r=S.ret;SCENE=S.prev;P.x=r.x;P.y=r.y;face=[0,1];FADE_AT=performance.now();sfx('door');rhSolidSync()}}

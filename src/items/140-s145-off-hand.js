@@ -49,7 +49,7 @@
   if(e.repeat){if(held)e.preventDefault();return}if(down())e.preventDefault()});
  addEventListener('keyup',e=>{if(e.key==='x'||e.key==='X')up()});addEventListener('blur',up);
  // HIT on ground you could till, with the can in hand and the hoe in the bag: swap to the hoe (Hollow 016, islands 072)
- {const _a=attack;attack=function(){try{if(!TL.hoe&&TL.can&&!TL.bow&&!WAND&&(inv.eq_hoe|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){
+ {SQHIT.before('140 off hand',()=>{try{if(!TL.hoe&&TL.can&&!TL.bow&&!WAND&&(inv.eq_hoe|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){
    const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18)){let ok=false;
     if(!SCENE)ok=!FARM.get(ty*N+tx)&&canTill(tx,ty);
@@ -58,7 +58,7 @@
    // a dry crop in front, with the hoe in hand and the can in the bag: swap to the can (019's dig-up would answer first)
    if(!TL.can&&TL.hoe&&(inv.eq_can|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);let pl=null;
     if(!SCENE)pl=FARM.get(ty*N+tx);else{const R=typeof rbR==='function'?rbR():null;if(R)pl=rfMap(R.region).get(rbK(tx,ty))}
-    if(pl&&pl.c&&!ripe(pl)&&!wet(pl)&&swapTo('eq_can'))return}}catch(e){}return _a.apply(this,arguments)}}
+    if(pl&&pl.c&&!ripe(pl)&&!wet(pl)&&swapTo('eq_can'))return}}catch(e){}})}
  // controller R1 / anything else that "shoots": with the hoe or can in hand, use it
  {const _sa=shootAim;shootAim=function(first){if(!TL.bow&&!WAND&&(TL.hoe||TL.can)){if(first)try{viaOff(()=>attack())}catch(e){}return}return _sa.apply(this,arguments)}}
  // keyboard and mouse: HIT (Space, left click) is melee only. It doesn't shoot the bow (021 shot at monsters out of sword
@@ -67,9 +67,9 @@
  // and controllers are unchanged.
  // Since 2026.11.13-8 this goes for every input: the hoe and can are used with the off-hand button (X / right-click,
  // controller R1, the touch TILL / WATER button), never with HIT. Only keyboard and mouse also keep HIT from shooting.
- {const _a=attack;attack=function(){if(VIA)return _a.apply(this,arguments);const pc=isPC&&!(typeof GPON!=='undefined'&&GPON);
+ {SQHIT.wrap('140 off hand',_a=>function(){if(VIA)return _a.apply(this,arguments);const pc=isPC&&!(typeof GPON!=='undefined'&&GPON);
    const h=TL.hoe,c=TL.can,bt=bowTarget;HID={h,c};TL.hoe=0;TL.can=0;if(pc)bowTarget=()=>null;
-   try{return _a.apply(this,arguments)}finally{TL.hoe=h;TL.can=c;bowTarget=bt;HID=null}}}
+   try{return _a.apply(this,arguments)}finally{TL.hoe=h;TL.can=c;bowTarget=bt;HID=null}})}
  // the off-hand button's name on this device, for hints
  function offHint(what){return(typeof GPON!=='undefined'&&GPON?'Press R1 to ':isPC?'Press X (or right-click) to ':'Tap '+(TL.can||/water/.test(what)?'WATER':'TILL')+' to ')+what}
  window.SQOFFHINT=offHint;

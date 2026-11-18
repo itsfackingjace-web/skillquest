@@ -465,6 +465,8 @@ function sqSteps(label,base,install){const steps=[];let built=null;
   wrap:(name,w)=>add(name,w,'wrap'),list:()=>steps.map(s=>s.kind+' '+s.name),
   run(){return(built||(built=steps.reduce((f,st)=>st.w(f),base))).apply(this,arguments)}};
  install(function(){return L.run.apply(this,arguments)});(window.SQSTEPS=window.SQSTEPS||{})[label]=L;return L}
+// HIT button (attack): the game's own HIT is in 004; every section after it adds a named step (window.SQHIT).
+const SQHIT=sqSteps('attack',attack,f=>{attack=f});window.SQHIT=SQHIT;
 SKN.push('Defence');AB.push('DEF');SKC.push('#7aa0e0');while(XPS.length<SKN.length)XPS.push(0);
 let ARM={helm:0,body:0,legs:0},Q={i:0,on:false,k:0,qp:0},REM=[],CLK=0,MUTE=false,lastK=kills,cloud=null,cloudBusy=false,lastLocal='',lastCloud='',saveT=0,cloudT=0,cloudOk=-9,LOCAL_AT=0,ngArm=false;
 const AT=['Leather','Iron','Steel'],OHP={tree:3,rock:4,bush:1},LS='sq_save';
@@ -541,11 +543,11 @@ function roamNPCs(dt){for(const n of NPCS){if(n.scene||SCENE)continue;if(n.hx==n
  n.x=nx;n.y=ny;if(Math.abs(dx)>Math.abs(dy)){n.dir=2;n.fl=dx<0}else{n.dir=dy<0?1:0;n.fl=false}
  n.ph+=dt*7;n.st=[1,0,2,0][Math.floor(n.ph)%4]}}
 // --- action wrappers: sounds, quest counters, world tracking ---
-const _atk5=attack;attack=function(){if(swing>0||dead||menuOpen||pnOpen)return;
+SQHIT.wrap('006 skillquest saving quests armor defence sound',_atk5=>function(){if(swing>0||dead||menuOpen||pnOpen)return;
  const[fx,fy]=front(13),tx=Math.floor(fx/T),ty=Math.floor(fy/T),okk=tx>=0&&ty>=0&&tx<N&&ty<N,ti=ty*N+tx,o=okk?obj[ti]:null,oh=o?o.hp:0,eh=en.reduce((a,n)=>a+n.hp,0);
  _atk5();
  if(en.reduce((a,n)=>a+n.hp,0)<eh)sfx('hit');else if(o&&o.hp<oh)sfx(o.t=='tree'?'chop':o.t=='rock'?'mine':'rustle');else sfx('swish');
- if(o&&okk&&!obj[ti]){REM.push({i:ti,t:o.t,at:CLK});setTimeout(()=>sfx('pickup'),90)}};
+ if(o&&okk&&!obj[ti]){REM.push({i:ti,t:o.t,at:CLK});setTimeout(()=>sfx('pickup'),90)}});
 /* 006's EAT wrapper (cooking sound + quest count) was removed Nov 18: 007 replaces eat() entirely and does both itself, so it never ran. */
 const _fi5=fire;fire=function(){const n0=fires.length;_fi5();if(fires.length>n0)sfx('fire')};
 const _ax5=addXp;addXp=function(i,x){const b=lvOf(i);_ax5(i,x);if(lvOf(i)>b)sfx('level')};
@@ -672,12 +674,9 @@ function catchFish(){const L=lvOf(9),open=FISH_T.filter(f=>L>=f.lv);let ix=open.
  FISH.t=0;FISH.bite=0;FISH.wait=(2+Math.random()*3)*Math.max(.6,1-L*.006)}
 // water you can fish in: Hollow's tiles on Hollow, the island's own tiles on the other islands (not indoors)
 function fishWaterAt(tx,ty){const R=SCENE&&SCENE.room;if(R&&R.region)return tx>=0&&ty>=0&&tx<R.w&&ty<R.h&&R.tiles[ty*R.w+tx]===0;if(SCENE)return false;return tx>=0&&ty>=0&&tx<N&&ty<N&&tile[ty*N+tx]==0}
-const _atk6=attack;attack=function(){if(dead||menuOpen||pnOpen)return;if(FISH){FISH=null;say('You reel in your line');return}
- const[fx,fy]=front(14),tx=Math.floor(fx/T),ty=Math.floor(fy/T);
- if(swing<=0&&fishWaterAt(tx,ty)&&!en.some(n=>Math.hypot(n.x-fx,n.y-fy)<16)){
+SQHIT.before('007 skillquest fishing smithing',()=>{if(dead||menuOpen||pnOpen)return;if(FISH){FISH=null;say('You reel in your line');return}const[fx,fy]=front(14),tx=Math.floor(fx/T),ty=Math.floor(fy/T);if(swing<=0&&fishWaterAt(tx,ty)&&!en.some(n=>Math.hypot(n.x-fx,n.y-fy)<16)){
   if(!TL.rod){say('You need a fishing rod - buy one at the general store');return}
-  const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}
- _atk6()};
+  const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}});
 const _u6=upd;upd=function(dt){const hp0=P.hp;_u6(dt);if(menuOpen||pnOpen||!FISH)return;
  if(dead||P.hp<hp0||Math.hypot(P.x-FISH.px,P.y-FISH.py)>1.5){FISH=null;if(!dead)say('You stop fishing');return}
  if(FISH.bite>0){FISH.bite-=dt;if(FISH.bite<=0)catchFish()}else if((FISH.t+=dt)>=FISH.wait){FISH.bite=.45;sfx('splash')}};
@@ -1181,9 +1180,7 @@ function placeBuild(){const k=BUILD.k;if((inv[k]|0)<1){endBuild('You have no mor
 function hitStructure(i){const s=STR.get(i);const wood=s.t!=='swall';s.hp-=1+(wood?TL.axe:TL.pick);s.shake=.15;sfx(wood?'chop':'mine');
  if(s.hp>0)return;STR.delete(i);inv[s.t]=(inv[s.t]|0)+1;let extra='';if(s.items){for(const k in s.items){inv[k]=(inv[k]|0)+s.items[k]}if(Object.values(s.items).some(v=>v>0))extra=' and everything inside'}
  if(BEDSP===i)BEDSP=-1;say('Picked up the '+INAME[s.t].toLowerCase()+extra+'.');setTimeout(()=>sfx('pickup'),90);saveLocal(true);saveCloud()}
-const _atk11=attack;attack=function(){if(dead||menuOpen||pnOpen)return;if(BUILD){placeBuild();return}
- if(swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x;if(STR.has(i)){swing=.25;hitStructure(i);return}}
- _atk11()};
+SQHIT.before('011 building inventory grid equipment',()=>{if(dead||menuOpen||pnOpen)return;if(BUILD){placeBuild();return}if(swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x;if(STR.has(i)){swing=.25;hitStructure(i);return}}});
 SQEAT.before('011 stop building',()=>{if(BUILD){endBuild('Stopped building.');return}});
 addEventListener('keydown',e=>{if(BUILD&&e.key==='Escape'){endBuild('Stopped building.');e.preventDefault();e.stopImmediatePropagation()}},true);
 // respawn beside your bed; a new game also clears everything you built
@@ -1422,8 +1419,7 @@ const _sbd12=sleepBed;sleepBed=function(i){HOMESP=null;_sbd12(i)};
 const _tk12=talk;talk=function(){if(SCENE&&!nearNpc()){const it=nearFurn();if(it&&!pnOpen&&!menuOpen)useFurn(it);return}_tk12()};
 tk.addEventListener('touchstart',e=>{if(SCENE&&!nearNpc()&&!pnOpen){const it=nearFurn();if(it){e.preventDefault();useFurn(it)}}},{passive:false});
 // actions that only make sense outdoors
-const _atk12=attack;attack=function(){if(dead||menuOpen||pnOpen)return;if(SCENE){if(swing<=0){swing=.25;sfx('swish')}return}
- if(!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile(),h=houseAt(x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;hitHouse(h);return}}_atk12()};
+SQHIT.before('012 interiors and houses',()=>{if(dead||menuOpen||pnOpen)return;if(SCENE){if(swing<=0){swing=.25;sfx('swish')}return}if(!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile(),h=houseAt(x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;hitHouse(h);return}}});
 const _fi12=fire;fire=function(){if(SCENE&&!(SCENE.room&&(SCENE.room.icv||SCENE.room.yard||SCENE.room.court))){say('Better not light a fire indoors.');return}_fi12()};
 // respawn: home bed beats a field bed beats the village
 const _rs12=reset;reset=function(){SCENE=null;_rs12();const h=HOUSES.find(o=>o.id===HOMESP);if(h){enterScene('home',h,{x:h.x*16+8,y:(h.y+1)*16+6});P.x=2*16+10;P.y=3*16+8;face=[0,1];say('You wake up at home, safe and sound.')}};
@@ -1501,7 +1497,7 @@ const _rs13=reset;reset=function(){_rs13();if(!inHome())return;const R=SCENE.roo
  for(const[x,y]of spots){const px=x*16+8,py=y*16+8;if(!(solid(px-5,py-3)||solid(px+5,py-3)||solid(px-5,py+6)||solid(px+5,py+6))){P.x=px;P.y=py;break}}};
 // --- HIT works like the A button ---
 function facingNpc(){const n=nearNpc();if(!n)return null;const dx=n.x-P.x,dy=n.y-P.y;return(dx*face[0]+dy*face[1])>-4||n.scene?n:null}
-const _atk13=attack;attack=function(){if(dead||menuOpen||pnOpen)return;
+SQHIT.wrap('013 decorating houses a button interaction',_atk13=>function(){if(dead||menuOpen||pnOpen)return;
  if(BUILD){if(SCENE){placeBuild();return}return _atk13()}
  if(facingNpc()){talk();return}
  if(SCENE){if(inHome()&&swing<=0){const R=SCENE.room,[x,y]=frontTile(),i=y*R.w+x,f=SCENE.house.furn.get(i);
@@ -1510,7 +1506,7 @@ const _atk13=attack;attack=function(){if(dead||menuOpen||pnOpen)return;
  if(swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x,s=STR.get(i);if(s&&(s.t==='bed'||s.t==='chest')){swing=.25;
    if(s.t==='chest'){useStructure(i);return}if(bedPick&&!bedPick.home&&bedPick.i===i&&performance.now()-bedPick.at<3000){bedPick=null;pickStruct(i);return}
    useStructure(i);if(dark()<.3){bedPick={i,at:performance.now(),home:0};say('This bed is where you wake up now. Hit it again to pick it up.')}return}}
- _atk13()};
+ _atk13()});
 // chest screen: pick the chest itself up
 const _r13=rPn;rPn=function(){_r13();if(ptab===7&&(CHEST_H||STR.get(CHEST_AT)))pbd.insertAdjacentHTML('beforeend','<button class="ng" id="chpk">Pick up this chest (contents go to your bag)</button>')};
 const _oc13=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('#chpk')){const inside=!!CHEST_H&&CHEST_IDX>=0;closePanel();if(inside)pickFurn(CHEST_IDX);else pickStruct(CHEST_AT);CHEST_H=null;return}_oc13(e)};
@@ -1566,11 +1562,11 @@ function caveAttack(){if(swing>0)return;swing=.25;const[fx,fy]=front(13),dm=1+TL
   n.hp-=d;const kb=n.type==='boss'||n.big?2:5;n.kx=face[0]*kb;n.ky=face[1]*kb;hit=true;addXp(0,4*d);addXp(7,3);
   if(n.hp<=0){n.dead=1;kills++;GLD+=2+Math.floor(Math.random()*5);addXp(0,12);if(n.type!=='boss'&&Math.random()<.6)inv.meat++;enemyDrop(n)}}}
  sfx(hit?'hit':'swish')}
-const _atk14=attack;attack=function(){if(dead||menuOpen||pnOpen)return;
+SQHIT.wrap('014 the wider world the slime king',_atk14=>function(){if(dead||menuOpen||pnOpen)return;
  if(SCENE&&SCENE.room.cave&&!BUILD){caveAttack();return}
  if(!SCENE&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(13),tx=Math.floor(fx/T),ty=Math.floor(fy/T);
   if(tx>=0&&ty>=0&&tx<N&&ty<N){const i=ty*N+tx,o=obj[i];if(o&&(o.t==='ore'||o.t==='pine'||o.t==='cactus')&&!facingNpc()&&!en.some(n=>Math.hypot(n.x-fx,n.y-fy)<16)){swing=.25;hitSpecial(i,o);return}}}
- const alive=en.filter(n=>!n.dead);_atk14();for(const n of alive)if(n.dead&&!n.dropped){n.dropped=1;enemyDrop(n)}};
+ const alive=en.filter(n=>!n.dead);_atk14();for(const n of alive)if(n.dead&&!n.dropped){n.dropped=1;enemyDrop(n)}});
 function drawWolf(n,tm){const x=Math.round(n.x),y=Math.round(n.y),f=P.x<n.x,hit=Math.abs(n.kx)+Math.abs(n.ky)>.8,st=Math.floor(tm*8+n.x)%2,c=hit?'#ffffff':'#8890a0',cd=hit?'#e0e0e0':'#5c6474',cl=hit?'#fff':'#c8d0dc';
  shd(x,y+5,16);const W2=(a,b,w,hh,col)=>Rg(x+(f?-a-w:a),y+b,w,hh,col);
  for(const[a,b,w,hh]of[[-7,-4,12,6],[3,-8,6,6],[-9,-5,3,2],[-6,2,2,4],[2,2,2,4],[4,-10,2,2],[7,-10,2,2]])W2(a-1,b-1,w+2,hh+2,O);
@@ -1667,7 +1663,7 @@ const _u15=upd;upd=function(dt){const hp0=P.hp,x0=P.x,y0=P.y;_u15(dt);if(menuOpe
  FLASH=Math.max(0,FLASH-dt);
  if(!dead&&P.hp===1){if((lowT-=dt)<=0){lowT=.9;tone(988,.07,'square',.035);tone(784,.07,'square',.035,0,.09)}}else lowT=0};
 // damage numbers on the enemies you hit
-const _atk15=attack;attack=function(){const before=en.map(n=>[n,n.hp]);_atk15();for(const[n,h]of before){const d=h-n.hp;if(d>0)DMGS.push({x:n.x,y:n.y-(n.type==='boss'?30:14),v:String(Math.round(d)),t:0,c:n.dead?'#f8d848':'#ffffff',sc:curScene()})}};
+SQHIT.wrap('015 sprinting and game feel',_atk15=>function(){const before=en.map(n=>[n,n.hp]);_atk15();for(const[n,h]of before){const d=h-n.hp;if(d>0)DMGS.push({x:n.x,y:n.y-(n.type==='boss'?30:14),v:String(Math.round(d)),t:0,c:n.dead?'#f8d848':'#ffffff',sc:curScene()})}});
 function drawFx(){const sc=curScene();for(const d of DUST){if(d.sc!==sc)continue;const a=1-d.t/.45;g.globalAlpha=a*.8;Rg(d.x-1,d.y-d.t*10,2+Math.round(d.t*4),2,d.c)}g.globalAlpha=1;
  g.save();g.font='700 9px '+PF;g.textAlign='center';g.textBaseline='middle';g.lineWidth=3;g.lineJoin='round';
  for(const d of DMGS){if(d.sc!==sc)continue;g.globalAlpha=Math.max(0,1-d.t/.9);const y=Math.round(d.y-d.t*16);g.strokeStyle='#181018';g.strokeText(d.v,Math.round(d.x),y);g.fillStyle=d.c;g.fillText(d.v,Math.round(d.x),y)}g.restore()}
@@ -1711,7 +1707,7 @@ function harvest(i,p){const C=CROPS[p.c],L=lvOf(11);let n=C.yield[0]+(Math.rando
  {const ns=window.SQSEEDS?SQSEEDS(L):(Math.random()<.45+L*.005?1:0);if(ns>0){inv[C.seed]=(inv[C.seed]|0)+ns;extra=ns>1?' and '+ns+' seeds':' and a seed'}}addXp(11,C.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='harvest')Q.k++;
  say('Harvested '+n+' '+C.n.toLowerCase()+(n>1&&p.c!=='wheat'?'s':'')+extra+'!');p.c=null;p.g=0;p.e=nowS();sfx('pickup');setTimeout(()=>sfx('coin'),120);saveLocal(true)}
 // HIT on the farm: till, water, harvest
-const _atk16=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH)return _atk16();if(facingNpc())return _atk16();
+SQHIT.wrap('016 farming',_atk16=>function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH)return _atk16();if(facingNpc())return _atk16();
  const[fx,fy]=front(13),tx=Math.floor(fx/T),ty=Math.floor(fy/T),i=ty*N+tx;if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _atk16();
  const p=FARM.get(i);
  if(p){swing=.25;if(ripe(p))return harvest(i,p);
@@ -1719,7 +1715,7 @@ const _atk16=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||s
   if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');sfx('swish');return}
   const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');sfx('swish');return}
  if(TL.hoe&&canTill(tx,ty)){swing=.25;FARM.set(i,{c:null,g:0,w:0,e:nowS()});addXp(11,4);sfx('chop');saveLocal(true);if(!farmTip){farmTip=true;say('Tilled! Plant seeds from your Bag.')}return}
- _atk16()};
+ _atk16()});
 let farmTip=false;
 // planting uses the Bag's PLANT button (plant mode works like build mode)
 const isSeed=k=>!!SEED2CROP[k];
@@ -1842,7 +1838,7 @@ setInterval(()=>{try{if(MG)MG.gain.value=MUSIC?.5*MUSV:0}catch(e){}},60);
 const _gh19=GROUNDHOOK;GROUNDHOOK=function(x0,y0,x1,y1,tm){if(!SCENE&&FARM.size)for(const[i,p]of FARM){const x=i%N,y=(i/N)|0;if(x<x0-1||x>x1+1||y<y0-1||y>y1+1)continue;drawPlot(i,p,tm)}if(_gh19)_gh19(x0,y0,x1,y1,tm)};
 // --- removing plots: with the hoe, press HIT twice on a plot to fill it back in ---
 let fillArm=null;
-const _atk19=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH||facingNpc())return _atk19();
+SQHIT.wrap('019 options screen farm layering removing plots',_atk19=>function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH||facingNpc())return _atk19();
  const[fx,fy]=front(13),i=Math.floor(fy/T)*N+Math.floor(fx/T),p=FARM.get(i);
  if(!p||ripe(p)||(p.c&&!wet(p)&&TL.can)||en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _atk19();
  if(!TL.hoe)return _atk19();
@@ -1851,7 +1847,7 @@ const _atk19=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||s
   FARM.delete(i);sfx('chop');saveLocal(true);return}
  swing=.25;sfx('swish');fillArm={i,t:CLK,c:p.c};
  if(p.c){const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing'+(wet(p)?', about '+Math.ceil(left/60)+' min left':'')+'. Press HIT again to dig it up.')}
- else say('Ready for seeds (plant from your Bag). Press HIT again to fill it in.')};
+ else say('Ready for seeds (plant from your Bag). Press HIT again to fill it in.')});
 // ---------------------------------------------------------------- 20. Saltmere (a port town to the east), the road and bridge, villagers' lives
 // A road leaves Hollow Village to the east and crosses a long bridge to the port of Saltmere:
 // a tackle shop, an inn, a master forge (steel tools), a fishing pier and townsfolk.
@@ -2048,9 +2044,9 @@ function xAct(a){const n=TALKN;
  svg();saveLocal(true);rPn()}
 const _oc20=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.xb');if(b){xAct(b.dataset.a);return}_oc20(e)};
 // bait: faster bites, and sometimes a bonus fish
-const _atk20=attack;attack=function(){
+SQHIT.wrap('020 saltmere a port town to the',_atk20=>function(){
  if(!dead&&!menuOpen&&!pnOpen&&!SCENE&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const[x,y]=frontTile(),s=SIGNS.get(y*N+x);if(s){say(s);sfx('talk');swing=.2;return}}
- const had=!!FISH;_atk20();if(!had&&FISH&&(inv.bait|0)>0){inv.bait--;FISH.wait*=.4;FISH.bait=1;say('You cast your line with bait...')}};
+ const had=!!FISH;_atk20();if(!had&&FISH&&(inv.bait|0)>0){inv.bait--;FISH.wait*=.4;FISH.bait=1;say('You cast your line with bait...')}});
 const _cf20=catchFish;catchFish=function(){const bait=FISH&&FISH.bait,before=fishKeys().map(k=>inv[k]|0);_cf20();
  if(bait){const i=fishKeys().findIndex((k,j)=>(inv[k]|0)>before[j]);if(i>=0&&Math.random()<.3){const k=fishKeys()[i];inv[k]++;say('A double catch! Two '+iname(k)+'!')}}
  if(FISH){if((inv.bait|0)>0){inv.bait--;FISH.wait*=.4;FISH.bait=1}else FISH.bait=0}};
@@ -2232,7 +2228,7 @@ const _u21=upd;upd=function(dt){const paused=menuOpen||pnOpen;const pos=paused?n
  if((wTick+=dt)>1){wTick=0;rainAudio();
   if(wet){if(FARM.size){for(const p of FARM.values())p.w=Math.max(p.w,CLK+90);if(!rainTip&&!rainWasOn){rainTip=true;say('It\'s raining! Your crops are getting watered.')}}}rainWasOn=wet}};
 // --- HIT: shoot when an enemy is in front and out of sword reach ---
-const _atk21=attack;attack=function(){if(!(typeof GPON!=='undefined'&&GPON)&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!(SCENE&&!SCENE.room.cave)&&!facingNpc()){const t=bowTarget();if(t){shoot();return}}_atk21()};  // with a controller, R1 is the bow and R2 is always the sword
+SQHIT.before('021 weather dodge roll bows archery smarter',()=>{if(!(typeof GPON!=='undefined'&&GPON)&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!(SCENE&&!SCENE.room.cave)&&!facingNpc()){const t=bowTarget();if(t){shoot();return}}});  // with a controller, R1 is the bow and R2 is always the sword
 // --- drawing ---
 function drawProj(p){const x=Math.round(p.x),y=Math.round(p.y);
  if(p.k==='arrow'){const l=Math.hypot(p.vx,p.vy)||1,ux=p.vx/l,uy=p.vy/l,hd=p.ah||(p.iron?'#c8d0dc':'#9898a8');shd(x,y+9,6);
@@ -2347,9 +2343,9 @@ const _uf22=useFurn;useFurn=function(o){if(o&&o.f&&STN.has(o.f.t)){openStation(o
 const _ns22=nearStruct;nearStruct=function(){const r=_ns22();if(r!==null)return r;const s=nearStation();return s&&!s.inside?s.i:null};
 const _us22=useStructure;useStructure=function(i){const s=STR.get(i);if(s&&STN.has(s.t)){openStation({t:s.t,inside:false,i,f:s});return}_us22(i)};
 // HIT: use the station you face (the dummy is for hitting)
-const _atk22=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o){swing=.25;
+SQHIT.before('022 usable stations wardrobe furnace anvil cooking',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o){swing=.25;
   if(o.t==='dummy'){o.f.wob=.3;setTimeout(()=>{o.f.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1);if(!dummyTip){dummyTip=true;say('Practice! The dummy teaches Attack up to level 30. Press USE to pick it up.')}}else say('You\'ve learned all a dummy can teach. Try real enemies!');return}
-  openStation(o);return}}_atk22()};
+  openStation(o);return}}});
 let dummyTip=false;
 // --- station screens ---
 const row22=(a,label,sub,ok)=>'<button class="sb stb" data-a="'+a+'" style="opacity:'+(ok?1:.45)+'">'+label+'<br><small>'+sub+'</small></button>';
@@ -2803,7 +2799,7 @@ function spellHit(s,n,dmg){n.hp-=dmg;addXp(ML,4*dmg);const big=n.type==='boss'||
 // --- action animations ---
 let ACTN=null;
 function frontObjTile(){const[fx,fy]=front(13);return[Math.floor(fx/16),Math.floor(fy/16)]}
-const _atk28=attack;attack=function(){
+SQHIT.wrap('028 gear equip unequip ranger and mage',_atk28=>function(){
  if(!(typeof GPON!=='undefined'&&GPON)&&WAND&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()&&!(SCENE&&!SCENE.room.cave)&&wandTarget()&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<18)){castSpell(true);return}
  if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||SCENE){_atk28();return}
  if(facingNpc()||en.some(n=>!n.dead&&Math.hypot(n.x-(P.x+face[0]*13),n.y-(P.y+face[1]*13))<16)){_atk28();return}
@@ -2814,7 +2810,7 @@ const _atk28=attack;attack=function(){
  else if(plR&&(!FARM.get(pi)||!FARM.get(pi).c||FARM.get(pi).g<1)){type='harvest';tx=px;ty=py}
  else if(pl&&plC&&!plW&&FARM.get(pi)&&wet(FARM.get(pi))){type='water';tx=px;ty=py}
  else if(!had&&FARM.has(pi)){type='till';tx=px;ty=py}
- if(type){ACTN={type,t:0,dur:type==='water'?.6:type==='harvest'?.35:.32,face:[face[0],face[1]],tx,ty,hit:false,crop:plC,tree:o&&o.t};if(type==='water')swing=Math.max(swing,.45)}};
+ if(type){ACTN={type,t:0,dur:type==='water'?.6:type==='harvest'?.35:.32,face:[face[0],face[1]],tx,ty,hit:false,crop:plC,tree:o&&o.t};if(type==='water')swing=Math.max(swing,.45)}});
 const _pb28=placeBuild;placeBuild=function(){if(!BUILD||SCENE||typeof isSeed!=='function'||!isSeed(BUILD.k))return _pb28();const[x,y]=frontTile(),i=y*N+x,b=FARM.get(i),before=b?b.c:null;_pb28();const a=FARM.get(i);
  if(a&&a.c&&!before)ACTN={type:'plant',t:0,dur:.45,face:[face[0],face[1]],tx:x,ty:y,hit:false}};
 function drawToolLine(kind,ang,hx,hy,tier){const dx=Math.cos(ang),dy=Math.sin(ang),px=-dy,py=dx,pts=[],head=[],hc=TCOL[tier]||'#c8d0d8';
@@ -3458,7 +3454,7 @@ const DUMCAP=30,useKey=()=>GPON?'L1':isPC?'T':'the USE button';
 let dumHintT=-99;
 function dumHint(){const now=performance.now()/1000;if(now-dumHintT>40){dumHintT=now;say('Training dummy: press '+useKey()+' next to it to pick it up.')}}
 // HIT on a dummy: same Attack practice as before, plus a reminder how to pick it up
-const _atk33=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o&&o.t==='dummy'&&dummyTip)dumHint()}_atk33()};
+SQHIT.before('033 every workstation draws on the house',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o&&o.t==='dummy'&&dummyTip)dumHint()}});
 // arrows and spells that reach a dummy hit it
 function dummyAt(px,py){const tx=Math.floor(px/16),ty=Math.floor(py/16);
  if(SCENE){if(!inHome())return null;const R=SCENE.room;if(tx<0||ty<0||tx>=R.w||ty>=R.h)return null;const f=SCENE.house.furn.get(ty*R.w+tx);return f&&f.t==='dummy'?f:null}
@@ -3803,7 +3799,7 @@ const _ed35=enemyDrop;enemyDrop=function(n){_ed35(n);const R=SCENE&&SCENE.room;i
  const x=Math.floor(n.x/16),y=Math.floor(n.y/16);R.items.push({t:'dchest',x,y,use:'dchest',id:R.dun.kind+'boss',boss:1});say('A golden chest appears where the '+(n.type==='boss'?'Slime King':'Bone Lord')+' fell!');msgT=4};
 // opening chests: HIT or USE when you face one
 function dChestNear(){const R=SCENE&&SCENE.room;if(!R||!R.dun)return null;const[fx,fy]=front(12);let best=null,bd=22;for(const it of R.items){if(it.t!=='dchest'||it.open)continue;const d=Math.hypot(it.x*16+8-fx,it.y*16+8-fy);if(d<bd){bd=d;best=it}}return best}
-const _atk35=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0){const it=dChestNear();if(it&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<30)){swing=.2;dOpen(it);return}}_atk35()};
+SQHIT.before('035 deep dungeons and rare loot',()=>{if(!dead&&!menuOpen&&!pnOpen&&swing<=0){const it=dChestNear();if(it&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<30)){swing=.2;dOpen(it);return}}});
 const _uf35=useFurn;useFurn=function(o){if(o&&o.use==='dchest'){dOpen(o);return}_uf35(o)};
 // saving: opened chests for today, and the legendary sword survives the tool-tier clamp
 SQSAVE.after('035:dun,rare',s=>{s.dun={day:DUN.day,op:[...DUN.opened]};s.rare={sword:TL.sword};});
@@ -4011,7 +4007,7 @@ let SWN=0,MOMT=0,MOMN=0,RIPO=false,RETAL=false,UNSTOPT=0;
 function meleeFlat(){return(lvOf(0)>=95?1:0)+(perk(0,'brawler')?1:0)+(perk(0,'weaponmaster')?2:0)}
 function meleeBonus(){let b=meleeFlat();if(Math.random()<lvOf(0)/100)b++;if(perk(0,'berserk'))b+=Math.max(0,6-P.hp);if(perk(0,'momentum')&&MOMT>0)b+=MOMN;if(RETAL){b+=3;RETAL=false}return b}
 const swingMul=()=>(lvOf(0)>=25?.9:1)*(lvOf(0)>=55?.9:1)*(perk(0,'quick')?.8:1)*(perk(0,'weaponmaster')?.9:1);
-const _atk37=attack;attack=function(){const sw0=swing,hp0=new Map(en.map(n=>[n,n.hp])),np=PROJ.length,ns=SPELLS.length;_atk37();
+SQHIT.wrap('037 combat skill trees attack defence archery',_atk37=>function(){const sw0=swing,hp0=new Map(en.map(n=>[n,n.hp])),np=PROJ.length,ns=SPELLS.length;_atk37();
  if(!(swing>sw0)||PROJ.length>np||SPELLS.length>ns)return;const D0=[...hp0.keys()].some(n=>n.hp<hp0.get(n));if(!D0&&typeof SKOF!=='undefined'){const[ox,oy]=frontObjTile(),fo=ox>=0&&oy>=0&&ox<N&&oy<N?obj[oy*N+ox]:null;if(fo&&SKOF[fo.t])return}swing*=swingMul();SWN++;
  const D=[...hp0.keys()].filter(n=>n.hp<hp0.get(n)),base=1+TL.sword+Math.floor(lvOf(0)/15)+meleeFlat();
  for(const n of D){const dealt=hp0.get(n)-n.hp,was=hp0.get(n)>0;let ex=0;n.tapped=1;
@@ -4026,7 +4022,7 @@ const _atk37=attack;attack=function(){const sw0=swing,hp0=new Map(en.map(n=>[n,n
  if(perk(0,'reach')&&!D.length){const[fx,fy]=front(24);for(const o of around(fx,fy,14,[]))hitE(o,base,'#ffffff')}
  const spin=(r,dm,col)=>{for(const o of around(P.x,P.y,r,D))hitE(o,dm,col);for(let k=0;k<24;k++){const a=k/24*6.283;part(P.x+Math.cos(a)*r*.6,P.y-4+Math.sin(a)*r*.5,Math.cos(a)*100,Math.sin(a)*80,.3,k%2?'#ffffff':'#c8d8ff',0)}sfx('swish')};
  if(perk(0,'whirl')&&SWN%5===0){spin(28,base,'#c8e0ff');say('Whirlwind!')}
- if(perk(0,'bladestorm')&&SWN%10===0){spin(42,base*2,'#a0e8ff');say('BLADE STORM!');FLASH=.2}};
+ if(perk(0,'bladestorm')&&SWN%10===0){spin(42,base*2,'#a0e8ff');say('BLADE STORM!');FLASH=.2}});
 // --- Defence ---
 function blockBonus(){return(perk(8,'shieldwall')?.05:0)+(perk(8,'juggernaut')?.1:0)+(perk(8,'armormaster')?armorPts()*.02:0)+(perk(8,'bastion')&&P.hp===1?.25:0)}
 function blockCap(){return .6+(lvOf(8)>=25?.05:0)+(lvOf(8)>=75?.05:0)+(perk(8,'fortress')?.1:0)+(perk(8,'juggernaut')?.1:0)}
@@ -4208,7 +4204,7 @@ const ACTW={1:0,2:0,3:0,11:0},FOODP={1:['wc_steady',.2],2:['mn_breaker',.2],3:['
 const SKOF={tree:1,pine:1,rock:2,ore:2,bush:3,cactus:3},STAYP={1:[['wc_roots',.15],['wc_endless',.25]],2:[['mn_veins',.15],['mn_endless',.25]],3:[['fg_abund',.15],['fg_endless',.25]]},
  RECP={1:'wc_recover',2:'mn_rapid',3:'fg_hands'};
 const GITEMS=['wood','stone','iron','berry'];
-const _atk38=attack;attack=function(){const sw0=swing,[ox,oy]=frontObjTile(),oi=oy*N+ox,o=ox>=0&&oy>=0&&ox<N&&oy<N?obj[oi]:null,oh=o?o.hp:0,inv0=GITEMS.map(k=>inv[k]|0);_atk38();
+SQHIT.wrap('038 gathering skill trees woodcutting mining fishing',_atk38=>function(){const sw0=swing,[ox,oy]=frontObjTile(),oi=oy*N+ox,o=ox>=0&&oy>=0&&ox<N&&oy<N?obj[oi]:null,oh=o?o.hp:0,inv0=GITEMS.map(k=>inv[k]|0);_atk38();
  if(!o||!SKOF[o.t]||!(swing>sw0))return;const now=obj[oi];if(now&&now.hp>=oh)return;const sk=SKOF[o.t];
  swing/=(1+gSpeed(sk));if(P_(sk,RECP[sk]))swing*=.8;ACTW[sk]=10;
  if(now)return;// still standing: just a hit
@@ -4218,7 +4214,7 @@ const _atk38=attack;attack=function(){const sw0=swing,[ox,oy]=frontObjTile(),oi=
   if(P_(1,'wc_bounty')&&Math.random()<.15){inv.wood=(inv.wood|0)+2;gTxt(x,y-38,'+2 wood','#48c048')}}
  if(sk===2&&P_(2,'mn_hidden')&&Math.random()<.1){if(Math.random()<.5){inv.stone=(inv.stone|0)+2;gTxt(x,y-38,'+2 stone','#90a8d0')}else{inv.iron=(inv.iron|0)+1;gTxt(x,y-38,'+1 iron ore','#90a8d0')}}
  if(sk===3&&P_(3,'fg_hidden')&&Math.random()<.1){const sd=['wheatseed','carrotseed','pumpkinseed'][Math.floor(Math.random()*3)];inv[sd]=(inv[sd]|0)+1;gTxt(x,y-38,'+1 '+iname(sd),'#e060a0')}
- if(Math.random()<sumP(sk,STAYP)){obj[oi]={t:o.t,hp:OHP[o.t]||3};for(let j=REM.length-1;j>=0;j--)if(REM[j].i===oi)REM.splice(j,1);gTxt(x,y-46,sk===3?'It grows straight back!':'Still standing!',SKC[sk])}};
+ if(Math.random()<sumP(sk,STAYP)){obj[oi]={t:o.t,hp:OHP[o.t]||3};for(let j=REM.length-1;j>=0;j--)if(REM[j].i===oi)REM.splice(j,1);gTxt(x,y-46,sk===3?'It grows straight back!':'Still standing!',SKC[sk])}});
 // --- fishing ---
 const FISHK=()=>[...FISH_T.map(f=>f.k),'rainbow'];
 const fBaitSave=()=>(P_(9,'fs_bait')?.2:0)+(P_(9,'fs_endless')?.35:0);
@@ -4231,13 +4227,13 @@ const _cf38=catchFish;catchFish=function(){if(!FISH)return _cf38();const ks=FISH
   if(P_(9,'fs_rapid'))FISH.wait*=.8}
  if((inv.bait|0)<bait0&&Math.random()<fBaitSave())inv.bait++;
  FISH.wait/=(1+gSpeed(9))};
-const _atk38b=attack;attack=function(){const had=!!FISH,bait0=inv.bait|0;_atk38b();if(!had&&FISH){FISH.wait/=(1+gSpeed(9));if((inv.bait|0)<bait0&&Math.random()<fBaitSave())inv.bait++}};
+SQHIT.wrap('038 gathering skill trees woodcutting mining fishing',_atk38b=>function(){const had=!!FISH,bait0=inv.bait|0;_atk38b();if(!had&&FISH){FISH.wait/=(1+gSpeed(9));if((inv.bait|0)<bait0&&Math.random()<fBaitSave())inv.bait++}});
 // --- farming ---
 const _hv38=harvest;harvest=function(i,p){const c=p.c,C=CROPS[c],n0=inv[c]|0,s0=inv[C.seed]|0;_hv38(i,p);const d=(inv[c]|0)-n0,x=(i%N)*16+8,y=((i/N)|0)*16;ACTW[11]=10;if(d<=0)return;
  if(P_(11,'fm_endless')){const more=Math.floor(d*.25)+(Math.random()<(d*.25)%1?1:0);if(more){inv[c]+=more;gTxt(x,y-38,'+'+more+' '+iname(c),SKC[11])}}
  gBoost(11,{[c]:d},x,y);if(P_(11,'fm_seed')&&Math.random()<.2){inv[C.seed]=(inv[C.seed]|0)+1;gTxt(x,y-46,'+1 '+iname(C.seed),'#c8a060')}};
-const _atk38c=attack;attack=function(){const[fx,fy]=front(13),i=Math.floor(fy/16)*N+Math.floor(fx/16),p=FARM.get(i),w0=p?p.w:0;_atk38c();const q=FARM.get(i);
- if(q&&q.w>w0&&P_(11,'fm_soil'))q.w=CLK+Math.round(WATER_FOR*1.2);if(q&&(q.w>w0||(!p&&q)))ACTW[11]=10};
+SQHIT.wrap('038 gathering skill trees woodcutting mining fishing',_atk38c=>function(){const[fx,fy]=front(13),i=Math.floor(fy/16)*N+Math.floor(fx/16),p=FARM.get(i),w0=p?p.w:0;_atk38c();const q=FARM.get(i);
+ if(q&&q.w>w0&&P_(11,'fm_soil'))q.w=CLK+Math.round(WATER_FOR*1.2);if(q&&(q.w>w0||(!p&&q)))ACTW[11]=10});
 // growth speed, hardy crops, and the FOOD perks
 const _u38=upd;upd=function(dt){_u38(dt);if(menuOpen||pnOpen)return;const gs=gSpeed(11),hardy=P_(11,'fm_roots');
  for(const[,p]of FARM){if(!p.c||ripe(p))continue;if(wet(p))p.g+=dt*gs;else if(hardy)p.g+=dt*.25*(1+gs)}
@@ -6243,11 +6239,9 @@ function rgGather(R,it){const o=it.o,t=o.t,sk=SKOF[t];if(!sk){swing=.25;return}
  if(Math.random()<sumP(sk,STAYP)){o.hp=OHP[t]||3;gTxt(x,y-46,sk===3?'It grows straight back!':'Still standing!',SKC[sk])}
  else{it.gone=true;rgCellDel(R,it);R.solid.delete(it.y*R.w+it.x);R.gone.push({it,at:CLK})}
  setTimeout(()=>sfx('pickup'),90);saveLocal()}
-const _atk50=attack;attack=function(){const R=SCENE&&SCENE.room;
- if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0){const[fx,fy]=front(13);
+SQHIT.before('050 the four new regions briarwood ashfall',()=>{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0){const[fx,fy]=front(13);
   if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){const tx=Math.floor(fx/16),ty=Math.floor(fy/16),it=rgObjAt(R,tx,ty);if(it){rgGather(R,it);return}
-   for(const l of R.useItems)if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1)){swing=.25;rgLook(l);return}}}
- _atk50()};
+   for(const l of R.useItems)if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1)){swing=.25;rgLook(l);return}}}});
 
 // --- region life: resources grow back, landmarks are discovered, spawns stay away from quiet places ---
 function rgSeen(reg,id){const s=WORLD_STATE[reg];return!!(s&&s.seen&&s.seen.includes(id))}
@@ -8029,8 +8023,8 @@ function buildTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now()
 // never save other people's things
 {SQSAVE.after('061:str,farm',s=>{const fs=new Set([...STR].filter(([i,v])=>v._foreign).map(([i])=>i)),ff=new Set([...FARM].filter(([i,p])=>p._foreign).map(([i])=>i));if(Array.isArray(s.str))s.str=s.str.filter(e=>!fs.has(e[0]));if(Array.isArray(s.farm))s.farm=s.farm.filter(e=>!ff.has(e[0]));})}
 // hands off: hitting, harvesting, watering, planting, opening, using
-{const _atk=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!SCENE&&swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x,o=ownerOfTile(i);
-   if(o){notYours(o);return}const h=houseAt(x,y);if(h&&h._foreign&&!(x===h.x&&y===h.y)){notYours(h._owner);return}}return _atk()}}
+{SQHIT.before('061 multiplayer firebase google sign in account',()=>{if(!dead&&!menuOpen&&!pnOpen&&!SCENE&&swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x,o=ownerOfTile(i);
+   if(o){notYours(o);return}const h=houseAt(x,y);if(h&&h._foreign&&!(x===h.x&&y===h.y)){notYours(h._owner);return}}})}
 {const _hh=hitHouse;hitHouse=function(h){if(h&&h._foreign){notYours(h._owner);return}return _hh(h)}}
 {const _hs=hitStructure;hitStructure=function(i){const s=STR.get(i);if(s&&s._foreign){notYours(s._foreign);return}return _hs(i)}}
 {const _us=useStructure;useStructure=function(i){const s=STR.get(i);if(s&&s._foreign){notYours(s._foreign);return}return _us(i)}}
@@ -8381,9 +8375,9 @@ function pvSend(ev){if(!MP.on||!MP.user)return;const L=mpLoc();if(!L)return;ev.s
 const r2=v=>Math.round(v*100)/100;
 {const _s=shoot;shoot=function(){const n0=PROJ.length;_s();const a=PROJ.slice(n0).filter(p=>p.k==='arrow').map(p=>[Math.round(p.x),Math.round(p.y),Math.round(p.vx),Math.round(p.vy),r2(p.life),p.iron?1:0]);if(a.length)pvSend({k:'ar',a})}}
 {const _c=castSpell;castSpell=function(first){const n0=SPELLS.length;const r=_c(first);const a=SPELLS.slice(n0).map(s=>[Math.round(s.x),Math.round(s.y),Math.round(s.vx),Math.round(s.vy),r2(s.life),s.el]);if(a.length)pvSend({k:'sp',a});return r}}
-{const _a=attack;attack=function(){const s0=swing,p0=PROJ.length,c0=SPELLS.length;_a();
+{SQHIT.wrap('064 seeing other players fight and opt',_a=>function(){const s0=swing,p0=PROJ.length,c0=SPELLS.length;_a();
   const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
-  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH&&!window.SQPVQUIET){pvSend({k:'sw',d:[face[0],face[1]],w:window.SQSWINGW?SQSWINGW():(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}}}
+  if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH&&!window.SQPVQUIET){pvSend({k:'sw',d:[face[0],face[1]],w:window.SQSWINGW?SQSWINGW():(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}})}
 // ---- what the others do ----
 function pvFx(u,v){if(!v||typeof v!=='object'||!MP.user||u===MP.user.uid)return;const s=+v.s||0;if(PV.seen[u]&&s<=PV.seen[u])return;PV.seen[u]=s;
  if(typeof v.t==='number'&&mpNow()-v.t>2500)return;if(v.loc!==mpLoc())return;const AR=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]):null);v.d=AR(v.d);v.a=AR(v.a);const r=MP.players.get(u);if(!r)return;const sc=curScene();
@@ -8503,10 +8497,10 @@ function rbOpenStation(R,x,y,s){openStation({t:s.t,inside:false,i:rbIdx(R,x,y),f
 {const _ps=pickStruct;pickStruct=function(i){if(i<1e7)return _ps(i);const R=rbR();if(!R)return;const j=i-1e7-(Object.keys(WORLD_REGIONS).indexOf(R.region)+1)*1e5;rbPick(R,j%R.w,Math.floor(j/R.w))}}
 // HIT: hit what you built (stations open, the dummy wobbles); TALK: open chests and stations
 const rbFront=R=>{const[x,y]=frontTile();return{x,y,s:rbMap(R.region).get(rbK(x,y))}};
-{const _a=attack;attack=function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const{x,y,s}=rbFront(R);
+{SQHIT.before('065 building and cooking on the other',()=>{const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const{x,y,s}=rbFront(R);
    if(s){swing=.25;if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}return}
     if(STN.has(s.t)){rbOpenStation(R,x,y,s);return}rbHit(R,x,y,s);return}
-   const f=rbForeignAt(R.region,x,y);if(f){notYours(f.owner);return}}return _a()}}
+   const f=rbForeignAt(R.region,x,y);if(f){notYours(f.owner);return}}})}
 {const _t=talk;talk=function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!nearNpc()){let hit=null;
    for(const[dx,dy]of[[0,0],[face[0],face[1]],[0,1],[0,-1],[1,0],[-1,0]]){const x=Math.floor(P.x/16)+dx,y=Math.floor((P.y+(face[1]>0?4:0))/16)+dy,s=rbMap(R.region).get(rbK(x,y));if(s&&(s.t==='chest'||s.t==='bed'||STN.has(s.t))){hit={x,y,s};break}}
    if(!hit){const{x,y,s}=rbFront(R);if(s)hit={x,y,s}}
@@ -8598,9 +8592,9 @@ setInterval(rhSolidSync,500);
 function rhPack(h){const j=RH.indexOf(h);if(j<0)return;RH.splice(j,1);rhSolidSync();inv.house=(inv.house|0)+1;
  for(const f of h.furn.values()){inv[f.t]=(inv[f.t]|0)+1;if(f.items)for(const k in f.items)inv[k]=(inv[k]|0)+f.items[k]}if(HOMESP===h.id)HOMESP=null;
  say('You packed up your house and everything inside it.');setTimeout(()=>sfx('pickup'),90);saveLocal(true);saveCloud(true)}
-{const _a=attack;attack=function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile();
+{SQHIT.before('067 houses on the other islands',()=>{const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile();
    const h=rhAt(rhHere(),x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;h.hp=(h.hp||12)-(1+TL.axe);sfx('chop');if(h.hp<=0)rhPack(h);else if(h.hp<=4)say('The house is about to come down...');return}
-   const f=rhAt(rhForeign(R.region),x,y);if(f){notYours(f._owner);return}}return _a()}}
+   const f=rhAt(rhForeign(R.region),x,y);if(f){notYours(f._owner);return}}})}
 // ---- going in and coming out ----
 {const _es=enterScene;enterScene=function(id,house,ret){const prev=SCENE&&SCENE.room&&SCENE.room.region?SCENE:null;_es(id,house,ret);if(prev&&SCENE&&!(SCENE.room&&SCENE.room.region))SCENE.prev=prev}}// an island never gets another island as `prev` (leaving an island always goes home; with one, sailing to Hollow could drop you back on the old island)
 {const _ls=leaveScene;leaveScene=function(){const S=SCENE;if(!S||!S.prev)return _ls();if(typeof BUILD!=='undefined'&&BUILD)endBuild();const r=S.ret;SCENE=S.prev;P.x=r.x;P.y=r.y;face=[0,1];FADE_AT=performance.now();sfx('door');rhSolidSync()}}
@@ -9350,11 +9344,10 @@ const inForeignHouse=()=>SCENE&&SCENE.house&&SCENE.house._foreign?SCENE.house:nu
 // outside on Hollow: their chests and stations
 function trUseForeignStr(i){const s=STR.get(i);if(!s||!s._foreign)return false;if(s.t!=='chest'&&!STN.has(s.t))return false;swing=.25;trustThen(s._foreign,()=>trUseForeignStr2(i,s));return true}
 function trUseForeignStr2(i,s){if(s.t==='chest')chOpenShared(s._foreign,'s_'+i);else if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}}else openStation({t:s.t,inside:false,i,f:s,_foreign:s._foreign})}
-{const _a=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!(typeof facingNpc==='function'&&facingNpc())){
+{SQHIT.before('072 world boss art hd same style',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!(typeof facingNpc==='function'&&facingNpc())){
   if(!SCENE){const[x,y]=frontTile();if(x>=0&&y>=0&&x<N&&y<N&&trUseForeignStr(y*N+x))return}
   else{const R=rbR();if(R){const[x,y]=frontTile();const f=rbForeignAt(R.region,x,y);if(f&&(f.t==='chest'||STN.has(f.t))){swing=.25;
-     trustThen(f.owner,()=>{if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner})});return}}}}
-  return _a()}}
+     trustThen(f.owner,()=>{if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner})});return}}}}})}
 {const _us=useStructure;useStructure=function(i){if(trUseForeignStr(i))return;return _us(i)}}
 window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};window.SQTRUTHEN=trustThen;
 // ---- Farming on every island ----
@@ -9371,7 +9364,7 @@ function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y
  if(typeof rhAt==='function'&&(rhAt(rhHere(),x,y)||rhAt(rhForeign(R.region),x,y)))return false;
  return!fires.some(f=>Math.abs(f.x-(x*16+8))<12&&Math.abs(f.y-(y*16+8))<12)}
 // HIT: harvest, water, check, or till
-{const _a=attack;attack=function(){const R=rbR();if(!R||dead||menuOpen||pnOpen||BUILD||swing>0||FISH||facingNpc())return _a();
+{SQHIT.wrap('072 world boss art hd same style',_a=>function(){const R=rbR();if(!R||dead||menuOpen||pnOpen||BUILD||swing>0||FISH||facingNpc())return _a();
   const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),k=rbK(tx,ty);if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _a();
   // a tree, bush or rock standing on the soil (it grew back there): chop/mine it as normal
   if(typeof rgObjAt==='function'&&rgObjAt(R,tx,ty))return _a();
@@ -9382,7 +9375,7 @@ function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y
    const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');sfx('swish');return}
   const fo=rfForeign(R.region).get(k);if(fo){notYours(fo._foreign);return}
   if(TL.hoe&&!rbMap(R.region).has(k)&&rfCanTill(R,tx,ty)){swing=.25;rfMap(R.region).set(k,{c:null,g:0,w:0,e:nowS()});addXp(11,4);sfx('chop');saveLocal(true);say('Tilled! Plant seeds from your Bag.');return}
-  return _a()}}
+  return _a()})}
 // planting
 {const _sb=startBuild;startBuild=function(k){const R=rbR();if(!R||!isSeed(k))return _sb(k);if((inv[k]|0)<1)return;const C=CROPS[SEED2CROP[k]];
   if(lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');closePanel();return}BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')}}
@@ -9853,7 +9846,7 @@ function sfCommit(before){if(!before)return;const area=before.area,now=sfNow(),A
   if(!b||!p)continue;const old=A[k]||{};
   if((b.c||null)!==(p.c||null)){if(!p.c)sfWrite(area,k,{c:'',g:0,t:now,w:0,e:now});else{const ww=Math.max(+old.w||0,p.w>CLK?now+(p.w-CLK)*1000:0);sfWrite(area,k,{c:p.c,g:0,t:now,w:ww,e:0})}continue}
   if(p.w!==b.w&&p.w>CLK){sfWrite(area,k,{c:p.c||'',g:sfGrowth(old,now),t:now,w:now+(p.w-CLK)*1000,e:p.c?0:(+old.e||now)})}}}
-{const _a=attack;attack=function(){const b=sfAround();_a();try{sfCommit(b)}catch(e){console.warn(e)}}}
+{SQHIT.wrap('077 islands update part 1 public farming',_a=>function(){const b=sfAround();_a();try{sfCommit(b)}catch(e){console.warn(e)}})}
 {const _p=placeBuild;placeBuild=function(){const b=BUILD&&isSeed(BUILD.k)?sfAround():null;_p();if(b)try{sfCommit(b)}catch(e){console.warn(e)}}}
 {const _u=upd;upd=function(dt){_u(dt);try{sfRebuild()}catch(e){}}}
 // nobody owns a plot any more: other players' old personal plots are no longer shown, and yours aren't published
@@ -10187,8 +10180,8 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
  {let mineTk=false;const _u=upd;upd=function(dt){_u(dt);const n=!pnOpen&&!menuOpen&&!dead&&nearClerk();
    if(n){tk.style.display='flex';const lab='TRADE'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mineTk=true}else if(mineTk){mineTk=false;if(!pnOpen)tk.style.display='none'}
    if(sp&&!SCENE)for(const m of en)if(!m.dead&&!m.big&&Math.hypot(m.x-WMK.clerk.x,m.y-WMK.clerk.y)<90){m.dead=1;m.dropped=1}}}
- {const _a=attack;attack=function(){if(!sp||SCENE||dead||menuOpen||pnOpen||BUILD||swing>0)return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),s=WMK.spot;
-   if(tx>=s.tx&&tx<s.tx+s.w&&ty>=s.ty&&ty<=s.ty+1&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){wmOpen();return}return _a()}}
+ {SQHIT.wrap('079 the world market hollow village buy',_a=>function(){if(!sp||SCENE||dead||menuOpen||pnOpen||BUILD||swing>0)return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),s=WMK.spot;
+   if(tx>=s.tx&&tx<s.tx+s.w&&ty>=s.ty&&ty<=s.ty+1&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){wmOpen();return}return _a()})}
  try{WK_PLACES&&WK_PLACES.push&&WK_PLACES.push({n:'World Market',w:'Hollow Village',d:'Trade with every player: put up offers to buy or sell anything, and they match automatically.'})}catch(e){}
 }
 // ---- 98. The wiki catches up: every dungeon, boss, monster, pet and place, with pictures ----
@@ -10385,13 +10378,12 @@ window.mpSend=mpSend;
   // the Woodcutting/Mining "stays standing" perks (038's STAYP) work on these too
   let stay=false;try{stay=Math.random()<sumP(sk,STAYP)}catch(e){}
   if(stay){o.hp=OHP[o.t]||3;try{gTxt(P.x+face[0]*16,P.y-40,'Still standing!',SKC[sk])}catch(e){}}else done();setTimeout(()=>sfx('pickup'),90);saveLocal()}
- const _atk64=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
+ SQHIT.before('083 world content fewer trees higher tier',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){
     if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const i=ty*N+tx,o=obj[i];if(o&&TIER[o.t]){tierHit(o,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})});return}}
     const R=SCENE&&SCENE.room;
     if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&TIER[it.o.t]){tierHit(it.o,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(it.y*R.w+it.x);R.gone.push({it,at:CLK})});return}}
-    else if(R&&R.dun){const it=R.items.find(q=>q.dmine&&q.x===tx&&q.y===ty);if(it){tierHit(it.o,()=>{const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx)});return}}}}
-  _atk64()};
+    else if(R&&R.dun){const it=R.items.find(q=>q.dmine&&q.x===tx&&q.y===ty);if(it){tierHit(it.o,()=>{const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx)});return}}}}});
  // campfires on the other islands: each island keeps its own fires
  const fireStash={};window.FIRESTASH=fireStash;let fireReg=curRegion();
  const _u64c=upd;upd=function(dt){const r=window.fireKey64?fireKey64():curRegion();if(r!==fireReg){fireStash[fireReg]=fires.filter(f=>!f._rp);fires=(fireStash[r]||[]).filter(f=>f.life>0);fireReg=r}_u64c(dt)};
@@ -10699,7 +10691,7 @@ var LUX={};
   if(SCENE&&!SCENE.room.cave){say('Not indoors!');return}if(typeof SAILING!=='undefined'&&SAILING||window.SQRSAIL&&SQRSAIL.on){say('Not while sailing!');return}
   if(DF.cd>0){say('Dragon Form is recharging ('+Math.ceil(DF.cd)+'s).');try{sfx('nomana')}catch(e){}return}dfStart()};
  // attacking (and shooting) breathes fire instead
- const _at=attack;attack=function(){if(DF.on){if(!dead&&!menuOpen&&!pnOpen)DF.tap=.3;return}return _at()};
+ SQHIT.before('086 jewelry gold rings and amulets with',()=>{if(DF.on){if(!dead&&!menuOpen&&!pnOpen)DF.tap=.3;return}});
  const _sa=shootAim;shootAim=function(f){if(DF.on){DF.tap=.3;return}return _sa(f)};
  cv.addEventListener('mousedown',e=>{if(e.button===0)DF.held.m=true});addEventListener('mouseup',e=>{if(e.button===0)DF.held.m=false});addEventListener('blur',()=>{DF.held.m=DF.held.t=false});
  {const ab=document.getElementById('a');if(ab){ab.addEventListener('touchstart',()=>{DF.held.t=true},{passive:true});for(const ev of['touchend','touchcancel'])ab.addEventListener(ev,()=>{DF.held.t=false},{passive:true})}}
@@ -10839,8 +10831,8 @@ var LUX={};
  const _u=upd;upd=function(dt){_u(dt);if(dead||menuOpen||pnOpen)return;for(const n of en){if(n.dead||n._rp||n._wb||n.big||n.type==='boss'||n.type==='bonelord')continue;
    const dx=n.x-P.x,dy=n.y-P.y,d=Math.hypot(dx,dy);if(d>=MIND)continue;const ux=d>.01?dx/d:-face[0]||1,uy=d>.01?dy/d:-face[1]||0,nx=P.x+ux*MIND,ny=P.y+uy*MIND;
    if(!solid(nx,ny+4)){n.x=nx;n.y=ny}}};
- const _a=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0&&!BUILD&&!FISH){const[fx,fy]=front(13);if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){let best=null,bd=18;
-    for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}if(best){const dx=best.x-P.x,dy=best.y-P.y;face=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx)||1,0]:[0,Math.sign(dy)||1]}}}return _a()}}
+ SQHIT.before('090 monsters keep a little distance dungeon',()=>{if(!dead&&!menuOpen&&!pnOpen&&swing<=0&&!BUILD&&!FISH){const[fx,fy]=front(13);if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){let best=null,bd=18;
+    for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}if(best){const dx=best.x-P.x,dy=best.y-P.y;face=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx)||1,0]:[0,Math.sign(dy)||1]}}}})}
 // Every dungeon's last floor has an exit door near the boss's lair: step on it to climb straight back outside.
 {const _da=dArrive;dArrive=function(R,from){_da(R,from);const D=R.dun;if(!D||R.items.some(it=>it.t==='stairs')||R.items.some(it=>it.t==='dexit'))return;
   const b=D.boss||[Math.floor(R.w/2),Math.floor(R.h/2)],W=R.w,ok=(x,y)=>x>0&&y>2&&x<W-1&&y<R.h-1&&!R.solid.has(y*W+x)&&!R.solid.has((y-1)*W+x)&&!R.items.some(it=>it.x===x&&it.y===y);
@@ -11007,13 +10999,12 @@ const _cf=catchFish;catchFish=function(){const R=SCENE&&SCENE.room,L=lvOf(9),lis
  FISH.t=0;FISH.bite=0;FISH.wait=(2+Math.random()*3)*Math.max(.6,1-L*.006)};
 window.SQRFISH=RFISH;
 // casting on the other islands (their attack goes through the island's own handler, which never reached fishing)
-{const _a=attack;attack=function(){const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD){
+{SQHIT.before('093 islands update part 2',()=>{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD){
    if(FISH){FISH=null;say('You reel in your line');return}
    if(swing<=0&&!facingNpc()){const[fx,fy]=front(14),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
     if(fishWaterAt(tx,ty)&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18)&&!(window.SQSHK&&SQSHK.list.some(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<22))){
      if(!TL.rod){say('You need a fishing rod - buy one at the general store');return}
-     const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}}
-  return _a()}}
+     const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}}})}
 // the line and bobber, drawn on the other islands too
 {const _dr=drawRoom;drawRoom=function(tm){_dr(tm);const R=SCENE&&SCENE.room;if(!FISH||!R||!R.region||window.SQSKFX)return;
   const hx=Math.round(P.x+face[0]*6),hy=Math.round(P.y-3+(face[1]>0?2:0)),rx=Math.round(P.x+face[0]*13+(face[1]?4:0)),ry=Math.round(P.y-13+face[1]*7),bx=Math.round(FISH.bx),by=Math.round(FISH.by)+(FISH.bite>0?2:Math.round(Math.sin(tm*3)));
@@ -11121,9 +11112,9 @@ const wolfPetOf=n=>{if(!n||n.type!=='wolf'||n._pet)return null;if(n.vr==='snow'|
 function rollWolf(n){if(!n||n._petRoll)return;n._petRoll=1;const k=wolfPetOf(n);if(k&&(Math.random()<1/1000||window.SQPETDROP))givePet(k)}
 {const _ed=enemyDrop;enemyDrop=function(n){_ed(n);try{rollWolf(n)}catch(e){}}}
 if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead)rollWolf(n)}catch(e){}return r}}
-{const _a=attack;attack=function(){let tt=null,tv=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;
+{SQHIT.wrap('093 islands update part 2',_a=>function(){let tt=null,tv=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;
    if(R&&R.region){const it=rgObjAt(R,tx,ty);tt=it&&it.o.t;tv=it&&it.o.v}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];tt=o&&o.t;tv=o&&o.v}}catch(e){}
-  const w0=inv.wood|0;_a();if(tt&&tt!=='cactus'&&(inv.wood|0)>w0&&(Math.random()<1/5000||window.SQTREEDROP))givePet(window.SQTREEPET?SQTREEPET(tt,tv):'ptree')}}
+  const w0=inv.wood|0;_a();if(tt&&tt!=='cactus'&&(inv.wood|0)>w0&&(Math.random()<1/5000||window.SQTREEDROP))givePet(window.SQTREEPET?SQTREEPET(tt,tv):'ptree')})}
 // drawing them
 const SIDEPAL={K:'#181018',W:'#f4f0e8',E:'#181018',N:'#e07080',R:'#3870d8'},SIDECOL={cat:{A:'#e88a38',B:'#b85e20',C:'#f8b868',T:'#c06a24',L:'#b85e20'},dog:{A:'#b07848',B:'#7c4e2c',C:'#d8a878',T:'#8a5a34',L:'#7c4e2c'},fox:{A:'#e86a20',B:'#a8440e',C:'#f89848',T:'#a8440e',L:'#3a2418'}};
 const SIDEMAP={cat:[["............K...K.","..K........KAK.KAK",".KAK.......KAAKAAK",".KAK.......KAAAAAK","..KAK......KAEAEAK","...KAKKKKKKKAAANAK","....KAACCCAAKCCCK.","....KAATAAATAAAKK.","....KAAAAAAAAAAK..","....KBAATAAATABK..","....KBBBBBBBBBBK.."],["....KLK.KK..KLK...","....KK..KLK..KK...","....KLK.KK..KLK...","....KK...KK.KK...."]],
@@ -11177,9 +11168,9 @@ function nearWaterSpot(R){const sail=window.SQRSAIL&&SQRSAIL.on;if(sail)return[P
    if(hunt&&dP<220){tx=spot[0];ty=spot[1];sp=58}else if(Math.hypot(tx-s.x,ty-s.y)<8||Math.random()<dt*.15){for(let k=0;k<8;k++){const a=Math.random()*6.283,d=40+Math.random()*90,x=s.x+Math.cos(a)*d,y=s.y+Math.sin(a)*d;if(wetW(R,x,y)){s.tx=x;s.ty=y;break}}tx=s.tx;ty=s.ty}
    const dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy);if(d>2){const m=Math.min(d,sp*dt),nx=s.x+dx/d*m,ny=s.y+dy/d*m;if(wetW(R,nx,s.y))s.x=nx;if(wetW(R,s.x,ny))s.y=ny;s.fl=dx<0}
    if(hunt&&onW&&dP<22&&s.bite<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){s.bite=2.2;s.a=.5;P.hp--;hurt=1.5;say('A shark bites!');try{sfx('hurt')}catch(e){}}}}}
-{const _a=attack;attack=function(){const R=shkR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(14);const s=SHK.list.find(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<20);
+{SQHIT.before('093 islands update part 2',()=>{const R=shkR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(14);const s=SHK.list.find(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<20);
    if(s){swing=.3;const dmg=1+(TL.sword|0)+(typeof meleeFlat==='function'?meleeFlat():0);s.hp-=dmg;s.hit=.25;try{DMGS.push({x:s.x,y:s.y-10,v:String(dmg),t:0,c:'#ffffff',sc:curScene()})}catch(e){}sfx('hit');
-    if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){}saveLocal()}return}}return _a()}}
+    if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){}saveLocal()}return}}})}
 function drawShark(s,tm){const x=Math.round(s.x),y=Math.round(s.y),f=s.fl?-1:1,w=Math.sin(s.t*3)*1;
  g.fillStyle='rgba(20,40,70,.35)';g.beginPath();g.ellipse(x,y+2,15,5,0,0,6.283);g.fill();
  if(s.a>0){// a lunge: the head and jaws come up out of the water
@@ -11508,8 +11499,8 @@ function treelingSprite(k,f){const key=k+f;if(TLC[key])return TLC[key];const c=d
 
 // ======== Void Trees ========
 // the purple-leaved trees of the Shattered Expanse: their name floats up when you chop one
-{const _a=attack;attack=function(){let vt=null;try{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const[fx,fy]=front(13),it=rgObjAt(R,Math.floor(fx/16),Math.floor(fy/16));if(it&&it.o.v==='dark'&&SKOF[it.o.t]===1)vt=it}}catch(e){}
-  _a();if(vt&&(swing>0)){const now=performance.now();if(!vt._vtn||now-vt._vtn>2500){vt._vtn=now;try{gTxt(vt.x*16+8,vt.y*16-34,'Void Tree','#c8a0ff')}catch(e){}}}}}
+{SQHIT.wrap('096 ashfall s forge camp and cinderdeep',_a=>function(){let vt=null;try{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const[fx,fy]=front(13),it=rgObjAt(R,Math.floor(fx/16),Math.floor(fy/16));if(it&&it.o.v==='dark'&&SKOF[it.o.t]===1)vt=it}}catch(e){}
+  _a();if(vt&&(swing>0)){const now=performance.now();if(!vt._vtn||now-vt._vtn>2500){vt._vtn=now;try{gTxt(vt.x*16+8,vt.y*16-34,'Void Tree','#c8a0ff')}catch(e){}}}})}
 
 // ======== the Stone Sledgehammer ========
 var SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
@@ -11616,13 +11607,13 @@ function boulderHit(o,x,y,done){const B=BOUL[o.t];if(!B)return false;
  if(stay){o.hp=OHP[o.t]||40;try{gTxt(x*16+8,y*16-44,'Still standing!',SKC[2])}catch(e){}}else done();saveLocal();return true}
 window.SQBOULDERHIT=boulderHit;
 {const BROKE=[];
- const _a=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();
+ SQHIT.wrap('096 ashfall s forge camp and cinderdeep',_a=>function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();
   const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);if(en.some(n=>!n.dead&&!n._pet&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16)))return _a();const R=SCENE&&SCENE.room;
   if(!SCENE){if(tx<0||ty<0||tx>=N||ty>=N)return _a();const i=ty*N+tx,o=obj[i];if(o&&BOUL[o.t]&&boulderHit(o,tx,ty,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})}))return;return _a()}
   if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&BOUL[it.o.t]&&boulderHit(it.o,tx,ty,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(ty*R.w+tx);R.gone.push({it,at:CLK})}))return;return _a()}
   if(R&&R.cave){const it=R.items.find(q=>q.t==='boulder'&&q.x===tx&&q.y===ty&&!q.gone);if(it){const o={t:it.ore||'boulder',hp:it.hp==null?24:it.hp};
     const r=boulderHit(o,tx,ty,()=>{it.gone=true;const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx);BROKE.push({R,it,at:performance.now()})});it.hp=o.hp;it.shake=o.shake;if(r)return}}
-  return _a()};
+  return _a()});
  // the Slime Caverns' boulders come back after five minutes (dungeon floors are rebuilt each day anyway)
  const _u=upd;upd=function(dt){_u(dt);if(!BROKE.length)return;const now=performance.now();for(let j=BROKE.length-1;j>=0;j--){const b=BROKE[j];if(now-b.at<3e5)continue;if(SCENE&&SCENE.room===b.R&&Math.hypot(P.x-(b.it.x*16+8),P.y-(b.it.y*16+8))<24)continue;
    b.it.gone=false;b.it.hp=null;if(!b.R.items.includes(b.it))b.R.items.push(b.it);b.R.solid.add(b.it.y*b.R.w+b.it.x);BROKE.splice(j,1)}}}
@@ -11783,8 +11774,8 @@ function drawEmberl(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs
 // the Ember ring: your sword sets monsters burning
 if(window.SQJK){SQGEMC.ember=['#f87020','#802008'];const j={k:'ja_ember',n:'Ember ring',s:'ring',g:'ember',v:4500,d:'Your melee hits set monsters on fire.'};SQJK[j.k]=j;
  INVK.push(j.k);if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]='Ring (rare, from the Emberlord): '+j.d+' Wear it from the Bag.';SELLP[j.k]=1800;SN[j.k]=j.n+'s';if(typeof SHORT!=='undefined')SHORT[j.k]=j.n.toLowerCase()}
-{const _a=attack;attack=function(){const on=window.SQJW&&SQJW.ring==='ja_ember';if(!on)return _a();const hp0=new Map();for(const n of en)if(!n.dead)hp0.set(n,n.hp);_a();
-  for(const[n,h]of hp0)if(!n.dead&&n.hp<h&&n.type!=='emberl'){n.burn=Math.max(n.burn||0,3);for(let k=0;k<4;k++)part(n.x,n.y-8,(Math.random()-.5)*60,-40-Math.random()*40,.4,k%2?'#f86020':'#f8b030',-30,1)}}}
+{SQHIT.wrap('096 ashfall s forge camp and cinderdeep',_a=>function(){const on=window.SQJW&&SQJW.ring==='ja_ember';if(!on)return _a();const hp0=new Map();for(const n of en)if(!n.dead)hp0.set(n,n.hp);_a();
+  for(const[n,h]of hp0)if(!n.dead&&n.hp<h&&n.type!=='emberl'){n.burn=Math.max(n.burn||0,3);for(let k=0;k<4;k++)part(n.x,n.y-8,(Math.random()-.5)*60,-40-Math.random()*40,.4,k%2?'#f86020':'#f8b030',-30,1)}})}
 
 // ======== the wiki ========
 try{WK_DUN.push({n:'Cinderdeep',w:'North-east hills of the Ashfall Coast',boss:'The Emberlord',bhp:EL_HP,d:'Six floors of ash and lava pools (don\'t stand in them): cinder beetles, ember skeletons, magma slimes, bats and scorpions. The Emberlord sets the ground under you on fire (watch the orange rings), throws fans of fireballs and calls magma slimes at half health.',loot:'600 gold, 3 gold bars, iron ore, a ruby (once a day); rare: Ember ring (10%)'})}catch(e){}
@@ -11887,10 +11878,10 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   const got=F.give(),txt=[];for(const[k,n]of got){inv[k]=(inv[k]|0)+n;txt.push('+'+n+' '+INAME[k].toLowerCase())}addXp(3,F.xp);
   if(o.t==='shroom'&&o.v==='void'&&Math.random()<.08){inv.sapphire=(inv.sapphire|0)+1;txt.push('and a sapphire hidden in the moss!')}
   say(txt.join(' '));try{gTxt(x*16+8,y*16-20,txt[0],'#e060a0');setTimeout(()=>sfx('pickup'),90)}catch(e){}done();saveLocal();return true}
- {const _a=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
+ {SQHIT.wrap('098 more foraging nuts mushrooms cactus fruit',_a=>function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(en.some(n=>!n.dead&&!n._pet&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16)))return _a();const R=SCENE&&SCENE.room;
    if(!SCENE){if(tx<0||ty<0||tx>=N||ty>=N)return _a();const i=ty*N+tx,o=obj[i];if(o&&FOR[o.t]&&forageHit(o,tx,ty,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})}))return;return _a()}
-   if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&FOR[it.o.t]&&forageHit(it.o,tx,ty,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(ty*R.w+tx);R.gone.push({it,at:CLK})}))return}return _a()}}
+   if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&FOR[it.o.t]&&forageHit(it.o,tx,ty,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(ty*R.w+tx);R.gone.push({it,at:CLK})}))return}return _a()})}
 
  // ---- pets that bring you things ----
  const PETS={psquir:{n:'Squirrel',src:'picking berry bushes (1 in 1,000)',every:80,bring(){const r=Math.random();
@@ -11907,10 +11898,10 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
    const got=P2.bring(),txt=[];for(const[it,n]of got){if(it==='$'){GLD+=n;try{svg()}catch(e){}txt.push(n+' gold')}else{inv[it]=(inv[it]|0)+n;txt.push(n+' '+(n>1?(SN[it]||INAME[it]):INAME[it]).toLowerCase())}}
    say('Your '+P2.n.toLowerCase()+' brings you '+txt.join(' and ')+'!');try{const s=PST&&PST.get&&PST.get('me');gTxt(s?s.x:P.x,(s?s.y:P.y)-18,'+'+txt[0],'#f8d048');sfx('pickup')}catch(e){}saveLocal()}}
  // the drops: berry bushes give the squirrel, ores give their golem
- {const _a=attack;attack=function(){let ft=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);ft=it&&it.o.t}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];ft=o&&o.t}}catch(e){}
+ {SQHIT.wrap('098 more foraging nuts mushrooms cactus fruit',_a=>function(){let ft=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);ft=it&&it.o.t}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];ft=o&&o.t}}catch(e){}
    const b0=inv.berry|0,o0={};for(const k in PETS)if(PETS[k].ore)o0[k]=inv[PETS[k].ore]|0;_a();
    if(ft==='bush'&&(inv.berry|0)>b0&&(Math.random()<1/1000||window.SQSQUIRDROP))SQGIVEPET('psquir');
-   for(const k in o0)if((inv[PETS[k].ore]|0)>o0[k]&&(Math.random()<1/2000||window.SQGOLEMDROP===k))SQGIVEPET(k)}}
+   for(const k in o0)if((inv[PETS[k].ore]|0)>o0[k]&&(Math.random()<1/2000||window.SQGOLEMDROP===k))SQGIVEPET(k)})}
  // ---- how they look ----
  // the squirrel: side view, big curled tail, two hopping frames
  const SQM=[["..........RR..","........RRrrR.","...K....RrrrR.","..KRK...RrrR..","..RRRK..RrR...",".RERRRK.RR....","RRRRRRRRR.....",".RCRRRRRR.....","..CCRRRRK.....","..RRK.RRK....."],["..........RR..","........RRrrR.","...K...RRrrrR.","..KRK..RrrrR..","..RRRK.RrrR...",".RERRRKRRR....","RRRRRRRRR.....",".RCRRRRRR.....","..CCRRRRK.....",".RRK...RRK...."]];
@@ -12505,8 +12496,8 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  // Frostbite ring
  if(window.SQJK){SQGEMC.frost=['#a8e0ff','#3870b0'];const j={k:'ja_frost',n:'Frostbite ring',s:'ring',g:'frost',v:6000,d:'Your melee hits chill monsters, and one in five freezes them solid for a moment.'};SQJK[j.k]=j;
   INVK.push(j.k);EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]='Ring (rare, from the Frost Wyrm): '+j.d+' Wear it from the Bag.';SELLP[j.k]=2500;SN[j.k]=j.n+'s';SHORT[j.k]=j.n.toLowerCase()}
- {const _a=attack;attack=function(){if(!(window.SQJW&&SQJW.ring==='ja_frost'))return _a();const hp0=new Map();for(const n of en)if(!n.dead)hp0.set(n,n.hp);_a();
-   for(const[n,h]of hp0)if(!n.dead&&n.hp<h){if(!n.big&&Math.random()<.2)n.frozen=1.2;for(let k=0;k<4;k++)part(n.x,n.y-8,(Math.random()-.5)*50,-30-Math.random()*30,.4,'#c8f0ff',-20,1)}}}
+ {SQHIT.wrap('100 island bosses the sealed doors open',_a=>function(){if(!(window.SQJW&&SQJW.ring==='ja_frost'))return _a();const hp0=new Map();for(const n of en)if(!n.dead)hp0.set(n,n.hp);_a();
+   for(const[n,h]of hp0)if(!n.dead&&n.hp<h){if(!n.big&&Math.random()<.2)n.frozen=1.2;for(let k=0;k<4;k++)part(n.x,n.y-8,(Math.random()-.5)*50,-30-Math.random()*30,.4,'#c8f0ff',-20,1)}})}
  // Outlaw's hat: a helmet you can see (like the flame crown)
  {const k='eq_ohat',e={slot:'helm',n:'Outlaw\'s hat',ic:'helm',col:'#2a2a32',v:6000};EQ[k]=e;EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=3000;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase();
   IDESC[k]='RARE, from Black Jack, the Outlaw King. A black cowboy hat with a silver band. Defence like an adamant helmet.';inv[k]=inv[k]|0;
@@ -13292,8 +13283,8 @@ window.SQA=SQA;
   if(!n.dead&&roll(fxSum('slow')))n.slow=Math.max(n.slow||0,3);
   if(P.hp<6&&roll(fxSum('ls')))healP(1,'life steal')}
  const anyFx=()=>{for(const s of SLOTS){const r=rule(occ(s));if(r&&r.fx)return true}if(window.SQFXEXTRA&&SQFXEXTRA.length)for(const k of['crit','burn','slow','ls'])if(fxSum(k)>0)return true;return false};// perks (SQFXEXTRA) count too
- const _atk=attack;attack=function(){if(!anyFx())return _atk.apply(this,arguments);const hp0=new Map(en.map(n=>[n,n.hp])),np=PROJ.length,ns=SPELLS.length;const out=_atk.apply(this,arguments);
-  if(PROJ.length===np&&SPELLS.length===ns)for(const[n,h]of hp0)if(n.hp<h)try{onHit(n,h-n.hp,'melee')}catch(e){}return out};
+ SQHIT.wrap('111a2 gear rules',_atk=>function(){if(!anyFx())return _atk.apply(this,arguments);const hp0=new Map(en.map(n=>[n,n.hp])),np=PROJ.length,ns=SPELLS.length;const out=_atk.apply(this,arguments);
+  if(PROJ.length===np&&SPELLS.length===ns)for(const[n,h]of hp0)if(n.hp<h)try{onHit(n,h-n.hp,'melee')}catch(e){}return out});
  const _ah=arrowHit;arrowHit=function(p,n){const out=_ah.apply(this,arguments);if(p&&!p.hostile&&p.k==='arrow'&&anyFx())try{onHit(n,p.dmg|0,'arrow')}catch(e){}return out};
  const _sh=spellHit;spellHit=function(s,n,dmg){const out=_sh.apply(this,arguments);if(anyFx())try{onHit(n,dmg|0,'spell')}catch(e){}return out};
  const _ax=addXp;addXp=function(i,x){const b=fxSum('xp');if(b&&x>0)x=Math.max(x,Math.round(x*(1+b/100)));return _ax.call(this,i,x)};
@@ -14510,10 +14501,10 @@ window.SQA=SQA;
  const setHp=(t,v)=>{if(t.cave)t.cave.hp=v;else t.o.hp=v};
  const getHp=t=>t.cave?t.cave.hp:t.o.hp;
  // one hit breaks small ores
- const _a=attack;attack=function(){if(!sledge()||dead||menuOpen||pnOpen||BUILD||swing>0)return _a.apply(this,arguments);
+ SQHIT.wrap('113 sledgehammer smashes ore',_a=>function(){if(!sledge()||dead||menuOpen||pnOpen||BUILD||swing>0)return _a.apply(this,arguments);
   let t=null;try{const[tx,ty]=frontObjTile();t=objAt(tx,ty)}catch(e){}
   if(!t||!t.o||!small(t.o.t))return _a.apply(this,arguments);
-  const h=t.o.hp;t.o.hp=1;try{return _a.apply(this,arguments)}finally{if(t.o.hp===1)t.o.hp=h}};
+  const h=t.o.hp;t.o.hp=1;try{return _a.apply(this,arguments)}finally{if(t.o.hp===1)t.o.hp=h}});
  // while the slam breaks ores, the hits it makes for you aren't sent as sword swings
  function smash(tx,ty){const t=objAt(tx,ty);if(!t)return false;const typ=typeOf(t);if(!small(typ)&&!BOUL[typ])return false;if(!canMine(typ))return false;
   const K={x:P.x,y:P.y,f:face,sw:swing},h=getHp(t);setHp(t,1);
@@ -14776,17 +14767,17 @@ window.SQA=SQA;
  const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;let o=null;
    if(R&&R.region){const it=rgObjAt(R,tx,ty);o=it&&it.o}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N)o=obj[ty*N+tx];return o}catch(e){return null}};
  const kinOf=o=>{if(!o)return'';if(o.v==='dark')return'dark';if(o.v==='dead')return'dead';const t=String(o.t||'');for(const k of['oak','willow','maple','yew','pine'])if(t.indexOf(k)===0)return k;return/tree/.test(t)?'tree':''};
- const _a=attack;attack=function(){const k=pet(),T=TREEL[k];if(!T||(window.SQPETOFF&&SQPETOFF(k)))return _a.apply(this,arguments);const o=treeAt(),before={};for(const i in inv)if(isLog(i))before[i]=inv[i]|0;
+ SQHIT.wrap('116 pet abilities',_a=>function(){const k=pet(),T=TREEL[k];if(!T||(window.SQPETOFF&&SQPETOFF(k)))return _a.apply(this,arguments);const o=treeAt(),before={};for(const i in inv)if(isLog(i))before[i]=inv[i]|0;
   const out=_a.apply(this,arguments);try{for(const i in inv){if(!isLog(i))continue;const d=(inv[i]|0)-(before[i]|0);if(d<=0)continue;
     const ch=T.ch*(kinOf(o)===T.kin?2:1);if(Math.random()<ch){inv[i]=(inv[i]|0)+1;const n=(NP[k]&&NP[k].n)||'treeling';pop('+1 '+(INAME[i]||i).toLowerCase(),'#7cd060');
-     if(Math.random()<.35)say('Your '+n.toLowerCase()+' shakes loose an extra '+(INAME[i]||i).toLowerCase()+'!');try{sfx('rustle')}catch(e){}}break}}catch(e){}return out};
+     if(Math.random()<.35)say('Your '+n.toLowerCase()+' shakes loose an extra '+(INAME[i]||i).toLowerCase()+'!');try{sfx('rustle')}catch(e){}}break}}catch(e){}return out});
  // ---- mushroom pets ----
  const MP={pmush:{n:'Mushling',src:'mushroom patches (1 in 1,000)',odds:1/1000,cap:['#d83830','#a02020','#f86858'],dot:'#f8f0e0'},
   pglow:{n:'Glowcap',src:'mushroom patches (1 in 2,500)',odds:1/2500,cap:['#4878d8','#2c4ca0','#78b0f8'],dot:'#c8f8ff',glow:1}};
  for(const k in MP){NP[k]={n:MP[k].n,src:MP[k].src};if(LP&&!LP.some(p=>p.k===k))LP.push({k,n:MP[k].n,v:0,rare:1,c:[MP[k].cap[0],MP[k].cap[1],MP[k].cap[2]]})}
  // found while picking mushroom patches
- const _a2=attack;attack=function(){let o=null;try{o=treeAt()}catch(e){}const s0=inv.shroom|0;const out=_a2.apply(this,arguments);
-  try{if(o&&o.t==='shroom'&&(inv.shroom|0)>s0)for(const k in MP)if(Math.random()<MP[k].odds||window.SQMUSHDROP===k){SQGIVEPET(k);break}}catch(e){}return out};
+ SQHIT.wrap('116 pet abilities',_a2=>function(){let o=null;try{o=treeAt()}catch(e){}const s0=inv.shroom|0;const out=_a2.apply(this,arguments);
+  try{if(o&&o.t==='shroom'&&(inv.shroom|0)>s0)for(const k in MP)if(Math.random()<MP[k].odds||window.SQMUSHDROP===k){SQGIVEPET(k);break}}catch(e){}return out});
  // the Mushling: heals you, or brings mushrooms
  let mT=40;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(pet()!=='pmush'||(window.SQPETOFF&&SQPETOFF('pmush'))||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen))return;mT-=dt;if(mT>0)return;
   if(P.hp<6){P.hp=Math.min(6,P.hp+1);mT=45+Math.random()*20;say('Your mushling puffs healing spores at you. +1 heart');pop('+1 heart','#f86868');
@@ -15457,7 +15448,7 @@ window.SQA=SQA;
  const monsterAhead=()=>{const[fx,fy]=front(13);return en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)};
  let HIT=false;
  const _wt=wandTarget;wandTarget=function(){if(HIT)return null;return _wt.apply(this,arguments)};
- const _a=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||swing>0||FISH){return _a.apply(this,arguments)}
+ SQHIT.wrap('122 tool swings and hit',_a=>function(){if(dead||menuOpen||pnOpen||BUILD||swing>0||FISH){return _a.apply(this,arguments)}
   let f=null;try{f=frontObj();if(monsterAhead()||(typeof facingNpc==='function'&&facingNpc())||(window.SQSLEDGE&&SQSLEDGE()))f=null;
    if(f&&f.k&&!(f.k==='chop'?TL.axe>0:TL.pick>0))f=null}catch(e){f=null}
   const tool=f&&f.k,q0=window.SQPVQUIET,s0=swing;HIT=true;if(tool)window.SQPVQUIET=true;
@@ -15465,7 +15456,7 @@ window.SQA=SQA;
   // the game swung at the tree/rock: make sure it's the tool swing that shows
   if(tool&&s0<=0&&swing>0&&!(ACTN&&ACTN.t<.05&&(ACTN.type==='chop'||ACTN.type==='mine')))
    ACTN={type:f.k,t:0,dur:.32,face:[face[0],face[1]],tx:f.tx,ty:f.ty,hit:false,tree:f.t};
-  return out};
+  return out});
  // drawing: the tool swing indoors/on islands too (the game only drew it on Hollow), and no sword at the end of a cast
  let castUntil=0;
  const _pp=pP;pP=function(tm){const now=performance.now();if(typeof CASTT!=='undefined'&&CASTT>0)castUntil=now+swing*1000+30;
@@ -16608,7 +16599,7 @@ window.SQA=SQA;
   if(e.repeat){if(held)e.preventDefault();return}if(down())e.preventDefault()});
  addEventListener('keyup',e=>{if(e.key==='x'||e.key==='X')up()});addEventListener('blur',up);
  // HIT on ground you could till, with the can in hand and the hoe in the bag: swap to the hoe (Hollow 016, islands 072)
- {const _a=attack;attack=function(){try{if(!TL.hoe&&TL.can&&!TL.bow&&!WAND&&(inv.eq_hoe|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){
+ {SQHIT.before('140 off hand',()=>{try{if(!TL.hoe&&TL.can&&!TL.bow&&!WAND&&(inv.eq_hoe|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){
    const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18)){let ok=false;
     if(!SCENE)ok=!FARM.get(ty*N+tx)&&canTill(tx,ty);
@@ -16617,7 +16608,7 @@ window.SQA=SQA;
    // a dry crop in front, with the hoe in hand and the can in the bag: swap to the can (019's dig-up would answer first)
    if(!TL.can&&TL.hoe&&(inv.eq_can|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);let pl=null;
     if(!SCENE)pl=FARM.get(ty*N+tx);else{const R=typeof rbR==='function'?rbR():null;if(R)pl=rfMap(R.region).get(rbK(tx,ty))}
-    if(pl&&pl.c&&!ripe(pl)&&!wet(pl)&&swapTo('eq_can'))return}}catch(e){}return _a.apply(this,arguments)}}
+    if(pl&&pl.c&&!ripe(pl)&&!wet(pl)&&swapTo('eq_can'))return}}catch(e){}})}
  // controller R1 / anything else that "shoots": with the hoe or can in hand, use it
  {const _sa=shootAim;shootAim=function(first){if(!TL.bow&&!WAND&&(TL.hoe||TL.can)){if(first)try{viaOff(()=>attack())}catch(e){}return}return _sa.apply(this,arguments)}}
  // keyboard and mouse: HIT (Space, left click) is melee only. It doesn't shoot the bow (021 shot at monsters out of sword
@@ -16626,9 +16617,9 @@ window.SQA=SQA;
  // and controllers are unchanged.
  // Since 2026.11.13-8 this goes for every input: the hoe and can are used with the off-hand button (X / right-click,
  // controller R1, the touch TILL / WATER button), never with HIT. Only keyboard and mouse also keep HIT from shooting.
- {const _a=attack;attack=function(){if(VIA)return _a.apply(this,arguments);const pc=isPC&&!(typeof GPON!=='undefined'&&GPON);
+ {SQHIT.wrap('140 off hand',_a=>function(){if(VIA)return _a.apply(this,arguments);const pc=isPC&&!(typeof GPON!=='undefined'&&GPON);
    const h=TL.hoe,c=TL.can,bt=bowTarget;HID={h,c};TL.hoe=0;TL.can=0;if(pc)bowTarget=()=>null;
-   try{return _a.apply(this,arguments)}finally{TL.hoe=h;TL.can=c;bowTarget=bt;HID=null}}}
+   try{return _a.apply(this,arguments)}finally{TL.hoe=h;TL.can=c;bowTarget=bt;HID=null}})}
  // the off-hand button's name on this device, for hints
  function offHint(what){return(typeof GPON!=='undefined'&&GPON?'Press R1 to ':isPC?'Press X (or right-click) to ':'Tap '+(TL.can||/water/.test(what)?'WATER':'TILL')+' to ')+what}
  window.SQOFFHINT=offHint;
@@ -16866,7 +16857,7 @@ window.SQA=SQA;
  const yi=(R,x,y)=>y*R.w+x;
  const onDoorTile=(R,x,y)=>y<=DOORY&&YDOOR(R).some(dx=>Math.abs(x*16+8-dx)<16);
  function tillable(R,Y,x,y){if(x<0||y<2||x>=R.w||y>=R.h||onDoorTile(R,x,y))return false;const i=yi(R,x,y);return R.lay(x,y)===2&&!R.solid.has(i)&&!regrowing(R,i)&&!Y.furn.has(i)&&!Y.plots.has(i)}
- {const _a=attack;attack=function(){if(!isYard()||dead||menuOpen||pnOpen||BUILD||swing>0||FISH)return _a.apply(this,arguments);const R=SCENE.room,Y=SCENE.house;
+ {SQHIT.wrap('145 backyards',_a=>function(){if(!isYard()||dead||menuOpen||pnOpen||BUILD||swing>0||FISH)return _a.apply(this,arguments);const R=SCENE.room,Y=SCENE.house;
    const[x,y]=frontTile(),i=yi(R,x,y),p=Y.plots.get(i);
    if(Y.ro){if(p||Y.furn.has(i)){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}return _a.apply(this,arguments)}
    // keyboard and mouse: Space / left-click is melee only, the hoe and can work from X (140); a tool in the bag is swapped in
@@ -16879,7 +16870,7 @@ window.SQA=SQA;
     const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');try{sfx('swish')}catch(e){}return}
    if(tillable(R,Y,x,y)&&!en.some(n=>!n.dead)&&(TL.hoe||TL.can||(inv.eq_hoe|0)>0)&&want('eq_hoe')){swing=.25;Y.plots.set(i,{c:null,g:0,w:0,e:nowS2()});addXp(11,4);try{sfx('chop')}catch(e){}saveLocal(true);pub();return}
    if(R.lay(x,y)!==2&&!R.solid.has(i)&&!Y.furn.has(i)&&y>=2&&!onDoorTile(R,x,y)&&(TL.hoe||TL.can)&&!melee&&!en.some(n=>!n.dead)){swing=.2;say('You can only till grass.');try{sfx('swish')}catch(e){}return}
-   return _a.apply(this,arguments)}}
+   return _a.apply(this,arguments)})}
  // planting: PLANT mode with seeds from the Bag
  {const _sb=startBuild;startBuild=function(k){if(!isYard()||!SEED2CROP[k])return _sb.apply(this,arguments);if(SCENE.house.ro){say('You can\'t plant in a friend\'s yard.');closePanel();return}if((inv[k]|0)<1)return;
    BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')}}
@@ -16943,14 +16934,14 @@ window.SQA=SQA;
  const objAt=(R,x,y)=>R.items.find(it=>it.t==='_obj'&&!it.ring&&!it.gone&&it.x===x&&it.y===y);
  const regrowing=(R,i)=>R.gone&&R.gone.some(g2=>g2.it.y*R.w+g2.it.x===i);
  {const _df=drawFurn;drawFurn=function(it){if(it&&it.t==='_obj'&&it.gone&&SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court))return;return _df.apply(this,arguments)}}
- {const _a=attack;attack=function(){if(isYard()&&FISH&&!dead&&!menuOpen&&!pnOpen){FISH=null;say('You reel in your line');return}
+ {SQHIT.wrap('145 backyards',_a=>function(){if(isYard()&&FISH&&!dead&&!menuOpen&&!pnOpen){FISH=null;say('You reel in your line');return}
    if(!isYard()||dead||menuOpen||pnOpen||BUILD||FISH||swing>0)return _a.apply(this,arguments);const R=SCENE.room,[x,y]=frontTile(),it=objAt(R,x,y);
    // casting (the house scene's own HIT, 012, would take it otherwise; this is 093's island cast)
    if(!it){const[fx,fy]=front(14);if(fishWaterAt(Math.floor(fx/16),Math.floor(fy/16))&&!facingNpc()){if(!TL.rod){say('You need a fishing rod - buy one at the general store');return}
      const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}
    if(!it||en.some(n=>!n.dead))return _a.apply(this,arguments);
    if(SCENE.house.ro){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}
-   R.region='_yard';try{return _a.apply(this,arguments)}finally{delete R.region}}}
+   R.region='_yard';try{return _a.apply(this,arguments)}finally{delete R.region}})}
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{for(const R of[ROOMS.yard,ROOMS.court])for(let j=R.gone.length-1;j>=0;j--){const g2=R.gone[j];if(CLK-g2.at<=240)continue;
     const it=g2.it,here=SCENE&&SCENE.room===R;if(here&&Math.hypot(P.x-(it.x*16+8),P.y-(it.y*16+8))<40)continue;
     it.gone=false;it.o.hp=OHP[it.o.t]||3;rgCellAdd(R,it);R.solid.add(it.y*R.w+it.x);R.gone.splice(j,1)}}catch(e){}return out}}
@@ -20859,10 +20850,10 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
    r(1,4,10,5,'#3c2a3c');r(1,4,10,1,'#56404e');r(9,4,2,5,'#a890d0');r(10,5,1,3,'#7a40c8');r(3,6,1,1,'#9a6ae0');r(6,7,1,1,'#9a6ae0');return ICONC[key]=c.toDataURL()}}
  const isLog=k=>k==='wood'||/log$/.test(k);
  const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);return it&&it.o}}catch(e){}return null};
- {const _a=attack;attack=function(){let o=null;try{o=treeAt()}catch(e){}if(!o||o.v!=='dark'||SKOF[o.t]!==1)return _a.apply(this,arguments);
+ {SQHIT.wrap('199 void treant',_a=>function(){let o=null;try{o=treeAt()}catch(e){}if(!o||o.v!=='dark'||SKOF[o.t]!==1)return _a.apply(this,arguments);
    const b={};for(const k in inv)if(isLog(k))b[k]=inv[k]|0;const out=_a.apply(this,arguments);
    try{let n=0;for(const k in inv){if(!isLog(k)||k===VL)continue;const d=(inv[k]|0)-(b[k]|0);if(d>0){inv[k]-=d;n+=d}}
-    if(n>0){inv[VL]=(inv[VL]|0)+n;addXp(1,15*n);say('+'+n+' void log'+(n>1?'s':''));try{gTxt(P.x,P.y-30,'+'+n+' void log'+(n>1?'s':''),'#c8a0ff')}catch(e){}}}catch(e){console.warn('voidlog',e)}return out}}
+    if(n>0){inv[VL]=(inv[VL]|0)+n;addXp(1,15*n);say('+'+n+' void log'+(n>1?'s':''));try{gTxt(P.x,P.y-30,'+'+n+' void log'+(n>1?'s':''),'#c8a0ff')}catch(e){}}}catch(e){console.warn('voidlog',e)}return out})}
  // ---- the Void wand: element 'void', the strongest wand; every 4th hit heals you one heart ----
  const WV='eq_wvoid',VB=4;
  WSP.void={cost:3,col:'#9a5af0',c2:'#e8d0ff',sfx:'cvoid'};
@@ -20914,9 +20905,9 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  function kill(k){const a=A(),r=rec(k);if(!a||!a.on()||!r||r.k)return;try{a.DB().set(a.ref('guilds/'+GID()+'/'+K[k].path+'/k'),a.TS()).catch(()=>{})}catch(e){}}
  {const _se=sqEvent;sqEvent=function(type,item){const B=type==='islandboss'&&kindOf(item);if(B){try{kill(B.k);if(window.SQACH&&SQACH.add)SQACH.add('ibw')}catch(e){}return}return _se.apply(this,arguments)}}
  // each boss has a skill that fights it too: every melee hit that lands adds B.bonus() (the Treant: 1 + axe tier + Woodcutting/10)
- {const _a=attack;attack=function(){const S=window.SQIBST,b=S&&S.boss,B=b&&kindOf(b.ib);if(!B||b.dead||!B.bonus)return _a.apply(this,arguments);const h0=b.hp,out=_a.apply(this,arguments);
+ {SQHIT.wrap('199 void treant',_a=>function(){const S=window.SQIBST,b=S&&S.boss,B=b&&kindOf(b.ib);if(!B||b.dead||!B.bonus)return _a.apply(this,arguments);const h0=b.hp,out=_a.apply(this,arguments);
    try{if(b.hp<h0&&!b.dead){const ex=B.bonus();b.hp-=ex;addXp(B.sk,ex*4);DMGS.push({x:b.x+10,y:b.y-(B.tall||70),v:'+'+ex,t:0,c:B.bcol||'#a8e070',sc:curScene()});
-     for(let k=0;k<5;k++)part(b.x+(Math.random()-.5)*20,b.y-30,(Math.random()-.5)*80,-30-Math.random()*50,.5,B.chip[k%2],160,2)}}catch(e){}return out}}
+     for(let k=0;k<5;k++)part(b.x+(Math.random()-.5)*20,b.y-30,(Math.random()-.5)*80,-30-Math.random()*50,.5,B.chip[k%2],160,2)}}catch(e){}return out})}
  // pixel sprites from palette rows ('.' = empty), plus an all-white copy for the hit flash
  function mkSprite(TPAL,ROWS){const rows=ROWS.split('|'),h=rows.length,w=Math.max(...rows.map(r=>r.length)),eyes=[];
   const mk=wh=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');rows.forEach((r,y)=>{for(let i=0;i<r.length;i++){const ch=r[i];if(ch==='.')continue;x.fillStyle=wh?'#ffffff':TPAL[ch];x.fillRect(i,y,1,1);if(!wh&&TPAL[ch]==='#ffffff')eyes.push([i,y])}});return c};
@@ -21206,10 +21197,10 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  const nowS=()=>performance.now()/1000;
  // the same reach as the game's swing (004/014: 16 px around the point 13 px in front; bigger monsters 24 px), a little wider
  const target=()=>{try{const[fx,fy]=front(13);for(const n of en){if(!n||n.dead)continue;const r=(n.type==='boss'||n.big||n._wb)?30:20;if(Math.hypot(n.x-fx,n.y-fy)<r)return n}}catch(e){}return null};
- const _a=attack;attack=function(){
+ SQHIT.wrap('202 combat balance',_a=>function(){
   if(target()&&!window.SQSTABNOW){if(nowS()-lastHit<MELEE_GAP)return;const hp0=new Map(en.map(n=>[n,n.hp])),out=_a.apply(this,arguments);
    for(const[n,h]of hp0)if(n.hp<h||n.dead&&h>0){lastHit=nowS();break}return out}
-  return _a.apply(this,arguments)};
+  return _a.apply(this,arguments)});
  // Magic: every spell costs 1 mana less (fire/ice 1, storm/void 2, never below 1). `cost` becomes an accessor, so 111a2's setCosts
  // (which writes the base cost, or a Dev Suite rule's `mp`) and every description reading WSP[el].cost see the lower number.
  for(const el in WSP){let b=WSP[el].cost;Object.defineProperty(WSP[el],'cost',{get(){return Math.max(1,b-1)},set(v){b=v},enumerable:true,configurable:true})}
@@ -21357,8 +21348,8 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
   let was=null;setInterval(()=>{try{const up=!!(pnOpen||menuOpen);if(up!==was){was=up;document.body.classList.toggle('sqpnup',up)}}catch(e){}},120)}
  // HIT on touch/controller can still shoot at a monster in range (140 only stops that for keyboard/mouse), so facing a tree with a
  // monster nearby shot an arrow instead of chopping (Kass). When HIT's own word says it would gather (chop, mine, pick...), it never shoots.
- {const GATHER=/^(CHOP|MINE|PICK|FORAGE|HARVEST|SMASH|CUT|DIG)/;const _a=attack;attack=function(){let w='';try{w=window.SQWORDS?String(SQWORDS.hitWord()||''):''}catch(e){}
-   if(!GATHER.test(w)||typeof bowTarget!=='function')return _a.apply(this,arguments);const bt=bowTarget;bowTarget=()=>null;try{return _a.apply(this,arguments)}finally{bowTarget=bt}}}
+ {const GATHER=/^(CHOP|MINE|PICK|FORAGE|HARVEST|SMASH|CUT|DIG)/;SQHIT.wrap('205 bug sweep nov15',_a=>function(){let w='';try{w=window.SQWORDS?String(SQWORDS.hitWord()||''):''}catch(e){}
+   if(!GATHER.test(w)||typeof bowTarget!=='function')return _a.apply(this,arguments);const bt=bowTarget;bowTarget=()=>null;try{return _a.apply(this,arguments)}finally{bowTarget=bt}})}
 })();
 // ---- 214. Pets at home: place pets in your house, castle or backyard, where they live their own little lives ----
 // Every pet item (104's pet_<kind>) becomes a building kind (BK), so the bag shows PLACE for it and every home loader
@@ -21464,11 +21455,11 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
   for(const s of petsHere()){const d=Math.hypot(s.x-fx,s.y-fy);if(d<bd){bd=d;best=s}}
   if(!best){const R=SCENE.room,[x,y]=frontTile(),i=y*R.w+x,f=h.furn.get(i);if(f&&isPet(f.t))best=PS.get(hid(h)+':'+i)||null}
   return best?{h,i:best.i,f:h.furn.get(best.i),s:best}:null}
- {const _a=attack;attack=function(){try{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const o=front();if(o&&o.f){swing=.25;const name=EQ[o.f.t].n,now=performance.now(),s=o.s;
+ {SQHIT.before('206 pets at home',()=>{try{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const o=front();if(o&&o.f){swing=.25;const name=EQ[o.f.t].n,now=performance.now(),s=o.s;
      if(mine(o.h)&&arm&&arm.i===o.i&&arm.h===o.h&&now-arm.at<3000){arm=null;PS.delete(hid(o.h)+':'+o.i);pickFurn(o.i);say('Your '+name.toLowerCase()+' hops back into your bag.');return}
      if(s){JOY.set(s,now);s.hopAt=now;s.mode='petted';s.until=now+3200;s.mv=0;s.fl=P.x<s.x;s.woke=0;s.next=null;s.greetCd=now+15000}try{sfx('talk')}catch(e){}
      if(mine(o.h)){arm={i:o.i,h:o.h,at:now};say('You pet your '+name.toLowerCase()+'. Hit it again to pick it up.')}else say('You pet the '+name.toLowerCase()+'. It looks very pleased.');
-     return}}}catch(e){console.warn(e)}return _a.apply(this,arguments)}}
+     return}}}catch(e){console.warn(e)}})}
  window.SQHOMEPETS={isPet,armed:()=>arm&&performance.now()-arm.at<3000?arm:null,front,addKeys,PS,petsHere}})();
 // ---- 215. Age check and protected mode for younger players, plus quick chat phrases for everyone ----
 // Once per account the game asks for a birth year (a neutral question, any year allowed) and keeps only the age band:
@@ -22202,8 +22193,8 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  // picking it up: a hung painting comes back as the painting
  {const _pf=pickFurn;pickFurn=function(i){try{const h=SCENE&&SCENE.house,f=h&&h.furn.get(i);if(f&&/^pw_/.test(f.t))f.t='pt_'+idOf(f.t)}catch(e){}return _pf.apply(this,arguments)}}
  // HIT facing a hung painting picks it up (it's stored on the tile you stand on)
- {const _at=attack;attack=function(){try{if(!BUILD&&inHomeRoom()&&!dead&&!pnOpen&&!menuOpen&&swing<=0){const wx=facingWall();if(wx>=0){const R=SCENE.room,i=2*R.w+wx,f=SCENE.house.furn.get(i);
-     if(f&&/^pw_/.test(f.t)&&!SCENE.house.ro&&!SCENE.house._foreign){swing=.25;pickFurn(i);return}}}}catch(e){}return _at.apply(this,arguments)}}
+ {SQHIT.before('213 paintings and gallery',()=>{try{if(!BUILD&&inHomeRoom()&&!dead&&!pnOpen&&!menuOpen&&swing<=0){const wx=facingWall();if(wx>=0){const R=SCENE.room,i=2*R.w+wx,f=SCENE.house.furn.get(i);
+     if(f&&/^pw_/.test(f.t)&&!SCENE.house.ro&&!SCENE.house._foreign){swing=.25;pickFurn(i);return}}}}catch(e){}})}
  // ---- who made it: a label when you face a painting ----
  function facedPainting(){if(!SCENE)return null;const R=SCENE.room;const[x,y]=frontTile();
   if(SCENE.id==='gallery'){for(const it of R.items){if(it.t!=='_ptw'&&it.t!=='_pte'||!it.pid)continue;const w=it.w||1;if(x>=it.x&&x<it.x+w&&(it.t==='_ptw'?y<=1:y===it.y))return it.pid}return null}
@@ -22487,7 +22478,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
   const[gx,gy]=front(6);const s2=starAt(gx,gy);if(s2>=0)return{k:'star',i:s2};return null}
  window.SQHITWORD=()=>{try{const t=target();if(!t)return'';return t.k==='star'?'PICK':'MINE'}catch(e){return''}};
  let LAST=0;
- {const _at=attack;attack=function(){let t=null;try{t=target()}catch(e){}if(!t||BUILD||pnOpen)return _at.apply(this,arguments);
+ {SQHIT.wrap('215 meteor strikes',_at=>function(){let t=null;try{t=target()}catch(e){}if(!t||BUILD||pnOpen)return _at.apply(this,arguments);
    const n=performance.now();if(swing>0||n-LAST<330)return;LAST=n;
    if(t.k==='star'){ST.star.add(t.i);const c=1+(Math.random()<.5?1:0);inv.stardust=(inv.stardust|0)+c;try{SQACH.add('mtdust',c)}catch(e){}try{sfx('pickup')}catch(e){}try{gTxt(P.x,P.y-30,'+'+c+' stardust','#c8a8ff')}catch(e){say('+'+c+' stardust')}return}
    if(!(TL.pick>0)){say('You need a pickaxe.');return}
@@ -22498,7 +22489,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
      try{gTxt(P.x,P.y-30,'+'+c+' meteorite ore','#ff80d8')}catch(e){}say('The vein crumbles. +'+c+' meteorite ore!')}
     else{const left=Math.max(0,CFG.vhp-veinHits(t.i));if(left%10===0)say('The vein is cracking... ('+left+' hits left)')}}
    else{const d=1+(TL.pick|0)+Math.floor(lv()/10);ST.mine.c=Math.min(190000,ST.mine.c+d);try{addXp(MI,6+d)}catch(e){}try{gTxt(CUR.x,CUR.y-26,'-'+d,'#ffb060')}catch(e){}
-    if(coreLeft()<=0)payCore()}}}
+    if(coreLeft()<=0)payCore()}})}
  // ---- drawing ----
  const sx=x=>(x-camX())*Z,sy=y=>(y-camY())*Z,px=(x,y,c,s)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),s,s)};
  let VF=null;function veinFrames(){if(VF)return VF;let S=null;try{S=hdSprites()}catch(e){}if(!S||!S.ore||!S.ore.length)return null;
@@ -22911,8 +22902,8 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
   else if(COATK==='pot_zap'){let from=n,hit=new Set([n]),d=Math.max(1,Math.round(dmg*.6));const jumps=PK('br_spark')?3:2;
    for(let j=0;j<jumps;j++){let best=null,bd=48;for(const m of en){if(hit.has(m)||m.dead||m.hp<=0)continue;const r=Math.hypot(m.x-from.x,m.y-from.y);if(r<bd){bd=r;best=m}}if(!best)break;
     ZAPS.push({a:{x:from.x,y:from.y},b:{x:best.x,y:best.y},t:0,sc:curScene()});hit.add(best);hitE(best,d,'#70d8ff','melee');from=best;d=Math.max(1,Math.round(d*.7))}}}
- {const _at=attack;attack=function(){if(!DAG||!COATK)return _at.apply(this,arguments);const H=new Map();for(const n of en)if(!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<60)H.set(n,n.hp);
-   const out=_at.apply(this,arguments);try{for(const[n,hp]of H){if(n.hp<hp)onStrike(n,hp-n.hp)}}catch(e){}return out}}
+ {SQHIT.wrap('218 brewing and daggers',_at=>function(){if(!DAG||!COATK)return _at.apply(this,arguments);const H=new Map();for(const n of en)if(!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<60)H.set(n,n.hp);
+   const out=_at.apply(this,arguments);try{for(const[n,hp]of H){if(n.hp<hp)onStrike(n,hp-n.hp)}}catch(e){}return out})}
  // ---- drawing: coated dagger, rings, lightning, flames on burning monsters, the coat timer ----
  const sxp=x=>(x-camX())*Z,syp=y=>(y-camY())*Z;
  {const _ps=pS;pS=function(n,tm){const out=_ps.apply(this,arguments);try{if(n&&n.burn>0&&!n.dead){const f=Math.floor(tm*9),w=(n.big||n.boss)?28:14;g.save();
@@ -23214,8 +23205,8 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
    const f=r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1],x=(r.tx!=null?r.tx:r.x)+f[0]*24,y=(r.ty!=null?r.ty:r.y)+f[1]*24;
    if(Math.floor(x/16)===tx&&Math.floor(y/16)===ty)out.push(u)}return out}
  let castAt=0;
- {const _a=attack;attack=function(){const had=!!FISH;const out=_a.apply(this,arguments);try{if(!had&&FISH){const tx=Math.floor(FISH.bx/16),ty=Math.floor(FISH.by/16);
-    if(others(tx,ty).length){FISH=null;say('Someone is already fishing there.');try{sfx('swish')}catch(e){}}else castAt=performance.now()}}catch(e){}return out}}
+ {SQHIT.wrap('222 ponds and fishing spots',_a=>function(){const had=!!FISH;const out=_a.apply(this,arguments);try{if(!had&&FISH){const tx=Math.floor(FISH.bx/16),ty=Math.floor(FISH.by/16);
+    if(others(tx,ty).length){FISH=null;say('Someone is already fishing there.');try{sfx('swish')}catch(e){}}else castAt=performance.now()}}catch(e){}return out})}
  {let acc=0;const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{acc+=dt;if(acc>.4){acc=0;if(FISH&&castAt&&performance.now()-castAt<3000){const o=others(Math.floor(FISH.bx/16),Math.floor(FISH.by/16));
      if(o.some(u=>u<me())){FISH=null;castAt=0;try{if(typeof SQDO!=='undefined'&&SQDO&&SQDO.kind==='reel')SQDO=null}catch(e){}say('Someone is already fishing there.')}}}}catch(e){}return out}}
 })();

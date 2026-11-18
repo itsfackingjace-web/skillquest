@@ -56,10 +56,10 @@
   const got=F.give(),txt=[];for(const[k,n]of got){inv[k]=(inv[k]|0)+n;txt.push('+'+n+' '+INAME[k].toLowerCase())}addXp(3,F.xp);
   if(o.t==='shroom'&&o.v==='void'&&Math.random()<.08){inv.sapphire=(inv.sapphire|0)+1;txt.push('and a sapphire hidden in the moss!')}
   say(txt.join(' '));try{gTxt(x*16+8,y*16-20,txt[0],'#e060a0');setTimeout(()=>sfx('pickup'),90)}catch(e){}done();saveLocal();return true}
- {const _a=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
+ {SQHIT.wrap('098 more foraging nuts mushrooms cactus fruit',_a=>function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(en.some(n=>!n.dead&&!n._pet&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16)))return _a();const R=SCENE&&SCENE.room;
    if(!SCENE){if(tx<0||ty<0||tx>=N||ty>=N)return _a();const i=ty*N+tx,o=obj[i];if(o&&FOR[o.t]&&forageHit(o,tx,ty,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})}))return;return _a()}
-   if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&FOR[it.o.t]&&forageHit(it.o,tx,ty,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(ty*R.w+tx);R.gone.push({it,at:CLK})}))return}return _a()}}
+   if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&FOR[it.o.t]&&forageHit(it.o,tx,ty,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(ty*R.w+tx);R.gone.push({it,at:CLK})}))return}return _a()})}
 
  // ---- pets that bring you things ----
  const PETS={psquir:{n:'Squirrel',src:'picking berry bushes (1 in 1,000)',every:80,bring(){const r=Math.random();
@@ -76,10 +76,10 @@
    const got=P2.bring(),txt=[];for(const[it,n]of got){if(it==='$'){GLD+=n;try{svg()}catch(e){}txt.push(n+' gold')}else{inv[it]=(inv[it]|0)+n;txt.push(n+' '+(n>1?(SN[it]||INAME[it]):INAME[it]).toLowerCase())}}
    say('Your '+P2.n.toLowerCase()+' brings you '+txt.join(' and ')+'!');try{const s=PST&&PST.get&&PST.get('me');gTxt(s?s.x:P.x,(s?s.y:P.y)-18,'+'+txt[0],'#f8d048');sfx('pickup')}catch(e){}saveLocal()}}
  // the drops: berry bushes give the squirrel, ores give their golem
- {const _a=attack;attack=function(){let ft=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);ft=it&&it.o.t}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];ft=o&&o.t}}catch(e){}
+ {SQHIT.wrap('098 more foraging nuts mushrooms cactus fruit',_a=>function(){let ft=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);ft=it&&it.o.t}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];ft=o&&o.t}}catch(e){}
    const b0=inv.berry|0,o0={};for(const k in PETS)if(PETS[k].ore)o0[k]=inv[PETS[k].ore]|0;_a();
    if(ft==='bush'&&(inv.berry|0)>b0&&(Math.random()<1/1000||window.SQSQUIRDROP))SQGIVEPET('psquir');
-   for(const k in o0)if((inv[PETS[k].ore]|0)>o0[k]&&(Math.random()<1/2000||window.SQGOLEMDROP===k))SQGIVEPET(k)}}
+   for(const k in o0)if((inv[PETS[k].ore]|0)>o0[k]&&(Math.random()<1/2000||window.SQGOLEMDROP===k))SQGIVEPET(k)})}
  // ---- how they look ----
  // the squirrel: side view, big curled tail, two hopping frames
  const SQM=[["..........RR..","........RRrrR.","...K....RrrrR.","..KRK...RrrR..","..RRRK..RrR...",".RERRRK.RR....","RRRRRRRRR.....",".RCRRRRRR.....","..CCRRRRK.....","..RRK.RRK....."],["..........RR..","........RRrrR.","...K...RRrrrR.","..KRK..RrrrR..","..RRRK.RrrR...",".RERRRKRRR....","RRRRRRRRR.....",".RCRRRRRR.....","..CCRRRRK.....",".RRK...RRK...."]];

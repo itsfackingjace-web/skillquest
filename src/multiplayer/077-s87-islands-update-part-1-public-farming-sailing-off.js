@@ -32,7 +32,7 @@ function sfCommit(before){if(!before)return;const area=before.area,now=sfNow(),A
   if(!b||!p)continue;const old=A[k]||{};
   if((b.c||null)!==(p.c||null)){if(!p.c)sfWrite(area,k,{c:'',g:0,t:now,w:0,e:now});else{const ww=Math.max(+old.w||0,p.w>CLK?now+(p.w-CLK)*1000:0);sfWrite(area,k,{c:p.c,g:0,t:now,w:ww,e:0})}continue}
   if(p.w!==b.w&&p.w>CLK){sfWrite(area,k,{c:p.c||'',g:sfGrowth(old,now),t:now,w:now+(p.w-CLK)*1000,e:p.c?0:(+old.e||now)})}}}
-{const _a=attack;attack=function(){const b=sfAround();_a();try{sfCommit(b)}catch(e){console.warn(e)}}}
+{SQHIT.wrap('077 islands update part 1 public farming',_a=>function(){const b=sfAround();_a();try{sfCommit(b)}catch(e){console.warn(e)}})}
 {const _p=placeBuild;placeBuild=function(){const b=BUILD&&isSeed(BUILD.k)?sfAround():null;_p();if(b)try{sfCommit(b)}catch(e){console.warn(e)}}}
 {const _u=upd;upd=function(dt){_u(dt);try{sfRebuild()}catch(e){}}}
 // nobody owns a plot any more: other players' old personal plots are no longer shown, and yours aren't published

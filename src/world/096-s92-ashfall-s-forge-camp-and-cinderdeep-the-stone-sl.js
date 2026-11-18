@@ -72,8 +72,8 @@ function treelingSprite(k,f){const key=k+f;if(TLC[key])return TLC[key];const c=d
 
 // ======== Void Trees ========
 // the purple-leaved trees of the Shattered Expanse: their name floats up when you chop one
-{const _a=attack;attack=function(){let vt=null;try{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const[fx,fy]=front(13),it=rgObjAt(R,Math.floor(fx/16),Math.floor(fy/16));if(it&&it.o.v==='dark'&&SKOF[it.o.t]===1)vt=it}}catch(e){}
-  _a();if(vt&&(swing>0)){const now=performance.now();if(!vt._vtn||now-vt._vtn>2500){vt._vtn=now;try{gTxt(vt.x*16+8,vt.y*16-34,'Void Tree','#c8a0ff')}catch(e){}}}}}
+{SQHIT.wrap('096 ashfall s forge camp and cinderdeep',_a=>function(){let vt=null;try{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const[fx,fy]=front(13),it=rgObjAt(R,Math.floor(fx/16),Math.floor(fy/16));if(it&&it.o.v==='dark'&&SKOF[it.o.t]===1)vt=it}}catch(e){}
+  _a();if(vt&&(swing>0)){const now=performance.now();if(!vt._vtn||now-vt._vtn>2500){vt._vtn=now;try{gTxt(vt.x*16+8,vt.y*16-34,'Void Tree','#c8a0ff')}catch(e){}}}})}
 
 // ======== the Stone Sledgehammer ========
 var SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
@@ -180,13 +180,13 @@ function boulderHit(o,x,y,done){const B=BOUL[o.t];if(!B)return false;
  if(stay){o.hp=OHP[o.t]||40;try{gTxt(x*16+8,y*16-44,'Still standing!',SKC[2])}catch(e){}}else done();saveLocal();return true}
 window.SQBOULDERHIT=boulderHit;
 {const BROKE=[];
- const _a=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();
+ SQHIT.wrap('096 ashfall s forge camp and cinderdeep',_a=>function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();
   const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);if(en.some(n=>!n.dead&&!n._pet&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16)))return _a();const R=SCENE&&SCENE.room;
   if(!SCENE){if(tx<0||ty<0||tx>=N||ty>=N)return _a();const i=ty*N+tx,o=obj[i];if(o&&BOUL[o.t]&&boulderHit(o,tx,ty,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})}))return;return _a()}
   if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&BOUL[it.o.t]&&boulderHit(it.o,tx,ty,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(ty*R.w+tx);R.gone.push({it,at:CLK})}))return;return _a()}
   if(R&&R.cave){const it=R.items.find(q=>q.t==='boulder'&&q.x===tx&&q.y===ty&&!q.gone);if(it){const o={t:it.ore||'boulder',hp:it.hp==null?24:it.hp};
     const r=boulderHit(o,tx,ty,()=>{it.gone=true;const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx);BROKE.push({R,it,at:performance.now()})});it.hp=o.hp;it.shake=o.shake;if(r)return}}
-  return _a()};
+  return _a()});
  // the Slime Caverns' boulders come back after five minutes (dungeon floors are rebuilt each day anyway)
  const _u=upd;upd=function(dt){_u(dt);if(!BROKE.length)return;const now=performance.now();for(let j=BROKE.length-1;j>=0;j--){const b=BROKE[j];if(now-b.at<3e5)continue;if(SCENE&&SCENE.room===b.R&&Math.hypot(P.x-(b.it.x*16+8),P.y-(b.it.y*16+8))<24)continue;
    b.it.gone=false;b.it.hp=null;if(!b.R.items.includes(b.it))b.R.items.push(b.it);b.R.solid.add(b.it.y*b.R.w+b.it.x);BROKE.splice(j,1)}}}
@@ -347,8 +347,8 @@ function drawEmberl(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs
 // the Ember ring: your sword sets monsters burning
 if(window.SQJK){SQGEMC.ember=['#f87020','#802008'];const j={k:'ja_ember',n:'Ember ring',s:'ring',g:'ember',v:4500,d:'Your melee hits set monsters on fire.'};SQJK[j.k]=j;
  INVK.push(j.k);if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]='Ring (rare, from the Emberlord): '+j.d+' Wear it from the Bag.';SELLP[j.k]=1800;SN[j.k]=j.n+'s';if(typeof SHORT!=='undefined')SHORT[j.k]=j.n.toLowerCase()}
-{const _a=attack;attack=function(){const on=window.SQJW&&SQJW.ring==='ja_ember';if(!on)return _a();const hp0=new Map();for(const n of en)if(!n.dead)hp0.set(n,n.hp);_a();
-  for(const[n,h]of hp0)if(!n.dead&&n.hp<h&&n.type!=='emberl'){n.burn=Math.max(n.burn||0,3);for(let k=0;k<4;k++)part(n.x,n.y-8,(Math.random()-.5)*60,-40-Math.random()*40,.4,k%2?'#f86020':'#f8b030',-30,1)}}}
+{SQHIT.wrap('096 ashfall s forge camp and cinderdeep',_a=>function(){const on=window.SQJW&&SQJW.ring==='ja_ember';if(!on)return _a();const hp0=new Map();for(const n of en)if(!n.dead)hp0.set(n,n.hp);_a();
+  for(const[n,h]of hp0)if(!n.dead&&n.hp<h&&n.type!=='emberl'){n.burn=Math.max(n.burn||0,3);for(let k=0;k<4;k++)part(n.x,n.y-8,(Math.random()-.5)*60,-40-Math.random()*40,.4,k%2?'#f86020':'#f8b030',-30,1)}})}
 
 // ======== the wiki ========
 try{WK_DUN.push({n:'Cinderdeep',w:'North-east hills of the Ashfall Coast',boss:'The Emberlord',bhp:EL_HP,d:'Six floors of ash and lava pools (don\'t stand in them): cinder beetles, ember skeletons, magma slimes, bats and scorpions. The Emberlord sets the ground under you on fire (watch the orange rings), throws fans of fireballs and calls magma slimes at half health.',loot:'600 gold, 3 gold bars, iron ore, a ruby (once a day); rare: Ember ring (10%)'})}catch(e){}

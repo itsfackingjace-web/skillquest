@@ -194,9 +194,9 @@ function xAct(a){const n=TALKN;
  svg();saveLocal(true);rPn()}
 const _oc20=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.xb');if(b){xAct(b.dataset.a);return}_oc20(e)};
 // bait: faster bites, and sometimes a bonus fish
-const _atk20=attack;attack=function(){
+SQHIT.wrap('020 saltmere a port town to the',_atk20=>function(){
  if(!dead&&!menuOpen&&!pnOpen&&!SCENE&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const[x,y]=frontTile(),s=SIGNS.get(y*N+x);if(s){say(s);sfx('talk');swing=.2;return}}
- const had=!!FISH;_atk20();if(!had&&FISH&&(inv.bait|0)>0){inv.bait--;FISH.wait*=.4;FISH.bait=1;say('You cast your line with bait...')}};
+ const had=!!FISH;_atk20();if(!had&&FISH&&(inv.bait|0)>0){inv.bait--;FISH.wait*=.4;FISH.bait=1;say('You cast your line with bait...')}});
 const _cf20=catchFish;catchFish=function(){const bait=FISH&&FISH.bait,before=fishKeys().map(k=>inv[k]|0);_cf20();
  if(bait){const i=fishKeys().findIndex((k,j)=>(inv[k]|0)>before[j]);if(i>=0&&Math.random()<.3){const k=fishKeys()[i];inv[k]++;say('A double catch! Two '+iname(k)+'!')}}
  if(FISH){if((inv.bait|0)>0){inv.bait--;FISH.wait*=.4;FISH.bait=1}else FISH.bait=0}};

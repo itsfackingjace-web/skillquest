@@ -69,13 +69,12 @@
   // the Woodcutting/Mining "stays standing" perks (038's STAYP) work on these too
   let stay=false;try{stay=Math.random()<sumP(sk,STAYP)}catch(e){}
   if(stay){o.hp=OHP[o.t]||3;try{gTxt(P.x+face[0]*16,P.y-40,'Still standing!',SKC[sk])}catch(e){}}else done();setTimeout(()=>sfx('pickup'),90);saveLocal()}
- const _atk64=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
+ SQHIT.before('083 world content fewer trees higher tier',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){
     if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const i=ty*N+tx,o=obj[i];if(o&&TIER[o.t]){tierHit(o,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})});return}}
     const R=SCENE&&SCENE.room;
     if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&TIER[it.o.t]){tierHit(it.o,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(it.y*R.w+it.x);R.gone.push({it,at:CLK})});return}}
-    else if(R&&R.dun){const it=R.items.find(q=>q.dmine&&q.x===tx&&q.y===ty);if(it){tierHit(it.o,()=>{const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx)});return}}}}
-  _atk64()};
+    else if(R&&R.dun){const it=R.items.find(q=>q.dmine&&q.x===tx&&q.y===ty);if(it){tierHit(it.o,()=>{const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx)});return}}}}});
  // campfires on the other islands: each island keeps its own fires
  const fireStash={};window.FIRESTASH=fireStash;let fireReg=curRegion();
  const _u64c=upd;upd=function(dt){const r=window.fireKey64?fireKey64():curRegion();if(r!==fireReg){fireStash[fireReg]=fires.filter(f=>!f._rp);fires=(fireStash[r]||[]).filter(f=>f.life>0);fireReg=r}_u64c(dt)};

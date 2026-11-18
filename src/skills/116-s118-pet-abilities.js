@@ -15,17 +15,17 @@
  const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;let o=null;
    if(R&&R.region){const it=rgObjAt(R,tx,ty);o=it&&it.o}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N)o=obj[ty*N+tx];return o}catch(e){return null}};
  const kinOf=o=>{if(!o)return'';if(o.v==='dark')return'dark';if(o.v==='dead')return'dead';const t=String(o.t||'');for(const k of['oak','willow','maple','yew','pine'])if(t.indexOf(k)===0)return k;return/tree/.test(t)?'tree':''};
- const _a=attack;attack=function(){const k=pet(),T=TREEL[k];if(!T||(window.SQPETOFF&&SQPETOFF(k)))return _a.apply(this,arguments);const o=treeAt(),before={};for(const i in inv)if(isLog(i))before[i]=inv[i]|0;
+ SQHIT.wrap('116 pet abilities',_a=>function(){const k=pet(),T=TREEL[k];if(!T||(window.SQPETOFF&&SQPETOFF(k)))return _a.apply(this,arguments);const o=treeAt(),before={};for(const i in inv)if(isLog(i))before[i]=inv[i]|0;
   const out=_a.apply(this,arguments);try{for(const i in inv){if(!isLog(i))continue;const d=(inv[i]|0)-(before[i]|0);if(d<=0)continue;
     const ch=T.ch*(kinOf(o)===T.kin?2:1);if(Math.random()<ch){inv[i]=(inv[i]|0)+1;const n=(NP[k]&&NP[k].n)||'treeling';pop('+1 '+(INAME[i]||i).toLowerCase(),'#7cd060');
-     if(Math.random()<.35)say('Your '+n.toLowerCase()+' shakes loose an extra '+(INAME[i]||i).toLowerCase()+'!');try{sfx('rustle')}catch(e){}}break}}catch(e){}return out};
+     if(Math.random()<.35)say('Your '+n.toLowerCase()+' shakes loose an extra '+(INAME[i]||i).toLowerCase()+'!');try{sfx('rustle')}catch(e){}}break}}catch(e){}return out});
  // ---- mushroom pets ----
  const MP={pmush:{n:'Mushling',src:'mushroom patches (1 in 1,000)',odds:1/1000,cap:['#d83830','#a02020','#f86858'],dot:'#f8f0e0'},
   pglow:{n:'Glowcap',src:'mushroom patches (1 in 2,500)',odds:1/2500,cap:['#4878d8','#2c4ca0','#78b0f8'],dot:'#c8f8ff',glow:1}};
  for(const k in MP){NP[k]={n:MP[k].n,src:MP[k].src};if(LP&&!LP.some(p=>p.k===k))LP.push({k,n:MP[k].n,v:0,rare:1,c:[MP[k].cap[0],MP[k].cap[1],MP[k].cap[2]]})}
  // found while picking mushroom patches
- const _a2=attack;attack=function(){let o=null;try{o=treeAt()}catch(e){}const s0=inv.shroom|0;const out=_a2.apply(this,arguments);
-  try{if(o&&o.t==='shroom'&&(inv.shroom|0)>s0)for(const k in MP)if(Math.random()<MP[k].odds||window.SQMUSHDROP===k){SQGIVEPET(k);break}}catch(e){}return out};
+ SQHIT.wrap('116 pet abilities',_a2=>function(){let o=null;try{o=treeAt()}catch(e){}const s0=inv.shroom|0;const out=_a2.apply(this,arguments);
+  try{if(o&&o.t==='shroom'&&(inv.shroom|0)>s0)for(const k in MP)if(Math.random()<MP[k].odds||window.SQMUSHDROP===k){SQGIVEPET(k);break}}catch(e){}return out});
  // the Mushling: heals you, or brings mushrooms
  let mT=40;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(pet()!=='pmush'||(window.SQPETOFF&&SQPETOFF('pmush'))||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen))return;mT-=dt;if(mT>0)return;
   if(P.hp<6){P.hp=Math.min(6,P.hp+1);mT=45+Math.random()*20;say('Your mushling puffs healing spores at you. +1 heart');pop('+1 heart','#f86868');

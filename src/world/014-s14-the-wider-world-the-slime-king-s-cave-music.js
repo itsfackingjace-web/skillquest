@@ -28,11 +28,11 @@ function caveAttack(){if(swing>0)return;swing=.25;const[fx,fy]=front(13),dm=1+TL
   n.hp-=d;const kb=n.type==='boss'||n.big?2:5;n.kx=face[0]*kb;n.ky=face[1]*kb;hit=true;addXp(0,4*d);addXp(7,3);
   if(n.hp<=0){n.dead=1;kills++;GLD+=2+Math.floor(Math.random()*5);addXp(0,12);if(n.type!=='boss'&&Math.random()<.6)inv.meat++;enemyDrop(n)}}}
  sfx(hit?'hit':'swish')}
-const _atk14=attack;attack=function(){if(dead||menuOpen||pnOpen)return;
+SQHIT.wrap('014 the wider world the slime king',_atk14=>function(){if(dead||menuOpen||pnOpen)return;
  if(SCENE&&SCENE.room.cave&&!BUILD){caveAttack();return}
  if(!SCENE&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(13),tx=Math.floor(fx/T),ty=Math.floor(fy/T);
   if(tx>=0&&ty>=0&&tx<N&&ty<N){const i=ty*N+tx,o=obj[i];if(o&&(o.t==='ore'||o.t==='pine'||o.t==='cactus')&&!facingNpc()&&!en.some(n=>Math.hypot(n.x-fx,n.y-fy)<16)){swing=.25;hitSpecial(i,o);return}}}
- const alive=en.filter(n=>!n.dead);_atk14();for(const n of alive)if(n.dead&&!n.dropped){n.dropped=1;enemyDrop(n)}};
+ const alive=en.filter(n=>!n.dead);_atk14();for(const n of alive)if(n.dead&&!n.dropped){n.dropped=1;enemyDrop(n)}});
 function drawWolf(n,tm){const x=Math.round(n.x),y=Math.round(n.y),f=P.x<n.x,hit=Math.abs(n.kx)+Math.abs(n.ky)>.8,st=Math.floor(tm*8+n.x)%2,c=hit?'#ffffff':'#8890a0',cd=hit?'#e0e0e0':'#5c6474',cl=hit?'#fff':'#c8d0dc';
  shd(x,y+5,16);const W2=(a,b,w,hh,col)=>Rg(x+(f?-a-w:a),y+b,w,hh,col);
  for(const[a,b,w,hh]of[[-7,-4,12,6],[3,-8,6,6],[-9,-5,3,2],[-6,2,2,4],[2,2,2,4],[4,-10,2,2],[7,-10,2,2]])W2(a-1,b-1,w+2,hh+2,O);

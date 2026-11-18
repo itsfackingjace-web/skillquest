@@ -5,8 +5,8 @@
  const _u=upd;upd=function(dt){_u(dt);if(dead||menuOpen||pnOpen)return;for(const n of en){if(n.dead||n._rp||n._wb||n.big||n.type==='boss'||n.type==='bonelord')continue;
    const dx=n.x-P.x,dy=n.y-P.y,d=Math.hypot(dx,dy);if(d>=MIND)continue;const ux=d>.01?dx/d:-face[0]||1,uy=d>.01?dy/d:-face[1]||0,nx=P.x+ux*MIND,ny=P.y+uy*MIND;
    if(!solid(nx,ny+4)){n.x=nx;n.y=ny}}};
- const _a=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0&&!BUILD&&!FISH){const[fx,fy]=front(13);if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){let best=null,bd=18;
-    for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}if(best){const dx=best.x-P.x,dy=best.y-P.y;face=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx)||1,0]:[0,Math.sign(dy)||1]}}}return _a()}}
+ SQHIT.before('090 monsters keep a little distance dungeon',()=>{if(!dead&&!menuOpen&&!pnOpen&&swing<=0&&!BUILD&&!FISH){const[fx,fy]=front(13);if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){let best=null,bd=18;
+    for(const n of en){if(n.dead)continue;const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}if(best){const dx=best.x-P.x,dy=best.y-P.y;face=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx)||1,0]:[0,Math.sign(dy)||1]}}}})}
 // Every dungeon's last floor has an exit door near the boss's lair: step on it to climb straight back outside.
 {const _da=dArrive;dArrive=function(R,from){_da(R,from);const D=R.dun;if(!D||R.items.some(it=>it.t==='stairs')||R.items.some(it=>it.t==='dexit'))return;
   const b=D.boss||[Math.floor(R.w/2),Math.floor(R.h/2)],W=R.w,ok=(x,y)=>x>0&&y>2&&x<W-1&&y<R.h-1&&!R.solid.has(y*W+x)&&!R.solid.has((y-1)*W+x)&&!R.items.some(it=>it.x===x&&it.y===y);

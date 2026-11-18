@@ -19,7 +19,7 @@ const DUMCAP=30,useKey=()=>GPON?'L1':isPC?'T':'the USE button';
 let dumHintT=-99;
 function dumHint(){const now=performance.now()/1000;if(now-dumHintT>40){dumHintT=now;say('Training dummy: press '+useKey()+' next to it to pick it up.')}}
 // HIT on a dummy: same Attack practice as before, plus a reminder how to pick it up
-const _atk33=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o&&o.t==='dummy'&&dummyTip)dumHint()}_atk33()};
+SQHIT.before('033 every workstation draws on the house',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o&&o.t==='dummy'&&dummyTip)dumHint()}});
 // arrows and spells that reach a dummy hit it
 function dummyAt(px,py){const tx=Math.floor(px/16),ty=Math.floor(py/16);
  if(SCENE){if(!inHome())return null;const R=SCENE.room;if(tx<0||ty<0||tx>=R.w||ty>=R.h)return null;const f=SCENE.house.furn.get(ty*R.w+tx);return f&&f.t==='dummy'?f:null}

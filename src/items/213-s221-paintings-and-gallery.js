@@ -78,8 +78,8 @@
  // picking it up: a hung painting comes back as the painting
  {const _pf=pickFurn;pickFurn=function(i){try{const h=SCENE&&SCENE.house,f=h&&h.furn.get(i);if(f&&/^pw_/.test(f.t))f.t='pt_'+idOf(f.t)}catch(e){}return _pf.apply(this,arguments)}}
  // HIT facing a hung painting picks it up (it's stored on the tile you stand on)
- {const _at=attack;attack=function(){try{if(!BUILD&&inHomeRoom()&&!dead&&!pnOpen&&!menuOpen&&swing<=0){const wx=facingWall();if(wx>=0){const R=SCENE.room,i=2*R.w+wx,f=SCENE.house.furn.get(i);
-     if(f&&/^pw_/.test(f.t)&&!SCENE.house.ro&&!SCENE.house._foreign){swing=.25;pickFurn(i);return}}}}catch(e){}return _at.apply(this,arguments)}}
+ {SQHIT.before('213 paintings and gallery',()=>{try{if(!BUILD&&inHomeRoom()&&!dead&&!pnOpen&&!menuOpen&&swing<=0){const wx=facingWall();if(wx>=0){const R=SCENE.room,i=2*R.w+wx,f=SCENE.house.furn.get(i);
+     if(f&&/^pw_/.test(f.t)&&!SCENE.house.ro&&!SCENE.house._foreign){swing=.25;pickFurn(i);return}}}}catch(e){}})}
  // ---- who made it: a label when you face a painting ----
  function facedPainting(){if(!SCENE)return null;const R=SCENE.room;const[x,y]=frontTile();
   if(SCENE.id==='gallery'){for(const it of R.items){if(it.t!=='_ptw'&&it.t!=='_pte'||!it.pid)continue;const w=it.w||1;if(x>=it.x&&x<it.x+w&&(it.t==='_ptw'?y<=1:y===it.y))return it.pid}return null}

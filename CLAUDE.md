@@ -12,7 +12,8 @@
   the manifest alone decides the order.
 - The build parses the game script and reports syntax errors with the source file and line.
 - **Automatic checks** (`tools/checks/`): `node tools/checks/run.cjs` (or `run.cjs <part of a name>`) plays short scripted scenes in the
-  real game (fresh Chromium page per case, fake Firebase in `tools/checks/fake/`, rules via `rulesdb.cjs`): start-up, save/load, crafting from
+  real game (fresh Chromium page per case, fake Firebase in `tools/checks/fake/`, rules via `rulesdb.cjs`, account-only saves on as on the
+  live site: without `sq_strict` the older cloud sync could load a different save mid-scene): start-up, save/load, crafting from
   chests, graves, campfire logs, house chests + packing, gathering/eating, island trips, two-player trading, the World Market (`window.SQWMAPI`
   from 079), the guild bank (`SQGUILD.api.create/deposit/withdraw`) and falling in a dungeon. A full run takes about 2.5 minutes. **Run them after building and before every release;
   never release with a failing check.** When fixing a bug, add a case in `cases/` that fails without the fix. Script errors on the page fail a case.
@@ -26,8 +27,10 @@
 - **Step lists for other functions** (`sqSteps(label, fn, install)` at the top of 006, `window.SQSTEPS[label]`): same after/before/wrap
   steps, plus `list()`. **EAT** (`window.SQEAT`, created in 007 right after its `eat`, which replaced 004's): 11 named steps (stop building,
   iron stomach, burnt food saves, potions not eaten, timed cooking, cooldown, PvP healing, meal buffs, food picker, already cooking).
-  **Never reassign `eat`.**
-  `attack`, `upd`, `pP`, `drawHUD` are still wrapper chains; `tools/refactor/` has the converters and the before/after comparisons.
+  **Never reassign `eat`.** **HIT** (`window.SQHIT`, created in 006 right after `sqSteps`, base = 004's `attack`): 58 steps named after their
+  section (20 before, 38 wrap: most take over HIT in one situation or lend/hide something for the call). **Never reassign `attack`**; add a
+  step (`SQHIT.wrap('<file no> <what>', next=>function(){...})`) and a word in 118 when it's a new situation.
+  `upd`, `pP`, `drawHUD` are still wrapper chains; `tools/refactor/` has the converters and the before/after comparisons.
 - Firebase rules are in `database.rules.json` and must be published in the Firebase console when they change.
 - **Every update to the game must add a patch note, and there is one patch note entry per day.** In `PATCH_NOTES`
   (`src/data/074-patch-notes.js`): if the top entry is today's, add your bullets to it (new features first, then "Fixed: ..."

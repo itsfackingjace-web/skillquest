@@ -234,8 +234,8 @@
  // Frostbite ring
  if(window.SQJK){SQGEMC.frost=['#a8e0ff','#3870b0'];const j={k:'ja_frost',n:'Frostbite ring',s:'ring',g:'frost',v:6000,d:'Your melee hits chill monsters, and one in five freezes them solid for a moment.'};SQJK[j.k]=j;
   INVK.push(j.k);EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]='Ring (rare, from the Frost Wyrm): '+j.d+' Wear it from the Bag.';SELLP[j.k]=2500;SN[j.k]=j.n+'s';SHORT[j.k]=j.n.toLowerCase()}
- {const _a=attack;attack=function(){if(!(window.SQJW&&SQJW.ring==='ja_frost'))return _a();const hp0=new Map();for(const n of en)if(!n.dead)hp0.set(n,n.hp);_a();
-   for(const[n,h]of hp0)if(!n.dead&&n.hp<h){if(!n.big&&Math.random()<.2)n.frozen=1.2;for(let k=0;k<4;k++)part(n.x,n.y-8,(Math.random()-.5)*50,-30-Math.random()*30,.4,'#c8f0ff',-20,1)}}}
+ {SQHIT.wrap('100 island bosses the sealed doors open',_a=>function(){if(!(window.SQJW&&SQJW.ring==='ja_frost'))return _a();const hp0=new Map();for(const n of en)if(!n.dead)hp0.set(n,n.hp);_a();
+   for(const[n,h]of hp0)if(!n.dead&&n.hp<h){if(!n.big&&Math.random()<.2)n.frozen=1.2;for(let k=0;k<4;k++)part(n.x,n.y-8,(Math.random()-.5)*50,-30-Math.random()*30,.4,'#c8f0ff',-20,1)}})}
  // Outlaw's hat: a helmet you can see (like the flame crown)
  {const k='eq_ohat',e={slot:'helm',n:'Outlaw\'s hat',ic:'helm',col:'#2a2a32',v:6000};EQ[k]=e;EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=3000;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase();
   IDESC[k]='RARE, from Black Jack, the Outlaw King. A black cowboy hat with a silver band. Defence like an adamant helmet.';inv[k]=inv[k]|0;

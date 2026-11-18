@@ -24,13 +24,12 @@ const _cf=catchFish;catchFish=function(){const R=SCENE&&SCENE.room,L=lvOf(9),lis
  FISH.t=0;FISH.bite=0;FISH.wait=(2+Math.random()*3)*Math.max(.6,1-L*.006)};
 window.SQRFISH=RFISH;
 // casting on the other islands (their attack goes through the island's own handler, which never reached fishing)
-{const _a=attack;attack=function(){const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD){
+{SQHIT.before('093 islands update part 2',()=>{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD){
    if(FISH){FISH=null;say('You reel in your line');return}
    if(swing<=0&&!facingNpc()){const[fx,fy]=front(14),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
     if(fishWaterAt(tx,ty)&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18)&&!(window.SQSHK&&SQSHK.list.some(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<22))){
      if(!TL.rod){say('You need a fishing rod - buy one at the general store');return}
-     const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}}
-  return _a()}}
+     const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}}})}
 // the line and bobber, drawn on the other islands too
 {const _dr=drawRoom;drawRoom=function(tm){_dr(tm);const R=SCENE&&SCENE.room;if(!FISH||!R||!R.region||window.SQSKFX)return;
   const hx=Math.round(P.x+face[0]*6),hy=Math.round(P.y-3+(face[1]>0?2:0)),rx=Math.round(P.x+face[0]*13+(face[1]?4:0)),ry=Math.round(P.y-13+face[1]*7),bx=Math.round(FISH.bx),by=Math.round(FISH.by)+(FISH.bite>0?2:Math.round(Math.sin(tm*3)));
@@ -138,9 +137,9 @@ const wolfPetOf=n=>{if(!n||n.type!=='wolf'||n._pet)return null;if(n.vr==='snow'|
 function rollWolf(n){if(!n||n._petRoll)return;n._petRoll=1;const k=wolfPetOf(n);if(k&&(Math.random()<1/1000||window.SQPETDROP))givePet(k)}
 {const _ed=enemyDrop;enemyDrop=function(n){_ed(n);try{rollWolf(n)}catch(e){}}}
 if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead)rollWolf(n)}catch(e){}return r}}
-{const _a=attack;attack=function(){let tt=null,tv=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;
+{SQHIT.wrap('093 islands update part 2',_a=>function(){let tt=null,tv=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;
    if(R&&R.region){const it=rgObjAt(R,tx,ty);tt=it&&it.o.t;tv=it&&it.o.v}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];tt=o&&o.t;tv=o&&o.v}}catch(e){}
-  const w0=inv.wood|0;_a();if(tt&&tt!=='cactus'&&(inv.wood|0)>w0&&(Math.random()<1/5000||window.SQTREEDROP))givePet(window.SQTREEPET?SQTREEPET(tt,tv):'ptree')}}
+  const w0=inv.wood|0;_a();if(tt&&tt!=='cactus'&&(inv.wood|0)>w0&&(Math.random()<1/5000||window.SQTREEDROP))givePet(window.SQTREEPET?SQTREEPET(tt,tv):'ptree')})}
 // drawing them
 const SIDEPAL={K:'#181018',W:'#f4f0e8',E:'#181018',N:'#e07080',R:'#3870d8'},SIDECOL={cat:{A:'#e88a38',B:'#b85e20',C:'#f8b868',T:'#c06a24',L:'#b85e20'},dog:{A:'#b07848',B:'#7c4e2c',C:'#d8a878',T:'#8a5a34',L:'#7c4e2c'},fox:{A:'#e86a20',B:'#a8440e',C:'#f89848',T:'#a8440e',L:'#3a2418'}};
 const SIDEMAP={cat:[["............K...K.","..K........KAK.KAK",".KAK.......KAAKAAK",".KAK.......KAAAAAK","..KAK......KAEAEAK","...KAKKKKKKKAAANAK","....KAACCCAAKCCCK.","....KAATAAATAAAKK.","....KAAAAAAAAAAK..","....KBAATAAATABK..","....KBBBBBBBBBBK.."],["....KLK.KK..KLK...","....KK..KLK..KK...","....KLK.KK..KLK...","....KK...KK.KK...."]],
@@ -194,9 +193,9 @@ function nearWaterSpot(R){const sail=window.SQRSAIL&&SQRSAIL.on;if(sail)return[P
    if(hunt&&dP<220){tx=spot[0];ty=spot[1];sp=58}else if(Math.hypot(tx-s.x,ty-s.y)<8||Math.random()<dt*.15){for(let k=0;k<8;k++){const a=Math.random()*6.283,d=40+Math.random()*90,x=s.x+Math.cos(a)*d,y=s.y+Math.sin(a)*d;if(wetW(R,x,y)){s.tx=x;s.ty=y;break}}tx=s.tx;ty=s.ty}
    const dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy);if(d>2){const m=Math.min(d,sp*dt),nx=s.x+dx/d*m,ny=s.y+dy/d*m;if(wetW(R,nx,s.y))s.x=nx;if(wetW(R,s.x,ny))s.y=ny;s.fl=dx<0}
    if(hunt&&onW&&dP<22&&s.bite<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){s.bite=2.2;s.a=.5;P.hp--;hurt=1.5;say('A shark bites!');try{sfx('hurt')}catch(e){}}}}}
-{const _a=attack;attack=function(){const R=shkR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(14);const s=SHK.list.find(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<20);
+{SQHIT.before('093 islands update part 2',()=>{const R=shkR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(14);const s=SHK.list.find(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<20);
    if(s){swing=.3;const dmg=1+(TL.sword|0)+(typeof meleeFlat==='function'?meleeFlat():0);s.hp-=dmg;s.hit=.25;try{DMGS.push({x:s.x,y:s.y-10,v:String(dmg),t:0,c:'#ffffff',sc:curScene()})}catch(e){}sfx('hit');
-    if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){}saveLocal()}return}}return _a()}}
+    if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){}saveLocal()}return}}})}
 function drawShark(s,tm){const x=Math.round(s.x),y=Math.round(s.y),f=s.fl?-1:1,w=Math.sin(s.t*3)*1;
  g.fillStyle='rgba(20,40,70,.35)';g.beginPath();g.ellipse(x,y+2,15,5,0,0,6.283);g.fill();
  if(s.a>0){// a lunge: the head and jaws come up out of the water

@@ -181,7 +181,7 @@
  {let mineTk=false;const _u=upd;upd=function(dt){_u(dt);const n=!pnOpen&&!menuOpen&&!dead&&nearClerk();
    if(n){tk.style.display='flex';const lab='TRADE'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mineTk=true}else if(mineTk){mineTk=false;if(!pnOpen)tk.style.display='none'}
    if(sp&&!SCENE)for(const m of en)if(!m.dead&&!m.big&&Math.hypot(m.x-WMK.clerk.x,m.y-WMK.clerk.y)<90){m.dead=1;m.dropped=1}}}
- {const _a=attack;attack=function(){if(!sp||SCENE||dead||menuOpen||pnOpen||BUILD||swing>0)return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),s=WMK.spot;
-   if(tx>=s.tx&&tx<s.tx+s.w&&ty>=s.ty&&ty<=s.ty+1&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){wmOpen();return}return _a()}}
+ {SQHIT.wrap('079 the world market hollow village buy',_a=>function(){if(!sp||SCENE||dead||menuOpen||pnOpen||BUILD||swing>0)return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),s=WMK.spot;
+   if(tx>=s.tx&&tx<s.tx+s.w&&ty>=s.ty&&ty<=s.ty+1&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){wmOpen();return}return _a()})}
  try{WK_PLACES&&WK_PLACES.push&&WK_PLACES.push({n:'World Market',w:'Hollow Village',d:'Trade with every player: put up offers to buy or sell anything, and they match automatically.'})}catch(e){}
 }

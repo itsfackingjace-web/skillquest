@@ -83,7 +83,7 @@
   if(SCENE&&!SCENE.room.cave){say('Not indoors!');return}if(typeof SAILING!=='undefined'&&SAILING||window.SQRSAIL&&SQRSAIL.on){say('Not while sailing!');return}
   if(DF.cd>0){say('Dragon Form is recharging ('+Math.ceil(DF.cd)+'s).');try{sfx('nomana')}catch(e){}return}dfStart()};
  // attacking (and shooting) breathes fire instead
- const _at=attack;attack=function(){if(DF.on){if(!dead&&!menuOpen&&!pnOpen)DF.tap=.3;return}return _at()};
+ SQHIT.before('086 jewelry gold rings and amulets with',()=>{if(DF.on){if(!dead&&!menuOpen&&!pnOpen)DF.tap=.3;return}});
  const _sa=shootAim;shootAim=function(f){if(DF.on){DF.tap=.3;return}return _sa(f)};
  cv.addEventListener('mousedown',e=>{if(e.button===0)DF.held.m=true});addEventListener('mouseup',e=>{if(e.button===0)DF.held.m=false});addEventListener('blur',()=>{DF.held.m=DF.held.t=false});
  {const ab=document.getElementById('a');if(ab){ab.addEventListener('touchstart',()=>{DF.held.t=true},{passive:true});for(const ev of['touchend','touchcancel'])ab.addEventListener(ev,()=>{DF.held.t=false},{passive:true})}}

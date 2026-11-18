@@ -41,7 +41,7 @@ const _rs13=reset;reset=function(){_rs13();if(!inHome())return;const R=SCENE.roo
  for(const[x,y]of spots){const px=x*16+8,py=y*16+8;if(!(solid(px-5,py-3)||solid(px+5,py-3)||solid(px-5,py+6)||solid(px+5,py+6))){P.x=px;P.y=py;break}}};
 // --- HIT works like the A button ---
 function facingNpc(){const n=nearNpc();if(!n)return null;const dx=n.x-P.x,dy=n.y-P.y;return(dx*face[0]+dy*face[1])>-4||n.scene?n:null}
-const _atk13=attack;attack=function(){if(dead||menuOpen||pnOpen)return;
+SQHIT.wrap('013 decorating houses a button interaction',_atk13=>function(){if(dead||menuOpen||pnOpen)return;
  if(BUILD){if(SCENE){placeBuild();return}return _atk13()}
  if(facingNpc()){talk();return}
  if(SCENE){if(inHome()&&swing<=0){const R=SCENE.room,[x,y]=frontTile(),i=y*R.w+x,f=SCENE.house.furn.get(i);
@@ -50,7 +50,7 @@ const _atk13=attack;attack=function(){if(dead||menuOpen||pnOpen)return;
  if(swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x,s=STR.get(i);if(s&&(s.t==='bed'||s.t==='chest')){swing=.25;
    if(s.t==='chest'){useStructure(i);return}if(bedPick&&!bedPick.home&&bedPick.i===i&&performance.now()-bedPick.at<3000){bedPick=null;pickStruct(i);return}
    useStructure(i);if(dark()<.3){bedPick={i,at:performance.now(),home:0};say('This bed is where you wake up now. Hit it again to pick it up.')}return}}
- _atk13()};
+ _atk13()});
 // chest screen: pick the chest itself up
 const _r13=rPn;rPn=function(){_r13();if(ptab===7&&(CHEST_H||STR.get(CHEST_AT)))pbd.insertAdjacentHTML('beforeend','<button class="ng" id="chpk">Pick up this chest (contents go to your bag)</button>')};
 const _oc13=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('#chpk')){const inside=!!CHEST_H&&CHEST_IDX>=0;closePanel();if(inside)pickFurn(CHEST_IDX);else pickStruct(CHEST_AT);CHEST_H=null;return}_oc13(e)};

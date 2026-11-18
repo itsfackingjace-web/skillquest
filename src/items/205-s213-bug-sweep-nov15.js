@@ -50,6 +50,6 @@
   let was=null;setInterval(()=>{try{const up=!!(pnOpen||menuOpen);if(up!==was){was=up;document.body.classList.toggle('sqpnup',up)}}catch(e){}},120)}
  // HIT on touch/controller can still shoot at a monster in range (140 only stops that for keyboard/mouse), so facing a tree with a
  // monster nearby shot an arrow instead of chopping (Kass). When HIT's own word says it would gather (chop, mine, pick...), it never shoots.
- {const GATHER=/^(CHOP|MINE|PICK|FORAGE|HARVEST|SMASH|CUT|DIG)/;const _a=attack;attack=function(){let w='';try{w=window.SQWORDS?String(SQWORDS.hitWord()||''):''}catch(e){}
-   if(!GATHER.test(w)||typeof bowTarget!=='function')return _a.apply(this,arguments);const bt=bowTarget;bowTarget=()=>null;try{return _a.apply(this,arguments)}finally{bowTarget=bt}}}
+ {const GATHER=/^(CHOP|MINE|PICK|FORAGE|HARVEST|SMASH|CUT|DIG)/;SQHIT.wrap('205 bug sweep nov15',_a=>function(){let w='';try{w=window.SQWORDS?String(SQWORDS.hitWord()||''):''}catch(e){}
+   if(!GATHER.test(w)||typeof bowTarget!=='function')return _a.apply(this,arguments);const bt=bowTarget;bowTarget=()=>null;try{return _a.apply(this,arguments)}finally{bowTarget=bt}})}
 })();

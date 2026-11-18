@@ -57,7 +57,7 @@ let SWN=0,MOMT=0,MOMN=0,RIPO=false,RETAL=false,UNSTOPT=0;
 function meleeFlat(){return(lvOf(0)>=95?1:0)+(perk(0,'brawler')?1:0)+(perk(0,'weaponmaster')?2:0)}
 function meleeBonus(){let b=meleeFlat();if(Math.random()<lvOf(0)/100)b++;if(perk(0,'berserk'))b+=Math.max(0,6-P.hp);if(perk(0,'momentum')&&MOMT>0)b+=MOMN;if(RETAL){b+=3;RETAL=false}return b}
 const swingMul=()=>(lvOf(0)>=25?.9:1)*(lvOf(0)>=55?.9:1)*(perk(0,'quick')?.8:1)*(perk(0,'weaponmaster')?.9:1);
-const _atk37=attack;attack=function(){const sw0=swing,hp0=new Map(en.map(n=>[n,n.hp])),np=PROJ.length,ns=SPELLS.length;_atk37();
+SQHIT.wrap('037 combat skill trees attack defence archery',_atk37=>function(){const sw0=swing,hp0=new Map(en.map(n=>[n,n.hp])),np=PROJ.length,ns=SPELLS.length;_atk37();
  if(!(swing>sw0)||PROJ.length>np||SPELLS.length>ns)return;const D0=[...hp0.keys()].some(n=>n.hp<hp0.get(n));if(!D0&&typeof SKOF!=='undefined'){const[ox,oy]=frontObjTile(),fo=ox>=0&&oy>=0&&ox<N&&oy<N?obj[oy*N+ox]:null;if(fo&&SKOF[fo.t])return}swing*=swingMul();SWN++;
  const D=[...hp0.keys()].filter(n=>n.hp<hp0.get(n)),base=1+TL.sword+Math.floor(lvOf(0)/15)+meleeFlat();
  for(const n of D){const dealt=hp0.get(n)-n.hp,was=hp0.get(n)>0;let ex=0;n.tapped=1;
@@ -72,7 +72,7 @@ const _atk37=attack;attack=function(){const sw0=swing,hp0=new Map(en.map(n=>[n,n
  if(perk(0,'reach')&&!D.length){const[fx,fy]=front(24);for(const o of around(fx,fy,14,[]))hitE(o,base,'#ffffff')}
  const spin=(r,dm,col)=>{for(const o of around(P.x,P.y,r,D))hitE(o,dm,col);for(let k=0;k<24;k++){const a=k/24*6.283;part(P.x+Math.cos(a)*r*.6,P.y-4+Math.sin(a)*r*.5,Math.cos(a)*100,Math.sin(a)*80,.3,k%2?'#ffffff':'#c8d8ff',0)}sfx('swish')};
  if(perk(0,'whirl')&&SWN%5===0){spin(28,base,'#c8e0ff');say('Whirlwind!')}
- if(perk(0,'bladestorm')&&SWN%10===0){spin(42,base*2,'#a0e8ff');say('BLADE STORM!');FLASH=.2}};
+ if(perk(0,'bladestorm')&&SWN%10===0){spin(42,base*2,'#a0e8ff');say('BLADE STORM!');FLASH=.2}});
 // --- Defence ---
 function blockBonus(){return(perk(8,'shieldwall')?.05:0)+(perk(8,'juggernaut')?.1:0)+(perk(8,'armormaster')?armorPts()*.02:0)+(perk(8,'bastion')&&P.hp===1?.25:0)}
 function blockCap(){return .6+(lvOf(8)>=25?.05:0)+(lvOf(8)>=75?.05:0)+(perk(8,'fortress')?.1:0)+(perk(8,'juggernaut')?.1:0)}

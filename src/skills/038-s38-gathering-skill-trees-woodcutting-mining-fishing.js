@@ -109,7 +109,7 @@ const ACTW={1:0,2:0,3:0,11:0},FOODP={1:['wc_steady',.2],2:['mn_breaker',.2],3:['
 const SKOF={tree:1,pine:1,rock:2,ore:2,bush:3,cactus:3},STAYP={1:[['wc_roots',.15],['wc_endless',.25]],2:[['mn_veins',.15],['mn_endless',.25]],3:[['fg_abund',.15],['fg_endless',.25]]},
  RECP={1:'wc_recover',2:'mn_rapid',3:'fg_hands'};
 const GITEMS=['wood','stone','iron','berry'];
-const _atk38=attack;attack=function(){const sw0=swing,[ox,oy]=frontObjTile(),oi=oy*N+ox,o=ox>=0&&oy>=0&&ox<N&&oy<N?obj[oi]:null,oh=o?o.hp:0,inv0=GITEMS.map(k=>inv[k]|0);_atk38();
+SQHIT.wrap('038 gathering skill trees woodcutting mining fishing',_atk38=>function(){const sw0=swing,[ox,oy]=frontObjTile(),oi=oy*N+ox,o=ox>=0&&oy>=0&&ox<N&&oy<N?obj[oi]:null,oh=o?o.hp:0,inv0=GITEMS.map(k=>inv[k]|0);_atk38();
  if(!o||!SKOF[o.t]||!(swing>sw0))return;const now=obj[oi];if(now&&now.hp>=oh)return;const sk=SKOF[o.t];
  swing/=(1+gSpeed(sk));if(P_(sk,RECP[sk]))swing*=.8;ACTW[sk]=10;
  if(now)return;// still standing: just a hit
@@ -119,7 +119,7 @@ const _atk38=attack;attack=function(){const sw0=swing,[ox,oy]=frontObjTile(),oi=
   if(P_(1,'wc_bounty')&&Math.random()<.15){inv.wood=(inv.wood|0)+2;gTxt(x,y-38,'+2 wood','#48c048')}}
  if(sk===2&&P_(2,'mn_hidden')&&Math.random()<.1){if(Math.random()<.5){inv.stone=(inv.stone|0)+2;gTxt(x,y-38,'+2 stone','#90a8d0')}else{inv.iron=(inv.iron|0)+1;gTxt(x,y-38,'+1 iron ore','#90a8d0')}}
  if(sk===3&&P_(3,'fg_hidden')&&Math.random()<.1){const sd=['wheatseed','carrotseed','pumpkinseed'][Math.floor(Math.random()*3)];inv[sd]=(inv[sd]|0)+1;gTxt(x,y-38,'+1 '+iname(sd),'#e060a0')}
- if(Math.random()<sumP(sk,STAYP)){obj[oi]={t:o.t,hp:OHP[o.t]||3};for(let j=REM.length-1;j>=0;j--)if(REM[j].i===oi)REM.splice(j,1);gTxt(x,y-46,sk===3?'It grows straight back!':'Still standing!',SKC[sk])}};
+ if(Math.random()<sumP(sk,STAYP)){obj[oi]={t:o.t,hp:OHP[o.t]||3};for(let j=REM.length-1;j>=0;j--)if(REM[j].i===oi)REM.splice(j,1);gTxt(x,y-46,sk===3?'It grows straight back!':'Still standing!',SKC[sk])}});
 // --- fishing ---
 const FISHK=()=>[...FISH_T.map(f=>f.k),'rainbow'];
 const fBaitSave=()=>(P_(9,'fs_bait')?.2:0)+(P_(9,'fs_endless')?.35:0);
@@ -132,13 +132,13 @@ const _cf38=catchFish;catchFish=function(){if(!FISH)return _cf38();const ks=FISH
   if(P_(9,'fs_rapid'))FISH.wait*=.8}
  if((inv.bait|0)<bait0&&Math.random()<fBaitSave())inv.bait++;
  FISH.wait/=(1+gSpeed(9))};
-const _atk38b=attack;attack=function(){const had=!!FISH,bait0=inv.bait|0;_atk38b();if(!had&&FISH){FISH.wait/=(1+gSpeed(9));if((inv.bait|0)<bait0&&Math.random()<fBaitSave())inv.bait++}};
+SQHIT.wrap('038 gathering skill trees woodcutting mining fishing',_atk38b=>function(){const had=!!FISH,bait0=inv.bait|0;_atk38b();if(!had&&FISH){FISH.wait/=(1+gSpeed(9));if((inv.bait|0)<bait0&&Math.random()<fBaitSave())inv.bait++}});
 // --- farming ---
 const _hv38=harvest;harvest=function(i,p){const c=p.c,C=CROPS[c],n0=inv[c]|0,s0=inv[C.seed]|0;_hv38(i,p);const d=(inv[c]|0)-n0,x=(i%N)*16+8,y=((i/N)|0)*16;ACTW[11]=10;if(d<=0)return;
  if(P_(11,'fm_endless')){const more=Math.floor(d*.25)+(Math.random()<(d*.25)%1?1:0);if(more){inv[c]+=more;gTxt(x,y-38,'+'+more+' '+iname(c),SKC[11])}}
  gBoost(11,{[c]:d},x,y);if(P_(11,'fm_seed')&&Math.random()<.2){inv[C.seed]=(inv[C.seed]|0)+1;gTxt(x,y-46,'+1 '+iname(C.seed),'#c8a060')}};
-const _atk38c=attack;attack=function(){const[fx,fy]=front(13),i=Math.floor(fy/16)*N+Math.floor(fx/16),p=FARM.get(i),w0=p?p.w:0;_atk38c();const q=FARM.get(i);
- if(q&&q.w>w0&&P_(11,'fm_soil'))q.w=CLK+Math.round(WATER_FOR*1.2);if(q&&(q.w>w0||(!p&&q)))ACTW[11]=10};
+SQHIT.wrap('038 gathering skill trees woodcutting mining fishing',_atk38c=>function(){const[fx,fy]=front(13),i=Math.floor(fy/16)*N+Math.floor(fx/16),p=FARM.get(i),w0=p?p.w:0;_atk38c();const q=FARM.get(i);
+ if(q&&q.w>w0&&P_(11,'fm_soil'))q.w=CLK+Math.round(WATER_FOR*1.2);if(q&&(q.w>w0||(!p&&q)))ACTW[11]=10});
 // growth speed, hardy crops, and the FOOD perks
 const _u38=upd;upd=function(dt){_u38(dt);if(menuOpen||pnOpen)return;const gs=gSpeed(11),hardy=P_(11,'fm_roots');
  for(const[,p]of FARM){if(!p.c||ripe(p))continue;if(wet(p))p.g+=dt*gs;else if(hardy)p.g+=dt*.25*(1+gs)}

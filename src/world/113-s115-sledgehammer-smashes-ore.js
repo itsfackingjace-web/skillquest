@@ -20,10 +20,10 @@
  const setHp=(t,v)=>{if(t.cave)t.cave.hp=v;else t.o.hp=v};
  const getHp=t=>t.cave?t.cave.hp:t.o.hp;
  // one hit breaks small ores
- const _a=attack;attack=function(){if(!sledge()||dead||menuOpen||pnOpen||BUILD||swing>0)return _a.apply(this,arguments);
+ SQHIT.wrap('113 sledgehammer smashes ore',_a=>function(){if(!sledge()||dead||menuOpen||pnOpen||BUILD||swing>0)return _a.apply(this,arguments);
   let t=null;try{const[tx,ty]=frontObjTile();t=objAt(tx,ty)}catch(e){}
   if(!t||!t.o||!small(t.o.t))return _a.apply(this,arguments);
-  const h=t.o.hp;t.o.hp=1;try{return _a.apply(this,arguments)}finally{if(t.o.hp===1)t.o.hp=h}};
+  const h=t.o.hp;t.o.hp=1;try{return _a.apply(this,arguments)}finally{if(t.o.hp===1)t.o.hp=h}});
  // while the slam breaks ores, the hits it makes for you aren't sent as sword swings
  function smash(tx,ty){const t=objAt(tx,ty);if(!t)return false;const typ=typeOf(t);if(!small(typ)&&!BOUL[typ])return false;if(!canMine(typ))return false;
   const K={x:P.x,y:P.y,f:face,sw:swing},h=getHp(t);setHp(t,1);

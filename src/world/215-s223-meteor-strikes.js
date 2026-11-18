@@ -144,7 +144,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
   const[gx,gy]=front(6);const s2=starAt(gx,gy);if(s2>=0)return{k:'star',i:s2};return null}
  window.SQHITWORD=()=>{try{const t=target();if(!t)return'';return t.k==='star'?'PICK':'MINE'}catch(e){return''}};
  let LAST=0;
- {const _at=attack;attack=function(){let t=null;try{t=target()}catch(e){}if(!t||BUILD||pnOpen)return _at.apply(this,arguments);
+ {SQHIT.wrap('215 meteor strikes',_at=>function(){let t=null;try{t=target()}catch(e){}if(!t||BUILD||pnOpen)return _at.apply(this,arguments);
    const n=performance.now();if(swing>0||n-LAST<330)return;LAST=n;
    if(t.k==='star'){ST.star.add(t.i);const c=1+(Math.random()<.5?1:0);inv.stardust=(inv.stardust|0)+c;try{SQACH.add('mtdust',c)}catch(e){}try{sfx('pickup')}catch(e){}try{gTxt(P.x,P.y-30,'+'+c+' stardust','#c8a8ff')}catch(e){say('+'+c+' stardust')}return}
    if(!(TL.pick>0)){say('You need a pickaxe.');return}
@@ -155,7 +155,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
      try{gTxt(P.x,P.y-30,'+'+c+' meteorite ore','#ff80d8')}catch(e){}say('The vein crumbles. +'+c+' meteorite ore!')}
     else{const left=Math.max(0,CFG.vhp-veinHits(t.i));if(left%10===0)say('The vein is cracking... ('+left+' hits left)')}}
    else{const d=1+(TL.pick|0)+Math.floor(lv()/10);ST.mine.c=Math.min(190000,ST.mine.c+d);try{addXp(MI,6+d)}catch(e){}try{gTxt(CUR.x,CUR.y-26,'-'+d,'#ffb060')}catch(e){}
-    if(coreLeft()<=0)payCore()}}}
+    if(coreLeft()<=0)payCore()}})}
  // ---- drawing ----
  const sx=x=>(x-camX())*Z,sy=y=>(y-camY())*Z,px=(x,y,c,s)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),s,s)};
  let VF=null;function veinFrames(){if(VF)return VF;let S=null;try{S=hdSprites()}catch(e){}if(!S||!S.ore||!S.ore.length)return null;

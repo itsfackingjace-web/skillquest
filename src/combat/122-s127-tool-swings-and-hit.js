@@ -18,7 +18,7 @@
  const monsterAhead=()=>{const[fx,fy]=front(13);return en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)};
  let HIT=false;
  const _wt=wandTarget;wandTarget=function(){if(HIT)return null;return _wt.apply(this,arguments)};
- const _a=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||swing>0||FISH){return _a.apply(this,arguments)}
+ SQHIT.wrap('122 tool swings and hit',_a=>function(){if(dead||menuOpen||pnOpen||BUILD||swing>0||FISH){return _a.apply(this,arguments)}
   let f=null;try{f=frontObj();if(monsterAhead()||(typeof facingNpc==='function'&&facingNpc())||(window.SQSLEDGE&&SQSLEDGE()))f=null;
    if(f&&f.k&&!(f.k==='chop'?TL.axe>0:TL.pick>0))f=null}catch(e){f=null}
   const tool=f&&f.k,q0=window.SQPVQUIET,s0=swing;HIT=true;if(tool)window.SQPVQUIET=true;
@@ -26,7 +26,7 @@
   // the game swung at the tree/rock: make sure it's the tool swing that shows
   if(tool&&s0<=0&&swing>0&&!(ACTN&&ACTN.t<.05&&(ACTN.type==='chop'||ACTN.type==='mine')))
    ACTN={type:f.k,t:0,dur:.32,face:[face[0],face[1]],tx:f.tx,ty:f.ty,hit:false,tree:f.t};
-  return out};
+  return out});
  // drawing: the tool swing indoors/on islands too (the game only drew it on Hollow), and no sword at the end of a cast
  let castUntil=0;
  const _pp=pP;pP=function(tm){const now=performance.now();if(typeof CASTT!=='undefined'&&CASTT>0)castUntil=now+swing*1000+30;

@@ -43,9 +43,9 @@ const _uf22=useFurn;useFurn=function(o){if(o&&o.f&&STN.has(o.f.t)){openStation(o
 const _ns22=nearStruct;nearStruct=function(){const r=_ns22();if(r!==null)return r;const s=nearStation();return s&&!s.inside?s.i:null};
 const _us22=useStructure;useStructure=function(i){const s=STR.get(i);if(s&&STN.has(s.t)){openStation({t:s.t,inside:false,i,f:s});return}_us22(i)};
 // HIT: use the station you face (the dummy is for hitting)
-const _atk22=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o){swing=.25;
+SQHIT.before('022 usable stations wardrobe furnace anvil cooking',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o){swing=.25;
   if(o.t==='dummy'){o.f.wob=.3;setTimeout(()=>{o.f.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1);if(!dummyTip){dummyTip=true;say('Practice! The dummy teaches Attack up to level 30. Press USE to pick it up.')}}else say('You\'ve learned all a dummy can teach. Try real enemies!');return}
-  openStation(o);return}}_atk22()};
+  openStation(o);return}}});
 let dummyTip=false;
 // --- station screens ---
 const row22=(a,label,sub,ok)=>'<button class="sb stb" data-a="'+a+'" style="opacity:'+(ok?1:.45)+'">'+label+'<br><small>'+sub+'</small></button>';

@@ -9,7 +9,7 @@ async function world(n=1,co){const b=await chromium.launch();const pages=[],erro
  for(let i=0;i<n;i++){const uid=['ann','bob','cat'][i];const ctx=await b.newContext(co||{viewport:{width:1280,height:720}});
   await ctx.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://sq.test/'))return r.fulfill({path:path.join(ROOT,'index.html'),contentType:'text/html'});
    for(const [k,f] of [['firebase-app.js','app.js'],['firebase-auth.js','auth.js'],['firebase-database.js','db.js']])if(u.includes(k))return r.fulfill({path:F+f,contentType:'text/javascript'});return r.abort()});
-  await ctx.addInitScript(u=>{window.__uid=u;try{if(!localStorage.getItem('sq_age_'+u))localStorage.setItem('sq_age_'+u,'a')}catch(e){}},uid);
+  await ctx.addInitScript(u=>{window.__uid=u;try{if(!localStorage.getItem('sq_age_'+u))localStorage.setItem('sq_age_'+u,'a');localStorage.setItem('sq_strict','1')/* account-only saves, as on skillquestmmo.com */}catch(e){}},uid);
   const p=await ctx.newPage();p.uid=uid;p.on('pageerror',e=>errors.push(uid+': '+e.message));
   await p.exposeBinding('__relay',(src,op,pp,v)=>relay(p,op,pp,v));await p.exposeFunction('__dbGet',(u,q)=>DB.get(u,q));await p.exposeFunction('__dbUpdate',(u,q)=>DB.update(u,q));
   await p.exposeFunction('__dbCas',(u,q,o,v)=>DB.cas(u,q,o,v));await p.exposeFunction('__dbListen',(u,q,id)=>DB.listen(p,u,q,id));await p.exposeFunction('__dbUnlisten',id=>DB.unlisten(p,id));pages.push(p)}

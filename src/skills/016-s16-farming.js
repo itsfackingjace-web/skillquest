@@ -34,7 +34,7 @@ function harvest(i,p){const C=CROPS[p.c],L=lvOf(11);let n=C.yield[0]+(Math.rando
  {const ns=window.SQSEEDS?SQSEEDS(L):(Math.random()<.45+L*.005?1:0);if(ns>0){inv[C.seed]=(inv[C.seed]|0)+ns;extra=ns>1?' and '+ns+' seeds':' and a seed'}}addXp(11,C.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='harvest')Q.k++;
  say('Harvested '+n+' '+C.n.toLowerCase()+(n>1&&p.c!=='wheat'?'s':'')+extra+'!');p.c=null;p.g=0;p.e=nowS();sfx('pickup');setTimeout(()=>sfx('coin'),120);saveLocal(true)}
 // HIT on the farm: till, water, harvest
-const _atk16=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH)return _atk16();if(facingNpc())return _atk16();
+SQHIT.wrap('016 farming',_atk16=>function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||swing>0||FISH)return _atk16();if(facingNpc())return _atk16();
  const[fx,fy]=front(13),tx=Math.floor(fx/T),ty=Math.floor(fy/T),i=ty*N+tx;if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _atk16();
  const p=FARM.get(i);
  if(p){swing=.25;if(ripe(p))return harvest(i,p);
@@ -42,7 +42,7 @@ const _atk16=attack;attack=function(){if(dead||menuOpen||pnOpen||BUILD||SCENE||s
   if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');sfx('swish');return}
   const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');sfx('swish');return}
  if(TL.hoe&&canTill(tx,ty)){swing=.25;FARM.set(i,{c:null,g:0,w:0,e:nowS()});addXp(11,4);sfx('chop');saveLocal(true);if(!farmTip){farmTip=true;say('Tilled! Plant seeds from your Bag.')}return}
- _atk16()};
+ _atk16()});
 let farmTip=false;
 // planting uses the Bag's PLANT button (plant mode works like build mode)
 const isSeed=k=>!!SEED2CROP[k];

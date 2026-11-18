@@ -168,8 +168,8 @@
   else if(COATK==='pot_zap'){let from=n,hit=new Set([n]),d=Math.max(1,Math.round(dmg*.6));const jumps=PK('br_spark')?3:2;
    for(let j=0;j<jumps;j++){let best=null,bd=48;for(const m of en){if(hit.has(m)||m.dead||m.hp<=0)continue;const r=Math.hypot(m.x-from.x,m.y-from.y);if(r<bd){bd=r;best=m}}if(!best)break;
     ZAPS.push({a:{x:from.x,y:from.y},b:{x:best.x,y:best.y},t:0,sc:curScene()});hit.add(best);hitE(best,d,'#70d8ff','melee');from=best;d=Math.max(1,Math.round(d*.7))}}}
- {const _at=attack;attack=function(){if(!DAG||!COATK)return _at.apply(this,arguments);const H=new Map();for(const n of en)if(!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<60)H.set(n,n.hp);
-   const out=_at.apply(this,arguments);try{for(const[n,hp]of H){if(n.hp<hp)onStrike(n,hp-n.hp)}}catch(e){}return out}}
+ {SQHIT.wrap('218 brewing and daggers',_at=>function(){if(!DAG||!COATK)return _at.apply(this,arguments);const H=new Map();for(const n of en)if(!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<60)H.set(n,n.hp);
+   const out=_at.apply(this,arguments);try{for(const[n,hp]of H){if(n.hp<hp)onStrike(n,hp-n.hp)}}catch(e){}return out})}
  // ---- drawing: coated dagger, rings, lightning, flames on burning monsters, the coat timer ----
  const sxp=x=>(x-camX())*Z,syp=y=>(y-camY())*Z;
  {const _ps=pS;pS=function(n,tm){const out=_ps.apply(this,arguments);try{if(n&&n.burn>0&&!n.dead){const f=Math.floor(tm*9),w=(n.big||n.boss)?28:14;g.save();

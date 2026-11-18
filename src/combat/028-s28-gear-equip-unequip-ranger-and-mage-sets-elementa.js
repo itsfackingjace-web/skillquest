@@ -74,7 +74,7 @@ function spellHit(s,n,dmg){n.hp-=dmg;addXp(ML,4*dmg);const big=n.type==='boss'||
 // --- action animations ---
 let ACTN=null;
 function frontObjTile(){const[fx,fy]=front(13);return[Math.floor(fx/16),Math.floor(fy/16)]}
-const _atk28=attack;attack=function(){
+SQHIT.wrap('028 gear equip unequip ranger and mage',_atk28=>function(){
  if(!(typeof GPON!=='undefined'&&GPON)&&WAND&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()&&!(SCENE&&!SCENE.room.cave)&&wandTarget()&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<18)){castSpell(true);return}
  if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||SCENE){_atk28();return}
  if(facingNpc()||en.some(n=>!n.dead&&Math.hypot(n.x-(P.x+face[0]*13),n.y-(P.y+face[1]*13))<16)){_atk28();return}
@@ -85,7 +85,7 @@ const _atk28=attack;attack=function(){
  else if(plR&&(!FARM.get(pi)||!FARM.get(pi).c||FARM.get(pi).g<1)){type='harvest';tx=px;ty=py}
  else if(pl&&plC&&!plW&&FARM.get(pi)&&wet(FARM.get(pi))){type='water';tx=px;ty=py}
  else if(!had&&FARM.has(pi)){type='till';tx=px;ty=py}
- if(type){ACTN={type,t:0,dur:type==='water'?.6:type==='harvest'?.35:.32,face:[face[0],face[1]],tx,ty,hit:false,crop:plC,tree:o&&o.t};if(type==='water')swing=Math.max(swing,.45)}};
+ if(type){ACTN={type,t:0,dur:type==='water'?.6:type==='harvest'?.35:.32,face:[face[0],face[1]],tx,ty,hit:false,crop:plC,tree:o&&o.t};if(type==='water')swing=Math.max(swing,.45)}});
 const _pb28=placeBuild;placeBuild=function(){if(!BUILD||SCENE||typeof isSeed!=='function'||!isSeed(BUILD.k))return _pb28();const[x,y]=frontTile(),i=y*N+x,b=FARM.get(i),before=b?b.c:null;_pb28();const a=FARM.get(i);
  if(a&&a.c&&!before)ACTN={type:'plant',t:0,dur:.45,face:[face[0],face[1]],tx:x,ty:y,hit:false}};
 function drawToolLine(kind,ang,hx,hy,tier){const dx=Math.cos(ang),dy=Math.sin(ang),px=-dy,py=dx,pts=[],head=[],hc=TCOL[tier]||'#c8d0d8';

@@ -13,3 +13,6 @@ Used to replace wrapper chains with ordered step lists without changing behaviou
 - `node compare-scenes.cjs scenes-<x>.cjs out.json` plays the scripted scenes in that file (bag, health, hunger, messages, open screen,
   timed job) for functions that act rather than load: run it 2-3 times on the old build first to be sure it repeats exactly.
   `scenes-eat.cjs` (8 situations) was used for EAT on Nov 18.
+- `scenes-attack.cjs` (18 HIT situations: trees, ores, rocks, boulder, bush, monsters, water, building, hoe, dagger, sledge, a house wall)
+  was used for HIT on Nov 18 with `--fresh` (a new game per scene) and `compare-load.py`-style comparison ignoring hp/hunger
+  (monsters and hunger tick on their own).

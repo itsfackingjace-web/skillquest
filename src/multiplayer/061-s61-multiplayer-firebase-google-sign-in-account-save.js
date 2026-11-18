@@ -778,8 +778,8 @@ function buildTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now()
 // never save other people's things
 {SQSAVE.after('061:str,farm',s=>{const fs=new Set([...STR].filter(([i,v])=>v._foreign).map(([i])=>i)),ff=new Set([...FARM].filter(([i,p])=>p._foreign).map(([i])=>i));if(Array.isArray(s.str))s.str=s.str.filter(e=>!fs.has(e[0]));if(Array.isArray(s.farm))s.farm=s.farm.filter(e=>!ff.has(e[0]));})}
 // hands off: hitting, harvesting, watering, planting, opening, using
-{const _atk=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!SCENE&&swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x,o=ownerOfTile(i);
-   if(o){notYours(o);return}const h=houseAt(x,y);if(h&&h._foreign&&!(x===h.x&&y===h.y)){notYours(h._owner);return}}return _atk()}}
+{SQHIT.before('061 multiplayer firebase google sign in account',()=>{if(!dead&&!menuOpen&&!pnOpen&&!SCENE&&swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x,o=ownerOfTile(i);
+   if(o){notYours(o);return}const h=houseAt(x,y);if(h&&h._foreign&&!(x===h.x&&y===h.y)){notYours(h._owner);return}}})}
 {const _hh=hitHouse;hitHouse=function(h){if(h&&h._foreign){notYours(h._owner);return}return _hh(h)}}
 {const _hs=hitStructure;hitStructure=function(i){const s=STR.get(i);if(s&&s._foreign){notYours(s._foreign);return}return _hs(i)}}
 {const _us=useStructure;useStructure=function(i){const s=STR.get(i);if(s&&s._foreign){notYours(s._foreign);return}return _us(i)}}

@@ -42,8 +42,8 @@
    const f=r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1],x=(r.tx!=null?r.tx:r.x)+f[0]*24,y=(r.ty!=null?r.ty:r.y)+f[1]*24;
    if(Math.floor(x/16)===tx&&Math.floor(y/16)===ty)out.push(u)}return out}
  let castAt=0;
- {const _a=attack;attack=function(){const had=!!FISH;const out=_a.apply(this,arguments);try{if(!had&&FISH){const tx=Math.floor(FISH.bx/16),ty=Math.floor(FISH.by/16);
-    if(others(tx,ty).length){FISH=null;say('Someone is already fishing there.');try{sfx('swish')}catch(e){}}else castAt=performance.now()}}catch(e){}return out}}
+ {SQHIT.wrap('222 ponds and fishing spots',_a=>function(){const had=!!FISH;const out=_a.apply(this,arguments);try{if(!had&&FISH){const tx=Math.floor(FISH.bx/16),ty=Math.floor(FISH.by/16);
+    if(others(tx,ty).length){FISH=null;say('Someone is already fishing there.');try{sfx('swish')}catch(e){}}else castAt=performance.now()}}catch(e){}return out})}
  {let acc=0;const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{acc+=dt;if(acc>.4){acc=0;if(FISH&&castAt&&performance.now()-castAt<3000){const o=others(Math.floor(FISH.bx/16),Math.floor(FISH.by/16));
      if(o.some(u=>u<me())){FISH=null;castAt=0;try{if(typeof SQDO!=='undefined'&&SQDO&&SQDO.kind==='reel')SQDO=null}catch(e){}say('Someone is already fishing there.')}}}}catch(e){}return out}}
 })();
