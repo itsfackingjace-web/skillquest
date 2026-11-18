@@ -32,10 +32,10 @@
   if(sudden()){P.hp=h0;return}
   const g=(P.hp-h0)/2+carry,w=Math.floor(g);carry=g-w;P.hp=Math.min(6,h0+w)}
  window.SQPVHEAL={fighting,sudden,damp};
- {const _e=eat;eat=function(){if(!fighting()||dead||menuOpen||pnOpen)return _e.apply(this,arguments);
+ {SQEAT.wrap('154 half healing while fighting players',_e=>function(){if(!fighting()||dead||menuOpen||pnOpen)return _e.apply(this,arguments);
    if(sudden()){say('Sudden death: no healing!');return}
    const c0=EATCD,h0=P.hp,r=_e.apply(this,arguments);
-   if(EATCD>c0)EATCD=EATPV;damp(h0);base=last=P.hp;return r}}
+   if(EATCD>c0)EATCD=EATPV;damp(h0);base=last=P.hp;return r})}
  {const _u=upd;upd=function(dt){try{if(last!==null&&P.hp>last)damp(last)}catch(e){}// healing between frames (timers, clicks)
    base=P.hp;const wd=duel(),r=_u.apply(this,arguments);
    try{if(base!==null&&!(wd&&!duel()))damp(base);base=null;last=P.hp;// a duel that just ended restores your health: leave that alone

@@ -97,14 +97,14 @@ function prodBoost(sk,o){if(!o.n)return{};const C=PROD[sk],add=(k,v)=>{inv[k]=(i
 // --- cooking at a campfire (EAT next to a fire) and eating ---
 const CKSET=new Set([...COOKS.map(c=>c.ck),'cooked']);
 let LAST39=0,FEAST39=0;
-const _eat39=eat;eat=function(){const raw0=COOKS.map(c=>inv[c.raw]|0),ck0=COOKS.map(c=>inv[c.ck]|0),h0=hunger,fd0={};for(const k of CKSET)fd0[k]=inv[k]|0;
+SQEAT.wrap('039 burnt food saves and cooking perks',_eat39=>function(){const raw0=COOKS.map(c=>inv[c.raw]|0),ck0=COOKS.map(c=>inv[c.ck]|0),h0=hunger,fd0={};for(const k of CKSET)fd0[k]=inv[k]|0;
  _eat39();const ci=COOKS.findIndex((c,i)=>(inv[c.raw]|0)<raw0[i]);
  if(ci>=0&&hunger===h0){const c=COOKS[ci],ok=(inv[c.ck]|0)>ck0[ci];
   if(!ok&&Math.random()<cBurnSave()){inv[c.ck]=(inv[c.ck]|0)+1;addXp(4,Math.max(0,c.xp-5));say('Saved it just in time! Cooked '+c.n);sfx('sizzle');if(Q.on&&QS[Q.i]&&QS[Q.i].type==='cook')Q.k++;prodBoost(4,{out:c.ck,n:1,used:{[c.raw]:1},xp:c.xp})}
   else if(ok)prodBoost(4,{out:c.ck,n:1,used:{[c.raw]:1},xp:c.xp});saveLocal(true);return}
  if(hunger>h0){const k=[...CKSET].find(k=>(inv[k]|0)<fd0[k]);if(!k)return;const f=FOODS.find(x=>x.k===k),b=cFood();
   if(f&&b>0){const add=Math.round(f.hun*b);if(add>0){hunger=Math.min(100,hunger+add);gTxt(P.x,P.y-30,'+'+add+' FOOD (perk)',SKC[4])}}
-  if(P39(4,'co_lasting'))LAST39=60;if(P39(4,'co_eternal'))FEAST39=30}};
+  if(P39(4,'co_lasting'))LAST39=60;if(P39(4,'co_eternal'))FEAST39=30}});
 // --- cooking at a stove ("Cook all") ---
 const _sa39=stationAct;stationAct=function(a){if(typeof a!=='string'||!a.startsWith('ck_'))return _sa39(a);const c=COOKS.find(q=>q.raw===a.slice(3));
  const m=typeof stUses==='function'&&stUses()?stMerge(STATION):false;

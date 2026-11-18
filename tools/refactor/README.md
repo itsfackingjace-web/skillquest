@@ -10,3 +10,6 @@ Used to replace wrapper chains with ordered step lists without changing behaviou
   - `node compare-load.cjs out.json` + `python3 compare-load.py old.json new.json` — four saves (current, older formats, a minimal
     one) loaded into a fresh game; the first run writes `saves.json` from the build you run it on, keep it for the second.
 - Then run `node tools/checks/run.cjs`.
+- `node compare-scenes.cjs scenes-<x>.cjs out.json` plays the scripted scenes in that file (bag, health, hunger, messages, open screen,
+  timed job) for functions that act rather than load: run it 2-3 times on the old build first to be sure it repeats exactly.
+  `scenes-eat.cjs` (8 situations) was used for EAT on Nov 18.

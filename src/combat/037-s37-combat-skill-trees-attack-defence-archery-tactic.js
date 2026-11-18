@@ -83,7 +83,7 @@ function onBlock(){if(perk(0,'riposte'))RIPO=true;if(perk(8,'retaliate'))RETAL=t
  if(perk(8,'invincible'))hurt=Math.max(hurt,2);
  if(perk(8,'avenger')){for(const o of near(32))hitE(o,3,'#b8c8ff');for(let k=0;k<20;k++){const a=k/20*6.283;part(P.x,P.y-4,Math.cos(a)*120,Math.sin(a)*90,.3,'#c8d8ff',0)}}}
 const _sfx37=sfx;sfx=function(n){if(n==='block'&&!chessOpen)try{onBlock()}catch(e){}_sfx37(n)};
-const _eat37=eat;eat=function(){const h0=P.hp;_eat37();if(perk(8,'ironstomach')&&P.hp>h0)P.hp=Math.min(6,P.hp+1)};
+SQEAT.wrap('037 iron stomach perk',_eat37=>function(){const h0=P.hp;_eat37();if(perk(8,'ironstomach')&&P.hp>h0)P.hp=Math.min(6,P.hp+1)});
 let NEXTCRIT=false;
 const _roll37=roll;roll=function(){const r0=ROLLT;_roll37();if(ROLLT>r0){if(perk(8,'evasion'))ROLLT*=1.6;if(perk(7,'counter'))NEXTCRIT=true}};
 // --- Archery ---

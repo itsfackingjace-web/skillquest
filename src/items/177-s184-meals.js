@@ -10,7 +10,7 @@
  function give(k){const f=FB[k],b=B();if(!f||!b||!NAME[f.b])return;b[f.b]=Math.max(b[f.b]||0,performance.now()+f.s*1000);
   const t=f.s>=120?Math.round(f.s/60)+' min':f.s+' s';try{say('Yum! '+NAME[f.b][0].toUpperCase()+NAME[f.b].slice(1)+' for '+t+'.')}catch(e){}}
  function watch(fn){return function(){const ks=Object.keys(FB),b0=ks.map(k=>inv[k]|0);const out=fn.apply(this,arguments);ks.forEach((k,i)=>{if((inv[k]|0)<b0[i])give(k)});return out}}
- eat=watch(eat);if(typeof useFood==='function')useFood=watch(useFood);
+ SQEAT.wrap('177 meal buffs',watch);if(typeof useFood==='function')useFood=watch(useFood);
  {const _ax=addXp;addXp=function(i,n){if(n>0&&on('wis'))n=Math.round(n*1.2);return _ax.call(this,i,n)}}
  let rg=0;{const _u=upd;upd=function(dt){const o=_u.apply(this,arguments);try{if(on('regen')&&!dead&&P.hp<6){rg+=dt;if(rg>=10){rg=0;P.hp=Math.min(6,P.hp+1)}}else rg=0}catch(e){}return o}}
  // ---- meals made on a cooking stove (Content recipes "Cooking (stove only)"): several ingredients, shown on the stove ----

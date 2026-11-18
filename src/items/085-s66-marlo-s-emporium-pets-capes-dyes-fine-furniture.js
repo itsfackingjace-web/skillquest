@@ -30,7 +30,7 @@ var LUX={};
  const _sp=isSprint;isSprint=function(){if(bOn('swift')&&!(swing>0)&&!dead&&!pnOpen&&!menuOpen&&!FISH){const m=Math.hypot(jx,jy)>.1||K.w||K.a||K.s||K.d||K.arrowup||K.arrowdown||K.arrowleft||K.arrowright;if(m)return true}return _sp()};
  {const _u=upd;upd=function(dt){const h0=hunger;_u(dt);if(bOn('swift')&&hunger<h0){const passive=dt*.9*FOOD_RATE;if(h0-hunger>passive)hunger=Math.min(100,h0-passive)}}}
  // EAT never drinks potions
- const _eat=eat;eat=function(){const keep={};for(const p of POTS){keep[p.k]=inv[p.k]|0;inv[p.k]=0}try{_eat()}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}};
+ SQEAT.wrap('085 shop potions are not eaten',_eat=>function(){const keep={};for(const p of POTS){keep[p.k]=inv[p.k]|0;inv[p.k]=0}try{_eat()}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}});
  // buff timers on screen
  const bx=document.createElement('div');bx.id='luxbuff';bx.style.cssText='position:fixed;left:8px;top:calc(52% + 48px);z-index:29;display:flex;flex-direction:column;gap:3px;pointer-events:none;font:700 12px '+PF;document.body.appendChild(bx);
  setInterval(()=>{const now=performance.now(),L=[['str','STRENGTH','#c83040'],['iron','IRON SKIN','#6878a8'],['swift','SWIFTNESS','#2aa098'],['wis','WISDOM','#8848c8'],['regen','REGENERATION','#38a048']].filter(([k])=>BUFF[k]>now);

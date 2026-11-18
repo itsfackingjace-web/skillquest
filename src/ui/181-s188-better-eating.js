@@ -19,11 +19,11 @@
  const front=(arr,e,fn)=>{const i=arr.indexOf(e);if(i<=0)return fn();arr.splice(i,1);arr.unshift(e);try{return fn()}finally{const j=arr.indexOf(e);if(j>=0){arr.splice(j,1);arr.splice(Math.min(i,arr.length),0,e)}}};
  const cookable=()=>{const cl=lvOf(4),seen=new Set(),out=[];for(const c of COOKS){if(c.st||(inv[c.raw]|0)<1||seen.has(c.raw))continue;seen.add(c.raw);out.push({c,ok:cl>=c.lv})}return out};
  const atFire=()=>{try{return nearFire(P.x,P.y,45)}catch(e){return false}};
- {const _e=eat;eat=function(){if(BYPASS||dead||menuOpen||pnOpen||window.SQDO_STEP||(typeof SQDO!=='undefined'&&SQDO)||(typeof BUILD!=='undefined'&&BUILD))return _e.apply(this,arguments);
+ {SQEAT.wrap('181 food picker and campfire menu',_e=>function(){if(BYPASS||dead||menuOpen||pnOpen||window.SQDO_STEP||(typeof SQDO!=='undefined'&&SQDO)||(typeof BUILD!=='undefined'&&BUILD))return _e.apply(this,arguments);
    if(atFire()){const L=cookable();if(L.filter(q=>q.ok).length>=2){openPick();return}if(L.length)return _e.apply(this,arguments)}
    const f=pick();if(!f){const any=FOODS.some(q=>(inv[q.k]|0)>0);if(!any)return _e.apply(this,arguments);say('Use potions and special meals from your Bag.');return}
    if(!PIN&&P.hp>=6&&hunger>=95){say('You\'re full.');try{sfx('swish')}catch(e){}return}
-   return front(FOODS,f,()=>_e.apply(this,arguments))}}
+   return front(FOODS,f,()=>_e.apply(this,arguments))})}
  // ---- the cooking picker ----
  function cook(raw,n){const e=COOKS.find(c=>c.raw===raw&&!c.st);if(!e)return;closePanel();const all=n==='all',cnt=all?(inv[raw]|0):1;
   const step=()=>{if((inv[raw]|0)<1)return;BYPASS++;try{front(COOKS,e,()=>eat())}finally{BYPASS--}};

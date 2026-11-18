@@ -1,4 +1,18 @@
 // ===== SkillQuest: saving, quests, armor + Defence, sound, roaming NPCs =====
+// ---- Step lists (sqSteps / window.SQSTEPS) ----
+// A function that many sections change is kept as one ordered list of named steps instead of a chain of wrappers:
+//   const L=sqSteps(label, fn, install)  takes the function as it is now, installs a stand-in that runs the list, returns L.
+//   L.after(name, fn)    runs fn with the same arguments after everything before it (its return value is ignored)
+//   L.before(name, fn)   runs fn first (latest-added runs first), then everything before it
+//   L.wrap(name, next=>function(...){...})   surrounds the rest: may decide not to call next (e.g. a button taking over)
+// L.list() shows the order. SQSTEPS[label] = L. Never reassign a function that has a step list: add a step.
+function sqSteps(label,base,install){const steps=[];let built=null;
+ const add=(name,w,kind)=>{steps.push({name:String(name),w,kind});built=null};
+ const L={after:(name,fn)=>add(name,next=>function(){const out=next.apply(this,arguments);fn.apply(this,arguments);return out},'after'),
+  before:(name,fn)=>add(name,next=>function(){fn.apply(this,arguments);return next.apply(this,arguments)},'before'),
+  wrap:(name,w)=>add(name,w,'wrap'),list:()=>steps.map(s=>s.kind+' '+s.name),
+  run(){return(built||(built=steps.reduce((f,st)=>st.w(f),base))).apply(this,arguments)}};
+ install(function(){return L.run.apply(this,arguments)});(window.SQSTEPS=window.SQSTEPS||{})[label]=L;return L}
 SKN.push('Defence');AB.push('DEF');SKC.push('#7aa0e0');while(XPS.length<SKN.length)XPS.push(0);
 let ARM={helm:0,body:0,legs:0},Q={i:0,on:false,k:0,qp:0},REM=[],CLK=0,MUTE=false,lastK=kills,cloud=null,cloudBusy=false,lastLocal='',lastCloud='',saveT=0,cloudT=0,cloudOk=-9,LOCAL_AT=0,ngArm=false;
 const AT=['Leather','Iron','Steel'],OHP={tree:3,rock:4,bush:1},LS='sq_save';
@@ -80,7 +94,7 @@ const _atk5=attack;attack=function(){if(swing>0||dead||menuOpen||pnOpen)return;
  _atk5();
  if(en.reduce((a,n)=>a+n.hp,0)<eh)sfx('hit');else if(o&&o.hp<oh)sfx(o.t=='tree'?'chop':o.t=='rock'?'mine':'rustle');else sfx('swish');
  if(o&&okk&&!obj[ti]){REM.push({i:ti,t:o.t,at:CLK});setTimeout(()=>sfx('pickup'),90)}};
-const _eat5=eat;eat=function(){if(dead)return;const c0=inv.cooked||0,h0=hunger;_eat5();if((inv.cooked||0)>c0){sfx('sizzle');if(Q.on&&QS[Q.i]&&QS[Q.i].type=='cook')Q.k++}else if(hunger>h0)sfx('eat')};
+/* 006's EAT wrapper (cooking sound + quest count) was removed Nov 18: 007 replaces eat() entirely and does both itself, so it never ran. */
 const _fi5=fire;fire=function(){const n0=fires.length;_fi5();if(fires.length>n0)sfx('fire')};
 const _ax5=addXp;addXp=function(i,x){const b=lvOf(i);_ax5(i,x);if(lvOf(i)>b)sfx('level')};
 const _sa5=shopAct;shopAct=function(a){const g0=GLD;_sa5(a);if(GLD!==g0)sfx('coin');saveLocal(true)};

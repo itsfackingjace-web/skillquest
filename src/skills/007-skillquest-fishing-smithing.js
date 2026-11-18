@@ -52,6 +52,8 @@ eat=function(){if(dead||menuOpen||pnOpen)return;
  const f=FOODS.find(x=>(inv[x.k]|0)>0);if(!f){say('Nothing to eat');return}
  inv[f.k]--;hunger=Math.min(100,hunger+f.hun);P.hp=Math.min(6,P.hp+f.heal);sfx('eat');
  say(f.k=='meat'?'Raw meat... cook it at a fire next time':'Ate '+f.n+(f.heal?' (+'+f.heal+' heart'+(f.heal>1?'s':'')+')':''))};
+// EAT button: the eating above is the base; every later section adds a named step (window.SQEAT, see sqSteps in 006).
+const SQEAT=sqSteps('eat',eat,f=>{eat=f});window.SQEAT=SQEAT;
 // --- smithing: furnace + anvil next to the smithy ---
 // (the furnace and anvil are inside the smithy now, section 12)
 function smithAct(i,all){const r=SM[i];if(!r)return;if(sqDo(r.smelt?'smelt':'smith',r.arm?1:all?999:1,()=>smithAct(i,false)))return;if(lvOf(10)<r.lv){say('Need Smithing '+r.lv);return}if(r.def&&lvOf(8)<r.def){say('Need Defence '+r.def+' to wear that');return}

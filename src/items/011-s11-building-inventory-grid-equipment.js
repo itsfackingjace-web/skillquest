@@ -35,7 +35,7 @@ function hitStructure(i){const s=STR.get(i);const wood=s.t!=='swall';s.hp-=1+(wo
 const _atk11=attack;attack=function(){if(dead||menuOpen||pnOpen)return;if(BUILD){placeBuild();return}
  if(swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x;if(STR.has(i)){swing=.25;hitStructure(i);return}}
  _atk11()};
-const _eat11=eat;eat=function(){if(BUILD){endBuild('Stopped building.');return}_eat11()};
+SQEAT.before('011 stop building',()=>{if(BUILD){endBuild('Stopped building.');return}});
 addEventListener('keydown',e=>{if(BUILD&&e.key==='Escape'){endBuild('Stopped building.');e.preventDefault();e.stopImmediatePropagation()}},true);
 // respawn beside your bed; a new game also clears everything you built
 const _rs11=reset;reset=function(){_rs11();const b=STR.get(BEDSP);if(b&&b.t==='bed'){const bx=BEDSP%N,by=(BEDSP/N)|0;for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]]){const px=(bx+dx)*16+8,py=(by+dy)*16+8;if(!(solid(px-5,py-3)||solid(px+5,py-3)||solid(px-5,py+6)||solid(px+5,py+6))){P.x=px;P.y=py;break}}saveLocal(true)}};
