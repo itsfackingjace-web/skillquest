@@ -31,9 +31,14 @@ setInterval(()=>{if(dead||typeof SAILING!=='undefined'&&SAILING&&!SCENE||window.
 // it happens the moment you fall (not when you get up), and the game saves right away, so closing the game
 // while you're down doesn't bring your things back
 GRV.fell=false;GRV.fellN=0;
-setInterval(()=>{if(!dead){GRV.fell=false;return}if(GRV.fell||NEWG)return;GRV.fell=true;const spot=GRV.lastSpot;if(!spot||typeof inv!=='object'){GRV.fellN=0;return}
+// (also run by the reset wrapper below, so respawning before this timer fires (or with timers throttled) can't skip the grave;
+// with no known spot for a grave, reset keeps your things in the bag instead of wiping them)
+function grvFall(){if(GRV.fell||NEWG)return;GRV.fell=true;GRV.nospot=false;const spot=GRV.lastSpot;if(!spot||typeof inv!=='object'){GRV.fellN=0;GRV.nospot=true;return}
  const lost={};for(const k in inv){const n=inv[k]|0;if(n>0&&!EQK.includes(k)&&INAME[k]){lost[k]=n;inv[k]=0}}GRV.fellN=Object.keys(lost).length;if(!GRV.fellN)return;
- grvMake(lost,spot);const hp0=P.hp;dead=false;P.hp=Math.max(1,hp0);try{saveLocal(true);saveCloud(true)}catch(e){}finally{dead=true;P.hp=hp0}},100);
+ grvMake(lost,spot);const hp0=P.hp;dead=false;P.hp=Math.max(1,hp0);try{saveLocal(true);saveCloud(true)}catch(e){}finally{dead=true;P.hp=hp0}}
+setInterval(()=>{if(!dead){GRV.fell=false;return}grvFall()},100);
+{const _rs=reset;reset=function(){let keep=null;if(dead&&!NEWG){try{grvFall()}catch(e){}if(GRV.nospot&&typeof inv==='object'){keep={};for(const k in inv)if((inv[k]|0)>0&&!EQK.includes(k))keep[k]=inv[k]|0}}
+ const out=_rs.apply(this,arguments);if(keep){for(const k in keep)inv[k]=(inv[k]|0)+keep[k];GRV.nospot=false;try{mpLog('game','You fell, but your things stayed in your bag.')}catch(e){}}return out}}
 function grvMake(items,spot){const g={u:MP.user?MP.user.uid:'me',n:myName().slice(0,12),loc:spot.loc,x:spot.x,y:spot.y,i:items},mk=spot.ar&&isFinite(spot.ax)&&isFinite(spot.ay)?{ar:spot.ar,ax:spot.ax,ay:spot.ay}:{};Object.assign(g,mk);
  const local=()=>{const id='L'+Date.now().toString(36);g.at=Date.now();g.local=true;g.id=id;GRV.local[id]=g;grvSaveLocal()};
  const n=Object.values(items).reduce((a,b)=>a+b,0);const gp=grvPos(g);mpLog('game','You fell! '+n+' item'+(n>1?'s are':' is')+' in your grave ('+LOCN(gp.loc)+(gp.out?', outside the entrance':'')+'). Anyone can loot it, and it crumbles in 15 minutes.');

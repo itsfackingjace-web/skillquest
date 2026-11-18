@@ -980,3 +980,7 @@
   109's timed steps) the bag holds every nearby/house chest's contents too. 007's smithAct saves on every step, so saves held the chests
   twice (players' house chests "doubled"). The outermost `snap` now runs `benchSplit()`, snapshots, and merges the same chests again.
   **Anything else that lends items to `inv` for longer than one call must also be taken out of `snap`.**
+- **Graves on a quick respawn** (063, in the MP block, edited in place): the grave is made by `grvFall()`, run by the 100 ms timer and also by a
+  `reset` wrapper before 001's reset wipes `inv` (a respawn before the timer fired, or with throttled timers, lost the bag with no grave). With no
+  `GRV.lastSpot`, `GRV.nospot` makes the wrapper keep the bag's non-gear items through reset instead. 220's outermost `snap` saves a campfire
+  build's lent wood as the tier logs while `PEND` waits. 071's narrow-screen `#wbb` sits below 115's guide hint (`SQHINTB`).
