@@ -33,7 +33,7 @@
   for(const k in o){const id=idOf(k);if(id&&!REG.has(id))reg(id);scan(o[k],d+1)}}
  let GOT=new Set(),APPLIED=false;
  {const _a=applySave;applySave=function(S){try{scan(S,0)}catch(e){}const r=_a.apply(this,arguments);try{GOT=new Set(Array.isArray(S&&S.ptg)?S.ptg.filter(okId):[]);APPLIED=true}catch(e){}return r}}
- {const _s=snap;snap=function(){const o=_s.apply(this,arguments);try{if(GOT.size)o.ptg=[...GOT]}catch(e){}return o}}
+ {SQSAVE.after('213:ptg',o=>{try{if(GOT.size)o.ptg=[...GOT]}catch(e){}})}
  try{KNOWN49.add('ptg')}catch(e){}
  {const _ng=newGame;newGame=function(){GOT=new Set();APPLIED=true;return _ng.apply(this,arguments)}}
  // ---- pictures ----

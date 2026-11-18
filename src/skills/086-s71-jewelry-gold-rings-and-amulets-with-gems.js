@@ -52,7 +52,7 @@
    const k='<div class="qc" style="margin-top:12px">',i=h.indexOf(k);return i<0?h+row:h.slice(0,i)+row+h.slice(i)};
   pbd.addEventListener('click',e=>{const b=e.target.closest('[data-hideh]');if(!b)return;e.stopPropagation();e.preventDefault();HIDEH=!HIDEH;say(HIDEH?'Your helmet is hidden. It still protects you.':'Your helmet is showing again.');
    try{saveLocal(true);saveCloud(true)}catch(err){}try{rPn()}catch(err){}},true);
-  const _sn=snap;snap=function(){const o=_sn();o.hh=HIDEH?1:0;return o};
+  SQSAVE.after('086:hh',o=>{o.hh=HIDEH?1:0;});
   const _ap=applySave;applySave=function(S){_ap(S);HIDEH=!!(S&&S.hh)};
   const _ng=newGame;newGame=function(){HIDEH=false;_ng()}}
  // ---- Dragonsoul amulet (a rare drop from the Dragon world boss) ----
@@ -110,7 +110,7 @@
   else{for(const[a,b]of[[2,1],[3,2],[3,3],[4,4],[5,5],[11,1],[10,2],[10,3],[9,4],[8,5]])r(a,b,1,1,GD2);r(4,6,6,7,O2);r(5,7,4,5,G);r(6,8,2,3,gc);r(6,8,1,1,'#fff');r(8,10,1,1,gd)}
   return ICONC[key]=c.toDataURL()};
  // ---- saving ----
- const _sn=snap;snap=function(){const s=_sn();if(JW.ring||JW.neck)s.jw={ring:JW.ring,neck:JW.neck};return s};
+ SQSAVE.after('086:jw',s=>{if(JW.ring||JW.neck)s.jw={ring:JW.ring,neck:JW.neck};});
  const _ap=applySave;applySave=function(S){_ap(S);JW.ring=JW.neck=null;const w=S&&S.jw;if(w){if(JK[w.ring]&&JK[w.ring].s==='ring')JW.ring=w.ring;if(JK[w.neck]&&JK[w.neck].s==='neck')JW.neck=w.neck}};
  const _ng=newGame;newGame=function(){JW.ring=JW.neck=null;_ng()};
  window.SQJW=JW;window.SQJK=JK;window.SQGEMC=GEMC}

@@ -167,7 +167,7 @@ QS.splice(GI21,0,{n:'The Bone Lord',d:'A tomb lies buried in the southern desert
 const _qv21=qVal;qVal=function(q){return q.type==='bonelord'?Q.k:_qv21(q)};
 const remap21=qv=>{if(qv>=7)return;if(Q.i===GI21){Q.on=false;Q.k=0}else if(Q.i>GI21){Q.i=GI21;Q.on=false;Q.k=0;GMDONE=true}};
 
-const _sn21=snap;snap=function(){const s=_sn21();s.qv=7;s.tomb=TOMB_DAY;s.gmd=GMDONE?1:0;return s};
+SQSAVE.after('021:qv,tomb,gmd',s=>{s.qv=7;s.tomb=TOMB_DAY;s.gmd=GMDONE?1:0;});
 const _ap21=applySave;applySave=function(S){_ap21(S);if(S.q)remap21(S.qv||0);TOMB_DAY=isFinite(S.tomb)?+S.tomb:-1;if(Array.isArray(S.xp))XPS[FL]=Math.max(0,+S.xp[FL]||0);
  if(S.inv){inv.arrow=Math.max(0,+S.inv.arrow||0);inv.iarrow=Math.max(0,+S.inv.iarrow||0)}TL.bow=S.tl?Math.max(0,Math.min(2,+S.tl.bow||0)):0};
 const _ng21=newGame;newGame=function(){TL.bow=0;TOMB_DAY=-1;PROJ.length=0;_ng21()};

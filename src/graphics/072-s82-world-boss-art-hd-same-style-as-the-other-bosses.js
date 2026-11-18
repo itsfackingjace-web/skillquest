@@ -337,7 +337,7 @@ function chSync(){if(!MP.on||!MP.user||!CHS.got||!Object.values(TRU.mine).some(B
  for(const cid in CHS.db)if(!seen.has(cid)&&CHS.ever.has(cid)&&!CHS.busy[cid]){FB.db.remove(FB.db.ref(FB.D,'chests/'+me+'/'+cid)).catch(()=>{});delete CHS.base[cid]}
  if(changed){if(pnOpen&&ptab===7)rPn();try{saveLocal(true)}catch(e){}}}
 setInterval(()=>{try{chSync()}catch(e){console.warn(e)}},1000);
-{const _sn=snap;snap=function(){const s=_sn();if(Object.keys(CHS.base).length)s.chb=CHS.base;return s}}
+{SQSAVE.after('072:chb',s=>{if(Object.keys(CHS.base).length)s.chb=CHS.base;})}
 {const _ap=applySave;applySave=function(S){_ap(S);CHS.base={};if(S&&S.chb&&typeof S.chb==='object')for(const k in S.chb)CHS.base[String(k).slice(0,60)]=chClean(S.chb[k])}}
 // a trusted friend opening one of your chests
 function chOpenShared(owner,cid){if(CHS.open)try{CHS.open()}catch(e){}const box={t:'chest',items:{},_sh:{o:owner,cid}};CHEST_H=box;CHEST_AT=-1;CHEST_IDX=-1;
@@ -419,7 +419,7 @@ setInterval(()=>{const t=nowS();let n=0;for(const[i,p]of[...FARM]){if(p._foreign
   for(const[k,f]of F){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2){const p={c:f.c,g:f.c?f.s*CROPS[f.c].st:0,w:f.w?CLK+60:0};out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}}return out}}
 {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rf'){const{M,F,tx,ty}=it;try{GC=g;drawPlot(-1,it.p,tm,tx,ty,(dx,dy)=>M.has(rbK(tx+dx,ty+dy))||F.has(rbK(tx+dx,ty+dy)))}catch(e){}return}return _df(it,tm)}}
 // saving
-{const _sn=snap;snap=function(){const s=_sn();const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w),p.e|0])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;return s}}
+{SQSAVE.after('072:rfarm',s=>{const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w),p.e|0])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;})}
 {const _ap=applySave;applySave=function(S){_ap(S);for(const id in RF)delete RF[id];const o=S&&S.rfarm;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id]||!Array.isArray(o[id]))continue;const M=rfMap(id);
    for(const e of o[id])if(Array.isArray(e)&&isFinite(e[0])&&isFinite(e[1]))M.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,g:Math.max(0,+e[3]||0),w:+e[4]||0,e:+e[5]||nowS()})}}}
 {const _ng=newGame;newGame=function(){for(const id in RF)delete RF[id];_ng()}}

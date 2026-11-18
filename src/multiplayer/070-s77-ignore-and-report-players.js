@@ -13,7 +13,7 @@ function ignSet(u,on){if(!u||!MP.user||u===MP.user.uid)return;const nm=trName(u)
  try{saveLocal(true);saveCloud(true)}catch(e){}if(MP.open)mpRList()}
 // what gets hidden
 {const _c=mpChat;mpChat=function(id,v){if(v&&ignored(v.u)){MP.seen.add(id);return}return _c(id,v)}}
-{const _s=snap;snap=function(){const s=_s();if(IGN.m.size)s.ign=[...IGN.m].map(([u,n])=>[u,String(n).slice(0,12)]);return s}}
+{SQSAVE.after('070:ign',s=>{if(IGN.m.size)s.ign=[...IGN.m].map(([u,n])=>[u,String(n).slice(0,12)]);})}
 {const _a=applySave;applySave=function(S){_a(S);IGN.m.clear();if(S&&Array.isArray(S.ign))for(const e of S.ign)if(Array.isArray(e)&&typeof e[0]==='string')IGN.m.set(e[0].slice(0,64),String(e[1]||'Someone').slice(0,12))}}
 // ---- the player menu ----
 {const st=document.createElement('style');st.textContent=`#mppm{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);z-index:70;width:min(320px,calc(100vw - 24px));display:none;flex-direction:column;gap:6px;padding:12px;box-sizing:border-box;font:500 14px ${PF}}

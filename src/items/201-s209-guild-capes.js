@@ -123,7 +123,7 @@
  window.SQCAPEUNDER=function(C,ch,dir,st,ox,oy,fl){if(!C||dir!==0||!spec(ch))return;try{const R=cloth(ch,0,st,tickFor(ch));if(R&&R.under)put(C,R.under,0,ox,oy,fl)}catch(e){}};
  window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(!C||!spec(ch))return;try{const R=cloth(ch,dir|0,st,tickFor(ch));if(R)put(C,R.over,dir|0,ox,oy,fl)}catch(e){}};
  // saving the choice to wear it
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(WEAR)s.gcw=1;return s}}
+ {SQSAVE.after('201:gcw',s=>{if(WEAR)s.gcw=1;})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);WEAR=!!(S&&S.gcw);try{KITC.clear()}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){WEAR=false;return _ng.apply(this,arguments)}}
  try{KNOWN49.add('gcw')}catch(e){}

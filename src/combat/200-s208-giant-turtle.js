@@ -26,7 +26,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot in TT)TT[slot]=!!k&&k===KEY[slot];return out}}
  {const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.tt&&lvOf(8)<DEF){say('You need Defence '+DEF+' to wear the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){}return}return _eq.apply(this,arguments)}}
  {const _wu=watchUpgrades;watchUpgrades=function(){const was={...TT};const out=_wu.apply(this,arguments);for(const s in TT)if(was[s]&&ARM[s]!==5){if((inv['eq_'+s+'5']|0)>0)inv['eq_'+s+'5']--;inv[KEY[s]]=(inv[KEY[s]]|0)+1;TT[s]=false}return out}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);const t=(TT.helm?'h':'')+(TT.body?'b':'')+(TT.legs?'l':'');if(t)s.tta=t;return s}}
+ {SQSAVE.after('200:tta',s=>{const t=(TT.helm?'h':'')+(TT.body?'b':'')+(TT.legs?'l':'');if(t)s.tta=t;})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);const t=String(S&&S.tta||'');TT.helm=t.includes('h')&&ARM.helm===5;TT.body=t.includes('b')&&ARM.body===5;TT.legs=t.includes('l')&&ARM.legs===5;try{snapEq()}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){TT.helm=TT.body=TT.legs=false;return _ng.apply(this,arguments)}}
  try{KNOWN49.add('tta')}catch(e){}

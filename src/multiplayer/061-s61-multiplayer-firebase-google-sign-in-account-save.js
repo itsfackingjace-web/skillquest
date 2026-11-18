@@ -561,7 +561,7 @@ function fireTick(){if(!MP.on||!FB||!MP.user)return;const l=mpLoc(),key=l?locKey
  const mine=fires.filter(f=>!f._rp&&f._loc===l&&f.life>0).slice(0,8).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});
  if(!othersHere()||!mine.length){if(FIRE.pubbed){d.remove(ref).catch(()=>{});FIRE.pubbed=false}return}
  d.set(ref,{t:d.serverTimestamp(),f:mine}).catch(()=>{});if(!FIRE.pubbed)d.onDisconnect(ref).remove().catch(()=>{});FIRE.pubbed=true}
-{const _sn64=snap;snap=function(){const s=_sn64();s.fires=fires.filter(f=>!f._rp).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});return s}}
+{SQSAVE.after('061:fires',s=>{s.fires=fires.filter(f=>!f._rp).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});})}
 // the frame: shared clock first, then the game, then sharing
 {const _u64=upd;upd=function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick();fireTick();housesTick();buildTick()}catch(e){console.warn(e)}}}}
 // signing out: drop other players' monsters and stop sharing
@@ -734,7 +734,7 @@ function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now(
  if(!HOUSES.some(h=>h._foreign)&&Object.keys(HS.data).some(o=>o!==MP.user.uid))housesSync()} // e.g. after a save was loaded
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!HS.unsub)try{housesStart()}catch(e){mpErr(e)}}}
 // never save other people's houses into your game
-{const _sn=snap;snap=function(){const s=_sn();if(Array.isArray(s.houses)){const fids=new Set(HOUSES.filter(h=>h._foreign).map(h=>h.id));s.houses=s.houses.filter(h=>!fids.has(h.id))}if(s.home&&HOUSES.some(h=>h._foreign&&h.id===s.home))s.home=null;return s}}
+{SQSAVE.after('061:houses,home',s=>{if(Array.isArray(s.houses)){const fids=new Set(HOUSES.filter(h=>h._foreign).map(h=>h.id));s.houses=s.houses.filter(h=>!fids.has(h.id))}if(s.home&&HOUSES.some(h=>h._foreign&&h.id===s.home))s.home=null;})}
 // the door: friends only
 {const _es=enterScene;enterScene=function(id,house,ret){if(house&&house._foreign&&!canEnter(house)){const now=performance.now();if(now-HS.msgAt>2500){HS.msgAt=now;const nm=fname(house._owner);say('This is '+nm+'\'s house. Only '+nm+'\'s friends can go in.');sfx('swish')}P.y+=6;return}
  _es(id,house,ret);if(house&&house._foreign)say('You visit '+fname(house._owner)+'\'s house.')}}
@@ -776,8 +776,7 @@ function buildTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now()
  if(BLDS.data&&Object.keys(BLDS.data).length&&![...STR.values()].some(v=>v._foreign)&&![...FARM.values()].some(p=>p._foreign))buildSync()}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!BLDS.unsub)try{buildStart()}catch(e){mpErr(e)}}}
 // never save other people's things
-{const _sn=snap;snap=function(){const s=_sn();const fs=new Set([...STR].filter(([i,v])=>v._foreign).map(([i])=>i)),ff=new Set([...FARM].filter(([i,p])=>p._foreign).map(([i])=>i));
-  if(Array.isArray(s.str))s.str=s.str.filter(e=>!fs.has(e[0]));if(Array.isArray(s.farm))s.farm=s.farm.filter(e=>!ff.has(e[0]));return s}}
+{SQSAVE.after('061:str,farm',s=>{const fs=new Set([...STR].filter(([i,v])=>v._foreign).map(([i])=>i)),ff=new Set([...FARM].filter(([i,p])=>p._foreign).map(([i])=>i));if(Array.isArray(s.str))s.str=s.str.filter(e=>!fs.has(e[0]));if(Array.isArray(s.farm))s.farm=s.farm.filter(e=>!ff.has(e[0]));})}
 // hands off: hitting, harvesting, watering, planting, opening, using
 {const _atk=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!SCENE&&swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x,o=ownerOfTile(i);
    if(o){notYours(o);return}const h=houseAt(x,y);if(h&&h._foreign&&!(x===h.x&&y===h.y)){notYours(h._owner);return}}return _atk()}}

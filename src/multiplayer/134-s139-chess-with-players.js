@@ -9,7 +9,7 @@
  // ---- Opening Moves: from the main chain to Orla ----
  const QOLD10=QS.map(q=>q.n);{const i=QS.findIndex(q=>q.n==='Opening Moves');if(i>=0)QS.splice(i,1)}
  const OM={n:'Opening Moves',d:'Beat Grandmaster Orla at chess once, on any difficulty. She plays at the table in the village square.',r:{g:100,xp:[7,300]}};
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.qv=11;return s};
+ SQSAVE.after('134:qv',s=>{s.qv=11;});
  const _ap=applySave;applySave=function(S){const v=S&&S.q?(S.qv|0):11,raw=S&&Array.isArray(S.qdone)?S.qdone.slice():[],sq=S&&S.q?{...S.q}:null;
   const out=_ap.apply(this,arguments);
   try{if(sq&&v<11){const i=Math.max(0,+sq.i||0);let done=raw.includes(OM.n),cur=null;

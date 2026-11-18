@@ -54,7 +54,7 @@ const _u36=upd;upd=function(dt){const hp0=P.hp,was=dead,t0=time,m0=MANA;_u36(dt)
 // tell the player when a choice opens up
 const _ax36=addXp;addXp=function(i,x){const b=lvOf(i);_ax36(i,x);const a=lvOf(i);if(a>b&&TREES[i]&&TREES[i].choices[a]&&!(PERKS[i]&&PERKS[i][a])){say(SKN[i]+' '+a+': a new perk to choose! Open Skills and tap '+SKN[i]+'.');msgT=5}};
 // --- saving ---
-const _sn36=snap;snap=function(){const s=_sn36();s.perks=PERKS;s.phx=PHX_DAY;return s};
+SQSAVE.after('036:perks,phx',s=>{s.perks=PERKS;s.phx=PHX_DAY;});
 const _ap36=applySave;applySave=function(S){_ap36(S);PERKS={};if(S.perks&&typeof S.perks==='object')for(const k in S.perks){const o=S.perks[k];if(!o||typeof o!=='object')continue;PERKS[k]={};for(const lv in o)if(o[lv]==='a'||o[lv]==='b'||o[lv]==='c')PERKS[k][lv]=o[lv]}PHX_DAY=isFinite(S.phx)?+S.phx:-1};
 // --- the tree screen ---
 const trst=document.createElement('style');trst.textContent=`

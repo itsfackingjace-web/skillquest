@@ -19,7 +19,7 @@ var CROWN=false;
  const _occ=occ;occ=function(slot){if(slot==='helm'&&CROWN)return'eq_fcrown';return _occ(slot)};
  const _ss=setSlot;setSlot=function(slot,k){_ss(slot,k);if(slot==='helm'){CROWN=k==='eq_fcrown';if(CROWN){ARM.helm=3;CLS.helm=null}}};
  const _wu=watchUpgrades;watchUpgrades=function(){const was=CROWN;_wu();if(was&&ARM.helm!==3){if((inv.eq_helm3|0)>0)inv.eq_helm3--;inv.eq_fcrown=(inv.eq_fcrown|0)+1;CROWN=false}};
- const _sn=snap;snap=function(){const s=_sn();if(CROWN)s.fcr=1;return s};
+ SQSAVE.after('091:fcr',s=>{if(CROWN)s.fcr=1;});
  const _ap=applySave;applySave=function(S){_ap(S);CROWN=!!(S&&S.fcr)&&ARM.helm===3};
  const _ng=newGame;newGame=function(){CROWN=false;_ng()};
  // how it looks: hair showing, the crown on top (for you and everyone who sees you)

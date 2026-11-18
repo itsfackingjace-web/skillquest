@@ -561,6 +561,17 @@ function snap(){return{v:1,ch:{...CH},xp:XPS.slice(),tl:{...TL},gold:GLD,arm:{..
  inv:Object.fromEntries(INVK.map(k=>[k,inv[k]|0])),
  p:{x:Math.round(P.x),y:Math.round(P.y),hp:P.hp},hunger:Math.round(hunger),time:Math.round(time),kills,
  fires:fires.map(f=>({x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)})),rm:REM.map(r=>({i:r.i,t:r.t,at:Math.round(r.at)})),clk:Math.round(CLK),mute:MUTE}}
+// ---- Saving is one ordered list of steps (window.SQSAVE) ----
+// snap() takes the game's own fields above, then runs every section's step in the order the sections load:
+//   SQSAVE.after(name, s=>{...})   change or add fields on the save object s (most sections; may return a new object)
+//   SQSAVE.wrap(name, next=>function(){...})   for the few that must run code before the save is taken or around it
+// SQSAVE.list() shows the steps in order. Never reassign snap itself: add a step.
+const SQSAVE=(()=>{const base=snap,steps=[];let built=null;
+ const add=(name,w,kind)=>{steps.push({name:String(name),w,kind});built=null};
+ const build=()=>{let f=base;for(const st of steps)f=st.w(f);built=f;return f};
+ return{after:(name,fn)=>add(name,next=>function(){const s=next.apply(this,arguments);const r=fn(s);return r===undefined?s:r},'after'),
+  wrap:(name,w)=>add(name,w,'wrap'),list:()=>steps.map(s=>s.kind+' '+s.name),run(){return(built||build()).apply(this,arguments)}}})();
+window.SQSAVE=SQSAVE;snap=function(){return SQSAVE.run.apply(this,arguments)};
 const keyOf=s=>{const o={...s};for(const k of['time','clk','hunger','mp','savedAt','wid','dev','bw','as'])delete o[k];o.p=s.p?[s.p.x>>4,s.p.y>>4,s.p.hp]:0;o.fires=(s.fires||[]).length;return JSON.stringify(o)};
 function saveLocal(force){if(dead)return;const s=snap(),k=keyOf(s);if(k===lastLocal&&!force)return;lastLocal=k;s.savedAt=Date.now();LOCAL_AT=s.savedAt;try{localStorage.setItem(LS,JSON.stringify(s))}catch(e){}}
 async function saveCloud(force){if(!cloud||cloudBusy||dead)return;const s=snap(),k=keyOf(s);if(k===lastCloud&&!force)return;cloudBusy=true;s.savedAt=Date.now();
@@ -624,7 +635,7 @@ const QMAP=[0,1,2,3,5,6,8,9,10],remapQ=i=>QMAP[Math.max(0,Math.min(8,i|0))];
 // finish loading the local save for the new fields
 
 const _ap6=applySave;applySave=function(S){_ap6(S);TL.rod=S.tl&&S.tl.rod?1:0;if(!S.qv&&S.q)Q.i=remapQ(+S.q.i||0)};
-const _sn6=snap;snap=function(){const s=_sn6();s.qv=2;return s};
+SQSAVE.after('007:qv',s=>{s.qv=2;});
 // sounds
 Object.assign(SFX,{cast:()=>{noise(.12,.06,3000);tone(700,.12,'sine',.03,-300)},splash:()=>{noise(.3,.14,800);tone(300,.08,'sine',.04,200)},smelt:()=>{noise(.6,.12,350);tone(110,.4,'triangle',.05)},anvil:()=>{tone(1900,.09,'square',.05,-500);noise(.06,.14,4200);tone(1700,.08,'square',.04,-500,.14);noise(.05,.12,4200,.14)}});
 // --- fishing ---
@@ -719,7 +730,7 @@ const wOf=S=>S&&S.wid||'legacy';
 const _ap7=applySave;applySave=function(S){_ap7(S);lastWid=wOf(S)};
 // every save remembers which account save it continues from (bw), so a device's own unsent progress can be told apart
 // from an old copy (061's account-only saves use it)
-{const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(lastWid)s.bw=lastWid;return s}}
+{SQSAVE.after('008:bw',s=>{if(lastWid)s.bw=lastWid;})}
 // What this device last synced with the account (the account save's id and how much progress it had). A save that
 // another device wrote since then is taken automatically only when this device hasn't made progress of its own since
 // and the other save isn't behind; otherwise the player picks. (Comparing save times was wrong: a device that was just
@@ -819,7 +830,7 @@ let CHS={w:0,l:0,d:0,rz:0,om:0},chessOpen=false,CG=null;
 // stats + quest in saves (quest inserted at index 3; older saves are remapped)
 QS.splice(3,0,{n:'Opening Moves',d:'Grandmaster Orla sits at the chess table in the village square. Beat her once on any difficulty.',type:'chess',amt:1,r:{g:100,xp:[7,300]}});
 const _qv9=qVal;qVal=function(q){return q.type==='chess'?Q.k:_qv9(q)};
-const _sn9=snap;snap=function(){const s=_sn9();s.qv=3;s.chess={...CHS};return s};
+SQSAVE.after('009:qv,chess',s=>{s.qv=3;s.chess={...CHS};});
 const _ap9=applySave;applySave=function(S){_ap9(S);if((S.qv||0)<3&&S.q&&Q.i>=3)Q.i++;if(S.chess)for(const k in CHS)CHS[k]=Math.max(0,+S.chess[k]||0)};
 
 // Orla and her table
@@ -889,7 +900,7 @@ try{document.fonts&&(document.fonts.load('16px "Pixelify Sans"'),document.fonts.
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // --- player name (saved) ---
 let PNAME='';
-const _sn10=snap;snap=function(){const s=_sn10();s.name=PNAME;return s};
+SQSAVE.after('010:name',s=>{s.name=PNAME;});
 const _ap10=applySave;applySave=function(S){_ap10(S);if(typeof S.name==='string')PNAME=S.name.slice(0,10)};
 
 const pname=()=>(PNAME||'Player');
@@ -1119,7 +1130,7 @@ const inVillage=(x,y)=>x>=VX-11&&x<=VX+11&&y>=VY-8&&y<=VY+8;
 function strToSave(){return[...STR].map(([i,s])=>[i,s.t,s.items||null])}
 function strFromSave(a){STR.clear();if(!Array.isArray(a))return;for(const e of a){if(!Array.isArray(e))continue;const i=e[0]|0,t=e[1];if(i<0||i>=N*N||!BK.includes(t)||tile[i]===0)continue;const s={t,hp:BHP[t]};
  if(t==='chest'){s.items={};if(e[2]&&typeof e[2]==='object')for(const k in e[2])if(INVK.includes(k))s.items[k]=Math.max(0,+e[2][k]||0)}STR.set(i,s);obj[i]=null}}
-const _sn11=snap;snap=function(){const s=_sn11();s.str=strToSave();s.bsp=BEDSP;return s};
+SQSAVE.after('011:str,bsp',s=>{s.str=strToSave();s.bsp=BEDSP;});
 const _ap11=applySave;applySave=function(S){_ap11(S);strFromSave(S.str);BEDSP=STR.has(+S.bsp)?+S.bsp:-1;BUILD=null};
 
 // --- collision: built pieces are solid; doors open when you are next to them ---
@@ -1357,7 +1368,7 @@ function housesFromSave(a){for(const h of HOUSES)for(const i of houseTiles(h))BS
   if(Array.isArray(e.f)){for(const q of e.f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RH||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:items(q[2])},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}}
   else{h.furn.set(2*RW+1,{t:'bed'});h.furn.set(2*RW+12,{t:'chest',items:items(e.items)})}
   HOUSES.push(h);addHouseBS(h)}}
-const _sn12=snap;snap=function(){const s=_sn12();s.houses=HOUSES.map(h=>({id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>f.nm?[i,f.t,f.items||null,f.nm]:[i,f.t,f.items||null])}));s.home=HOMESP;if(SCENE){s.p.x=Math.round(SCENE.ret.x);s.p.y=Math.round(SCENE.ret.y)}return s};
+SQSAVE.after('012:houses,home',s=>{s.houses=HOUSES.map(h=>({id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>f.nm?[i,f.t,f.items||null,f.nm]:[i,f.t,f.items||null])}));s.home=HOMESP;if(SCENE){s.p.x=Math.round(SCENE.ret.x);s.p.y=Math.round(SCENE.ret.y)}});
 const _ap12=applySave;applySave=function(S){SCENE=null;_ap12(S);housesFromSave(S.houses);HOMESP=HOUSES.some(h=>h.id===S.home)?S.home:null};
 
 // --- entering and leaving ---
@@ -1578,7 +1589,7 @@ QS.splice(10,0,{n:'Into the Cold',d:'Travel to the snowy north and bring the Eld
  {n:'Bone Collector',d:'Skeletons roam the southern desert at night. Bring the Elder 5 bones.',type:'give',item:'bone',amt:5,r:{g:150,xp:[8,400]}},
  {n:'The Slime King',d:'A great slime rules the cave in the northern mountains. Find the cave and defeat it.',type:'boss',amt:1,r:{g:300,xp:[7,800]}});
 const _qv14=qVal;qVal=function(q){return q.type==='boss'?Q.k:_qv14(q)};
-const _sn14=snap;snap=function(){const s=_sn14();s.qv=4;s.cave=CAVE_DAY;return s};
+SQSAVE.after('014:qv,cave',s=>{s.qv=4;s.cave=CAVE_DAY;});
 const _ap14=applySave;applySave=function(S){_ap14(S);if((S.qv||0)<4&&S.q&&Q.i>=10)Q.i=Math.min(QS.length,Q.i+3);CAVE_DAY=isFinite(S.cave)?+S.cave:-1};
 
 // --- update: enemy types, wolf speed, boss contact ---
@@ -1659,7 +1670,7 @@ GEN.push({n:'Hoe',c:12,f:()=>{TL.hoe=1;say('Got a hoe! Face grass and press HIT 
 const FARM=new Map();
 const TILL_LIFE=600,nowS=()=>Math.floor(Date.now()/1000);   // empty tilled soil turns back into grass after 10 minutes
 function farmFromSave(a){FARM.clear();if(!Array.isArray(a))return;for(const e of a){if(!Array.isArray(e))continue;const i=e[0]|0;if(i<0||i>=N*N||tile[i]===0)continue;FARM.set(i,{c:CROPS[e[1]]?e[1]:null,g:Math.max(0,+e[2]||0),w:+e[3]||0,e:+e[4]||nowS()});obj[i]=null}}
-const _sn16=snap;snap=function(){const s=_sn16();s.farm=[...FARM].map(([i,p])=>[i,p.c,Math.round(p.g),Math.round(p.w),p.e|0]);s.qv=5;return s};
+SQSAVE.after('016:farm,qv',s=>{s.farm=[...FARM].map(([i,p])=>[i,p.c,Math.round(p.g),Math.round(p.w),p.e|0]);s.qv=5;});
 const _ap16=applySave;applySave=function(S){_ap16(S);farmFromSave(S.farm);TL.hoe=S.tl&&S.tl.hoe?1:0;TL.can=S.tl&&S.tl.can?1:0;if((S.qv||0)<5&&S.q&&Q.i>=13)Q.i=Math.min(QS.length,Q.i+1)};
 QS.splice(13,0,{n:'Green Thumb',d:'Get a hoe (craft one, or buy it at the general store) and seeds from the general store, then grow and harvest 5 crops.',type:'harvest',amt:5,r:{g:120,xp:[11,500]}});
 const _qv16=qVal;qVal=function(q){return q.type==='harvest'?Q.k:_qv16(q)};
@@ -1698,7 +1709,7 @@ const _dmap16=drawMap;drawMap=function(){_dmap16();const c=document.getElementBy
 const _ng16=newGame;newGame=function(){FARM.clear();TL.hoe=0;TL.can=0;_ng16()};
 // ---------------------------------------------------------------- 17. Longer days
 // Older saves counted 2-minute days; keep their day number and start them in the morning.
-const _sn17=snap;snap=function(){const s=_sn17();s.dl=DAYLEN;return s};
+SQSAVE.after('017:dl',s=>{s.dl=DAYLEN;});
 const _ap17=applySave;applySave=function(S){_ap17(S);if(!S.dl)time=Math.floor((+S.time||0)/120)*DAYLEN+5};
 
 // ---------------------------------------------------------------- 18. GBA graphics pass
@@ -2024,7 +2035,7 @@ const _qv20=qVal;qVal=function(q){return q.type==='talk'||q.type==='jobs'?Q.k:q.
 let GMDONE=false;const remap20=(qv,gmd)=>{if(qv>=6){GMDONE=!!gmd;return}if(Q.i===GI){Q.on=false;Q.k=0}else if(Q.i>GI){Q.i=GI;Q.on=false;Q.k=0;GMDONE=true}};
 
 const _qa20=questAct;questAct=function(a){_qa20(a);if(GMDONE&&QS[Q.i]&&QS[Q.i].n==='Grandmaster'){Q.i++;GMDONE=false;saveLocal(true);rPn()}};
-const _sn20=snap;snap=function(){const s=_sn20();s.qv=6;s.jobs={...JOBD};s.gmd=GMDONE?1:0;return s};
+SQSAVE.after('020:qv,jobs,gmd',s=>{s.qv=6;s.jobs={...JOBD};s.gmd=GMDONE?1:0;});
 const _ap20=applySave;applySave=function(S){_ap20(S);GMDONE=false;if(S.q)remap20(S.qv||0,S.gmd);JOBD={};if(S.jobs&&typeof S.jobs==='object')for(const k in S.jobs)if(JOBS[k])JOBD[k]=+S.jobs[k]||0;
  if(S.tl)for(const k of['axe','pick','sword'])TL[k]=Math.max(0,Math.min(4,+S.tl[k]||0));if(S.inv){inv.stew=Math.max(0,+S.inv.stew||0);inv.bait=Math.max(0,+S.inv.bait||0)}clearProt()};
 
@@ -2257,7 +2268,7 @@ QS.splice(GI21,0,{n:'The Bone Lord',d:'A tomb lies buried in the southern desert
 const _qv21=qVal;qVal=function(q){return q.type==='bonelord'?Q.k:_qv21(q)};
 const remap21=qv=>{if(qv>=7)return;if(Q.i===GI21){Q.on=false;Q.k=0}else if(Q.i>GI21){Q.i=GI21;Q.on=false;Q.k=0;GMDONE=true}};
 
-const _sn21=snap;snap=function(){const s=_sn21();s.qv=7;s.tomb=TOMB_DAY;s.gmd=GMDONE?1:0;return s};
+SQSAVE.after('021:qv,tomb,gmd',s=>{s.qv=7;s.tomb=TOMB_DAY;s.gmd=GMDONE?1:0;});
 const _ap21=applySave;applySave=function(S){_ap21(S);if(S.q)remap21(S.qv||0);TOMB_DAY=isFinite(S.tomb)?+S.tomb:-1;if(Array.isArray(S.xp))XPS[FL]=Math.max(0,+S.xp[FL]||0);
  if(S.inv){inv.arrow=Math.max(0,+S.inv.arrow||0);inv.iarrow=Math.max(0,+S.inv.iarrow||0)}TL.bow=S.tl?Math.max(0,Math.min(2,+S.tl.bow||0)):0};
 const _ng21=newGame;newGame=function(){TL.bow=0;TOMB_DAY=-1;PROJ.length=0;_ng21()};
@@ -2337,7 +2348,7 @@ function stationAct(a){const o=STATION;if(!o)return;
 const _oc22=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.stb');if(b){stationAct(b.dataset.a);return}_oc22(e)};
 const _cp22=closePanel;closePanel=function(){_cp22();if(shop==='station'){STATION=null;shop=null}};
 // --- saving the planters ---
-const _sn22=snap;snap=function(){const s=_sn22();s.plant={...PLANTD};return s};
+SQSAVE.after('022:plant',s=>{s.plant={...PLANTD};});
 const _ap22=applySave;applySave=function(S){_ap22(S);PLANTD={};if(S.plant&&typeof S.plant==='object')for(const k in S.plant)PLANTD[k]=+S.plant[k]||0};
 const _ng22=newGame;newGame=function(){PLANTD={};_ng22()};
 // icons
@@ -2637,7 +2648,7 @@ const GI26=QS.findIndex(q=>q.n==='Grandmaster');
 QS.splice(GI26,0,{n:'Castaway',d:'Buy a sailboat from Captain Ida in Saltmere, then sail west and find the hermit who lives alone on an island.',type:'hermit',amt:1,r:{g:300,xp:[9,1500]}});
 const _qv26=qVal;qVal=function(q){return q.type==='hermit'?Q.k:_qv26(q)};
 const remap26=qv=>{if(qv>=8)return;if(Q.i===GI26){Q.on=false;Q.k=0}else if(Q.i>GI26){Q.i=GI26;Q.on=false;Q.k=0;GMDONE=true}};
-const _sn26=snap;snap=function(){const s=_sn26();s.qv=8;s.gmd=GMDONE?1:0;s.wreck=WRECK_DAY;s.sail=SAILING?1:0;return s};
+SQSAVE.after('026:qv,gmd,wreck',s=>{s.qv=8;s.gmd=GMDONE?1:0;s.wreck=WRECK_DAY;s.sail=SAILING?1:0;});
 const _ap26=applySave;applySave=function(S){_ap26(S);if(S.q)remap26(S.qv||0);WRECK_DAY=isFinite(S.wreck)?+S.wreck:-1;TL.boat=S.tl&&S.tl.boat?1:0;SAILING=false;
  if(S.sail&&S.p&&TL.boat){const x=+S.p.x,y=+S.p.y;if(isFinite(x)&&isFinite(y)&&boatOK(x,y)){P.x=x;P.y=y;SAILING=true}}};
 const _ng26=newGame;newGame=function(){SAILING=false;WRECK_DAY=-1;_ng26()};
@@ -2839,7 +2850,7 @@ let NEWG=false;
 const _rs28=reset;reset=function(){const keep=NEWG?{}:Object.fromEntries(EQK.map(k=>[k,inv[k]|0]));_rs28();for(const k in keep)if(keep[k])inv[k]=keep[k];SPELLS.length=0};
 const _ng28=newGame;newGame=function(){NEWG=true;try{_ng28()}finally{NEWG=false}CLS={helm:null,body:null,legs:null};WAND=null;MANA=10;for(const k of EQK)inv[k]=0;snapEq()};
 // --- saving ---
-const _sn28=snap;snap=function(){const s=_sn28();s.cls={...CLS};s.wand=WAND;s.mp=Math.round(MANA);s.offh=1;return s};
+SQSAVE.after('028:cls,wand,mp',s=>{s.cls={...CLS};s.wand=WAND;s.mp=Math.round(MANA);s.offh=1;});
 const _ap28=applySave;applySave=function(S){_ap28(S);CLS={helm:null,body:null,legs:null};if(S.cls)for(const s of['helm','body','legs'])CLS[s]=S.cls[s]==='r'||S.cls[s]==='m'?(ARM[s]?null:S.cls[s]):null;
  WAND=S.wand&&WSP[S.wand]?S.wand:null;if(Array.isArray(S.xp))XPS[ML]=Math.max(0,+S.xp[ML]||0);MANA=Math.min(maxMP(),isFinite(S.mp)?+S.mp:10);
  // one item in the off-hand (a bow wins over a wand); saves from before the off-hand get their best bow back in it
@@ -3772,7 +3783,7 @@ function dChestNear(){const R=SCENE&&SCENE.room;if(!R||!R.dun)return null;const[
 const _atk35=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0){const it=dChestNear();if(it&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<30)){swing=.2;dOpen(it);return}}_atk35()};
 const _uf35=useFurn;useFurn=function(o){if(o&&o.use==='dchest'){dOpen(o);return}_uf35(o)};
 // saving: opened chests for today, and the legendary sword survives the tool-tier clamp
-const _sn35=snap;snap=function(){const s=_sn35();s.dun={day:DUN.day,op:[...DUN.opened]};s.rare={sword:TL.sword};return s};
+SQSAVE.after('035:dun,rare',s=>{s.dun={day:DUN.day,op:[...DUN.opened]};s.rare={sword:TL.sword};});
 const _ap35=applySave;applySave=function(S){_ap35(S);if(S.dun&&Array.isArray(S.dun.op)&&S.dun.day===today()){DUN.day=S.dun.day;DUN.floors={};DUN.opened=new Set(S.dun.op)}
  if(S.rare&&+S.rare.sword===5)TL.sword=5};
 // --- drawing: floors, walls (faces where a wall meets the floor below, dark rock tops elsewhere), stairs, chests ---
@@ -3881,7 +3892,7 @@ const _u36=upd;upd=function(dt){const hp0=P.hp,was=dead,t0=time,m0=MANA;_u36(dt)
 // tell the player when a choice opens up
 const _ax36=addXp;addXp=function(i,x){const b=lvOf(i);_ax36(i,x);const a=lvOf(i);if(a>b&&TREES[i]&&TREES[i].choices[a]&&!(PERKS[i]&&PERKS[i][a])){say(SKN[i]+' '+a+': a new perk to choose! Open Skills and tap '+SKN[i]+'.');msgT=5}};
 // --- saving ---
-const _sn36=snap;snap=function(){const s=_sn36();s.perks=PERKS;s.phx=PHX_DAY;return s};
+SQSAVE.after('036:perks,phx',s=>{s.perks=PERKS;s.phx=PHX_DAY;});
 const _ap36=applySave;applySave=function(S){_ap36(S);PERKS={};if(S.perks&&typeof S.perks==='object')for(const k in S.perks){const o=S.perks[k];if(!o||typeof o!=='object')continue;PERKS[k]={};for(const lv in o)if(o[lv]==='a'||o[lv]==='b'||o[lv]==='c')PERKS[k][lv]=o[lv]}PHX_DAY=isFinite(S.phx)?+S.phx:-1};
 // --- the tree screen ---
 const trst=document.createElement('style');trst.textContent=`
@@ -4667,7 +4678,7 @@ function sqDrawMarks(tm,inScene){for(const n of NPCS){if(!n.town)continue;if(inS
 const _nd42=NEWDRAW;NEWDRAW=function(...a){_nd42(...a);if(!SCENE)sqDrawMarks(a[8],false)};
 const _dr42=drawRoom;drawRoom=function(tm){_dr42(tm);if(SCENE)sqDrawMarks(tm,true)};
 // saving: optional field, older saves start every line fresh
-const _sn42=snap;snap=function(){const s=_sn42();s.sideQuests=JSON.parse(JSON.stringify(SQ_SIDE));return s};
+SQSAVE.after('042:sideQuests',s=>{s.sideQuests=JSON.parse(JSON.stringify(SQ_SIDE));});
 function sqReset(){for(const t in SQ_SIDE)Object.assign(SQ_SIDE[t],{index:0,on:false,k:0,completed:false})}
 const _ap42=applySave;applySave=function(S){_ap42(S);sqReset();const o=S.sideQuests;if(!o||typeof o!=='object')return;
  for(const t in SQ_SIDE){const v=o[t];if(!v||typeof v!=='object')continue;const L=SIDE_QS[t].length,s=SQ_SIDE[t];
@@ -4838,7 +4849,7 @@ const _df43=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='icepillar'){shd(x0+8,y0+15,16);Rg(x0+2,y0-18,12,33,O);Rg(x0+3,y0-17,10,31,'#9cc8ec');Rg(x0+4,y0-17,3,31,'#d8f0ff');Rg(x0+10,y0-17,2,31,'#6a9cc8');Rg(x0+1,y0-20,14,4,O);Rg(x0+2,y0-19,12,2,'#e8f8ff');return}
  _df43(it,tm)};
 // saving: the Alpha's daily clear (older saves: never cleared)
-const _sn43=snap;snap=function(){const s=_sn43();s.xdun={...EXTRA_DUNGEON_DAYS};return s};
+SQSAVE.after('043:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
 const _ap43=applySave;applySave=function(S){_ap43(S);SLOW43=0;ROAR43=null;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1};
 const _ng43=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng43()};
 // ---------------------------------------------------------------- 44. Dusthaven: the southern desert village
@@ -5210,7 +5221,7 @@ const _df45=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='sandpile'){g.fillStyle='rgba(60,40,10,.25)';g.beginPath();g.ellipse(x0+8,y0+13,10,3.5,0,0,6.283);g.fill();for(const[r,cy,c]of[[9,11,'#a8803c'],[7.5,9.5,'#c8a058'],[5.5,8,'#dcb470'],[3.5,6.5,'#ecc888'],[1.8,5.5,'#f8dca0']]){g.fillStyle=c;g.beginPath();g.ellipse(x0+8-(9-r)*.15,y0+cy,r,r*.55,0,0,6.283);g.fill()}
   g.fillStyle='#8a6428';for(const[a,b]of[[3,11],[12,10],[6,12],[10,7]])g.fillRect(x0+a,y0+b,1,1);return}
  _df45(it,tm)};
-const _sn45=snap;snap=function(){const s=_sn45();s.xdun={...EXTRA_DUNGEON_DAYS};return s};
+SQSAVE.after('045:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
 const _ap45=applySave;applySave=function(S){_ap45(S);EMERGE45=[];for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1};
 const _ng45=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng45()};
 // ---------------------------------------------------------------- 46. Tidewatch: the western fishing village
@@ -5432,7 +5443,7 @@ const _es47=enterScene;enterScene=function(id,house,ret){if(id!=='tidekeeper')re
  say('You tie up the boat and wade into the Drowned Grotto. Green light ripples on the walls.')};
 const _ls47=leaveScene;leaveScene=function(){_ls47();if(!SCENE&&GROTTO_BOAT){GROTTO_BOAT=false;if(TL.boat&&boatOK(P.x,P.y)){SAILING=true;say('You climb back into your boat.')}}};
 const _rs47=reset;reset=function(){GROTTO_BOAT=false;_rs47()};
-const _sn47=snap;snap=function(){const s=_sn47();if(GROTTO_BOAT&&SCENE&&TL.boat)s.sail=1;s.xdun={...EXTRA_DUNGEON_DAYS};return s};
+SQSAVE.after('047:sail,xdun',s=>{if(GROTTO_BOAT&&SCENE&&TL.boat)s.sail=1;s.xdun={...EXTRA_DUNGEON_DAYS};});
 const _ap47=applySave;applySave=function(S){GROTTO_BOAT=false;_ap47(S);for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1};
 const _ng47=newGame;newGame=function(){GROTTO_BOAT=false;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng47()};
 // loot: the caverns' table (gems, elixir, the Crystal blade, rarely) plus a piece of magic gear you don't own yet
@@ -5549,7 +5560,7 @@ const _ed48=enemyDrop;enemyDrop=function(n){_ed48(n);const q=QS[Q.i];if(Q.on&&q&
 var QDONE=new Set(),QHOLD=null;
 function qSkip(){while(QS[Q.i]&&QDONE.has(QS[Q.i].n))Q.i++;if(QHOLD&&QS[Q.i]&&QS[Q.i].n===QHOLD.n){Q.on=QHOLD.on;Q.k=QHOLD.k;QHOLD=null}}
 const _qa48=questAct;questAct=function(a){const i0=Q.i,q=QS[Q.i];_qa48(a);if(Q.i!==i0&&q){QDONE.add(q.n);if(q.fin){TALKQ=q.fin;say('Quest complete: '+q.n+'! "'+q.fin+'"');msgT=5}qSkip();saveNow();rPn()}else if(a==='acc')saveNow()};
-const _sn48=snap;snap=function(){const s=_sn48();s.qv=9;s.qdone=[...QDONE];if(QHOLD)s.qhold={...QHOLD};return s};
+SQSAVE.after('048:qv,qdone,qhold',s=>{s.qv=9;s.qdone=[...QDONE];if(QHOLD)s.qhold={...QHOLD};});
 const _ap48=applySave;applySave=function(S){_ap48(S);QDONE=new Set();QHOLD=null;if(!S.q)return;
  if((S.qv||0)<9){// Q.i is an index into the 20-quest chain: turn it into names, then find the first quest not yet done
   const done=QOLD8.slice(0,Math.min(Q.i,QOLD8.length));if(GMDONE||Q.i>=QOLD8.length)done.push('Grandmaster');for(const n of done)QDONE.add(n);
@@ -5662,10 +5673,7 @@ const _ap49=applySave;applySave=function(S){
  if(M.region.id!=='hollow'&&typeof routeOpen==='function'&&!routeOpen(M.region.id)){say('The route to '+WORLD_REGIONS[M.region.id].name+' must be charted again with the voyage quests. You are safe back on Hollow Island.');msgT=8}   // s.p is the harbor post you sailed from
  else if(M.region.id!=='hollow'){const id=M.region.id,ok=loadRegion(id,M.region.x>=0?[M.region.x,M.region.y]:null,{x:P.x,y:P.y});
   if(ok){if(M.p&&M.p.f)face=[M.p.f[0],M.p.f[1]]}else say('Could not reach '+WORLD_REGIONS[id].name+'. You are back at the harbor you sailed from.')}};
-const _sn49=snap;snap=function(){const s=_sn49();for(const k in SAVE_EXTRA)if(!(k in s))s[k]=SAVE_EXTRA[k];
- s.sv=SAVE_VERSION;if(s.p)s.p.f=[face[0]|0,face[1]|0];
- const R=SCENE&&SCENE.room;s.region=R&&R.region?{id:R.region,x:Math.max(0,Math.min(R.w-1,Math.floor(P.x/16))),y:Math.max(0,Math.min(R.h-1,Math.floor(P.y/16)))}:{id:'hollow'};
- s.worldState=JSON.parse(JSON.stringify(WORLD_STATE));s.unlockedRegions=UNLOCKED_REGIONS.slice();s.travelUnlocks={...TRAVEL_UNLOCKS};return s};
+SQSAVE.after('049:sv,region,worldState',s=>{for(const k in SAVE_EXTRA)if(!(k in s))s[k]=SAVE_EXTRA[k];s.sv=SAVE_VERSION;if(s.p)s.p.f=[face[0]|0,face[1]|0];const R=SCENE&&SCENE.room;s.region=R&&R.region?{id:R.region,x:Math.max(0,Math.min(R.w-1,Math.floor(P.x/16))),y:Math.max(0,Math.min(R.h-1,Math.floor(P.y/16)))}:{id:'hollow'};s.worldState=JSON.parse(JSON.stringify(WORLD_STATE));s.unlockedRegions=UNLOCKED_REGIONS.slice();s.travelUnlocks={...TRAVEL_UNLOCKS};});
 // a save we refused (newer version) must never be overwritten by this build
 const _sl49=saveLocal;saveLocal=function(f){if(SAVE_LOCK)return;_sl49(f)};
 const _sc49=saveCloud;saveCloud=async function(f){if(SAVE_LOCK)return;return _sc49(f)};
@@ -6413,7 +6421,7 @@ function rgFogAttach(R){const ws=WORLD_STATE[R.region]||(WORLD_STATE[R.region]={
  if(R.fogSrc!==ws.fog||!R.fog){R.fog=fogDecode(ws.fog,R.w*R.h);R.fogSrc=ws.fog;R.fogDirty=false;R.mmF=null}return R}
 const _rp52=rgPrepare;rgPrepare=function(id){return rgFogAttach(_rp52(id))};
 function fogFlush(){for(const id in RG_CACHE){const R=RG_CACHE[id];if(R&&R.fogDirty&&R.fog){const s=fogEncode(R.fog);(WORLD_STATE[id]||(WORLD_STATE[id]={})).fog=s;R.fogSrc=s;R.fogDirty=false}}}
-const _sn52=snap;snap=function(){fogFlush();return _sn52()};
+SQSAVE.wrap('052',_sn52=>function(){fogFlush();return _sn52()});
 const _ap52=applySave;applySave=function(S){FOG_LEGACY=new Set();try{const ws=S&&S.worldState||{};for(const id of(S&&Array.isArray(S.unlockedRegions)?S.unlockedRegions:[]))if(id!=='hollow'&&!(ws[id]&&ws[id].fog!==undefined))FOG_LEGACY.add(id)}catch(e){}
  for(const id in RG_CACHE)if(RG_CACHE[id])RG_CACHE[id].fogSrc=null;
  _ap52(S);for(const id of FOG_LEGACY)if(WORLD_STATE[id]&&WORLD_STATE[id].fog===undefined)WORLD_STATE[id].fog='full';FOG_LEGACY=new Set();
@@ -7785,7 +7793,7 @@ function fireTick(){if(!MP.on||!FB||!MP.user)return;const l=mpLoc(),key=l?locKey
  const mine=fires.filter(f=>!f._rp&&f._loc===l&&f.life>0).slice(0,8).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});
  if(!othersHere()||!mine.length){if(FIRE.pubbed){d.remove(ref).catch(()=>{});FIRE.pubbed=false}return}
  d.set(ref,{t:d.serverTimestamp(),f:mine}).catch(()=>{});if(!FIRE.pubbed)d.onDisconnect(ref).remove().catch(()=>{});FIRE.pubbed=true}
-{const _sn64=snap;snap=function(){const s=_sn64();s.fires=fires.filter(f=>!f._rp).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});return s}}
+{SQSAVE.after('061:fires',s=>{s.fires=fires.filter(f=>!f._rp).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});})}
 // the frame: shared clock first, then the game, then sharing
 {const _u64=upd;upd=function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick();fireTick();housesTick();buildTick()}catch(e){console.warn(e)}}}}
 // signing out: drop other players' monsters and stop sharing
@@ -7958,7 +7966,7 @@ function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now(
  if(!HOUSES.some(h=>h._foreign)&&Object.keys(HS.data).some(o=>o!==MP.user.uid))housesSync()} // e.g. after a save was loaded
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!HS.unsub)try{housesStart()}catch(e){mpErr(e)}}}
 // never save other people's houses into your game
-{const _sn=snap;snap=function(){const s=_sn();if(Array.isArray(s.houses)){const fids=new Set(HOUSES.filter(h=>h._foreign).map(h=>h.id));s.houses=s.houses.filter(h=>!fids.has(h.id))}if(s.home&&HOUSES.some(h=>h._foreign&&h.id===s.home))s.home=null;return s}}
+{SQSAVE.after('061:houses,home',s=>{if(Array.isArray(s.houses)){const fids=new Set(HOUSES.filter(h=>h._foreign).map(h=>h.id));s.houses=s.houses.filter(h=>!fids.has(h.id))}if(s.home&&HOUSES.some(h=>h._foreign&&h.id===s.home))s.home=null;})}
 // the door: friends only
 {const _es=enterScene;enterScene=function(id,house,ret){if(house&&house._foreign&&!canEnter(house)){const now=performance.now();if(now-HS.msgAt>2500){HS.msgAt=now;const nm=fname(house._owner);say('This is '+nm+'\'s house. Only '+nm+'\'s friends can go in.');sfx('swish')}P.y+=6;return}
  _es(id,house,ret);if(house&&house._foreign)say('You visit '+fname(house._owner)+'\'s house.')}}
@@ -8000,8 +8008,7 @@ function buildTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now()
  if(BLDS.data&&Object.keys(BLDS.data).length&&![...STR.values()].some(v=>v._foreign)&&![...FARM.values()].some(p=>p._foreign))buildSync()}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!BLDS.unsub)try{buildStart()}catch(e){mpErr(e)}}}
 // never save other people's things
-{const _sn=snap;snap=function(){const s=_sn();const fs=new Set([...STR].filter(([i,v])=>v._foreign).map(([i])=>i)),ff=new Set([...FARM].filter(([i,p])=>p._foreign).map(([i])=>i));
-  if(Array.isArray(s.str))s.str=s.str.filter(e=>!fs.has(e[0]));if(Array.isArray(s.farm))s.farm=s.farm.filter(e=>!ff.has(e[0]));return s}}
+{SQSAVE.after('061:str,farm',s=>{const fs=new Set([...STR].filter(([i,v])=>v._foreign).map(([i])=>i)),ff=new Set([...FARM].filter(([i,p])=>p._foreign).map(([i])=>i));if(Array.isArray(s.str))s.str=s.str.filter(e=>!fs.has(e[0]));if(Array.isArray(s.farm))s.farm=s.farm.filter(e=>!ff.has(e[0]));})}
 // hands off: hitting, harvesting, watering, planting, opening, using
 {const _atk=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&!SCENE&&swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x,o=ownerOfTile(i);
    if(o){notYours(o);return}const h=houseAt(x,y);if(h&&h._foreign&&!(x===h.x&&y===h.y)){notYours(h._owner);return}}return _atk()}}
@@ -8496,7 +8503,7 @@ function rbDraw(R,x,y,s,tm){if(STN.has(s.t)){if(s.t==='planter')s.ready=PLANTD[p
 {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rb'){const R=rbR();if(R)try{rbDraw(R,it.tx,it.ty,it.s,tm)}catch(e){}return}return _df(it,tm)}}
 {const _u=upd;upd=function(dt){_u(dt);const R=rbR();if(R)for(const s of rbMap(R.region).values())if(s.shake>0)s.shake-=dt}}
 // ---- saving ----
-{const _sn=snap;snap=function(){const s=_sn();const o={};for(const id in RB){const a=[];for(const[k,v]of RB[id]){const[x,y]=rbXY(k);a.push(v.items?[x,y,v.t,v.items]:[x,y,v.t])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rb=o;return s}}
+{SQSAVE.after('065:rb',s=>{const o={};for(const id in RB){const a=[];for(const[k,v]of RB[id]){const[x,y]=rbXY(k);a.push(v.items?[x,y,v.t,v.items]:[x,y,v.t])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rb=o;})}
 {const _ap=applySave;applySave=function(S){_ap(S);for(const id in RB)delete RB[id];const o=S&&S.rb;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id])continue;const m=rbMap(id);
    for(const e of (Array.isArray(o[id])?o[id]:[])){if(!Array.isArray(e)||!BK.includes(e[2]))continue;const s={t:e[2],hp:BHP[e[2]]||4};if(e[2]==='chest')s.items=(e[3]&&typeof e[3]==='object')?{...e[3]}:{};m.set(rbK(e[0]|0,e[1]|0),s)}}
   try{rbSolidSync()}catch(e){}}}
@@ -8595,9 +8602,8 @@ function rhSign(h){const nm=h._foreign?fname(h._owner):(MP.on?myName():pname());
 {const _dh=drawHUD;drawHUD=function(){const R=rbR();if(R&&BUILD&&BUILD.k==='house'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=rhFits(R,x,y),cx=camX(),cy=camY();
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drBld({...HOUSE_STYLE,w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}_dh()}}
 // ---- saving ----
-{const _sn=snap;snap=function(){const s=_sn();if(RH.length)s.rh=RH.map(h=>({id:h.id,rg:h.rg,x:h.x,y:h.y,f:[...h.furn].map(([i,f])=>f.nm?[i,f.t,f.items||null,f.nm]:[i,f.t,f.items||null])}));
-  if(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region){const pr=SCENE.prev,R=pr.room;if(s.p&&pr.ret){s.p.x=Math.round(pr.ret.x);s.p.y=Math.round(pr.ret.y)}
-   s.region={id:R.region,x:Math.max(0,Math.min(R.w-1,Math.floor(SCENE.ret.x/16))),y:Math.max(0,Math.min(R.h-1,Math.floor(SCENE.ret.y/16)))}}return s}}
+{SQSAVE.after('067:rh,region',s=>{if(RH.length)s.rh=RH.map(h=>({id:h.id,rg:h.rg,x:h.x,y:h.y,f:[...h.furn].map(([i,f])=>f.nm?[i,f.t,f.items||null,f.nm]:[i,f.t,f.items||null])}));if(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region){const pr=SCENE.prev,R=pr.room;if(s.p&&pr.ret){s.p.x=Math.round(pr.ret.x);s.p.y=Math.round(pr.ret.y)}
+   s.region={id:R.region,x:Math.max(0,Math.min(R.w-1,Math.floor(SCENE.ret.x/16))),y:Math.max(0,Math.min(R.h-1,Math.floor(SCENE.ret.y/16)))}}})}
 {const _ap=applySave;applySave=function(S){RH.length=0;const keepHome=S&&S.home;_ap(S);const RW=14,RHt=10,items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r};
   if(S&&Array.isArray(S.rh))for(const e of S.rh){if(!e||!WORLD_REGIONS[e.rg]||!isFinite(e.x)||!isFinite(e.y))continue;const h={id:String(e.id||'').slice(0,12)||Math.random().toString(36).slice(2,8),rg:e.rg,x:e.x|0,y:e.y|0,w:7,furn:new Map(),hp:12};
    if(Array.isArray(e.f))for(const q of e.f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RHt||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:items(q[2])},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}RH.push(h)}
@@ -8614,7 +8620,7 @@ window.SQRH=RH;
 const LB={open:false,cat:'tot',data:{},unsub:null,pubKey:'',pubAt:-1e9,pk:0};
 // PvP kills you've made (counted when the player you beat tells you so)
 {const _in=pvIncoming;pvIncoming=function(id,v){if(v&&v.k==='ko'&&typeof v.t==='number'&&mpNow()-v.t<=5000){LB.pk++;try{saveLocal(true)}catch(e){}}return _in(id,v)}}
-{const _sn=snap;snap=function(){const s=_sn();if(LB.pk)s.pvpk=LB.pk;return s}}
+{SQSAVE.after('068:pvpk',s=>{if(LB.pk)s.pvpk=LB.pk;})}
 {const _ap=applySave;applySave=function(S){_ap(S);LB.pk=Math.max(0,+(S&&S.pvpk)||0)}}
 function lbTick(){if(!MP.on||!MP.user||!FB)return;const now=performance.now();if(now-LB.pubAt<20000)return;LB.pubAt=now;
  const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};try{const c=window.SQCHR&&SQCHR.row();if(c){row.cr=c.r;row.cg=c.g}}catch(e){}const k=JSON.stringify(row);if(k===LB.pubKey)return;
@@ -8730,7 +8736,7 @@ tk.addEventListener('touchstart',e=>{if(pnOpen||!rsR()||nearNpc())return;if(rsCa
 {const _rs=reset;reset=function(){rsStop();_rs()}}
 {const _es=enterScene;enterScene=function(...a){rsStop();return _es(...a)}}
 // a save made at sea puts you back where you set sail
-{const _sn=snap;snap=function(){const s=_sn();if(RSAIL.on&&s.region&&s.region.id!=='hollow'){s.region.x=Math.floor(RSAIL.lx/16);s.region.y=Math.floor(RSAIL.ly/16)}return s}}
+{SQSAVE.after('069',s=>{if(RSAIL.on&&s.region&&s.region.id!=='hollow'){s.region.x=Math.floor(RSAIL.lx/16);s.region.y=Math.floor(RSAIL.ly/16)}})}
 // ---------------------------------------------------------------- 77. Ignore and report players
 // Tap a name in chat for a player menu: Message / Add friend, Trade (when they're close), Ignore and Report.
 // Ignoring someone hides their public chat (and the speech over their head), and drops their private messages,
@@ -8746,7 +8752,7 @@ function ignSet(u,on){if(!u||!MP.user||u===MP.user.uid)return;const nm=trName(u)
  try{saveLocal(true);saveCloud(true)}catch(e){}if(MP.open)mpRList()}
 // what gets hidden
 {const _c=mpChat;mpChat=function(id,v){if(v&&ignored(v.u)){MP.seen.add(id);return}return _c(id,v)}}
-{const _s=snap;snap=function(){const s=_s();if(IGN.m.size)s.ign=[...IGN.m].map(([u,n])=>[u,String(n).slice(0,12)]);return s}}
+{SQSAVE.after('070:ign',s=>{if(IGN.m.size)s.ign=[...IGN.m].map(([u,n])=>[u,String(n).slice(0,12)]);})}
 {const _a=applySave;applySave=function(S){_a(S);IGN.m.clear();if(S&&Array.isArray(S.ign))for(const e of S.ign)if(Array.isArray(e)&&typeof e[0]==='string')IGN.m.set(e[0].slice(0,64),String(e[1]||'Someone').slice(0,12))}}
 // ---- the player menu ----
 {const st=document.createElement('style');st.textContent=`#mppm{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);z-index:70;width:min(320px,calc(100vw - 24px));display:none;flex-direction:column;gap:6px;padding:12px;box-sizing:border-box;font:500 14px ${PF}}
@@ -8952,7 +8958,7 @@ setInterval(()=>{const B=WB.b,show=B&&MP.on&&!dead&&!pnOpen&&!menuOpen&&!TS.open
  // a message box you need to read (a sign, a door, someone talking) wins: the banner steps aside while it's up
  try{if(msgT>0&&msg&&MSGBOX){const r=wbbEl.getBoundingClientRect(),m=MSGBOX;if(r.left<m.x+m.w&&r.right>m.x&&r.top<m.y+m.h&&r.bottom>m.y)wbbEl.style.display='none'}}catch(e){}},150);
 // ---- saving, and the leaderboard ----
-{const _s=snap;snap=function(){const s=_s();if(WB.kills)s.wbk=WB.kills;const c=Object.keys(WB.claimed).slice(-20);if(c.length)s.wbc=c;return s}}
+{SQSAVE.after('071:wbk,wbc',s=>{if(WB.kills)s.wbk=WB.kills;const c=Object.keys(WB.claimed).slice(-20);if(c.length)s.wbc=c;})}
 {const _a=applySave;applySave=function(S){_a(S);WB.kills=Math.max(0,+(S&&S.wbk)||0);WB.claimed={};if(S&&Array.isArray(S.wbc))for(const k of S.wbc)WB.claimed[k]=1}}
 window.SQWB=WB;
 // ---------------------------------------------------------------- 82. World boss art (HD, same style as the other bosses)
@@ -9294,7 +9300,7 @@ function chSync(){if(!MP.on||!MP.user||!CHS.got||!Object.values(TRU.mine).some(B
  for(const cid in CHS.db)if(!seen.has(cid)&&CHS.ever.has(cid)&&!CHS.busy[cid]){FB.db.remove(FB.db.ref(FB.D,'chests/'+me+'/'+cid)).catch(()=>{});delete CHS.base[cid]}
  if(changed){if(pnOpen&&ptab===7)rPn();try{saveLocal(true)}catch(e){}}}
 setInterval(()=>{try{chSync()}catch(e){console.warn(e)}},1000);
-{const _sn=snap;snap=function(){const s=_sn();if(Object.keys(CHS.base).length)s.chb=CHS.base;return s}}
+{SQSAVE.after('072:chb',s=>{if(Object.keys(CHS.base).length)s.chb=CHS.base;})}
 {const _ap=applySave;applySave=function(S){_ap(S);CHS.base={};if(S&&S.chb&&typeof S.chb==='object')for(const k in S.chb)CHS.base[String(k).slice(0,60)]=chClean(S.chb[k])}}
 // a trusted friend opening one of your chests
 function chOpenShared(owner,cid){if(CHS.open)try{CHS.open()}catch(e){}const box={t:'chest',items:{},_sh:{o:owner,cid}};CHEST_H=box;CHEST_AT=-1;CHEST_IDX=-1;
@@ -9376,7 +9382,7 @@ setInterval(()=>{const t=nowS();let n=0;for(const[i,p]of[...FARM]){if(p._foreign
   for(const[k,f]of F){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2){const p={c:f.c,g:f.c?f.s*CROPS[f.c].st:0,w:f.w?CLK+60:0};out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}}return out}}
 {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rf'){const{M,F,tx,ty}=it;try{GC=g;drawPlot(-1,it.p,tm,tx,ty,(dx,dy)=>M.has(rbK(tx+dx,ty+dy))||F.has(rbK(tx+dx,ty+dy)))}catch(e){}return}return _df(it,tm)}}
 // saving
-{const _sn=snap;snap=function(){const s=_sn();const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w),p.e|0])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;return s}}
+{SQSAVE.after('072:rfarm',s=>{const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w),p.e|0])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;})}
 {const _ap=applySave;applySave=function(S){_ap(S);for(const id in RF)delete RF[id];const o=S&&S.rfarm;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id]||!Array.isArray(o[id]))continue;const M=rfMap(id);
    for(const e of o[id])if(Array.isArray(e)&&isFinite(e[0])&&isFinite(e[1]))M.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,g:Math.max(0,+e[3]||0),w:+e[4]||0,e:+e[5]||nowS()})}}}
 {const _ng=newGame;newGame=function(){for(const id in RF)delete RF[id];_ng()}}
@@ -9848,7 +9854,7 @@ function sfStart(){const d=FB.db;SF.unsub=d.onValue(d.ref(FB.D,'farm'),s=>{const
  MP.unsub.push(()=>{if(SF.unsub)SF.unsub();SF.unsub=null;SF.ready=false;SF.data={}})}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!SF.unsub)try{sfStart()}catch(e){mpErr(e)}}}
 // saves: the offline fields; old saves' own plots become shared plots
-{const _sn=snap;snap=function(){const s=_sn();s.sf=SF.local;delete s.farm;delete s.rfarm;return s}}
+{SQSAVE.after('077:sf',s=>{s.sf=SF.local;delete s.farm;delete s.rfarm;})}
 {const _ap=applySave;applySave=function(S){_ap(S);SF.local={};const now=Date.now();
   if(S&&S.sf&&typeof S.sf==='object'){for(const a in S.sf){if(!WORLD_REGIONS[a]||typeof S.sf[a]!=='object')continue;SF.local[a]={};for(const k in S.sf[a])if(/^\d+_\d+$/.test(k))SF.local[a][k]=sfClean(S.sf[a][k])}}
   else{const conv=(a,x,y,c,g,w)=>{(SF.local[a]||(SF.local[a]={}))[sfK(x,y)]={c:CROPS[c]?c:'',g:+g||0,t:now,w:w>CLK?now+(w-CLK)*1000:0,e:CROPS[c]?0:now}};
@@ -9944,8 +9950,7 @@ rhPack=(_rp=>function(h){if(!h||!h.castle)return _rp(h);const n0=inv.house|0;_rp
 rhForeign=(_rf=>function(id){const out=_rf(id);try{for(const o in BLDS.data){const L=BLDS.data[o]&&BLDS.data[o].r&&BLDS.data[o].r._h;if(!L)continue;for(const e0 of(Array.isArray(L)?L:Object.values(L))){const e=Array.isArray(e0)?e0:Object.values(e0||{});
    if(e[0]!==id||!e[5])continue;const h=out.find(q=>q._owner===o&&q.x===(e[1]|0)&&q.y===(e[2]|0));if(h&&!h.castle){const fresh=buildForeign(o,{id:e[3],x:e[1],y:e[2],w:7,f:e[4],c:1});h.castle=1;h.furn=fresh.furn}}}}catch(err){}return out})(rhForeign);
 // saving your castles
-{const _sn=snap;snap=function(){const s=_sn();if(Array.isArray(s.houses))for(const e of s.houses){const h=HOUSES.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}
-  if(Array.isArray(s.rh))for(const e of s.rh){const h=RH.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}return s}}
+{SQSAVE.after('077',s=>{if(Array.isArray(s.houses))for(const e of s.houses){const h=HOUSES.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}if(Array.isArray(s.rh))for(const e of s.rh){const h=RH.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}})}
 {const _ap=applySave;applySave=function(S){_ap(S);const items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r},
    fill=(h,f)=>{h.castle=1;h.hp=24;h.furn=new Map();if(Array.isArray(f))for(const q of f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*CASTLE_W||i>=CASTLE_W*CASTLE_H||!BK.includes(t)||t==='house'||t==='castle')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:items(q[2])},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}};
   if(S&&Array.isArray(S.houses))for(const e of S.houses){if(!e||!e.c)continue;const h=HOUSES.find(o=>!o._foreign&&o.id===String(e.id).slice(0,12));if(h)fill(h,e.f)}
@@ -10476,7 +10481,7 @@ var LUX={};
   bx.style.display=(pnOpen||menuOpen)?'none':'flex';bx.innerHTML=L.map(([k,n,c])=>{const s=Math.ceil((BUFF[k]-now)/1000);return'<span style="background:#f8f8f8;border:2px solid #485870;padding:2px 6px;color:'+c+'">'+n+' '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+'</span>'}).join('');
   for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength wore off.',iron:'Your iron skin wore off.',swift:'Your swiftness wore off.',wis:'Your wisdom wore off.',regen:'Your regeneration wore off.'}[k]||'')}},500);
  // ---- saves ----
- const _sn=snap;snap=function(){const s=_sn();s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};return s};
+ SQSAVE.after('085:cos',s=>{s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};});
  const _ap=applySave;applySave=function(S){_ap(S);const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);
   COS.pet=COS.pets.includes(c.pet)?c.pet:null;COS.cape=COS.capes.includes(+c.cape)?+c.cape:0;for(const k of['db','dl','dh'])COS[k]=COS.dyes.includes(+c[k])?+c[k]:0;KITC.clear()};
  // ---- looks: capes and dyes are part of the character sprite, so other players see them too ----
@@ -10651,7 +10656,7 @@ var LUX={};
    const k='<div class="qc" style="margin-top:12px">',i=h.indexOf(k);return i<0?h+row:h.slice(0,i)+row+h.slice(i)};
   pbd.addEventListener('click',e=>{const b=e.target.closest('[data-hideh]');if(!b)return;e.stopPropagation();e.preventDefault();HIDEH=!HIDEH;say(HIDEH?'Your helmet is hidden. It still protects you.':'Your helmet is showing again.');
    try{saveLocal(true);saveCloud(true)}catch(err){}try{rPn()}catch(err){}},true);
-  const _sn=snap;snap=function(){const o=_sn();o.hh=HIDEH?1:0;return o};
+  SQSAVE.after('086:hh',o=>{o.hh=HIDEH?1:0;});
   const _ap=applySave;applySave=function(S){_ap(S);HIDEH=!!(S&&S.hh)};
   const _ng=newGame;newGame=function(){HIDEH=false;_ng()}}
  // ---- Dragonsoul amulet (a rare drop from the Dragon world boss) ----
@@ -10709,7 +10714,7 @@ var LUX={};
   else{for(const[a,b]of[[2,1],[3,2],[3,3],[4,4],[5,5],[11,1],[10,2],[10,3],[9,4],[8,5]])r(a,b,1,1,GD2);r(4,6,6,7,O2);r(5,7,4,5,G);r(6,8,2,3,gc);r(6,8,1,1,'#fff');r(8,10,1,1,gd)}
   return ICONC[key]=c.toDataURL()};
  // ---- saving ----
- const _sn=snap;snap=function(){const s=_sn();if(JW.ring||JW.neck)s.jw={ring:JW.ring,neck:JW.neck};return s};
+ SQSAVE.after('086:jw',s=>{if(JW.ring||JW.neck)s.jw={ring:JW.ring,neck:JW.neck};});
  const _ap=applySave;applySave=function(S){_ap(S);JW.ring=JW.neck=null;const w=S&&S.jw;if(w){if(JK[w.ring]&&JK[w.ring].s==='ring')JW.ring=w.ring;if(JK[w.neck]&&JK[w.neck].s==='neck')JW.neck=w.neck}};
  const _ng=newGame;newGame=function(){JW.ring=JW.neck=null;_ng()};
  window.SQJW=JW;window.SQJK=JK;window.SQGEMC=GEMC}
@@ -10774,7 +10779,7 @@ var LUX={};
  const _br=bowRange;bowRange=function(){return _br()+(TL.bow===4?-10:TL.bow===5?15:0)};
  const _sd=spellDmg;spellDmg=function(el){return _sd(el)+WT};
  // saving
- const _sn=snap;snap=function(){const s=_sn();if(WT)s.wt=WT;if(TL.bow>=4){s.tl=s.tl||{};s.tl.bow=TL.bow}return s};
+ SQSAVE.after('088:wt,tl',s=>{if(WT)s.wt=WT;if(TL.bow>=4){s.tl=s.tl||{};s.tl.bow=TL.bow}});
  const _ap=applySave;applySave=function(S){_ap(S);WT=WAND&&(S.wt===1||S.wt===2)?S.wt:0;const b=S&&S.tl&&+S.tl.bow;if(b===4||b===5){TL.bow=b;WAND=null;WT=0}if(typeof snapEq==='function')snapEq()};
  const _ng=newGame;newGame=function(){WT=0;_ng()};
  // stats on the item descriptions (with how they compare)
@@ -10855,7 +10860,7 @@ var CROWN=false;
  const _occ=occ;occ=function(slot){if(slot==='helm'&&CROWN)return'eq_fcrown';return _occ(slot)};
  const _ss=setSlot;setSlot=function(slot,k){_ss(slot,k);if(slot==='helm'){CROWN=k==='eq_fcrown';if(CROWN){ARM.helm=3;CLS.helm=null}}};
  const _wu=watchUpgrades;watchUpgrades=function(){const was=CROWN;_wu();if(was&&ARM.helm!==3){if((inv.eq_helm3|0)>0)inv.eq_helm3--;inv.eq_fcrown=(inv.eq_fcrown|0)+1;CROWN=false}};
- const _sn=snap;snap=function(){const s=_sn();if(CROWN)s.fcr=1;return s};
+ SQSAVE.after('091:fcr',s=>{if(CROWN)s.fcr=1;});
  const _ap=applySave;applySave=function(S){_ap(S);CROWN=!!(S&&S.fcr)&&ARM.helm===3};
  const _ng=newGame;newGame=function(){CROWN=false;_ng()};
  // how it looks: hair showing, the crown on top (for you and everyone who sees you)
@@ -11404,7 +11409,7 @@ function drawThorn(n,tm){const x=Math.round(n.x),y=Math.round(n.y),K='#181018',h
  const w=40,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-66,w+2,5,K);Rg(x-w/2,y-65,w,3,'#3a1a1a');Rg(x-w/2,y-65,Math.round(w*f),3,'#78d050')}
 {const _pS=pS;pS=function(n,tm){if(n&&n.type==='thorn')return drawThorn(n,tm);return _pS(n,tm)}}
 // saving the boss day
-{const _sn=snap;snap=function(){const s=_sn();s.thd=THDAY;return s}}
+{SQSAVE.after('095:thd',s=>{s.thd=THDAY;})}
 {const _ap=applySave;applySave=function(S){_ap(S);THDAY=isFinite(S&&S.thd)?+S.thd:-1}}
 try{if(typeof KNOWN49!=='undefined'&&KNOWN49.add)KNOWN49.add('thd')}catch(e){}
 
@@ -11501,7 +11506,7 @@ var SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
 {const _occ=occ;occ=function(slot){if(slot==='main'&&SLEDGE)return'eq_sledge';return _occ(slot)}}
 {const _ss=setSlot;setSlot=function(slot,k){_ss(slot,k);if(slot==='main'){SLEDGE=k==='eq_sledge';if(SLEDGE)TL.sword=3}}}
 {const _wu=watchUpgrades;watchUpgrades=function(){const was=SLEDGE;_wu();if(was&&TL.sword!==3){if((inv.eq_sword3|0)>0)inv.eq_sword3--;inv.eq_sledge=(inv.eq_sledge|0)+1;SLEDGE=false}}}
-{const _sn=snap;snap=function(){const s=_sn();if(SLEDGE)s.sld=1;return s}}
+{SQSAVE.after('096:sld',s=>{if(SLEDGE)s.sld=1;})}
 {const _ap=applySave;applySave=function(S){_ap(S);SLEDGE=!!(S&&S.sld)&&TL.sword===3}}
 {const _ng=newGame;newGame=function(){SLEDGE=false;_ng()}}
 try{KNOWN49.add('sld');KNOWN49.add('emd')}catch(e){}
@@ -11761,7 +11766,7 @@ function drawEmberl(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs
  for(const b of n.balls){g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(b.x,b.y,6,0,6.283);g.fill();Rg(b.x-3,b.y-3,6,6,K);Rg(b.x-2,b.y-2,4,4,'#f87020');Rg(b.x-1,b.y-2,2,2,'#fff0a0')}
  const w=44,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-62,w+2,5,K);Rg(x-w/2,y-61,w,3,'#3a1a1a');Rg(x-w/2,y-61,Math.round(w*f),3,'#f87020')}
 {const _pS=pS;pS=function(n,tm){if(n&&n.type==='emberl')return drawEmberl(n,tm);return _pS(n,tm)}}
-{const _sn=snap;snap=function(){const s=_sn();s.emd=EMDAY;return s}}
+{SQSAVE.after('096:emd',s=>{s.emd=EMDAY;})}
 {const _ap=applySave;applySave=function(S){_ap(S);EMDAY=isFinite(S&&S.emd)?+S.emd:-1}}
 // the Ember ring: your sword sets monsters burning
 if(window.SQJK){SQGEMC.ember=['#f87020','#802008'];const j={k:'ja_ember',n:'Ember ring',s:'ring',g:'ember',v:4500,d:'Your melee hits set monsters on fire.'};SQJK[j.k]=j;
@@ -12497,7 +12502,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   const _occ=occ;occ=function(slot){if(slot==='helm'&&HAT)return k;return _occ(slot)};
   const _ss=setSlot;setSlot=function(slot,kk){_ss(slot,kk);if(slot==='helm'){HAT=kk===k;if(HAT){ARM.helm=AH;CLS.helm=null}}};
   const _wu=watchUpgrades;watchUpgrades=function(){const was=HAT;_wu();if(was&&ARM.helm!==AH){if((inv['eq_helm'+AH]|0)>0)inv['eq_helm'+AH]--;inv[k]=(inv[k]|0)+1;HAT=false}};
-  const _sn=snap;snap=function(){const s=_sn();if(HAT)s.ohat=1;return s};const _ap=applySave;applySave=function(S){_ap(S);HAT=!!(S&&S.ohat)&&ARM.helm===AH};const _ng=newGame;newGame=function(){HAT=false;_ng()};try{KNOWN49.add('ohat')}catch(e){}
+  SQSAVE.after('100:ohat',s=>{if(HAT)s.ohat=1;});const _ap=applySave;applySave=function(S){_ap(S);HAT=!!(S&&S.ohat)&&ARM.helm===AH};const _ng=newGame;newGame=function(){HAT=false;_ng()};try{KNOWN49.add('ohat')}catch(e){}
   const _gc=gearCH;gearCH=function(){const c=_gc();if(HAT&&!(typeof HIDEH!=='undefined'&&HIDEH)){c.ht=0;delete c.mh;delete c.dyh;c.oh=1}return c};
   const OHC=new Map();const _ks=kitSprite;kitSprite=function(ch,dir,st,fl){const c=_ks(ch,dir,st,fl);if(!ch||!ch.oh)return c;const key=JSON.stringify(ch)+'|'+dir+'|'+st+'|'+(fl?1:0);let o=OHC.get(key);if(o)return o;
    const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let top=c.height,l=c.width,r=0;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(d[(y*c.width+x)*4+3]>0){if(y<top)top=y}
@@ -12764,7 +12769,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
   c.pets=PL().map(p=>p.k).filter(own);lastOwn=new Set(c.pets)}
  window.SQPETSYNC=sync;
  const _ap=applySave;applySave=function(S){_ap(S);MIG=!!(S&&S.petItems);lastOwn=null;lastE=null;sync()};
- const _sn=snap;snap=function(){try{sync()}catch(e){}const s=_sn();s.petItems=1;return s};
+ SQSAVE.wrap('104:petItems',_sn=>function(){try{sync()}catch(e){}const s=_sn();s.petItems=1;return s});
  const _ng=newGame;newGame=function(){_ng();MIG=true;lastOwn=null;lastE=null};
  let st=0;const _u=upd;upd=function(dt){_u(dt);st+=dt;if(st>.4){st=0;try{sync()}catch(e){}}};
  const _eq=equipItem;equipItem=function(k){_eq(k);if(EQ[k]&&EQ[k].slot==='pet'){try{sync()}catch(e){}}};
@@ -12829,7 +12834,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
  const max=k=>k==='bait'?200:RAW.has(k)||/bar$|log$|ore$/.test(k)?8:EQ[k]||TL[k]!==undefined||/^(axe|pick|rod|hoe|can|bow|sword|wand)/.test(k)?2:20;
  const day=()=>1+Math.floor(time/DAYLEN);let STK={d:0,n:{}};const cur=()=>{if(STK.d!==day())STK={d:day(),n:{}};return STK};
  const left=k=>Math.max(0,max(k)-(cur().n[k]|0));window.SQSTOCK={left,max,day,keyOf:t=>keyOf(t)};
- {const _s=snap;snap=function(){const s=_s();s.stk=cur();return s}}
+ {SQSAVE.after('107:stk',s=>{s.stk=cur();})}
  {const _a=applySave;applySave=function(S){_a(S);STK=S&&S.stk&&S.stk.n?{d:+S.stk.d||0,n:{...S.stk.n}}:{d:0,n:{}}}}
  const isShop=()=>pnOpen&&ptab===2&&shop&&shop!=='wmkt';
  // a purchase = gold went down and items came in. Over today's stock: undo it.
@@ -13283,8 +13288,8 @@ window.SQA=SQA;
  const _up=upd;upd=function(dt){const x0=P.x,y0=P.y;const out=_up.apply(this,arguments);try{const sp=fxSum('spd');if(sp&&!dead&&!SCENE){const dx=P.x-x0,dy=P.y-y0;
    if((dx||dy)&&Math.hypot(dx,dy)<20){const f=sp/100,ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));if(ok(P.x+dx*f,P.y))P.x+=dx*f;if(ok(P.x,P.y+dy*f))P.y+=dy*f}}}catch(e){}return out};
  // ---- saves keep new items (and what you wear) even if they haven't loaded yet ----
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];
-   const c={};for(const sl of SLOTS){if(CUS[sl])c[sl]=CUS[sl];else if(PCUS[sl])c[sl]=PCUS[sl]}if(Object.keys(c).length)s.cus=c}catch(e){}return s};
+ SQSAVE.after('111a2:cus',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];
+   const c={};for(const sl of SLOTS){if(CUS[sl])c[sl]=CUS[sl];else if(PCUS[sl])c[sl]=PCUS[sl]}if(Object.keys(c).length)s.cus=c}catch(e){}});
  const _ap=applySave;applySave=function(S){for(const k in PEND)delete PEND[k];for(const s of SLOTS){CUS[s]=null;delete PCUS[s]}const out=_ap.apply(this,arguments);
   try{if(S&&S.inv)for(const k in S.inv)if(ngKey(k)&&!EQ[k]&&+S.inv[k]>0)PEND[k]=Math.min(1e6,+S.inv[k]|0);
    if(S&&S.cus&&typeof S.cus==='object')for(const s of SLOTS){const k=S.cus[s];if(!ngKey(k))continue;if(EQ[k]&&EQ[k].custom){if(_occ(s)===EQ[k].base)CUS[s]=k}else PCUS[s]=k}
@@ -14732,7 +14737,7 @@ window.SQA=SQA;
   d.innerHTML='<b>Getting started '+(GD.s+1)+'/'+N0+':</b> '+S[GD.s].n+'<button data-gskip>Skip the guide</button>';pbd.prepend(d)};
  pbd.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('[data-gskip]'))return;GD.s=DONE;light(null);try{say('Guide skipped. Your quests are in the quest log.');saveLocal(true)}catch(x){}rPn()});
  // saves
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{if(GD.s!=null)s.gd=GD.s}catch(e){}return s};
+ SQSAVE.after('115:gd',s=>{try{if(GD.s!=null)s.gd=GD.s}catch(e){}});
  const _ap=applySave;applySave=function(Sv){const out=_ap.apply(this,arguments);try{const v=Sv&&Sv.gd;
    if(typeof v==='number'&&v>=0)GD.s=v>=N0?DONE:v|0;else decide()}catch(e){GD.s=DONE}return out};
  const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);GD.s=0;stepStart();return out};
@@ -15395,7 +15400,7 @@ window.SQA=SQA;
  const _rp=rPn;rPn=function(){const out=_rp.apply(this,arguments);try{if(pnOpen&&ptab===6&&D){const d=document.createElement('div');d.className='sqdl';d.innerHTML=html();
    const gd=pbd.querySelector('.sqgd');if(gd)gd.after(d);else pbd.prepend(d)}}catch(e){}return out};
  // saves
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{if(D)s.dly=JSON.parse(JSON.stringify(D))}catch(e){}return s};
+ SQSAVE.after('120:dly',s=>{try{if(D)s.dly=JSON.parse(JSON.stringify(D))}catch(e){}});
  const _ap=applySave;applySave=function(Sv){const out=_ap.apply(this,arguments);try{const v=Sv&&Sv.dly;
    if(v&&typeof v==='object'&&typeof v.d==='string'&&Array.isArray(v.q)){D={d:v.d,s:Math.max(0,v.s|0),l:typeof v.l==='string'?v.l:'',
      q:v.q.filter(q=>q&&T[q.t]).slice(0,3).map(q=>({t:q.t,n:Math.max(1,q.n|0),p:Math.max(0,q.p|0),c:q.c?1:0}))};if(!D.q.length)D=null}
@@ -15793,7 +15798,7 @@ window.SQA=SQA;
  // Hollow's night slimes have no type: count them for the slime quests (048 counts the ones typed 'slime')
  const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const q=cur();if(q&&q.type==='kill'&&q.item==='slime'&&n&&!n.type&&!n._rp){Q.k++;if(Q.k===q.amt)done1(q)}}catch(e){}return out};
  // ---- saves ----
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.qv=10;s.ibk=[...IBK];return s};
+ SQSAVE.after('128:qv,ibk',s=>{s.qv=10;s.ibk=[...IBK];});
  const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{IBK=new Set(Array.isArray(S&&S.ibk)?S.ibk.filter(k=>typeof k==='string').slice(0,10):[]);NW=0;
    if(S&&S.q&&(S.qv|0)===9){const i=Math.max(0,Math.min(QOLD9.length,+S.q.i||0)),name=QOLD9[i];
     for(const n of QOLD9.slice(0,i))QDONE.add(n);
@@ -15912,7 +15917,7 @@ window.SQA=SQA;
    say('Achievement unlocked: '+a.n+'!'+(a.gold?' +'+a.gold+' gold':''));msgT=5;try{sfx('level')}catch(e){}try{svg()}catch(e){}try{saveLocal(true)}catch(e){}if(pnOpen&&ptab===ATAB)rPn();break}}}
  window.SQACH={add:(k,n)=>{C[k]=cnt(k)+(n||1)},get counters(){return C},get done(){return D},get col(){return COL},A,cats,check,colCount,colTotal};
  // ---- saves ----
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.ach={c:Object.assign({},C),d:Object.assign({},D),col:[...COL],rg:[...RG]};return s};
+ SQSAVE.after('129:ach',s=>{s.ach={c:Object.assign({},C),d:Object.assign({},D),col:[...COL],rg:[...RG]};});
  const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const v=S&&S.ach;C={};D={};COL=new Set();RG=new Set();
    if(v&&typeof v==='object'){for(const k in v.c||{}){const n=+v.c[k];if(isFinite(n)&&n>0)C[k]=Math.floor(n)}for(const k in v.d||{})if(A.some(a=>a.id===k))D[k]=+v.d[k]||1;
     for(const k of Array.isArray(v.col)?v.col:[])if(typeof k==='string'&&INAME[k])COL.add(k);for(const r of Array.isArray(v.rg)?v.rg:[])if(typeof r==='string')RG.add(r)}
@@ -16213,7 +16218,7 @@ window.SQA=SQA;
  // ---- Opening Moves: from the main chain to Orla ----
  const QOLD10=QS.map(q=>q.n);{const i=QS.findIndex(q=>q.n==='Opening Moves');if(i>=0)QS.splice(i,1)}
  const OM={n:'Opening Moves',d:'Beat Grandmaster Orla at chess once, on any difficulty. She plays at the table in the village square.',r:{g:100,xp:[7,300]}};
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.qv=11;return s};
+ SQSAVE.after('134:qv',s=>{s.qv=11;});
  const _ap=applySave;applySave=function(S){const v=S&&S.q?(S.qv|0):11,raw=S&&Array.isArray(S.qdone)?S.qdone.slice():[],sq=S&&S.q?{...S.q}:null;
   const out=_ap.apply(this,arguments);
   try{if(sq&&v<11){const i=Math.max(0,+sq.i||0);let done=raw.includes(OM.n),cur=null;
@@ -16672,7 +16677,7 @@ window.SQA=SQA;
    const card='<div class="qc" style="margin:8px 0;font-size:13px"><b>Chess ladder</b><p style="margin:4px 0 0">'+(ST.g?'Your rating: <b>'+Math.round(ST.r)+'</b> · '+ST.w+' won, '+ST.l+' lost, '+ST.d+' drawn · best '+ST.pk:'Play chess against another player (tap their name and choose CHESS) to get a rating. Everyone starts at 1000.')+'</p><p style="margin:4px 0 0;font-size:11px;opacity:.8">See the top players in Leaderboards > Chess.</p></div>';
    const i=h.indexOf('<button class="cg');return i<0?h+card:h.slice(0,i)+card+h.slice(i)}}
  // saves
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{if(ST.g)s.chr={r:Math.round(ST.r*10)/10,g:ST.g,w:ST.w,l:ST.l,d:ST.d,pk:ST.pk,f:ST.f}}catch(e){}return s}}
+ {SQSAVE.after('142:chr',s=>{try{if(ST.g)s.chr={r:Math.round(ST.r*10)/10,g:ST.g,w:ST.w,l:ST.l,d:ST.d,pk:ST.pk,f:ST.f}}catch(e){}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const v=S&&S.chr;Object.assign(ST,{r:1000,g:0,w:0,l:0,d:0,pk:1000,f:{}});
    if(v&&typeof v==='object'){ST.r=Math.max(100,Math.min(3000,+v.r||1000));for(const k of['g','w','l','d'])ST[k]=Math.max(0,v[k]|0);ST.pk=Math.max(ST.r,+v.pk||0);
     if(v.f&&typeof v.f==='object')for(const u in v.f){const a=v.f[u];if(Array.isArray(a))ST.f[u]=[a[0]|0,a[1]|0]}}}catch(e){}return out}}
@@ -16760,7 +16765,7 @@ window.SQA=SQA;
 #pn .sqwe-t{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin:3px 0 5px}#pn .sqwe-r{display:flex;flex-direction:column;gap:1px;font-size:11px;margin-bottom:5px}
 #pn .sqwe-r span{opacity:.6}#pn .sqwe-r span.on{opacity:1;color:#287818;font-weight:700}#pn .sqwe small{display:block;font-size:11px;opacity:.9}#pn .sqwe-top{margin-top:3px}`;document.head.appendChild(st)}
  // ---- saves ----
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{if(W.c||W.got)s.wev={w:W.w,c:W.c,got:W.got,q:W.q}}catch(e){}return s}}
+ {SQSAVE.after('143:wev',s=>{try{if(W.c||W.got)s.wev={w:W.w,c:W.c,got:W.got,q:W.q}}catch(e){}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const v=S&&S.wev;W=v&&typeof v==='object'&&isFinite(+v.w)?{w:+v.w|0,c:Math.max(0,v.c|0),got:Math.max(0,Math.min(3,v.got|0)),q:Math.max(0,v.q|0)}:{w:weekOf(now()),c:0,got:0,q:0};
    TOT=0;TOP=[];NP=0;subW=-1;if(unsub){try{unsub()}catch(e){}unsub=null}LASTINV=null;LASTK=typeof kills==='number'?kills:0}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);W={w:weekOf(now()),c:0,got:0,q:0};LASTINV=null;LASTK=0;return out}}
@@ -16956,10 +16961,10 @@ window.SQA=SQA;
   for(const M of[h.yf,h.yp])for(const[i,v]of[...M]){const x=i%W,y=i/W|0,grass=j=>M!==h.yp||R.lay(j%W,j/W|0)===2;if(!R.solid.has(i)&&!onDoorTile(R,x,y)&&grass(i))continue;let best=-1,bd=1e9;
    for(let j=2*W;j<W*R.h;j++)if(free(j)&&grass(j)){const d=Math.hypot(j%W-x,(j/W|0)-y);if(d<bd){bd=d;best=j}}
    M.delete(i);used.delete(i);if(best>=0){M.set(best,v);used.add(best)}else if(M===h.yf&&!ro){inv[v.t]=(inv[v.t]|0)+1;if(v.items)for(const k in v.items)inv[k]=(inv[k]|0)+(v.items[k]|0)}}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{const put=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;const f=outF(h),p=outP(h);if(f)e.yf=f;if(p)e.yp=p;if(f||p)e.yw=RofH(h).w}};
+ {SQSAVE.after('145',s=>{try{const put=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;const f=outF(h),p=outP(h);if(f)e.yf=f;if(p)e.yp=p;if(f||p)e.yw=RofH(h).w}};
     put(HOUSES,s.houses);put(window.SQRH||[],s.rh);
     // standing in a yard saves you outside the house (its ret), like standing in the house does
-    if(isYard()&&SCENE.ret&&s.p&&!SCENE.prev){s.p.x=Math.round(SCENE.ret.x);s.p.y=Math.round(SCENE.ret.y)}}catch(e){console.warn(e)}return s}}
+    if(isYard()&&SCENE.ret&&s.p&&!SCENE.prev){s.p.x=Math.round(SCENE.ret.x);s.p.y=Math.round(SCENE.ret.y)}}catch(e){console.warn(e)}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const get=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;h._yd=null;const ow=+e.yw||OLDW(h);inF(h,e.yf,RofH(h),ow);inP(h,e.yp,RofH(h),ow);settle(h)}};
     get(HOUSES,S&&S.houses);get(window.SQRH||[],S&&S.rh);for(const h of mine()){if(!h.yf)h.yf=new Map();if(!h.yp)h.yp=new Map()}KNOWN=new Set(mine());if(window.SQONEHOME)SQONEHOME.enforce()}catch(e){console.warn(e)}return out}}
  // packing a house packs its yard (furniture and what's in its chests); one-home (149) packs extra homes the same way
@@ -17102,7 +17107,7 @@ window.SQA=SQA;
      const sl=e.slot==='main'?'sword':e.slot,inHand=TL[sl]===e.tier,anywhere=new RegExp('"'+key+'"\\s*[:,]\\s*"?[1-9]').test(js)||(inv[key]|0)>0;
      if(!inHand&&!anywhere){if(key==='eq_bow3'&&TL.bow===2&&!WAND){TL.bow=3;hand.push(key)}else{inv[key]=(inv[key]|0)+1;back.push(key)}}}}
    if(typeof snapEq==='function')snapEq()}catch(e){console.warn(e)}return out}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.tfx=2;return s}}
+ {SQSAVE.after('147:tfx',s=>{s.tfx=2;})}
  // tell the player once play is running (upd only runs in play)
  let wait=0;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if((back.length||hand.length)&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;
    if(hand.length){hand=[];say('Sorry about that! A bug swapped your Bone bow for a Longbow. It\'s back in your hands.')}
@@ -17642,7 +17647,7 @@ window.SQA=SQA;
    return h+s+'</div>'}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ultp]');if(!b||ptab!==3)return;e.stopPropagation();e.preventDefault();PICK=b.dataset.ultp;
   const o=avail().find(x=>x.k===PICK);say('Your ULT button now uses '+(o?o.n:'that ultimate')+'.');try{sfx('talk')}catch(_){}try{saveLocal(true)}catch(_){}rPn()},true);
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(PICK)s.ultp=PICK;return s}}
+ {SQSAVE.after('159:ultp',s=>{if(PICK)s.ultp=PICK;})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);PICK=S&&/^(slam|dragon|wand|dagger)$/.test(S.ultp)?S.ultp:null;return out}}
  try{KNOWN49.add('ultp')}catch(e){}
  window.SQULT={avail,chosen,get pick(){return PICK},set pick(v){PICK=v}}})();
@@ -17978,7 +17983,7 @@ window.SQA=SQA;
    if(o.buff&&window.LUX&&LUX.BUFF){LUX.BUFF[o.buff]=performance.now()+o.bs*1000;got.push({str:'stronger hits',iron:'better blocks',swift:'free sprinting',wis:'+20% XP',regen:'regeneration'}[o.buff]+' for '+(o.bs>=120?Math.round(o.bs/60)+' min':o.bs+' s'))}
    say('You drink the '+o.n.toLowerCase()+(got.length?': '+got.join(', '):'')+'.');try{sfx('quest')}catch(e){}saveLocal(true);if(pnOpen)rPn()}}
  {const _e=eat;eat=function(){const keep={};for(const k in POT){keep[k]=inv[k]|0;inv[k]=0}try{return _e.apply(this,arguments)}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){}return s}}
+ {SQSAVE.after('162:cq',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){}})}
  {const _ap=applySave;applySave=function(S){for(const k in PEND)delete PEND[k];const out=_ap.apply(this,arguments);
    try{if(S&&S.inv)for(const k in S.inv)if(/^it_/.test(k)&&+S.inv[k]>0){if(REG.has(k))inv[k]=Math.min(1e6,+S.inv[k]|0);else PEND[k]=Math.min(1e6,+S.inv[k]|0)}}catch(e){}
    for(const k in CQ)delete CQ[k];try{if(S&&S.cq&&typeof S.cq==='object')for(const k in S.cq){const v=+S.cq[k];if(/^q_[a-z0-9_]{1,30}[#@!]?$/.test(k)&&isFinite(v))CQ[k]=Math.max(0,Math.min(1e6,v|0))}}catch(e){}return out}}
@@ -18664,9 +18669,9 @@ window.SQA=SQA;
  for(const k of KEYS)KNOWN49.add(k);
  const learn=s=>{if(!s||typeof s!=='object')return;for(const k of Object.keys(s))if(!(k in SAVE_EXTRA)||s[k]!==SAVE_EXTRA[k])KNOWN49.add(k)};
  const prune=()=>{try{for(const k of Object.keys(SAVE_EXTRA))if(KNOWN49.has(k))delete SAVE_EXTRA[k]}catch(e){}};
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{
+ {SQSAVE.after('166',s=>{try{
    // a known field that only came from SAVE_EXTRA (same object) is stale: leave it out
-   for(const k in SAVE_EXTRA)if(KNOWN49.has(k)&&s[k]===SAVE_EXTRA[k])delete s[k];learn(s);prune()}catch(e){}return s}}
+   for(const k in SAVE_EXTRA)if(KNOWN49.has(k)&&s[k]===SAVE_EXTRA[k])delete s[k];learn(s);prune()}catch(e){}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);prune();return out}}
  window.SQSAVEKEYS={KEYS,prune}})();
 // ---- 174. Test group: send the draft to a few accounts before everyone ----
@@ -19532,7 +19537,7 @@ window.SQA=SQA;
     h=h.replace('<button class="use" data-k="'+k+'">USE</button>','<button class="use" data-k="'+k+'">USE</button><button class="use" data-eatpin="'+k+'" title="EAT uses this food first"'+(on?' style="background:#f8d048;color:#181018"':'')+'>'+(on?'★ EATS FIRST':'☆ EAT FIRST')+'</button>')}}catch(e){}return h}}
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-eatpin]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.eatpin;PIN=PIN===k?'':k;
   say(PIN?'EAT will use '+(INAME[k]||k).toLowerCase()+' first.':'EAT picks food for you again.');try{sfx('talk');saveLocal()}catch(x){}try{rPn()}catch(x){}},true);
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{s.eatp=PIN}catch(e){}return s}}
+ {SQSAVE.after('181:eatp',s=>{try{s.eatp=PIN}catch(e){}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{PIN=S&&typeof S.eatp==='string'&&INAME[S.eatp]?S.eatp:''}catch(e){}return out}}
  window.SQEAT={pick,cookable,get pin(){return PIN},set pin(v){PIN=v||''},open:openPick,cook}})();
 // ---- 189. A tidier screen on phones ----
@@ -20984,7 +20989,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot in TT)TT[slot]=!!k&&k===KEY[slot];return out}}
  {const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.tt&&lvOf(8)<DEF){say('You need Defence '+DEF+' to wear the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){}return}return _eq.apply(this,arguments)}}
  {const _wu=watchUpgrades;watchUpgrades=function(){const was={...TT};const out=_wu.apply(this,arguments);for(const s in TT)if(was[s]&&ARM[s]!==5){if((inv['eq_'+s+'5']|0)>0)inv['eq_'+s+'5']--;inv[KEY[s]]=(inv[KEY[s]]|0)+1;TT[s]=false}return out}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);const t=(TT.helm?'h':'')+(TT.body?'b':'')+(TT.legs?'l':'');if(t)s.tta=t;return s}}
+ {SQSAVE.after('200:tta',s=>{const t=(TT.helm?'h':'')+(TT.body?'b':'')+(TT.legs?'l':'');if(t)s.tta=t;})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);const t=String(S&&S.tta||'');TT.helm=t.includes('h')&&ARM.helm===5;TT.body=t.includes('b')&&ARM.body===5;TT.legs=t.includes('l')&&ARM.legs===5;try{snapEq()}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){TT.helm=TT.body=TT.legs=false;return _ng.apply(this,arguments)}}
  try{KNOWN49.add('tta')}catch(e){}
@@ -21152,7 +21157,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  window.SQCAPEUNDER=function(C,ch,dir,st,ox,oy,fl){if(!C||dir!==0||!spec(ch))return;try{const R=cloth(ch,0,st,tickFor(ch));if(R&&R.under)put(C,R.under,0,ox,oy,fl)}catch(e){}};
  window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(!C||!spec(ch))return;try{const R=cloth(ch,dir|0,st,tickFor(ch));if(R)put(C,R.over,dir|0,ox,oy,fl)}catch(e){}};
  // saving the choice to wear it
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(WEAR)s.gcw=1;return s}}
+ {SQSAVE.after('201:gcw',s=>{if(WEAR)s.gcw=1;})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);WEAR=!!(S&&S.gcw);try{KITC.clear()}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){WEAR=false;return _ng.apply(this,arguments)}}
  try{KNOWN49.add('gcw')}catch(e){}
@@ -21653,7 +21658,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
    for(const b of n.matches&&n.matches('b.nm[data-u]')?[n]:n.querySelectorAll?n.querySelectorAll('b.nm[data-u]'):[]){const u2=b.dataset.u;if(u2&&active(u2)&&!(b.previousSibling&&b.previousSibling.className==='sqpf'))b.before(flameImg())}}}).observe(lst,{childList:true,subtree:true})}
  // ---- the fire cape ----
  let WEAR=false;
- {const _s=snap;snap=function(){const o=_s.apply(this,arguments);try{o.fcw=WEAR?1:0}catch(e){}return o}}
+ {SQSAVE.after('210:fcw',o=>{try{o.fcw=WEAR?1:0}catch(e){}})}
  {const _a=applySave;applySave=function(s){const r=_a.apply(this,arguments);try{WEAR=!!(s&&s.fcw)}catch(e){}return r}}
  {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);if(WEAR&&cape(uid()))c.fcp=1;else delete c.fcp;return c}}
  {const _u=upd;upd=function(){try{const m=mp();if(m&&m.players)for(const [u2,r] of m.players){if(r&&r.ch&&r.ch.fcp&&!cape(u2||r.uid))delete r.ch.fcp}}catch(e){}return _u.apply(this,arguments)}}
@@ -22140,7 +22145,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
   for(const k in o){const id=idOf(k);if(id&&!REG.has(id))reg(id);scan(o[k],d+1)}}
  let GOT=new Set(),APPLIED=false;
  {const _a=applySave;applySave=function(S){try{scan(S,0)}catch(e){}const r=_a.apply(this,arguments);try{GOT=new Set(Array.isArray(S&&S.ptg)?S.ptg.filter(okId):[]);APPLIED=true}catch(e){}return r}}
- {const _s=snap;snap=function(){const o=_s.apply(this,arguments);try{if(GOT.size)o.ptg=[...GOT]}catch(e){}return o}}
+ {SQSAVE.after('213:ptg',o=>{try{if(GOT.size)o.ptg=[...GOT]}catch(e){}})}
  try{KNOWN49.add('ptg')}catch(e){}
  {const _ng=newGame;newGame=function(){GOT=new Set();APPLIED=true;return _ng.apply(this,arguments)}}
  // ---- pictures ----
@@ -22456,7 +22461,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
   const pl=['1st','2nd','3rd'][rank];try{sfx('coin')}catch(e){}
   tell('☄️ The meteor core shattered! '+(pl?'You did the '+(rank===0?'most':pl)+' damage: ':'Your share: ')+'+'+r[0].toLocaleString()+' '+(SHORT[ore]||ore)+' and +'+r[1]+' meteorite ore.');
   try{saveLocal(true)}catch(e){}}
- {const _s=snap;snap=function(){const o=_s.apply(this,arguments);try{o.mtp=PAID.slice(-20)}catch(e){}return o}}
+ {SQSAVE.after('215:mtp',o=>{try{o.mtp=PAID.slice(-20)}catch(e){}})}
  {const _a=applySave;applySave=function(sv){const r=_a.apply(this,arguments);try{PAID=Array.isArray(sv&&sv.mtp)?sv.mtp.filter(x=>typeof x==='string').slice(-20):[];ST.paid=PAID.includes(ST.id)}catch(e){}return r}}
  // ---- hit boxes (world px) ----
  const here=()=>!!(CUR&&CUR.known&&at(CUR.loc));
@@ -22600,7 +22605,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
  {const _occ=occ;occ=function(slot){if(MT[slot]&&ARM[slot]===5)return KEY[slot];return _occ.apply(this,arguments)}}
  {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot in MT)MT[slot]=!!k&&k===KEY[slot];return out}}
  {const _wu=watchUpgrades;watchUpgrades=function(){const was={...MT};const out=_wu.apply(this,arguments);for(const s in MT)if(was[s]&&ARM[s]!==5){if((inv['eq_'+s+'5']|0)>0)inv['eq_'+s+'5']--;inv[KEY[s]]=(inv[KEY[s]]|0)+1;MT[s]=false}return out}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);const t=(MT.helm?'h':'')+(MT.body?'b':'')+(MT.legs?'l':'');if(t)s.mta=t;if((inv.marrow|0)>0){s.inv=s.inv||{};s.inv.marrow=inv.marrow|0}return s}}
+ {SQSAVE.after('216:mta,inv',s=>{const t=(MT.helm?'h':'')+(MT.body?'b':'')+(MT.legs?'l':'');if(t)s.mta=t;if((inv.marrow|0)>0){s.inv=s.inv||{};s.inv.marrow=inv.marrow|0}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);const t=String(S&&S.mta||'');MT.helm=t.includes('h')&&ARM.helm===5;MT.body=t.includes('b')&&ARM.body===5;MT.legs=t.includes('l')&&ARM.legs===5;
    try{if(S&&S.inv&&S.inv.marrow!=null)inv.marrow=Math.max(0,+S.inv.marrow|0)}catch(e){}try{snapEq()}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){MT.helm=MT.body=MT.legs=false;return _ng.apply(this,arguments)}}
@@ -22614,7 +22619,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
  add('eq_bow6',{slot:'off',kind:'bow',tier:6,n:'Meteorite bow',ic:'bow',col:'#8a60e0',v:16000,arch:L75,rq2:{s:FL,l:L75}},'A meteorite bow: the hardest-hitting, furthest-shooting bow there is. Needs Archery 75.');
  {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+(TL.bow===6?3:0)+(LEND?3:0)}}
  {const _br=bowRange;bowRange=function(){return _br.apply(this,arguments)+(TL.bow===6?30:0)}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(TL.bow===6){s.tl=s.tl||{};s.tl.bow=6}return s}}
+ {SQSAVE.after('216:tl',s=>{if(TL.bow===6){s.tl=s.tl||{};s.tl.bow=6}})}
  // ---- meteorite arrows ----
  const MA='marrow';INVK.includes(MA)||INVK.push(MA);INAME[MA]='Meteorite arrows';SN[MA]='Meteorite arrows';SHORT[MA]='meteorite arrows';SELLP[MA]=60;inv[MA]=inv[MA]|0;
  IDESC[MA]='Arrows tipped with meteorite: +3 damage over iron arrows (+4 over plain arrows). Any bow shoots these first.';
@@ -22846,7 +22851,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
  // a bow/wand/hoe/can that got into the hand some other way pushes the dagger to the bag
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(DAG&&(TL.bow||WAND||TL.hoe||TL.can)){inv[DAG]=(inv[DAG]|0)+1;DAG=null;try{snapEq()}catch(e){}}
    if(DCD>0)DCD=Math.max(0,DCD-(dt||0));if(COATK&&performance.now()>COATU){COATK=null;try{say('Your dagger\'s coating wore off.')}catch(e){}}return out}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.dag=DAG||'';s.dpin=DPIN||'';return s}}
+ {SQSAVE.after('218:dag,dpin',s=>{s.dag=DAG||'';s.dpin=DPIN||'';})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const d=S&&S.dag;DAG=d&&DAGS[d]&&!TL.bow&&!WAND&&!TL.hoe&&!TL.can?d:null;DPIN=S&&typeof S.dpin==='string'?S.dpin:'';COATK=null;try{snapEq()}catch(e){}}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){DAG=null;DPIN='';COATK=null;return _ng.apply(this,arguments)}}
  // ---- pinning a potion for the dagger ult ----
@@ -23108,8 +23113,8 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
  pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen)return;const b=e.target.closest('[data-fmb],[data-fmf],[data-fmx]');if(!b)return;e.stopPropagation();e.preventDefault();if(b.disabled)return;
   if(b.dataset.fmb){closePanel();build(+b.dataset.fmb);return}if(b.dataset.fmf){feed(+b.dataset.fmf);return}closePanel()},true);
  // a save while the 3 lent wood is out (the fire is still being lit) records the logs, not the wood (Nov 18)
- {const _s=snap;snap=function(){const p=PEND;if(!p||fires.some(q=>q&&!q._rp&&!p.before.has(q))||(inv.wood|0)<3)return _s.apply(this,arguments);
-   inv.wood-=3;inv[p.k]=n(p.k)+3;try{return _s.apply(this,arguments)}finally{inv[p.k]-=3;inv.wood+=3}}}
+ {SQSAVE.wrap('220',_s=>function(){const p=PEND;if(!p||fires.some(q=>q&&!q._rp&&!p.before.has(q))||(inv.wood|0)<3)return _s.apply(this,arguments);
+   inv.wood-=3;inv[p.k]=n(p.k)+3;try{return _s.apply(this,arguments)}finally{inv[p.k]-=3;inv.wood+=3}})}
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(PEND)try{check()}catch(e){PEND=null}return out}}
  // ---- the look ----
  {const _p=pF;pF=function(f,tm){const P5=f&&f.lg&&PAL[f.lg];if(!P5||f._glow)return _p.apply(this,arguments);
@@ -23228,7 +23233,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
  // recipes, in level order after iron arrows
  try{const at=FREC.findIndex(r=>r.k==='bow2');for(const a of A)if(!FREC.some(r=>r.k===a.k))FREC.splice(at>=0?at+1:FREC.length,0,{k:a.k,n:'15 '+a.sh,c:{[a.bar]:1,[a.log]:2},lv:a.lv,xp:a.xp,f:()=>{inv[a.k]=(inv[a.k]|0)+15;say('Made 15 '+a.sh+'.')}})}catch(e){}
  // saving
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);for(const a of A)if((inv[a.k]|0)>0){s.inv=s.inv||{};s.inv[a.k]=inv[a.k]|0}return s}}
+ {SQSAVE.after('224:inv',s=>{for(const a of A)if((inv[a.k]|0)>0){s.inv=s.inv||{};s.inv[a.k]=inv[a.k]|0}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);for(const a of A)try{inv[a.k]=S&&S.inv&&S.inv[a.k]!=null?Math.max(0,+S.inv[a.k]|0):0}catch(e){}return out}}
  // lending
  let BON=0;
@@ -23396,7 +23401,7 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
  const fromCh=ch=>{const C=GC();if(!C||!ch||!(ch.slc>0))return null;const P=C.PAL;return{c:P[(ch.slc-1)%P.length],s:P[(ch.sls|0)%P.length],p:ch.slp|0,t:!!ch.slt,e:Math.min(C.EM.length-1,ch.sle|0),x:P[(ch.slx|0)%P.length]}};
  const mine=()=>{const C=GC();if(!ON||!C||!inGuild())return null;try{const d=C.design();return fromCh({slc:d.c+1,sls:d.s,slp:d.p,slt:d.t,sle:d.e,slx:d.x})}catch(e){return null}};
  {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);try{const C=GC();if(ON&&C&&inGuild()){const d=C.design();c.slc=d.c+1;c.sls=d.s;c.slp=d.p;if(d.t)c.slt=1;c.sle=d.e;c.slx=d.x}}catch(e){}return c}}
- {const _s=snap;snap=function(){const o=_s.apply(this,arguments);try{o.gsw=ON?1:0}catch(e){}return o}}
+ {SQSAVE.after('226:gsw',o=>{try{o.gsw=ON?1:0}catch(e){}})}
  {const _a=applySave;applySave=function(S){const r=_a.apply(this,arguments);try{ON=!!(S&&S.gsw)}catch(e){}return r}}
  {const _n=newGame;newGame=function(){ON=false;return _n.apply(this,arguments)}}
  // ---- recolouring the sail layer ----
@@ -23556,8 +23561,8 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
 (()=>{if(typeof snap!=='function'||typeof benchSplit!=='function')return;
  const merge=chests=>{const tot={};for(const c of chests)for(const k in c)if(c[k]>0)tot[k]=(tot[k]||0)+c[k];
   const bag={};for(const k in tot){bag[k]=inv[k]|0;inv[k]=bag[k]+tot[k]}BMERGE={chests,tot,bag}};
- const _s=snap;snap=function(){const M=typeof BMERGE!=='undefined'?BMERGE:null;if(!M)return _s.apply(this,arguments);
-  benchSplit();try{return _s.apply(this,arguments)}finally{merge(M.chests)}};
+ SQSAVE.wrap('230',_s=>function(){const M=typeof BMERGE!=='undefined'?BMERGE:null;if(!M)return _s.apply(this,arguments);
+  benchSplit();try{return _s.apply(this,arguments)}finally{merge(M.chests)}});
  window.SQMERGESAFE=true;
 })();
 // ---------------------------------------------------------------- Fullscreen (Options)
@@ -23598,7 +23603,7 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
  const _ap=applySave;applySave=function(S){let packed=null;if(S&&typeof S==='object'&&S.hsc!==HSC){try{packed=hMigrate(S)}catch(e){console.warn('hollow migrate',e)}}_ap(S);
   if(packed){S.hsc=HSC;try{if(!SCENE&&(solid(P.x-5,P.y-3)||solid(P.x+5,P.y+6))){const tx=Math.floor(P.x/16),ty=Math.floor(P.y/16);let done=false;for(let r=1;r<14&&!done;r++)for(let dy=-r;dy<=r&&!done;dy++)for(let dx=-r;dx<=r&&!done;dx++){const x=(tx+dx)*16+8,y=(ty+dy)*16+8;if(!solid(x-5,y-3)&&!solid(x+5,y+6)&&!solid(x,y)){P.x=x;P.y=y;done=true}}if(!done){P.x=SPX;P.y=SPY}}}catch(e){}
    setTimeout(()=>{try{say('Hollow Island has grown! It\'s twice as big now'+(packed.length?'. Some of your builds landed in water or on rock, so they\'re in your bag: '+[...new Set(packed)].join(', ')+'.':', and your builds moved with it.'));msgT=8;saveLocal(true);saveCloud(true)}catch(e){}},1500)}};
- const _sn=snap;snap=function(){const s=_sn();s.hsc=HSC;return s};
+ SQSAVE.after('113:hsc',s=>{s.hsc=HSC;});
  try{KNOWN49.add('hsc')}catch(e){}
  // the island map: markers keep their size on the bigger island (each 3x3 marker and its centre dot are drawn HSC times as big)
  {const _dm=drawMap;drawMap=function(){const c=document.getElementById('mpc'),R=SCENE&&SCENE.room;if(!c||(R&&R.region)||c.width!==N)return _dm();const x=c.getContext('2d'),fr=x.fillRect;let last=null;

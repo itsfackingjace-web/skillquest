@@ -21,7 +21,7 @@
   c.pets=PL().map(p=>p.k).filter(own);lastOwn=new Set(c.pets)}
  window.SQPETSYNC=sync;
  const _ap=applySave;applySave=function(S){_ap(S);MIG=!!(S&&S.petItems);lastOwn=null;lastE=null;sync()};
- const _sn=snap;snap=function(){try{sync()}catch(e){}const s=_sn();s.petItems=1;return s};
+ SQSAVE.wrap('104:petItems',_sn=>function(){try{sync()}catch(e){}const s=_sn();s.petItems=1;return s});
  const _ng=newGame;newGame=function(){_ng();MIG=true;lastOwn=null;lastE=null};
  let st=0;const _u=upd;upd=function(dt){_u(dt);st+=dt;if(st>.4){st=0;try{sync()}catch(e){}}};
  const _eq=equipItem;equipItem=function(k){_eq(k);if(EQ[k]&&EQ[k].slot==='pet'){try{sync()}catch(e){}}};

@@ -8,7 +8,7 @@
 (()=>{if(typeof snap!=='function'||typeof benchSplit!=='function')return;
  const merge=chests=>{const tot={};for(const c of chests)for(const k in c)if(c[k]>0)tot[k]=(tot[k]||0)+c[k];
   const bag={};for(const k in tot){bag[k]=inv[k]|0;inv[k]=bag[k]+tot[k]}BMERGE={chests,tot,bag}};
- const _s=snap;snap=function(){const M=typeof BMERGE!=='undefined'?BMERGE:null;if(!M)return _s.apply(this,arguments);
-  benchSplit();try{return _s.apply(this,arguments)}finally{merge(M.chests)}};
+ SQSAVE.wrap('230',_s=>function(){const M=typeof BMERGE!=='undefined'?BMERGE:null;if(!M)return _s.apply(this,arguments);
+  benchSplit();try{return _s.apply(this,arguments)}finally{merge(M.chests)}});
  window.SQMERGESAFE=true;
 })();

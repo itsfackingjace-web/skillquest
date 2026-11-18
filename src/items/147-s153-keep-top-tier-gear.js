@@ -18,7 +18,7 @@
      const sl=e.slot==='main'?'sword':e.slot,inHand=TL[sl]===e.tier,anywhere=new RegExp('"'+key+'"\\s*[:,]\\s*"?[1-9]').test(js)||(inv[key]|0)>0;
      if(!inHand&&!anywhere){if(key==='eq_bow3'&&TL.bow===2&&!WAND){TL.bow=3;hand.push(key)}else{inv[key]=(inv[key]|0)+1;back.push(key)}}}}
    if(typeof snapEq==='function')snapEq()}catch(e){console.warn(e)}return out}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.tfx=2;return s}}
+ {SQSAVE.after('147:tfx',s=>{s.tfx=2;})}
  // tell the player once play is running (upd only runs in play)
  let wait=0;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if((back.length||hand.length)&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;
    if(hand.length){hand=[];say('Sorry about that! A bug swapped your Bone bow for a Longbow. It\'s back in your hands.')}

@@ -13,7 +13,7 @@
  // recipes, in level order after iron arrows
  try{const at=FREC.findIndex(r=>r.k==='bow2');for(const a of A)if(!FREC.some(r=>r.k===a.k))FREC.splice(at>=0?at+1:FREC.length,0,{k:a.k,n:'15 '+a.sh,c:{[a.bar]:1,[a.log]:2},lv:a.lv,xp:a.xp,f:()=>{inv[a.k]=(inv[a.k]|0)+15;say('Made 15 '+a.sh+'.')}})}catch(e){}
  // saving
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);for(const a of A)if((inv[a.k]|0)>0){s.inv=s.inv||{};s.inv[a.k]=inv[a.k]|0}return s}}
+ {SQSAVE.after('224:inv',s=>{for(const a of A)if((inv[a.k]|0)>0){s.inv=s.inv||{};s.inv[a.k]=inv[a.k]|0}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);for(const a of A)try{inv[a.k]=S&&S.inv&&S.inv[a.k]!=null?Math.max(0,+S.inv[a.k]|0):0}catch(e){}return out}}
  // lending
  let BON=0;

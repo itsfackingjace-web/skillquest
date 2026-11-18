@@ -40,7 +40,7 @@
    for(const b of n.matches&&n.matches('b.nm[data-u]')?[n]:n.querySelectorAll?n.querySelectorAll('b.nm[data-u]'):[]){const u2=b.dataset.u;if(u2&&active(u2)&&!(b.previousSibling&&b.previousSibling.className==='sqpf'))b.before(flameImg())}}}).observe(lst,{childList:true,subtree:true})}
  // ---- the fire cape ----
  let WEAR=false;
- {const _s=snap;snap=function(){const o=_s.apply(this,arguments);try{o.fcw=WEAR?1:0}catch(e){}return o}}
+ {SQSAVE.after('210:fcw',o=>{try{o.fcw=WEAR?1:0}catch(e){}})}
  {const _a=applySave;applySave=function(s){const r=_a.apply(this,arguments);try{WEAR=!!(s&&s.fcw)}catch(e){}return r}}
  {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);if(WEAR&&cape(uid()))c.fcp=1;else delete c.fcp;return c}}
  {const _u=upd;upd=function(){try{const m=mp();if(m&&m.players)for(const [u2,r] of m.players){if(r&&r.ch&&r.ch.fcp&&!cape(u2||r.uid))delete r.ch.fcp}}catch(e){}return _u.apply(this,arguments)}}

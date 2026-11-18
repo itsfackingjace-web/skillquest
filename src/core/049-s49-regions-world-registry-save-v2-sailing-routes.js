@@ -65,10 +65,7 @@ const _ap49=applySave;applySave=function(S){
  if(M.region.id!=='hollow'&&typeof routeOpen==='function'&&!routeOpen(M.region.id)){say('The route to '+WORLD_REGIONS[M.region.id].name+' must be charted again with the voyage quests. You are safe back on Hollow Island.');msgT=8}   // s.p is the harbor post you sailed from
  else if(M.region.id!=='hollow'){const id=M.region.id,ok=loadRegion(id,M.region.x>=0?[M.region.x,M.region.y]:null,{x:P.x,y:P.y});
   if(ok){if(M.p&&M.p.f)face=[M.p.f[0],M.p.f[1]]}else say('Could not reach '+WORLD_REGIONS[id].name+'. You are back at the harbor you sailed from.')}};
-const _sn49=snap;snap=function(){const s=_sn49();for(const k in SAVE_EXTRA)if(!(k in s))s[k]=SAVE_EXTRA[k];
- s.sv=SAVE_VERSION;if(s.p)s.p.f=[face[0]|0,face[1]|0];
- const R=SCENE&&SCENE.room;s.region=R&&R.region?{id:R.region,x:Math.max(0,Math.min(R.w-1,Math.floor(P.x/16))),y:Math.max(0,Math.min(R.h-1,Math.floor(P.y/16)))}:{id:'hollow'};
- s.worldState=JSON.parse(JSON.stringify(WORLD_STATE));s.unlockedRegions=UNLOCKED_REGIONS.slice();s.travelUnlocks={...TRAVEL_UNLOCKS};return s};
+SQSAVE.after('049:sv,region,worldState',s=>{for(const k in SAVE_EXTRA)if(!(k in s))s[k]=SAVE_EXTRA[k];s.sv=SAVE_VERSION;if(s.p)s.p.f=[face[0]|0,face[1]|0];const R=SCENE&&SCENE.room;s.region=R&&R.region?{id:R.region,x:Math.max(0,Math.min(R.w-1,Math.floor(P.x/16))),y:Math.max(0,Math.min(R.h-1,Math.floor(P.y/16)))}:{id:'hollow'};s.worldState=JSON.parse(JSON.stringify(WORLD_STATE));s.unlockedRegions=UNLOCKED_REGIONS.slice();s.travelUnlocks={...TRAVEL_UNLOCKS};});
 // a save we refused (newer version) must never be overwritten by this build
 const _sl49=saveLocal;saveLocal=function(f){if(SAVE_LOCK)return;_sl49(f)};
 const _sc49=saveCloud;saveCloud=async function(f){if(SAVE_LOCK)return;return _sc49(f)};

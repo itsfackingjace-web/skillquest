@@ -101,7 +101,7 @@ const GI26=QS.findIndex(q=>q.n==='Grandmaster');
 QS.splice(GI26,0,{n:'Castaway',d:'Buy a sailboat from Captain Ida in Saltmere, then sail west and find the hermit who lives alone on an island.',type:'hermit',amt:1,r:{g:300,xp:[9,1500]}});
 const _qv26=qVal;qVal=function(q){return q.type==='hermit'?Q.k:_qv26(q)};
 const remap26=qv=>{if(qv>=8)return;if(Q.i===GI26){Q.on=false;Q.k=0}else if(Q.i>GI26){Q.i=GI26;Q.on=false;Q.k=0;GMDONE=true}};
-const _sn26=snap;snap=function(){const s=_sn26();s.qv=8;s.gmd=GMDONE?1:0;s.wreck=WRECK_DAY;s.sail=SAILING?1:0;return s};
+SQSAVE.after('026:qv,gmd,wreck',s=>{s.qv=8;s.gmd=GMDONE?1:0;s.wreck=WRECK_DAY;s.sail=SAILING?1:0;});
 const _ap26=applySave;applySave=function(S){_ap26(S);if(S.q)remap26(S.qv||0);WRECK_DAY=isFinite(S.wreck)?+S.wreck:-1;TL.boat=S.tl&&S.tl.boat?1:0;SAILING=false;
  if(S.sail&&S.p&&TL.boat){const x=+S.p.x,y=+S.p.y;if(isFinite(x)&&isFinite(y)&&boatOK(x,y)){P.x=x;P.y=y;SAILING=true}}};
 const _ng26=newGame;newGame=function(){SAILING=false;WRECK_DAY=-1;_ng26()};

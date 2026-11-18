@@ -41,4 +41,4 @@ tk.addEventListener('touchstart',e=>{if(pnOpen||!rsR()||nearNpc())return;if(rsCa
 {const _rs=reset;reset=function(){rsStop();_rs()}}
 {const _es=enterScene;enterScene=function(...a){rsStop();return _es(...a)}}
 // a save made at sea puts you back where you set sail
-{const _sn=snap;snap=function(){const s=_sn();if(RSAIL.on&&s.region&&s.region.id!=='hollow'){s.region.x=Math.floor(RSAIL.lx/16);s.region.y=Math.floor(RSAIL.ly/16)}return s}}
+{SQSAVE.after('069',s=>{if(RSAIL.on&&s.region&&s.region.id!=='hollow'){s.region.x=Math.floor(RSAIL.lx/16);s.region.y=Math.floor(RSAIL.ly/16)}})}

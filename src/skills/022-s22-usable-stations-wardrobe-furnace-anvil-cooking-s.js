@@ -72,7 +72,7 @@ function stationAct(a){const o=STATION;if(!o)return;
 const _oc22=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.stb');if(b){stationAct(b.dataset.a);return}_oc22(e)};
 const _cp22=closePanel;closePanel=function(){_cp22();if(shop==='station'){STATION=null;shop=null}};
 // --- saving the planters ---
-const _sn22=snap;snap=function(){const s=_sn22();s.plant={...PLANTD};return s};
+SQSAVE.after('022:plant',s=>{s.plant={...PLANTD};});
 const _ap22=applySave;applySave=function(S){_ap22(S);PLANTD={};if(S.plant&&typeof S.plant==='object')for(const k in S.plant)PLANTD[k]=+S.plant[k]||0};
 const _ng22=newGame;newGame=function(){PLANTD={};_ng22()};
 // icons

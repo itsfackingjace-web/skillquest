@@ -6,7 +6,7 @@ try{document.fonts&&(document.fonts.load('16px "Pixelify Sans"'),document.fonts.
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // --- player name (saved) ---
 let PNAME='';
-const _sn10=snap;snap=function(){const s=_sn10();s.name=PNAME;return s};
+SQSAVE.after('010:name',s=>{s.name=PNAME;});
 const _ap10=applySave;applySave=function(S){_ap10(S);if(typeof S.name==='string')PNAME=S.name.slice(0,10)};
 
 const pname=()=>(PNAME||'Player');

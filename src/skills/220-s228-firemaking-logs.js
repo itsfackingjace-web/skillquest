@@ -62,8 +62,8 @@
  pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen)return;const b=e.target.closest('[data-fmb],[data-fmf],[data-fmx]');if(!b)return;e.stopPropagation();e.preventDefault();if(b.disabled)return;
   if(b.dataset.fmb){closePanel();build(+b.dataset.fmb);return}if(b.dataset.fmf){feed(+b.dataset.fmf);return}closePanel()},true);
  // a save while the 3 lent wood is out (the fire is still being lit) records the logs, not the wood (Nov 18)
- {const _s=snap;snap=function(){const p=PEND;if(!p||fires.some(q=>q&&!q._rp&&!p.before.has(q))||(inv.wood|0)<3)return _s.apply(this,arguments);
-   inv.wood-=3;inv[p.k]=n(p.k)+3;try{return _s.apply(this,arguments)}finally{inv[p.k]-=3;inv.wood+=3}}}
+ {SQSAVE.wrap('220',_s=>function(){const p=PEND;if(!p||fires.some(q=>q&&!q._rp&&!p.before.has(q))||(inv.wood|0)<3)return _s.apply(this,arguments);
+   inv.wood-=3;inv[p.k]=n(p.k)+3;try{return _s.apply(this,arguments)}finally{inv[p.k]-=3;inv.wood+=3}})}
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(PEND)try{check()}catch(e){PEND=null}return out}}
  // ---- the look ----
  {const _p=pF;pF=function(f,tm){const P5=f&&f.lg&&PAL[f.lg];if(!P5||f._glow)return _p.apply(this,arguments);

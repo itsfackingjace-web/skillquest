@@ -127,7 +127,7 @@ function drawThorn(n,tm){const x=Math.round(n.x),y=Math.round(n.y),K='#181018',h
  const w=40,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-66,w+2,5,K);Rg(x-w/2,y-65,w,3,'#3a1a1a');Rg(x-w/2,y-65,Math.round(w*f),3,'#78d050')}
 {const _pS=pS;pS=function(n,tm){if(n&&n.type==='thorn')return drawThorn(n,tm);return _pS(n,tm)}}
 // saving the boss day
-{const _sn=snap;snap=function(){const s=_sn();s.thd=THDAY;return s}}
+{SQSAVE.after('095:thd',s=>{s.thd=THDAY;})}
 {const _ap=applySave;applySave=function(S){_ap(S);THDAY=isFinite(S&&S.thd)?+S.thd:-1}}
 try{if(typeof KNOWN49!=='undefined'&&KNOWN49.add)KNOWN49.add('thd')}catch(e){}
 

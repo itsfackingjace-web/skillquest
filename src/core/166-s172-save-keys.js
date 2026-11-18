@@ -11,8 +11,8 @@
  for(const k of KEYS)KNOWN49.add(k);
  const learn=s=>{if(!s||typeof s!=='object')return;for(const k of Object.keys(s))if(!(k in SAVE_EXTRA)||s[k]!==SAVE_EXTRA[k])KNOWN49.add(k)};
  const prune=()=>{try{for(const k of Object.keys(SAVE_EXTRA))if(KNOWN49.has(k))delete SAVE_EXTRA[k]}catch(e){}};
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{
+ {SQSAVE.after('166',s=>{try{
    // a known field that only came from SAVE_EXTRA (same object) is stale: leave it out
-   for(const k in SAVE_EXTRA)if(KNOWN49.has(k)&&s[k]===SAVE_EXTRA[k])delete s[k];learn(s);prune()}catch(e){}return s}}
+   for(const k in SAVE_EXTRA)if(KNOWN49.has(k)&&s[k]===SAVE_EXTRA[k])delete s[k];learn(s);prune()}catch(e){}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);prune();return out}}
  window.SQSAVEKEYS={KEYS,prune}})();

@@ -211,7 +211,7 @@ const _qv20=qVal;qVal=function(q){return q.type==='talk'||q.type==='jobs'?Q.k:q.
 let GMDONE=false;const remap20=(qv,gmd)=>{if(qv>=6){GMDONE=!!gmd;return}if(Q.i===GI){Q.on=false;Q.k=0}else if(Q.i>GI){Q.i=GI;Q.on=false;Q.k=0;GMDONE=true}};
 
 const _qa20=questAct;questAct=function(a){_qa20(a);if(GMDONE&&QS[Q.i]&&QS[Q.i].n==='Grandmaster'){Q.i++;GMDONE=false;saveLocal(true);rPn()}};
-const _sn20=snap;snap=function(){const s=_sn20();s.qv=6;s.jobs={...JOBD};s.gmd=GMDONE?1:0;return s};
+SQSAVE.after('020:qv,jobs,gmd',s=>{s.qv=6;s.jobs={...JOBD};s.gmd=GMDONE?1:0;});
 const _ap20=applySave;applySave=function(S){_ap20(S);GMDONE=false;if(S.q)remap20(S.qv||0,S.gmd);JOBD={};if(S.jobs&&typeof S.jobs==='object')for(const k in S.jobs)if(JOBS[k])JOBD[k]=+S.jobs[k]||0;
  if(S.tl)for(const k of['axe','pick','sword'])TL[k]=Math.max(0,Math.min(4,+S.tl[k]||0));if(S.inv){inv.stew=Math.max(0,+S.inv.stew||0);inv.bait=Math.max(0,+S.inv.bait||0)}clearProt()};
 

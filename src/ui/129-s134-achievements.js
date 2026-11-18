@@ -108,7 +108,7 @@
    say('Achievement unlocked: '+a.n+'!'+(a.gold?' +'+a.gold+' gold':''));msgT=5;try{sfx('level')}catch(e){}try{svg()}catch(e){}try{saveLocal(true)}catch(e){}if(pnOpen&&ptab===ATAB)rPn();break}}}
  window.SQACH={add:(k,n)=>{C[k]=cnt(k)+(n||1)},get counters(){return C},get done(){return D},get col(){return COL},A,cats,check,colCount,colTotal};
  // ---- saves ----
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.ach={c:Object.assign({},C),d:Object.assign({},D),col:[...COL],rg:[...RG]};return s};
+ SQSAVE.after('129:ach',s=>{s.ach={c:Object.assign({},C),d:Object.assign({},D),col:[...COL],rg:[...RG]};});
  const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const v=S&&S.ach;C={};D={};COL=new Set();RG=new Set();
    if(v&&typeof v==='object'){for(const k in v.c||{}){const n=+v.c[k];if(isFinite(n)&&n>0)C[k]=Math.floor(n)}for(const k in v.d||{})if(A.some(a=>a.id===k))D[k]=+v.d[k]||1;
     for(const k of Array.isArray(v.col)?v.col:[])if(typeof k==='string'&&INAME[k])COL.add(k);for(const r of Array.isArray(v.rg)?v.rg:[])if(typeof r==='string')RG.add(r)}

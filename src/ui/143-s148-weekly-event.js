@@ -81,7 +81,7 @@
 #pn .sqwe-t{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin:3px 0 5px}#pn .sqwe-r{display:flex;flex-direction:column;gap:1px;font-size:11px;margin-bottom:5px}
 #pn .sqwe-r span{opacity:.6}#pn .sqwe-r span.on{opacity:1;color:#287818;font-weight:700}#pn .sqwe small{display:block;font-size:11px;opacity:.9}#pn .sqwe-top{margin-top:3px}`;document.head.appendChild(st)}
  // ---- saves ----
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{if(W.c||W.got)s.wev={w:W.w,c:W.c,got:W.got,q:W.q}}catch(e){}return s}}
+ {SQSAVE.after('143:wev',s=>{try{if(W.c||W.got)s.wev={w:W.w,c:W.c,got:W.got,q:W.q}}catch(e){}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const v=S&&S.wev;W=v&&typeof v==='object'&&isFinite(+v.w)?{w:+v.w|0,c:Math.max(0,v.c|0),got:Math.max(0,Math.min(3,v.got|0)),q:Math.max(0,v.q|0)}:{w:weekOf(now()),c:0,got:0,q:0};
    TOT=0;TOP=[];NP=0;subW=-1;if(unsub){try{unsub()}catch(e){}unsub=null}LASTINV=null;LASTK=typeof kills==='number'?kills:0}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);W={w:weekOf(now()),c:0,got:0,q:0};LASTINV=null;LASTK=0;return out}}

@@ -21,7 +21,7 @@
  const _ap=applySave;applySave=function(S){let packed=null;if(S&&typeof S==='object'&&S.hsc!==HSC){try{packed=hMigrate(S)}catch(e){console.warn('hollow migrate',e)}}_ap(S);
   if(packed){S.hsc=HSC;try{if(!SCENE&&(solid(P.x-5,P.y-3)||solid(P.x+5,P.y+6))){const tx=Math.floor(P.x/16),ty=Math.floor(P.y/16);let done=false;for(let r=1;r<14&&!done;r++)for(let dy=-r;dy<=r&&!done;dy++)for(let dx=-r;dx<=r&&!done;dx++){const x=(tx+dx)*16+8,y=(ty+dy)*16+8;if(!solid(x-5,y-3)&&!solid(x+5,y+6)&&!solid(x,y)){P.x=x;P.y=y;done=true}}if(!done){P.x=SPX;P.y=SPY}}}catch(e){}
    setTimeout(()=>{try{say('Hollow Island has grown! It\'s twice as big now'+(packed.length?'. Some of your builds landed in water or on rock, so they\'re in your bag: '+[...new Set(packed)].join(', ')+'.':', and your builds moved with it.'));msgT=8;saveLocal(true);saveCloud(true)}catch(e){}},1500)}};
- const _sn=snap;snap=function(){const s=_sn();s.hsc=HSC;return s};
+ SQSAVE.after('113:hsc',s=>{s.hsc=HSC;});
  try{KNOWN49.add('hsc')}catch(e){}
  // the island map: markers keep their size on the bigger island (each 3x3 marker and its centre dot are drawn HSC times as big)
  {const _dm=drawMap;drawMap=function(){const c=document.getElementById('mpc'),R=SCENE&&SCENE.room;if(!c||(R&&R.region)||c.width!==N)return _dm();const x=c.getContext('2d'),fr=x.fillRect;let last=null;

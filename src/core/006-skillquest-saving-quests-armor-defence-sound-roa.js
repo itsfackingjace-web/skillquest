@@ -109,6 +109,17 @@ function snap(){return{v:1,ch:{...CH},xp:XPS.slice(),tl:{...TL},gold:GLD,arm:{..
  inv:Object.fromEntries(INVK.map(k=>[k,inv[k]|0])),
  p:{x:Math.round(P.x),y:Math.round(P.y),hp:P.hp},hunger:Math.round(hunger),time:Math.round(time),kills,
  fires:fires.map(f=>({x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)})),rm:REM.map(r=>({i:r.i,t:r.t,at:Math.round(r.at)})),clk:Math.round(CLK),mute:MUTE}}
+// ---- Saving is one ordered list of steps (window.SQSAVE) ----
+// snap() takes the game's own fields above, then runs every section's step in the order the sections load:
+//   SQSAVE.after(name, s=>{...})   change or add fields on the save object s (most sections; may return a new object)
+//   SQSAVE.wrap(name, next=>function(){...})   for the few that must run code before the save is taken or around it
+// SQSAVE.list() shows the steps in order. Never reassign snap itself: add a step.
+const SQSAVE=(()=>{const base=snap,steps=[];let built=null;
+ const add=(name,w,kind)=>{steps.push({name:String(name),w,kind});built=null};
+ const build=()=>{let f=base;for(const st of steps)f=st.w(f);built=f;return f};
+ return{after:(name,fn)=>add(name,next=>function(){const s=next.apply(this,arguments);const r=fn(s);return r===undefined?s:r},'after'),
+  wrap:(name,w)=>add(name,w,'wrap'),list:()=>steps.map(s=>s.kind+' '+s.name),run(){return(built||build()).apply(this,arguments)}}})();
+window.SQSAVE=SQSAVE;snap=function(){return SQSAVE.run.apply(this,arguments)};
 const keyOf=s=>{const o={...s};for(const k of['time','clk','hunger','mp','savedAt','wid','dev','bw','as'])delete o[k];o.p=s.p?[s.p.x>>4,s.p.y>>4,s.p.hp]:0;o.fires=(s.fires||[]).length;return JSON.stringify(o)};
 function saveLocal(force){if(dead)return;const s=snap(),k=keyOf(s);if(k===lastLocal&&!force)return;lastLocal=k;s.savedAt=Date.now();LOCAL_AT=s.savedAt;try{localStorage.setItem(LS,JSON.stringify(s))}catch(e){}}
 async function saveCloud(force){if(!cloud||cloudBusy||dead)return;const s=snap(),k=keyOf(s);if(k===lastCloud&&!force)return;cloudBusy=true;s.savedAt=Date.now();

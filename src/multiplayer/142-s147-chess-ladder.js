@@ -31,7 +31,7 @@
    const card='<div class="qc" style="margin:8px 0;font-size:13px"><b>Chess ladder</b><p style="margin:4px 0 0">'+(ST.g?'Your rating: <b>'+Math.round(ST.r)+'</b> · '+ST.w+' won, '+ST.l+' lost, '+ST.d+' drawn · best '+ST.pk:'Play chess against another player (tap their name and choose CHESS) to get a rating. Everyone starts at 1000.')+'</p><p style="margin:4px 0 0;font-size:11px;opacity:.8">See the top players in Leaderboards > Chess.</p></div>';
    const i=h.indexOf('<button class="cg');return i<0?h+card:h.slice(0,i)+card+h.slice(i)}}
  // saves
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{if(ST.g)s.chr={r:Math.round(ST.r*10)/10,g:ST.g,w:ST.w,l:ST.l,d:ST.d,pk:ST.pk,f:ST.f}}catch(e){}return s}}
+ {SQSAVE.after('142:chr',s=>{try{if(ST.g)s.chr={r:Math.round(ST.r*10)/10,g:ST.g,w:ST.w,l:ST.l,d:ST.d,pk:ST.pk,f:ST.f}}catch(e){}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const v=S&&S.chr;Object.assign(ST,{r:1000,g:0,w:0,l:0,d:0,pk:1000,f:{}});
    if(v&&typeof v==='object'){ST.r=Math.max(100,Math.min(3000,+v.r||1000));for(const k of['g','w','l','d'])ST[k]=Math.max(0,v[k]|0);ST.pk=Math.max(ST.r,+v.pk||0);
     if(v.f&&typeof v.f==='object')for(const u in v.f){const a=v.f[u];if(Array.isArray(a))ST.f[u]=[a[0]|0,a[1]|0]}}}catch(e){}return out}}

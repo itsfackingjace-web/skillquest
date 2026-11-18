@@ -67,7 +67,7 @@ const _es47=enterScene;enterScene=function(id,house,ret){if(id!=='tidekeeper')re
  say('You tie up the boat and wade into the Drowned Grotto. Green light ripples on the walls.')};
 const _ls47=leaveScene;leaveScene=function(){_ls47();if(!SCENE&&GROTTO_BOAT){GROTTO_BOAT=false;if(TL.boat&&boatOK(P.x,P.y)){SAILING=true;say('You climb back into your boat.')}}};
 const _rs47=reset;reset=function(){GROTTO_BOAT=false;_rs47()};
-const _sn47=snap;snap=function(){const s=_sn47();if(GROTTO_BOAT&&SCENE&&TL.boat)s.sail=1;s.xdun={...EXTRA_DUNGEON_DAYS};return s};
+SQSAVE.after('047:sail,xdun',s=>{if(GROTTO_BOAT&&SCENE&&TL.boat)s.sail=1;s.xdun={...EXTRA_DUNGEON_DAYS};});
 const _ap47=applySave;applySave=function(S){GROTTO_BOAT=false;_ap47(S);for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1};
 const _ng47=newGame;newGame=function(){GROTTO_BOAT=false;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng47()};
 // loot: the caverns' table (gems, elixir, the Crystal blade, rarely) plus a piece of magic gear you don't own yet

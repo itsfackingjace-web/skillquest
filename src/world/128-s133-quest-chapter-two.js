@@ -41,7 +41,7 @@
  // Hollow's night slimes have no type: count them for the slime quests (048 counts the ones typed 'slime')
  const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const q=cur();if(q&&q.type==='kill'&&q.item==='slime'&&n&&!n.type&&!n._rp){Q.k++;if(Q.k===q.amt)done1(q)}}catch(e){}return out};
  // ---- saves ----
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);s.qv=10;s.ibk=[...IBK];return s};
+ SQSAVE.after('128:qv,ibk',s=>{s.qv=10;s.ibk=[...IBK];});
  const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{IBK=new Set(Array.isArray(S&&S.ibk)?S.ibk.filter(k=>typeof k==='string').slice(0,10):[]);NW=0;
    if(S&&S.q&&(S.qv|0)===9){const i=Math.max(0,Math.min(QOLD9.length,+S.q.i||0)),name=QOLD9[i];
     for(const n of QOLD9.slice(0,i))QDONE.add(n);

@@ -40,7 +40,7 @@ const wOf=S=>S&&S.wid||'legacy';
 const _ap7=applySave;applySave=function(S){_ap7(S);lastWid=wOf(S)};
 // every save remembers which account save it continues from (bw), so a device's own unsent progress can be told apart
 // from an old copy (061's account-only saves use it)
-{const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(lastWid)s.bw=lastWid;return s}}
+{SQSAVE.after('008:bw',s=>{if(lastWid)s.bw=lastWid;})}
 // What this device last synced with the account (the account save's id and how much progress it had). A save that
 // another device wrote since then is taken automatically only when this device hasn't made progress of its own since
 // and the other save isn't behind; otherwise the player picks. (Comparing save times was wrong: a device that was just

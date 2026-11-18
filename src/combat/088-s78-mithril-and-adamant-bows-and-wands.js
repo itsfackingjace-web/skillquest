@@ -25,7 +25,7 @@
  const _br=bowRange;bowRange=function(){return _br()+(TL.bow===4?-10:TL.bow===5?15:0)};
  const _sd=spellDmg;spellDmg=function(el){return _sd(el)+WT};
  // saving
- const _sn=snap;snap=function(){const s=_sn();if(WT)s.wt=WT;if(TL.bow>=4){s.tl=s.tl||{};s.tl.bow=TL.bow}return s};
+ SQSAVE.after('088:wt,tl',s=>{if(WT)s.wt=WT;if(TL.bow>=4){s.tl=s.tl||{};s.tl.bow=TL.bow}});
  const _ap=applySave;applySave=function(S){_ap(S);WT=WAND&&(S.wt===1||S.wt===2)?S.wt:0;const b=S&&S.tl&&+S.tl.bow;if(b===4||b===5){TL.bow=b;WAND=null;WT=0}if(typeof snapEq==='function')snapEq()};
  const _ng=newGame;newGame=function(){WT=0;_ng()};
  // stats on the item descriptions (with how they compare)

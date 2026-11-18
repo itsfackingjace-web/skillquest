@@ -51,7 +51,7 @@ function sqDrawMarks(tm,inScene){for(const n of NPCS){if(!n.town)continue;if(inS
 const _nd42=NEWDRAW;NEWDRAW=function(...a){_nd42(...a);if(!SCENE)sqDrawMarks(a[8],false)};
 const _dr42=drawRoom;drawRoom=function(tm){_dr42(tm);if(SCENE)sqDrawMarks(tm,true)};
 // saving: optional field, older saves start every line fresh
-const _sn42=snap;snap=function(){const s=_sn42();s.sideQuests=JSON.parse(JSON.stringify(SQ_SIDE));return s};
+SQSAVE.after('042:sideQuests',s=>{s.sideQuests=JSON.parse(JSON.stringify(SQ_SIDE));});
 function sqReset(){for(const t in SQ_SIDE)Object.assign(SQ_SIDE[t],{index:0,on:false,k:0,completed:false})}
 const _ap42=applySave;applySave=function(S){_ap42(S);sqReset();const o=S.sideQuests;if(!o||typeof o!=='object')return;
  for(const t in SQ_SIDE){const v=o[t];if(!v||typeof v!=='object')continue;const L=SIDE_QS[t].length,s=SQ_SIDE[t];

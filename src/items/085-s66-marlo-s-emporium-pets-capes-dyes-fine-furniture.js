@@ -37,7 +37,7 @@ var LUX={};
   bx.style.display=(pnOpen||menuOpen)?'none':'flex';bx.innerHTML=L.map(([k,n,c])=>{const s=Math.ceil((BUFF[k]-now)/1000);return'<span style="background:#f8f8f8;border:2px solid #485870;padding:2px 6px;color:'+c+'">'+n+' '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+'</span>'}).join('');
   for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength wore off.',iron:'Your iron skin wore off.',swift:'Your swiftness wore off.',wis:'Your wisdom wore off.',regen:'Your regeneration wore off.'}[k]||'')}},500);
  // ---- saves ----
- const _sn=snap;snap=function(){const s=_sn();s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};return s};
+ SQSAVE.after('085:cos',s=>{s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};});
  const _ap=applySave;applySave=function(S){_ap(S);const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);
   COS.pet=COS.pets.includes(c.pet)?c.pet:null;COS.cape=COS.capes.includes(+c.cape)?+c.cape:0;for(const k of['db','dl','dh'])COS[k]=COS.dyes.includes(+c[k])?+c[k]:0;KITC.clear()};
  // ---- looks: capes and dyes are part of the character sprite, so other players see them too ----

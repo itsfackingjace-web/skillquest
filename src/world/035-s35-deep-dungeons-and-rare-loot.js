@@ -101,7 +101,7 @@ function dChestNear(){const R=SCENE&&SCENE.room;if(!R||!R.dun)return null;const[
 const _atk35=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0){const it=dChestNear();if(it&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<30)){swing=.2;dOpen(it);return}}_atk35()};
 const _uf35=useFurn;useFurn=function(o){if(o&&o.use==='dchest'){dOpen(o);return}_uf35(o)};
 // saving: opened chests for today, and the legendary sword survives the tool-tier clamp
-const _sn35=snap;snap=function(){const s=_sn35();s.dun={day:DUN.day,op:[...DUN.opened]};s.rare={sword:TL.sword};return s};
+SQSAVE.after('035:dun,rare',s=>{s.dun={day:DUN.day,op:[...DUN.opened]};s.rare={sword:TL.sword};});
 const _ap35=applySave;applySave=function(S){_ap35(S);if(S.dun&&Array.isArray(S.dun.op)&&S.dun.day===today()){DUN.day=S.dun.day;DUN.floors={};DUN.opened=new Set(S.dun.op)}
  if(S.rare&&+S.rare.sword===5)TL.sword=5};
 // --- drawing: floors, walls (faces where a wall meets the floor below, dark rock tops elsewhere), stairs, chests ---

@@ -160,10 +160,10 @@
   for(const M of[h.yf,h.yp])for(const[i,v]of[...M]){const x=i%W,y=i/W|0,grass=j=>M!==h.yp||R.lay(j%W,j/W|0)===2;if(!R.solid.has(i)&&!onDoorTile(R,x,y)&&grass(i))continue;let best=-1,bd=1e9;
    for(let j=2*W;j<W*R.h;j++)if(free(j)&&grass(j)){const d=Math.hypot(j%W-x,(j/W|0)-y);if(d<bd){bd=d;best=j}}
    M.delete(i);used.delete(i);if(best>=0){M.set(best,v);used.add(best)}else if(M===h.yf&&!ro){inv[v.t]=(inv[v.t]|0)+1;if(v.items)for(const k in v.items)inv[k]=(inv[k]|0)+(v.items[k]|0)}}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{const put=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;const f=outF(h),p=outP(h);if(f)e.yf=f;if(p)e.yp=p;if(f||p)e.yw=RofH(h).w}};
+ {SQSAVE.after('145',s=>{try{const put=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;const f=outF(h),p=outP(h);if(f)e.yf=f;if(p)e.yp=p;if(f||p)e.yw=RofH(h).w}};
     put(HOUSES,s.houses);put(window.SQRH||[],s.rh);
     // standing in a yard saves you outside the house (its ret), like standing in the house does
-    if(isYard()&&SCENE.ret&&s.p&&!SCENE.prev){s.p.x=Math.round(SCENE.ret.x);s.p.y=Math.round(SCENE.ret.y)}}catch(e){console.warn(e)}return s}}
+    if(isYard()&&SCENE.ret&&s.p&&!SCENE.prev){s.p.x=Math.round(SCENE.ret.x);s.p.y=Math.round(SCENE.ret.y)}}catch(e){console.warn(e)}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const get=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;h._yd=null;const ow=+e.yw||OLDW(h);inF(h,e.yf,RofH(h),ow);inP(h,e.yp,RofH(h),ow);settle(h)}};
     get(HOUSES,S&&S.houses);get(window.SQRH||[],S&&S.rh);for(const h of mine()){if(!h.yf)h.yf=new Map();if(!h.yp)h.yp=new Map()}KNOWN=new Set(mine());if(window.SQONEHOME)SQONEHOME.enforce()}catch(e){console.warn(e)}return out}}
  // packing a house packs its yard (furniture and what's in its chests); one-home (149) packs extra homes the same way

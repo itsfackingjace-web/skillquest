@@ -22,7 +22,7 @@ const _ed48=enemyDrop;enemyDrop=function(n){_ed48(n);const q=QS[Q.i];if(Q.on&&q&
 var QDONE=new Set(),QHOLD=null;
 function qSkip(){while(QS[Q.i]&&QDONE.has(QS[Q.i].n))Q.i++;if(QHOLD&&QS[Q.i]&&QS[Q.i].n===QHOLD.n){Q.on=QHOLD.on;Q.k=QHOLD.k;QHOLD=null}}
 const _qa48=questAct;questAct=function(a){const i0=Q.i,q=QS[Q.i];_qa48(a);if(Q.i!==i0&&q){QDONE.add(q.n);if(q.fin){TALKQ=q.fin;say('Quest complete: '+q.n+'! "'+q.fin+'"');msgT=5}qSkip();saveNow();rPn()}else if(a==='acc')saveNow()};
-const _sn48=snap;snap=function(){const s=_sn48();s.qv=9;s.qdone=[...QDONE];if(QHOLD)s.qhold={...QHOLD};return s};
+SQSAVE.after('048:qv,qdone,qhold',s=>{s.qv=9;s.qdone=[...QDONE];if(QHOLD)s.qhold={...QHOLD};});
 const _ap48=applySave;applySave=function(S){_ap48(S);QDONE=new Set();QHOLD=null;if(!S.q)return;
  if((S.qv||0)<9){// Q.i is an index into the 20-quest chain: turn it into names, then find the first quest not yet done
   const done=QOLD8.slice(0,Math.min(Q.i,QOLD8.length));if(GMDONE||Q.i>=QOLD8.length)done.push('Grandmaster');for(const n of done)QDONE.add(n);

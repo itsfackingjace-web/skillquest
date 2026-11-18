@@ -148,7 +148,7 @@ let NEWG=false;
 const _rs28=reset;reset=function(){const keep=NEWG?{}:Object.fromEntries(EQK.map(k=>[k,inv[k]|0]));_rs28();for(const k in keep)if(keep[k])inv[k]=keep[k];SPELLS.length=0};
 const _ng28=newGame;newGame=function(){NEWG=true;try{_ng28()}finally{NEWG=false}CLS={helm:null,body:null,legs:null};WAND=null;MANA=10;for(const k of EQK)inv[k]=0;snapEq()};
 // --- saving ---
-const _sn28=snap;snap=function(){const s=_sn28();s.cls={...CLS};s.wand=WAND;s.mp=Math.round(MANA);s.offh=1;return s};
+SQSAVE.after('028:cls,wand,mp',s=>{s.cls={...CLS};s.wand=WAND;s.mp=Math.round(MANA);s.offh=1;});
 const _ap28=applySave;applySave=function(S){_ap28(S);CLS={helm:null,body:null,legs:null};if(S.cls)for(const s of['helm','body','legs'])CLS[s]=S.cls[s]==='r'||S.cls[s]==='m'?(ARM[s]?null:S.cls[s]):null;
  WAND=S.wand&&WSP[S.wand]?S.wand:null;if(Array.isArray(S.xp))XPS[ML]=Math.max(0,+S.xp[ML]||0);MANA=Math.min(maxMP(),isFinite(S.mp)?+S.mp:10);
  // one item in the off-hand (a bow wins over a wand); saves from before the off-hand get their best bow back in it

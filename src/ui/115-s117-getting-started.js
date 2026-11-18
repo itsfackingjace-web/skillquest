@@ -70,7 +70,7 @@
   d.innerHTML='<b>Getting started '+(GD.s+1)+'/'+N0+':</b> '+S[GD.s].n+'<button data-gskip>Skip the guide</button>';pbd.prepend(d)};
  pbd.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('[data-gskip]'))return;GD.s=DONE;light(null);try{say('Guide skipped. Your quests are in the quest log.');saveLocal(true)}catch(x){}rPn()});
  // saves
- const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{if(GD.s!=null)s.gd=GD.s}catch(e){}return s};
+ SQSAVE.after('115:gd',s=>{try{if(GD.s!=null)s.gd=GD.s}catch(e){}});
  const _ap=applySave;applySave=function(Sv){const out=_ap.apply(this,arguments);try{const v=Sv&&Sv.gd;
    if(typeof v==='number'&&v>=0)GD.s=v>=N0?DONE:v|0;else decide()}catch(e){GD.s=DONE}return out};
  const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);GD.s=0;stepStart();return out};

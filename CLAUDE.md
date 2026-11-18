@@ -16,6 +16,10 @@
   chests, graves, campfire logs, house chests + packing, gathering/eating, island trips, two-player trading, the World Market (`window.SQWMAPI`
   from 079), the guild bank (`SQGUILD.api.create/deposit/withdraw`) and falling in a dungeon. A full run takes about 2.5 minutes. **Run them after building and before every release;
   never release with a failing check.** When fixing a bug, add a case in `cases/` that fails without the fix. Script errors on the page fail a case.
+- **Saving is a list of steps** (006, `window.SQSAVE`): `snap()` = the game's own fields + every section's step in load order.
+  Add to the save with `SQSAVE.after('<file no>:<keys>', s=>{ s.key=... })`; code that must run before/around the save uses
+  `SQSAVE.wrap(name, next=>function(){... next() ...})`. **Never reassign `snap`.** `SQSAVE.list()` shows the order (74 steps on Nov 18).
+  The other busy functions (`applySave`, `attack`, `upd`, `eat`) are still wrapper chains; `tools/refactor/` has the converter used for snap.
 - Firebase rules are in `database.rules.json` and must be published in the Firebase console when they change.
 - **Every update to the game must add a patch note, and there is one patch note entry per day.** In `PATCH_NOTES`
   (`src/data/074-patch-notes.js`): if the top entry is today's, add your bullets to it (new features first, then "Fixed: ..."
@@ -983,9 +987,9 @@
 
 - **No saves of borrowed chest items** (`items/230-s238-no-saves-while-chests-merged.js`, Nov 18): while `BMERGE` is set (027/033 station clicks,
   109's timed steps) the bag holds every nearby/house chest's contents too. 007's smithAct saves on every step, so saves held the chests
-  twice (players' house chests "doubled"). The outermost `snap` now runs `benchSplit()`, snapshots, and merges the same chests again.
+  twice (players' house chests "doubled"). Its `SQSAVE.wrap` step runs `benchSplit()`, snapshots, and merges the same chests again.
   **Anything else that lends items to `inv` for longer than one call must also be taken out of `snap`.**
 - **Graves on a quick respawn** (063, in the MP block, edited in place): the grave is made by `grvFall()`, run by the 100 ms timer and also by a
   `reset` wrapper before 001's reset wipes `inv` (a respawn before the timer fired, or with throttled timers, lost the bag with no grave). With no
-  `GRV.lastSpot`, `GRV.nospot` makes the wrapper keep the bag's non-gear items through reset instead. 220's outermost `snap` saves a campfire
+  `GRV.lastSpot`, `GRV.nospot` makes the wrapper keep the bag's non-gear items through reset instead. 220's `SQSAVE.wrap` step saves a campfire
   build's lent wood as the tier logs while `PEND` waits. 071's narrow-screen `#wbb` sits below 115's guide hint (`SQHINTB`).

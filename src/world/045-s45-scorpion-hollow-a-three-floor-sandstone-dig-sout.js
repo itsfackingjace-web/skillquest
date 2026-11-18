@@ -162,6 +162,6 @@ const _df45=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='sandpile'){g.fillStyle='rgba(60,40,10,.25)';g.beginPath();g.ellipse(x0+8,y0+13,10,3.5,0,0,6.283);g.fill();for(const[r,cy,c]of[[9,11,'#a8803c'],[7.5,9.5,'#c8a058'],[5.5,8,'#dcb470'],[3.5,6.5,'#ecc888'],[1.8,5.5,'#f8dca0']]){g.fillStyle=c;g.beginPath();g.ellipse(x0+8-(9-r)*.15,y0+cy,r,r*.55,0,0,6.283);g.fill()}
   g.fillStyle='#8a6428';for(const[a,b]of[[3,11],[12,10],[6,12],[10,7]])g.fillRect(x0+a,y0+b,1,1);return}
  _df45(it,tm)};
-const _sn45=snap;snap=function(){const s=_sn45();s.xdun={...EXTRA_DUNGEON_DAYS};return s};
+SQSAVE.after('045:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
 const _ap45=applySave;applySave=function(S){_ap45(S);EMERGE45=[];for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1};
 const _ng45=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng45()};

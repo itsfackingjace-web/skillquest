@@ -27,7 +27,7 @@
  {const _occ=occ;occ=function(slot){if(MT[slot]&&ARM[slot]===5)return KEY[slot];return _occ.apply(this,arguments)}}
  {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot in MT)MT[slot]=!!k&&k===KEY[slot];return out}}
  {const _wu=watchUpgrades;watchUpgrades=function(){const was={...MT};const out=_wu.apply(this,arguments);for(const s in MT)if(was[s]&&ARM[s]!==5){if((inv['eq_'+s+'5']|0)>0)inv['eq_'+s+'5']--;inv[KEY[s]]=(inv[KEY[s]]|0)+1;MT[s]=false}return out}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);const t=(MT.helm?'h':'')+(MT.body?'b':'')+(MT.legs?'l':'');if(t)s.mta=t;if((inv.marrow|0)>0){s.inv=s.inv||{};s.inv.marrow=inv.marrow|0}return s}}
+ {SQSAVE.after('216:mta,inv',s=>{const t=(MT.helm?'h':'')+(MT.body?'b':'')+(MT.legs?'l':'');if(t)s.mta=t;if((inv.marrow|0)>0){s.inv=s.inv||{};s.inv.marrow=inv.marrow|0}})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);const t=String(S&&S.mta||'');MT.helm=t.includes('h')&&ARM.helm===5;MT.body=t.includes('b')&&ARM.body===5;MT.legs=t.includes('l')&&ARM.legs===5;
    try{if(S&&S.inv&&S.inv.marrow!=null)inv.marrow=Math.max(0,+S.inv.marrow|0)}catch(e){}try{snapEq()}catch(e){}return out}}
  {const _ng=newGame;newGame=function(){MT.helm=MT.body=MT.legs=false;return _ng.apply(this,arguments)}}
@@ -41,7 +41,7 @@
  add('eq_bow6',{slot:'off',kind:'bow',tier:6,n:'Meteorite bow',ic:'bow',col:'#8a60e0',v:16000,arch:L75,rq2:{s:FL,l:L75}},'A meteorite bow: the hardest-hitting, furthest-shooting bow there is. Needs Archery 75.');
  {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+(TL.bow===6?3:0)+(LEND?3:0)}}
  {const _br=bowRange;bowRange=function(){return _br.apply(this,arguments)+(TL.bow===6?30:0)}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(TL.bow===6){s.tl=s.tl||{};s.tl.bow=6}return s}}
+ {SQSAVE.after('216:tl',s=>{if(TL.bow===6){s.tl=s.tl||{};s.tl.bow=6}})}
  // ---- meteorite arrows ----
  const MA='marrow';INVK.includes(MA)||INVK.push(MA);INAME[MA]='Meteorite arrows';SN[MA]='Meteorite arrows';SHORT[MA]='meteorite arrows';SELLP[MA]=60;inv[MA]=inv[MA]|0;
  IDESC[MA]='Arrows tipped with meteorite: +3 damage over iron arrows (+4 over plain arrows). Any bow shoots these first.';

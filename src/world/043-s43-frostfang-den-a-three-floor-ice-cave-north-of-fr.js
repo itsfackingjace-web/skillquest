@@ -163,6 +163,6 @@ const _df43=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='icepillar'){shd(x0+8,y0+15,16);Rg(x0+2,y0-18,12,33,O);Rg(x0+3,y0-17,10,31,'#9cc8ec');Rg(x0+4,y0-17,3,31,'#d8f0ff');Rg(x0+10,y0-17,2,31,'#6a9cc8');Rg(x0+1,y0-20,14,4,O);Rg(x0+2,y0-19,12,2,'#e8f8ff');return}
  _df43(it,tm)};
 // saving: the Alpha's daily clear (older saves: never cleared)
-const _sn43=snap;snap=function(){const s=_sn43();s.xdun={...EXTRA_DUNGEON_DAYS};return s};
+SQSAVE.after('043:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
 const _ap43=applySave;applySave=function(S){_ap43(S);SLOW43=0;ROAR43=null;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1};
 const _ng43=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng43()};

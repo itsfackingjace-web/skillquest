@@ -23,7 +23,7 @@ GEN.push({n:'Hoe',c:12,f:()=>{TL.hoe=1;say('Got a hoe! Face grass and press HIT 
 const FARM=new Map();
 const TILL_LIFE=600,nowS=()=>Math.floor(Date.now()/1000);   // empty tilled soil turns back into grass after 10 minutes
 function farmFromSave(a){FARM.clear();if(!Array.isArray(a))return;for(const e of a){if(!Array.isArray(e))continue;const i=e[0]|0;if(i<0||i>=N*N||tile[i]===0)continue;FARM.set(i,{c:CROPS[e[1]]?e[1]:null,g:Math.max(0,+e[2]||0),w:+e[3]||0,e:+e[4]||nowS()});obj[i]=null}}
-const _sn16=snap;snap=function(){const s=_sn16();s.farm=[...FARM].map(([i,p])=>[i,p.c,Math.round(p.g),Math.round(p.w),p.e|0]);s.qv=5;return s};
+SQSAVE.after('016:farm,qv',s=>{s.farm=[...FARM].map(([i,p])=>[i,p.c,Math.round(p.g),Math.round(p.w),p.e|0]);s.qv=5;});
 const _ap16=applySave;applySave=function(S){_ap16(S);farmFromSave(S.farm);TL.hoe=S.tl&&S.tl.hoe?1:0;TL.can=S.tl&&S.tl.can?1:0;if((S.qv||0)<5&&S.q&&Q.i>=13)Q.i=Math.min(QS.length,Q.i+1)};
 QS.splice(13,0,{n:'Green Thumb',d:'Get a hoe (craft one, or buy it at the general store) and seeds from the general store, then grow and harvest 5 crops.',type:'harvest',amt:5,r:{g:120,xp:[11,500]}});
 const _qv16=qVal;qVal=function(q){return q.type==='harvest'?Q.k:_qv16(q)};

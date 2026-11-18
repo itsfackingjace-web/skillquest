@@ -23,7 +23,7 @@
    return h+s+'</div>'}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ultp]');if(!b||ptab!==3)return;e.stopPropagation();e.preventDefault();PICK=b.dataset.ultp;
   const o=avail().find(x=>x.k===PICK);say('Your ULT button now uses '+(o?o.n:'that ultimate')+'.');try{sfx('talk')}catch(_){}try{saveLocal(true)}catch(_){}rPn()},true);
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);if(PICK)s.ultp=PICK;return s}}
+ {SQSAVE.after('159:ultp',s=>{if(PICK)s.ultp=PICK;})}
  {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);PICK=S&&/^(slam|dragon|wand|dagger)$/.test(S.ultp)?S.ultp:null;return out}}
  try{KNOWN49.add('ultp')}catch(e){}
  window.SQULT={avail,chosen,get pick(){return PICK},set pick(v){PICK=v}}})();

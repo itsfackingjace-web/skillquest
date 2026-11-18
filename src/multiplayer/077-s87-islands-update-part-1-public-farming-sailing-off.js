@@ -51,7 +51,7 @@ function sfStart(){const d=FB.db;SF.unsub=d.onValue(d.ref(FB.D,'farm'),s=>{const
  MP.unsub.push(()=>{if(SF.unsub)SF.unsub();SF.unsub=null;SF.ready=false;SF.data={}})}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!SF.unsub)try{sfStart()}catch(e){mpErr(e)}}}
 // saves: the offline fields; old saves' own plots become shared plots
-{const _sn=snap;snap=function(){const s=_sn();s.sf=SF.local;delete s.farm;delete s.rfarm;return s}}
+{SQSAVE.after('077:sf',s=>{s.sf=SF.local;delete s.farm;delete s.rfarm;})}
 {const _ap=applySave;applySave=function(S){_ap(S);SF.local={};const now=Date.now();
   if(S&&S.sf&&typeof S.sf==='object'){for(const a in S.sf){if(!WORLD_REGIONS[a]||typeof S.sf[a]!=='object')continue;SF.local[a]={};for(const k in S.sf[a])if(/^\d+_\d+$/.test(k))SF.local[a][k]=sfClean(S.sf[a][k])}}
   else{const conv=(a,x,y,c,g,w)=>{(SF.local[a]||(SF.local[a]={}))[sfK(x,y)]={c:CROPS[c]?c:'',g:+g||0,t:now,w:w>CLK?now+(w-CLK)*1000:0,e:CROPS[c]?0:now}};
@@ -147,8 +147,7 @@ rhPack=(_rp=>function(h){if(!h||!h.castle)return _rp(h);const n0=inv.house|0;_rp
 rhForeign=(_rf=>function(id){const out=_rf(id);try{for(const o in BLDS.data){const L=BLDS.data[o]&&BLDS.data[o].r&&BLDS.data[o].r._h;if(!L)continue;for(const e0 of(Array.isArray(L)?L:Object.values(L))){const e=Array.isArray(e0)?e0:Object.values(e0||{});
    if(e[0]!==id||!e[5])continue;const h=out.find(q=>q._owner===o&&q.x===(e[1]|0)&&q.y===(e[2]|0));if(h&&!h.castle){const fresh=buildForeign(o,{id:e[3],x:e[1],y:e[2],w:7,f:e[4],c:1});h.castle=1;h.furn=fresh.furn}}}}catch(err){}return out})(rhForeign);
 // saving your castles
-{const _sn=snap;snap=function(){const s=_sn();if(Array.isArray(s.houses))for(const e of s.houses){const h=HOUSES.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}
-  if(Array.isArray(s.rh))for(const e of s.rh){const h=RH.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}return s}}
+{SQSAVE.after('077',s=>{if(Array.isArray(s.houses))for(const e of s.houses){const h=HOUSES.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}if(Array.isArray(s.rh))for(const e of s.rh){const h=RH.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}})}
 {const _ap=applySave;applySave=function(S){_ap(S);const items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r},
    fill=(h,f)=>{h.castle=1;h.hp=24;h.furn=new Map();if(Array.isArray(f))for(const q of f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*CASTLE_W||i>=CASTLE_W*CASTLE_H||!BK.includes(t)||t==='house'||t==='castle')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:items(q[2])},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}};
   if(S&&Array.isArray(S.houses))for(const e of S.houses){if(!e||!e.c)continue;const h=HOUSES.find(o=>!o._foreign&&o.id===String(e.id).slice(0,12));if(h)fill(h,e.f)}

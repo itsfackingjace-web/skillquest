@@ -54,7 +54,7 @@
    if(o.buff&&window.LUX&&LUX.BUFF){LUX.BUFF[o.buff]=performance.now()+o.bs*1000;got.push({str:'stronger hits',iron:'better blocks',swift:'free sprinting',wis:'+20% XP',regen:'regeneration'}[o.buff]+' for '+(o.bs>=120?Math.round(o.bs/60)+' min':o.bs+' s'))}
    say('You drink the '+o.n.toLowerCase()+(got.length?': '+got.join(', '):'')+'.');try{sfx('quest')}catch(e){}saveLocal(true);if(pnOpen)rPn()}}
  {const _e=eat;eat=function(){const keep={};for(const k in POT){keep[k]=inv[k]|0;inv[k]=0}try{return _e.apply(this,arguments)}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}}}
- {const _sn=snap;snap=function(){const s=_sn.apply(this,arguments);try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){}return s}}
+ {SQSAVE.after('162:cq',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){}})}
  {const _ap=applySave;applySave=function(S){for(const k in PEND)delete PEND[k];const out=_ap.apply(this,arguments);
    try{if(S&&S.inv)for(const k in S.inv)if(/^it_/.test(k)&&+S.inv[k]>0){if(REG.has(k))inv[k]=Math.min(1e6,+S.inv[k]|0);else PEND[k]=Math.min(1e6,+S.inv[k]|0)}}catch(e){}
    for(const k in CQ)delete CQ[k];try{if(S&&S.cq&&typeof S.cq==='object')for(const k in S.cq){const v=+S.cq[k];if(/^q_[a-z0-9_]{1,30}[#@!]?$/.test(k)&&isFinite(v))CQ[k]=Math.max(0,Math.min(1e6,v|0))}}catch(e){}return out}}

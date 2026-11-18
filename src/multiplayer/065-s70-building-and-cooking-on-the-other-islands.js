@@ -60,7 +60,7 @@ function rbDraw(R,x,y,s,tm){if(STN.has(s.t)){if(s.t==='planter')s.ready=PLANTD[p
 {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rb'){const R=rbR();if(R)try{rbDraw(R,it.tx,it.ty,it.s,tm)}catch(e){}return}return _df(it,tm)}}
 {const _u=upd;upd=function(dt){_u(dt);const R=rbR();if(R)for(const s of rbMap(R.region).values())if(s.shake>0)s.shake-=dt}}
 // ---- saving ----
-{const _sn=snap;snap=function(){const s=_sn();const o={};for(const id in RB){const a=[];for(const[k,v]of RB[id]){const[x,y]=rbXY(k);a.push(v.items?[x,y,v.t,v.items]:[x,y,v.t])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rb=o;return s}}
+{SQSAVE.after('065:rb',s=>{const o={};for(const id in RB){const a=[];for(const[k,v]of RB[id]){const[x,y]=rbXY(k);a.push(v.items?[x,y,v.t,v.items]:[x,y,v.t])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rb=o;})}
 {const _ap=applySave;applySave=function(S){_ap(S);for(const id in RB)delete RB[id];const o=S&&S.rb;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id])continue;const m=rbMap(id);
    for(const e of (Array.isArray(o[id])?o[id]:[])){if(!Array.isArray(e)||!BK.includes(e[2]))continue;const s={t:e[2],hp:BHP[e[2]]||4};if(e[2]==='chest')s.items=(e[3]&&typeof e[3]==='object')?{...e[3]}:{};m.set(rbK(e[0]|0,e[1]|0),s)}}
   try{rbSolidSync()}catch(e){}}}
