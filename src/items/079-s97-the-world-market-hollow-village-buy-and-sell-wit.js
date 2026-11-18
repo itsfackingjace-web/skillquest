@@ -123,7 +123,7 @@
  // ---- the panel ----
  function wmOpen(){/* not "open": a function here (a bare block) becomes window.open */if(!online()){say('The World Market needs you to be signed in (Menu > Online).');sfx('swish');return}wmStart();shop='wmkt';WMK.tab='mine';WMK.form=null;pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');
   if(Object.keys(WMK.box).length)collect().then(()=>{if(pnOpen&&shop==='wmkt')rPn()})}
- window.SQWMOPEN=wmOpen;
+ window.SQWMOPEN=wmOpen;window.SQWMAPI={place,collect,cancel,match};/* for tools/checks */
  const ic=k=>{try{return'<img src="'+iconURL(k)+'" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:-2px;margin-right:4px">'}catch(e){return''}};
  function book(k){let bs=null,bb=null,qs=0,qb=0;for(const o of Object.values(WMK.offers)){if(!live(o)||o.k!==k||!inBand(k,o.p))continue;const r=o.q-o.f;if(o.s==='s'){qs+=r;if(bs==null||o.p<bs)bs=o.p}else{qb+=r;if(bb==null||o.p>bb)bb=o.p}}return{bs,bb,qs,qb}}
  const guide=k=>{const M=mkt(k);if(M)return clampP(k,M.p);const L=WMK.last[k];return clampP(k,L&&L.p>0?L.p:Math.max(1,Math.round((SELLP[k]||1)*1.3)))};
