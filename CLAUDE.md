@@ -976,3 +976,7 @@
   description line. Mana regen = 028 base × (1 + 036's Magic level/perk share) + 086 sapphire .25, × (1 + `mreg`%) × 202's `MREG` (matches the measured rate).
   The bag's item text (228) shows the full value line. New stats/effects worth showing go in `extraRows()`.
 
+- **No saves of borrowed chest items** (`items/230-s238-no-saves-while-chests-merged.js`, Nov 18): while `BMERGE` is set (027/033 station clicks,
+  109's timed steps) the bag holds every nearby/house chest's contents too. 007's smithAct saves on every step, so saves held the chests
+  twice (players' house chests "doubled"). The outermost `snap` now runs `benchSplit()`, snapshots, and merges the same chests again.
+  **Anything else that lends items to `inv` for longer than one call must also be taken out of `snap`.**
