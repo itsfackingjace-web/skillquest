@@ -120,6 +120,19 @@ const SQSAVE=(()=>{const base=snap,steps=[];let built=null;
  return{after:(name,fn)=>add(name,next=>function(){const s=next.apply(this,arguments);const r=fn(s);return r===undefined?s:r},'after'),
   wrap:(name,w)=>add(name,w,'wrap'),list:()=>steps.map(s=>s.kind+' '+s.name),run(){return(built||build()).apply(this,arguments)}}})();
 window.SQSAVE=SQSAVE;snap=function(){return SQSAVE.run.apply(this,arguments)};
+// ---- Loading is one ordered list of steps too (window.SQLOAD) ----
+// applySave(S) runs the game's own loader (function applySave below), then every section's step in load order:
+//   SQLOAD.after(name, (S)=>{...})    read your fields from the save S after everything before you has loaded (most sections)
+//   SQLOAD.before(name, (S)=>{...})   prepare S or the game before the loaders run (latest-added runs first)
+//   SQLOAD.wrap(name, next=>function(S){... next(S) ...})   for the few that must surround the load
+// SQLOAD.list() shows the steps in order. Never reassign applySave itself: add a step.
+const SQLOAD=(()=>{const base=applySave,steps=[];let built=null;
+ const add=(name,w,kind)=>{steps.push({name:String(name),w,kind});built=null};
+ const build=()=>{let f=base;for(const st of steps)f=st.w(f);built=f;return f};
+ return{after:(name,fn)=>add(name,next=>function(){const out=next.apply(this,arguments);fn.apply(this,arguments);return out},'after'),
+  before:(name,fn)=>add(name,next=>function(){fn.apply(this,arguments);return next.apply(this,arguments)},'before'),
+  wrap:(name,w)=>add(name,w,'wrap'),list:()=>steps.map(s=>s.kind+' '+s.name),run(){return(built||build()).apply(this,arguments)}}})();
+window.SQLOAD=SQLOAD;
 const keyOf=s=>{const o={...s};for(const k of['time','clk','hunger','mp','savedAt','wid','dev','bw','as'])delete o[k];o.p=s.p?[s.p.x>>4,s.p.y>>4,s.p.hp]:0;o.fires=(s.fires||[]).length;return JSON.stringify(o)};
 function saveLocal(force){if(dead)return;const s=snap(),k=keyOf(s);if(k===lastLocal&&!force)return;lastLocal=k;s.savedAt=Date.now();LOCAL_AT=s.savedAt;try{localStorage.setItem(LS,JSON.stringify(s))}catch(e){}}
 async function saveCloud(force){if(!cloud||cloudBusy||dead)return;const s=snap(),k=keyOf(s);if(k===lastCloud&&!force)return;cloudBusy=true;s.savedAt=Date.now();
@@ -138,6 +151,7 @@ function applySave(S){
  fires=(S.fires||[]).filter(f=>isFinite(f.x)&&isFinite(f.y)&&f.life>0).map(f=>({x:+f.x,y:+f.y,life:+f.life,lg:Math.max(0,Math.min(5,f.lg|0))}));
  if(S.p){const x=+S.p.x,y=+S.p.y;if(isFinite(x)&&isFinite(y)&&!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6))){P.x=x;P.y=y}else{P.x=SPX;P.y=SPY}P.hp=Math.max(1,Math.min(6,+S.p.hp||6))}
  MUTE=!!S.mute;mb.textContent=MUTE?'🔇':'🔊';en=[];dead=false;svs();svg()}
+applySave=function(){return SQLOAD.run.apply(this,arguments)};
 function hideCreator(){menuOpen=false;cm.style.display='none'}
 function newGame(){XPS.fill(0);for(const k in TL)TL[k]=0;for(const k in ARM)ARM[k]=0;GLD=0;Object.assign(Q,{i:0,on:false,k:0,qp:0});
  for(const r of REM)if(!obj[r.i])obj[r.i]={t:r.t,hp:OHP[r.t]};REM=[];CLK=0;

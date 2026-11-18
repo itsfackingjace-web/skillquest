@@ -53,7 +53,6 @@ const _dr42=drawRoom;drawRoom=function(tm){_dr42(tm);if(SCENE)sqDrawMarks(tm,tru
 // saving: optional field, older saves start every line fresh
 SQSAVE.after('042:sideQuests',s=>{s.sideQuests=JSON.parse(JSON.stringify(SQ_SIDE));});
 function sqReset(){for(const t in SQ_SIDE)Object.assign(SQ_SIDE[t],{index:0,on:false,k:0,completed:false})}
-const _ap42=applySave;applySave=function(S){_ap42(S);sqReset();const o=S.sideQuests;if(!o||typeof o!=='object')return;
- for(const t in SQ_SIDE){const v=o[t];if(!v||typeof v!=='object')continue;const L=SIDE_QS[t].length,s=SQ_SIDE[t];
-  s.index=Math.max(0,Math.min(L,+v.index||0));s.completed=!!v.completed||(L>0&&s.index>=L);s.on=!s.completed&&!!v.on;s.k=Math.max(0,+v.k||0)}};
+SQLOAD.after('042',(S)=>{sqReset();const o=S.sideQuests;if(!o||typeof o!=='object')return;for(const t in SQ_SIDE){const v=o[t];if(!v||typeof v!=='object')continue;const L=SIDE_QS[t].length,s=SQ_SIDE[t];
+  s.index=Math.max(0,Math.min(L,+v.index||0));s.completed=!!v.completed||(L>0&&s.index>=L);s.on=!s.completed&&!!v.on;s.k=Math.max(0,+v.k||0)}});
 const _ng42=newGame;newGame=function(){sqReset();_ng42()};

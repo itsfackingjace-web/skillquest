@@ -44,5 +44,5 @@
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-eatpin]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.eatpin;PIN=PIN===k?'':k;
   say(PIN?'EAT will use '+(INAME[k]||k).toLowerCase()+' first.':'EAT picks food for you again.');try{sfx('talk');saveLocal()}catch(x){}try{rPn()}catch(x){}},true);
  {SQSAVE.after('181:eatp',s=>{try{s.eatp=PIN}catch(e){}})}
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{PIN=S&&typeof S.eatp==='string'&&INAME[S.eatp]?S.eatp:''}catch(e){}return out}}
+ {SQLOAD.after('181',(S)=>{try{PIN=S&&typeof S.eatp==='string'&&INAME[S.eatp]?S.eatp:''}catch(e){}})}
  window.SQEAT={pick,cookable,get pin(){return PIN},set pin(v){PIN=v||''},open:openPick,cook}})();

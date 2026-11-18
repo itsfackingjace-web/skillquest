@@ -156,5 +156,5 @@ setInterval(()=>{const B=WB.b,show=B&&MP.on&&!dead&&!pnOpen&&!menuOpen&&!TS.open
  try{if(msgT>0&&msg&&MSGBOX){const r=wbbEl.getBoundingClientRect(),m=MSGBOX;if(r.left<m.x+m.w&&r.right>m.x&&r.top<m.y+m.h&&r.bottom>m.y)wbbEl.style.display='none'}}catch(e){}},150);
 // ---- saving, and the leaderboard ----
 {SQSAVE.after('071:wbk,wbc',s=>{if(WB.kills)s.wbk=WB.kills;const c=Object.keys(WB.claimed).slice(-20);if(c.length)s.wbc=c;})}
-{const _a=applySave;applySave=function(S){_a(S);WB.kills=Math.max(0,+(S&&S.wbk)||0);WB.claimed={};if(S&&Array.isArray(S.wbc))for(const k of S.wbc)WB.claimed[k]=1}}
+{SQLOAD.after('071',(S)=>{WB.kills=Math.max(0,+(S&&S.wbk)||0);WB.claimed={};if(S&&Array.isArray(S.wbc))for(const k of S.wbc)WB.claimed[k]=1})}
 window.SQWB=WB;

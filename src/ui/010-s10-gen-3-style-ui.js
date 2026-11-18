@@ -7,7 +7,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 // --- player name (saved) ---
 let PNAME='';
 SQSAVE.after('010:name',s=>{s.name=PNAME;});
-const _ap10=applySave;applySave=function(S){_ap10(S);if(typeof S.name==='string')PNAME=S.name.slice(0,10)};
+SQLOAD.after('010',(S)=>{if(typeof S.name==='string')PNAME=S.name.slice(0,10)});
 
 const pname=()=>(PNAME||'Player');
 // --- styles ---

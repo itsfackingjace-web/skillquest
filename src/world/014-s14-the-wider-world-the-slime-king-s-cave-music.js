@@ -82,7 +82,7 @@ QS.splice(10,0,{n:'Into the Cold',d:'Travel to the snowy north and bring the Eld
  {n:'The Slime King',d:'A great slime rules the cave in the northern mountains. Find the cave and defeat it.',type:'boss',amt:1,r:{g:300,xp:[7,800]}});
 const _qv14=qVal;qVal=function(q){return q.type==='boss'?Q.k:_qv14(q)};
 SQSAVE.after('014:qv,cave',s=>{s.qv=4;s.cave=CAVE_DAY;});
-const _ap14=applySave;applySave=function(S){_ap14(S);if((S.qv||0)<4&&S.q&&Q.i>=10)Q.i=Math.min(QS.length,Q.i+3);CAVE_DAY=isFinite(S.cave)?+S.cave:-1};
+SQLOAD.after('014',(S)=>{if((S.qv||0)<4&&S.q&&Q.i>=10)Q.i=Math.min(QS.length,Q.i+3);CAVE_DAY=isFinite(S.cave)?+S.cave:-1});
 
 // --- update: enemy types, wolf speed, boss contact ---
 const _u14=upd;upd=function(dt){_u14(dt);if(menuOpen||pnOpen||dead)return;

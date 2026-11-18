@@ -19,7 +19,7 @@ QS.splice(7,0,{n:'Forged in Fire',d:'Smelt iron ore at the blacksmith\'s furnace
 const QMAP=[0,1,2,3,5,6,8,9,10],remapQ=i=>QMAP[Math.max(0,Math.min(8,i|0))];
 // finish loading the local save for the new fields
 
-const _ap6=applySave;applySave=function(S){_ap6(S);TL.rod=S.tl&&S.tl.rod?1:0;if(!S.qv&&S.q)Q.i=remapQ(+S.q.i||0)};
+SQLOAD.after('007',(S)=>{TL.rod=S.tl&&S.tl.rod?1:0;if(!S.qv&&S.q)Q.i=remapQ(+S.q.i||0)});
 SQSAVE.after('007:qv',s=>{s.qv=2;});
 // sounds
 Object.assign(SFX,{cast:()=>{noise(.12,.06,3000);tone(700,.12,'sine',.03,-300)},splash:()=>{noise(.3,.14,800);tone(300,.08,'sine',.04,200)},smelt:()=>{noise(.6,.12,350);tone(110,.4,'triangle',.05)},anvil:()=>{tone(1900,.09,'square',.05,-500);noise(.06,.14,4200);tone(1700,.08,'square',.04,-500,.14);noise(.05,.12,4200,.14)}});

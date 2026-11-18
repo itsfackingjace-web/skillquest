@@ -32,7 +32,7 @@
  function scan(o,d){if(d>7||!o)return;if(typeof o==='string'){const id=idOf(o);if(id&&!REG.has(id))reg(id);return}if(typeof o!=='object')return;
   for(const k in o){const id=idOf(k);if(id&&!REG.has(id))reg(id);scan(o[k],d+1)}}
  let GOT=new Set(),APPLIED=false;
- {const _a=applySave;applySave=function(S){try{scan(S,0)}catch(e){}const r=_a.apply(this,arguments);try{GOT=new Set(Array.isArray(S&&S.ptg)?S.ptg.filter(okId):[]);APPLIED=true}catch(e){}return r}}
+ {SQLOAD.wrap('213',_a=>function(S){try{scan(S,0)}catch(e){}const r=_a.apply(this,arguments);try{GOT=new Set(Array.isArray(S&&S.ptg)?S.ptg.filter(okId):[]);APPLIED=true}catch(e){}return r})}
  {SQSAVE.after('213:ptg',o=>{try{if(GOT.size)o.ptg=[...GOT]}catch(e){}})}
  try{KNOWN49.add('ptg')}catch(e){}
  {const _ng=newGame;newGame=function(){GOT=new Set();APPLIED=true;return _ng.apply(this,arguments)}}

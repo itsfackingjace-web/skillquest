@@ -23,12 +23,10 @@ var QDONE=new Set(),QHOLD=null;
 function qSkip(){while(QS[Q.i]&&QDONE.has(QS[Q.i].n))Q.i++;if(QHOLD&&QS[Q.i]&&QS[Q.i].n===QHOLD.n){Q.on=QHOLD.on;Q.k=QHOLD.k;QHOLD=null}}
 const _qa48=questAct;questAct=function(a){const i0=Q.i,q=QS[Q.i];_qa48(a);if(Q.i!==i0&&q){QDONE.add(q.n);if(q.fin){TALKQ=q.fin;say('Quest complete: '+q.n+'! "'+q.fin+'"');msgT=5}qSkip();saveNow();rPn()}else if(a==='acc')saveNow()};
 SQSAVE.after('048:qv,qdone,qhold',s=>{s.qv=9;s.qdone=[...QDONE];if(QHOLD)s.qhold={...QHOLD};});
-const _ap48=applySave;applySave=function(S){_ap48(S);QDONE=new Set();QHOLD=null;if(!S.q)return;
- if((S.qv||0)<9){// Q.i is an index into the 20-quest chain: turn it into names, then find the first quest not yet done
+SQLOAD.after('048',(S)=>{QDONE=new Set();QHOLD=null;if(!S.q)return;if((S.qv||0)<9){// Q.i is an index into the 20-quest chain: turn it into names, then find the first quest not yet done
   const done=QOLD8.slice(0,Math.min(Q.i,QOLD8.length));if(GMDONE||Q.i>=QOLD8.length)done.push('Grandmaster');for(const n of done)QDONE.add(n);
   const cur=QOLD8[Q.i];if(cur&&Q.on)QHOLD={n:cur,on:true,k:Q.k};Q.i=0;Q.on=false;Q.k=0;qSkip();if(QHOLD&&QS[Q.i]&&QS[Q.i].n!==QHOLD.n){Q.on=false;Q.k=0}}
- else{if(Array.isArray(S.qdone))for(const n of S.qdone)if(typeof n==='string'&&QS.some(q=>q.n===n))QDONE.add(n);if(S.qhold&&typeof S.qhold.n==='string')QHOLD={n:S.qhold.n,on:!!S.qhold.on,k:Math.max(0,+S.qhold.k||0)}}
- Q.i=Math.max(0,Math.min(QS.length,Q.i))};
+ else{if(Array.isArray(S.qdone))for(const n of S.qdone)if(typeof n==='string'&&QS.some(q=>q.n===n))QDONE.add(n);if(S.qhold&&typeof S.qhold.n==='string')QHOLD={n:S.qhold.n,on:!!S.qhold.on,k:Math.max(0,+S.qhold.k||0)}}Q.i=Math.max(0,Math.min(QS.length,Q.i))});
 const _ng48=newGame;newGame=function(){QDONE=new Set();QHOLD=null;_ng48()};
 // the quest list shows finished quests by name (an old save may have done later ones before an earlier new one)
 const _qh48=questsHTML;questsHTML=function(){const full=_qh48(),cut=full.indexOf('<div class="tl" style="margin-top:14px">'),side=cut>=0?full.slice(cut):'';

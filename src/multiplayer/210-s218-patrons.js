@@ -41,7 +41,7 @@
  // ---- the fire cape ----
  let WEAR=false;
  {SQSAVE.after('210:fcw',o=>{try{o.fcw=WEAR?1:0}catch(e){}})}
- {const _a=applySave;applySave=function(s){const r=_a.apply(this,arguments);try{WEAR=!!(s&&s.fcw)}catch(e){}return r}}
+ {SQLOAD.after('210',(s)=>{try{WEAR=!!(s&&s.fcw)}catch(e){}})}
  {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);if(WEAR&&cape(uid()))c.fcp=1;else delete c.fcp;return c}}
  {const _u=upd;upd=function(){try{const m=mp();if(m&&m.players)for(const [u2,r] of m.players){if(r&&r.ch&&r.ch.fcp&&!cape(u2||r.uid))delete r.ch.fcp}}catch(e){}return _u.apply(this,arguments)}}
  // ---- credits ----

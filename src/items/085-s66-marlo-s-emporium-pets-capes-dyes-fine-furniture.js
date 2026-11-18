@@ -38,8 +38,7 @@ var LUX={};
   for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength wore off.',iron:'Your iron skin wore off.',swift:'Your swiftness wore off.',wis:'Your wisdom wore off.',regen:'Your regeneration wore off.'}[k]||'')}},500);
  // ---- saves ----
  SQSAVE.after('085:cos',s=>{s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};});
- const _ap=applySave;applySave=function(S){_ap(S);const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);
-  COS.pet=COS.pets.includes(c.pet)?c.pet:null;COS.cape=COS.capes.includes(+c.cape)?+c.cape:0;for(const k of['db','dl','dh'])COS[k]=COS.dyes.includes(+c[k])?+c[k]:0;KITC.clear()};
+ SQLOAD.after('085',(S)=>{const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);COS.pet=COS.pets.includes(c.pet)?c.pet:null;COS.cape=COS.capes.includes(+c.cape)?+c.cape:0;for(const k of['db','dl','dh'])COS[k]=COS.dyes.includes(+c[k])?+c[k]:0;KITC.clear()});
  // ---- looks: capes and dyes are part of the character sprite, so other players see them too ----
  const _gc=gearCH;gearCH=function(){const c=_gc();if(COS.cape)c.cape=COS.cape;if(COS.db)c.dyb=COS.db;if(COS.dl)c.dyl=COS.dl;if(COS.dh)c.dyh=COS.dh;return c};
  const _kl=kitLook;kitLook=function(ch){const o=_kl(ch),d=i=>DYES[(i|0)-1];if(d(ch.dyb)&&o.body)o.bc=d(ch.dyb).c;if(d(ch.dyl)&&o.legs)o.lc=d(ch.dyl).c;if(d(ch.dyh)&&o.head)o.hc=d(ch.dyh).c;return o};

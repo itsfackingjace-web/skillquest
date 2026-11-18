@@ -111,13 +111,13 @@ function packRaw(e){const add=(k,n)=>{if(k&&INAME[k])inv[k]=(inv[k]|0)+(n|0)};ad
 function packLeft(rg){const L=window.SQRH;if(!L)return 0;let n=0;for(let j=L.length-1;j>=0;j--){const h=L[j];if(h._foreign||h.rg!==rg)continue;
   const f=[...h.furn].map(([i,v])=>[i,v.t,v.items||null]),yf=[...(h.yf||new Map())].map(([i,v])=>[i,v.t,v.items||null]);L.splice(j,1);h.yf=new Map();h.yp=new Map();packRaw({c:h.castle?1:0,f,yf});n++}
  if(n){try{rhSolidSync()}catch(e){}}return n}
-{const _ap=applySave;applySave=function(S){let orphan=[];try{const want=new Set();if(S&&Array.isArray(S.rh))for(const e of S.rh){const m=e&&GIRX.exec(String(e.rg||''));if(m)want.add(m[1])}
+{SQLOAD.wrap('197',_ap=>function(S){let orphan=[];try{const want=new Set();if(S&&Array.isArray(S.rh))for(const e of S.rh){const m=e&&GIRX.exec(String(e.rg||''));if(m)want.add(m[1])}
    const m2=S&&S.region&&GIRX.exec(String(S.region.id||''));if(m2)want.add(m2[1]);
    for(const gid of want){if(!G.id){G.id=gid;G.isl={};keep()}if(G.id===gid)register()}
    if(S&&Array.isArray(S.rh))orphan=S.rh.filter(e=>{const m=e&&GIRX.exec(String(e.rg||''));return m&&m[1]!==G.id})}catch(e){console.warn('guild load',e)}
   const out=_ap.apply(this,arguments);
   try{if(orphan.length){for(const e of orphan)packRaw(e);const m='Your '+(orphan.length>1?'homes':(orphan[0].c?'castle':'house'))+' on the island of a guild you left '+(orphan.length>1?'were':'was')+' packed into your bag with everything inside.';
-    setTimeout(()=>{try{say(m);msgT=8;saveLocal(true);saveCloud(true)}catch(e){}},2500)}}catch(e){console.warn('guild pack',e)}return out}}
+    setTimeout(()=>{try{say(m);msgT=8;saveLocal(true);saveCloud(true)}catch(e){}},2500)}}catch(e){console.warn('guild pack',e)}return out})}
 const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region===REG&&REG)}catch(e){return false}};
  // planted things in the room you stand in (and on every load of the island)
  function applyNodes(R){if(!R||!R.region||R.region!==REG)return;const W=R.w;

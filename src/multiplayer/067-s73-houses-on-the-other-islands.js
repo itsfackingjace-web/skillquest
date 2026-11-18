@@ -56,10 +56,10 @@ function rhSign(h){const nm=h._foreign?fname(h._owner):(MP.on?myName():pname());
 // ---- saving ----
 {SQSAVE.after('067:rh,region',s=>{if(RH.length)s.rh=RH.map(h=>({id:h.id,rg:h.rg,x:h.x,y:h.y,f:[...h.furn].map(([i,f])=>f.nm?[i,f.t,f.items||null,f.nm]:[i,f.t,f.items||null])}));if(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region){const pr=SCENE.prev,R=pr.room;if(s.p&&pr.ret){s.p.x=Math.round(pr.ret.x);s.p.y=Math.round(pr.ret.y)}
    s.region={id:R.region,x:Math.max(0,Math.min(R.w-1,Math.floor(SCENE.ret.x/16))),y:Math.max(0,Math.min(R.h-1,Math.floor(SCENE.ret.y/16)))}}})}
-{const _ap=applySave;applySave=function(S){RH.length=0;const keepHome=S&&S.home;_ap(S);const RW=14,RHt=10,items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r};
+{SQLOAD.wrap('067',_ap=>function(S){RH.length=0;const keepHome=S&&S.home;_ap(S);const RW=14,RHt=10,items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r};
   if(S&&Array.isArray(S.rh))for(const e of S.rh){if(!e||!WORLD_REGIONS[e.rg]||!isFinite(e.x)||!isFinite(e.y))continue;const h={id:String(e.id||'').slice(0,12)||Math.random().toString(36).slice(2,8),rg:e.rg,x:e.x|0,y:e.y|0,w:7,furn:new Map(),hp:12};
    if(Array.isArray(e.f))for(const q of e.f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RHt||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:items(q[2])},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}RH.push(h)}
-  if(keepHome&&RH.some(h=>h.id===keepHome))HOMESP=keepHome;try{rhSolidSync()}catch(e){}}}
+  if(keepHome&&RH.some(h=>h.id===keepHome))HOMESP=keepHome;try{rhSolidSync()}catch(e){}})}
 {const _ng=newGame;newGame=function(){RH.length=0;_ng()}}
 // shared: other players see where your island houses are
 {const _rp=rbPub;rbPub=function(){const o=_rp()||{};if(RH.length)o._h=RH.map(h=>[h.rg,h.x,h.y,h.id,[...h.furn].map(([i,f])=>f.nm?[i,f.t,0,f.nm]:[i,f.t])]);return Object.keys(o).length?o:null}}

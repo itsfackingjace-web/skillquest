@@ -48,16 +48,16 @@
  const MV={};// merged items: key -> the item it turns into
  function merge(){for(const k in MV){const t=MV[k];if(t===k||!INAME[t]||MV[t])continue;const n=inv[k]|0;if(n>0){inv[t]=(inv[t]|0)+n;inv[k]=0}}}
  {let mt=0;const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if((mt+=dt)>2){mt=0;try{merge()}catch(e){}}return out}}
- {const _ap=applySave;applySave=function(){const out=_ap.apply(this,arguments);try{merge()}catch(e){}return out}}
+ {SQLOAD.after('162',()=>{try{merge()}catch(e){}})}
  {const _uf=useFood;useFood=function(k){const o=POT[k];if(!o)return _uf.apply(this,arguments);if((inv[k]|0)<1)return;inv[k]--;const got=[];
    if(o.heal){P.hp=Math.min(6,P.hp+o.heal);got.push('+'+o.heal+' HP')}if(o.mana){MANA=Math.min(typeof maxMP==='function'?maxMP():10,MANA+o.mana);got.push('+'+o.mana+' mana')}
    if(o.buff&&window.LUX&&LUX.BUFF){LUX.BUFF[o.buff]=performance.now()+o.bs*1000;got.push({str:'stronger hits',iron:'better blocks',swift:'free sprinting',wis:'+20% XP',regen:'regeneration'}[o.buff]+' for '+(o.bs>=120?Math.round(o.bs/60)+' min':o.bs+' s'))}
    say('You drink the '+o.n.toLowerCase()+(got.length?': '+got.join(', '):'')+'.');try{sfx('quest')}catch(e){}saveLocal(true);if(pnOpen)rPn()}}
  {const _e=eat;eat=function(){const keep={};for(const k in POT){keep[k]=inv[k]|0;inv[k]=0}try{return _e.apply(this,arguments)}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}}}
  {SQSAVE.after('162:cq',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){}})}
- {const _ap=applySave;applySave=function(S){for(const k in PEND)delete PEND[k];const out=_ap.apply(this,arguments);
+ {SQLOAD.wrap('162',_ap=>function(S){for(const k in PEND)delete PEND[k];const out=_ap.apply(this,arguments);
    try{if(S&&S.inv)for(const k in S.inv)if(/^it_/.test(k)&&+S.inv[k]>0){if(REG.has(k))inv[k]=Math.min(1e6,+S.inv[k]|0);else PEND[k]=Math.min(1e6,+S.inv[k]|0)}}catch(e){}
-   for(const k in CQ)delete CQ[k];try{if(S&&S.cq&&typeof S.cq==='object')for(const k in S.cq){const v=+S.cq[k];if(/^q_[a-z0-9_]{1,30}[#@!]?$/.test(k)&&isFinite(v))CQ[k]=Math.max(0,Math.min(1e6,v|0))}}catch(e){}return out}}
+   for(const k in CQ)delete CQ[k];try{if(S&&S.cq&&typeof S.cq==='object')for(const k in S.cq){const v=+S.cq[k];if(/^q_[a-z0-9_]{1,30}[#@!]?$/.test(k)&&isFinite(v))CQ[k]=Math.max(0,Math.min(1e6,v|0))}}catch(e){}return out})}
  {const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];for(const k in CQ)delete CQ[k];return _ng.apply(this,arguments)}}
  try{KNOWN49.add('cq')}catch(e){}
  // ======================= recipes =======================

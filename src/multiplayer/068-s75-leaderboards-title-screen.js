@@ -7,7 +7,7 @@ const LB={open:false,cat:'tot',data:{},unsub:null,pubKey:'',pubAt:-1e9,pk:0};
 // PvP kills you've made (counted when the player you beat tells you so)
 {const _in=pvIncoming;pvIncoming=function(id,v){if(v&&v.k==='ko'&&typeof v.t==='number'&&mpNow()-v.t<=5000){LB.pk++;try{saveLocal(true)}catch(e){}}return _in(id,v)}}
 {SQSAVE.after('068:pvpk',s=>{if(LB.pk)s.pvpk=LB.pk;})}
-{const _ap=applySave;applySave=function(S){_ap(S);LB.pk=Math.max(0,+(S&&S.pvpk)||0)}}
+{SQLOAD.after('068',(S)=>{LB.pk=Math.max(0,+(S&&S.pvpk)||0)})}
 function lbTick(){if(!MP.on||!MP.user||!FB)return;const now=performance.now();if(now-LB.pubAt<20000)return;LB.pubAt=now;
  const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};try{const c=window.SQCHR&&SQCHR.row();if(c){row.cr=c.r;row.cg=c.g}}catch(e){}const k=JSON.stringify(row);if(k===LB.pubKey)return;
  LB.pubKey=k;FB.db.set(FB.db.ref(FB.D,'lb/'+MP.user.uid),Object.assign(row,{t:FB.db.serverTimestamp()})).catch(e=>{LB.pubKey='';mpErr(e)})}

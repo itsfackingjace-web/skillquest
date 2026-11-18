@@ -18,7 +18,7 @@
  const mine=()=>{const C=GC();if(!ON||!C||!inGuild())return null;try{const d=C.design();return fromCh({slc:d.c+1,sls:d.s,slp:d.p,slt:d.t,sle:d.e,slx:d.x})}catch(e){return null}};
  {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);try{const C=GC();if(ON&&C&&inGuild()){const d=C.design();c.slc=d.c+1;c.sls=d.s;c.slp=d.p;if(d.t)c.slt=1;c.sle=d.e;c.slx=d.x}}catch(e){}return c}}
  {SQSAVE.after('226:gsw',o=>{try{o.gsw=ON?1:0}catch(e){}})}
- {const _a=applySave;applySave=function(S){const r=_a.apply(this,arguments);try{ON=!!(S&&S.gsw)}catch(e){}return r}}
+ {SQLOAD.after('226',(S)=>{try{ON=!!(S&&S.gsw)}catch(e){}})}
  {const _n=newGame;newGame=function(){ON=false;return _n.apply(this,arguments)}}
  // ---- recolouring the sail layer ----
  let CURD=null;const CACHE=new WeakMap();

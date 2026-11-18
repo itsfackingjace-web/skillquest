@@ -128,7 +128,7 @@ function drawThorn(n,tm){const x=Math.round(n.x),y=Math.round(n.y),K='#181018',h
 {const _pS=pS;pS=function(n,tm){if(n&&n.type==='thorn')return drawThorn(n,tm);return _pS(n,tm)}}
 // saving the boss day
 {SQSAVE.after('095:thd',s=>{s.thd=THDAY;})}
-{const _ap=applySave;applySave=function(S){_ap(S);THDAY=isFinite(S&&S.thd)?+S.thd:-1}}
+{SQLOAD.after('095',(S)=>{THDAY=isFinite(S&&S.thd)?+S.thd:-1})}
 try{if(typeof KNOWN49!=='undefined'&&KNOWN49.add)KNOWN49.add('thd')}catch(e){}
 
 // ---- the Thorn amulet (the Thornheart's rare drop) ----

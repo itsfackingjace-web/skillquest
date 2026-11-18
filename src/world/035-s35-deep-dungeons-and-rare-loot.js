@@ -102,8 +102,7 @@ const _atk35=attack;attack=function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0){co
 const _uf35=useFurn;useFurn=function(o){if(o&&o.use==='dchest'){dOpen(o);return}_uf35(o)};
 // saving: opened chests for today, and the legendary sword survives the tool-tier clamp
 SQSAVE.after('035:dun,rare',s=>{s.dun={day:DUN.day,op:[...DUN.opened]};s.rare={sword:TL.sword};});
-const _ap35=applySave;applySave=function(S){_ap35(S);if(S.dun&&Array.isArray(S.dun.op)&&S.dun.day===today()){DUN.day=S.dun.day;DUN.floors={};DUN.opened=new Set(S.dun.op)}
- if(S.rare&&+S.rare.sword===5)TL.sword=5};
+SQLOAD.after('035',(S)=>{if(S.dun&&Array.isArray(S.dun.op)&&S.dun.day===today()){DUN.day=S.dun.day;DUN.floors={};DUN.opened=new Set(S.dun.op)}if(S.rare&&+S.rare.sword===5)TL.sword=5});
 // --- drawing: floors, walls (faces where a wall meets the floor below, dark rock tops elsewhere), stairs, chests ---
 function hdDunBG(R){let c=HDRM.get(R);if(c)return c;const W=R.w,H=R.h,G=R.dun.G,tomb=R.tomb,b=hdBuf(W*32,H*32),FP=hdShadeOf(R.floor[0],5),FPd=hdShadeOf(R.floor[1],5),WP=hdShadeOf(R.wall,5),CEIL=hdShadeOf(hdMix(R.wall,'#000000',R.tomb?.6:.45),5);
  const wall=(x,y)=>x<0||y<0||x>=W||y>=H?1:G[y*W+x];

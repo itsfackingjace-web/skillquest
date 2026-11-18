@@ -83,7 +83,7 @@ var SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
 {const _ss=setSlot;setSlot=function(slot,k){_ss(slot,k);if(slot==='main'){SLEDGE=k==='eq_sledge';if(SLEDGE)TL.sword=3}}}
 {const _wu=watchUpgrades;watchUpgrades=function(){const was=SLEDGE;_wu();if(was&&TL.sword!==3){if((inv.eq_sword3|0)>0)inv.eq_sword3--;inv.eq_sledge=(inv.eq_sledge|0)+1;SLEDGE=false}}}
 {SQSAVE.after('096:sld',s=>{if(SLEDGE)s.sld=1;})}
-{const _ap=applySave;applySave=function(S){_ap(S);SLEDGE=!!(S&&S.sld)&&TL.sword===3}}
+{SQLOAD.after('096',(S)=>{SLEDGE=!!(S&&S.sld)&&TL.sword===3})}
 {const _ng=newGame;newGame=function(){SLEDGE=false;_ng()}}
 try{KNOWN49.add('sld');KNOWN49.add('emd')}catch(e){}
 // its icon: a stone head on a wooden haft
@@ -343,7 +343,7 @@ function drawEmberl(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs
  const w=44,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-62,w+2,5,K);Rg(x-w/2,y-61,w,3,'#3a1a1a');Rg(x-w/2,y-61,Math.round(w*f),3,'#f87020')}
 {const _pS=pS;pS=function(n,tm){if(n&&n.type==='emberl')return drawEmberl(n,tm);return _pS(n,tm)}}
 {SQSAVE.after('096:emd',s=>{s.emd=EMDAY;})}
-{const _ap=applySave;applySave=function(S){_ap(S);EMDAY=isFinite(S&&S.emd)?+S.emd:-1}}
+{SQLOAD.after('096',(S)=>{EMDAY=isFinite(S&&S.emd)?+S.emd:-1})}
 // the Ember ring: your sword sets monsters burning
 if(window.SQJK){SQGEMC.ember=['#f87020','#802008'];const j={k:'ja_ember',n:'Ember ring',s:'ring',g:'ember',v:4500,d:'Your melee hits set monsters on fire.'};SQJK[j.k]=j;
  INVK.push(j.k);if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]='Ring (rare, from the Emberlord): '+j.d+' Wear it from the Bag.';SELLP[j.k]=1800;SN[j.k]=j.n+'s';if(typeof SHORT!=='undefined')SHORT[j.k]=j.n.toLowerCase()}

@@ -24,5 +24,5 @@
    const m='Building outside isn\'t allowed any more, so what you had built outside was packed into your bag: '+list+(inside?' (with everything that was inside)':'')+'. Place them in your house, castle or backyard.';
    setTimeout(()=>{try{say(m);msgT=10;try{mpLog('game',m)}catch(e){}saveLocal(true);saveCloud(true)}catch(e){}},3000)}
   return n}
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{packAll()}catch(e){console.warn(e)}return out}}
+ {SQLOAD.after('173',(S)=>{try{packAll()}catch(e){console.warn(e)}})}
  window.SQHOMEBUILD={packAll,atHome,FREE}})();

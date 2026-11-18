@@ -60,10 +60,10 @@
    const gd=pbd.querySelector('.sqgd');if(gd)gd.after(d);else pbd.prepend(d)}}catch(e){}return out};
  // saves
  SQSAVE.after('120:dly',s=>{try{if(D)s.dly=JSON.parse(JSON.stringify(D))}catch(e){}});
- const _ap=applySave;applySave=function(Sv){const out=_ap.apply(this,arguments);try{const v=Sv&&Sv.dly;
+ SQLOAD.after('120',(Sv)=>{try{const v=Sv&&Sv.dly;
    if(v&&typeof v==='object'&&typeof v.d==='string'&&Array.isArray(v.q)){D={d:v.d,s:Math.max(0,v.s|0),l:typeof v.l==='string'?v.l:'',
      q:v.q.filter(q=>q&&T[q.t]).slice(0,3).map(q=>({t:q.t,n:Math.max(1,q.n|0),p:Math.max(0,q.p|0),c:q.c?1:0}))};if(!D.q.length)D=null}
-   else D=null;LASTINV=null;LASTK=typeof kills==='number'?kills:0}catch(e){D=null}return out};
+   else D=null;LASTINV=null;LASTK=typeof kills==='number'?kills:0}catch(e){D=null}});
  const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);D=null;LASTINV=null;LASTK=0;return out};
  {const st=document.createElement('style');st.textContent=`#pn .sqdl{background:#eef4fc;border:2px solid #7890b8;border-radius:8px;padding:8px 10px;margin:0 0 10px;font-size:13px;color:#404040;text-align:left}
 #pn .sqdl-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}#pn .sqdl-h b{letter-spacing:1px;color:#304870}#pn .sqdl-h span{font-size:12px;color:#b06010;font-weight:700}

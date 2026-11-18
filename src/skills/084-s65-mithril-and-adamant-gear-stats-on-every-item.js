@@ -24,8 +24,7 @@
   if(!ch.mh&&ch.ht===2&&(hc===HB+5||hc===HB+6)){const t=tc(hc-HB-5);o.head='helm';o.hc=t[0];o.ha=t[1]}return o};
  if(typeof KITC!=='undefined')KITC.clear();
  // saves: keep tiers above the old caps
- const _ap65=applySave;applySave=function(S){_ap65(S);if(S.arm)for(const s of['helm','body','legs']){const v=+S.arm[s]|0;if(v>=4&&v<=5)ARM[s]=v}
-  if(S.rare&&(+S.rare.sword===6||+S.rare.sword===7))TL.sword=+S.rare.sword;if(typeof snapEq==='function')snapEq()};
+ SQLOAD.after('084',(S)=>{if(S.arm)for(const s of['helm','body','legs']){const v=+S.arm[s]|0;if(v>=4&&v<=5)ARM[s]=v}if(S.rare&&(+S.rare.sword===6||+S.rare.sword===7))TL.sword=+S.rare.sword;if(typeof snapEq==='function')snapEq()});
  // ---- stats ----
  const withTemp=(o,k,v,f)=>{const old=o[k];o[k]=v;try{return f()}finally{o[k]=old}};
  const meleeOf=t=>1+t+Math.floor(lvOf(0)/15)+(typeof meleeFlat==='function'?meleeFlat():0);

@@ -98,10 +98,10 @@
  // ---- saves keep new items (and what you wear) even if they haven't loaded yet ----
  SQSAVE.after('111a2:cus',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];
    const c={};for(const sl of SLOTS){if(CUS[sl])c[sl]=CUS[sl];else if(PCUS[sl])c[sl]=PCUS[sl]}if(Object.keys(c).length)s.cus=c}catch(e){}});
- const _ap=applySave;applySave=function(S){for(const k in PEND)delete PEND[k];for(const s of SLOTS){CUS[s]=null;delete PCUS[s]}const out=_ap.apply(this,arguments);
+ SQLOAD.wrap('111a2',_ap=>function(S){for(const k in PEND)delete PEND[k];for(const s of SLOTS){CUS[s]=null;delete PCUS[s]}const out=_ap.apply(this,arguments);
   try{if(S&&S.inv)for(const k in S.inv)if(ngKey(k)&&!EQ[k]&&+S.inv[k]>0)PEND[k]=Math.min(1e6,+S.inv[k]|0);
    if(S&&S.cus&&typeof S.cus==='object')for(const s of SLOTS){const k=S.cus[s];if(!ngKey(k))continue;if(EQ[k]&&EQ[k].custom){if(_occ(s)===EQ[k].base)CUS[s]=k}else PCUS[s]=k}
-   if(typeof snapEq==='function')snapEq();setCosts()}catch(e){}return out};
+   if(typeof snapEq==='function')snapEq();setCosts()}catch(e){}return out});
  const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];for(const s of SLOTS){CUS[s]=null;delete PCUS[s]}return _ng.apply(this,arguments)};
  // ---- icons: a new item without its own icon uses its base item's ----
  const _ic=iconURL;iconURL=function(k,col){const e=EQ[k];if(e&&e.custom&&!SQA.hasIcon(k))return _ic(e.base,col);return _ic(k,col)};

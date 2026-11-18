@@ -10,7 +10,7 @@
  const QOLD10=QS.map(q=>q.n);{const i=QS.findIndex(q=>q.n==='Opening Moves');if(i>=0)QS.splice(i,1)}
  const OM={n:'Opening Moves',d:'Beat Grandmaster Orla at chess once, on any difficulty. She plays at the table in the village square.',r:{g:100,xp:[7,300]}};
  SQSAVE.after('134:qv',s=>{s.qv=11;});
- const _ap=applySave;applySave=function(S){const v=S&&S.q?(S.qv|0):11,raw=S&&Array.isArray(S.qdone)?S.qdone.slice():[],sq=S&&S.q?{...S.q}:null;
+ SQLOAD.wrap('134',_ap=>function(S){const v=S&&S.q?(S.qv|0):11,raw=S&&Array.isArray(S.qdone)?S.qdone.slice():[],sq=S&&S.q?{...S.q}:null;
   const out=_ap.apply(this,arguments);
   try{if(sq&&v<11){const i=Math.max(0,+sq.i||0);let done=raw.includes(OM.n),cur=null;
     const list=v===10?QOLD10:v===9&&window.SQCH2?SQCH2.QOLD9:null;
@@ -21,7 +21,7 @@
      for(const n of QOLD10.slice(0,Math.min(i,QOLD10.length)))if(QS.some(q=>q.n===n))QDONE.add(n);
      const name=QOLD10[i];QHOLD=sq.on&&name&&name!==OM.n?{n:name,on:true,k:Math.max(0,+sq.k||0)}:null;Q.i=0;Q.on=false;Q.k=0;qSkip();if(QHOLD&&QS[Q.i]&&QS[Q.i].n!==QHOLD.n){Q.on=false;Q.k=0}QHOLD=null;
      Q.i=Math.max(0,Math.min(QS.length,Q.i))}}}catch(e){console.warn('opening moves',e)}
-  return out};
+  return out});
  // a win counts for it
  {const _ec=endChess;endChess=function(res,why){const out=_ec.apply(this,arguments);try{if(res==='w'&&(CHS.om|0)===1){CHS.om=2;chst.textContent+=' Opening Moves done: tell Orla!';saveLocal(true)}}catch(e){}return out}}
  // Orla's card

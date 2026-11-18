@@ -164,8 +164,8 @@
     put(HOUSES,s.houses);put(window.SQRH||[],s.rh);
     // standing in a yard saves you outside the house (its ret), like standing in the house does
     if(isYard()&&SCENE.ret&&s.p&&!SCENE.prev){s.p.x=Math.round(SCENE.ret.x);s.p.y=Math.round(SCENE.ret.y)}}catch(e){console.warn(e)}})}
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const get=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;h._yd=null;const ow=+e.yw||OLDW(h);inF(h,e.yf,RofH(h),ow);inP(h,e.yp,RofH(h),ow);settle(h)}};
-    get(HOUSES,S&&S.houses);get(window.SQRH||[],S&&S.rh);for(const h of mine()){if(!h.yf)h.yf=new Map();if(!h.yp)h.yp=new Map()}KNOWN=new Set(mine());if(window.SQONEHOME)SQONEHOME.enforce()}catch(e){console.warn(e)}return out}}
+ {SQLOAD.after('145',(S)=>{try{const get=(L,arr)=>{if(!Array.isArray(arr))return;for(const e of arr){const h=L.find(o=>o.id===e.id);if(!h)continue;h._yd=null;const ow=+e.yw||OLDW(h);inF(h,e.yf,RofH(h),ow);inP(h,e.yp,RofH(h),ow);settle(h)}};
+    get(HOUSES,S&&S.houses);get(window.SQRH||[],S&&S.rh);for(const h of mine()){if(!h.yf)h.yf=new Map();if(!h.yp)h.yp=new Map()}KNOWN=new Set(mine());if(window.SQONEHOME)SQONEHOME.enforce()}catch(e){console.warn(e)}})}
  // packing a house packs its yard (furniture and what's in its chests); one-home (149) packs extra homes the same way
  let KNOWN=new Set();
  function packYard(h){if(h._ypk)return;h._ypk=1;for(const f of(h.yf||new Map()).values()){inv[f.t]=(inv[f.t]|0)+1;if(f.items)for(const k in f.items)inv[k]=(inv[k]|0)+(f.items[k]|0)}h.yf=new Map();h.yp=new Map()}

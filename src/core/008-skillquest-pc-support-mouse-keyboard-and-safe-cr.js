@@ -37,7 +37,7 @@ const _dr7=draw;draw=function(){_dr7();if(!isPC||menuOpen)return;let f=true;try{
 // --- cross-device sync: never overwrite progress another device saved ---
 let lastWid=null;const myDev=Math.random().toString(36).slice(2,10);
 const wOf=S=>S&&S.wid||'legacy';
-const _ap7=applySave;applySave=function(S){_ap7(S);lastWid=wOf(S)};
+SQLOAD.after('008',(S)=>{lastWid=wOf(S)});
 // every save remembers which account save it continues from (bw), so a device's own unsent progress can be told apart
 // from an old copy (061's account-only saves use it)
 {SQSAVE.after('008:bw',s=>{if(lastWid)s.bw=lastWid;})}

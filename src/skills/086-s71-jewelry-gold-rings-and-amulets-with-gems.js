@@ -53,7 +53,7 @@
   pbd.addEventListener('click',e=>{const b=e.target.closest('[data-hideh]');if(!b)return;e.stopPropagation();e.preventDefault();HIDEH=!HIDEH;say(HIDEH?'Your helmet is hidden. It still protects you.':'Your helmet is showing again.');
    try{saveLocal(true);saveCloud(true)}catch(err){}try{rPn()}catch(err){}},true);
   SQSAVE.after('086:hh',o=>{o.hh=HIDEH?1:0;});
-  const _ap=applySave;applySave=function(S){_ap(S);HIDEH=!!(S&&S.hh)};
+  SQLOAD.after('086',(S)=>{HIDEH=!!(S&&S.hh)});
   const _ng=newGame;newGame=function(){HIDEH=false;_ng()}}
  // ---- Dragonsoul amulet (a rare drop from the Dragon world boss) ----
  // While worn, your ultimate (V / L1+R1 / the ULT button) becomes Dragon Form: you turn into a small dragon for
@@ -111,7 +111,7 @@
   return ICONC[key]=c.toDataURL()};
  // ---- saving ----
  SQSAVE.after('086:jw',s=>{if(JW.ring||JW.neck)s.jw={ring:JW.ring,neck:JW.neck};});
- const _ap=applySave;applySave=function(S){_ap(S);JW.ring=JW.neck=null;const w=S&&S.jw;if(w){if(JK[w.ring]&&JK[w.ring].s==='ring')JW.ring=w.ring;if(JK[w.neck]&&JK[w.neck].s==='neck')JW.neck=w.neck}};
+ SQLOAD.after('086',(S)=>{JW.ring=JW.neck=null;const w=S&&S.jw;if(w){if(JK[w.ring]&&JK[w.ring].s==='ring')JW.ring=w.ring;if(JK[w.neck]&&JK[w.neck].s==='neck')JW.neck=w.neck}});
  const _ng=newGame;newGame=function(){JW.ring=JW.neck=null;_ng()};
  window.SQJW=JW;window.SQJK=JK;window.SQGEMC=GEMC}
 // every item shows in the bag and in chests

@@ -8,7 +8,7 @@
 // Bows: TL.bow above 2 (the Bone bow, 3) is restored too; saves before tfx 2 that lost a Bone bow this way get it back in hand
 // (in place of the Longbow the clamp gave them) or in the bag.
 (()=>{const SL=['sword','axe','pick'],LOST=['eq_sword8','eq_axe6','eq_axe7','eq_pick6','eq_pick7'],LOST2=['eq_bow3'];let back=[],hand=[];
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);back=[];hand=[];try{
+ {SQLOAD.after('147',(S)=>{back=[];hand=[];try{
    for(const k of SL){const v=+(S&&S.tl&&S.tl[k])|0;if(v>4&&EQ['eq_'+k+v]&&TL[k]!==v&&!(k==='sword'&&window.SLEDGE))TL[k]=v}
    // bows: 021 clamps TL.bow to 2 and 088 puts back only 4/5, so the Bone bow (3) in hand became a Longbow on every load
    {const v=+(S&&S.tl&&S.tl.bow)|0;if(v>2&&EQ['eq_bow'+v]&&TL.bow!==v&&!WAND)TL.bow=v}
@@ -17,7 +17,7 @@
     for(const key of keys){if(!S.ach.col.includes(key))continue;const e=EQ[key];if(!e)continue;
      const sl=e.slot==='main'?'sword':e.slot,inHand=TL[sl]===e.tier,anywhere=new RegExp('"'+key+'"\\s*[:,]\\s*"?[1-9]').test(js)||(inv[key]|0)>0;
      if(!inHand&&!anywhere){if(key==='eq_bow3'&&TL.bow===2&&!WAND){TL.bow=3;hand.push(key)}else{inv[key]=(inv[key]|0)+1;back.push(key)}}}}
-   if(typeof snapEq==='function')snapEq()}catch(e){console.warn(e)}return out}}
+   if(typeof snapEq==='function')snapEq()}catch(e){console.warn(e)}})}
  {SQSAVE.after('147:tfx',s=>{s.tfx=2;})}
  // tell the player once play is running (upd only runs in play)
  let wait=0;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if((back.length||hand.length)&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;

@@ -56,7 +56,7 @@
  // ---- Hollow Island now has open sea all around its edge: things built where the land became sea go back in your bag
  {const bad=i=>i<0||i>=N*N||tile[i]===0;const add=(S,k,n)=>{if(!S.inv||typeof S.inv!=='object')S.inv={};S.inv[k]=(+S.inv[k]||0)+n};
   const items=(S,o)=>{if(o&&typeof o==='object')for(const k in o){const n=Math.max(0,+o[k]||0);if(n)add(S,k,n)}};let PACKED=null;
-  const _ap=applySave;applySave=function(S){PACKED=null;try{if(S&&typeof S==='object'){const inH=!S.region||!S.region.id||S.region.id==='hollow',pk=[];
+  SQLOAD.wrap('131',_ap=>function(S){PACKED=null;try{if(S&&typeof S==='object'){const inH=!S.region||!S.region.id||S.region.id==='hollow',pk=[];
      if(Array.isArray(S.str))S.str=S.str.filter(e=>{if(!Array.isArray(e)||!bad(e[0]|0))return true;if(BRIDGE.has(e[0]|0))return true;add(S,e[1],1);items(S,e[2]);pk.push(INAME[e[1]]||e[1]);if(+S.bsp===(e[0]|0))S.bsp=-1;return false});
      if(Array.isArray(S.houses))S.houses=S.houses.filter(h=>{if(!h||!isFinite(h.x)||!isFinite(h.y))return true;const w=h.w||5,hw=(w-1)/2;let ok=true;for(let dy=-1;dy<=0&&ok;dy++)for(let dx=-hw;dx<=hw;dx++)if(bad((h.y+dy)*N+h.x+dx)){ok=false;break}
        if(ok)return true;add(S,h.c?'castle':'house',1);pk.push(h.c?'Castle':'House');if(Array.isArray(h.f))for(const q of h.f)if(Array.isArray(q)&&q[1]){add(S,q[1],1);items(S,q[2])}if(S.home===h.id)S.home=null;return false});
@@ -67,6 +67,6 @@
    try{if(PACKED&&!SCENE&&!SAILING){if(solid(P.x-5,P.y-3)||solid(P.x+5,P.y+6)){const tx=Math.floor(P.x/16),ty=Math.floor(P.y/16);let done=false;
       for(let r=1;r<40&&!done;r++)for(let dy=-r;dy<=r&&!done;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const x=(tx+dx)*16+8,y=(ty+dy)*16+8;if(!solid(x-5,y-3)&&!solid(x+5,y+6)&&!solid(x,y)){P.x=x;P.y=y;done=true;break}}}
      if(PACKED.length){const L=[...new Set(PACKED)];setTimeout(()=>{try{say('The sea has risen around the edge of Hollow Island. What you built out there is safe in your bag: '+L.join(', ')+'.');msgT=8;saveLocal(true)}catch(e){}},1500)}}}catch(e){}
-   return out}}
+   return out})}
 
 })();

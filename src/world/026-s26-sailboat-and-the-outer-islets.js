@@ -102,8 +102,7 @@ QS.splice(GI26,0,{n:'Castaway',d:'Buy a sailboat from Captain Ida in Saltmere, t
 const _qv26=qVal;qVal=function(q){return q.type==='hermit'?Q.k:_qv26(q)};
 const remap26=qv=>{if(qv>=8)return;if(Q.i===GI26){Q.on=false;Q.k=0}else if(Q.i>GI26){Q.i=GI26;Q.on=false;Q.k=0;GMDONE=true}};
 SQSAVE.after('026:qv,gmd,wreck',s=>{s.qv=8;s.gmd=GMDONE?1:0;s.wreck=WRECK_DAY;s.sail=SAILING?1:0;});
-const _ap26=applySave;applySave=function(S){_ap26(S);if(S.q)remap26(S.qv||0);WRECK_DAY=isFinite(S.wreck)?+S.wreck:-1;TL.boat=S.tl&&S.tl.boat?1:0;SAILING=false;
- if(S.sail&&S.p&&TL.boat){const x=+S.p.x,y=+S.p.y;if(isFinite(x)&&isFinite(y)&&boatOK(x,y)){P.x=x;P.y=y;SAILING=true}}};
+SQLOAD.after('026',(S)=>{if(S.q)remap26(S.qv||0);WRECK_DAY=isFinite(S.wreck)?+S.wreck:-1;TL.boat=S.tl&&S.tl.boat?1:0;SAILING=false;if(S.sail&&S.p&&TL.boat){const x=+S.p.x,y=+S.p.y;if(isFinite(x)&&isFinite(y)&&boatOK(x,y)){P.x=x;P.y=y;SAILING=true}}});
 const _ng26=newGame;newGame=function(){SAILING=false;WRECK_DAY=-1;_ng26()};
 // map markers and music
 const _dmap26=drawMap;drawMap=function(){_dmap26();const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');for(const[s,col]of[[GULL,'#68d8f8'],[WRK,'#c88848'],[HRM,'#f8d848']]){x.fillStyle='#101010';x.fillRect(s.x-1,s.y-1,3,3);x.fillStyle=col;x.fillRect(s.x,s.y,1,1)}};

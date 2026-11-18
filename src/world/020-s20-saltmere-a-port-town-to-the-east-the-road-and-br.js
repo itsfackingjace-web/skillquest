@@ -212,8 +212,7 @@ let GMDONE=false;const remap20=(qv,gmd)=>{if(qv>=6){GMDONE=!!gmd;return}if(Q.i==
 
 const _qa20=questAct;questAct=function(a){_qa20(a);if(GMDONE&&QS[Q.i]&&QS[Q.i].n==='Grandmaster'){Q.i++;GMDONE=false;saveLocal(true);rPn()}};
 SQSAVE.after('020:qv,jobs,gmd',s=>{s.qv=6;s.jobs={...JOBD};s.gmd=GMDONE?1:0;});
-const _ap20=applySave;applySave=function(S){_ap20(S);GMDONE=false;if(S.q)remap20(S.qv||0,S.gmd);JOBD={};if(S.jobs&&typeof S.jobs==='object')for(const k in S.jobs)if(JOBS[k])JOBD[k]=+S.jobs[k]||0;
- if(S.tl)for(const k of['axe','pick','sword'])TL[k]=Math.max(0,Math.min(4,+S.tl[k]||0));if(S.inv){inv.stew=Math.max(0,+S.inv.stew||0);inv.bait=Math.max(0,+S.inv.bait||0)}clearProt()};
+SQLOAD.after('020',(S)=>{GMDONE=false;if(S.q)remap20(S.qv||0,S.gmd);JOBD={};if(S.jobs&&typeof S.jobs==='object')for(const k in S.jobs)if(JOBS[k])JOBD[k]=+S.jobs[k]||0;if(S.tl)for(const k of['axe','pick','sword'])TL[k]=Math.max(0,Math.min(4,+S.tl[k]||0));if(S.inv){inv.stew=Math.max(0,+S.inv.stew||0);inv.bait=Math.max(0,+S.inv.bait||0)}clearProt()});
 
 const _ng20=newGame;newGame=function(){JOBD={};GMDONE=false;_ng20();for(const n of FOLK)if(n.room&&n.scene)comeOut(n)};
 clearProt();

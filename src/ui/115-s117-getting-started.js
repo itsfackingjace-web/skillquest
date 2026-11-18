@@ -71,8 +71,8 @@
  pbd.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('[data-gskip]'))return;GD.s=DONE;light(null);try{say('Guide skipped. Your quests are in the quest log.');saveLocal(true)}catch(x){}rPn()});
  // saves
  SQSAVE.after('115:gd',s=>{try{if(GD.s!=null)s.gd=GD.s}catch(e){}});
- const _ap=applySave;applySave=function(Sv){const out=_ap.apply(this,arguments);try{const v=Sv&&Sv.gd;
-   if(typeof v==='number'&&v>=0)GD.s=v>=N0?DONE:v|0;else decide()}catch(e){GD.s=DONE}return out};
+ SQLOAD.after('115',(Sv)=>{try{const v=Sv&&Sv.gd;
+   if(typeof v==='number'&&v>=0)GD.s=v>=N0?DONE:v|0;else decide()}catch(e){GD.s=DONE}});
  const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);GD.s=0;stepStart();return out};
  {const st=document.createElement('style');st.textContent=`@keyframes sqglow{0%,100%{box-shadow:0 0 0 3px #f8d048,0 0 10px 4px rgba(248,208,72,.8)}50%{box-shadow:0 0 0 3px #f8d048,0 0 22px 10px rgba(248,208,72,.35)}}
 .sqglow{animation:sqglow 1.1s ease-in-out infinite!important}

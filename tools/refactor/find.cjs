@@ -1,6 +1,6 @@
 // Finds every place the game's script wraps a global function (default: snap) and classifies it.
 const acorn=require('/opt/node-tools/node_modules/acorn'),walk=require('/opt/node-tools/node_modules/acorn-walk');const fs=require('fs'),path=require('path');
-const FN=process.argv[2]||'snap',ROOT='/home/claude/skillquest/src';
+const FN=process.argv[2]||'snap',ROOT=path.join(__dirname,'..','..','src');
 const files=fs.readFileSync(ROOT+'/manifest.txt','utf8').split('\n').map(s=>s.trim()).filter(s=>s&&!s.startsWith('#'));
 let out='';const map=[];for(const f of files){map.push([out.length,f]);out+=fs.readFileSync(path.join(ROOT,f),'utf8')}
 const a=out.indexOf('<script>\n')+9,b=out.lastIndexOf('</script>');const js=out.slice(a,b);

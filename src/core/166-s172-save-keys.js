@@ -14,5 +14,5 @@
  {SQSAVE.after('166',s=>{try{
    // a known field that only came from SAVE_EXTRA (same object) is stale: leave it out
    for(const k in SAVE_EXTRA)if(KNOWN49.has(k)&&s[k]===SAVE_EXTRA[k])delete s[k];learn(s);prune()}catch(e){}})}
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);prune();return out}}
+ {SQLOAD.after('166',(S)=>{prune();})}
  window.SQSAVEKEYS={KEYS,prune}})();

@@ -131,7 +131,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
   tell('☄️ The meteor core shattered! '+(pl?'You did the '+(rank===0?'most':pl)+' damage: ':'Your share: ')+'+'+r[0].toLocaleString()+' '+(SHORT[ore]||ore)+' and +'+r[1]+' meteorite ore.');
   try{saveLocal(true)}catch(e){}}
  {SQSAVE.after('215:mtp',o=>{try{o.mtp=PAID.slice(-20)}catch(e){}})}
- {const _a=applySave;applySave=function(sv){const r=_a.apply(this,arguments);try{PAID=Array.isArray(sv&&sv.mtp)?sv.mtp.filter(x=>typeof x==='string').slice(-20):[];ST.paid=PAID.includes(ST.id)}catch(e){}return r}}
+ {SQLOAD.after('215',(sv)=>{try{PAID=Array.isArray(sv&&sv.mtp)?sv.mtp.filter(x=>typeof x==='string').slice(-20):[];ST.paid=PAID.includes(ST.id)}catch(e){}})}
  // ---- hit boxes (world px) ----
  const here=()=>!!(CUR&&CUR.known&&at(CUR.loc));
  const active=()=>here()&&(CUR.phase==='hot'||CUR.phase==='cold')&&CUR.since>=0;

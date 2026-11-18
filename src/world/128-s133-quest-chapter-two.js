@@ -42,11 +42,11 @@
  const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const q=cur();if(q&&q.type==='kill'&&q.item==='slime'&&n&&!n.type&&!n._rp){Q.k++;if(Q.k===q.amt)done1(q)}}catch(e){}return out};
  // ---- saves ----
  SQSAVE.after('128:qv,ibk',s=>{s.qv=10;s.ibk=[...IBK];});
- const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{IBK=new Set(Array.isArray(S&&S.ibk)?S.ibk.filter(k=>typeof k==='string').slice(0,10):[]);NW=0;
+ SQLOAD.after('128',(S)=>{try{IBK=new Set(Array.isArray(S&&S.ibk)?S.ibk.filter(k=>typeof k==='string').slice(0,10):[]);NW=0;
    if(S&&S.q&&(S.qv|0)===9){const i=Math.max(0,Math.min(QOLD9.length,+S.q.i||0)),name=QOLD9[i];
     for(const n of QOLD9.slice(0,i))QDONE.add(n);
     if(name&&Q.on){const was=by(name);QHOLD={n:name,on:true,k:was&&(was.type==='night'||was.type==='visit')?0:Q.k}}
     Q.i=0;Q.on=false;Q.k=0;qSkip();if(QHOLD&&QS[Q.i]&&QS[Q.i].n!==QHOLD.n){Q.on=false;Q.k=0}}
-   Q.i=Math.max(0,Math.min(QS.length,Q.i))}catch(e){console.warn(e)}return out};
+   Q.i=Math.max(0,Math.min(QS.length,Q.i))}catch(e){console.warn(e)}});
  const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);IBK=new Set();NW=0;return out};
  window.SQCH2={get ibk(){return IBK},get nw(){return NW},QOLD9}})();

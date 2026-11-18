@@ -109,10 +109,10 @@
  window.SQACH={add:(k,n)=>{C[k]=cnt(k)+(n||1)},get counters(){return C},get done(){return D},get col(){return COL},A,cats,check,colCount,colTotal};
  // ---- saves ----
  SQSAVE.after('129:ach',s=>{s.ach={c:Object.assign({},C),d:Object.assign({},D),col:[...COL],rg:[...RG]};});
- const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const v=S&&S.ach;C={};D={};COL=new Set();RG=new Set();
+ SQLOAD.after('129',(S)=>{try{const v=S&&S.ach;C={};D={};COL=new Set();RG=new Set();
    if(v&&typeof v==='object'){for(const k in v.c||{}){const n=+v.c[k];if(isFinite(n)&&n>0)C[k]=Math.floor(n)}for(const k in v.d||{})if(A.some(a=>a.id===k))D[k]=+v.d[k]||1;
     for(const k of Array.isArray(v.col)?v.col:[])if(typeof k==='string'&&INAME[k])COL.add(k);for(const r of Array.isArray(v.rg)?v.rg:[])if(typeof r==='string')RG.add(r)}
-   seed();LAST=null;LK=typeof kills==='number'?kills:null;READY=true}catch(e){console.warn(e)}return out};
+   seed();LAST=null;LK=typeof kills==='number'?kills:null;READY=true}catch(e){console.warn(e)}});
  const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);C={};D={};COL=new Set();RG=new Set();LAST=null;LK=typeof kills==='number'?kills:null;READY=true;return out};
  // ---- the screen ----
  const ATAB=35;let VIEW='a',PICK='';

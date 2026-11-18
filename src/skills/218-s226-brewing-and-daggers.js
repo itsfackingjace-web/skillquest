@@ -120,7 +120,7 @@
  {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(DAG&&(TL.bow||WAND||TL.hoe||TL.can)){inv[DAG]=(inv[DAG]|0)+1;DAG=null;try{snapEq()}catch(e){}}
    if(DCD>0)DCD=Math.max(0,DCD-(dt||0));if(COATK&&performance.now()>COATU){COATK=null;try{say('Your dagger\'s coating wore off.')}catch(e){}}return out}}
  {SQSAVE.after('218:dag,dpin',s=>{s.dag=DAG||'';s.dpin=DPIN||'';})}
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);try{const d=S&&S.dag;DAG=d&&DAGS[d]&&!TL.bow&&!WAND&&!TL.hoe&&!TL.can?d:null;DPIN=S&&typeof S.dpin==='string'?S.dpin:'';COATK=null;try{snapEq()}catch(e){}}catch(e){}return out}}
+ {SQLOAD.after('218',(S)=>{try{const d=S&&S.dag;DAG=d&&DAGS[d]&&!TL.bow&&!WAND&&!TL.hoe&&!TL.can?d:null;DPIN=S&&typeof S.dpin==='string'?S.dpin:'';COATK=null;try{snapEq()}catch(e){}}catch(e){}})}
  {const _ng=newGame;newGame=function(){DAG=null;DPIN='';COATK=null;return _ng.apply(this,arguments)}}
  // ---- pinning a potion for the dagger ult ----
  {const _b=bagGridHTML;bagGridHTML=function(){let h=_b.apply(this,arguments);try{const k=invSel;if(k&&(inv[k]|0)>0&&isPotion(k)){const on=DPIN===k;

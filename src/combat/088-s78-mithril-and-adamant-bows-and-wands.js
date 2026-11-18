@@ -26,7 +26,7 @@
  const _sd=spellDmg;spellDmg=function(el){return _sd(el)+WT};
  // saving
  SQSAVE.after('088:wt,tl',s=>{if(WT)s.wt=WT;if(TL.bow>=4){s.tl=s.tl||{};s.tl.bow=TL.bow}});
- const _ap=applySave;applySave=function(S){_ap(S);WT=WAND&&(S.wt===1||S.wt===2)?S.wt:0;const b=S&&S.tl&&+S.tl.bow;if(b===4||b===5){TL.bow=b;WAND=null;WT=0}if(typeof snapEq==='function')snapEq()};
+ SQLOAD.after('088',(S)=>{WT=WAND&&(S.wt===1||S.wt===2)?S.wt:0;const b=S&&S.tl&&+S.tl.bow;if(b===4||b===5){TL.bow=b;WAND=null;WT=0}if(typeof snapEq==='function')snapEq()});
  const _ng=newGame;newGame=function(){WT=0;_ng()};
  // stats on the item descriptions (with how they compare)
  for(const k of['eq_bow4','eq_bow5','eq_wfire_m','eq_wice_m','eq_wstorm_m','eq_wfire_a','eq_wice_a','eq_wstorm_a']){const base=IDESC[k];

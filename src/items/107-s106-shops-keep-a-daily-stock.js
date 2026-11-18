@@ -7,7 +7,7 @@
  const day=()=>1+Math.floor(time/DAYLEN);let STK={d:0,n:{}};const cur=()=>{if(STK.d!==day())STK={d:day(),n:{}};return STK};
  const left=k=>Math.max(0,max(k)-(cur().n[k]|0));window.SQSTOCK={left,max,day,keyOf:t=>keyOf(t)};
  {SQSAVE.after('107:stk',s=>{s.stk=cur();})}
- {const _a=applySave;applySave=function(S){_a(S);STK=S&&S.stk&&S.stk.n?{d:+S.stk.d||0,n:{...S.stk.n}}:{d:0,n:{}}}}
+ {SQLOAD.after('107',(S)=>{STK=S&&S.stk&&S.stk.n?{d:+S.stk.d||0,n:{...S.stk.n}}:{d:0,n:{}}})}
  const isShop=()=>pnOpen&&ptab===2&&shop&&shop!=='wmkt';
  // a purchase = gold went down and items came in. Over today's stock: undo it.
  pbd.addEventListener('click',ev=>{if(!isShop())return;const b=ev.target.closest('[data-a]');if(!b)return;const inv0={...inv},g0=GLD;

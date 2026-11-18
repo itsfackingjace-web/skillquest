@@ -12,7 +12,7 @@ function strToSave(){return[...STR].map(([i,s])=>[i,s.t,s.items||null])}
 function strFromSave(a){STR.clear();if(!Array.isArray(a))return;for(const e of a){if(!Array.isArray(e))continue;const i=e[0]|0,t=e[1];if(i<0||i>=N*N||!BK.includes(t)||tile[i]===0)continue;const s={t,hp:BHP[t]};
  if(t==='chest'){s.items={};if(e[2]&&typeof e[2]==='object')for(const k in e[2])if(INVK.includes(k))s.items[k]=Math.max(0,+e[2][k]||0)}STR.set(i,s);obj[i]=null}}
 SQSAVE.after('011:str,bsp',s=>{s.str=strToSave();s.bsp=BEDSP;});
-const _ap11=applySave;applySave=function(S){_ap11(S);strFromSave(S.str);BEDSP=STR.has(+S.bsp)?+S.bsp:-1;BUILD=null};
+SQLOAD.after('011',(S)=>{strFromSave(S.str);BEDSP=STR.has(+S.bsp)?+S.bsp:-1;BUILD=null});
 
 // --- collision: built pieces are solid; doors open when you are next to them ---
 const doorOpen=i=>Math.hypot(P.x-((i%N)*16+8),P.y-(((i/N)|0)*16+8))<22;

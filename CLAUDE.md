@@ -19,7 +19,11 @@
 - **Saving is a list of steps** (006, `window.SQSAVE`): `snap()` = the game's own fields + every section's step in load order.
   Add to the save with `SQSAVE.after('<file no>:<keys>', s=>{ s.key=... })`; code that must run before/around the save uses
   `SQSAVE.wrap(name, next=>function(){... next() ...})`. **Never reassign `snap`.** `SQSAVE.list()` shows the order (74 steps on Nov 18).
-  The other busy functions (`applySave`, `attack`, `upd`, `eat`) are still wrapper chains; `tools/refactor/` has the converter used for snap.
+- **Loading is a list of steps too** (006, `window.SQLOAD`): `applySave(S)` = the game's own loader + every section's step in load order.
+  Read your fields with `SQLOAD.after('<file no>', (S)=>{...})`; `SQLOAD.before(name,(S)=>{...})` prepares S/the game before the loaders
+  run (latest-added first); `SQLOAD.wrap(name, next=>function(S){... next(S) ...})` surrounds the load (13 of the 76 steps, e.g. 012, 049,
+  067, 131, 156, 197). **Never reassign `applySave`.** `SQLOAD.list()` shows the order.
+  `attack`, `upd`, `eat`, `pP`, `drawHUD` are still wrapper chains; `tools/refactor/` has the converters and the before/after comparisons.
 - Firebase rules are in `database.rules.json` and must be published in the Firebase console when they change.
 - **Every update to the game must add a patch note, and there is one patch note entry per day.** In `PATCH_NOTES`
   (`src/data/074-patch-notes.js`): if the top entry is today's, add your bullets to it (new features first, then "Fixed: ..."

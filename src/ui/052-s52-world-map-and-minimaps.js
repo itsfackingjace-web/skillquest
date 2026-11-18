@@ -15,10 +15,10 @@ function rgFogAttach(R){const ws=WORLD_STATE[R.region]||(WORLD_STATE[R.region]={
 const _rp52=rgPrepare;rgPrepare=function(id){return rgFogAttach(_rp52(id))};
 function fogFlush(){for(const id in RG_CACHE){const R=RG_CACHE[id];if(R&&R.fogDirty&&R.fog){const s=fogEncode(R.fog);(WORLD_STATE[id]||(WORLD_STATE[id]={})).fog=s;R.fogSrc=s;R.fogDirty=false}}}
 SQSAVE.wrap('052',_sn52=>function(){fogFlush();return _sn52()});
-const _ap52=applySave;applySave=function(S){FOG_LEGACY=new Set();try{const ws=S&&S.worldState||{};for(const id of(S&&Array.isArray(S.unlockedRegions)?S.unlockedRegions:[]))if(id!=='hollow'&&!(ws[id]&&ws[id].fog!==undefined))FOG_LEGACY.add(id)}catch(e){}
+SQLOAD.wrap('052',_ap52=>function(S){FOG_LEGACY=new Set();try{const ws=S&&S.worldState||{};for(const id of(S&&Array.isArray(S.unlockedRegions)?S.unlockedRegions:[]))if(id!=='hollow'&&!(ws[id]&&ws[id].fog!==undefined))FOG_LEGACY.add(id)}catch(e){}
  for(const id in RG_CACHE)if(RG_CACHE[id])RG_CACHE[id].fogSrc=null;
  _ap52(S);for(const id of FOG_LEGACY)if(WORLD_STATE[id]&&WORLD_STATE[id].fog===undefined)WORLD_STATE[id].fog='full';FOG_LEGACY=new Set();
- const R=SCENE&&SCENE.room;if(R&&R.region)rgFogAttach(R)};
+ const R=SCENE&&SCENE.room;if(R&&R.region)rgFogAttach(R)});
 // reveal around the player
 let FOGT=0;
 function fogReveal(R){if(!R.fog)rgFogAttach(R);const cx=Math.floor(P.x/16),cy=Math.floor(P.y/16),W=R.w;let n=0;

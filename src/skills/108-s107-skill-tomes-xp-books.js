@@ -6,7 +6,7 @@ function sqBookReg(k){if(typeof k!=='string'||k.slice(0,4)!=='xpb_'||INAME[k])re
  INAME[k]=SKN[i]+' tome ('+xp.toLocaleString('en-US')+' XP)';SN[k]=SKN[i]+' tomes ('+xp.toLocaleString('en-US')+' XP)';SHORT[k]=SKN[i].toLowerCase()+' tome';
  IDESC[k]='An old book of '+SKN[i].toLowerCase()+' secrets. Read it (Bag → READ) to gain '+xp.toLocaleString('en-US')+' '+SKN[i]+' XP. It can be traded or sold at the World Market.';
  SELLP[k]=Math.max(1,Math.round(xp/20));if(!INVK.includes(k))INVK.push(k);if(typeof EXTRA_BAG!=='undefined'&&!EXTRA_BAG.includes(k))EXTRA_BAG.push(k)}
-{const _ap=applySave;applySave=function(S){try{if(S&&S.inv)for(const k in S.inv)sqBookReg(k)}catch(e){}return _ap(S)};
+{SQLOAD.before('108',(S)=>{try{if(S&&S.inv)for(const k in S.inv)sqBookReg(k)}catch(e){}});
  // icon: a book in the skill's colour
  const _ic=iconURL;iconURL=function(k,col){if(typeof k==='string'&&k.slice(0,4)==='xpb_'){sqBookReg(k);const m=/^xpb_(\d+)_/.exec(k),i=m?+m[1]:0,key='ixb'+i;if(ICONC[key])return ICONC[key];
    const c=document.createElement('canvas');c.width=c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)},cl=(typeof SKC!=='undefined'&&SKC[i])||'#a06030';

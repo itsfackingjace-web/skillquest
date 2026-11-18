@@ -20,7 +20,7 @@
    if(lastE&&lastOwn.has(lastE))inv['pet_'+lastE]=(inv['pet_'+lastE]|0)+1;if(c.pet&&(inv['pet_'+c.pet]|0)>0)inv['pet_'+c.pet]--;lastE=c.pet}
   c.pets=PL().map(p=>p.k).filter(own);lastOwn=new Set(c.pets)}
  window.SQPETSYNC=sync;
- const _ap=applySave;applySave=function(S){_ap(S);MIG=!!(S&&S.petItems);lastOwn=null;lastE=null;sync()};
+ SQLOAD.after('104',(S)=>{MIG=!!(S&&S.petItems);lastOwn=null;lastE=null;sync()});
  SQSAVE.wrap('104:petItems',_sn=>function(){try{sync()}catch(e){}const s=_sn();s.petItems=1;return s});
  const _ng=newGame;newGame=function(){_ng();MIG=true;lastOwn=null;lastE=null};
  let st=0;const _u=upd;upd=function(dt){_u(dt);st+=dt;if(st>.4){st=0;try{sync()}catch(e){}}};

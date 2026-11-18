@@ -163,5 +163,5 @@ const _df45=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
   g.fillStyle='#8a6428';for(const[a,b]of[[3,11],[12,10],[6,12],[10,7]])g.fillRect(x0+a,y0+b,1,1);return}
  _df45(it,tm)};
 SQSAVE.after('045:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
-const _ap45=applySave;applySave=function(S){_ap45(S);EMERGE45=[];for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1};
+SQLOAD.after('045',(S)=>{EMERGE45=[];for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1});
 const _ng45=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng45()};

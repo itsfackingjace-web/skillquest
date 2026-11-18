@@ -164,5 +164,5 @@ const _df43=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
  _df43(it,tm)};
 // saving: the Alpha's daily clear (older saves: never cleared)
 SQSAVE.after('043:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
-const _ap43=applySave;applySave=function(S){_ap43(S);SLOW43=0;ROAR43=null;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1};
+SQLOAD.after('043',(S)=>{SLOW43=0;ROAR43=null;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1});
 const _ng43=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng43()};

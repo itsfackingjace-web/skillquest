@@ -204,8 +204,8 @@ var SQA=(()=>{
  // custom islands are open as soon as they're published (no voyage needed)
  const _ro=routeOpen;routeOpen=function(id){const D=WORLD_REGIONS[id];if(D&&D.custom)return!!RG_GEN[id];return _ro(id)};
  // a save on an island that no longer exists comes back to Hollow Island
- const _asI=applySave;applySave=function(S){try{if(S&&S.region&&S.region.id&&S.region.id!=='hollow'&&!(WORLD_REGIONS[S.region.id]&&RG_GEN[S.region.id])&&/^cu_/.test(S.region.id)){
-   S.region={id:'hollow'};setTimeout(()=>{try{say('The island you were on has gone from the charts. You are safe back on Hollow Island.');msgT=8}catch(e){}},600)}}catch(e){}return _asI.apply(this,arguments)};
+ SQLOAD.before('111a',(S)=>{try{if(S&&S.region&&S.region.id&&S.region.id!=='hollow'&&!(WORLD_REGIONS[S.region.id]&&RG_GEN[S.region.id])&&/^cu_/.test(S.region.id)){
+   S.region={id:'hollow'};setTimeout(()=>{try{say('The island you were on has gone from the charts. You are safe back on Hollow Island.');msgT=8}catch(e){}},600)}}catch(e){}});
  // ---- apply a whole library (undoing whatever was applied before) ----
  let applied={stats:{}};const HOOKS=[];// other sections (gear rules) apply their part of the library here
  function apply(lib){lib=lib||{};

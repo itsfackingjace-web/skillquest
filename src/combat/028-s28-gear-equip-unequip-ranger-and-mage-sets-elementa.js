@@ -149,11 +149,7 @@ const _rs28=reset;reset=function(){const keep=NEWG?{}:Object.fromEntries(EQK.map
 const _ng28=newGame;newGame=function(){NEWG=true;try{_ng28()}finally{NEWG=false}CLS={helm:null,body:null,legs:null};WAND=null;MANA=10;for(const k of EQK)inv[k]=0;snapEq()};
 // --- saving ---
 SQSAVE.after('028:cls,wand,mp',s=>{s.cls={...CLS};s.wand=WAND;s.mp=Math.round(MANA);s.offh=1;});
-const _ap28=applySave;applySave=function(S){_ap28(S);CLS={helm:null,body:null,legs:null};if(S.cls)for(const s of['helm','body','legs'])CLS[s]=S.cls[s]==='r'||S.cls[s]==='m'?(ARM[s]?null:S.cls[s]):null;
- WAND=S.wand&&WSP[S.wand]?S.wand:null;if(Array.isArray(S.xp))XPS[ML]=Math.max(0,+S.xp[ML]||0);MANA=Math.min(maxMP(),isFinite(S.mp)?+S.mp:10);
- // one item in the off-hand (a bow wins over a wand); saves from before the off-hand get their best bow back in it
- if(TL.bow&&WAND){inv['eq_w'+WAND]=(inv['eq_w'+WAND]|0)+1;WAND=null}
- if(!S.offh&&!TL.bow&&!WAND){for(const t of[2,1])if((inv['eq_bow'+t]|0)>0){inv['eq_bow'+t]--;TL.bow=t;break}}snapEq()};
+SQLOAD.after('028',(S)=>{CLS={helm:null,body:null,legs:null};if(S.cls)for(const s of['helm','body','legs'])CLS[s]=S.cls[s]==='r'||S.cls[s]==='m'?(ARM[s]?null:S.cls[s]):null;WAND=S.wand&&WSP[S.wand]?S.wand:null;if(Array.isArray(S.xp))XPS[ML]=Math.max(0,+S.xp[ML]||0);MANA=Math.min(maxMP(),isFinite(S.mp)?+S.mp:10);if(TL.bow&&WAND){inv['eq_w'+WAND]=(inv['eq_w'+WAND]|0)+1;WAND=null}if(!S.offh&&!TL.bow&&!WAND){for(const t of[2,1])if((inv['eq_bow'+t]|0)>0){inv['eq_bow'+t]--;TL.bow=t;break}}snapEq()});
 // --- bag: EQUIP button ---
 const _bag28=bagGridHTML;bagGridHTML=function(){let h=_bag28();if(invSel&&EQ[invSel]&&(inv[invSel]|0)>0)h=h.replace('<div class="bd">','<div class="bd"><button class="use eqi" data-k="'+invSel+'">EQUIP</button>');return h};
 // --- equipment screen ---

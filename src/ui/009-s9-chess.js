@@ -7,7 +7,7 @@ let CHS={w:0,l:0,d:0,rz:0,om:0},chessOpen=false,CG=null;
 QS.splice(3,0,{n:'Opening Moves',d:'Grandmaster Orla sits at the chess table in the village square. Beat her once on any difficulty.',type:'chess',amt:1,r:{g:100,xp:[7,300]}});
 const _qv9=qVal;qVal=function(q){return q.type==='chess'?Q.k:_qv9(q)};
 SQSAVE.after('009:qv,chess',s=>{s.qv=3;s.chess={...CHS};});
-const _ap9=applySave;applySave=function(S){_ap9(S);if((S.qv||0)<3&&S.q&&Q.i>=3)Q.i++;if(S.chess)for(const k in CHS)CHS[k]=Math.max(0,+S.chess[k]||0)};
+SQLOAD.after('009',(S)=>{if((S.qv||0)<3&&S.q&&Q.i>=3)Q.i++;if(S.chess)for(const k in CHS)CHS[k]=Math.max(0,+S.chess[k]||0)});
 
 // Orla and her table
 NPCS.push({kind:'chess',x:(VX+3)*16+8,y:(VY+1)*16+8,ch:{sk:3,hs:1,hc:0,sh:7,pn:1,ht:1,hcol:4,so:2}});

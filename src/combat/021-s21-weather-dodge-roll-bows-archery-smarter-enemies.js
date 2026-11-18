@@ -168,8 +168,7 @@ const _qv21=qVal;qVal=function(q){return q.type==='bonelord'?Q.k:_qv21(q)};
 const remap21=qv=>{if(qv>=7)return;if(Q.i===GI21){Q.on=false;Q.k=0}else if(Q.i>GI21){Q.i=GI21;Q.on=false;Q.k=0;GMDONE=true}};
 
 SQSAVE.after('021:qv,tomb,gmd',s=>{s.qv=7;s.tomb=TOMB_DAY;s.gmd=GMDONE?1:0;});
-const _ap21=applySave;applySave=function(S){_ap21(S);if(S.q)remap21(S.qv||0);TOMB_DAY=isFinite(S.tomb)?+S.tomb:-1;if(Array.isArray(S.xp))XPS[FL]=Math.max(0,+S.xp[FL]||0);
- if(S.inv){inv.arrow=Math.max(0,+S.inv.arrow||0);inv.iarrow=Math.max(0,+S.inv.iarrow||0)}TL.bow=S.tl?Math.max(0,Math.min(2,+S.tl.bow||0)):0};
+SQLOAD.after('021',(S)=>{if(S.q)remap21(S.qv||0);TOMB_DAY=isFinite(S.tomb)?+S.tomb:-1;if(Array.isArray(S.xp))XPS[FL]=Math.max(0,+S.xp[FL]||0);if(S.inv){inv.arrow=Math.max(0,+S.inv.arrow||0);inv.iarrow=Math.max(0,+S.inv.iarrow||0)}TL.bow=S.tl?Math.max(0,Math.min(2,+S.tl.bow||0)):0});
 const _ng21=newGame;newGame=function(){TL.bow=0;TOMB_DAY=-1;PROJ.length=0;_ng21()};
 const _dmap21=drawMap;drawMap=function(){_dmap21();const c=document.getElementById('mpc');if(!c||!TOMB)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(TOMB.x-1,TOMB.y-1,3,3);x.fillStyle='#b070f0';x.fillRect(TOMB.x,TOMB.y,1,1)};
 const _ws21=wantSong;wantSong=function(){return SCENE&&SCENE.room.tomb?'cave':_ws21()};

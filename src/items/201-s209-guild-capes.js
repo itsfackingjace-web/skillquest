@@ -124,7 +124,7 @@
  window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(!C||!spec(ch))return;try{const R=cloth(ch,dir|0,st,tickFor(ch));if(R)put(C,R.over,dir|0,ox,oy,fl)}catch(e){}};
  // saving the choice to wear it
  {SQSAVE.after('201:gcw',s=>{if(WEAR)s.gcw=1;})}
- {const _ap=applySave;applySave=function(S){const out=_ap.apply(this,arguments);WEAR=!!(S&&S.gcw);try{KITC.clear()}catch(e){}return out}}
+ {SQLOAD.after('201',(S)=>{WEAR=!!(S&&S.gcw);try{KITC.clear()}catch(e){}})}
  {const _ng=newGame;newGame=function(){WEAR=false;return _ng.apply(this,arguments)}}
  try{KNOWN49.add('gcw')}catch(e){}
  // pictures for the guild screen: the cape on your character, back and front
