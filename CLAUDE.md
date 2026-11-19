@@ -1014,3 +1014,6 @@
 - **Plateau sides open to paths** (`world/232-s240-plateau-paths.js`, `SQPLATOPEN(R)`): 101's edge mask `R._pe` blocks every plateau side; only
   the south side is drawn as a cliff. 232's outermost `solid` replaces `R._pe` once per room (`R._peo` = the `R.plat` it was built for) with a mask
   whose N/E/W sides are open toward path tiles (14 trail, 11 flagstones). The room object isn't the one `rgFinish` returns, so don't set it there.
+- **Campfire colours per log** (220 `PAL`/`GLOW`/`STICK`): flames oak gold, willow blue, maple crimson, yew green, void purple. 001's night glow
+  takes each fire's colour from `window.SQFIREGLOW(f)` and only merges fires of the same colour; 114's `drawFire` (lighting) colours the sticks,
+  base log and ember from `SQFIRELOGS.lighting()` (the pending tier build, else plain wood). Peers lighting a fire are drawn with plain wood.

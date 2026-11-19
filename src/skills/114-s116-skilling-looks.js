@@ -70,13 +70,15 @@
  // ---- lighting a fire ----
  function drawFire(x,y,fx,fy,t,tm){const kx=Math.round(x+fx*16+(fx?0:3)),ky=Math.round(y+fy*16)+4;
   // kindling: a little teepee of sticks over a tuft of tinder
-  line(kx-4,ky+1,kx,ky-4,O);line(kx+4,ky+1,kx,ky-4,O);line(kx-3,ky+1,kx,ky-3,'#8a5a2a');line(kx+3,ky+1,kx,ky-3,'#7a4a20');
-  Rg(kx-5,ky+1,11,2,O);Rg(kx-4,ky+1,9,1,'#6a4020');Rg(kx-1,ky-1,3,2,'#d8b860');px(kx,ky-2,'#f0d888');
+  // the sticks and first flames take the colours of the log being lit (220's SQFIRELOGS.lighting(); plain wood otherwise)
+  let LT=null;try{LT=window.SQFIRELOGS&&SQFIRELOGS.lighting&&SQFIRELOGS.lighting()}catch(e){}const S0=LT?LT.st[0]:'#8a5a2a',S1=LT?LT.st[1]:'#7a4a20',S2=LT?LT.st[2]:'#6a4020',F=LT?LT.fl:['#f86020','#ffb040','#f87830','#ffe080'];
+  line(kx-4,ky+1,kx,ky-4,O);line(kx+4,ky+1,kx,ky-4,O);line(kx-3,ky+1,kx,ky-3,S0);line(kx+3,ky+1,kx,ky-3,S1);
+  Rg(kx-5,ky+1,11,2,O);Rg(kx-4,ky+1,9,1,S2);Rg(kx-1,ky-1,3,2,'#d8b860');px(kx,ky-2,'#f0d888');
   const ph=(performance.now()/380)%1,glow=Math.min(1,Math.max(0,(t-1.1)/1.2));
   // smoke builds, then an ember and a first flame
   for(let k=0;k<1+Math.floor(glow*4);k++){const p=((tm*.7+k/4))%1;g.globalAlpha=(1-p)*(.25+glow*.45);Rg(Math.round(kx+Math.sin(p*6+k)*2),Math.round(ky-4-p*14),2,2,'#c8c0b8')}g.globalAlpha=1;
-  if(glow>0){g.globalAlpha=.5+.5*Math.sin(tm*10);px(kx,ky-1,'#f86020');if(glow>.5)px(kx+1,ky-1,'#ffb040');g.globalAlpha=1}
-  if(glow>.8){const f=Math.floor(tm*8)%2;Rg(kx-1,ky-3-f,2,2+f,'#f87830');px(kx,ky-4-f,'#ffe080')}
+  if(glow>0){g.globalAlpha=.5+.5*Math.sin(tm*10);px(kx,ky-1,F[0]);if(glow>.5)px(kx+1,ky-1,F[1]);g.globalAlpha=1}
+  if(glow>.8){const f=Math.floor(tm*8)%2;Rg(kx-1,ky-3-f,2,2+f,F[2]);px(kx,ky-4-f,F[3])}
   // in your hands, just in front of you: the flint held low, the steel striking down across it
   const hx=Math.round(x+(fx?fx*8:-5)),hy=Math.round(y+(fy>0?4:2));Rg(hx-2,hy-2,5,4,O);Rg(hx-1,hy-1,3,2,'#9a9aa4');px(hx,hy-1,'#d0d0d8');fist(hx-(fx||1),hy+1);
   const sy=Math.round(hy-9+ph*ph*8),sx=hx+(fx?-fx*2:2);Rg(sx-3,sy-1,7,3,O);Rg(sx-2,sy,5,1,'#4a4048');px(sx+2,sy,'#b8b0a0');fist(sx-(fx||1)*2,sy+1);

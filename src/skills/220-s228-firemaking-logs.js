@@ -14,8 +14,9 @@
 (()=>{const TAB=50,FM=5,CAP=1800;
  const T=[{k:'wood',lv:1,pl:13,m:1,fs:30},{k:'oaklog',lv:15,pl:45,m:1.4,fs:45},{k:'willowlog',lv:30,pl:75,m:1.8,fs:55},
   {k:'maplelog',lv:45,pl:110,m:2.2,fs:65},{k:'yewlog',lv:60,pl:165,m:2.6,fs:80},{k:'voidlog',lv:75,pl:250,m:3,fs:95}];
- const PAL=[null,{c:['#c8281a','#e84818','#f88820','#f8e060','#fff4c0'],s:1.1},{c:['#d8401a','#f06020','#f8a030','#f8f080','#ffffe0'],s:1.15},
-  {c:['#a81818','#d83018','#f06818','#f8c040','#fff0b0'],s:1.2},{c:['#1f7a3a','#2fa850','#58d070','#c8f8a0','#f0fff0'],s:1.25},
+ // flame colours per log (outer to core). Oak burns golden, willow blue, maple crimson, yew green, void purple: plain wood stays orange.
+ const PAL=[null,{c:['#b86a10','#e09a18','#f8c838','#fff070','#fffde0'],s:1.1},{c:['#1e5aa8','#3a8ad8','#78c0f0','#d0f0ff','#ffffff'],s:1.15},
+  {c:['#6a0a18','#a81428','#e03038','#ff8070','#ffe8e0'],s:1.2},{c:['#1f7a3a','#2fa850','#58d070','#c8f8a0','#f0fff0'],s:1.25},
   {c:['#4a1880','#7a38c8','#a868f0','#e8c8ff','#ffffff'],s:1.3}];
  const nm=k=>k==='wood'?'Wood':(INAME[k]||k),lv=()=>lvOf(FM),n=k=>inv[k]|0;
  const xtra=(x)=>{if(!(x>0))return;window.SQFIREXTRA=1;try{addXp(FM,Math.round(x))}finally{window.SQFIREXTRA=0}};
@@ -23,7 +24,13 @@
  const baseLife=()=>{let L=150+lv()*3;try{if(typeof fDur==='function')L*=1+fDur()}catch(e){}return L};
  function myFire(){let best=null,bd=30;const[fx,fy]=front(14);for(const f of fires){if(!f||f._rp||f._glow||!(f.life>0))continue;const d=Math.min(Math.hypot(f.x-fx,f.y-fy),Math.hypot(f.x-P.x,f.y-P.y)+4);if(d<bd){bd=d;best=f}}return best}
  const canBuild=t=>lv()>=t.lv&&n(t.k)>=3&&n('stone')>=1;
- window.SQFIRELOGS={T,PAL,myFire};
+ // night glow (r,g,b) and kindling sticks [light, dark] per log, used by 001's night glow and 114's lighting look
+ const GLOW=['255,150,40','255,196,70','110,175,255','255,70,70','80,230,120','170,90,255'];
+ const STICK=[['#8a5a2a','#7a4a20','#6a4020'],['#d8a850','#a87830','#8a6020'],['#a8b870','#7a8a4a','#5a6a38'],['#c84a32','#9a3020','#7a2018'],['#7a4a38','#5a3020','#3a2014'],['#8a62d0','#5a3a98','#3a2470']];
+ window.SQFIREGLOW=f=>GLOW[(f&&f.lg)|0]||GLOW[0];
+ // the log being lit right now (a tier build waiting for 109's job): its sticks and flame colours, else null
+ const lighting=()=>{if(!PEND||!PEND.i)return null;const p=PAL[PEND.i];return{st:STICK[PEND.i],fl:[p.c[1],p.c[2],p.c[3],p.c[4]]}};
+ window.SQFIRELOGS={T,PAL,GLOW,STICK,myFire,lighting};
  // ---- building with a tier log ----
  let PEND=null;
  const _f=fire;

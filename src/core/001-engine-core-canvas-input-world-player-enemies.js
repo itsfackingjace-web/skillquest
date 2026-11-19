@@ -186,8 +186,9 @@ function draw(){
    gr.addColorStop(0,'rgba('+rgb+','+(a*.08)+')');gr.addColorStop(.6,'rgba('+rgb+','+(a*.45)+')');gr.addColorStop(1,'rgba('+rgb+','+a+')');g.fillStyle=gr};
   g.globalCompositeOperation='multiply';nightFill('60,70,160',dk*.7);g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';nightFill('6,8,30',dk*.2);g.fillRect(0,0,W,H);
   g.globalCompositeOperation='lighter';{// fires next to each other share one glow (brighter and a little wider); off-screen ones are skipped
-   const r0=48*(typeof fireLR==='function'?fireLR():1)*Z,CL=new Map();for(const f of fires){const sx=(f.x-cx)*Z,sy=(f.y-cy)*Z;if(sx<-r0||sy<-r0||sx>W+r0||sy>H+r0)continue;const k=Math.round(f.x/32)+','+Math.round(f.y/32),c=CL.get(k);if(c){c.n++;c.x+=sx;c.y+=sy}else CL.set(k,{n:1,x:sx,y:sy})}
-   let m=0;for(const c of CL.values()){if(++m>24)break;const sx=c.x/c.n,sy=c.y/c.n,r=r0*Math.min(1.4,1+.08*(c.n-1)),a=Math.min(.9,.45*dk*Math.min(1.8,1+.25*(c.n-1))),gr=g.createRadialGradient(sx,sy,0,sx,sy,r);gr.addColorStop(0,'rgba(255,150,40,'+a+')');gr.addColorStop(1,'rgba(255,150,40,0)');g.fillStyle=gr;g.fillRect(sx-r,sy-r,r*2,r*2)}}
+   const r0=48*(typeof fireLR==='function'?fireLR():1)*Z,CL=new Map();for(const f of fires){const sx=(f.x-cx)*Z,sy=(f.y-cy)*Z;if(sx<-r0||sy<-r0||sx>W+r0||sy>H+r0)continue;const col=window.SQFIREGLOW?SQFIREGLOW(f):'255,150,40',k=Math.round(f.x/32)+','+Math.round(f.y/32)+','+col,c=CL.get(k);if(c){c.n++;c.x+=sx;c.y+=sy}else CL.set(k,{n:1,x:sx,y:sy,col})}
+   let m=0;for(const c of CL.values()){if(++m>24)break;const sx=c.x/c.n,sy=c.y/c.n,r=r0*Math.min(1.4,1+.08*(c.n-1)),a=Math.min(.9,.45*dk*Math.min(1.8,1+.25*(c.n-1))),gr=g.createRadialGradient(sx,sy,0,sx,sy,r);gr.addColorStop(0,'rgba('+c.col+','+a+')');gr.addColorStop(1,'rgba('+c.col+',0)');// each log's own glow colour (220's SQFIREGLOW)
+   g.fillStyle=gr;g.fillRect(sx-r,sy-r,r*2,r*2)}}
   g.globalCompositeOperation='source-over'}
  {const vg=g.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=vg;g.fillRect(0,0,W,H);if(dk>0&&dk<.55){g.fillStyle='rgba(255,130,50,'+(.14*(1-dk/.55))+')';g.fillRect(0,0,W,H)}}
  drawHUD(); // Gen 3-style HUD, section 10
