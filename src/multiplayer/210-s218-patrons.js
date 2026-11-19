@@ -89,6 +89,7 @@
   h+=perk('A flame next to your name','Over your head and in chat, while your membership is active.','',act);
   h+=perk('The fire cape','An animated cape of flames that\'s yours to keep.',cape(u)?'<button class="qb" data-pcr="style" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">Wear it</button>':'',cape(u));
   h+=perk('The Art Room','Draw pictures, animations and things to wear, and send them in. Approved pictures become paintings in the Patron Art Gallery, with your name on them.',act&&!kid&&window.SQARTROOM?'<button class="qb" data-pcr="art" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">Open</button>':'',act&&!kid);
+  h+=perk('The Song Studio','Make your own music: pick a mood, tap notes on a grid, and send your song in. No music experience needed. Approved songs can play in the game.',act&&!kid&&window.SQSTUDIO?'<button class="qb" data-pcr="song" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">Open</button>':'',act&&!kid);
   h+=perk('Your name in the Credits','Options &gt; About &gt; Credits.',r&&!kid?'<button class="qb" data-pcr="cred" style="flex:none;width:auto;min-width:84px;margin:0;padding:8px 12px">'+(credPref?'Shown':'Hidden')+'</button>':'',!!(r&&credPref&&!kid));
   const kid2=!window.SQAGE||!SQAGE.known||!SQAGE.known()||SQAGE.child();
   if(u&&!kid2&&!act)h+='<a class="sb sqpatlink" href="'+PATREON+'" target="_blank" rel="noopener" style="margin-top:10px">'+f+'Become a Patron</a>'+
@@ -112,5 +113,6 @@
   else if(a==='open'){try{showScreen('patron')}catch(x){}}
   else if(a==='cape'){WEAR=!WEAR;try{saveLocal(true)}catch(x){}say(WEAR?'You put on your fire cape.':'You take off your fire cape.');rPn()}
   else if(a==='cred'){credPref=!credPref;try{localStorage.setItem('sq_pcred',credPref?'1':'0')}catch(x){}credSent='';syncCred();rPn()}
-  else if(a==='art'&&window.SQARTROOM)SQARTROOM.open()},true);
+  else if(a==='art'&&window.SQARTROOM)SQARTROOM.open()
+  else if(a==='song'&&window.SQSTUDIO)SQSTUDIO.open()},true);
  window.SQPATRON={PTAB,open:()=>showScreen('patron'),PATREON,active,cape,rec,get all(){return PR},get wearing(){return WEAR},set wearing(v){WEAR=!!v},flameURL,syncCred,loadCredits,CTAB}})();

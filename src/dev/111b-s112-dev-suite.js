@@ -137,7 +137,7 @@
   ed.ox-=ox*ed.s/2;ed.oy-=oy*ed.s/2;ed.w=w;ed.h=h;ed.px=ed.layers[ed.dir];ed.undo=[];ed.redo=[];ed.fit=0;ed.z=0;ed.rcd=ed.layers.map(()=>1);draw()}
  function pets(){const q=S.q.toLowerCase(),all=A.petKinds(),keys=all.filter(k=>(!q||(INAME[k]||'').toLowerCase().includes(q)||k.includes(q))&&(!S.only||pState(EQ[k].pet)));
   let h='<div class="dv-spr'+(S.sel?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+all.length+' pets" value="'+E(S.q)+'" data-in="q">'+
-   '<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only pets with a new look</label><div class="dv-grid">';
+   (window.SQNEWPETS&&SQNEWPETS.listBtn?SQNEWPETS.listBtn():'')+'<label class="dv-mut"><input type="checkbox" data-a="only"'+(S.only?' checked':'')+'> Only pets with a new look</label><div class="dv-grid">';
   for(const k of keys){const s2=pState(EQ[k].pet);h+='<button class="dv-it'+(S.sel===k?' dv-on':'')+'" data-k="'+E(k)+'">'+(s2?'<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>':'')+'<img alt="" src="'+thumb(k)+'"><span>'+E(EQ[k].n||k)+'</span></button>'}
   if(!keys.length)h+='<p class="dv-mut">Nothing matches.</p>';
   h+='</div></div><div class="dv-ed">';

@@ -43,6 +43,7 @@
    for(const Q of arr(I.npc)){if(!Q||!Q.ro)continue;const m=/^(shop|quest):(.+)$/.exec(Q.ro);if(!m){bad(w,(Q.n||'A person')+' has a job that isn\'t a shop or quest.',g);continue}
     for(const x of m[2].split(','))if(m[1]==='shop'?!shops[x]:!quests[x])bad(w,(Q.n||'A person')+' runs a '+m[1]+' that doesn\'t exist any more.',g)}
    for(const z of arr(I.zn))for(const k of arr(z&&z.m))if(!mobs.has(k))bad(w,'a monster zone has "'+k+'", which isn\'t a monster.',g);
+   if(window.SQSONGS)for(const z of arr(I.sz)){const sk=z&&z.s;if(sk&&!SQSONGS.ORIG[sk]&&!(D.songs||{})[sk])bad(w,'a song zone plays "'+sk+'", which isn\'t a song.',g)}
    for(const c of arr(I.cv))for(const k of arr(c&&c.m))if(!mobs.has(k))bad(w,'a dungeon entrance has "'+k+'", which isn\'t a monster.',g);
    for(const L of arr(I.lm))if(L&&L.loot)for(const k in L.loot)if(k!=='gold'&&!item(k)&&!loot.has(k))bad(w,'a chest holds "'+k+'", which isn\'t an item or loot table.',g)}
   // Gathering: what trees/rocks/fish give

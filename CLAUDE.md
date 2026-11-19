@@ -1025,3 +1025,21 @@
 - **Chat log** (`dev/233-s241-chat-log.js`, `window.SQCHATLOG`, Dev Suite > Chat log): reads public `chat` (never `pm`) newest 1000 first, "Load older"
   pages by push key (`orderByKey`+`endBefore`+`limitToLast`), search, a "Possible bugs" filter (`BUGRX`), Download .txt / Copy. Players report
   bugs in chat a lot: check it with the bug reports. The checks' fake db now applies those three query parts in `get()` only.
+- **Editing patron art** (211, `SQARTROOM.edit(x,done)`): Dev Suite > Art Room > ✎ Edit it opens a submission in the Art Room editor (mode
+  from `k`/size, frames from `unpack`, `A.edit` set: no drafts saved, no mode tabs, Cancel/Save changes). Saving updates `art/<u>/<id>`
+  {n,w,h,f,ms} and keeps the artist's first version as `fo/fw/fh/fms` ("Put back the artist's version"). Paintings/pets/gear made after use the edit.
+- **New pets** (`dev/234-s242-new-pets.js`, `SQNEWPETS`, Dev Suite > New pets + "＋ New pet" in the Pets list): library `newpets.np_<id>`
+  {n,d,v} (id ≤ 9 chars: 061 keeps 12 of `pet`) → LUX.PETS kind + item `pet_np_<id>` built like 104/151; look = `pets.np_<id>`.
+  v>0 = sold at Marlo's, 0 = rare. Unknown pets in saves wait in `PEND` (bag) / `PPET` (PET slot). The dev's draft pets are registered on
+  their device while the suite is loaded. Art Room's pet card can make "a new pet called <name>" from a submission. Never delete a published one.
+- **Song Studio** (`ui/235-s243-song-studio.js`, `SQSTUDIO`, ptab 51, START > Patron): beginner composer for Patrons (and devs via Dev Suite >
+  Patron songs). Moods (`MOODS`: band + key + chords), sections A-D of 4 bars, one chord a bar from `CHD(key)` (named by feeling), a grid of
+  the key's notes only (pentatonic rows bright), notes stored as midi {s eighth,d,m}; `toDef()` = 155's format (checked by SQSONGS.check,
+  played as `__st`). Draft `sq_song_draft`. Sends `songsub/<uid>/<id>` {n,s (JSON),note,who,t}; rules like `art` plus no st/re on create.
+  `dev/236-s244-patron-songs.js` (`SQPSONGS`, Dev Suite > Patron songs): play, approve/no (gift + `artcred/s<id>`), `toDraft(def)` =
+  draft `songs.su_<name>`, `openSongs(k)`. The studio never shows the game's own songs.
+- **Song zones** (111c palette "🎵 Song zone", `world/237-s245-song-zones.js`, `SQSONGZONES.here()`): `sz` [{x,y,w,h,s,n}] on `cu_` islands
+  (+ISL_PAD), `ed_<region>` and `ed_hollow`; the outermost wantSong plays `s` outdoors inside the box (boss/sail still win), `n` is said once on
+  entering. 169 checks the song exists. (Also fixed 111c's dungeon entrance panel: a missing `+` hid Layout and its monster list.)
+- **HERE map players** (`ui/238-s246-online-list-on-here-map.js`): the outermost mapHTML adds 061's "Players online" list (class `sqonl`)
+  on the HERE view, players on your island marked (here).

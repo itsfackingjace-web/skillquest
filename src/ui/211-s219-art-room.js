@@ -32,7 +32,7 @@
  function load(){if(A)return;DR.pic=loadOne('pic');DR.wear=loadOne('wear');DR.pet=loadOne('pet');let m='pic';try{const v=localStorage.getItem('sq_art_mode');m=v==='wear'||v==='pet'?v:'pic'}catch(e){}A=DR[m]}
  const W=()=>A&&A.mode==='wear',PT=()=>A&&A.mode==='pet';
  let saveT=0;function keep(){clearTimeout(saveT);saveT=setTimeout(keepNow,400)}
- function keepNow(){clearTimeout(saveT);if(!A)return;try{localStorage.setItem(LSK(A.mode),JSON.stringify({w:A.w,h:A.h,fr:A.fr.map(f=>Array.from(f)),cur:A.cur,pal:A.pal,col:A.col,tool:A.tool,ms:A.ms,onion:A.onion,mirror:A.mirror,zoom:A.zoom,grid:A.grid,name:A.name,kind:A.kind,note:A.note,sl:A.sl,under:A.under,gear:A.gear,pvm:A.pvm,scale:A.scale}));localStorage.setItem('sq_art_mode',A.mode)}catch(e){}}
+ function keepNow(){clearTimeout(saveT);if(!A||A.edit)return;try{localStorage.setItem(LSK(A.mode),JSON.stringify({w:A.w,h:A.h,fr:A.fr.map(f=>Array.from(f)),cur:A.cur,pal:A.pal,col:A.col,tool:A.tool,ms:A.ms,onion:A.onion,mirror:A.mirror,zoom:A.zoom,grid:A.grid,name:A.name,kind:A.kind,note:A.note,sl:A.sl,under:A.under,gear:A.gear,pvm:A.pvm,scale:A.scale}));localStorage.setItem('sq_art_mode',A.mode)}catch(e){}}
  const snapU=()=>{A.undo.push({fr:A.fr.map(f=>f.slice()),cur:A.cur,w:A.w,h:A.h});if(A.undo.length>60)A.undo.shift();A.redo=[]};
  // ---- the panel: tools on top, the canvas, the colours right under it, frames under those; name and sending on their own page ----
  {const st=document.createElement('style');st.textContent=`#pn.sqart .pc{max-width:980px}
@@ -72,7 +72,7 @@
  function fit(){const wide=innerWidth>=760,pw=Math.max(200,(pbd.clientWidth||340)-(wide?360:12)),ph=Math.max(180,innerHeight*(wide?.66:.5));
   return Math.max(3,Math.floor(Math.min(pw,ph)/Math.max(A.w,A.h)))}
  const cell=()=>fit()*A.zoom;
- function html(){if(!can())return'<div class="tl">ART ROOM</div><p>The Art Room is open to Patrons aged 13 and up.</p><button class="arb" data-ar="back">Back</button>';
+ function html(){if(!can()&&!(A&&A.edit))return'<div class="tl">ART ROOM</div><p>The Art Room is open to Patrons aged 13 and up.</p><button class="arb" data-ar="back">Back</button>';
   if(A.view==='mine')return mineHTML();if(A.view==='send')return sendHTML();
   const c=cell(),f=A.fr.length;
   const tools='<div class="artb">'+tb('tool:pen','pen','Pen (B)',A.tool==='pen')+tb('tool:erase','erase','Eraser (E)',A.tool==='erase')+tb('tool:fill','fill','Fill (G)',A.tool==='fill')+tb('tool:pick','pick','Pick a colour from the drawing (I)',A.tool==='pick')+
@@ -98,9 +98,9 @@
    (f>1?'<label class="arsm" style="display:block">Speed: <span id="arms">'+A.ms+'</span> ms a frame<input type="range" id="arsp" min="60" max="1000" step="20" value="'+A.ms+'" style="width:100%"></label>':'')+'</div></div>';
   const more=PT()?'<div class="arrow"><label class="arsm">Size <select id="arsz" class="arin" style="width:auto;padding:4px;font-size:14px">'+PSZ.map(n=>'<option value="'+n+'"'+(n===A.w?' selected':'')+'>'+n+' x '+n+'</option>').join('')+'</select></label><button class="arb" data-ar="clear">Clear frame</button><button class="arb" data-ar="new">Start over</button></div>':W()?'<div class="arrow"><button class="arb" data-ar="clear">Clear this side</button><button class="arb" data-ar="new">Start over</button></div>':'<div class="arrow"><label class="arsm">Canvas <select id="arsz" class="arin" style="width:auto;padding:4px;font-size:14px">'+SIZES.map(n=>'<option value="'+n+'"'+(n===A.w&&n===A.h?' selected':'')+'>'+n+' x '+n+'</option>').join('')+(A.w!==A.h||!SIZES.includes(A.w)?'<option selected>'+A.w+' x '+A.h+'</option>':'')+'</select></label>'+
    '<button class="arb" data-ar="clear">Clear frame</button><button class="arb" data-ar="new">Start over</button></div>';
-  return '<div class="arw"><div class="arhd"><div class="tl">ART ROOM</div><button class="arb" data-ar="mine">My art</button><button class="arb" data-ar="back">Back</button></div>'+modes+tools+
+  const ED=A.edit;return '<div class="arw"><div class="arhd"><div class="tl">'+(ED?'EDITING "'+E(A.name)+'" BY '+E(ED.who).toUpperCase():'ART ROOM')+'</div>'+(ED?'':'<button class="arb" data-ar="mine">My art</button>')+'<button class="arb" data-ar="back">'+(ED?'Cancel':'Back')+'</button></div>'+(ED?'<p class="arsm" style="margin:0 0 4px">Fix it before approving: delete a stray frame, tidy pixels, change the speed. Saving replaces the artist\'s version (the first version is kept so you can put it back).</p>':modes)+tools+
    '<div class="armain"><div class="arbox'+(A.zoom>1?' zm':'')+'" id="arbox"><canvas class="arcv" id="arcv" width="'+A.w*c+'" height="'+A.h*c+'" style="width:'+A.w*c+'px;height:'+A.h*c+'px" aria-label="Drawing canvas"></canvas></div>'+
-   '<div class="arside">'+pal+frames+more+'<button class="arb pri wide" data-ar="next" style="width:100%;min-height:46px;font-size:15px">Done? Name it and send</button></div></div></div>'}
+   '<div class="arside">'+pal+frames+(ED?more.replace(/<button class="arb" data-ar="new">Start over<\/button>/,''):more)+(ED?'<label class="arsm" style="display:block;margin:4px 0">Name <input id="aren" class="arin" maxlength="24" value="'+E(A.name)+'"></label><button class="arb pri wide" data-ar="esave" style="width:100%;min-height:46px;font-size:15px">Save changes</button>'+(ED.msg?'<p class="arsm">'+E(ED.msg)+'</p>':''):'<button class="arb pri wide" data-ar="next" style="width:100%;min-height:46px;font-size:15px">Done? Name it and send</button>')+'</div></div></div>'}
  function sendHTML(){return '<div class="arw"><div class="arhd"><div class="tl">SEND YOUR ART</div><button class="arb" data-ar="draw">Back to drawing</button></div>'+
    '<div class="arsend">'+(PT()?'<canvas class="big" id="arpv" width="96" height="'+PVH()+'" style="width:192px;height:'+2*PVH()+'px"></canvas>':'<canvas class="big" id="arpv" width="'+A.w+'" height="'+A.h+'"'+(W()?' style="width:120px;height:190px"':'')+'></canvas>')+'<div>'+
    '<p class="arsm" style="margin:0">'+(PT()?'A pet, '+A.w+' x '+A.h+', standing and walking. Approved pets can be given to a pet in the game, with your name in the credits.':W()?'Something to wear, from the front, back and side. Approved designs can become real gear.':A.w+' x '+A.h+', '+A.fr.length+' frame'+(A.fr.length>1?'s at '+A.ms+' ms':'')+'. Approved art goes into the game, with your name in the credits. Pictures can become paintings in the Patron Art Gallery.')+'</p>'+
@@ -188,12 +188,13 @@
   else if(a==='send'){send();return}
   else if(a==='mine'){A.view='mine';A.mine=null;rPn();loadMine();return}
   else if(a==='draw')A.view='draw';
-  else if(a==='back'){ptab=window.SQPATRON&&SQPATRON.PTAB||8;rPn();return}
+  else if(a==='esave'){saveEdit();return}
+  else if(a==='back'){if(A.edit){endEdit();return}ptab=window.SQPATRON&&SQPATRON.PTAB||8;rPn();return}
   keep();rPn()}
  pbd.addEventListener('click',e=>{if(ptab!==ATAB)return;const fc=e.target.closest&&e.target.closest('[data-arf]');if(fc){A.cur=+fc.dataset.arf;keep();rPn();return}
   const b=e.target.closest&&e.target.closest('[data-ar]');if(!b)return;e.stopPropagation();e.preventDefault();const[a,v]=b.dataset.ar.split(':');act(a,v,b)},true);
  pbd.addEventListener('input',e=>{if(ptab!==ATAB||!A)return;const t=e.target;
-  if(t.id==='arnm')A.name=t.value.slice(0,24);else if(t.id==='arnt')A.note=t.value.slice(0,300);
+  if(t.id==='arnm'||t.id==='aren')A.name=t.value.slice(0,24);else if(t.id==='arnt')A.note=t.value.slice(0,300);
   else if(t.id==='arsp'){A.ms=+t.value;const s=document.getElementById('arms');if(s)s.textContent=A.ms}
   else if(t.id==='arcc'&&A.col){A.pal[A.col]=t.value;paint();const sw=document.querySelector('#pn [data-ar="col:'+A.col+'"]');if(sw)sw.style.background=t.value;const cu=t.parentNode;if(cu)cu.style.background=t.value}
   keep()},true);
@@ -225,7 +226,19 @@
  // ---- the panel hook ----
  {const _r=rPn;rPn=function(){if(!(ptab===ATAB&&pnOpen))try{pn.classList.remove('sqart')}catch(e){}if(ptab===ATAB&&pnOpen){load();try{panelChrome('')}catch(e){}pbd.innerHTML=html();try{pn.classList.add('sqart')}catch(e){}if(A.view!=='mine')paint();else document.querySelectorAll('#pn [data-arm]').forEach(cv=>{const x=(A.mine||[]).find(m=>m.id===cv.dataset.arm);const fr=x?unpack(x):[];if(fr[0])drawFrame(cv,fr[0].f,x.w,x.h,fr[0].pal)});return}return _r.apply(this,arguments)}}
  function open(){if(!can()){say('The Art Room is for Patrons aged 13 and up.');return}load();if(A.view!=='send')A.view='draw';try{if(!pnOpen&&typeof openPanel==='function')openPanel(ATAB)}catch(e){}ptab=ATAB;pnOpen=true;try{pn.style.display='block'}catch(e){}rPn()}
- window.SQARTROOM={open,unpack,pack:()=>pack(),get state(){return A},CH};
+ // ---- developer editing (Dev Suite > Art Room > Edit before approving): the piece opens in this editor, drafts on the device untouched ----
+ let BEFORE=null;
+ function edit(x,done){const fr=unpack(x);if(!fr.length)return false;const pal=fr[0].pal.slice();for(const c of PAL0.slice(1))if(!pal.includes(c))pal.push(c);
+  const m=x.k==='wear'&&x.w===48&&x.h===76&&fr.length===3?'wear':x.k==='pet'&&fr.length===4&&x.w===x.h?'pet':'pic';
+  BEFORE=A;A=Object.assign(mk(m),{w:x.w,h:x.h,fr:fr.map(o=>o.f.slice()),cur:0,pal,col:1,ms:x.ms|0||200,name:String(x.n||''),kind:x.k,note:x.note||'',sl:x.sl||'helm',zoom:1,
+   edit:{u:x.u,id:x.id,who:x.who||'a Patron',fo:x.fo||x.f,fw:x.fo?x.fw||x.w:x.w,fh:x.fo?x.fh||x.h:x.h,fms:x.fo?x.fms||x.ms||200:x.ms||200,done,msg:''}});
+  try{if(window.SQSUITE)SQSUITE.close()}catch(e){}try{if(!pnOpen&&typeof openPanel==='function')openPanel(ATAB)}catch(e){}ptab=ATAB;pnOpen=true;try{pn.style.display='block'}catch(e){}rPn();return true}
+ function endEdit(saved){const ed=A&&A.edit;A=BEFORE;BEFORE=null;try{if(typeof closePanel==='function')closePanel()}catch(e){}pnOpen=false;try{if(window.SQSUITE)SQSUITE.open()}catch(e){}if(ed&&ed.done)try{ed.done(saved)}catch(e){}}
+ async function saveEdit(){const ed=A.edit,Fb=F();if(!Fb){ed.msg='Not connected.';rPn();return}const n=String(A.name||'').trim().slice(0,24);if(!n){ed.msg='It needs a name.';rPn();return}
+  if(!A.fr.some(f=>f.some(v=>v))){ed.msg='There\'s nothing drawn.';rPn();return}
+  const up={n,w:A.w,h:A.h,f:pack(),ms:Math.max(40,Math.min(2000,A.ms|0)),fo:ed.fo,fw:ed.fw,fh:ed.fh,fms:ed.fms};ed.msg='Saving...';rPn();
+  try{await Fb.db.update(Fb.db.ref(Fb.D,'art/'+ed.u+'/'+ed.id),up);endEdit(up)}catch(e){ed.msg='That didn\'t save: '+(e&&e.message||e);rPn()}}
+ window.SQARTROOM={open,edit,unpack,pack:()=>pack(),get state(){return A},CH};
  // ======================= Dev Suite > Art Room inbox =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,toast,fail}=API;
  const T={list:null,lb:null,msg:{},q:'',pat:{},paint:{},pp:{},wk:{},pk:{}};
@@ -242,6 +255,7 @@
    h+='<div class="dv-card" style="margin-top:10px"><div class="dv-row" style="gap:12px;align-items:flex-start;flex-wrap:wrap"><canvas data-arp="'+E(k)+'" width="'+x.w+'" height="'+x.h+'" style="position:static;display:block;width:'+(wear?144:Math.min(192,x.w*6))+'px;height:'+(wear?228:Math.min(192,x.h*6))+'px;image-rendering:pixelated;background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/12px 12px;border:2px solid #485870"></canvas>'+
     '<div style="flex:1;min-width:200px"><b>'+E(x.n)+'</b> <span class="dv-mut">by '+E(x.who||nm(x.u))+' · '+E(x.k)+' · '+x.w+'x'+x.h+' · '+fr.length+' frame'+(fr.length===1?'':'s')+(fr.length>1&&!pet?' at '+(x.ms||200)+' ms':'')+(x.t?' · '+new Date(x.t).toLocaleDateString():'')+'</span>'+
     (x.note?'<p>'+E(x.note)+'</p>':'')+(x.st?'<p><b>'+(x.st==='ok'?'Approved':'Not this time')+'</b>'+(x.re?': '+E(x.re):'')+'</p>':'')+
+    '<div class="dv-row" style="flex-wrap:wrap;gap:6px;margin-bottom:6px"><button class="dv-b dv-pri" data-arx="edit:'+E(k)+'">✎ Edit it</button>'+(x.fo&&x.fo!==x.f?'<button class="dv-b" data-arx="orig:'+E(k)+'">Put back the artist\'s version</button><span class="dv-mut">you edited this</span>':'')+'</div>'+
     '<div class="dv-row" style="flex-wrap:wrap;gap:6px">'+fr.map((_,i)=>'<button class="dv-b" data-arx="clip:'+E(k)+':'+i+'">Copy '+(pet?PFN[i]:'frame '+(i+1))+'</button>').join('')+'</div>'+
     (x.st?'':'<input data-arq="'+E(k)+'" placeholder="Message to the artist (optional)" value="'+E(T.msg[k]||'')+'" style="width:100%;margin-top:6px"><div class="dv-row" style="gap:6px;margin-top:6px"><button class="dv-b dv-pri" data-arx="ok:'+E(k)+'">Approve</button><button class="dv-b dv-bad" data-arx="no:'+E(k)+'">Not this time</button></div>')+
     (wear?wearCtl(x,k):pet?petCtl(x,k):paintCtl(x,k))+
@@ -291,8 +305,8 @@
   const o={h:1};['f','b','s'].forEach((d,i)=>{const a=new Array(96*112).fill('.');const f=fr[i].f;let any=false;for(let q=0;q<f.length;q++){const v=f[q];if(!v)continue;any=true;a[(28+((q/48)|0))*96+24+(q%48)]=PX[v-1]}
    if(any)o[d]={w:96,h:112,s:1,p:pal.join(','),r:SQA.pack(a.join(''))}});return o.f||o.b||o.s?o:null}
  // a pet: becomes the look of a pet in the draft (pets.<kind>: frames a/c standing, b/d walking), then opens the Pets editor on it
- function petCtl(x,k){const L=(window.SQA&&SQA.petKinds?SQA.petKinds():[]).slice().sort((a,b)=>String(INAME[a]||a).localeCompare(String(INAME[b]||b)));if(!T.pk[k])T.pk[k]=L[0]||'';
-  return'<p class="dv-mut" style="margin:8px 0 4px">'+'A pet: Idle 1 and 2 while it stands, Walk 1 and 2 while it walks (preview: walking, then standing).'+' Use it as the look of:</p><div class="dv-row" style="gap:6px;flex-wrap:wrap"><select data-arpk="'+E(k)+'">'+L.map(q=>'<option value="'+q+'"'+(T.pk[k]===q?' selected':'')+'>'+E(INAME[q]||q)+(S.draft&&S.draft.pets&&S.draft.pets[EQ[q].pet]?' (has a look)':'')+'</option>').join('')+'</select>'+
+ function petCtl(x,k){const L=(window.SQA&&SQA.petKinds?SQA.petKinds():[]).slice().sort((a,b)=>String(INAME[a]||a).localeCompare(String(INAME[b]||b)));if(!T.pk[k])T.pk[k]=window.SQNEWPETS&&SQNEWPETS.create?'__new':L[0]||'';
+  return'<p class="dv-mut" style="margin:8px 0 4px">'+'A pet: Idle 1 and 2 while it stands, Walk 1 and 2 while it walks (preview: walking, then standing).'+' Use it as the look of:</p><div class="dv-row" style="gap:6px;flex-wrap:wrap"><select data-arpk="'+E(k)+'">'+(window.SQNEWPETS&&SQNEWPETS.create?'<option value="__new"'+(T.pk[k]==='__new'?' selected':'')+'>＋ A new pet called "'+E(x.n)+'"</option>':'')+L.map(q=>'<option value="'+q+'"'+(T.pk[k]===q?' selected':'')+'>'+E(INAME[q]||q)+(S.draft&&S.draft.pets&&S.draft.pets[EQ[q].pet]?' (has a look)':'')+'</option>').join('')+'</select>'+
    '<button class="dv-b dv-pri" data-arx="pet:'+E(k)+'">Put it in the Pets editor</button></div><p class="dv-mut" style="margin:4px 0 0">Saves it to the draft as that pet\'s look (replacing a draft look) and opens it, so you can finish it and publish.</p>'}
  function petFrom(x){const fr=unpack(x);if(!fr.length||fr.length>8)return null;const PX=window.SQA&&SQA.PXC;if(!PX)return null;const pal=fr[0].pal.slice(1);if(pal.length>PX.length)return null;
   const w=x.w,h=x.h,o={w,h,s:2,ox:-Math.floor(w/2),oy:7-h};['a','c','b','d'].forEach((d,i)=>{const f=fr[i]&&fr[i].f;if(!f||!f.some(v=>v))return;o[d]={w,h,s:2,p:pal.join(','),r:SQA.pack(Array.from(f,v=>v?PX[v-1]:'.').join(''))}});
@@ -314,6 +328,11 @@
   try{
    if(a==='clip'){const[u,id]=parts[1].split('/'),x=T.list.find(y=>y.u===u&&y.id===id),fr=unpack(x)[+parts[2]];if(!fr)return;const c={w:x.w,h:x.h,p:Array.from(fr.f,v=>v?fr.pal[v]||'':'')};
     try{localStorage.setItem('sq_dev_clip',JSON.stringify(c))}catch(_){}toast('Frame copied. Open a picture editor and press Paste.')}
+   else if(a==='edit'){const[u,id]=parts[1].split('/'),x=T.list.find(y=>y.u===u&&y.id===id);if(!x)return;
+    if(!SQARTROOM.edit(x,saved=>{if(saved){Object.assign(x,saved);toast('Saved. Approve it or make it a painting now.')}API.draw()}))toast('This piece can\'t be opened (no frames).')}
+   else if(a==='orig'){const[u,id]=parts[1].split('/'),x=T.list.find(y=>y.u===u&&y.id===id);if(!x||!x.fo)return;
+    if(t.dataset.sure!=='1'){t.dataset.sure='1';t.textContent='Sure? Your edits are lost. Tap again';return}
+    const o={f:x.fo,w:x.fw||x.w,h:x.fh||x.h,ms:x.fms||x.ms||200};await D().update(ref('art/'+u+'/'+id),o);Object.assign(x,o);toast('The artist\'s version is back.');API.draw()}
    else if(a==='galhere'){const PG=window.SQPAINT;if(!PG)return;const c=PG.standHere();if(!c){toast('Go outside on Hollow Island first, then come back here.');return}
     if(!PG.tryPlace(c)){toast('Not enough room there: it needs 5 tiles across and 2 up clear of trees, rocks, houses and other buildings, above where you stand.');return}
     S.draft.places=S.draft.places||{};S.draft.places.gallery=c;await API.dset('draft/places/gallery',c);toast('Moved in your game. Publish it from the Publish tab and everyone sees it there.');API.draw()}
@@ -328,7 +347,7 @@
    else if(a==='wear'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id),key=T.wk[k];if(!x||!key||!EQ[key]){toast('Pick an item first.');return}
     const o=wornFrom(x);if(!o){toast('This piece has nothing drawn.');return}S.draft.worn=S.draft.worn||{};S.draft.worn[key]=o;await API.dset('draft/worn/'+key,o);
     toast('Saved as the look of '+(INAME[key]||key)+' in the draft. Opening it...');const tb=document.querySelector('#dvs [data-tab="worn"]');if(tb){tb.click();setTimeout(()=>{const it=document.querySelector('#dvs [data-k="'+key+'"]');if(it)it.click()},150)}}
-   else if(a==='pet'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id),item=T.pk[k],e=item&&EQ[item];if(!x||!e||!e.pet){toast('Pick a pet first.');return}
+   else if(a==='pet'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id);if(x&&T.pk[k]==='__new'){if(!petFrom(x)){toast('This piece has nothing drawn in its first frame.');return}T.pk[k]=await SQNEWPETS.create(x.n)}const item=T.pk[k],e=item&&EQ[item];if(!x||!e||!e.pet){toast('Pick a pet first.');return}
     const o=petFrom(x);if(!o||!(SQA.validPet&&SQA.validPet(o))){toast('This piece has nothing drawn in its first frame.');return}S.draft.pets=S.draft.pets||{};S.draft.pets[e.pet]=o;await API.dset('draft/pets/'+e.pet,o);
     toast('Saved as the look of '+(INAME[item]||item)+' in the draft. Opening it...');const tb=document.querySelector('#dvs [data-tab="pets"]');if(tb){tb.click();setTimeout(()=>{const it=document.querySelector('#dvs [data-k="'+item+'"]');if(it)it.click()},150)}}
    else if(a==='ok'||a==='no'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id);const re=String(T.msg[k]||'').trim().slice(0,300);

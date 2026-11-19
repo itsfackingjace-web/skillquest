@@ -1082,6 +1082,28 @@
           }
         }
       }
+    },
+    "songsub": {
+      ".read": "auth != null && root.child('devs').child(auth.uid).val() === true",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('devs').child(auth.uid).val() === true)",
+        "$id": {
+          ".write": "auth != null && (root.child('devs').child(auth.uid).val() === true || (auth.uid === $uid && !data.exists() && root.child('patron').child($uid).child('u').val() > now && root.child('age').child($uid).child('b').exists() && root.child('age').child($uid).child('b').val() !== 'c' && !newData.child('st').exists() && !newData.child('re').exists()) || (auth.uid === $uid && !newData.exists() && data.child('st').val() !== 'ok'))",
+          ".validate": "newData.hasChildren(['n','s','t']) && newData.child('n').isString() && newData.child('n').val().length >= 1 && newData.child('n').val().length <= 24 && newData.child('s').isString() && newData.child('s').val().length < 30000 && newData.child('t').isNumber()",
+          "who": {
+            ".validate": "newData.isString() && newData.val().length <= 12"
+          },
+          "note": {
+            ".validate": "newData.isString() && newData.val().length <= 300"
+          },
+          "st": {
+            ".validate": "newData.isString() && newData.val().length <= 8"
+          },
+          "re": {
+            ".validate": "newData.isString() && newData.val().length <= 300"
+          }
+        }
+      }
     }
   }
 }
