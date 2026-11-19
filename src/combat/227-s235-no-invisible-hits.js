@@ -16,7 +16,7 @@
    const others=MP.players?[...MP.players.values()].filter(p=>p&&p.loc===(typeof mpLoc==='function'?mpLoc():'')).length:0;
    const what=('[auto] Invisible monster touching the player (blocked). '+JSON.stringify({where:R&&R.region||(SCENE&&SCENE.id)||'hollow',px:Math.round(P.x),py:Math.round(P.y),others,dark:+dark().toFixed(2),ver:window.SQVER,m:list.slice(0,3)})).slice(0,1500);
    d.push(d.ref(F.D,'bugs'),{what,u:MP.user.uid,n:String(MP.user.displayName||'').split(' ')[0].slice(0,12),t:d.serverTimestamp()}).catch(()=>{})}catch(e){}}
- const _u=upd;upd=function(dt){
+ SQUPD.wrap('227',_u=>function(dt){
   if(dead||menuOpen||pnOpen||!Array.isArray(en))return _u.apply(this,arguments);
   const now=performance.now(),moved=[];let bad=null;
   for(let i=en.length-1;i>=0;i--){const n=en[i];if(!n||n.dead)continue;if(!BORN.has(n))BORN.set(n,now);
@@ -27,6 +27,6 @@
    // right next to you and not drawn for 0.4 s: keep it out of reach for this update
    bad=bad||[];bad.push(describe(n,'undrawn'));moved.push([n,n.x,n.y]);n.x=P.x+4000;n.y=P.y+4000}
   if(bad){LOG.push(...bad);if(LOG.length>20)LOG.splice(0,LOG.length-20);report(bad)}
-  try{return _u.apply(this,arguments)}finally{for(const[n,x,y]of moved)if(Math.abs(n.x-(P.x+4000))<200){n.x=x;n.y=y}}};
+  try{return _u.apply(this,arguments)}finally{for(const[n,x,y]of moved)if(Math.abs(n.x-(P.x+4000))<200){n.x=x;n.y=y}}});
  window.SQGHOSTHIT={log:LOG,get reported(){return reported}};
 })();

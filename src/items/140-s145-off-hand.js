@@ -24,7 +24,7 @@
   if(TL.hoe&&fight){TL.hoe=0;inv.eq_hoe=(inv.eq_hoe|0)+1;moved=1}
   if(TL.can&&(fight||TL.hoe)){TL.can=0;inv.eq_can=(inv.eq_can|0)+1;moved=1}
   if(!moved)return;try{snapEq()}catch(e){}if(!told){told=true;setTimeout(()=>{try{say('Your hoe and watering can are off-hand items now, so what didn\'t fit went in your bag. Farming swaps them for you.');msgT=7}catch(e){}},1200)}try{saveLocal(true)}catch(e){}};
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{fix()}catch(e){}return out}}
+ {SQUPD.after('140',(dt)=>{try{fix()}catch(e){}})}
  // farming hints that told you to craft a hoe when it's just in your bag
  // ...and when the other farming tool is in the bag, swap to it and do the job instead
  let swapAt=0,VIA=false,HID=null;const viaOff=f=>{const v=VIA;VIA=true;try{return f()}finally{VIA=v}};const swapTo=k=>{const now=performance.now();if(now-swapAt<400||(inv[k]|0)<1||dead)return false;swapAt=now;

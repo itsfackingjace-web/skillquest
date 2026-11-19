@@ -124,7 +124,7 @@
   else if(a==='blink'){const R=SCENE&&SCENE.room;for(let t=0;t<30;t++){const x=(4+Math.random()*(AW-8))*16,y=(3+Math.random()*(AH-9))*16;if(R&&!R.solid.has(Math.floor(y/16)*AW+Math.floor(x/16))&&Math.hypot(x-T.x,y-T.y)>70){for(let k=0;k<14;k++)part(b.x,b.y-14,(Math.random()-.5)*90,(Math.random()-.5)*90,.4,B.sc[0],0,2);b.x=x+8;b.y=y+8;break}}}
   else if(a==='summon'){if(o.half&&!en2)return;const alive=en.filter(m=>m.summon&&!m.dead).length;for(let k=alive;k<Math.min(o.cap,alive+o.n);k++){const q=Math.random()*6.283,x=b.x+Math.cos(q)*40,y=b.y+Math.sin(q)*28;if(solid(x,y))continue;
     let m;if(o.key==='spiderling')m={x,y,hp:12,mhp:12,kx:0,ky:0,type:'spiderling'};else{m=rgMake(o.key,o.key==='bandit'?30:40,x,y);m.rg=b.ib}m.summon=1;m._prov=9;en.push(m);try{if(window.RG_OWN)RG_OWN.add(m)}catch(e){}}}}
- {const _u=upd;upd=function(dt){if(ST.boss&&!ST.boss._rp&&ST.boss.hp<=0&&!ST.boss._rew){try{ibReward(ST.boss)}catch(e){console.warn(e)}}ibShared(dt);const b=ST.boss,R=SCENE&&SCENE.room,live=b&&!b._rp&&!b.dead&&R&&R.ib===b.ib&&en.includes(b);const pre=live?[b.x,b.y]:null;_u(dt);if(!live||menuOpen||pnOpen)return;
+ {SQUPD.wrap('100',_u=>function(dt){if(ST.boss&&!ST.boss._rp&&ST.boss.hp<=0&&!ST.boss._rew){try{ibReward(ST.boss)}catch(e){console.warn(e)}}ibShared(dt);const b=ST.boss,R=SCENE&&SCENE.room,live=b&&!b._rp&&!b.dead&&R&&R.ib===b.ib&&en.includes(b);const pre=live?[b.x,b.y]:null;_u(dt);if(!live||menuOpen||pnOpen)return;
    const B=IB[b.ib],en2=b.hp<b.mhp/2;b.t+=dt;b.x=pre[0]+b.kx*.15;b.y=pre[1]+b.ky*.15;b.kx*=.5;b.ky*=.5;if(!b.half&&en2){b.half=1;say(B.n+' is enraged!');msgT=3;try{sfx('roar')}catch(e){}}
    const T=ibT(b),dx=T.x-b.x,dy=T.y-b.y,d=Math.hypot(dx,dy)||1,pd=Math.hypot(P.x-b.x,P.y-b.y);b.face=dx<0?-1:1;ibScale(b);
    // wind-up, then the strike pose holds for a moment after the attack goes off
@@ -147,9 +147,9 @@
     else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
    b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<h.max);
    // the fight is over
-   if(b.hp<=0&&!b._rew)ibReward(b)}}
+   if(b.hp<=0&&!b._rew)ibReward(b)})}
  // spiderlings: small, fast, weak
- {const _u=upd;upd=function(dt){const pre=new Map();for(const n of en)if(n.type==='spiderling'&&!n.dead)pre.set(n,[n.x,n.y]);_u(dt);if(menuOpen||pnOpen)return;for(const[n,[x,y]]of pre){if(n.dead)continue;const dx=P.x-x,dy=P.y-y,d=Math.hypot(dx,dy)||1;n.x=x+n.kx*.4;n.y=y+n.ky*.4;n.t=(n.t||0)+dt;stepTo(n,dx/d*46*dt,dy/d*46*dt)}}}
+ {SQUPD.wrap('100',_u=>function(dt){const pre=new Map();for(const n of en)if(n.type==='spiderling'&&!n.dead)pre.set(n,[n.x,n.y]);_u(dt);if(menuOpen||pnOpen)return;for(const[n,[x,y]]of pre){if(n.dead)continue;const dx=P.x-x,dy=P.y-y,d=Math.hypot(dx,dy)||1;n.x=x+n.kx*.4;n.y=y+n.ky*.4;n.t=(n.t||0)+dt;stepTo(n,dx/d*46*dt,dy/d*46*dt)}})}
  function ibReward(b){b._rew=1;b.dead=1;b.dropped=1;b.pr=[];b.hz=[];for(const m of en)if(m.summon&&!m.dead){m.dead=1;m.dropped=1}const B=IB[b.ib],g0=B.gold[0]+Math.floor(Math.random()*(B.gold[1]-B.gold[0]));GLD+=g0;const got=[g0+' gold'];
   for(const[k,n]of B.loot){inv[k]=(inv[k]|0)+n;const nm=INAME[k]||k;got.push(n+' '+(n>1?(SN[k]||(/s$/.test(nm)?nm:nm+'s')):nm).toLowerCase())}addXp(0,B.xp);addXp(7,Math.round(B.xp*.4));
   let rare=null;if(Math.random()<.05||window.SQIBRARE){const[rk,rn]=B.rare;rare=rn;if(window.SQNPET&&SQNPET[rk])SQGIVEPET(rk);else inv[rk]=(inv[rk]|0)+1}

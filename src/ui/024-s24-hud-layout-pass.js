@@ -19,5 +19,5 @@ function msgTap(x,y){const b=MSGBOX;if(!b||msgT<=0||x<b.x||x>b.x+b.w||y<b.y||y>b
  if(!b.done)MP.pat=now-60000;else if(b.more){MP.p++;MP.pat=now;msgT=Math.max(msgT,2.6)}else msgT=Math.min(msgT,.25);b.done=false;b.more=false;return true}
 cv.addEventListener('touchstart',e=>{const t=e.changedTouches[0];if(t&&msgTap(t.clientX,t.clientY)){e.preventDefault();e.stopImmediatePropagation()}},{capture:true,passive:false});
 cv.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'&&msgTap(e.clientX,e.clientY))e.stopImmediatePropagation()},{capture:true});
-const _u24=upd;upd=function(dt){_u24(dt);hudDom(dt)};
+SQUPD.after('024',(dt)=>{hudDom(dt)});
 addEventListener('resize',()=>{lastLay=''});

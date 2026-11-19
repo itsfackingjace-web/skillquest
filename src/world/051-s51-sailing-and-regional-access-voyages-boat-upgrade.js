@@ -77,11 +77,10 @@ routeOpen=function(id){const D=WORLD_REGIONS[id];if(!D)return false;if(id==='hol
 // --- progress: buoys, the cairn, landmark checks ---
 function vAdvance(q,msgTxt){const V=VQ();V[q.id]=(V[q.id]||1)+1;say(msgTxt||('Quest updated: '+q.name+' - '+q.steps[V[q.id]-1]));msgT=5;sfx('quest');saveLocal(true);saveCloud(true)}
 let VTICK=0;
-const _u51=upd;upd=function(dt){_u51(dt);if(menuOpen||pnOpen||dead||TRAVEL49||(VTICK-=dt)>0)return;VTICK=.25;const V=VQ();
- for(const q of VOYS){if(V[q.id]!==1)continue;
+SQUPD.after('051',(dt)=>{if(menuOpen||pnOpen||dead||TRAVEL49||(VTICK-=dt)>0)return;VTICK=.25;const V=VQ();for(const q of VOYS){if(V[q.id]!==1)continue;
   if(q.buoy&&!SCENE&&SAILING){const b=BUOYS[q.buoy];if(b&&Math.hypot(P.x-(b.x*16+8),P.y-(b.y*16+8))<36)vAdvance(q,'You reach the buoy and chart the sea lane. Now report back.')}
   else if(q.cairn&&!SCENE&&CAIRN&&Math.hypot(P.x-(CAIRN.x*16+8),P.y-(CAIRN.y*16+8))<26)vAdvance(q,'The cairn marks a buried trail, blocked by a rockfall. Report to Sera, the Navigator in Tidewatch.');
-  else if(q.check&&q.check())vAdvance(q,q.name+': done! Report to Sera, the Navigator in Tidewatch.')}};
+  else if(q.check&&q.check())vAdvance(q,q.name+': done! Report to Sera, the Navigator in Tidewatch.')}});
 function vComplete(q){const V=VQ(),before=ROUTE_ORDER.filter(r=>routeOpen(r));V[q.id]=99;GLD+=q.gold;for(const k of q.unlock||[])TRAVEL_UNLOCKS[k]=true;
  const opened=ROUTE_ORDER.filter(r=>routeOpen(r)&&!before.includes(r));
  say(q.name+' complete! +'+q.gold+' gold'+(opened.length?'. Route charted: '+opened.map(r=>WORLD_REGIONS[r].name).join(', ')+'!':''));msgT=6;sfx('quest');saveNow()}

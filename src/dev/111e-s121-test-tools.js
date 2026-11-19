@@ -11,9 +11,9 @@
   else{const v=hpv;delete P.hp;P.hp=v}}
  // monsters you spawn stay until beaten, even in a town (towns clear monsters) or in Hollow's daylight (which wears them down)
  const DEVM=new Set();let devScene=null;
- const _u=upd;upd=function(dt){const r=_u.apply(this,arguments);if(god&&dead){dead=false}
+ SQUPD.wrap('111e',_u=>function(dt){const r=_u.apply(this,arguments);if(god&&dead){dead=false}
   if(DEVM.size){const sc=SCENE?SCENE.id:'hollow';if(sc!==devScene){DEVM.clear();return r}const melt=!SCENE&&dark()<.05?(+dt||0)*.5:0;
-   for(const m of DEVM){if(m.dead||m.hp<=0){DEVM.delete(m);continue}if(melt)m.hp+=melt;if(!en.includes(m)&&Math.hypot(m.x-P.x,m.y-P.y)<400)en.push(m)}}return r};
+   for(const m of DEVM){if(m.dead||m.hp<=0){DEVM.delete(m);continue}if(melt)m.hp+=melt;if(!en.includes(m)&&Math.hypot(m.x-P.x,m.y-P.y)<400)en.push(m)}}return r});
  // ---- places ----
  const here=()=>{const R=SCENE&&SCENE.room;return R&&R.region?'island':SCENE?'inside':'hollow'};
  const regions=()=>Object.keys(WORLD_REGIONS).filter(id=>id==='hollow'||RG_GEN[id]).map(id=>[id,WORLD_REGIONS[id].name||id]);

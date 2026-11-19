@@ -44,7 +44,7 @@ const _fire26=fire;fire=function(){if(SAILING){say('Not on a boat!');return}_fir
 const _sb26=startBuild;startBuild=function(k){if(SAILING){say('Go ashore to build.');closePanel();return}_sb26(k)};
 // movement while sailing: the boat glides over water and under bridges
 let sailLab=false;
-const _u26=upd;upd=function(dt){const paused=menuOpen||pnOpen;
+SQUPD.wrap('026',_u26=>function(dt){const paused=menuOpen||pnOpen;
  if(SAILING&&!paused&&!dead){let ix=jx+(K.d||K.arrowright?1:0)-(K.a||K.arrowleft?1:0),iy=jy+(K.s||K.arrowdown?1:0)-(K.w||K.arrowup?1:0);const l=Math.hypot(ix,iy);
   _u26(dt);  // the normal walk can't leave the water tile we're on, so the boat moves itself below
   if(l>.05&&!dead){const nx=ix/Math.max(1,l),ny=iy/Math.max(1,l),sp=78*(K.shift?1.35:1)*dt;if(Math.abs(nx)>Math.abs(ny))face=[Math.sign(nx),0];else face=[0,Math.sign(ny)];
@@ -56,7 +56,7 @@ const _u26=upd;upd=function(dt){const paused=menuOpen||pnOpen;
  // prompt on the TALK button
  const want=!paused&&!dead&&!SCENE&&!nearNpc()?(nearWreck()?'SEARCH':canLand()?'LAND':(nearStruct()===null&&canBoard())?'SAIL':''):'';
  if(want){tk.style.display='flex';const lab=want+(isPC?'<small>T</small>':'');if(tk.innerHTML!==lab&&!tk.innerHTML.startsWith(want))tk.innerHTML=lab;sailLab=true}
- else if(sailLab){sailLab=false;tk.innerHTML='TALK'+(isPC?'<small>T</small>':'');if(typeof tkLab!=='undefined')tkLab=''}};
+ else if(sailLab){sailLab=false;tk.innerHTML='TALK'+(isPC?'<small>T</small>':'');if(typeof tkLab!=='undefined')tkLab=''}});
 const _rs26=reset;reset=function(){SAILING=false;_rs26()};
 // --- drawing: the boat, the wreck, the hut, the sparkling fishing spot ---
 function drawBoat26(tm){const x=Math.round(P.x),bob=Math.round(Math.sin(tm*2.6)),y=Math.round(P.y)+bob,hz=face[0]!==0;

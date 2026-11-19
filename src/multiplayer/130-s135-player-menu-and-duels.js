@@ -149,7 +149,7 @@
    for(const u in D.inbox)if(!old[u]){if(D.sent[u]&&D.st==='idle'){answer(u,true);continue}try{mpLog('game',D.inbox[u].k==='chess'?nameOf(u)+' wants to play chess! Tap PLAY, or tap their name.':nameOf(u)+' challenges you to a duel! Tap DUEL, or tap their name.')}catch(e){}if(D.st==='idle')popShow(u);try{sfx('talk')}catch(e){}}
    if(popU&&!D.inbox[popU])popHide();draw()})}
  function stop(){started=false;if(reqOff){reqOff();reqOff=null}D.inbox={};popHide();if(D.st!=='idle')end('You went offline, so the '+WHAT(D.kind)+' was cancelled.')}
- const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{
+ SQUPD.after('130',(dt)=>{try{
    if(on()&&!started)start();else if(!on()&&started)stop();
    if(D.st==='stake'||D.st==='confirm'){if(!(pnOpen&&ptab===DTAB))end('You declined the '+WHAT(D.kind)+'.');else if(D.foe&&!near(D.foe)){const r=Mp().players.get(D.foe);if(!r||!liveR(r))end(nameOf(D.foe)+' went offline.');else if(Math.hypot(r.tx-P.x,r.ty-P.y)>NEAR*2.5||r.loc!==mpLoc())end(nameOf(D.foe)+' walked away, so the '+WHAT(D.kind)+' was cancelled.')}}
    if(D.st==='ready'&&performance.now()-D.readyAt>20000){end(nameOf(D.foe)+' did not get ready in time.')}
@@ -159,5 +159,5 @@
     if(left<=0)draw3();else if(dead)lose('fell');
     else{let L=null;try{L=mpLoc()}catch(e){}if(D.loc0===undefined)D.loc0=L;if(L!==D.loc0)lose('left');
      else if(!r||!liveR(r)||performance.now()-r.seen>20000)win('gone');else if(r.loc!==L){D.away+=dt;if(D.away>5)win('left')}else D.away=0}}
-   else if(D.st!=='fight'){D.loc0=undefined}}catch(e){console.warn(e)}return out};
+   else if(D.st!=='fight'){D.loc0=undefined}}catch(e){console.warn(e)}});
  window.SQDUELAPI={ask,answer,open,end,lose,win,draw3,push,menuOpenFor,key,me:()=>me(),nameOf,get D(){return D},get inbox(){return D.inbox}}})();

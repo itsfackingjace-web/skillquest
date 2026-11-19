@@ -24,7 +24,7 @@
  const _ad=arrowDmg;arrowDmg=function(){return _ad()+(has('ja_emerald')?1:0)+(has('ja_diamond')?1:0)};
  const _sd=spellDmg;spellDmg=function(el){return _sd(el)+(has('ja_sapphire')?1:0)+(has('ja_diamond')?1:0)};
  const _ax=addXp;addXp=function(i,x){if(x>0){const m=1+(has('ja_gold')?.05:0)+(has('jr_emerald')&&GATHER.has(i)?.1:0);if(m>1)x=Math.max(x+1,Math.round(x*m))}return _ax(i,x)};
- const _u=upd;upd=function(dt){_u(dt);if(!menuOpen&&!pnOpen&&!dead&&has('jr_sapphire')&&typeof MANA!=='undefined')MANA=Math.min(maxMP(),MANA+dt*.25)};
+ SQUPD.after('086',(dt)=>{if(!menuOpen&&!pnOpen&&!dead&&has('jr_sapphire')&&typeof MANA!=='undefined')MANA=Math.min(maxMP(),MANA+dt*.25)});
  // ---- wearing ----
  function jwWear(k){const j=JK[k];if(!j||(inv[k]|0)<1)return;const old=JW[j.s];if(old)inv[old]=(inv[old]|0)+1;inv[k]--;JW[j.s]=k;say('You put on the '+j.n.toLowerCase()+'. '+j.d);sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){}rPn()}
  function jwOff(s){const k=JW[s];if(!k)return;inv[k]=(inv[k]|0)+1;JW[s]=null;say('You take off the '+JK[k].n.toLowerCase()+'.');sfx('talk');saveLocal(true);rPn()}
@@ -88,15 +88,8 @@
  const _sa=shootAim;shootAim=function(f){if(DF.on){DF.tap=.3;return}return _sa(f)};
  cv.addEventListener('mousedown',e=>{if(e.button===0)DF.held.m=true});addEventListener('mouseup',e=>{if(e.button===0)DF.held.m=false});addEventListener('blur',()=>{DF.held.m=DF.held.t=false});
  {const ab=document.getElementById('a');if(ab){ab.addEventListener('touchstart',()=>{DF.held.t=true},{passive:true});for(const ev of['touchend','touchcancel'])ab.addEventListener(ev,()=>{DF.held.t=false},{passive:true})}}
- const _u2=upd;upd=function(dt){_u2(dt);if(menuOpen||pnOpen)return;DF.cd=Math.max(0,DF.cd-(DF.on?0:dt));if(!DF.on)return;
-  if(dead){dfEnd();return}if(!dsoul()){dfEnd('The dragon spirit leaves you.');return}if(SCENE&&!SCENE.room.cave){dfEnd('You change back to fit inside.');return}
-  if(typeof SAILING!=='undefined'&&SAILING||window.SQRSAIL&&SQRSAIL.on){dfEnd('You change back to sail.');return}
-  DF.t-=dt;if(DF.t<=0){dfEnd('Your dragon form fades.');return}DF.fr+=dt;
-  DF.tap=Math.max(0,DF.tap-dt);DF.breath=!!(K[' ']||DF.held.m||DF.held.t||DF.tap>0);if(!DF.breath)return;
-  const d=dfDir();dfFlames(P.x,P.y,d,dt);if((DF.snd=(DF.snd||0)-dt)<=0){DF.snd=.45;try{sfx('cfire')}catch(e){}}
-  if((DF.tick-=dt)>0)return;DF.tick=.25;const[mx,my,fx,fy]=dfMouth(P.x,P.y,d),sc=curScene(),dmg=Math.max(2,spellDmg('fire'));
-  for(const n of en){if(n.dead)continue;const big=n.type==='boss'||n.type==='bonelord'||n.big,dx=n.x-mx,dy=(n.y-(big?14:6))-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);
-   if(al>-4&&al<64+(big?20:0)&&pe<8+al*.45+(big?14:0))spellHit({el:'fire',sc},n,dmg)}};
+ SQUPD.after('086',(dt)=>{if(menuOpen||pnOpen)return;DF.cd=Math.max(0,DF.cd-(DF.on?0:dt));if(!DF.on)return;if(dead){dfEnd();return}if(!dsoul()){dfEnd('The dragon spirit leaves you.');return}if(SCENE&&!SCENE.room.cave){dfEnd('You change back to fit inside.');return}if(typeof SAILING!=='undefined'&&SAILING||window.SQRSAIL&&SQRSAIL.on){dfEnd('You change back to sail.');return}DF.t-=dt;if(DF.t<=0){dfEnd('Your dragon form fades.');return}DF.fr+=dt;DF.tap=Math.max(0,DF.tap-dt);DF.breath=!!(K[' ']||DF.held.m||DF.held.t||DF.tap>0);if(!DF.breath)return;const d=dfDir();dfFlames(P.x,P.y,d,dt);if((DF.snd=(DF.snd||0)-dt)<=0){DF.snd=.45;try{sfx('cfire')}catch(e){}}if((DF.tick-=dt)>0)return;DF.tick=.25;const[mx,my,fx,fy]=dfMouth(P.x,P.y,d),sc=curScene(),dmg=Math.max(2,spellDmg('fire'));for(const n of en){if(n.dead)continue;const big=n.type==='boss'||n.type==='bonelord'||n.big,dx=n.x-mx,dy=(n.y-(big?14:6))-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);
+   if(al>-4&&al<64+(big?20:0)&&pe<8+al*.45+(big?14:0))spellHit({el:'fire',sc},n,dmg)}});
  // drawing you as the dragon
  const _pp=pP;pP=function(tm){if(!DF.on)return _pp(tm);if(hurt>0&&Math.floor(tm*20)%2)return;const fr=Math.floor(tm/(qm?.12:.2))%4;dfDraw(Math.round(P.x),Math.round(P.y),dfDir(),fr)};
  // HUD: the ULT chip shows the form's timer / cooldown

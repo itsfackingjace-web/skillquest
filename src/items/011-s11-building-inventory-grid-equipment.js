@@ -48,11 +48,7 @@ function useStructure(i){const s=STR.get(i);if(!s)return;if(s.t==='bed')sleepBed
 const _talk11=talk;talk=function(){if(nearNpc())return _talk11();const i=nearStruct();if(i!==null&&!pnOpen&&!menuOpen&&!dead)useStructure(i)};
 tk.addEventListener('touchstart',e=>{if(!nearNpc()&&!pnOpen){const i=nearStruct();if(i!==null){e.preventDefault();useStructure(i)}}},{passive:false});
 let tkLab='';
-const _u11=upd;upd=function(dt){_u11(dt);if(BUILD&&(dead||(inv[BUILD.k]|0)<1))endBuild();
- const npc=nearNpc(),si=(!npc&&!dead&&!pnOpen&&!menuOpen)?nearStruct():null;if(si!==null)tk.style.display='flex';
- const lab=npc||si===null?'TALK':'USE';if(lab!==tkLab){tkLab=lab;tk.innerHTML=lab+(isPC?'<small>T</small>':'')}
- for(const s of STR.values())if(s.shake>0)s.shake-=dt;
- if((CLK|0)%2===0)for(const i of STR.keys())if(obj[i])obj[i]=null};
+SQUPD.after('011',(dt)=>{if(BUILD&&(dead||(inv[BUILD.k]|0)<1))endBuild();const npc=nearNpc(),si=(!npc&&!dead&&!pnOpen&&!menuOpen)?nearStruct():null;if(si!==null)tk.style.display='flex';const lab=npc||si===null?'TALK':'USE';if(lab!==tkLab){tkLab=lab;tk.innerHTML=lab+(isPC?'<small>T</small>':'')}for(const s of STR.values())if(s.shake>0)s.shake-=dt;if((CLK|0)%2===0)for(const i of STR.keys())if(obj[i])obj[i]=null});
 // --- drawing ---
 const isWall=i=>{const s=STR.get(i);return!!s&&(s.t==='wwall'||s.t==='swall'||s.t==='door')};
 function drawStruct(i,s,ghost){const x=i%N,y=(i/N)|0,px=x*16+(s.shake>0?Math.round(Math.sin(performance.now()/16)):0),py=y*16;

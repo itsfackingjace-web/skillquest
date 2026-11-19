@@ -42,11 +42,11 @@
    loadRegion(id);if(SCENE&&SCENE.room&&SCENE.room.region===id&&!solid(px,py)){P.x=px;P.y=py;face=f}}catch(e){console.warn(e)}},50)}
  // monster zones on a built-in island: kept topped up while you're within 30 tiles; the island's own monsters go on as before
  const TOUGH=[1,1.6,2.4,3.5];let zt=0;
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(dead||menuOpen||pnOpen||(zt-=dt)>0)return out;zt=1;const R=SCENE&&SCENE.room,id=R&&R.region,E=id&&PATCH[id];if(!E||!E.zn)return out;
+ {SQUPD.wrap('111g',_u=>function(dt){const out=_u.apply(this,arguments);try{if(dead||menuOpen||pnOpen||(zt-=dt)>0)return out;zt=1;const R=SCENE&&SCENE.room,id=R&&R.region,E=id&&PATCH[id];if(!E||!E.zn)return out;
     const L=window.SQISLIFE&&SQISLIFE.MOBS||{},ptx=P.x/16,pty=P.y/16;arr(E.zn).slice(0,24).forEach((Z,k)=>{if(!Z)return;const zx=Z.x|0,zy=Z.y|0,zw=Math.max(1,Z.w|0),zh=Math.max(1,Z.h|0),ms=arr(Z.m).filter(m=>L[m]);if(!ms.length)return;
      if(ptx<zx-30||ptx>zx+zw+30||pty<zy-30||pty>zy+zh+30)return;const zi='e'+k,have=en.filter(n=>!n.dead&&n.zc===id&&n.zi===zi).length;if(have>=Math.max(1,Math.min(12,Z.n|0||4)))return;
      for(let t=0;t<12;t++){const x=zx+Math.floor(Math.random()*zw),y=zy+Math.floor(Math.random()*zh),px=x*16+8,py=y*16+8;if(solid(px,py)||Math.hypot(px-P.x,py-P.y)<120)continue;
-      const m=ms[Math.floor(Math.random()*ms.length)],hp=Math.round(L[m].hp*(TOUGH[Z.hp|0]||1)),n=rgMake(m,hp,px,py);n.mhp=n.mhp||hp;n.zc=id;n.zi=zi;delete n.night;try{RG_OWN.add(n)}catch(e){}en.push(n);break}})}catch(e){console.warn(e)}return out}}
+      const m=ms[Math.floor(Math.random()*ms.length)],hp=Math.round(L[m].hp*(TOUGH[Z.hp|0]||1)),n=rgMake(m,hp,px,py);n.mhp=n.mhp||hp;n.zc=id;n.zi=zi;delete n.night;try{RG_OWN.add(n)}catch(e){}en.push(n);break}})}catch(e){console.warn(e)}return out})}
  // own ground tiles, drawn over the ground like 117 does for custom islands
  const IMG=new Map(),img=u=>{let m=IMG.get(u);if(!m){m=new Image();m.src=u;IMG.set(u,m)}return m.complete&&m.naturalWidth?m:null};
  {const _bg=ROOMBG;ROOMBG=function(R2){const out=_bg.apply(this,arguments);try{const E=R2&&R2.region&&PATCH[R2.region];if(!E||typeof E.c!=='string'||!arr(E.ct).length)return out;

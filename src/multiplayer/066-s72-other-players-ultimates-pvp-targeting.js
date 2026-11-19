@@ -22,8 +22,8 @@ const pvFront=(maxAl,minAl,wide)=>{let best=null,bd=1e9;for(const r of MP.player
    if(el==='fire')for(let k=0;k<40;k++){const a=k/40*6.283;part(x+Math.cos(a)*10,y-4+Math.sin(a)*8,Math.cos(a)*120,Math.sin(a)*90-20,.6,k%3?'#f88830':'#f8e060',-30,2)}
    else if(el==='ice')for(let k=0;k<36;k++){const a=k/36*6.283;part(x,y-4,Math.cos(a)*140,Math.sin(a)*110,.7,k%2?'#c8f0ff':'#ffffff',0,2)}
    try{sfx(el==='fire'?'cfire':el==='ice'?'cice':'cstorm')}catch(e){}return}return _fx(u,v)}}
-{const _u=upd;upd=function(dt){const fz=PVU.frozen>performance.now()&&!menuOpen&&!pnOpen&&!dead,px=P.x,py=P.y;_u(dt);if(fz){P.x=px;P.y=py}
-  if(menuOpen||pnOpen)return;for(const u of PVU.list)u.t+=dt;PVU.list=PVU.list.filter(u=>u.t<u.life)}}
+{SQUPD.wrap('066',_u=>function(dt){const fz=PVU.frozen>performance.now()&&!menuOpen&&!pnOpen&&!dead,px=P.x,py=P.y;_u(dt);if(fz){P.x=px;P.y=py}
+  if(menuOpen||pnOpen)return;for(const u of PVU.list)u.t+=dt;PVU.list=PVU.list.filter(u=>u.t<u.life)})}
 {const _dh=drawHUD;drawHUD=function(){if(!menuOpen&&PVU.list.length){const cx=camX(),cy=camY(),tm=performance.now()/1000,f0=ULTFX,px=P.x,py=P.y;
    g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{for(const u of PVU.list){ULTFX=u;P.x=u.x;P.y=u.y;drawUlt(tm)}}finally{ULTFX=f0;P.x=px;P.y=py;g.restore()}
    for(const u of PVU.list)if(u.flash&&u.t<u.flash){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(255,255,230,'+(.45*(1-u.t/u.flash))+')';g.fillRect(0,0,W,H);g.restore()}}

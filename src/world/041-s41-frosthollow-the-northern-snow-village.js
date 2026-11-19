@@ -153,9 +153,7 @@ const _es41=enterScene;enterScene=function(id,house,ret){_es41(id,house,ret);if(
  say({fh_pine:'Pine & Plank. It smells of fresh sawdust.',fh_lodge:'The Ember Lodge. A fire crackles in the hearth.',fh_work:'The Northwind Workshop. Tools hang on every wall.',fh_ranger:'The Ranger\'s Cabin. Maps, shields and a well-hit training dummy.'}[id]||('This is '+FHNAMES[id]+'.'))};
 // --- update: routines, safe streets, welcome ---
 let fhPrev=false;
-const _u41=upd;upd=function(dt){_u41(dt);if(menuOpen||!FHON)return;fhRoutine(dt);if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inFHBox(x,y);
- /* no welcome message: towns are named on the map (Nov 16) */fhPrev=inT;
- en=en.filter(n=>!inFHBox(Math.floor(n.x/16),Math.floor(n.y/16)))};
+SQUPD.after('041',(dt)=>{if(menuOpen||!FHON)return;fhRoutine(dt);if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inFHBox(x,y);fhPrev=inT;en=en.filter(n=>!inFHBox(Math.floor(n.x/16),Math.floor(n.y/16)))});
 // --- drawing: stone steps in the snow and an iced-over pond (baked into the terrain chunks) ---
 let FHPAV=null;
 function fhPavers(){if(FHPAV)return FHPAV;FHPAV=[];const SP=hdP(['#5a6070','#727a8a','#8a92a2','#a2aaba','#bcc4d2']);

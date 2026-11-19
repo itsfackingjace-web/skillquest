@@ -131,9 +131,7 @@ const _es44=enterScene;enterScene=function(id,house,ret){_es44(id,house,ret);if(
  const k=DHN.find(n=>n.work===id);if(k&&k.scene!==id&&k.id!=='mira'){say(DHNAMES[id][0].toUpperCase()+DHNAMES[id].slice(1)+' is closed for the night. '+k.name+' has gone home.');return}
  say({dh_market:'The Sandstone Market. Spices and dust in the air.',dh_forge:'The Copper Sun Forge. Two furnaces glow orange.',dh_rest:'The Oasis Rest. Cool shade at last.',dh_hall:'The Excavator\'s Hall: ore samples on every shelf, a furnace and an anvil.'}[id]||('This is '+DHNAMES[id]+'.'))};
 let dhPrev=false;
-const _u44=upd;upd=function(dt){_u44(dt);if(menuOpen||!DHON)return;townRoutine(DHN,dt,'mira');if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inDHBox(x,y);
- /* no welcome message: towns are named on the map (Nov 16) */dhPrev=inT;
- en=en.filter(n=>!inDHBox(Math.floor(n.x/16),Math.floor(n.y/16)))};
+SQUPD.after('044',(dt)=>{if(menuOpen||!DHON)return;townRoutine(DHN,dt,'mira');if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inDHBox(x,y);dhPrev=inT;en=en.filter(n=>!inDHBox(Math.floor(n.x/16),Math.floor(n.y/16)))});
 // --- drawing: sandstone flagstones, flat-roofed clay buildings with awnings, palms, the watchtower, the ruins ---
 let DHPAV=null;
 function dhPavers(){if(DHPAV)return DHPAV;DHPAV=[];const SP=hdP(['#9a7848','#b89060','#d0aa78','#e2c290','#f0d8a8']);

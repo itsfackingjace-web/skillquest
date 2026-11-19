@@ -59,13 +59,13 @@ const _es35=enterScene;enterScene=function(id,house,ret){if(id==='cave'||id==='t
   say('You enter the '+DKIND[id].name+'. Three floors deep - find the stairs down. Chests hold rare loot!');return}_es35(id,house,ret)};
 const _ls35=leaveScene;leaveScene=function(){const R=SCENE&&SCENE.room;if(R&&R.dun&&R.dun.f>1){dGo(R.dun.kind,R.dun.f-1,'below');return}_ls35()};
 // waking monsters, taking stairs, mapping, and the Elixir of Life
-const _u35=upd;upd=function(dt){const R=SCENE&&SCENE.room;
+SQUPD.wrap('035',_u35=>function(dt){const R=SCENE&&SCENE.room;
  if(R&&R.dun&&!dead&&!menuOpen){en=en.filter(n=>!(R.mobs.includes(n)&&!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)>230));
   for(const m of R.mobs)if(!m.dead&&!en.includes(m)&&Math.hypot(m.x-P.x,m.y-P.y)<170)en.push(m);
   const px=Math.floor(P.x/16),py=Math.floor(P.y/16),S=R.dun.seen;let ch=false;for(let dy=-6;dy<=6;dy++)for(let dx=-7;dx<=7;dx++){const x=px+dx,y=py+dy;if(x<0||y<0||x>=R.w||y>=R.h||dx*dx+dy*dy>45)continue;const i=y*R.w+x;if(!S[i]){S[i]=1;ch=true}}if(ch)R.dun.mmDirty=1;
   const st=R.items.find(it=>it.t==='stairs');if(st&&Math.hypot(P.x-(st.x*16+8),P.y-(st.y*16+8))<6){dGo(R.dun.kind,R.dun.f+1,'above');return}}
  const t0=time,was=dead;_u35(dt);
- if(dead&&!was&&(inv.elixir|0)>0){inv.elixir--;dead=false;time=t0;P.hp=6;if(typeof MANA!=='undefined')MANA=maxMP();hurt=1.6;FLASH=.6;say('The Elixir of Life flares - you are saved!');msgT=4;sfx('quest');saveLocal(true)}};
+ if(dead&&!was&&(inv.elixir|0)>0){inv.elixir--;dead=false;time=t0;P.hp=6;if(typeof MANA!=='undefined')MANA=maxMP();hurt=1.6;FLASH=.6;say('The Elixir of Life flares - you are saved!');msgT=4;sfx('quest');saveLocal(true)}});
 // --- loot ---
 const RARC={common:'#f0f0f0',uncommon:'#68d868',rare:'#58a8ff',epic:'#c878ff',legendary:'#ffa830'};
 const DITEM={coin:{n:'Ancient coin',v:40,r:'common',d:'An old gold coin from the deep. Sells for a good price.'},ruby:{n:'Ruby',v:120,r:'uncommon',d:'A deep red gem. Sell it for gold.'},

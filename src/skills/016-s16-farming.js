@@ -55,7 +55,7 @@ const _pb16=placeBuild;placeBuild=function(){if(!BUILD||!isSeed(BUILD.k))return 
 const _sal16=setActionLabels;setActionLabels=function(){_sal16();if(BUILD&&isSeed(BUILD.k)){const a=document.getElementById('a');if(a)a.innerHTML='PLANT'+(isPC?'<small>Space</small>':'')}};
 const _bag16=bagGridHTML;bagGridHTML=function(){let h=_bag16();if(invSel&&isSeed(invSel)&&(inv[invSel]|0)>0)h=h.replace('<div class="bd">','<div class="bd"><button class="use plc" data-k="'+invSel+'">PLANT</button>');return h};
 // growth while you play
-const _u16=upd;upd=function(dt){_u16(dt);if(menuOpen||pnOpen)return;for(const[i,p]of FARM){if(obj[i])obj[i]=null;if(p.c&&wet(p)&&!ripe(p))p.g+=dt}};
+SQUPD.after('016',(dt)=>{if(menuOpen||pnOpen)return;for(const[i,p]of FARM){if(obj[i])obj[i]=null;if(p.c&&wet(p)&&!ripe(p))p.g+=dt}});
 // equipment: hoe and watering can
 const _eq16=equipHTML;equipHTML=function(){return _eq16().replace('<div class="qc" style="margin-top:12px">','<div class="eqg" style="margin-top:6px">'+eqSlot('HOE','hoe','',TL.hoe?'Hoe':'')+eqSlot('WATER','can','',TL.can?'Watering can':'')+'</div><div class="qc" style="margin-top:12px">')};
 const _dmap16=drawMap;drawMap=function(){_dmap16();const c=document.getElementById('mpc');if(!c||!FARM.size)return;const x=c.getContext('2d');for(const[i,p]of FARM){x.fillStyle=ripe(p)?'#f0c848':'#8a5a30';x.fillRect(i%N,(i/N)|0,1,1)}};

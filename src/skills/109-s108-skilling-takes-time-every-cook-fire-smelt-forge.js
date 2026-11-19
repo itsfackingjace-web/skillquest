@@ -19,16 +19,7 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;//
   if(nearFire(P.x,P.y,45)&&(typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st)||(inv.meat|0)>0&&nearFire(P.x,P.y,45))){let n=0;for(const c of COOKS)if(lvOf(4)>=c.lv&&!c.st)n+=inv[c.raw]|0;if(sqDo('cook',Math.max(1,n),()=>_e()))return}return _e()});
  const _cf=catchFish;catchFish=function(){if(window.SQDO_STEP||!FISH)return _cf();FISH.t=-999;FISH.bite=0;sqDo('reel',1,()=>{if(FISH)_cf()});};
  const xpSum=()=>XPS.reduce((a,v)=>a+v,0),invSum=()=>Object.values(inv).reduce((a,v)=>a+(+v||0),0);
- const _u=upd;upd=function(dt){_u(dt);const D=SQDO;if(!D)return;
-  if(dead||Math.hypot(P.x-D.x,P.y-D.y)>3||(D.kind==='reel'&&!FISH)){SQDO=null;if(!dead&&D.kind!=='reel')say('Stopped'+(D.done?' after '+D.done:'')+'.');return}
-  if(D.kind==='reel'&&FISH)FISH.t=-999;
-  if((D.kind==='smith'||D.kind==='craft')&&!window.SQSKFX&&swing<=0&&(D.t%0.7)<dt)swing=.25;
-  D.t+=dt;if(D.t<D.d)return;
-  const x0=xpSum(),i0=invSum(),f0=fires.length,c0=JSON.stringify(D.chests||[]),st0=typeof STATION!=='undefined'?STATION:null;window.SQDO_STEP=true;
-  if(D.st)STATION=D.st;const m=sqMerge(D.chests);
-  try{D.fn()}catch(e){console.warn(e)}finally{if(m)benchSplit();if(D.st)STATION=st0;window.SQDO_STEP=false}
-  const ok=xpSum()!==x0||invSum()!==i0||fires.length!==f0||JSON.stringify(D.chests||[])!==c0;if(ok)D.done++;D.n--;
-  if(!ok||D.n<=0||SQDO!==D){if(SQDO===D)SQDO=null}else{D.t=0;D.x=P.x;D.y=P.y}};
+ SQUPD.after('109',(dt)=>{const D=SQDO;if(!D)return;if(dead||Math.hypot(P.x-D.x,P.y-D.y)>3||(D.kind==='reel'&&!FISH)){SQDO=null;if(!dead&&D.kind!=='reel')say('Stopped'+(D.done?' after '+D.done:'')+'.');return}if(D.kind==='reel'&&FISH)FISH.t=-999;if((D.kind==='smith'||D.kind==='craft')&&!window.SQSKFX&&swing<=0&&(D.t%0.7)<dt)swing=.25;D.t+=dt;if(D.t<D.d)return;const x0=xpSum(),i0=invSum(),f0=fires.length,c0=JSON.stringify(D.chests||[]),st0=typeof STATION!=='undefined'?STATION:null;window.SQDO_STEP=true;if(D.st)STATION=D.st;const m=sqMerge(D.chests);try{D.fn()}catch(e){console.warn(e)}finally{if(m)benchSplit();if(D.st)STATION=st0;window.SQDO_STEP=false}const ok=xpSum()!==x0||invSum()!==i0||fires.length!==f0||JSON.stringify(D.chests||[])!==c0;if(ok)D.done++;D.n--;if(!ok||D.n<=0||SQDO!==D){if(SQDO===D)SQDO=null}else{D.t=0;D.x=P.x;D.y=P.y}});
  // the look of it: a progress bar over your head and something happening in front of you
  const _dh=drawHUD;drawHUD=function(){_dh();const D=SQDO;if(!D||menuOpen)return;const U=(HUDL&&HUDL.U)||1,sx=W/2,sy=H/2,tm=performance.now()/1000,[fx0,fy0]=front(14),fx=W/2+(fx0-P.x)*Z,fy=H/2+(fy0-P.y)*Z,z=Z,pr=Math.min(1,D.t/D.d);
   // no progress bar: the character's own animation shows the work (fire, cooking and fishing: section 116)

@@ -16,7 +16,7 @@ const rsStop=()=>{RSAIL.on=false};
 {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead&&rsR()&&!nearNpc()){if(RSAIL.on?rsCanLand():rsCanBoard()){rsToggle();return}if(RSAIL.on)return}return _t()}}
 tk.addEventListener('touchstart',e=>{if(pnOpen||!rsR()||nearNpc())return;if(rsCanBoard()||rsCanLand()){e.preventDefault();e.stopImmediatePropagation();rsToggle()}},{passive:false,capture:true});
 // the boat glides over water; you can't walk off it
-{const _u=upd;upd=function(dt){const paused=menuOpen||pnOpen;if(RSAIL.on&&(!rsR()||dead))RSAIL.on=false;
+{SQUPD.wrap('069',_u=>function(dt){const paused=menuOpen||pnOpen;if(RSAIL.on&&(!rsR()||dead))RSAIL.on=false;
   if(RSAIL.on&&!paused){const R=rsR(),px=P.x,py=P.y;let ix=jx+(K.d||K.arrowright?1:0)-(K.a||K.arrowleft?1:0),iy=jy+(K.s||K.arrowdown?1:0)-(K.w||K.arrowup?1:0);const l=Math.hypot(ix,iy);
    _u(dt);if(RSAIL.on&&rsR()===R&&!(TRAVEL49&&TRAVEL49.done)){P.x=px;P.y=py}   // a controller ✕ can land you during the update: then keep the spot it put you on (but not across a sea crossing)
    if(RSAIL.on&&l>.05&&!dead){const nx=ix/Math.max(1,l),ny=iy/Math.max(1,l),sp=78*(K.shift?1.35:1)*dt;if(Math.abs(nx)>Math.abs(ny))face=[Math.sign(nx),0];else face=[0,Math.sign(ny)];
@@ -27,7 +27,7 @@ tk.addEventListener('touchstart',e=>{if(pnOpen||!rsR()||nearNpc())return;if(rsCa
   // SAIL / LAND on the TALK button
   const want=!paused&&!dead&&rsR()&&!nearNpc()?(rsCanLand()?'LAND':rsCanBoard()?'SAIL':''):'';
   if(want){tk.style.display='flex';const lab=want+(isPC?'<small>T</small>':'');if(!tk.innerHTML.startsWith(want))tk.innerHTML=lab;RSAIL.lab=true}
-  else if(RSAIL.lab){RSAIL.lab=false;tk.innerHTML='TALK'+(isPC?'<small>T</small>':'');if(typeof tkLab!=='undefined')tkLab=''}}}
+  else if(RSAIL.lab){RSAIL.lab=false;tk.innerHTML='TALK'+(isPC?'<small>T</small>':'');if(typeof tkLab!=='undefined')tkLab=''}})}
 // drawing: you in your boat
 {const _p=pP;pP=function(tm){if(!RSAIL.on||!rsR())return _p(tm);const bob=Math.round(Math.sin(tm*2.6));drawBoat26(tm);
   g.save();g.translate(0,(window.BOAT85?BOAT85.dy:3)+bob);_p(tm);g.restore();drawBoatFront26(Math.round(P.x),Math.round(P.y)+bob,face,tm)}}

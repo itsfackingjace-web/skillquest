@@ -14,8 +14,8 @@
  // (which writes the base cost, or a Dev Suite rule's `mp`) and every description reading WSP[el].cost see the lower number.
  for(const el in WSP){let b=WSP[el].cost;Object.defineProperty(WSP[el],'cost',{get(){return Math.max(1,b-1)},set(v){b=v},enumerable:true,configurable:true})}
  // ...and mana comes back 3x as fast: the frame's own regen (small rises) is added twice more; potions and other big gains aren't
- const MREG=3;{const _u=upd;upd=function(dt){const m0=typeof MANA==='number'?MANA:null;const out=_u.apply(this,arguments);
-   try{if(m0!=null&&!dead){const g=MANA-m0;if(g>0&&g<1.5&&MANA<maxMP())MANA=Math.min(maxMP(),MANA+g*(MREG-1))}}catch(e){}return out}}
+ const MREG=3;{SQUPD.wrap('202',_u=>function(dt){const m0=typeof MANA==='number'?MANA:null;const out=_u.apply(this,arguments);
+   try{if(m0!=null&&!dead){const g=MANA-m0;if(g>0&&g<1.5&&MANA<maxMP())MANA=Math.min(maxMP(),MANA+g*(MREG-1))}}catch(e){}return out})}
  // Archery and Magic: +1 damage on every arrow and spell (early bows and wands lagged well behind melee)
  {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+1}}
  {const _sd=spellDmg;spellDmg=function(){return _sd.apply(this,arguments)+1}}

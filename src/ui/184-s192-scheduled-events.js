@@ -30,11 +30,11 @@
   for(let t=0;t<24;t++){const ang=Math.random()*6.283,d=150+Math.random()*110,x=P.x+Math.cos(ang)*d,y=P.y+Math.sin(ang)*d;try{if(solid(x,y))continue}catch(e){continue}
    const m=rgMake(a.e.mob.k,M.hp,x,y);if(!m)return false;m.mhp=m.mhp||M.hp;if(M.rg)m.rg=M.rg;delete m.night;m._ev=a.id;try{RG_OWN.add(m)}catch(_){}en.push(m);EVM.add(m);evScene=SCENE?SCENE.id+(SCENE.room&&SCENE.room.region||''):'hollow';return true}return false}
  let spT=0;
- {const _u=upd;upd=function(dt){const r=_u.apply(this,arguments);try{
+ {SQUPD.after('184',(dt)=>{try{
    const sc=SCENE?SCENE.id+(SCENE.room&&SCENE.room.region||''):'hollow';if(sc!==evScene&&EVM.size)EVM.clear();
    const melt=!SCENE&&typeof dark==='function'&&dark()<.05?(+dt||0)*.5:0;for(const m of EVM){if(m.dead||m.hp<=0){EVM.delete(m);continue}if(melt)m.hp=Math.min(m.mhp||m.hp+melt,m.hp+melt);if(!en.includes(m)&&Math.hypot(m.x-P.x,m.y-P.y)<420)en.push(m)}
    spT-=+dt||0;if(spT<=0){spT=4;if(playing()&&outdoors())for(const a of active()){if(!a.e.mob||(a.e.mob.r!=='any'&&a.e.mob.r!==region()))continue;let n=0;for(const m of EVM)if(m._ev===a.id&&Math.hypot(m.x-P.x,m.y-P.y)<500)n++;if(n<a.e.mob.n)spawnOne(a)}}
-  }catch(e){}return r}}
+  }catch(e){}})}
  // ---- pill, start notice, event card ----
  const pill=document.createElement('button');pill.id='sqsev';pill.type='button';pill.style.cssText='position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 36px);z-index:25;display:none;background:#183028;color:#d8ffe8;border:2px solid #40b878;border-radius:0;padding:3px 9px;font:700 12px '+PF+';cursor:pointer;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';document.body.appendChild(pill);
  pill.addEventListener('click',e=>{e.stopPropagation();openCard()});

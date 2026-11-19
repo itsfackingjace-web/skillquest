@@ -264,8 +264,7 @@
 {const _dp=mpDrawPeer;mpDrawPeer=function(r,tm){if(!r.dg||!window.SQDF)return _dp(r,tm);const x=Math.round(r.x),y=Math.round(r.y),d=r.d===2?(r.fl?'w':'e'):r.d===1?'n':'s';
   SQDF.draw(x,y,d,Math.floor(tm/(r.mv?.12:.2))%4);MP.T=g.getTransform();MP.Tat=performance.now();
   if(r.br&&!menuOpen&&!pnOpen){const n=performance.now();if(!r.brAt||n-r.brAt>45){r.brAt=n;SQDF.flames(r.x,r.y,d)}}}}
-{const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen||!window.SQDF||!SQDF.br||!PV.on)return;const d=SQDF.dir(),[mx,my,fx,fy]=SQDF.mouth(P.x,P.y,d);
-  for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-mx,dy=r.y-6-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);if(al>-4&&al<64&&pe<8+al*.45)pvHit(r,'sp','fire')}}}
+{SQUPD.after('072',(dt)=>{if(menuOpen||pnOpen||!window.SQDF||!SQDF.br||!PV.on)return;const d=SQDF.dir(),[mx,my,fx,fy]=SQDF.mouth(P.x,P.y,d);for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-mx,dy=r.y-6-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);if(al>-4&&al<64&&pe<8+al*.45)pvHit(r,'sp','fire')}})}
 window.SQFWPEERS=()=>{const l=mpLoc();return[...MP.players.values()].filter(r=>r.fw&&r.loc===l&&live(r)&&isFinite(r.fw[0])).map(r=>r.fw)};
 // ---- the Imp pet in PvP: it goes after a player who hits you ----
 {const _in=pvIncoming;pvIncoming=function(id,v){const h0=P.hp,hu=hurt;_in(id,v);try{if(v&&PV.on&&(P.hp<h0||hurt>hu)&&window.SQIMP)SQIMP.aggro(String(v.f||''))}catch(e){}}}
@@ -409,7 +408,7 @@ function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y
   if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'You need tilled soil. Craft a hoe (Craft menu) or buy one at the general store.');sfx('swish');return}
   if(p.c){say('Something is already growing there.');sfx('swish');return}inv[k]--;p.c=SEED2CROP[k];p.g=0;addXp(11,5);sfx('rustle');saveLocal(true);if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
 // growing (every island's plots grow while you play, like Hollow's)
-{const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen)return;for(const id in RF)for(const p of RF[id].values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}}
+{SQUPD.after('072',(dt)=>{if(menuOpen||pnOpen)return;for(const id in RF)for(const p of RF[id].values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt})}
 // empty tilled soil turns back into grass after a while (so nobody can cover the world in dirt)
 setInterval(()=>{const t=nowS();let n=0;for(const[i,p]of[...FARM]){if(p._foreign||p.c)continue;if(!p.e){p.e=t;continue}if(t-p.e>TILL_LIFE){FARM.delete(i);n++}}
  for(const id in RF)for(const[k,p]of[...RF[id]]){if(p.c)continue;if(!p.e){p.e=t;continue}if(t-p.e>TILL_LIFE){RF[id].delete(k);n++}}if(n)try{saveLocal(true)}catch(e){}},5000);

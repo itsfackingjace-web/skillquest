@@ -71,7 +71,7 @@
  // a save while the 3 lent wood is out (the fire is still being lit) records the logs, not the wood (Nov 18)
  {SQSAVE.wrap('220',_s=>function(){const p=PEND;if(!p||fires.some(q=>q&&!q._rp&&!p.before.has(q))||(inv.wood|0)<3)return _s.apply(this,arguments);
    inv.wood-=3;inv[p.k]=n(p.k)+3;try{return _s.apply(this,arguments)}finally{inv[p.k]-=3;inv.wood+=3}})}
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(PEND)try{check()}catch(e){PEND=null}return out}}
+ {SQUPD.after('220',(dt)=>{if(PEND)try{check()}catch(e){PEND=null}})}
  // ---- the look ----
  {const _p=pF;pF=function(f,tm){const P5=f&&f.lg&&PAL[f.lg];if(!P5||f._glow)return _p.apply(this,arguments);
    try{if(window.SQPROPS&&SQPROPS.looks&&SQPROPS.looks['p:campfire'])return _p.apply(this,arguments)}catch(e){}

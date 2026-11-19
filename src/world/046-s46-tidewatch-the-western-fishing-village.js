@@ -114,9 +114,7 @@ const _es46=enterScene;enterScene=function(id,house,ret){_es46(id,house,ret);if(
  const k=TWN.find(n=>n.work===id);if(k&&k.scene!==id&&k.id!=='luma'){say(TWNAMES[id][0].toUpperCase()+TWNAMES[id].slice(1)+' is closed for the night. '+k.name+' has gone home.');return}
  say({tw_tackle:'Silverhook Tackle. Nets, rods and the smell of the sea.',tw_kitchen:'The Seabreeze Kitchen. Something delicious is bubbling.',tw_post:'The Driftwood Trading Post. Half of it washed ashore.',tw_nav:'The Navigator\'s House: charts on every wall and a brass telescope by the window.'}[id]||('This is '+TWNAMES[id]+'.'))};
 let twPrev=false;
-const _u46=upd;upd=function(dt){_u46(dt);if(menuOpen||!TWON)return;townRoutine(TWN,dt,'luma');if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inTWBox(x,y);
- /* no welcome message: towns are named on the map (Nov 16) */twPrev=inT;
- en=en.filter(n=>!inTWBox(Math.floor(n.x/16),Math.floor(n.y/16)))};
+SQUPD.after('046',(dt)=>{if(menuOpen||!TWON)return;townRoutine(TWN,dt,'luma');if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inTWBox(x,y);twPrev=inT;en=en.filter(n=>!inTWBox(Math.floor(n.x/16),Math.floor(n.y/16)))});
 // --- drawing: blue-and-white houses (the normal HD house with crisp white walls), drying nets, the lighthouse ---
 const _drb46=drBld;drBld=function(b,tm){_drb46(b,tm);if(!b.tw)return;const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16;
  // a blue stripe along the wall and blue shutters

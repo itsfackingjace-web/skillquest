@@ -12,7 +12,7 @@
    try{_t.apply(this,arguments)}finally{n.scene=s;n.x=x;n.y=y;n.dir=dir}
    if(!pnOpen&&msg&&msg.indexOf(n.name)===0)msg='(yawn) '+msg}}
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!near()||!!(_pu&&_pu())}
- let mine=false;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{const n=!pnOpen&&!menuOpen&&!dead&&!awake()?near():null;
+ let mine=false;{SQUPD.after('194',(dt)=>{try{const n=!pnOpen&&!menuOpen&&!dead&&!awake()?near():null;
    if(n&&(tk.style.display==='none'||mine)){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mine=true}
-   else if(!n&&mine){mine=false;if(!pnOpen)tk.style.display='none'}}catch(e){}return out}}
+   else if(!n&&mine){mine=false;if(!pnOpen)tk.style.display='none'}}catch(e){}})}
  window.SQSLEEPTALK={near}})();

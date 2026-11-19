@@ -20,7 +20,7 @@
  // the button is ours only while nothing else wants it: hide it before the game's own code runs each frame; if that
  // code shows it again (a person, a chest, a boat...), it's theirs, and their word goes back on it
  const giveBack=()=>{mine=false;who=null;tk.classList.remove('sqpn');if(word(tk.innerHTML)===word(lab)){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
- const _u=upd;upd=function(dt){if(mine)tk.style.display='none';const out=_u.apply(this,arguments);
+ SQUPD.wrap('119',_u=>function(dt){if(mine)tk.style.display='none';const out=_u.apply(this,arguments);
   if(mine&&(tk.style.display!=='none'||word(tk.innerHTML)!==word(lab)))giveBack();
   if(mine&&!pnOpen&&!menuOpen&&!dead)tk.style.display='flex';
   if((t-=dt)>0)return out;t=.15;
@@ -28,7 +28,7 @@
   const u=busy?null:nearest();
   if(u){who=u;lab=label();if(word(tk.innerHTML)!==word(lab))tk.innerHTML=lab;tk.classList.add('sqpn');tk.style.display='flex';mine=true}
   else if(mine){giveBack();tk.style.display='none'}
-  return out};
+  return out});
  tk.addEventListener('touchstart',e=>{if(!mine||pnOpen||menuOpen||dead)return;e.preventDefault();e.stopImmediatePropagation();ask()},{passive:false,capture:true});
  const _t=talk;talk=function(){if(mine&&!pnOpen&&!menuOpen&&!dead&&ask())return;return _t.apply(this,arguments)};
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!(mine&&who)||!!(_pu&&_pu())}

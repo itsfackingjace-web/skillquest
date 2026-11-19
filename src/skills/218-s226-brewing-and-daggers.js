@@ -117,8 +117,7 @@
  {const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.kind==='dagger'&&e.rq2&&lvOf(e.rq2.s)<e.rq2.l){say('You need Attack '+e.rq2.l+' to use the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){}return}return _eq.apply(this,arguments)}}
  {const _mf=meleeFlat;meleeFlat=function(){return _mf.apply(this,arguments)+(DAG&&DAGS[DAG]?DAGS[DAG].t:0)}}
  // a bow/wand/hoe/can that got into the hand some other way pushes the dagger to the bag
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(DAG&&(TL.bow||WAND||TL.hoe||TL.can)){inv[DAG]=(inv[DAG]|0)+1;DAG=null;try{snapEq()}catch(e){}}
-   if(DCD>0)DCD=Math.max(0,DCD-(dt||0));if(COATK&&performance.now()>COATU){COATK=null;try{say('Your dagger\'s coating wore off.')}catch(e){}}return out}}
+ {SQUPD.after('218',(dt)=>{if(DAG&&(TL.bow||WAND||TL.hoe||TL.can)){inv[DAG]=(inv[DAG]|0)+1;DAG=null;try{snapEq()}catch(e){}}if(DCD>0)DCD=Math.max(0,DCD-(dt||0));if(COATK&&performance.now()>COATU){COATK=null;try{say('Your dagger\'s coating wore off.')}catch(e){}}})}
  {SQSAVE.after('218:dag,dpin',s=>{s.dag=DAG||'';s.dpin=DPIN||'';})}
  {SQLOAD.after('218',(S)=>{try{const d=S&&S.dag;DAG=d&&DAGS[d]&&!TL.bow&&!WAND&&!TL.hoe&&!TL.can?d:null;DPIN=S&&typeof S.dpin==='string'?S.dpin:'';COATK=null;try{snapEq()}catch(e){}}catch(e){}})}
  {const _ng=newGame;newGame=function(){DAG=null;DPIN='';COATK=null;return _ng.apply(this,arguments)}}
@@ -184,8 +183,7 @@
      for(const z of ZAPS){if(z.sc!==sc)continue;let lx=sxp(z.a.x),ly=syp(z.a.y-6);for(let i=1;i<=6;i++){const k=i/6,x=sxp(z.a.x+(z.b.x-z.a.x)*k)+(i<6?((Math.random()*8-4)|0)*Z:0),y=syp(z.a.y-6+(z.b.y-z.a.y)*k)+(i<6?((Math.random()*8-4)|0)*Z:0);
        g.strokeStyle='#70d8ff';g.lineWidth=Z*2;g.beginPath();g.moveTo(lx,ly);g.lineTo(x,y);g.stroke();g.strokeStyle='#ffffff';g.lineWidth=Z*.8;g.beginPath();g.moveTo(lx,ly);g.lineTo(x,y);g.stroke();lx=x;ly=y}}
     }catch(e){}g.restore()}return _dh.apply(this,arguments)}}
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);for(const q of RINGS)q.t+=dt||0;for(const z of ZAPS)z.t+=dt||0;
-   for(let i=RINGS.length-1;i>=0;i--)if(RINGS[i].t>.8)RINGS.splice(i,1);for(let i=ZAPS.length-1;i>=0;i--)if(ZAPS[i].t>.25)ZAPS.splice(i,1);return out}}
+ {SQUPD.after('218',(dt)=>{for(const q of RINGS)q.t+=dt||0;for(const z of ZAPS)z.t+=dt||0;for(let i=RINGS.length-1;i>=0;i--)if(RINGS[i].t>.8)RINGS.splice(i,1);for(let i=ZAPS.length-1;i>=0;i--)if(ZAPS[i].t>.25)ZAPS.splice(i,1);})}
  // HUD chips (next to the arrows/ULT chips): the coating with its time left, and the dagger ULT's readiness
  {const _hl=hudLayout;hudLayout=function(){const L=_hl.apply(this,arguments);try{let add=0;
    if(COATK){L.chips.push([COATK,({pot_poison:'POISON',pot_napalm:'NAPALM',pot_zap:'ZAP'}[COATK])+' '+Math.max(0,Math.ceil((COATU-performance.now())/1000))+'s']);add=1}

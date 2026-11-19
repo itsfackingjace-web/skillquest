@@ -39,9 +39,7 @@ function rhPack(h){const j=RH.indexOf(h);if(j<0)return;RH.splice(j,1);rhSolidSyn
 // ---- going in and coming out ----
 {const _es=enterScene;enterScene=function(id,house,ret){const prev=SCENE&&SCENE.room&&SCENE.room.region?SCENE:null;_es(id,house,ret);if(prev&&SCENE&&!(SCENE.room&&SCENE.room.region))SCENE.prev=prev}}// an island never gets another island as `prev` (leaving an island always goes home; with one, sailing to Hollow could drop you back on the old island)
 {const _ls=leaveScene;leaveScene=function(){const S=SCENE;if(!S||!S.prev)return _ls();if(typeof BUILD!=='undefined'&&BUILD)endBuild();const r=S.ret;SCENE=S.prev;P.x=r.x;P.y=r.y;face=[0,1];FADE_AT=performance.now();sfx('door');rhSolidSync()}}
-{const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen||dead)return;const R=rbR();if(!R||face[1]>=0)return;
-  for(const h of rhHere()){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+6&&P.y>h.y*16-4){enterScene('home',h,{x:cx,y:(h.y+1)*16+7});return}}
-  for(const h of rhForeign(R.region)){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+6&&P.y>h.y*16-4){enterScene('home',h,{x:cx,y:(h.y+1)*16+7});return}}}}
+{SQUPD.after('067',(dt)=>{if(menuOpen||pnOpen||dead)return;const R=rbR();if(!R||face[1]>=0)return;for(const h of rhHere()){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+6&&P.y>h.y*16-4){enterScene('home',h,{x:cx,y:(h.y+1)*16+7});return}}for(const h of rhForeign(R.region)){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+6&&P.y>h.y*16-4){enterScene('home',h,{x:cx,y:(h.y+1)*16+7});return}}})}
 // waking up in a house on another island
 {const _rs=reset;reset=function(){_rs();const h=RH.find(o=>o.id===HOMESP);if(!h||dead)return;try{SCENE=null;const ok=loadRegion(h.rg,[h.x,h.y+1],{x:P.x,y:P.y});if(!ok)return;
   enterScene('home',h,{x:h.x*16+8,y:(h.y+1)*16+7});P.x=2*16+10;P.y=3*16+8;face=[0,1];say('You wake up at home on '+WORLD_REGIONS[h.rg].name+'.')}catch(e){console.warn(e)}}}

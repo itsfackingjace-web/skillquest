@@ -197,3 +197,6 @@ function draw(){
 }
 let loopErr=0;function loop(n){const dt=Math.max(0,Math.min(.05,(n-last)/1000));last=n;try{upd(dt);draw()}catch(e){if(loopErr++<5)console.error(e)}requestAnimationFrame(loop)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{last=performance.now();requestAnimationFrame(loop)});else requestAnimationFrame(loop);
+
+// Per-frame update (upd): the game's own above; every later section adds a named step (window.SQUPD, sqSteps in 006).
+const SQUPD=sqSteps('upd',upd,f=>{upd=f});window.SQUPD=SQUPD;

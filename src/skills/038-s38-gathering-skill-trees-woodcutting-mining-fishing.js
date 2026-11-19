@@ -140,9 +140,7 @@ const _hv38=harvest;harvest=function(i,p){const c=p.c,C=CROPS[c],n0=inv[c]|0,s0=
 SQHIT.wrap('038 gathering skill trees woodcutting mining fishing',_atk38c=>function(){const[fx,fy]=front(13),i=Math.floor(fy/16)*N+Math.floor(fx/16),p=FARM.get(i),w0=p?p.w:0;_atk38c();const q=FARM.get(i);
  if(q&&q.w>w0&&P_(11,'fm_soil'))q.w=CLK+Math.round(WATER_FOR*1.2);if(q&&(q.w>w0||(!p&&q)))ACTW[11]=10});
 // growth speed, hardy crops, and the FOOD perks
-const _u38=upd;upd=function(dt){_u38(dt);if(menuOpen||pnOpen)return;const gs=gSpeed(11),hardy=P_(11,'fm_roots');
- for(const[,p]of FARM){if(!p.c||ripe(p))continue;if(wet(p))p.g+=dt*gs;else if(hardy)p.g+=dt*.25*(1+gs)}
- let save=0;for(const sk in ACTW){if(ACTW[sk]>0){ACTW[sk]-=dt;const f=FOODP[sk];if(f&&P_(+sk,f[0]))save=Math.max(save,f[1])}}if(save&&!dead&&hunger>0)hunger=Math.min(100,hunger+dt*.9*FOOD_RATE*save)};
+SQUPD.after('038',(dt)=>{if(menuOpen||pnOpen)return;const gs=gSpeed(11),hardy=P_(11,'fm_roots');for(const[,p]of FARM){if(!p.c||ripe(p))continue;if(wet(p))p.g+=dt*gs;else if(hardy)p.g+=dt*.25*(1+gs)}let save=0;for(const sk in ACTW){if(ACTW[sk]>0){ACTW[sk]-=dt;const f=FOODP[sk];if(f&&P_(+sk,f[0]))save=Math.max(save,f[1])}}if(save&&!dead&&hunger>0)hunger=Math.min(100,hunger+dt*.9*FOOD_RATE*save)});
 // --- selling perks: a bonus on top of any shop's price ---
 const SELLB=[[1,'wc_grain',.25,['heartwood']],[2,'mn_touch',.2,['stone','iron','goldore','mithore','adamore','ruby','sapphire','emerald','diamond']],[9,'fs_gold',.25,()=>[...FISHK(),...FISH_T.map(f=>'c'+f.k),'crainbow']],
  [3,'fg_gold',.25,['berry','honey']],[11,'fm_gold',.25,['wheat','carrot','pumpkin','goldcrop']]];

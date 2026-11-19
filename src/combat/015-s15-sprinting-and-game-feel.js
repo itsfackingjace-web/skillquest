@@ -6,7 +6,7 @@ function isSprint(){if(swing>0||hunger<=5||dead||pnOpen||menuOpen||FISH)return f
  const kb=K.shift&&(K.w||K.a||K.s||K.d||K.arrowup||K.arrowdown||K.arrowleft||K.arrowright);return!!(kb||Math.hypot(jx,jy)>=.95)}
 function dustColor(){if(SCENE)return'#c8b8a0';const t=tile[Math.floor(P.y/16)*N+Math.floor(P.x/16)];return t===4?'#ffffff':t===5||t===1?'#f0d898':'#d8c8a0'}
 function shakeScreen(px){cv.style.transform='translate('+((Math.random()*2-1)*px).toFixed(1)+'px,'+((Math.random()*2-1)*px).toFixed(1)+'px)';clearTimeout(shakeScreen.t);shakeScreen.t=setTimeout(()=>{cv.style.transform=''},90)}
-const _u15=upd;upd=function(dt){const hp0=P.hp,x0=P.x,y0=P.y;_u15(dt);if(menuOpen||pnOpen)return;
+SQUPD.wrap('015',_u15=>function(dt){const hp0=P.hp,x0=P.x,y0=P.y;_u15(dt);if(menuOpen||pnOpen)return;
  const moving=Math.hypot(P.x-x0,P.y-y0)>.2,spr=moving&&isSprint();
  if(spr){hunger=Math.max(0,hunger-dt*.9*FOOD_RATE);if(!sprintTip){sprintTip=true;say('Sprinting! It uses up food faster.')}
   if((dustT-=dt)<=0){dustT=.07;DUST.push({x:P.x-face[0]*4+(Math.random()*6-3),y:P.y+6,t:0,c:dustColor(),sc:curScene()})}}
@@ -15,7 +15,7 @@ const _u15=upd;upd=function(dt){const hp0=P.hp,x0=P.x,y0=P.y;_u15(dt);if(menuOpe
   let best=null,bd=40;for(const n of en){const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}
   if(best){const dx=P.x-best.x,dy=P.y-best.y,l=Math.hypot(dx,dy)||1;for(let k=0;k<6;k++){const nx=P.x+dx/l,ny=P.y+dy/l;if(!(solid(nx-5,ny-3)||solid(nx+5,ny-3)||solid(nx-5,ny+6)||solid(nx+5,ny+6))){P.x=nx;P.y=ny}}}}
  FLASH=Math.max(0,FLASH-dt);
- if(!dead&&P.hp===1){if((lowT-=dt)<=0){lowT=.9;tone(988,.07,'square',.035);tone(784,.07,'square',.035,0,.09)}}else lowT=0};
+ if(!dead&&P.hp===1){if((lowT-=dt)<=0){lowT=.9;tone(988,.07,'square',.035);tone(784,.07,'square',.035,0,.09)}}else lowT=0});
 // damage numbers on the enemies you hit
 SQHIT.wrap('015 sprinting and game feel',_atk15=>function(){const before=en.map(n=>[n,n.hp]);_atk15();for(const[n,h]of before){const d=h-n.hp;if(d>0)DMGS.push({x:n.x,y:n.y-(n.type==='boss'?30:14),v:String(Math.round(d)),t:0,c:n.dead?'#f8d848':'#ffffff',sc:curScene()})}});
 function drawFx(){const sc=curScene();for(const d of DUST){if(d.sc!==sc)continue;const a=1-d.t/.45;g.globalAlpha=a*.8;Rg(d.x-1,d.y-d.t*10,2+Math.round(d.t*4),2,d.c)}g.globalAlpha=1;

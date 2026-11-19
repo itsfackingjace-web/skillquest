@@ -18,7 +18,7 @@
  document.body.appendChild(box);
  function show(){const b=banned()&&!(window.SQTITLE&&SQTITLE()&&!uid());box.style.display=b?'flex':'none';
   if(b)document.getElementById('sqbant').textContent='This account can\'t play until '+until(M.ba)+'.'+(M.r?' Reason: '+M.r.replace(/[.!?]?$/,'.'):'')+' If you think this is a mistake, ask on the Discord.'}
- {const _u=upd;upd=function(){if(banned())return;return _u.apply(this,arguments)}}
+ {SQUPD.wrap('170',_u=>function(){if(banned())return;return _u.apply(this,arguments)})}
  window.SQMOD={get state(){return M},muted,banned,blockChat(){if(banned()){try{mpLog('game','This account is suspended.')}catch(e){}return true}
    if(muted()){try{mpLog('game','You can\'t chat until '+until(M.mu)+'.'+(M.r?' ('+M.r+')':''))}catch(e){}return true}return false}};
  // ---- REPORT from the player menu (130 adds the button) ----

@@ -61,8 +61,7 @@
  const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=near();if(n){talkTo(n);return}}return _t.apply(this,arguments)};
  tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=near();if(n){e.preventDefault();e.stopImmediatePropagation();talkTo(n)}},{passive:false,capture:true});
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!near()||!!(_pu&&_pu())}
- let tkMine=false;const _u=upd;upd=function(dt){_u.apply(this,arguments);const n=!pnOpen&&!menuOpen&&!dead?near():null;
-  if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;tkMine=true}else if(tkMine){tkMine=false;if(!pnOpen)tk.style.display='none'}};
+ let tkMine=false;SQUPD.after('117',(dt)=>{const n=!pnOpen&&!menuOpen&&!dead?near():null;if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;tkMine=true}else if(tkMine){tkMine=false;if(!pnOpen)tk.style.display='none'}});
  function wrap(t,n){const w=t.split(' '),out=[];let l='';for(const x of w){if((l+' '+x).trim().length>n&&l){out.push(l);l=x}else l=(l+' '+x).trim()}if(l)out.push(l);return out.slice(0,4)}
  const _df=drawFurn;drawFurn=function(it,tm){
   if(it&&it.t==='lm'&&it.k==='npc'){const x=it.x*16+8,y=it.y*16+10,cl=Math.hypot(x-P.x,y-P.y)<60,dir=cl?(Math.abs(P.x-x)>Math.abs(P.y-y)?2:P.y<y?1:0):0,fl=cl&&P.x<x;

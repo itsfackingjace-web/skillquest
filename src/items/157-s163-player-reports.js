@@ -12,17 +12,17 @@
  function unstick(){if(!blocked(P.x,P.y))return false;const R=SCENE&&SCENE.room;
   for(let r=4;r<=96;r+=4)for(let a=0;a<16;a++){const x=P.x+Math.cos(a/16*6.283)*r,y=P.y+Math.sin(a/16*6.283)*r;if(R&&(x<4||y<4||x>R.w*16-4||y>R.h*16-4))continue;if(!blocked(x,y)){P.x=x;P.y=y;return true}}return false}
  const fixed=new WeakSet();
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{
+ {SQUPD.after('157',(dt)=>{try{
    if(SCENE&&SCENE.id==='home'&&!dead)unstick();// you should never stand inside something; if a door put you there, step out
    if(inHouse()&&!SCENE.house._foreign&&!SCENE.house.ro&&!fixed.has(SCENE.house)){const h=SCENE.house,R=SCENE.room;fixed.add(h);let moved=0;
     if(h.furn&&typeof h.furn.forEach==='function')for(const [i,f] of [...h.furn]){const x=i%R.w,y=i/R.w|0;if(!doorTile(R,x,y))continue;h.furn.delete(i);
      let to=-1;for(let r=1;r<R.w&&to<0;r++)for(let dy=-r;dy<=r&&to<0;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const nx=x+dx,ny=y+dy;if(nx<0||ny<2||nx>=R.w||ny>=R.h)continue;if(canPlaceIn(nx,ny)&&!(Math.abs(nx*16+8-P.x)<12&&Math.abs(ny*16+8-P.y)<14)){to=ny*R.w+nx;break}}
      if(to>=0){h.furn.set(to,f);moved++}else h.furn.set(i,f)}
     if(moved){say('Some furniture was in front of your back door, so it was moved aside.');try{saveLocal(true)}catch(e){}}
-    unstick()}}catch(e){console.warn('door fix',e)}return out}}
+    unstick()}}catch(e){console.warn('door fix',e)}})}
  // ---- in an island boss's lair the world boss banner steps aside (it covered the island boss's health bar) ----
  {const st=document.createElement('style');st.textContent='body.sqibf #wbb{display:none!important}';document.head.appendChild(st);
-  const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{const on=!!(SCENE&&SCENE.room&&SCENE.room.ib);if(document.body.classList.contains('sqibf')!==on)document.body.classList.toggle('sqibf',on)}catch(e){}return out}}
+  SQUPD.after('157',(dt)=>{try{const on=!!(SCENE&&SCENE.room&&SCENE.room.ib);if(document.body.classList.contains('sqibf')!==on)document.body.classList.toggle('sqibf',on)}catch(e){}})}
  // ---- keep the screen awake while playing ----
  let lock=null,want=false;
  async function wake(){try{if(!('wakeLock' in navigator)||document.hidden||lock)return;lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}catch(e){lock=null}}

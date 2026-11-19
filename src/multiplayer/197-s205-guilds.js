@@ -410,7 +410,7 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
   test:{retag,depositMany,bagFor,horn,pray,rename,pubLB,loadTop,applyBuildings,has,rank,create,invite,accept,leave,pick,flush,deposit,withdraw,plant,dig,setRole,setPerm,claimCheck,claim,applyNodes,listen,startDB,stopDB,frontCell,canPlant}};
  // ---- every frame: start/stop with the connection, count quest progress, flush it, keep the island registered ----
  if(G.id)try{register()}catch(e){}
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{
+ {SQUPD.after('197',(dt)=>{try{
    if(on()&&!started)startDB();else if(!on()&&started)stopDB();
    const q=G.q;if(q&&!q.done&&QK[q.k]&&LASTINV){const si=SKN.indexOf(QK[q.k].sk);if(XPF.has(si)){let n=0;for(const k in inv){const v=(inv[k]|0)-(LASTINV[k]|0);if(v>0&&!NODE[k])n+=v}if(n>0){PEND+=n;PK=q.k}}}
    if(G.id&&G.ready&&LASTINV)for(const k in QK){const rk=rank(k);if(!rk||!XPF.has(SKN.indexOf(QK[k].sk)))continue;   // rank bonus: extra items
@@ -419,6 +419,6 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
    XPF.clear();LASTINV=Object.assign({},inv);
    if(onIsle()){const R=SCENE.room;for(const g2 of R.gone||[])if(g2.it&&g2.it._gn&&!g2._gf){g2._gf=1;g2.at-=180}}
    if(PEND&&(flushT-=dt)<=0){flushT=8;flush()}
-   if(G.id&&!REG)register();chatListen();if(NOTE&&performance.now()-NOTE.at>8000&&NOTE.t){NOTE=null;redraw()}}catch(e){console.warn('guild',e)}return out}}
+   if(G.id&&!REG)register();chatListen();if(NOTE&&performance.now()-NOTE.at>8000&&NOTE.t){NOTE=null;redraw()}}catch(e){console.warn('guild',e)}})}
  // the guild pill on the HUD isn't needed: the tag sits over your name for others; the START menu shows Guild [TAG]
 })();

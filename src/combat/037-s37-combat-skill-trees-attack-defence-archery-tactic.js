@@ -114,7 +114,7 @@ function critMul(n){if(perk(7,'coupdegrace')&&n&&n.mhp&&n.hp>=n.mhp)return 4;ret
 function onCrit(n,d){NEXTCRIT=false;if(n)n.tapped=1;if(perk(7,'gambit')){GLD+=3;drops.push({x:n.x,y:n.y-26,t:0,tx:'+3 gold',c:'#f8d848'})}if(perk(7,'pin')&&n)n.frozen=Math.max(n.frozen||0,1);
  if(perk(7,'mastermind')&&n)for(const o of en)if(o!==n&&!o.dead&&Math.hypot(o.x-n.x,o.y-n.y)<22)hitE(o,d,'#ff70a0')}
 // --- per-frame: momentum, damage over time, shrugging off hits, second wind, regeneration, survivor, arrow hits ---
-const _u37=upd;upd=function(dt){const hp0=P.hp,was=dead,t0=time,paused=menuOpen||pnOpen,live=paused?[]:PROJ.filter(p=>p.k==='arrow'&&!p.hostile&&!p.dead),foes=en.slice();_u37(dt);if(paused)return;
+SQUPD.wrap('037',_u37=>function(dt){const hp0=P.hp,was=dead,t0=time,paused=menuOpen||pnOpen,live=paused?[]:PROJ.filter(p=>p.k==='arrow'&&!p.hostile&&!p.dead),foes=en.slice();_u37(dt);if(paused)return;
  MOMT=Math.max(0,MOMT-dt);UNSTOPT=Math.max(0,UNSTOPT-dt);SWDT=Math.max(0,SWDT-dt);AEGT=Math.max(0,AEGT-dt);SURVT=Math.max(0,SURVT-dt);
  for(const n of en)if(n.mhp==null)n.mhp=n.hp;
  for(const p of live)if(p.dead){let n=null,bd=16;for(const o of foes){const d=Math.hypot(o.x-p.x,(o.y-4)-p.y);if(d<bd){bd=d;n=o}}if(n)arrowHit(p,n)}
@@ -125,7 +125,7 @@ const _u37=upd;upd=function(dt){const hp0=P.hp,was=dead,t0=time,paused=menuOpen|
   else if(perk(8,'unbreakable'))hurt*=1.6}
  if(!dead&&P.hp===1&&perk(8,'secondwind')&&SWDT<=0){SWDT=90;healP(2,'Second Wind')}
  if(!dead&&perk(8,'regen')&&P.hp<6){REGT+=dt;if(REGT>=40){REGT=0;healP(1,'Regeneration')}}else REGT=0;
- if(dead&&!was&&perk(8,'survivor')&&SURVT<=0){SURVT=180;dead=false;time=t0;P.hp=1;hurt=1.5;say('Survivor! You cling on with 1 heart.');msgT=3;sfx('block')}};
+ if(dead&&!was&&perk(8,'survivor')&&SURVT<=0){SURVT=180;dead=false;time=t0;P.hp=1;hurt=1.5;say('Survivor! You cling on with 1 heart.');msgT=3;sfx('block')}});
 // --- Tactics: chess insight, takeback and prize perks ---
 function hintCh(){if(perk(7,'grandstrat'))return 1;return Math.min(1,lvOf(7)/100+(perk(7,'openingbook')?.15:0)+(perk(7,'gmeye')?.2:0)+(perk(7,'deepcalc')?.1:0)+(perk(7,'clairvoyance')?.3:0))}
 function chessInsight(){const G=CG;if(!G||G.over||G.busy||G.st.turn!=='w'||G.hintPly===G.st.ply)return;G.hintPly=G.st.ply;G.hint=null;G.reply=null;

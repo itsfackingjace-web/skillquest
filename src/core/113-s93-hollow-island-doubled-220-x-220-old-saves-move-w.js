@@ -29,5 +29,4 @@
     if(w===1&&h===1&&last&&X===last[0]+1&&Y===last[1]+1){last=null;return fr.call(this,X+.5-HSC/2+.5,Y+.5-HSC/2+.5,HSC,HSC)}last=null;return fr.call(this,X,Y,w,h)};
    try{return _dm()}finally{x.fillRect=fr}}}
  // nothing grows under a build (the bigger island has new trees where old builds now stand)
- let chk=0;const _u=upd;upd=function(dt){_u(dt);if((chk-=dt)>0)return;chk=1.5;for(const i of STR.keys())if(obj[i])obj[i]=null;for(const i of FARM.keys())if(obj[i])obj[i]=null;
-  for(const h of HOUSES){try{for(const i of houseTiles(h))if(obj[i])obj[i]=null}catch(e){}}}}
+ let chk=0;SQUPD.after('113',(dt)=>{if((chk-=dt)>0)return;chk=1.5;for(const i of STR.keys())if(obj[i])obj[i]=null;for(const i of FARM.keys())if(obj[i])obj[i]=null;for(const h of HOUSES){try{for(const i of houseTiles(h))if(obj[i])obj[i]=null}catch(e){}}})}

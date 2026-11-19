@@ -38,7 +38,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  let VRF=null;
  {const _cu=castUlt;castUlt=function(){const v=WAND==='void',cd=ULTCD;if(!v)return _cu.apply(this,arguments);VU=1;let out;try{out=_cu.apply(this,arguments)}finally{VU=0}
    if(ULTCD>cd&&typeof ULTFX!=='undefined'&&ULTFX&&ULTFX.el==='storm'){VRF={t:0,pts:(ULTFX.bolts||[]).slice()};ULTFX=null;say('VOID RIFT!');try{sfx('cvoid');setTimeout(()=>sfx('cvoid'),120)}catch(e){}}return out}}
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(VRF){VRF.t+=dt;if(VRF.t>.8)VRF=null}return out}}
+ {SQUPD.after('199',(dt)=>{if(VRF){VRF.t+=dt;if(VRF.t>.8)VRF=null}})}
  {const _dh=drawHUD;drawHUD=function(){if(VRF&&!menuOpen)try{const cx=camX(),cy=camY(),p=VRF.t/.8;g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);
     for(const[bx,by]of VRF.pts){g.globalAlpha=Math.max(0,1-p);const r=6+p*18;g.fillStyle='#0c0814';g.beginPath();g.ellipse(bx,by-4,r,r*.6,0,0,6.283);g.fill();g.strokeStyle='#b080f0';g.lineWidth=1.5;g.beginPath();g.ellipse(bx,by-4,r+2,r*.6+2,0,0,6.283);g.stroke();
      for(let k=0;k<8;k++){const q=k/8*6.283+p*6;Rg(Math.round(bx+Math.cos(q)*(r+5)),Math.round(by-4+Math.sin(q)*(r*.6+3)),2,2,k%2?'#e8d0ff':'#9a5af0')}}
@@ -128,5 +128,5 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  window.SQGBOSS=window.SQGTREANT={add,K,open,beaten,html,act,enter,drawPortal,portals,key,summon,kill,regBoss,WEEK,mkSprite,kindOf,SUM,DEF:K.treant.DEF,drawTreant:(b,tm)=>K.treant.draw(b,tm)};
  // keep the bosses registered, and the portals in step with the week (the database listener covers summons and kills)
  // (stamped on the island's room: a portal that closed while you were in the arena is gone when you come back)
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(GID())for(const k of ORDER)regBoss(k);const a=A();if(a&&a.onIsle()){const R=SCENE.room,o=key();if(R._bk!==o){R._bk=o;a.applyBuildings()}}}catch(e){}return out}}
+ {SQUPD.after('199',(dt)=>{try{if(GID())for(const k of ORDER)regBoss(k);const a=A();if(a&&a.onIsle()){const R=SCENE.room,o=key();if(R._bk!==o){R._bk=o;a.applyBuildings()}}}catch(e){}})}
 })();

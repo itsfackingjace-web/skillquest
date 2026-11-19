@@ -52,10 +52,7 @@
   if(!T.drag){const n=nearestFoe();if(n)aimAt(n.x,n.y);else AIM.t=-1e9}aimFire(true)};
  tb.addEventListener('touchend',tEnd,{passive:false});tb.addEventListener('touchcancel',e=>{AIMX.touch=null;tb.classList.remove('on')});
  // --- every frame: keep the aim on the cursor, repeat while held ---
- const _u63=upd;upd=function(dt){_u63(dt);if(typeof GPON!=='undefined'&&GPON)return;
-  if(isPC&&AIMX.mIn&&AIMX.mouse&&offhand()){const w=toWorld(AIMX.mouse[0],AIMX.mouse[1]);if(w)aimAt(w.x,w.y)}
-  if(AIMX.rHeld){AIMX.rT+=dt;if(AIMX.rT>.35&&swing<=0)aimFire(false)}
-  if(AIMX.touch){AIMX.tHeld+=dt;if(AIMX.touch.drag){AIM.t=performance.now();if(AIMX.tHeld>.5&&swing<=0&&performance.now()-AIMX.lastFire>420)aimFire(false)}}};
+ SQUPD.after('082',(dt)=>{if(typeof GPON!=='undefined'&&GPON)return;if(isPC&&AIMX.mIn&&AIMX.mouse&&offhand()){const w=toWorld(AIMX.mouse[0],AIMX.mouse[1]);if(w)aimAt(w.x,w.y)}if(AIMX.rHeld){AIMX.rT+=dt;if(AIMX.rT>.35&&swing<=0)aimFire(false)}if(AIMX.touch){AIMX.tHeld+=dt;if(AIMX.touch.drag){AIM.t=performance.now();if(AIMX.tHeld>.5&&swing<=0&&performance.now()-AIMX.lastFire>420)aimFire(false)}}});
  // cursor: a crosshair over the game while a bow or wand is ready
  setInterval(()=>{cv.style.cursor=isPC&&offhand()&&!(typeof GPON!=='undefined'&&GPON)?'crosshair':''},500);
  // crosshair for mouse and touch aiming (the controller draws its own)

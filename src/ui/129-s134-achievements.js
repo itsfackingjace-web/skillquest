@@ -97,13 +97,13 @@
  let LAST=null,LK=null,XF=new Set(),t=0;
  const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(x>0){XF.add(i);if(i===SK('Firemaking')&&!window.SQFIREXTRA)C.fire=cnt('fire')+1}return out};
  const _se=sqEvent;sqEvent=function(type,item){if(type==='islandboss')C.ibw=cnt('ibw')+1;return _se.apply(this,arguments)};
- const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(!READY){seed();READY=true;LK=typeof kills==='number'?kills:null}if(dead)return out;
+ SQUPD.wrap('129',_u=>function(dt){const out=_u.apply(this,arguments);try{if(!READY){seed();READY=true;LK=typeof kills==='number'?kills:null}if(dead)return out;
    if(LAST){const got={};let tot=0;for(const k in inv){const v=(inv[k]|0)-(LAST[k]|0);if(v>0){got[k]=v;tot+=v;note(k)}}
     if(XF.size)for(const i of XF){const c=WHICH[i];if(!c)continue;C[c]=cnt(c)+(MIN1[c]?Math.max(1,tot):tot)}}
    if(typeof kills==='number'){if(LK!=null&&kills>LK)C.kill=cnt('kill')+(kills-LK);LK=kills}
    XF.clear();LAST=Object.assign({},inv);
    if((t-=dt)<=0){t=1;for(const s of['main','off','axe','pick','helm','body','legs']){try{const k=occ(s);if(k)note(k)}catch(e){}}for(const p of pets())note('pet_'+p);
-    try{const r=curRegion();if(r&&r!=='hollow')RG.add(r)}catch(e){}check()}}catch(e){}return out};
+    try{const r=curRegion();if(r&&r!=='hollow')RG.add(r)}catch(e){}check()}}catch(e){}return out});
  function check(){for(const a of A){if(D[a.id])continue;let v=0;try{v=a.val()}catch(e){}if(v>=goalOf(a)){D[a.id]=Math.floor(Date.now()/864e5);if(a.gold)GLD+=a.gold;
    say('Achievement unlocked: '+a.n+'!'+(a.gold?' +'+a.gold+' gold':''));msgT=5;try{sfx('level')}catch(e){}try{svg()}catch(e){}try{saveLocal(true)}catch(e){}if(pnOpen&&ptab===ATAB)rPn();break}}}
  window.SQACH={add:(k,n)=>{C[k]=cnt(k)+(n||1)},get counters(){return C},get done(){return D},get col(){return COL},A,cats,check,colCount,colTotal};

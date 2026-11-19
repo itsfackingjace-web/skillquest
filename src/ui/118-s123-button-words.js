@@ -37,7 +37,6 @@
  function put(el,w){if(!el||!w)return;const h=el.innerHTML,i=h.indexOf('<small'),word=i<0?h:h.slice(0,i);if(word===w)return;el.innerHTML=w+(i<0?'':h.slice(i))}
  // HIT/EAT words are worked out every 0.1 s; the TALK button's word is put back every frame (other sections write USE on it
  // every frame, so doing it only every 0.1 s made it flip between USE and the word, e.g. SAIL on a pier)
- let t=0,uw=null;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(dead)return;const fresh=(t-=dt)<=0;if(fresh)t=.1;
-  try{if(fresh){put(document.getElementById('a'),hitWord());put(document.getElementById('e'),eatWord())}
-   const tw=tk.innerHTML.split('<')[0];if(tk.style.display!=='none'&&(tw==='USE'||MINE.has(tw)&&typeof tkLab!=='undefined'&&tkLab==='USE')){if(fresh||uw===null)uw=useWord()||'USE';put(tk,uw)}else uw=null}catch(e){}};
+ let t=0,uw=null;SQUPD.after('118',(dt)=>{if(dead)return;const fresh=(t-=dt)<=0;if(fresh)t=.1;try{if(fresh){put(document.getElementById('a'),hitWord());put(document.getElementById('e'),eatWord())}
+   const tw=tk.innerHTML.split('<')[0];if(tk.style.display!=='none'&&(tw==='USE'||MINE.has(tw)&&typeof tkLab!=='undefined'&&tkLab==='USE')){if(fresh||uw===null)uw=useWord()||'USE';put(tk,uw)}else uw=null}catch(e){}});
  window.SQWORDS={hitWord,eatWord,useWord}})();

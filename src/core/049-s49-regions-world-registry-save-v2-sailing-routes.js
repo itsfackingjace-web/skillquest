@@ -154,7 +154,7 @@ const _fi49=fire;fire=function(){if(curRegion()!=='hollow'&&!(SCENE&&SCENE.room&
 
 // --- update: travel, quest regions, spawns ---
 const RG_OWN=new WeakSet();let RG_SPT=0;
-const _u49=upd;upd=function(dt){
+SQUPD.wrap('049',_u49=>function(dt){
  if(TRAVEL49){const T=TRAVEL49;T.t+=dt;if(T.job&&!T.job.done)rgJobStep(T.job,7);
   if(!T.done&&T.t>=T.dur*.55){if(T.job&&!T.job.done&&T.hold<6){T.t=T.dur*.55;T.hold+=dt}
    else{T.done=true;if(T.job&&T.job.err){console.warn(T.job.err);say('The crossing failed; you are still where you were.')}else{if(T.job&&T.job.G)RG_PRE[T.to]=T.job.G;try{travelCommit(T)}catch(e){console.warn(e)}}T.job=null}}
@@ -165,7 +165,7 @@ const _u49=upd;upd=function(dt){
  _u49(dt);if(guard)Q.k=qk;
  const R=SCENE&&SCENE.room;
  if(R&&R.region&&!menuOpen&&!pnOpen&&!dead)rgUpd(R,dt);
- if(!SCENE&&!menuOpen&&!pnOpen&&!dead&&nearPost49()&&!nearNpc()){tk.style.display='flex';const lab='ROUTES'+(isPC?'<small>T</small>':'');if(!tk.innerHTML.startsWith('ROUTES'))tk.innerHTML=lab;tkLab=''}};
+ if(!SCENE&&!menuOpen&&!pnOpen&&!dead&&nearPost49()&&!nearNpc()){tk.style.display='flex';const lab='ROUTES'+(isPC?'<small>T</small>':'');if(!tk.innerHTML.startsWith('ROUTES'))tk.innerHTML=lab;tkLab=''}});
 function rgUpd(R,dt){rgTick(R,dt);const cap=(REGION_SPAWNS[R.region]||{maxEnemies:10}).maxEnemies,dkx=(R.dock[0]+.5)*16,dky=(R.dock[1]+.5)*16;
  // enemies that appeared on their own must stand on reachable ground and away from the pier
  for(const n of en)if(!RG_OWN.has(n)){RG_OWN.add(n);const tx=Math.floor(n.x/16),ty=Math.floor(n.y/16),i=ty*R.w+tx;if(!(R.reach[i])||Math.hypot(n.x-dkx,n.y-dky)<80||Math.hypot(n.x-P.x,n.y-P.y)<60||rgQuiet(R,tx,ty))n.dead=1;

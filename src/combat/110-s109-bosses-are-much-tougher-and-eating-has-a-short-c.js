@@ -4,8 +4,7 @@
 {const BT=new Set(['boss','bonelord','matri','tidekeeper','frostfang','thorn','emberl','ib']);try{for(const f of Object.values(window.WK_BOSSMK||{})){const t=f().type;if(t)BT.add(t)}}catch(e){}
  const isBoss=m=>m&&!m.dead&&(m.big||m.boss||BT.has(m.type)||m._wb);
  // dungeon/floor bosses (island and world bosses get their HP from their own tables): double HP the first time they appear
- const _u=upd;upd=function(dt){_u(dt);for(const m of en)if(!m._hard&&!m._rp&&!m._wb&&m.type!=='ib'&&isBoss(m)){m._hard=1;m.hp=Math.round((m.hp||1)*2);m.mhp=Math.round((m.mhp||m.hp/2)*2)}
-  if(EATCD>0)EATCD-=dt};
+ SQUPD.after('110',(dt)=>{for(const m of en)if(!m._hard&&!m._rp&&!m._wb&&m.type!=='ib'&&isBoss(m)){m._hard=1;m.hp=Math.round((m.hp||1)*2);m.mhp=Math.round((m.mhp||m.hp/2)*2)}if(EATCD>0)EATCD-=dt});
  // bosses hit 60% harder
  const near=()=>{for(const m of en)if(isBoss(m)&&Math.hypot(m.x-P.x,m.y-P.y)<360)return true;const R=SCENE&&SCENE.room;return!!(R&&/^ib_/.test(SCENE.id||''))};
  const _h=hurtP;hurtP=function(d,msg){return _h(near()?Math.ceil(d*1.6*10)/10:d,msg)};

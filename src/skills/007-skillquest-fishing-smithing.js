@@ -33,9 +33,9 @@ SQHIT.wrap('007 skillquest fishing smithing',next=>function(){if(dead||menuOpen|
   if(!TL.rod){say('You need a fishing rod - buy one at the general store');return}
   const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}
  return next.apply(this,arguments)});
-const _u6=upd;upd=function(dt){const hp0=P.hp;_u6(dt);if(!FISH)return;// keeps fishing while a menu or screen is open (Alan, Nov 18)
+SQUPD.wrap('007',_u6=>function(dt){const hp0=P.hp;_u6(dt);if(!FISH)return;// keeps fishing while a menu or screen is open (Alan, Nov 18)
  if(dead||P.hp<hp0||Math.hypot(P.x-FISH.px,P.y-FISH.py)>1.5){FISH=null;if(!dead)say('You stop fishing');return}
- if(FISH.bite>0){FISH.bite-=dt;if(FISH.bite<=0)catchFish()}else if((FISH.t+=dt)>=FISH.wait){FISH.bite=.45;sfx('splash')}};
+ if(FISH.bite>0){FISH.bite-=dt;if(FISH.bite<=0)catchFish()}else if((FISH.t+=dt)>=FISH.wait){FISH.bite=.45;sfx('splash')}});
 // --- cooking & eating (meat + fish) ---
 const COOKS=[{raw:'meat',ck:'cooked',n:'meat',lv:1,xp:30},...FISH_T.map(f=>({raw:f.k,ck:'c'+f.k,n:f.k=='shrimp'?'shrimp':f.n.toLowerCase(),lv:f.cook,xp:f.cxp}))];
 const FOODS=[...FISH_T.map(f=>({k:'c'+f.k,n:'cooked '+f.n.toLowerCase(),heal:f.heal,hun:f.hun})),{k:'cooked',n:'cooked meat',heal:2,hun:60},{k:'berry',n:'berries',heal:0,hun:18},{k:'meat',n:'raw meat',heal:0,hun:20}].sort((a,b)=>b.heal-a.heal||b.hun-a.hun);

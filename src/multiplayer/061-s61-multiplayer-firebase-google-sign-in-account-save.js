@@ -226,7 +226,7 @@ if(STRICT){const st=document.createElement('style');st.textContent=`#sqlost{posi
  const off=document.createElement('div');off.id='sqoff';off.textContent='Not saved: reconnecting...';document.body.appendChild(off);
  setInterval(()=>{const show=MP.on&&SQSTRICT.ready&&!SQSTRICT.conn&&!SQSTRICT.lost&&!(TS&&TS.open)&&Date.now()-SQSTRICT.offAt>4000;off.style.display=show?'block':'none'},500);
  // a stopped game stands still and writes nothing, not even to this device
- const _u=upd;upd=function(dt){if(SQSTRICT.lost)return;return _u.apply(this,arguments)};
+ SQUPD.wrap('061',_u=>function(dt){if(SQSTRICT.lost)return;return _u.apply(this,arguments)});
  const _sl=saveLocal;saveLocal=function(){if(SQSTRICT.lost)return;return _sl.apply(this,arguments)}}
 async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=u;const d=FB.db,D=FB.D,uid=u.uid;
  // account save: one JSON string per player
@@ -429,7 +429,7 @@ addEventListener('keyup',e=>{if(TS.open&&!(e.target&&e.target.closest&&e.target.
 // controller: the title is the screen being navigated
 const _nr62=navRoot;navRoot=function(){if(TS.open)return TS.stage?tsMn:tsEl;return _nr62()};
 // the world is frozen while the title is up
-const _u62=upd;upd=function(dt){if(TS.open){try{pollPad(dt)}catch(e){}return}_u62(dt)}; // the controller still drives the title
+SQUPD.wrap('061',_u62=>function(dt){if(TS.open){try{pollPad(dt)}catch(e){}return}_u62(dt)}); // the controller still drives the title
 let tsLast=0;const tsLoop=function(t){if(!TS.open)return;const s=t/1000;TS.cl.forEach((e,i)=>e.style.backgroundPositionX=Math.round(-s*[6,14,24][i])+'px');
  if(menuOpen)menuOpen=false; // the creator waits behind the title (restored on close)
  if(t-tsLast>700){tsLast=t;tsDrawHero();tsFoot();if(TS.stage)tsMenu()}requestAnimationFrame(tsLoop)};tsLoop(0);
@@ -563,7 +563,7 @@ function fireTick(){if(!MP.on||!FB||!MP.user)return;const l=mpLoc(),key=l?locKey
  d.set(ref,{t:d.serverTimestamp(),f:mine}).catch(()=>{});if(!FIRE.pubbed)d.onDisconnect(ref).remove().catch(()=>{});FIRE.pubbed=true}
 {SQSAVE.after('061:fires',s=>{s.fires=fires.filter(f=>!f._rp).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});})}
 // the frame: shared clock first, then the game, then sharing
-{const _u64=upd;upd=function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick();fireTick();housesTick();buildTick()}catch(e){console.warn(e)}}}}
+{SQUPD.wrap('061',_u64=>function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick();fireTick();housesTick();buildTick()}catch(e){console.warn(e)}}})}
 // signing out: drop other players' monsters and stop sharing
 function mobStop(){for(const p of FIRE.prox.values()){const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}FIRE.prox.clear();if(FIRE.unsub){FIRE.unsub();FIRE.unsub=null}FIRE.loc=null;FIRE.pubbed=false;for(const p of[...MOB.prox.values(),...MOB.limbo]){const j=en.indexOf(p);if(j>=0)en.splice(j,1)}MOB.prox.clear();MOB.limbo.length=0;if(MOB.unsub){MOB.unsub();MOB.unsub=null}MOB.loc=null;MOB.pubbed=false;
  if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.rloc=null;RES.h={};RES.r={}}

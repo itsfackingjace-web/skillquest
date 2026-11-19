@@ -40,7 +40,7 @@
  const COL={slow:'#80b0ff',burn:'#ff7a28',freeze:'#c8f0ff',poison:'#78d048'};
  function apply(r){if(r.dmg>0&&!dead)P.hp-=r.dmg;const got=[];for(const f in r.fx){const[c,t]=r.fx[f];if(Math.random()*100<c){ST[f]=Math.max(ST[f],t);got.push(NAMES[f])}}
   if(got.length){say('You are '+got.join(' and ')+'!');try{sfx('hurt')}catch(e){}}}
- {const _u=upd;upd=function(dt){FRAME++;SEEN=en.slice();const live=[],x0=P.x,y0=P.y,hp0=P.hp,h0=hurt;
+ {SQUPD.wrap('160',_u=>function(dt){FRAME++;SEEN=en.slice();const live=[],x0=P.x,y0=P.y,hp0=P.hp,h0=hurt;
    if(Object.keys(R).length)for(const p of PROJ)if(p&&!p.dead&&p.hostile&&p._mk&&R[p._mk])live.push(p);
    const out=_u.apply(this,arguments);
    try{if(!dead&&live.length&&(P.hp<hp0||hurt>h0))for(const p of live)if((p.dead||p.life<0||!PROJ.includes(p))&&Math.hypot(P.x-p.x,P.y-2-p.y)<16){apply(R[p._mk]);break}
@@ -49,6 +49,6 @@
      if(ST.burn>0&&(ST.bt-=dt)<=0){ST.bt=1.5;P.hp-=1;FLASH=.2}if(ST.poison>0&&(ST.pt-=dt)<=0){ST.pt=3;P.hp-=1;FLASH=.15}
      for(const f of FX)if(ST[f]>0){ST[f]=Math.max(0,ST[f]-dt);if(Math.random()<dt*8&&typeof part==='function')part(P.x+(Math.random()-.5)*10,P.y-8-Math.random()*10,(Math.random()-.5)*16,-24,.5,COL[f],f==='freeze'?0:-40,1)}
      if(ST.burn<=0)ST.bt=0;if(ST.poison<=0)ST.pt=0}}catch(e){console.warn('monster attacks',e)}
-   return out}}
+   return out})}
  window.SQMOBATK={SHOOT,FX,capDraw,get rules(){return R},status:ST,shoots:k=>!!SHOOT[String(k||'').replace(/^[mj]:/,'').split(':')[0]],clear(){for(const f of FX)ST[f]=0}};
  try{SQPROPS.recat()}catch(e){}})();

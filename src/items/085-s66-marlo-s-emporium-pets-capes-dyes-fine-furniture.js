@@ -28,7 +28,7 @@ var LUX={};
  const _bb=blockBonus;blockBonus=function(){return _bb()+(bOn('iron')?.15:0)};
  const _bc=blockCap;blockCap=function(){return _bc()+(bOn('iron')?.1:0)};
  const _sp=isSprint;isSprint=function(){if(bOn('swift')&&!(swing>0)&&!dead&&!pnOpen&&!menuOpen&&!FISH){const m=Math.hypot(jx,jy)>.1||K.w||K.a||K.s||K.d||K.arrowup||K.arrowdown||K.arrowleft||K.arrowright;if(m)return true}return _sp()};
- {const _u=upd;upd=function(dt){const h0=hunger;_u(dt);if(bOn('swift')&&hunger<h0){const passive=dt*.9*FOOD_RATE;if(h0-hunger>passive)hunger=Math.min(100,h0-passive)}}}
+ {SQUPD.wrap('085',_u=>function(dt){const h0=hunger;_u(dt);if(bOn('swift')&&hunger<h0){const passive=dt*.9*FOOD_RATE;if(h0-hunger>passive)hunger=Math.min(100,h0-passive)}})}
  // EAT never drinks potions
  SQEAT.wrap('085 shop potions are not eaten',_eat=>function(){const keep={};for(const p of POTS){keep[p.k]=inv[p.k]|0;inv[p.k]=0}try{_eat()}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}});
  // buff timers on screen
@@ -79,7 +79,7 @@ var LUX={};
  function impPoof(x,y){for(let k=0;k<14;k++){const a=k/14*6.283;part(x,y-8,Math.cos(a)*60,Math.sin(a)*40,.5,k%2?'#a080c0':'#605070',-20,2)}}
  function impHitMob(n){const d=impDmg();n.hp-=d;n._ipois=IMP_POIS;n._iptk=1;const big=n.type==='boss'||n.type==='bonelord'||n.big;DMGS.push({x:n.x,y:n.y-(big?30:14),v:String(d),t:0,c:'#78f090',sc:curScene()});
   for(let k=0;k<5;k++)part(n.x,n.y-6,(Math.random()-.5)*70,-Math.random()*60,.35,k%2?'#58e070':'#b8ffa0',120);try{sfx('hit')}catch(e){}if(n.hp<=0&&!n._wb)killEnemy(n,'imp')}
- {const _u=upd;upd=function(dt){const hp0=P.hp,h0=hurt;_u(dt);if(menuOpen||pnOpen)return;
+ {SQUPD.wrap('085',_u=>function(dt){const hp0=P.hp,h0=hurt;_u(dt);if(menuOpen||pnOpen)return;
    // poison ticking on monsters (whoever's imp it came from)
    for(const n of en){if(!(n._ipois>0)||n.dead)continue;n._ipois-=dt;if((n._iptk-=dt)<=0){n._iptk=1;n.hp-=1;DMGS.push({x:n.x,y:n.y-14,v:'1',t:0,c:'#58e070',sc:curScene()});if(n.hp<=0&&!n._wb)killEnemy(n,'imp')}}
    if(!impOn()){IMP.seen=false;IMP.tgt=IMP.ptgt=null;return}
@@ -98,7 +98,7 @@ var LUX={};
    // monsters right next to it scratch back
    if(IMP.tgt&&!IMP.tgt._wb&&Math.hypot(IMP.tgt.x-IMP.x,IMP.tgt.y-IMP.y)<14&&(IMP.hurtT-=dt)<=0){IMP.hurtT=1.4;IMP.hp-=1;
     if(IMP.hp<=0){IMP.dead=60;IMP.tgt=IMP.ptgt=null;impPoof(IMP.x,IMP.y);say('Your imp was defeated! It will be back in a minute.');try{sfx('hurt')}catch(e){}}}
-   else if(!IMP.tgt&&IMP.hp<IMP.max&&(IMP.hurtT-=dt)<=0){IMP.hurtT=4;IMP.hp++}}}
+   else if(!IMP.tgt&&IMP.hp<IMP.max&&(IMP.hurtT-=dt)<=0){IMP.hurtT=4;IMP.hp++}})}
  const WB_ENT=()=>{const W=window.SQWB;return W&&W.ent&&!W.ent.dead&&Math.hypot(W.ent.x-P.x,W.ent.y-P.y)<220?W.ent:null};
  // drawing it (your imp is drawn by the pet code below; other players' imps where they report them)
  window.SQIMP={state:IMP,aggro:u=>{if(impOn()&&IMP.dead<=0){IMP.ptgt=u;IMP.tgt=null}},pres:()=>impOn()&&IMP.dead<=0?[Math.round(IMP.x),Math.round(IMP.y),'nswe'.indexOf(IMP.dir),IMP.stab>0?1:0]:0};

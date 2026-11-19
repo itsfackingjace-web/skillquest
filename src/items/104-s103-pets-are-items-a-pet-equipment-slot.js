@@ -23,7 +23,7 @@
  SQLOAD.after('104',(S)=>{MIG=!!(S&&S.petItems);lastOwn=null;lastE=null;sync()});
  SQSAVE.wrap('104:petItems',_sn=>function(){try{sync()}catch(e){}const s=_sn();s.petItems=1;return s});
  const _ng=newGame;newGame=function(){_ng();MIG=true;lastOwn=null;lastE=null};
- let st=0;const _u=upd;upd=function(dt){_u(dt);st+=dt;if(st>.4){st=0;try{sync()}catch(e){}}};
+ let st=0;SQUPD.after('104',(dt)=>{st+=dt;if(st>.4){st=0;try{sync()}catch(e){}}});
  const _eq=equipItem;equipItem=function(k){_eq(k);if(EQ[k]&&EQ[k].slot==='pet'){try{sync()}catch(e){}}};
  // icons: the pet itself
  const _ic=iconURL;iconURL=function(k,col){if(typeof k==='string'&&k.startsWith('pet:')){const key='ip'+k;if(ICONC[key])return ICONC[key];let u='';try{u=window.SQPETPIC?SQPETPIC(k.slice(4)):''}catch(e){}if(u)return ICONC[key]=u;k='pet'}

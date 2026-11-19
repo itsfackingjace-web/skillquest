@@ -13,8 +13,8 @@
   {const st=document.createElement('style');st.textContent='#tk.sqtkon{display:flex!important}#tk.sqtkoff{display:none!important}';document.head.appendChild(st)}
   Object.defineProperty(tk,'innerHTML',{configurable:true,get(){return inUpd&&buf!==null?buf:D.get.call(this)},set(v){if(inUpd)buf=String(v);else D.set.call(this,v)}});
   const hold=()=>{const on=tk.style.display!=='none';tk.classList.toggle('sqtkon',on);tk.classList.toggle('sqtkoff',!on)};
-  const _u=upd;upd=function(){inUpd++;if(inUpd===1)buf=null;try{return _u.apply(this,arguments)}finally{inUpd--;
-   if(!inUpd){if(buf!==null){const v=buf;buf=null;if(D.get.call(tk)!==v)D.set.call(tk,v)}last=performance.now();hold()}}};
+  SQUPD.wrap('131',_u=>function(){inUpd++;if(inUpd===1)buf=null;try{return _u.apply(this,arguments)}finally{inUpd--;
+   if(!inUpd){if(buf!==null){const v=buf;buf=null;if(D.get.call(tk)!==v)D.set.call(tk,v)}last=performance.now();hold()}}});
   setInterval(()=>{if(performance.now()-last>200&&(tk.classList.contains('sqtkon')||tk.classList.contains('sqtkoff')))tk.classList.remove('sqtkon','sqtkoff')},100);
   // something outside the frame (a panel closing, a menu) shows or hides it: follow at once
   for(const f of['closePanel','showScreen'])try{const o=window[f];if(typeof o==='function')window[f]=function(){const out=o.apply(this,arguments);try{hold()}catch(e){}return out}}catch(e){}
@@ -50,8 +50,8 @@
  // ---- a boat can't ride up onto a bridge or a pier (they're built over the water, so the boat used to slide onto them
  // and from there reach the land); a boat that starts on one can still sail off it
  {const onB=(x,y)=>[[-6,-1],[6,-1],[-6,6],[6,6]].some(([a,b])=>{const tx=Math.floor((x+a)/16),ty=Math.floor((y+b)/16);return tx>=0&&ty>=0&&tx<N&&ty<N&&BRIDGE.has(ty*N+tx)});
-  const _u=upd;upd=function(dt){const s=SAILING&&!SCENE,ox=P.x,oy=P.y;const out=_u.apply(this,arguments);
-   if(s&&SAILING&&!SCENE&&(P.x!==ox||P.y!==oy)&&!onB(ox,oy)&&onB(P.x,P.y)){if(!onB(P.x,oy))P.y=oy;else if(!onB(ox,P.y))P.x=ox;else{P.x=ox;P.y=oy}}return out}}
+  SQUPD.wrap('131',_u=>function(dt){const s=SAILING&&!SCENE,ox=P.x,oy=P.y;const out=_u.apply(this,arguments);
+   if(s&&SAILING&&!SCENE&&(P.x!==ox||P.y!==oy)&&!onB(ox,oy)&&onB(P.x,P.y)){if(!onB(P.x,oy))P.y=oy;else if(!onB(ox,P.y))P.x=ox;else{P.x=ox;P.y=oy}}return out})}
 
  // ---- Hollow Island now has open sea all around its edge: things built where the land became sea go back in your bag
  {const bad=i=>i<0||i>=N*N||tile[i]===0;const add=(S,k,n)=>{if(!S.inv||typeof S.inv!=='object')S.inv={};S.inv[k]=(+S.inv[k]||0)+n};

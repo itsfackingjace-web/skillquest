@@ -8,11 +8,7 @@ const gateAt=(px,py)=>{const x=Math.floor(px/16),y=Math.floor(py/16),R=rbR();
 const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the corners of your own step
 {const _s=solid;solid=function(px,py){if(gateAt(px,py))return!playerProbe(px,py)||dead;return _s(px,py)}}
 {const okAt=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));let chk=0;
- const _u=upd;upd=function(dt){_u(dt);if(dead||menuOpen||pnOpen||TRAVEL49||(chk-=dt)>0)return;chk=.25;const R=SCENE&&SCENE.room;if(SCENE&&!(R&&R.region))return;
-  if(SAILING||RSAIL.on)return;if(okAt(P.x,P.y))return;
-  // only rescue from things that grow back (trees, rocks, ores, bushes)
-  const tx=Math.floor(P.x/16),ty=Math.floor((P.y+2)/16);let grown=false;for(let b=-1;b<=1&&!grown;b++)for(let a=-1;a<=1;a++){const o=R?rgObjAt(R,tx+a,ty+b):obj[(ty+b)*N+tx+a];if(o){grown=true;break}}if(!grown)return;
-  for(let r=4;r<=48;r+=2)for(let k=0;k<16;k++){const an=k/16*6.283,x=P.x+Math.cos(an)*r,y=P.y+Math.sin(an)*r;if(okAt(x,y)){P.x=x;P.y=y;say('You squeeze out from under the branches.');return}}}}
+ SQUPD.after('078',(dt)=>{if(dead||menuOpen||pnOpen||TRAVEL49||(chk-=dt)>0)return;chk=.25;const R=SCENE&&SCENE.room;if(SCENE&&!(R&&R.region))return;if(SAILING||RSAIL.on)return;if(okAt(P.x,P.y))return;const tx=Math.floor(P.x/16),ty=Math.floor((P.y+2)/16);let grown=false;for(let b=-1;b<=1&&!grown;b++)for(let a=-1;a<=1;a++){const o=R?rgObjAt(R,tx+a,ty+b):obj[(ty+b)*N+tx+a];if(o){grown=true;break}}if(!grown)return;for(let r=4;r<=48;r+=2)for(let k=0;k<16;k++){const an=k/16*6.283,x=P.x+Math.cos(an)*r,y=P.y+Math.sin(an)*r;if(okAt(x,y)){P.x=x;P.y=y;say('You squeeze out from under the branches.');return}}})}
 // ---- the Stone Sledgehammer: the Stone Giant's second rare drop (5% for everyone who fought, 8% for the top three) ----
 {const _wl=wbLoot;wbLoot=function(b){const me=MP.user&&MP.user.uid,ok=b&&b.type==='giant'&&WB.dmg>=1&&!WB.claimed[b.slot];let top=false;
   if(ok){const rank=Object.entries(Object.assign({},WB.all,{[me]:WB.dmg})).sort((a,c)=>c[1]-a[1]).findIndex(e=>e[0]===me)+1;top=rank>0&&rank<=3}

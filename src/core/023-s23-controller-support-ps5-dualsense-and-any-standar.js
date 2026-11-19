@@ -143,5 +143,5 @@ const _pP25=pP;pP=function(tm){if(BOWT<=0)return _pP25(tm);const sw=swing;swing=
  for(let t=-6;t<=6;t++){const k=t*t/9;pts.push([Math.round(cx+px*t-dx*k),Math.round(cy+py*t-dy*k)])}
  for(const[x,y]of pts)Rg(x-1,y-1,4,4,O);for(let t=-5;t<=5;t++){const k=36/9+dr-Math.abs(t)*dr/5;Rg(Math.round(cx+px*t-dx*k),Math.round(cy+py*t-dy*k),1,1,'#f0f0f0')}
  for(const[x,y]of pts)Rg(x,y,2,2,'#a86830');Rg(pts[6][0],pts[6][1],2,2,'#7a4a20')};
-const _u25=upd;upd=function(dt){_u25(dt);BOWT=Math.max(0,BOWT-dt)};
-const _u23=upd;upd=function(dt){pollPad(dt);const hp0=P.hp;_u23(dt);if(GPON){if(GPAX.aim&&ROLLT<=0&&!pnOpen)face=GPAX.aim;const sm=tk.querySelector('small');if(sm&&sm.textContent!=='✕')sm.textContent='✕';else if(!sm&&tk.style.display!=='none')tk.insertAdjacentHTML('beforeend','<small>✕</small>')}if(GPON&&P.hp<hp0)rumble(140,.7,.4);if(GPON&&dead&&GPHP>0)rumble(400,1,1);GPHP=dead?0:P.hp};
+SQUPD.after('023',(dt)=>{BOWT=Math.max(0,BOWT-dt)});
+SQUPD.wrap('023',_u23=>function(dt){pollPad(dt);const hp0=P.hp;_u23(dt);if(GPON){if(GPAX.aim&&ROLLT<=0&&!pnOpen)face=GPAX.aim;const sm=tk.querySelector('small');if(sm&&sm.textContent!=='✕')sm.textContent='✕';else if(!sm&&tk.style.display!=='none')tk.insertAdjacentHTML('beforeend','<small>✕</small>')}if(GPON&&P.hp<hp0)rumble(140,.7,.4);if(GPON&&dead&&GPHP>0)rumble(400,1,1);GPHP=dead?0:P.hp});

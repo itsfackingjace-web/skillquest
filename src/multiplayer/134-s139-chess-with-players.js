@@ -40,8 +40,8 @@
 
  // ---- no damage while you sit at a chess board (Orla's or another player's) ----
  {let held=false,hv=0;const want=()=>!!(chessOpen||PV.open);
-  const _u=upd;upd=function(dt){const w=want();if(PV.open)pnOpen=true;if(w&&!held){const d=Object.getOwnPropertyDescriptor(P,'hp');if(!d||!d.get){hv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hv},set(v){if(v>hv)hv=v}});held=true}}
-   else if(!w&&held){const v=hv;delete P.hp;P.hp=v;held=false}return _u.apply(this,arguments)}}
+  SQUPD.before('134',(dt)=>{const w=want();if(PV.open)pnOpen=true;if(w&&!held){const d=Object.getOwnPropertyDescriptor(P,'hp');if(!d||!d.get){hv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hv},set(v){if(v>hv)hv=v}});held=true}}
+   else if(!w&&held){const v=hv;delete P.hp;P.hp=v;held=false}})}
 
  // ---- chess against another player ----
  const PV={open:false,st:null,white:true,sel:-1,moves:[],last:null,at:0,over:false};

@@ -83,7 +83,7 @@ const _ed47=enemyDrop;enemyDrop=function(n){_ed47(n);if(n.type!=='tidek')return;
  sfx('quest');sqEvent('dungeonboss','tidekeeper');saveNow()};
 // --- monster behaviour ---
 function waterBolt(n,ang,sp,dmg){PROJ.push({x:n.x,y:n.y-8,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,t:0,life:n.type==='tidek'?1.6:1.1,k:'water',sc:curScene(),hostile:1,wd:dmg});sfx('splash')}
-const _u47=upd;upd=function(dt){const paused=menuOpen||pnOpen||dead;const pos=paused?null:en.map(n=>[n,n.x,n.y]),hp0=P.hp,wp=paused?null:PROJ.filter(p=>p.k==='water'&&!p.dead);_u47(dt);if(paused)return;const hit=P.hp<hp0;
+SQUPD.wrap('047',_u47=>function(dt){const paused=menuOpen||pnOpen||dead;const pos=paused?null:en.map(n=>[n,n.x,n.y]),hp0=P.hp,wp=paused?null:PROJ.filter(p=>p.k==='water'&&!p.dead);_u47(dt);if(paused)return;const hit=P.hp<hp0;
  // a water bolt that just hit you: it hits harder than a bone (top-up), and says so
  if(hit&&wp)for(const p of wp)if(p.dead&&Math.hypot(P.x-p.x,P.y-2-p.y)<14){if(p.wd>1)PEND43+=p.wd-1;say('A water bolt slams into you!');break}
  for(const[n,ox,oy]of pos){if(n.dead)continue;const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;
@@ -99,7 +99,7 @@ const _u47=upd;upd=function(dt){const paused=menuOpen||pnOpen||dead;const pos=pa
   else if(n.type==='guard'){if(n.frozen>0){n.x=ox;n.y=oy;continue}n.x=ox+n.kx*.4;n.y=oy+n.ky*.4;if(d>34)stepTo(n,dx/d*14*dt,dy/d*14*dt);
    n.cast=Math.max(0,(n.cast||0)-dt);if((n.gcd-=dt)<=0&&d<95&&losClear(n.x,n.y-6,P.x,P.y)){n.gcd=2.4+Math.random()*.6;n.cast=.35;n.fire=.35}
    if(n.fire>0&&(n.fire-=dt)<=0)waterBolt(n,Math.atan2(P.y-(n.y-8),P.x-n.x),90,2)}
-  else if(n.type==='tidek')tideAI(n,ox,oy,dt,d,dx,dy,hit)}};
+  else if(n.type==='tidek')tideAI(n,ox,oy,dt,d,dx,dy,hit)}});
 function tideAI(n,ox,oy,dt,d,dx,dy,hit){const ph2=n.hp<n.mhp*.6;if(ph2&&!n.p2){n.p2=1;say('The Tidekeeper raises its trident. The water surges!');msgT=3;sfx('roar');n.ks='rest';n.kt=.6}
  if(n.frozen>0){n.x=ox;n.y=oy;return}n.x=ox+n.kx*.25;n.y=oy+n.ky*.25;const ang=Math.atan2(P.y-(n.y-10),P.x-n.x);
  if(n.ks==='move'){n.ang+=dt*(ph2?.55:.4)*(n.dir2||1);const r=64,tx=P.x+Math.cos(n.ang)*r,ty=P.y+Math.sin(n.ang)*r*.75,ddx=tx-n.x,ddy=ty-n.y,dd=Math.hypot(ddx,ddy)||1;

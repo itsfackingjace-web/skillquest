@@ -27,7 +27,18 @@ for(const r of res){if(!r.decl)continue;const inner=r.inner,f=r.fnode,S=f.body.b
  const args='('+(pn||[]).join(',')+')';
  const rep=kind==='wrap'?REG+".wrap('"+name+"',"+inner+"=>"+src(f)+")":REG+"."+kind+"('"+name+"',"+args+"=>{"+body+"})";
  const d0=fileAt(r.decl.start),d1=fileAt(r.stmt.end);if(d0.f!==d1.f)throw new Error('spans files '+file);
- const between=js.slice(r.decl.end,r.stmt.start);if(between.trim()!=='')throw new Error('not adjacent in '+file+': '+between.slice(0,80));
- const tail=src(r.stmt).trimEnd().endsWith(';')?';':'';(edits[file]=edits[file]||[]).push([d0.off,d1.off,rep+tail])}
+ // the saved inner function must not be used anywhere else in its block (it disappears with the declaration)
+ if(r.blockList){let uses=0;const own=new Set();// blocks/functions that declare their own `inner` hide it
+  const declares=n=>{const body=n.type==='BlockStatement'||n.type==='Program'?n.body:n.body&&n.body.type==='BlockStatement'?n.body.body:[];
+   if(/Function/.test(n.type)&&n.params.some(p=>p.type==='Identifier'&&p.name===inner))return true;
+   return(body||[]).some(st=>(st.type==='VariableDeclaration'&&st.declarations.some(d=>d.id.type==='Identifier'&&d.id.name===inner))||(st.type==='FunctionDeclaration'&&st.id&&st.id.name===inner))};
+  (function vis(n,top){if(!n||typeof n.type!=='string')return;if(!top&&(n.type==='BlockStatement'||/Function/.test(n.type))&&declares(n))return;
+   if(n.type==='Identifier'&&n.name===inner&&!(n.start>=r.decl.start&&n.end<=r.decl.end)&&!(n.start>=f.start&&n.end<=f.end))uses++;
+   for(const k in n){if(k==='type')continue;const v=n[k];if(Array.isArray(v))v.forEach(x=>x&&vis(x,false));else if(v&&typeof v.type==='string')vis(v,false)}})(r.blockList,true);
+  if(uses)throw new Error(inner+' is used outside its wrapper in '+file)}
+ const tail=src(r.stmt).trimEnd().endsWith(';')?';':'';const between=js.slice(r.decl.end,r.stmt.start);
+ if(between.trim()===''){(edits[file]=edits[file]||[]).push([d0.off,d1.off,rep+tail])}
+ else{// something in between (e.g. `let t=0;`): drop the declaration, keep the rest, replace the assignment
+  const s0=fileAt(r.stmt.start);(edits[file]=edits[file]||[]).push([d0.off,fileAt(r.decl.end).off,'/* '+inner+' */'],[s0.off,d1.off,rep+tail])}}
 for(const file in edits){const p=path.join(ROOT,file);let s=fs.readFileSync(p,'utf8');for(const[x,y,t]of edits[file].sort((m,n)=>n[0]-m[0]))s=s.slice(0,x)+t+s.slice(y);if(!DRY)fs.writeFileSync(p,s)}
 console.log(JSON.stringify(cnt));console.log(names.join('\n'));

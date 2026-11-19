@@ -8,8 +8,8 @@
  {const _s=spellDmg;spellDmg=function(){const v=_s.apply(this,arguments),p=fx('mag');return p?Math.max(1,Math.round(v*(1+p/100))):v}}
  {const _e=killEnemy;killEnemy=function(){/* kill gold (021) + the monster's drops */const g0=GLD;const out=_e.apply(this,arguments);try{const p=fx('gold'),d=GLD-g0;if(p&&d>0)GLD+=Math.round(d*p/100)}catch(e){}return out}}
  let hr=0;
- {const _u=upd;upd=function(dt){const m0=MANA,h0=hunger;const out=_u.apply(this,arguments);try{
+ {SQUPD.wrap('179',_u=>function(dt){const m0=MANA,h0=hunger;const out=_u.apply(this,arguments);try{
    const mr=fx('mreg'),dm=MANA-m0;if(mr&&dm>0&&dm<1)MANA=Math.min(maxMP(),MANA+dm*mr/100);
    const hu=fx('hun'),dh=h0-hunger;if(hu&&dh>0&&dh<2)hunger=Math.min(100,hunger+dh*Math.min(90,hu)/100);
-   const hg=fx('hreg');if(hg&&!dead&&P.hp<6){hr+=dt;if(hr>=600/hg){hr=0;P.hp=Math.min(6,P.hp+1)}}else hr=0}catch(e){}return out}}
+   const hg=fx('hreg');if(hg&&!dead&&P.hp<6){hr+=dt;if(hr>=600/hg){hr=0;P.hp=Math.min(6,P.hp+1)}}else hr=0}catch(e){}return out})}
  window.SQGEARFX={fx}})();

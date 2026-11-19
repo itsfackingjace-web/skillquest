@@ -47,7 +47,7 @@
   for(const k in MV)delete MV[k];for(const k in want)if(want[k].mv)MV[k]=want[k].mv;merge()}
  const MV={};// merged items: key -> the item it turns into
  function merge(){for(const k in MV){const t=MV[k];if(t===k||!INAME[t]||MV[t])continue;const n=inv[k]|0;if(n>0){inv[t]=(inv[t]|0)+n;inv[k]=0}}}
- {let mt=0;const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if((mt+=dt)>2){mt=0;try{merge()}catch(e){}}return out}}
+ {let mt=0;SQUPD.after('162',(dt)=>{if((mt+=dt)>2){mt=0;try{merge()}catch(e){}}})}
  {SQLOAD.after('162',()=>{try{merge()}catch(e){}})}
  {const _uf=useFood;useFood=function(k){const o=POT[k];if(!o)return _uf.apply(this,arguments);if((inv[k]|0)<1)return;inv[k]--;const got=[];
    if(o.heal){P.hp=Math.min(6,P.hp+o.heal);got.push('+'+o.heal+' HP')}if(o.mana){MANA=Math.min(typeof maxMP==='function'?maxMP():10,MANA+o.mana);got.push('+'+o.mana+' mana')}

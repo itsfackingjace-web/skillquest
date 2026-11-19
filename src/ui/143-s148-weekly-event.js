@@ -56,11 +56,11 @@
  function add(k){if(!(k>0)||!on())return;const was=W.c;W.c+=k;W.q+=k;if(was<mins(E())&&W.c>=mins(E()))pay(E(),tierOf(TOT,E()));if(pnOpen&&ptab===6)rPn()}
  // ---- counting ----
  {const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);if(x<=200&&!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}return out}}// (big gains are rewards, not fires)
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;rollover();watch();const e=E(),si=SK(e.s);
+ {SQUPD.wrap('143',_u=>function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;rollover();watch();const e=E(),si=SK(e.s);
    if(LASTINV&&!e.kill&&XPF.has(si)){if(e.xpc)add(XPN[si]|0);else{let tot=0;for(const k in inv){const v=(inv[k]|0)-(LASTINV[k]|0);if(v>0)tot+=v}add(e.min1?Math.max(1,tot):tot)}}
    if(typeof kills==='number'){if(e.kill&&kills>LASTK&&LASTINV)add(kills-LASTK);LASTK=kills}
    XPF.clear();XPN={};LASTINV=Object.assign({},inv);
-   const t=performance.now();if(W.q>0&&t-sendAt>10000){sendAt=t;send()}}catch(er){}return out}}
+   const t=performance.now();if(W.q>0&&t-sendAt>10000){sendAt=t;send()}}catch(er){}return out})}
  // ---- the quest log card ----
  const left=()=>{const ms=Math.max(0,endsAt(W.w)-now()),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5);return d>0?d+'d '+h+'h left':h>0?h+'h left':Math.max(1,Math.ceil(ms/6e4))+' min left'};
  function html(){const e=E(),pc=Math.min(100,TOT/e.goal*100),k=tierOf(TOT,e),mn=mins(e);

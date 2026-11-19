@@ -28,10 +28,9 @@ function dummyStruck(d,x,y,dmg,skill,xpPer,word){d.wob=.3;setTimeout(()=>{d.wob=
  DMGS.push({x,y:y-14,v:String(dmg),t:0,c:'#ffffff',sc:curScene()});
  if(lvOf(skill)<DUMCAP){addXp(skill,xpPer*dmg);if(!d.tip2){d.tip2=1;say('Good shot! The dummy teaches '+word+' up to level '+DUMCAP+'.')}}
  else if(!d.tip3){d.tip3=1;say('You\'ve learned all the dummy can teach about '+word+'. Try real enemies!')}}
-const _u33=upd;upd=function(dt){if(!dead&&!menuOpen){const sc=curScene();
+SQUPD.before('033',(dt)=>{if(!dead&&!menuOpen){const sc=curScene();
   for(const p of PROJ){if(p.dead||p.hostile||p.sc!==sc||p.k==='bone')continue;const d=dummyAt(p.x+p.vx*dt,p.y+p.vy*dt+4);if(d){p.life=-1;dummyStruck(d,p.x,p.y,p.dmg||1,FL,3,'Archery')}}
-  for(const s of SPELLS){if(s.dead||s.sc!==sc)continue;const d=dummyAt(s.x+s.vx*dt,s.y+s.vy*dt+4);if(d){s.life=-1;dummyStruck(d,s.x,s.y,s.dmg||1,ML,4,'Magic')}}}
- _u33(dt)};
+  for(const s of SPELLS){if(s.dead||s.sc!==sc)continue;const d=dummyAt(s.x+s.vx*dt,s.y+s.vy*dt+4);if(d){s.life=-1;dummyStruck(d,s.x,s.y,s.dmg||1,ML,4,'Magic')}}}});
 const _sh33b=stationHTML;stationHTML=function(o){if(o.t!=='dummy')return _sh33b(o);const S=STNS.find(s=>s.k==='dummy');
  const row=(n,sk)=>'<li>'+n+': level '+lvOf(sk)+(lvOf(sk)<DUMCAP?' (it can teach you up to '+DUMCAP+')':' (you\'ve outgrown it)')+'</li>';
  return'<div class="tl">'+S.n+'</div><div class="qc"><p>Practice on it from up close or from range:</p><ul style="margin:6px 0 0 18px;padding:0;text-align:left">'+row('HIT it — Attack',0)+row('Shoot arrows at it — Archery',FL)+row('Cast spells at it — Magic',ML)+'</ul></div>'

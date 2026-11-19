@@ -78,7 +78,7 @@
  return next.apply(this,arguments)});
  // campfires on the other islands: each island keeps its own fires
  const fireStash={};window.FIRESTASH=fireStash;let fireReg=curRegion();
- const _u64c=upd;upd=function(dt){const r=window.fireKey64?fireKey64():curRegion();if(r!==fireReg){fireStash[fireReg]=fires.filter(f=>!f._rp);fires=(fireStash[r]||[]).filter(f=>f.life>0);fireReg=r}_u64c(dt)};
+ SQUPD.before('083',(dt)=>{const r=window.fireKey64?fireKey64():curRegion();if(r!==fireReg){fireStash[fireReg]=fires.filter(f=>!f._rp);fires=(fireStash[r]||[]).filter(f=>f.life>0);fireReg=r}});
  const _fi64=fire;fire=function(){const R=SCENE&&SCENE.room;if(!R||!R.region)return _fi64();if(dead||(typeof SAILING!=='undefined'&&SAILING))return;
   if(!((inv.wood|0)>=3&&(inv.stone|0)>=1)){say('Need 3 wood + 1 stone');return}const[fx,fy]=front(16);if(solid(fx,fy)){say('No room there');return}
   inv.wood-=3;inv.stone--;const life=(150+lvOf(5)*3)*(1+(typeof fDur==='function'?fDur():0));fires.push({x:fx,y:fy,life,mx:life});say('Campfire built');addXp(5,40);sfx('fire');saveLocal()};

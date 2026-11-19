@@ -70,7 +70,7 @@ const _ed21=enemyDrop;enemyDrop=function(n){if(n.type!=='bonelord')return _ed21(
  say('The Bone Lord crumbles! +250 gold, 3 steel bars, 10 iron arrows');msgT=5;sfx('quest');saveLocal(true);saveCloud(true)};
 // --- update: roll, projectiles, enemy behaviors, weather ---
 let wTick=0;
-const _u21=upd;upd=function(dt){const paused=menuOpen||pnOpen;const pos=paused?null:en.map(n=>[n,n.x,n.y]);_u21(dt);if(paused)return;
+SQUPD.wrap('021',_u21=>function(dt){const paused=menuOpen||pnOpen;const pos=paused?null:en.map(n=>[n,n.x,n.y]);_u21(dt);if(paused)return;
  ROLLCD=Math.max(0,ROLLCD-dt);
  if(ROLLT>0&&!dead){ROLLT-=dt;const s=165*dt,ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));const nx=P.x+ROLLV[0]*s,ny=P.y+ROLLV[1]*s;if(ok(nx,P.y))P.x=nx;if(ok(P.x,ny))P.y=ny;
   if(Math.abs(ROLLV[0])>Math.abs(ROLLV[1]))face=[Math.sign(ROLLV[0]),0];else if(ROLLV[1])face=[0,Math.sign(ROLLV[1])];
@@ -100,7 +100,7 @@ const _u21=upd;upd=function(dt){const paused=menuOpen||pnOpen;const pos=paused?n
  const bm=biomeHere(),wet=rainingNow();
  RAINV+=((wet&&bm!=='desert'&&bm!=='snow'?1:0)-RAINV)*Math.min(1,dt*.35);SNOWV+=((bm==='snow'?(wet?1:.4):0)-SNOWV)*Math.min(1,dt*.5);HAZEV+=((bm==='desert'&&dark()<.2?1:0)-HAZEV)*Math.min(1,dt*.5);
  if((wTick+=dt)>1){wTick=0;rainAudio();
-  if(wet){if(FARM.size){for(const p of FARM.values())p.w=Math.max(p.w,CLK+90);if(!rainTip&&!rainWasOn){rainTip=true;say('It\'s raining! Your crops are getting watered.')}}}rainWasOn=wet}};
+  if(wet){if(FARM.size){for(const p of FARM.values())p.w=Math.max(p.w,CLK+90);if(!rainTip&&!rainWasOn){rainTip=true;say('It\'s raining! Your crops are getting watered.')}}}rainWasOn=wet}});
 // --- HIT: shoot when an enemy is in front and out of sword reach ---
 SQHIT.wrap('021 weather dodge roll bows archery smarter',next=>function(){if(!(typeof GPON!=='undefined'&&GPON)&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!(SCENE&&!SCENE.room.cave)&&!facingNpc()){const t=bowTarget();if(t){shoot();return}}
  return next.apply(this,arguments)});  // with a controller, R1 is the bow and R2 is always the sword

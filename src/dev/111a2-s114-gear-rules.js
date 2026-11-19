@@ -93,8 +93,8 @@
  const _ah=arrowHit;arrowHit=function(p,n){const out=_ah.apply(this,arguments);if(p&&!p.hostile&&p.k==='arrow'&&anyFx())try{onHit(n,p.dmg|0,'arrow')}catch(e){}return out};
  const _sh=spellHit;spellHit=function(s,n,dmg){const out=_sh.apply(this,arguments);if(anyFx())try{onHit(n,dmg|0,'spell')}catch(e){}return out};
  const _ax=addXp;addXp=function(i,x){const b=fxSum('xp');if(b&&x>0)x=Math.max(x,Math.round(x*(1+b/100)));return _ax.call(this,i,x)};
- const _up=upd;upd=function(dt){const x0=P.x,y0=P.y;const out=_up.apply(this,arguments);try{const sp=fxSum('spd');if(sp&&!dead&&!SCENE){const dx=P.x-x0,dy=P.y-y0;
-   if((dx||dy)&&Math.hypot(dx,dy)<20){const f=sp/100,ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));if(ok(P.x+dx*f,P.y))P.x+=dx*f;if(ok(P.x,P.y+dy*f))P.y+=dy*f}}}catch(e){}return out};
+ SQUPD.wrap('111a2',_up=>function(dt){const x0=P.x,y0=P.y;const out=_up.apply(this,arguments);try{const sp=fxSum('spd');if(sp&&!dead&&!SCENE){const dx=P.x-x0,dy=P.y-y0;
+   if((dx||dy)&&Math.hypot(dx,dy)<20){const f=sp/100,ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));if(ok(P.x+dx*f,P.y))P.x+=dx*f;if(ok(P.x,P.y+dy*f))P.y+=dy*f}}}catch(e){}return out});
  // ---- saves keep new items (and what you wear) even if they haven't loaded yet ----
  SQSAVE.after('111a2:cus',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];
    const c={};for(const sl of SLOTS){if(CUS[sl])c[sl]=CUS[sl];else if(PCUS[sl])c[sl]=PCUS[sl]}if(Object.keys(c).length)s.cus=c}catch(e){}});

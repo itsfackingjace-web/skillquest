@@ -46,11 +46,11 @@ const _ul36=castUlt;castUlt=function(){const cd0=ULTCD,cheap=perk(ML,'cheapult')
  ULTBOOST=true;try{_ul36()}finally{ULTBOOST=false}const fired=ULTCD>cd0&&ULTCD>=19;
  if(fired){const l=lvOf(ML);ULTCD-=(l>=25?2:0)+(l>=55?2:0)+(perk(ML,'ultfocus')?8:0);if(cheap)MANA=Math.min(maxMP(),MANA+5-lent)}else if(lent)MANA-=lent};
 // regen bonus, mana shield and the phoenix ward
-const _u36=upd;upd=function(dt){const hp0=P.hp,was=dead,t0=time,m0=MANA;_u36(dt);if(menuOpen||pnOpen)return;
+SQUPD.wrap('036',_u36=>function(dt){const hp0=P.hp,was=dead,t0=time,m0=MANA;_u36(dt);if(menuOpen||pnOpen)return;
  if(!dead&&MANA<maxMP()){const ex=.01*(lvOf(ML)-1)+(perk(ML,'recovery')?.5:0);MANA=Math.min(maxMP(),MANA+dt*.5*(1+.4*nCls('m'))*ex)}
  if(perk(ML,'shield')&&P.hp<hp0&&m0>=4){P.hp=hp0;MANA=Math.max(0,MANA-4);if(dead&&!was){dead=false;time=t0}drops.push({x:P.x,y:P.y-22,t:0,tx:'Mana Shield',c:'#b080ff'});for(let k=0;k<14;k++){const a=k/14*6.283;part(P.x+Math.cos(a)*10,P.y-6+Math.sin(a)*9,Math.cos(a)*30,Math.sin(a)*30,.35,'#c8a8ff',0)}}
  if(dead&&!was&&perk(ML,'phoenix')&&PHX_DAY!==today()){PHX_DAY=today();dead=false;time=t0;P.hp=6;MANA=maxMP();hurt=1.6;FLASH=.6;say('PHOENIX WARD! You rise from the flames.');msgT=4;sfx('quest');
-  for(let k=0;k<40;k++){const a=k/40*6.283;part(P.x,P.y-6,Math.cos(a)*110,Math.sin(a)*90-30,.7,k%2?'#f88830':'#f8e060',-40,2)}saveLocal(true)}};
+  for(let k=0;k<40;k++){const a=k/40*6.283;part(P.x,P.y-6,Math.cos(a)*110,Math.sin(a)*90-30,.7,k%2?'#f88830':'#f8e060',-40,2)}saveLocal(true)}});
 // tell the player when a choice opens up
 const _ax36=addXp;addXp=function(i,x){const b=lvOf(i);_ax36(i,x);const a=lvOf(i);if(a>b&&TREES[i]&&TREES[i].choices[a]&&!(PERKS[i]&&PERKS[i][a])){say(SKN[i]+' '+a+': a new perk to choose! Open Skills and tap '+SKN[i]+'.');msgT=5}};
 // --- saving ---

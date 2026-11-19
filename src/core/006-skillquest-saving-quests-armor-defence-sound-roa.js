@@ -103,7 +103,7 @@ const _sa5=shopAct;shopAct=function(a){const g0=GLD;_sa5(a);if(GLD!==g0)sfx('coi
 const SPX=VX*16+8,SPY=(VY+2)*16+8;
 const _rs5=reset;reset=function(){_rs5();P.x=SPX;P.y=SPY;inv.cooked=0;inv.iron=0;lastK=kills;saveLocal(true);saveCloud()};
 // --- update loop additions ---
-const _u5=upd;upd=function(dt){
+SQUPD.wrap('006',_u5=>function(dt){
  const paused=menuOpen||pnOpen,wasDead=dead,hp0=P.hp;
  if(!paused&&!dead&&hurt<=0&&!(ROLLT>0)&&en.some(n=>!n.dead&&!(n.frozen>0)&&Math.hypot(P.x-n.x,P.y-n.y)<10)&&Math.random()<blockCh()){hurt=.6;say('Blocked!');sfx('block');addXp(8,10)}
  _u5(dt);
@@ -114,7 +114,7 @@ const _u5=upd;upd=function(dt){
  if(kills>lastK){const d=kills-lastK;if(Q.on&&QS[Q.i]&&QS[Q.i].type=='kill'&&!QS[Q.i].item)Q.k+=d;addXp(8,8*d)}lastK=kills;
  for(let j=REM.length-1;j>=0;j--){const r=REM[j];if(obj[r.i]){REM.splice(j,1);continue}if(CLK-r.at>240){const x=r.i%N,y=(r.i/N)|0;if(Math.hypot(P.x-(x*16+8),P.y-(y*16+8))>40){obj[r.i]={t:r.t,hp:OHP[r.t]};REM.splice(j,1)}}}
  roamNPCs(dt);
- if(!dead){if((saveT+=dt)>3){saveT=0;saveLocal()}if((cloudT+=dt)>15){cloudT=0;saveCloud()}}};
+ if(!dead){if((saveT+=dt)>3){saveT=0;saveLocal()}if((cloudT+=dt)>15){cloudT=0;saveCloud()}}});
 // --- drawing: quest marker + HUD ---
 const _nd5=NEWDRAW;NEWDRAW=function(...a){_nd5(...a);const tm=a[8],q=QS[Q.i];if(!q)return;
  for(const n of NPCS){if(n.kind!='elder')continue;const mk=!Q.on?'!':qDone(q)?'?':'';if(!mk)continue;const bx=Math.round(n.x),by=Math.round(n.y-30+Math.sin(tm*4)*1.5);

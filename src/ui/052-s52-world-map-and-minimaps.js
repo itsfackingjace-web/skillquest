@@ -25,7 +25,7 @@ function fogReveal(R){if(!R.fog)rgFogAttach(R);const cx=Math.floor(P.x/16),cy=Ma
  for(let y=Math.max(0,cy-FOG_R);y<=Math.min(R.h-1,cy+FOG_R);y++)for(let x=Math.max(0,cx-FOG_R);x<=Math.min(W-1,cx+FOG_R);x++){const i=y*W+x;if(R.fog[i]||(x-cx)*(x-cx)+(y-cy)*(y-cy)>FOG_R*FOG_R+2)continue;R.fog[i]=1;n++;
   if(R.mmFU)R.mmFU[i]=R.mmT[i]}
  if(n){R.fogDirty=true;R.mmFD=true}return n}
-const _u52=upd;upd=function(dt){_u52(dt);const R=SCENE&&SCENE.room;if(!R||!R.region||dead||TRAVEL49)return;if((FOGT-=dt)>0)return;FOGT=.2;fogReveal(R)};
+SQUPD.after('052',(dt)=>{const R=SCENE&&SCENE.room;if(!R||!R.region||dead||TRAVEL49)return;if((FOGT-=dt)>0)return;FOGT=.2;fogReveal(R)});
 // --- cached map layers ---
 const MAPC={sea:hdC('#2a6cc2'),fogL:hdC('#3a4152'),fogS:hdC('#1e2c48')};
 function rgTerrainU(R){if(R.mmT)return R.mmT;const u=new Uint32Array(R.w*R.h),COL=RG_MAPCOL.map(hdC);for(let i=0;i<u.length;i++)u[i]=COL[R.tiles[i]]||COL[2];

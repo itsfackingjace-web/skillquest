@@ -61,10 +61,7 @@ function bwOpen(n){BW.npc=n;BW.sure=null;shop='bwnpc';pnOpen=true;ptab=2;jx=jy=0
 {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=bwNear();if(n){bwOpen(n);return}}return _t()}}
 tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=bwNear();if(n){e.preventDefault();e.stopImmediatePropagation();bwOpen(n)}},{passive:false,capture:true});
 {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!bwNear()||!!(_pu&&_pu())}
-let tkMine=false;{const _u=upd;upd=function(dt){_u(dt);const n=!pnOpen&&!menuOpen&&!dead?bwNear():null;
-  if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;tkMine=true}else if(tkMine){tkMine=false;if(!pnOpen)tk.style.display='none'}
-  // monsters keep out of the village
-  const R=bwR();if(R&&BW.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&inTown(m.x,m.y)){m.dead=1;m.dropped=1}}}
+let tkMine=false;{SQUPD.after('095',(dt)=>{const n=!pnOpen&&!menuOpen&&!dead?bwNear():null;if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;tkMine=true}else if(tkMine){tkMine=false;if(!pnOpen)tk.style.display='none'}const R=bwR();if(R&&BW.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&inTown(m.x,m.y)){m.dead=1;m.dropped=1}})}
 const SHOPBW=[{n:'Healing potion',c:180,k:'pot_heal',m:1},{n:'20 arrows',c:30,k:'arrow',m:20},{n:'10 bait',c:15,k:'bait',m:10},{n:'5 wheat seeds',c:6,k:'wheatseed',m:5},{n:'5 carrot seeds',c:14,k:'carrotseed',m:5,lv:[11,5]},{n:'Fire kit (3 wood + 1 stone)',c:12,kit:1}];
 window.SHOPBW=SHOPBW;// (161b/162 edit and add to it from the Dev Suite)
 function bwHTML(){const n=BW.npc;if(!n)return'';const line=SAYS[n.id][Math.floor(performance.now()/7000)%SAYS[n.id].length];
@@ -90,7 +87,7 @@ if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a)
 const TH_HP=180;let THDAY=-1;
 {const _da=dArrive;dArrive=function(R,from){_da(R,from);const D=R.dun;if(!D||D.kind!=='bwroot'||D.f!==6||!D.boss||D._th)return;D._th=1;if(THDAY===today()){say('Thornroot Hollow - the Thornheart\'s lair. It sleeps until tomorrow.');return}
   const[bx,by]=D.boss;const b={x:bx*16+8,y:by*16+8,hp:TH_HP,mhp:TH_HP,kx:0,ky:0,type:'thorn',big:1,rcd:3,scd:0,half:false,roots:[]};R.mobs.push(b);BW.boss=b;setTimeout(()=>{try{sfx('roar')}catch(e){}},300)}}
-{const _u=upd;upd=function(dt){const pre=new Map();for(const n of en)if(n.type==='thorn'&&!n.dead)pre.set(n,[n.x,n.y]);const hp0=P.hp;_u(dt);
+{SQUPD.wrap('095',_u=>function(dt){const pre=new Map();for(const n of en)if(n.type==='thorn'&&!n.dead)pre.set(n,[n.x,n.y]);const hp0=P.hp;_u(dt);
   for(const[n,[x,y]]of pre){if(n.dead)continue;n.x=x+(n.x-x)*.45;n.y=y+(n.y-y)*.45;n.kx*=.3;n.ky*=.3;n.t=(n.t||0)+dt;
    // roots: three green rings appear near you, then thorny roots burst up out of them
    if((n.rcd-=dt)<=0){n.rcd=n.half?2.6:3.6;for(let k=0;k<3;k++){const a=Math.random()*6.283,r=k?12+Math.random()*30:0;n.roots.push({x:P.x+Math.cos(a)*r,y:P.y+4+Math.sin(a)*r*.7,t:1.1,hit:false})}}
@@ -106,7 +103,7 @@ const TH_HP=180;let THDAY=-1;
    sqEvent('dungeonboss','thornheart');say('The Thornheart crumbles into the earth. +450 gold, oak and willow logs, an emerald'+(rare||'.'));msgT=6;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){}}}
   // the Thorn amulet: whatever hurts you gets hurt back
   if(P.hp<hp0&&!dead&&window.SQJW&&SQJW.neck==='ja_thorn'){let best=null,bd=48;for(const m of en){if(m.dead)continue;const d=Math.hypot(m.x-P.x,m.y-P.y);if(d<bd){bd=d;best=m}}
-   if(best){best.hp-=4;try{DMGS.push({x:best.x,y:best.y-16,v:'4',t:0,c:'#78e060',sc:curScene()})}catch(e){}if(best.hp<=0&&!best.dead){if(typeof killEnemy==='function'&&best.type!=='thorn')killEnemy(best,'thorn')}}}}}
+   if(best){best.hp-=4;try{DMGS.push({x:best.x,y:best.y-16,v:'4',t:0,c:'#78e060',sc:curScene()})}catch(e){}if(best.hp<=0&&!best.dead){if(typeof killEnemy==='function'&&best.type!=='thorn')killEnemy(best,'thorn')}}}})}
 // how it looks: a hulking tree with glowing eyes and thorny arms
 function drawThorn(n,tm){const x=Math.round(n.x),y=Math.round(n.y),K='#181018',hit=Math.abs(n.kx)+Math.abs(n.ky)>.3,sw=Math.round(Math.sin((n.t||0)*3)*2),B=hit?'#ffffff':'#6a4424',Bd=hit?'#e0e0e0':'#4a2c14',L=hit?'#ffffff':'#3e8a32',Ld='#2a6424';
  for(const q of n.roots){if(q.t>0){const a=.4+.4*Math.sin(tm*14);g.strokeStyle='rgba(120,230,90,'+a+')';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,13,7,0,0,6.283);g.stroke()}else{const h=Math.round(14*Math.min(1,-q.t*5+1));for(const dx of[-6,0,6]){Rg(q.x+dx-1,q.y-h,3,h,K);Rg(q.x+dx,q.y-h+1,1,h-1,'#7a5030');Rg(q.x+dx-1,q.y-h-1,1,1,'#58a040')}}}

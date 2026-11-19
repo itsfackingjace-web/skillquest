@@ -155,7 +155,7 @@ let NF50=50,NF70=70;
 function fireLR(){return NF70/70}
 const _nf39=nearFire;nearFire=function(x,y,r){return _nf39(x,y,r===50?NF50:r===70?NF70:r)};
 const isSlime39=n=>!n.type||n.type==='slime'||n.type==='magma';
-const _u39=upd;upd=function(dt){
+SQUPD.wrap('039',_u39=>function(dt){
  NF50=P39(5,'fi_warm')?60:50;let m=1;if(P39(5,'fi_bright'))m=1.25;if(P39(5,'fi_blaze'))m=Math.max(m,1.4);NF70=70*m;if(P39(5,'fi_guard'))NF70=Math.max(NF70,96);
  const paused=menuOpen||pnOpen;
  if(P39(5,'fi_embers'))for(const f of fires)if(f.life-dt<=0&&!f.re){f.re=1;f.life+=(f.mx||150)*.3}
@@ -166,7 +166,7 @@ const _u39=upd;upd=function(dt){
   if(haven&&d>=104&&d<130)s=.25;// beyond 80% of a slime's notice range: it doesn't spot you, so it just drifts
   if(sacred&&_nf39(x0,y0,80))s*=.85;if(s<1){n.x=x0+(n.x-x0)*s;n.y=y0+(n.y-y0)*s}}
  if(paused||dead)return;if(LAST39>0)LAST39-=dt;if(FEAST39>0)FEAST39-=dt;
- const back=FEAST39>0?1:LAST39>0?.1:0;if(back&&hunger>0)hunger=Math.min(100,hunger+dt*.9*FOOD_RATE*back)};
+ const back=FEAST39>0?1:LAST39>0?.1:0;if(back&&hunger>0)hunger=Math.min(100,hunger+dt*.9*FOOD_RATE*back)});
 // FOOD perks for smithing and crafting ride on section 38's activity timers
 ACTW[10]=0;FOODP[10]=['sm_steady',.2];ACTW[6]=0;FOODP[6]=['cr_steady',.2];
 // --- selling perks ---

@@ -40,12 +40,12 @@
  {const _ls=leaveScene;leaveScene=function(){if(isYard()){goBack();return}return _ls.apply(this,arguments)}}
  // ---- every frame: doors, growing ----
  const keyUp=()=>face[1]<0,keyDn=()=>face[1]>0;
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(dead||menuOpen||pnOpen||!SCENE)return out;
+ {SQUPD.wrap('145',_u=>function(dt){const out=_u.apply(this,arguments);try{if(dead||menuOpen||pnOpen||!SCENE)return out;
     // after going through a door you have to step away from it (or turn round) before it takes you back
     if(LOCK&&(!keyUp()||P.y-LOCK.y>10||Math.abs(P.x-LOCK.x)>10||SCENE!==LOCK.s))LOCK=null;if(LOCK){if(isYard()&&P.y<DOORY*16+4)P.y=DOORY*16+4;return out}
     if(inHouse()&&P.y<2*16+9&&keyUp()){const L=HDOOR(SCENE.room);for(let i=0;i<L.length;i++)if(Math.abs(P.x-L[i])<7){goOut(i);break}}
-    else if(isYard()&&P.y<DOORY*16+5&&keyUp()){for(const dx of YDOOR(SCENE.room))if(Math.abs(P.x-dx)<10){goBack();break}}}catch(e){console.warn(e)}return out}}
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;try{for(const h of mine())if(h.yp)for(const p of h.yp.values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}catch(e){}return out}}
+    else if(isYard()&&P.y<DOORY*16+5&&keyUp()){for(const dx of YDOOR(SCENE.room))if(Math.abs(P.x-dx)<10){goBack();break}}}catch(e){console.warn(e)}return out})}
+ {SQUPD.wrap('145',_u=>function(dt){const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;try{for(const h of mine())if(h.yp)for(const p of h.yp.values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}catch(e){}return out})}
  // your own houses only: HOUSES also holds other players' houses while online (_foreign); a friend's yard you visited
  // must never be packed into your bag when their house unloads
  const mine=()=>HOUSES.concat(window.SQRH||[]).filter(h=>h&&!h._foreign);
@@ -138,9 +138,9 @@
    if(!it||en.some(n=>!n.dead))return _a.apply(this,arguments);
    if(SCENE.house.ro){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}
    R.region='_yard';try{return _a.apply(this,arguments)}finally{delete R.region}})}
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{for(const R of[ROOMS.yard,ROOMS.court])for(let j=R.gone.length-1;j>=0;j--){const g2=R.gone[j];if(CLK-g2.at<=240)continue;
+ {SQUPD.after('145',(dt)=>{try{for(const R of[ROOMS.yard,ROOMS.court])for(let j=R.gone.length-1;j>=0;j--){const g2=R.gone[j];if(CLK-g2.at<=240)continue;
     const it=g2.it,here=SCENE&&SCENE.room===R;if(here&&Math.hypot(P.x-(it.x*16+8),P.y-(it.y*16+8))<40)continue;
-    it.gone=false;it.o.hp=OHP[it.o.t]||3;rgCellAdd(R,it);R.solid.add(it.y*R.w+it.x);R.gone.splice(j,1)}}catch(e){}return out}}
+    it.gone=false;it.o.hp=OHP[it.o.t]||3;rgCellAdd(R,it);R.solid.add(it.y*R.w+it.x);R.gone.splice(j,1)}}catch(e){}})}
  {const _fw=fishWaterAt;fishWaterAt=function(tx,ty){if(isYard()){const R=SCENE.room;return tx>=0&&ty>=2&&tx<R.w&&ty<R.h&&R.lay(tx,ty)===0}return _fw.apply(this,arguments)}}
  {const _rb=ROOMBG;ROOMBG=function(R,W2,H2){if(R&&(R.yard||R.court))return drawYard(R,W2,H2);const out=_rb?_rb.apply(this,arguments):undefined;
    // the back door(s) on a house's or castle's back wall

@@ -69,7 +69,7 @@ const losClear=(ax,ay,bx,by)=>{for(let k=1;k<10;k++){const t=k/10;if(solid(ax+(b
 const stepTo=(n,mx,my)=>{let moved=true;if(!solid(n.x+mx,n.y))n.x+=mx;else moved=false;if(!solid(n.x,n.y+my))n.y+=my;else moved=false;return moved};
 // extra damage lands at the start of the next update, so the normal death check, the Elixir of Life and the Phoenix perk all apply
 function hurtP(d,msg){if(dead||hurt>0||ROLLT>0)return false;PEND43+=d;hurt=1;FLASH=.25;say(msg);sfx('hurt');return true}
-const _u43=upd;upd=function(dt){const paused=menuOpen||pnOpen||dead;if(!paused&&PEND43>0){P.hp-=PEND43;PEND43=0}const pos=paused?null:en.map(n=>[n,n.x,n.y]),hp0=P.hp,px0=P.x,py0=P.y,sc0=SCENE;
+SQUPD.wrap('043',_u43=>function(dt){const paused=menuOpen||pnOpen||dead;if(!paused&&PEND43>0){P.hp-=PEND43;PEND43=0}const pos=paused?null:en.map(n=>[n,n.x,n.y]),hp0=P.hp,px0=P.x,py0=P.y,sc0=SCENE;
  _u43(dt);if(paused)return;
  const hit=P.hp<hp0;
  for(const[n,ox,oy]of pos){if(n.dead)continue;const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;
@@ -84,7 +84,7 @@ const _u43=upd;upd=function(dt){const paused=menuOpen||pnOpen||dead;if(!paused&&
  if(ROAR43){ROAR43.t+=dt}
  if(SLOW43>0){SLOW43-=dt;if(SCENE===sc0&&!(ROLLT>0)){const mx=P.x-px0,my=P.y-py0;if(Math.abs(mx)+Math.abs(my)<6){P.x=px0+mx*.55;P.y=py0+my*.55}}
   if(Math.random()<dt*10)part(P.x+(Math.random()*10-5),P.y-2-Math.random()*10,0,-12,.5,Math.random()<.5?'#a8e0ff':'#ffffff',-20,1)}
-};
+});
 function alphaAI(n,ox,oy,dt,d,dx,dy,hit){const ph2=n.hp<n.mhp*.6;if(ph2&&!n.p2){n.p2=1;say('The Frostfang Alpha howls in fury!');msgT=3;sfx('roar');n.as='rest';n.at=.5}
  if(n.frozen>0){n.x=ox;n.y=oy;return}
  n.x=ox+n.kx*.3;n.y=oy+n.ky*.3;n.lunge=n.as==='lunge';

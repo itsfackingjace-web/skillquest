@@ -42,9 +42,7 @@
  // a game started without a save (a brand-new player on this device): decide once play begins
  const decide=()=>{GD.s=(Q.i>0||Q.on&&Q.k>0||lvTot()-XPS.length>6||GLD>100)?DONE:0;stepStart()};
  // progress
- const _u=upd;upd=function(dt){_u.apply(this,arguments);if(GD.s==null)decide();if(!active()||dead)return;
-  for(const k in LAST){const v=inv[k]|0;if(v>LAST[k]){GAIN[k]+=v-LAST[k];LASTP=now()}LAST[k]=v}
-  let guard=0;while(active()&&guard++<3){let d=false;try{d=S[GD.s].done()}catch(e){}if(!d)break;advance()}};
+ SQUPD.after('115',(dt)=>{if(GD.s==null)decide();if(!active()||dead)return;for(const k in LAST){const v=inv[k]|0;if(v>LAST[k]){GAIN[k]+=v-LAST[k];LASTP=now()}LAST[k]=v}let guard=0;while(active()&&guard++<3){let d=false;try{d=S[GD.s].done()}catch(e){}if(!d)break;advance()}});
  // the tracker: the step, its progress and where to go
  window.SQGUIDE=()=>{if(!active())return null;const st=S[GD.s];let t=null;try{t=outside()&&st.at?st.at():null}catch(e){}
   let prog='';try{prog=st.prog?st.prog():''}catch(e){}

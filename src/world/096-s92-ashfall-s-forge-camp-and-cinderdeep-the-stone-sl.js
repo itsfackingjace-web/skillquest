@@ -40,8 +40,7 @@ const ROOMMSG={bwlodge:'The Ranger Lodge. Maps and bows line the walls.',bwinn:'
   if(it&&it.use==='look'&&SCENE&&ROOMMSG[SCENE.id]){rgLook(it);return}return _uf(it)}}
 // doors: walk up into one (the same as a house)
 function vDoors(R){if(!R._doors)R._doors=R.items.filter(it=>it.room&&it.b);return R._doors}
-{const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen||dead||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;
-  for(const it of vDoors(R)){const b=it.b,cx=(b.tx+(b.w>>1))*16+8;if(Math.abs(P.x-cx)<9&&P.y<(b.ty+2)*16+6&&P.y>(b.ty+1)*16-4){enterScene(it.room,null,{x:cx,y:(b.ty+2)*16+8});if(ROOMMSG[it.room])say(ROOMMSG[it.room]);return}}}}
+{SQUPD.after('096',(dt)=>{if(menuOpen||pnOpen||dead||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;for(const it of vDoors(R)){const b=it.b,cx=(b.tx+(b.w>>1))*16+8;if(Math.abs(P.x-cx)<9&&P.y<(b.ty+2)*16+6&&P.y>(b.ty+1)*16-4){enterScene(it.room,null,{x:cx,y:(b.ty+2)*16+8});if(ROOMMSG[it.room])say(ROOMMSG[it.room]);return}}})}
 {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region==='briarwood'&&!R._bwd){R._bwd=1;R._doors=null;for(const it of R.items)if(it.t==='bwbld'&&it.b)it.room=/Inn|Fern/.test(it.b.name)?'bwinn':'bwlodge'}}catch(e){console.warn(e)}return ok}}
 
 // ======== treelings: one for each kind of tree ========
@@ -105,7 +104,7 @@ function slamDmg(){return 12+Math.floor(lvOf(0)/3)+Math.floor(lvOf(2)/10)+(typeo
    n0++;const k=d<34?1.4:1;hitE(n,Math.round(dmg*k),'#e8c890','slam');if(!big){n.kx=dx/d*3.2;n.ky=dy/d*3.2}}
   if(n0)addXp(0,n0*20);say(n0?'GROUND SLAM! '+n0+' hit.':'GROUND SLAM!');try{sfx('mine');setTimeout(()=>sfx('mine'),70);if(typeof rumble==='function')rumble(350,1,.7)}catch(e){}
   if(typeof FLASH!=='undefined')FLASH=.12;for(let k=0;k<40;k++){const an=k/40*6.283,sp=80+Math.random()*70;part(P.x,P.y+4,Math.cos(an)*sp,Math.sin(an)*sp*.6-20,.5+Math.random()*.2,k%3?'#9a8a78':'#c8b8a0',120,2)}}}
-{const _u=upd;upd=function(dt){_u(dt);if(SLAM.cd>0&&!menuOpen&&!pnOpen)SLAM.cd=Math.max(0,SLAM.cd-dt);if(SLAM.t>0)SLAM.t=Math.max(0,SLAM.t-dt)}}
+{SQUPD.after('096',(dt)=>{if(SLAM.cd>0&&!menuOpen&&!pnOpen)SLAM.cd=Math.max(0,SLAM.cd-dt);if(SLAM.t>0)SLAM.t=Math.max(0,SLAM.t-dt)})}
 {const _pp=pP;pP=function(tm){if(SLAM.t>0){const p=1-SLAM.t/.55,r=SLAM.R*Math.min(1,p*1.6);g.strokeStyle='rgba(232,208,160,'+(.75*(1-p))+')';g.lineWidth=3;g.beginPath();g.ellipse(SLAM.x,SLAM.y,r,r*.6,0,0,6.283);g.stroke();
    g.strokeStyle='rgba(90,70,50,'+(.5*(1-p))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(SLAM.x,SLAM.y,r*.7,r*.42,0,0,6.283);g.stroke();for(let k=0;k<8;k++){const an=k/8*6.283+.3;Rg(SLAM.x+Math.cos(an)*r*.5,SLAM.y+Math.sin(an)*r*.3,2,1,'#3a2a1a')}}return _pp(tm)}}
 // the ULT chip / button show SLAM and its cooldown
@@ -164,8 +163,8 @@ function drawBoulder(o,x,y,bx,by,s){const sp=boulderSprite(o.t,(x*7+y*3)&1);shd(
  // caves and dungeons: some boulders hold ore (deeper floors: better ore)
  const _bf=buildFloor;buildFloor=function(kind,f){const R=_bf(kind,f);try{const rnd=dRng(today()*313+f*71+kind.length*17);for(const it of R.items)if(it.t==='boulder'&&rnd()<.3){const r=rnd(),deep=Math.min(1,.25+f*.13);it.ore=r<.1*deep?'oba':r<.28*deep?'obm':r<.55?'obg':'obi'}}catch(e){}return R}}
 // keep builds clear: a boulder never sits under a house, structure or farm plot on Hollow
-{let chk=0;const _u=upd;upd=function(dt){_u(dt);if((chk-=dt)>0)return;chk=2;for(let i=0;i<obj.length;i++){const o=obj[i];if(!o||!BOUL[o.t])continue;const x=i%N,y=(i/N)|0;
-   if(STR.has(i)||BS.has(i)||(typeof FARM!=='undefined'&&FARM.has(i))||(typeof houseAt==='function'&&houseAt(x,y)))obj[i]=null}}}
+{let chk=0;SQUPD.after('096',(dt)=>{if((chk-=dt)>0)return;chk=2;for(let i=0;i<obj.length;i++){const o=obj[i];if(!o||!BOUL[o.t])continue;const x=i%N,y=(i/N)|0;
+   if(STR.has(i)||BS.has(i)||(typeof FARM!=='undefined'&&FARM.has(i))||(typeof houseAt==='function'&&houseAt(x,y)))obj[i]=null}})}
 // breaking them
 function boulderHit(o,x,y,done){const B=BOUL[o.t];if(!B)return false;
  if(!SLEDGE){swing=.25;say('This '+B.n+' is far too big for a pickaxe. It would take a sledgehammer...');sfx('swish');return true}
@@ -188,8 +187,8 @@ window.SQBOULDERHIT=boulderHit;
     const r=boulderHit(o,tx,ty,()=>{it.gone=true;const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx);BROKE.push({R,it,at:performance.now()})});it.hp=o.hp;it.shake=o.shake;if(r)return}}
   return _a()});
  // the Slime Caverns' boulders come back after five minutes (dungeon floors are rebuilt each day anyway)
- const _u=upd;upd=function(dt){_u(dt);if(!BROKE.length)return;const now=performance.now();for(let j=BROKE.length-1;j>=0;j--){const b=BROKE[j];if(now-b.at<3e5)continue;if(SCENE&&SCENE.room===b.R&&Math.hypot(P.x-(b.it.x*16+8),P.y-(b.it.y*16+8))<24)continue;
-   b.it.gone=false;b.it.hp=null;if(!b.R.items.includes(b.it))b.R.items.push(b.it);b.R.solid.add(b.it.y*b.R.w+b.it.x);BROKE.splice(j,1)}}}
+ SQUPD.after('096',(dt)=>{if(!BROKE.length)return;const now=performance.now();for(let j=BROKE.length-1;j>=0;j--){const b=BROKE[j];if(now-b.at<3e5)continue;if(SCENE&&SCENE.room===b.R&&Math.hypot(P.x-(b.it.x*16+8),P.y-(b.it.y*16+8))<24)continue;
+   b.it.gone=false;b.it.hp=null;if(!b.R.items.includes(b.it))b.R.items.push(b.it);b.R.solid.add(b.it.y*b.R.w+b.it.x);BROKE.splice(j,1)}})}
 // ore boulders in caves look like ore boulders
 {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='boulder'&&it.ore&&!it.o){const s=it.shake>0?(it.shake-=.016,Math.round(Math.sin(tm*60))):0;drawBoulder({t:it.ore},it.x,it.y,it.x*16+8,it.y*16+14,s);return}return _df(it,tm)}}
 window.SQSLEDGE=()=>SLEDGE;
@@ -251,9 +250,7 @@ function afOpen(n){AF.npc=n;shop='afnpc';pnOpen=true;ptab=2;jx=jy=0;fromMenu=fal
 {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=afNear();if(n){afOpen(n);return}}return _t()}}
 tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=afNear();if(n){e.preventDefault();e.stopImmediatePropagation();afOpen(n)}},{passive:false,capture:true});
 {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!afNear()||!!(_pu&&_pu())}
-{let mine=false;const _u=upd;upd=function(dt){_u(dt);const n=!pnOpen&&!menuOpen&&!dead?afNear():null;
-  if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mine=true}else if(mine){mine=false;if(!pnOpen)tk.style.display='none'}
-  if(afR()&&AF.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&afIn(m.x,m.y)){m.dead=1;m.dropped=1}}}
+{let mine=false;SQUPD.after('096',(dt)=>{const n=!pnOpen&&!menuOpen&&!dead?afNear():null;if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mine=true}else if(mine){mine=false;if(!pnOpen)tk.style.display='none'}if(afR()&&AF.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&afIn(m.x,m.y)){m.dead=1;m.dropped=1}})}
 // Vessa's potion stall: sells potions, buys yours for 1.5x SELLP (always below her own price)
 const POTAF=[{k:'pot_heal',c:180},{k:'pot_str',c:320},{k:'pot_poison',c:260},{k:'pot_swift',c:280},{k:'pot_iron',c:320},{k:'pot_napalm',c:420},{k:'pot_zap',c:650}];window.SQPOTAF=POTAF;
 const potBuy=k=>{const it=POTAF.find(q=>q.k===k);return Math.min(Math.floor((SELLP[k]|0)*1.5),it?it.c-1:1e9)};
@@ -297,15 +294,14 @@ window.SQICV.aflava={name:'Cinderdeep',floor:['#4a3430','#42302c'],wall:'#2e2220
 {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='aflavap'){const x=it.x*16,y=it.y*16,w=(it.w||1)*16,p=.5+.5*Math.sin(tm*2+it.x);Rg(x-1,y+1,w+2,14,'#2a1410');Rg(x,y+2,w,12,'#c83810');Rg(x+1,y+3,w-2,10,'#f06018');
    for(let k=0;k<w/4;k++){const ph=(tm*.7+k*.31+it.x*.1)%1;Rg(x+2+k*4,y+4+Math.round(ph*6),2,2,ph<.5?'#ffd060':'#f8a030')}g.fillStyle='rgba(255,120,30,'+(.12+.1*p)+')';g.beginPath();g.arc(x+w/2,y+8,w*.7+6,0,6.283);g.fill();return}return _df(it,tm)}}
 // the floor tiles of the lava pools draw under you (they're floor, not furniture)
-{const _u=upd;let burnT=0;upd=function(dt){_u(dt);const R=SCENE&&SCENE.room;if(!R||!R.dun||R.dun.kind!=='aflava'||dead||menuOpen||pnOpen)return;burnT-=dt;const tx=Math.floor(P.x/16),ty=Math.floor((P.y+4)/16);
-  const on=R.items.some(it=>it.t==='aflavap'&&ty===it.y&&tx>=it.x&&tx<it.x+(it.w||1));if(on&&burnT<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){burnT=1.2;P.hp--;hurt=1;say('Ow! Lava!');try{sfx('hurt')}catch(e){}}}}
+{/* _u */let burnT=0;SQUPD.after('096',(dt)=>{const R=SCENE&&SCENE.room;if(!R||!R.dun||R.dun.kind!=='aflava'||dead||menuOpen||pnOpen)return;burnT-=dt;const tx=Math.floor(P.x/16),ty=Math.floor((P.y+4)/16);const on=R.items.some(it=>it.t==='aflavap'&&ty===it.y&&tx>=it.x&&tx<it.x+(it.w||1));if(on&&burnT<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){burnT=1.2;P.hp--;hurt=1;say('Ow! Lava!');try{sfx('hurt')}catch(e){}}})}
 {const _uf=useFurn;useFurn=function(it){return _uf(it)}}
 
 // ---- the Emberlord (floor 6 of Cinderdeep) ----
 const EL_HP=320;let EMDAY=-1;
 {const _da=dArrive;dArrive=function(R,from){_da(R,from);const D=R.dun;if(!D||D.kind!=='aflava'||D.f!==6||!D.boss||D._el)return;D._el=1;if(EMDAY===today()){say('Cinderdeep - the Emberlord\'s lair. The lava is cooling. It sleeps until tomorrow.');return}
   const[bx,by]=D.boss;const b={x:bx*16+8,y:by*16+8,hp:EL_HP,mhp:EL_HP,kx:0,ky:0,type:'emberl',big:1,pcd:2.5,fcd:4,scd:0,half:false,pools:[],balls:[]};R.mobs.push(b);AF.boss=b;setTimeout(()=>{try{sfx('roar')}catch(e){}},300);say('The ground shakes. THE EMBERLORD rises from the lava!');msgT=4}}
-{const _u=upd;upd=function(dt){const pre=new Map();for(const n of en)if(n.type==='emberl'&&!n.dead)pre.set(n,[n.x,n.y]);_u(dt);
+{SQUPD.wrap('096',_u=>function(dt){const pre=new Map();for(const n of en)if(n.type==='emberl'&&!n.dead)pre.set(n,[n.x,n.y]);_u(dt);
   for(const[n,[x,y]]of pre){if(n.dead)continue;n.x=x+(n.x-x)*.4;n.y=y+(n.y-y)*.4;n.kx*=.3;n.ky*=.3;n.t=(n.t||0)+dt;const roll=typeof ROLLT!=='undefined'&&ROLLT>0;
    // fire pools: orange rings under you, then they burst into flame for a few seconds
    if((n.pcd-=dt)<=0){n.pcd=n.half?2.4:3.4;for(let k=0;k<(n.half?3:2);k++){const a=Math.random()*6.283,r=k?14+Math.random()*28:0;n.pools.push({x:P.x+Math.cos(a)*r,y:P.y+4+Math.sin(a)*r*.7,t:1.2,life:3})}}
@@ -321,7 +317,7 @@ const EL_HP=320;let EMDAY=-1;
   {const n=AF.boss;if(n&&n.hp<=0&&!n._rew){AF.boss=null;n._rew=1;n.dead=1;n.dropped=1;n.pools=[];n.balls=[];EMDAY=today();try{saveLocal(true)}catch(e){}
    GLD+=600;inv.gbar=(inv.gbar|0)+3;inv.iron=(inv.iron|0)+10;inv.ruby=(inv.ruby|0)+1;addXp(0,900);addXp(7,400);
    let rare='';if(Math.random()<.1||window.SQEMBERDROP){inv.ja_ember=(inv.ja_ember|0)+1;rare=' and an EMBER RING!'}
-   sqEvent('dungeonboss','emberlord');say('The Emberlord cracks and sinks into the lava. +600 gold, gold bars, iron ore, a ruby'+(rare||'.'));msgT=6;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){}}}}}
+   sqEvent('dungeonboss','emberlord');say('The Emberlord cracks and sinks into the lava. +600 gold, gold bars, iron ore, a ruby'+(rare||'.'));msgT=6;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){}}}})}
 function drawEmberl(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs(n.kx)+Math.abs(n.ky)>.3,t=n.t||0,sw=Math.round(Math.sin(t*2.5)*2),R=hit?'#ffffff':'#3a2c2a',Rd=hit?'#e0e0e0':'#241a18',Rl=hit?'#ffffff':'#54443e',C=hit?'#ffffff':'#f87020',Cl='#ffd060';
  for(const q of n.pools){if(q.t>0){const a=.4+.4*Math.sin(tm*14);g.strokeStyle='rgba(255,140,40,'+a+')';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.stroke()}
   else{g.fillStyle='rgba(255,100,20,.35)';g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.fill();for(let k=0;k<5;k++){const ph=(tm*1.8+k*.21)%1,fx=q.x-10+k*5,fh=Math.round(4+8*(1-ph));Rg(fx,q.y-fh,2,fh,k%2?'#f86020':'#f8b030');Rg(fx,q.y-fh,1,2,'#fff0a0')}}}

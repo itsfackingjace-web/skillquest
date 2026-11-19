@@ -46,14 +46,14 @@ window.SQRFISH=RFISH;
 // Fewer of them (a small fixed number at night on Hollow, lower caps everywhere else), they only come for you once you're
 // close (or you hit them), they chase more slowly, and after a hit you get a moment longer before the next one lands.
 for(const id in RG_FAUNA){const F=RG_FAUNA[id];F.cap={day:Math.max(2,Math.round(F.cap.day*.5)),night:Math.max(3,Math.round(F.cap.night*.55))}}
-{const AG=95,PROV=6;const _u=upd;upd=function(dt){const pre=new Map(),live=!dead&&!menuOpen&&!pnOpen;
+{const AG=95,PROV=6;SQUPD.wrap('093',_u=>function(dt){const pre=new Map(),live=!dead&&!menuOpen&&!pnOpen;
   if(live)for(const n of en){if(n.dead||n._rp||n._wb||n.type==='boss'||n.type==='bonelord'||n.big||n.summon||n._pet||n.under)continue;/* n.under: a burrowed beetle is parked far away (045) and surfaces next to you; don't snap it back */pre.set(n,[n.x,n.y,n.hp])}
   const hp0=P.hp;_u(dt);
   for(const[n,[x,y,h]]of pre){if(n.dead)continue;if(n.hp<h)n._prov=PROV;else if(n._prov>0)n._prov-=dt;
    const d0=Math.hypot(x-P.x,y-P.y),d1=Math.hypot(n.x-P.x,n.y-P.y),calm=d0>AG&&!(n._prov>0);
    if(calm&&n.tcd!==undefined)n.tcd=Math.max(n.tcd,.4);
    if(d1<d0){if(calm){n.x=x;n.y=y}else{n.x=x+(n.x-x)*.72;n.y=y+(n.y-y)*.72}}}
-  if(live&&P.hp<hp0)hurt=Math.max(hurt,1.5)}}
+  if(live&&P.hp<hp0)hurt=Math.max(hurt,1.5)})}
 
 // ---- Ironcrest caves and mines ----
 // Two mines (by the abandoned mining camps) and two caves (in the cliffs set aside for them). Each is three floors,
@@ -101,8 +101,7 @@ function icvPlace(R){if(R._icv||!R.region)return;R._icv=1;const W=R.w,walk=(x,y)
   for(const[a,b]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1]])R.solid.add((y+b)*W+x+a)}}
 {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)icvPlace(R)}catch(e){console.warn(e)}return ok}}
 {const _uf=useFurn;useFurn=function(it){if(it&&it.use==='icv'){icvEnter(it);return}return _uf(it)}}
-{const _u=upd;upd=function(dt){_u(dt);if(dead||menuOpen||pnOpen||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;
-  for(const it of R.useItems)if(it.use==='icv'&&Math.abs(P.x-(it.x*16+8))<8&&P.y<(it.y+1)*16+2&&P.y>it.y*16){icvEnter(it);return}}}
+{SQUPD.after('093',(dt)=>{if(dead||menuOpen||pnOpen||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;for(const it of R.useItems)if(it.use==='icv'&&Math.abs(P.x-(it.x*16+8))<8&&P.y<(it.y+1)*16+2&&P.y>it.y*16){icvEnter(it);return}})}
 // campfires in the caves: lit, drawn, cooking and keeping monsters away like outside
 {const _p=pP;pP=function(tm){const R=SCENE&&SCENE.room;if(R&&R.icv)for(const f of fires)if(!f._glow)try{pF(f,tm)}catch(e){}return _p(tm)}}
 window.SQICV=ICV;
@@ -185,15 +184,11 @@ const deepW=(R,x,y)=>{const tx=Math.floor(x/16),ty=Math.floor(y/16);if(tx<1||ty<
 const wetW=(R,x,y)=>{const tx=Math.floor(x/16),ty=Math.floor(y/16);return tx>=0&&ty>=0&&tx<R.w&&ty<R.h&&R.tiles[ty*R.w+tx]===0};
 const wounded=()=>P.hp<=3;
 function nearWaterSpot(R){const sail=window.SQRSAIL&&SQRSAIL.on;if(sail)return[P.x,P.y];for(const[a,b]of[[0,16],[0,-16],[16,0],[-16,0],[12,12],[-12,12],[12,-12],[-12,-12]])if(wetW(R,P.x+a,P.y+b))return[P.x+a,P.y+b];return null}
-{const _u=upd;upd=function(dt){_u(dt);const R=shkR();if(!R||dead||menuOpen||pnOpen){if(!R)SHK.list.length=0;return}
-  SHK.list=SHK.list.filter(s=>!s.dead&&Math.hypot(s.x-P.x,s.y-P.y)<420);
-  if((SHK.cd-=dt)<=0&&SHK.list.length<3){SHK.cd=9+Math.random()*8;for(let k=0;k<20;k++){const a=Math.random()*6.283,d=170+Math.random()*120,x=P.x+Math.cos(a)*d,y=P.y+Math.sin(a)*d;if(deepW(R,x,y)){SHK.list.push({x,y,hp:16,mhp:16,tx:x,ty:y,t:Math.random()*9,bite:0,hit:0,a:0});break}}}
-  const spot=nearWaterSpot(R),hunt=wounded()&&spot,onW=!!(window.SQRSAIL&&SQRSAIL.on)||wetW(R,P.x,P.y);// they only bite you on the water (your boat); on land they just circle close
-  for(const s of SHK.list){s.t+=dt;s.bite=Math.max(0,s.bite-dt);s.hit=Math.max(0,s.hit-dt);s.a=Math.max(0,s.a-dt);let tx=s.tx,ty=s.ty,sp=26;
+{SQUPD.after('093',(dt)=>{const R=shkR();if(!R||dead||menuOpen||pnOpen){if(!R)SHK.list.length=0;return}SHK.list=SHK.list.filter(s=>!s.dead&&Math.hypot(s.x-P.x,s.y-P.y)<420);if((SHK.cd-=dt)<=0&&SHK.list.length<3){SHK.cd=9+Math.random()*8;for(let k=0;k<20;k++){const a=Math.random()*6.283,d=170+Math.random()*120,x=P.x+Math.cos(a)*d,y=P.y+Math.sin(a)*d;if(deepW(R,x,y)){SHK.list.push({x,y,hp:16,mhp:16,tx:x,ty:y,t:Math.random()*9,bite:0,hit:0,a:0});break}}}const spot=nearWaterSpot(R),hunt=wounded()&&spot,onW=!!(window.SQRSAIL&&SQRSAIL.on)||wetW(R,P.x,P.y);for(const s of SHK.list){s.t+=dt;s.bite=Math.max(0,s.bite-dt);s.hit=Math.max(0,s.hit-dt);s.a=Math.max(0,s.a-dt);let tx=s.tx,ty=s.ty,sp=26;
    const dP=Math.hypot(s.x-P.x,s.y-P.y);
    if(hunt&&dP<220){tx=spot[0];ty=spot[1];sp=58}else if(Math.hypot(tx-s.x,ty-s.y)<8||Math.random()<dt*.15){for(let k=0;k<8;k++){const a=Math.random()*6.283,d=40+Math.random()*90,x=s.x+Math.cos(a)*d,y=s.y+Math.sin(a)*d;if(wetW(R,x,y)){s.tx=x;s.ty=y;break}}tx=s.tx;ty=s.ty}
    const dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy);if(d>2){const m=Math.min(d,sp*dt),nx=s.x+dx/d*m,ny=s.y+dy/d*m;if(wetW(R,nx,s.y))s.x=nx;if(wetW(R,s.x,ny))s.y=ny;s.fl=dx<0}
-   if(hunt&&onW&&dP<22&&s.bite<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){s.bite=2.2;s.a=.5;P.hp--;hurt=1.5;say('A shark bites!');try{sfx('hurt')}catch(e){}}}}}
+   if(hunt&&onW&&dP<22&&s.bite<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){s.bite=2.2;s.a=.5;P.hp--;hurt=1.5;say('A shark bites!');try{sfx('hurt')}catch(e){}}}})}
 {SQHIT.wrap('093 islands update part 2',next=>function(){const R=shkR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(14);const s=SHK.list.find(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<20);
    if(s){swing=.3;const dmg=1+(TL.sword|0)+(typeof meleeFlat==='function'?meleeFlat():0);s.hp-=dmg;s.hit=.25;try{DMGS.push({x:s.x,y:s.y-10,v:String(dmg),t:0,c:'#ffffff',sc:curScene()})}catch(e){}sfx('hit');
     if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){}saveLocal()}return}}

@@ -74,13 +74,13 @@ setInterval(()=>{try{wbTick()}catch(e){console.warn(e)}},500);
 const WB_BIG=1e6;
 function wbHere(){const B=WB.b;if(!B||wbHp(B)<=0||!MP.on)return null;if(mpLoc()!==wbLoc(B))return null;if(B.where!=='hollow'&&!(SCENE&&SCENE.room&&SCENE.room.region===B.where))return null;if(B.where==='hollow'&&SCENE)return null;
  const L=wbLair(B);return L?{B,L}:null}
-{const _u=upd;upd=function(dt){const H=wbHere(),e=WB.ent;
+{SQUPD.wrap('071',_u=>function(dt){const H=wbHere(),e=WB.ent;
   if(e&&!H){const j=en.indexOf(e);if(j>=0)en.splice(j,1);WB.ent=null}
   if(H){const now=wbNow(),p=wbPos(H.B,H.L,now);let n=WB.ent;if(!n||n._slot!==H.B.slot||n._wb!==H.B.type){if(n){const j=en.indexOf(n);if(j>=0)en.splice(j,1)}n=WB.ent={x:p.x,y:p.y,hp:WB_BIG,mhp:WB_BIG,kx:0,ky:0,type:'wb',big:1,_wb:H.B.type,_slot:H.B.slot}}
    if(en.indexOf(n)<0)en.unshift(n);n.dead=0;n.dropped=1}
   _u(dt);
   const n=WB.ent;if(n&&H){const lost=WB_BIG-n.hp;if(lost>=.5&&!dead){WB.dmg+=Math.min(60,lost);WB.hitAt=performance.now()}n.hp=WB_BIG;n.dead=0;n.burn=0;n.slow=0;n.frozen=0;
-   const p=wbPos(H.B,H.L,wbNow());n.x=p.x;n.y=p.y;n.kx=n.ky=0;if(en.indexOf(n)<0)en.unshift(n);wbStrike(H)}}}
+   const p=wbPos(H.B,H.L,wbNow());n.x=p.x;n.y=p.y;n.kx=n.ky=0;if(en.indexOf(n)<0)en.unshift(n);wbStrike(H)}})}
 // the attacks land on you
 const WBHIT={};
 function wbStrike(H){if(dead||pnOpen||menuOpen)return;const now=wbNow(),T=H.B.T;

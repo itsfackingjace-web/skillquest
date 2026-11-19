@@ -77,7 +77,7 @@
  tk.addEventListener('touchstart',e=>{if(!onHollow()||pnOpen||menuOpen||dead)return;const it=front();if(it&&mineTk){e.preventDefault();e.stopImmediatePropagation();useIt()}},{passive:false,capture:true});
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>(onHollow()&&!!front())||!!(_pu&&_pu())}
  let mineTk=false,zt=0;const KEEP=new Set(),TOUGH=[1,1.6,2.4,3.5];
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{
+ {SQUPD.after('193',(dt)=>{try{
    const it=onHollow()&&!pnOpen&&!menuOpen&&!dead&&ITEMS.length?front():null;
    if(it&&(tk.style.display==='none'||mineTk)){tk.style.display='flex';const lab=(it.use==='loot'?'OPEN':'READ')+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mineTk=true}
    else if(!it&&mineTk){mineTk=false;if(!pnOpen)tk.style.display='none'}
@@ -92,6 +92,6 @@
       for(let t=0;t<12;t++){const x=Z.x+Math.floor(Math.random()*Z.w),y=Z.y+Math.floor(Math.random()*Z.h),px=x*16+8,py=y*16+8;if(solid(px,py)||Math.hypot(px-P.x,py-P.y)<120)continue;
        const m=ms[Math.floor(Math.random()*ms.length)],hp=Math.round(ML[m].hp*(TOUGH[Z.hp]||1)),n=rgMake(m,hp,px,py);if(!n)break;n.mhp=n.mhp||hp;if(ML[m].rg)n.rg=ML[m].rg;n.zc='hollow';n.zi=Z.k;delete n.night;try{RG_OWN.add(n)}catch(e){}en.push(n);KEEP.add(n);break}}}
     if(KEEP.size&&typeof dark==='function'&&dark()<.05)for(const m of KEEP)m.hp=Math.min(m.mhp||m.hp,m.hp+dt*.5)}
-  }catch(e){console.warn('hollow places',e)}return out}}
+  }catch(e){console.warn('hollow places',e)}})}
  window.SQHOLLOWP={R:R0,get items(){return ITEMS},npcs:()=>ITEMS.filter(it=>it.k==='npc'),get zones(){return ZN},KEEP,front};
  X.hollowOK=true;X.hollowHard=HARD;X.HOLOBJ=OK;window.SQHOLLOWED={HARD,SOFT,OT,OO,get cur(){return CUR.length}}})();

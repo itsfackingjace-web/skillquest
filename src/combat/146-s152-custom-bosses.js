@@ -46,12 +46,12 @@
   else if(a==='charge'){const l=dist||1;n.cbc={vx:dx/l,vy:dy/l,t:.65,ph:0}}
   else if(a==='slam'){TG.push({x:P.x,y:P.y,r:26,t:1.05,d:B.dmg+1});try{sfx('talk')}catch(e){}}
   else if(a==='summon'){const have=en.filter(m=>!m.dead&&m._cbs===n).length;for(let i=0;i<Math.min(2,4-have);i++){let sx=n.x+(i?18:-18),sy=n.y+8;if(solid(sx,sy)){sx=n.x;sy=n.y}const m=rgMake(B.sk,Math.max(4,Math.round(B.hp/12)),sx,sy);m._cbs=n;delete m.night;if(n.zc)m.zc=n.zc;try{RG_OWN.add(m)}catch(e){}en.push(m)}}}
- {const _u=upd;upd=function(dt){let pos=null;const L=[];try{if(!menuOpen&&!pnOpen&&!dead)for(const n of en){if(!n||!n.cb||n.dead||n._rp)continue;const B=CB[n.cb];if(!B)continue;if(away(B)){n.dead=1;n.dropped=1;continue}L.push([n,B,n.x,n.y])}}catch(e){}
+ {SQUPD.wrap('146',_u=>function(dt){let pos=null;const L=[];try{if(!menuOpen&&!pnOpen&&!dead)for(const n of en){if(!n||!n.cb||n.dead||n._rp)continue;const B=CB[n.cb];if(!B)continue;if(away(B)){n.dead=1;n.dropped=1;continue}L.push([n,B,n.x,n.y])}}catch(e){}
    const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;
    try{for(const[n,B,x,y]of L){if(n.dead)continue;act(n,B,dt)}
     for(let i=SH.length-1;i>=0;i--){const s=SH[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.t-=dt;if(s.t<=0||solid(s.x,s.y)){SH.splice(i,1);continue}if(Math.hypot(s.x-P.x,s.y-(P.y-4))<8){const h0=P.hp;hit(s.d);if(P.hp<h0&&window.SQSHOTHIT)SQSHOTHIT(s);SH.splice(i,1)}}
     for(let i=TG.length-1;i>=0;i--){const q=TG[i];q.t-=dt;if(q.t<=0){if(Math.hypot(q.x-P.x,(q.y-P.y)*1.6)<q.r)hit(q.d);TG.splice(i,1)}}
-    if(!L.length&&!en.some(n=>n&&n.cb&&!n.dead)){SH.length=0;TG.length=0}}catch(e){console.warn(e)}return out}}
+    if(!L.length&&!en.some(n=>n&&n.cb&&!n.dead)){SH.length=0;TG.length=0}}catch(e){console.warn(e)}return out})}
  // beaten: remembered, announced
  {const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const B=n&&n.cb&&CB[n.cb];if(B&&!n._rp){DEAD[deadKey(B)]=Date.now()+B.rs*60000;try{localStorage.setItem(LSK,JSON.stringify(DEAD))}catch(e){}
     addXp(0,Math.round(B.hp*2));setTimeout(()=>{try{say('You defeated '+B.n+'!');msgT=5;sfx('quest')}catch(e){}},300);for(const m of en)if(m._cbs===n&&!m.dead){m.dead=1;m.dropped=1}}}catch(e){}return out}}

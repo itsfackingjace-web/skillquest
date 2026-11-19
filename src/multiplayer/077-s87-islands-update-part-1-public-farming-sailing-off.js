@@ -34,7 +34,7 @@ function sfCommit(before){if(!before)return;const area=before.area,now=sfNow(),A
   if(p.w!==b.w&&p.w>CLK){sfWrite(area,k,{c:p.c||'',g:sfGrowth(old,now),t:now,w:now+(p.w-CLK)*1000,e:p.c?0:(+old.e||now)})}}}
 {SQHIT.wrap('077 islands update part 1 public farming',_a=>function(){const b=sfAround();_a();try{sfCommit(b)}catch(e){console.warn(e)}})}
 {const _p=placeBuild;placeBuild=function(){const b=BUILD&&isSeed(BUILD.k)?sfAround():null;_p();if(b)try{sfCommit(b)}catch(e){console.warn(e)}}}
-{const _u=upd;upd=function(dt){_u(dt);try{sfRebuild()}catch(e){}}}
+{SQUPD.after('077',(dt)=>{try{sfRebuild()}catch(e){}})}
 // nobody owns a plot any more: other players' old personal plots are no longer shown, and yours aren't published
 rfForeign=function(){return new Map()};
 {const _rp=rbPub;rbPub=function(){const o=_rp();if(o&&o._f)delete o._f;return o&&Object.keys(o).length?o:null}}
@@ -69,16 +69,14 @@ function edgePush(Wt,Ht){const ix=jx+(K.d||K.arrowright?1:0)-(K.a||K.arrowleft?1
  if(P.x<m&&ix<-.3)return'west';if(P.x>Wt*16-m&&ix>.3)return'east';if(P.y<m+4&&iy<-.3)return'north';if(P.y>Ht*16-m&&iy>.3)return'south';return null}
 function edgeMsg(t){const n=performance.now();if(n-EDGE.msgAt>2500){EDGE.msgAt=n;say(t);msgT=4}}
 function edgeGo(to,side,frac){if(TRAVEL49||dead)return;TRAVEL49={t:0,dur:1.3,to,done:false,job:to!=='hollow'&&!RG_CACHE[to]?rgJob(to):null,hold:0,edge:{side,frac}};sfx('splash')}
-{const _u=upd;upd=function(dt){_u(dt);if(TRAVEL49||dead||menuOpen||pnOpen)return;
-  if(!SCENE&&SAILING){const side=edgePush(N,N);if(!side)return;const id=edgeRegion(side);if(!id)return;
+{SQUPD.after('077',(dt)=>{if(TRAVEL49||dead||menuOpen||pnOpen)return;if(!SCENE&&SAILING){const side=edgePush(N,N);if(!side)return;const id=edgeRegion(side);if(!id)return;
    if(!routeOpen(id)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[id].name+', but the route isn\'t charted yet. Ask Sera, the Navigator in Tidewatch.');return}
-   edgeGo(id,side,side==='west'||side==='east'?P.y/(N*16):P.x/(N*16));return}
-  const R=rbR();if(R&&RSAIL.on){const side=edgePush(R.w,R.h);if(!side)return;const nb=window.SQNEIGH&&SQNEIGH[R.region]&&SQNEIGH[R.region][side];
+   edgeGo(id,side,side==='west'||side==='east'?P.y/(N*16):P.x/(N*16));return}const R=rbR();if(R&&RSAIL.on){const side=edgePush(R.w,R.h);if(!side)return;const nb=window.SQNEIGH&&SQNEIGH[R.region]&&SQNEIGH[R.region][side];
    if(nb){if(!routeOpen(nb)){edgeMsg('The open sea to the '+side+' leads to '+WORLD_REGIONS[nb].name+', but the route isn\'t charted yet.');return}edgeGo(nb,side,side==='west'||side==='east'?P.y/(R.h*16):P.x/(R.w*16));return}
    if(R.region==='nomans'){edgeMsg('Open sea. Briarwood Isle lies north, the Shattered Expanse east. Hollow Island is a long way north-east: sail from the pier.');return}
    const home=OPP[WORLD_REGIONS[R.region].dir];
    if(side!==home){edgeMsg('Open sea. Hollow Island lies to the '+home+'.');return}
-   edgeGo('hollow',WORLD_REGIONS[R.region].dir,side==='west'||side==='east'?P.y/(R.h*16):P.x/(R.w*16))}}}
+   edgeGo('hollow',WORLD_REGIONS[R.region].dir,side==='west'||side==='east'?P.y/(R.h*16):P.x/(R.w*16))}})}
 // find open water along an edge, as close as possible to where you crossed
 function edgeSpot(Wt,Ht,side,frac,ok){const along=side==='west'||side==='east'?Ht:Wt,c=Math.round(frac*along);
  for(let d=0;d<along;d++)for(const s of[1,-1]){const a=c+s*d;if(a<2||a>=along-2)continue;for(let inset=2;inset<10;inset++){const x=side==='west'?inset:side==='east'?Wt-1-inset:a,y=side==='north'?inset:side==='south'?Ht-1-inset:a;

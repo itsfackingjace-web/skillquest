@@ -16,8 +16,8 @@ function castUlt(){if(dead||menuOpen||pnOpen||BUILD)return;if(!WAND){say('Equip 
  saveLocal()}
 addEventListener('keydown',e=>{if((e.key||'').toLowerCase()==='v'&&!e.repeat){const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'))return;castUlt()}});
 hp.innerHTML=hp.innerHTML.replace('P: equipment (equip tools, weapons, armor)','P: equipment (equip tools, weapons, armor)<br>V: wand ultimate (10 mana)');
-const _u29=upd;upd=function(dt){const paused=menuOpen||pnOpen;const fz=paused?null:en.filter(n=>n.frozen>0).map(n=>[n,n.x,n.y]);_u29(dt);if(paused)return;
- ULTCD=Math.max(0,ULTCD-dt);for(const[n,x,y]of fz){n.x=x;n.y=y;n.frozen-=dt;n.kx=n.ky=0}if(ULTFX){ULTFX.t+=dt;if(ULTFX.t>ULTFX.life)ULTFX=null}};
+SQUPD.wrap('029',_u29=>function(dt){const paused=menuOpen||pnOpen;const fz=paused?null:en.filter(n=>n.frozen>0).map(n=>[n,n.x,n.y]);_u29(dt);if(paused)return;
+ ULTCD=Math.max(0,ULTCD-dt);for(const[n,x,y]of fz){n.x=x;n.y=y;n.frozen-=dt;n.kx=n.ky=0}if(ULTFX){ULTFX.t+=dt;if(ULTFX.t>ULTFX.life)ULTFX=null}});
 function drawUlt(tm){const f=ULTFX;if(f&&!SCENE===!SCENE){const p=f.t/f.life,x=Math.round(P.x),y=Math.round(P.y-4);
   if(f.el==='fire'){const r=Math.round(10+p*60);g.globalAlpha=1-p;for(let k=0;k<28;k++){const a=k/28*6.283+tm,fx=Math.round(x+Math.cos(a)*r),fy=Math.round(y+Math.sin(a)*r*.75),fl=Math.floor(tm*12+k)%2;Rg(fx-1,fy-3-fl,3,4,'#f88830');Rg(fx,fy-2-fl,1,2,'#f8e060')}g.globalAlpha=1}
   else if(f.el==='ice'){const r=Math.round(8+p*70);g.globalAlpha=(1-p)*.9;for(let k=0;k<32;k++){const a=k/32*6.283,fx=Math.round(x+Math.cos(a)*r),fy=Math.round(y+Math.sin(a)*r*.75);Rg(fx-1,fy,3,1,'#e8f8ff');Rg(fx,fy-1,1,3,'#e8f8ff')}g.globalAlpha=1}

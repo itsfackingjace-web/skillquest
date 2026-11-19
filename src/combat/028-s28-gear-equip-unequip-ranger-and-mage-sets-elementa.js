@@ -130,7 +130,7 @@ const _dr28=drawRoom;drawRoom=function(tm){_dr28(tm);drawSpells(tm);drawParts()}
 const _dh28=drawHUD;drawHUD=function(){if(typeof GPON!=='undefined'&&GPON&&WAND&&!menuOpen&&typeof aimLive==='function'&&aimLive()&&!dead){const cx=camX(),cy=camY(),[dx,dy]=castDir(),x=Math.round(P.x+dx*34),y=Math.round(P.y-4+dy*34),c=WSP[WAND].col;
   g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);for(const[a,b]of[[-6,-1],[4,-1],[-1,-6],[-1,4]])Rg(x+a-1,y+b-1,5,5,O);Rg(x-6,y,3,1,c);Rg(x+4,y,3,1,c);Rg(x,y-6,1,3,c);Rg(x,y+4,1,3,c);Rg(x,y,1,1,c);g.restore()}_dh28()};
 // --- update: mana, spells, particles, effects, upgrade watcher ---
-const _u28=upd;upd=function(dt){watchUpgrades();const paused=menuOpen||pnOpen;
+SQUPD.wrap('028',_u28=>function(dt){watchUpgrades();const paused=menuOpen||pnOpen;
  const slowed=paused?null:en.filter(n=>n.slow>0).map(n=>[n,n.x,n.y]);_u28(dt);if(paused)return;
  CASTT=Math.max(0,CASTT-dt);MANA=Math.min(maxMP(),MANA+dt*.5*(1+.4*nCls('m')));
  for(const[n,ox,oy]of slowed){n.x=ox+(n.x-ox)*.3;n.y=oy+(n.y-oy)*.3;n.slow-=dt}
@@ -142,7 +142,7 @@ const _u28=upd;upd=function(dt){watchUpgrades();const paused=menuOpen||pnOpen;
     if(s.el==='storm'){let nb=null,bd=56;for(const o of en){if(o===n||o.dead)continue;const d=Math.hypot(o.x-n.x,o.y-n.y);if(d<bd){bd=d;nb=o}}if(nb){const l=Math.hypot(nb.x-n.x,nb.y-n.y)||1;for(let k=0;k<l;k+=3)part(n.x+(nb.x-n.x)*k/l+(Math.random()-.5)*4,n.y-6+(nb.y-n.y)*k/l+(Math.random()-.5)*4,0,0,.18,k%2?'#fff':'#f8f048',0);spellHit(s,nb,Math.max(1,s.dmg-1))}}break}}}
  for(let i=SPELLS.length-1;i>=0;i--)if(SPELLS[i].dead)SPELLS.splice(i,1);
  for(const q of PARTS){q.t+=dt;q.vy+=q.g*dt;q.x+=q.vx*dt;q.y+=q.vy*dt}for(let i=PARTS.length-1;i>=0;i--)if(PARTS[i].t>PARTS[i].life)PARTS.splice(i,1);if(PARTS.length>400)PARTS.splice(0,PARTS.length-400);
- actFx(dt)};
+ actFx(dt)});
 // --- gear is safe when you fall; a new game clears it ---
 let NEWG=false;
 const _rs28=reset;reset=function(){const keep=NEWG?{}:Object.fromEntries(EQK.map(k=>[k,inv[k]|0]));_rs28();for(const k in keep)if(keep[k])inv[k]=keep[k];SPELLS.length=0};

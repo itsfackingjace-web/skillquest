@@ -15,7 +15,7 @@
   if(D){if(D.kind==='fire')return 1;if(D.kind==='cook')return 2;if(D.kind==='reel')return FISH?5:0;if(D.kind==='smelt')return 7;if(D.kind==='smith')return 8;if(D.kind==='craft')return 9}
   if(FISH)return FISH.bite>0?4:3;return 0}
  window.SQACT=()=>ACT.c;
- let FN=-1;const _u=upd;upd=function(dt){_u.apply(this,arguments);if(FISH){const n=fishN();if(FN>=0&&n>FN&&SQDO&&SQDO.kind==='reel'||FN>=0&&n>FN&&ACT.c===5)CATCH.at=now();FN=n}else FN=-1;const c=localAct();if(c>=7){const n=beat(c,now()-ACT.at);if(n!==MYB){MYB=n;if(n>=0&&c===ACT.c)try{sfx(BEATS[c])}catch(e){}}}else MYB=-9;if(c!==ACT.c){ACT.prev=ACT.c;ACT.c=c;ACT.at=now()}};
+ let FN=-1;SQUPD.after('114',(dt)=>{if(FISH){const n=fishN();if(FN>=0&&n>FN&&SQDO&&SQDO.kind==='reel'||FN>=0&&n>FN&&ACT.c===5)CATCH.at=now();FN=n}else FN=-1;const c=localAct();if(c>=7){const n=beat(c,now()-ACT.at);if(n!==MYB){MYB=n;if(n>=0&&c===ACT.c)try{sfx(BEATS[c])}catch(e){}}}else MYB=-9;if(c!==ACT.c){ACT.prev=ACT.c;ACT.c=c;ACT.at=now()}});
  // a fish you actually catch flies out of the water to you
  function fishN(){let n=inv.rainbow|0;for(const f of FISH_T)n+=inv[f.k]|0;return n}
  // ---- crouching (fire and cooking): the whole character, gear included, drawn shorter at the knees ----

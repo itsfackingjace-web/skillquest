@@ -63,7 +63,7 @@ function pvMelee(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;for(const
 function pvProjHits(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;const ts=[...MP.players.values()].filter(pvTarget);if(!ts.length)return;const sc=curScene();
  for(const p of PROJ){if(p.dead||p.hostile||p.k!=='arrow'||p.sc!==sc)continue;for(const r of ts)if(Math.hypot(r.x-p.x,r.y-4-p.y)<10){p.dead=1;p.life=-1;pvHit(r,'ar');break}}
  for(const s of SPELLS){if(s.dead||s.ghost||s.sc!==sc)continue;for(const r of ts)if(Math.hypot(r.x-s.x,r.y-4-s.y)<10){s.dead=1;s.life=-1;pvHit(r,'sp',s.el);break}}}
-{const _u=upd;upd=function(dt){_u(dt);if(menuOpen||pnOpen)return;try{pvGhostStep(dt);pvProjHits()}catch(e){console.warn(e)}}}
+{SQUPD.after('064',(dt)=>{if(menuOpen||pnOpen)return;try{pvGhostStep(dt);pvProjHits()}catch(e){console.warn(e)}})}
 // ---- PvP: their hits on you ----
 function pvIncoming(id,v){FB.db.remove(FB.db.ref(FB.D,'pvp/'+MP.user.uid+'/'+id)).catch(()=>{});if(!v||typeof v!=='object')return;
  const u=String(v.f||''),r=MP.players.get(u);if(typeof v.t==='number'&&mpNow()-v.t>5000)return;

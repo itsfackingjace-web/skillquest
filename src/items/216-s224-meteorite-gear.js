@@ -77,11 +77,11 @@
    if(best){tx=best.x;ty=best.y}dropAt(tx,ty,true);say('METEOR FALL!');try{sfx('cfire')}catch(e){}
    try{if(window.SQPVSEND)SQPVSEND({k:'mf',x:Math.round(tx),y:Math.round(ty)})}catch(e){}try{saveLocal()}catch(e){}}}
  try{window.SQFXH=window.SQFXH||{};SQFXH.mf=(pl,v)=>{const x=+v.x,y=+v.y;if(isFinite(x)&&isFinite(y))dropAt(x,y,false)}}catch(e){}
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;const sc=curScene();
+ {SQUPD.wrap('216',_u=>function(dt){const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;const sc=curScene();
    for(const f of FALLS){f.t+=dt||0;if(!f.hit&&f.t>=f.fall){f.hit=true;if(f.sc===sc){try{shakeScreen(6)}catch(e){}try{sfx('cstorm');setTimeout(()=>{try{sfx('cfire')}catch(e){}},80)}catch(e){}
       for(let k=0;k<36;k++){const a=k/36*6.283;part(f.x,f.y-4,Math.cos(a)*(90+Math.random()*80),Math.sin(a)*(60+Math.random()*60)-30,.7,['#ff70c0','#ffb060','#8a60e0','#ffe0a0'][k%4],40,2)}
       if(f.own){const dmg=spellDmg('meteor')*3;for(const n of en.slice()){if(n.dead||n.hp<=0||n._rp)continue;if(Math.hypot(n.x-f.x,(n.y-f.y)*1.3)<48)spellHit({el:'meteor',sc,sub:1},n,dmg)}try{if(typeof rumble==='function')rumble(400,1,.8)}catch(e){}}}}}
-   for(let i=FALLS.length-1;i>=0;i--)if(FALLS[i].t>FALLS[i].life)FALLS.splice(i,1);return out}}
+   for(let i=FALLS.length-1;i>=0;i--)if(FALLS[i].t>FALLS[i].life)FALLS.splice(i,1);return out})}
  {const _dh=drawHUD;drawHUD=function(){if(FALLS.length&&!menuOpen){const cx=camX(),cy=camY(),sc=curScene();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{const tm=performance.now()/1000;
    for(const f of FALLS){if(f.sc!==sc)continue;if(f.t<f.fall){const p=f.t/f.fall,hx=f.x+70*(1-p),hy=f.y-150*(1-p);
      // shadow growing on the ground

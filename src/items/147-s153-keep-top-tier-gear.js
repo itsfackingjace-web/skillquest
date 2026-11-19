@@ -20,7 +20,7 @@
    if(typeof snapEq==='function')snapEq()}catch(e){console.warn(e)}})}
  {SQSAVE.after('147:tfx',s=>{s.tfx=2;})}
  // tell the player once play is running (upd only runs in play)
- let wait=0;{const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);if((back.length||hand.length)&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;
+ let wait=0;{SQUPD.after('147',(dt)=>{if((back.length||hand.length)&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;
    if(hand.length){hand=[];say('Sorry about that! A bug swapped your Bone bow for a Longbow. It\'s back in your hands.')}
-   else{const n=back.map(k=>INAME[k]).join(', ');back=[];say('Sorry about that! A bug swapped your '+n+' for a weaker one. It\'s back in your Bag.')}msgT=8;try{saveLocal(true)}catch(e){}}return out}}
+   else{const n=back.map(k=>INAME[k]).join(', ');back=[];say('Sorry about that! A bug swapped your '+n+' for a weaker one. It\'s back in your Bag.')}msgT=8;try{saveLocal(true)}catch(e){}}})}
  window.SQTFX={LOST,LOST2}})();

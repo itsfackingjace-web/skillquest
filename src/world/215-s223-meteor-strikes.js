@@ -237,7 +237,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
  // the summoned record
  let subbed=false;function watch(){if(subbed)return;const F=Fb();if(!F||!me())return;subbed=true;try{F.db.onValue(F.db.ref(F.D,'events/met'),s=>{const v=s.val();const loc=v&&LOCS.includes(v.loc)?v.loc:'hollow';SUM=v&&typeof v.t==='number'&&v.x>=0&&v.y>=0&&v.x<400&&v.y<400&&(loc!=='hollow'||(v.x<N&&v.y<N))?{t:v.t,x:v.x|0,y:v.y|0,loc,id:String(v.id||('d'+v.t)).replace(/[^a-z0-9]/gi,'').slice(0,20)}:null},()=>{subbed=false})}catch(e){subbed=false}}
  let lastT=0;
- {const _u=upd;upd=function(){const out=_u.apply(this,arguments);const n=performance.now();if(n-lastT>250){lastT=n;try{watch();tick()}catch(e){console.warn('meteor',e)}}try{unstick()}catch(e){}return out}}
+ {SQUPD.after('215',()=>{const n=performance.now();if(n-lastT>250){lastT=n;try{watch();tick()}catch(e){console.warn('meteor',e)}}try{unstick()}catch(e){}})}
  // ---- achievements ----
  try{const A=SQACH.A,c=k=>()=>SQACH.counters[k]|0,ad=(id,n,d,k,goal,gold)=>{if(!A.some(a=>a.id===id))A.push({g:'Meteors',id,n,d,val:c(k),goal,gold})};
   ad('met1','Starfall','Help break a meteor core','mtcore',1,300);ad('met10','Meteor Chaser','Help break 10 meteor cores','mtcore',10,2500);

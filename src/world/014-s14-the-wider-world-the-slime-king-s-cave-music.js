@@ -85,11 +85,10 @@ SQSAVE.after('014:qv,cave',s=>{s.qv=4;s.cave=CAVE_DAY;});
 SQLOAD.after('014',(S)=>{if((S.qv||0)<4&&S.q&&Q.i>=10)Q.i=Math.min(QS.length,Q.i+3);CAVE_DAY=isFinite(S.cave)?+S.cave:-1});
 
 // --- update: enemy types, wolf speed, boss contact ---
-const _u14=upd;upd=function(dt){_u14(dt);if(menuOpen||pnOpen||dead)return;
- for(const n of en){if(!n.type){const t=SCENE?2:tile[Math.floor(n.y/16)*N+Math.floor(n.x/16)];if(t===4){n.type='wolf';n.hp=5}else if(t===5){n.type='skel';n.hp=6}else n.type='slime'}
+SQUPD.after('014',(dt)=>{if(menuOpen||pnOpen||dead)return;for(const n of en){if(!n.type){const t=SCENE?2:tile[Math.floor(n.y/16)*N+Math.floor(n.x/16)];if(t===4){n.type='wolf';n.hp=5}else if(t===5){n.type='skel';n.hp=6}else n.type='slime'}
   const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;
   if(n.type==='wolf'&&d<140&&!nearFire(n.x,n.y,70)){const s=16*dt,mx=dx/d*s,my=dy/d*s;if(!solid(n.x+mx,n.y))n.x+=mx;if(!solid(n.x,n.y+my))n.y+=my}
-  if(n.type==='boss'&&d<18&&hurt<=0&&!(ROLLT>0)){P.hp-=1;hurt=1;say('The Slime King crushes you!');sfx('hurt')}}};
+  if(n.type==='boss'&&d<18&&hurt<=0&&!(ROLLT>0)){P.hp-=1;hurt=1;say('The Slime King crushes you!');sfx('hurt')}}});
 // --- shops, bag, map ---
 const _r14=rPn;rPn=function(){if(ptab===2&&shop==='trader'){document.getElementById('t0').style.display='none';document.getElementById('t1').style.display='none';ptt.textContent='';pbd.innerHTML=traderHTML();return}_r14()};
 const _oc14=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.trb');if(b){traderAct(b.dataset.a);return}_oc14(e)};

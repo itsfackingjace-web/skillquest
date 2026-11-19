@@ -4,8 +4,8 @@
  // TALK/USE slept again and re-armed it, so on touch screens (both buttons said SLEEP) the bed could never be picked up.
  {const _uf=useFurn;useFurn=function(it){try{if(it&&it.f&&it.f.t==='bed'&&typeof bedPick!=='undefined'&&bedPick&&bedPick.home&&bedPick.i===it.i&&performance.now()-bedPick.at<3000&&typeof inHome==='function'&&inHome()){bedPick=null;pickFurn(it.i);return}}catch(e){}return _uf.apply(this,arguments)}}
  // Rain waters backyard/courtyard crops too (021 only watered Hollow's FARM plots). Same rule: watered for at least 90 more seconds.
- {let acc=0;const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if((acc+=dt||0)>1){acc=0;if(typeof rainingNow==='function'&&rainingNow()){
-   const homes=(typeof HOUSES!=='undefined'?HOUSES:[]).concat(window.SQRH||[]);for(const h of homes){if(!h||h._foreign||!h.yp)continue;for(const p of h.yp.values())if(p&&p.c)p.w=Math.max(+p.w||0,CLK+90)}}}}catch(e){}return out}}
+ {let acc=0;SQUPD.after('205',(dt)=>{try{if((acc+=dt||0)>1){acc=0;if(typeof rainingNow==='function'&&rainingNow()){
+   const homes=(typeof HOUSES!=='undefined'?HOUSES:[]).concat(window.SQRH||[]);for(const h of homes){if(!h||h._foreign||!h.yp)continue;for(const p of h.yp.values())if(p&&p.c)p.w=Math.max(+p.w||0,CLK+90)}}}}catch(e){}})}
  // Jewelry at the furnace uses the house's chests like smelting does (033 merges chests only around its own clicks; 086's Make/All
  // run outside that and as a timed job). Before Make/All, exactly the gold bars and gems needed are moved from the chests to the bag.
  {const _oc=pbd.onclick;pbd.onclick=function(e){try{const b=e.target.closest&&e.target.closest('[data-jw]');const a=b&&b.dataset.jw;

@@ -669,7 +669,7 @@
  addEventListener('keyup',e=>{if(S.open)e.stopPropagation()},true);
  // you're safe while the suite is open: no damage, no hunger, nothing can kill you
  const _hp=hurtP;hurtP=function(){if(S.open)return;return _hp.apply(this,arguments)};
- const _uS=upd;upd=function(dt){if(!S.open)return _uS(dt);const h0=hunger,hp0=P&&P.hp,d0=dead;_uS(dt);try{if(hunger<h0)hunger=h0;if(P&&P.hp<hp0)P.hp=hp0;if(dead&&!d0&&P&&P.hp>0)dead=false}catch(e){}};
+ SQUPD.wrap('111b',_uS=>function(dt){if(!S.open)return _uS(dt);const h0=hunger,hp0=P&&P.hp,d0=dead;_uS(dt);try{if(hunger<h0)hunger=h0;if(P&&P.hp<hp0)P.hp=hp0;if(dead&&!d0&&P&&P.hp>0)dead=false}catch(e){}});
  // ... and it opens straight from the title screen once you're signed in
  window.SQTITLE=()=>{const t=document.getElementById('sqts');return!!(t&&t.style.display!=='none'&&getComputedStyle(t).display!=='none')};
  {const mn=document.getElementById('tsmn');const addBtn=()=>{if(!mn||mn.querySelector('[data-a="dvs"]')||!(window.SQDEV&&SQDEV()&&user()))return;const o=mn.querySelector('[data-a="opt"]');if(!o)return;

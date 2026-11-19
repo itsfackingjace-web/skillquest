@@ -218,10 +218,7 @@ const _ng20=newGame;newGame=function(){JOBD={};GMDONE=false;_ng20();for(const n 
 clearProt();
 // --- update: safe streets, welcome message ---
 let inTownPrev=false,protT=0;
-const _u20=upd;upd=function(dt){_u20(dt);if(!pnOpen)TALKN=null;if(menuOpen||pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inTownBox(x,y);
- /* no welcome message: towns are named on the map (Nov 16) */inTownPrev=inT;
- en=en.filter(n=>!inTownBox(Math.floor(n.x/16),Math.floor(n.y/16)));
- if((protT+=dt)>1){protT=0;for(let j=REM.length-1;j>=0;j--)if(PROT.has(REM[j].i))REM.splice(j,1)}};
+SQUPD.after('020',(dt)=>{if(!pnOpen)TALKN=null;if(menuOpen||pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inTownBox(x,y);inTownPrev=inT;en=en.filter(n=>!inTownBox(Math.floor(n.x/16),Math.floor(n.y/16)));if((protT+=dt)>1){protT=0;for(let j=REM.length-1;j>=0;j--)if(PROT.has(REM[j].i))REM.splice(j,1)}});
 // --- drawing ---
 function drawBridge(i,tm){const x=i%N,y=(i/N)|0,px=x*16,py=y*16,horiz=ROADS.has(i-1)||ROADS.has(i+1)||(tile[i-1]>0&&!BRIDGE.has(i-1)&&tile[i-1]!==undefined&&!BRIDGE.has(i+N)&&!BRIDGE.has(i-N));
  Rg(px,py,16,16,'#2860c0');const fr=Math.floor(tm*2)%2;Rg(px+((x*5+fr*3)%12),py+((y*7)%12)+2,3,1,'#5898f0');

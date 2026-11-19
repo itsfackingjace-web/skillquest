@@ -44,6 +44,6 @@
  let castAt=0;
  {SQHIT.wrap('222 ponds and fishing spots',_a=>function(){const had=!!FISH;const out=_a.apply(this,arguments);try{if(!had&&FISH){const tx=Math.floor(FISH.bx/16),ty=Math.floor(FISH.by/16);
     if(others(tx,ty).length){FISH=null;say('Someone is already fishing there.');try{sfx('swish')}catch(e){}}else castAt=performance.now()}}catch(e){}return out})}
- {let acc=0;const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{acc+=dt;if(acc>.4){acc=0;if(FISH&&castAt&&performance.now()-castAt<3000){const o=others(Math.floor(FISH.bx/16),Math.floor(FISH.by/16));
-     if(o.some(u=>u<me())){FISH=null;castAt=0;try{if(typeof SQDO!=='undefined'&&SQDO&&SQDO.kind==='reel')SQDO=null}catch(e){}say('Someone is already fishing there.')}}}}catch(e){}return out}}
+ {let acc=0;SQUPD.after('222',(dt)=>{try{acc+=dt;if(acc>.4){acc=0;if(FISH&&castAt&&performance.now()-castAt<3000){const o=others(Math.floor(FISH.bx/16),Math.floor(FISH.by/16));
+     if(o.some(u=>u<me())){FISH=null;castAt=0;try{if(typeof SQDO!=='undefined'&&SQDO&&SQDO.kind==='reel')SQDO=null}catch(e){}say('Someone is already fishing there.')}}}}catch(e){}})}
 })();

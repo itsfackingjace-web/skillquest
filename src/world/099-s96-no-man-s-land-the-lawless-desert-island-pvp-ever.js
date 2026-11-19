@@ -96,12 +96,12 @@
   if((n.swap-=dt)<=0){n.swap=1.5+Math.random()*2;n.side=-n.side}
   let mx=0,my=0;if(d>130){mx=dx/d;my=dy/d}else if(d<72){mx=-dx/d;my=-dy/d}mx+=-dy/d*.7*n.side;my+=dx/d*.7*n.side;const l=Math.hypot(mx,my)||1;stepTo(n,mx/l*36*dt,my/l*36*dt);n.mv=1;
   if((n.cd-=dt)<=0&&d<175){n.cd=1.7+Math.random()*.7;n.aim=.4}}
- {const _u=upd;upd=function(dt){const R=nmR(),paused=menuOpen||pnOpen||dead;const pos=R&&!paused?en.map(n=>[n,n.x,n.y]):null;_u(dt);if(!R||paused)return;
+ {SQUPD.wrap('099',_u=>function(dt){const R=nmR(),paused=menuOpen||pnOpen||dead;const pos=R&&!paused?en.map(n=>[n,n.x,n.y]):null;_u(dt);if(!R||paused)return;
    for(const[n,ox,oy]of pos){if(n.dead)continue;n.t=(n.t||0)+dt;if(n.flash>0)n.flash-=dt;if(n.puff>0)n.puff-=dt;
     if(n.type==='gscorp')gscorpAI(n,ox,oy,dt);else if(n.type==='cacti')cactiAI(n,ox,oy,dt);else if(n.type==='bandit')banditAI(n,ox,oy,dt)}
    for(const b of NMP){b.t-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(solid(b.x,b.y+4)){b.t=0;continue}
     if(Math.hypot(P.x-b.x,P.y-6-b.y)<8&&!roll()&&!dead){b.t=0;const h0=P.hp;hurtP(1,b.k==='bullet'?'A bandit\'s bullet hits you!':'Cactus needles!');if(P.hp<h0&&window.SQSHOTHIT)SQSHOTHIT(b)}}
-   for(let i=NMP.length-1;i>=0;i--)if(NMP[i].t<=0)NMP.splice(i,1)}}
+   for(let i=NMP.length-1;i>=0;i--)if(NMP[i].t<=0)NMP.splice(i,1)})}
  {const _lr=leaveRegion;leaveRegion=function(...a){NMP.length=0;return _lr(...a)}}
  // ---- how they look ----
  function drawCacti(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs(n.kx)+Math.abs(n.ky)>.8,G=hit?'#ffffff':'#3c9a38',Gd=hit?'#e0e0e0':'#2a7028',Gl=hit?'#ffffff':'#6cc858',awake=n.st!=='sleep',
@@ -143,13 +143,12 @@
 
  // ---- PvP is always on here ----
  let forced=false,was=false,warnAt=0;
- {const _u=upd;upd=function(dt){_u(dt);const PV=window.SQPVP;if(!PV)return;const here=curRegion()===ID||(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region===ID);
-   if(here&&window.SQMPON&&SQMPON()){if(!PV.on){if(!forced){was=false;forced=true;const n=performance.now();if(n-warnAt>4000){warnAt=n;say('No Man\'s Land: there is no law here. PvP is ON for everyone.');msgT=5;try{sfx('quest')}catch(e){}}}else if(forced&&performance.now()-warnAt>2500){warnAt=performance.now();say('You can\'t turn PvP off in No Man\'s Land.')}PV.on=true}else if(!forced){forced=true;was=true}}
-   else if(forced){forced=false;if(!was&&!(PV.fight&&performance.now()-PV.fight<30000)){PV.on=false;say('You leave No Man\'s Land. PvP is off again.')}}}}
+ {SQUPD.after('099',(dt)=>{const PV=window.SQPVP;if(!PV)return;const here=curRegion()===ID||(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region===ID);if(here&&window.SQMPON&&SQMPON()){if(!PV.on){if(!forced){was=false;forced=true;const n=performance.now();if(n-warnAt>4000){warnAt=n;say('No Man\'s Land: there is no law here. PvP is ON for everyone.');msgT=5;try{sfx('quest')}catch(e){}}}else if(forced&&performance.now()-warnAt>2500){warnAt=performance.now();say('You can\'t turn PvP off in No Man\'s Land.')}PV.on=true}else if(!forced){forced=true;was=true}}
+   else if(forced){forced=false;if(!was&&!(PV.fight&&performance.now()-PV.fight<30000)){PV.on=false;say('You leave No Man\'s Land. PvP is off again.')}}})}
 
  // ---- the world map draws every island's outline ahead of time (it used to take ~20s on a phone after opening it) ----
  {const next=()=>ROUTE_ORDER.find(id=>id!=='hollow'&&!RG_THUMB[id]);let bg=2;
-  const _u=upd;upd=function(dt){_u(dt);if(TRAVEL49||dead)return;if((bg-=dt)>0)return;bg=.4;const id=next();if(id)try{rgThumb(id)}catch(e){console.warn(e)}};
+  SQUPD.after('099',(dt)=>{if(TRAVEL49||dead)return;if((bg-=dt)>0)return;bg=.4;const id=next();if(id)try{rgThumb(id)}catch(e){console.warn(e)}});
   // while the WORLD map is open, build much faster and redraw as each island appears
   setInterval(()=>{try{if(typeof MAPVIEW==='undefined'||MAPVIEW!=='world'||!pnOpen||ptab!==5)return;const id=next();if(!id)return;const t0=performance.now();while(performance.now()-t0<45&&next()===id&&!RG_THUMB[id])rgThumb(id);if(RG_THUMB[id])drawMap()}catch(e){console.warn(e)}},90)}
  // a desert: no rain, the odd dust storm

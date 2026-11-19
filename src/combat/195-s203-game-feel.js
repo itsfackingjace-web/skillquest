@@ -20,7 +20,7 @@
  {const _k=killEnemy;killEnemy=function(n){if(n&&!n.dead)n._kp=1;return _k.apply(this,arguments)}}
  const LAST=new Map();let ut=0;
  {const _ss=shakeScreen;shakeScreen=function(){if(!on)return;return _ss.apply(this,arguments)}}// 015's shake when you're hurt follows the option too
- {const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{
+ {SQUPD.after('195',(dt)=>{try{
    if(!menuOpen&&!pnOpen){
     const seen=new Set();for(const n of en){if(!n||n._rp)continue;const d=Math.hypot(n.x-P.x,n.y-P.y);if(d>300)continue;seen.add(n);const was=LAST.get(n);
      if(was!=null&&!n.dead&&n.hp<was){spark(n);if(d<60)shake(1.5,.09)}
@@ -34,7 +34,7 @@
        const x=(tx+a)*16+8,y=(ty+b)*16+8;let bad=true;try{bad=solid(x,y)||solid(x-5,y)||solid(x+5,y)||solid(x,y-4)||solid(x,y+5)}catch(e){}if(!bad){n.x=x;n.y=y;n.kx=0;n.ky=0;break out}}}}}
    // shake
    if(SH>0){SH-=dt;const a=SH>0?SHA*Math.min(1,SH*8):0;cv.style.transform=a>0?'translate('+((Math.random()*2-1)*a).toFixed(1)+'px,'+((Math.random()*2-1)*a).toFixed(1)+'px) scale(1.012)':'';if(SH<=0)SHA=0}
-  }catch(e){console.warn('game feel',e)}return out}}
+  }catch(e){console.warn('game feel',e)}})}
  // Options: screen shake on/off
  const _o=optionsHTML;optionsHTML=function(){const h=_o(),add='<button class="sb sqshk">Screen shake: '+(on?'ON':'OFF')+'</button>';
   let k=h.indexOf('<div class="tl" style="margin-top:16px">CONTROLLER</div>');if(k<0)k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)};

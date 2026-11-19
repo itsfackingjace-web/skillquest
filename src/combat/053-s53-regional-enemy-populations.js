@@ -56,8 +56,8 @@ rgUpd=function(R,dt){rgTick(R,dt);const F=RG_FAUNA[R.region];if(!F)return;const 
   for(let j=0;j<size;j++){const ox=j?((j&1?1:-1)*20):0,oy=j?((j>1?1:-1)*14):0,X=tx*16+8+ox,Y=ty*16+8+oy;if(j&&!rgSpotOK(R,Math.floor(X/16),Math.floor(Y/16),coast))continue;
    const n=rgMake(key,e[1],X,Y);n.rg=R.region;RG_OWN.add(n);en.push(n)}break}};
 // heavier hits from the toughest lands (Ironcrest and the Shattered Expanse): +1 on a creature's touch
-const _u53=upd;upd=function(dt){const R=SCENE&&SCENE.room,reg=R&&R.region,hp0=P.hp,h0=hurt;RG53_UPD=!!reg;try{_u53(dt)}finally{RG53_UPD=false}
- if(!reg||dead||menuOpen||pnOpen)return;const F=RG_FAUNA[reg];if(F&&F.extra&&h0<=0&&hurt>0&&P.hp<hp0&&en.some(n=>!n.dead&&n.rg===reg&&Math.hypot(n.x-P.x,n.y-P.y)<16))PEND43+=F.extra};
+SQUPD.wrap('053',_u53=>function(dt){const R=SCENE&&SCENE.room,reg=R&&R.region,hp0=P.hp,h0=hurt;RG53_UPD=!!reg;try{_u53(dt)}finally{RG53_UPD=false}
+ if(!reg||dead||menuOpen||pnOpen)return;const F=RG_FAUNA[reg];if(F&&F.extra&&h0<=0&&hurt>0&&P.hp<hp0&&en.some(n=>!n.dead&&n.rg===reg&&Math.hypot(n.x-P.x,n.y-P.y)<16))PEND43+=F.extra});
 // regional bounty: a little more XP and gold the further out you go
 const _ed53=enemyDrop;enemyDrop=function(n){_ed53(n);const F=n.rg&&RG_FAUNA[n.rg];if(!F)return;GLD+=F.tier*2+Math.floor(Math.random()*(F.tier*2));addXp(0,Math.round(10*F.xp));
  if(n.rv==='cinder'&&Math.random()<.35){inv.iron=(inv.iron|0)+1;say('+1 iron ore (from the cinder beetle\'s shell)')}};

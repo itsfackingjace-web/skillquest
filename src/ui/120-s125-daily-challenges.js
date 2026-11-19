@@ -41,7 +41,7 @@
  function add(id,k){if(!D||!(k>0))return;for(const q of D.q)if(q.t===id&&!q.c){q.p=Math.min(q.n,q.p+k);if(q.p>=q.n)pay(q);else if(pnOpen&&ptab===6)rPn()}}
  // XP gains mark the skill for this frame
  const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);if(!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}return out};
- const _u=upd;upd=function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;
+ SQUPD.wrap('120',_u=>function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;
    if(!D||D.d!==today()){fresh();LASTINV=null;
     if(TOLD!==D.d){TOLD=D.d;let gd=null;try{gd=window.SQGUIDE&&SQGUIDE()}catch(e){}if(!gd)setTimeout(()=>{if(!dead){say('New daily challenges! Find them in your quest log.');msgT=4}},2500)}}
    // what arrived this frame, for the skills that just gained XP
@@ -49,7 +49,7 @@
     for(const q of D.q){if(q.c)continue;const t=T[q.t],si=SK(t.s);if(t.kill||!XPF.has(si))continue;
      if(t.xpc)add(q.t,XPN[si]|0);else add(q.t,t.min1?Math.max(1,tot):tot)}}
    if(typeof kills==='number'){if(kills>LASTK&&LASTINV)add('kill',kills-LASTK);LASTK=kills}
-   XPF.clear();XPN={};LASTINV=Object.assign({},inv)}catch(e){}return out};
+   XPF.clear();XPN={};LASTINV=Object.assign({},inv)}catch(e){}return out});
  // the quest log: the three of today at the top (below the getting-started box if it's showing)
  function html(){if(!D)return'';let h='<div class="sqdl-h"><b>DAILY CHALLENGES</b><span>'+(D.s>0?'Streak: '+D.s+' day'+(D.s>1?'s':''):'New ones every day')+'</span></div>';
   for(const q of D.q){const t=T[q.t],pc=Math.round(q.p/q.n*100);h+='<div class="sqdl-r'+(q.c?' done':'')+'"><div class="sqdl-t"><span>'+(q.c?'✔ ':'')+esc(t.w(q.n))+'</span><i>'+q.p+'/'+q.n+'</i></div>'+

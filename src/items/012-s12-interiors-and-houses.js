@@ -70,10 +70,8 @@ const _fi12=fire;fire=function(){if(SCENE&&!(SCENE.room&&(SCENE.room.icv||SCENE.
 const _rs12=reset;reset=function(){SCENE=null;_rs12();const h=HOUSES.find(o=>o.id===HOMESP);if(h){enterScene('home',h,{x:h.x*16+8,y:(h.y+1)*16+6});P.x=2*16+10;P.y=3*16+8;face=[0,1];say('You wake up at home, safe and sound.')}};
 const _ng12=newGame;newGame=function(){for(const h of HOUSES)for(const i of houseTiles(h))BS.delete(i);HOUSES=[];HOMESP=null;SCENE=null;_ng12()};
 // --- update: doors, indoor rules, USE label ---
-const _u12=upd;upd=function(dt){_u12(dt);if(menuOpen||pnOpen||dead)return;
- if(SCENE){if(!SCENE.room.cave)en=[];const R=SCENE.room;if(P.y>R.h*16-5&&Math.abs(P.x-(R.ex*16+8))<9){leaveScene();return}
-  const it=nearFurn();if(it||nearNpc()){tk.style.display='flex';const lab=nearNpc()?'TALK':'USE';if(tkLab!==lab){tkLab=lab;tk.innerHTML=lab+(isPC?'<small>T</small>':'')}}else tk.style.display='none';return}
- for(const d of entrances()){const cx=d.x*16+8;if(face[1]<0&&Math.abs(P.x-cx)<9&&P.y<(d.y+1)*16+6&&P.y>d.y*16-4){enterScene(d.id,d.house,{x:cx,y:(d.y+1)*16+7});return}}};
+SQUPD.after('012',(dt)=>{if(menuOpen||pnOpen||dead)return;if(SCENE){if(!SCENE.room.cave)en=[];const R=SCENE.room;if(P.y>R.h*16-5&&Math.abs(P.x-(R.ex*16+8))<9){leaveScene();return}
+  const it=nearFurn();if(it||nearNpc()){tk.style.display='flex';const lab=nearNpc()?'TALK':'USE';if(tkLab!==lab){tkLab=lab;tk.innerHTML=lab+(isPC?'<small>T</small>':'')}}else tk.style.display='none';return}for(const d of entrances()){const cx=d.x*16+8;if(face[1]<0&&Math.abs(P.x-cx)<9&&P.y<(d.y+1)*16+6&&P.y>d.y*16-4){enterScene(d.id,d.house,{x:cx,y:(d.y+1)*16+7});return}}});
 // --- drawing ---
 const _dk12=dark;dark=function(){return SCENE&&INDRAW?0:_dk12()};
 const _dh12=drawHUD;drawHUD=function(){INDRAW=false;_dh12();const a=1-(performance.now()-FADE_AT)/320;if(a>0){g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=Math.min(1,a);g.fillStyle='#000';g.fillRect(0,0,W,H);g.restore()}};

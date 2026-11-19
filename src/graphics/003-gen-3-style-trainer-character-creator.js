@@ -59,5 +59,5 @@ pc.onclick=()=>{pd=(pd+1)%4;rp()};
 setInterval(()=>{if(menuOpen){pt++;rp()}},280);
 document.getElementById('cgo').onclick=()=>{menuOpen=false;cm.style.display='none';try{localStorage.setItem('hw_ch',JSON.stringify(CH))}catch(e){}};
 cb.onclick=()=>{menuOpen=true;jx=jy=0;cm.style.display='flex';document.getElementById('cgo').textContent='DONE';build();rp()};
-const _u=upd;upd=function(dt){if(!menuOpen)_u(dt)};
+SQUPD.wrap('003',_u=>function(dt){if(!menuOpen)_u(dt)});
 build();rp();

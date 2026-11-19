@@ -70,13 +70,13 @@ const HIDE45=200;// burrowed things are parked out of reach (and out of sight) w
 function hideAt(n){n.x=P.x+HIDE45;n.y=P.y}
 function inArc(n,ax,ay,r,dirx,diry,cosw){const dx=P.x-ax,dy=P.y-ay,d=Math.hypot(dx,dy);if(d>r)return false;if(d<6)return true;return(dx*dirx+dy*diry)/d>=cosw}
 let EMERGE45=[];// emergence/strike flashes for drawing
-const _u45=upd;upd=function(dt){const paused=menuOpen||pnOpen||dead;const pos=paused?null:en.map(n=>[n,n.x,n.y]),hp0=P.hp;_u45(dt);if(paused)return;const hit=P.hp<hp0;
+SQUPD.wrap('045',_u45=>function(dt){const paused=menuOpen||pnOpen||dead;const pos=paused?null:en.map(n=>[n,n.x,n.y]),hp0=P.hp;_u45(dt);if(paused)return;const hit=P.hp<hp0;
  for(const e of EMERGE45)e.t+=dt;EMERGE45=EMERGE45.filter(e=>e.t<.5);
  for(const[n,ox,oy]of pos){if(n.dead)continue;
   if(n.type==='scorp')scorpAI(n,ox,oy,dt);
   else if(n.type==='beetle')beetleAI(n,ox,oy,dt);
   else if(n.type==='skel'&&n.vr==='dust'){if(n.frozen>0)continue;const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;if(d<46){n.x=ox;n.y=oy;stepTo(n,-dx/d*30*dt,-dy/d*30*dt)}}
-  else if(n.type==='matri')matriAI(n,ox,oy,dt,hit)}};
+  else if(n.type==='matri')matriAI(n,ox,oy,dt,hit)}});
 function scorpAI(n,ox,oy,dt){if(n.frozen>0){n.x=ox;n.y=oy;return}const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1;n.x=ox+n.kx*.5;n.y=oy+n.ky*.5;
  if(n.ss==='walk'){if(d>24&&d<160)stepTo(n,dx/d*30*dt,dy/d*30*dt);if((n.st2-=dt)<=0&&d<34){n.ss='wind';n.st2=.55;n.ax=dx/d;n.ay=dy/d}}
  else if(n.ss==='wind'){if((n.st2-=dt)<=0){n.ss='strike';n.st2=.16;EMERGE45.push({x:n.x+n.ax*20,y:n.y+n.ay*20-4,t:0,c:'#ffd070',r:10});if(inArc(n,n.x,n.y,32,n.ax,n.ay,.55))hurtP(2,'The scorpion\'s tail stings!');sfx('swish')}}

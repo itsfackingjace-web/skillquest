@@ -46,7 +46,7 @@
   show()}
  setInterval(check,700);
  // the game waits while the question is up
- {const _u=upd;upd=function(){if(asking)return;return _u.apply(this,arguments)}}
+ {SQUPD.wrap('207',_u=>function(){if(asking)return;return _u.apply(this,arguments)})}
  {const _nr=navRoot;navRoot=function(){if(asking)return box;return _nr()}}
  // ---- chat: phrases only for under 13 ----
  {const _s=window.mpSend;window.mpSend=function(t){if(API.child()){const s=String(t||'').replace(/\s+/g,' ').trim();

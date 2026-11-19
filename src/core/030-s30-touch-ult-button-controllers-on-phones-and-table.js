@@ -23,6 +23,5 @@ const _opt30=optionsHTML;optionsHTML=function(){let h=_opt30();const k=h.indexOf
 const _oc30=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('.padtab')){saveLocal(true);try{window.open(location.href,'_blank')}catch(_){}return}_oc30(e)};
 // live refresh of the status box while Options is open
 let padT=0;
-const _u30=upd;upd=function(dt){_u30(dt);ubUpdate();
- if(pnOpen&&ptab===8&&(padT+=dt)>.25){padT=0;const old=PADSTAT,ol=PADLAST;padCheck();const el=document.getElementById('padlast');if(old!==PADSTAT)rPn();else if(el&&ol!==PADLAST)el.textContent=PADLAST}};
+SQUPD.after('030',(dt)=>{ubUpdate();if(pnOpen&&ptab===8&&(padT+=dt)>.25){padT=0;const old=PADSTAT,ol=PADLAST;padCheck();const el=document.getElementById('padlast');if(old!==PADSTAT)rPn();else if(el&&ol!==PADLAST)el.textContent=PADLAST}});
 
