@@ -102,9 +102,10 @@
   for(const s of petsHere()){const d=Math.hypot(s.x-fx,s.y-fy);if(d<bd){bd=d;best=s}}
   if(!best){const R=SCENE.room,[x,y]=frontTile(),i=y*R.w+x,f=h.furn.get(i);if(f&&isPet(f.t))best=PS.get(hid(h)+':'+i)||null}
   return best?{h,i:best.i,f:h.furn.get(best.i),s:best}:null}
- {SQHIT.before('206 pets at home',()=>{try{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const o=front();if(o&&o.f){swing=.25;const name=EQ[o.f.t].n,now=performance.now(),s=o.s;
+ {SQHIT.wrap('206 pets at home',next=>function(){try{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const o=front();if(o&&o.f){swing=.25;const name=EQ[o.f.t].n,now=performance.now(),s=o.s;
      if(mine(o.h)&&arm&&arm.i===o.i&&arm.h===o.h&&now-arm.at<3000){arm=null;PS.delete(hid(o.h)+':'+o.i);pickFurn(o.i);say('Your '+name.toLowerCase()+' hops back into your bag.');return}
      if(s){JOY.set(s,now);s.hopAt=now;s.mode='petted';s.until=now+3200;s.mv=0;s.fl=P.x<s.x;s.woke=0;s.next=null;s.greetCd=now+15000}try{sfx('talk')}catch(e){}
      if(mine(o.h)){arm={i:o.i,h:o.h,at:now};say('You pet your '+name.toLowerCase()+'. Hit it again to pick it up.')}else say('You pet the '+name.toLowerCase()+'. It looks very pleased.');
-     return}}}catch(e){console.warn(e)}})}
+     return}}}catch(e){console.warn(e)}
+ return next.apply(this,arguments)})}
  window.SQHOMEPETS={isPet,armed:()=>arm&&performance.now()-arm.at<3000?arm:null,front,addKeys,PS,petsHere}})();

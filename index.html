@@ -674,10 +674,11 @@ function catchFish(){const L=lvOf(9),open=FISH_T.filter(f=>L>=f.lv);let ix=open.
  FISH.t=0;FISH.bite=0;FISH.wait=(2+Math.random()*3)*Math.max(.6,1-L*.006)}
 // water you can fish in: Hollow's tiles on Hollow, the island's own tiles on the other islands (not indoors)
 function fishWaterAt(tx,ty){const R=SCENE&&SCENE.room;if(R&&R.region)return tx>=0&&ty>=0&&tx<R.w&&ty<R.h&&R.tiles[ty*R.w+tx]===0;if(SCENE)return false;return tx>=0&&ty>=0&&tx<N&&ty<N&&tile[ty*N+tx]==0}
-SQHIT.before('007 skillquest fishing smithing',()=>{if(dead||menuOpen||pnOpen)return;if(FISH){FISH=null;say('You reel in your line');return}const[fx,fy]=front(14),tx=Math.floor(fx/T),ty=Math.floor(fy/T);if(swing<=0&&fishWaterAt(tx,ty)&&!en.some(n=>Math.hypot(n.x-fx,n.y-fy)<16)){
+SQHIT.wrap('007 skillquest fishing smithing',next=>function(){if(dead||menuOpen||pnOpen)return;if(FISH){FISH=null;say('You reel in your line');return}const[fx,fy]=front(14),tx=Math.floor(fx/T),ty=Math.floor(fy/T);if(swing<=0&&fishWaterAt(tx,ty)&&!en.some(n=>Math.hypot(n.x-fx,n.y-fy)<16)){
   if(!TL.rod){say('You need a fishing rod - buy one at the general store');return}
-  const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}});
-const _u6=upd;upd=function(dt){const hp0=P.hp;_u6(dt);if(menuOpen||pnOpen||!FISH)return;
+  const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}
+ return next.apply(this,arguments)});
+const _u6=upd;upd=function(dt){const hp0=P.hp;_u6(dt);if(!FISH)return;// keeps fishing while a menu or screen is open (Alan, Nov 18)
  if(dead||P.hp<hp0||Math.hypot(P.x-FISH.px,P.y-FISH.py)>1.5){FISH=null;if(!dead)say('You stop fishing');return}
  if(FISH.bite>0){FISH.bite-=dt;if(FISH.bite<=0)catchFish()}else if((FISH.t+=dt)>=FISH.wait){FISH.bite=.45;sfx('splash')}};
 // --- cooking & eating (meat + fish) ---
@@ -1180,8 +1181,10 @@ function placeBuild(){const k=BUILD.k;if((inv[k]|0)<1){endBuild('You have no mor
 function hitStructure(i){const s=STR.get(i);const wood=s.t!=='swall';s.hp-=1+(wood?TL.axe:TL.pick);s.shake=.15;sfx(wood?'chop':'mine');
  if(s.hp>0)return;STR.delete(i);inv[s.t]=(inv[s.t]|0)+1;let extra='';if(s.items){for(const k in s.items){inv[k]=(inv[k]|0)+s.items[k]}if(Object.values(s.items).some(v=>v>0))extra=' and everything inside'}
  if(BEDSP===i)BEDSP=-1;say('Picked up the '+INAME[s.t].toLowerCase()+extra+'.');setTimeout(()=>sfx('pickup'),90);saveLocal(true);saveCloud()}
-SQHIT.before('011 building inventory grid equipment',()=>{if(dead||menuOpen||pnOpen)return;if(BUILD){placeBuild();return}if(swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x;if(STR.has(i)){swing=.25;hitStructure(i);return}}});
-SQEAT.before('011 stop building',()=>{if(BUILD){endBuild('Stopped building.');return}});
+SQHIT.wrap('011 building inventory grid equipment',next=>function(){if(dead||menuOpen||pnOpen)return;if(BUILD){placeBuild();return}if(swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x;if(STR.has(i)){swing=.25;hitStructure(i);return}}
+ return next.apply(this,arguments)});
+SQEAT.wrap('011 stop building',next=>function(){if(BUILD){endBuild('Stopped building.');return}
+ return next.apply(this,arguments)});
 addEventListener('keydown',e=>{if(BUILD&&e.key==='Escape'){endBuild('Stopped building.');e.preventDefault();e.stopImmediatePropagation()}},true);
 // respawn beside your bed; a new game also clears everything you built
 const _rs11=reset;reset=function(){_rs11();const b=STR.get(BEDSP);if(b&&b.t==='bed'){const bx=BEDSP%N,by=(BEDSP/N)|0;for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]]){const px=(bx+dx)*16+8,py=(by+dy)*16+8;if(!(solid(px-5,py-3)||solid(px+5,py-3)||solid(px-5,py+6)||solid(px+5,py+6))){P.x=px;P.y=py;break}}saveLocal(true)}};
@@ -1419,7 +1422,8 @@ const _sbd12=sleepBed;sleepBed=function(i){HOMESP=null;_sbd12(i)};
 const _tk12=talk;talk=function(){if(SCENE&&!nearNpc()){const it=nearFurn();if(it&&!pnOpen&&!menuOpen)useFurn(it);return}_tk12()};
 tk.addEventListener('touchstart',e=>{if(SCENE&&!nearNpc()&&!pnOpen){const it=nearFurn();if(it){e.preventDefault();useFurn(it)}}},{passive:false});
 // actions that only make sense outdoors
-SQHIT.before('012 interiors and houses',()=>{if(dead||menuOpen||pnOpen)return;if(SCENE){if(swing<=0){swing=.25;sfx('swish')}return}if(!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile(),h=houseAt(x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;hitHouse(h);return}}});
+SQHIT.wrap('012 interiors and houses',next=>function(){if(dead||menuOpen||pnOpen)return;if(SCENE){if(swing<=0){swing=.25;sfx('swish')}return}if(!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile(),h=houseAt(x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;hitHouse(h);return}}
+ return next.apply(this,arguments)});
 const _fi12=fire;fire=function(){if(SCENE&&!(SCENE.room&&(SCENE.room.icv||SCENE.room.yard||SCENE.room.court))){say('Better not light a fire indoors.');return}_fi12()};
 // respawn: home bed beats a field bed beats the village
 const _rs12=reset;reset=function(){SCENE=null;_rs12();const h=HOUSES.find(o=>o.id===HOMESP);if(h){enterScene('home',h,{x:h.x*16+8,y:(h.y+1)*16+6});P.x=2*16+10;P.y=3*16+8;face=[0,1];say('You wake up at home, safe and sound.')}};
@@ -2228,7 +2232,8 @@ const _u21=upd;upd=function(dt){const paused=menuOpen||pnOpen;const pos=paused?n
  if((wTick+=dt)>1){wTick=0;rainAudio();
   if(wet){if(FARM.size){for(const p of FARM.values())p.w=Math.max(p.w,CLK+90);if(!rainTip&&!rainWasOn){rainTip=true;say('It\'s raining! Your crops are getting watered.')}}}rainWasOn=wet}};
 // --- HIT: shoot when an enemy is in front and out of sword reach ---
-SQHIT.before('021 weather dodge roll bows archery smarter',()=>{if(!(typeof GPON!=='undefined'&&GPON)&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!(SCENE&&!SCENE.room.cave)&&!facingNpc()){const t=bowTarget();if(t){shoot();return}}});  // with a controller, R1 is the bow and R2 is always the sword
+SQHIT.wrap('021 weather dodge roll bows archery smarter',next=>function(){if(!(typeof GPON!=='undefined'&&GPON)&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!(SCENE&&!SCENE.room.cave)&&!facingNpc()){const t=bowTarget();if(t){shoot();return}}
+ return next.apply(this,arguments)});  // with a controller, R1 is the bow and R2 is always the sword
 // --- drawing ---
 function drawProj(p){const x=Math.round(p.x),y=Math.round(p.y);
  if(p.k==='arrow'){const l=Math.hypot(p.vx,p.vy)||1,ux=p.vx/l,uy=p.vy/l,hd=p.ah||(p.iron?'#c8d0dc':'#9898a8');shd(x,y+9,6);
@@ -2343,9 +2348,10 @@ const _uf22=useFurn;useFurn=function(o){if(o&&o.f&&STN.has(o.f.t)){openStation(o
 const _ns22=nearStruct;nearStruct=function(){const r=_ns22();if(r!==null)return r;const s=nearStation();return s&&!s.inside?s.i:null};
 const _us22=useStructure;useStructure=function(i){const s=STR.get(i);if(s&&STN.has(s.t)){openStation({t:s.t,inside:false,i,f:s});return}_us22(i)};
 // HIT: use the station you face (the dummy is for hitting)
-SQHIT.before('022 usable stations wardrobe furnace anvil cooking',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o){swing=.25;
+SQHIT.wrap('022 usable stations wardrobe furnace anvil cooking',next=>function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const o=frontStation();if(o){swing=.25;
   if(o.t==='dummy'){o.f.wob=.3;setTimeout(()=>{o.f.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1);if(!dummyTip){dummyTip=true;say('Practice! The dummy teaches Attack up to level 30. Press USE to pick it up.')}}else say('You\'ve learned all a dummy can teach. Try real enemies!');return}
-  openStation(o);return}}});
+  openStation(o);return}}
+ return next.apply(this,arguments)});
 let dummyTip=false;
 // --- station screens ---
 const row22=(a,label,sub,ok)=>'<button class="sb stb" data-a="'+a+'" style="opacity:'+(ok?1:.45)+'">'+label+'<br><small>'+sub+'</small></button>';
@@ -3799,7 +3805,8 @@ const _ed35=enemyDrop;enemyDrop=function(n){_ed35(n);const R=SCENE&&SCENE.room;i
  const x=Math.floor(n.x/16),y=Math.floor(n.y/16);R.items.push({t:'dchest',x,y,use:'dchest',id:R.dun.kind+'boss',boss:1});say('A golden chest appears where the '+(n.type==='boss'?'Slime King':'Bone Lord')+' fell!');msgT=4};
 // opening chests: HIT or USE when you face one
 function dChestNear(){const R=SCENE&&SCENE.room;if(!R||!R.dun)return null;const[fx,fy]=front(12);let best=null,bd=22;for(const it of R.items){if(it.t!=='dchest'||it.open)continue;const d=Math.hypot(it.x*16+8-fx,it.y*16+8-fy);if(d<bd){bd=d;best=it}}return best}
-SQHIT.before('035 deep dungeons and rare loot',()=>{if(!dead&&!menuOpen&&!pnOpen&&swing<=0){const it=dChestNear();if(it&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<30)){swing=.2;dOpen(it);return}}});
+SQHIT.wrap('035 deep dungeons and rare loot',next=>function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0){const it=dChestNear();if(it&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<30)){swing=.2;dOpen(it);return}}
+ return next.apply(this,arguments)});
 const _uf35=useFurn;useFurn=function(o){if(o&&o.use==='dchest'){dOpen(o);return}_uf35(o)};
 // saving: opened chests for today, and the legendary sword survives the tool-tier clamp
 SQSAVE.after('035:dun,rare',s=>{s.dun={day:DUN.day,op:[...DUN.opened]};s.rare={sword:TL.sword};});
@@ -6239,9 +6246,10 @@ function rgGather(R,it){const o=it.o,t=o.t,sk=SKOF[t];if(!sk){swing=.25;return}
  if(Math.random()<sumP(sk,STAYP)){o.hp=OHP[t]||3;gTxt(x,y-46,sk===3?'It grows straight back!':'Still standing!',SKC[sk])}
  else{it.gone=true;rgCellDel(R,it);R.solid.delete(it.y*R.w+it.x);R.gone.push({it,at:CLK})}
  setTimeout(()=>sfx('pickup'),90);saveLocal()}
-SQHIT.before('050 the four new regions briarwood ashfall',()=>{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0){const[fx,fy]=front(13);
+SQHIT.wrap('050 the four new regions briarwood ashfall',next=>function(){const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0){const[fx,fy]=front(13);
   if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){const tx=Math.floor(fx/16),ty=Math.floor(fy/16),it=rgObjAt(R,tx,ty);if(it){rgGather(R,it);return}
-   for(const l of R.useItems)if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1)){swing=.25;rgLook(l);return}}}});
+   for(const l of R.useItems)if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1)){swing=.25;rgLook(l);return}}}
+ return next.apply(this,arguments)});
 
 // --- region life: resources grow back, landmarks are discovered, spawns stay away from quiet places ---
 function rgSeen(reg,id){const s=WORLD_STATE[reg];return!!(s&&s.seen&&s.seen.includes(id))}
@@ -8497,10 +8505,11 @@ function rbOpenStation(R,x,y,s){openStation({t:s.t,inside:false,i:rbIdx(R,x,y),f
 {const _ps=pickStruct;pickStruct=function(i){if(i<1e7)return _ps(i);const R=rbR();if(!R)return;const j=i-1e7-(Object.keys(WORLD_REGIONS).indexOf(R.region)+1)*1e5;rbPick(R,j%R.w,Math.floor(j/R.w))}}
 // HIT: hit what you built (stations open, the dummy wobbles); TALK: open chests and stations
 const rbFront=R=>{const[x,y]=frontTile();return{x,y,s:rbMap(R.region).get(rbK(x,y))}};
-{SQHIT.before('065 building and cooking on the other',()=>{const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const{x,y,s}=rbFront(R);
+{SQHIT.wrap('065 building and cooking on the other',next=>function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const{x,y,s}=rbFront(R);
    if(s){swing=.25;if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}return}
     if(STN.has(s.t)){rbOpenStation(R,x,y,s);return}rbHit(R,x,y,s);return}
-   const f=rbForeignAt(R.region,x,y);if(f){notYours(f.owner);return}}})}
+   const f=rbForeignAt(R.region,x,y);if(f){notYours(f.owner);return}}
+ return next.apply(this,arguments)})}
 {const _t=talk;talk=function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!nearNpc()){let hit=null;
    for(const[dx,dy]of[[0,0],[face[0],face[1]],[0,1],[0,-1],[1,0],[-1,0]]){const x=Math.floor(P.x/16)+dx,y=Math.floor((P.y+(face[1]>0?4:0))/16)+dy,s=rbMap(R.region).get(rbK(x,y));if(s&&(s.t==='chest'||s.t==='bed'||STN.has(s.t))){hit={x,y,s};break}}
    if(!hit){const{x,y,s}=rbFront(R);if(s)hit={x,y,s}}
@@ -8592,9 +8601,10 @@ setInterval(rhSolidSync,500);
 function rhPack(h){const j=RH.indexOf(h);if(j<0)return;RH.splice(j,1);rhSolidSync();inv.house=(inv.house|0)+1;
  for(const f of h.furn.values()){inv[f.t]=(inv[f.t]|0)+1;if(f.items)for(const k in f.items)inv[k]=(inv[k]|0)+f.items[k]}if(HOMESP===h.id)HOMESP=null;
  say('You packed up your house and everything inside it.');setTimeout(()=>sfx('pickup'),90);saveLocal(true);saveCloud(true)}
-{SQHIT.before('067 houses on the other islands',()=>{const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile();
+{SQHIT.wrap('067 houses on the other islands',next=>function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile();
    const h=rhAt(rhHere(),x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;h.hp=(h.hp||12)-(1+TL.axe);sfx('chop');if(h.hp<=0)rhPack(h);else if(h.hp<=4)say('The house is about to come down...');return}
-   const f=rhAt(rhForeign(R.region),x,y);if(f){notYours(f._owner);return}}})}
+   const f=rhAt(rhForeign(R.region),x,y);if(f){notYours(f._owner);return}}
+ return next.apply(this,arguments)})}
 // ---- going in and coming out ----
 {const _es=enterScene;enterScene=function(id,house,ret){const prev=SCENE&&SCENE.room&&SCENE.room.region?SCENE:null;_es(id,house,ret);if(prev&&SCENE&&!(SCENE.room&&SCENE.room.region))SCENE.prev=prev}}// an island never gets another island as `prev` (leaving an island always goes home; with one, sailing to Hollow could drop you back on the old island)
 {const _ls=leaveScene;leaveScene=function(){const S=SCENE;if(!S||!S.prev)return _ls();if(typeof BUILD!=='undefined'&&BUILD)endBuild();const r=S.ret;SCENE=S.prev;P.x=r.x;P.y=r.y;face=[0,1];FADE_AT=performance.now();sfx('door');rhSolidSync()}}
@@ -9344,10 +9354,11 @@ const inForeignHouse=()=>SCENE&&SCENE.house&&SCENE.house._foreign?SCENE.house:nu
 // outside on Hollow: their chests and stations
 function trUseForeignStr(i){const s=STR.get(i);if(!s||!s._foreign)return false;if(s.t!=='chest'&&!STN.has(s.t))return false;swing=.25;trustThen(s._foreign,()=>trUseForeignStr2(i,s));return true}
 function trUseForeignStr2(i,s){if(s.t==='chest')chOpenShared(s._foreign,'s_'+i);else if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}}else openStation({t:s.t,inside:false,i,f:s,_foreign:s._foreign})}
-{SQHIT.before('072 world boss art hd same style',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!(typeof facingNpc==='function'&&facingNpc())){
+{SQHIT.wrap('072 world boss art hd same style',next=>function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!(typeof facingNpc==='function'&&facingNpc())){
   if(!SCENE){const[x,y]=frontTile();if(x>=0&&y>=0&&x<N&&y<N&&trUseForeignStr(y*N+x))return}
   else{const R=rbR();if(R){const[x,y]=frontTile();const f=rbForeignAt(R.region,x,y);if(f&&(f.t==='chest'||STN.has(f.t))){swing=.25;
-     trustThen(f.owner,()=>{if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner})});return}}}}})}
+     trustThen(f.owner,()=>{if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner})});return}}}}
+ return next.apply(this,arguments)})}
 {const _us=useStructure;useStructure=function(i){if(trUseForeignStr(i))return;return _us(i)}}
 window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};window.SQTRUTHEN=trustThen;
 // ---- Farming on every island ----
@@ -9454,7 +9465,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.18-2',d:'Nov 18, 2026',t:"Bug fixes: doubled chest items, graves and more",n:["Fixed: smelting, smithing or crafting at a station in your house (or next to chests outdoors) could save your game with the chests' contents counted in your bag as well. If you closed the game soon after, the next time it loaded those items were in both places. Saves now never count items borrowed from chests.","Fixed: getting up very quickly after falling could lose everything you carried without leaving a gravestone. Your things now always go into your grave, or stay in your bag if there's nowhere to put one.","Fixed: closing the game while lighting a campfire with oak or better logs could turn those logs into plain wood.","Fixed: on phones, the world boss bar covered the getting-started tips. It now sits below them."]},
+ {v:'2026.11.18-3',d:'Nov 18, 2026',t:"Bug fixes: doubled chest items, graves, fishing and more",n:["You can eat while cooking at a fire: press EAT while your food cooks and you eat something without stopping the cooking.","Fixed: fishing stopped while a menu or screen was open. Bites now keep coming and the line reels in behind the menu.","Fixed: with a full bag, a chest's item card could be cut off at the bottom of the screen on iPhone, hiding its buttons. It now always fits on screen.","Fixed: since earlier today, HIT could do two things at once: reeling in a fish or placing something also swung your weapon, and other buttons that take over HIT did the same. HIT does one thing again.","Fixed: smelting, smithing or crafting at a station in your house (or next to chests outdoors) could save your game with the chests' contents counted in your bag as well. If you closed the game soon after, the next time it loaded those items were in both places. Saves now never count items borrowed from chests.","Fixed: getting up very quickly after falling could lose everything you carried without leaving a gravestone. Your things now always go into your grave, or stay in your bag if there's nowhere to put one.","Fixed: closing the game while lighting a campfire with oak or better logs could turn those logs into plain wood.","Fixed: on phones, the world boss bar covered the getting-started tips. It now sits below them."]},
  {v:'2026.11.17-3',d:'Nov 17, 2026',t:"Market prices set by players, better character screen",n:["Every item now has a market price worked out from what players actually paid for it on the World Market: the middle price of the last 30 days' sales. You'll see it when you buy or sell (with a little chart of recent sales), in your bag and on chest item cards. Items nobody has traded lately just show the shop price.","Sales on the World Market of 100 gold or more now pay a 1% market tax, taken from the seller's gold. It keeps gold from piling up, so prices stay fair for new players. The sell screen shows what you'll get after the tax.","Your character screen (the tab with your name): tap any slot with gear in it, or the name of the ring or amulet you're wearing, to see that item's card, with its stats, what a shop pays and its market price. The stats list now also shows health, armour, your block limit, critical hit chance, mana regen per second, every gear effect you're wearing (life steal, burn, bonus XP and so on), Turtle and Meteorite set pieces, and potion buffs with their time left.","Every item in your bag now shows what a shop pays for it next to its market price."]},
 {v:'2026.11.16-25',d:'Nov 16, 2026',t:"Meteor strikes, Brewing, daggers, better maps and moderators",n:["Better maps: the minimap now follows you, zoomed in on the area around you, with an arrow showing which way you're facing. Your tracked quest shows on it as a gold dot, or a gold arrow on the edge when it's further away.","Map pins: tap anywhere on the map (HERE) to drop a pink pin. A pink arrow on screen shows the way and how far it is, and the pin is on your minimap too. Tap the pin on the map again to remove it, or just walk there. In a party, everyone sees each other's pins in green with the owner's name, on the map, the minimap and the ground.","Towns, dungeons, harbors, piers and the landmarks you've found are now named right on the map, so the colour key underneath is much shorter.","Guild quests can be tracked: find your guild's quest in the quest log (or tap Track in the quest tracker on the guild's Quest tab). The tracker shows the guild's progress while you gather anywhere.","Guild sails: fly your guild's colours on your boat. START > Style has a new Boat section: pick Guild sails and your sails take on your guild cape's design (colours, pattern, trim and emblem). The emblem is drawn large and outlined, centred on the sail above your head. Other players see them when you sail past.","Walking into a town no longer pops up a welcome message: every town is named on your map now.","Mithril and adamant arrows: fletch 15 mithril arrows from 1 mithril bar + 2 maple logs (Archery 40) or 15 adamant arrows from 1 adamant bar + 2 yew logs (Archery 55) in the Craft tab. Each step up hits 1 harder: iron arrows +1 over plain ones, mithril +2, adamant +3 and meteorite +4 (meteorite arrows got 1 stronger). Your bow always shoots the best arrows you carry first.","Vessa's potion stall in Emberwatch, the forge camp on Ashfall Coast: buy healing, strength, poison, swiftness, iron skin, napalm and electricity potions, and sell her the potions you brew for 1.5x what other shops pay.","Meteors also fall on Ashfall Coast, Briarwood Isle, Ironcrest Highlands and the Shattered Expanse now, not just Hollow. The banner tells everyone which island it's on, and a crater on an island flattens the trees and rocks where it lands until it's gone.","Meteor achievements (START > Achievements): help break a meteor core, break 10, do the most damage to one, break 25 meteorite veins, pick up 50 stardust, and help break one on an island.","The new deep-water fish (moonfin, abyssal eel and ancient koi) count toward summoning the Giant Turtle, and the guild bank's raw fish button puts them in too.","Guild fishing ponds: finishing the guild Fishing quest now lets the leader or an officer pick ponds as the reward (4 trout, 3 salmon, 2 swordfish, 1 moonfin or 1 koi pond; a mountain of bait is still an option). Dig one from the guild Bank tab while facing open ground on your guild island. Fish in it to catch that pond's fish much more often: moonfin at any time of day, and the ancient koi more than twice as often as in open water. Each pond has 30 catches for you, refilling one every 2 minutes, and everything you catch counts toward the next guild quest.","Only one player can fish a spot at a time now. If someone's line is already in that water, you'll see \"Someone is already fishing there.\" Step over a tile and cast again.","Better campfires: burn oak (Firemaking 15), willow (30), maple (45), yew (60) and void logs (75). Press F (the fire button) and pick which logs to use: 3 logs + 1 stone build a campfire that burns longer and gives much more XP, and each kind burns in its own colour, from bright willow flames to green yew and purple void fire. Standing next to one of your own fires, F also lets you feed it one log at a time to keep it going (up to 30 minutes) for XP, no stone needed.","New fish for high-level anglers: the moonfin (Fishing 70) only bites at night, the abyssal eel (Fishing 80) lives in the cold waters of the Shattered Expanse and Ironcrest, and the very rare ancient koi (Fishing 90) can bite anywhere. Cook them at Cooking 70, 80 and 90; they heal 6, 7 and 8 hearts.","Moderators: SkillQuest now has player moderators, trusted adult players who help keep chat safe. They can read public chat, private messages, party messages and guild chat, look into player reports, delete messages, and mute or suspend players who break the rules. Private messages are not private from moderators, so never share personal information (real name, address, school, phone number, passwords) in the game. The privacy policy (Options > ABOUT) explains what moderators can see.","Patrons can design pets in the Art Room: pick A pet and draw it facing right in four frames, Idle 1 and Idle 2 (it switches between them while it stands) and Walk 1 and Walk 2 (it steps between them as it follows you). The preview shows it standing or walking to and fro next to your character, at the size it will be in the game. Approved pets can be given to a pet in the game, with your name in the credits.","Fixed: on the Shattered Expanse you could keep getting hit (\"Ouch!\" every second) by something you couldn't see. A monster has to be on screen to touch you now, and the game sends a report when it stops one of these, so the cause can be tracked down.","Fixed: skeletons near another player could throw bones in a rapid stream. Monsters you see from another player's game now keep their own reload time, so skeletons throw at their normal pace again.","Fixed: meteors could come down one after another. Strikes are now at least 12 hours apart.","New skill: Brewing. Build a cauldron (Craft tab, Crafting 8: 10 stone, 2 iron bars, 4 wood), place it at home and press HIT to brew healing (Brewing 1), strength (10), poison (15), swiftness (20), iron skin (30), napalm (35) and electricity-in-a-bottle (55) potions from berries, mushrooms, bones, nuts and more. Its skill tree has perks at 20, 40, 60 and 80. While you brew, the cauldron boils and bubbles in the colour of the potion you're making.","Daggers are off-hand weapons now: iron and steel daggers from the anvil, plus new mithril (Attack 30), adamant (45), starsteel (60: 2 adamant bars + 4 stardust, Smithing 66) and meteorite (75) daggers. They add to your melee damage, give you a new ultimate, Potion Burst, and stab: press X or right-click (R1 on a controller, the STAB button on touch screens) for a quick dagger jab. Stabs are weaker than sword swings but come faster and fit in between them, so sword plus dagger fight together. Other players see your dagger jab too.","Potion Burst: pin any potion in your bag (select it, tap ☆ DAGGER ULT) and pick Potion Burst in the equipment screen. ULT then uses that potion: a healing or buff potion is drunk by you AND by party members and friends standing near you (it only uses one of yours). Poison, napalm and electricity coat your dagger for 20 seconds instead: poison poisons every monster you hit, napalm sets every one on fire, and electricity sends lightning to up to two more monsters nearby. 20 second cooldown, no mana. You can also coat your dagger by using those potions from the bag.","Burning monsters now show proper flames.","Fixed: Shattered Expanse sharks bit players standing on the beach, hidden behind them. Sharks still circle close to the shore when you're hurt, but they only bite on the water (in your boat), and a biting shark now shows over you.","Fixed: stabbing with a Stone Sledgehammer in your main hand showed the hammer swinging instead of the dagger.","Fixed: chests, the bag and other screens with iron or steel daggers in them stopped opening after the Brewing update (another screen showed instead). Nothing was lost: your items were there all along.","Meteor strikes: about once a day (never twice within 12 hours) a meteor falls somewhere wild on Hollow Island or one of the four big islands (never near a village or anyone's home). Everyone online gets a warning a minute before, sees it streak across the sky, and a banner and map marker show where it landed. Anyone with a pickaxe can mine the glowing core, and the three players who do the most damage get 750, 500 or 300 of the best ore their Mining level can mine plus a tenth of that in meteorite ore (everyone else who helps gets 100 + 10). The meteorite veins around it need Mining 70 and a steel pickaxe or better, take about 40 hits each and give 1-3 meteorite ore. Pick up stardust from the sparkles on the rim. The crater cools after 15 minutes.","Meteorite gear, forged at an anvil from meteorite bars (smelt 15 meteorite ore, 15 adamant ore and 3 stardust at a furnace, Smithing 80). Everything needs level 75 in its skill: meteorite helmet, chestplate and legs (Defence 75; more block than adamant, and a set bonus for wearing all three), pickaxe and axe (Mining / Woodcutting 75; the fastest tools there are), bow (Archery 75; the hardest-hitting, furthest-shooting bow) and wand (Magic 75). The meteorite wand shoots mini meteorites that splash nearby monsters, and its ultimate, METEOR FALL, calls a meteor down on your foes for a big explosion. Meteorite arrows (25 from 1 bar + 2 void logs in the Craft tab, Archery 75) are the hardest-hitting arrows there are.","The Mining and Woodcutting skill trees now show every tree and ore you unlock (oak, willow, maple and yew trees; gold, mithril and adamant veins and boulders; meteor cores and meteorite veins) and which tool you need.","Skill trees now list every piece of gear and every recipe at the level it needs: what you can wear or use at each Defence, Attack, Magic, Archery, Woodcutting or Mining level, and what you can smith, craft or cook at each level. New gear added to the game shows up there by itself.","Stuck? Type /stuck in chat. It takes you out of any room, back to the pier on an island, or to the Tidewatch harbor post on Hollow (once every 2 minutes, not during duels or boss fights).","Fixed: sailing home from an island (including your guild island) could drop you in the sea when the trip was started from inside a house, yard or dungeon, for example with the guild horn. You now always land on solid ground, and old saves with a bad landing spot are put right when you sail home.","Graves are now locked to their owner for the first 5 minutes, so you have time to get back to your things. After that, anyone can take what's left, as before.","Fixed: the cauldron now uses the chests in your house or castle like the furnace, anvil and stove do. Ingredients come from your bag first, then your chests.","Fixed: the Mining perks that keep a rock standing now work on gold, mithril and adamant veins, rocks in dungeons and boulders too.","Fixed: sailing to Hollow could put you back on the island you had just come from (for example your guild island).","Fixed: lots of campfires close together made the game lag at night. Fires side by side now share one glow."]},
  {v:'2026.11.15-22',d:'Nov 15, 2026',t:"Patrons, safer chat, pets at home, combat rebalance",n:["Patrons: support SkillQuest on Patreon (START > Patron) and get a flame next to your name, an animated fire cape that's yours to keep, your name in the new Credits, and the Art Room, where you can draw sprites and animations and send them in to be added to the game. Perks are cosmetic only. Ask a parent first if you're under 18.","The Patron Art Gallery opened in Hollow Village (north of the World Market). Every painting in it was drawn by a SkillQuest Patron, and Iris sells prints. Hang a painting at home: face a wall and PLACE to hang it, or place it on the floor to stand it on an easel. Face any painting to see who painted it.","Patrons can draw things to wear in the Art Room (Something to wear): hats, tops and trousers drawn right on your character from the front, back and side. The best ones can become real gear.","Everything for Patrons is on one screen: START > Patron shows your perks, opens the Art Room and the fire cape, and has the Patreon buttons. Join with the email you sign in with and your perks switch on by themselves.","Every cape in one place: START > Style now lists your Marlo capes, your guild cape and the fire cape, with a picture of how you look from the back and the front. The one you're wearing has a check mark.","The Art Room is rebuilt for phones: the tools sit in a row above the canvas, the colours right under it, zoom in and move around (two fingers or the move tool), a mirror mode that draws both sides at once, and a separate page for naming and sending. On a computer: B/E/G/I for the tools, M for mirror, Ctrl+Z to undo.","New Credits screen in Options > About.","Safer for younger players: the game asks for your birth year once (only your age group is kept). Players under 13 chat with ready-made phrases, can only trade, message and duel with friends, and never show their real name.","New PHRASES button in the chat box: tap to send a quick line like \"Want to team up?\" or \"Good game!\".","Chat filter: swear words, slurs, email addresses, phone numbers and outside links are starred out. Character and chest names are checked too.","Terms of Service, Privacy Policy and Refund Policy pages, linked from the title screen and Options > About.","Options > Delete my account removes your character and data for good.","Show off your pets: pick a pet in your bag and tap PLACE while you're in your house, castle, backyard or courtyard. They live there now: they roam around, stop to look about, nap (more at night), play chase with each other, get the zoomies, and trot over to greet you or any friend who visits, then tag along for a bit. HIT a pet to give it a pat (visitors can too); HIT it again within 3 seconds to pick it back up.","Chests: TAKE ALL moves everything into your bag, and SORT orders the chest by type, name, amount or value (it remembers your choice). Tap ✎ RENAME to give a chest a name of up to 12 letters. The name shows on the chest screen and on a little placard on the front of the chest, which visitors see too.","Magic: every spell costs 1 mana less (fire and ice 1, storm and void 2), mana comes back 3 times as fast, and every spell does 1 more damage. Wands now keep up through a long fight instead of running dry after a few casts.","Archery: every arrow does 1 more damage, so early bows keep up with early swords.","Together with yesterday's slower sword hits (one every 0.4 seconds), melee, bows and wands now deal about the same damage over a fight. Melee still hits everything in front of you, bows and wands hit from a distance, and spells can burn, freeze or shock.","Rain now waters the crops in your backyard and courtyard too.","Jewelry at the furnace uses the gold bars and gems in your house's chests, like smelting does.","Campfire cooking keeps going while you open your skills, bag or other menus.","Rings and amulets can be put on (or swapped) right from the equipment screen: the Ring and Amulet slots list the jewelry in your bag.","Online play uses much less data: your game now sends only what changed about you and the monsters around you, instead of everything several times a second. Easier on phone data plans, and it keeps the game's servers running smoothly as more players join.","Fixed: chest names on castle chests disappeared after every update.","Fixed: beds couldn't be picked up with the USE button. Tap a bed once (you'll wake up there), then HIT or USE it again within 3 seconds: both buttons say PICK UP.","Fixed: when a campfire burned out mid-cooking you started eating the food raw; cooking now stops. Tapping COOK again while cooking no longer restarts it with the first recipe in the list.","Fixed: the CHAT and BUG buttons covered the map and other screens on phones.","Fixed: HIT next to a tree or rock could shoot at a nearby monster instead of chopping or mining (touch and controller).","Fixed: the seed cursor in backyards showed red on tilled soil.","Fixed: world bosses stayed on the map after being defeated.","Fixed: Saltmere's moored boats sat on the grass north of town.","Fixed: some berry bushes, rocks and trees on the islands couldn't be reached (cut off by water or cliffs); they're gone.","Fixed: START > PvP opened the Custom Controls screen instead, so PvP couldn't be turned off. It opens the PvP screen again (Custom Controls is still under Options > Controls).","Fixed: chest names on homes on the islands (and guild islands) didn't show for visitors. They do now; the owner just needs to be on this update.","Fixed: while you visit a friend's backyard or courtyard, chests they rename (and furniture or crops they change) now show up within a few seconds instead of only after you walk out and back in.","Fixed: furniture and chests could be placed in backyard and courtyard ponds.","Fixed: arrows and spells stopped at the water's edge on the islands. They now fly over water everywhere, and you can shoot and cast from your boat while sailing around an island (the arrow used to vanish).","Fixed: other players couldn't see you shoot your bow, and your arrows couldn't hit players in duels or PvP. Everyone nearby sees your arrows again.","Fixed: campfires on the islands burned out twice as fast as they should (a Lone Bonfire lasted about 15 minutes instead of 30). They now last their full time everywhere.","Fixed: some foods and items added in updates (like pizza) had no description in the bag. They now show what they heal and fill, and a short line about them.","Fixed: tapping Become a Patron in Options could trip an error in the background.","Fixed: the Patron Art Gallery was squeezed in right behind a player's house. It now never sits on or against a player's house.","Fixed: on a computer, the Art Room's colours and frames ran off the right edge of the window."]},
@@ -10378,12 +10389,13 @@ window.mpSend=mpSend;
   // the Woodcutting/Mining "stays standing" perks (038's STAYP) work on these too
   let stay=false;try{stay=Math.random()<sumP(sk,STAYP)}catch(e){}
   if(stay){o.hp=OHP[o.t]||3;try{gTxt(P.x+face[0]*16,P.y-40,'Still standing!',SKC[sk])}catch(e){}}else done();setTimeout(()=>sfx('pickup'),90);saveLocal()}
- SQHIT.before('083 world content fewer trees higher tier',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
+ SQHIT.wrap('083 world content fewer trees higher tier',next=>function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){
     if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const i=ty*N+tx,o=obj[i];if(o&&TIER[o.t]){tierHit(o,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})});return}}
     const R=SCENE&&SCENE.room;
     if(R&&R.region){const it=rgObjAt(R,tx,ty);if(it&&TIER[it.o.t]){tierHit(it.o,()=>{it.gone=true;rgCellDel(R,it);R.solid.delete(it.y*R.w+it.x);R.gone.push({it,at:CLK})});return}}
-    else if(R&&R.dun){const it=R.items.find(q=>q.dmine&&q.x===tx&&q.y===ty);if(it){tierHit(it.o,()=>{const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx)});return}}}}});
+    else if(R&&R.dun){const it=R.items.find(q=>q.dmine&&q.x===tx&&q.y===ty);if(it){tierHit(it.o,()=>{const j=R.items.indexOf(it);if(j>=0)R.items.splice(j,1);R.solid.delete(ty*R.w+tx)});return}}}}
+ return next.apply(this,arguments)});
  // campfires on the other islands: each island keeps its own fires
  const fireStash={};window.FIRESTASH=fireStash;let fireReg=curRegion();
  const _u64c=upd;upd=function(dt){const r=window.fireKey64?fireKey64():curRegion();if(r!==fireReg){fireStash[fireReg]=fires.filter(f=>!f._rp);fires=(fireStash[r]||[]).filter(f=>f.life>0);fireReg=r}_u64c(dt)};
@@ -10691,7 +10703,8 @@ var LUX={};
   if(SCENE&&!SCENE.room.cave){say('Not indoors!');return}if(typeof SAILING!=='undefined'&&SAILING||window.SQRSAIL&&SQRSAIL.on){say('Not while sailing!');return}
   if(DF.cd>0){say('Dragon Form is recharging ('+Math.ceil(DF.cd)+'s).');try{sfx('nomana')}catch(e){}return}dfStart()};
  // attacking (and shooting) breathes fire instead
- SQHIT.before('086 jewelry gold rings and amulets with',()=>{if(DF.on){if(!dead&&!menuOpen&&!pnOpen)DF.tap=.3;return}});
+ SQHIT.wrap('086 jewelry gold rings and amulets with',next=>function(){if(DF.on){if(!dead&&!menuOpen&&!pnOpen)DF.tap=.3;return}
+ return next.apply(this,arguments)});
  const _sa=shootAim;shootAim=function(f){if(DF.on){DF.tap=.3;return}return _sa(f)};
  cv.addEventListener('mousedown',e=>{if(e.button===0)DF.held.m=true});addEventListener('mouseup',e=>{if(e.button===0)DF.held.m=false});addEventListener('blur',()=>{DF.held.m=DF.held.t=false});
  {const ab=document.getElementById('a');if(ab){ab.addEventListener('touchstart',()=>{DF.held.t=true},{passive:true});for(const ev of['touchend','touchcancel'])ab.addEventListener(ev,()=>{DF.held.t=false},{passive:true})}}
@@ -10999,12 +11012,13 @@ const _cf=catchFish;catchFish=function(){const R=SCENE&&SCENE.room,L=lvOf(9),lis
  FISH.t=0;FISH.bite=0;FISH.wait=(2+Math.random()*3)*Math.max(.6,1-L*.006)};
 window.SQRFISH=RFISH;
 // casting on the other islands (their attack goes through the island's own handler, which never reached fishing)
-{SQHIT.before('093 islands update part 2',()=>{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD){
+{SQHIT.wrap('093 islands update part 2',next=>function(){const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD){
    if(FISH){FISH=null;say('You reel in your line');return}
    if(swing<=0&&!facingNpc()){const[fx,fy]=front(14),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
     if(fishWaterAt(tx,ty)&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18)&&!(window.SQSHK&&SQSHK.list.some(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<22))){
      if(!TL.rod){say('You need a fishing rod - buy one at the general store');return}
-     const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}}})}
+     const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}}
+ return next.apply(this,arguments)})}
 // the line and bobber, drawn on the other islands too
 {const _dr=drawRoom;drawRoom=function(tm){_dr(tm);const R=SCENE&&SCENE.room;if(!FISH||!R||!R.region||window.SQSKFX)return;
   const hx=Math.round(P.x+face[0]*6),hy=Math.round(P.y-3+(face[1]>0?2:0)),rx=Math.round(P.x+face[0]*13+(face[1]?4:0)),ry=Math.round(P.y-13+face[1]*7),bx=Math.round(FISH.bx),by=Math.round(FISH.by)+(FISH.bite>0?2:Math.round(Math.sin(tm*3)));
@@ -11168,9 +11182,10 @@ function nearWaterSpot(R){const sail=window.SQRSAIL&&SQRSAIL.on;if(sail)return[P
    if(hunt&&dP<220){tx=spot[0];ty=spot[1];sp=58}else if(Math.hypot(tx-s.x,ty-s.y)<8||Math.random()<dt*.15){for(let k=0;k<8;k++){const a=Math.random()*6.283,d=40+Math.random()*90,x=s.x+Math.cos(a)*d,y=s.y+Math.sin(a)*d;if(wetW(R,x,y)){s.tx=x;s.ty=y;break}}tx=s.tx;ty=s.ty}
    const dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy);if(d>2){const m=Math.min(d,sp*dt),nx=s.x+dx/d*m,ny=s.y+dy/d*m;if(wetW(R,nx,s.y))s.x=nx;if(wetW(R,s.x,ny))s.y=ny;s.fl=dx<0}
    if(hunt&&onW&&dP<22&&s.bite<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){s.bite=2.2;s.a=.5;P.hp--;hurt=1.5;say('A shark bites!');try{sfx('hurt')}catch(e){}}}}}
-{SQHIT.before('093 islands update part 2',()=>{const R=shkR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(14);const s=SHK.list.find(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<20);
+{SQHIT.wrap('093 islands update part 2',next=>function(){const R=shkR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(14);const s=SHK.list.find(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<20);
    if(s){swing=.3;const dmg=1+(TL.sword|0)+(typeof meleeFlat==='function'?meleeFlat():0);s.hp-=dmg;s.hit=.25;try{DMGS.push({x:s.x,y:s.y-10,v:String(dmg),t:0,c:'#ffffff',sc:curScene()})}catch(e){}sfx('hit');
-    if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){}saveLocal()}return}}})}
+    if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){}saveLocal()}return}}
+ return next.apply(this,arguments)})}
 function drawShark(s,tm){const x=Math.round(s.x),y=Math.round(s.y),f=s.fl?-1:1,w=Math.sin(s.t*3)*1;
  g.fillStyle='rgba(20,40,70,.35)';g.beginPath();g.ellipse(x,y+2,15,5,0,0,6.283);g.fill();
  if(s.a>0){// a lunge: the head and jaws come up out of the water
@@ -12884,7 +12899,8 @@ function sqMerge(chests){if(typeof BMERGE==='undefined'||BMERGE||!chests||!chest
 function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;// speed from the skill's level and perks (039's pSpeed) makes the action shorter
  const SKK={fire:5,cook:4,smelt:10,smith:10,craft:6}[kind],D=({fire:2.6,cook:2.4,smelt:2.4,smith:2.6,craft:2.4,reel:1.8}[kind]||2.4)/(1+(SKK!=null&&typeof pSpeed==='function'?Math.max(0,pSpeed(SKK)):0));
  const st=typeof STATION!=='undefined'?STATION:null,chests=typeof BMERGE!=='undefined'&&BMERGE?BMERGE.chests.slice():null;
- SQDO={kind,n:Math.max(1,n|0),fn,t:0,d:D,x:P.x,y:P.y,done:0,st,chests};try{if(pnOpen)closePanel()}catch(e){}jx=jy=0;
+ SQDO={kind,n:Math.max(1,n|0),fn,t:0,d:D,x:P.x,y:P.y,done:0,st,chests};try{if(pnOpen&&kind!=='reel')closePanel()}catch(e){}jx=jy=0;// a bite while a screen is open reels in behind it
+ 
  say({fire:'Lighting a fire...',cook:'Cooking...',smelt:'Smelting...',smith:'Hammering at the anvil...',craft:'Crafting...',reel:'Reeling it in...'}[kind]||'Working...');return true}
 {const _f=fire;fire=function(){if(sqDo('fire',1,()=>_f()))return;return _f()};
  SQEAT.wrap('109 cooking at a fire takes time',_e=>function(){if(dead||menuOpen||pnOpen)return _e();// cooking at a fire takes time; eating doesn't
@@ -16599,7 +16615,7 @@ window.SQA=SQA;
   if(e.repeat){if(held)e.preventDefault();return}if(down())e.preventDefault()});
  addEventListener('keyup',e=>{if(e.key==='x'||e.key==='X')up()});addEventListener('blur',up);
  // HIT on ground you could till, with the can in hand and the hoe in the bag: swap to the hoe (Hollow 016, islands 072)
- {SQHIT.before('140 off hand',()=>{try{if(!TL.hoe&&TL.can&&!TL.bow&&!WAND&&(inv.eq_hoe|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){
+ {SQHIT.wrap('140 off hand',next=>function(){try{if(!TL.hoe&&TL.can&&!TL.bow&&!WAND&&(inv.eq_hoe|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){
    const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18)){let ok=false;
     if(!SCENE)ok=!FARM.get(ty*N+tx)&&canTill(tx,ty);
@@ -16608,7 +16624,8 @@ window.SQA=SQA;
    // a dry crop in front, with the hoe in hand and the can in the bag: swap to the can (019's dig-up would answer first)
    if(!TL.can&&TL.hoe&&(inv.eq_can|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);let pl=null;
     if(!SCENE)pl=FARM.get(ty*N+tx);else{const R=typeof rbR==='function'?rbR():null;if(R)pl=rfMap(R.region).get(rbK(tx,ty))}
-    if(pl&&pl.c&&!ripe(pl)&&!wet(pl)&&swapTo('eq_can'))return}}catch(e){}})}
+    if(pl&&pl.c&&!ripe(pl)&&!wet(pl)&&swapTo('eq_can'))return}}catch(e){}
+ return next.apply(this,arguments)})}
  // controller R1 / anything else that "shoots": with the hoe or can in hand, use it
  {const _sa=shootAim;shootAim=function(first){if(!TL.bow&&!WAND&&(TL.hoe||TL.can)){if(first)try{viaOff(()=>attack())}catch(e){}return}return _sa.apply(this,arguments)}}
  // keyboard and mouse: HIT (Space, left click) is melee only. It doesn't shoot the bow (021 shot at monsters out of sword
@@ -19542,7 +19559,9 @@ window.SQA=SQA;
   say(PIN?'EAT will use '+(INAME[k]||k).toLowerCase()+' first.':'EAT picks food for you again.');try{sfx('talk');saveLocal()}catch(x){}try{rPn()}catch(x){}},true);
  {SQSAVE.after('181:eatp',s=>{try{s.eatp=PIN}catch(e){}})}
  {SQLOAD.after('181',(S)=>{try{PIN=S&&typeof S.eatp==='string'&&INAME[S.eatp]?S.eatp:''}catch(e){}})}
- window.SQEAT={pick,cookable,get pin(){return PIN},set pin(v){PIN=v||''},open:openPick,cook}})();
+ // window.SQEAT is 007's EAT step list; this section's helpers are SQEATPICK. eat(): eat now, never cook (used while a cook job runs).
+ window.SQEATPICK={pick,cookable,get pin(){return PIN},set pin(v){PIN=v||''},open:openPick,cook,
+  eat(){const f=pick();if(!f){say('Nothing to eat');return false}if(!PIN&&P.hp>=6&&hunger>=95){say('You\'re full.');return false}BYPASS++;try{useFood(f.k)}finally{BYPASS--}return true}}})();
 // ---- 189. A tidier screen on phones ----
 // The minimap is drawn by many sections (052, 049, 035, 061, 076, 132, 105) at hudLayout()'s dx/dw; they now use L.mw (the
 // minimap's width, right-aligned to the day box) when set. On touch screens held sideways the minimap would run under the
@@ -21323,7 +21342,8 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
     const a=pnOpen,m=menuOpen;pnOpen=false;menuOpen=false;try{return fn.apply(this,arguments)}finally{pnOpen=a;menuOpen=m}};
    return _sd.call(this,kind,n,wrapped)}}
  // Pressing EAT/COOK again while already cooking used to start a new job with the first recipe in the list (Aztu): now it's ignored.
- {SQEAT.before('205 already cooking',()=>{try{if(!window.SQDO_STEP&&typeof SQDO!=='undefined'&&SQDO&&SQDO.kind==='cook'){say('Already cooking.');return}}catch(e){}})}
+ // While cooking, EAT eats something instead (the cooking carries on): players had to walk away from the fire to eat (Nov 15).
+ {SQEAT.wrap('205 already cooking: eat instead',_e=>function(){try{if(!window.SQDO_STEP&&typeof SQDO!=='undefined'&&SQDO&&SQDO.kind==='cook'&&!dead){if(window.SQEATPICK)SQEATPICK.eat();else say('Already cooking.');return}}catch(e){}return _e.apply(this,arguments)})}
  // Saltmere's two moored boats sit at fixed spots (020's BOATS); since the coast moved they were drawn on the grass north of town.
  // Only boats on water are drawn now (Tidewatch already placed its own on water).
  try{if(typeof BOATS!=='undefined'&&Array.isArray(BOATS))for(let k=BOATS.length-1;k>=0;k--){const[x,y]=BOATS[k];if(tile[y*N+x]!==0)BOATS.splice(k,1)}}catch(e){}
@@ -21455,11 +21475,12 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
   for(const s of petsHere()){const d=Math.hypot(s.x-fx,s.y-fy);if(d<bd){bd=d;best=s}}
   if(!best){const R=SCENE.room,[x,y]=frontTile(),i=y*R.w+x,f=h.furn.get(i);if(f&&isPet(f.t))best=PS.get(hid(h)+':'+i)||null}
   return best?{h,i:best.i,f:h.furn.get(best.i),s:best}:null}
- {SQHIT.before('206 pets at home',()=>{try{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const o=front();if(o&&o.f){swing=.25;const name=EQ[o.f.t].n,now=performance.now(),s=o.s;
+ {SQHIT.wrap('206 pets at home',next=>function(){try{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const o=front();if(o&&o.f){swing=.25;const name=EQ[o.f.t].n,now=performance.now(),s=o.s;
      if(mine(o.h)&&arm&&arm.i===o.i&&arm.h===o.h&&now-arm.at<3000){arm=null;PS.delete(hid(o.h)+':'+o.i);pickFurn(o.i);say('Your '+name.toLowerCase()+' hops back into your bag.');return}
      if(s){JOY.set(s,now);s.hopAt=now;s.mode='petted';s.until=now+3200;s.mv=0;s.fl=P.x<s.x;s.woke=0;s.next=null;s.greetCd=now+15000}try{sfx('talk')}catch(e){}
      if(mine(o.h)){arm={i:o.i,h:o.h,at:now};say('You pet your '+name.toLowerCase()+'. Hit it again to pick it up.')}else say('You pet the '+name.toLowerCase()+'. It looks very pleased.');
-     return}}}catch(e){console.warn(e)}})}
+     return}}}catch(e){console.warn(e)}
+ return next.apply(this,arguments)})}
  window.SQHOMEPETS={isPet,armed:()=>arm&&performance.now()-arm.at<3000?arm:null,front,addKeys,PS,petsHere}})();
 // ---- 215. Age check and protected mode for younger players, plus quick chat phrases for everyone ----
 // Once per account the game asks for a birth year (a neutral question, any year allowed) and keeps only the age band:
@@ -22193,8 +22214,9 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  // picking it up: a hung painting comes back as the painting
  {const _pf=pickFurn;pickFurn=function(i){try{const h=SCENE&&SCENE.house,f=h&&h.furn.get(i);if(f&&/^pw_/.test(f.t))f.t='pt_'+idOf(f.t)}catch(e){}return _pf.apply(this,arguments)}}
  // HIT facing a hung painting picks it up (it's stored on the tile you stand on)
- {SQHIT.before('213 paintings and gallery',()=>{try{if(!BUILD&&inHomeRoom()&&!dead&&!pnOpen&&!menuOpen&&swing<=0){const wx=facingWall();if(wx>=0){const R=SCENE.room,i=2*R.w+wx,f=SCENE.house.furn.get(i);
-     if(f&&/^pw_/.test(f.t)&&!SCENE.house.ro&&!SCENE.house._foreign){swing=.25;pickFurn(i);return}}}}catch(e){}})}
+ {SQHIT.wrap('213 paintings and gallery',next=>function(){try{if(!BUILD&&inHomeRoom()&&!dead&&!pnOpen&&!menuOpen&&swing<=0){const wx=facingWall();if(wx>=0){const R=SCENE.room,i=2*R.w+wx,f=SCENE.house.furn.get(i);
+     if(f&&/^pw_/.test(f.t)&&!SCENE.house.ro&&!SCENE.house._foreign){swing=.25;pickFurn(i);return}}}}catch(e){}
+ return next.apply(this,arguments)})}
  // ---- who made it: a label when you face a painting ----
  function facedPainting(){if(!SCENE)return null;const R=SCENE.room;const[x,y]=frontTile();
   if(SCENE.id==='gallery'){for(const it of R.items){if(it.t!=='_ptw'&&it.t!=='_pte'||!it.pid)continue;const w=it.w||1;if(x>=it.x&&x<it.x+w&&(it.t==='_ptw'?y<=1:y===it.y))return it.pid}return null}
@@ -23566,6 +23588,23 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
  SQSAVE.wrap('230',_s=>function(){const M=typeof BMERGE!=='undefined'?BMERGE:null;if(!M)return _s.apply(this,arguments);
   benchSplit();try{return _s.apply(this,arguments)}finally{merge(M.chests)}});
  window.SQMERGESAFE=true;
+})();
+// Chest item card always fits on screen (Amethyst, Nov 16). 011's card (.chcbg/.chc) is position:fixed inside #pn; iPhone Safari
+// clips fixed things to the scrolling panel, so with a full bag the card sat at the panel's bottom edge and its buttons were cut
+// off. After every render the backdrop is set to the panel's own visible box, the card's height is capped to fit inside it
+// (it scrolls if needed), and the panel stops scrolling while the card is open (class sqchlock).
+(()=>{
+ const st=document.createElement('style');st.textContent='#pn.sqchlock{overflow:hidden!important}#pn .chcbg{box-sizing:border-box}#pn .chc{box-sizing:border-box}';document.head.appendChild(st);
+ function fit(){try{const bg=pn.querySelector('.chcbg');pn.classList.toggle('sqchlock',!!bg&&pnOpen);if(!bg)return;
+  const r=pn.getBoundingClientRect(),vh=window.innerHeight,vw=window.innerWidth;
+  const top=Math.max(0,r.top),bot=Math.min(vh,r.bottom),left=Math.max(0,r.left),right=Math.min(vw,r.right);if(bot-top<120||right-left<120)return;
+  Object.assign(bg.style,{top:top+'px',left:left+'px',width:(right-left)+'px',height:(bot-top)+'px',right:'auto',bottom:'auto',padding:'10px'});
+  const c=bg.querySelector('.chc');if(c){c.style.maxHeight=Math.max(100,bot-top-20)+'px';c.style.overflow='auto'}
+ }catch(e){}}
+ window.SQCHFIT=fit;
+ const _r=rPn;rPn=function(){const v=_r.apply(this,arguments);fit();return v};
+ const _c=closePanel;closePanel=function(){const v=_c.apply(this,arguments);try{pn.classList.remove('sqchlock')}catch(e){}return v};
+ window.addEventListener('resize',fit);if(window.visualViewport)visualViewport.addEventListener('resize',fit);
 })();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari

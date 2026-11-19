@@ -29,10 +29,11 @@ function catchFish(){const L=lvOf(9),open=FISH_T.filter(f=>L>=f.lv);let ix=open.
  FISH.t=0;FISH.bite=0;FISH.wait=(2+Math.random()*3)*Math.max(.6,1-L*.006)}
 // water you can fish in: Hollow's tiles on Hollow, the island's own tiles on the other islands (not indoors)
 function fishWaterAt(tx,ty){const R=SCENE&&SCENE.room;if(R&&R.region)return tx>=0&&ty>=0&&tx<R.w&&ty<R.h&&R.tiles[ty*R.w+tx]===0;if(SCENE)return false;return tx>=0&&ty>=0&&tx<N&&ty<N&&tile[ty*N+tx]==0}
-SQHIT.before('007 skillquest fishing smithing',()=>{if(dead||menuOpen||pnOpen)return;if(FISH){FISH=null;say('You reel in your line');return}const[fx,fy]=front(14),tx=Math.floor(fx/T),ty=Math.floor(fy/T);if(swing<=0&&fishWaterAt(tx,ty)&&!en.some(n=>Math.hypot(n.x-fx,n.y-fy)<16)){
+SQHIT.wrap('007 skillquest fishing smithing',next=>function(){if(dead||menuOpen||pnOpen)return;if(FISH){FISH=null;say('You reel in your line');return}const[fx,fy]=front(14),tx=Math.floor(fx/T),ty=Math.floor(fy/T);if(swing<=0&&fishWaterAt(tx,ty)&&!en.some(n=>Math.hypot(n.x-fx,n.y-fy)<16)){
   if(!TL.rod){say('You need a fishing rod - buy one at the general store');return}
-  const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}});
-const _u6=upd;upd=function(dt){const hp0=P.hp;_u6(dt);if(menuOpen||pnOpen||!FISH)return;
+  const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}
+ return next.apply(this,arguments)});
+const _u6=upd;upd=function(dt){const hp0=P.hp;_u6(dt);if(!FISH)return;// keeps fishing while a menu or screen is open (Alan, Nov 18)
  if(dead||P.hp<hp0||Math.hypot(P.x-FISH.px,P.y-FISH.py)>1.5){FISH=null;if(!dead)say('You stop fishing');return}
  if(FISH.bite>0){FISH.bite-=dt;if(FISH.bite<=0)catchFish()}else if((FISH.t+=dt)>=FISH.wait){FISH.bite=.45;sfx('splash')}};
 // --- cooking & eating (meat + fish) ---

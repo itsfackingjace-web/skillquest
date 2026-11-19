@@ -32,8 +32,10 @@ function placeBuild(){const k=BUILD.k;if((inv[k]|0)<1){endBuild('You have no mor
 function hitStructure(i){const s=STR.get(i);const wood=s.t!=='swall';s.hp-=1+(wood?TL.axe:TL.pick);s.shake=.15;sfx(wood?'chop':'mine');
  if(s.hp>0)return;STR.delete(i);inv[s.t]=(inv[s.t]|0)+1;let extra='';if(s.items){for(const k in s.items){inv[k]=(inv[k]|0)+s.items[k]}if(Object.values(s.items).some(v=>v>0))extra=' and everything inside'}
  if(BEDSP===i)BEDSP=-1;say('Picked up the '+INAME[s.t].toLowerCase()+extra+'.');setTimeout(()=>sfx('pickup'),90);saveLocal(true);saveCloud()}
-SQHIT.before('011 building inventory grid equipment',()=>{if(dead||menuOpen||pnOpen)return;if(BUILD){placeBuild();return}if(swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x;if(STR.has(i)){swing=.25;hitStructure(i);return}}});
-SQEAT.before('011 stop building',()=>{if(BUILD){endBuild('Stopped building.');return}});
+SQHIT.wrap('011 building inventory grid equipment',next=>function(){if(dead||menuOpen||pnOpen)return;if(BUILD){placeBuild();return}if(swing<=0&&!FISH){const[x,y]=frontTile(),i=y*N+x;if(STR.has(i)){swing=.25;hitStructure(i);return}}
+ return next.apply(this,arguments)});
+SQEAT.wrap('011 stop building',next=>function(){if(BUILD){endBuild('Stopped building.');return}
+ return next.apply(this,arguments)});
 addEventListener('keydown',e=>{if(BUILD&&e.key==='Escape'){endBuild('Stopped building.');e.preventDefault();e.stopImmediatePropagation()}},true);
 // respawn beside your bed; a new game also clears everything you built
 const _rs11=reset;reset=function(){_rs11();const b=STR.get(BEDSP);if(b&&b.t==='bed'){const bx=BEDSP%N,by=(BEDSP/N)|0;for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]]){const px=(bx+dx)*16+8,py=(by+dy)*16+8;if(!(solid(px-5,py-3)||solid(px+5,py-3)||solid(px-5,py+6)||solid(px+5,py+6))){P.x=px;P.y=py;break}}saveLocal(true)}};

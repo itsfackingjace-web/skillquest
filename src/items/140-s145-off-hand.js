@@ -49,7 +49,7 @@
   if(e.repeat){if(held)e.preventDefault();return}if(down())e.preventDefault()});
  addEventListener('keyup',e=>{if(e.key==='x'||e.key==='X')up()});addEventListener('blur',up);
  // HIT on ground you could till, with the can in hand and the hoe in the bag: swap to the hoe (Hollow 016, islands 072)
- {SQHIT.before('140 off hand',()=>{try{if(!TL.hoe&&TL.can&&!TL.bow&&!WAND&&(inv.eq_hoe|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){
+ {SQHIT.wrap('140 off hand',next=>function(){try{if(!TL.hoe&&TL.can&&!TL.bow&&!WAND&&(inv.eq_hoe|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){
    const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18)){let ok=false;
     if(!SCENE)ok=!FARM.get(ty*N+tx)&&canTill(tx,ty);
@@ -58,7 +58,8 @@
    // a dry crop in front, with the hoe in hand and the can in the bag: swap to the can (019's dig-up would answer first)
    if(!TL.can&&TL.hoe&&(inv.eq_can|0)>0&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);let pl=null;
     if(!SCENE)pl=FARM.get(ty*N+tx);else{const R=typeof rbR==='function'?rbR():null;if(R)pl=rfMap(R.region).get(rbK(tx,ty))}
-    if(pl&&pl.c&&!ripe(pl)&&!wet(pl)&&swapTo('eq_can'))return}}catch(e){}})}
+    if(pl&&pl.c&&!ripe(pl)&&!wet(pl)&&swapTo('eq_can'))return}}catch(e){}
+ return next.apply(this,arguments)})}
  // controller R1 / anything else that "shoots": with the hoe or can in hand, use it
  {const _sa=shootAim;shootAim=function(first){if(!TL.bow&&!WAND&&(TL.hoe||TL.can)){if(first)try{viaOff(()=>attack())}catch(e){}return}return _sa.apply(this,arguments)}}
  // keyboard and mouse: HIT (Space, left click) is melee only. It doesn't shoot the bow (021 shot at monsters out of sword

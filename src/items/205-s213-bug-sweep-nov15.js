@@ -25,7 +25,8 @@
     const a=pnOpen,m=menuOpen;pnOpen=false;menuOpen=false;try{return fn.apply(this,arguments)}finally{pnOpen=a;menuOpen=m}};
    return _sd.call(this,kind,n,wrapped)}}
  // Pressing EAT/COOK again while already cooking used to start a new job with the first recipe in the list (Aztu): now it's ignored.
- {SQEAT.before('205 already cooking',()=>{try{if(!window.SQDO_STEP&&typeof SQDO!=='undefined'&&SQDO&&SQDO.kind==='cook'){say('Already cooking.');return}}catch(e){}})}
+ // While cooking, EAT eats something instead (the cooking carries on): players had to walk away from the fire to eat (Nov 15).
+ {SQEAT.wrap('205 already cooking: eat instead',_e=>function(){try{if(!window.SQDO_STEP&&typeof SQDO!=='undefined'&&SQDO&&SQDO.kind==='cook'&&!dead){if(window.SQEATPICK)SQEATPICK.eat();else say('Already cooking.');return}}catch(e){}return _e.apply(this,arguments)})}
  // Saltmere's two moored boats sit at fixed spots (020's BOATS); since the coast moved they were drawn on the grass north of town.
  // Only boats on water are drawn now (Tidewatch already placed its own on water).
  try{if(typeof BOATS!=='undefined'&&Array.isArray(BOATS))for(let k=BOATS.length-1;k>=0;k--){const[x,y]=BOATS[k];if(tile[y*N+x]!==0)BOATS.splice(k,1)}}catch(e){}

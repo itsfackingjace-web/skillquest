@@ -41,10 +41,11 @@ function rbOpenStation(R,x,y,s){openStation({t:s.t,inside:false,i:rbIdx(R,x,y),f
 {const _ps=pickStruct;pickStruct=function(i){if(i<1e7)return _ps(i);const R=rbR();if(!R)return;const j=i-1e7-(Object.keys(WORLD_REGIONS).indexOf(R.region)+1)*1e5;rbPick(R,j%R.w,Math.floor(j/R.w))}}
 // HIT: hit what you built (stations open, the dummy wobbles); TALK: open chests and stations
 const rbFront=R=>{const[x,y]=frontTile();return{x,y,s:rbMap(R.region).get(rbK(x,y))}};
-{SQHIT.before('065 building and cooking on the other',()=>{const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const{x,y,s}=rbFront(R);
+{SQHIT.wrap('065 building and cooking on the other',next=>function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const{x,y,s}=rbFront(R);
    if(s){swing=.25;if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}return}
     if(STN.has(s.t)){rbOpenStation(R,x,y,s);return}rbHit(R,x,y,s);return}
-   const f=rbForeignAt(R.region,x,y);if(f){notYours(f.owner);return}}})}
+   const f=rbForeignAt(R.region,x,y);if(f){notYours(f.owner);return}}
+ return next.apply(this,arguments)})}
 {const _t=talk;talk=function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!nearNpc()){let hit=null;
    for(const[dx,dy]of[[0,0],[face[0],face[1]],[0,1],[0,-1],[1,0],[-1,0]]){const x=Math.floor(P.x/16)+dx,y=Math.floor((P.y+(face[1]>0?4:0))/16)+dy,s=rbMap(R.region).get(rbK(x,y));if(s&&(s.t==='chest'||s.t==='bed'||STN.has(s.t))){hit={x,y,s};break}}
    if(!hit){const{x,y,s}=rbFront(R);if(s)hit={x,y,s}}

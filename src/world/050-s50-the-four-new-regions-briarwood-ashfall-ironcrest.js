@@ -332,9 +332,10 @@ function rgGather(R,it){const o=it.o,t=o.t,sk=SKOF[t];if(!sk){swing=.25;return}
  if(Math.random()<sumP(sk,STAYP)){o.hp=OHP[t]||3;gTxt(x,y-46,sk===3?'It grows straight back!':'Still standing!',SKC[sk])}
  else{it.gone=true;rgCellDel(R,it);R.solid.delete(it.y*R.w+it.x);R.gone.push({it,at:CLK})}
  setTimeout(()=>sfx('pickup'),90);saveLocal()}
-SQHIT.before('050 the four new regions briarwood ashfall',()=>{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0){const[fx,fy]=front(13);
+SQHIT.wrap('050 the four new regions briarwood ashfall',next=>function(){const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0){const[fx,fy]=front(13);
   if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){const tx=Math.floor(fx/16),ty=Math.floor(fy/16),it=rgObjAt(R,tx,ty);if(it){rgGather(R,it);return}
-   for(const l of R.useItems)if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1)){swing=.25;rgLook(l);return}}}});
+   for(const l of R.useItems)if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1)){swing=.25;rgLook(l);return}}}
+ return next.apply(this,arguments)});
 
 // --- region life: resources grow back, landmarks are discovered, spawns stay away from quiet places ---
 function rgSeen(reg,id){const s=WORLD_STATE[reg];return!!(s&&s.seen&&s.seen.includes(id))}

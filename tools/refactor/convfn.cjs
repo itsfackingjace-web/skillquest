@@ -8,8 +8,9 @@ const walk=require('/opt/node-tools/node_modules/acorn-walk');const fs=require('
 const FN=process.argv[2],REG=process.argv[3],DRY=process.argv.includes('--dry');
 process.argv[2]=FN;const {res,js,fileAt}=require('./find.cjs');const ROOT=path.join(__dirname,'..','..','src');
 const src=n=>js.slice(n.start,n.end);const edits={};const cnt={after:0,before:0,wrap:0};const names=[];
-const plain=(stmts,inner)=>{let ok=true;for(const st of stmts)walk.recursive(st,null,{Function(){},ArrowFunctionExpression(){},FunctionExpression(){},FunctionDeclaration(){},
-  ReturnStatement(n){if(n.argument)ok=false},Identifier(n){if(n.name===inner||n.name==='arguments')ok=false},ThisExpression(){ok=false}},walk.base);return ok};
+// noRet: for `before`, any return (even a bare `return;`) means "stop, skip the inner function", which a before step can't do (Nov 18 bug).
+const plain=(stmts,inner,noRet)=>{let ok=true;for(const st of stmts)walk.recursive(st,null,{Function(){},ArrowFunctionExpression(){},FunctionExpression(){},FunctionDeclaration(){},
+  ReturnStatement(n){if(n.argument||noRet)ok=false},Identifier(n){if(n.name===inner||n.name==='arguments')ok=false},ThisExpression(){ok=false}},walk.base);return ok};
 for(const r of res){if(!r.decl)continue;const inner=r.inner,f=r.fnode,S=f.body.body,params=f.params;
  const pn=params.every(p=>p.type==='Identifier')?params.map(p=>p.name):null;
  const isCall=e=>{if(!e)return false;if(e.type==='ExpressionStatement')e=e.expression;else if(e.type==='ReturnStatement')e=e.argument;if(!e||e.type!=='CallExpression')return false;
@@ -20,7 +21,7 @@ for(const r of res){if(!r.decl)continue;const inner=r.inner,f=r.fnode,S=f.body.b
  const L=S[S.length-1];
  if(pn&&S.length>=2&&isDeclCall(S[0])&&L.type==='ReturnStatement'&&L.argument&&L.argument.type==='Identifier'&&L.argument.name===S[0].declarations[0].id.name&&plain(S.slice(1,-1),inner)){kind='after';body=S.slice(1,-1).map(src).join('')}else
  if(pn&&S.length>=1&&S[0].type==='ExpressionStatement'&&isCall(S[0])&&plain(S.slice(1),inner)){kind='after';body=S.slice(1).map(src).join('')}
- else if(pn&&S.length>=2&&isCall(S[S.length-1])&&(S[S.length-1].type==='ExpressionStatement'||S[S.length-1].type==='ReturnStatement')&&plain(S.slice(0,-1),inner)){kind='before';body=S.slice(0,-1).map(src).join('')}
+ else if(pn&&S.length>=2&&isCall(S[S.length-1])&&(S[S.length-1].type==='ExpressionStatement'||S[S.length-1].type==='ReturnStatement')&&plain(S.slice(0,-1),inner,true)){kind='before';body=S.slice(0,-1).map(src).join('')}
  const file=r.at.f,num=file.split('/')[1].split('-')[0];cnt[kind]++;
  const name=num;names.push(kind+' '+name);
  const args='('+(pn||[]).join(',')+')';

@@ -98,7 +98,8 @@ const _ed35=enemyDrop;enemyDrop=function(n){_ed35(n);const R=SCENE&&SCENE.room;i
  const x=Math.floor(n.x/16),y=Math.floor(n.y/16);R.items.push({t:'dchest',x,y,use:'dchest',id:R.dun.kind+'boss',boss:1});say('A golden chest appears where the '+(n.type==='boss'?'Slime King':'Bone Lord')+' fell!');msgT=4};
 // opening chests: HIT or USE when you face one
 function dChestNear(){const R=SCENE&&SCENE.room;if(!R||!R.dun)return null;const[fx,fy]=front(12);let best=null,bd=22;for(const it of R.items){if(it.t!=='dchest'||it.open)continue;const d=Math.hypot(it.x*16+8-fx,it.y*16+8-fy);if(d<bd){bd=d;best=it}}return best}
-SQHIT.before('035 deep dungeons and rare loot',()=>{if(!dead&&!menuOpen&&!pnOpen&&swing<=0){const it=dChestNear();if(it&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<30)){swing=.2;dOpen(it);return}}});
+SQHIT.wrap('035 deep dungeons and rare loot',next=>function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0){const it=dChestNear();if(it&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<30)){swing=.2;dOpen(it);return}}
+ return next.apply(this,arguments)});
 const _uf35=useFurn;useFurn=function(o){if(o&&o.use==='dchest'){dOpen(o);return}_uf35(o)};
 // saving: opened chests for today, and the legendary sword survives the tool-tier clamp
 SQSAVE.after('035:dun,rare',s=>{s.dun={day:DUN.day,op:[...DUN.opened]};s.rare={sword:TL.sword};});

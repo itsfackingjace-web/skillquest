@@ -369,10 +369,11 @@ const inForeignHouse=()=>SCENE&&SCENE.house&&SCENE.house._foreign?SCENE.house:nu
 // outside on Hollow: their chests and stations
 function trUseForeignStr(i){const s=STR.get(i);if(!s||!s._foreign)return false;if(s.t!=='chest'&&!STN.has(s.t))return false;swing=.25;trustThen(s._foreign,()=>trUseForeignStr2(i,s));return true}
 function trUseForeignStr2(i,s){if(s.t==='chest')chOpenShared(s._foreign,'s_'+i);else if(s.t==='dummy'){s.wob=.3;setTimeout(()=>{s.wob=0},300);sfx('hit');if(lvOf(0)<30){addXp(0,4);addXp(7,1)}}else openStation({t:s.t,inside:false,i,f:s,_foreign:s._foreign})}
-{SQHIT.before('072 world boss art hd same style',()=>{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!(typeof facingNpc==='function'&&facingNpc())){
+{SQHIT.wrap('072 world boss art hd same style',next=>function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH&&!(typeof facingNpc==='function'&&facingNpc())){
   if(!SCENE){const[x,y]=frontTile();if(x>=0&&y>=0&&x<N&&y<N&&trUseForeignStr(y*N+x))return}
   else{const R=rbR();if(R){const[x,y]=frontTile();const f=rbForeignAt(R.region,x,y);if(f&&(f.t==='chest'||STN.has(f.t))){swing=.25;
-     trustThen(f.owner,()=>{if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner})});return}}}}})}
+     trustThen(f.owner,()=>{if(f.t==='chest')chOpenShared(f.owner,'r_'+R.region+'_'+x+'_'+y);else if(f.t!=='dummy')openStation({t:f.t,inside:false,i:-1,f:{t:f.t},_foreign:f.owner})});return}}}}
+ return next.apply(this,arguments)})}
 {const _us=useStructure;useStructure=function(i){if(trUseForeignStr(i))return;return _us(i)}}
 window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};window.SQTRUTHEN=trustThen;
 // ---- Farming on every island ----

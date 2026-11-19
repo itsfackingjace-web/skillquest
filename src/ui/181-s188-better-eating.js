@@ -45,4 +45,6 @@
   say(PIN?'EAT will use '+(INAME[k]||k).toLowerCase()+' first.':'EAT picks food for you again.');try{sfx('talk');saveLocal()}catch(x){}try{rPn()}catch(x){}},true);
  {SQSAVE.after('181:eatp',s=>{try{s.eatp=PIN}catch(e){}})}
  {SQLOAD.after('181',(S)=>{try{PIN=S&&typeof S.eatp==='string'&&INAME[S.eatp]?S.eatp:''}catch(e){}})}
- window.SQEAT={pick,cookable,get pin(){return PIN},set pin(v){PIN=v||''},open:openPick,cook}})();
+ // window.SQEAT is 007's EAT step list; this section's helpers are SQEATPICK. eat(): eat now, never cook (used while a cook job runs).
+ window.SQEATPICK={pick,cookable,get pin(){return PIN},set pin(v){PIN=v||''},open:openPick,cook,
+  eat(){const f=pick();if(!f){say('Nothing to eat');return false}if(!PIN&&P.hp>=6&&hunger>=95){say('You\'re full.');return false}BYPASS++;try{useFood(f.k)}finally{BYPASS--}return true}}})();

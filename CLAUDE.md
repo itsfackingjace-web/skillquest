@@ -27,8 +27,11 @@
 - **Step lists for other functions** (`sqSteps(label, fn, install)` at the top of 006, `window.SQSTEPS[label]`): same after/before/wrap
   steps, plus `list()`. **EAT** (`window.SQEAT`, created in 007 right after its `eat`, which replaced 004's): 11 named steps (stop building,
   iron stomach, burnt food saves, potions not eaten, timed cooking, cooldown, PvP healing, meal buffs, food picker, already cooking).
-  **Never reassign `eat`.** **HIT** (`window.SQHIT`, created in 006 right after `sqSteps`, base = 004's `attack`): 58 steps named after their
-  section (20 before, 38 wrap: most take over HIT in one situation or lend/hide something for the call). **Never reassign `attack`**; add a
+  **Never reassign `eat`.** A `before` step can't stop the call (a `return` only ends the step): a step that may take over the
+  button must be a `wrap` that skips `next` (Nov 18: convfn.cjs had turned 18 such wrappers into `before` steps; `tools/refactor/fix-before-returns.cjs`
+  put them back and convfn now refuses). 181's food-picker helpers are `window.SQEATPICK` (`eat()` = eat now, never cook); `window.SQEAT` is the step list.
+  **HIT** (`window.SQHIT`, created in 006 right after `sqSteps`, base = 004's `attack`): 58 steps named after their
+  section (mostly wrap steps: most take over HIT in one situation or lend/hide something for the call). **Never reassign `attack`**; add a
   step (`SQHIT.wrap('<file no> <what>', next=>function(){...})`) and a word in 118 when it's a new situation.
   `upd`, `pP`, `drawHUD` are still wrapper chains; `tools/refactor/` has the converters and the before/after comparisons.
 - Firebase rules are in `database.rules.json` and must be published in the Firebase console when they change.
@@ -542,7 +545,7 @@
   Attacks come from where the pet is drawn (093's `PST.get('me')`, the imp's state); a melee pet is moved next to the monster and
   093's `petFollow` walks it back. Peers see the attacks via fx `pa` (`SQFXH.pa`, looks only). Powers are appended to `IDESC.pet_<k>`.
   A new pet with a built-in ability should check `SQPETOFF` and get a line in the tab's `own()`.
-- **Eating / campfire cooking** (`ui/181-s188-better-eating.js`, `SQEAT`): the outermost `eat` moves the chosen food to the front of
+- **Eating / campfire cooking** (`ui/181-s188-better-eating.js`, `SQEATPICK`): the outermost `eat` moves the chosen food to the front of
   `FOODS` for the call (pinned `eatp` in the save, else smallest heal that covers what's missing, else least healing; potions and
   `SQFOODBUFF` meals left for USE; "You're full." at full health + food 95). At a fire with 2+ cookable kinds it opens a picker
   (`ptab` 41); a picked kind runs as 109's `sqDo('cook')` whose steps call `eat()` (BYPASS) with that COOKS entry moved first.
@@ -1004,3 +1007,7 @@
   `reset` wrapper before 001's reset wipes `inv` (a respawn before the timer fired, or with throttled timers, lost the bag with no grave). With no
   `GRV.lastSpot`, `GRV.nospot` makes the wrapper keep the bag's non-gear items through reset instead. 220's `SQSAVE.wrap` step saves a campfire
   build's lent wood as the tier logs while `PEND` waits. 071's narrow-screen `#wbb` sits below 115's guide hint (`SQHINTB`).
+- **Nov 18 evening fixes**: fishing runs while a panel/START menu is open (007's fishing `upd` only needs `FISH`; 109's `sqDo` doesn't close the
+  panel for a `reel` job). 205's EAT step: while a campfire `cook` job runs, EAT eats (`SQEATPICK.eat()`) and the job carries on.
+  `items/231-s239-chest-card-fits.js` (`SQCHFIT`): after every `rPn` the chest item card's backdrop (`.chcbg`) is set to #pn's visible box and
+  the card capped to fit (iPhone Safari clips position:fixed inside the scrolling panel), and #pn doesn't scroll while it's open (`sqchlock`).
