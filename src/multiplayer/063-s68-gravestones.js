@@ -61,7 +61,7 @@ function grvDraw(g,tm){const gp=grvPos(g),x=Math.round(gp.x),y=Math.round(gp.y),
  Rg(x-1,y-8,2,8,D);Rg(x-3,y-6,6,2,D);Rg(x-6,y+2,12,2,'#6a4a2a');Rg(x-5,y+1,2,1,'#3a8a3a');Rg(x+3,y+1,2,1,'#3a8a3a');
  if(grvLeft(g)<60000&&Math.floor(tm*4)%2)Rg(x-4,y-10,8,13,'rgba(248,200,80,.35)'); // last minute: it flickers
  if(mine){const b=Math.round(Math.sin(tm*4)*1.5);Rg(x-1,y-17+b,3,3,'#f8d848');Rg(x,y-14+b,1,1,'#f8d848')}}
-{const _pP=pP;pP=function(tm){try{for(const gv of grvHere())grvDraw(gv,tm)}catch(e){}return _pP(tm)}}
+{SQPP.before('063',(tm)=>{try{for(const gv of grvHere())grvDraw(gv,tm)}catch(e){}})}
 // the hint when you're close, and your own grave's countdown
 {const st=document.createElement('style');st.textContent=`#grvh{position:fixed;left:50%;transform:translateX(-50%);top:58%;z-index:9;display:none;padding:6px 10px;font:600 13px ${PF};pointer-events:none;text-align:center;max-width:calc(100vw - 24px);box-sizing:border-box}
 #grvt{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0px) + 202px);z-index:9;display:none;padding:5px 9px;font:600 12px ${PF};pointer-events:none;color:#b03828;max-width:calc(100vw - 150px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}

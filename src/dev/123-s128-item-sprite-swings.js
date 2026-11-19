@@ -30,7 +30,7 @@
  function toolAng(a){const p=Math.min(1,a.t/a.dur),f=a.face,a0=Math.atan2(f[1],f[0]),sg=f[0]<0?1:-1,ch=a.type==='chop',st=a0+sg*(ch?1.9:2.7),en2=a0-sg*(ch?.25:.1),e=p<.6?Math.pow(p/.6,2):1;return st+(en2-st)*e}
  // ---- your own character ----
  let castUntil=0,bowUntil=0;
- const _pp=pP;pP=function(tm){const now=performance.now();
+ SQPP.wrap('123',_pp=>function(tm){const now=performance.now();
   if(dead||(window.SQDF&&SQDF.on)||(typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on)||(typeof FISH!=='undefined'&&FISH))return _pp.apply(this,arguments);
   const cast=typeof CASTT!=='undefined'&&CASTT>0,bow=typeof BOWT!=='undefined'&&BOWT>0;if(cast)castUntil=now+swing*1000+30;if(bow)bowUntil=now+swing*1000+30;
   let mode=null,key=null;
@@ -51,7 +51,7 @@
   const sv=[swing,typeof CASTT!=='undefined'?CASTT:0,typeof BOWT!=='undefined'?BOWT:0,ACTN];
   swing=0;if(mode==='wand')CASTT=0;if(mode==='bow')BOWT=0;if(mode==='tool')ACTN=null;
   try{_pp.apply(this,arguments)}finally{swing=sv[0];if(mode==='wand')CASTT=sv[1];if(mode==='bow')BOWT=sv[2];if(mode==='tool')ACTN=sv[3]}
-  if(!behind&&!flick)put(g,s,kind,ang,hx,hy)};
+  if(!behind&&!flick)put(g,s,kind,ang,hx,hy)});
  // ---- other players' swings (sword tier, 9 = sledgehammer) ----
  if(window.SQSWING){const _sw=SQSWING;window.SQSWING=function(x,y,fx,fy,pr,t,tm){const key=t===9?'eq_sledge':t?'eq_sword'+t:null,s=key&&use(key)?srcFor(key):null;
    if(!s)return _sw.apply(this,arguments);put(g,s,'diag',swingAng(fx,fy,pr),Math.round(x)+fx*5,Math.round(y)-4+fy*5)}}

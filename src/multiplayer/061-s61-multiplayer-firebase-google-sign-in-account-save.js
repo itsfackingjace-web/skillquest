@@ -297,19 +297,12 @@ const _drr61=drawRoom;drawRoom=function(tm){const R=SCENE&&SCENE.room;if(!R||R.r
  const all=R.items;R.items=all.concat(add);try{_drr61(tm)}finally{R.items=all}};
 const _df61=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_mp'){mpDrawPeer(it.r,tm);return}return _df61(it,tm)};
 // remember the world transform every frame (the player is always drawn in world space)
-const _pP61=pP;pP=function(tm){MP.T=g.getTransform();MP.Tat=performance.now();return _pP61(tm)};
+SQPP.before('061',(tm)=>{MP.T=g.getTransform();MP.Tat=performance.now();});
 // names and chat bubbles go over everything, in screen pixels
 function mpLabel(txt,X,Y,sz,col){g.font='700 '+sz+'px '+PF;g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';g.lineWidth=Math.max(2,sz/4);g.strokeStyle='#202020';g.strokeText(txt,X,Y);g.fillStyle=col;g.fillText(txt,X,Y)}
-const _dh61=drawHUD;drawHUD=function(){_dh61();if(!MP.on||!MP.T||performance.now()-MP.Tat>120||pnOpen||menuOpen)return;
- const u=Math.max(2,Math.round(Math.min(W,H)/160)),sz=Math.round(5*u),now=performance.now(),T=MP.T;g.save();g.setTransform(1,0,0,1,0,0);
- const cs=Math.max(1,Math.round(u*.7));
- const skull=(X,Y)=>{const q=cs,P2=[[1,0,5],[0,1,7],[0,2,7],[0,3,2],[3,3,1],[5,3,2],[1,4,5],[1,5,1],[3,5,1],[5,5,1]];g.fillStyle='#202020';g.fillRect(Math.round(X-q),Math.round(Y-q),9*q,8*q);g.fillStyle='#f8f8f8';for(const[a,b,w]of P2)g.fillRect(Math.round(X+a*q),Math.round(Y+b*q),w*q,q)};
- const one=(x,y,name,said,og,fr,pk)=>{const p=T.transformPoint({x,y:y-27});let Y=p.y;if(pk){g.font='700 '+sz+'px '+PF;const tw=name?g.measureText(name).width:0;skull(p.x+(name?tw/2+u*2:-3.5*cs),Y-sz*.8)}if(name){mpLabel(name,p.x,Y,sz,pk?'#f87060':fr?'#88f088':'#f8f8f8');
+SQHUD.after('061',()=>{if(!MP.on||!MP.T||performance.now()-MP.Tat>120||pnOpen||menuOpen)return;const u=Math.max(2,Math.round(Math.min(W,H)/160)),sz=Math.round(5*u),now=performance.now(),T=MP.T;g.save();g.setTransform(1,0,0,1,0,0);const cs=Math.max(1,Math.round(u*.7));const skull=(X,Y)=>{const q=cs,P2=[[1,0,5],[0,1,7],[0,2,7],[0,3,2],[3,3,1],[5,3,2],[1,4,5],[1,5,1],[3,5,1],[5,5,1]];g.fillStyle='#202020';g.fillRect(Math.round(X-q),Math.round(Y-q),9*q,8*q);g.fillStyle='#f8f8f8';for(const[a,b,w]of P2)g.fillRect(Math.round(X+a*q),Math.round(Y+b*q),w*q,q)};const one=(x,y,name,said,og,fr,pk)=>{const p=T.transformPoint({x,y:y-27});let Y=p.y;if(pk){g.font='700 '+sz+'px '+PF;const tw=name?g.measureText(name).width:0;skull(p.x+(name?tw/2+u*2:-3.5*cs),Y-sz*.8)}if(name){mpLabel(name,p.x,Y,sz,pk?'#f87060':fr?'#88f088':'#f8f8f8');
    if(og){g.font='700 '+sz+'px '+PF;const tw=g.measureText(name).width;g.imageSmoothingEnabled=false;g.drawImage(crownCv,Math.round(p.x-tw/2-9*cs-u),Math.round(Y-sz*.75),9*cs,7*cs)}Y-=sz+u}
-  if(said&&now-said.at<5000)mpLabel(said.m.length>42?said.m.slice(0,41)+'…':said.m,p.x,Y,sz,'#f8f048')};
- for(const r of mpVis())one(r.x,r.y,r.n,r.said,isOG(r.uid),MP.friends&&MP.friends[r.uid],r.pk);
- if(mpLoc()||SCENE){const me=MP.selfName&&!dead;one(P.x,P.y,me?myName():'',MP.selfSaid,me&&MP.user&&isOG(MP.user.uid),false,window.SQPVP&&SQPVP.on&&!dead)}
- g.restore()};
+  if(said&&now-said.at<5000)mpLabel(said.m.length>42?said.m.slice(0,41)+'…':said.m,p.x,Y,sz,'#f8f048')};for(const r of mpVis())one(r.x,r.y,r.n,r.said,isOG(r.uid),MP.friends&&MP.friends[r.uid],r.pk);if(mpLoc()||SCENE){const me=MP.selfName&&!dead;one(P.x,P.y,me?myName():'',MP.selfSaid,me&&MP.user&&isOG(MP.user.uid),false,window.SQPVP&&SQPVP.on&&!dead)}g.restore()});
 // ---- chat ----
 const CHAT_KEEP=24*3600*1000;
 function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.seen.add(id);if(typeof v.t==='number'&&mpNow()-v.t>CHAT_KEEP)return; // older than a day: not shown

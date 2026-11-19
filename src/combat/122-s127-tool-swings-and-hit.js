@@ -29,8 +29,8 @@
   return out});
  // drawing: the tool swing indoors/on islands too (the game only drew it on Hollow), and no sword at the end of a cast
  let castUntil=0;
- const _pp=pP;pP=function(tm){const now=performance.now();if(typeof CASTT!=='undefined'&&CASTT>0)castUntil=now+swing*1000+30;
+ SQPP.wrap('122',_pp=>function(tm){const now=performance.now();if(typeof CASTT!=='undefined'&&CASTT>0)castUntil=now+swing*1000+30;
   const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'),hide=swing>0&&(tool||now<castUntil),sw=swing;if(hide)swing=0;
   try{_pp.apply(this,arguments)}finally{swing=sw}
-  if(tool&&SCENE&&!(hurt>0&&Math.floor(tm*20)%2))try{drawAct(tm)}catch(e){}};
+  if(tool&&SCENE&&!(hurt>0&&Math.floor(tm*20)%2))try{drawAct(tm)}catch(e){}});
  window.SQTOOLSW={front:frontObj,kindOf}})();

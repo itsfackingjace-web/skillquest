@@ -17,14 +17,7 @@
   if(fw>0){g.fillStyle=col;g.fillRect(bx+p,by+p,fw,bh-2*p);g.fillStyle='rgba(255,255,255,.4)';g.fillRect(bx+p,by+p,fw,p)}
   g3text(txt,tx,y,10,U,'#404040','right',600)};
  // the sailing crossing card, redrawn on top of the old one in flat bands
- const _dh59=drawHUD;drawHUD=function(){_dh59();if(typeof TRAVEL49==='undefined'||!TRAVEL49)return;const T=TRAVEL49,k=T.t/T.dur,a=k<.45?k/.45:k>.7?Math.max(0,(1-k)/.3):1,now=performance.now()/1000;
-  const u=Math.max(2,Math.round(Math.min(W,H)/160));g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=a;g.imageSmoothingEnabled=false;
-  const bands=['#183a78','#1e4a90','#2458a8','#2a68c0','#3478d0'];for(let i=0;i<5;i++){g.fillStyle=bands[i];g.fillRect(0,Math.round(H*i/5),W,Math.ceil(H/5)+1)}
-  g.fillStyle='#78b0f0';for(let r=0;r<7;r++){const yy=Math.round(H*.42+r*H*.075),off=Math.round(((now*40*(r%2?1:-1))%(16*u)));for(let x=-16*u+off;x<W;x+=16*u){g.fillRect(x,yy,5*u,u);g.fillRect(x+u,yy-u,3*u,u)}}
-  const bt=hdRowboat(true,false,false),s=u*2,bx=Math.round(W/2+Math.sin(now*1.3)*10),by=Math.round(H*.45+Math.round(Math.sin(now*3)*2)*u);
-  g.drawImage(bt.c,bx+bt.ox*s,by+bt.oy*s,bt.ww*s,bt.hh*s);
-  const tw=Math.min(W-8*u,140*u),tx=Math.round((W-tw)/2),ty=Math.round(H*.24);g3box(tx,ty,tw,22*u,u/2,'#f8f8f8');
-  g.fillStyle='#404040';g.textAlign='center';g.textBaseline='middle';g.font='700 '+Math.round(8*u)+'px '+PF;g.fillText('Sailing to '+WORLD_REGIONS[T.to].name+'…',W/2,ty+11*u);g.restore()};
+ SQHUD.after('059',()=>{if(typeof TRAVEL49==='undefined'||!TRAVEL49)return;const T=TRAVEL49,k=T.t/T.dur,a=k<.45?k/.45:k>.7?Math.max(0,(1-k)/.3):1,now=performance.now()/1000;const u=Math.max(2,Math.round(Math.min(W,H)/160));g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=a;g.imageSmoothingEnabled=false;const bands=['#183a78','#1e4a90','#2458a8','#2a68c0','#3478d0'];for(let i=0;i<5;i++){g.fillStyle=bands[i];g.fillRect(0,Math.round(H*i/5),W,Math.ceil(H/5)+1)}g.fillStyle='#78b0f0';for(let r=0;r<7;r++){const yy=Math.round(H*.42+r*H*.075),off=Math.round(((now*40*(r%2?1:-1))%(16*u)));for(let x=-16*u+off;x<W;x+=16*u){g.fillRect(x,yy,5*u,u);g.fillRect(x+u,yy-u,3*u,u)}}const bt=hdRowboat(true,false,false),s=u*2,bx=Math.round(W/2+Math.sin(now*1.3)*10),by=Math.round(H*.45+Math.round(Math.sin(now*3)*2)*u);g.drawImage(bt.c,bx+bt.ox*s,by+bt.oy*s,bt.ww*s,bt.hh*s);const tw=Math.min(W-8*u,140*u),tx=Math.round((W-tw)/2),ty=Math.round(H*.24);g3box(tx,ty,tw,22*u,u/2,'#f8f8f8');g.fillStyle='#404040';g.textAlign='center';g.textBaseline='middle';g.font='700 '+Math.round(8*u)+'px '+PF;g.fillText('Sailing to '+WORLD_REGIONS[T.to].name+'…',W/2,ty+11*u);g.restore()});
  const css=document.createElement('style');css.textContent=`
 #cm *,#pn *,#sm *,#chs *,#hp,#hpc,#gpcur,.g3 *,.ig,.slot,.bl,.pk,.sk,.qc,.sb,.rc,.gr,.gc,.fg,.qb,.ng,.skc,.skd,.br,.xb,.sw,.ab,#cgo,#cb,#pb2,#mb{border-radius:0!important}
 .g3,#sm,#pn .pc,#cm .cc,#chs .cw{border-radius:0!important;border:4px solid #485870!important;box-shadow:inset 0 0 0 3px #a8c0e0!important;

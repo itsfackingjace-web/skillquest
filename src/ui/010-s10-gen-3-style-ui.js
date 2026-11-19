@@ -223,3 +223,6 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
 function drawDead(){const U=uiS();g.save();g.fillStyle='rgba(0,0,0,.6)';g.fillRect(0,0,W,H);const bw=Math.min(W-24*U,360*U),bh=118*U,x=(W-bw)/2,y=H*.34;g3box(x,y,bw,bh,U);
  g3text('You fell!',x+bw/2,y+26*U,22,U,'#d05030','center',700);{const gl=window.SQGRV&&SQGRV.lostPreview?SQGRV.lostPreview():0;g3text(gl?'Your things are in a grave where you fell. It\'s on your map.':'You weren\'t carrying anything.',x+bw/2,y+52*U,13,U,'#404040','center',500);g3text(gl?'Anyone can loot it! Gold and gear are safe.':'Skills, gold and gear are safe.',x+bw/2,y+70*U,13,U,'#404040','center',500)}
  if(time>1.5)g3text((isPC?'Click or press Space':'Tap')+' to try again',x+bw/2,y+96*U,14,U,'#5878b8','center',700);g.restore()}
+
+// HUD drawing (drawHUD): the game's own above; later sections add named steps (window.SQHUD, sqSteps in 006).
+const SQHUD=sqSteps('drawHUD',drawHUD,f=>{drawHUD=f});window.SQHUD=SQHUD;

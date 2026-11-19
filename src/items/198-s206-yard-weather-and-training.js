@@ -16,7 +16,7 @@
  castSpell=during(castSpell);shootAim=during(shootAim);castUlt=during(castUlt);
  if(typeof drawCrosshair==='function')drawCrosshair=during(drawCrosshair);
  // rain/snow/haze in yards
- {const _dh=drawHUD;drawHUD=function(){try{if(isYard()&&typeof drawWeather==='function')drawWeather()}catch(e){}return _dh.apply(this,arguments)}}
+ {SQHUD.before('198',()=>{try{if(isYard()&&typeof drawWeather==='function')drawWeather()}catch(e){}})}
  {const _b=biomeHere;biomeHere=function(){if(!isYard())return _b();try{const r=SCENE.ret;if(r&&!(SCENE.yardOf&&SCENE.yardOf.room&&SCENE.yardOf.room.region)&&typeof tile!=='undefined'){
     const x=Math.floor(r.x/16),y=Math.floor(r.y/16);let s=0,d=0;for(let dy=-4;dy<=4;dy+=2)for(let dx=-5;dx<=5;dx+=2){const t=tile[(y+dy)*N+x+dx];if(t===4)s++;else if(t===5)d++}
     return s>=10?'snow':d>=10?'desert':'grass'}}catch(e){}return'grass'}}

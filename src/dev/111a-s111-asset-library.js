@@ -102,9 +102,9 @@ var SQA=(()=>{
   const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2;try{shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;
   if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,x+L.ox,y+L.oy,w,h);g.restore();return true}
  window.SQPETLOOK=(k,s)=>k!=='imp'&&!!PETL[k]&&drawPetLook(k,s);   // 214: pets placed at home
- {const _pPL=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||k==='imp'||!PETL[k])return _pPL(tm);
+ {SQPP.wrap('111a',_pPL=>function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||k==='imp'||!PETL[k])return _pPL(tm);
    if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on)&&typeof petFollow==='function')drawPetLook(k,petFollow('me',P.x,P.y,face));
-   C.pet=null;try{return _pPL(tm)}finally{C.pet=k}}}
+   C.pet=null;try{return _pPL(tm)}finally{C.pet=k}})}
  if(window.LUX){const _dpp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&r.pet!=='imp'&&PETL[r.pet]&&typeof petFollow==='function'){if(r.sl)return;drawPetLook(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]));return}return _dpp&&_dpp(r,tm)}}
  // the game's own look of a pet (for the editor to start from): drawn by the game onto its hidden screen canvas at 2x
  // the Imp (it fights, so it isn't a follower): 085 asks window.SQIMPSP(frame, 'n'|'s'|'e'|'w', attacking) for a 24 x 27

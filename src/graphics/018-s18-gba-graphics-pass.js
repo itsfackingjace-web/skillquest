@@ -57,9 +57,9 @@ function tgCover(cx,fy,hw,hh,tm){const tx=Math.floor(cx/16),ty=Math.floor(fy/16)
 const _nd18=NEWDRAW;NEWDRAW=function(...a){_nd18(...a);if(SCENE)return;const tm=a[8];
  if(!dead)tgCover(P.x,P.y+7,9,7,tm);for(const n of en)if(n.type!=='boss')tgCover(n.x,n.y+6,9,4,tm)};
 // --- night: blue palette tint instead of a flat dark overlay, and lit windows ---
-const _dh18=drawHUD;drawHUD=function(){const dk=SCENE?0:dark();if(dk>.25){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
+SQHUD.before('018',()=>{const dk=SCENE?0:dark();if(dk>.25){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
   const lit=(X0,w,base,k)=>{for(const wx of[X0+8,X0+w-20]){g.fillStyle='rgba(255,210,110,'+(.55*dk)+')';g.fillRect(wx,base-22,12,10);g.fillStyle='rgba(255,200,100,'+(.12*dk)+')';g.fillRect(wx-4,base-26,20,18)}};
-  for(const b of BLD)lit(b.tx*16,b.w*16,(b.ty+2)*16);for(const h of HOUSES){const w=(h.w||5);lit((h.x-(w-1)/2)*16,w*16,(h.y+1)*16)}g.restore()}_dh18()};
+  for(const b of BLD)lit(b.tx*16,b.w*16,(b.ty+2)*16);for(const h of HOUSES){const w=(h.w||5);lit((h.x-(w-1)/2)*16,w*16,(h.y+1)*16)}g.restore()}});
 // --- fence icon ---
 const _icon18=iconURL;iconURL=function(k,col){if(k!=='wwall'&&k!=='door')return _icon18(k,col);const key='g18'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  if(k==='wwall'){r(1,4,12,7,O);r(1,5,12,2,WD.lt);r(1,9,12,1,WD.lt);for(const a of[2,9]){r(a,1,4,12,O);r(a+1,2,2,10,WD.md);r(a+1,2,2,1,WD.hi)}}

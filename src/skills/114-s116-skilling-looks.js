@@ -127,11 +127,11 @@
  // ---- draw for a player ----
  function drawFor(code,prev,t,x,y,fx,fy,B,tm,seed,sk){SKN0=sk||'#f0c8a0';if(code===1)drawFire(x,y,fx,fy,t,tm);else if(code===2)drawCook(x,y,fx,fy,t,tm);else if(code===7)drawSmelt(x,y,fx,fy,t,tm);else if(code===8)drawSmith(x,y,fx,fy,t,tm);else if(code===9)drawCraft(x,y,fx,fy,t,tm);else if(code>=3&&code<=6)drawFishing(x,y,fx,fy,code,prev,t,tm,B,seed)}
  // you: behind you when you face away, in front otherwise
- const _pp=pP;pP=function(tm){const c=ACT.c,t=now()-ACT.at,x=Math.round(P.x),y=Math.round(P.y),fx=face[0],fy=fx?0:face[1];
+ SQPP.wrap('114',_pp=>function(tm){const c=ACT.c,t=now()-ACT.at,x=Math.round(P.x),y=Math.round(P.y),fx=face[0],fy=fx?0:face[1];
   const B=FISH?[FISH.bx,FISH.by]:[x+fx*24,y+fy*24];const sk=c&&!dead&&!(hurt>0&&Math.floor(tm*20)%2);
   const skc=skinOf(CH);if(sk&&fy<0)try{drawFor(c,ACT.prev,t,x,y,fx,fy,B,tm,0,skc)}catch(e){}
   POSE=c===1||c===2?c:0;try{_pp.apply(this,arguments)}finally{POSE=0}
-  if(sk&&fy>=0)try{drawFor(c,ACT.prev,t,x,y,fx,fy,B,tm,0,skc)}catch(e){}};
+  if(sk&&fy>=0)try{drawFor(c,ACT.prev,t,x,y,fx,fy,B,tm,0,skc)}catch(e){}});
  // other players
  (window.SQPEERFX=window.SQPEERFX||[]).push((r,tm)=>{const c=r.ak|0;if(c!==(r._ak|0)){r._akPrev=r._ak|0;r._ak=c;r._akAt=now();
    if(c===4&&Math.hypot(r.x-P.x,r.y-P.y)<160)try{sfx('splash')}catch(e){}if(c===3&&!r._akPrev&&Math.hypot(r.x-P.x,r.y-P.y)<160)try{sfx('cast')}catch(e){}}

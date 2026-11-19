@@ -174,15 +174,15 @@
  {const _ps=pS;pS=function(n,tm){const out=_ps.apply(this,arguments);try{if(n&&n.burn>0&&!n.dead){const f=Math.floor(tm*9),w=(n.big||n.boss)?28:14;g.save();
      flame(Math.round(n.x-w*.32),Math.round(n.y+1),1,f,true);flame(Math.round(n.x+w*.05),Math.round(n.y-3),1,f+2,false);flame(Math.round(n.x+w*.34),Math.round(n.y+1),1,f+1,true);
      for(let i=0;i<4;i++){const ph=(tm*1.2+i/4)%1;g.globalAlpha=1-ph;g.fillStyle=i%2?'#ffb030':'#ff6020';g.fillRect(Math.round(n.x+Math.sin(i*3.1+tm*2)*w*.45),Math.round(n.y-8-ph*20),1,1)}g.restore()}}catch(e){}return out}}
- {const _pp=pP;pP=function(tm){const out=_pp.apply(this,arguments);try{if(COATK&&!SCENE||COATK&&SCENE){const f=Math.floor((tm||performance.now()/1000)*9),hx=Math.round(P.x+(face[0]<0?-6:6)),hy=Math.round(P.y+1);g.save();
+ {SQPP.after('218',(tm)=>{try{if(COATK&&!SCENE||COATK&&SCENE){const f=Math.floor((tm||performance.now()/1000)*9),hx=Math.round(P.x+(face[0]<0?-6:6)),hy=Math.round(P.y+1);g.save();
      if(COATK==='pot_napalm'){flame(hx,hy,.8,f,face[0]<0)}
      else if(COATK==='pot_poison'){for(let i=0;i<3;i++){const ph=((tm||0)*1.5+i/3)%1;g.fillStyle=i%2?'#80e060':'#58c048';g.fillRect(hx-1+i,hy-6+ph*8,1,1)}}
-     else if(COATK==='pot_zap'){for(let i=0;i<4;i++){g.fillStyle=i%2?'#ffffff':'#70d8ff';g.fillRect(Math.round(hx+Math.sin((tm||0)*20+i)*4),Math.round(hy-6+Math.cos((tm||0)*17+i*2)*5),1,1)}}g.restore()}}catch(e){}return out}}
- {const _dh=drawHUD;drawHUD=function(){const sc=curScene();if(RINGS.length||ZAPS.length){g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;try{
+     else if(COATK==='pot_zap'){for(let i=0;i<4;i++){g.fillStyle=i%2?'#ffffff':'#70d8ff';g.fillRect(Math.round(hx+Math.sin((tm||0)*20+i)*4),Math.round(hy-6+Math.cos((tm||0)*17+i*2)*5),1,1)}}g.restore()}}catch(e){}})}
+ {SQHUD.before('218',()=>{const sc=curScene();if(RINGS.length||ZAPS.length){g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;try{
      for(const q of RINGS){if(q.sc!==sc)continue;const k=Math.min(1,q.t/.7),r=8+k*q.r,n=Math.max(30,r*1.4|0);g.globalAlpha=1-k*.8;g.fillStyle=q.col;for(let i=0;i<n;i++){const a=i/n*6.283;g.fillRect(Math.round(sxp(q.x+Math.cos(a)*r)),Math.round(syp(q.y+Math.sin(a)*r*.6)),Z*2,Z*2)}g.globalAlpha=1}
      for(const z of ZAPS){if(z.sc!==sc)continue;let lx=sxp(z.a.x),ly=syp(z.a.y-6);for(let i=1;i<=6;i++){const k=i/6,x=sxp(z.a.x+(z.b.x-z.a.x)*k)+(i<6?((Math.random()*8-4)|0)*Z:0),y=syp(z.a.y-6+(z.b.y-z.a.y)*k)+(i<6?((Math.random()*8-4)|0)*Z:0);
        g.strokeStyle='#70d8ff';g.lineWidth=Z*2;g.beginPath();g.moveTo(lx,ly);g.lineTo(x,y);g.stroke();g.strokeStyle='#ffffff';g.lineWidth=Z*.8;g.beginPath();g.moveTo(lx,ly);g.lineTo(x,y);g.stroke();lx=x;ly=y}}
-    }catch(e){}g.restore()}return _dh.apply(this,arguments)}}
+    }catch(e){}g.restore()}})}
  {SQUPD.after('218',(dt)=>{for(const q of RINGS)q.t+=dt||0;for(const z of ZAPS)z.t+=dt||0;for(let i=RINGS.length-1;i>=0;i--)if(RINGS[i].t>.8)RINGS.splice(i,1);for(let i=ZAPS.length-1;i>=0;i--)if(ZAPS[i].t>.25)ZAPS.splice(i,1);})}
  // HUD chips (next to the arrows/ULT chips): the coating with its time left, and the dagger ULT's readiness
  {const _hl=hudLayout;hudLayout=function(){const L=_hl.apply(this,arguments);try{let add=0;
@@ -208,8 +208,8 @@
  D.stab=stab;
  {const _sa=shootAim;shootAim=function(first){if(D.dag&&!TL.bow&&!WAND){stab();return}return _sa.apply(this,arguments)}}
  cv.addEventListener('mousedown',e=>{if(e.button===2&&e.isTrusted&&D.dag&&!TL.bow&&!WAND){e.preventDefault();e.stopImmediatePropagation();stab()}},true);
- {const _pp=pP;pP=function(){if(!(D.dag&&performance.now()<VIS))return _pp.apply(this,arguments);const _o=occ,sl=SLEDGE;SLEDGE=false;occ=function(s){return s==='main'?D.dag:_o.apply(this,arguments)};
-   try{return _pp.apply(this,arguments)}finally{occ=_o;SLEDGE=sl}}}
+ {SQPP.wrap('218',_pp=>function(){if(!(D.dag&&performance.now()<VIS))return _pp.apply(this,arguments);const _o=occ,sl=SLEDGE;SLEDGE=false;occ=function(s){return s==='main'?D.dag:_o.apply(this,arguments)};
+   try{return _pp.apply(this,arguments)}finally{occ=_o;SLEDGE=sl}})}
  // other players' stabs: 064 sends the swing with w = 20 + dagger tier; draw that dagger's icon jabbing out instead of a sword
  const BYT={};for(const k in D.DAGS)BYT[D.DAGS[k].t]=k;const IMG={};
  const img=k=>{if(!IMG[k]){const i=new Image();try{i.src=eqIcon(k)}catch(e){i.src=iconURL(k)}IMG[k]=i}return IMG[k]};

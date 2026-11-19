@@ -6,7 +6,7 @@
 // Keyboard and controller play are unchanged (Space / HIT still auto-shoots at an enemy in front of you).
 {const AIMX={T:null,mouse:null,mIn:false,rHeld:false,rT:0,touch:null,tHeld:0,lastFire:0};
  const offhand=()=>!!(WAND||TL.bow);
- const _pP63=pP;pP=function(tm){AIMX.T=g.getTransform();return _pP63(tm)};
+ SQPP.before('082',(tm)=>{AIMX.T=g.getTransform();});
  const toWorld=(cx,cy)=>{if(!AIMX.T)return null;try{const p=AIMX.T.inverse().transformPoint({x:cx*D,y:cy*D});return p}catch(e){return null}};
  const canFire=()=>!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&!(typeof GPON!=='undefined'&&GPON);
  function aimAt(wx,wy){const dx=wx-P.x,dy=(wy)-(P.y-4),l=Math.hypot(dx,dy);if(l<4)return false;AIM.v=[dx/l,dy/l];AIM.t=performance.now();return true}
@@ -62,5 +62,5 @@
   const r=34,x=Math.round(P.x+dx*r),y=Math.round(P.y-4+dy*r),pu=Math.floor(tm*4)%2,c=tgt?'#f84030':(WAND?'#c8a8ff':'#f8f8f8'),k=tgt?3:4+pu;
   for(const[a,b,w,hh]of[[-k-2,-1,3,3],[k,-1,3,3],[-1,-k-2,3,3],[-1,k,3,3]])Rg(x+a-1,y+b-1,w+2,hh+2,O);
   Rg(x-k-2,y,3,1,c);Rg(x+k,y,3,1,c);Rg(x,y-k-2,1,3,c);Rg(x,y+k,1,3,c);Rg(x,y,1,1,c)}
- const _dh63=drawHUD;drawHUD=function(){if(AIMX.T){g.save();g.setTransform(AIMX.T);try{aimCross(performance.now()/1000)}catch(e){}g.restore()}_dh63()};
+ SQHUD.before('082',()=>{if(AIMX.T){g.save();g.setTransform(AIMX.T);try{aimCross(performance.now()/1000)}catch(e){}g.restore()}});
  window.SQAIM=AIMX}

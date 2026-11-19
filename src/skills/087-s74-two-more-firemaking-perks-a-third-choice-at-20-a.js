@@ -19,10 +19,10 @@
  window.SQAURA=()=>{try{return perk(5,'fi_aura')}catch(e){return false}};
  window.SQAURALIT=()=>{try{return!dead&&perk(5,'fi_aura')?150:0}catch(e){return 0}};
  const myFire=()=>{if(fires.some(f=>!f._rp&&f.life>0))return true;const st=window.FIRESTASH;if(st)for(const k in st)if(Array.isArray(st[k])&&st[k].some(f=>!f._rp&&f.life>0))return true;return false};
- const _dh=drawHUD;drawHUD=function(){try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
+ SQHUD.before('087',()=>{try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
    if(dk>.05&&!dead&&perk(5,'fi_aura')){const cx=camX(),cy=camY(),sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=120*Z,fl=1+Math.sin(performance.now()/180)*.03;
     g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(sx,sy,0,sx,sy,r*fl);gr.addColorStop(0,'rgba(255,215,150,'+(.22*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.1*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
-    g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){}_dh()}}
+    g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){}})}
 // the leaderboards take the controller / keyboard while they're open (title screen)
 {const _n=navRoot;navRoot=function(){const lb=document.getElementById('sqlb');if(lb&&lb.style.display==='flex')return lb;return _n()}}
 // a LOOT button when you stand at a grave (phones had no button to press)

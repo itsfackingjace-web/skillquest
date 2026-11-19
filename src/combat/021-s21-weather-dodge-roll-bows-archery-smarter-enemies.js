@@ -137,7 +137,7 @@ function drawWxIcon(){if(menuOpen)return;const U=uiS(),ins=12*U,top=50*U,dw=100*
  g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='#f8f8f8';g.fillRect(dx+9*U,top+5*U,20*U,18*U);
  g.fillStyle='#a8b4c8';g.beginPath();g.arc(dx+15*U,top+12*U,4.5*U,0,6.283);g.arc(dx+21*U,top+11*U,5.5*U,0,6.283);g.arc(dx+25*U,top+13*U,3.5*U,0,6.283);g.fill();g.fillRect(dx+12*U,top+12*U,15*U,4*U);
  g.fillStyle=snow?'#c8d8f0':'#4878d0';for(const[a,b]of[[13,19],[18,21],[23,19]])g.fillRect(dx+a*U,top+b*U,snow?2*U:1.5*U,snow?2*U:3*U);g.restore()}
-const _dh21=drawHUD;drawHUD=function(){if(!SCENE||SCENE.room&&SCENE.room.region)drawWeather();_dh21();drawWxIcon()};
+SQHUD.wrap('021',_dh21=>function(){if(!SCENE||SCENE.room&&SCENE.room.region)drawWeather();_dh21();drawWxIcon()});
 // --- crafting: Archery in the Craft tab ---
 const FREC=[{k:'arrow',n:'10 arrows',c:{wood:1,stone:1},lv:1,xp:12,f:()=>inv.arrow=(inv.arrow|0)+10},
  {k:'bow1',n:'Shortbow',c:{wood:5},lv:1,xp:30,hide:()=>TL.bow>=1,f:()=>{TL.bow=Math.max(TL.bow,1);say('You made a shortbow! HIT shoots at enemies in front of you that are out of sword reach.')}},

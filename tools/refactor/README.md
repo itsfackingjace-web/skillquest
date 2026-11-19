@@ -16,3 +16,11 @@ Used to replace wrapper chains with ordered step lists without changing behaviou
 - `scenes-attack.cjs` (18 HIT situations: trees, ores, rocks, boulder, bush, monsters, water, building, hoe, dagger, sledge, a house wall)
   was used for HIT on Nov 18 with `--fresh` (a new game per scene) and `compare-load.py`-style comparison ignoring hp/hunger
   (monsters and hunger tick on their own).
+- `compare-frames.cjs scenes-frames.cjs out.json --pix` (Nov 18, used for `upd`/`drawHUD`/`pP`): the page runs offline and frozen from
+  its first line (clock, timers, requestAnimationFrame and Math.random under the harness's control), starts the game through the title
+  screen and character creator, loads `frames-save.json` and plays scenes frame by frame (walking, a fight to the death, chopping/lighting/
+  cooking, sailing to Ashfall, fishing behind the START menu, a dungeon, building and walking through a house), recording state lines and a
+  canvas hash every few frames. Two runs of one build give identical files (pixels too); compare with a JSON diff of the `lines`.
+  It caught a deliberate 0.2-pixel nudge in `upd` in every scene.
+- `convfn.cjs` refuses: a `before` step with any `return` (it would no longer stop the call), and a wrapper whose saved inner function is
+  used anywhere else in its block (scope-aware). Text between `const _x=fn` and `fn=function` is kept.

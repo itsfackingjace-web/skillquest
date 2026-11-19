@@ -90,7 +90,7 @@
    return _cP.apply(this,arguments)}}
  window.SQEMOTE={emote,list:EM,pres(){return MINE&&live1(MINE.k,MINE.at)?MINE.k+':'+SEQ:''},get mine(){return MINE}};
  // you: walking (or anything that moves you) ends it
- {const _pp=pP;pP=function(tm){if(MINE&&(!live1(MINE.k,MINE.at)||Math.hypot(P.x-MX,P.y-MY)>1.5||dead||SAILING))MINE=null;SELF=true;try{return _pp.apply(this,arguments)}finally{SELF=false}}}
+ {SQPP.wrap('136',_pp=>function(tm){if(MINE&&(!live1(MINE.k,MINE.at)||Math.hypot(P.x-MX,P.y-MY)>1.5||dead||SAILING))MINE=null;SELF=true;try{return _pp.apply(this,arguments)}finally{SELF=false}})}
  // the others: their emote comes in their position (em); it stops when theirs does
  (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r)return;const em=r.em||'';if(em!==(r._em||'')){r._em=em;const k=em.split(':')[0];if(em&&EM[k]){r._emK=k;r._emAt=performance.now()}else r._emK=null}
   if(PT.id&&r.pt===PT.id){g.save();g.fillStyle='#58e070';g.strokeStyle='#183818';g.lineWidth=1;g.font='700 7px '+PF;g.textAlign='center';g.strokeText('★',Math.round(r.x),Math.round(r.y-33));g.fillText('★',Math.round(r.x),Math.round(r.y-33));g.restore()}});
@@ -162,7 +162,7 @@
  // G opens the emotes (keyboard)
  window.addEventListener('keydown',e=>{if(e.key!=='g'&&e.key!=='G')return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;if(pnOpen||menuOpen||dead||e.ctrlKey||e.metaKey||e.altKey)return;showScreen('emotes');e.preventDefault()});
  // ---- the HUD: party members under the minimap ----
- {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!PT.id)return out;const L=others().slice(0,3);if(!L.length)return out;const H=hudLayout(),U=H.U,w=100*U,x0=H.ins;
+ {SQHUD.wrap('136',_dh=>function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!PT.id)return out;const L=others().slice(0,3);if(!L.length)return out;const H=hudLayout(),U=H.U,w=100*U,x0=H.ins;
    // left column, under the quest box and its chips (the right side has the minimap, CHAT and BUG)
    let y=(H.stackBottom||H.qy+30*U)+6*U;try{const wb=document.getElementById('wbb');if(wb&&wb.style.display==='block'){const r=wb.getBoundingClientRect(),k=cv.width/(cv.clientWidth||innerWidth);if(r.left*k<x0+w&&r.bottom>0)y=Math.max(y,r.bottom*k+6*U)}}catch(e){}
    // phones without a minimap (indoors) put CHAT and BUG in this column too (111's sqPlaceBtns, SQHUDBTN = their bottom in CSS px)
@@ -170,7 +170,7 @@
    // and under the getting-started hint when it was drawn this moment (115 records its bottom in canvas px)
    try{const hb=window.SQHINTB;if(hb&&performance.now()-hb.f<100)y=Math.max(y,hb.b+6*U)}catch(e){}
    g.save();g.setTransform(1,0,0,1,0,0);for(const r of L){g3box(x0,y,w,26*U,U,'#eef8e8');g.font='700 '+9*U+'px '+PF;g.textAlign='left';g.textBaseline='middle';g.fillStyle='#284028';g.fillText(fitText('★ '+r.n,w-12*U),x0+6*U,y+9*U);
-    const f=Math.max(0,Math.min(1,(r.hpv||0)/6));g.fillStyle='#485870';g.fillRect(x0+6*U,y+16*U,w-12*U,5*U);g.fillStyle=f>.5?'#48c878':f>.2?'#f8c030':'#f05030';g.fillRect(x0+7*U,y+17*U,(w-14*U)*f,3*U);y+=29*U}g.restore()}catch(e){}return out}}
+    const f=Math.max(0,Math.min(1,(r.hpv||0)/6));g.fillStyle='#485870';g.fillRect(x0+6*U,y+16*U,w-12*U,5*U);g.fillStyle=f>.5?'#48c878':f>.2?'#f8c030':'#f05030';g.fillRect(x0+7*U,y+17*U,(w-14*U)*f,3*U);y+=29*U}g.restore()}catch(e){}return out})}
  // ---- the map and the minimap: party members in green ----
  const inArea=(r,area)=>(r.ar||'')===area&&isFinite(r.ax)&&isFinite(r.ay);
  {const _dm=drawMap;drawMap=function(){const out=_dm.apply(this,arguments);try{if(!PT.id||(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world'))return out;const c=document.getElementById('mpc');if(!c)return out;const area=curRegion(),x=c.getContext('2d'),s=Math.max(2,Math.round(c.width/70));

@@ -61,3 +61,6 @@ document.getElementById('cgo').onclick=()=>{menuOpen=false;cm.style.display='non
 cb.onclick=()=>{menuOpen=true;jx=jy=0;cm.style.display='flex';document.getElementById('cgo').textContent='DONE';build();rp()};
 SQUPD.wrap('003',_u=>function(dt){if(!menuOpen)_u(dt)});
 build();rp();
+
+// Drawing the player (pP): the game's own above; later sections add named steps (window.SQPP, sqSteps in 006).
+const SQPP=sqSteps('pP',pP,f=>{pP=f});window.SQPP=SQPP;

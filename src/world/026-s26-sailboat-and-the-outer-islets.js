@@ -64,8 +64,8 @@ function drawBoat26(tm){const x=Math.round(P.x),bob=Math.round(Math.sin(tm*2.6))
  else{Rg(x-9,y-5,18,17,O);Rg(x-8,y-4,16,10,'#a86830');Rg(x-7,y+6,14,5,'#7a4a20');Rg(x-8,y-4,16,1,'#d8a060')}
  const mx=hz?x-face[0]*9:x+7;Rg(mx-1,y-26,3,26,O);Rg(mx,y-25,1,25,'#7a4a20');const sd=hz?-face[0]:1;
  for(let k=0;k<14;k++){const w=Math.round(k*.7)+1;Rg(sd>0?mx+1:mx-w,y-24+k,w,1,k%5===2?'#e05040':'#f4f0e0')}}
-const _pP26=pP;pP=function(tm){if(!SAILING||SCENE)return _pP26(tm);const bob=Math.round(Math.sin(tm*2.6));drawBoat26(tm);
- g.save();g.translate(0,(window.BOAT85?BOAT85.dy:3)+bob);_pP26(tm);g.restore();drawBoatFront26(Math.round(P.x),Math.round(P.y)+bob,face,tm)};
+SQPP.wrap('026',_pP26=>function(tm){if(!SAILING||SCENE)return _pP26(tm);const bob=Math.round(Math.sin(tm*2.6));drawBoat26(tm);
+ g.save();g.translate(0,(window.BOAT85?BOAT85.dy:3)+bob);_pP26(tm);g.restore();drawBoatFront26(Math.round(P.x),Math.round(P.y)+bob,face,tm)});
 function drawWreck(tm){const x0=(WRK.x-1)*16,y0=(WRK.y-1)*16+6;shd(x0+24,y0+26,48);
  // a beached hull lying on its side: curved keel, broken middle with ribs showing, snapped mast, torn sail
  const hull=[[0,10,6],[4,6,10],[8,4,13],[14,3,15],[22,4,14],[30,5,13],[36,7,11],[42,10,8],[46,13,5]];

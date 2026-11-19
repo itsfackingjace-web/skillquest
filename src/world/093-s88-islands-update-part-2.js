@@ -103,7 +103,7 @@ function icvPlace(R){if(R._icv||!R.region)return;R._icv=1;const W=R.w,walk=(x,y)
 {const _uf=useFurn;useFurn=function(it){if(it&&it.use==='icv'){icvEnter(it);return}return _uf(it)}}
 {SQUPD.after('093',(dt)=>{if(dead||menuOpen||pnOpen||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;for(const it of R.useItems)if(it.use==='icv'&&Math.abs(P.x-(it.x*16+8))<8&&P.y<(it.y+1)*16+2&&P.y>it.y*16){icvEnter(it);return}})}
 // campfires in the caves: lit, drawn, cooking and keeping monsters away like outside
-{const _p=pP;pP=function(tm){const R=SCENE&&SCENE.room;if(R&&R.icv)for(const f of fires)if(!f._glow)try{pF(f,tm)}catch(e){}return _p(tm)}}
+{SQPP.before('093',(tm)=>{const R=SCENE&&SCENE.room;if(R&&R.icv)for(const f of fires)if(!f._glow)try{pF(f,tm)}catch(e){}})}
 window.SQICV=ICV;
 
 // ---- Ores and trees look like what they drop ----
@@ -170,8 +170,8 @@ function drawNPet(k,s,tm){if(window.SQDRAWTL&&k!=='ptree'&&SQDRAWTL(k,s,tm))retu
  P.x=x+(s.fl?-40:40);P.y=y;try{pS(n,tm)}catch(e){}finally{P.x=px;P.y=py}
  // the red collar
  const L=s.fl?x-7:x+3;g.fillStyle='#181018';g.fillRect(L,y-6,4,6);g.fillStyle='#d82828';g.fillRect(L+1,y-6,2,5);g.fillStyle='#ff6050';g.fillRect(L+1,y-6,1,2);g.fillStyle='#f8d048';g.fillRect(L+(s.fl?1:2),y-1,1,1)}
-{const _p=pP;pP=function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!(NPET[k]||SIDEMAP[k]))return _p(tm);
-  if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on))drawNPet(k,petFollow('me',P.x,P.y,face),tm);C.pet=null;try{return _p(tm)}finally{C.pet=k}}}
+{SQPP.wrap('093',_p=>function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!(NPET[k]||SIDEMAP[k]))return _p(tm);
+  if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on))drawNPet(k,petFollow('me',P.x,P.y,face),tm);C.pet=null;try{return _p(tm)}finally{C.pet=k}})}
 if(window.LUX){const _dp=LUX.drawPeerPet;LUX.drawPeerPet=(r,tm)=>{if(r&&(NPET[r.pet]||SIDEMAP[r.pet])){if(r.sl)return;drawNPet(r.pet,petFollow(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]),tm);return}return _dp&&_dp(r,tm)}}
 window.SQNPET=NPET;window.SQSIDEMAP=SIDEMAP;window.SQDRAWNPET=(k,s2,tm)=>drawNPet(k,s2,tm);
 
@@ -200,7 +200,7 @@ function drawShark(s,tm){const x=Math.round(s.x),y=Math.round(s.y),f=s.fl?-1:1,w
  // the fin cutting through the water, with a wake
  g.fillStyle='rgba(232,248,255,.75)';g.fillRect(x-f*10-2+w,y+1,4,1);g.fillRect(x-f*14-1,y+2,3,1);
  Rg(x-4,y,9,2,'#e8f8ff');const c=s.hit>0?'#ffffff':'#5a6878';Rg(x-3,y-8,1,8,'#181018');for(let k=0;k<7;k++){const h=8-k;Rg(x-3+(f>0?k:0)-(f<0?k-6:0)+(f<0?-6:0)+1,y-h,1,h,k===0?'#181018':c)}Rg(x-4,y-1,10,1,'#181018')}
-{const _p=pP;pP=function(tm){const R=shkR();if(R)for(const s of SHK.list)if(!s.dead&&!(s.a>0))try{drawShark(s,tm)}catch(e){}const out=_p(tm);if(R)for(const s of SHK.list)if(!s.dead&&s.a>0)try{drawShark(s,tm)}catch(e){}return out}}// a lunging shark goes over you (and your boat)
+{SQPP.wrap('093',_p=>function(tm){const R=shkR();if(R)for(const s of SHK.list)if(!s.dead&&!(s.a>0))try{drawShark(s,tm)}catch(e){}const out=_p(tm);if(R)for(const s of SHK.list)if(!s.dead&&s.a>0)try{drawShark(s,tm)}catch(e){}return out})}// a lunging shark goes over you (and your boat)
 window.SQSHK=SHK;
 
 // ---- Castles: the outside (two towers, a gate and two torches), the great hall inside, and where it would go ----
@@ -223,8 +223,8 @@ function drawCastle(b,tm){const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,S=['#5a5650
  R(X0+2,base-1,w-4,2,'rgba(0,0,0,.25)')}
 {const _db=drBld;drBld=function(b,tm){if(b&&b.castle)return drawCastle(b,tm);return _db(b,tm)}}
 // where a castle would go, while placing
-{const _dh=drawHUD;drawHUD=function(){if(BUILD&&BUILD.k==='castle'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=canPlace(x,y),cx=camX(),cy=camY();
-   g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drawCastle({w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}_dh()}}
+{SQHUD.before('093',()=>{if(BUILD&&BUILD.k==='castle'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=canPlace(x,y),cx=camX(),cy=camY();
+   g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drawCastle({w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}})}
 // the great hall
 {const _rb=ROOMBG;ROOMBG=(R,W2,H2)=>{if(!R.castle)return _rb(R,W2,H2);const S=['#6a645a','#7a746a','#8a8478','#9a9488'];Rg(-5,-5,W2+10,H2+10,'#141016');
   // (mirrored left to right: the marks in the stone use the distance from the nearer side wall)

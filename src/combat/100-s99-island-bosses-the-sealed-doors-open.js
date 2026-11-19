@@ -167,9 +167,7 @@
    ST.boss=null;ST.wait=0;ST.done=null;leaveScene();say('The way into the lair closes behind you. Bring more sigil shards to face it again.');msgT=4}catch(e){}},KICK)}
  window.SQIBREWARD=ibReward;window.SQIBKICK=ibKick;window.SQIBENTER=ibEnter;
  // ---- the boss bar ----
- {const _dh=drawHUD;drawHUD=function(){_dh();const b=ST.boss,R=SCENE&&SCENE.room;if(!b||b.dead||!R||R.ib!==b.ib||menuOpen)return;const B=IB[b.ib],w=Math.min(W*.6,420),x=(W-w)/2,y=Math.max(70,H*.1),f=Math.max(0,b.hp/b.mhp);
-   g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(20,16,24,.82)';g.fillRect(x-4,y-20,w+8,34);g.fillStyle='#3a1a1a';g.fillRect(x,y,w,10);g.fillStyle=b.hp<b.mhp/2?'#f05030':B.col;g.fillRect(x,y,w*f,10);g.strokeStyle='#f8f0e0';g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,9);
-   g.font='700 13px '+PF;g.fillStyle='#f8f0e0';g.textAlign='center';g.textBaseline='bottom';g.fillText(B.n.toUpperCase(),W/2,y-3);g.restore()}}
+ {SQHUD.after('100',()=>{const b=ST.boss,R=SCENE&&SCENE.room;if(!b||b.dead||!R||R.ib!==b.ib||menuOpen)return;const B=IB[b.ib],w=Math.min(W*.6,420),x=(W-w)/2,y=Math.max(70,H*.1),f=Math.max(0,b.hp/b.mhp);g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(20,16,24,.82)';g.fillRect(x-4,y-20,w+8,34);g.fillStyle='#3a1a1a';g.fillRect(x,y,w,10);g.fillStyle=b.hp<b.mhp/2?'#f05030':B.col;g.fillRect(x,y,w*f,10);g.strokeStyle='#f8f0e0';g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,9);g.font='700 13px '+PF;g.fillStyle='#f8f0e0';g.textAlign='center';g.textBaseline='bottom';g.fillText(B.n.toUpperCase(),W/2,y-3);g.restore()})}
  // ---- how they look ----
  const R4=(a,b,w,h,c)=>Rg(Math.round(a),Math.round(b),w,h,c);
  function hzDraw(b,tm){for(const h of b.hz||[]){if(h.k==='circ'){const p=Math.min(1,h.t/h.d),c=h.kind==='ice'?'160,220,255':h.kind==='void'?'180,120,255':h.kind==='water'?'90,190,255':h.kind==='land'?'120,200,90':h.kind==='dyn'?'255,200,80':'255,120,40';

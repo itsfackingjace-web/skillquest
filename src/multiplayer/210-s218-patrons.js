@@ -27,14 +27,14 @@
 #pn .pcr{font:500 15px/1.5 ${PF}}#pn .pcr h3{font:700 17px ${PF};margin:16px 0 6px}#pn .pcr ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:4px 14px}
 #pn .pcr li{display:flex;align-items:center;gap:4px}#pn .pcr .muted{opacity:.7;font-size:13px}`;document.head.appendChild(st)}
  // over heads: left of the name (and left of the OG crown when there is one)
- {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{const m=mp();if(!m||!m.on||!m.T||performance.now()-m.Tat>120||pnOpen||menuOpen||typeof mpVis!=='function')return out;
+ {SQHUD.wrap('210',_dh=>function(){const out=_dh.apply(this,arguments);try{const m=mp();if(!m||!m.on||!m.T||performance.now()-m.Tat>120||pnOpen||menuOpen||typeof mpVis!=='function')return out;
     const u=Math.max(2,Math.round(Math.min(W,H)/160)),sz=Math.round(5*u),cs=Math.max(1,Math.round(u*.7)),fc=Math.max(1,Math.round(cs*.85)),T=m.T,fr=FL[Math.floor(performance.now()/260)%2];
     g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;g.font='700 '+sz+'px '+PF;
     const one=(x,y,name,uidx)=>{if(!name||!active(uidx))return;const p=T.transformPoint({x,y:y-27});const tw=g.measureText(name).width;const og=!!(m.og&&m.og[uidx]);
      const left=p.x-tw/2-u-(og?9*cs+u:0)-9*fc;g.drawImage(fr,Math.round(left),Math.round(p.y-sz*.75-(11*fc-7*cs)),9*fc,11*fc)};
     for(const r of mpVis())one(r.x,r.y,r.n,r.uid);
     if(m.selfName&&!dead&&m.user)one(P.x,P.y,myNm(),m.user.uid);
-    g.restore()}catch(e){window.__pfErr=String(e&&e.stack||e)}return out}}
+    g.restore()}catch(e){window.__pfErr=String(e&&e.stack||e)}return out})}
  // chat lines
  {const lst=document.getElementById('mpl');if(lst)new MutationObserver(ms=>{for(const mu of ms)for(const n of mu.addedNodes){if(!(n instanceof HTMLElement))continue;
    for(const b of n.matches&&n.matches('b.nm[data-u]')?[n]:n.querySelectorAll?n.querySelectorAll('b.nm[data-u]'):[]){const u2=b.dataset.u;if(u2&&active(u2)&&!(b.previousSibling&&b.previousSibling.className==='sqpf'))b.before(flameImg())}}}).observe(lst,{childList:true,subtree:true})}

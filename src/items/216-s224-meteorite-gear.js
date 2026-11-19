@@ -82,7 +82,7 @@
       for(let k=0;k<36;k++){const a=k/36*6.283;part(f.x,f.y-4,Math.cos(a)*(90+Math.random()*80),Math.sin(a)*(60+Math.random()*60)-30,.7,['#ff70c0','#ffb060','#8a60e0','#ffe0a0'][k%4],40,2)}
       if(f.own){const dmg=spellDmg('meteor')*3;for(const n of en.slice()){if(n.dead||n.hp<=0||n._rp)continue;if(Math.hypot(n.x-f.x,(n.y-f.y)*1.3)<48)spellHit({el:'meteor',sc,sub:1},n,dmg)}try{if(typeof rumble==='function')rumble(400,1,.8)}catch(e){}}}}}
    for(let i=FALLS.length-1;i>=0;i--)if(FALLS[i].t>FALLS[i].life)FALLS.splice(i,1);return out})}
- {const _dh=drawHUD;drawHUD=function(){if(FALLS.length&&!menuOpen){const cx=camX(),cy=camY(),sc=curScene();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{const tm=performance.now()/1000;
+ {SQHUD.before('216',()=>{if(FALLS.length&&!menuOpen){const cx=camX(),cy=camY(),sc=curScene();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{const tm=performance.now()/1000;
    for(const f of FALLS){if(f.sc!==sc)continue;if(f.t<f.fall){const p=f.t/f.fall,hx=f.x+70*(1-p),hy=f.y-150*(1-p);
      // shadow growing on the ground
      g.globalAlpha=.25+.35*p;Rg(Math.round(f.x-6*p-2),Math.round(f.y-1),Math.round(12*p+4),2,'#000000');g.globalAlpha=1;
@@ -90,7 +90,7 @@
      Rg(Math.round(hx)-4,Math.round(hy)-4,8,8,'#120e14');Rg(Math.round(hx)-3,Math.round(hy)-4,6,6,'#4a4058');Rg(Math.round(hx)-1,Math.round(hy)-2,2,2,'#ff70c0');Rg(Math.round(hx)+1,Math.round(hy),2,1,'#ffb060');Rg(Math.round(hx)-3,Math.round(hy)+1,1,1,'#70e8ff')}
     else{const p=(f.t-f.fall)/(f.life-f.fall),r=8+p*44;g.globalAlpha=Math.max(0,1-p);
      for(let k=0;k<32;k++){const a=k/32*6.283;Rg(Math.round(f.x+Math.cos(a)*r)-1,Math.round(f.y-2+Math.sin(a)*r*.6)-1,2,2,k%2?'#ff70c0':'#ffe0a0')}
-     if(p<.35){g.globalAlpha=(.35-p)*2;g.fillStyle='#fff4d8';g.beginPath();g.arc(f.x,f.y-4,10+p*40,0,6.283);g.fill()}g.globalAlpha=1}}}catch(e){}g.restore()}return _dh.apply(this,arguments)}}
+     if(p<.35){g.globalAlpha=(.35-p)*2;g.fillStyle='#fff4d8';g.beginPath();g.arc(f.x,f.y-4,10+p*40,0,6.283);g.fill()}g.globalAlpha=1}}}catch(e){}g.restore()}})}
  // ---- icons ----
  {const _ic=iconURL;iconURL=function(k,col){if(k!=='wmeteor'&&k!==MA)return _ic.apply(this,arguments);const key='g224'+k;if(ICONC[key])return ICONC[key];
    const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};

@@ -135,13 +135,13 @@ function drawCrosshair(tm){if(!GPON||!TL.bow||!aimLive()||dead||ROLLT>0)return;i
  g.globalAlpha=Math.min(1,1.2-(performance.now()-AIM.t)/1000);for(const[a,b,w,hh]of[[-k-2,-1,3,3],[k,-1,3,3],[-1,-k-2,3,3],[-1,k,3,3]]){Rg(x+a-1,y+b-1,w+2,hh+2,O)}
  Rg(x-k-2,y,3,1,c);Rg(x+k,y,3,1,c);Rg(x,y-k-2,1,3,c);Rg(x,y+k,1,3,c);Rg(x,y,1,1,c);g.globalAlpha=1}
 // crosshair goes on top of the night tint so it stays easy to see
-const _dh25=drawHUD;drawHUD=function(){if(GPON&&!menuOpen){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);drawCrosshair(performance.now()/1000);g.restore()}_dh25()};
+SQHUD.before('023',()=>{if(GPON&&!menuOpen){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);drawCrosshair(performance.now()/1000);g.restore()}});
 // shooting shows a drawn bow instead of the sword swing
 let BOWT=0,BOWD=[0,1];
-const _pP25=pP;pP=function(tm){if(BOWT<=0)return _pP25(tm);const sw=swing;swing=0;_pP25(tm);swing=sw;if(hurt>0&&Math.floor(tm*20)%2)return;
+SQPP.wrap('023',_pP25=>function(tm){if(BOWT<=0)return _pP25(tm);const sw=swing;swing=0;_pP25(tm);swing=sw;if(hurt>0&&Math.floor(tm*20)%2)return;
  const[dx,dy]=BOWD,px=-dy,py=dx,cx=P.x+dx*10,cy=P.y-5+dy*8,dr=(BOWT>.2?2:0),pts=[];
  for(let t=-6;t<=6;t++){const k=t*t/9;pts.push([Math.round(cx+px*t-dx*k),Math.round(cy+py*t-dy*k)])}
  for(const[x,y]of pts)Rg(x-1,y-1,4,4,O);for(let t=-5;t<=5;t++){const k=36/9+dr-Math.abs(t)*dr/5;Rg(Math.round(cx+px*t-dx*k),Math.round(cy+py*t-dy*k),1,1,'#f0f0f0')}
- for(const[x,y]of pts)Rg(x,y,2,2,'#a86830');Rg(pts[6][0],pts[6][1],2,2,'#7a4a20')};
+ for(const[x,y]of pts)Rg(x,y,2,2,'#a86830');Rg(pts[6][0],pts[6][1],2,2,'#7a4a20')});
 SQUPD.after('023',(dt)=>{BOWT=Math.max(0,BOWT-dt)});
 SQUPD.wrap('023',_u23=>function(dt){pollPad(dt);const hp0=P.hp;_u23(dt);if(GPON){if(GPAX.aim&&ROLLT<=0&&!pnOpen)face=GPAX.aim;const sm=tk.querySelector('small');if(sm&&sm.textContent!=='✕')sm.textContent='✕';else if(!sm&&tk.style.display!=='none')tk.insertAdjacentHTML('beforeend','<small>✕</small>')}if(GPON&&P.hp<hp0)rumble(140,.7,.4);if(GPON&&dead&&GPHP>0)rumble(400,1,1);GPHP=dead?0:P.hp});

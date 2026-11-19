@@ -52,7 +52,7 @@ function drawMini52(){const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.
  else{for(const d of DUNGEON_REG)if(d.on)m(d.x,d.y,'#2a1a10',3),m(d.x,d.y,'#e8b048',1.6);for(const p of HARBOR_POSTS)m(p.x,p.y,'#58d8ff',2.4);
   const V=VQ();if((performance.now()/350|0)%2)for(const q of VOYS)if(V[q.id]===1){const tg=q.buoy?BUOYS[q.buoy]:q.cairn?CAIRN:null;if(tg)m(tg.x,tg.y,'#f83030',2.4)}}
  if(!t.fake){const px=P.x/16-.5,py=P.y/16-.5;m(px,py,'#000',4.2);m(px,py,(performance.now()/300|0)%2?'#ff4060':'#ffffff',3)}g.restore()}
-const _dh52=drawHUD;drawHUD=function(){drawMini52();_dh52()};   // under the rest of the HUD: the message box always stays on top
+SQHUD.before('052',()=>{drawMini52();});   // under the rest of the HUD: the message box always stays on top
 // --- the WORLD view ---
 let MAPVIEW='local',WSEL=null;const WM={W:300,H:300,s:.45};
 const WM_POS={hollow:[150,150],briarwood:[44,146],ashfall:[256,146],ironcrest:[150,44],shattered:[150,256]};   // centres, laid out as the chart in the plan

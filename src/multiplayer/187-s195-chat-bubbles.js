@@ -13,10 +13,10 @@
    const t=cur?cur+' '+w:w;if(g.measureText(t).width<=maxW)cur=t;else{if(cur)L.push(cur);cur=w}}if(cur)L.push(cur);
   if(L.length>MAXL){L.length=MAXL;let s=L[MAXL-1];while(s.length>1&&g.measureText(s+'…').width>maxW)s=s.slice(0,-1);L[MAXL-1]=s+'…'}return L}
  function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.lineTo(x+w-r,y);g.quadraticCurveTo(x+w,y,x+w,y+r);g.lineTo(x+w,y+h-r);g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);g.lineTo(x+r,y+h);g.quadraticCurveTo(x,y+h,x,y+h-r);g.lineTo(x,y+r);g.quadraticCurveTo(x,y,x+r,y);g.closePath()}
- const _dh=drawHUD;drawHUD=function(){const M=window.SQMP;if(!M||!M.on){return _dh.apply(this,arguments)}
+ SQHUD.wrap('187',_dh=>function(){const M=window.SQMP;if(!M||!M.on){return _dh.apply(this,arguments)}
   const hid=[];for(const r of M.players.values())if(r.said){hid.push([r,r.said]);r.said=null}const ss=M.selfSaid;M.selfSaid=null;
   let out;try{out=_dh.apply(this,arguments)}finally{for(const[r,s]of hid)r.said=s;M.selfSaid=ss}
-  try{draw(M,ss)}catch(e){}return out};
+  try{draw(M,ss)}catch(e){}return out});
  function draw(M,ss){const st=SQBUBBLES.last={n:0,overlap:false,dots:0};if(!M.T||performance.now()-M.Tat>120||pnOpen||menuOpen)return;const now=performance.now(),T=M.T;
   const u=Math.max(2,Math.round(Math.min(W,H)/160)),sz=Math.round(5*u),phone=!isPC||Math.min(W,H)<700*(window.devicePixelRatio||1);
   const list=[];const add=(x,y,said,named,who)=>{if(!said||!said.m)return;const age=now-said.at,d=dur(said.m);if(age<0||age>d)return;const p=T.transformPoint({x,y:y-27});

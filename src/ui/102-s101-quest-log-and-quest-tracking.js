@@ -98,18 +98,12 @@
   return e&&e.area&&e.area!==par?'on '+isl(e.area):''}
  // ---------- the HUD line and the arrow ----------
  {const _hl=hudLayout;hudLayout=function(){const L=_hl();L.cy+=16*L.U;L.stackBottom+=16*L.U;return L}}
- const _dh=drawHUD;drawHUD=function(){_dh();if(menuOpen||typeof HUDL==='undefined'||!HUDL)return;refresh();const e=TGE,L=HUDL,{U,ins,qy,qw}=L;if(!e&&TRK==='none')return;
-  g.save();g.setTransform(1,0,0,1,0,0);g.shadowBlur=0;
-  const t1=e?(e.st==='avail'?'! New: ':'')+e.name:'All quests complete!',wh=e?where(e,TGT):'',t2=e?(e.step||'')+(e.prog&&!e.ready?' ('+e.prog+')':'')+(wh?' · '+wh:''):'';
-  g3box(ins,qy,qw,42*U,U,'#f8f0d8');g.font='700 '+11*U+'px '+PF;g3text(fitText(t1,qw-22*U),ins+11*U,qy+12*U,11,U,e&&e.st==='avail'?'#b06010':'#3058c8','left',700);
-  g.font='600 '+11*U+'px '+PF;g3text(fitText(t2,qw-22*U),ins+11*U,qy+28*U,11,U,e&&e.ready?'#2f8a3a':'#404040','left',600);
-  const t=TGT;if(t&&t.x!=null&&t.area===curArea()&&!dead&&!(typeof pnOpen!=='undefined'&&pnOpen)){const sx=W/2+(t.x-P.x)*Z,sy=H/2+(t.y-P.y)*Z,m=44*U,tm=performance.now()/1000,dist=Math.round(Math.hypot(t.x-P.x,t.y-P.y)/16);
+ SQHUD.after('102',()=>{if(menuOpen||typeof HUDL==='undefined'||!HUDL)return;refresh();const e=TGE,L=HUDL,{U,ins,qy,qw}=L;if(!e&&TRK==='none')return;g.save();g.setTransform(1,0,0,1,0,0);g.shadowBlur=0;const t1=e?(e.st==='avail'?'! New: ':'')+e.name:'All quests complete!',wh=e?where(e,TGT):'',t2=e?(e.step||'')+(e.prog&&!e.ready?' ('+e.prog+')':'')+(wh?' · '+wh:''):'';g3box(ins,qy,qw,42*U,U,'#f8f0d8');g.font='700 '+11*U+'px '+PF;g3text(fitText(t1,qw-22*U),ins+11*U,qy+12*U,11,U,e&&e.st==='avail'?'#b06010':'#3058c8','left',700);g.font='600 '+11*U+'px '+PF;g3text(fitText(t2,qw-22*U),ins+11*U,qy+28*U,11,U,e&&e.ready?'#2f8a3a':'#404040','left',600);const t=TGT;if(t&&t.x!=null&&t.area===curArea()&&!dead&&!(typeof pnOpen!=='undefined'&&pnOpen)){const sx=W/2+(t.x-P.x)*Z,sy=H/2+(t.y-P.y)*Z,m=44*U,tm=performance.now()/1000,dist=Math.round(Math.hypot(t.x-P.x,t.y-P.y)/16);
    const col='#f8d048',drawTri=(x,y,an,s)=>{g.save();g.translate(x,y);g.rotate(an);g.beginPath();g.moveTo(s,0);g.lineTo(-s*.7,-s*.75);g.lineTo(-s*.35,0);g.lineTo(-s*.7,s*.75);g.closePath();g.lineWidth=3*U;g.strokeStyle='#302818';g.stroke();g.fillStyle=col;g.fill();g.restore()};
    if(sx>m&&sx<W-m&&sy>m+40*U&&sy<H-m&&dist>1){{const by=sy-(t.mob?26:22)*Z-Math.abs(Math.sin(tm*4))*5*U;drawTri(sx,by,Math.PI/2,9*U)}}
    if(dist>3){// an arrow circling you, pointing the way
     const an=Math.atan2(t.y-P.y,t.x-P.x),cx=W/2,cy=H/2-6*Z,r=26*Z,ax=cx+Math.cos(an)*r,ay=cy+Math.sin(an)*r*.8;drawTri(ax,ay,an,Math.max(7*U,3.2*Z)+Math.sin(tm*5)*U);
-    g.font='700 '+11*U+'px '+PF;g.textAlign='center';g.textBaseline='middle';const lx=cx+Math.cos(an)*(r+14*U+3*Z),ly=cy+Math.sin(an)*(r*.8+10*U+2*Z);g.lineWidth=3*U;g.strokeStyle='#302818';g.strokeText(dist+'m',lx,ly);g.fillStyle='#f8f0d8';g.fillText(dist+'m',lx,ly)}}
-  g.restore()};
+    g.font='700 '+11*U+'px '+PF;g.textAlign='center';g.textBaseline='middle';const lx=cx+Math.cos(an)*(r+14*U+3*Z),ly=cy+Math.sin(an)*(r*.8+10*U+2*Z);g.lineWidth=3*U;g.strokeStyle='#302818';g.strokeText(dist+'m',lx,ly);g.fillStyle='#f8f0d8';g.fillText(dist+'m',lx,ly)}}g.restore()});
  // ---------- the map marks the spot ----------
  {const _dm=drawMap;drawMap=function(){_dm();try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return;refresh();const t=TGT;if(!t||t.x==null)return;const c=document.getElementById('mpc');if(!c)return;
    const R=SCENE&&SCENE.room,area=R&&R.region?R.region:SCENE?null:'hollow';if(t.area!==area)return;const x=c.getContext('2d'),tx=t.x/16,ty=t.y/16,ph=(performance.now()/350)%2<1;

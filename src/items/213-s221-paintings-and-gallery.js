@@ -86,11 +86,11 @@
   if(SCENE.id==='gallery'){for(const it of R.items){if(it.t!=='_ptw'&&it.t!=='_pte'||!it.pid)continue;const w=it.w||1;if(x>=it.x&&x<it.x+w&&(it.t==='_ptw'?y<=1:y===it.y))return it.pid}return null}
   const h=SCENE.house;if(!h||!h.furn)return null;const wx=facingWall();if(wx>=0){const f=h.furn.get(2*R.w+wx);if(f&&/^pw_/.test(f.t))return idOf(f.t)}
   const f=h.furn.get(y*R.w+x);if(f&&/^pt_/.test(f.t))return idOf(f.t);return null}
- {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{if(pnOpen||menuOpen||dead||!SCENE)return out;const id=facedPainting();if(!id)return out;
+ {SQHUD.wrap('213',_dh=>function(){const out=_dh.apply(this,arguments);try{if(pnOpen||menuOpen||dead||!SCENE)return out;const id=facedPainting();if(!id)return out;
     const u=Math.max(2,Math.round(Math.min(W,H)/160)),fs=Math.round(5.5*u),t1='“'+nameOf(id)+'”',t2='by '+byOf(id);g.save();g.setTransform(1,0,0,1,0,0);g.font='700 '+fs+'px '+PF;
     const w=Math.max(g.measureText(t1).width,g.measureText(t2).width)+fs*1.6,hh=fs*3.2,x=Math.round(W/2-w/2),y=Math.round(H*.16);
     g.fillStyle='rgba(32,20,24,.88)';g.fillRect(x,y,w,hh);g.fillStyle=GOLD;g.fillRect(x,y,w,Math.max(2,u));g.fillRect(x,y+hh-Math.max(2,u),w,Math.max(2,u));
-    g.textAlign='center';g.textBaseline='middle';g.fillStyle='#f8ecd0';g.fillText(t1,W/2,y+hh*.36);g.font='500 '+Math.round(fs*.85)+'px '+PF;g.fillStyle='#e8c878';g.fillText(t2,W/2,y+hh*.7);g.restore()}catch(e){}return out}}
+    g.textAlign='center';g.textBaseline='middle';g.fillStyle='#f8ecd0';g.fillText(t1,W/2,y+hh*.36);g.font='500 '+Math.round(fs*.85)+'px '+PF;g.fillStyle='#e8c878';g.fillText(t2,W/2,y+hh*.7);g.restore()}catch(e){}return out})}
  // ---- the gallery building ----
  // Its spot: the developer's choice (library `places.gallery` {tx,ty}, set in Dev Suite > Art Room with "Put the gallery
  // where I'm standing") or else the nearest free spot inside the village (players can't build there). Moving it puts back

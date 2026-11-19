@@ -121,14 +121,14 @@ function drawSpells(tm){const sc=curScene();for(const s of SPELLS){if(s.sc!==sc)
 function drawWand(){if(CASTT<=0||!WAND)return;const[dx,dy]=CASTD,hx=P.x+dx*6,hy=P.y-5+dy*5,W2=WSP[WAND];for(let i=0;i<9;i++)Rg(Math.round(hx+dx*i)-1,Math.round(hy+dy*i)-1,3,3,O);
  for(let i=0;i<9;i++)Rg(Math.round(hx+dx*i),Math.round(hy+dy*i),1,1,'#7a4a20');const tx=Math.round(hx+dx*9),ty=Math.round(hy+dy*9);Rg(tx-1,ty-1,3,3,W2.col);Rg(tx,ty,1,1,'#fff');
  g.fillStyle='rgba(255,255,255,.25)';g.fillRect(tx-3,ty-3,7,7)}
-const _pP28=pP;pP=function(tm){const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');const sw=swing;if(tool||CASTT>0)swing=0;
+SQPP.wrap('028',_pP28=>function(tm){const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');const sw=swing;if(tool||CASTT>0)swing=0;
  const kneel=ACTN&&(ACTN.type==='plant'||ACTN.type==='harvest')&&ACTN.t/ACTN.dur<.7;if(kneel){g.save();g.translate(0,1)}try{_pP28(tm)}finally{swing=sw;if(kneel)g.restore()}
- if(hurt>0&&Math.floor(tm*20)%2)return;if(tool&&!SCENE)drawAct(tm);drawWand()};
+ if(hurt>0&&Math.floor(tm*20)%2)return;if(tool&&!SCENE)drawAct(tm);drawWand()});
 const _nd28=NEWDRAW;NEWDRAW=function(...a){_nd28(...a);if(!SCENE){drawSpells(a[8]);drawParts()}};
 const _dr28=drawRoom;drawRoom=function(tm){_dr28(tm);drawSpells(tm);drawParts()};
 // wand crosshair (controller)
-const _dh28=drawHUD;drawHUD=function(){if(typeof GPON!=='undefined'&&GPON&&WAND&&!menuOpen&&typeof aimLive==='function'&&aimLive()&&!dead){const cx=camX(),cy=camY(),[dx,dy]=castDir(),x=Math.round(P.x+dx*34),y=Math.round(P.y-4+dy*34),c=WSP[WAND].col;
-  g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);for(const[a,b]of[[-6,-1],[4,-1],[-1,-6],[-1,4]])Rg(x+a-1,y+b-1,5,5,O);Rg(x-6,y,3,1,c);Rg(x+4,y,3,1,c);Rg(x,y-6,1,3,c);Rg(x,y+4,1,3,c);Rg(x,y,1,1,c);g.restore()}_dh28()};
+SQHUD.before('028',()=>{if(typeof GPON!=='undefined'&&GPON&&WAND&&!menuOpen&&typeof aimLive==='function'&&aimLive()&&!dead){const cx=camX(),cy=camY(),[dx,dy]=castDir(),x=Math.round(P.x+dx*34),y=Math.round(P.y-4+dy*34),c=WSP[WAND].col;
+  g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);for(const[a,b]of[[-6,-1],[4,-1],[-1,-6],[-1,4]])Rg(x+a-1,y+b-1,5,5,O);Rg(x-6,y,3,1,c);Rg(x+4,y,3,1,c);Rg(x,y-6,1,3,c);Rg(x,y+4,1,3,c);Rg(x,y,1,1,c);g.restore()}});
 // --- update: mana, spells, particles, effects, upgrade watcher ---
 SQUPD.wrap('028',_u28=>function(dt){watchUpgrades();const paused=menuOpen||pnOpen;
  const slowed=paused?null:en.filter(n=>n.slow>0).map(n=>[n,n.x,n.y]);_u28(dt);if(paused)return;
@@ -206,7 +206,6 @@ function wizOverlay(ox,oy,dir,st,fl){const C=GC;if(!C)return;const R=(a,b,w,hh,c
   rows.forEach(([a,w],i)=>{const y=-16-i+by,xo=Math.round(i*i*t/14);R(a+xo,y,w,1,i===1?GDc:P1);if(w>3)R(a+xo,y,1,1,P3)});
   const tx=-1+Math.round(49*t/14)+(t?2*t:0);R(tx-1,-24+by,3,2,O);R(tx,-24+by,1,1,P1);R(tx+(t||1),-24+by,1,1,P1);
   if(dir!==1){R(-3+Math.round(9*t/14),-18+by,1,1,GDc);R(1,-20+by,1,1,'#fff8c0')}}}
-const _pPw=pP;pP=function(tm){_pPw(tm);if(!(CLS.helm==='m'||CLS.body==='m')||SCENE&&false)return;if(hurt>0&&Math.floor(tm*20)%2)return;if(typeof SAILING!=='undefined'&&SAILING)return;
- const st=qm?[1,0,2,0][Math.floor(qW)%4]:0,dir=face[0]?2:face[1]<0?1:0;GC=g;wizOverlay(Math.round(P.x),Math.round(P.y)+(ACTN&&(ACTN.type==='plant'||ACTN.type==='harvest')&&ACTN.t/ACTN.dur<.7?1:0),dir,st,face[0]<0)};
+SQPP.after('028',(tm)=>{if(!(CLS.helm==='m'||CLS.body==='m')||SCENE&&false)return;if(hurt>0&&Math.floor(tm*20)%2)return;if(typeof SAILING!=='undefined'&&SAILING)return;const st=qm?[1,0,2,0][Math.floor(qW)%4]:0,dir=face[0]?2:face[1]<0?1:0;GC=g;wizOverlay(Math.round(P.x),Math.round(P.y)+(ACTN&&(ACTN.type==='plant'||ACTN.type==='harvest')&&ACTN.t/ACTN.dur<.7?1:0),dir,st,face[0]<0)});
 const _dcs=drawCardSprite;drawCardSprite=function(){_dcs();const c=document.getElementById('tcs');if(c&&(CLS.helm==='m'||CLS.body==='m')){GC=c.getContext('2d');wizOverlay(16,29,0,0,false)}};
 

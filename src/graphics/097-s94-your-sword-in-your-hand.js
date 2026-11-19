@@ -28,7 +28,7 @@
   if(t===9)hammer(hx,hy,an);else blade(hx,hy,an,t);
   // the swoosh trail behind the blade
   const tc=S&&S[8]?'rgba('+S[8]+',.9)':'#ffffff',reach=(S?S[6]:12)+3;for(let k=1;k<=4;k++){const q=an-k*.22*(pr<.98?1:0);if(q<a-1.2)break;const tx=hx+Math.cos(q)*reach,ty=hy+Math.sin(q)*reach;Rg(Math.round(tx),Math.round(ty),k<3?2:1,k<3?2:1,k<2?tc:'#c8e8ff')}};
- {const _pp=pP;pP=function(tm){const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
+ {SQPP.wrap('097',_pp=>function(tm){const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
    if(!(swing>0)||dead||tool||CASTT>0||BOWT>0||(window.SQDF&&SQDF.on)||(typeof SAILING!=='undefined'&&SAILING)||(window.SQRSAIL&&SQRSAIL.on))return _pp(tm);
    const sw=swing;if(!pP._d0)pP._d0=sw;swing=0;try{_pp(tm)}finally{swing=sw}if(hurt>0&&Math.floor(tm*20)%2)return;
-   const t=(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0);SQSWING(P.x,P.y,face[0],face[1],1-sw/.25,t,tm)}}}
+   const t=(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0);SQSWING(P.x,P.y,face[0],face[1],1-sw/.25,t,tm)})}}

@@ -23,5 +23,5 @@ function drawFx(){const sc=curScene();for(const d of DUST){if(d.sc!==sc)continue
  for(const d of DMGS){if(d.sc!==sc)continue;g.globalAlpha=Math.max(0,1-d.t/.9);const y=Math.round(d.y-d.t*16);g.strokeStyle='#181018';g.strokeText(d.v,Math.round(d.x),y);g.fillStyle=d.c;g.fillText(d.v,Math.round(d.x),y)}g.restore()}
 const _nd15=NEWDRAW;NEWDRAW=function(...a){_nd15(...a);if(!SCENE)drawFx()};
 const _dr15=drawRoom;drawRoom=function(tm){_dr15(tm);drawFx()};
-const _dh15=drawHUD;drawHUD=function(){if(FLASH>0){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(240,40,40,'+(FLASH*.5)+')';g.fillRect(0,0,W,H);g.restore()}_dh15()};
+SQHUD.before('015',()=>{if(FLASH>0){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(240,40,40,'+(FLASH*.5)+')';g.fillRect(0,0,W,H);g.restore()}});
 hp.innerHTML=hp.innerHTML.replace('WASD / arrows: move','WASD / arrows: move<br>Shift: sprint');

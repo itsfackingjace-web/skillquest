@@ -33,7 +33,12 @@
   **HIT** (`window.SQHIT`, created in 006 right after `sqSteps`, base = 004's `attack`): 58 steps named after their
   section (mostly wrap steps: most take over HIT in one situation or lend/hide something for the call). **Never reassign `attack`**; add a
   step (`SQHIT.wrap('<file no> <what>', next=>function(){...})`) and a word in 118 when it's a new situation.
-  `upd`, `pP`, `drawHUD` are still wrapper chains; `tools/refactor/` has the converters and the before/after comparisons.
+  **UPD** (`window.SQUPD`, created at the end of 001 right after its `upd`): 142 steps, every frame. **HUD** (`window.SQHUD`, end of 010,
+  base = 010's `drawHUD`): 38 steps. **Player drawing** (`window.SQPP`, end of 003, base = 003's `pP`): 31 steps. **Never reassign `upd`,
+  `drawHUD` or `pP`**; add a step (`SQUPD.after('<file no> <what>', dt=>{...})`, or `.wrap` when it must run before/around the frame or skip it).
+  The steps keep the names of the sections that made them, so `SQUPD.list()` shows what runs each frame, in order. `solid` is still a
+  wrapper chain (012 calls its saved inner `_sol12` elsewhere, so it can't be converted without changing behaviour).
+  `tools/refactor/` has the converters and the before/after comparisons (`compare-frames.cjs` for anything that runs every frame).
 - Firebase rules are in `database.rules.json` and must be published in the Firebase console when they change.
 - **Every update to the game must add a patch note, and there is one patch note entry per day.** In `PATCH_NOTES`
   (`src/data/074-patch-notes.js`): if the top entry is today's, add your bullets to it (new features first, then "Fixed: ..."

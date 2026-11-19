@@ -32,7 +32,7 @@ const AC3=['#9a6438','#b8c0c8','#6c84b0'],HB=OPT.hatc.length,SB=OPT.shirt.length
 OPT.hatc.push(...AC3);OPT.shirt.push(...AC3);OPT.pants.push(...AC3.map(c=>sh2(c,.85)));
 const armorPts=()=>ARM.helm+ARM.body+ARM.legs,blockCh=()=>Math.min(typeof blockCap==='function'?blockCap():.6,armorPts()*.05+lvOf(8)*.004+(typeof blockBonus==='function'?blockBonus():0));
 function gearCH(){const c={...CH};if(ARM.helm){c.ht=2;c.hcol=HB+ARM.helm-1}if(ARM.body)c.sh=SB+ARM.body-1;if(ARM.legs)c.pn=PB+ARM.legs-1;return c}
-const _pP5=pP;pP=function(tm){const c0=CH;CH=gearCH();try{_pP5(tm)}finally{CH=c0}};
+SQPP.wrap('006',_pP5=>function(tm){const c0=CH;CH=gearCH();try{_pP5(tm)}finally{CH=c0}});
 // --- sound (WebAudio chiptune) ---
 let ACX=null;
 function ac(){if(!ACX){try{ACX=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}try{if(ACX.state=='suspended')ACX.resume()}catch(e){}return ACX}

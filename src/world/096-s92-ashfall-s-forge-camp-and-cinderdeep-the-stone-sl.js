@@ -90,10 +90,10 @@ try{KNOWN49.add('sld');KNOWN49.add('emd')}catch(e){}
   for(let i=0;i<9;i++){r(3+i,12-i,2,2,'#302010')}for(let i=0;i<8;i++)r(4+i,11-i,1,1,'#a87038');r(5,1,8,6,'#302010');r(6,2,6,4,'#9a9284');r(6,2,6,1,'#c8c0b0');r(6,5,6,1,'#6a645c');r(8,3,1,1,'#5a8a3a');r(10,4,1,1,'#6a645c');return IC=c.toDataURL()};
  const _ic=iconURL;iconURL=function(k,col){if(k==='eq_sledge')return pic();return _ic(k,col)};if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return k==='eq_sledge'?pic():_ei(k)}}}
 // swinging it: a stone hammer instead of a blade
-{const _pp=pP;pP=function(tm){if(!SLEDGE||!(swing>0)||dead||(window.SQDF&&SQDF.on))return _pp(tm);const sw=swing;swing=0;try{_pp(tm)}finally{swing=sw}
+{SQPP.wrap('096',_pp=>function(tm){if(!SLEDGE||!(swing>0)||dead||(window.SQDF&&SQDF.on))return _pp(tm);const sw=swing;swing=0;try{_pp(tm)}finally{swing=sw}
   if(hurt>0&&Math.floor(tm*20)%2)return;const fx=face[0],fy=face[1],a=Math.atan2(fy,fx),pr=1-swing/.25,an=a+(pr-.5)*2.2,hx=Math.round(P.x+fx*4),hy=Math.round(P.y-4+fy*4);
   for(let i=2;i<=11;i++)Rg(hx+Math.cos(an)*i-1,hy+Math.sin(an)*i-1,3,3,K);for(let i=2;i<=11;i++)Rg(hx+Math.cos(an)*i,hy+Math.sin(an)*i,1,1,'#a87038');
-  const ex=Math.round(hx+Math.cos(an)*13),ey=Math.round(hy+Math.sin(an)*13);Rg(ex-5,ey-4,10,8,K);Rg(ex-4,ey-3,8,6,'#9a9284');Rg(ex-4,ey-3,8,1,'#c8c0b0');Rg(ex-4,ey+2,8,1,'#6a645c');Rg(ex-1,ey-1,2,1,'#5a8a3a')}}
+  const ex=Math.round(hx+Math.cos(an)*13),ey=Math.round(hy+Math.sin(an)*13);Rg(ex-5,ey-4,10,8,K);Rg(ex-4,ey-3,8,6,'#9a9284');Rg(ex-4,ey-3,8,1,'#c8c0b0');Rg(ex-4,ey+2,8,1,'#6a645c');Rg(ex-1,ey-1,2,1,'#5a8a3a')})}
 // GROUND SLAM (the ultimate while you hold it)
 function slamDmg(){return 12+Math.floor(lvOf(0)/3)+Math.floor(lvOf(2)/10)+(typeof meleeBonus==='function'?meleeBonus():0)}
 {const _cu=castUlt;castUlt=function(){if(!SLEDGE)return _cu();if(dead||menuOpen||pnOpen||BUILD)return;
@@ -105,8 +105,8 @@ function slamDmg(){return 12+Math.floor(lvOf(0)/3)+Math.floor(lvOf(2)/10)+(typeo
   if(n0)addXp(0,n0*20);say(n0?'GROUND SLAM! '+n0+' hit.':'GROUND SLAM!');try{sfx('mine');setTimeout(()=>sfx('mine'),70);if(typeof rumble==='function')rumble(350,1,.7)}catch(e){}
   if(typeof FLASH!=='undefined')FLASH=.12;for(let k=0;k<40;k++){const an=k/40*6.283,sp=80+Math.random()*70;part(P.x,P.y+4,Math.cos(an)*sp,Math.sin(an)*sp*.6-20,.5+Math.random()*.2,k%3?'#9a8a78':'#c8b8a0',120,2)}}}
 {SQUPD.after('096',(dt)=>{if(SLAM.cd>0&&!menuOpen&&!pnOpen)SLAM.cd=Math.max(0,SLAM.cd-dt);if(SLAM.t>0)SLAM.t=Math.max(0,SLAM.t-dt)})}
-{const _pp=pP;pP=function(tm){if(SLAM.t>0){const p=1-SLAM.t/.55,r=SLAM.R*Math.min(1,p*1.6);g.strokeStyle='rgba(232,208,160,'+(.75*(1-p))+')';g.lineWidth=3;g.beginPath();g.ellipse(SLAM.x,SLAM.y,r,r*.6,0,0,6.283);g.stroke();
-   g.strokeStyle='rgba(90,70,50,'+(.5*(1-p))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(SLAM.x,SLAM.y,r*.7,r*.42,0,0,6.283);g.stroke();for(let k=0;k<8;k++){const an=k/8*6.283+.3;Rg(SLAM.x+Math.cos(an)*r*.5,SLAM.y+Math.sin(an)*r*.3,2,1,'#3a2a1a')}}return _pp(tm)}}
+{SQPP.before('096',(tm)=>{if(SLAM.t>0){const p=1-SLAM.t/.55,r=SLAM.R*Math.min(1,p*1.6);g.strokeStyle='rgba(232,208,160,'+(.75*(1-p))+')';g.lineWidth=3;g.beginPath();g.ellipse(SLAM.x,SLAM.y,r,r*.6,0,0,6.283);g.stroke();
+   g.strokeStyle='rgba(90,70,50,'+(.5*(1-p))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(SLAM.x,SLAM.y,r*.7,r*.42,0,0,6.283);g.stroke();for(let k=0;k<8;k++){const an=k/8*6.283+.3;Rg(SLAM.x+Math.cos(an)*r*.5,SLAM.y+Math.sin(an)*r*.3,2,1,'#3a2a1a')}}})}
 // the ULT chip / button show SLAM and its cooldown
 {const _hl=hudLayout;hudLayout=function(){const L=_hl();if(!SLEDGE)return L;const t=SLAM.cd>0?'SLAM '+Math.ceil(SLAM.cd)+'s':'SLAM',i=L.chips.findIndex(c=>c[0]==='ult');if(i>=0)L.chips[i]=['ult',t];else{L.chips.push(['ult',t]);if(L.chips.length===1)L.stackBottom=L.cy+22*L.U}return L}}
 {const _ub=ubUpdate;ubUpdate=function(){if(!SLEDGE)return _ub();const show=!isPC&&!GPON&&!menuOpen&&!dead,lab=!show?'':SLAM.cd>0?'SLAM<small>'+Math.ceil(SLAM.cd)+'s</small>':'SLAM';

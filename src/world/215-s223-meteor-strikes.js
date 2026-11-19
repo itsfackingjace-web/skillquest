@@ -189,22 +189,22 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
  {const _gh=GROUNDHOOK;GROUNDHOOK=function(){if(_gh)_gh.apply(this,arguments);if(!SCENE)drawGround()}}
  if(typeof ROOMBG!=='undefined'){const _rb=ROOMBG;ROOMBG=function(R2){const out=_rb?_rb.apply(this,arguments):undefined;try{if(R2&&R2.region&&R2===ROOM())drawGround()}catch(e){}return out}}
  // veins and the core in front of you are drawn again over you
- {const _pp=pP;pP=function(){const out=_pp.apply(this,arguments);if(!active()||!onScreen())return out;const tm=performance.now()/1000;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
-   try{for(const o of order())if(o.y>P.y+2&&Math.abs(o.y-P.y)<30)o.f(tm)}catch(e){}g.restore();return out}}
+ {SQPP.wrap('215',_pp=>function(){const out=_pp.apply(this,arguments);if(!active()||!onScreen())return out;const tm=performance.now()/1000;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;
+   try{for(const o of order())if(o.y>P.y+2&&Math.abs(o.y-P.y)<30)o.f(tm)}catch(e){}g.restore();return out})}
  // sky streak, impact flash and ring, smoke (screen space, over the world)
  function fireball(hx,hy,dx,dy,u,len){const cols=['#fff8d0','#ffe060','#ffa020','#f05818','#c02810','#702018','#504048','#383038'];
   for(let i=len;i>=0;i--){const k=Math.min(cols.length-1,Math.floor(i/len*cols.length)),w=Math.max(1,Math.round((1-i/len)*4+1)),jx=((i*7)%3-1)*.6,jy=((i*5)%3-1)*.6;
    for(let a=0;a<w;a++)for(let b=0;b<w;b++)px(hx-dx*i*u*1.1+(a-w/2+jx)*u,hy-dy*i*u*1.1+(b-w/2+jy)*u,cols[k],u)}
   for(let a=-2;a<=2;a++)for(let b=-2;b<=2;b++)if(a*a+b*b<=5)px(hx+a*u,hy+b*u,a*a+b*b<=1?'#ffffff':a*a+b*b<=2?'#fff8a0':'#ffc030',u)}
  let SHOOK='';
- {const _dh=drawHUD;drawHUD=function(){if(here()&&!dead){g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;try{const tm=performance.now()/1000;
+ {SQHUD.before('215',()=>{if(here()&&!dead){g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;try{const tm=performance.now()/1000;
    if(CUR.phase==='warn'&&CUR.left<10000){const p=1-CUR.left/10000,u=Math.max(2,Math.round(Z*1.1)),cx0=sx(CUR.x),cy0=sy(CUR.y),onS=cx0>0&&cx0<W&&cy0>0&&cy0<H,vx=cx0-W/2,vy=cy0-H/2,vl=Math.hypot(vx,vy)||1,ux=vx/vl,uy=vy/vl,ed=Math.min(W/2/Math.max(.01,Math.abs(ux)),H/2/Math.max(.01,Math.abs(uy)))*1.05,tx=onS?cx0:W/2+ux*ed,ty=onS?cy0:H/2+uy*ed,st={x:W/2-ux*W*.55,y:-H*.08};
     g.fillStyle='rgba(255,110,30,'+(.1+.2*p).toFixed(3)+')';g.fillRect(0,0,W,H);const hx=st.x+(tx-st.x)*p,hy=st.y+(ty-st.y)*p,d=Math.hypot(tx-st.x,ty-st.y);fireball(hx,hy,(tx-st.x)/d,(ty-st.y)/d,u,Math.round(20+40*p))}
    if(CUR.since>=0&&CUR.since<1600&&onScreen()){const k=CUR.since/1600;g.fillStyle='rgba(255,250,235,'+(.5*(1-k)).toFixed(3)+')';g.fillRect(0,0,W,H);const r=20+k*110,n=60;
     g.fillStyle='rgba(255,230,180,'+(1-k).toFixed(3)+')';for(let i=0;i<n;i++){const a=i/n*6.283;g.fillRect(Math.round(sx(CUR.x+Math.cos(a)*r)),Math.round(sy(CUR.y+Math.sin(a)*r*.55)),Z*2,Z*2)}
     if(SHOOK!==CUR.s.id){SHOOK=CUR.s.id;try{shakeScreen(8)}catch(e){}knock()}}
    if(CUR.phase==='hot'&&onScreen())for(let i=0;i<7;i++){const ph=(tm*.35+i/7)%1,X=sx(CUR.x-2+Math.sin(i*2.1+tm)*4+ph*10),Y=sy(CUR.y-18-ph*60),s=Math.round(Z*(3+ph*5));g.fillStyle='rgba(90,84,96,'+(.55*(1-ph)).toFixed(3)+')';g.fillRect(Math.round(X-s/2),Math.round(Y-s/2),s,s)}
-  }catch(e){}g.restore()}return _dh.apply(this,arguments)}}
+  }catch(e){}g.restore()}})}
  // knocked back from the landing spot, and never left inside a vein or the core
  function knock(){if(!here())return;const d=Math.hypot(P.x-CUR.x,(P.y-CUR.y)*1.8);if(d>RX+10)return;const a=Math.atan2(P.y-CUR.y,P.x-CUR.x)||Math.PI/2;
   for(let r=RX+14;r<RX+140;r+=8){const x=CUR.x+Math.cos(a)*r,y=CUR.y+Math.sin(a)*r*.6;if(!solid(x,y)){P.x=x;P.y=y;return}}}

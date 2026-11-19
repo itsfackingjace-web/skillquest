@@ -26,12 +26,11 @@
     return '<br>'+esc(nm)+(out?' (outside the entrance)':inside?' (inside, by the door)':'')+' · crumbles in '+left+' min'}).join('');
    return h+'<div class="qc" style="margin-top:8px"><b>Your grave'+(M.length>1?'s':'')+'</b><small>'+rows+'</small></div>'}}
  // an arrow at the side of the screen pointing to your grave (same area, not on screen)
- {const _dh=drawHUD;drawHUD=function(){_dh();if(dead||menuOpen||pnOpen||window.SQTS&&SQTS.open)return;const R=SCENE&&SCENE.room;if(SCENE&&!(R&&R.region))return;const area=curRegion();
-   for(const o of mine()){if(o.w.ar!==area)continue;const dx=o.w.x-P.x,dy=o.w.y-P.y;if(Math.abs(dx)*Z<W/2-20&&Math.abs(dy)*Z<H/2-20)continue;
+ {SQHUD.after('076',()=>{if(dead||menuOpen||pnOpen||window.SQTS&&SQTS.open)return;const R=SCENE&&SCENE.room;if(SCENE&&!(R&&R.region))return;const area=curRegion();for(const o of mine()){if(o.w.ar!==area)continue;const dx=o.w.x-P.x,dy=o.w.y-P.y;if(Math.abs(dx)*Z<W/2-20&&Math.abs(dy)*Z<H/2-20)continue;
     const a=Math.atan2(dy,dx),rx=Math.min(W,H)*.38,cx=W/2+Math.cos(a)*rx,cy=H/2+Math.sin(a)*rx*.85,u=Math.max(2,Math.round(Math.min(W,H)/200)),d=Math.hypot(dx,dy)/16;
     g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=.92;g.translate(Math.round(cx),Math.round(cy));
     g.save();g.rotate(a);g.fillStyle='#181018';g.beginPath();g.moveTo(14*u,0);g.lineTo(7*u,-5*u);g.lineTo(7*u,5*u);g.fill();g.fillStyle='#f8f8f8';g.beginPath();g.moveTo(12.5*u,0);g.lineTo(8*u,-3.5*u);g.lineTo(8*u,3.5*u);g.fill();g.restore();
     tomb(g,0,0,u,blink());g.font='700 '+(5*u)+'px '+PF;g.textAlign='center';g.textBaseline='top';g.lineWidth=u;g.strokeStyle='#181018';const txt=Math.round(d)+'m';g.strokeText(txt,0,5*u);g.fillStyle='#ffffff';g.fillText(txt,0,5*u);
-    g.restore()}}}}
+    g.restore()}})}}
 window.SQGRV2=GRV;
 window.SQPADUSE=()=>{try{return rsCanLand()||rsCanBoard()||!!grvNear()}catch(e){return false}};   // ✕ on a controller: LAND / SAIL on every island, open a grave

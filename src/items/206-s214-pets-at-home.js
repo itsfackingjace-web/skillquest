@@ -88,10 +88,10 @@
   const j=JOY.get(s);if(j&&now-j<1500){const p=(now-j)/1500;heart(s.x,s.y-16-p*10,1-p*p)}else if(j)JOY.delete(s);
   if(s.mode==='zoom'||s.mode==='chase'){if(Math.floor(now/180)%2)px(s.x+(s.fl?6:-7),s.y+4,2,1,'rgba(240,240,220,.7)')}
   if(s.mode==='follow'&&s.mv===0&&Math.floor(now/2600)%3===0)note(s.x+6,s.y-14,.9)}
- {const _pP=pP;pP=function(tm){const h=home();if(!h)return _pP.apply(this,arguments);let list=[];const now=performance.now(),dt=Math.min(.1,Math.max(0,(now-(last||now))/1000));last=now;
+ {SQPP.wrap('206',_pP=>function(tm){const h=home();if(!h)return _pP.apply(this,arguments);let list=[];const now=performance.now(),dt=Math.min(.1,Math.max(0,(now-(last||now))/1000));last=now;
    try{list=petsHere();if(!pnOpen&&!menuOpen)for(const s of list)tick(s,list,dt,now)}catch(e){console.warn(e)}
    const by=P.y+6;for(const s of list)if(s.y+6<=by)drawPet(s,tm,now);
-   const out=_pP.apply(this,arguments);for(const s of list)if(s.y+6>by)drawPet(s,tm,now);return out}}
+   const out=_pP.apply(this,arguments);for(const s of list)if(s.y+6>by)drawPet(s,tm,now);return out})}
  // the old spot drawing: only the placement preview draws something (the pet itself is drawn with the player)
  {const _dp=drawPiece;drawPiece=function(t,x,y,f,ghost,tm){if(!isPet(t))return _dp.apply(this,arguments);if(!ghost)return;
    try{drawAt(EQ[t].pet,{x:x*16+8,y:y*16+8,mv:0,t:0,fl:false},tm)}catch(e){}}}

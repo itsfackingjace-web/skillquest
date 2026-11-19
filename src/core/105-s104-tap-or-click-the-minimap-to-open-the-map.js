@@ -1,6 +1,6 @@
 // ---- 104. Tap or click the minimap to open the map ----
 {let MINIBOX=null;const R2=()=>W/innerWidth;
- const _dh=drawHUD;drawHUD=function(){MINIBOX=null;_dh()};
+ SQHUD.before('105',()=>{MINIBOX=null;});
  const keep=(x,y,w,h)=>{const r=R2();MINIBOX={x:x/r,y:y/r,w:w/r,h:h/r}};
  const _m52=drawMini52;drawMini52=function(){_m52();const t=miniTarget();if(!t)return;const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w;keep(L.dx+L.dw-w-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+6*U)};
  SQUPD.after('105',(dt)=>{const R=SCENE&&SCENE.room;if(R&&R.dun&&!menuOpen&&!dead){const L=HUDL||hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*R.h/R.w;keep(L.dx+L.dw-w-3*U,L.top+L.dh+46*U-3*U,w+6*U,hh+16*U)}});

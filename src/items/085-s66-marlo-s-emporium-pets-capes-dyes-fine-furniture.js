@@ -61,7 +61,7 @@ var LUX={};
  function petStep(id,ox,oy,fc){let s=petState.get(id);if(!s){s={x:ox-14,y:oy+4,t:0};petState.set(id,s)}const tx=ox-(fc&&fc[0]?fc[0]*16:10),ty=oy+(fc&&fc[1]?-fc[1]*10:4)+2,dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy),now=performance.now();
   const dt=Math.min(.1,(now-(s.lt||now))/1000);s.lt=now;if(d>160){s.x=tx;s.y=ty}else if(d>6){const sp=Math.min(d,(d>40?110:60)*dt);s.x+=dx/d*sp;s.y+=dy/d*sp;s.t+=dt*8;s.fl=dx<0}return s}
  function drawPet(k,s){const sp=petSprite(k,Math.floor(s.t)%2);if(!sp)return;const x=Math.round(s.x),y=Math.round(s.y);shd(x,y+5,9);g.save();if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.imageSmoothingEnabled=false;g.drawImage(sp,x-6,y-6);g.restore()}
- const _pP=pP;pP=function(tm){if(COS.pet==='imp'){if(impOn()&&IMP.dead<=0)impDraw(IMP.x,IMP.y,IMP.dir,Math.floor(IMP.t)%4,IMP.stab>0,IMP.hp,IMP.max)}else if(COS.pet&&!(typeof SAILING!=='undefined'&&SAILING)){const s=petStep('me',P.x,P.y,face);drawPet(COS.pet,s)}return _pP(tm)};
+ SQPP.before('085',(tm)=>{if(COS.pet==='imp'){if(impOn()&&IMP.dead<=0)impDraw(IMP.x,IMP.y,IMP.dir,Math.floor(IMP.t)%4,IMP.stab>0,IMP.hp,IMP.max)}else if(COS.pet&&!(typeof SAILING!=='undefined'&&SAILING)){const s=petStep('me',P.x,P.y,face);drawPet(COS.pet,s)}});
  LUX.drawPeerPet=(r,tm)=>{if(r.pet==='imp'){if(!r.sl)impDrawPeer(r,tm);return}if(!r.pet||!PETS.some(p=>p.k===r.pet)||r.sl)return;const s=petStep(r.uid||'?',r.x,r.y,r.d===2?[r.fl?-1:1,0]:[0,r.d===1?-1:1]);drawPet(r.pet,s)};
  LUX.pet=()=>COS.pet||'';LUX.PETS=PETS;LUX.drawPetS=(k,s)=>drawPet(k,s);LUX.impDrawS=(x,y,d,fr)=>impDraw(x,y,d,fr,false,10,10);/* 214: pets placed at home */LUX.EMP={PETS,CAPES,DYES,DYEV,FURN2,POTS};
  // ---- The Imp (a rare pet from the Demon world boss) ----

@@ -62,7 +62,7 @@
   // you, facing your way
   const an=Math.atan2(face[1]||0,face[0]||0);tri(B.x+B.w/2,B.y+B.h/2,an,4.2*U,'#ffffff',DARK,1.6*U)}
  // ---------------- the pin's on-screen arrow ----------------
- {const _dh=drawHUD;drawHUD=function(){const out=_dh.apply(this,arguments);try{const a=areaNow();if(a&&PP.length&&!dead&&!menuOpen&&!(typeof pnOpen!=='undefined'&&pnOpen)){const U=(typeof HUDL!=='undefined'&&HUDL&&HUDL.U)||1;g.save();g.setTransform(1,0,0,1,0,0);
+ {SQHUD.wrap('225',_dh=>function(){const out=_dh.apply(this,arguments);try{const a=areaNow();if(a&&PP.length&&!dead&&!menuOpen&&!(typeof pnOpen!=='undefined'&&pnOpen)){const U=(typeof HUDL!=='undefined'&&HUDL&&HUDL.U)||1;g.save();g.setTransform(1,0,0,1,0,0);
     for(const q of PP){if(q.a!==a)continue;const sx=W/2+(q.x*16+8-P.x)*Z,sy=H/2+(q.y*16+8-P.y)*Z;if(sx<0||sx>W||sy<0||sy>H)continue;const r=4.5*U;
      g.fillStyle=DARK;g.beginPath();g.arc(sx,sy-13*U,r+2*U,0,6.283);g.fill();g.beginPath();g.moveTo(sx-4*U,sy-10*U);g.lineTo(sx+4*U,sy-10*U);g.lineTo(sx,sy);g.closePath();g.fill();
      g.fillStyle=PCOL;g.beginPath();g.arc(sx,sy-13*U,r,0,6.283);g.fill();g.beginPath();g.moveTo(sx-2.5*U,sy-10*U);g.lineTo(sx+2.5*U,sy-10*U);g.lineTo(sx,sy-2*U);g.closePath();g.fill();
@@ -76,7 +76,7 @@
      g.fillStyle=PINK;g.beginPath();g.arc(sx,py-14*U,r,0,6.283);g.fill();g.beginPath();g.moveTo(sx-2.5*U,py-11*U);g.lineTo(sx+2.5*U,py-11*U);g.lineTo(sx,py-2*U);g.closePath();g.fill();g.fillStyle='#fff';g.fillRect(sx-1.5*U,py-16*U,2*U,2*U)}
     if(d>3){const an=Math.atan2(ty-P.y,tx-P.x),cx=W/2,cy=H/2-6*Z,r=34*Z,ax=cx+Math.cos(an)*r,ay=cy+Math.sin(an)*r*.8;tri(ax,ay,an,Math.max(6*U,2.8*Z)+Math.sin(tm*5)*U,PINK,DARK,3*U);
      g.font='700 '+11*U+'px '+PF;g.textAlign='center';g.textBaseline='middle';const lx=cx+Math.cos(an)*(r+14*U+3*Z),ly=cy+Math.sin(an)*(r*.8+10*U+2*Z);g.lineWidth=3*U;g.strokeStyle=DARK;g.strokeText('📍'+Math.round(d)+'m',lx,ly);g.fillStyle='#ffe0ea';g.fillText('📍'+Math.round(d)+'m',lx,ly)}
-    g.restore()}catch(e){}return out}}
+    g.restore()}catch(e){}return out})}
  // ---------------- the map screen: pin, labels, legend ----------------
  const mapArea=()=>{const R=SCENE&&SCENE.room;return R&&R.region?R.region:'hollow'};
  const isHere=()=>typeof MAPVIEW==='undefined'||MAPVIEW!=='world';

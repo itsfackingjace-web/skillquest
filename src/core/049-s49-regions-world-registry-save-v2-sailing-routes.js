@@ -249,13 +249,12 @@ const _drm49=drawRoom;drawRoom=function(tm){const R=SCENE&&SCENE.room;if(!R||!R.
 const _lh49=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh49(L,x0,y0,x1,y1,tm);if(RG_POST&&RG_POST.x>=x0-2&&RG_POST.x<=x1+2&&RG_POST.y>=y0-2&&RG_POST.y<=y1+3)L.push([RG_POST.y*16+13,4,()=>drawPost49(RG_POST.x*16+(RG_POST.x<TWDOCK[0]%N?3:13),RG_POST.y*16+8,tm)])};
 
 // --- the crossing, the region minimap ---
-const _dh49=drawHUD;drawHUD=function(){_dh49();
- if(TRAVEL49){const T=TRAVEL49,k=T.t/T.dur,a=k<.45?k/.45:k>.7?Math.max(0,(1-k)/.3):1,now=performance.now()/1000;g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=a;
+SQHUD.after('049',()=>{if(TRAVEL49){const T=TRAVEL49,k=T.t/T.dur,a=k<.45?k/.45:k>.7?Math.max(0,(1-k)/.3):1,now=performance.now()/1000;g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=a;
   const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#0e2a58');gr.addColorStop(1,'#1d5aa8');g.fillStyle=gr;g.fillRect(0,0,W,H);
   g.strokeStyle='rgba(200,236,255,.45)';g.lineWidth=2;for(let r=0;r<6;r++){const yy=H*.45+r*H*.07;g.beginPath();for(let x=0;x<=W;x+=16){const y=yy+Math.sin(x*.025+now*3+r)*5;x?g.lineTo(x,y):g.moveTo(x,y)}g.stroke()}
   const bx=W/2+Math.sin(now*1.3)*10,by=H*.45+Math.sin(now*3)*4,u=Math.max(2,Math.min(W,H)/160);g.fillStyle='#5a3a20';g.fillRect(bx-12*u,by-2*u,24*u,5*u);g.fillStyle='#8a6038';g.fillRect(bx-10*u,by-3*u,20*u,2*u);g.fillStyle='#3a2618';g.fillRect(bx-u/2,by-20*u,u,18*u);
   g.fillStyle='#f4ecd8';g.beginPath();g.moveTo(bx+u,by-19*u);g.lineTo(bx+11*u,by-5*u);g.lineTo(bx+u,by-5*u);g.fill();
-  g.fillStyle='#fff';g.textAlign='center';g.font='700 '+Math.round(9*u)+'px "Pixelify Sans",monospace';g.fillText('Sailing to '+WORLD_REGIONS[T.to].name+'…',W/2,H*.3);g.textAlign='left';g.restore()}};
+  g.fillStyle='#fff';g.textAlign='center';g.font='700 '+Math.round(9*u)+'px "Pixelify Sans",monospace';g.fillText('Sailing to '+WORLD_REGIONS[T.to].name+'…',W/2,H*.3);g.textAlign='left';g.restore()}});
 function rgMiniCanvas(R){if(R.mm)return R.mm;const c=document.createElement('canvas');c.width=R.w;c.height=R.h;const x=c.getContext('2d'),im=x.createImageData(R.w,R.h),u=new Uint32Array(im.data.buffer),COL=RG_MAPCOL.map(hdC);
  for(let i=0;i<R.w*R.h;i++)u[i]=COL[R.tiles[i]]||COL[2];for(const it of R.items){if(it.t==='_obj')u[it.y*R.w+it.x]=hdC(RG_OBJCOL[it.o.v||it.o.t]||'#2c7c30');else if(it.t==='lm')for(let b=0;b<(it.h||1);b++)for(let a=0;a<(it.w||1);a++)u[(it.y+b)*R.w+it.x+a]=hdC('#d8d0c0')}
  for(const[a,b]of R.pier)u[b*R.w+a]=hdC('#a87850');

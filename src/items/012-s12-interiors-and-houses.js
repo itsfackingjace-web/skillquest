@@ -74,7 +74,7 @@ SQUPD.after('012',(dt)=>{if(menuOpen||pnOpen||dead)return;if(SCENE){if(!SCENE.ro
   const it=nearFurn();if(it||nearNpc()){tk.style.display='flex';const lab=nearNpc()?'TALK':'USE';if(tkLab!==lab){tkLab=lab;tk.innerHTML=lab+(isPC?'<small>T</small>':'')}}else tk.style.display='none';return}for(const d of entrances()){const cx=d.x*16+8;if(face[1]<0&&Math.abs(P.x-cx)<9&&P.y<(d.y+1)*16+6&&P.y>d.y*16-4){enterScene(d.id,d.house,{x:cx,y:(d.y+1)*16+7});return}}});
 // --- drawing ---
 const _dk12=dark;dark=function(){return SCENE&&INDRAW?0:_dk12()};
-const _dh12=drawHUD;drawHUD=function(){INDRAW=false;_dh12();const a=1-(performance.now()-FADE_AT)/320;if(a>0){g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=Math.min(1,a);g.fillStyle='#000';g.fillRect(0,0,W,H);g.restore()}};
+SQHUD.wrap('012',_dh12=>function(){INDRAW=false;_dh12();const a=1-(performance.now()-FADE_AT)/320;if(a>0){g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=Math.min(1,a);g.fillStyle='#000';g.fillRect(0,0,W,H);g.restore()}});
 function drawFurn(it,tm){const x0=it.x*16,y0=it.y*16,w=(it.w||1)*16;
  switch(it.t){
   case'rug':Rg(x0+1,y0+2,w-2,12,'#f8d848');Rg(x0+2,y0+3,w-4,10,'#5878b8');Rg(x0+4,y0+5,w-8,6,'#6890d0');break;

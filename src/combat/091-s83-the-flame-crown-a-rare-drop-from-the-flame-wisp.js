@@ -47,8 +47,8 @@ function fwDraw(x,y,tm,glow){const c=fwCan(Math.floor(tm/.09)%4);if(!c)return;co
  g.save();g.imageSmoothingEnabled=false;g.drawImage(c,wx-8,wy-10,16,19.6);g.restore()}
 // drawn on top of the world (so fences and trees don't hide it), using the exact camera the world was drawn with
 let FWT=null,FWTat=0;
-{const _pp=pP;pP=function(tm){FWT=g.getTransform();FWTat=performance.now();_pp(tm)}}
-{const _dh=drawHUD;drawHUD=function(){if(!menuOpen&&FWT&&performance.now()-FWTat<200)try{const live=fwLive(),peers=window.SQFWPEERS?SQFWPEERS():[];if(live||peers.length){const t=performance.now()/1000;g.save();g.setTransform(FWT);
+{SQPP.before('091',(tm)=>{FWT=g.getTransform();FWTat=performance.now();})}
+{SQHUD.before('091',()=>{if(!menuOpen&&FWT&&performance.now()-FWTat<200)try{const live=fwLive(),peers=window.SQFWPEERS?SQFWPEERS():[];if(live||peers.length){const t=performance.now()/1000;g.save();g.setTransform(FWT);
    if(live){fwDraw(FWP.x,FWP.y,t,true);for(const b of FWP.balls){Rg(Math.round(b.x)-2,Math.round(b.y)-2,4,4,'#f86020');Rg(Math.round(b.x)-1,Math.round(b.y)-1,2,2,'#fff0a0')}}
-   for(const q of peers)fwDraw(q[0],q[1],t,true);g.restore()}}catch(e){}_dh()}}
+   for(const q of peers)fwDraw(q[0],q[1],t,true);g.restore()}}catch(e){}})}
 window.SQFW={state:FWP,live:fwLive,pres:()=>fwLive()?[Math.round(FWP.x),Math.round(FWP.y)]:0};

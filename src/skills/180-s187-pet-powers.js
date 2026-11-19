@@ -97,7 +97,7 @@
   for(const f of FX){const p=1-f.t/f.T;g.save();g.strokeStyle=f.c;g.globalAlpha=Math.max(0,1-p);
    if(f.s==='ring'){g.lineWidth=2;g.beginPath();g.ellipse(f.x,f.y,Math.max(1,f.r*(.3+.7*p)),Math.max(1,f.r*(.3+.7*p)/1.3),0,0,6.283);g.stroke();g.globalAlpha*=.25;g.fillStyle=f.c;g.fill()}
    else{g.lineWidth=2;g.beginPath();const a0=f.f?0:Math.PI;g.arc(f.x,f.y,9,a0-1.1,a0-1.1+2.2*Math.min(1,p*2),false);g.stroke()}g.restore()}}
- {const _p=pP;pP=function(tm){const out=_p.apply(this,arguments);try{if(SH.length||FX.length)drawFx()}catch(e){}return out}}
+ {SQPP.after('180',(tm)=>{try{if(SH.length||FX.length)drawFx()}catch(e){}})}
  // other players' pets
  window.SQFXH=window.SQFXH||{};SQFXH.pa=(pl,v)=>{const c=hex(v.c)||'#ffffff',x=+v.x||0,y=+v.y||0;if(v.s==='aoe')FX.push({s:'ring',x,y,t:.45,T:.45,c,r:num(v.r,16,200,48)});
   else if(v.s==='melee')FX.push({s:'slash',x:+v.tx||x,y:(+v.ty||y)-6,t:.22,T:.22,c,f:x>(+v.tx||x)});
