@@ -1022,3 +1022,6 @@
 - **Campfire colours per log** (220 `PAL`/`GLOW`/`STICK`): flames oak gold, willow blue, maple crimson, yew green, void purple. 001's night glow
   takes each fire's colour from `window.SQFIREGLOW(f)` and only merges fires of the same colour; 114's `drawFire` (lighting) colours the sticks,
   base log and ember from `SQFIRELOGS.lighting()` (the pending tier build, else plain wood). Peers lighting a fire are drawn with plain wood.
+- **Chat log** (`dev/233-s241-chat-log.js`, `window.SQCHATLOG`, Dev Suite > Chat log): reads public `chat` (never `pm`) newest 1000 first, "Load older"
+  pages by push key (`orderByKey`+`endBefore`+`limitToLast`), search, a "Possible bugs" filter (`BUGRX`), Download .txt / Copy. Players report
+  bugs in chat a lot: check it with the bug reports. The checks' fake db now applies those three query parts in `get()` only.

@@ -241,6 +241,7 @@ ui/229-s237-gear-tab-cards-and-stats.js
 items/230-s238-no-saves-while-chests-merged.js
 items/231-s239-chest-card-fits.js
 world/232-s240-plateau-paths.js
+dev/233-s241-chat-log.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js
