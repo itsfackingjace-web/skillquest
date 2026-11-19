@@ -1011,3 +1011,6 @@
   panel for a `reel` job). 205's EAT step: while a campfire `cook` job runs, EAT eats (`SQEATPICK.eat()`) and the job carries on.
   `items/231-s239-chest-card-fits.js` (`SQCHFIT`): after every `rPn` the chest item card's backdrop (`.chcbg`) is set to #pn's visible box and
   the card capped to fit (iPhone Safari clips position:fixed inside the scrolling panel), and #pn doesn't scroll while it's open (`sqchlock`).
+- **Plateau sides open to paths** (`world/232-s240-plateau-paths.js`, `SQPLATOPEN(R)`): 101's edge mask `R._pe` blocks every plateau side; only
+  the south side is drawn as a cliff. 232's outermost `solid` replaces `R._pe` once per room (`R._peo` = the `R.plat` it was built for) with a mask
+  whose N/E/W sides are open toward path tiles (14 trail, 11 flagstones). The room object isn't the one `rgFinish` returns, so don't set it there.
