@@ -65,4 +65,6 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - Guild quest rules: `guilds/$g/q` validates when the quest keeps its `k` and `goal` (`data.exists()`), or the goal matches the ladder. Quests
   started before the doubling goals failed every progress write (Nov 20 chat). Check 28 writes an old goal with `__dbForce` (lib.cjs/rulesdb.cjs:
   test set-up writes without rules).
+- PvP hit rules: `pvp/$uid/$id` `d` may be 0-3 (154's `SQPVDMG` sends up to 3 hearts; the rules took 2 since Nov 13, so 3-heart hits were
+  refused and 061's `mpErr` said "The online server refused that"). Check 38 tests the rules file directly with `RulesDB`.
 - 239 wiki "How to get it" reads `window.SQWIKIGET[item]` (HTML lines); 215 adds meteor strikes for `meteorore` and `stardust`. Check 25.
