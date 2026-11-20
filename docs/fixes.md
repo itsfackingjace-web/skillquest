@@ -48,3 +48,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   panel for a `reel` job). 205's EAT step: while a campfire `cook` job runs, EAT eats (`SQEATPICK.eat()`) and the job carries on.
   `items/231-s239-chest-card-fits.js` (`SQCHFIT`): after every `rPn` the chest item card's backdrop (`.chcbg`) is set to #pn's visible box and
   the card capped to fit (iPhone Safari clips position:fixed inside the scrolling panel), and #pn doesn't scroll while it's open (`sqchlock`).
+
+## Nov 20 harbor posts
+
+- 013 replaced `useFurn` (`useFurn=function`) after 012 had made it a step list (`SQUSEFURN`, Nov 19 evening), so every step added later was
+  skipped: harbor posts on islands (049's `regdock`), island NPCs (117), guild board/bank/hall (197), loot chests (111a). 013 is now the first
+  step. 220's `fire` and 111a's library icons were reassigned the same way and are steps too (111a's `origIcon` runs the list with its step
+  stepping aside, `RAWICO`). `tools/checks/lint.cjs` refuses `fn=` for any function with a step list; check 27 uses the post on Ashfall.

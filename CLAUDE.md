@@ -18,7 +18,8 @@
   live site). The cases in `cases/` cover start-up, saves, crafting from chests, graves, campfires, house chests, gathering/eating, island
   trips, trading, the World Market, the guild bank, dungeons, fishing behind menus, HIT/EAT, the Dev Suite tabs, patron art, new pets,
   the Song Studio, song zones, the wiki and the error reporter. First come the **source rules** (`tools/checks/lint.cjs`, also on its own):
-  no bare top-level `{ }` blocks, unique panel numbers, no class styled in two files unless listed in
+  no bare top-level `{ }` blocks, no `fn=` for a function that has a step list (Nov 20: 013's `useFurn=function`
+  skipped every later step and stranded players on islands), unique panel numbers, no class styled in two files unless listed in
   `tools/checks/css-shared.txt`, no `prompt()`, no untagged empty catches. A full run takes about 4 minutes. **Run them after building and before
   every release; never release with a failing check.** When fixing a bug, add a case that fails without the fix. Script errors on the page
   fail a case. Errors that tagged catches swallowed during the run are written to `tools/checks/caught-errors.txt` (code errors are
@@ -150,6 +151,6 @@ Each area has its own notes file in `docs/`. Read the one for the area you're ch
 - **`docs/music.md`** — Music: The soundtrack engine, the Dev Suite song editor, the Patron Song Studio and song zones.
   Covers: Soundtrack, Song editor, Song Studio, Song zones.
 - **`docs/fixes.md`** — Dated fix collections: Batches of small fixes, by day. Each names the file it lives in.
-  Covers: Quality fixes, Audit fixes, Player-report fixes, Bug sweep Nov 15, Bug fixes Nov 15 (afternoon), Nov 16 report fixes, Nov 18 evening fixes.
+  Covers: Quality fixes, Audit fixes, Player-report fixes, Bug sweep Nov 15, Bug fixes Nov 15 (afternoon), Nov 16 report fixes, Nov 18 evening fixes, Nov 20 harbor posts.
 
 When you add something, put its note in the right `docs/` file (or a new one listed here), not in this file. Keep this file to rules and the index.
