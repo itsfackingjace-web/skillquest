@@ -36,10 +36,10 @@
    if(sudden()){say('Sudden death: no healing!');return}
    const c0=EATCD,h0=P.hp,r=_e.apply(this,arguments);
    if(EATCD>c0)EATCD=EATPV;damp(h0);base=last=P.hp;return r})}
- {SQUPD.wrap('154',_u=>function(dt){try{if(last!==null&&P.hp>last)damp(last)}catch(e){}// healing between frames (timers, clicks)
+ {SQUPD.wrap('154',_u=>function(dt){try{if(last!==null&&P.hp>last)damp(last)}catch(e){self.SQERR&&SQERR(e,'154-1')}// healing between frames (timers, clicks)
    base=P.hp;const wd=duel(),r=_u.apply(this,arguments);
    try{if(base!==null&&!(wd&&!duel()))damp(base);base=null;last=P.hp;// a duel that just ended restores your health: leave that alone
     if(sudden()){const b=document.getElementById('dlbar');if(b&&b.textContent.indexOf('SUDDEN')<0)b.textContent+=' · SUDDEN DEATH';
-     if(!sdSaid){sdSaid=true;say('Sudden death! No more healing.');try{sfx('quest')}catch(e){}}}
-    else sdSaid=false}catch(e){}
+     if(!sdSaid){sdSaid=true;say('Sudden death! No more healing.');try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'154-2')}}}
+    else sdSaid=false}catch(e){self.SQERR&&SQERR(e,'154-3')}
    return r})}})();

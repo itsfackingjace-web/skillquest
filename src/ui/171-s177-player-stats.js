@@ -12,18 +12,18 @@
  setInterval(()=>{try{const F=FBx(),u=uid();if(!F||!u)return;if(window.SQTITLE&&SQTITLE())return;if(document.hidden)return;
    const d0=day();if(d0!==mday){mday=d0;sent=false}pend++;const d=F.db;
    if(firstDone!==u){firstDone=u;d.get(d.ref(F.D,'stats/f/'+u)).then(s=>{if(!s.exists())return d.set(d.ref(F.D,'stats/f/'+u),d0)}).catch(()=>{})}
-   if(!sent||pend>=5){const add=pend;pend=0;sent=true;d.runTransaction(d.ref(F.D,'stats/d/'+d0+'/'+u),cur=>Math.min(1440,(+cur||0)+add)).catch(()=>{pend+=add})}}catch(e){}},60000);
+   if(!sent||pend>=5){const add=pend;pend=0;sent=true;d.runTransaction(d.ref(F.D,'stats/d/'+d0+'/'+u),cur=>Math.min(1440,(+cur||0)+add)).catch(()=>{pend+=add})}}catch(e){self.SQERR&&SQERR(e,'171-1')}},60000);
  // deaths
- let was=false;setInterval(()=>{try{const now=!!dead;if(now&&!was){const F=FBx(),u=uid();if(F&&u){let where='hollow';try{where=SCENE&&SCENE.id&&SCENE.id!=='region'?(SCENE.room&&SCENE.room.region?SCENE.room.region+'-':'')+SCENE.id:(typeof curRegion==='function'?curRegion():'hollow')}catch(e){}
+ let was=false;setInterval(()=>{try{const now=!!dead;if(now&&!was){const F=FBx(),u=uid();if(F&&u){let where='hollow';try{where=SCENE&&SCENE.id&&SCENE.id!=='region'?(SCENE.room&&SCENE.room.region?SCENE.room.region+'-':'')+SCENE.id:(typeof curRegion==='function'?curRegion():'hollow')}catch(e){self.SQERR&&SQERR(e,'171-2')}
      let mob='other',bd=48;for(const n of en||[]){if(!n||n.dead)continue;const dd=Math.hypot(n.x-P.x,n.y-P.y);if(dd<bd){bd=dd;mob=n.rk||n.type||'monster'}}
-     const d=F.db;d.runTransaction(d.ref(F.D,'stats/dz/'+day()+'/'+safe(where)+'~'+safe(mob)),c=>(+c||0)+1).catch(()=>{})}}was=now}catch(e){}},250);
+     const d=F.db;d.runTransaction(d.ref(F.D,'stats/dz/'+day()+'/'+safe(where)+'~'+safe(mob)),c=>(+c||0)+1).catch(()=>{})}}was=now}catch(e){self.SQERR&&SQERR(e,'171-3')}},250);
  window.SQSTATS={day};
  // ======================= Dev Suite > Stats =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,fail}=API;
  const T={st:null,lb:null,sv:null,busy:0};
  const D=()=>FBx().db,ref=p=>D().ref(FBx().D,p),get=async p=>(await D().get(ref(p))).val();
  async function load(){T.busy=1;API.draw();try{const[a,b]=await Promise.all([get('stats'),get('lb')]);T.st=a||{};T.lb=b||{}}catch(e){fail(e);T.st={};T.lb={}}T.busy=0;API.draw()}
- async function loadSaves(){T.busy=1;API.draw();try{const us=Object.keys(T.lb||{});const out=[];await Promise.all(us.map(async u=>{try{const v=await get('saves/'+u);if(v&&v.json){const S2=JSON.parse(v.json);out.push({u,S:S2,t:(T.lb[u]||{}).t||0})}}catch(e){}}));T.sv=out}catch(e){fail(e)}T.busy=0;API.draw()}
+ async function loadSaves(){T.busy=1;API.draw();try{const us=Object.keys(T.lb||{});const out=[];await Promise.all(us.map(async u=>{try{const v=await get('saves/'+u);if(v&&v.json){const S2=JSON.parse(v.json);out.push({u,S:S2,t:(T.lb[u]||{}).t||0})}}catch(e){self.SQERR&&SQERR(e,'171-4')}}));T.sv=out}catch(e){fail(e)}T.busy=0;API.draw()}
  const addDays=(d,n)=>day(Date.parse(d+'T12:00:00Z')+n*864e5);
  const bar=(v,max,lab,txt)=>'<div style="display:flex;align-items:center;gap:8px;margin:2px 0;font-size:12px"><span style="width:86px;flex:none" class="dv-mut">'+E(lab)+'</span><span style="flex:1;background:#1a2030;height:12px;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+(max?Math.round(v/max*100):0)+'%;background:#e8b030"></span></span><span style="width:110px;flex:none;text-align:right">'+txt+'</span></div>';
  function render(){if(!T.st){if(!T.busy)load();return'<p class="dv-mut">Loading…</p>'}

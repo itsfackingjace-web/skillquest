@@ -21,40 +21,40 @@
  const playing=()=>!(window.SQTITLE&&SQTITLE())&&typeof dead!=='undefined'&&!dead;
  // ---- XP and gold ----
  {const _ax=addXp;addXp=function(i,x){if(x>0){let m=1;for(const a of active())if(a.e.xp>1&&(a.e.xs<0||a.e.xs===i))m=Math.max(m,a.e.xp);if(m>1)x=Math.round(x*m)}return _ax.call(this,i,x)}}
- {const _ed=killEnemy;killEnemy=function(n){const g0=GLD,out=_ed.apply(this,arguments);try{if(n&&!n._rp){let p=0;for(const a of active())p=Math.max(p,a.e.gold);const got=GLD-g0;if(p>0&&got>0){const add=Math.max(1,Math.round(got*p/100));GLD+=add;try{drops.push({x:n.x,y:n.y-24,t:0,tx:'+'+add+' event gold',c:'#f8d848'})}catch(e){}}}}catch(e){}return out}}
+ {const _ed=killEnemy;killEnemy=function(n){const g0=GLD,out=_ed.apply(this,arguments);try{if(n&&!n._rp){let p=0;for(const a of active())p=Math.max(p,a.e.gold);const got=GLD-g0;if(p>0&&got>0){const add=Math.max(1,Math.round(got*p/100));GLD+=add;try{drops.push({x:n.x,y:n.y-24,t:0,tx:'+'+add+' event gold',c:'#f8d848'})}catch(e){self.SQERR&&SQERR(e,'184-1')}}}}catch(e){self.SQERR&&SQERR(e,'184-2')}return out}}
  // ---- event monsters ----
  const EVM=new Set();let evScene=null;
  const outdoors=()=>!SCENE||SCENE.id==='region';
  const region=()=>{try{return typeof curRegion==='function'?curRegion():'hollow'}catch(e){return'hollow'}};
  function spawnOne(a){const M=window.SQISLIFE&&SQISLIFE.MOBS&&SQISLIFE.MOBS[a.e.mob.k];if(!M)return false;
   for(let t=0;t<24;t++){const ang=Math.random()*6.283,d=150+Math.random()*110,x=P.x+Math.cos(ang)*d,y=P.y+Math.sin(ang)*d;try{if(solid(x,y))continue}catch(e){continue}
-   const m=rgMake(a.e.mob.k,M.hp,x,y);if(!m)return false;m.mhp=m.mhp||M.hp;if(M.rg)m.rg=M.rg;delete m.night;m._ev=a.id;try{RG_OWN.add(m)}catch(_){}en.push(m);EVM.add(m);evScene=SCENE?SCENE.id+(SCENE.room&&SCENE.room.region||''):'hollow';return true}return false}
+   const m=rgMake(a.e.mob.k,M.hp,x,y);if(!m)return false;m.mhp=m.mhp||M.hp;if(M.rg)m.rg=M.rg;delete m.night;m._ev=a.id;try{RG_OWN.add(m)}catch(_){self.SQERR&&SQERR(_,'184-3')}en.push(m);EVM.add(m);evScene=SCENE?SCENE.id+(SCENE.room&&SCENE.room.region||''):'hollow';return true}return false}
  let spT=0;
  {SQUPD.after('184',(dt)=>{try{
    const sc=SCENE?SCENE.id+(SCENE.room&&SCENE.room.region||''):'hollow';if(sc!==evScene&&EVM.size)EVM.clear();
    const melt=!SCENE&&typeof dark==='function'&&dark()<.05?(+dt||0)*.5:0;for(const m of EVM){if(m.dead||m.hp<=0){EVM.delete(m);continue}if(melt)m.hp=Math.min(m.mhp||m.hp+melt,m.hp+melt);if(!en.includes(m)&&Math.hypot(m.x-P.x,m.y-P.y)<420)en.push(m)}
    spT-=+dt||0;if(spT<=0){spT=4;if(playing()&&outdoors())for(const a of active()){if(!a.e.mob||(a.e.mob.r!=='any'&&a.e.mob.r!==region()))continue;let n=0;for(const m of EVM)if(m._ev===a.id&&Math.hypot(m.x-P.x,m.y-P.y)<500)n++;if(n<a.e.mob.n)spawnOne(a)}}
-  }catch(e){}})}
+  }catch(e){self.SQERR&&SQERR(e,'184-4')}})}
  // ---- pill, start notice, event card ----
  const pill=document.createElement('button');pill.id='sqsev';pill.type='button';pill.style.cssText='position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 36px);z-index:25;display:none;background:#183028;color:#d8ffe8;border:2px solid #40b878;border-radius:0;padding:3px 9px;font:700 12px '+PF+';cursor:pointer;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';document.body.appendChild(pill);
  pill.addEventListener('click',e=>{e.stopPropagation();openCard()});
  const left=ms=>{const m=Math.max(0,Math.ceil(ms/60000));return m>=2880?Math.round(m/1440)+' days':m>90?Math.round(m/60)+' h':m+' min'};
  const what=e=>{const p=[];if(e.xp>1)p.push('×'+e.xp+' '+(e.xs>=0?(SKN[e.xs]||'')+' ':'')+'XP');if(e.gold)p.push('+'+e.gold+'% gold');if(e.mob){const M=window.SQISLIFE&&SQISLIFE.MOBS[e.mob.k];p.push((M?M.n:'Monsters')+(e.mob.r==='any'?' everywhere':' on '+((WORLD_REGIONS[e.mob.r]||{}).name||e.mob.r)))}if(e.shop)p.push('event shop');return p};
- let SEEN={};try{SEEN=JSON.parse(localStorage.getItem('sq_evseen')||'{}')||{}}catch(e){}
+ let SEEN={};try{SEEN=JSON.parse(localStorage.getItem('sq_evseen')||'{}')||{}}catch(e){self.SQERR&&SQERR(e,'184-5')}
  setInterval(()=>{try{const A=active(),on=A.length&&playing()&&!pnOpen&&!menuOpen;pill.style.display=on?'block':'none';
    if(on){const a=A[0];pill.textContent='🎉 '+a.e.n+(A.length>1?' +'+(A.length-1):'')+' · '+left(a.end-Date.now())}
    // 161's XP pill sits at the very top; when it isn't showing, take its place
    const xp=document.getElementById('sqevp');pill.style.top='calc(env(safe-area-inset-top,0px) + '+(xp&&xp.style.display==='block'?36:8)+'px)';
-   if(playing())for(const a of A){const k=a.id+'@'+a.start;if(SEEN[k])continue;SEEN[k]=1;try{const ks=Object.keys(SEEN);if(ks.length>40)for(const x of ks.slice(0,ks.length-40))delete SEEN[x];localStorage.setItem('sq_evseen',JSON.stringify(SEEN))}catch(e){}
-    say('🎉 Event: '+a.e.n+(a.e.msg?' — '+a.e.msg:'')+' ('+what(a.e).join(', ')+'). Ends in '+left(a.end-Date.now())+'.');msgT=8;try{sfx('quest')}catch(e){}break}}catch(e){}},1000);
- function openCard(){if(!playing())return;pnOpen=true;ptab=TAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){}}
+   if(playing())for(const a of A){const k=a.id+'@'+a.start;if(SEEN[k])continue;SEEN[k]=1;try{const ks=Object.keys(SEEN);if(ks.length>40)for(const x of ks.slice(0,ks.length-40))delete SEEN[x];localStorage.setItem('sq_evseen',JSON.stringify(SEEN))}catch(e){self.SQERR&&SQERR(e,'184-6')}
+    say('🎉 Event: '+a.e.n+(a.e.msg?' — '+a.e.msg:'')+' ('+what(a.e).join(', ')+'). Ends in '+left(a.end-Date.now())+'.');msgT=8;try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'184-7')}break}}catch(e){self.SQERR&&SQERR(e,'184-8')}},1000);
+ function openCard(){if(!playing())return;pnOpen=true;ptab=TAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'184-9')}}
  function cardHTML(){const A=active(),t=Date.now();let h='<div class="tl">EVENTS</div>';if(!A.length)h+='<div class="qc">No event is running right now.</div>';
   for(const a of A){const e=a.e;h+='<div class="qc"><b style="color:#c83820">'+esc(e.n)+'</b> <small>· ends in '+left(a.end-t)+'</small>'+(e.msg?'<br>'+esc(e.msg):'')+'<br><small>'+what(e).map(esc).join(' · ')+'</small>'+
    (e.shop&&window.SQCONTENT&&SQCONTENT.C.shops[e.shop]?'<div style="margin-top:6px"><button class="sb" data-evshop="'+e.shop+'" style="min-width:0;padding:8px 12px">🛒 '+esc(SQCONTENT.C.shops[e.shop].n||'Event shop')+'</button></div>':'')+'</div>'}
   const up=Object.entries(EVS).map(([id,e])=>[id,e,next(e,t)]).filter(x=>x[2]&&!A.some(a=>a.id===x[0])).sort((a,b)=>a[2]-b[2]).slice(0,3);
   if(up.length)h+='<div class="qc" style="font-size:12px"><b>Coming up</b><br>'+up.map(([,e,s])=>esc(e.n)+' · in '+left(s-t)).join('<br>')+'</div>';
   return h+'<div class="pmb"><button class="sb no" data-evx="1">CLOSE</button></div>'}
- {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){}pbd.innerHTML=cardHTML()}}
+ {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'184-10')}pbd.innerHTML=cardHTML()}}
  pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen)return;const b=e.target.closest('[data-evshop],[data-evx]');if(!b)return;e.stopPropagation();e.preventDefault();
   if(b.dataset.evshop){const id=b.dataset.evshop;if(!active().some(a=>a.e.shop===id)){closePanel();return}closePanel();SQCONTENT.openShop(id,'Event shop');return}closePanel()},true);
  window.SQEVENTS={active,win,next,norm,force(id,min){FORCE[id]=Date.now()+(min||10)*60000},unforce(id){delete FORCE[id]},open:openCard,get list(){return EVS},EVM};

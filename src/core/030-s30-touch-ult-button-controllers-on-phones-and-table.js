@@ -20,7 +20,7 @@ function padStatusHTML(){padCheck();const s={connected:'<b style="color:#2f8a3a"
   +(PADSTAT==='blocked'||PADSTAT==='waiting'?'<button class="sb padtab">Open the game in its own tab</button>':'')}
 const _opt30=optionsHTML;optionsHTML=function(){let h=_opt30();const k=h.indexOf('<div class="tl" style="margin-top:16px">CONTROLLER</div>');const st=padStatusHTML();
  if(k>=0)return h.slice(0,k)+st+h.slice(h.indexOf('<button class="sb gpo"',k));const j=h.indexOf('<div class="tl" style="margin-top:22px');return j<0?h+st:h.slice(0,j)+st+h.slice(j)};
-const _oc30=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('.padtab')){saveLocal(true);try{window.open(location.href,'_blank')}catch(_){}return}_oc30(e)};
+const _oc30=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('.padtab')){saveLocal(true);try{window.open(location.href,'_blank')}catch(_){self.SQERR&&SQERR(_,'030-1')}return}_oc30(e)};
 // live refresh of the status box while Options is open
 let padT=0;
 SQUPD.after('030',(dt)=>{ubUpdate();if(pnOpen&&ptab===8&&(padT+=dt)>.25){padT=0;const old=PADSTAT,ol=PADLAST;padCheck();const el=document.getElementById('padlast');if(old!==PADSTAT)rPn();else if(el&&ol!==PADLAST)el.textContent=PADLAST}});

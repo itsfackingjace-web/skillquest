@@ -63,7 +63,7 @@
    else if(isPC){const L={a:kname(KB.hit),e:kname(KB.eat),f:kname(KB.fire),tk:kname(KB.talk),rl:kname(KB.roll)};for(const id in L){const el=document.getElementById(id);const sm=el&&el.querySelector('small');if(sm)sm.textContent=L[id]}
     if(typeof hp!=='undefined'&&hp&&!(typeof GPON!=='undefined'&&GPON)){const mv=[KB.mvu,KB.mvl,KB.mvd,KB.mvr].map(kname).join('');
      hp.innerHTML='<b>Controls</b><br>'+mv+' / arrows: move · '+kname(KB.spr)+': sprint<br>'+kname(KB.hit)+': hit, chop, mine, fish<br>'+kname(KB.eat)+': eat / cook at fire<br>'+kname(KB.fire)+': build campfire<br>'+kname(KB.talk)+' or Enter: talk<br>Right-click or '+kname(KB.off)+': use off-hand (bow, wand, hoe, can)<br>'+
-      kname(KB.bag)+': bag · '+kname(KB.skills)+': skills · '+kname(KB.craft)+': craft · Esc: close<br>'+kname(KB.help)+': hide this help · Options > Controls: change keys'}}}catch(e){}}
+      kname(KB.bag)+': bag · '+kname(KB.skills)+': skills · '+kname(KB.craft)+': craft · Esc: close<br>'+kname(KB.help)+': hide this help · Options > Controls: change keys'}}}catch(e){self.SQERR&&SQERR(e,'124-1')}}
  if(typeof gpLabels==='function'){const _gl=gpLabels;gpLabels=function(on){_gl.apply(this,arguments);labels()}}
  if(typeof setActionLabels==='function'){const _sl=setActionLabels;setActionLabels=function(){_sl.apply(this,arguments);labels()}}
  setTimeout(labels,0);
@@ -84,7 +84,7 @@
    h+='<button class="sb" data-ct="preset" style="width:100%;margin-top:10px">Reset buttons to the game\'s own</button>'}
   return h+'<button class="sb" data-ct="back" style="width:100%">Back to Options</button>'}
  function draw(){if(pnOpen&&ptab===CTAB)rPn()}
- const _r=rPn;rPn=function(){if(ptab===CTAB){try{panelChrome('')}catch(e){}pbd.innerHTML=html();return}return _r.apply(this,arguments)};
+ const _r=rPn;rPn=function(){if(ptab===CTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'124-2')}pbd.innerHTML=html();return}return _r.apply(this,arguments)};
  const open=()=>{VIEW=(typeof GPON!=='undefined'&&GPON)?'p':isPC?'k':'t';CAP=null;pnOpen=true;ptab=CTAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
  pbd.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.ctlb')){e.stopPropagation();open()}},true);
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab!==CTAB)return _oc(e);const b=e.target.closest('[data-ct]');if(!b)return;const a=b.dataset.ct;

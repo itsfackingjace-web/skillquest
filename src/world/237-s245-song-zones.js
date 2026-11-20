@@ -11,9 +11,9 @@
  function here(){try{if(typeof dead!=='undefined'&&dead)return null;let L=null,pad=0,tx,ty;
    if(!SCENE){if(typeof SAILING!=='undefined'&&SAILING)return null;L=ISL.ed_hollow;tx=Math.floor(P.x/16);ty=Math.floor(P.y/16)}
    else{const R=SCENE.room,rg=R&&R.region;if(!rg||SCENE.id==='home')return null;if(ISL[rg]&&/^cu_/.test(rg)){L=ISL[rg];pad=A()&&A().ISL_PAD|0}else L=ISL['ed_'+rg];tx=Math.floor(P.x/16)-pad;ty=Math.floor(P.y/16)-pad}
-   if(!L)return null;const Z=arr(L.sz);for(let i=Z.length-1;i>=0;i--){const z=Z[i];if(z&&z.s&&tx>=(z.x|0)&&ty>=(z.y|0)&&tx<(z.x|0)+Math.max(1,z.w|0)&&ty<(z.y|0)+Math.max(1,z.h|0))return z}}catch(e){}return null}
+   if(!L)return null;const Z=arr(L.sz);for(let i=Z.length-1;i>=0;i--){const z=Z[i];if(z&&z.s&&tx>=(z.x|0)&&ty>=(z.y|0)&&tx<(z.x|0)+Math.max(1,z.w|0)&&ty<(z.y|0)+Math.max(1,z.h|0))return z}}catch(e){self.SQERR&&SQERR(e,'237-1')}return null}
  let last=null;
  {const _w=wantSong;wantSong=function(){const w=_w.apply(this,arguments);if(w==='boss'||w==='sail')return w;const z=here();
-   if(z!==last){if(z&&z.n&&(!last||last.n!==z.n))try{say(String(z.n).slice(0,40))}catch(e){}last=z}
+   if(z!==last){if(z&&z.n&&(!last||last.n!==z.n))try{say(String(z.n).slice(0,40))}catch(e){self.SQERR&&SQERR(e,'237-2')}last=z}
    return z&&window.SQMUSIC&&SQMUSIC.S[z.s]?z.s:w}}
  window.SQSONGZONES={here}})();

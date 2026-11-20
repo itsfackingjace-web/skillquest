@@ -15,20 +15,20 @@
   IDESC[it]=(r.d?r.d.trim()+' ':(r.v?'A pet from Marlo\'s Emporium. ':'A rare pet. '))+'Put it in your PET slot (Equip) and it follows you everywhere; other players see it too.';
   if(PEND[it]){inv[it]=(inv[it]|0)+PEND[it];delete PEND[it]}
   const c=COS();if(c&&PPET===k){PPET=null;if(!c.pet){c.pet=k;if(!c.pets.includes(k))c.pets.push(k)}else inv[it]=(inv[it]|0)+1}
-  try{delete ICONC['ippet:'+k]}catch(e){}REG.set(k,r)}
+  try{delete ICONC['ippet:'+k]}catch(e){self.SQERR&&SQERR(e,'234-1')}REG.set(k,r)}
  function unreg(k){const it='pet_'+k;if(inv[it]|0)PEND[it]=(PEND[it]|0)+(inv[it]|0);delete inv[it];
   for(const L of[INVK,EXTRA_BAG,EQK]){let i;while((i=L.indexOf(it))>=0)L.splice(i,1)}delete EQ[it];
   const c=COS();if(c&&c.pet===k){PPET=k;c.pet=null}if(c)c.pets=c.pets.filter(q=>q!==k);
   const L=PETS(),i=L.findIndex(q=>q.k===k&&q._np);if(i>=0)L.splice(i,1);REG.delete(k)}
  // what should exist: the published library, plus the developer's draft on their own device
  function want(){const o={},add=s=>{for(const k in s||{})if(ok(k,s[k]))o[k]=clean(s[k])};add(LIB.newpets);
-  try{const S=window.SQSUITE&&SQSUITE.state;if(S&&S.draft&&S.ok==='yes')add(S.draft.newpets)}catch(e){}return o}
- function sync(){const w=want();for(const k of[...REG.keys()])if(!w[k])unreg(k);for(const k in w)reg(k,w[k]);try{if(window.SQPETSYNC)SQPETSYNC()}catch(e){}}
+  try{const S=window.SQSUITE&&SQSUITE.state;if(S&&S.draft&&S.ok==='yes')add(S.draft.newpets)}catch(e){self.SQERR&&SQERR(e,'234-2')}return o}
+ function sync(){const w=want();for(const k of[...REG.keys()])if(!w[k])unreg(k);for(const k in w)reg(k,w[k]);try{if(window.SQPETSYNC)SQPETSYNC()}catch(e){self.SQERR&&SQERR(e,'234-3')}}
  if(window.SQA&&SQA.onApply)SQA.onApply(lib=>{LIB=lib||{};sync()});
- SQSAVE.after('234:np',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(PPET&&s.cos&&!s.cos.pet){s.cos.pet=PPET;s.cos.pets=[...(s.cos.pets||[]),PPET]}}catch(e){}});
+ SQSAVE.after('234:np',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(PPET&&s.cos&&!s.cos.pet){s.cos.pet=PPET;s.cos.pets=[...(s.cos.pets||[]),PPET]}}catch(e){self.SQERR&&SQERR(e,'234-4')}});
  SQLOAD.wrap('234',_ap=>function(S){for(const k in PEND)delete PEND[k];PPET=null;const out=_ap.apply(this,arguments);
   try{if(S&&S.inv)for(const k in S.inv)if(/^pet_np_/.test(k)&&!EQ[k]&&+S.inv[k]>0)PEND[k]=Math.min(1e6,+S.inv[k]|0);
-   const c=S&&S.cos;if(c&&typeof c.pet==='string'&&/^np_/.test(c.pet)&&!REG.has(c.pet))PPET=c.pet}catch(e){}return out});
+   const c=S&&S.cos;if(c&&typeof c.pet==='string'&&/^np_/.test(c.pet)&&!REG.has(c.pet))PPET=c.pet}catch(e){self.SQERR&&SQERR(e,'234-5')}return out});
  {const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];PPET=null;return _ng.apply(this,arguments)}}
  window.SQNEWPETS={sync,REG,PEND,get ppet(){return PPET},ok,clean};
  // ======================= Dev Suite > New pets =======================
@@ -61,7 +61,7 @@
   const[a,k]=t.dataset.np.split(':');try{
    if(a==='new'){const inp=document.querySelector('#dvs [data-npn]'),n=inp&&inp.value.trim()||'New pet';const it=await create(n);toast(n+' made. Draw it now.');if(S.tab==='pets')openLook(it);else API.draw()}
    else if(a==='look')openLook('pet_'+k);
-   else if(a==='give'){const it='pet_'+k;if(!EQ[it])return;inv[it]=(inv[it]|0)+1;try{saveLocal(true)}catch(_){}toast('One '+EQ[it].n+' is in your bag.')}
+   else if(a==='give'){const it='pet_'+k;if(!EQ[it])return;inv[it]=(inv[it]|0)+1;try{saveLocal(true)}catch(_){self.SQERR&&SQERR(_,'234-6')}toast('One '+EQ[it].n+' is in your bag.')}
    else if(a==='del'){if(live(k))return;if(t.dataset.sure!=='1'){t.dataset.sure='1';t.textContent='Sure? Tap again';return}
     delete D()[k];await API.dset('draft/newpets/'+k,null);if(S.draft.pets&&S.draft.pets[k]){delete S.draft.pets[k];await API.dset('draft/pets/'+k,null)}sync();toast('Deleted.');API.draw()}}catch(err){fail(err)}},true);
  // the Pets tab's list gets a "New pet" button (111b calls this)

@@ -11,15 +11,15 @@
    const m=t.match(/const PATCH_NOTES=\[\s*\{v:'([0-9.\-]+)'/);if(!m)throw new Error('no version');U.v=newer(m[1],CUR)?m[1]:null;U.st=U.v?'new':'latest'}
   catch(e){U.st='fail'}finally{U.busy=false;U.at=Date.now()}draw();bar();return U.v}
  async function update(){U.st='saving';draw();bar();
-  try{saveLocal(true)}catch(e){}try{await Promise.race([saveCloud(true),new Promise(r=>setTimeout(r,2500))])}catch(e){}
+  try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'125-1')}try{await Promise.race([saveCloud(true),new Promise(r=>setTimeout(r,2500))])}catch(e){self.SQERR&&SQERR(e,'125-2')}
   location.replace(location.pathname+'?v='+encodeURIComponent(U.v||Date.now())+location.hash)}
  // after an update the address keeps ?v=...; tidy it away so a bookmark or a share isn't stuck on it
- try{if(/[?&](v|upd)=/.test(location.search))history.replaceState(null,'',location.pathname+location.hash)}catch(e){}
+ try{if(/[?&](v|upd)=/.test(location.search))history.replaceState(null,'',location.pathname+location.hash)}catch(e){self.SQERR&&SQERR(e,'125-3')}
  // ---- Options ----
  function row(){const t=U.st==='checking'?'Checking…':U.st==='latest'?'You have the newest version ('+CUR+').':U.st==='fail'?'Couldn\'t reach the website. Check your connection and try again.':U.st==='saving'?'Saving your game and updating…':U.st==='new'?'Update '+U.v+' is ready!':'You have version '+CUR+'.';
   return'<div class="upd-r"><button class="sb upb" data-up="'+(U.st==='new'?'go':'check')+'" style="width:100%;margin-top:8px'+(U.st==='new'?';background:#f8e8b0':'')+'"'+(U.busy||U.st==='saving'?' disabled':'')+'><b>'+(U.st==='new'?'UPDATE NOW':'Check for updates')+'</b><br><small>'+t+'</small></button></div>'}
  const _oh=optionsHTML;optionsHTML=function(){const h=_oh(),k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+row():h.slice(0,k)+row()+h.slice(k)};
- function draw(){try{if(pnOpen&&ptab===8){const el=pbd.querySelector('.upd-r');if(el)el.outerHTML=row();else rPn()}}catch(e){}}
+ function draw(){try{if(pnOpen&&ptab===8){const el=pbd.querySelector('.upd-r');if(el)el.outerHTML=row();else rPn()}}catch(e){self.SQERR&&SQERR(e,'125-4')}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-up]');if(!b)return;e.stopPropagation();if(b.dataset.up==='go')update();else check()},true);
  // ---- the "update ready" bar ----
  const st=document.createElement('style');st.textContent=`#updbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);z-index:32;display:none;align-items:center;gap:8px;padding:8px 10px;max-width:calc(100vw - 24px);background:#f8f0d8;color:#404040;border:3px solid #485870;font:600 13px ${PF}}
@@ -28,7 +28,7 @@
  for(const ev of['touchstart','pointerdown','mousedown'])el.addEventListener(ev,e=>e.stopPropagation());
  el.querySelector('.ok').onclick=()=>update();el.querySelector('.no').onclick=()=>{U.dismissed=U.v;bar()};
  function bar(){const show=U.v&&U.dismissed!==U.v&&!(window.SQTS&&SQTS.open)&&!pnOpen&&!menuOpen&&U.st!=='saving';el.style.display=show?'flex':'none';if(show)el.querySelector('span').textContent='Update '+U.v+' is ready.'}
- {const _cp=closePanel;closePanel=function(){const r=_cp.apply(this,arguments);try{bar()}catch(e){}return r}}
+ {const _cp=closePanel;closePanel=function(){const r=_cp.apply(this,arguments);try{bar()}catch(e){self.SQERR&&SQERR(e,'125-5')}return r}}
  setInterval(()=>{bar();if(!document.hidden&&Date.now()-U.at>10*60e3)check()},60e3);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-U.at>5*60e3)check()});
  setTimeout(()=>{if(!U.at)check()},20e3);

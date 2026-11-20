@@ -33,26 +33,26 @@
  const tierOf=(tot,e)=>TIERS.filter(f=>tot>=Math.ceil(e.goal*f)).length;
  // ---- paying out tiers ----
  function pay(e,upTo,why){if(W.c<mins(e)||upTo<=W.got)return;let g=0,x=0;for(let i=W.got;i<upTo;i++){g+=REW[i].g;x+=REW[i].x}W.got=upTo;
-  PAYING=true;try{GLD+=g;const si=SK(e.s);if(si>=0)addXp(si,x)}catch(er){}finally{PAYING=false}
+  PAYING=true;try{GLD+=g;const si=SK(e.s);if(si>=0)addXp(si,x)}catch(er){self.SQERR&&SQERR(er,'143-1')}finally{PAYING=false}
   const m=(why||'')+e.n+': tier '+upTo+' reached! +'+g+' gold, +'+x+' '+e.s+' XP for helping.';
-  setTimeout(()=>{try{say(m);msgT=6;sfx('quest');mpLog('game',m)}catch(er){}},600);try{saveLocal(true)}catch(er){}}
+  setTimeout(()=>{try{say(m);msgT=6;sfx('quest');mpLog('game',m)}catch(er){self.SQERR&&SQERR(er,'143-2')}},600);try{saveLocal(true)}catch(er){self.SQERR&&SQERR(er,'143-3')}}
  // ---- the shared total ----
- function watch(){if(!on()){if(unsub){try{unsub()}catch(e){}unsub=null;subW=-1}return}if(subW===W.w&&unsub)return;if(unsub)try{unsub()}catch(e){}subW=W.w;const w=W.w;
+ function watch(){if(!on()){if(unsub){try{unsub()}catch(e){self.SQERR&&SQERR(e,'143-4')}unsub=null;subW=-1}return}if(subW===W.w&&unsub)return;if(unsub)try{unsub()}catch(e){self.SQERR&&SQERR(e,'143-5')}subW=W.w;const w=W.w;
   unsub=fb().db.onValue(ref('wev/'+w),s=>{if(w!==W.w)return;const v=s.val()||{};TOT=Math.max(0,+v.t||0);const p=v.p&&typeof v.p==='object'?v.p:{};
     const L=[];for(const u in p){const r=p[u];if(r&&typeof r==='object'&&typeof r.n==='string')L.push({u,n:r.n.replace(/[<>]/g,'').slice(0,12),c:Math.max(0,+r.c||0)})}
     NP=L.filter(r=>r.c>0).length;TOP=L.sort((a,b)=>b.c-a.c).slice(0,3);
     const mine=p[me()];if(mine&&+mine.c>W.c)W.c=Math.floor(+mine.c);// played on another device
     pay(E(),tierOf(TOT,E()));if(pnOpen&&ptab===6)rPn()},()=>{});
-  try{(window.SQMP.unsub||[]).push(()=>{if(unsub){try{unsub()}catch(e){}unsub=null;subW=-1}})}catch(e){}}
+  try{(window.SQMP.unsub||[]).push(()=>{if(unsub){try{unsub()}catch(e){self.SQERR&&SQERR(e,'143-6')}unsub=null;subW=-1}})}catch(e){self.SQERR&&SQERR(e,'143-7')}}
  async function send(){if(sending||!on()||W.q<=0)return;sending=true;const w=W.w,d=Math.min(500,W.q),db=fb().db,r=ref('wev/'+w+'/t');
   try{let ok=false;if(db.runTransaction){const res=await db.runTransaction(r,cur=>(+cur||0)+d);ok=!!(res&&res.committed)}else{const s=await db.get(r);await db.set(r,(+s.val()||0)+d);ok=true}
    if(ok&&w===W.w){W.q-=d;await db.set(ref('wev/'+w+'/p/'+me()),{n:String(pname()).slice(0,12),c:W.c})}}catch(e){sendAt=performance.now()+20000}finally{sending=false}}
  // last week's tiers, when the week turns (or the game starts in a new week)
  function rollover(){const w=weekOf(now());if(w===W.w)return;const old=W;W={w,c:0,got:0,q:0};TOT=0;TOP=[];NP=0;
   if(old&&old.w===w-1&&old.c>=mins(evOf(old.w))&&old.got<3&&on()){fb().db.get(ref('wev/'+old.w+'/t')).then(s=>{const t=+s.val()||0,e=evOf(old.w),k=tierOf(t,e);if(k>old.got){
-    let g=0,x=0;for(let i=old.got;i<k;i++){g+=REW[i].g;x+=REW[i].x}PAYING=true;try{GLD+=g;const si=SK(e.s);if(si>=0)addXp(si,x)}catch(er){}finally{PAYING=false}
-    const m='Last week\'s '+e.n+' reached tier '+k+'. Your reward: +'+g+' gold, +'+x+' '+e.s+' XP.';setTimeout(()=>{try{say(m);msgT=6;sfx('quest');mpLog('game',m)}catch(er){}},1500);try{saveLocal(true)}catch(er){}}}).catch(()=>{})}
-  setTimeout(()=>{try{if(!dead&&on()){const e=E();mpLog('game','New weekly event: '+e.n+'! '+e.w(e.goal)+'. See your quest log.')}}catch(er){}},3000)}
+    let g=0,x=0;for(let i=old.got;i<k;i++){g+=REW[i].g;x+=REW[i].x}PAYING=true;try{GLD+=g;const si=SK(e.s);if(si>=0)addXp(si,x)}catch(er){self.SQERR&&SQERR(er,'143-8')}finally{PAYING=false}
+    const m='Last week\'s '+e.n+' reached tier '+k+'. Your reward: +'+g+' gold, +'+x+' '+e.s+' XP.';setTimeout(()=>{try{say(m);msgT=6;sfx('quest');mpLog('game',m)}catch(er){self.SQERR&&SQERR(er,'143-9')}},1500);try{saveLocal(true)}catch(er){self.SQERR&&SQERR(er,'143-10')}}}).catch(()=>{})}
+  setTimeout(()=>{try{if(!dead&&on()){const e=E();mpLog('game','New weekly event: '+e.n+'! '+e.w(e.goal)+'. See your quest log.')}}catch(er){self.SQERR&&SQERR(er,'143-11')}},3000)}
  function add(k){if(!(k>0)||!on())return;const was=W.c;W.c+=k;W.q+=k;if(was<mins(E())&&W.c>=mins(E()))pay(E(),tierOf(TOT,E()));if(pnOpen&&ptab===6)rPn()}
  // ---- counting ----
  {const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);if(x<=200&&!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}return out}}// (big gains are rewards, not fires)
@@ -60,7 +60,7 @@
    if(LASTINV&&!e.kill&&XPF.has(si)){if(e.xpc)add(XPN[si]|0);else{let tot=0;for(const k in inv){const v=(inv[k]|0)-(LASTINV[k]|0);if(v>0)tot+=v}add(e.min1?Math.max(1,tot):tot)}}
    if(typeof kills==='number'){if(e.kill&&kills>LASTK&&LASTINV)add(kills-LASTK);LASTK=kills}
    XPF.clear();XPN={};LASTINV=Object.assign({},inv);
-   const t=performance.now();if(W.q>0&&t-sendAt>10000){sendAt=t;send()}}catch(er){}return out})}
+   const t=performance.now();if(W.q>0&&t-sendAt>10000){sendAt=t;send()}}catch(er){self.SQERR&&SQERR(er,'143-12')}return out})}
  // ---- the quest log card ----
  const left=()=>{const ms=Math.max(0,endsAt(W.w)-now()),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5);return d>0?d+'d '+h+'h left':h>0?h+'h left':Math.max(1,Math.ceil(ms/6e4))+' min left'};
  function html(){const e=E(),pc=Math.min(100,TOT/e.goal*100),k=tierOf(TOT,e),mn=mins(e);
@@ -73,7 +73,7 @@
   if(TOP.length)h+='<small class="sqwe-top">Top helpers: '+TOP.map((r,i)=>(i+1)+'. '+esc(r.n)+' ('+r.c.toLocaleString('en-US')+')').join(' · ')+'</small>';
   return h}
  {const _rp=rPn;rPn=function(){const out=_rp.apply(this,arguments);try{if(pnOpen&&ptab===6){const d=document.createElement('div');d.className='sqwe';d.innerHTML=html();
-    const dl=pbd.querySelector('.sqdl')||pbd.querySelector('.sqgd');if(dl)dl.after(d);else pbd.prepend(d)}}catch(e){}return out}}
+    const dl=pbd.querySelector('.sqdl')||pbd.querySelector('.sqgd');if(dl)dl.after(d);else pbd.prepend(d)}}catch(e){self.SQERR&&SQERR(e,'143-13')}return out}}
  {const st=document.createElement('style');st.textContent=`#pn .sqwe{background:#fdf6e4;border:2px solid #c09040;border-radius:8px;padding:8px 10px;margin:0 0 10px;font-size:13px;color:#404040;text-align:left}
 #pn .sqwe-h{display:flex;justify-content:space-between;align-items:center;gap:6px}#pn .sqwe-h b{letter-spacing:1px;color:#805010;font-size:13px}#pn .sqwe-h span{font-size:11px;color:#906030;white-space:nowrap}
 #pn .sqwe-g{font-weight:700;margin:4px 0 6px}#pn .sqwe-b{position:relative;height:10px;background:#e8dcc0;border:1px solid #a88850}#pn .sqwe-b div{height:100%}
@@ -81,8 +81,8 @@
 #pn .sqwe-t{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin:3px 0 5px}#pn .sqwe-r{display:flex;flex-direction:column;gap:1px;font-size:11px;margin-bottom:5px}
 #pn .sqwe-r span{opacity:.6}#pn .sqwe-r span.on{opacity:1;color:#287818;font-weight:700}#pn .sqwe small{display:block;font-size:11px;opacity:.9}#pn .sqwe-top{margin-top:3px}`;document.head.appendChild(st)}
  // ---- saves ----
- {SQSAVE.after('143:wev',s=>{try{if(W.c||W.got)s.wev={w:W.w,c:W.c,got:W.got,q:W.q}}catch(e){}})}
+ {SQSAVE.after('143:wev',s=>{try{if(W.c||W.got)s.wev={w:W.w,c:W.c,got:W.got,q:W.q}}catch(e){self.SQERR&&SQERR(e,'143-14')}})}
  {SQLOAD.after('143',(S)=>{try{const v=S&&S.wev;W=v&&typeof v==='object'&&isFinite(+v.w)?{w:+v.w|0,c:Math.max(0,v.c|0),got:Math.max(0,Math.min(3,v.got|0)),q:Math.max(0,v.q|0)}:{w:weekOf(now()),c:0,got:0,q:0};
-   TOT=0;TOP=[];NP=0;subW=-1;if(unsub){try{unsub()}catch(e){}unsub=null}LASTINV=null;LASTK=typeof kills==='number'?kills:0}catch(e){}})}
+   TOT=0;TOP=[];NP=0;subW=-1;if(unsub){try{unsub()}catch(e){self.SQERR&&SQERR(e,'143-15')}unsub=null}LASTINV=null;LASTK=typeof kills==='number'?kills:0}catch(e){self.SQERR&&SQERR(e,'143-16')}})}
  {const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);W={w:weekOf(now()),c:0,got:0,q:0};LASTINV=null;LASTK=0;return out}}
  window.SQWEEK={EV,TIERS,REW,weekOf,evOf,get state(){return W},set state(v){W=v},get total(){return TOT},html,mins,send,tierOf}})();

@@ -31,11 +31,11 @@
  // stats on the item descriptions (with how they compare)
  for(const k of['eq_bow4','eq_bow5','eq_wfire_m','eq_wice_m','eq_wstorm_m','eq_wfire_a','eq_wice_a','eq_wstorm_a']){const base=IDESC[k];
   Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){const e=EQ[k];let s='';try{if(e.kind==='bow'){const t=TL.bow;TL.bow=e.tier;const d=arrowDmg(),r=bowRange();TL.bow=t;s='Arrow damage '+d+' · Range '+r+'. '}
-     else{const w=WT;WT=e.wt;const d=spellDmg(e.el);WT=w;s='Damage '+d+' · Costs '+WSP[e.el].cost+' mana. '}}catch(err){}return s+base},set(v){}})}
+     else{const w=WT;WT=e.wt;const d=spellDmg(e.el);WT=w;s='Damage '+d+' · Costs '+WSP[e.el].cost+' mana. '}}catch(err){self.SQERR&&SQERR(err,'088-1')}return s+base},set(v){}})}
  // icons: the usual bow / wand, recoloured mithril blue or adamant green (made once the plain icon has loaded)
  const _ic=iconURL;iconURL=function(k,col){const e=EQ[k];if(!e||!(e.tier>=4&&e.kind==='bow'||e.wt))return _ic(k,col);const key='g78'+k;if(ICONC[key])return ICONC[key];
   const src=_ic(e.kind==='bow'?'eq_bow2':'eq_w'+e.el);if(ICONC[key+'_p'])return src;ICONC[key+'_p']=1;const img=new Image();
   img.onload=()=>{try{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const x=c.getContext('2d');x.drawImage(img,0,0);const d=x.getImageData(0,0,c.width,c.height),p=d.data,tc=e.col.match(/\w\w/g).map(h=>parseInt(h,16));
     for(let i=0;i<p.length;i+=4){if(p[i+3]<10)continue;const r=p[i],g2=p[i+1],b=p[i+2];if(r>g2+15&&r>b+25){const l=Math.max(.35,(r+g2+b)/3/150);p[i]=Math.min(255,tc[0]*l);p[i+1]=Math.min(255,tc[1]*l);p[i+2]=Math.min(255,tc[2]*l)}}
-    x.putImageData(d,0,0);ICONC[key]=c.toDataURL();if(typeof pnOpen!=='undefined'&&pnOpen)rPn()}catch(err){}};img.src=src;return src};
+    x.putImageData(d,0,0);ICONC[key]=c.toDataURL();if(typeof pnOpen!=='undefined'&&pnOpen)rPn()}catch(err){self.SQERR&&SQERR(err,'088-2')}};img.src=src;return src};
  window.SQWT=()=>WT}

@@ -14,12 +14,12 @@
  const parse=x=>{try{return JSON.parse(x.s)}catch(e){return null}};
  function stop(){if(T.play){M.force=null;delete M.S.__ps;delete M.SONGS.__ps;T.play=null}}
  async function play(x){stop();const c=window.SQSONGS.check(parse(x));if(!c.def){toast(c.errs[0]||'This song doesn\'t build.');return}M.S.__ps=c.def;M.SONGS.__ps=M.build(c.def);M.VOL.__ps=1.6;T.play=x.u+'/'+x.id;API.draw();
-  try{if(typeof ACX!=='undefined'&&ACX&&ACX.state!=='running')await ACX.resume()}catch(e){}try{await M.loadSong('__ps')}catch(e){toast('Could not load the instruments.')}if(T.play)M.force='__ps'}
+  try{if(typeof ACX!=='undefined'&&ACX&&ACX.state!=='running')await ACX.resume()}catch(e){self.SQERR&&SQERR(e,'236-1')}try{await M.loadSong('__ps')}catch(e){toast('Could not load the instruments.')}if(T.play)M.force='__ps'}
  // into the draft as a new song su_<name>; returns its key
  async function toDraft(def){const c=window.SQSONGS.check(def);if(!c.def)throw new Error(c.errs[0]||'Not a song');S.draft.songs=S.draft.songs||{};
   const b=String(def.n||'song').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,16)||'song';let k='su_'+b,i=2;while(S.draft.songs[k]||(S.live&&S.live.songs||{})[k])k='su_'+b+(i++);
   const o={...c.def,vol:1.6};S.draft.songs[k]=o;await API.dset('draft/songs/'+k,o);return k}
- function openSongs(k){try{SQSUITE.open()}catch(e){}setTimeout(()=>{const tb=document.querySelector('#dvs [data-tab="songs"]');if(tb)tb.click();setTimeout(()=>{const it=document.querySelector('#dvs [data-sgs="'+k+'"]');if(it)it.click()},200)},300)}
+ function openSongs(k){try{SQSUITE.open()}catch(e){self.SQERR&&SQERR(e,'236-2')}setTimeout(()=>{const tb=document.querySelector('#dvs [data-tab="songs"]');if(tb)tb.click();setTimeout(()=>{const it=document.querySelector('#dvs [data-sgs="'+k+'"]');if(it)it.click()},200)},300)}
  function render(){if(!T.list){inbox();return'<p class="dv-mut">Loading…</p>'}const waiting=T.list.filter(x=>!x.st);
   let h='<div class="dv-card"><b>🎵 Patron songs</b><p class="dv-mut">Songs Patrons made in the Song Studio. Listen, answer them, and put the ones you like into the Songs editor to finish and give them a place (an island\'s song, or a song zone in the island builder).</p>'+
    '<p>'+waiting.length+' waiting, '+(T.list.length-waiting.length)+' answered.</p><button class="dv-b dv-pri" data-psg="studio">Open the Song Studio (the simple composer)</button></div>';
@@ -39,6 +39,6 @@
    else if((a==='ok'||a==='no')&&x){const re=String(T.msg[k]||'').trim().slice(0,300);await D().set(ref('songsub/'+u+'/'+id+'/st'),a);if(re)await D().set(ref('songsub/'+u+'/'+id+'/re'),re);
     if(a==='ok')await D().set(ref('artcred/s'+id),{n:String(x.who||nm(u)).slice(0,12),w:('Song: '+String(x.n||'')).slice(0,40)});
     const m=(a==='ok'?'Your song "'+x.n+'" was approved! Thank you. It will play in the game, and your name is in the credits.':'About your song "'+x.n+'": not this time.')+(re?' '+re:'');
-    try{await D().set(ref('gifts/'+u+'/s'+Date.now().toString(36)),{m:m.slice(0,300),t:D().serverTimestamp(),f:'dev'})}catch(_){}x.st=a;if(re)x.re=re;toast(a==='ok'?'Approved.':'Answered.');API.draw()}}catch(err){fail(err)}},true);
+    try{await D().set(ref('gifts/'+u+'/s'+Date.now().toString(36)),{m:m.slice(0,300),t:D().serverTimestamp(),f:'dev'})}catch(_){self.SQERR&&SQERR(_,'236-3')}x.st=a;if(re)x.re=re;toast(a==='ok'?'Approved.':'Answered.');API.draw()}}catch(err){fail(err)}},true);
  window.SQPSONGS={toDraft,openSongs,inbox};
  SQSUITE.addTab('psongs','Patron songs',{render,leave(){stop()}})})();

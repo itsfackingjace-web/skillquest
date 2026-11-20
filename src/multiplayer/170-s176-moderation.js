@@ -11,7 +11,7 @@
  const until=t=>{const d=new Date(t);return t>nowS()+3e10?'further notice':d.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})};
  const muted=()=>M&&M.mu>nowS(),banned=()=>M&&M.ba>nowS();
  function watch(){const F=FBx(),u=uid();if(!F||!u||on===u)return;on=u;const d=F.db;d.onValue(d.ref(F.D,'mod/'+u),s=>{M=s.val();show()},()=>{on=null})}
- setInterval(()=>{try{watch();show()}catch(e){}},3000);
+ setInterval(()=>{try{watch();show()}catch(e){self.SQERR&&SQERR(e,'170-1')}},3000);
  // suspended: a full-screen notice, and the game stops
  const box=document.createElement('div');box.id='sqban';box.style.cssText='position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;background:rgba(8,12,24,.86)';
  box.innerHTML='<div style="max-width:420px;margin:12px;background:#f8f8f8;color:#404040;border:4px solid #804848;box-shadow:inset 0 0 0 3px #e0b0b0;padding:16px;font:500 15px '+PF+';text-align:center;line-height:1.4"><div style="font-weight:700;font-size:17px;margin-bottom:8px">ACCOUNT SUSPENDED</div><div id="sqbant"></div></div>';
@@ -19,19 +19,19 @@
  function show(){const b=banned()&&!(window.SQTITLE&&SQTITLE()&&!uid());box.style.display=b?'flex':'none';
   if(b)document.getElementById('sqbant').textContent='This account can\'t play until '+until(M.ba)+'.'+(M.r?' Reason: '+M.r.replace(/[.!?]?$/,'.'):'')+' If you think this is a mistake, ask on the Discord.'}
  {SQUPD.wrap('170',_u=>function(){if(banned())return;return _u.apply(this,arguments)})}
- window.SQMOD={get state(){return M},muted,banned,blockChat(){if(banned()){try{mpLog('game','This account is suspended.')}catch(e){}return true}
-   if(muted()){try{mpLog('game','You can\'t chat until '+until(M.mu)+'.'+(M.r?' ('+M.r+')':''))}catch(e){}return true}return false}};
+ window.SQMOD={get state(){return M},muted,banned,blockChat(){if(banned()){try{mpLog('game','This account is suspended.')}catch(e){self.SQERR&&SQERR(e,'170-2')}return true}
+   if(muted()){try{mpLog('game','You can\'t chat until '+until(M.mu)+'.'+(M.r?' ('+M.r+')':''))}catch(e){self.SQERR&&SQERR(e,'170-3')}return true}return false}};
  // ---- REPORT from the player menu (130 adds the button) ----
  const RTAB=40;let RU=null,RN='',RS=0;
  const WHY=[['chat','Rude or hurtful chat'],['cheat','Cheating or using a bug'],['scam','Scamming in a trade'],['name','Bad name'],['other','Something else']];
  window.SQREPORT=(u,n)=>{RU=u;RN=n||'';RS=0;pnOpen=true;ptab=RTAB;pn.style.display='block';rPn()};
- {const _r=rPn;rPn=function(){if(ptab!==RTAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){}
+ {const _r=rPn;rPn=function(){if(ptab!==RTAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'170-4')}
    pbd.innerHTML=RS?'<div class="tl">THANK YOU</div><div class="qc" style="text-align:center">Your report about '+esc(RN)+' was sent to the developer.</div><div class="pmb"><button class="sb" data-rp="close">CLOSE</button></div>'
     :'<div class="tl">REPORT '+esc(RN).toUpperCase()+'</div><div class="qc" style="font-size:13px">What happened? The developer sees the report and their recent chat.</div><div class="pmb">'+WHY.map(([k,l])=>'<button class="sb" data-rp="'+k+'">'+l+'</button>').join('')+
      '<input id="sqrpx" maxlength="200" placeholder="Anything to add? (optional)" style="width:100%;box-sizing:border-box;margin:6px 0;padding:8px;font:500 14px '+PF+'"><button class="sb" data-rp="close">CANCEL</button></div>'}}
  pbd.addEventListener('click',async e=>{if(ptab!==RTAB)return;const b=e.target.closest('[data-rp]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.rp;
   if(k==='close'){closePanel();return}const F=FBx(),me=uid();if(!F||!me){say('Sign in to report.');return}if(RS)return;RS=1;
-  const x=(document.getElementById('sqrpx')||{}).value||'';let loc='';try{loc=SCENE&&SCENE.room&&SCENE.room.region||((typeof curRegion==='function')?curRegion():'')}catch(_){}
+  const x=(document.getElementById('sqrpx')||{}).value||'';let loc='';try{loc=SCENE&&SCENE.room&&SCENE.room.region||((typeof curRegion==='function')?curRegion():'')}catch(_){self.SQERR&&SQERR(_,'170-5')}
   try{const d=F.db;await d.push(d.ref(F.D,'reports'),{u:RU,n:String(RN).slice(0,12),by:me,byn:String((typeof PNAME!=='undefined'&&PNAME)||'').slice(0,12),why:k,x:String(x).slice(0,200),loc:String(loc||'').slice(0,40),t:d.serverTimestamp()});sfx('quest')}
   catch(err){RS=0;say('Couldn\'t send the report. Check your connection.');return}rPn()},true);
  // ======================= Dev Suite > Moderation =======================
@@ -41,7 +41,7 @@
  const ago=t=>{const s=(Date.now()-t)/1000;return s<3600?Math.max(1,Math.round(s/60))+' min ago':s<86400*2?Math.round(s/3600)+' h ago':Math.round(s/86400)+' days ago'};
  async function load(){T.busy=1;API.draw();try{const d=D();const[rep,mod,lb,ch]=await Promise.all([get('reports'),get('mod'),get('lb'),d.get(d.query(ref('chat'),d.limitToLast(300)))]);
    T.rep=rep||{};T.mod=mod||{};T.lb=lb||{};T.chat=Object.entries(ch.val()||{}).map(([id,v])=>({id,...v})).filter(m=>m&&m.m).sort((a,b)=>(b.t||0)-(a.t||0))}catch(e){fail(e);T.rep=T.rep||{};T.mod=T.mod||{};T.lb=T.lb||{};T.chat=T.chat||[]}T.busy=0;API.draw()}
- const nm=u=>T.lb&&T.lb[u]&&T.lb[u].n||(T.chat||[]).find(m=>m.u===u)?.n||(()=>{try{const r=SQMP.players.get(u);return r&&r.n}catch(e){}})()||String(u).slice(0,8);
+ const nm=u=>T.lb&&T.lb[u]&&T.lb[u].n||(T.chat||[]).find(m=>m.u===u)?.n||(()=>{try{const r=SQMP.players.get(u);return r&&r.n}catch(e){self.SQERR&&SQERR(e,'170-6')}})()||String(u).slice(0,8);
  const st=u=>{const m=(T.mod||{})[u]||{},n=Date.now(),o=[];if(m.ba>n)o.push('🚫 suspended until '+until(m.ba));if(m.mu>n)o.push('🔇 muted until '+until(m.mu));return o.join(' · ')};
  const acts=u=>'<span class="dv-row" style="flex-wrap:wrap;gap:4px"><button class="dv-b" data-md="mu:'+E(u)+':1">Mute 1 h</button><button class="dv-b" data-md="mu:'+E(u)+':24">Mute 1 day</button><button class="dv-b dv-bad" data-md="ba:'+E(u)+':168">Suspend 7 days</button><button class="dv-b dv-bad" data-md="ba:'+E(u)+':876000">Suspend for good</button>'+(((T.mod||{})[u]||{}).mu>Date.now()||((T.mod||{})[u]||{}).ba>Date.now()?'<button class="dv-b" data-md="clr:'+E(u)+'">Lift</button>':'')+'</span>';
  const chatOf=u=>(T.chat||[]).filter(m=>m.u===u).slice(0,12);
@@ -61,7 +61,7 @@
   return'<p class="dv-mut">Accounts muted or suspended right now.</p>'+(L.map(([u,m])=>'<div class="dv-hl" style="flex-wrap:wrap"><span><b>'+E(nm(u))+'</b> '+st(u)+(m.r?' <small class="dv-mut">('+E(m.r)+')</small>':'')+'</span><button class="dv-b" data-md="clr:'+E(u)+'">Lift</button></div>').join('')||'<p class="dv-mut">Nobody.</p>')}
  // Find a player: anyone on the leaderboard list (every signed-in account) or online now, by name or account id, so a player can be
  // muted or suspended without a report.
- const online=()=>{const o={};try{for(const[k,r]of (window.SQMP&&SQMP.players)||[])if(r&&performance.now()-(r.seen||-1e9)<6e4)o[k]=r}catch(e){}return o};
+ const online=()=>{const o={};try{for(const[k,r]of (window.SQMP&&SQMP.players)||[])if(r&&performance.now()-(r.seen||-1e9)<6e4)o[k]=r}catch(e){self.SQERR&&SQERR(e,'170-7')}return o};
  const fishLv=u=>{try{const x=T.lb[u]&&T.lb[u].x;const i=SKN.indexOf('Fishing');if(!x||i<0)return 0;let L=1;while(L<XT.length&&x[i]>=XT[L])L++;return L}catch(e){return 0}};
  function findView(){const q=String(T.q||'').trim().toLowerCase(),on=online(),ids=new Set([...Object.keys(T.lb||{}),...Object.keys(on)]);
   let L=[...ids].map(u=>({u,n:(T.lb[u]&&T.lb[u].n)||(on[u]&&on[u].n)||'',tot:T.lb[u]&&T.lb[u].tot||0,t:T.lb[u]&&T.lb[u].t||0,on:!!on[u]}));
@@ -86,6 +86,6 @@
     await D().set(ref('mod/'+b),o);T.mod[b]=o;T.reason='';toast(nm(b)+(a==='mu'?' muted.':' suspended.'))}
    else if(a==='clr'){await D().set(ref('mod/'+b),null);delete T.mod[b];toast('Lifted for '+nm(b)+'.')}}catch(e2){fail(e2)}API.draw()},true);
  document.addEventListener('input',e=>{if(S.tab!=='mod'||!e.target.dataset)return;if(e.target.dataset.mr)T.reason=e.target.value;
-  if(e.target.dataset.mq){T.q=e.target.value;const el=e.target,pos=el.selectionStart;clearTimeout(T.qt);T.qt=setTimeout(()=>{API.draw();const n=document.querySelector('#dvs [data-mq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},250)}},true);
+  if(e.target.dataset.mq){T.q=e.target.value;const el=e.target,pos=el.selectionStart;clearTimeout(T.qt);T.qt=setTimeout(()=>{API.draw();const n=document.querySelector('#dvs [data-mq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'170-8')}}},250)}},true);
  SQSUITE.addTab('mod','Moderation',{render});
  window.SQMODADMIN={load}})();

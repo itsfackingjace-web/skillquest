@@ -56,13 +56,13 @@ for(const e of[btn,ov,pc,sg])document.body.appendChild(e);
 const stop=e=>e.stopPropagation();
 for(const e of[btn,pc,sg])for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])e.addEventListener(ev,stop);
 const $=id=>document.getElementById(id),lst=$('mpl'),inp=$('mpi');
-function mpClearKeys(){try{for(const k in K)K[k]=0}catch(e){}}
+function mpClearKeys(){try{for(const k in K)K[k]=0}catch(e){self.SQERR&&SQERR(e,'061-1')}}
 function mpOpenChat(){if(!MP.on){sg.style.display='block';return}MP.open=true;MP.unread=0;pc.style.display='block';mpRList();mpClearKeys();setTimeout(()=>inp.focus(),30)}
 function mpCloseChat(){MP.open=false;pc.style.display='none';inp.blur()}
 btn.onclick=()=>MP.open?mpCloseChat():mpOpenChat();
 $('mpx').onclick=mpCloseChat;$('mpno').onclick=()=>{sg.style.display='none'};
 $('mpgo').onclick=()=>{sg.style.display='none';mpSignIn()};
-$('mpso').onclick=async()=>{mpCloseChat();if(STRICT)try{await saveCloud(true)}catch(e){}await mpStop(true);try{await FB.auth.signOut(FB.A)}catch(e){}say(STRICT?'Signed out.':'Signed out. Playing offline.')};
+$('mpso').onclick=async()=>{mpCloseChat();if(STRICT)try{await saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'061-2')}await mpStop(true);try{await FB.auth.signOut(FB.A)}catch(e){self.SQERR&&SQERR(e,'061-3')}say(STRICT?'Signed out.':'Signed out. Playing offline.')};
 pc.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{MP.tab=b.dataset.t;mpRList()});
 // the game's keyboard handlers (capture phase on document) would swallow Enter, so the chat box gets the key first
 addEventListener('keydown',e=>{if(e.target!==inp){const t=e.target;if(t&&t.tagName==='INPUT'&&t.closest&&t.closest('#mpchat')){e.stopImmediatePropagation();if(e.key==='Enter'&&!e.isComposing){e.preventDefault();const f=t.closest('form');if(f)f.requestSubmit()}else if(e.key==='Escape'){e.preventDefault();mpCloseChat()}}return}e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();mpCloseChat()}else if(e.key==='Enter'&&!e.isComposing){e.preventDefault();(window.mpSend||mpSend)(inp.value);inp.value=''}},true);
@@ -100,11 +100,11 @@ const crownImg=()=>{const i=document.createElement('img');i.src=crownURL;i.alt='
 // This device remembers which account its save belongs to (sq_acct). The first time a device meets an account that already
 // has a different save, the player chooses which one to keep, and the other is backed up on this device (sq_bak_*).
 // Once linked, the cross-device rule from section 8 applies (newest save wins, another device's newer save is adopted).
-const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){self.SQERR&&SQERR(e,'061-4')}};
 function mpBackup(tag,S){try{const keys=Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort();while(keys.length>=4)localStorage.removeItem(keys.shift());
- localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){}cloudBak(tag,S)}
+ localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){self.SQERR&&SQERR(e,'061-5')}cloudBak(tag,S)}
 // the same backups also go to your account (bak/<uid>, the last 8), so any device can restore them (Options → Backups)
-function cloudBak(tag,S){try{window.sqCloudBak&&sqCloudBak(tag,S)}catch(e){}}
+function cloudBak(tag,S){try{window.sqCloudBak&&sqCloudBak(tag,S)}catch(e){self.SQERR&&SQERR(e,'061-6')}}
 const lvFromXp=x=>{let l=1;while(l<99&&(+x||0)>=XT[l])l++;return l};
 function saveInfo(S){const xp=Array.isArray(S.xp)?S.xp:[];let tl=0;for(let i=0;i<SKN.length;i++)tl+=lvFromXp(xp[i]);
  const qi=Math.max(0,+(S.q&&S.q.i)||0);return{name:String(S.name||'?').slice(0,10),tl,q:Math.min(qi,QS.length),gold:Math.max(0,+S.gold||0),at:+S.savedAt||0,
@@ -115,10 +115,10 @@ async function mpLinkSave(uid,adapter){const r=await adapter.get(),linked=lsGet(
  const done=()=>{lsSet('sq_acct',uid);cloud=adapter;if(TS&&TS.open)TS.mh=''};
  // switching to a different Google account on this device: this device's save belongs to the other account (it's in
  // that account's cloud save, and backed up here), so load this account's own save, or start it fresh
- const prev=lsGet('sq_acct');if(prev&&prev!==uid&&localHasProgress()){const L=snap();L.savedAt=LOCAL_AT;try{mpBackup('device',L)}catch(e){}
-  let S=null;if(r.exists){try{S=JSON.parse(JSON.stringify(r.data()))}catch(e){}}
+ const prev=lsGet('sq_acct');if(prev&&prev!==uid&&localHasProgress()){const L=snap();L.savedAt=LOCAL_AT;try{mpBackup('device',L)}catch(e){self.SQERR&&SQERR(e,'061-7')}
+  let S=null;if(r.exists){try{S=JSON.parse(JSON.stringify(r.data()))}catch(e){self.SQERR&&SQERR(e,'061-8')}}
   if(S&&S.v==1){applySave(S);hideCreator();say('Switched account: loaded this account\'s save.');saveLocal(true);lastCloud=keyOf(snap());syncMark(S);done();return}
-  try{localStorage.removeItem('sq_spf')}catch(e){}newGame();done();say('Switched account: this account has no save yet, so make a new character.');return}
+  try{localStorage.removeItem('sq_spf')}catch(e){self.SQERR&&SQERR(e,'061-9')}newGame();done();say('Switched account: this account has no save yet, so make a new character.');return}
  if(!r.exists){done();if(localHasProgress())saveCloud(true);return}
  const S=JSON.parse(JSON.stringify(r.data()));if(S.v!=1){done();return}
  if(!localHasProgress()){applySave(S);hideCreator();say('Progress loaded from your account');saveLocal(true);lastCloud=keyOf(snap());syncMark(S);done();return}
@@ -161,16 +161,16 @@ function gsiNote(e){const c=String((e&&(e.code||e.message))||e||'');if(/popup-cl
  let d=document.getElementById('gsinote');if(!d){d=document.createElement('div');d.id='gsinote';d.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:460px;margin:0 auto;z-index:999;background:#f8f8f8;color:#404040;border:3px solid #c04040;padding:10px 12px;font:500 14px '+PF+';line-height:1.35;text-align:center';d.onclick=()=>d.remove();document.body.appendChild(d)}
  d.textContent='Google sign-in didn\'t finish ('+c.replace(/^auth\//,'').slice(0,70)+'). Tap Sign in to try again. Tap to close.';clearTimeout(d._t);d._t=setTimeout(()=>d.remove(),12000)}
 const gsiRand=()=>{const a=new Uint8Array(16);crypto.getRandomValues(a);return[...a].map(b=>b.toString(16).padStart(2,'0')).join('')};
-function gsiGo(){const st=gsiRand(),no=gsiRand();try{localStorage.setItem('sq_gsi',JSON.stringify({st,no,t:Date.now()}))}catch(e){}
+function gsiGo(){const st=gsiRand(),no=gsiRand();try{localStorage.setItem('sq_gsi',JSON.stringify({st,no,t:Date.now()}))}catch(e){self.SQERR&&SQERR(e,'061-10')}
  location.href='https://accounts.google.com/o/oauth2/v2/auth?'+new URLSearchParams({client_id:GSI.id,redirect_uri:location.origin+'/',response_type:'id_token',scope:'openid email profile',nonce:no,state:st,prompt:'select_account'})}
 // the Windows app signs in through your browser: it opens skillquestmmo.com/?desktop=PORT&st=CODE, we sign in with Google
 // here, then hand the sign-in to the app on this PC (http://127.0.0.1:PORT) instead of signing this browser in
-function gsiDeskStart(){const sp=new URLSearchParams(location.search),dp=sp.get('desktop'),dst=sp.get('st')||'';if(!dp)return false;try{history.replaceState(null,'',location.pathname)}catch(e){}
+function gsiDeskStart(){const sp=new URLSearchParams(location.search),dp=sp.get('desktop'),dst=sp.get('st')||'';if(!dp)return false;try{history.replaceState(null,'',location.pathname)}catch(e){self.SQERR&&SQERR(e,'061-11')}
  if(!/^\d{2,5}$/.test(dp)||!/^[0-9a-f]{32}$/.test(dst)||!GSI.on())return false;try{localStorage.setItem('sq_desk',JSON.stringify({p:dp,st:dst,t:Date.now()}))}catch(e){return false}gsiGo();return true}
-function gsiDeskEnd(q){let d=null;try{d=JSON.parse(localStorage.getItem('sq_desk')||'null');localStorage.removeItem('sq_desk')}catch(e){}if(!d||Date.now()-d.t>600000||!/^\d{2,5}$/.test(d.p))return false;
+function gsiDeskEnd(q){let d=null;try{d=JSON.parse(localStorage.getItem('sq_desk')||'null');localStorage.removeItem('sq_desk')}catch(e){self.SQERR&&SQERR(e,'061-12')}if(!d||Date.now()-d.t>600000||!/^\d{2,5}$/.test(d.p))return false;
  const o={st:d.st};if(q.get('id_token'))o.id_token=q.get('id_token');else o.error=q.get('error')||'failed';location.replace('http://127.0.0.1:'+d.p+'/cb#'+new URLSearchParams(o));return true}
-async function gsiReturn(){if(gsiDeskStart())return;const h=location.hash;if(!/[#&](id_token|error)=/.test(h))return;const q=new URLSearchParams(h.slice(1));try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
- let saved=null;try{saved=JSON.parse(localStorage.getItem('sq_gsi')||'null');localStorage.removeItem('sq_gsi')}catch(e){}
+async function gsiReturn(){if(gsiDeskStart())return;const h=location.hash;if(!/[#&](id_token|error)=/.test(h))return;const q=new URLSearchParams(h.slice(1));try{history.replaceState(null,'',location.pathname+location.search)}catch(e){self.SQERR&&SQERR(e,'061-13')}
+ let saved=null;try{saved=JSON.parse(localStorage.getItem('sq_gsi')||'null');localStorage.removeItem('sq_gsi')}catch(e){self.SQERR&&SQERR(e,'061-14')}
  if(localStorage.getItem('sq_desk')&&gsiDeskEnd(q))return;if(q.get('error')){if(q.get('error')!=='access_denied')gsiNote(q.get('error'));return}
  if(saved&&q.get('state')!==saved.st)throw new Error('sign-in check failed');
  await FB.auth.signInWithCredential(FB.A,FB.auth.GoogleAuthProvider.credential(q.get('id_token')))}
@@ -183,16 +183,16 @@ window.sqCloudBak=(tag,S)=>{const u=MP.user;if(!FB||!u||!S||S.v!=1)return Promis
  return d.set(d.ref(D,base+'/'+Date.now()+'_'+String(tag).slice(0,12)),{json:JSON.stringify(S),at:Date.now(),tag:String(tag).slice(0,12)}).then(async()=>{
   const s=await d.get(d.ref(D,base));if(!s.exists())return true;const ks=Object.keys(s.val()).sort();while(ks.length>8)await d.remove(d.ref(D,base+'/'+ks.shift()));return true}).catch(e=>{mpErr(e);return false})};
 window.sqCloudBakList=async()=>{const u=MP.user;if(!FB||!u)return null;const d=FB.db,D=FB.D;const s=await d.get(d.ref(D,'bak/'+u.uid));if(!s.exists())return[];const v=s.val(),out=[];
- for(const k of Object.keys(v).sort().reverse()){let S=null;try{S=JSON.parse(v[k].json)}catch(e){}if(S&&S.v==1)out.push({k,at:+v[k].at||0,tag:v[k].tag||'',S})}return out};
+ for(const k of Object.keys(v).sort().reverse()){let S=null;try{S=JSON.parse(v[k].json)}catch(e){self.SQERR&&SQERR(e,'061-15')}if(S&&S.v==1)out.push({k,at:+v[k].at||0,tag:v[k].tag||'',S})}return out};
 // ---- account-only saves: the session lock, loading, losing the account to another device ----
 async function sqClaim(uid){const d=FB.db;await d.set(d.ref(FB.D,'sess/'+uid),{id:SQSTRICT.sid,t:Date.now()});SQSTRICT.lost=false}
 function sqWatch(uid){const d=FB.db;MP.unsub.push(d.onValue(d.ref(FB.D,'sess/'+uid),s=>{const v=s.val();if(v&&v.id&&v.id!==SQSTRICT.sid&&!SQSTRICT.lost&&MP.user&&MP.user.uid===uid)sqLost()}));
  MP.unsub.push(d.onValue(d.ref(FB.D,'.info/connected'),s=>{const c=s.val()===true;if(!c&&SQSTRICT.conn)SQSTRICT.offAt=Date.now();SQSTRICT.conn=c}))}
-SQSTRICT&&(SQSTRICT.denied=async()=>{try{const u=MP.user;if(!u||SQSTRICT.lost)return;const s=await FB.db.get(FB.db.ref(FB.D,'sess/'+u.uid));const v=s.val();if(!v||v.id!==SQSTRICT.sid)sqLost()}catch(e){}});
+SQSTRICT&&(SQSTRICT.denied=async()=>{try{const u=MP.user;if(!u||SQSTRICT.lost)return;const s=await FB.db.get(FB.db.ref(FB.D,'sess/'+u.uid));const v=s.val();if(!v||v.id!==SQSTRICT.sid)sqLost()}catch(e){self.SQERR&&SQERR(e,'061-16')}});
 // what to load when you sign in: the account save, except (a) the very first time under these rules, when the save with more
 // progress wins (the other one is backed up), and (b) when this device's save continues the account save exactly (made after
 // it, from it: bw = its wid) and simply hadn't reached the account yet. A save on this device from another account is never used.
-function bakLocalOnly(tag,S){try{const keys=Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort();while(keys.length>=4)localStorage.removeItem(keys.shift());localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){}}
+function bakLocalOnly(tag,S){try{const keys=Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort();while(keys.length>=4)localStorage.removeItem(keys.shift());localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){self.SQERR&&SQERR(e,'061-17')}}
 async function mpLinkStrict(uid,adapter){const r=await adapter.get();let S=r.exists?r.data():null;if(S&&S.v!=1)S=null;
  const prev=lsGet('sq_acct'),has=localHasProgress();let L=null;
  if(has){L=snap();L.savedAt=LOCAL_AT;const bw=lastWid&&lastWid!=='legacy'?lastWid:(typeof BOOT_LOCAL!=='undefined'&&BOOT_LOCAL&&BOOT_LOCAL.bw)||null;L.bw=bw}
@@ -206,14 +206,14 @@ async function mpLinkStrict(uid,adapter){const r=await adapter.get();let S=r.exi
  else if(pick==='none'){if(L)newGame();say('Welcome! Make your character: it\'s saved to your Google account.')}
  else if(pick==='same')lastWid=wOf(S);
  lsSet('sq_acct',uid);cloud=adapter;SQSTRICT.ready=true;SQSTRICT.pick=pick;if(TS&&TS.open)TS.mh='';
- try{localStorage.removeItem('sq_spf')}catch(e){}
+ try{localStorage.removeItem('sq_spf')}catch(e){self.SQERR&&SQERR(e,'061-18')}
  saveLocal(true);if(pick!=='none')await saveCloud(true)}
 let lostBox=null;
-function sqLost(){SQSTRICT.lost=true;cloud=null;try{if(BUILD)endBuild()}catch(e){}FISH=null;
+function sqLost(){SQSTRICT.lost=true;cloud=null;try{if(BUILD)endBuild()}catch(e){self.SQERR&&SQERR(e,'061-19')}FISH=null;
  if(!lostBox){lostBox=document.createElement('div');lostBox.id='sqlost';lostBox.innerHTML='<div class="sqlb"><div class="h">PLAYING ON ANOTHER DEVICE</div><p>Your account was opened on another device or tab, so this one has stopped. Your progress is saved there.</p><button data-a="here">PLAY HERE INSTEAD</button></div>';
   for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])lostBox.addEventListener(ev,e=>e.stopPropagation());
   lostBox.querySelector('button').onclick=sqTakeBack;document.body.appendChild(lostBox)}
- lostBox.style.display='flex';try{mpLog('game','Your account was opened somewhere else, so this game stopped.')}catch(e){}}
+ lostBox.style.display='flex';try{mpLog('game','Your account was opened somewhere else, so this game stopped.')}catch(e){self.SQERR&&SQERR(e,'061-20')}}
 async function sqTakeBack(){const b=lostBox.querySelector('button'),u=MP.user;if(!u||!MP.adapter){b.textContent='SIGN IN AGAIN';tsReopen();lostBox.style.display='none';return}
  b.disabled=true;b.textContent='LOADING...';
  try{await sqClaim(u.uid);const r=await MP.adapter.get();const S=r.exists?r.data():null;if(S&&S.v==1){applySave(S);hideCreator()}cloud=MP.adapter;SQSTRICT.lost=false;lostBox.style.display='none';
@@ -231,12 +231,12 @@ if(STRICT){const st=document.createElement('style');st.textContent=`#sqlost{posi
 async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=u;const d=FB.db,D=FB.D,uid=u.uid;
  // account save: one JSON string per player
  const sref=d.ref(D,'saves/'+uid);
- const adapter={async get(){const s=await d.get(sref);if(!s.exists())return{exists:false,data:()=>null};let v=null;try{v=JSON.parse(s.val().json)}catch(e){}return{exists:!!v,data:()=>v}},
+ const adapter={async get(){const s=await d.get(sref);if(!s.exists())return{exists:false,data:()=>null};let v=null;try{v=JSON.parse(s.val().json)}catch(e){self.SQERR&&SQERR(e,'061-21')}return{exists:!!v,data:()=>v}},
   async set(s){await d.set(sref,Object.assign({json:JSON.stringify(s),savedAt:+s.savedAt||Date.now()},STRICT?{sid:SQSTRICT.sid}:{}))}};
  MP.adapter=adapter;
  if(STRICT){try{await sqClaim(uid);await mpLinkStrict(uid,adapter);sqWatch(uid)}catch(e){mpErr(e);say('Couldn\'t load your save. Check your connection and try again.')}}
  else try{await mpLinkSave(uid,adapter)}catch(e){mpErr(e)}
- try{const kd='sq_dbak_'+uid,last=+lsGet(kd)||0;if(Date.now()-last>20*3600e3){const r=await adapter.get();if(r.exists){const S=r.data();if(S&&S.v==1&&await sqCloudBak('daily',S))lsSet(kd,String(Date.now()))}}}catch(e){}
+ try{const kd='sq_dbak_'+uid,last=+lsGet(kd)||0;if(Date.now()-last>20*3600e3){const r=await adapter.get();if(r.exists){const S=r.data();if(S&&S.v==1&&await sqCloudBak('daily',S))lsSet(kd,String(Date.now()))}}}catch(e){self.SQERR&&SQERR(e,'061-22')}
  // presence
  MP.pref=d.ref(D,'presence/'+uid);MP.last='';MP.lastCh='';MP.lastN='';
  MP.unsub.push(d.onValue(d.ref(D,'.info/serverTimeOffset'),s=>{MP.off=+s.val()||0}));
@@ -249,12 +249,12 @@ async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=
  MP.unsub.push(d.onValue(d.ref(D,'og'),s=>{const v=s.val()||{};MP.og={};for(const k in v)if(typeof v[k]==='number')MP.og[k]=v[k];
   if(isOG(uid)&&!MP.ogTold){MP.ogTold=true;mpLog('game','You are OG #'+ogRank(uid)+'! Your crown is permanent.')}
   if(MP.open)mpRList();else mpRBtn()}));
- try{const mine=await d.get(d.ref(D,'og/'+uid));if(!mine.exists()&&mpNow()<OG_CUTOFF){await d.set(d.ref(D,'og/'+uid),d.serverTimestamp());say('Welcome, OG! You joined SkillQuest early, so you get a permanent crown.')}}catch(e){}
+ try{const mine=await d.get(d.ref(D,'og/'+uid));if(!mine.exists()&&mpNow()<OG_CUTOFF){await d.set(d.ref(D,'og/'+uid),d.serverTimestamp());say('Welcome, OG! You joined SkillQuest early, so you get a permanent crown.')}}catch(e){self.SQERR&&SQERR(e,'061-23')}
  MP.on=true;mpRBtn();say('Online as '+myName()+'!')}
-async function mpStop(manual){const was=MP.on;MP.on=false;for(const f of MP.unsub)try{f()}catch(e){}MP.unsub=[];
- if(manual&&MP.pref)try{await FB.db.remove(MP.pref)}catch(e){}
- MP.players.clear();try{mobStop()}catch(e){}MP.pref=null;MP.user=null;if(cloud&&cloud===MP.adapter)cloud=null;if(was)mpCloseChat();mpRBtn();
- if(STRICT){const wasReady=SQSTRICT.ready;SQSTRICT.ready=false;if(lostBox)lostBox.style.display='none';SQSTRICT.lost=false;if(wasReady&&!TS.open)try{tsReopen()}catch(e){}TS.mh=''}}
+async function mpStop(manual){const was=MP.on;MP.on=false;for(const f of MP.unsub)try{f()}catch(e){self.SQERR&&SQERR(e,'061-24')}MP.unsub=[];
+ if(manual&&MP.pref)try{await FB.db.remove(MP.pref)}catch(e){self.SQERR&&SQERR(e,'061-25')}
+ MP.players.clear();try{mobStop()}catch(e){self.SQERR&&SQERR(e,'061-26')}MP.pref=null;MP.user=null;if(cloud&&cloud===MP.adapter)cloud=null;if(was)mpCloseChat();mpRBtn();
+ if(STRICT){const wasReady=SQSTRICT.ready;SQSTRICT.ready=false;if(lostBox)lostBox.style.display='none';SQSTRICT.lost=false;if(wasReady&&!TS.open)try{tsReopen()}catch(e){self.SQERR&&SQERR(e,'061-27')}TS.mh=''}}
 // ---- other players ----
 const live=r=>performance.now()-r.seen<20000;
 const cleanCh=c=>{const o={};if(c&&typeof c==='object')for(const k in c){const v=c[k];if(typeof v==='number'&&isFinite(v))o[k]=Math.max(0,Math.min(99,v|0))}
@@ -270,7 +270,7 @@ function mpPeer(k,v){if(!v||!MP.user||k===MP.user.uid)return;if(typeof v.x!=='nu
  r.seen=typeof v.t==='number'?performance.now()-Math.max(0,mpNow()-v.t):-1e9;mpRBtn()}
 function mpTick(){if(!MP.on||!MP.pref||MP.passive)return;const d=FB.db,now=performance.now(),loc=mpLoc(),fx=face[0],fy=face[1];
  const op=outdoorPos(),st={n:myName().slice(0,12),loc,x:Math.round(P.x),y:Math.round(P.y),d:fx?2:fy<0?1:0,fl:fx<0?1:0,m:qm?1:0,sl:((typeof SAILING!=='undefined'&&SAILING&&!SCENE)||(window.SQRSAIL&&SQRSAIL.on))?1:0,ar:dead?'':curRegion(),ax:Math.round(op[0]),ay:Math.round(op[1]),pet:(window.LUX&&LUX.pet)?LUX.pet():'',pk:(window.SQPVP&&SQPVP.on&&!dead)?1:0,au:(window.SQAURA&&!dead&&SQAURA())?1:0,dg:(window.SQDF&&SQDF.on&&!dead)?1:0,br:(window.SQDF&&SQDF.br)?1:0,sid:MP.sid,s0:MP.s0,im:(window.SQIMP&&SQIMP.pres())||0,fw:(window.SQFW&&SQFW.pres())||0,ak:(window.SQACT&&SQACT())||0,pt:(window.SQPARTY&&SQPARTY.id)||'',hp:dead?0:Math.max(0,Math.min(99,Math.round(+P.hp||0))),em:(window.SQEMOTE&&SQEMOTE.pres())||'',gt:(window.SQGUILD&&SQGUILD.pres()&&SQGUILD.pres().t)||'',gc:(window.SQGUILD&&SQGUILD.pres()&&SQGUILD.pres().c)||0},k=JSON.stringify(st);
- let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){}const nm=myName();
+ let chk='{}';try{chk=JSON.stringify(gearCH())}catch(e){self.SQERR&&SQERR(e,'061-28')}const nm=myName();
  if(chk!==MP.lastCh||nm!==MP.lastN){MP.lastCh=chk;MP.lastN=nm;MP.last='';d.update(MP.pref,{ch:JSON.parse(chk),n:nm}).catch(()=>{MP.lastCh=''})}
  // only the fields that changed go out (the database forwards every write to every player online, so a whole record five
  // times a second while walking was most of the game's download traffic); the whole record after a reset (MP.last ''),
@@ -286,7 +286,7 @@ function mpStepAll(){const n=performance.now(),dt=Math.min(.1,(n-mpLastF)/1000);
 function mpVis(){if(!MP.on)return[];const loc=mpLoc();if(!loc)return[];const out=[];const rx=W/Z+48,ry=H/Z+64;
  for(const r of MP.players.values())if(r.loc===loc&&live(r)&&Math.abs(r.x-P.x)<rx&&Math.abs(r.y-P.y)<ry)out.push(r);return out}
 function mpDrawPeer(r,tm){const x=Math.round(r.x),y=Math.round(r.y),st=r.mv?[1,0,2,0][Math.floor(r.w)%4]:0;GC=g;shd(x,y+6,12);
- try{cP(r.ak?{...r.ch,ak:r.ak}:r.ch,r.d,st,x,y,r.fl)}catch(e){}MP.T=g.getTransform();MP.Tat=performance.now()}
+ try{cP(r.ak?{...r.ch,ak:r.ak}:r.ch,r.d,st,x,y,r.fl)}catch(e){self.SQERR&&SQERR(e,'061-29')}MP.T=g.getTransform();MP.Tat=performance.now()}
 // Hollow: join the y-sorted list
 const _lh61=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{if(_lh61)_lh61(L,x0,y0,x1,y1,tm);mpStepAll();for(const r of mpVis())L.push([r.y+6,4,t=>mpDrawPeer(r,t)])};
 // regions: ride along as room items
@@ -314,11 +314,11 @@ function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)
  const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;
  const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}
 // ---- Options: show your own name (and crown) over your head ----
-MP.selfName=false;try{MP.selfName=localStorage.getItem('sq_myname')==='1'}catch(e){}
+MP.selfName=false;try{MP.selfName=localStorage.getItem('sq_myname')==='1'}catch(e){self.SQERR&&SQERR(e,'061-30')}
 const _opt61=optionsHTML;optionsHTML=function(){const h=_opt61(),k=h.indexOf('<div class="tl" style="margin-top:22px');
  const add='<div class="tl" style="margin-top:16px">ONLINE</div><button class="sb mpo" data-o="myname">Show my name overhead: '+(MP.selfName?'ON':'OFF')+'</button>';
  return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
-const _oc61=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mpo');if(b){MP.selfName=!MP.selfName;try{localStorage.setItem('sq_myname',MP.selfName?'1':'0')}catch(_){}rPn();return}_oc61(e)};
+const _oc61=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mpo');if(b){MP.selfName=!MP.selfName;try{localStorage.setItem('sq_myname',MP.selfName?'1':'0')}catch(_){self.SQERR&&SQERR(_,'061-31')}rPn();return}_oc61(e)};
 // ---- controller: START menu entry, highlight navigation in the chat and sign-in boxes, ○ / Options closes them ----
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'online',l:()=>MP.on?'Chat':'Play online'});
 const _ss61=showScreen;showScreen=function(id){if(id!=='online')return _ss61(id);releaseMenu();mpOpenChat()};
@@ -386,7 +386,7 @@ for(const ev of['touchstart','pointerdown','mousedown'])tsEl.addEventListener(ev
  for(const[k,u]of L){const e=tsEl.querySelector('.tsc.c'+k);e.style.backgroundImage='url('+u+')';TS.cl.push(e)}
  for(let i=0;i<14;i++){const s=document.createElement('i');s.className='tssp';s.style.left=(4+Math.random()*92)+'%';s.style.top=(3+Math.random()*45)+'%';s.style.animationDelay=(-Math.random()*2.4)+'s';tsEl.appendChild(s)}}
 const tsHero=tsEl.querySelector('.tshero canvas'),tsMn=$('tsmn'),tsPs=$('tsps');
-function tsDrawHero(){try{const x=tsHero.getContext('2d');x.clearRect(0,0,16,32);x.drawImage(kitSprite(gearCH(),0,0,false),0,0)}catch(e){}}
+function tsDrawHero(){try{const x=tsHero.getContext('2d');x.clearRect(0,0,16,32);x.drawImage(kitSprite(gearCH(),0,0,false),0,0)}catch(e){self.SQERR&&SQERR(e,'061-32')}}
 const hasSave=()=>!(cm.style.display!=='none'&&!PNAME);
 const fmtT=s=>{s=Math.max(0,Math.floor(+s||0));const h=Math.floor(s/3600),m=Math.floor(s/60)%60;return h+':'+String(m).padStart(2,'0')};
 function tsTotal(){let t=0;for(let i=0;i<XPS.length;i++)t+=lvOf(i);return t}
@@ -403,8 +403,8 @@ function tsMenu(){let h='';const btn=(a,html)=>{h+='<button data-a="'+a+'">'+htm
 function tsFoot(){const f=$('tsft');if(!f)return;const parts=[];if(MP.on){const n=[...MP.players.values()].filter(live).length+1;parts.push('<b>&#9679;</b> '+n+' ONLINE')}
  const left=OG_CUTOFF-mpNow();if(left>0){const d=Math.ceil(left/864e5);parts.push('OG CROWNS: '+d+' DAY'+(d===1?'':'S')+' LEFT')}f.innerHTML=parts.join(' &middot; ')}
 function tsStage(n){TS.stage=n;TS.mh='';tsPs.style.display=n?'none':'block';tsMn.style.display=n?'flex':'none';setFocus(null);if(n){tsMenu();const f=tsMn.querySelector('button');if(f&&(GPON||TS.kb))setFocus(f)}}
-function tsClose(then){TS.open=false;tsEl.style.display='none';setFocus(null);menuOpen=cm.style.display!=='none';try{sfx('door')}catch(e){}if(then)then()}
-tsPs.onclick=()=>{try{sfx('talk')}catch(e){}tsStage(1)};
+function tsClose(then){TS.open=false;tsEl.style.display='none';setFocus(null);menuOpen=cm.style.display!=='none';try{sfx('door')}catch(e){self.SQERR&&SQERR(e,'061-33')}if(then)then()}
+tsPs.onclick=()=>{try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'061-34')}tsStage(1)};
 tsEl.addEventListener('click',e=>{if(TS.stage===0&&e.target!==tsPs)tsPs.click()});
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
  if(a==='go'){if(STRICT&&!(MP.on&&SQSTRICT.ready))return;tsClose()}else if(a==='in'){mpSignIn();}else if(a==='opt')tsClose(()=>{fromMenu=false;showScreen('options')})});
@@ -422,7 +422,7 @@ addEventListener('keyup',e=>{if(TS.open&&!(e.target&&e.target.closest&&e.target.
 // controller: the title is the screen being navigated
 const _nr62=navRoot;navRoot=function(){if(TS.open)return TS.stage?tsMn:tsEl;return _nr62()};
 // the world is frozen while the title is up
-SQUPD.wrap('061',_u62=>function(dt){if(TS.open){try{pollPad(dt)}catch(e){}return}_u62(dt)}); // the controller still drives the title
+SQUPD.wrap('061',_u62=>function(dt){if(TS.open){try{pollPad(dt)}catch(e){self.SQERR&&SQERR(e,'061-35')}return}_u62(dt)}); // the controller still drives the title
 let tsLast=0;const tsLoop=function(t){if(!TS.open)return;const s=t/1000;TS.cl.forEach((e,i)=>e.style.backgroundPositionX=Math.round(-s*[6,14,24][i])+'px');
  if(menuOpen)menuOpen=false; // the creator waits behind the title (restored on close)
  if(t-tsLast>700){tsLast=t;tsDrawHero();tsFoot();if(TS.stage)tsMenu()}requestAnimationFrame(tsLoop)};tsLoop(0);
@@ -519,7 +519,7 @@ function mobPost(dt){if(!MP.on||!FB)return;mobSubscribe();if(!MOB.loc)return;mob
  if(!othersHere()){if(MOB.pubbed){d.remove(ref).catch(()=>{});MOB.pubbed=false}return}
  const m={};let c=0;for(const n of en){if(n._rp||n._wb||n.dead||c>=24)continue;m[mid(n)]=mobPack(n);c++}
  // other sections can send extra state along with the monsters (island bosses: their attacks), read back by SQMOBRX
- let x=null;try{x=window.SQMOBX?SQMOBX():null}catch(e){}for(const id in m){m[id].x=Math.round(m[id].x);m[id].y=Math.round(m[id].y)}
+ let x=null;try{x=window.SQMOBX?SQMOBX():null}catch(e){self.SQERR&&SQERR(e,'061-36')}for(const id in m){m[id].x=Math.round(m[id].x);m[id].y=Math.round(m[id].y)}
  // the whole set once, then only what changed (every write is forwarded to everyone in the area: re-sending every monster's
  // name, kind and countdown timers four times a second was a large part of the game's download traffic). Timers and other
  // numbers besides x/y/hp go out when they move by 1 or more or change sign; the time stamp every 2 s (peers drop a set after 6 s).
@@ -644,7 +644,7 @@ function friendsStart(){const d=FB.db,D=FB.D,uid=MP.user.uid;
  MP.unsub.push(d.onValue(d.ref(D,'profiles'),s=>{MP.prof=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()}));
  MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'pm/'+uid),d.limitToLast(30)),s=>{const v=s.val();if(!v||typeof v.m!=='string'||MP.seen.has('pm'+s.key))return;MP.seen.add('pm'+s.key);if(ignored(v.f)){FB.db.remove(FB.db.ref(FB.D,'pm/'+uid+'/'+s.key)).catch(()=>{});return}
   const fresh=typeof v.t==='number'&&mpNow()-v.t<15000;if(v.m.startsWith('[Party] '))mpLog('pt',v.m.slice(8,88),{n:String(v.n||'?').slice(0,12),uid:v.f,t:typeof v.t==='number'?v.t:0});else mpLog('pm',v.m.slice(0,80),{dir:'from',n:String(v.n||'?').slice(0,12),uid:v.f,t:typeof v.t==='number'?v.t:0});const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
-  else{if(!v.m.startsWith('[Party] '))MP.pmTo=MP.pmTo||v.f;if(!MP.open){MP.unread++;mpRBtn()}try{sfx('talk')}catch(e){}}}));
+  else{if(!v.m.startsWith('[Party] '))MP.pmTo=MP.pmTo||v.f;if(!MP.open){MP.unread++;mpRBtn()}try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'061-37')}}}));
  MP.req={};MP.unsub.push(d.onValue(d.ref(D,'freq/'+uid),s=>{const v=s.val()||{},old=MP.req||{};MP.req={};for(const k in v)if(v[k]&&typeof v[k]==='object')MP.req[k]=v[k];
   for(const k in MP.req)if(!old[k]&&!isFriend(k)&&!ignored(k)){mpLog('game',String(MP.req[k].n||'Someone')+' added you as a friend. Open Chat > Friends to add them back.');if(!MP.open){MP.unread++;mpRBtn()}}
   if(MP.open&&MP.tab==='fr')mpRList()}));
@@ -677,17 +677,17 @@ function bugClose(){bugF.style.display='none';setFocus(null)}
 function bugInfo(){const R=SCENE&&SCENE.room;return{where:mpLoc()||(SCENE?'private:'+SCENE.id:'hollow'),x:Math.round(P.x),y:Math.round(P.y),region:curRegion(),day:Math.floor(time/DAYLEN)+1,
  hp:P.hp,quest:Q.i,dead:!!dead,pad:!!GPON,pc:!!isPC,ua:navigator.userAgent.slice(0,200),scr:innerWidth+'x'+innerHeight+'@'+(window.devicePixelRatio||1),standalone:!!(navigator.standalone||matchMedia('(display-mode: standalone)').matches),v:BUGV,last:(MP.log.slice(-6).map(m=>m.m).join(' | ')).slice(0,400)}}
 function bugSendNow(r){const d=FB.db;return d.push(d.ref(FB.D,'bugs'),Object.assign(r,{u:MP.user.uid,n:myName().slice(0,12),t:d.serverTimestamp()}))}
-function bugFlush(){if(!MP.on)return;let q=[];try{q=JSON.parse(lsGet('sq_bugq')||'[]')}catch(e){}if(!q.length)return;lsSet('sq_bugq','[]');for(const r of q)bugSendNow(r).catch(()=>{})}
+function bugFlush(){if(!MP.on)return;let q=[];try{q=JSON.parse(lsGet('sq_bugq')||'[]')}catch(e){self.SQERR&&SQERR(e,'061-38')}if(!q.length)return;lsSet('sq_bugq','[]');for(const r of q)bugSendNow(r).catch(()=>{})}
 $('bgsend').onclick=async()=>{const w=$('bgw').value.trim();if(w.length<3){$('bgst').textContent='Please describe what happened.';return}
  const r={what:w.slice(0,1500),exp:$('bge').value.trim().slice(0,600),info:bugInfo(),shot:$('bgs').checked?bugShot:''};
- if(!MP.on){let q=[];try{q=JSON.parse(lsGet('sq_bugq')||'[]')}catch(e){}q.push(r);while(q.length>5)q.shift();lsSet('sq_bugq',JSON.stringify(q));$('bgw').value='';$('bge').value='';bugClose();say('Bug report saved. It will be sent when you sign in.');return}
+ if(!MP.on){let q=[];try{q=JSON.parse(lsGet('sq_bugq')||'[]')}catch(e){self.SQERR&&SQERR(e,'061-39')}q.push(r);while(q.length>5)q.shift();lsSet('sq_bugq',JSON.stringify(q));$('bgw').value='';$('bge').value='';bugClose();say('Bug report saved. It will be sent when you sign in.');return}
  $('bgst').textContent='Sending...';try{await bugSendNow(r);$('bgw').value='';$('bge').value='';bugClose();say('Bug report sent. Thank you!')}catch(e){$('bgst').textContent='Could not send. Try again in a moment.';mpErr(e)}};
 $('bgno').onclick=bugClose;bugBtn.onclick=bugOpen;
 // typing in the form never moves your character
 addEventListener('keydown',e=>{const t=e.target;if(!t||!bugF.contains(t))return;e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();bugClose()}},true);
 addEventListener('keyup',e=>{if(e.target&&bugF.contains(e.target))e.stopImmediatePropagation()},true);
 setInterval(()=>{bugBtn.style.display=(pnOpen||menuOpen||chessOpen||TS.open||bugF.style.display==='block')?'none':'block'},250);
-{const _ms=mpStart;mpStart=async function(u){await _ms(u);try{bugFlush()}catch(e){}}}
+{const _ms=mpStart;mpStart=async function(u){await _ms(u);try{bugFlush()}catch(e){self.SQERR&&SQERR(e,'061-40')}}}
 // also in the START menu, the title screen and Options
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'bug',l:()=>'Report a bug'});
 {const _ss=showScreen;showScreen=function(id){if(id!=='bug')return _ss(id);releaseMenu();bugOpen()}}
@@ -720,7 +720,7 @@ function housesSync(){if(!MP.on)return;const want=new Map();
  for(const{owner,e}of want.values()){const h=buildForeign(owner,e);if(h.x<4||h.y<3||h.x>N-5||h.y>N-3||overlapsMine(h))continue;HOUSES.push(h);addHouseBS(h);
   if(!HS.frUnsub[owner]){HS.frUnsub[owner]=FB.db.onValue(FB.db.ref(FB.D,'friends/'+owner),s=>{HS.fr[owner]=s.val()||{}})}}}
 function housesStart(){const d=FB.db;HS.unsub=d.onValue(d.ref(FB.D,'houses'),s=>{HS.data=s.val()||{};for(const k in HS.data){const v=HS.data[k];if(v&&!Array.isArray(v)&&typeof v==='object')HS.data[k]=Object.values(v)}housesSync()});
- MP.unsub.push(()=>{if(HS.unsub)HS.unsub();HS.unsub=null;for(const k in HS.frUnsub)try{HS.frUnsub[k]()}catch(e){}HS.frUnsub={};HS.fr={};HS.data={};HS.pubKey='';
+ MP.unsub.push(()=>{if(HS.unsub)HS.unsub();HS.unsub=null;for(const k in HS.frUnsub)try{HS.frUnsub[k]()}catch(e){self.SQERR&&SQERR(e,'061-41')}HS.frUnsub={};HS.fr={};HS.data={};HS.pubKey='';
   if(SCENE&&SCENE.house&&SCENE.house._foreign)leaveScene();for(let j=HOUSES.length-1;j>=0;j--)if(HOUSES[j]._foreign){for(const i of houseTiles(HOUSES[j]))BS.delete(i);HOUSES.splice(j,1)}})}
 function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now();if(now-HS.pubAt<3000)return;HS.pubAt=now;
  const mine=myHousesData(),k=JSON.stringify(mine);if(k!==HS.pubKey){HS.pubKey=k;FB.db.set(FB.db.ref(FB.D,'houses/'+MP.user.uid),mine.length?mine:null).catch(()=>{HS.pubKey=''})}
@@ -735,7 +735,7 @@ function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now(
 {const _uf=useFurn;useFurn=function(it){const h=SCENE&&SCENE.house;if(h&&h._foreign){const st=it&&(it.f?it.f.t:it.t);if(st&&typeof STN!=='undefined'&&STN.has(st)&&window.SQTRUTHEN){SQTRUTHEN(h._owner,()=>openStation({t:st,inside:true,i:it.i,f:it.f||{t:st},_foreign:h._owner,_ok:1}));return}say(it&&it.use==='chest'?'That chest belongs to '+fname(h._owner)+'.':it&&it.use==='bed'?'That\'s '+fname(h._owner)+'\'s bed.':'Better ask '+fname(h._owner)+' first.');sfx('swish');return}return _uf(it)}}
 {const _sb=startBuild;startBuild=function(k){const h=SCENE&&SCENE.house;if(h&&h._foreign){say('You can only decorate your own house.');closePanel();return}return _sb(k)}}
 // ---- START menu: Friends, and Save & quit to title ----
-function tsReopen(){try{saveLocal(true);saveCloud(true)}catch(e){}closePanel();if(typeof closeSM==='function'&&typeof smOpen!=='undefined'&&smOpen)closeSM();if(MP.open)mpCloseChat();
+function tsReopen(){try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'061-42')}closePanel();if(typeof closeSM==='function'&&typeof smOpen!=='undefined'&&smOpen)closeSM();if(MP.open)mpCloseChat();
  TS.open=true;TS.mh='';tsEl.style.display='flex';tsStage(0);tsDrawHero();tsFoot();requestAnimationFrame(tsLoop);say('Game saved.')}
 SMI.splice(SMI.findIndex(x=>x.id==='online')+1,0,{id:'friends',l:()=>'Friends'});
 // Craft straight from the START menu (it used to hide behind Skills > Craft)
@@ -806,7 +806,7 @@ document.body.appendChild(nmBox);for(const ev of['touchstart','pointerdown','mou
 function nameAsk(taken){NM.box=true;$('nmwhy').textContent='"'+taken+'" already belongs to another player. Pick a different name to play online. (Capital letters don\'t count as different.)';$('nmst').textContent='';$('nmin').value='';
  nmBox.style.display='block';mpClearKeys();if(!GPON)setTimeout(()=>$('nmin').focus(),30)}
 $('nmf').onsubmit=async e=>{e.preventDefault();const n=cleanName($('nmin').value);if(n.length<2){$('nmst').textContent='Names need at least 2 letters.';return}if(!MP.on){$('nmst').textContent='You are offline.';return}
- $('nmst').textContent='Checking...';const r=await nameClaim(n);if(r==='ok'){PNAME=n;try{saveLocal(true);saveCloud(true)}catch(e){}nmBox.style.display='none';NM.box=null;setFocus(null);say('Your name is now '+n+'.');MP.lastCh='';if(MP.pubProf)MP.pubProf()}
+ $('nmst').textContent='Checking...';const r=await nameClaim(n);if(r==='ok'){PNAME=n;try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'061-43')}nmBox.style.display='none';NM.box=null;setFocus(null);say('Your name is now '+n+'.');MP.lastCh='';if(MP.pubProf)MP.pubProf()}
  else $('nmst').textContent=r==='taken'?'"'+n+'" is taken too. Try another.':'Could not check that name. Try again in a moment.'};
 addEventListener('keydown',e=>{const t=e.target;if(!t||!nmBox.contains(t))return;e.stopImmediatePropagation();if(e.key==='Enter'&&!e.isComposing){e.preventDefault();$('nmf').requestSubmit()}},true);
 addEventListener('keyup',e=>{if(e.target&&nmBox.contains(e.target))e.stopImmediatePropagation()},true);
@@ -815,7 +815,7 @@ addEventListener('keyup',e=>{if(e.target&&nmBox.contains(e.target))e.stopImmedia
 async function nameCheck(){if(!MP.on||!MP.user||NM.busy||NM.box)return;const n=cleanName(myName());if(!n||nameKey(n)===NM.key)return;
  const a=document.activeElement;if(menuOpen||TS.open||(a&&(a.id==='cni'||a.id==='nmi')))return;
  NM.busy=true;let r;try{r=await nameClaim(n)}finally{NM.busy=false}
- if(r==='taken'){if(NM.claimed&&nameKey(NM.claimed)!==nameKey(n)){PNAME=NM.claimed;try{saveLocal(true)}catch(e){}say('"'+n+'" belongs to another player. Your name is still '+NM.claimed+'.');sfx('swish')}else nameAsk(n)}}
+ if(r==='taken'){if(NM.claimed&&nameKey(NM.claimed)!==nameKey(n)){PNAME=NM.claimed;try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'061-44')}say('"'+n+'" belongs to another player. Your name is still '+NM.claimed+'.');sfx('swish')}else nameAsk(n)}}
 setInterval(()=>{nameCheck().catch(()=>{})},1000);
 {const _st=mpStop;mpStop=async function(m){NM.claimed=null;NM.key=null;if(NM.box){nmBox.style.display='none';NM.box=null}return _st(m)}}
 // ---- Minimap: other players; house name signs ----
@@ -845,4 +845,4 @@ const outdoorPos=()=>{if(SCENE&&SCENE.room&&SCENE.room.region)return[P.x,P.y];if
   for(const[u,r]of rows){const fr=MP.friends&&MP.friends[u],where=r.ar&&WORLD_REGIONS[r.ar]?WORLD_REGIONS[r.ar].name:'At sea';t+='<br><span style="color:'+(fr?'#28a048':'#3070c0')+'">&#9632;</span> '+esc(r.n||'?')+(fr?' (friend)':'')+' · '+esc(where)}
   return h+t+'</small></div>'}}
 {const _lg=worldHTML52;worldHTML52=function(){const h=_lg();return MP.on?h.replace('<span><i style="background:#f8f8f8"></i>Landmark</span></div>','<span><i style="background:#f8f8f8"></i>Landmark</span><span><i style="background:#60e860"></i>Friend</span><span><i style="background:#60c0ff"></i>Player</span></div>'):h}}
-{const _dpp=mpDrawPeer;mpDrawPeer=function(r,tm){try{if(window.LUX&&LUX.drawPeerPet)LUX.drawPeerPet(r,tm)}catch(e){}return _dpp(r,tm)}}
+{const _dpp=mpDrawPeer;mpDrawPeer=function(r,tm){try{if(window.LUX&&LUX.drawPeerPet)LUX.drawPeerPet(r,tm)}catch(e){self.SQERR&&SQERR(e,'061-45')}return _dpp(r,tm)}}

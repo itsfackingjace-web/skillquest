@@ -20,13 +20,13 @@
   if(!best){let far=null,fv=1e9;for(const e of items){if(e===GPF)continue;const r=e.getBoundingClientRect();if(!r.width||!r.height)continue;
     const ov=dy?Math.min(a.right,r.right)-Math.max(a.left,r.left):Math.min(a.bottom,r.bottom)-Math.max(a.top,r.top);if(ov<=0)continue;
     const v=dy?(dy>0?r.top:-r.bottom):(dx>0?r.left:-r.right);if(v<fv){fv=v;far=e}}
-   if(!far)return;best=far}setFocus(best);try{sfx('talk')}catch(e){}};
+   if(!far)return;best=far}setFocus(best);try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'158-1')}};
  // remember the thing a card was opened from, and go back to it when the card closes
  const key=e=>e&&e.dataset?(e.dataset.k||'')+'|'+(e.dataset.a||'')+'|'+(e.dataset.cm||''):'';
  let from=null,wasCard=false;
  {const _np=navPress;navPress=function(){const before=GPF,bk=key(before);const out=_np.apply(this,arguments);
-   try{const c=pn&&pn.querySelector('[role="dialog"]');if(c&&before&&!c.contains(before)&&bk!=='||')from=bk}catch(e){}return out}}
+   try{const c=pn&&pn.querySelector('[role="dialog"]');if(c&&before&&!c.contains(before)&&bk!=='||')from=bk}catch(e){self.SQERR&&SQERR(e,'158-2')}return out}}
  setInterval(()=>{try{if(!GPON||!pnOpen){wasCard=false;return}const card=!!pn.querySelector('[role="dialog"]');
    if(wasCard&&!card&&from){const [k,a]=from.split('|');const el=[...navItems(pn)].find(e=>e.dataset&&e.dataset.k===k&&(e.dataset.a||'')===a);if(el)setFocus(el)}
-   if(!card&&wasCard)from=null;wasCard=card}catch(e){}},60);
+   if(!card&&wasCard)from=null;wasCard=card}catch(e){self.SQERR&&SQERR(e,'158-3')}},60);
 })();

@@ -29,7 +29,7 @@
    '<span class="dv-mut" style="font-size:10px">'+esc(String(m.u||'').slice(0,8))+'</span><br>'+esc(m.m||'')+'</div>';
   if(list.length>600)h+='<p class="dv-mut">…and '+(list.length-600)+' more (search to narrow, or download the .txt).</p>';
   return h+'</div>'}
- document.addEventListener('input',e=>{if(S.tab!=='chatlog')return;const t=e.target;if(t&&t.dataset&&t.dataset.clq){L.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-clq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}},true);
+ document.addEventListener('input',e=>{if(S.tab!=='chatlog')return;const t=e.target;if(t&&t.dataset&&t.dataset.clq){L.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-clq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'233-1')}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='chatlog')return;const t=e.target.closest('[data-cl]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();e.stopPropagation();
   const a=t.dataset.cl;try{
    if(a==='bugs'){L.bugs=true;API.draw()}else if(a==='all'){L.bugs=false;API.draw()}

@@ -1,8 +1,8 @@
 // ===== Skills (OSRS) + tool crafting (Minecraft) + Tactics (chess) =====
 const SKN=['Attack','Woodcutting','Mining','Foraging','Cooking','Firemaking','Crafting','Tactics'],AB=['ATK','WC','MIN','FOR','COOK','FM','CRAFT','TAC'],SKC=['#e04040','#48c048','#90a8d0','#e060a0','#f0a840','#f87830','#a880e0','#f0e8d0'],TIT=['Hands','Wooden','Stone','Iron'];
 let XPS=[0,0,0,0,0,0,0,0],TL={axe:0,pick:0,sword:0},drops=[],pnOpen=false;
-try{const s=JSON.parse(localStorage.getItem('hw_sk'));if(s){if(Array.isArray(s.x)&&s.x.length==8)XPS=s.x.map(v=>+v||0);if(s.t)for(const k in TL)TL[k]=Math.max(0,Math.min(3,+s.t[k]||0))}}catch(e){}
-const svs=()=>{try{localStorage.setItem('hw_sk',JSON.stringify({x:XPS,t:TL}))}catch(e){}};
+try{const s=JSON.parse(localStorage.getItem('hw_sk'));if(s){if(Array.isArray(s.x)&&s.x.length==8)XPS=s.x.map(v=>+v||0);if(s.t)for(const k in TL)TL[k]=Math.max(0,Math.min(3,+s.t[k]||0))}}catch(e){self.SQERR&&SQERR(e,'004-1')}
+const svs=()=>{try{localStorage.setItem('hw_sk',JSON.stringify({x:XPS,t:TL}))}catch(e){self.SQERR&&SQERR(e,'004-2')}};
 const XT=[0];{let a=0;for(let l=1;l<99;l++){a+=Math.floor(l+300*Math.pow(2,l/7));XT.push(Math.floor(a/4))}}
 const lvOf=i=>{let l=1;while(l<99&&XPS[i]>=XT[l])l++;return l};
 function addXp(i,x){const b=lvOf(i);XPS[i]+=x;const a=lvOf(i);drops.push({x:P.x,y:P.y-16-(drops.length%3)*6,t:0,tx:'+'+x+' '+AB[i],c:SKC[i]});if(a>b){say('LEVEL UP! '+SKN[i]+' '+a);msgT=4}svs()}
@@ -33,7 +33,7 @@ function fire(){if(dead)return;if(inv.wood>=3&&inv.stone>=1){const[fx,fy]=front(
 for(const id of['a','e','f']){const o=document.getElementById(id),n=o.cloneNode(true);o.replaceWith(n);n.addEventListener('touchstart',e=>{e.preventDefault();if(!dead&&!pnOpen&&!menuOpen)({a:attack,e:eat,f:fire})[id]()},{passive:false})}
 // recipes
 // a tool's tier name for the crafting header; tiers past the table (Crystal sword, custom items) use the item's own name
-function tierName(k){const t=TL[k]|0;if(!t)return TIT[0]||'none';if(TIT[t])return TIT[t];try{const o=typeof occ==='function'?occ('main'):null;if(k==='sword'&&o&&INAME[o])return INAME[o].replace(/ sword$/i,'')}catch(e){}const e=EQ&&EQ['eq_'+k+t];return e&&e.n?e.n.split(' ')[0]:'Tier '+t}
+function tierName(k){const t=TL[k]|0;if(!t)return TIT[0]||'none';if(TIT[t])return TIT[t];try{const o=typeof occ==='function'?occ('main'):null;if(k==='sword'&&o&&INAME[o])return INAME[o].replace(/ sword$/i,'')}catch(e){self.SQERR&&SQERR(e,'004-3')}const e=EQ&&EQ['eq_'+k+t];return e&&e.n?e.n.split(' ')[0]:'Tier '+t}
 const REC=[];for(let t=1;t<=3;t++)['axe','pick','sword'].forEach((k,i)=>REC.push({k,t,name:TIT[t]+' '+['axe','pickaxe','sword'][i],c:t==1?{wood:[3,4,3][i]}:t==2?{wood:[2,2,1][i],stone:[3,3,2][i]}:{wood:2,iron:[3,3,2][i]},req:[1,5,15][t-1],xp:[40,80,150][t-1]}));
 // farming tools are craftable too (one of each; the general store still sells them)
 REC.push({k:'hoe',t:1,name:'Hoe',c:{wood:3,stone:2},req:1,xp:40},{k:'can',t:1,name:'Watering can',c:{wood:2,stone:3},req:1,xp:40},{k:'rod',t:1,name:'Fishing rod',c:{wood:4,iron:1},req:3,xp:40});
@@ -62,4 +62,4 @@ function drawDrops(){g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-m
 const _nd=NEWDRAW;NEWDRAW=function(...a){_nd(...a);drawDrops()};
 
 // a material's name in recipe lists (191): the short name if there is one, else the item's name, else its key
-function matN(k){try{if(typeof SHORT!=='undefined'&&SHORT[k])return SHORT[k]}catch(e){}return INAME[k]?String(INAME[k]).toLowerCase():k}
+function matN(k){try{if(typeof SHORT!=='undefined'&&SHORT[k])return SHORT[k]}catch(e){self.SQERR&&SQERR(e,'004-4')}return INAME[k]?String(INAME[k]).toLowerCase():k}

@@ -15,7 +15,7 @@
 //   Cooldown DCD s, no mana. Burning monsters get 3 flames drawn after the outermost pS (all burns, not only napalm).
 (()=>{if(typeof STNS==='undefined'||typeof TREES==='undefined')return;
  // ---- the skill ----
- SKN.push('Brewing');AB.push('BREW');SKC.push('#58b848');while(XPS.length<SKN.length)XPS.push(0);try{SKICON.push('brew')}catch(e){}
+ SKN.push('Brewing');AB.push('BREW');SKC.push('#58b848');while(XPS.length<SKN.length)XPS.push(0);try{SKICON.push('brew')}catch(e){self.SQERR&&SQERR(e,'218-1')}
  const BR=SKN.length-1;window.SQBREWSK=BR;
  // ---- potions ----
  const COAT={pot_poison:{n:'Poison potion',v:240,d:'Coats your off-hand dagger: every strike poisons. Pin it in your bag for your dagger\'s ULT.',c:'#80e060',ic:'#58c048'},
@@ -56,12 +56,12 @@
  function brewOne(r){const L=lvOf(BR);if(L<r.lv){say('You need Brewing '+r.lv+'.');return false}if(canMake(r)<1){say('You don\'t have the ingredients.');return false}
   const save=sumTo(exAt,L)+(PK('br_thrift')?.15:0),extra=sumTo(raAt,L)+(PK('br_twice')?.15:0);
   for(const[a,b]of Object.entries(r.c))for(let i=0;i<b;i++)if(!(Math.random()<save))inv[a]--;
-  const n=1+(Math.random()<extra?1:0);inv[r.k]=(inv[r.k]|0)+n;addXp(BR,r.xp);try{sfx('pickup')}catch(e){}
+  const n=1+(Math.random()<extra?1:0);inv[r.k]=(inv[r.k]|0)+n;addXp(BR,r.xp);try{sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'218-2')}
   say('You brew '+(n>1?n+' ':'a ')+INAME[r.k].toLowerCase()+(n>1?'s':'')+'.');return true}
  {const _sa=stationAct;stationAct=function(a){const o=STATION;if(!(o&&o.t==='cauldron'&&/^cwa?_/.test(a||'')))return _sa.apply(this,arguments);
    const all=a.startsWith('cwa_'),r=RECIPES.find(q=>q.k===a.replace(/^cwa?_/,''));if(!r)return;
    if(lvOf(BR)<r.lv){say('You need Brewing '+r.lv+' to brew that.');return}const m=canMake(r);if(m<1){say('You need '+Object.entries(r.c).map(([k,b])=>b+' '+matN(k)).join(', ')+'.');return}
-   const n=all?m:1;if(sqDo('craft',n,()=>{brewOne(r)})){try{SQDO.d=2.4/(1+spd());SQDO.tot=n;SQDO.brew=r.k;const[fx,fy]=front(16);BREWAT={k:r.k,tx:Math.floor(fx/16),ty:Math.floor(fy/16)}}catch(e){}say('Brewing...');return}
+   const n=all?m:1;if(sqDo('craft',n,()=>{brewOne(r)})){try{SQDO.d=2.4/(1+spd());SQDO.tot=n;SQDO.brew=r.k;const[fx,fy]=front(16);BREWAT={k:r.k,tx:Math.floor(fx/16),ty:Math.floor(fy/16)}}catch(e){self.SQERR&&SQERR(e,'218-3')}say('Brewing...');return}
    brewOne(r);saveLocal(true);rPn()}}
  // the cauldron's look (world px; a Props look 'p:cauldron' wins when there is one)
  const CC={K:'#16121c',d:'#2b2937',m:'#434158',l:'#64627e',h:'#9c9ab8',s:'#d6d4ec',g:'#2f9a3e',G:'#62cc48',L:'#a8f070',W:'#e8ffd0',D:'#1f6a2c',b:'#5a3418',B:'#8c5a2c',n:'#b88850'};
@@ -95,7 +95,7 @@
  // the cauldron you're brewing at (the one in front of you when the job started), while the job runs
  const brewing=(x,y)=>{const D=window.SQDO;if(!D||!D.brew||!BREWAT)return null;return x===BREWAT.tx&&y===BREWAT.ty?palOf(D.brew):null};
  const hasLook=()=>{try{return!!(window.SQPROPS&&SQPROPS.looks&&SQPROPS.looks['p:cauldron'])}catch(e){return false}};
- {const _ds=drawStation;drawStation=function(t,x,y,st,tm){if(t!=='cauldron'||hasLook())return _ds.apply(this,arguments);g.save();try{cauldronArt(x*16+8,y*16+15,(tm!=null&&tm>0?tm:performance.now()/1000),brewing(x,y))}catch(e){}g.restore()}}
+ {const _ds=drawStation;drawStation=function(t,x,y,st,tm){if(t!=='cauldron'||hasLook())return _ds.apply(this,arguments);g.save();try{cauldronArt(x*16+8,y*16+15,(tm!=null&&tm>0?tm:performance.now()/1000),brewing(x,y))}catch(e){self.SQERR&&SQERR(e,'218-4')}g.restore()}}
  // ---- icons ----
  const DAGS={idag:{t:1,c:'#c8ccd8',n:'Iron dagger'},sdag:{t:2,c:'#e0e4f0',n:'Steel dagger'},mdag:{t:3,c:'#70a8e0',n:'Mithril dagger',lv:30,bar:'mbar',sm:35},adag:{t:4,c:'#58c088',n:'Adamant dagger',lv:45,bar:'abar',sm:50},
   stdag:{t:5,c:'#f0d8ff',n:'Starsteel dagger',lv:60,bar:'abar',mc:{abar:2,stardust:4},sm:66},metdag:{t:6,c:'#a070f0',n:'Meteorite dagger',lv:75,bar:'metbar',sm:82}};
@@ -114,48 +114,48 @@
  let DAG=null,DPIN='',COATK=null,COATU=0,DCD=0;
  {const _occ=occ;occ=function(slot){if(slot==='off'&&DAG)return DAG;return _occ.apply(this,arguments)}}
  {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot==='off')DAG=k&&EQ[k]&&EQ[k].kind==='dagger'?k:null;return out}}
- {const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.kind==='dagger'&&e.rq2&&lvOf(e.rq2.s)<e.rq2.l){say('You need Attack '+e.rq2.l+' to use the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){}return}return _eq.apply(this,arguments)}}
+ {const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.kind==='dagger'&&e.rq2&&lvOf(e.rq2.s)<e.rq2.l){say('You need Attack '+e.rq2.l+' to use the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){self.SQERR&&SQERR(x,'218-5')}return}return _eq.apply(this,arguments)}}
  {const _mf=meleeFlat;meleeFlat=function(){return _mf.apply(this,arguments)+(DAG&&DAGS[DAG]?DAGS[DAG].t:0)}}
  // a bow/wand/hoe/can that got into the hand some other way pushes the dagger to the bag
- {SQUPD.after('218',(dt)=>{if(DAG&&(TL.bow||WAND||TL.hoe||TL.can)){inv[DAG]=(inv[DAG]|0)+1;DAG=null;try{snapEq()}catch(e){}}if(DCD>0)DCD=Math.max(0,DCD-(dt||0));if(COATK&&performance.now()>COATU){COATK=null;try{say('Your dagger\'s coating wore off.')}catch(e){}}})}
+ {SQUPD.after('218',(dt)=>{if(DAG&&(TL.bow||WAND||TL.hoe||TL.can)){inv[DAG]=(inv[DAG]|0)+1;DAG=null;try{snapEq()}catch(e){self.SQERR&&SQERR(e,'218-6')}}if(DCD>0)DCD=Math.max(0,DCD-(dt||0));if(COATK&&performance.now()>COATU){COATK=null;try{say('Your dagger\'s coating wore off.')}catch(e){self.SQERR&&SQERR(e,'218-7')}}})}
  {SQSAVE.after('218:dag,dpin',s=>{s.dag=DAG||'';s.dpin=DPIN||'';})}
- {SQLOAD.after('218',(S)=>{try{const d=S&&S.dag;DAG=d&&DAGS[d]&&!TL.bow&&!WAND&&!TL.hoe&&!TL.can?d:null;DPIN=S&&typeof S.dpin==='string'?S.dpin:'';COATK=null;try{snapEq()}catch(e){}}catch(e){}})}
+ {SQLOAD.after('218',(S)=>{try{const d=S&&S.dag;DAG=d&&DAGS[d]&&!TL.bow&&!WAND&&!TL.hoe&&!TL.can?d:null;DPIN=S&&typeof S.dpin==='string'?S.dpin:'';COATK=null;try{snapEq()}catch(e){self.SQERR&&SQERR(e,'218-8')}}catch(e){self.SQERR&&SQERR(e,'218-9')}})}
  {const _ng=newGame;newGame=function(){DAG=null;DPIN='';COATK=null;return _ng.apply(this,arguments)}}
  // ---- pinning a potion for the dagger ult ----
  {const _b=bagGridHTML;bagGridHTML=function(){let h=_b.apply(this,arguments);try{const k=invSel;if(k&&(inv[k]|0)>0&&isPotion(k)){const on=DPIN===k;
    const btn='<button class="use" data-dpin="'+k+'" title="Your dagger\'s ULT uses this potion"'+(on?' style="background:#b070f0;color:#fff"':'')+'>'+(on?'★ DAGGER ULT':'☆ DAGGER ULT')+'</button>';
-   const u='<button class="use" data-k="'+k+'">USE</button>',nm='<b>'+esc(INAME[k]||k)+'</b> ×';if(h.includes(u))h=h.replace(u,u+btn);else if(h.includes(nm))h=h.replace(nm,(COAT[k]?'<button class="use" data-dcoat="'+k+'">USE</button>':'')+btn+nm)}}catch(e){}return h}}
+   const u='<button class="use" data-k="'+k+'">USE</button>',nm='<b>'+esc(INAME[k]||k)+'</b> ×';if(h.includes(u))h=h.replace(u,u+btn);else if(h.includes(nm))h=h.replace(nm,(COAT[k]?'<button class="use" data-dcoat="'+k+'">USE</button>':'')+btn+nm)}}catch(e){self.SQERR&&SQERR(e,'218-10')}return h}}
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dpin]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.dpin;DPIN=DPIN===k?'':k;
-  say(DPIN?'Your dagger\'s ULT will use your '+INAME[k].toLowerCase()+'.'+(DAG?'':' Put a dagger in your off-hand to use it.'):'Unpinned.');try{sfx('talk')}catch(x){}try{saveLocal(true)}catch(x){}try{rPn()}catch(x){}},true);
- document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dcoat]');if(!b)return;e.stopPropagation();e.preventDefault();useFood(b.dataset.dcoat);try{rPn()}catch(x){}},true);
+  say(DPIN?'Your dagger\'s ULT will use your '+INAME[k].toLowerCase()+'.'+(DAG?'':' Put a dagger in your off-hand to use it.'):'Unpinned.');try{sfx('talk')}catch(x){self.SQERR&&SQERR(x,'218-11')}try{saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'218-12')}try{rPn()}catch(x){self.SQERR&&SQERR(x,'218-13')}},true);
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dcoat]');if(!b)return;e.stopPropagation();e.preventDefault();useFood(b.dataset.dcoat);try{rPn()}catch(x){self.SQERR&&SQERR(x,'218-14')}},true);
  // attack potions from the bag: USE coats the dagger (they aren't foods)
- {const _uf=useFood;useFood=function(k){if(COAT[k]){if(!DAG){say('Put a dagger in your off-hand to coat it.');return}if((inv[k]|0)<1)return;inv[k]--;coat(k);try{saveLocal(true)}catch(e){}if(pnOpen)rPn();return}return _uf.apply(this,arguments)}}
- const COATS=20;function coat(k){COATK=k;COATU=performance.now()+COATS*1000*(PK('br_long')?1.5:1);try{sfx('quest')}catch(e){}say({pot_poison:'Your dagger drips with poison!',pot_napalm:'Your dagger bursts into flame!',pot_zap:'Your dagger crackles with lightning!'}[k])}
+ {const _uf=useFood;useFood=function(k){if(COAT[k]){if(!DAG){say('Put a dagger in your off-hand to coat it.');return}if((inv[k]|0)<1)return;inv[k]--;coat(k);try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'218-15')}if(pnOpen)rPn();return}return _uf.apply(this,arguments)}}
+ const COATS=20;function coat(k){COATK=k;COATU=performance.now()+COATS*1000*(PK('br_long')?1.5:1);try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'218-16')}say({pot_poison:'Your dagger drips with poison!',pot_napalm:'Your dagger bursts into flame!',pot_zap:'Your dagger crackles with lightning!'}[k])}
  // ---- the ult ----
  const DCDMAX=()=>PK('br_quick')?12:20,SHARE=()=>PK('br_wide')?96:48;
  const uidMe=()=>{const m=window.SQMP;return m&&m.user?m.user.uid:''};
  const pals=()=>{const out=[];try{const M=window.SQMP;if(!M||!M.players)return out;const fr=M.friends||{};for(const[u,r]of M.players){if(!r||u===uidMe())continue;
-   const mine=(window.SQPARTY&&SQPARTY.has&&SQPARTY.has(u))||!!fr[u];if(!mine)continue;if(Math.hypot((r.x||0)-P.x,(r.y||0)-P.y)>SHARE())continue;out.push(u)}}catch(e){}return out};
+   const mine=(window.SQPARTY&&SQPARTY.has&&SQPARTY.has(u))||!!fr[u];if(!mine)continue;if(Math.hypot((r.x||0)-P.x,(r.y||0)-P.y)>SHARE())continue;out.push(u)}}catch(e){self.SQERR&&SQERR(e,'218-17')}return out};
  const RINGS=[];const ring=(x,y,col,r)=>RINGS.push({x,y,col,r,t:0,sc:curScene()});
  function drink(k,silent){const before=inv[k]|0;inv[k]=before+1;const v=window.SQBREWDRINK;window.SQBREWDRINK=true;try{useFood(k)}finally{window.SQBREWDRINK=v}if((inv[k]|0)>before)inv[k]=before;
   if(k==='pot_heal'&&silent&&window.SQBREWFULL){}}
  function daggerUlt(){if(dead||menuOpen||pnOpen||BUILD)return;if(!DAG){say('Put a dagger in your off-hand first.');return}
-  if(DCD>0){say('Your dagger ult is recharging ('+Math.ceil(DCD)+'s).');try{sfx('nomana')}catch(e){}return}
+  if(DCD>0){say('Your dagger ult is recharging ('+Math.ceil(DCD)+'s).');try{sfx('nomana')}catch(e){self.SQERR&&SQERR(e,'218-18')}return}
   if(!DPIN){say('Pin a potion in your bag for your dagger\'s ULT (Bag > potion > ☆ DAGGER ULT).');return}
   if((inv[DPIN]|0)<1){say('You\'re out of '+(SN[DPIN]||INAME[DPIN]||'that potion').toLowerCase()+'.');return}
   if(COAT[DPIN]){inv[DPIN]--;coat(DPIN);ring(P.x,P.y-6,COAT[DPIN].c,30)}
-  else{const to=pals();useFood(DPIN);ring(P.x,P.y-6,'#70f090',SHARE());if(to.length){try{SQPVSEND({k:'dp',p:DPIN,to:to.join(','),f:PK('br_heal')?1:0,x:Math.round(P.x),y:Math.round(P.y)})}catch(e){}say('You share your '+(INAME[DPIN]||'potion').toLowerCase()+' with '+to.length+' '+(to.length>1?'friends':'friend')+'.')}}
-  DCD=DCDMAX();try{saveLocal(true)}catch(e){}}
+  else{const to=pals();useFood(DPIN);ring(P.x,P.y-6,'#70f090',SHARE());if(to.length){try{SQPVSEND({k:'dp',p:DPIN,to:to.join(','),f:PK('br_heal')?1:0,x:Math.round(P.x),y:Math.round(P.y)})}catch(e){self.SQERR&&SQERR(e,'218-19')}say('You share your '+(INAME[DPIN]||'potion').toLowerCase()+' with '+to.length+' '+(to.length>1?'friends':'friend')+'.')}}
+  DCD=DCDMAX();try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'218-20')}}
  // someone shared a potion with us
  try{window.SQFXH=window.SQFXH||{};SQFXH.dp=(r,v)=>{try{const u=r&&(r.uid||r.u),me=uidMe();if(!u||!me||!v||typeof v.to!=='string'||!v.to.split(',').includes(me))return;
    const fr=(window.SQMP&&SQMP.friends)||{};if(!((window.SQPARTY&&SQPARTY.has&&SQPARTY.has(u))||fr[u]))return;const k=String(v.p||'');if(!isHelp(k))return;
    if(Math.hypot((+v.x||0)-P.x,(+v.y||0)-P.y)>200)return;ring(+v.x,+v.y-6,'#70f090',48);const hp=P.hp;drink(k);if(k==='pot_heal'&&!v.f){}
-   say((r.n||'A friend')+' shared a '+(INAME[k]||'potion').toLowerCase()+' with you!')}catch(e){}}}catch(e){}
+   say((r.n||'A friend')+' shared a '+(INAME[k]||'potion').toLowerCase()+' with you!')}catch(e){self.SQERR&&SQERR(e,'218-21')}}}catch(e){self.SQERR&&SQERR(e,'218-22')}
  // 159's picker: a dagger ultimate
  window.SQULTX=window.SQULTX||[];SQULTX.push({k:'dagger',n:'Potion Burst',ok:()=>!!DAG,from:()=>INAME[DAG]||'your dagger',run:daggerUlt});
- {const _cu=castUlt;castUlt=function(){let c=null;try{c=window.SQULT&&SQULT.chosen()}catch(e){}if(c&&c.k==='dagger'){daggerUlt();return}return _cu.apply(this,arguments)}}
+ {const _cu=castUlt;castUlt=function(){let c=null;try{c=window.SQULT&&SQULT.chosen()}catch(e){self.SQERR&&SQERR(e,'218-23')}if(c&&c.k==='dagger'){daggerUlt();return}return _cu.apply(this,arguments)}}
  // the ULT touch button shows the pinned potion and the cooldown
- let LB='';{const _ub=ubUpdate;ubUpdate=function(){let c=null;try{c=window.SQULT&&SQULT.chosen()}catch(e){}if(!(c&&c.k==='dagger')){if(LB){LB='';try{lastUb=''}catch(e){}}return _ub.apply(this,arguments)}
+ let LB='';{const _ub=ubUpdate;ubUpdate=function(){let c=null;try{c=window.SQULT&&SQULT.chosen()}catch(e){self.SQERR&&SQERR(e,'218-24')}if(!(c&&c.k==='dagger')){if(LB){LB='';try{lastUb=''}catch(e){self.SQERR&&SQERR(e,'218-25')}}return _ub.apply(this,arguments)}
    const show=!isPC&&!GPON&&!menuOpen&&!dead,nm=DPIN?(COAT[DPIN]?{pot_poison:'poison',pot_napalm:'napalm',pot_zap:'zap'}[DPIN]:(SHORT[DPIN]||'potion').replace(/ potion$/,'')):'pin a potion',
     lab=!show?'':DCD>0?'ULT<small>'+Math.ceil(DCD)+'s</small>':'ULT<small>'+nm+'</small>';const key=show+'|'+lab;if(key===LB)return;LB=key;
    ubt.style.display=show?'flex':'none';ubt.innerHTML=lab;ubt.style.opacity=DCD>0||!DPIN||(inv[DPIN]|0)<1?'.55':'1'}}
@@ -168,27 +168,27 @@
    for(let j=0;j<jumps;j++){let best=null,bd=48;for(const m of en){if(hit.has(m)||m.dead||m.hp<=0)continue;const r=Math.hypot(m.x-from.x,m.y-from.y);if(r<bd){bd=r;best=m}}if(!best)break;
     ZAPS.push({a:{x:from.x,y:from.y},b:{x:best.x,y:best.y},t:0,sc:curScene()});hit.add(best);hitE(best,d,'#70d8ff','melee');from=best;d=Math.max(1,Math.round(d*.7))}}}
  {SQHIT.wrap('218 brewing and daggers',_at=>function(){if(!DAG||!COATK)return _at.apply(this,arguments);const H=new Map();for(const n of en)if(!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<60)H.set(n,n.hp);
-   const out=_at.apply(this,arguments);try{for(const[n,hp]of H){if(n.hp<hp)onStrike(n,hp-n.hp)}}catch(e){}return out})}
+   const out=_at.apply(this,arguments);try{for(const[n,hp]of H){if(n.hp<hp)onStrike(n,hp-n.hp)}}catch(e){self.SQERR&&SQERR(e,'218-26')}return out})}
  // ---- drawing: coated dagger, rings, lightning, flames on burning monsters, the coat timer ----
  const sxp=x=>(x-camX())*Z,syp=y=>(y-camY())*Z;
  {const _ps=pS;pS=function(n,tm){const out=_ps.apply(this,arguments);try{if(n&&n.burn>0&&!n.dead){const f=Math.floor(tm*9),w=(n.big||n.boss)?28:14;g.save();
      flame(Math.round(n.x-w*.32),Math.round(n.y+1),1,f,true);flame(Math.round(n.x+w*.05),Math.round(n.y-3),1,f+2,false);flame(Math.round(n.x+w*.34),Math.round(n.y+1),1,f+1,true);
-     for(let i=0;i<4;i++){const ph=(tm*1.2+i/4)%1;g.globalAlpha=1-ph;g.fillStyle=i%2?'#ffb030':'#ff6020';g.fillRect(Math.round(n.x+Math.sin(i*3.1+tm*2)*w*.45),Math.round(n.y-8-ph*20),1,1)}g.restore()}}catch(e){}return out}}
+     for(let i=0;i<4;i++){const ph=(tm*1.2+i/4)%1;g.globalAlpha=1-ph;g.fillStyle=i%2?'#ffb030':'#ff6020';g.fillRect(Math.round(n.x+Math.sin(i*3.1+tm*2)*w*.45),Math.round(n.y-8-ph*20),1,1)}g.restore()}}catch(e){self.SQERR&&SQERR(e,'218-27')}return out}}
  {SQPP.after('218',(tm)=>{try{if(COATK&&!SCENE||COATK&&SCENE){const f=Math.floor((tm||performance.now()/1000)*9),hx=Math.round(P.x+(face[0]<0?-6:6)),hy=Math.round(P.y+1);g.save();
      if(COATK==='pot_napalm'){flame(hx,hy,.8,f,face[0]<0)}
      else if(COATK==='pot_poison'){for(let i=0;i<3;i++){const ph=((tm||0)*1.5+i/3)%1;g.fillStyle=i%2?'#80e060':'#58c048';g.fillRect(hx-1+i,hy-6+ph*8,1,1)}}
-     else if(COATK==='pot_zap'){for(let i=0;i<4;i++){g.fillStyle=i%2?'#ffffff':'#70d8ff';g.fillRect(Math.round(hx+Math.sin((tm||0)*20+i)*4),Math.round(hy-6+Math.cos((tm||0)*17+i*2)*5),1,1)}}g.restore()}}catch(e){}})}
+     else if(COATK==='pot_zap'){for(let i=0;i<4;i++){g.fillStyle=i%2?'#ffffff':'#70d8ff';g.fillRect(Math.round(hx+Math.sin((tm||0)*20+i)*4),Math.round(hy-6+Math.cos((tm||0)*17+i*2)*5),1,1)}}g.restore()}}catch(e){self.SQERR&&SQERR(e,'218-28')}})}
  {SQHUD.before('218',()=>{const sc=curScene();if(RINGS.length||ZAPS.length){g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;try{
      for(const q of RINGS){if(q.sc!==sc)continue;const k=Math.min(1,q.t/.7),r=8+k*q.r,n=Math.max(30,r*1.4|0);g.globalAlpha=1-k*.8;g.fillStyle=q.col;for(let i=0;i<n;i++){const a=i/n*6.283;g.fillRect(Math.round(sxp(q.x+Math.cos(a)*r)),Math.round(syp(q.y+Math.sin(a)*r*.6)),Z*2,Z*2)}g.globalAlpha=1}
      for(const z of ZAPS){if(z.sc!==sc)continue;let lx=sxp(z.a.x),ly=syp(z.a.y-6);for(let i=1;i<=6;i++){const k=i/6,x=sxp(z.a.x+(z.b.x-z.a.x)*k)+(i<6?((Math.random()*8-4)|0)*Z:0),y=syp(z.a.y-6+(z.b.y-z.a.y)*k)+(i<6?((Math.random()*8-4)|0)*Z:0);
        g.strokeStyle='#70d8ff';g.lineWidth=Z*2;g.beginPath();g.moveTo(lx,ly);g.lineTo(x,y);g.stroke();g.strokeStyle='#ffffff';g.lineWidth=Z*.8;g.beginPath();g.moveTo(lx,ly);g.lineTo(x,y);g.stroke();lx=x;ly=y}}
-    }catch(e){}g.restore()}})}
+    }catch(e){self.SQERR&&SQERR(e,'218-29')}g.restore()}})}
  {SQUPD.after('218',(dt)=>{for(const q of RINGS)q.t+=dt||0;for(const z of ZAPS)z.t+=dt||0;for(let i=RINGS.length-1;i>=0;i--)if(RINGS[i].t>.8)RINGS.splice(i,1);for(let i=ZAPS.length-1;i>=0;i--)if(ZAPS[i].t>.25)ZAPS.splice(i,1);})}
  // HUD chips (next to the arrows/ULT chips): the coating with its time left, and the dagger ULT's readiness
  {const _hl=hudLayout;hudLayout=function(){const L=_hl.apply(this,arguments);try{let add=0;
    if(COATK){L.chips.push([COATK,({pot_poison:'POISON',pot_napalm:'NAPALM',pot_zap:'ZAP'}[COATK])+' '+Math.max(0,Math.ceil((COATU-performance.now())/1000))+'s']);add=1}
-   let c=null;try{c=window.SQULT&&SQULT.chosen()}catch(e){}if(c&&c.k==='dagger'&&!WAND&&L.chips.length<5){L.chips.push(['ult',DCD>0?'ULT '+Math.ceil(DCD)+'s':'ULT']);add=1}
-   if(add&&L.stackBottom<L.cy+22*L.U)L.stackBottom=L.cy+22*L.U}catch(e){}return L}}
+   let c=null;try{c=window.SQULT&&SQULT.chosen()}catch(e){self.SQERR&&SQERR(e,'218-30')}if(c&&c.k==='dagger'&&!WAND&&L.chips.length<5){L.chips.push(['ult',DCD>0?'ULT '+Math.ceil(DCD)+'s':'ULT']);add=1}
+   if(add&&L.stackBottom<L.cy+22*L.U)L.stackBottom=L.cy+22*L.U}catch(e){self.SQERR&&SQERR(e,'218-31')}return L}}
  window.SQDAGGER={get dag(){return DAG},get pin(){return DPIN},set pin(v){DPIN=v},get coat(){return COATK},coat,daggerUlt,DAGS,get cd(){return DCD},set cd(v){DCD=v},onStrike}})();
 // ---- dagger stabs: the off-hand button (X / right-click, controller R1, touch STAB) jabs with the dagger ----
 // SQDAGGER.stab() runs the game's own melee (the outermost attack, so PvP, shared monsters, bosses, coatings and XP all work)
@@ -197,13 +197,13 @@
 // plays. While a stab shows, the outermost pP draws the dagger in place of the sword (occ('main') answers the dagger for that call).
 (()=>{if(!window.SQDAGGER)return;const D=SQDAGGER,STABGAP=.28;let last=-1e9,VIS=0;
  const nowS=()=>performance.now()/1000;
- const tgt=()=>{try{const[fx,fy]=front(13);for(const n of en){if(!n||n.dead)continue;const r=(n.type==='boss'||n.big||n._wb)?30:20;if(Math.hypot(n.x-fx,n.y-fy)<r)return n}}catch(e){}
-  try{const M=window.SQPVP;if(M&&M.on&&typeof pvTarget==='function'&&pvTarget())return true}catch(e){}return null};
+ const tgt=()=>{try{const[fx,fy]=front(13);for(const n of en){if(!n||n.dead)continue;const r=(n.type==='boss'||n.big||n._wb)?30:20;if(Math.hypot(n.x-fx,n.y-fy)<r)return n}}catch(e){self.SQERR&&SQERR(e,'218-32')}
+  try{const M=window.SQPVP;if(M&&M.on&&typeof pvTarget==='function'&&pvTarget())return true}catch(e){self.SQERR&&SQERR(e,'218-33')}return null};
  function stab(){if(!D.dag||dead||menuOpen||pnOpen||BUILD||FISH)return;const t=nowS();if(t-last<STABGAP)return;last=t;
   const sw=TL.sword,s0=swing;VIS=performance.now()+260;
   const W=20+((D.DAGS[D.dag]||{}).t|0);window.SQSWINGW=()=>W;
   try{if(tgt()){window.SQSTABNOW=1;const sl=SLEDGE;SLEDGE=false;TL.sword=0;swing=0;try{attack()}catch(e){console.warn('stab',e)}finally{TL.sword=sw;SLEDGE=sl;window.SQSTABNOW=0}}
-   else{try{sfx('swish')}catch(e){}try{SQPVSEND({k:'sw',d:[face[0],face[1]],w:W})}catch(e){}}}finally{window.SQSWINGW=null}
+   else{try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'218-34')}try{SQPVSEND({k:'sw',d:[face[0],face[1]],w:W})}catch(e){self.SQERR&&SQERR(e,'218-35')}}}finally{window.SQSWINGW=null}
   swing=Math.max(.25,s0)}
  D.stab=stab;
  {const _sa=shootAim;shootAim=function(first){if(D.dag&&!TL.bow&&!WAND){stab();return}return _sa.apply(this,arguments)}}

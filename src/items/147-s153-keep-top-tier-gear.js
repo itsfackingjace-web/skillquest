@@ -22,5 +22,5 @@
  // tell the player once play is running (upd only runs in play)
  let wait=0;{SQUPD.after('147',(dt)=>{if((back.length||hand.length)&&!menuOpen&&!pnOpen&&!dead&&(wait+=dt)>1.5){wait=0;
    if(hand.length){hand=[];say('Sorry about that! A bug swapped your Bone bow for a Longbow. It\'s back in your hands.')}
-   else{const n=back.map(k=>INAME[k]).join(', ');back=[];say('Sorry about that! A bug swapped your '+n+' for a weaker one. It\'s back in your Bag.')}msgT=8;try{saveLocal(true)}catch(e){}}})}
+   else{const n=back.map(k=>INAME[k]).join(', ');back=[];say('Sorry about that! A bug swapped your '+n+' for a weaker one. It\'s back in your Bag.')}msgT=8;try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'147-1')}}})}
  window.SQTFX={LOST,LOST2}})();

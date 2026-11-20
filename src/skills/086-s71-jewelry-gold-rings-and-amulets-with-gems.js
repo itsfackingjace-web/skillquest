@@ -26,7 +26,7 @@
  const _ax=addXp;addXp=function(i,x){if(x>0){const m=1+(has('ja_gold')?.05:0)+(has('jr_emerald')&&GATHER.has(i)?.1:0);if(m>1)x=Math.max(x+1,Math.round(x*m))}return _ax(i,x)};
  SQUPD.after('086',(dt)=>{if(!menuOpen&&!pnOpen&&!dead&&has('jr_sapphire')&&typeof MANA!=='undefined')MANA=Math.min(maxMP(),MANA+dt*.25)});
  // ---- wearing ----
- function jwWear(k){const j=JK[k];if(!j||(inv[k]|0)<1)return;const old=JW[j.s];if(old)inv[old]=(inv[old]|0)+1;inv[k]--;JW[j.s]=k;say('You put on the '+j.n.toLowerCase()+'. '+j.d);sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){}rPn()}
+ function jwWear(k){const j=JK[k];if(!j||(inv[k]|0)<1)return;const old=JW[j.s];if(old)inv[old]=(inv[old]|0)+1;inv[k]--;JW[j.s]=k;say('You put on the '+j.n.toLowerCase()+'. '+j.d);sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'086-1')}rPn()}
  function jwOff(s){const k=JW[s];if(!k)return;inv[k]=(inv[k]|0)+1;JW[s]=null;say('You take off the '+JK[k].n.toLowerCase()+'.');sfx('talk');saveLocal(true);rPn()}
  const _bg=bagGridHTML;bagGridHTML=function(){const h=_bg();const k=invSel;if(!k||!JK[k]||(inv[k]|0)<1)return h;return h.replace('<div class="bd">','<div class="bd"><button class="use" data-jw="wear" data-k="'+k+'">WEAR</button>')};
  const _eh=equipHTML;equipHTML=function(){const row=(s,lab)=>{const k=JW[s];return'<div class="tc-r"><span>'+lab+'</span><b>'+(k?esc(JK[k].n)+' <button class="gc" data-jw="off" data-s="'+s+'" style="margin-left:6px;padding:4px 8px">Take off</button>':'None')+'</b></div>'+(k?'<div style="font-size:11px;opacity:.75;margin:-2px 0 6px">'+esc(JK[k].d)+'</div>':'')+
@@ -39,9 +39,9 @@
    h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><img class="gimg" alt="" src="'+iconURL(j.k)+'"><div class="gi"><b>'+j.n+'</b> <small>(have '+(inv[j.k]|0)+')</small><br><small>'+need.map(([a,b])=>b+' '+(INAME[a]||a).toLowerCase()).join(', ')+' · Crafting '+j.lv+' · '+j.xp+' xp<br>'+j.d+'</small></div><button class="fg" data-jw="make" data-k="'+j.k+'">Make</button><button class="fg" data-jw="all" data-k="'+j.k+'">All</button></div>'}return h}
  function jwCan(j){return Math.min(Math.floor((inv.gbar|0)/j.b),j.g?(inv[j.g]|0):1e9)}
  function jwMake(k,all){const j=JK[k];if(!j)return;const n=all?jwCan(j):1;if(all&&n<1){say('You need '+j.b+' gold bar'+(j.b>1?'s':'')+(j.g?' and a '+INAME[j.g].toLowerCase():'')+'.');sfx('swish');return}
-  if(sqDo('craft',n,()=>jwMake(k))){try{if(all&&SQDO)SQDO.tot=n}catch(e){}return}if(lvOf(6)<j.lv){say('You need Crafting '+j.lv+' to make that.');sfx('swish');return}
+  if(sqDo('craft',n,()=>jwMake(k))){try{if(all&&SQDO)SQDO.tot=n}catch(e){self.SQERR&&SQERR(e,'086-2')}return}if(lvOf(6)<j.lv){say('You need Crafting '+j.lv+' to make that.');sfx('swish');return}
   if((inv.gbar|0)<j.b||(j.g&&(inv[j.g]|0)<1)){say('You need '+j.b+' gold bar'+(j.b>1?'s':'')+(j.g?' and a '+INAME[j.g].toLowerCase():'')+'.');sfx('swish');return}
-  inv.gbar-=j.b;if(j.g)inv[j.g]--;inv[k]=(inv[k]|0)+1;addXp(6,j.xp);say('You made a '+j.n.toLowerCase()+'!');try{sfx('smelt')}catch(e){}saveLocal(true);rPn()}
+  inv.gbar-=j.b;if(j.g)inv[j.g]--;inv[k]=(inv[k]|0)+1;addXp(6,j.xp);say('You made a '+j.n.toLowerCase()+'!');try{sfx('smelt')}catch(e){self.SQERR&&SQERR(e,'086-3')}saveLocal(true);rPn()}
  const _sh=stationHTML;stationHTML=function(o){const h=_sh(o);if(!o||o.t!=='furnace')return h;const i=h.lastIndexOf('<button class="ng stb"');return i<0?h+jwRows():h.slice(0,i)+jwRows()+h.slice(i)};
  if(typeof forgeHTML==='function'){const _fh=forgeHTML;forgeHTML=function(...a){return _fh(...a)+jwRows()}}
  const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-jw]');if(b){const a=b.dataset.jw;if(a==='wear')jwWear(b.dataset.k);else if(a==='off')jwOff(b.dataset.s);else if(a==='make')jwMake(b.dataset.k);else if(a==='all')jwMake(b.dataset.k,true);return}_oc(e)};
@@ -51,7 +51,7 @@
   const _eh2=equipHTML;equipHTML=function(){const h=_eh2();const row='<button class="sb" data-hideh="1" style="margin:8px 0 2px">Hide helmet: '+(HIDEH?'ON':'OFF')+'</button>';
    const k='<div class="qc" style="margin-top:12px">',i=h.indexOf(k);return i<0?h+row:h.slice(0,i)+row+h.slice(i)};
   pbd.addEventListener('click',e=>{const b=e.target.closest('[data-hideh]');if(!b)return;e.stopPropagation();e.preventDefault();HIDEH=!HIDEH;say(HIDEH?'Your helmet is hidden. It still protects you.':'Your helmet is showing again.');
-   try{saveLocal(true);saveCloud(true)}catch(err){}try{rPn()}catch(err){}},true);
+   try{saveLocal(true);saveCloud(true)}catch(err){self.SQERR&&SQERR(err,'086-4')}try{rPn()}catch(err){self.SQERR&&SQERR(err,'086-5')}},true);
   SQSAVE.after('086:hh',o=>{o.hh=HIDEH?1:0;});
   SQLOAD.after('086',(S)=>{HIDEH=!!(S&&S.hh)});
   const _ng=newGame;newGame=function(){HIDEH=false;_ng()}}
@@ -74,21 +74,21 @@
  function dfFlames(x,y,d,dt){const[mx,my,fx,fy]=dfMouth(x,y,d);for(let k=0;k<3;k++){const sp=110+Math.random()*80,q=(Math.random()-.5)*.7,a=Math.atan2(fy,fx)+q;
    part(mx,my,Math.cos(a)*sp,Math.sin(a)*sp*(fy?1:.8),.32+Math.random()*.12,k===0?'#fff0a0':k===1?'#f8a020':'#f05010',-20,k===2?2:1)}}
  window.SQDF={get on(){return DF.on},get br(){return DF.on&&DF.breath},dir:dfDir,draw:dfDraw,flames:dfFlames,mouth:dfMouth,state:DF};
- function dfStart(){DF.on=true;DF.t=DF_LIFE;DF.breath=false;say('DRAGON FORM! Hold attack to breathe fire.');try{sfx('cfire');setTimeout(()=>sfx('cfire'),140)}catch(e){}
+ function dfStart(){DF.on=true;DF.t=DF_LIFE;DF.breath=false;say('DRAGON FORM! Hold attack to breathe fire.');try{sfx('cfire');setTimeout(()=>sfx('cfire'),140)}catch(e){self.SQERR&&SQERR(e,'086-6')}
   for(let k=0;k<36;k++){const a=k/36*6.283;part(P.x,P.y-6,Math.cos(a)*110,Math.sin(a)*80-20,.6,k%3?'#f88830':'#f8e060',-30,2)}if(typeof rumble==='function')rumble(300,.8,.6)}
- function dfEnd(why){if(!DF.on)return;DF.on=false;DF.breath=false;DF.cd=DF_CD;if(why)say(why);for(let k=0;k<20;k++){const a=k/20*6.283;part(P.x,P.y-6,Math.cos(a)*70,Math.sin(a)*50,.45,'#c0c0c0',-20,2)}try{sfx('swish')}catch(e){}}
+ function dfEnd(why){if(!DF.on)return;DF.on=false;DF.breath=false;DF.cd=DF_CD;if(why)say(why);for(let k=0;k<20;k++){const a=k/20*6.283;part(P.x,P.y-6,Math.cos(a)*70,Math.sin(a)*50,.45,'#c0c0c0',-20,2)}try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'086-7')}}
  // the ultimate
  const _cu=castUlt;castUlt=function(){if(!dsoul())return _cu();if(dead||menuOpen||pnOpen||BUILD)return;
   if(DF.on){dfEnd('You change back.');return}
   if(SCENE&&!SCENE.room.cave){say('Not indoors!');return}if(typeof SAILING!=='undefined'&&SAILING||window.SQRSAIL&&SQRSAIL.on){say('Not while sailing!');return}
-  if(DF.cd>0){say('Dragon Form is recharging ('+Math.ceil(DF.cd)+'s).');try{sfx('nomana')}catch(e){}return}dfStart()};
+  if(DF.cd>0){say('Dragon Form is recharging ('+Math.ceil(DF.cd)+'s).');try{sfx('nomana')}catch(e){self.SQERR&&SQERR(e,'086-8')}return}dfStart()};
  // attacking (and shooting) breathes fire instead
  SQHIT.wrap('086 jewelry gold rings and amulets with',next=>function(){if(DF.on){if(!dead&&!menuOpen&&!pnOpen)DF.tap=.3;return}
  return next.apply(this,arguments)});
  const _sa=shootAim;shootAim=function(f){if(DF.on){DF.tap=.3;return}return _sa(f)};
  cv.addEventListener('mousedown',e=>{if(e.button===0)DF.held.m=true});addEventListener('mouseup',e=>{if(e.button===0)DF.held.m=false});addEventListener('blur',()=>{DF.held.m=DF.held.t=false});
  {const ab=document.getElementById('a');if(ab){ab.addEventListener('touchstart',()=>{DF.held.t=true},{passive:true});for(const ev of['touchend','touchcancel'])ab.addEventListener(ev,()=>{DF.held.t=false},{passive:true})}}
- SQUPD.after('086',(dt)=>{if(menuOpen||pnOpen)return;DF.cd=Math.max(0,DF.cd-(DF.on?0:dt));if(!DF.on)return;if(dead){dfEnd();return}if(!dsoul()){dfEnd('The dragon spirit leaves you.');return}if(SCENE&&!SCENE.room.cave){dfEnd('You change back to fit inside.');return}if(typeof SAILING!=='undefined'&&SAILING||window.SQRSAIL&&SQRSAIL.on){dfEnd('You change back to sail.');return}DF.t-=dt;if(DF.t<=0){dfEnd('Your dragon form fades.');return}DF.fr+=dt;DF.tap=Math.max(0,DF.tap-dt);DF.breath=!!(K[' ']||DF.held.m||DF.held.t||DF.tap>0);if(!DF.breath)return;const d=dfDir();dfFlames(P.x,P.y,d,dt);if((DF.snd=(DF.snd||0)-dt)<=0){DF.snd=.45;try{sfx('cfire')}catch(e){}}if((DF.tick-=dt)>0)return;DF.tick=.25;const[mx,my,fx,fy]=dfMouth(P.x,P.y,d),sc=curScene(),dmg=Math.max(2,spellDmg('fire'));for(const n of en){if(n.dead)continue;const big=n.type==='boss'||n.type==='bonelord'||n.big,dx=n.x-mx,dy=(n.y-(big?14:6))-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);
+ SQUPD.after('086',(dt)=>{if(menuOpen||pnOpen)return;DF.cd=Math.max(0,DF.cd-(DF.on?0:dt));if(!DF.on)return;if(dead){dfEnd();return}if(!dsoul()){dfEnd('The dragon spirit leaves you.');return}if(SCENE&&!SCENE.room.cave){dfEnd('You change back to fit inside.');return}if(typeof SAILING!=='undefined'&&SAILING||window.SQRSAIL&&SQRSAIL.on){dfEnd('You change back to sail.');return}DF.t-=dt;if(DF.t<=0){dfEnd('Your dragon form fades.');return}DF.fr+=dt;DF.tap=Math.max(0,DF.tap-dt);DF.breath=!!(K[' ']||DF.held.m||DF.held.t||DF.tap>0);if(!DF.breath)return;const d=dfDir();dfFlames(P.x,P.y,d,dt);if((DF.snd=(DF.snd||0)-dt)<=0){DF.snd=.45;try{sfx('cfire')}catch(e){self.SQERR&&SQERR(e,'086-9')}}if((DF.tick-=dt)>0)return;DF.tick=.25;const[mx,my,fx,fy]=dfMouth(P.x,P.y,d),sc=curScene(),dmg=Math.max(2,spellDmg('fire'));for(const n of en){if(n.dead)continue;const big=n.type==='boss'||n.type==='bonelord'||n.big,dx=n.x-mx,dy=(n.y-(big?14:6))-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);
    if(al>-4&&al<64+(big?20:0)&&pe<8+al*.45+(big?14:0))spellHit({el:'fire',sc},n,dmg)}});
  // drawing you as the dragon
  SQPP.wrap('086',_pp=>function(tm){if(!DF.on)return _pp(tm);if(hurt>0&&Math.floor(tm*20)%2)return;const fr=Math.floor(tm/(qm?.12:.2))%4;dfDraw(Math.round(P.x),Math.round(P.y),dfDir(),fr)});

@@ -13,8 +13,8 @@
   expect:(me,foe)=>1/(1+Math.pow(10,(foe-me)/400))};
  // the opponent's rating, read when the game starts
  if(window.SQPVC){const _b=SQPVC.begin;SQPVC.begin=function(){const out=_b.apply(this,arguments);try{foeU=(window.SQDUEL&&SQDUEL.foe)||'';foeR=null;foeG=0;
-    if(foeU&&on()){const F=fb();F.db.get(F.db.ref(F.D,'lb/'+foeU)).then(s=>{const v=s.val()||{};foeG=Math.max(0,+v.cg|0);foeR=foeG>0&&isFinite(+v.cr)?Math.max(100,Math.min(3000,+v.cr)):1000}).catch(()=>{foeR=1000})}}catch(e){}return out}}
- window.SQDUELEND=(kind,res,foe,why)=>{if(kind!=='chess')return;let plies=0;try{plies=(window.SQPVCSTATE&&SQPVCSTATE.st&&SQPVCSTATE.st.ply)|0}catch(e){}
+    if(foeU&&on()){const F=fb();F.db.get(F.db.ref(F.D,'lb/'+foeU)).then(s=>{const v=s.val()||{};foeG=Math.max(0,+v.cg|0);foeR=foeG>0&&isFinite(+v.cr)?Math.max(100,Math.min(3000,+v.cr)):1000}).catch(()=>{foeR=1000})}}catch(e){self.SQERR&&SQERR(e,'142-1')}return out}}
+ window.SQDUELEND=(kind,res,foe,why)=>{if(kind!=='chess')return;let plies=0;try{plies=(window.SQPVCSTATE&&SQPVCSTATE.st&&SQPVCSTATE.st.ply)|0}catch(e){self.SQERR&&SQERR(e,'142-2')}
   let note='';
   if(plies<10)note='Too short to be rated (fewer than 5 moves each).';
   else{const d=day(),f=ST.f[foe];const n=f&&f[0]===d?f[1]:0;
@@ -23,16 +23,16 @@
     const fr=foeR==null?1000:foeR,S=res==='w'?1:res==='d'?.5:0,ch=K()*(S-SQCHR.expect(ST.r,fr)),old=Math.round(ST.r);
     ST.r=Math.max(100,ST.r+ch);ST.g++;if(res==='w')ST.w++;else if(res==='l')ST.l++;else ST.d++;ST.pk=Math.max(ST.pk,Math.round(ST.r));
     const nw=Math.round(ST.r),dl=nw-old;note='Chess rating: '+nw+' ('+(dl>=0?'+':'')+dl+')'+(ST.g===1?'. You\'re on the Chess leaderboard!':'');
-    try{if(window.SQLB)SQLB.pubAt=-1e9}catch(e){}}}
-  try{saveLocal(true)}catch(e){}
-  setTimeout(()=>{try{mpLog('game',note)}catch(e){}try{const t=document.getElementById('pvc_pvst');if(t)t.textContent+=' '+note}catch(e){}},50)};
+    try{if(window.SQLB)SQLB.pubAt=-1e9}catch(e){self.SQERR&&SQERR(e,'142-3')}}}
+  try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'142-4')}
+  setTimeout(()=>{try{mpLog('game',note)}catch(e){self.SQERR&&SQERR(e,'142-5')}try{const t=document.getElementById('pvc_pvst');if(t)t.textContent+=' '+note}catch(e){self.SQERR&&SQERR(e,'142-6')}},50)};
  // the chess lobby (Orla's board) shows your rating
  if(typeof chessLobby==='function'){const _cl=chessLobby;chessLobby=function(){const h=_cl.apply(this,arguments);
    const card='<div class="qc" style="margin:8px 0;font-size:13px"><b>Chess ladder</b><p style="margin:4px 0 0">'+(ST.g?'Your rating: <b>'+Math.round(ST.r)+'</b> · '+ST.w+' won, '+ST.l+' lost, '+ST.d+' drawn · best '+ST.pk:'Play chess against another player (tap their name and choose CHESS) to get a rating. Everyone starts at 1000.')+'</p><p style="margin:4px 0 0;font-size:11px;opacity:.8">See the top players in Leaderboards > Chess.</p></div>';
    const i=h.indexOf('<button class="cg');return i<0?h+card:h.slice(0,i)+card+h.slice(i)}}
  // saves
- {SQSAVE.after('142:chr',s=>{try{if(ST.g)s.chr={r:Math.round(ST.r*10)/10,g:ST.g,w:ST.w,l:ST.l,d:ST.d,pk:ST.pk,f:ST.f}}catch(e){}})}
+ {SQSAVE.after('142:chr',s=>{try{if(ST.g)s.chr={r:Math.round(ST.r*10)/10,g:ST.g,w:ST.w,l:ST.l,d:ST.d,pk:ST.pk,f:ST.f}}catch(e){self.SQERR&&SQERR(e,'142-7')}})}
  {SQLOAD.after('142',(S)=>{try{const v=S&&S.chr;Object.assign(ST,{r:1000,g:0,w:0,l:0,d:0,pk:1000,f:{}});
    if(v&&typeof v==='object'){ST.r=Math.max(100,Math.min(3000,+v.r||1000));for(const k of['g','w','l','d'])ST[k]=Math.max(0,v[k]|0);ST.pk=Math.max(ST.r,+v.pk||0);
-    if(v.f&&typeof v.f==='object')for(const u in v.f){const a=v.f[u];if(Array.isArray(a))ST.f[u]=[a[0]|0,a[1]|0]}}}catch(e){}})}
+    if(v.f&&typeof v.f==='object')for(const u in v.f){const a=v.f[u];if(Array.isArray(a))ST.f[u]=[a[0]|0,a[1]|0]}}}catch(e){self.SQERR&&SQERR(e,'142-8')}})}
  {const _ng=newGame;newGame=function(){Object.assign(ST,{r:1000,g:0,w:0,l:0,d:0,pk:1000,f:{}});return _ng.apply(this,arguments)}}})();

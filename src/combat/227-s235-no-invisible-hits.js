@@ -8,14 +8,14 @@
 //  - sends one automatic bug report a session describing the culprit, so the cause can be found (window.SQGHOSTHIT).
 (()=>{const SEEN=new WeakMap(),BORN=new WeakMap(),LOG=[];let reported=false;
  const fin=n=>Number.isFinite(n.x)&&Number.isFinite(n.y);
- {const _p=pS;pS=function(n,tm){try{if(n&&fin(n))SEEN.set(n,performance.now())}catch(e){}return _p.apply(this,arguments)}}
+ {const _p=pS;pS=function(n,tm){try{if(n&&fin(n))SEEN.set(n,performance.now())}catch(e){self.SQERR&&SQERR(e,'227-1')}return _p.apply(this,arguments)}}
  const exempt=n=>n.big||n.boss||n.type==='boss'||n.type==='ib'||n._wb||n.cb||n.under||n._pet;
  function describe(n,why){const o={why,type:n.type,rk:n.rk,x:n.x,y:n.y,hp:n.hp,dead:n.dead};for(const k of['_rp','_owner','_dev','_ev','zc','zi','rg','night','tx','ty','summon'])if(n[k]!=null)o[k]=n[k];
   o.keys=Object.keys(n).join(',').slice(0,300);const s=SEEN.get(n);o.seen=s?Math.round(performance.now()-s):-1;return o}
  function report(list){if(reported)return;reported=true;try{const MP=window.SQMP,F=window.SQFB;if(!MP||!MP.user||!F)return;const d=F.db,R=SCENE&&SCENE.room;
    const others=MP.players?[...MP.players.values()].filter(p=>p&&p.loc===(typeof mpLoc==='function'?mpLoc():'')).length:0;
    const what=('[auto] Invisible monster touching the player (blocked). '+JSON.stringify({where:R&&R.region||(SCENE&&SCENE.id)||'hollow',px:Math.round(P.x),py:Math.round(P.y),others,dark:+dark().toFixed(2),ver:window.SQVER,m:list.slice(0,3)})).slice(0,1500);
-   d.push(d.ref(F.D,'bugs'),{what,u:MP.user.uid,n:String(MP.user.displayName||'').split(' ')[0].slice(0,12),t:d.serverTimestamp()}).catch(()=>{})}catch(e){}}
+   d.push(d.ref(F.D,'bugs'),{what,u:MP.user.uid,n:String(MP.user.displayName||'').split(' ')[0].slice(0,12),t:d.serverTimestamp()}).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'227-2')}}
  SQUPD.wrap('227',_u=>function(dt){
   if(dead||menuOpen||pnOpen||!Array.isArray(en))return _u.apply(this,arguments);
   const now=performance.now(),moved=[];let bad=null;

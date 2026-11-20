@@ -170,7 +170,7 @@
   // a concert-hall reverb from a decaying noise burst (stereo, slightly different per side)
   const len=Math.floor(ctx.sampleRate*2.6),ir=ctx.createBuffer(2,len,ctx.sampleRate);for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)*(i<ctx.sampleRate*.012?i/(ctx.sampleRate*.012):1)}
   const cv=ctx.createConvolver();cv.buffer=ir;const wet=ctx.createGain();wet.gain.value=.32;cv.connect(wet);wet.connect(comp);
-  const mk=(p,send)=>{const g=ctx.createGain();let n=g;try{const sp=ctx.createStereoPanner();sp.pan.value=p;g.connect(sp);n=sp}catch(e){}n.connect(BUS);const s=ctx.createGain();s.gain.value=send;g.connect(s);s.connect(cv);return g};
+  const mk=(p,send)=>{const g=ctx.createGain();let n=g;try{const sp=ctx.createStereoPanner();sp.pan.value=p;g.connect(sp);n=sp}catch(e){self.SQERR&&SQERR(e,'155-1')}n.connect(BUS);const s=ctx.createGain();s.gain.value=send;g.connect(s);s.connect(cv);return g};
   PAN={lead:mk(0,.9),harm:mk(-.3,1),pad:mk(.25,1.1),arp:mk(.35,.9),bass:mk(-.15,.5),perc:mk(0,.7)};
   NOISE=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);{const d=NOISE.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}}
  const LV={lead:.9,harm:.42,pad:.22,arp:.38,bass:.6,perc:.8};
@@ -195,13 +195,13 @@
   return oc.startRendering()}
  // ---------- which song ----------
  const BOSSR=220;let bossUntil=0;
- const bossNear=()=>{try{if(SCENE&&/^ib_/.test(SCENE.id||''))return true;const dun=!!(SCENE&&SCENE.room&&SCENE.room.dun);for(const m of en)if(m&&!m.dead&&!m._rp&&(m.boss||m._wb||m.cb||m.type==='boss'||m.type==='ib'||(m.big&&dun))&&Math.hypot(m.x-P.x,m.y-P.y)<BOSSR)return true}catch(e){}return false};
+ const bossNear=()=>{try{if(SCENE&&/^ib_/.test(SCENE.id||''))return true;const dun=!!(SCENE&&SCENE.room&&SCENE.room.dun);for(const m of en)if(m&&!m.dead&&!m._rp&&(m.boss||m._wb||m.cb||m.type==='boss'||m.type==='ib'||(m.big&&dun))&&Math.hypot(m.x-P.x,m.y-P.y)<BOSSR)return true}catch(e){self.SQERR&&SQERR(e,'155-2')}return false};
  {const _w=wantSong;wantSong=function(){const w=_w.apply(this,arguments);try{
    const now=performance.now();if(!dead&&bossNear())bossUntil=now+6000;if(now<bossUntil)return'boss';
    if(typeof SAILING!=='undefined'&&SAILING)return'sail';
-   if(w==='day'){const R=SCENE&&SCENE.room;const rg=R&&R.region;if(rg&&REGION_SONG[rg])return REGION_SONG[rg]}}catch(e){}return w}}
+   if(w==='day'){const R=SCENE&&SCENE.room;const rg=R&&R.region;if(rg&&REGION_SONG[rg])return REGION_SONG[rg]}}catch(e){self.SQERR&&SQERR(e,'155-3')}return w}}
  // ---------- the old player stays quiet ----------
- const hush=()=>{try{for(const k in PARSED){const p=PARSED[k];if(p&&p.lead&&p.lead.ev.length){p.lead.ev=[];p.bass.ev=[]}}}catch(e){}};hush();
+ const hush=()=>{try{for(const k in PARSED){const p=PARSED[k];if(p&&p.lead&&p.lead.ev.length){p.lead.ev=[];p.bass.ev=[]}}}catch(e){self.SQERR&&SQERR(e,'155-4')}};hush();
  // ---------- scheduler ----------
  // A new song starts once its instruments have loaded; until then the current one keeps playing.
  let cur=null,t0=0,step=0,def=null,song=null,failAt=0,FORCE=null;// FORCE: a song the Dev Suite's song editor is playing
@@ -218,6 +218,6 @@
  // credit for the instrument samples (CC BY 3.0 asks for it), at the bottom of Options
  {const _o=optionsHTML;optionsHTML=function(){return _o()+'<div style="margin:14px 0 4px;font-size:11px;opacity:.6;text-align:center">Music instruments: FluidR3_GM SoundFont by Frank Wen (CC BY 3.0)</div>'}}
  // one note on its own (the Dev Suite's composer: tapping a note or a key plays it)
- const note=(inst,m,d)=>{try{if(!setup())return;if(ACX.state!=='running')ACX.resume();load(inst).then(()=>{try{sample('lead',{i:inst,m:fit(inst,m)},ctx.currentTime+.02,d||.35)}catch(e){}}).catch(()=>{})}catch(e){}};
+ const note=(inst,m,d)=>{try{if(!setup())return;if(ACX.state!=='running')ACX.resume();load(inst).then(()=>{try{sample('lead',{i:inst,m:fit(inst,m)},ctx.currentTime+.02,d||.35)}catch(e){self.SQERR&&SQERR(e,'155-5')}}).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'155-6')}};
  window.SQMUSIC={S,SONGS:SONGS2,INST,VOL,build,render,load,loadSong,note,chord,midi,get cur(){return cur},REGION_SONG,tick,get force(){return FORCE},set force(v){FORCE=v||null;cur=null},restart(){cur=null},get step(){return step},get len(){return song?song.len:0}};
 })();

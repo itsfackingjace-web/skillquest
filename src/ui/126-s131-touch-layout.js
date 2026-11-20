@@ -31,8 +31,8 @@
   '<div style="font-size:11px;opacity:.8">'+(ED.sel?'Selected: '+NAMES[ED.sel]:'Touch a button to pick it.')+'</div>'}
  function show(on){for(const id of IDS){const el=$(id);if(!el)continue;if(on){if(!(id in ED.shown))ED.shown[id]=[el.style.display,el.innerHTML];el.style.display='flex';el.classList.add('tled');if(!el.textContent.trim())el.textContent=NAMES[id]}
    else{el.classList.remove('tled','tlsel');if(id in ED.shown){el.style.display=ED.shown[id][0];el.innerHTML=ED.shown[id][1]}}}if(!on)ED.shown={}}
- function start(){if(ED.on)return;try{closePanel()}catch(e){}ED.on=true;ED.sel=null;pnOpen=true;jx=jy=0;bg.style.display='block';tb.style.display='flex';show(true);bar();apply()}
- function done(){if(!ED.on)return;ED.on=false;ED.drag=null;bg.style.display='none';tb.style.display='none';show(false);pnOpen=false;LS(Object.keys(LAY).length?LAY:null);apply();try{say('Button layout saved.')}catch(e){}}
+ function start(){if(ED.on)return;try{closePanel()}catch(e){self.SQERR&&SQERR(e,'126-1')}ED.on=true;ED.sel=null;pnOpen=true;jx=jy=0;bg.style.display='block';tb.style.display='flex';show(true);bar();apply()}
+ function done(){if(!ED.on)return;ED.on=false;ED.drag=null;bg.style.display='none';tb.style.display='none';show(false);pnOpen=false;LS(Object.keys(LAY).length?LAY:null);apply();try{say('Button layout saved.')}catch(e){self.SQERR&&SQERR(e,'126-2')}}
  const save=()=>LS(Object.keys(LAY).length?LAY:null);
  function curOf(id){const L=LAY[orient()]||(LAY[orient()]={});if(!L[id]){const r=$(id).getBoundingClientRect(),s=1;L[id]={x:(r.left+r.width/2)/innerWidth,y:(r.top+r.height/2)/innerHeight,s}}return L[id]}
  tb.addEventListener('click',e=>{const b=e.target.closest('[data-tl]');if(!b)return;const a=b.dataset.tl;
@@ -49,7 +49,7 @@
  for(const ev of['pointerup','pointercancel'])addEventListener(ev,e=>{if(!ED.on)return;e.stopImmediatePropagation();if(ED.drag&&e.pointerId===ED.drag.pid){ED.drag=null;save()}},true);
  // any way of closing (Esc, a controller's back button) finishes editing; the game's code may hide buttons each frame
  {const _cp=closePanel;closePanel=function(){if(ED.on){done();return}return _cp.apply(this,arguments)}}
- {SQUPD.after('126',(dt)=>{try{if(ED.on){pnOpen=true;for(const id of IDS){const el=$(id);if(el&&el.style.display==='none')el.style.display='flex'}}apply()}catch(e){}})}
+ {SQUPD.after('126',(dt)=>{try{if(ED.on){pnOpen=true;for(const id of IDS){const el=$(id);if(el&&el.style.display==='none')el.style.display='flex'}}apply()}catch(e){self.SQERR&&SQERR(e,'126-3')}})}
  setTimeout(apply,0);
  // ---- the Touch tab in Options > Controls ----
  function html(){const n=o=>Object.keys(LAY[o]||{}).length;

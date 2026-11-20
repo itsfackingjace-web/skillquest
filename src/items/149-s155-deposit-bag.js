@@ -7,7 +7,7 @@
  function depositBag(){const s=chest();if(!s)return;if(s._sh&&!s.ok){say('The chest is still opening...');return}const ks=bagKeys();if(!ks.length){say('Your bag is empty.');return}
   let n=0;for(const k of ks)n+=inv[k]|0;
   if(s._sh){for(const k of ks)chestMove(k,'d')}
-  else{for(const k of ks){s.items[k]=(s.items[k]|0)+(inv[k]|0);inv[k]=0}try{sfx('pickup')}catch(e){}saveLocal(true);try{saveCloud(true)}catch(e){}}
+  else{for(const k of ks){s.items[k]=(s.items[k]|0)+(inv[k]|0);inv[k]=0}try{sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'149-1')}saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'149-2')}}
   CHCARD=null;say('Put '+n+' item'+(n===1?'':'s')+' from your bag into the chest.');rPn()}
  {const _h=chestHTML;chestHTML=function(){const h=_h.apply(this,arguments),mark='<div class="tl" style="margin-top:12px">YOUR BAG</div>';if(!chest()||h.indexOf(mark)<0)return h;
    const btn='<div class="tl" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px">YOUR BAG'+(bagKeys().length?'<button class="sb chdep" style="width:auto;margin:0;padding:6px 12px;font-size:13px">DEPOSIT BAG</button>':'')+'</div>';

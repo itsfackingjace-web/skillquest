@@ -11,7 +11,7 @@ function sqMerge(chests){if(typeof BMERGE==='undefined'||BMERGE||!chests||!chest
 function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;// speed from the skill's level and perks (039's pSpeed) makes the action shorter
  const SKK={fire:5,cook:4,smelt:10,smith:10,craft:6}[kind],D=({fire:2.6,cook:2.4,smelt:2.4,smith:2.6,craft:2.4,reel:1.8}[kind]||2.4)/(1+(SKK!=null&&typeof pSpeed==='function'?Math.max(0,pSpeed(SKK)):0));
  const st=typeof STATION!=='undefined'?STATION:null,chests=typeof BMERGE!=='undefined'&&BMERGE?BMERGE.chests.slice():null;
- SQDO={kind,n:Math.max(1,n|0),fn,t:0,d:D,x:P.x,y:P.y,done:0,st,chests};try{if(pnOpen&&kind!=='reel')closePanel()}catch(e){}jx=jy=0;// a bite while a screen is open reels in behind it
+ SQDO={kind,n:Math.max(1,n|0),fn,t:0,d:D,x:P.x,y:P.y,done:0,st,chests};try{if(pnOpen&&kind!=='reel')closePanel()}catch(e){self.SQERR&&SQERR(e,'109-1')}jx=jy=0;// a bite while a screen is open reels in behind it
  
  say({fire:'Lighting a fire...',cook:'Cooking...',smelt:'Smelting...',smith:'Hammering at the anvil...',craft:'Crafting...',reel:'Reeling it in...'}[kind]||'Working...');return true}
 {const _f=fire;fire=function(){if(sqDo('fire',1,()=>_f()))return;return _f()};

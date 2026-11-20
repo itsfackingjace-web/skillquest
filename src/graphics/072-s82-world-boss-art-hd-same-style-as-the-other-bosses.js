@@ -246,7 +246,7 @@
  // where each picture's feet sit, in sprite pixels / 2
  const BOX={dragon:{w:11,e:13,s:12,n:12,y:26.5},demon:{w:11,e:13,s:12,n:12,y:26},giant:{w:13,e:15,s:14,n:14,y:43},wisp:{w:10,e:10,s:10,n:10,y:25}};
  // it turns to face the nearest player (you or anyone else here), with a little stickiness so it doesn't flicker
- function wbFace(n,x,y){let bx=P.x-x,by=P.y-y,bd=Math.hypot(bx,by);try{const l=mpLoc();if(l)for(const r of MP.players.values()){if(r.loc!==l||!live(r))continue;const d=Math.hypot(r.x-x,r.y-y);if(d<bd){bd=d;bx=r.x-x;by=r.y-y}}}catch(e){}
+ function wbFace(n,x,y){let bx=P.x-x,by=P.y-y,bd=Math.hypot(bx,by);try{const l=mpLoc();if(l)for(const r of MP.players.values()){if(r.loc!==l||!live(r))continue;const d=Math.hypot(r.x-x,r.y-y);if(d<bd){bd=d;bx=r.x-x;by=r.y-y}}}catch(e){self.SQERR&&SQERR(e,'072-1')}
   let f=n._fd||'s';const ax=Math.abs(bx),ay=Math.abs(by),want=ax>ay?(bx<0?'w':'e'):(by<0?'n':'s');
   if(want!==f){const horiz=f==='w'||f==='e',wh=want==='w'||want==='e';if(horiz===wh||(wh?ax>ay*1.25:ay>ax*1.25))f=want}return n._fd=f}
  drawWB=function(n,tm){const x=Math.round(n.x),y=Math.round(n.y),t=n._wb,per={dragon:.18,demon:.16,giant:.22,wisp:.09}[t],fr=Math.floor(tm/per)%4,hit=WB.hitAt&&performance.now()-WB.hitAt<110,fd=wbFace(n,x,y),c=bsSp(t,fr,fd),K=SC[t];
@@ -267,7 +267,7 @@
 {SQUPD.after('072',(dt)=>{if(menuOpen||pnOpen||!window.SQDF||!SQDF.br||!PV.on)return;const d=SQDF.dir(),[mx,my,fx,fy]=SQDF.mouth(P.x,P.y,d);for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-mx,dy=r.y-6-my,al=dx*fx+dy*fy,pe=Math.abs(dx*fy-dy*fx);if(al>-4&&al<64&&pe<8+al*.45)pvHit(r,'sp','fire')}})}
 window.SQFWPEERS=()=>{const l=mpLoc();return[...MP.players.values()].filter(r=>r.fw&&r.loc===l&&live(r)&&isFinite(r.fw[0])).map(r=>r.fw)};
 // ---- the Imp pet in PvP: it goes after a player who hits you ----
-{const _in=pvIncoming;pvIncoming=function(id,v){const h0=P.hp,hu=hurt;_in(id,v);try{if(v&&PV.on&&(P.hp<h0||hurt>hu)&&window.SQIMP)SQIMP.aggro(String(v.f||''))}catch(e){}}}
+{const _in=pvIncoming;pvIncoming=function(id,v){const h0=P.hp,hu=hurt;_in(id,v);try{if(v&&PV.on&&(P.hp<h0||hurt>hu)&&window.SQIMP)SQIMP.aggro(String(v.f||''))}catch(e){self.SQERR&&SQERR(e,'072-2')}}}
 window.SQIMPPVP={pos:u=>{const r=MP.players.get(u);return r&&pvTarget(r)?{x:r.x,y:r.y}:null},hit:u=>{const r=MP.players.get(u);if(r&&pvTarget(r))pvHit(r,'sp','fire')}};
 // ---- One game per account at a time ----
 // With SkillQuest open on two devices (or two tabs) on the same account, both used to post your position in turn,
@@ -278,8 +278,8 @@ MP.sid=Math.random().toString(36).slice(2,10);MP.s0=Date.now();MP.passive=false;
 const sessEl=el('div','sqsess','g3','');sessEl.style.cssText='position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(20,24,40,.82)';
 sessEl.innerHTML='<div class="g3" style="max-width:320px;padding:18px;text-align:center;font:500 15px '+PF+';background:#f8f8f8;border:3px solid #485870"><b style="font-size:18px">Playing somewhere else</b><br><br>SkillQuest was opened on another device or tab with your account, so this one is paused.<br><br><button id="sqsessgo" style="font:700 16px '+PF+';padding:10px 18px;border:3px solid #485870;background:#485870;color:#fff;cursor:pointer">PLAY HERE</button></div>';
 document.body.appendChild(sessEl);for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])sessEl.addEventListener(ev,e=>e.stopPropagation());
-$('sqsessgo').onclick=()=>{try{location.reload()}catch(e){}};
-function sessPassive(){if(MP.passive||window.SQSTRICT)return;/* account-only saves: 061 sess lock */MP.passive=true;try{FB.db.onDisconnect(MP.pref).cancel().catch(()=>{})}catch(e){}sessEl.style.display='flex';try{if(TR&&TR.st!=='idle'&&typeof trCancel==='function')trCancel()}catch(e){}}
+$('sqsessgo').onclick=()=>{try{location.reload()}catch(e){self.SQERR&&SQERR(e,'072-3')}};
+function sessPassive(){if(MP.passive||window.SQSTRICT)return;/* account-only saves: 061 sess lock */MP.passive=true;try{FB.db.onDisconnect(MP.pref).cancel().catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'072-4')}sessEl.style.display='flex';try{if(TR&&TR.st!=='idle'&&typeof trCancel==='function')trCancel()}catch(e){self.SQERR&&SQERR(e,'072-5')}}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(!MP.on||!MP.pref)return;MP.unsub.push(FB.db.onValue(MP.pref,s=>{const v=s.val();if(MP.passive)return;
    // the copy opened later wins (both sides compare the same numbers, so they always agree)
    if(v&&v.sid&&v.sid!==MP.sid&&(+v.s0>MP.s0||(+v.s0===MP.s0&&v.sid>MP.sid)))sessPassive();else if(!v)MP.last=''}))}}
@@ -300,14 +300,14 @@ function trustedBy(o){if(!MP.on||!MP.user||!o||o===MP.user.uid)return false;trus
 function trustThen(o,fn){if(!MP.on||!MP.user)return noTrust(o);trustSub(o);if(TRU.of[o]){if(TRU.of[o][MP.user.uid]===true)fn();else noTrust(o);return}
  swing=.25;FB.db.get(FB.db.ref(FB.D,'trust/'+o)).then(s=>{TRU.of[o]=s.val()||{};if(TRU.of[o][MP.user.uid]===true)fn();else noTrust(o)}).catch(()=>noTrust(o))}
 // keep the trust lists of everyone whose houses or builds are here up to date
-setInterval(()=>{if(!MP.on||!MP.user)return;try{for(const o of Object.keys(HS.data||{}).concat(Object.keys(BLDS.data||{})))trustSub(o);for(const o in (MP.friends||{}))trustSub(o)}catch(e){}},2000);
+setInterval(()=>{if(!MP.on||!MP.user)return;try{for(const o of Object.keys(HS.data||{}).concat(Object.keys(BLDS.data||{})))trustSub(o);for(const o in (MP.friends||{}))trustSub(o)}catch(e){self.SQERR&&SQERR(e,'072-6')}},2000);
 const iTrust=u=>!!TRU.mine[u];
 function trustSet(u,on){if(!MP.user||!u)return;FB.db.set(FB.db.ref(FB.D,'trust/'+MP.user.uid+'/'+u),on?true:null).then(()=>{mpLog('game',on?fname(u)+' is now a trusted friend. They can use your stations, chests and beds.':fname(u)+' is no longer a trusted friend.')}).catch(mpErr)}
 function noTrust(o){const n=performance.now();if(n-BLDS.msgAt>1500){BLDS.msgAt=n;const nm=fname(o);say('Only '+nm+'\'s trusted friends can use that. Ask '+nm+' to trust you (Friends list).');sfx('swish')}swing=.25}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(!MP.on||TRU.sub)return;try{
   TRU.sub=FB.db.onValue(FB.db.ref(FB.D,'trust/'+MP.user.uid),s=>{TRU.mine=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()});
   CHS.sub=FB.db.onValue(FB.db.ref(FB.D,'chests/'+MP.user.uid),s=>{CHS.db=s.val()||{};CHS.got=true});
-  MP.unsub.push(()=>{try{TRU.sub&&TRU.sub();CHS.sub&&CHS.sub()}catch(e){}TRU.sub=CHS.sub=null;CHS.got=false;for(const k in TRU.subs)try{TRU.subs[k]()}catch(e){}TRU.subs={};TRU.of={};TRU.mine={};CHS.db={}})}catch(e){mpErr(e)}}}
+  MP.unsub.push(()=>{try{TRU.sub&&TRU.sub();CHS.sub&&CHS.sub()}catch(e){self.SQERR&&SQERR(e,'072-7')}TRU.sub=CHS.sub=null;CHS.got=false;for(const k in TRU.subs)try{TRU.subs[k]()}catch(e){self.SQERR&&SQERR(e,'072-8')}TRU.subs={};TRU.of={};TRU.mine={};CHS.db={}})}catch(e){mpErr(e)}}}
 // trust goes when the friendship does
 setInterval(()=>{if(!MP.on||!MP.user||!MP.friends)return;for(const u in TRU.mine)if(TRU.mine[u]&&!MP.friends[u])trustSet(u,false)},4000);
 // Friends list: a TRUST button on each friend, and what it means
@@ -334,21 +334,21 @@ function chSync(){if(!MP.on||!MP.user||!CHS.got||!Object.values(TRU.mine).some(B
      for(const k in ni)if(!ni[k])delete ni[k];CHS.base[cid]=chClean(v&&v.i);chSet(o,ni);if(pnOpen&&ptab===7)rPn()}).catch(mpErr).finally(()=>{delete CHS.busy[cid]});continue}
   const di=chClean(db.i);if(!chEq(di,base)){CHS.base[cid]=di;chSet(o,di);changed=true}}
  for(const cid in CHS.db)if(!seen.has(cid)&&CHS.ever.has(cid)&&!CHS.busy[cid]){FB.db.remove(FB.db.ref(FB.D,'chests/'+me+'/'+cid)).catch(()=>{});delete CHS.base[cid]}
- if(changed){if(pnOpen&&ptab===7)rPn();try{saveLocal(true)}catch(e){}}}
+ if(changed){if(pnOpen&&ptab===7)rPn();try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'072-9')}}}
 setInterval(()=>{try{chSync()}catch(e){console.warn(e)}},1000);
 {SQSAVE.after('072:chb',s=>{if(Object.keys(CHS.base).length)s.chb=CHS.base;})}
 {SQLOAD.after('072',(S)=>{CHS.base={};if(S&&S.chb&&typeof S.chb==='object')for(const k in S.chb)CHS.base[String(k).slice(0,60)]=chClean(S.chb[k])})}
 // a trusted friend opening one of your chests
-function chOpenShared(owner,cid){if(CHS.open)try{CHS.open()}catch(e){}const box={t:'chest',items:{},_sh:{o:owner,cid}};CHEST_H=box;CHEST_AT=-1;CHEST_IDX=-1;
+function chOpenShared(owner,cid){if(CHS.open)try{CHS.open()}catch(e){self.SQERR&&SQERR(e,'072-10')}const box={t:'chest',items:{},_sh:{o:owner,cid}};CHEST_H=box;CHEST_AT=-1;CHEST_IDX=-1;
  CHS.open=FB.db.onValue(FB.db.ref(FB.D,'chests/'+owner+'/'+cid),s=>{const v=s.val();box.items=chClean(v&&v.i);box.ok=true;if(pnOpen&&ptab===7&&CHEST_H===box)rPn()},()=>{box.err=true;if(pnOpen&&ptab===7)rPn()});
  fromMenu=false;pnOpen=true;ptab=7;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}
-{const _cp=closePanel;closePanel=function(){_cp();if(CHS.open&&!(pnOpen&&ptab===7)){try{CHS.open()}catch(e){}CHS.open=null;if(CHEST_H&&CHEST_H._sh)CHEST_H=null}}}
+{const _cp=closePanel;closePanel=function(){_cp();if(CHS.open&&!(pnOpen&&ptab===7)){try{CHS.open()}catch(e){self.SQERR&&SQERR(e,'072-11')}CHS.open=null;if(CHEST_H&&CHEST_H._sh)CHEST_H=null}}}
 {const _cm=chestMove;chestMove=function(k,a,q){const s=CHEST_H;if(!s||!s._sh)return _cm(k,a,q);const lim=q>0?q|0:1e9;const{o,cid}=s._sh,ref=FB.db.ref(FB.D,'chests/'+o+'/'+cid);
   if(a==='d'){const n=Math.min(inv[k]|0,lim);if(n<1)return;inv[k]-=n;s.items[k]=(s.items[k]|0)+n;sfx('pickup');rPn();
-   FB.db.runTransaction(ref,cur=>{const i=chClean(cur&&cur.i);i[k]=(i[k]|0)+n;return{i,v:((cur&&+cur.v)|0)+1}}).then(r=>{if(!r||!r.committed)throw new Error('no')}).then(()=>{saveLocal(true);try{saveCloud(true)}catch(e){}})
+   FB.db.runTransaction(ref,cur=>{const i=chClean(cur&&cur.i);i[k]=(i[k]|0)+n;return{i,v:((cur&&+cur.v)|0)+1}}).then(r=>{if(!r||!r.committed)throw new Error('no')}).then(()=>{saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'072-12')}})
     .catch(()=>{inv[k]=(inv[k]|0)+n;say('Could not put that in the chest. Try again.');rPn()})}
   else{let got=0;if(!(s.items[k]>0))return;FB.db.runTransaction(ref,cur=>{got=0;if(!cur)return cur;const i=chClean(cur.i);got=Math.min(i[k]|0,lim);if(!got)return;i[k]-=got;if(!(i[k]>0))delete i[k];return{i,v:(+cur.v|0)+1}})
-    .then(r=>{if(r&&r.committed&&got>0){inv[k]=(inv[k]|0)+got;sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){}}else say('Someone else got to that first.');rPn()}).catch(()=>{say('Could not take that. Try again.')})}}}
+    .then(r=>{if(r&&r.committed&&got>0){inv[k]=(inv[k]|0)+got;sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'072-13')}}else say('Someone else got to that first.');rPn()}).catch(()=>{say('Could not take that. Try again.')})}}}
 {const _r=rPn;rPn=function(){_r();if(!pnOpen)return;if(ptab===7&&CHEST_H&&CHEST_H._sh){const b=document.getElementById('chpk');if(b)b.remove();
    pbd.insertAdjacentHTML('afterbegin','<div class="tl" style="font-size:12px;font-weight:400;opacity:.8;margin-bottom:6px">'+esc(fname(CHEST_H._sh.o))+'\'s chest'+(CHEST_H.err?' · could not open it (are you still trusted?)':CHEST_H.ok?'':' · loading...')+'</div>')}
   if((ptab===2&&typeof STATION!=='undefined'&&STATION&&STATION._foreign)||(ptab===1&&typeof BENCH!=='undefined'&&BENCH&&BENCH._foreign))for(const b of pbd.querySelectorAll('[data-a="pickup"]'))b.remove()}}
@@ -411,12 +411,12 @@ function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y
 {SQUPD.after('072',(dt)=>{if(menuOpen||pnOpen)return;for(const id in RF)for(const p of RF[id].values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt})}
 // empty tilled soil turns back into grass after a while (so nobody can cover the world in dirt)
 setInterval(()=>{const t=nowS();let n=0;for(const[i,p]of[...FARM]){if(p._foreign||p.c)continue;if(!p.e){p.e=t;continue}if(t-p.e>TILL_LIFE){FARM.delete(i);n++}}
- for(const id in RF)for(const[k,p]of[...RF[id]]){if(p.c)continue;if(!p.e){p.e=t;continue}if(t-p.e>TILL_LIFE){RF[id].delete(k);n++}}if(n)try{saveLocal(true)}catch(e){}},5000);
+ for(const id in RF)for(const[k,p]of[...RF[id]]){if(p.c)continue;if(!p.e){p.e=t;continue}if(t-p.e>TILL_LIFE){RF[id].delete(k);n++}}if(n)try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'072-14')}},5000);
 // drawing: plots lie flat on the ground
 {const _rn=rgNear;rgNear=function(R,x0,y0,x1,y1){const out=_rn(R,x0,y0,x1,y1);if(!R||!R.region||!(SCENE&&SCENE.room===R))return out;const M=rfMap(R.region),F=rfForeign(R.region);
   for(const[k,p]of M){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2)out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}
   for(const[k,f]of F){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2){const p={c:f.c,g:f.c?f.s*CROPS[f.c].st:0,w:f.w?CLK+60:0};out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}}return out}}
-{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rf'){const{M,F,tx,ty}=it;try{GC=g;drawPlot(-1,it.p,tm,tx,ty,(dx,dy)=>M.has(rbK(tx+dx,ty+dy))||F.has(rbK(tx+dx,ty+dy)))}catch(e){}return}return _df(it,tm)}}
+{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rf'){const{M,F,tx,ty}=it;try{GC=g;drawPlot(-1,it.p,tm,tx,ty,(dx,dy)=>M.has(rbK(tx+dx,ty+dy))||F.has(rbK(tx+dx,ty+dy)))}catch(e){self.SQERR&&SQERR(e,'072-15')}return}return _df(it,tm)}}
 // saving
 {SQSAVE.after('072:rfarm',s=>{const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w),p.e|0])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;})}
 {SQLOAD.after('072',(S)=>{for(const id in RF)delete RF[id];const o=S&&S.rfarm;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id]||!Array.isArray(o[id]))continue;const M=rfMap(id);
@@ -462,7 +462,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
    const k=r[0];inv[k]=(inv[k]|0)+n;out('Gave you '+n+' × '+INAME[k]+'.');saveLocal(true);if(pnOpen)rPn();return}
   if(cmd==='gold'){const n=Math.min(1e7,Math.max(0,parseInt(args[0])||0));GLD+=n;out('Gave you '+n+' gold.');saveLocal(true);return}
   if(cmd==='xp'){const n=parseInt(args[args.length-1]);const i=skillIdx(args.slice(0,-1).join(' '));if(i<0||!(n>0)){out('Usage: /xp skill amount   (skills: '+SKN.join(', ')+')');return}addXp(i,Math.min(5e7,n));out('Gave '+n+' '+SKN[i]+' XP.');return}
-  if(cmd==='heal'){P.hp=6;hunger=100;try{MANA=maxMP()}catch(e){}out('Healed.');return}
+  if(cmd==='heal'){P.hp=6;hunger=100;try{MANA=maxMP()}catch(e){self.SQERR&&SQERR(e,'072-16')}out('Healed.');return}
   if(cmd==='boss'){const t=(args[0]||'').toLowerCase();
    if(t==='off'||t==='end'||t==='stop'){if(window.SQWBFORCE&&SQWBFORCE.dev){window.SQWBFORCE=null;out('Dev boss removed.')}else out('No dev boss is up.');return}
    if(!WBT[t]){out('Usage: /boss dragon|demon|giant|wisp [hp]  ·  /boss off');return}if(SCENE&&!SCENE.room.region){out('Go outside first.');return}

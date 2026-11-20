@@ -34,10 +34,10 @@
  // ---- applying the library ----
  let MINE=new Set();
  SQA.onApply(lib=>{const L=lib&&lib.songs||{};for(const k of MINE){if(ORIG[k]){M.S[k]=ORIG[k];M.SONGS[k]=M.build(ORIG[k]);M.VOL[k]=OVOL[k]}else{delete M.S[k];delete M.SONGS[k];delete M.VOL[k]}}MINE=new Set();
-  for(const k in L){if(!(ORIG[k]||/^su_[a-z0-9_]{1,30}$/.test(k)))continue;const c=check(L[k]);if(!c.def)continue;try{M.SONGS[k]=M.build(c.def);M.S[k]=c.def;M.VOL[k]=c.vol;MINE.add(k)}catch(e){}}
+  for(const k in L){if(!(ORIG[k]||/^su_[a-z0-9_]{1,30}$/.test(k)))continue;const c=check(L[k]);if(!c.def)continue;try{M.SONGS[k]=M.build(c.def);M.S[k]=c.def;M.VOL[k]=c.vol;MINE.add(k)}catch(e){self.SQERR&&SQERR(e,'165-1')}}
   for(const r in M.REGION_SONG)if(!(r in OMAP))delete M.REGION_SONG[r];Object.assign(M.REGION_SONG,OMAP);
   const SM=lib&&lib.songmap||{};for(const r in SM)if(typeof SM[r]==='string'&&M.S[SM[r]])M.REGION_SONG[r]=SM[r];
-  try{if(M.cur&&MINE.has(M.cur))M.restart()}catch(e){}});
+  try{if(M.cur&&MINE.has(M.cur))M.restart()}catch(e){self.SQERR&&SQERR(e,'165-2')}});
  window.SQSONGS={check,ORIG};
  // ======================= Dev Suite > Songs: a composer =======================
  // The song is still stored as text (155's format), but you write it on a piano roll: each part has a chord lane (tap a bar to
@@ -54,7 +54,7 @@
   const out=sc.map((p,i)=>NN[p]+q[i]);if(mnr)out.push(NN[(r+7)%12]+'7');else out.push(NN[(r+7)%12]+'7');return out};
  const ROMAN={maj:['I','ii','iii','IV','V','vi','vii°','V7'],min:['i','ii°','III','iv','v','VI','VII','V7']};
  const QS=['','m','7','m7','maj7','sus4','dim','aug'];
- const redraw=()=>{API.draw();try{drawRoll()}catch(e){}setTimeout(()=>{try{drawRoll()}catch(e){}},0)};
+ const redraw=()=>{API.draw();try{drawRoll()}catch(e){self.SQERR&&SQERR(e,'165-3')}setTimeout(()=>{try{drawRoll()}catch(e){self.SQERR&&SQERR(e,'165-4')}},0)};
  const ST={sel:null,w:null,errs:[],pi:0,playing:null,dirty:false,tool:'draw',fine:false,undo:[],redo:[],lo:60,drag:null,pick:null,sel1:null,text:false};
  const sec=()=>S.draft.songs||(S.draft.songs={}),map=()=>S.draft.songmap||(S.draft.songmap={});
  const clone=o=>JSON.parse(JSON.stringify(o));
@@ -86,13 +86,13 @@
  function undo(r){const a=r?ST.redo:ST.undo,b=r?ST.undo:ST.redo,x=a.pop();if(!x)return;b.push(JSON.stringify(ST.w));ST.w=JSON.parse(x);ST.dirty=true;redraw()}
  // ---- sound ----
  const leadOf=()=>{const p=part();return(p&&p.lead)||ST.w.lead||'flute'};
- const ping=m=>{try{if(M.note)M.note(leadOf(),m,.35)}catch(e){}};
+ const ping=m=>{try{if(M.note)M.note(leadOf(),m,.35)}catch(e){self.SQERR&&SQERR(e,'165-5')}};
  function stop(){if(ST.playing){M.force=null;ST.playing=null;delete M.S.__ed;delete M.SONGS.__ed}}
  async function play(which){const w=fromEd(ST.w);if(which==='part'){const p=part();w.order=p.n}const c=check(w);ST.errs=c.errs;if(!c.def){redraw();return}
   M.S.__ed=c.def;M.SONGS.__ed=M.build(c.def);M.VOL.__ed=c.vol;
-  try{if(typeof ACX!=='undefined'&&ACX&&ACX.state!=='running')await ACX.resume()}catch(e){}if(typeof MUSIC!=='undefined'&&!MUSIC)toast('Music is off in Options: turn it on to hear it.');
+  try{if(typeof ACX!=='undefined'&&ACX&&ACX.state!=='running')await ACX.resume()}catch(e){self.SQERR&&SQERR(e,'165-6')}if(typeof MUSIC!=='undefined'&&!MUSIC)toast('Music is off in Options: turn it on to hear it.');
   try{await M.loadSong('__ed')}catch(e){toast('Could not load the instruments.')}M.force=null;M.force='__ed';ST.playing=which;redraw()}
- function guessKey(o){const cnt=new Array(12).fill(0);for(const pn in o.parts||{}){const a=o.parts[pn];const t=Array.isArray(a)?a:[a.c,a.m];for(const c of String(t[0]||'').split(/[\s,]+/).filter(Boolean)){try{const C=M.chord(c);for(const v of C.iv)cnt[(C.r+v)%12]+=2}catch(e){}}
+ function guessKey(o){const cnt=new Array(12).fill(0);for(const pn in o.parts||{}){const a=o.parts[pn];const t=Array.isArray(a)?a:[a.c,a.m];for(const c of String(t[0]||'').split(/[\s,]+/).filter(Boolean)){try{const C=M.chord(c);for(const v of C.iv)cnt[(C.r+v)%12]+=2}catch(e){self.SQERR&&SQERR(e,'165-7')}}
    for(const tk of String(t[1]||'').replace(/\|/g,' ').split(/\s+/))for(const q of tk.split('/')){const v=M.midi(q);if(v)cnt[v%12]++}}
   let best='C',bs=-1;for(const k of KEYS){const sc=scaleOf(k);let sv=sc.reduce((a,p)=>a+cnt[p],0)+cnt[sc[0]]*.5;if(sv>bs){bs=sv;best=k}}return best}
  // ---- an idea: a melody over this part's chords (made here, so it's original) ----
@@ -154,7 +154,7 @@
   else{let s=D.s0+(c.s-D.c0.s);if(!ST.fine)s&=~1;s=Math.max(0,Math.min(G.steps-n.d,s));const mm=Math.max(G.hi-ROWS+1,Math.min(G.hi,D.m0+(D.c0.row-c.row)));if(mm!==n.m)ping(mm);n.s=s;n.m=mm}
   setNotes(G.p,place(D.notes.filter(o=>o!==n).map(o=>({...o})),n));drawRoll()}
  function up(){if(!ST.drag)return;ST.drag=null;const p=part();setNotes(p,notesOf(p));redraw()}
- document.addEventListener('pointerdown',e=>{if(S.tab!=='songs'||!e.target||e.target.id!=='sgroll')return;try{e.target.setPointerCapture(e.pointerId)}catch(x){}down(e)},true);
+ document.addEventListener('pointerdown',e=>{if(S.tab!=='songs'||!e.target||e.target.id!=='sgroll')return;try{e.target.setPointerCapture(e.pointerId)}catch(x){self.SQERR&&SQERR(x,'165-8')}down(e)},true);
  document.addEventListener('pointermove',e=>{if(S.tab==='songs'&&ST.drag)move(e)},true);
  document.addEventListener('pointerup',e=>{if(S.tab==='songs'&&ST.drag)up()},true);
  document.addEventListener('contextmenu',e=>{if(e.target&&e.target.id==='sgroll')e.preventDefault()},true);
@@ -216,7 +216,7 @@
   else if(t.dataset&&t.dataset.sgf==='bpm'){ST.w.bpm=+t.value;const b=t.parentElement&&t.parentElement.querySelector('b');if(b)b.textContent=t.value;markDirty()}},true);
  async function save(){const c=check(fromEd(ST.w));ST.errs=c.errs;if(!c.def){toast('Fix the problems first.');redraw();return}const o={...c.def,vol:c.vol};sec()[ST.sel]=o;
   try{await dset('draft/songs/'+ST.sel,o);ST.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}if(SQA.previewing)SQA.preview(S.draft);redraw()}
- function setChord(c){const p=part(),B=bars(p),pk=ST.pick;if(!pk||!B[pk.b])return;snap();const hs=B[pk.b].split(',');hs[pk.h]=c;B[pk.b]=hs.join(',');p.c=B.join(' ');markDirty();try{const C=M.chord(c);for(const v of C.iv)setTimeout(()=>ping(ST.lo+12+((C.r+v-ST.lo)%12+12)%12),0)}catch(e){}redraw()}
+ function setChord(c){const p=part(),B=bars(p),pk=ST.pick;if(!pk||!B[pk.b])return;snap();const hs=B[pk.b].split(',');hs[pk.h]=c;B[pk.b]=hs.join(',');p.c=B.join(' ');markDirty();try{const C=M.chord(c);for(const v of C.iv)setTimeout(()=>ping(ST.lo+12+((C.r+v-ST.lo)%12+12)%12),0)}catch(e){self.SQERR&&SQERR(e,'165-9')}redraw()}
  document.addEventListener('click',e=>{if(S.tab!=='songs')return;const t=e.target.closest('[data-sgx],[data-sgs],[data-sgc],[data-sgr],[data-sgq]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();
   if(t.dataset.sgc){setChord(t.dataset.sgc);return}
   if(t.dataset.sgr||t.dataset.sgq!=null){const p=part(),B=bars(p),pk=ST.pick;if(!pk)return;const c=(B[pk.b]||'C').split(',')[pk.h]||'C',root=c.replace(/(m7|maj7|sus4|dim|aug|m|7)$/,''),q=c.slice(root.length);setChord(t.dataset.sgr?t.dataset.sgr+q:root+t.dataset.sgq);return}

@@ -18,7 +18,7 @@
  async function load(){S.ok=null;S.note='';draw();
   if(!fb()||!user()){S.ok='signin';draw();return}S.uid=user().uid;
   try{S.live=await dget('live');S.draft=await dget('draft')}catch(e){S.ok=/permission/i.test(e.message)?'setup':'error';S.note=e.message;draw();return}
-  if(!S.draft){S.draft=body(S.live);try{await dset('draft',S.draft)}catch(e){}}
+  if(!S.draft){S.draft=body(S.live);try{await dset('draft',S.draft)}catch(e){self.SQERR&&SQERR(e,'111b-1')}}
   norm(S.draft);S.ok='yes';syncNG();draw()}
  const syncNG=()=>{try{if(window.SQGEAR)SQGEAR.devItems(S.draft&&S.draft.newgear)}catch(e){console.warn(e)}};
  const toast=t=>{S.note=t;const n=document.querySelector('#dvs .dv-note');if(n)n.textContent=t;clearTimeout(toast.t);toast.t=setTimeout(()=>{S.note='';const n2=document.querySelector('#dvs .dv-note');if(n2)n2.textContent=''},4000)};
@@ -46,7 +46,7 @@
   for(const k of mk2)if(!same((L.mobs||{})[k],(D.mobs||{})[k]))out.push({kind:'ext',html:'👾 '+E(propName(k))+': '+((D.mobs||{})[k]?'rules changed':'back to the game\'s own rules')});
   const nk2=new Set([...Object.keys(L.pnames||{}),...Object.keys(D.pnames||{})]);
   for(const k of nk2)if(!same((L.pnames||{})[k],(D.pnames||{})[k]))out.push({kind:'ext',html:'🏷 '+E(gameName(k))+': '+((D.pnames||{})[k]?'renamed to "'+E(D.pnames[k])+'" in the Dev Suite':'back to its own name in the Dev Suite')});
-  for(const k in EXT)if(EXT[k].changes)try{out.push(...EXT[k].changes(L,D))}catch(e){}
+  for(const k in EXT)if(EXT[k].changes)try{out.push(...EXT[k].changes(L,D))}catch(e){self.SQERR&&SQERR(e,'111b-2')}
   return out}
  const wState=k=>{const d=S.draft&&S.draft.worn&&S.draft.worn[k],l=S.live&&S.live.worn&&S.live.worn[k];return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
  const rState=k=>{const d0=S.draft||{},l0=S.live||{},d=(d0.gear||{})[k]||(d0.newgear||{})[k]?[(d0.gear||{})[k],(d0.newgear||{})[k]]:null,l=(l0.gear||{})[k]||(l0.newgear||{})[k]?[(l0.gear||{})[k],(l0.newgear||{})[k]]:null;return d&&!same(d,l)?'draft':!d&&l?'draft':d?'live':''};
@@ -294,9 +294,9 @@
  // copy / paste between pictures (any editor): the clipboard keeps colours, not palette numbers, and lives in
  // localStorage sq_dev_clip so it carries over between sprites, props, pets, monsters and gear. A paste is lined up by the
  // bottom middle (where things stand) and cropped to the picture; its colours join this picture's palette.
- function pxCopy(){const ed=S.ed;if(!ed)return;const c={w:ed.w,h:ed.h,p:[...ed.px].map(v=>v===255?'':ed.pal[v]||'')};try{localStorage.setItem('sq_dev_clip',JSON.stringify(c))}catch(e){}pxCopy.mem=c;
+ function pxCopy(){const ed=S.ed;if(!ed)return;const c={w:ed.w,h:ed.h,p:[...ed.px].map(v=>v===255?'':ed.pal[v]||'')};try{localStorage.setItem('sq_dev_clip',JSON.stringify(c))}catch(e){self.SQERR&&SQERR(e,'111b-3')}pxCopy.mem=c;
   toast('Copied ('+ed.w+' × '+ed.h+'). Open another picture and press Paste.')}
- function pxPaste(){const ed=S.ed;if(!ed)return;let c=pxCopy.mem;try{const v=JSON.parse(localStorage.getItem('sq_dev_clip')||'null');if(v)c=v}catch(e){}
+ function pxPaste(){const ed=S.ed;if(!ed)return;let c=pxCopy.mem;try{const v=JSON.parse(localStorage.getItem('sq_dev_clip')||'null');if(v)c=v}catch(e){self.SQERR&&SQERR(e,'111b-4')}
   if(!c||!Array.isArray(c.p)){toast('Nothing copied yet: open a picture and press Copy first.');return}
   snapEd();const dx=Math.floor((ed.w-c.w)/2),dy=ed.h-c.h;let n=0;
   for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){const col=c.p[y*c.w+x];if(!col)continue;const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=ed.w||Y>=ed.h)continue;
@@ -501,7 +501,7 @@
  // ---- palette tools: hex codes, copy / paste a whole palette, saved palettes (localStorage sq_dev_pals {name:[hex...]}) ----
  const HEXRE=/#?\b([0-9a-f]{6}|[0-9a-f]{3})\b/gi,normHex=h=>{h=String(h).replace('#','').toLowerCase();if(h.length===3)h=h.split('').map(c=>c+c).join('');return/^[0-9a-f]{6}$/.test(h)?'#'+h:null};
  const hexesIn=t=>{const out=[];for(const m of String(t||'').matchAll(HEXRE)){const h=normHex(m[1]);if(h&&!out.includes(h))out.push(h)}return out};
- const PALS=()=>{try{return JSON.parse(localStorage.getItem('sq_dev_pals')||'{}')||{}}catch(e){return{}}},setPALS=o=>{try{localStorage.setItem('sq_dev_pals',JSON.stringify(o))}catch(e){}};
+ const PALS=()=>{try{return JSON.parse(localStorage.getItem('sq_dev_pals')||'{}')||{}}catch(e){return{}}},setPALS=o=>{try{localStorage.setItem('sq_dev_pals',JSON.stringify(o))}catch(e){self.SQERR&&SQERR(e,'111b-5')}};
  let PALUI=null;// null | 'paste' | 'save'
  function palExtra(ed){const cur=ed.pal[ed.col]||'',sv=Object.keys(PALS());
   return'<div class="dv-row" style="flex-basis:100%;flex-wrap:wrap;gap:6px;margin-top:6px">'+
@@ -514,11 +514,11 @@
  // add colours to the open picture's palette (skips ones it has; stops at the palette's limit)
  function palAdd(list){const ed=S.ed;if(!ed)return 0;let n=0;snapEd();for(const h of list){if(ed.pal.length>=MAXC)break;if(ed.pal.some(c=>c.toLowerCase()===h))continue;ed.pal.push(h);n++}
   if(n){ed.col=ed.pal.length-1;ed.tool='pen'}drawPal();drawTools();paint();return n}
- async function palCopy(){const ed=S.ed;if(!ed)return;const t=ed.pal.join(' ');let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(e){}
-  try{localStorage.setItem('sq_dev_palclip',t)}catch(e){}toast(ok?'Copied '+ed.pal.length+' colours: '+t.slice(0,60)+(t.length>60?'…':''):'Copied '+ed.pal.length+' colours (Paste palette in another picture adds them).')}
+ async function palCopy(){const ed=S.ed;if(!ed)return;const t=ed.pal.join(' ');let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(e){self.SQERR&&SQERR(e,'111b-6')}
+  try{localStorage.setItem('sq_dev_palclip',t)}catch(e){self.SQERR&&SQERR(e,'111b-7')}toast(ok?'Copied '+ed.pal.length+' colours: '+t.slice(0,60)+(t.length>60?'…':''):'Copied '+ed.pal.length+' colours (Paste palette in another picture adds them).')}
  root.addEventListener('click',async e=>{const t=e.target.closest('[data-pa]');if(!t||!S.ed)return;e.preventDefault();e.stopPropagation();const a=t.dataset.pa;
   if(a==='copy'){palCopy();return}
-  if(a==='paste'){PALUI='paste';drawPal();const ta=root.querySelector('[data-hex="ptext"]');let clip='';try{clip=await navigator.clipboard.readText()}catch(e2){}if(!hexesIn(clip).length)try{clip=localStorage.getItem('sq_dev_palclip')||''}catch(e2){}
+  if(a==='paste'){PALUI='paste';drawPal();const ta=root.querySelector('[data-hex="ptext"]');let clip='';try{clip=await navigator.clipboard.readText()}catch(e2){self.SQERR&&SQERR(e2,'111b-8')}if(!hexesIn(clip).length)try{clip=localStorage.getItem('sq_dev_palclip')||''}catch(e2){self.SQERR&&SQERR(e2,'111b-9')}
    if(ta){ta.value=hexesIn(clip).join(' ');ta.focus()}return}
   if(a==='pasteok'){const ta=root.querySelector('[data-hex="ptext"]'),L=hexesIn(ta&&ta.value);PALUI=null;if(!L.length){toast('No hex codes found (they look like #c89858).');drawPal();return}const n=palAdd(L);toast(n?'Added '+n+' colour'+(n===1?'':'s')+(n<L.length?' ('+(L.length-n)+' already there or no room)':'')+'.':'Those colours are already in this palette'+(S.ed.pal.length>=MAXC?' (or it\'s full)':'')+'.');return}
   if(a==='save'){PALUI='save';drawPal();const i=root.querySelector('[data-hex="pname"]');if(i)i.focus();return}
@@ -567,7 +567,7 @@
    if(old&&old.v)await dset('hist/'+old.v,old);
    const next={...body(L),v:((old&&old.v)|0)+1,at:Date.now()};await dset('live',next);S.live=next;A.setLive(next);
    if(S.hist)S.hist=null;// prune: keep the 20 newest earlier versions
-   try{const H=await dget('hist');if(H){const ks=Object.keys(H).map(Number).sort((a,b)=>b-a);for(const k of ks.slice(20))await dset('hist/'+k,null)}}catch(e){}
+   try{const H=await dget('hist');if(H){const ks=Object.keys(H).map(Number).sort((a,b)=>b-a);for(const k of ks.slice(20))await dset('hist/'+k,null)}}catch(e){self.SQERR&&SQERR(e,'111b-10')}
    toast(label+' Players get v'+next.v+' within about 30 seconds.')}catch(e){fail(e)}S.busy=false;S.arm=null;draw()}
  // ---- input ----
  const arm=(k,fn)=>{if(S.arm===k){S.arm=null;fn();return}S.arm=k;draw();clearTimeout(arm.t);arm.t=setTimeout(()=>{if(S.arm===k){S.arm=null;draw()}},4000)};
@@ -589,8 +589,8 @@
   if(a==='ngmake'){const n=((root.querySelector('[data-in="ngn"]')||{}).value||'').trim(),b=(root.querySelector('[data-in="ngb"]')||{}).value;if(!n){toast('Give it a name first.');return}if(!EQ[b])return;
    const sl=n.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,24)||'item';let k='eq_cu_'+sl,i=2;while(EQ[k]||S.draft.newgear[k]||(S.live&&S.live.newgear&&S.live.newgear[k]))k='eq_cu_'+sl+'_'+(i++);
    await ngSave(k,{n,b,v:SELLP[b]|0,d:''});if(!EQ[k]){toast('Could not create that item.');return}S.gm='rules';openGear(k);toast('Created. Draw its look and icon, and set how it works.');return}
-  if(a==='nggive'){const k=S.sel;if(EQ[k]){inv[k]=(inv[k]|0)+1;try{saveLocal(true)}catch(e2){}toast('One '+INAME[k]+' is in your bag.')}return}
-  if(a==='ngdel'){const k=S.sel;return arm('ngdel',async()=>{for(const sec of['gear','worn','icons'])if(S.draft[sec]&&S.draft[sec][k]){delete S.draft[sec][k];try{await dset('draft/'+sec+'/'+k,null)}catch(e2){}}
+  if(a==='nggive'){const k=S.sel;if(EQ[k]){inv[k]=(inv[k]|0)+1;try{saveLocal(true)}catch(e2){self.SQERR&&SQERR(e2,'111b-11')}toast('One '+INAME[k]+' is in your bag.')}return}
+  if(a==='ngdel'){const k=S.sel;return arm('ngdel',async()=>{for(const sec of['gear','worn','icons'])if(S.draft[sec]&&S.draft[sec][k]){delete S.draft[sec][k];try{await dset('draft/'+sec+'/'+k,null)}catch(e2){self.SQERR&&SQERR(e2,'111b-12')}}
    S.sel=null;S.ed=null;await ngSave(k,null)})}
   if(a==='gm'){const m=t.dataset.m;if(m===S.gm)return;if(S.ed&&S.ed.dirty&&!confirmLeave())return;if(S.ed)S.ed.dirty=false;S.gm=m;S.ed=null;openGear(S.sel);return}
   if(a==='grst'){const k=S.sel;return arm('grst',async()=>{delete S.draft.gear[k];try{await dset('draft/gear/'+k,null);toast('Back to how the game made it work (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw()})}
@@ -629,7 +629,7 @@
   if(a==='pub')return arm('pub',()=>goLive(S.draft,'Published.'));
   if(a==='disc')return arm('disc',async()=>{S.draft=norm(body(S.live));syncNG();try{await dset('draft',S.draft)}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);S.sel=null;S.ed=null;toast('Draft reset to the live version.');draw()});
   if(a==='restore'){const v=+t.dataset.v;return arm('h'+v,async()=>{const H=v?S.hist.find(x=>x.v===v):{};await goLive(H,v?'Restored v'+v+' as the live version.':'Back to the game\'s own sprites and stats.');
-   S.draft=norm(body(S.live));syncNG();try{await dset('draft',S.draft)}catch(e2){}draw()})}});
+   S.draft=norm(body(S.live));syncNG();try{await dset('draft',S.draft)}catch(e2){self.SQERR&&SQERR(e2,'111b-13')}draw()})}});
  let pendingLeave=0;const confirmLeave=()=>{if(Date.now()-pendingLeave<4000)return true;pendingLeave=Date.now();toast('Unsaved changes. Tap again to leave without saving.');return false};
  async function saveSprite(){const ed=S.ed;if(!ed)return;const sp=toSp(ed);S.draft.icons[ed.k]=sp;try{await dset('draft/icons/'+ed.k,sp);ed.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);const it=root.querySelector('.dv-it[data-k="'+ed.k+'"]');if(it){const im=it.querySelector('img');if(im)im.src=thumb(ed.k)}paint()}
@@ -648,11 +648,11 @@
   if(t.dataset.g&&S.sel){gearSet(S.sel,t.dataset.g,t.value);return}
   if(t.dataset.gn&&S.sel){ngSet(S.sel,t.dataset.gn,t.value);return}
   if(t.dataset.gr&&S.sel){ngRecipe(S.sel);return}
-  if(t.dataset.gs&&S.sel){statSet('items',S.sel,t.dataset.gs,t.value).then(()=>{try{if(A.previewing)A.preview(S.draft)}catch(e2){}draw()});return}
+  if(t.dataset.gs&&S.sel){statSet('items',S.sel,t.dataset.gs,t.value).then(()=>{try{if(A.previewing)A.preview(S.draft)}catch(e2){self.SQERR&&SQERR(e2,'111b-14')}draw()});return}
   if(t.dataset.f){const k=t.closest('[data-row]').dataset.row;statSet(S.statT,k,t.dataset.f,t.type==='checkbox'?t.checked:t.value).then(()=>{const o=A.TABLES[S.statT].orig(k),cur=A.merged(S.statT,k,(S.draft.stats[S.statT]||{})[k]);t.classList.toggle('dv-chg',cur[t.dataset.f]!==o[t.dataset.f]);
    const last=t.closest('tr').lastElementChild;if(last)last.innerHTML=(S.draft.stats[S.statT]||{})[k]?'<button class="dv-b" data-a="rowreset" title="Back to original">↺</button>':''})}});
  let pan=null;
- root.addEventListener('pointerdown',e=>{if(e.target.id!=='dvc'||!S.ed)return;e.preventDefault();try{e.target.setPointerCapture(e.pointerId)}catch(_){}
+ root.addEventListener('pointerdown',e=>{if(e.target.id!=='dvc'||!S.ed)return;e.preventDefault();try{e.target.setPointerCapture(e.pointerId)}catch(_){self.SQERR&&SQERR(_,'111b-15')}
   if(S.ed.tool==='pan'){const cv=e.target.parentElement;pan={x:e.clientX,y:e.clientY,sx:cv.scrollLeft,sy:cv.scrollTop,cv};return}down=true;use(e,true)});
  root.addEventListener('pointermove',e=>{if(down&&e.pointerType==='mouse'&&!(e.buttons&1)){endStroke();return}if(pan){pan.cv.scrollLeft=pan.sx-(e.clientX-pan.x);pan.cv.scrollTop=pan.sy-(e.clientY-pan.y);return}if(down&&e.target.id==='dvc'&&S.ed&&S.ed.tool!=='fill'&&S.ed.tool!=='pick')use(e,false)});
  addEventListener('pointerup',()=>{pan=null});
@@ -669,14 +669,14 @@
  addEventListener('keyup',e=>{if(S.open)e.stopPropagation()},true);
  // you're safe while the suite is open: no damage, no hunger, nothing can kill you
  const _hp=hurtP;hurtP=function(){if(S.open)return;return _hp.apply(this,arguments)};
- SQUPD.wrap('111b',_uS=>function(dt){if(!S.open)return _uS(dt);const h0=hunger,hp0=P&&P.hp,d0=dead;_uS(dt);try{if(hunger<h0)hunger=h0;if(P&&P.hp<hp0)P.hp=hp0;if(dead&&!d0&&P&&P.hp>0)dead=false}catch(e){}});
+ SQUPD.wrap('111b',_uS=>function(dt){if(!S.open)return _uS(dt);const h0=hunger,hp0=P&&P.hp,d0=dead;_uS(dt);try{if(hunger<h0)hunger=h0;if(P&&P.hp<hp0)P.hp=hp0;if(dead&&!d0&&P&&P.hp>0)dead=false}catch(e){self.SQERR&&SQERR(e,'111b-16')}});
  // ... and it opens straight from the title screen once you're signed in
  window.SQTITLE=()=>{const t=document.getElementById('sqts');return!!(t&&t.style.display!=='none'&&getComputedStyle(t).display!=='none')};
  {const mn=document.getElementById('tsmn');const addBtn=()=>{if(!mn||mn.querySelector('[data-a="dvs"]')||!(window.SQDEV&&SQDEV()&&user()))return;const o=mn.querySelector('[data-a="opt"]');if(!o)return;
    const b=document.createElement('button');b.dataset.a='dvs';b.textContent='DEV SUITE';o.after(b)};
   if(mn){new MutationObserver(addBtn).observe(mn,{childList:true});setInterval(addBtn,1500);
    mn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='dvs'){e.stopPropagation();openSuite()}},true)}}
- function openSuite(){if(!(window.SQDEV&&SQDEV()))return;try{for(const k in K)K[k]=0}catch(e){}try{if(pnOpen)closePanel()}catch(e){}
+ function openSuite(){if(!(window.SQDEV&&SQDEV()))return;try{for(const k in K)K[k]=0}catch(e){self.SQERR&&SQERR(e,'111b-17')}try{if(pnOpen)closePanel()}catch(e){self.SQERR&&SQERR(e,'111b-18')}
   S.open=true;root.style.display='flex';draw();if(S.ok!=='yes')load()}
  function close(){if(((S.ed&&S.ed.dirty)||(EXT[S.tab]&&EXT[S.tab].dirty&&EXT[S.tab].dirty()))&&!confirmLeave())return;S.open=false;root.style.display='none';root.innerHTML=''}
  window.SQSUITE={open:openSuite,close,get state(){return S},

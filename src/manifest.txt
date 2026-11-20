@@ -1,6 +1,7 @@
 # Build order. tools/build.mjs joins these files, in this order, into index.html.
 # Order matters: later parts build on (and often wrap) what earlier parts define.
 shell/000-page-head-html-css-buttons.html
+core/000b-error-reporter.js
 core/001-engine-core-canvas-input-world-player-enemies.js
 graphics/002-gba-style-pixel-art-1-unit-1-pixel-integer-scale.js
 graphics/003-gen-3-style-trainer-character-creator.js
@@ -249,6 +250,7 @@ world/237-s245-song-zones.js
 ui/238-s246-online-list-on-here-map.js
 data/239a-wiki-drops.js
 ui/239-s247-wiki-pages.js
+dev/240-s248-errors-tab.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

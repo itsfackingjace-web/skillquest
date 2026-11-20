@@ -12,8 +12,8 @@
  let PR={},listening='',PCFG={};
  const rec=u=>u&&PR[u]||null,active=u=>{const r=rec(u);return!!(r&&typeof r.u==='number'&&r.u>Date.now())},cape=u=>{const r=rec(u);return!!(r&&r.c)};
  function listen(){const m=mp(),Fb=F();if(!m||!m.on||!m.user||!Fb){return}if(listening===m.user.uid)return;listening=m.user.uid;
-  try{Fb.db.get(Fb.db.ref(Fb.D,'cfgpub/patreon')).then(s=>{PCFG=s.val()||{};try{if((ptab===8||ptab===PTAB)&&pnOpen)rPn()}catch(e){}}).catch(()=>{})}catch(e){}
-  try{Fb.db.onValue(Fb.db.ref(Fb.D,'patron'),s=>{const v=s.val()||{};PR={};for(const k in v)if(v[k]&&typeof v[k]==='object')PR[k]=v[k];syncCred();try{if((ptab===8||ptab===PTAB)&&pnOpen)rPn()}catch(e){}},()=>{})}catch(e){}}
+  try{Fb.db.get(Fb.db.ref(Fb.D,'cfgpub/patreon')).then(s=>{PCFG=s.val()||{};try{if((ptab===8||ptab===PTAB)&&pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'210-1')}}).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'210-2')}
+  try{Fb.db.onValue(Fb.db.ref(Fb.D,'patron'),s=>{const v=s.val()||{};PR={};for(const k in v)if(v[k]&&typeof v[k]==='object')PR[k]=v[k];syncCred();try{if((ptab===8||ptab===PTAB)&&pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'210-3')}},()=>{})}catch(e){self.SQERR&&SQERR(e,'210-4')}}
  setInterval(listen,1500);
  // ---- the flame emblem (our own pixel art: a 9x11 flame with a flickering tip) ----
  const FLC={K:'#2a0c06',R:'#c8300e',O:'#f07a20',Y:'#f8c838',W:'#fff2b0'};
@@ -40,12 +40,12 @@
    for(const b of n.matches&&n.matches('b.nm[data-u]')?[n]:n.querySelectorAll?n.querySelectorAll('b.nm[data-u]'):[]){const u2=b.dataset.u;if(u2&&active(u2)&&!(b.previousSibling&&b.previousSibling.className==='sqpf'))b.before(flameImg())}}}).observe(lst,{childList:true,subtree:true})}
  // ---- the fire cape ----
  let WEAR=false;
- {SQSAVE.after('210:fcw',o=>{try{o.fcw=WEAR?1:0}catch(e){}})}
- {SQLOAD.after('210',(s)=>{try{WEAR=!!(s&&s.fcw)}catch(e){}})}
+ {SQSAVE.after('210:fcw',o=>{try{o.fcw=WEAR?1:0}catch(e){self.SQERR&&SQERR(e,'210-5')}})}
+ {SQLOAD.after('210',(s)=>{try{WEAR=!!(s&&s.fcw)}catch(e){self.SQERR&&SQERR(e,'210-6')}})}
  {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);if(WEAR&&cape(uid()))c.fcp=1;else delete c.fcp;return c}}
- {SQUPD.before('210',()=>{try{const m=mp();if(m&&m.players)for(const [u2,r] of m.players){if(r&&r.ch&&r.ch.fcp&&!cape(u2||r.uid))delete r.ch.fcp}}catch(e){}})}
+ {SQUPD.before('210',()=>{try{const m=mp();if(m&&m.players)for(const [u2,r] of m.players){if(r&&r.ch&&r.ch.fcp&&!cape(u2||r.uid))delete r.ch.fcp}}catch(e){self.SQERR&&SQERR(e,'210-7')}})}
  // ---- credits ----
- let credPref=true;try{credPref=localStorage.getItem('sq_pcred')!=='0'}catch(e){}
+ let credPref=true;try{credPref=localStorage.getItem('sq_pcred')!=='0'}catch(e){self.SQERR&&SQERR(e,'210-8')}
  let credSent='';
  function syncCred(){const u=uid(),Fb=F();if(!u||!Fb||!rec(u))return;const kid=window.SQAGE&&SQAGE.child();const n=myNm().slice(0,12);
   const want=credPref&&!kid&&n?n:'';if(credSent===u+'|'+want)return;credSent=u+'|'+want;const r=Fb.db.ref(Fb.D,'pcred/'+u);
@@ -54,7 +54,7 @@
  const CTAB=46;let CR={p:[],a:[],at:0};
  async function loadCredits(){const Fb=F();if(!Fb||!uid())return;try{const[p,a]=await Promise.all([Fb.db.get(Fb.db.ref(Fb.D,'pcred')),Fb.db.get(Fb.db.ref(Fb.D,'artcred'))]);
    CR.p=Object.values(p.val()||{}).map(x=>x&&x.n).filter(Boolean).sort((x,y)=>x.localeCompare(y,undefined,{sensitivity:'base'}));
-   CR.a=Object.values(a.val()||{}).filter(x=>x&&x.n&&x.w).sort((x,y)=>x.n.localeCompare(y.n));CR.at=Date.now()}catch(e){}if(ptab===CTAB&&pnOpen)rPn()}
+   CR.a=Object.values(a.val()||{}).filter(x=>x&&x.n&&x.w).sort((x,y)=>x.n.localeCompare(y.n));CR.at=Date.now()}catch(e){self.SQERR&&SQERR(e,'210-9')}if(ptab===CTAB&&pnOpen)rPn()}
  const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  function creditsHTML(){const f='<img class="sqpf" src="'+flameURL+'" alt="">';
   return '<div class="tl">CREDITS</div><div class="pcr"><h3>Head Developer</h3><p>Jace Holman</p><h3>Lead Administrator</h3><p>Heather Holman</p>'+
@@ -63,17 +63,17 @@
    (CR.a.length?'<h3>Player art</h3><ul>'+CR.a.map(a=>'<li>'+E(a.w)+' by '+E(a.n)+'</li>').join('')+'</ul>':'')+
    '<h3>Music</h3><p>Instrument samples from the FluidR3_GM SoundFont by Frank Wen (CC BY 3.0).</p>'+
    '<h3>Lettering</h3><p>Pixelify Sans by Stefie Justprince (SIL Open Font License).</p></div><button class="sb" data-pcr="back">Back</button>'}
- {const _r=rPn;rPn=function(){if(ptab===CTAB&&pnOpen){try{panelChrome('')}catch(e){}pbd.innerHTML=creditsHTML();return}return _r.apply(this,arguments)}}
+ {const _r=rPn;rPn=function(){if(ptab===CTAB&&pnOpen){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'210-10')}pbd.innerHTML=creditsHTML();return}return _r.apply(this,arguments)}}
  const REDIRECT='https://us-central1-skillquest-913e2.cloudfunctions.net/patreonAuth';let LNK=null;
  const nonce=()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789',b=new Uint8Array(24);crypto.getRandomValues(b);return Array.from(b,x=>A[x%A.length]).join('')};
  // the click writes the one-time link before the browser leaves for Patreon (the server checks it when Patreon sends the player back)
  // the Patreon links are real links: keep their clicks away from the panel's button handlers (they ran shopAct on them)
  pbd.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.sqpatlink'))e.stopPropagation()},true);
- pbd.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-plink]');if(!a)return;const u=uid(),Fb=F();let n='';try{n=(new URL(a.href).searchParams.get('state')||'').split('.').pop()}catch(x){}if(!u||!Fb||!n)return;
-  try{Fb.db.set(Fb.db.ref(Fb.D,'plink/'+u),{n,t:Fb.db.serverTimestamp()}).catch(()=>{say('Couldn\'t start the link. Check your connection and try again.')})}catch(err){}
+ pbd.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-plink]');if(!a)return;const u=uid(),Fb=F();let n='';try{n=(new URL(a.href).searchParams.get('state')||'').split('.').pop()}catch(x){self.SQERR&&SQERR(x,'210-11')}if(!u||!Fb||!n)return;
+  try{Fb.db.set(Fb.db.ref(Fb.D,'plink/'+u),{n,t:Fb.db.serverTimestamp()}).catch(()=>{say('Couldn\'t start the link. Check your connection and try again.')})}catch(err){self.SQERR&&SQERR(err,'210-12')}
   say('Opening Patreon... Allow access there, then come back here.')},true);
  // ---- Options: Credits for everyone, PATRON settings for patrons ----
- let pcAt=-1e9;const pcLoad=()=>{const Fb=F();if(!Fb||!uid()||performance.now()-pcAt<30000)return;pcAt=performance.now();try{Fb.db.get(Fb.db.ref(Fb.D,'cfgpub/patreon')).then(s=>{const v=s.val()||{};const was=PCFG.cid;PCFG=v;if(v.cid!==was)try{if((ptab===8||ptab===PTAB)&&pnOpen)rPn()}catch(e){}}).catch(()=>{})}catch(e){}};
+ let pcAt=-1e9;const pcLoad=()=>{const Fb=F();if(!Fb||!uid()||performance.now()-pcAt<30000)return;pcAt=performance.now();try{Fb.db.get(Fb.db.ref(Fb.D,'cfgpub/patreon')).then(s=>{const v=s.val()||{};const was=PCFG.cid;PCFG=v;if(v.cid!==was)try{if((ptab===8||ptab===PTAB)&&pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'210-13')}}).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'210-14')}};
  // ---- the Patron screen (START > Patron, ptab 48; Options keeps a button to it): status, perks, Art Room, the Patreon buttons ----
  const PTAB=48;
  // who sees it: anyone signed in with a patron record, or signed in with a known age band that isn't under 13
@@ -98,21 +98,21 @@
    '<a class="sb sqpatlink" data-plink="1" href="'+linkURL(u)+'" target="_blank" rel="noopener">Link Patreon</a>';
   if(!u)h+='<p>Sign in to see your Patron perks.</p>';
   return h}
- {const _r=rPn;rPn=function(){if(ptab===PTAB&&pnOpen){try{panelChrome('')}catch(e){}pbd.innerHTML=patronHTML();return}return _r.apply(this,arguments)}}
+ {const _r=rPn;rPn=function(){if(ptab===PTAB&&pnOpen){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'210-15')}pbd.innerHTML=patronHTML();return}return _r.apply(this,arguments)}}
  // START menu item, only for players who can see it (added/removed each time the menu is drawn)
  const ITEM={id:'patron',l:()=>'Patron'};
- if(typeof rSM==='function'){const _sm=rSM;rSM=function(){try{const at=SMI.indexOf(ITEM),want=showMenu();if(want&&at<0){const o=SMI.findIndex(x=>x.id==='options');SMI.splice(o>=0?o:SMI.length,0,ITEM)}else if(!want&&at>=0)SMI.splice(at,1)}catch(e){}return _sm.apply(this,arguments)}}
- {const _ss=showScreen;showScreen=function(id){if(id!=='patron')return _ss.apply(this,arguments);pnOpen=true;ptab=PTAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){}}}
+ if(typeof rSM==='function'){const _sm=rSM;rSM=function(){try{const at=SMI.indexOf(ITEM),want=showMenu();if(want&&at<0){const o=SMI.findIndex(x=>x.id==='options');SMI.splice(o>=0?o:SMI.length,0,ITEM)}else if(!want&&at>=0)SMI.splice(at,1)}catch(e){self.SQERR&&SQERR(e,'210-16')}return _sm.apply(this,arguments)}}
+ {const _ss=showScreen;showScreen=function(id){if(id!=='patron')return _ss.apply(this,arguments);pnOpen=true;ptab=PTAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'210-17')}}}
  // Options: Credits for everyone, one button to the Patron screen
  {const _o=optionsHTML;optionsHTML=function(){let h=_o();
    h=h.replace('<div class="aclinks">','<button class="sb" data-pcr="credits">Credits</button>'+(showMenu()?'<button class="sb" data-pcr="open"><img class="sqpf" src="'+flameURL+'" alt="">Patron</button>':'')+'<div class="aclinks">');
    return h}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pcr]');if(!b)return;e.stopPropagation();e.preventDefault();const a=b.dataset.pcr;
   if(a==='credits'){ptab=CTAB;loadCredits();rPn()}else if(a==='back'){ptab=8;rPn()}
-  else if(a==='style'){try{showScreen('style')}catch(x){}}
-  else if(a==='open'){try{showScreen('patron')}catch(x){}}
-  else if(a==='cape'){WEAR=!WEAR;try{saveLocal(true)}catch(x){}say(WEAR?'You put on your fire cape.':'You take off your fire cape.');rPn()}
-  else if(a==='cred'){credPref=!credPref;try{localStorage.setItem('sq_pcred',credPref?'1':'0')}catch(x){}credSent='';syncCred();rPn()}
+  else if(a==='style'){try{showScreen('style')}catch(x){self.SQERR&&SQERR(x,'210-18')}}
+  else if(a==='open'){try{showScreen('patron')}catch(x){self.SQERR&&SQERR(x,'210-19')}}
+  else if(a==='cape'){WEAR=!WEAR;try{saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'210-20')}say(WEAR?'You put on your fire cape.':'You take off your fire cape.');rPn()}
+  else if(a==='cred'){credPref=!credPref;try{localStorage.setItem('sq_pcred',credPref?'1':'0')}catch(x){self.SQERR&&SQERR(x,'210-21')}credSent='';syncCred();rPn()}
   else if(a==='art'&&window.SQARTROOM)SQARTROOM.open()
   else if(a==='song'&&window.SQSTUDIO)SQSTUDIO.open()},true);
  window.SQPATRON={PTAB,open:()=>showScreen('patron'),PATREON,active,cape,rec,get all(){return PR},get wearing(){return WEAR},set wearing(v){WEAR=!!v},flameURL,syncCred,loadCredits,CTAB}})();

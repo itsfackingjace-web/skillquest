@@ -35,7 +35,7 @@ function gearCH(){const c={...CH};if(ARM.helm){c.ht=2;c.hcol=HB+ARM.helm-1}if(AR
 SQPP.wrap('006',_pP5=>function(tm){const c0=CH;CH=gearCH();try{_pP5(tm)}finally{CH=c0}});
 // --- sound (WebAudio chiptune) ---
 let ACX=null;
-function ac(){if(!ACX){try{ACX=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}try{if(ACX.state=='suspended')ACX.resume()}catch(e){}return ACX}
+function ac(){if(!ACX){try{ACX=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}try{if(ACX.state=='suspended')ACX.resume()}catch(e){self.SQERR&&SQERR(e,'006-1')}return ACX}
 addEventListener('touchstart',()=>ac(),{capture:true,passive:true});addEventListener('pointerdown',()=>ac(),{capture:true});
 function tone(f,d,type,v,slide,delay){const a=ac();if(!a||MUTE)return;const t=a.currentTime+(delay||0),o=a.createOscillator(),gn=a.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+d);gn.gain.setValueAtTime(v||.06,t);gn.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(gn);gn.connect(a.destination);o.start(t);o.stop(t+d+.02)}
 function noise(d,v,fq,delay){const a=ac();if(!a||MUTE)return;const t=a.currentTime+(delay||0),b=a.createBuffer(1,Math.max(1,Math.floor(a.sampleRate*d)),a.sampleRate),c=b.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=(Math.random()*2-1)*(1-i/c.length);const s=a.createBufferSource(),f=a.createBiquadFilter(),gn=a.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=fq||1000;gn.gain.value=v||.1;s.connect(f);f.connect(gn);gn.connect(a.destination);s.start(t)}
@@ -45,7 +45,7 @@ const SFX={swish:()=>noise(.08,.07,2500),chop:()=>{noise(.07,.22,420);tone(170,.
  sizzle:()=>noise(.45,.09,3500),fire:()=>noise(.4,.14,500),talk:()=>tone(520,.05,'square',.04),
  level:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.15,'square',.06,0,i*.1)),quest:()=>[392,523,659,784,659,784,1047].forEach((f,i)=>tone(f,.14,'square',.06,0,i*.09)),
  death:()=>[392,330,262,196].forEach((f,i)=>tone(f,.28,'triangle',.09,0,i*.22))};
-function sfx(n){try{SFX[n]&&SFX[n]()}catch(e){}}
+function sfx(n){try{SFX[n]&&SFX[n]()}catch(e){self.SQERR&&SQERR(e,'006-2')}}
 // --- quests ---
 const QS=[
  {n:'Firewood',d:'The village is running low on firewood. Bring the Elder 10 wood.',type:'give',item:'wood',amt:10,r:{g:30,xp:[1,150]}},
@@ -150,7 +150,7 @@ const SQLOAD=(()=>{const base=applySave,steps=[];let built=null;
   wrap:(name,w)=>add(name,w,'wrap'),list:()=>steps.map(s=>s.kind+' '+s.name),run(){return(built||build()).apply(this,arguments)}}})();
 window.SQLOAD=SQLOAD;
 const keyOf=s=>{const o={...s};for(const k of['time','clk','hunger','mp','savedAt','wid','dev','bw','as'])delete o[k];o.p=s.p?[s.p.x>>4,s.p.y>>4,s.p.hp]:0;o.fires=(s.fires||[]).length;return JSON.stringify(o)};
-function saveLocal(force){if(dead)return;const s=snap(),k=keyOf(s);if(k===lastLocal&&!force)return;lastLocal=k;s.savedAt=Date.now();LOCAL_AT=s.savedAt;try{localStorage.setItem(LS,JSON.stringify(s))}catch(e){}}
+function saveLocal(force){if(dead)return;const s=snap(),k=keyOf(s);if(k===lastLocal&&!force)return;lastLocal=k;s.savedAt=Date.now();LOCAL_AT=s.savedAt;try{localStorage.setItem(LS,JSON.stringify(s))}catch(e){self.SQERR&&SQERR(e,'006-3')}}
 async function saveCloud(force){if(!cloud||cloudBusy||dead)return;const s=snap(),k=keyOf(s);if(k===lastCloud&&!force)return;cloudBusy=true;s.savedAt=Date.now();
  try{await cloud.set(s);lastCloud=k;cloudOk=performance.now()/1000}catch(e){const c=e&&e.code;if(c=='invalid_argument'||c=='revoked'||c=='not_granted'||c=='capability_disabled'||c=='capability_removed')cloud=null}finally{cloudBusy=false}}
 function applySave(S){
@@ -171,7 +171,7 @@ applySave=function(){return SQLOAD.run.apply(this,arguments)};
 function hideCreator(){menuOpen=false;cm.style.display='none'}
 function newGame(){XPS.fill(0);for(const k in TL)TL[k]=0;for(const k in ARM)ARM[k]=0;GLD=0;Object.assign(Q,{i:0,on:false,k:0,qp:0});
  for(const r of REM)if(!obj[r.i])obj[r.i]={t:r.t,hp:OHP[r.t]};REM=[];CLK=0;
- try{['hw_sk','hw_g','hw_ch'].forEach(k=>localStorage.removeItem(k))}catch(e){}
+ try{['hw_sk','hw_g','hw_ch'].forEach(k=>localStorage.removeItem(k))}catch(e){self.SQERR&&SQERR(e,'006-4')}
  reset();time=0;hunger=100;saveLocal(true);saveCloud(true);
  pnOpen=false;pn.style.display='none';menuOpen=true;cm.style.display='flex';document.getElementById('cgo').textContent='START';build();rp()}
 const _go=document.getElementById('cgo'),_goOld=_go.onclick;_go.onclick=()=>{_goOld();saveLocal(true);saveCloud(true)};
@@ -179,7 +179,7 @@ const _go=document.getElementById('cgo'),_goOld=_go.onclick;_go.onclick=()=>{_go
 let hadLocal=false;
 // the save is applied once, at the very end of the script, after every system is set up (see BOOT LOAD)
 const BOOT_LOCAL=(()=>{try{const b=JSON.parse(localStorage.getItem(LS));return b&&b.v==1?b:null}catch(e){return null}})();if(BOOT_LOCAL){LOCAL_AT=+BOOT_LOCAL.savedAt||0;hadLocal=true}
-let oldPlayer=false;try{oldPlayer=!!localStorage.getItem('hw_ch')}catch(e){}
+let oldPlayer=false;try{oldPlayer=!!localStorage.getItem('hw_ch')}catch(e){self.SQERR&&SQERR(e,'006-5')}
 if(hadLocal||oldPlayer)hideCreator();
 if(hadLocal)say('Welcome back to SkillQuest!');
 (async()=>{try{const C=window.claude;if(!C||!C.use)return;const[db,user]=await Promise.all([C.use('db'),C.use('user')]);if(!db||!user)return;
@@ -188,6 +188,6 @@ if(hadLocal)say('Welcome back to SkillQuest!');
  cloud=ref;
  if(sn&&sn.exists){const S=JSON.parse(JSON.stringify(sn.data()||{}));if(S.v==1&&(+S.savedAt||0)>LOCAL_AT+2000){applySave(S);hideCreator();say('Progress loaded from your account');saveLocal(true)}else saveCloud(true)}
  else if(hadLocal||!menuOpen)saveCloud(true);
-}catch(e){}})();
+}catch(e){self.SQERR&&SQERR(e,'006-6')}})();
 addEventListener('pagehide',()=>saveHide());addEventListener('beforeunload',()=>saveHide());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='hidden')saveHide()});

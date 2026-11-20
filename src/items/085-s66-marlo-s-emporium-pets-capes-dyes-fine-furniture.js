@@ -23,7 +23,7 @@ var LUX={};
  const BUFF={};LUX.BUFF=BUFF;const bOn=k=>BUFF[k]&&BUFF[k]>performance.now();
  const _uf=useFood;useFood=function(k){const p=POTS.find(q=>q.k===k);if(!p)return _uf(k);if((inv[k]|0)<1)return;inv[k]--;
   if(p.heal){P.hp=6;say('You drink the healing potion. Fully healed!')}else{BUFF[p.buff]=performance.now()+120000;say('You drink the '+p.n.toLowerCase()+'. '+p.d.replace(' for 2 minutes','')+' (2 min)')}
-  try{sfx('quest')}catch(e){}saveLocal(true);if(pnOpen)rPn()};
+  try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'085-1')}saveLocal(true);if(pnOpen)rPn()};
  const _mf=meleeFlat;meleeFlat=function(){return _mf()+(bOn('str')?2:0)};
  const _bb=blockBonus;blockBonus=function(){return _bb()+(bOn('iron')?.15:0)};
  const _bc=blockCap;blockCap=function(){return _bc()+(bOn('iron')?.1:0)};
@@ -78,7 +78,7 @@ var LUX={};
  const dirOf=(dx,dy,old)=>Math.abs(dx)<1&&Math.abs(dy)<1?old:Math.abs(dx)>=Math.abs(dy)?(dx<0?'w':'e'):(dy<0?'n':'s');
  function impPoof(x,y){for(let k=0;k<14;k++){const a=k/14*6.283;part(x,y-8,Math.cos(a)*60,Math.sin(a)*40,.5,k%2?'#a080c0':'#605070',-20,2)}}
  function impHitMob(n){const d=impDmg();n.hp-=d;n._ipois=IMP_POIS;n._iptk=1;const big=n.type==='boss'||n.type==='bonelord'||n.big;DMGS.push({x:n.x,y:n.y-(big?30:14),v:String(d),t:0,c:'#78f090',sc:curScene()});
-  for(let k=0;k<5;k++)part(n.x,n.y-6,(Math.random()-.5)*70,-Math.random()*60,.35,k%2?'#58e070':'#b8ffa0',120);try{sfx('hit')}catch(e){}if(n.hp<=0&&!n._wb)killEnemy(n,'imp')}
+  for(let k=0;k<5;k++)part(n.x,n.y-6,(Math.random()-.5)*70,-Math.random()*60,.35,k%2?'#58e070':'#b8ffa0',120);try{sfx('hit')}catch(e){self.SQERR&&SQERR(e,'085-2')}if(n.hp<=0&&!n._wb)killEnemy(n,'imp')}
  {SQUPD.wrap('085',_u=>function(dt){const hp0=P.hp,h0=hurt;_u(dt);if(menuOpen||pnOpen)return;
    // poison ticking on monsters (whoever's imp it came from)
    for(const n of en){if(!(n._ipois>0)||n.dead)continue;n._ipois-=dt;if((n._iptk-=dt)<=0){n._iptk=1;n.hp-=1;DMGS.push({x:n.x,y:n.y-14,v:'1',t:0,c:'#58e070',sc:curScene()});if(n.hp<=0&&!n._wb)killEnemy(n,'imp')}}
@@ -97,7 +97,7 @@ var LUX={};
    if(goal&&Math.hypot(goal.x-IMP.x,goal.y-IMP.y)<(goal.big?34:16)&&IMP.cd<=0){IMP.cd=.8;IMP.stab=.25;if(IMP.tgt)impHitMob(IMP.tgt);else if(window.SQIMPPVP)SQIMPPVP.hit(IMP.ptgt)}
    // monsters right next to it scratch back
    if(IMP.tgt&&!IMP.tgt._wb&&Math.hypot(IMP.tgt.x-IMP.x,IMP.tgt.y-IMP.y)<14&&(IMP.hurtT-=dt)<=0){IMP.hurtT=1.4;IMP.hp-=1;
-    if(IMP.hp<=0){IMP.dead=60;IMP.tgt=IMP.ptgt=null;impPoof(IMP.x,IMP.y);say('Your imp was defeated! It will be back in a minute.');try{sfx('hurt')}catch(e){}}}
+    if(IMP.hp<=0){IMP.dead=60;IMP.tgt=IMP.ptgt=null;impPoof(IMP.x,IMP.y);say('Your imp was defeated! It will be back in a minute.');try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'085-3')}}}
    else if(!IMP.tgt&&IMP.hp<IMP.max&&(IMP.hurtT-=dt)<=0){IMP.hurtT=4;IMP.hp++}})}
  const WB_ENT=()=>{const W=window.SQWB;return W&&W.ent&&!W.ent.dead&&Math.hypot(W.ent.x-P.x,W.ent.y-P.y)<220?W.ent:null};
  // drawing it (your imp is drawn by the pet code below; other players' imps where they report them)
@@ -140,7 +140,7 @@ var LUX={};
   if(GLD<price){say('Not enough gold. That costs '+coin(price)+'.');sfx('swish');return}GLD-=price;
   if(c==='pet'){COS.pets.push(k);COS.pet=k;say('Your new '+name+' follows you now!')}else if(c==='cape'){COS.capes.push(+k);COS.cape=+k;KITC.clear();say('You put on the '+name+'.')}
   else if(c==='dye'){COS.dyes.push(+k);say('Bought the '+name+'. Use it on the Style screen.')}else{inv[k]=(inv[k]|0)+1;say('Bought a '+name+'.')}
-  try{sfx('coin')}catch(e){try{sfx('pickup')}catch(e2){}}if(typeof svg==='function')svg();saveLocal(true);try{saveCloud(true)}catch(e){}rPn()}
+  try{sfx('coin')}catch(e){try{sfx('pickup')}catch(e2){self.SQERR&&SQERR(e2,'085-4')}}if(typeof svg==='function')svg();saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'085-5')}rPn()}
  // ---- the Style screen ----
  const STAB=31;function styleHTML(){const pick=(lab,on,data)=>'<button class="gc sty'+(on?' on':'')+'" '+data+' aria-pressed="'+(on?'true':'false')+'" style="margin:3px;'+(on?'background:#f8d878;color:#303030;box-shadow:0 0 0 3px #c88010':'opacity:.85')+'">'+(on?'✓ ':'')+lab+'</button>';
   let h='<div class="tl">STYLE</div><div class="qc"><b>Pet</b><div>'+pick('None',!COS.pet,'data-s="pet" data-v=""');for(const k of COS.pets)h+=pick(PETS.find(p=>p.k===k).n,COS.pet===k,'data-s="pet" data-v="'+k+'"');

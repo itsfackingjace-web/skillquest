@@ -59,7 +59,7 @@ function trPopHide(u){if(u&&TR.popU!==u)return;TR.popU=null;trPopEl.style.displa
 // ---- the trade session ----
 function trOpen(u,iAccepted){const d=FB.db;TR.st='offer';TR.w=u;TR.tid=trTid(u,MP.user.uid);TR.me={};TR.g=0;TR.th={};TR.tg=0;TR.my={a:'',c:'',d:''};TR.their=null;TR.applied=false;TR.lastTh='';TR.warnAt=0;TR.seenThem=false;TR.closing=false;
  delete TR.inbox[u];trPopHide(u);if(TR.sent[u]&&TR.sent[u].done)TR.sent[u].done();
- try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){}if(MP.open&&typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){}
+ try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){self.SQERR&&SQERR(e,'062-1')}if(MP.open&&typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){self.SQERR&&SQERR(e,'062-2')}
  trPush();TR.unsub=d.onValue(trRef('trades/'+TR.tid+'/'+u),s=>trTheirs(s.val()));
  TR.openAt=performance.now();pnOpen=true;ptab=TTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');mpLog('game','Trading with '+trName(u)+'.')}
 function trTheirs(v){if(TR.st==='idle')return;
@@ -78,8 +78,8 @@ function trStep(){if(TR.st==='idle'||!TR.their)return;const key=trKey(),t=TR.the
  if(pnOpen&&ptab===TTAB)rPn()}
 function trApply(key){for(const k in TR.me)if((inv[k]|0)<TR.me[k]){trEnd('You no longer have everything you offered, so the trade was cancelled.');return}if(GLD<TR.g){trEnd('You no longer have that much gold.');return}
  TR.applied=true;for(const k in TR.me)inv[k]=(inv[k]|0)-TR.me[k];GLD-=TR.g;for(const k in TR.th)inv[k]=(inv[k]|0)+TR.th[k];GLD+=TR.tg;
- const got=trList(TR.th,TR.tg);try{saveLocal(true)}catch(e){}try{saveCloud(true)}catch(e){}TR.my.d=key;trPush();
- const w=TR.w;sfx('quest');try{setTimeout(()=>sfx('coin'),150)}catch(e){}say('Trade complete!'+(got?' You got '+got+'.':''));try{window.SQACH&&SQACH.add('trade')}catch(e){}mpLog('game','Trade with '+trName(w)+' complete.'+(got?' You got '+got+'.':''));
+ const got=trList(TR.th,TR.tg);try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'062-3')}try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'062-4')}TR.my.d=key;trPush();
+ const w=TR.w;sfx('quest');try{setTimeout(()=>sfx('coin'),150)}catch(e){self.SQERR&&SQERR(e,'062-5')}say('Trade complete!'+(got?' You got '+got+'.':''));try{window.SQACH&&SQACH.add('trade')}catch(e){self.SQERR&&SQERR(e,'062-6')}mpLog('game','Trade with '+trName(w)+' complete.'+(got?' You got '+got+'.':''));
  trEnd(null)}
 function trEnd(why){if(TR.st==='idle')return;const tid=TR.tid,me=MP.user&&MP.user.uid,keep=TR.applied;TR.st='idle';if(TR.unsub){TR.unsub();TR.unsub=null}
  // remove your side (after a moment when finished, so the other player sees your "done" first)
@@ -135,7 +135,7 @@ function trStart(){const d=FB.db,uid=MP.user.uid;TR.inbox={};
  TR.reqUnsub=d.onValue(trRef('treq/'+uid),s=>{const v=s.val()||{},now=mpNow(),old=TR.inbox;TR.inbox={};
   for(const u in v){const q=v[u];if(!q||typeof q!=='object')continue;if(typeof q.t==='number'&&now-q.t>60000){d.remove(trRef('treq/'+uid+'/'+u)).catch(()=>{});continue}TR.inbox[u]={n:String(q.n||'').slice(0,12),t:q.t}}
   for(const u in TR.inbox)if(ignored(u)){delete TR.inbox[u];d.remove(trRef('treq/'+uid+'/'+u)).catch(()=>{})}else if(!old[u]){if(TR.sent[u]&&TR.st==='idle'){trAnswer(u,true);continue} // you asked each other
-   mpLog('game',trName(u)+' wants to trade with you. Tap TRADE, or open START > Trade.');if(TR.st==='idle')trPopShow(u);try{sfx('talk')}catch(e){}}
+   mpLog('game',trName(u)+' wants to trade with you. Tap TRADE, or open START > Trade.');if(TR.st==='idle')trPopShow(u);try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'062-7')}}
   if(TR.popU&&!TR.inbox[TR.popU])trPopHide();if(pnOpen&&ptab===TTAB&&TR.st==='idle')rPn()});
 }
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&MP.user&&!TR.reqUnsub)try{trStart()}catch(e){mpErr(e)}}}
@@ -143,9 +143,9 @@ function trStart(){const d=FB.db,uid=MP.user.uid;TR.inbox={};
 // /trade name in chat
 {const _s=mpSend;mpSend=function(t){const m=String(t||'').trim().match(/^\/trade\s+(\S+)\s*$/i);if(!m)return _s(t);const nl=m[1].toLowerCase();
   const u=[...MP.players.keys()].find(k=>(MP.players.get(k).n||'').toLowerCase()===nl);if(!u){mpLog('game','No player called '+m[1]+' is nearby.');return}
-  if(typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){}trRequest(u)}}
+  if(typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){self.SQERR&&SQERR(e,'062-8')}trRequest(u)}}
 // a TRADE button next to friends who are standing near you
 {const _fv=friendsView;friendsView=function(){_fv();for(const row of lst.querySelectorAll('.fr')){const msg=[...row.querySelectorAll('button')].find(b=>b.textContent==='MESSAGE');if(!msg)continue;
   const nm=row.querySelector('.fn b');const u=Object.keys(MP.friends).find(k=>fname(k)===(nm&&nm.textContent));if(!u||!trNear(u))continue;const b=document.createElement('button');b.textContent='TRADE';
-  b.onclick=()=>{if(typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){}trRequest(u)};msg.after(b)}}}
+  b.onclick=()=>{if(typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){self.SQERR&&SQERR(e,'062-9')}trRequest(u)};msg.after(b)}}}
 window.SQTRADE=TR;window.SQTRREQ=u=>trRequest(u);window.SQTRNEAR=()=>trNearList();

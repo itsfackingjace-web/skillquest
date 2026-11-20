@@ -17,7 +17,7 @@
    if(!inUpd){if(buf!==null){const v=buf;buf=null;if(D.get.call(tk)!==v)D.set.call(tk,v)}last=performance.now();hold()}}});
   setInterval(()=>{if(performance.now()-last>200&&(tk.classList.contains('sqtkon')||tk.classList.contains('sqtkoff')))tk.classList.remove('sqtkon','sqtkoff')},100);
   // something outside the frame (a panel closing, a menu) shows or hides it: follow at once
-  for(const f of['closePanel','showScreen'])try{const o=window[f];if(typeof o==='function')window[f]=function(){const out=o.apply(this,arguments);try{hold()}catch(e){}return out}}catch(e){}
+  for(const f of['closePanel','showScreen'])try{const o=window[f];if(typeof o==='function')window[f]=function(){const out=o.apply(this,arguments);try{hold()}catch(e){self.SQERR&&SQERR(e,'131-1')}return out}}catch(e){self.SQERR&&SQERR(e,'131-2')}
   window.SQTKBUF={get pending(){return buf}}}
 
  // ---- routine messages (casting a line, a catch, a cooked fish, +1 log...) float over your head instead of opening the
@@ -41,7 +41,7 @@
    for(let j=L.length-1;j>=0;j--){const y=q.hi?Math.round(P.y+12+off2+q.t*2):Math.round(P.y-28-off-q.t*4);g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(L[j],x,y);g.fillStyle='#fff';g.fillText(L[j],x,y);if(q.hi)off2+=5.5;else off+=5.5}if(q.hi)off2+=1;else off+=1}
   g.restore();for(let i=QL.length-1;i>=0;i--)if(QL[i].t>=1.8)QL.splice(i,1)}
 
- {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){}try{drawQL()}catch(e){}return out}}
+ {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){self.SQERR&&SQERR(e,'131-3')}try{drawQL()}catch(e){self.SQERR&&SQERR(e,'131-4')}return out}}
 
  // ---- a castle's warmth keeps monsters away and heals you, but cooking needs a real campfire
  {const _nf=nearFire;nearFire=function(x,y,r){const v=_nf(x,y,r);if(!v||r!==45||x!==P.x||y!==P.y)return v;
@@ -66,7 +66,7 @@
    const out=_ap.apply(this,arguments);
    try{if(PACKED&&!SCENE&&!SAILING){if(solid(P.x-5,P.y-3)||solid(P.x+5,P.y+6)){const tx=Math.floor(P.x/16),ty=Math.floor(P.y/16);let done=false;
       for(let r=1;r<40&&!done;r++)for(let dy=-r;dy<=r&&!done;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const x=(tx+dx)*16+8,y=(ty+dy)*16+8;if(!solid(x-5,y-3)&&!solid(x+5,y+6)&&!solid(x,y)){P.x=x;P.y=y;done=true;break}}}
-     if(PACKED.length){const L=[...new Set(PACKED)];setTimeout(()=>{try{say('The sea has risen around the edge of Hollow Island. What you built out there is safe in your bag: '+L.join(', ')+'.');msgT=8;saveLocal(true)}catch(e){}},1500)}}}catch(e){}
+     if(PACKED.length){const L=[...new Set(PACKED)];setTimeout(()=>{try{say('The sea has risen around the edge of Hollow Island. What you built out there is safe in your bag: '+L.join(', ')+'.');msgT=8;saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'131-5')}},1500)}}}catch(e){self.SQERR&&SQERR(e,'131-6')}
    return out})}
 
 })();

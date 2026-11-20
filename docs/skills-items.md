@@ -1,0 +1,139 @@
+# Skills and items
+
+Skilling looks, gathering, cooking, fishing, firemaking, brewing, off-hand tools, perks, daily/weekly challenges, quests, achievements.
+
+Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follows). File numbers like 061 are the source files in `src/` (see `src/manifest.txt`).
+
+- **Skilling looks** (`skills/114-s116-skilling-looks.js`): fire, cooking and fishing are drawn on the character, not as a
+  progress bar (109 now only draws the "N left" count). The state travels as `ak` in the
+  multiplayer position (1 fire, 2 cook, 3 fishing, 4 bite, 5 reeling, 6 caught, 7 smelt, 8 smith, 9 craft; `SQACT()`; 0-9 only, `cleanCh`/receiver clamp), the crouch is done in the
+  outermost `cP` (whole character, gear included, re-drawn shorter at the knees), and other players' props via `SQPEERFX`.
+- **Pet abilities** (`skills/116-s118-pet-abilities.js`): treelings (`SQPETAB.TREEL`, chance per kind, doubled on their own
+  tree kind) add +1 of whatever log a chop just gave (outermost-at-the-time `attack` wrapper). Mushroom pets `pmush`/`pglow`
+  (`SQPETAB.MP`) drop from `shroom` patches (`SQMUSHDROP=<kind>` forces it in tests), are drawn through `SQPETDRAW`, and
+  registered in `SQNPET`/`LUX.PETS` like the other non-shop pets. Glowcap watches for P.hp drops in `upd` (damage is applied
+  in many places, there is no single hurt function).
+- **Button words** (`ui/118-s123-button-words.js`, `window.SQWORDS`): every 0.1 s the HIT (`a`) and EAT (`e`) buttons get
+  the word for what they'd do now (`hitWord`/`eatWord`, following the same order as the `attack`/`eat` wrappers: build,
+  facing someone, fishing, station, home furniture/chest/bed, monster in front, water, sign, the object's skill via
+  `SKOF`), and a TALK button showing USE gets the thing's word (`useWord`). The `<small>` key hint is kept. When a new
+  context is added to `attack`, `eat` or `talk`, add its word here too.
+- **Main quest chapter two** (`world/128-s133-quest-chapter-two.js`, `window.SQCH2`): edits QS entries by name (slime
+  quests `item:'slime'`, typeless Hollow slimes counted there; Night Watch type `night`; replaced duplicate quests;
+  Grandmaster 150), moves The Road East after Gone Fishing, adds chapter two before Grandmaster and Legend of the Isles
+  last. New types: `night`, `visit` (region key; done on arrival), `line` (a village line's `SQ_SIDE[k].completed`),
+  `ib` (island bosses beaten, `ibk` in the save, recorded from `sqEvent('islandboss',id)`). Save `qv` 10; a qv 9 save is
+  converted to names with the old order (`QOLD9`) then `qSkip`. Never reorder QS without such a name-based migration.
+  102's tracker: `routeStep(region)` names the next voyage/boat upgrade on the way, `villNext([key])` the next village quest.
+- **Achievements / collection log** (`ui/129-s134-achievements.js`, `window.SQACH`, START > Achievements, `ptab` 35): list
+  `A` ({g,id,n,d,val(),goal,gold}); lifetime counters `C` (items arriving in a frame with that skill's XP, fires, kills,
+  `ibw`, plus `SQACH.add(k)` from elsewhere: `trade` in 062, `duelw` in 130); checked once a second, one unlock at a time.
+  Collection log categories `CATS` over `INAME` (first match wins, `eq_cu_` left out), seeded from bag/worn/pets on load.
+  Saved as `ach` {c,d,col,rg}.
+- **Off-hand** (`items/140`, `window.SQOFFHAND`): `eq_hoe` is slot `off` (kind `hoe`); `TL.hoe` = hoe in hand (farming code
+  unchanged); outermost `occ`/`setSlot` handle it and drop 'hoe' from `SLOTS`; a hoe together with a bow/wand goes to the bag.
+  X (124's `KA` 'off') = use off-hand: hoe → `attack()`, bow/wand → a synthetic right-click on `cv` at the cursor (082's code).
+- **Mithril/adamant tools** (`items/141`): `eq_axe6/7`, `eq_pick6/7` = tool tiers 6/7 (same numbers and `TCOL` as the swords),
+  anvil recipes from `mbar`/`abar`, `req:{s,l}` checked by the outermost `equipItem` (Woodcutting/Mining 30/45).
+  Skill trees: `TREES[1|2].extra[30|45]`; Smithing's `ulSmith` (039) is rebuilt from `SM` after load and on `SQA.onApply`.
+- **Perks**: production speed (039's `pSpeed`: level + `PSPD` perks) shortens 109's timed actions (`sqDo` divides the
+  duration) instead of giving bonus XP. Flame Aura (`fi_aura`, 087) needs only the perk (`SQAURA`/`SQAURALIT`; 014's cave dark
+  widens with it). fi_haven/fi_sacred act on all non-boss local monsters. `SELLB` (038) lists use functions where recipes grow.
+- **Watering can off-hand** (140): `eq_can` slot `off` kind `can` (`TL.can`); hoe and can swap by themselves in the outermost
+  `attack` (tillable ground with the can → hoe; dry crop with the hoe → can) and on the "Buy a watering can" message;
+  `shootAim` (controller R1) uses hoe/can when that's the off-hand.
+- **HIT never farms** (140, outermost `attack`): on every input HIT hides `TL.hoe`/`TL.can` for that call (`HID`); keyboard/mouse (`isPC`, no `GPON`) also gets
+  `bowTarget` null. Touch: 082's `#aimb` shows TILL/WATER for a hoe/can off-hand (also in yards), a tap = `SQOFFHAND.use()`; hints via `SQOFFHINT(what)`. Off-hand use goes through `viaOff` (X, R1, the farming swaps) which skips the hiding.
+- **Meals and food buffs** (`items/177-s184-meals.js`, `SQMEALS`): `window.SQFOODBUFF` {food:{b,s}} = eating it (outermost `eat`/`useFood`,
+  by bag count drop) starts buff b for s s in 085's `LUX.BUFF` (085 lists/pills: str, iron, swift, wis, regen; wis = +20% XP in the
+  outermost `addXp`, regen = 1 heart / 10 s in the outermost `upd`). Filled by 162 (Content food items' `buff`/`bs`) and 161b (Stats >
+  Food & potions `buff`/`bs`). `window.SQSTOVE` = multi-ingredient stove meals (Content recipes `sk:'stove'`), listed under "Meals" in
+  the outermost `stationHTML` and made by `stationAct('sv_<i>')`. COOKS entries with `st` are stove-only: 007's fire loop, 109, 110 and
+  118 skip them (Stats > Recipes "Stove only"). Stats table fields can be `sel` [f,label,'sel',options|()=>options].
+- **Fletching** (021 `makeFletch`): timed through 109's `sqDo('craft',n)` ("All" = as many as the materials allow); the generic
+  "Made ..." line only when the recipe's own `f` didn't say anything (arrows say the arrow count, gear its name).
+- **Pet powers** (`skills/180-s187-pet-powers.js`, `SQPETPOW`, Dev Suite > Pet powers): library `petab.<pet kind>` = {own (0 = its built-in
+  ability off: `window.SQPETOFF(k)`, asked by 085's imp aggro, 098's fetchers, 116's treelings/mushling/glowcap), at
+  melee|ranged|magic|aoe, ag hurt|near|yours, dmg, gr (+1 per 25 Attack/Archery/Magic), cd, rng, col, fx {slow,burn,poison,freeze:
+  [%,s]} (the game's own n.slow/burn/poison/frozen), heal {h,e}, fetch {k,n,e}, ex {s skill (-1 any gathering),c}, xp, gold, guard}.
+  Attacks come from where the pet is drawn (093's `PST.get('me')`, the imp's state); a melee pet is moved next to the monster and
+  093's `petFollow` walks it back. Peers see the attacks via fx `pa` (`SQFXH.pa`, looks only). Powers are appended to `IDESC.pet_<k>`.
+  A new pet with a built-in ability should check `SQPETOFF` and get a line in the tab's `own()`.
+- **Eating / campfire cooking** (`ui/181-s188-better-eating.js`, `SQEATPICK`): the outermost `eat` moves the chosen food to the front of
+  `FOODS` for the call (pinned `eatp` in the save, else smallest heal that covers what's missing, else least healing; potions and
+  `SQFOODBUFF` meals left for USE; "You're full." at full health + food 95). At a fire with 2+ cookable kinds it opens a picker
+  (`ptab` 41); a picked kind runs as 109's `sqDo('cook')` whose steps call `eat()` (BYPASS) with that COOKS entry moved first.
+- **"N left" for make-all** (`skills/192-s200-make-all-count.js`): the outermost smithAct/makeGood/makeBuild work out how many the
+  materials allow when `all`; the wrapped `sqDo` keeps it as `SQDO.tot` and 109 shows `min(n, tot-done)` (display only).
+- **Jewelry make-all** (086, edited in place): `data-jw="all"` → `jwMake(k,true)` = `sqDo('craft',jwCan(j),...)` and `SQDO.tot` for 109's "N left".
+- **Skill trees list every item** (`skills/214-s222-tree-unlocks-from-gear.js`, `window.SQTREEAUTO`): the outermost `treeGains(sk,l)` appends
+  generated lines: wear/use requirements of every `EQ` item (library `gear.<k>.rq` first, then `e.tt` = Defence 50, 111a2's `defReq`, `e.req`)
+  and making levels from SM (Smithing), GOODS/REC/BREC (Crafting), COOKS (Cooking). Skipped when the level's own text already names the item
+  (or "<first word> armor"). Rebuilt on `SQA.onApply` and when those lists change size. A new requirement check elsewhere should be added to `reqOf`.
+- **Meteorite gear** (`items/216-s224-meteorite-gear.js`, `window.SQMETGEAR`): all level 75 (`rq2` {s,l}, read first by 214's `reqOf`).
+  Armor `eq_mhelm9/eq_mbody9/eq_mlegs9` held as armor tier 5 with `MT` flags (save `mta`, KNOWN49), like 200's turtle armor: +5% block
+  a piece, 2 pieces +5%, 3 another +5% and blockCap +8%; look = gearCH `mtk` bits → kitLook recolour. Tools `eq_pick9/eq_axe9` = tier 9
+  (TIER_N/TCOL/TIT[9]). Bow `eq_bow6` (tier 6, +3 dmg, +30 range). Wand `eq_wmeteor`, element `meteor` (`WSP.meteor`, +6 dmg): the
+  outermost `drawSpells` draws meteor spells as rocks (their `sc` is hidden from the inner drawer for the call), 40% splash in
+  `spellHit`; ult METEOR FALL in the outermost `castUlt` when 159's `SQULT.chosen()` is the wand (`FALLS`, drawn in drawHUD, damage
+  spellDmg x3 within 48 px on impact; peers via fx `mf`). 159's `WN` names void/meteor ults. Meteorite arrows `marrow` (FREC, 25 per
+  bar + 2 void logs): the outermost `shoot`/`shootAim` lend them to `inv.iarrow` for the call (`LEND` adds +2 in `arrowDmg`) and take
+  back what was used; projectiles get `met:1`. 214 also lists SQTIER trees/ores, SQBOUL boulders and meteor cores/veins on the
+  Woodcutting/Mining trees.
+- **Brewing and daggers** (`skills/218-s226-brewing-and-daggers.js`, `window.SQBREW`/`SQDAGGER`): skill 14 = Brewing (`SQBREWSK`, pushed
+  onto SKN/AB/SKC/XPS/SKICON like 028's Magic; `PSK`/`pTree` tree, perks `br_long/wide/twice/thrift/venom/spark/quick/heal`, read with
+  `PK(id)` = 036's `perk`). Cauldron = 022 station `cauldron` (STNS/BREC/BK), the outermost `stationHTML`/`stationAct` (actions `cw_<pot>`/
+  `cwa_<pot>`: **station actions starting with `b` are taken as shop buys by 107**), timed with `sqDo('craft')`. Art drawn in the outermost
+  `drawStation` unless a Props look `p:cauldron` exists. Potions `pot_poison/napalm/zap` are `COAT` potions (not FOODS; USE coats).
+  Daggers `idag/sdag/mdag/adag/stdag/metdag` (stdag = Starsteel, tier 5, `mc` = its own anvil materials) are EQ kind `dagger` (028's iconURL draws EQ items as `iconURL(EQ[k].ic)`: an `ic` equal to the item's own key recursed forever and broke every screen showing one, so idag/sdag use `ic:'dagger'`), slot `off` (DAG, save `dag`), +tier in `meleeFlat`. Potion pin `dpin`
+  (bag button `data-dpin`). 159's `avail()` also lists `window.SQULTX` entries ({k,n,ok,from,run}); the outermost `castUlt` runs the
+  dagger ult (cooldown `DCD`, 20 s / 12 with br_quick). Helpful potions are drunk and shared with fx `dp` {p,to (uid list),x,y}:
+  receivers check party/friend + distance and drink without using their own. Coats apply on hp drops during the outermost `attack`.
+  While a brew job runs (`SQDO.brew` = potion, `BREWAT` = the tile in front when it started) that cauldron is drawn boiling in the
+  potion's colour (`PCOL`/`palOf`), and 114's `localAct` returns 0 for `SQDO.brew` (no crafting saw). HUD chips (coat time, dagger ULT) are added in the outermost `hudLayout`. Flames on every burning monster in the outermost `pS`.
+  **Stabs** (`window.SQSTAB`, end of 218): the off-hand button (140's `down` → `SQDAGGER.stab()`, X; right-click capture on `cv`; outermost
+  `shootAim` for R1; 082's touch button shows STAB) runs the outermost `attack` with `TL.sword` 0 on its own 0.28 s clock; 202 skips its
+  sword gap while `window.SQSTABNOW` is set. The outermost `pP` answers `occ('main')` with the dagger and sets `SLEDGE` false while a stab shows (123 draws it; the sledge won
+  otherwise), and the stab's attack also runs with `SLEDGE` false. Peers: 064's `sw` event takes `w` from `window.SQSWINGW()` when set
+  (stabs send 20 + dagger tier); 218's outermost `SQSWING` draws that dagger's icon jabbing for `t` 20-29.
+- **Campfire logs and feeding** (`skills/220-s228-firemaking-logs.js`, `window.SQFIRELOGS`, `ptab` 50): tiers `T` (wood, oak 15, willow 30, maple 45,
+  yew 60, void 75: per-log XP `pl`, life multiplier `m`, feed seconds `fs`). The outermost `fire` opens the CAMPFIRE picker only when there's a choice
+  (a tier log you can burn, or your own fire next to you); plain wood with nothing near builds as before (`SQFIREDIRECT` skips the picker).
+  A tier build lends 3 wood to the game's own fire() (timed by 109) and `PEND` waits in the outermost `upd`: the new fire gets `lg`, life x`m`,
+  extra XP; no new fire and no job running = wood taken back, logs returned. Feeding: 1 log, +`fs` s (cap 30 min), `pl` XP, `lg` raised.
+  Extra/feed XP is added with `window.SQFIREXTRA` set, which 120/143/129 check so it doesn't count as another fire lit. `lg` is kept in
+  saved fires (061 snap, 006 load) and shared fires (061 FIRE sync, clamped 0-5); the outermost `pF` draws it in `PAL` colours unless a
+  `p:campfire` look exists. Skill tree lines via the outermost `treeGains`.
+- **Fishing 70/80/90** (`skills/221-s229-deep-fishing.js`, `window.SQDEEPFISH`): moonfin (70, night: `dark()>.25`), abyssal eel (80, shattered/
+  ironcrest), ancient koi (90, anywhere, 6%) through `window.SQFISHX`, which 093b's catch hook checks before the Dev Suite's `SQGFISH`
+  (entries may have `ok()`). Raw `k` + cooked `c<k>`, COOKS/FOODS/icons/tree lines. Not in 200's turtle `RAW` (fixed by the rules).
+- **Arrow ladder** (`items/224-s232-arrow-ladder.js`, `window.SQARROWS`): `mitharrow` (Archery 40) and `adarrow` (55), 15 a fletch; damage over
+  plain arrows iron +1, mithril +2, adamant +3, meteorite +4 (216's LEND bonus is 3). The outermost shoot/shootAim lend the best special
+  arrows to `inv.iarrow` for the call (meteorite left to 216's own lend) with `BON` added in `arrowDmg`; `bowTarget` counts them; shots get
+  `p.ah` (head colour, 021's drawProj). 021's fletch/equipment lines and 010's arrow chip list every arrow kind: a new arrow goes there too.
+- **Vessa's potion stall** (096, edited in place): NPC role `potions` at Emberwatch with an `afstall` item; `POTAF` (`window.SQPOTAF`) =
+  potions she sells; she buys any of them for `potBuy(k)` = 1.5x SELLP, always below her own price (data-af `p<i>` buy, `q<key>` sell).
+- **Campfire colours per log** (220 `PAL`/`GLOW`/`STICK`): flames oak gold, willow blue, maple crimson, yew green, void purple. 001's night glow
+  takes each fire's colour from `window.SQFIREGLOW(f)` and only merges fires of the same colour; 114's `drawFire` (lighting) colours the sticks,
+  base log and ember from `SQFIRELOGS.lighting()` (the pending tier build, else plain wood). Peers lighting a fire are drawn with plain wood.
+- **Weekly event** (`ui/143-s148-weekly-event.js`, `window.SQWEEK`): week = `floor((day-4)/7)` (Monday 00:00 UTC), event `EV[week % 7]`;
+  counting like 120's daily challenges (items with that skill's XP in the frame, `xpc` = XP gains of 200 or less, kills).
+  `wev/<week>/t` total (only up, +500 a write at most) and `wev/<week>/p/<uid>` {n,c}; sent every 10 s. Tiers at 1/3, 2/3, 1 of
+  `goal`, paid once each (`got`) if your count is at least `mins` (2%); last week's tiers paid at the turn. Only shown as a card in the
+  quest log under the daily box (no HUD element). Saved as `wev` {w,c,got,q}. Rules: `wev` (publish them).
+- **Daily challenges** (`ui/120-s125-daily-challenges.js`, `window.SQDAILY`): three tasks per real day (device date), picked
+  from `T` by a hash of the date, skipping ones the character can't do yet (`r`), target scaled by skill level. Items count
+  when they arrive in a frame where that task's skill gained XP (outermost `addXp` marks it; positive `inv` deltas in `upd`),
+  `xpc` tasks count XP gains, `kill` uses the game's `kills` counter. Paid at once (gold + XP); all three = streak bonus.
+  Saved as `dly` {d,q:[{t,n,p,c}],s,l}; shown at the top of the quest log (below the guide box). Separate from the
+  townsfolk "daily jobs" in 020.
+- **Quest tracker** (102): `TRK==='none'` = nothing tracked (stored in localStorage `sq_trk`): no quest box (010's old box
+  checks `SQTRKOFF()` too), tapping that HUD spot doesn't open the log, and new quests don't grab the tracker. The main
+  quest of type `village` gets its step and arrow from the first unfinished village line (`villNext`).
+- **Getting started guide** (`ui/115-s117-getting-started.js`): 8 steps for new characters, shown through the quest
+  tracker (102's `refresh` asks `SQGUIDE()` first), with hints, glowing buttons (`.sqglow`) and small rewards. Saved as `gd`
+  (99 = done or skipped); a save without `gd`, or a game started without a save, is judged once play starts. Tapping the
+  quest box opens the quest log (with "Skip the guide").
+- **Farming seeds** (`skills/152-s158-farming-seeds.js`, `SQSEEDS(L)`): 016's harvest asks it for the seed count: 45% + 0.5%/level
+  (cap 95%), second seed 5% per 10 levels (max 45%); perks (third choices, like 087's) `fm_pouch` (20, +15%), `fm_twin` (40,
+  each seed 25% ×2), `fm_heir` (70, at least one). `TREES[11].step` lists the seed numbers. 038's `fm_seed` still adds its own.

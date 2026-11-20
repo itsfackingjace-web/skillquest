@@ -78,7 +78,7 @@ var SQA=(()=>{
  const wornCanvasFrom=(w,dir,fl,dc,k,st)=>{let sp=frameOf(w,k,dir,st|0);if(!sp)return null;if(dc&&w.dy)sp=recol(sp,dyeMap(w.dy,dc));const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
  // what you have on travels with your look (ch.wr) so other players' games draw it too
  const _gch=gearCH;gearCH=function(){const c=_gch();const wr=[];
-  for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){}if(!k||!WORN[k])continue;wr.push(k)}
+  for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){self.SQERR&&SQERR(e,'111a-1')}if(!k||!WORN[k])continue;wr.push(k)}
   // your own hat, shirt and trousers, so a game that has a look marked "hide" can take the game's piece off you
   if(wr.length){c.wr=wr;c.wht=CH.ht|0;c.whc=CH.hcol|0;c.wsh=CH.sh|0;c.wpn=CH.pn|0}return c};
  // "hide" is decided by the game drawing you (it needs the look in its library), not by the game you play on
@@ -87,19 +87,19 @@ var SQA=(()=>{
  const _cPw=cP;
  // the character as other code sees it (game kit + worn looks) drawn into any canvas: 201 measures capes against it
  window.SQCHDRAW=function(C,ch,dir,st,ox,oy,fl){const sv=GC;GC=C;try{_cPw(hideFor(ch),dir,st,ox,oy,fl);if(ch&&Array.isArray(ch.wr))drawWorn(C,ch.wr.slice(0,6),dir|0,st|0,ox,oy,!!fl,null,ch)}finally{GC=sv}};
- cP=function(ch,dir,st,ox,oy,fl){try{if(window.SQCAPEUNDER)SQCAPEUNDER(GC||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch)return;const C=GC;
+ cP=function(ch,dir,st,ox,oy,fl){try{if(window.SQCAPEUNDER)SQCAPEUNDER(GC||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){self.SQERR&&SQERR(e,'111a-2')}_cPw(hideFor(ch),dir,st,ox,oy,fl);if(!ch)return;const C=GC;
   // capes over the shoulders/back (201), also on characters without worn looks
-  if(!ch.wr||!(C===g||C&&C.canvas&&C.canvas.hd2)){try{if(window.SQCAPETOP)SQCAPETOP(C||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}return}
-  try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl,null,ch)}catch(e){}
+  if(!ch.wr||!(C===g||C&&C.canvas&&C.canvas.hd2)){try{if(window.SQCAPETOP)SQCAPETOP(C||g,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){self.SQERR&&SQERR(e,'111a-3')}return}
+  try{drawWorn(C,Array.isArray(ch.wr)?ch.wr.slice(0,6):[],dir|0,st|0,ox,oy,!!fl,null,ch)}catch(e){self.SQERR&&SQERR(e,'111a-4')}
   // a cape seen from behind goes over worn looks (201)
-  try{if(window.SQCAPETOP)SQCAPETOP(C,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){}};
+  try{if(window.SQCAPETOP)SQCAPETOP(C,ch,dir|0,st|0,ox,oy,!!fl)}catch(e){self.SQERR&&SQERR(e,'111a-5')}};
  // ---- pet looks: replace how a pet is drawn following its owner (yours and other players') ----
  const PETL={},pcache=new Map();
  const validPet=L=>L&&L.w>0&&L.h>0&&L.w<=96&&L.h<=96&&L.s>=1&&L.s<=8&&isFinite(L.ox)&&isFinite(L.oy)&&['a','b','c','d'].some(f=>L[f]&&L[f].w===L.w&&L[f].h===L.h&&valid(L[f]));
  const petKinds=()=>[...new Set(INVK)].filter(k=>EQ[k]&&EQ[k].slot==='pet'&&EQ[k].pet);
  function petCan(k,f){const L=PETL[k];if(!L)return null;const sp=L[f]&&valid(L[f])?L[f]:L.a&&valid(L.a)?L.a:L.b;const key=k+'@'+ver+f;let c=pcache.get(key);if(!c){c=render(sp);pcache.set(key,c)}return c}
  function drawPetLook(k,s,lib){const L=lib||PETL[k];if(!L||!s)return false;const ok=f=>L[f]&&valid(L[f]),mv=s.mv>0,f=mv?(Math.floor(s.t)%2?(ok('d')?'d':'a'):'b'):(Math.floor(performance.now()/500)%2&&ok('c')?'c':'a');const c=lib?render(L[f]&&valid(L[f])?L[f]:L.a):petCan(k,f);if(!c)return false;
-  const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2;try{shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;
+  const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2;try{shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){self.SQERR&&SQERR(e,'111a-6')}g.save();g.imageSmoothingEnabled=false;
   if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,x+L.ox,y+L.oy,w,h);g.restore();return true}
  window.SQPETLOOK=(k,s)=>k!=='imp'&&!!PETL[k]&&drawPetLook(k,s);   // 214: pets placed at home
  {SQPP.wrap('111a',_pPL=>function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||k==='imp'||!PETL[k])return _pPL(tm);
@@ -186,26 +186,26 @@ var SQA=(()=>{
   REGION_SPAWNS[id]={maxEnemies:mob?Math.max(0,Math.min(30,I.max==null?20:I.max|0)):0};if(typeof RG_MOBS!=='undefined'){if(mob)RG_MOBS[id]=RG_MOBS[mob];else delete RG_MOBS[id]}
   RG_LMCOUNT[id]=0;const pos=ISL_POS[dir];WM_POS[id]=[isFinite(I.mx)?Math.max(10,Math.min(350,+I.mx)):pos[0],isFinite(I.my)?Math.max(10,Math.min(350,+I.my)):pos[1]];
   WM_ROUTE[id]={from:'Tidewatch',post:'tidewatch'};RG_GENS[id]=islandGen(I);try{regCaves(id,I)}catch(e){console.warn(e)}RG_GEN[id]=D=>rgRunSync(RG_GENS[id](D));
-  try{delete RG_CACHE[id];delete RG_PRE[id];delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id];const j=RG_ORDER.indexOf(id);if(j>=0)RG_ORDER.splice(j,1)}catch(e){}
+  try{delete RG_CACHE[id];delete RG_PRE[id];delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id];const j=RG_ORDER.indexOf(id);if(j>=0)RG_ORDER.splice(j,1)}catch(e){self.SQERR&&SQERR(e,'111a-7')}
   ISL[id]=I}
- function unregIsland(id){if(here()===id)return;try{regCaves(id,null)}catch(e){}const j=ROUTE_ORDER.indexOf(id);if(j>=0)ROUTE_ORDER.splice(j,1);delete RG_GEN[id];delete RG_GENS[id];
-  try{delete RG_CACHE[id];delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id]}catch(e){}delete ISL[id]}// the name stays known, so old references still read well
+ function unregIsland(id){if(here()===id)return;try{regCaves(id,null)}catch(e){self.SQERR&&SQERR(e,'111a-8')}const j=ROUTE_ORDER.indexOf(id);if(j>=0)ROUTE_ORDER.splice(j,1);delete RG_GEN[id];delete RG_GENS[id];
+  try{delete RG_CACHE[id];delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id]}catch(e){self.SQERR&&SQERR(e,'111a-9')}delete ISL[id]}// the name stays known, so old references still read well
  function applyIslands(L){const want={};for(const id of Object.keys(L||{}).sort())if(/^cu_[a-z0-9_]{1,30}$/.test(id)&&islandValid(L[id]))want[id]=L[id];
   for(const id in ISL)if(!want[id])unregIsland(id);for(const id in want)if(JSON.stringify(ISL[id])!==JSON.stringify(want[id]))regIsland(id,want[id])}
  // painted islands keep exactly what was placed (generated islands thin out trees and upgrade tiers at random)
  const _rpI=rgPrepare;rgPrepare=function(id){const R=_rpI(id);if(R&&WORLD_REGIONS[id]&&WORLD_REGIONS[id].custom)R._t64=1;return R};
  // loot chests: drawn with the game's chest; each player can take what's inside once (remembered in their save)
- const _dfI=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='lm'&&it.k==='chest'){try{shd(it.x*16+8,it.y*16+15,14);hdPut(hdChestS(),it.x*16,it.y*16)}catch(e){}return}return _dfI(it,tm)};
+ const _dfI=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='lm'&&it.k==='chest'){try{shd(it.x*16+8,it.y*16+15,14);hdPut(hdChestS(),it.x*16,it.y*16)}catch(e){self.SQERR&&SQERR(e,'111a-10')}return}return _dfI(it,tm)};
  const _ufI=useFurn;useFurn=function(it){if(it&&it.use==='loot'){const id=here(),W=WORLD_STATE[id]=WORLD_STATE[id]||{},got=W.loot=W.loot||[];
    if(got.includes(it.ci)){say('The chest is empty. You already took what was inside.');msgT=4;sfx('swish');return}
    const parts=[],G={};for(const k in it.loot||{}){const n=Math.max(0,Math.min(100000,it.loot[k]|0));if(!n)continue;if(/^lt_/.test(k)){if(window.SQCONTENT)for(let i=0;i<Math.min(n,20);i++){const r=SQCONTENT.roll(k);for(const q in r)G[q]=(G[q]|0)+r[q]}}else G[k]=(G[k]|0)+n}for(const k in G){const n=G[k];if(k==='gold'){GLD+=n;parts.push(n+' gold')}else if(INAME[k]){inv[k]=(inv[k]|0)+n;parts.push(n+' '+(n>1?(SN[k]||INAME[k]):INAME[k]).toLowerCase())}}
-   got.push(it.ci);say(parts.length?'You open the '+(it.name||'chest').toLowerCase()+': '+parts.join(', ')+'!':'The chest is empty.');msgT=6;try{sfx(parts.length?'coin':'swish');saveNow();svg()}catch(e){}return}
+   got.push(it.ci);say(parts.length?'You open the '+(it.name||'chest').toLowerCase()+': '+parts.join(', ')+'!':'The chest is empty.');msgT=6;try{sfx(parts.length?'coin':'swish');saveNow();svg()}catch(e){self.SQERR&&SQERR(e,'111a-11')}return}
   return _ufI(it)};
  // custom islands are open as soon as they're published (no voyage needed)
  const _ro=routeOpen;routeOpen=function(id){const D=WORLD_REGIONS[id];if(D&&D.custom)return!!RG_GEN[id];return _ro(id)};
  // a save on an island that no longer exists comes back to Hollow Island
  SQLOAD.before('111a',(S)=>{try{if(S&&S.region&&S.region.id&&S.region.id!=='hollow'&&!(WORLD_REGIONS[S.region.id]&&RG_GEN[S.region.id])&&/^cu_/.test(S.region.id)){
-   S.region={id:'hollow'};setTimeout(()=>{try{say('The island you were on has gone from the charts. You are safe back on Hollow Island.');msgT=8}catch(e){}},600)}}catch(e){}});
+   S.region={id:'hollow'};setTimeout(()=>{try{say('The island you were on has gone from the charts. You are safe back on Hollow Island.');msgT=8}catch(e){self.SQERR&&SQERR(e,'111a-12')}},600)}}catch(e){self.SQERR&&SQERR(e,'111a-13')}});
  // ---- apply a whole library (undoing whatever was applied before) ----
  let applied={stats:{}};const HOOKS=[];// other sections (gear rules) apply their part of the library here
  function apply(lib){lib=lib||{};
@@ -213,23 +213,23 @@ var SQA=(()=>{
   for(const k in ICO)delete ICO[k];for(const k in WORN)delete WORN[k];ver++;wcache.clear();
   const icons=lib.icons||{};for(const k in icons)if(valid(icons[k]))ICO[k]=icons[k];
   try{applyIslands(lib.islands)}catch(e){console.warn('islands:',e)}
-  for(const k in PETL)delete PETL[k];pcache.clear();const pets=lib.pets||{};for(const k in pets)if(validPet(pets[k]))PETL[k]=pets[k];try{impRepaint()}catch(e){}
+  for(const k in PETL)delete PETL[k];pcache.clear();const pets=lib.pets||{};for(const k in pets)if(validPet(pets[k]))PETL[k]=pets[k];try{impRepaint()}catch(e){self.SQERR&&SQERR(e,'111a-14')}
   // no EQ check here: new gear items (newgear, 111a2) are registered by an onApply hook that runs after this, so a look for one
   // would be dropped on every normal load (only the Dev Suite's re-apply kept it). drawWorn/hideFor check the slot when drawing.
   const worn=lib.worn||{};for(const k in worn)if(/^eq_[a-z0-9_]{1,40}$/.test(k)&&validWorn(worn[k]))WORN[k]=worn[k];
-  const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){}}}
+  const st=lib.stats||{};for(const t in st){if(!TABLES[t])continue;for(const k in st[t]){if(!TABLES[t].keys().includes(k))continue;try{TABLES[t].set(k,merged(t,k,st[t][k]))}catch(e){self.SQERR&&SQERR(e,'111a-15')}}}
   applied={stats:JSON.parse(JSON.stringify(st))};// a copy: the draft's own object changes under us (a row taken out of it must still be put back next time)
   for(const f of HOOKS)try{f(lib)}catch(e){console.warn(e)}
-  try{if(pnOpen)rPn()}catch(e){}}
+  try{if(pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'111a-16')}}
  let live=null,preview=null;
- try{live=JSON.parse(localStorage.getItem(LS)||'null')}catch(e){}
+ try{live=JSON.parse(localStorage.getItem(LS)||'null')}catch(e){self.SQERR&&SQERR(e,'111a-17')}
  if(live)try{apply(live)}catch(e){console.error(e)}
  // latest published copy (no sign-in needed); used now and kept for the next load
  // (the library is ~265 KB: ask for its version number first and skip the download when this device already has that version)
  async function refresh(force){try{if(!force&&live&&live.v){const q=await fetch(DBURL+'/assets/live/v.json?t='+Date.now(),{cache:'no-store'});if(q.ok){const v=await q.json();if(v===live.v)return}}
    const r=await fetch(DBURL+'/assets/live.json',{cache:'no-store'});if(!r.ok)return;const L=await r.json();
-   if(JSON.stringify(L)===JSON.stringify(live))return;live=L;try{if(L)localStorage.setItem(LS,JSON.stringify(L));else localStorage.removeItem(LS)}catch(e){}
-   if(!preview)apply(live)}catch(e){}}
+   if(JSON.stringify(L)===JSON.stringify(live))return;live=L;try{if(L)localStorage.setItem(LS,JSON.stringify(L));else localStorage.removeItem(LS)}catch(e){self.SQERR&&SQERR(e,'111a-18')}
+   if(!preview)apply(live)}catch(e){self.SQERR&&SQERR(e,'111a-19')}}
  setTimeout(refresh,400);
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,autoStep,frameOf,
   ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,ISL_POS,CAVE_ST,caveKind,npcLook,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
@@ -238,5 +238,5 @@ var SQA=(()=>{
   onApply(f){HOOKS.push(f);try{f(preview||live||{})}catch(e){console.warn(e)}},
   // the Dev Suite can show unpublished edits in the developer's own game
   preview(lib){preview=lib||null;apply(preview||live)},get previewing(){return!!preview},
-  setLive(L){live=L;try{if(L)localStorage.setItem(LS,JSON.stringify(L));else localStorage.removeItem(LS)}catch(e){}if(!preview)apply(live)}}})();
+  setLive(L){live=L;try{if(L)localStorage.setItem(LS,JSON.stringify(L));else localStorage.removeItem(LS)}catch(e){self.SQERR&&SQERR(e,'111a-20')}if(!preview)apply(live)}}})();
 window.SQA=SQA;

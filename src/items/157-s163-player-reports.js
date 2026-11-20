@@ -18,11 +18,11 @@
     if(h.furn&&typeof h.furn.forEach==='function')for(const [i,f] of [...h.furn]){const x=i%R.w,y=i/R.w|0;if(!doorTile(R,x,y))continue;h.furn.delete(i);
      let to=-1;for(let r=1;r<R.w&&to<0;r++)for(let dy=-r;dy<=r&&to<0;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const nx=x+dx,ny=y+dy;if(nx<0||ny<2||nx>=R.w||ny>=R.h)continue;if(canPlaceIn(nx,ny)&&!(Math.abs(nx*16+8-P.x)<12&&Math.abs(ny*16+8-P.y)<14)){to=ny*R.w+nx;break}}
      if(to>=0){h.furn.set(to,f);moved++}else h.furn.set(i,f)}
-    if(moved){say('Some furniture was in front of your back door, so it was moved aside.');try{saveLocal(true)}catch(e){}}
+    if(moved){say('Some furniture was in front of your back door, so it was moved aside.');try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'157-1')}}
     unstick()}}catch(e){console.warn('door fix',e)}})}
  // ---- in an island boss's lair the world boss banner steps aside (it covered the island boss's health bar) ----
  {const st=document.createElement('style');st.textContent='body.sqibf #wbb{display:none!important}';document.head.appendChild(st);
-  SQUPD.after('157',(dt)=>{try{const on=!!(SCENE&&SCENE.room&&SCENE.room.ib);if(document.body.classList.contains('sqibf')!==on)document.body.classList.toggle('sqibf',on)}catch(e){}})}
+  SQUPD.after('157',(dt)=>{try{const on=!!(SCENE&&SCENE.room&&SCENE.room.ib);if(document.body.classList.contains('sqibf')!==on)document.body.classList.toggle('sqibf',on)}catch(e){self.SQERR&&SQERR(e,'157-2')}})}
  // ---- keep the screen awake while playing ----
  let lock=null,want=false;
  async function wake(){try{if(!('wakeLock' in navigator)||document.hidden||lock)return;lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}catch(e){lock=null}}

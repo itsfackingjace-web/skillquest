@@ -44,8 +44,8 @@
  let ST=null;
  function fresh(mood){const md=MOODS[mood]||MOODS.village,b=md[2];return{n:'',mood,...JSON.parse(JSON.stringify(b)),secs:[{c:md[3][0].map(i=>chordName(b.key,i)),n:[]},{c:md[3][1].map(i=>chordName(b.key,i)),n:[]}],order:['A','A','B','A'],
   cur:0,len:2,view:'make',pick:-1,note:'',sent:'',mine:null,drums:b.perc!=='none'}}
- function load(){if(ST)return;try{const d=JSON.parse(localStorage.getItem('sq_song_draft')||'null');if(d&&Array.isArray(d.secs)&&d.secs.length&&KEYS.includes(d.key)){ST=Object.assign(fresh(d.mood),d,{view:'make',pick:-1,sent:'',mine:null});return}}catch(e){}ST=null}
- let keepT=0;const keep=()=>{clearTimeout(keepT);keepT=setTimeout(()=>{if(!ST||ST.dev)return;try{const o={...ST};delete o.mine;delete o.view;delete o.sent;delete o.dev;localStorage.setItem('sq_song_draft',JSON.stringify(o))}catch(e){}},300)};
+ function load(){if(ST)return;try{const d=JSON.parse(localStorage.getItem('sq_song_draft')||'null');if(d&&Array.isArray(d.secs)&&d.secs.length&&KEYS.includes(d.key)){ST=Object.assign(fresh(d.mood),d,{view:'make',pick:-1,sent:'',mine:null});return}}catch(e){self.SQERR&&SQERR(e,'235-1')}ST=null}
+ let keepT=0;const keep=()=>{clearTimeout(keepT);keepT=setTimeout(()=>{if(!ST||ST.dev)return;try{const o={...ST};delete o.mine;delete o.view;delete o.sent;delete o.dev;localStorage.setItem('sq_song_draft',JSON.stringify(o))}catch(e){self.SQERR&&SQERR(e,'235-2')}},300)};
  const UNDO=[],REDO=[];const snapU=()=>{UNDO.push(JSON.stringify(ST.secs));if(UNDO.length>80)UNDO.shift();REDO.length=0};
  const m8=()=>ST.m===6?6:8,cols=()=>NB*m8(),sec=()=>ST.secs[Math.min(ST.cur,ST.secs.length-1)];
  // ---- to 155's format ----
@@ -61,9 +61,9 @@
  function stop(){if(playing){M.force=null;playing=null;delete M.S.__st;delete M.SONGS.__st}}
  async function play(which){stop();const c=check(toDef(which==='sec'?ST.cur:null));if(!c.def){say(c.errs[0]||'That can\'t play yet.');return}
   M.S.__st=c.def;M.SONGS.__st=M.build(c.def);M.VOL.__st=1.6;
-  try{if(typeof ACX!=='undefined'&&ACX&&ACX.state!=='running')await ACX.resume()}catch(e){}if(typeof MUSIC!=='undefined'&&!MUSIC)say('Music is off in Options: turn it on to hear your song.');
+  try{if(typeof ACX!=='undefined'&&ACX&&ACX.state!=='running')await ACX.resume()}catch(e){self.SQERR&&SQERR(e,'235-3')}if(typeof MUSIC!=='undefined'&&!MUSIC)say('Music is off in Options: turn it on to hear your song.');
   playing={w:which,sec:ST.cur};rPn();try{await M.loadSong('__st')}catch(e){say('Could not load the instruments yet: check your connection.')}if(playing)M.force='__st'}
- const ping=m=>{try{M.note(ST.lead,m,.35)}catch(e){}};
+ const ping=m=>{try{M.note(ST.lead,m,.35)}catch(e){self.SQERR&&SQERR(e,'235-4')}};
  // which eighth of the shown section is playing now (for the moving line)
  function playCol(){if(!playing||M.cur!=='__st'||!M.S.__st)return-1;const sp=60/M.S.__st.bpm/4,lag=Math.round(.35/sp);let st=Math.max(0,M.step-lag)%Math.max(1,M.len),e8=Math.floor(st/2),N=cols();
   if(playing.w==='sec')return playing.sec===ST.cur?e8:-1;const ord=ST.order.filter(o=>SECN.indexOf(o)<ST.secs.length);const i=Math.floor(e8/N);return SECN[ST.cur]===ord[i]?e8%N:-1}
@@ -155,7 +155,7 @@
   return h+'</div>'}
  // ---- input ----
  function act(a,v,btn){
-  if(a==='back'){stop();if(ST.dev){try{closePanel()}catch(e){}pnOpen=false;try{SQSUITE.open()}catch(e){}return}ptab=window.SQPATRON&&SQPATRON.PTAB||8;rPn();return}
+  if(a==='back'){stop();if(ST.dev){try{closePanel()}catch(e){self.SQERR&&SQERR(e,'235-5')}pnOpen=false;try{SQSUITE.open()}catch(e){self.SQERR&&SQERR(e,'235-6')}return}ptab=window.SQPATRON&&SQPATRON.PTAB||8;rPn();return}
   if(a==='stop'){stop();rPn();return}if(a==='psec'){play('sec');return}if(a==='psong'){play('song');return}
   if(a==='mood'){const md=MOODS[v];if(!md)return;stop();snapU();const keepKey=ST.key,om=m8();if((md[2].m===6?6:8)!==om)remeter(md[2].m===6?6:8,om);Object.assign(ST,JSON.parse(JSON.stringify(md[2])));ST.key=keepKey;ST.mood=v;ST.drums=md[2].perc!=='none';
    const k2=md[2].key;setKey(k2);ST.secs.forEach((s,i)=>{s.c=md[3][i%2].map(j=>chordName(ST.key,j))})}
@@ -166,7 +166,7 @@
   else if(a==='tune'){snapU();sec().n=tune(sec())}else if(a==='chords'){snapU();sec().c=chordsFor()}else if(a==='clr'){snapU();sec().n=[]}
   else if(a==='undo'&&UNDO.length){REDO.push(JSON.stringify(ST.secs));ST.secs=JSON.parse(UNDO.pop())}else if(a==='redo'&&REDO.length){UNDO.push(JSON.stringify(ST.secs));ST.secs=JSON.parse(REDO.pop())}
   else if(a==='len')ST.len=+v||2;else if(a==='pick')ST.pick=+v;
-  else if(a==='chord'&&ST.pick>=0){snapU();sec().c[ST.pick]=v;try{const r0=M.chord(v);for(const iv of r0.iv)M.note(ST.pad||'strings',48+r0.r+iv,.8)}catch(e){}}
+  else if(a==='chord'&&ST.pick>=0){snapU();sec().c[ST.pick]=v;try{const r0=M.chord(v);for(const iv of r0.iv)M.note(ST.pad||'strings',48+r0.r+iv,.8)}catch(e){self.SQERR&&SQERR(e,'235-7')}}
   else if(a==='row')ping(+v);
   else if(a==='oadd'&&ST.order.length<16)ST.order.push(v);else if(a==='odel'){ST.order.splice(+v,1);if(!ST.order.length)ST.order=['A']}
   else if(a==='drums')ST.drums=!ST.drums;
@@ -187,7 +187,7 @@
   ST.sent='Sending...';rPn();try{await Fb.db.push(Fb.db.ref(Fb.D,'songsub/'+u),d);ST.sent='Sent! You\'ll get a message when the developer has listened to "'+name+'".';say('Your song was sent to the developer.')}catch(e){ST.sent='That didn\'t send. Check your connection and try again.'}rPn()}
  async function loadMine(){const u=uid(),Fb=F();if(!u||!Fb){ST.mine=[];rPn();return}try{const v=(await Fb.db.get(Fb.db.ref(Fb.D,'songsub/'+u))).val()||{};ST.mine=Object.entries(v).map(([id,x])=>({id,...x})).sort((a,b)=>(b.t||0)-(a.t||0))}catch(e){ST.mine=[]}rPn()}
  async function toSuite(){const c=check(toDef());if(!c.def){ST.sent=c.errs[0];rPn();return}const n=String(ST.n||'').trim().slice(0,24)||'New song';c.def.n=n;
-  try{const k=await window.SQPSONGS.toDraft(c.def);ST.sent='Saved as '+k+' in the draft.';stop();try{closePanel()}catch(e){}pnOpen=false;window.SQPSONGS.openSongs(k)}catch(e){ST.sent='Could not save: '+(e&&e.message||e);rPn()}}
+  try{const k=await window.SQPSONGS.toDraft(c.def);ST.sent='Saved as '+k+' in the draft.';stop();try{closePanel()}catch(e){self.SQERR&&SQERR(e,'235-8')}pnOpen=false;window.SQPSONGS.openSongs(k)}catch(e){ST.sent='Could not save: '+(e&&e.message||e);rPn()}}
  // ---- panel hook ----
  pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen||!ST)return;const c=e.target.closest&&e.target.closest('[data-sc],[data-sn],[data-ss]');if(!c)return;e.stopPropagation();e.preventDefault();
   if(c.dataset.ss){const i=c.dataset.ss.indexOf(':');act(i<0?c.dataset.ss:c.dataset.ss.slice(0,i),i<0?'':c.dataset.ss.slice(i+1),c);return}
@@ -196,11 +196,11 @@
  pbd.addEventListener('input',e=>{if(ptab!==TAB||!ST)return;const t=e.target;if(t.id==='ssnm')ST.n=t.value.slice(0,24);else if(t.id==='ssnt')ST.note=t.value.slice(0,300);
   else if(t.id==='ssbp'){ST.bpm=+t.value;const s=document.getElementById('ssbpm');if(s)s.textContent=ST.bpm;if(playing&&M.S.__st){M.S.__st.bpm=ST.bpm}}keep()},true);
  pbd.addEventListener('change',e=>{if(ptab!==TAB||!ST)return;const t=e.target;if(t.id==='sslead'){ST.lead=t.value;ping(rows(ST.key)[7].m)}else if(t.id==='sskey'){stop();snapU();setKey(t.value)}else return;keep();rPn()},true);
- {const _r=rPn;rPn=function(){try{if(!(ptab===TAB&&pnOpen))pn.classList.remove('ssw')}catch(e){}if(ptab===TAB&&pnOpen&&ST){try{panelChrome('')}catch(e){}const sx=(document.querySelector('#pn .ssgw')||{}).scrollLeft||0;pbd.innerHTML=html();try{pn.classList.add('ssw')}catch(e){}const g=document.querySelector('#pn .ssgw');if(g)g.scrollLeft=sx;return}if(!(ptab===TAB&&pnOpen))stop();return _r.apply(this,arguments)}}
+ {const _r=rPn;rPn=function(){try{if(!(ptab===TAB&&pnOpen))pn.classList.remove('ssw')}catch(e){self.SQERR&&SQERR(e,'235-9')}if(ptab===TAB&&pnOpen&&ST){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'235-10')}const sx=(document.querySelector('#pn .ssgw')||{}).scrollLeft||0;pbd.innerHTML=html();try{pn.classList.add('ssw')}catch(e){self.SQERR&&SQERR(e,'235-11')}const g=document.querySelector('#pn .ssgw');if(g)g.scrollLeft=sx;return}if(!(ptab===TAB&&pnOpen))stop();return _r.apply(this,arguments)}}
  // the moving line while a song plays (only the grid cells' class changes)
  let lastPc=-2;setInterval(()=>{if(ptab!==TAB||!pnOpen||!ST||ST.view!=='make'){lastPc=-2;return}if(!playing&&lastPc===-2)return;const pc=playCol();if(pc===lastPc)return;lastPc=pc;
   document.querySelectorAll('#pn .ssg .sc.pl').forEach(x=>x.classList.remove('pl'));if(pc>=0)document.querySelectorAll('#pn .ssg [data-sc^="'+pc+',"]').forEach(x=>x.classList.add('pl'))},90);
  function open(asDev){if(!asDev&&!can()){say('The Song Studio is for Patrons aged 13 and up.');return}if(asDev){ST=fresh('village');ST.dev=true;UNDO.length=REDO.length=0}else{if(!ST||ST.dev){ST=null;load();if(!ST)ST=fresh('village')}}ST.view='make';
-  try{if(!pnOpen&&typeof openPanel==='function')openPanel(TAB)}catch(e){}ptab=TAB;pnOpen=true;try{pn.style.display='block'}catch(e){}rPn()}
+  try{if(!pnOpen&&typeof openPanel==='function')openPanel(TAB)}catch(e){self.SQERR&&SQERR(e,'235-12')}ptab=TAB;pnOpen=true;try{pn.style.display='block'}catch(e){self.SQERR&&SQERR(e,'235-13')}rPn()}
  window.SQSTUDIO={open,get state(){return ST},toDef:()=>toDef(),fromDef,rows,chordName,CHD,KEYS,MOODS,act:(a,v)=>act(a,v),stop,TAB};
 })();

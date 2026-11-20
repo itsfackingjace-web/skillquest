@@ -6,7 +6,7 @@ function sqBookReg(k){if(typeof k!=='string'||k.slice(0,4)!=='xpb_'||INAME[k])re
  INAME[k]=SKN[i]+' tome ('+xp.toLocaleString('en-US')+' XP)';SN[k]=SKN[i]+' tomes ('+xp.toLocaleString('en-US')+' XP)';SHORT[k]=SKN[i].toLowerCase()+' tome';
  IDESC[k]='An old book of '+SKN[i].toLowerCase()+' secrets. Read it (Bag → READ) to gain '+xp.toLocaleString('en-US')+' '+SKN[i]+' XP. It can be traded or sold at the World Market.';
  SELLP[k]=Math.max(1,Math.round(xp/20));if(!INVK.includes(k))INVK.push(k);if(typeof EXTRA_BAG!=='undefined'&&!EXTRA_BAG.includes(k))EXTRA_BAG.push(k)}
-{SQLOAD.before('108',(S)=>{try{if(S&&S.inv)for(const k in S.inv)sqBookReg(k)}catch(e){}});
+{SQLOAD.before('108',(S)=>{try{if(S&&S.inv)for(const k in S.inv)sqBookReg(k)}catch(e){self.SQERR&&SQERR(e,'108-1')}});
  // icon: a book in the skill's colour
  const _ic=iconURL;iconURL=function(k,col){if(typeof k==='string'&&k.slice(0,4)==='xpb_'){sqBookReg(k);const m=/^xpb_(\d+)_/.exec(k),i=m?+m[1]:0,key='ixb'+i;if(ICONC[key])return ICONC[key];
    const c=document.createElement('canvas');c.width=c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)},cl=(typeof SKC!=='undefined'&&SKC[i])||'#a06030';
@@ -15,4 +15,4 @@ function sqBookReg(k){if(typeof k!=='string'||k.slice(0,4)!=='xpb_'||INAME[k])re
  // Bag: READ
  const _bg=bagGridHTML;bagGridHTML=function(){const h=_bg(),k=invSel;if(!k||k.slice(0,4)!=='xpb_'||(inv[k]|0)<1)return h;return h.replace('<div class="bd">','<div class="bd"><button class="use xpread" data-k="'+k+'" style="background:#5878b8;color:#fff">READ</button>')};
  pbd.addEventListener('click',ev=>{const b=ev.target.closest('.xpread');if(!b)return;ev.stopPropagation();const k=b.dataset.k,m=/^xpb_(\d+)_(\d+)$/.exec(k);if(!m||(inv[k]|0)<1)return;
-  inv[k]--;const i=+m[1],xp=+m[2];addXp(i,xp);say('You read the '+SKN[i].toLowerCase()+' tome: +'+xp.toLocaleString('en-US')+' '+SKN[i]+' XP!');msgT=4;try{sfx('quest')}catch(e){}saveLocal(true);try{saveCloud(true)}catch(e){}rPn()},true)}
+  inv[k]--;const i=+m[1],xp=+m[2];addXp(i,xp);say('You read the '+SKN[i].toLowerCase()+' tome: +'+xp.toLocaleString('en-US')+' '+SKN[i]+' XP!');msgT=4;try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'108-2')}saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'108-3')}rPn()},true)}

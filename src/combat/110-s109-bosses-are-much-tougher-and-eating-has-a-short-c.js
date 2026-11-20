@@ -1,7 +1,7 @@
 // ---- 109. Bosses are much tougher, and eating has a short cooldown ----
 // Every boss (island bosses, world bosses, dungeon and floor bosses) has more HP and hits harder, and you can only eat
 // once every 3 seconds, so standing still and eating through a boss's damage no longer works.
-{const BT=new Set(['boss','bonelord','matri','tidekeeper','frostfang','thorn','emberl','ib']);try{for(const f of Object.values(window.WK_BOSSMK||{})){const t=f().type;if(t)BT.add(t)}}catch(e){}
+{const BT=new Set(['boss','bonelord','matri','tidekeeper','frostfang','thorn','emberl','ib']);try{for(const f of Object.values(window.WK_BOSSMK||{})){const t=f().type;if(t)BT.add(t)}}catch(e){self.SQERR&&SQERR(e,'110-1')}
  const isBoss=m=>m&&!m.dead&&(m.big||m.boss||BT.has(m.type)||m._wb);
  // dungeon/floor bosses (island and world bosses get their HP from their own tables): double HP the first time they appear
  SQUPD.after('110',(dt)=>{for(const m of en)if(!m._hard&&!m._rp&&!m._wb&&m.type!=='ib'&&isBoss(m)){m._hard=1;m.hp=Math.round((m.hp||1)*2);m.mhp=Math.round((m.mhp||m.hp/2)*2)}if(EATCD>0)EATCD-=dt});

@@ -12,11 +12,11 @@
  const inGuild=()=>{const s=window.SQGUILD&&SQGUILD.state;return!!(s&&s.id&&s.info)};
  const fireOK=()=>{const p=PA();return!!(p&&me()&&p.cape(me()))};
  const sw=c=>'<span style="color:'+c+'">&#9632;</span> ';
- function opts(){const L=[];if(inGuild()&&G()){let c='#3870d8';try{const d=G().design();c=G().PAL[d.c]||c}catch(e){}L.push({id:'guild',l:sw(c)+'Guild cape'})}
+ function opts(){const L=[];if(inGuild()&&G()){let c='#3870d8';try{const d=G().design();c=G().PAL[d.c]||c}catch(e){self.SQERR&&SQERR(e,'212-1')}L.push({id:'guild',l:sw(c)+'Guild cape'})}
   if(fireOK())L.push({id:'fire',l:(PA().flameURL?'<img alt="" src="'+PA().flameURL+'" style="width:9px;height:11px;image-rendering:pixelated;vertical-align:-1px;margin-right:4px">':sw('#e8581a'))+'Fire cape'});return L}
  function wearing(){const p=PA(),g=G();if(p&&p.wearing&&fireOK())return'fire';if(g&&g.wear&&inGuild())return'guild';return''}
- function pick(id){const p=PA(),g=G();if(p)p.wearing=id==='fire';if(g)g.wear=id==='guild';try{KITC.clear()}catch(e){}
-  if(id)try{say(id==='fire'?'You put on your fire cape.':'You put on the guild cape.')}catch(e){}}
+ function pick(id){const p=PA(),g=G();if(p)p.wearing=id==='fire';if(g)g.wear=id==='guild';try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'212-2')}
+  if(id)try{say(id==='fire'?'You put on your fire cape.':'You put on the guild cape.')}catch(e){self.SQERR&&SQERR(e,'212-3')}}
  // the character, at 3x, from the back and the front (the part of 201's 48x56 box around the kit)
  function pic(dir,over){try{const ch=Object.assign(gearCH(),over||{}),c=document.createElement('canvas');c.width=72;c.height=78;c.hd2=true;const x=c.getContext('2d');x.imageSmoothingEnabled=false;
    x.setTransform(3,0,0,3,0,-18);const sv=GC;GC=x;try{cP(ch,dir,0,12,25,false)}finally{GC=sv;x.setTransform(1,0,0,1,0,0)}return c.toDataURL()}catch(e){return''}}
@@ -26,4 +26,4 @@
  function picWith(over,dir){const u=pic(dir==null?1:dir,over);return u?'<img alt="" src="'+u+'" style="width:60px;image-rendering:pixelated">':''}
  window.SQCAPEX={opts,wearing,pick,preview,picWith};
  // the Style screen redraws itself on a pick, but the guild design or patron record can arrive later: refresh while open
- let last='';setInterval(()=>{try{if(!pnOpen||ptab!==31)return;const k=opts().map(o=>o.id).join()+'|'+wearing();if(k!==last){const was=last;last=k;if(was)rPn()}}catch(e){}},1000)})();
+ let last='';setInterval(()=>{try{if(!pnOpen||ptab!==31)return;const k=opts().map(o=>o.id).join()+'|'+wearing();if(k!==last){const was=last;last=k;if(was)rPn()}}catch(e){self.SQERR&&SQERR(e,'212-4')}},1000)})();

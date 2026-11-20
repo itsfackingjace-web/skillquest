@@ -15,34 +15,34 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  {const _ic=iconURL;iconURL=function(k,col){if(k!==VL)return _ic(k,col);const key='g207vlog';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a+1,b+1,w,h)};
    r(1,4,10,5,'#3c2a3c');r(1,4,10,1,'#56404e');r(9,4,2,5,'#a890d0');r(10,5,1,3,'#7a40c8');r(3,6,1,1,'#9a6ae0');r(6,7,1,1,'#9a6ae0');return ICONC[key]=c.toDataURL()}}
  const isLog=k=>k==='wood'||/log$/.test(k);
- const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);return it&&it.o}}catch(e){}return null};
- {SQHIT.wrap('199 void treant',_a=>function(){let o=null;try{o=treeAt()}catch(e){}if(!o||o.v!=='dark'||SKOF[o.t]!==1)return _a.apply(this,arguments);
+ const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);return it&&it.o}}catch(e){self.SQERR&&SQERR(e,'199-1')}return null};
+ {SQHIT.wrap('199 void treant',_a=>function(){let o=null;try{o=treeAt()}catch(e){self.SQERR&&SQERR(e,'199-2')}if(!o||o.v!=='dark'||SKOF[o.t]!==1)return _a.apply(this,arguments);
    const b={};for(const k in inv)if(isLog(k))b[k]=inv[k]|0;const out=_a.apply(this,arguments);
    try{let n=0;for(const k in inv){if(!isLog(k)||k===VL)continue;const d=(inv[k]|0)-(b[k]|0);if(d>0){inv[k]-=d;n+=d}}
-    if(n>0){inv[VL]=(inv[VL]|0)+n;addXp(1,15*n);say('+'+n+' void log'+(n>1?'s':''));try{gTxt(P.x,P.y-30,'+'+n+' void log'+(n>1?'s':''),'#c8a0ff')}catch(e){}}}catch(e){console.warn('voidlog',e)}return out})}
+    if(n>0){inv[VL]=(inv[VL]|0)+n;addXp(1,15*n);say('+'+n+' void log'+(n>1?'s':''));try{gTxt(P.x,P.y-30,'+'+n+' void log'+(n>1?'s':''),'#c8a0ff')}catch(e){self.SQERR&&SQERR(e,'199-3')}}}catch(e){console.warn('voidlog',e)}return out})}
  // ---- the Void wand: element 'void', the strongest wand; every 4th hit heals you one heart ----
  const WV='eq_wvoid',VB=4;
  WSP.void={cost:3,col:'#9a5af0',c2:'#e8d0ff',sfx:'cvoid'};
  SFX.cvoid=()=>{noise(.14,.07,500);tone(170,.24,'sine',.045,-90);tone(340,.12,'triangle',.02,-200,.04)};
  {const e={slot:'off',kind:'wand',el:'void',n:'Void wand',ic:'wvoid',col:'#7a40c8',v:20000,lv:50};EQ[WV]=e;EQK.push(WV);INVK.push(WV);EXTRA_BAG.push(WV);INAME[WV]=e.n;SELLP[WV]=8000;SN[WV]=e.n+'s';SHORT[WV]=e.n.toLowerCase();inv[WV]=inv[WV]|0;
   const base='From the Void Treant. Casts void bolts that hit harder than any other wand, and every fourth hit drains life back to you (+1 heart). Needs Magic 50.';
-  Object.defineProperty(IDESC,WV,{configurable:true,enumerable:true,get(){let s='';try{s='Damage '+spellDmg('void')+' · Costs '+WSP.void.cost+' mana. '}catch(e){}return s+base},set(v){}})}
+  Object.defineProperty(IDESC,WV,{configurable:true,enumerable:true,get(){let s='';try{s='Damage '+spellDmg('void')+' · Costs '+WSP.void.cost+' mana. '}catch(e){self.SQERR&&SQERR(e,'199-4')}return s+base},set(v){}})}
  {const _sd=spellDmg;spellDmg=function(el){return _sd.apply(this,arguments)+(el==='void'?VB:0)}}
  {const _ic=iconURL;iconURL=function(k,col){if(k!=='wvoid')return _ic(k,col);const key='g207wvoid';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
    for(let i=0;i<8;i++)r(2+i,11-i,2,2,i%3?'#3c2a3c':'#56404e');r(1,12,2,1,'#221626');r(8,0,6,6,'#0c0814');r(9,1,4,4,'#7a40c8');r(10,2,2,2,'#e8d0ff');r(13,3,1,1,'#c8a0ff');r(8,5,1,1,'#c8a0ff');return ICONC[key]=c.toDataURL()}}
  let VD=0,VU=0;
  {const _sh=spellHit;spellHit=function(s,n,dmg){if(VU&&s&&s.el==='storm')s=Object.assign({},s,{el:'void'});const out=_sh.call(this,s,n,dmg);
    try{if(s&&s.el==='void'&&!s.sub&&!dead){for(let k=0;k<4;k++)part(n.x,n.y-8,(P.x-n.x)*(.8+Math.random()*.6),(P.y-8-n.y)*(.8+Math.random()*.6),.5,k%2?'#c8a0ff':'#7a40c8',0,1);
-     VD+=VU?1:.25;if(VD>=1){VD-=1;if(P.hp<6){P.hp=Math.min(6,P.hp+1);try{gTxt(P.x,P.y-26,'+1 heart','#d8b0ff')}catch(e){}}}}}catch(e){}return out}}
+     VD+=VU?1:.25;if(VD>=1){VD-=1;if(P.hp<6){P.hp=Math.min(6,P.hp+1);try{gTxt(P.x,P.y-26,'+1 heart','#d8b0ff')}catch(e){self.SQERR&&SQERR(e,'199-5')}}}}}catch(e){self.SQERR&&SQERR(e,'199-6')}return out}}
  // the void ultimate: 029 has no case for 'void' and runs its storm branch; here that becomes VOID RIFT (purple, and it drains)
  let VRF=null;
  {const _cu=castUlt;castUlt=function(){const v=WAND==='void',cd=ULTCD;if(!v)return _cu.apply(this,arguments);VU=1;let out;try{out=_cu.apply(this,arguments)}finally{VU=0}
-   if(ULTCD>cd&&typeof ULTFX!=='undefined'&&ULTFX&&ULTFX.el==='storm'){VRF={t:0,pts:(ULTFX.bolts||[]).slice()};ULTFX=null;say('VOID RIFT!');try{sfx('cvoid');setTimeout(()=>sfx('cvoid'),120)}catch(e){}}return out}}
+   if(ULTCD>cd&&typeof ULTFX!=='undefined'&&ULTFX&&ULTFX.el==='storm'){VRF={t:0,pts:(ULTFX.bolts||[]).slice()};ULTFX=null;say('VOID RIFT!');try{sfx('cvoid');setTimeout(()=>sfx('cvoid'),120)}catch(e){self.SQERR&&SQERR(e,'199-7')}}return out}}
  {SQUPD.after('199',(dt)=>{if(VRF){VRF.t+=dt;if(VRF.t>.8)VRF=null}})}
  {SQHUD.before('199',()=>{if(VRF&&!menuOpen)try{const cx=camX(),cy=camY(),p=VRF.t/.8;g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);
     for(const[bx,by]of VRF.pts){g.globalAlpha=Math.max(0,1-p);const r=6+p*18;g.fillStyle='#0c0814';g.beginPath();g.ellipse(bx,by-4,r,r*.6,0,0,6.283);g.fill();g.strokeStyle='#b080f0';g.lineWidth=1.5;g.beginPath();g.ellipse(bx,by-4,r+2,r*.6+2,0,0,6.283);g.stroke();
      for(let k=0;k<8;k++){const q=k/8*6.283+p*6;Rg(Math.round(bx+Math.cos(q)*(r+5)),Math.round(by-4+Math.sin(q)*(r*.6+3)),2,2,k%2?'#e8d0ff':'#9a5af0')}}
-    g.globalAlpha=1;g.restore()}catch(e){}})}
+    g.globalAlpha=1;g.restore()}catch(e){self.SQERR&&SQERR(e,'199-8')}})}
 
  // ---- guild bosses (the Void Treant here; 200 adds the Giant Turtle through SQGBOSS.add) ----
  // The arena and the fight are 100's island-boss system (shared online, +60% health per extra fighter, every fighter in the
@@ -59,26 +59,26 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  function regBoss(k){const B=K[k],id=GID()?B.pre+GID():'';if(!id||!window.SQIB)return'';if(!Object.prototype.hasOwnProperty.call(SQIB,id))Object.defineProperty(SQIB,id,{value:Object.assign({},B.DEF),enumerable:false,configurable:true,writable:true});
   if(typeof DKIND!=='undefined'&&!DKIND['ib_'+id])DKIND['ib_'+id]={name:B.DEF.n,floor:B.DEF.floor,wall:B.DEF.wall,trim:B.DEF.trim,W:30,H:24,floors:1,cavey:1};return id}
  function enter(it){const k=it&&it.bk||'treant',B=K[k];if(!B)return;if(!open(k)){A()&&A().tell('The portal has closed.');return}const id=regBoss(k);if(!id)return;
-  say(B.enterMsg||'You step through the portal...');try{sfx('roar')}catch(e){}SQIBENTER(id,it)}
+  say(B.enterMsg||'You step through the portal...');try{sfx('roar')}catch(e){self.SQERR&&SQERR(e,'199-9')}SQIBENTER(id,it)}
  function summon(k){const a=A(),B=K[k];if(!a||!B||!a.on()||!a.ready)return;if(!a.boss()){a.tell('Only the leader and officers can summon '+B.DEF.n+'.');return}
   if(open(k)){a.tell(B.DEF.n+' is already awake. Its portal is on the guild island.');return}if(beaten(k)){a.tell('Your guild already beat '+B.DEF.n+' this week. It can be summoned again from Monday.');return}
   // it also costs one rank in its skill (guilds/<g>/prog/<pk>; the rules check both in the same write)
-  const rk=prk(k);if(rk<1){a.tell('Summoning '+B.DEF.n+' costs 1 '+B.pkName+' rank, and your guild has none. Finish a '+B.pkName.toLowerCase()+' Guild Quest to earn one.');try{sfx('swish')}catch(e){}return}
-  const bank=SQGUILD.state.bank.i||{},ch=B.pay(bank);if(!ch){a.tell('The guild bank needs '+B.costTxt+' (it has '+B.have(bank).toLocaleString()+').');try{sfx('swish')}catch(e){}return}
+  const rk=prk(k);if(rk<1){a.tell('Summoning '+B.DEF.n+' costs 1 '+B.pkName+' rank, and your guild has none. Finish a '+B.pkName.toLowerCase()+' Guild Quest to earn one.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'199-10')}return}
+  const bank=SQGUILD.state.bank.i||{},ch=B.pay(bank);if(!ch){a.tell('The guild bank needs '+B.costTxt+' (it has '+B.have(bank).toLocaleString()+').');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'199-11')}return}
   const ex={};ex['guilds/'+GID()+'/'+B.path]={w:WEEK(),t:a.TS(),by:a.me()};ex['guilds/'+GID()+'/prog/'+B.pk]=rk-1;
-  a.bankUpdate(ch,{w:'boss',k:B.logK,d:B.costTxt+' + 1 '+B.pkName+' rank'},ex).then(()=>{a.tell(B.wakeMsg+' (The guild spent 1 '+B.pkName+' rank.)');msgT=7;try{sfx('roar')}catch(e){}}).catch(a.fail)}
+  a.bankUpdate(ch,{w:'boss',k:B.logK,d:B.costTxt+' + 1 '+B.pkName+' rank'},ex).then(()=>{a.tell(B.wakeMsg+' (The guild spent 1 '+B.pkName+' rank.)');msgT=7;try{sfx('roar')}catch(e){self.SQERR&&SQERR(e,'199-12')}}).catch(a.fail)}
  // when it falls: close its portal for the week (any fighter writes k; the first one wins)
- function kill(k){const a=A(),r=rec(k);if(!a||!a.on()||!r||r.k)return;try{a.DB().set(a.ref('guilds/'+GID()+'/'+K[k].path+'/k'),a.TS()).catch(()=>{})}catch(e){}}
- {const _se=sqEvent;sqEvent=function(type,item){const B=type==='islandboss'&&kindOf(item);if(B){try{kill(B.k);if(window.SQACH&&SQACH.add)SQACH.add('ibw')}catch(e){}return}return _se.apply(this,arguments)}}
+ function kill(k){const a=A(),r=rec(k);if(!a||!a.on()||!r||r.k)return;try{a.DB().set(a.ref('guilds/'+GID()+'/'+K[k].path+'/k'),a.TS()).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'199-13')}}
+ {const _se=sqEvent;sqEvent=function(type,item){const B=type==='islandboss'&&kindOf(item);if(B){try{kill(B.k);if(window.SQACH&&SQACH.add)SQACH.add('ibw')}catch(e){self.SQERR&&SQERR(e,'199-14')}return}return _se.apply(this,arguments)}}
  // each boss has a skill that fights it too: every melee hit that lands adds B.bonus() (the Treant: 1 + axe tier + Woodcutting/10)
  {SQHIT.wrap('199 void treant',_a=>function(){const S=window.SQIBST,b=S&&S.boss,B=b&&kindOf(b.ib);if(!B||b.dead||!B.bonus)return _a.apply(this,arguments);const h0=b.hp,out=_a.apply(this,arguments);
    try{if(b.hp<h0&&!b.dead){const ex=B.bonus();b.hp-=ex;addXp(B.sk,ex*4);DMGS.push({x:b.x+10,y:b.y-(B.tall||70),v:'+'+ex,t:0,c:B.bcol||'#a8e070',sc:curScene()});
-     for(let k=0;k<5;k++)part(b.x+(Math.random()-.5)*20,b.y-30,(Math.random()-.5)*80,-30-Math.random()*50,.5,B.chip[k%2],160,2)}}catch(e){}return out})}
+     for(let k=0;k<5;k++)part(b.x+(Math.random()-.5)*20,b.y-30,(Math.random()-.5)*80,-30-Math.random()*50,.5,B.chip[k%2],160,2)}}catch(e){self.SQERR&&SQERR(e,'199-15')}return out})}
  // pixel sprites from palette rows ('.' = empty), plus an all-white copy for the hit flash
  function mkSprite(TPAL,ROWS){const rows=ROWS.split('|'),h=rows.length,w=Math.max(...rows.map(r=>r.length)),eyes=[];
   const mk=wh=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');rows.forEach((r,y)=>{for(let i=0;i<r.length;i++){const ch=r[i];if(ch==='.')continue;x.fillStyle=wh?'#ffffff':TPAL[ch];x.fillRect(i,y,1,1);if(!wh&&TPAL[ch]==='#ffffff')eyes.push([i,y])}});return c};
   const c=mk(0);return{c,w:mk(1),eyes}}
- {const _art=window.SQIBART;window.SQIBART=function(id,b,tm){const B=kindOf(id);if(B){try{B.draw(b,tm)}catch(e){}return true}return _art?_art.apply(this,arguments):false}}
+ {const _art=window.SQIBART;window.SQIBART=function(id,b,tm){const B=kindOf(id);if(B){try{B.draw(b,tm)}catch(e){self.SQERR&&SQERR(e,'199-16')}return true}return _art?_art.apply(this,arguments):false}}
  // the portals on the guild island (197's applyBuildings adds what this returns)
  function portals(R){const out=[],W=R.w,ok1=(x,y)=>{const i=y*W+x;return x>0&&y>0&&x<W-1&&y<R.h-1&&!R.solid.has(i)&&!rgObjAt(R,x,y)&&RG_WALK[R.tiles[i]]&&R.tiles[i]!==0},
   // the tile below is where you come back out (100's ibEnter), so it must be dry, open ground too
@@ -124,9 +124,9 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
    g.fillStyle='#0c0814';g.beginPath();g.ellipse(x,y-10,8,13,0,0,6.283);g.fill();g.fillStyle='rgba(122,64,200,'+(.55+.25*Math.sin(tm*3))+')';g.beginPath();g.ellipse(x,y-10,5,10,0,0,6.283);g.fill();
    g.strokeStyle='#b080f0';g.lineWidth=1.5;g.beginPath();g.ellipse(x,y-10,9,14,0,0,6.283);g.stroke();
    for(let k=0;k<10;k++){const q=tm*2+k/10*6.283;Rg(Math.round(x+Math.cos(q)*11),Math.round(y-10+Math.sin(q)*16),k%3?1:2,k%3?1:2,k%2?'#e8d0ff':'#9a5af0')}
-   if(Math.random()<.2)try{part(x+(Math.random()-.5)*10,y-6,(Math.random()-.5)*10,-20-Math.random()*20,.8,'#c8a0ff',-10,1)}catch(e){}}});
+   if(Math.random()<.2)try{part(x+(Math.random()-.5)*10,y-6,(Math.random()-.5)*10,-20-Math.random()*20,.8,'#c8a0ff',-10,1)}catch(e){self.SQERR&&SQERR(e,'199-17')}}});
  window.SQGBOSS=window.SQGTREANT={add,K,open,beaten,html,act,enter,drawPortal,portals,key,summon,kill,regBoss,WEEK,mkSprite,kindOf,SUM,DEF:K.treant.DEF,drawTreant:(b,tm)=>K.treant.draw(b,tm)};
  // keep the bosses registered, and the portals in step with the week (the database listener covers summons and kills)
  // (stamped on the island's room: a portal that closed while you were in the arena is gone when you come back)
- {SQUPD.after('199',(dt)=>{try{if(GID())for(const k of ORDER)regBoss(k);const a=A();if(a&&a.onIsle()){const R=SCENE.room,o=key();if(R._bk!==o){R._bk=o;a.applyBuildings()}}}catch(e){}})}
+ {SQUPD.after('199',(dt)=>{try{if(GID())for(const k of ORDER)regBoss(k);const a=A();if(a&&a.onIsle()){const R=SCENE.room,o=key();if(R._bk!==o){R._bk=o;a.applyBuildings()}}}catch(e){self.SQERR&&SQERR(e,'199-18')}})}
 })();

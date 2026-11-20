@@ -42,7 +42,7 @@
    o+='<tr data-simrow="'+E(r.k)+'" style="border-top:1px solid #ffffff14;cursor:pointer"><td style="padding:4px 2px">'+E(MOBS()[r.k].n)+'</td><td>'+f1(h.sec)+'</td><td>'+f1(h.gpk)+'</td><td>'+Math.round(h.gph).toLocaleString()+'</td><td>'+bar(h.vph,mx,'#f8c048')+' '+Math.round(h.vph).toLocaleString()+'</td><td>'+(best?ico(best[0])+E(nm(best[0]))+' <span class="dv-mut">'+pct((r.seen[best[0]]||0)/r.n)+'</span>':'<span class="dv-mut">—</span>')+'</td></tr>'}
   o+='</table>';
   // what things cost, in hours of the best monster
-  const top=L.slice().sort((a,b)=>b.h.vph-a.h.vph)[0];if(top){const sh=[];try{for(const L2 of[GEN,window.SHOPBW||[],window.SHOPAF||[]])for(const q of L2)if(q&&q.k&&q.c>0)sh.push(q)}catch(e){}
+  const top=L.slice().sort((a,b)=>b.h.vph-a.h.vph)[0];if(top){const sh=[];try{for(const L2 of[GEN,window.SHOPBW||[],window.SHOPAF||[]])for(const q of L2)if(q&&q.k&&q.c>0)sh.push(q)}catch(e){self.SQERR&&SQERR(e,'185-1')}
    const seen=new Set(),ex=sh.filter(q=>INAME[q.k]&&!seen.has(q.k)&&seen.add(q.k)).sort((a,b)=>b.c-a.c).slice(0,8);if(ex.length)o+='<p class="dv-mut" style="margin-top:12px">Priciest shop things, in time spent on the best monster ('+E(MOBS()[top.r.k].n)+', '+Math.round(top.h.vph).toLocaleString()+' gold an hour):</p><div class="dv-row" style="flex-wrap:wrap;gap:6px">'+
     ex.map(q=>{const m=q.c/top.h.vph*60;return'<span class="dv-b" style="cursor:default">'+ico(q.k)+E(INAME[q.k])+' · '+q.c.toLocaleString()+' gold · '+(m<1?'under a minute':m<90?Math.round(m)+' min':f1(m/60)+' h')+'</span>'}).join('')+'</div>'}
   return o+'</div>'}

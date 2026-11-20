@@ -56,7 +56,7 @@
  if(window.SQSWING){const _sw=SQSWING;window.SQSWING=function(x,y,fx,fy,pr,t,tm){const key=t===9?'eq_sledge':t?'eq_sword'+t:null,s=key&&use(key)?srcFor(key):null;
    if(!s)return _sw.apply(this,arguments);put(g,s,'diag',swingAng(fx,fy,pr),Math.round(x)+fx*5,Math.round(y)-4+fy*5)}}
  // have the pictures ready before the first swing
- {let t=0;SQUPD.after('123',(dt)=>{if((t-=dt)<=0){t=.5;try{for(const sl of['main','off','axe','pick'])srcFor(occ(sl));if(window.SQSLEDGE&&SQSLEDGE())srcFor('eq_sledge')}catch(e){}}})}
+ {let t=0;SQUPD.after('123',(dt)=>{if((t-=dt)<=0){t=.5;try{for(const sl of['main','off','axe','pick'])srcFor(occ(sl));if(window.SQSLEDGE&&SQSLEDGE())srcFor('eq_sledge')}catch(e){self.SQERR&&SQERR(e,'123-1')}}})}
  window.SQISW={use,srcFor,turned,put,isBow,swingAng,toolAng,get cfg(){return CFG}};
 
  // ---- Dev Suite > Swings ----

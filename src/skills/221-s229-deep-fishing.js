@@ -26,5 +26,5 @@
     if(base==='akoi'){r(4,4,1,1,'#ffffff');r(6,5,1,1,'#ffffff')}if(base==='moonfin'){r(3,4,3,1,'#ffffffa0')}}
    if(!raw)r(4,4,3,1,'#00000030');
    return ICONC[key]=c.toDataURL()}}
- if(typeof treeGains==='function'){const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if(sk===9){const f=F.find(q=>q.lv===l);if(f)a.push('Catch the '+f.n.toLowerCase()+' '+f.w+' ('+f.xp+' XP)')}}catch(e){}return a}}
+ if(typeof treeGains==='function'){const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if(sk===9){const f=F.find(q=>q.lv===l);if(f)a.push('Catch the '+f.n.toLowerCase()+' '+f.w+' ('+f.xp+' XP)')}}catch(e){self.SQERR&&SQERR(e,'221-1')}return a}}
 })();

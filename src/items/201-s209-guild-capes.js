@@ -120,13 +120,13 @@
   if(fl&&dir===2){C.save();C.translate(X*2+48,0);C.scale(-1,1);C.drawImage(L,X,Y,48,56);C.restore()}else C.drawImage(L,X,Y,48,56);C.imageSmoothingEnabled=sm};
  // 111a's cP wrapper: SQCAPEUNDER before the character, SQCAPETOP after it (and after worn looks)
  const tickFor=ch=>ch&&ch.fcp>0?(window.SQCAPETICK!=null?SQCAPETICK:Math.floor(performance.now()/110)%8):tickNow();
- window.SQCAPEUNDER=function(C,ch,dir,st,ox,oy,fl){if(!C||dir!==0||!spec(ch))return;try{const R=cloth(ch,0,st,tickFor(ch));if(R&&R.under)put(C,R.under,0,ox,oy,fl)}catch(e){}};
- window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(!C||!spec(ch))return;try{const R=cloth(ch,dir|0,st,tickFor(ch));if(R)put(C,R.over,dir|0,ox,oy,fl)}catch(e){}};
+ window.SQCAPEUNDER=function(C,ch,dir,st,ox,oy,fl){if(!C||dir!==0||!spec(ch))return;try{const R=cloth(ch,0,st,tickFor(ch));if(R&&R.under)put(C,R.under,0,ox,oy,fl)}catch(e){self.SQERR&&SQERR(e,'201-1')}};
+ window.SQCAPETOP=function(C,ch,dir,st,ox,oy,fl){if(!C||!spec(ch))return;try{const R=cloth(ch,dir|0,st,tickFor(ch));if(R)put(C,R.over,dir|0,ox,oy,fl)}catch(e){self.SQERR&&SQERR(e,'201-2')}};
  // saving the choice to wear it
  {SQSAVE.after('201:gcw',s=>{if(WEAR)s.gcw=1;})}
- {SQLOAD.after('201',(S)=>{WEAR=!!(S&&S.gcw);try{KITC.clear()}catch(e){}})}
+ {SQLOAD.after('201',(S)=>{WEAR=!!(S&&S.gcw);try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'201-3')}})}
  {const _ng=newGame;newGame=function(){WEAR=false;return _ng.apply(this,arguments)}}
- try{KNOWN49.add('gcw')}catch(e){}
+ try{KNOWN49.add('gcw')}catch(e){self.SQERR&&SQERR(e,'201-4')}
  // pictures for the guild screen: the cape on your character, back and front
  function pic(d,dir){try{const ch=toCh(Object.assign({},gearCH()),d),c=document.createElement('canvas');c.width=72;c.height=96;c.hd2=true;const x=c.getContext('2d');x.imageSmoothingEnabled=false;
   // the 24x32 part of the 48x56 box around the kit, at 3x
@@ -144,11 +144,11 @@
    '<small>Trim</small>'+btns('t',['No trim','Trim'],d.t)+'<small>Emblem (on the back)</small>'+btns('e',EM.map(e=>e.n),d.e)+'<small>Emblem colour</small>'+sw('x',d.x)+
    '<button class="qb" data-g="gcp:save"'+(DR?'':' disabled style="opacity:.5"')+'>Save the cape</button>'+(DR?' <button class="qb" data-g="gcp:undo">Undo changes</button>':'')+'</div>'}
  function act(x,y){const a=A();if(!a)return;
-  if(x==='style'){try{showScreen('style')}catch(e){}return}
-  if(x==='wear'){WEAR=!WEAR;try{KITC.clear()}catch(e){}try{saveLocal(true)}catch(e){}a.tell(WEAR?'You put on the guild cape.':'You took off the guild cape.');return}
+  if(x==='style'){try{showScreen('style')}catch(e){self.SQERR&&SQERR(e,'201-5')}return}
+  if(x==='wear'){WEAR=!WEAR;try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'201-6')}try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'201-7')}a.tell(WEAR?'You put on the guild cape.':'You took off the guild cape.');return}
   if(a.role()!=='l')return;
   if('cspex'.includes(x)&&x.length===1||x==='t'){DR=Object.assign(DR||design(),{[x]:+y|0});a.redraw();return}
   if(x==='undo'){DR=null;a.redraw();return}
-  if(x==='save'&&DR){const d=DR;a.DB().set(a.ref('guilds/'+SQGUILD.id+'/info/cp'),{c:d.c,s:d.s,p:d.p,t:d.t,e:d.e,x:d.x}).then(()=>{DR=null;try{KITC.clear()}catch(e){}a.tell('The guild cape is saved. Every member wearing it shows the new design.')}).catch(a.fail)}}
- window.SQGCAPE={card,setCard,act,EM,PAL,PAT,design,spec,get wear(){return WEAR},set wear(v){WEAR=!!v;try{KITC.clear()}catch(e){}}};
+  if(x==='save'&&DR){const d=DR;a.DB().set(a.ref('guilds/'+SQGUILD.id+'/info/cp'),{c:d.c,s:d.s,p:d.p,t:d.t,e:d.e,x:d.x}).then(()=>{DR=null;try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'201-8')}a.tell('The guild cape is saved. Every member wearing it shows the new design.')}).catch(a.fail)}}
+ window.SQGCAPE={card,setCard,act,EM,PAL,PAT,design,spec,get wear(){return WEAR},set wear(v){WEAR=!!v;try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'201-9')}}};
 })();

@@ -12,11 +12,11 @@ const playerProbe=(px,py)=>Math.abs(px-P.x)<=8&&py-P.y>=-6&&py-P.y<=9;   // the 
 // ---- the Stone Sledgehammer: the Stone Giant's second rare drop (5% for everyone who fought, 8% for the top three) ----
 {const _wl=wbLoot;wbLoot=function(b){const me=MP.user&&MP.user.uid,ok=b&&b.type==='giant'&&WB.dmg>=1&&!WB.claimed[b.slot];let top=false;
   if(ok){const rank=Object.entries(Object.assign({},WB.all,{[me]:WB.dmg})).sort((a,c)=>c[1]-a[1]).findIndex(e=>e[0]===me)+1;top=rank>0&&rank<=3}
-  _wl(b);if(ok&&(Math.random()<(top?.08:.05)||window.SQSLEDGEDROP)){inv.eq_sledge=(inv.eq_sledge|0)+1;setTimeout(()=>{say('A STONE SLEDGEHAMMER! Wield it: your ultimate becomes a Ground Slam, and it breaks boulders.');msgT=6;try{sfx('level')}catch(e){}},900);try{saveLocal(true);saveCloud(true)}catch(e){}}}}
+  _wl(b);if(ok&&(Math.random()<(top?.08:.05)||window.SQSLEDGEDROP)){inv.eq_sledge=(inv.eq_sledge|0)+1;setTimeout(()=>{say('A STONE SLEDGEHAMMER! Wield it: your ultimate becomes a Ground Slam, and it breaks boulders.');msgT=6;try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'078-1')}},900);try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'078-2')}}}}
 // ---- Hollow Island is twice as big: other players' houses and builds published before the change are scaled up ----
 {const sc=i=>{const x=i%110,y=(i/110)|0;return(y*HSC)*N+x*HSC};
- const _hs=housesSync;housesSync=function(){try{for(const o in HS.data){const L=HS.data[o];if(Array.isArray(L))for(const e of L)if(e&&!e.s2&&!e._t2&&isFinite(e.x)&&isFinite(e.y)){e.x*=HSC;e.y*=HSC;e._t2=1}}}catch(e){}return _hs()};
- const _bs=buildSync;buildSync=function(){try{for(const o in BLDS.data){const r=BLDS.data[o];if(!r||r.h===2||r._t2||!r.s)continue;r._t2=1;for(const e of(Array.isArray(r.s)?r.s:Object.values(r.s)))if(e&&e[0]!=null)e[0]=sc(e[0]|0)}}catch(e){}return _bs()};
+ const _hs=housesSync;housesSync=function(){try{for(const o in HS.data){const L=HS.data[o];if(Array.isArray(L))for(const e of L)if(e&&!e.s2&&!e._t2&&isFinite(e.x)&&isFinite(e.y)){e.x*=HSC;e.y*=HSC;e._t2=1}}}catch(e){self.SQERR&&SQERR(e,'078-3')}return _hs()};
+ const _bs=buildSync;buildSync=function(){try{for(const o in BLDS.data){const r=BLDS.data[o];if(!r||r.h===2||r._t2||!r.s)continue;r._t2=1;for(const e of(Array.isArray(r.s)?r.s:Object.values(r.s)))if(e&&e[0]!=null)e[0]=sc(e[0]|0)}}catch(e){self.SQERR&&SQERR(e,'078-4')}return _bs()};
  // old public plots (farm/hollow) move once to farm/hollow2, by whoever gets there first
  let tried=false;window.sfMigrateHollow=function(old,cur){if(tried||!old||typeof old!=='object'||!Object.keys(old).length||!MP.on||!FB.db.runTransaction)return;tried=true;
   const d=FB.db;d.runTransaction(d.ref(FB.D,'farm/_meta/hollow2'),c=>c?undefined:{c:'moved',t:Date.now()}).then(r=>{if(!r||!r.committed)return;

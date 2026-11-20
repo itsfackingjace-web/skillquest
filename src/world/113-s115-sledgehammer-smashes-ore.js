@@ -21,7 +21,7 @@
  const getHp=t=>t.cave?t.cave.hp:t.o.hp;
  // one hit breaks small ores
  SQHIT.wrap('113 sledgehammer smashes ore',_a=>function(){if(!sledge()||dead||menuOpen||pnOpen||BUILD||swing>0)return _a.apply(this,arguments);
-  let t=null;try{const[tx,ty]=frontObjTile();t=objAt(tx,ty)}catch(e){}
+  let t=null;try{const[tx,ty]=frontObjTile();t=objAt(tx,ty)}catch(e){self.SQERR&&SQERR(e,'113-1')}
   if(!t||!t.o||!small(t.o.t))return _a.apply(this,arguments);
   const h=t.o.hp;t.o.hp=1;try{return _a.apply(this,arguments)}finally{if(t.o.hp===1)t.o.hp=h}});
  // while the slam breaks ores, the hits it makes for you aren't sent as sword swings
@@ -34,12 +34,12 @@
   if(!sledge()||!(SLAM.t>t0)||!(SLAM.cd>c0))return out;// the slam didn't happen
   let n=0;try{const cx=P.x,cy=P.y+4,R=SLAM.R,tx0=Math.floor((cx-R)/16),tx1=Math.floor((cx+R)/16),ty0=Math.floor((cy-R)/16),ty1=Math.floor((cy+R)/16);
    for(let ty=ty0;ty<=ty1;ty++)for(let tx=tx0;tx<=tx1;tx++){if(Math.hypot(tx*16+8-cx,ty*16+8-cy)>R)continue;if(smash(tx,ty))n++}}catch(e){console.warn(e)}
-  if(n){try{say('GROUND SLAM! '+n+' rock'+(n>1?'s':'')+' and ore'+(n>1?'s':'')+' smashed.')}catch(e){}}
-  try{if(window.SQPVSEND)SQPVSEND({k:'sl',x:Math.round(P.x),y:Math.round(P.y+4)})}catch(e){}
+  if(n){try{say('GROUND SLAM! '+n+' rock'+(n>1?'s':'')+' and ore'+(n>1?'s':'')+' smashed.')}catch(e){self.SQERR&&SQERR(e,'113-2')}}
+  try{if(window.SQPVSEND)SQPVSEND({k:'sl',x:Math.round(P.x),y:Math.round(P.y+4)})}catch(e){self.SQERR&&SQERR(e,'113-3')}
   return out};
  // ---- other players' slams ----
  function slamFx(x,y){for(let k=0;k<40;k++){const an=k/40*6.283,sp=80+Math.random()*70;part(x,y,Math.cos(an)*sp,Math.sin(an)*sp*.6-20,.5+Math.random()*.2,k%3?'#9a8a78':'#c8b8a0',120,2)}
-  try{sfx('mine');setTimeout(()=>sfx('mine'),70)}catch(e){}}
+  try{sfx('mine');setTimeout(()=>sfx('mine'),70)}catch(e){self.SQERR&&SQERR(e,'113-4')}}
  (window.SQFXH=window.SQFXH||{}).sl=(r,v)=>{const x=+v.x,y=+v.y;if(!isFinite(x)||!isFinite(y))return;r.slam=r.lastSlam={x,y,at:performance.now()};slamFx(x,y)};
  (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{const S=r&&r.slam;if(!S)return;const p=(performance.now()-S.at)/550;if(p>=1){r.slam=null;return}const rr=SLAM.R*Math.min(1,p*1.6);
    g.strokeStyle='rgba(232,208,160,'+(.75*(1-p))+')';g.lineWidth=3;g.beginPath();g.ellipse(S.x,S.y,rr,rr*.6,0,0,6.283);g.stroke();

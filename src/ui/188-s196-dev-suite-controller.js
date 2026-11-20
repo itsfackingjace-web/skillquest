@@ -31,7 +31,7 @@
  const clickSel=s=>{const b=dvs()&&dvs().querySelector(s);if(b){b.click();return true}return false};
  function cycle(sel,attr,cmp,step){const L=[...dvs().querySelectorAll(sel)];if(!L.length)return;let i=L.findIndex(cmp);i=(i+step+L.length)%L.length;L[i].click()}
  {const _pp=pollPad;pollPad=function(dt){if(!open()){if(D.on)stop();return _pp.apply(this,arguments)}
-   let gp=null;try{gp=navigator.getGamepads()[GPI]}catch(e){}
+   let gp=null;try{gp=navigator.getGamepads()[GPI]}catch(e){self.SQERR&&SQERR(e,'188-1')}
    if(!gp||!GPON){if(D.on)stop();return _pp.apply(this,arguments)}
    const down=i=>!!(gp.buttons[i]&&(gp.buttons[i].pressed||gp.buttons[i].value>.5)),pr=i=>down(i)&&!GPPREV[i];
    if(D.on){if(!cv()||!ed()){stop();GPPREV=gp.buttons.map(b=>b.pressed||b.value>.5);return}
@@ -43,10 +43,10 @@
     if(pr(PADB.TRI))cycle('.dv-tools [data-tool]','tool',b=>b.classList.contains('dv-on'),1);
     if(pr(PADB.SQ))clickSel('[data-a="undo"]');
     if(pr(PADB.L1)||pr(PADB.R1))cycle('.dv-pal [data-col]','col',b=>b.classList.contains('dv-on'),pr(PADB.R1)?1:-1);
-    if(pr(PADB.O)||pr(PADB.OPT)){stop();try{setFocus(cv())}catch(e){}}
+    if(pr(PADB.O)||pr(PADB.OPT)){stop();try{setFocus(cv())}catch(e){self.SQERR&&SQERR(e,'188-2')}}
     if(D.on)place();GPPREV=gp.buttons.map(b=>b.pressed||b.value>.5);return}
    // ○ = back inside the suite, L1/R1 = tabs
-   if(pr(PADB.O)){GPPREV[PADB.O]=true;if(!clickSel('[data-a="back"]')){const S=SQSUITE.state;if(S.sel||S.ed){S.sel=null;S.ed=null;SQSUITE.api.draw()}else SQSUITE.close()}try{setFocus(null)}catch(e){}}
-   if(pr(PADB.L1)||pr(PADB.R1)){const n=pr(PADB.R1)?1:-1;GPPREV[PADB.L1]=GPPREV[PADB.R1]=true;cycle('[data-tab]','tab',b=>b.dataset.tab===SQSUITE.state.tab,n);try{setFocus(null)}catch(e){}}
+   if(pr(PADB.O)){GPPREV[PADB.O]=true;if(!clickSel('[data-a="back"]')){const S=SQSUITE.state;if(S.sel||S.ed){S.sel=null;S.ed=null;SQSUITE.api.draw()}else SQSUITE.close()}try{setFocus(null)}catch(e){self.SQERR&&SQERR(e,'188-3')}}
+   if(pr(PADB.L1)||pr(PADB.R1)){const n=pr(PADB.R1)?1:-1;GPPREV[PADB.L1]=GPPREV[PADB.R1]=true;cycle('[data-tab]','tab',b=>b.dataset.tab===SQSUITE.state.tab,n);try{setFocus(null)}catch(e){self.SQERR&&SQERR(e,'188-4')}}
    return _pp.apply(this,arguments)}}
  window.SQDVPAD={D,start,stop}})();

@@ -8,10 +8,10 @@
  const draw=(x,list,aw,s,toX,toY)=>{for(const[h,own]of list){const hm=own&&home(h);glyph(x,toX(h.x+.5),toY(h.y),s,own?(hm?'#f8e050':'#d8a030'):'#7890b0',own?'#f8f0d8':'#c8d0e0')}};
  const _dm=drawMap;drawMap=function(){const out=_dm.apply(this,arguments);try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return out;const c=document.getElementById('mpc');if(!c)return out;
    const R=SCENE&&SCENE.room,area=R&&R.region?R.region:(SCENE?null:'hollow');if(!area)return out;const x=c.getContext('2d'),aw=c.width,s=Math.max(1,Math.round(aw/110));
-   const L=area==='hollow'?theirs().map(h=>[h,false]).concat(mineH().map(h=>[h,true])):isle(area).map(h=>[h,true]);draw(x,L,aw,s,v=>v,v=>v)}catch(e){}return out};
+   const L=area==='hollow'?theirs().map(h=>[h,false]).concat(mineH().map(h=>[h,true])):isle(area).map(h=>[h,true]);draw(x,L,aw,s,v=>v,v=>v)}catch(e){self.SQERR&&SQERR(e,'132-1')}return out};
  {const _mh=mapHTML;mapHTML=function(){const h=_mh.apply(this,arguments);return h.replace('<div class="lg">','<div class="lg"><span><i style="background:#d8a030"></i>Your house</span>'+(theirs().length?'<span><i style="background:#7890b0"></i>Other players\' houses</span>':''))}}
  // the HUD minimap
  if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{const t=miniTarget();if(!t)return out;
    const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U,s=Math.max(1,U*.7);g.save();g.setTransform(1,0,0,1,0,0);
-   const list=t.k==='region'?isle(t.R.region).map(h=>[h,true]):mineH().map(h=>[h,true]);draw(g,list,t.w,s,v=>x0+v/t.w*w,v=>y0+v/t.h*hh);g.restore()}catch(e){}return out}}
+   const list=t.k==='region'?isle(t.R.region).map(h=>[h,true]):mineH().map(h=>[h,true]);draw(g,list,t.w,s,v=>x0+v/t.w*w,v=>y0+v/t.h*hh);g.restore()}catch(e){self.SQERR&&SQERR(e,'132-2')}return out}}
  window.SQHOUSEMAP={glyph}})();

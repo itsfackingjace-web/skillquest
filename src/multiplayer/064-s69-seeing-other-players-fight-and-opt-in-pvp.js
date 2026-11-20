@@ -30,10 +30,10 @@ const r2=v=>Math.round(v*100)/100;
 // ---- what the others do ----
 function pvFx(u,v){if(!v||typeof v!=='object'||!MP.user||u===MP.user.uid)return;const s=+v.s||0;if(PV.seen[u]&&s<=PV.seen[u])return;PV.seen[u]=s;
  if(typeof v.t==='number'&&mpNow()-v.t>2500)return;if(v.loc!==mpLoc())return;const AR=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]):null);v.d=AR(v.d);v.a=AR(v.a);const r=MP.players.get(u);if(!r)return;const sc=curScene();
- if(v.k==='sw'&&Array.isArray(v.d)){r.swAt=performance.now();r.swD=[Math.sign(+v.d[0]||0),Math.sign(+v.d[1]||0)];r.swW=v.w==null?3:(+v.w|0);try{sfx('swish')}catch(e){}}
+ if(v.k==='sw'&&Array.isArray(v.d)){r.swAt=performance.now();r.swD=[Math.sign(+v.d[0]||0),Math.sign(+v.d[1]||0)];r.swW=v.w==null?3:(+v.w|0);try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'064-1')}}
  else if((v.k==='ar'||v.k==='sp')&&Array.isArray(v.a))for(const q0 of v.a.slice(0,8)){const q=AR(q0);if(!q)continue;const[x,y,vx,vy,life,ex]=q;if(![x,y,vx,vy].every(isFinite))continue;
    const gp={k:v.k==='ar'?'arrow':'spell',x:+x,y:+y,vx:+vx,vy:+vy,t:0,life:Math.min(3,+life||1),sc,f:u,ghost:1};if(v.k==='ar')gp.iron=!!ex;else{if(!WSP[ex])continue;gp.el=ex}PV.ghosts.push(gp);
-   if(v.k==='ar'){r.bowAt=performance.now();try{sfx('bow')}catch(e){}}else{r.castAt=performance.now();r.castEl=gp.el;try{sfx(WSP[gp.el].sfx)}catch(e){}}}
+   if(v.k==='ar'){r.bowAt=performance.now();try{sfx('bow')}catch(e){self.SQERR&&SQERR(e,'064-2')}}else{r.castAt=performance.now();r.castEl=gp.el;try{sfx(WSP[gp.el].sfx)}catch(e){self.SQERR&&SQERR(e,'064-3')}}}
  else if(SQFXH[v.k])try{SQFXH[v.k](r,v)}catch(e){console.warn(e)}}
 // ghosts fly until a wall, a monster, or (in a fight) you
 function pvGhostStep(dt){const sc=curScene();for(const p of PV.ghosts){if(p.sc!==sc){p.dead=1;continue}p.t+=dt;const nx=p.x+p.vx*dt,ny=p.y+p.vy*dt;
@@ -46,7 +46,7 @@ function pvGhostStep(dt){const sc=curScene();for(const p of PV.ghosts){if(p.sc!=
 {const _d=drawCombatFx;drawCombatFx=function(tm){_d(tm);const sc=curScene();for(const p of PV.ghosts)if(p.sc===sc&&p.k==='arrow')drawProj(p)}}
 {const _d=drawSpells;drawSpells=function(tm){const add=PV.ghosts.filter(p=>p.k==='spell');const n0=SPELLS.length;for(const p of add)SPELLS.push(p);try{_d(tm)}finally{SPELLS.splice(n0,add.length)}}}
 // their sword swing (the same arc as yours), their bow and wand
-{const _dp=mpDrawPeer;mpDrawPeer=function(r,tm){_dp(r,tm);for(const f of SQPEERFX)try{f(r,tm)}catch(e){}const now=performance.now(),x=Math.round(r.x),y=Math.round(r.y);
+{const _dp=mpDrawPeer;mpDrawPeer=function(r,tm){_dp(r,tm);for(const f of SQPEERFX)try{f(r,tm)}catch(e){self.SQERR&&SQERR(e,'064-4')}const now=performance.now(),x=Math.round(r.x),y=Math.round(r.y);
   if(r.swAt&&now-r.swAt<250&&window.SQSWING){SQSWING(x,y,r.swD[0],r.swD[1],(now-r.swAt)/250,r.swW,tm)}
   else if(r.swAt&&now-r.swAt<250){const[fx,fy]=r.swD,a=Math.atan2(fy,fx),pr=(now-r.swAt)/250,f=Math.min(2,Math.floor(pr*3)),an=a+(f-1)*1.15,hx=x+fx*5,hy=y-4+fy*5;
    for(let i=2;i<=12;i++)Rg(hx+Math.cos(an)*i-1,hy+Math.sin(an)*i-1,4,4,O);for(let i=2;i<=12;i++)Rg(hx+Math.cos(an)*i,hy+Math.sin(an)*i,2,2,i<=3?GD:SV);
@@ -56,9 +56,9 @@ function pvGhostStep(dt){const sc=curScene();for(const p of PV.ghosts){if(p.sc!=
   if(r.bowAt&&now-r.bowAt<300){const dx=r.d===2?(r.fl?-1:1):0,dy=r.d===2?0:r.d===1?-1:1,bx=x+dx*7,by=y-3+dy*6;if(dx){for(let i=-5;i<=5;i++)Rg(bx+Math.round(Math.abs(i)*-.35*dx),by+i,1,1,'#8a5a30');Rg(bx-dx*2,by-5,1,11,'#f0f0f0')}else{for(let i=-5;i<=5;i++)Rg(bx+i,by+Math.round(Math.abs(i)*-.35*dy),1,1,'#8a5a30');Rg(bx-5,by-dy*2,11,1,'#f0f0f0')}}}}
 // ---- PvP: your hits on them ----
 function pvDmg(kind,p){if(kind==='sw')return TL.sword>=6?2:1;if(kind==='ar')return(p&&p.dmg>=6)?2:1;return 1}
-function pvHit(r,kind,el){const n=performance.now();if(r.pvHitAt&&n-r.pvHitAt<350)return;r.pvHitAt=n;PV.fight=n;let d=pvDmg(kind);try{if(window.SQPVDMG)d=SQPVDMG(kind,el)}catch(e){}
+function pvHit(r,kind,el){const n=performance.now();if(r.pvHitAt&&n-r.pvHitAt<350)return;r.pvHitAt=n;PV.fight=n;let d=pvDmg(kind);try{if(window.SQPVDMG)d=SQPVDMG(kind,el)}catch(e){self.SQERR&&SQERR(e,'064-5')}
  FB.db.push(FB.db.ref(FB.D,'pvp/'+r.uid),{f:MP.user.uid,n:myName().slice(0,12),d,k:kind,el:el||'',t:FB.db.serverTimestamp()}).catch(mpErr);
- DMGS.push({x:r.x,y:r.y-16,v:String(d),t:0,c:'#f86848',sc:curScene()});try{sfx('hit')}catch(e){}}
+ DMGS.push({x:r.x,y:r.y-16,v:String(d),t:0,c:'#f86848',sc:curScene()});try{sfx('hit')}catch(e){self.SQERR&&SQERR(e,'064-6')}}
 function pvMelee(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;for(const r of MP.players.values()){if(!pvTarget(r))continue;const dx=r.x-P.x,dy=r.y-P.y,al=dx*face[0]+dy*face[1],pe=Math.abs(dx*face[1]-dy*face[0]);if(al>-2&&al<24&&pe<14){pvHit(r,'sw');break}}}
 function pvProjHits(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;const ts=[...MP.players.values()].filter(pvTarget);if(!ts.length)return;const sc=curScene();
  for(const p of PROJ){if(p.dead||p.hostile||p.k!=='arrow'||p.sc!==sc)continue;for(const r of ts)if(Math.hypot(r.x-p.x,r.y-4-p.y)<10){p.dead=1;p.life=-1;pvHit(r,'ar');break}}
@@ -67,10 +67,10 @@ function pvProjHits(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;const 
 // ---- PvP: their hits on you ----
 function pvIncoming(id,v){FB.db.remove(FB.db.ref(FB.D,'pvp/'+MP.user.uid+'/'+id)).catch(()=>{});if(!v||typeof v!=='object')return;
  const u=String(v.f||''),r=MP.players.get(u);if(typeof v.t==='number'&&mpNow()-v.t>5000)return;
- if(v.k==='ko'){mpLog('game','You defeated '+String(v.n||trName(u)).slice(0,12)+'! Their grave is where they fell.');try{sfx('quest')}catch(e){}return}
+ if(v.k==='ko'){mpLog('game','You defeated '+String(v.n||trName(u)).slice(0,12)+'! Their grave is where they fell.');try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'064-7')}return}
  if(pvDuel(u)){if(dead||!r||r.loc!==mpLoc()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return}
  else if(!PV.on||dead||!r||!r.pk||r.loc!==mpLoc()||pvMeSafe()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return;
- let d=Math.max(1,Math.min(3,+v.d|0));try{if(window.SQPVARM)d=SQPVARM(d)}catch(e){}const who=String(v.n||r.n).slice(0,12);PV.fight=performance.now();PV.lastBy=u;PV.lastByAt=performance.now();
+ let d=Math.max(1,Math.min(3,+v.d|0));try{if(window.SQPVARM)d=SQPVARM(d)}catch(e){self.SQERR&&SQERR(e,'064-8')}const who=String(v.n||r.n).slice(0,12);PV.fight=performance.now();PV.lastBy=u;PV.lastByAt=performance.now();
  if(ROLLT>0)return;if(hurt>0)return;
  if(Math.random()<Math.min(window.SQPVBLK||1,blockCh())){hurt=.5;say('Blocked '+who+'\'s attack!');sfx('block');addXp(8,10);return}
  hurtP(d,'Hit by '+who+'!');if(window.SQPVIF&&hurt>SQPVIF)hurt=SQPVIF;DMGS.push({x:P.x,y:P.y-18,v:String(d),t:0,c:'#f86848',sc:curScene()})}

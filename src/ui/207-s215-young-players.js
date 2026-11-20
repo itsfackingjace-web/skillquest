@@ -30,13 +30,13 @@
  document.body.appendChild(box);for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])box.addEventListener(ev,e=>e.stopPropagation());
  const sel=box.querySelector('#agy'),okb=box.querySelector('#agok');sel.onchange=()=>{okb.disabled=!sel.value};
  okb.onclick=()=>{const y=+sel.value;if(!y)return;const a=yNow-y;const b=a<=13?'c':a<=18?'t':'a';choose(b,true)};
- function show(){asking=true;box.style.display='flex';setTimeout(()=>{try{sel.focus()}catch(e){}},50)}
- function choose(b,fresh){band=b;bandFor=uid()||'local';try{localStorage.setItem(LK(),b)}catch(e){}box.style.display='none';asking=false;
+ function show(){asking=true;box.style.display='flex';setTimeout(()=>{try{sel.focus()}catch(e){self.SQERR&&SQERR(e,'207-1')}},50)}
+ function choose(b,fresh){band=b;bandFor=uid()||'local';try{localStorage.setItem(LK(),b)}catch(e){self.SQERR&&SQERR(e,'207-2')}box.style.display='none';asking=false;
   if(fresh&&uid()&&window.SQFB){const F=SQFB;F.db.set(F.db.ref(F.D,'age/'+uid()),{b,t:F.db.serverTimestamp()}).catch(()=>{})}
-  apply();if(fresh)try{say(b==='c'?'Chat for you uses ready-made phrases: tap PHRASES in the chat box.':'All set. Have fun!')}catch(e){}}
+  apply();if(fresh)try{say(b==='c'?'Chat for you uses ready-made phrases: tap PHRASES in the chat box.':'All set. Have fun!')}catch(e){self.SQERR&&SQERR(e,'207-3')}}
  // ---- what changes for younger players ----
- function apply(){try{const inp=document.getElementById('mpi');if(inp){inp.readOnly=API.child();inp.placeholder=API.child()?'Tap PHRASES to chat':'Say something...'}}catch(e){}
-  try{if(API.child()&&typeof PNAME!=='undefined'&&!PNAME)PNAME='Adventurer'}catch(e){}}
+ function apply(){try{const inp=document.getElementById('mpi');if(inp){inp.readOnly=API.child();inp.placeholder=API.child()?'Tap PHRASES to chat':'Say something...'}}catch(e){self.SQERR&&SQERR(e,'207-4')}
+  try{if(API.child()&&typeof PNAME!=='undefined'&&!PNAME)PNAME='Adventurer'}catch(e){self.SQERR&&SQERR(e,'207-5')}}
  // decide (or look up) the age band for whoever is playing now
  function check(){if(window.SQTS&&SQTS.open)return;const who=uid()||'local';if(bandFor===who&&band){return}
   if(bandFor!==who){band='';bandFor=null}
@@ -52,7 +52,7 @@
  {const _s=window.mpSend;window.mpSend=function(t){if(API.child()){const s=String(t||'').replace(/\s+/g,' ').trim();
     const w=/^\/(?:w|msg|pm|g|guild|p|party)\s+(?:(\S+)\s+)?(.+)$/i.exec(s);const body=w?(/^\/(?:g|guild|p|party)\s/i.test(s)?s.replace(/^\/\S+\s+/,''):w[2]):s;
     if(s[0]==='/'&&!w){return _s.apply(this,arguments)}
-    if(!ok(body)){try{(window.SQMPLOG||(()=>{}))('game','Tap PHRASES to pick something to say.')}catch(e){}return}}
+    if(!ok(body)){try{(window.SQMPLOG||(()=>{}))('game','Tap PHRASES to pick something to say.')}catch(e){self.SQERR&&SQERR(e,'207-6')}return}}
    return _s.apply(this,arguments)}}
  // ---- trades: only with friends for under 13 ----
  const friend=u=>{try{return!!(mp().friends&&mp().friends[u])}catch(e){return false}};

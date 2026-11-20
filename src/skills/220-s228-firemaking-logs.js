@@ -21,7 +21,7 @@
  const nm=k=>k==='wood'?'Wood':(INAME[k]||k),lv=()=>lvOf(FM),n=k=>inv[k]|0;
  const xtra=(x)=>{if(!(x>0))return;window.SQFIREXTRA=1;try{addXp(FM,Math.round(x))}finally{window.SQFIREXTRA=0}};
  const mmss=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
- const baseLife=()=>{let L=150+lv()*3;try{if(typeof fDur==='function')L*=1+fDur()}catch(e){}return L};
+ const baseLife=()=>{let L=150+lv()*3;try{if(typeof fDur==='function')L*=1+fDur()}catch(e){self.SQERR&&SQERR(e,'220-1')}return L};
  function myFire(){let best=null,bd=30;const[fx,fy]=front(14);for(const f of fires){if(!f||f._rp||f._glow||!(f.life>0))continue;const d=Math.min(Math.hypot(f.x-fx,f.y-fy),Math.hypot(f.x-P.x,f.y-P.y)+4);if(d<bd){bd=d;best=f}}return best}
  const canBuild=t=>lv()>=t.lv&&n(t.k)>=3&&n('stone')>=1;
  // night glow (r,g,b) and kindling sticks [light, dark] per log, used by 001's night glow and 114's lighting look
@@ -41,7 +41,7 @@
   window.SQFIREDIRECT=1;try{fire()}finally{window.SQFIREDIRECT=0}check()}
  function check(){if(!PEND)return;const f=fires.find(q=>q&&!q._rp&&!q._glow&&!PEND.before.has(q)&&q.life>0);
   if(f){const t=T[PEND.i];f.lg=PEND.i;f.life=Math.min(CAP,f.life*t.m);f.mx=Math.max(f.mx||0,f.life);xtra(t.pl*3-40);
-   try{gTxt(f.x,f.y-20,nm(t.k)+' fire',PAL[PEND.i].c[2])}catch(e){}PEND=null;return}
+   try{gTxt(f.x,f.y-20,nm(t.k)+' fire',PAL[PEND.i].c[2])}catch(e){self.SQERR&&SQERR(e,'220-2')}PEND=null;return}
   const job=typeof SQDO!=='undefined'?SQDO:null;if(!job&&performance.now()-PEND.at>250)settle(false)}
  function settle(force){if(!PEND)return;const p=PEND;PEND=null;if((inv.wood|0)>=3){inv.wood-=3;inv[p.k]=n(p.k)+3}}
  // ---- feeding ----
@@ -49,13 +49,13 @@
   if(lv()<t.lv){say('Burning '+nm(t.k).toLowerCase()+' needs Firemaking '+t.lv+'.');return}if(n(t.k)<1){say('No '+nm(t.k).toLowerCase()+' left.');return}
   if(f.life>=CAP-5){say('That fire is roaring already.');return}
   inv[t.k]-=1;f.life=Math.min(CAP,f.life+t.fs*(1+((typeof fDur==='function'&&fDur())||0)*.5));f.mx=Math.max(f.mx||0,f.life);if(i>(f.lg|0))f.lg=i;
-  xtra(t.pl);try{sfx('fire')}catch(e){}try{gTxt(f.x,f.y-18,'+'+mmss(t.fs),i?PAL[i].c[2]:'#f88820')}catch(e){}try{saveLocal()}catch(e){}if(ptab===TAB&&pnOpen)rPn()}
+  xtra(t.pl);try{sfx('fire')}catch(e){self.SQERR&&SQERR(e,'220-3')}try{gTxt(f.x,f.y-18,'+'+mmss(t.fs),i?PAL[i].c[2]:'#f88820')}catch(e){self.SQERR&&SQERR(e,'220-4')}try{saveLocal()}catch(e){self.SQERR&&SQERR(e,'220-5')}if(ptab===TAB&&pnOpen)rPn()}
  // ---- F ----
  fire=function(){if(window.SQFIREDIRECT||dead||menuOpen||pnOpen)return _f.apply(this,arguments);
   const near=myFire(),tier=T.slice(1).some(t=>n(t.k)>=3&&lv()>=t.lv);
   if(!near&&!tier)return _f.apply(this,arguments);
   if(near&&!tier&&!T.some(t=>n(t.k)>0&&lv()>=t.lv))return _f.apply(this,arguments);
-  pnOpen=true;ptab=TAB;pn.style.display='block';rPn();try{sfx('talk')}catch(e){}};
+  pnOpen=true;ptab=TAB;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'220-6')}};
  function row(i,mode){const t=T[i],have=n(t.k),ok=lv()>=t.lv,img='<img src="'+iconURL(t.k)+'" style="width:28px;height:28px;image-rendering:pixelated">';
   let info,btn='';if(mode==='b'){info=ok?(3*t.pl)+' XP · burns '+mmss(baseLife()*t.m)+' · needs 3 + 1 stone':'needs Firemaking '+t.lv;
    if(ok)btn='<button class="sb" data-fmb="'+i+'" style="min-width:0;padding:8px 10px"'+(canBuild(t)?'':' disabled')+'>BUILD</button>'}
@@ -65,7 +65,7 @@
   if(f){h+='<div class="qc" style="font-size:13px">Your fire has <b>'+mmss(f.life)+'</b> left. Feed it a log (Firemaking '+lv()+').</div>';for(let i=0;i<T.length;i++)if(n(T[i].k)>0||i===0)h+=row(i,'f')}
   h+='<div class="tl" style="font-size:14px;margin-top:8px">BUILD A NEW CAMPFIRE</div>';for(let i=0;i<T.length;i++)if(i===0||n(T[i].k)>0||lv()>=T[i].lv)h+=row(i,'b');
   return h+'<div class="pmb"><button class="sb no" data-fmx="1">CLOSE</button></div>'}
- {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){}pbd.innerHTML=html()}}
+ {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'220-7')}pbd.innerHTML=html()}}
  pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen)return;const b=e.target.closest('[data-fmb],[data-fmf],[data-fmx]');if(!b)return;e.stopPropagation();e.preventDefault();if(b.disabled)return;
   if(b.dataset.fmb){closePanel();build(+b.dataset.fmb);return}if(b.dataset.fmf){feed(+b.dataset.fmf);return}closePanel()},true);
  // a save while the 3 lent wood is out (the fire is still being lit) records the logs, not the wood (Nov 18)
@@ -74,7 +74,7 @@
  {SQUPD.after('220',(dt)=>{if(PEND)try{check()}catch(e){PEND=null}})}
  // ---- the look ----
  {const _p=pF;pF=function(f,tm){const P5=f&&f.lg&&PAL[f.lg];if(!P5||f._glow)return _p.apply(this,arguments);
-   try{if(window.SQPROPS&&SQPROPS.looks&&SQPROPS.looks['p:campfire'])return _p.apply(this,arguments)}catch(e){}
+   try{if(window.SQPROPS&&SQPROPS.looks&&SQPROPS.looks['p:campfire'])return _p.apply(this,arguments)}catch(e){self.SQERR&&SQERR(e,'220-8')}
    const x=Math.round(f.x),y=Math.round(f.y),s=P5.s,C=P5.c;shd(x,y+4,18);g.drawImage(hdFireBase(),x-9,y-2,18,8);
    const fl=(cx,by2,w,hh,col)=>{w*=s;hh*=s;g.fillStyle=col;for(let k=0;k<hh*2;k++){const t=k/(hh*2),ww=w*Math.sin(Math.PI*(1-t)*.5+.15)*(1-t*.55);g.fillRect(Math.round((cx-ww/2)*2)/2,by2-k*.5,Math.max(.5,Math.round(ww*2)/2),.5)}};
    const k=tm*9+f.x,a=Math.sin(k)*.6,bq=Math.sin(k*1.7)*.5;
@@ -83,5 +83,5 @@
    for(let i=0;i<3+(f.lg>3?2:0);i++){const ph=(tm*.8+i*.33+f.x*.01)%1;g.globalAlpha=1-ph;g.fillStyle=i%2?C[3]:C[2];g.fillRect(x+Math.sin(ph*9+i*2)*3*s,y-8*s-ph*12*s,.5+(i===1?.5:0),.5+(i===1?.5:0))}g.globalAlpha=1}}
  // ---- skill tree lines ----
  if(typeof treeGains==='function'){const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if(sk===FM){const t=T.find(q=>q.lv===l&&q.k!=='wood');
-    if(t)a.push('Burn '+nm(t.k).toLowerCase()+': campfires that burn '+t.m+'x as long ('+(3*t.pl)+' XP), or feed one log into your fire ('+t.pl+' XP)')}}catch(e){}return a}}
+    if(t)a.push('Burn '+nm(t.k).toLowerCase()+': campfires that burn '+t.m+'x as long ('+(3*t.pl)+' XP), or feed one log into your fire ('+t.pl+' XP)')}}catch(e){self.SQERR&&SQERR(e,'220-9')}return a}}
 })();

@@ -8,11 +8,11 @@
  const cur=()=>(SQA.live&&SQA.live.v)|0;let busy=false,lastV=null,sub=false,told=-1e9;
  async function seen(v){v=v|0;if(!v||v===lastV&&v===cur())return;lastV=v;if(v===cur()||busy)return;busy=true;
   try{const before=cur();await SQA.refresh();const now=cur();
-   if(now!==before&&now===v){try{if(window.SQBETA)SQBETA.check()}catch(e){}
+   if(now!==before&&now===v){try{if(window.SQBETA)SQBETA.check()}catch(e){self.SQERR&&SQERR(e,'174-1')}
     if(before&&performance.now()-told>20000&&!(window.SQSUITE&&SQSUITE.state&&SQSUITE.state.open)){told=performance.now();
-     try{if(typeof SQTITLE!=='function'||!SQTITLE()){say('✨ The world was just updated with new things from the developers. Have a look around!');try{mpLog('game','The world was just updated with new content.')}catch(e){}}}catch(e){}}}}
-  catch(e){}finally{busy=false}}
- async function poll(){if(document.hidden)return;try{const r=await fetch(URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)seen(await r.json())}catch(e){}}
+     try{if(typeof SQTITLE!=='function'||!SQTITLE()){say('✨ The world was just updated with new things from the developers. Have a look around!');try{mpLog('game','The world was just updated with new content.')}catch(e){self.SQERR&&SQERR(e,'174-2')}}}catch(e){self.SQERR&&SQERR(e,'174-3')}}}}
+  catch(e){self.SQERR&&SQERR(e,'174-4')}finally{busy=false}}
+ async function poll(){if(document.hidden)return;try{const r=await fetch(URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)seen(await r.json())}catch(e){self.SQERR&&SQERR(e,'174-5')}}
  setInterval(poll,30000);setTimeout(poll,5000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});addEventListener('focus',poll);
  // realtime once the database is connected

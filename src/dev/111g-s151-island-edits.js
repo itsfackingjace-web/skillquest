@@ -36,7 +36,7 @@
  {const _rf=rgFinish;rgFinish=function(C){try{const id=C&&C.D&&C.D.id,E=id&&id!==OFF&&PATCH[id];if(E)apply(C,E)}catch(e){console.warn(e)}return _rf.apply(this,arguments)}}
  {const _rp=rgPrepare;rgPrepare=function(id){const R=_rp.apply(this,arguments);if(R&&PATCH[id])R._t64=1;return R}}
  const here=()=>{try{return curRegion()}catch(e){return null}};
- function drop(id,force){if(here()===id&&!force)return;try{delete RG_CACHE[id];if(typeof RG_PRE!=='undefined')delete RG_PRE[id];if(typeof RG_THUMB!=='undefined')delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id];if(typeof HDRM!=='undefined'&&ROOMS['reg_'+id])HDRM.delete(ROOMS['reg_'+id])}catch(e){}}
+ function drop(id,force){if(here()===id&&!force)return;try{delete RG_CACHE[id];if(typeof RG_PRE!=='undefined')delete RG_PRE[id];if(typeof RG_THUMB!=='undefined')delete RG_THUMB[id];if(ROOMS['reg_'+id])delete ROOMS['reg_'+id];if(typeof HDRM!=='undefined'&&ROOMS['reg_'+id])HDRM.delete(ROOMS['reg_'+id])}catch(e){self.SQERR&&SQERR(e,'111g-1')}}
  // standing on the island while it changes: build it again around you (same spot, inside or outside)
  function refresh(id){if(here()!==id||SCENE&&SCENE.room&&!SCENE.room.region)return;setTimeout(()=>{try{if(here()!==id||!(SCENE&&SCENE.room&&SCENE.room.region===id))return;const px=P.x,py=P.y,f=face.slice();drop(id,true);
    loadRegion(id);if(SCENE&&SCENE.room&&SCENE.room.region===id&&!solid(px,py)){P.x=px;P.y=py;face=f}}catch(e){console.warn(e)}},50)}
@@ -46,16 +46,16 @@
     const L=window.SQISLIFE&&SQISLIFE.MOBS||{},ptx=P.x/16,pty=P.y/16;arr(E.zn).slice(0,24).forEach((Z,k)=>{if(!Z)return;const zx=Z.x|0,zy=Z.y|0,zw=Math.max(1,Z.w|0),zh=Math.max(1,Z.h|0),ms=arr(Z.m).filter(m=>L[m]);if(!ms.length)return;
      if(ptx<zx-30||ptx>zx+zw+30||pty<zy-30||pty>zy+zh+30)return;const zi='e'+k,have=en.filter(n=>!n.dead&&n.zc===id&&n.zi===zi).length;if(have>=Math.max(1,Math.min(12,Z.n|0||4)))return;
      for(let t=0;t<12;t++){const x=zx+Math.floor(Math.random()*zw),y=zy+Math.floor(Math.random()*zh),px=x*16+8,py=y*16+8;if(solid(px,py)||Math.hypot(px-P.x,py-P.y)<120)continue;
-      const m=ms[Math.floor(Math.random()*ms.length)],hp=Math.round(L[m].hp*(TOUGH[Z.hp|0]||1)),n=rgMake(m,hp,px,py);n.mhp=n.mhp||hp;n.zc=id;n.zi=zi;delete n.night;try{RG_OWN.add(n)}catch(e){}en.push(n);break}})}catch(e){console.warn(e)}return out})}
+      const m=ms[Math.floor(Math.random()*ms.length)],hp=Math.round(L[m].hp*(TOUGH[Z.hp|0]||1)),n=rgMake(m,hp,px,py);n.mhp=n.mhp||hp;n.zc=id;n.zi=zi;delete n.night;try{RG_OWN.add(n)}catch(e){self.SQERR&&SQERR(e,'111g-2')}en.push(n);break}})}catch(e){console.warn(e)}return out})}
  // own ground tiles, drawn over the ground like 117 does for custom islands
  const IMG=new Map(),img=u=>{let m=IMG.get(u);if(!m){m=new Image();m.src=u;IMG.set(u,m)}return m.complete&&m.naturalWidth?m:null};
  {const _bg=ROOMBG;ROOMBG=function(R2){const out=_bg.apply(this,arguments);try{const E=R2&&R2.region&&PATCH[R2.region];if(!E||typeof E.c!=='string'||!arr(E.ct).length)return out;
-   if(E.lay===undefined){E.lay=null;try{const s2=A.unpack(E.c);if(s2.length===R2.w*R2.h)E.lay=s2}catch(e){}}const L=E.lay;if(!L)return out;const ct=arr(E.ct),ok=window.SQISLIFE&&SQISLIFE.okUrl||(()=>false);
+   if(E.lay===undefined){E.lay=null;try{const s2=A.unpack(E.c);if(s2.length===R2.w*R2.h)E.lay=s2}catch(e){self.SQERR&&SQERR(e,'111g-3')}}const L=E.lay;if(!L)return out;const ct=arr(E.ct),ok=window.SQISLIFE&&SQISLIFE.okUrl||(()=>false);
    const v=rgView(),x0=Math.max(0,Math.floor(v.x0/16)),x1=Math.min(R2.w-1,Math.ceil(v.x1/16)),y0=Math.max(0,Math.floor(v.y0/16)),y1=Math.min(R2.h-1,Math.ceil(v.y1/16));g.imageSmoothingEnabled=false;
-   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const ch=L[y*R2.w+x];if(!ch||ch==='.')continue;const T2=ct[HEX.indexOf(ch)];if(!T2||!ok(T2.p))continue;const m=img(T2.p);if(m)g.drawImage(m,x*16,y*16,16,16)}}catch(e){}return out}}
+   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const ch=L[y*R2.w+x];if(!ch||ch==='.')continue;const T2=ct[HEX.indexOf(ch)];if(!T2||!ok(T2.p))continue;const m=img(T2.p);if(m)g.drawImage(m,x*16,y*16,16,16)}}catch(e){self.SQERR&&SQERR(e,'111g-4')}return out}}
  A.onApply(lib=>{const L=lib&&lib.islands||{},want={};for(const k in L){const E=L[k];if(!/^ed_[a-z0-9_]{1,30}$/.test(k)||!E||typeof E!=='object')continue;const id=k.slice(3);if(id==='hollow')continue;if(!WORLD_REGIONS[id]||WORLD_REGIONS[id].custom||E.bi!==id)continue;want[id]=E}
-  for(const id in PATCH)if(!want[id]){delete PATCH[id];try{regCaves(id,null)}catch(e){}drop(id);refresh(id)}
-  for(const id in want){const s=JSON.stringify(want[id]);if(PATCH[id]&&PATCH[id]._s===s)continue;PATCH[id]=Object.assign({},want[id],{_s:s,cells:null,lay:undefined});try{regCaves(id,PATCH[id])}catch(e){}drop(id);refresh(id)}});
+  for(const id in PATCH)if(!want[id]){delete PATCH[id];try{regCaves(id,null)}catch(e){self.SQERR&&SQERR(e,'111g-5')}drop(id);refresh(id)}
+  for(const id in want){const s=JSON.stringify(want[id]);if(PATCH[id]&&PATCH[id]._s===s)continue;PATCH[id]=Object.assign({},want[id],{_s:s,cells:null,lay:undefined});try{regCaves(id,PATCH[id])}catch(e){self.SQERR&&SQERR(e,'111g-6')}drop(id);refresh(id)}});
  // the builder's starting point: the island exactly as the game generates it, without its patch
  function base(id){const D=WORLD_REGIONS[id];if(!D||!RG_GENS[id])throw new Error('unknown island');OFF=id;let keep=null;const rf=rgFinish;
   rgFinish=function(C){if(C&&C.D&&C.D.id===id){keep=new Uint8Array(C.N2);for(let i=0;i<C.N2;i++)keep[i]=C.keep[i]||C.lmSolid[i]?1:0}return rf.apply(this,arguments)};

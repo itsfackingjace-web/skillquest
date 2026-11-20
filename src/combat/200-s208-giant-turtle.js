@@ -24,12 +24,12 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  const worn=()=>(TT.helm?1:0)+(TT.body?1:0)+(TT.legs?1:0);
  {const _occ=occ;occ=function(slot){if(TT[slot]&&ARM[slot]===5)return KEY[slot];return _occ.apply(this,arguments)}}
  {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot in TT)TT[slot]=!!k&&k===KEY[slot];return out}}
- {const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.tt&&lvOf(8)<DEF){say('You need Defence '+DEF+' to wear the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){}return}return _eq.apply(this,arguments)}}
+ {const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.tt&&lvOf(8)<DEF){say('You need Defence '+DEF+' to wear the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){self.SQERR&&SQERR(x,'200-1')}return}return _eq.apply(this,arguments)}}
  {const _wu=watchUpgrades;watchUpgrades=function(){const was={...TT};const out=_wu.apply(this,arguments);for(const s in TT)if(was[s]&&ARM[s]!==5){if((inv['eq_'+s+'5']|0)>0)inv['eq_'+s+'5']--;inv[KEY[s]]=(inv[KEY[s]]|0)+1;TT[s]=false}return out}}
  {SQSAVE.after('200:tta',s=>{const t=(TT.helm?'h':'')+(TT.body?'b':'')+(TT.legs?'l':'');if(t)s.tta=t;})}
- {SQLOAD.after('200',(S)=>{const t=String(S&&S.tta||'');TT.helm=t.includes('h')&&ARM.helm===5;TT.body=t.includes('b')&&ARM.body===5;TT.legs=t.includes('l')&&ARM.legs===5;try{snapEq()}catch(e){}})}
+ {SQLOAD.after('200',(S)=>{const t=String(S&&S.tta||'');TT.helm=t.includes('h')&&ARM.helm===5;TT.body=t.includes('b')&&ARM.body===5;TT.legs=t.includes('l')&&ARM.legs===5;try{snapEq()}catch(e){self.SQERR&&SQERR(e,'200-2')}})}
  {const _ng=newGame;newGame=function(){TT.helm=TT.body=TT.legs=false;return _ng.apply(this,arguments)}}
- try{KNOWN49.add('tta')}catch(e){}
+ try{KNOWN49.add('tta')}catch(e){self.SQERR&&SQERR(e,'200-3')}
  {const _bb=blockBonus;blockBonus=function(){const n=worn();return _bb.apply(this,arguments)+n*.03+(n>=2?.05:0)+(n>=3?.05:0)}}
  {const _bc=blockCap;blockCap=function(){return _bc.apply(this,arguments)+(worn()>=3?.05:0)}}
  // the look: the plate pieces in shell green with a sand trim
@@ -61,11 +61,11 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
    shd(b.x,b.y+6,Math.min(w*.55,60));if(wind){g.fillStyle='rgba(120,210,255,'+(.12+.1*Math.sin(tm*10))+')';g.beginPath();g.ellipse(x,y-h*.4,w*.6,h*.5,0,0,6.283);g.fill()}
    const bob=b.mv>0?-Math.round(Math.abs(Math.sin(tm*3))*2):Math.round(Math.sin(tm*1.2)),jit=spin?Math.round(Math.sin(tm*60)*2):0,left=Math.round(x-w/2+jit),top=Math.round(y+6-h+bob);
    g.save();g.imageSmoothingEnabled=false;g.drawImage(c,left,top,Math.round(w),Math.round(h));if(hit){g.globalAlpha=.55;g.drawImage(sp.w,left,top,Math.round(w),Math.round(h))}g.restore();
-   if(spin)for(let k=0;k<4;k++)try{part(b.x+(Math.random()-.5)*w*.8,b.y+4,(Math.random()-.5)*60,-20-Math.random()*30,.4,k%2?'#c8b878':'#e8e0c0',120,2)}catch(e){}
+   if(spin)for(let k=0;k<4;k++)try{part(b.x+(Math.random()-.5)*w*.8,b.y+4,(Math.random()-.5)*60,-20-Math.random()*30,.4,k%2?'#c8b878':'#e8e0c0',120,2)}catch(e){self.SQERR&&SQERR(e,'200-4')}
    if(wind)for(let k=0;k<5;k++){const ph=(tm*1.5+k/5)%1;Rg(Math.round(x-12+k*6),Math.round(top+h*.9-ph*30),2,2,'rgba(220,245,255,'+(1-ph)+')')}},
   drawPortal(it,tm){const x=it.x*16+8,y=it.y*16+10;
    for(let r=4;r>=0;r--){const a=tm*2.4+r*.9;g.strokeStyle=r%2?'#58b0e8':'#c8f0ff';g.lineWidth=1.5;g.beginPath();g.ellipse(x,y,4+r*2.6,2.4+r*1.5,0,a,a+4.4);g.stroke()}
    g.fillStyle='#0c2a3a';g.beginPath();g.ellipse(x,y,3,1.8,0,0,6.283);g.fill();
-   if(Math.random()<.15)try{part(x+(Math.random()-.5)*20,y,(Math.random()-.5)*10,-15-Math.random()*15,.6,'#e8f8ff',40,1)}catch(e){}}});
+   if(Math.random()<.15)try{part(x+(Math.random()-.5)*20,y,(Math.random()-.5)*10,-15-Math.random()*15,.6,'#e8f8ff',40,1)}catch(e){self.SQERR&&SQERR(e,'200-5')}}});
  window.SQTURT={KEY,TT,worn,FR,RAW,have};
 })();

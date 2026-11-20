@@ -23,7 +23,7 @@
      Q.i=Math.max(0,Math.min(QS.length,Q.i))}}}catch(e){console.warn('opening moves',e)}
   return out});
  // a win counts for it
- {const _ec=endChess;endChess=function(res,why){const out=_ec.apply(this,arguments);try{if(res==='w'&&(CHS.om|0)===1){CHS.om=2;chst.textContent+=' Opening Moves done: tell Orla!';saveLocal(true)}}catch(e){}return out}}
+ {const _ec=endChess;endChess=function(res,why){const out=_ec.apply(this,arguments);try{if(res==='w'&&(CHS.om|0)===1){CHS.om=2;chst.textContent+=' Opening Moves done: tell Orla!';saveLocal(true)}}catch(e){self.SQERR&&SQERR(e,'134-1')}return out}}
  // Orla's card
  function omCard(){const s=CHS.om|0;if(s>=3)return'<div class="qc" style="margin-top:8px"><b>✓ Opening Moves</b><p>"You have a feel for the game. Come back any time."</p></div>';
   let h='<div class="qc" style="margin-top:8px"><b>'+(s?'▶ ':'! ')+'Opening Moves</b><p>'+esc(OM.d)+'</p><p class="qr">Reward: 100 gold · 300 Tactics XP</p>';
@@ -32,7 +32,7 @@
  {const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.om139');if(b){const a=b.dataset.o;
    if(a==='acc'&&!(CHS.om|0)){CHS.om=1;say('Quest started: Opening Moves');sfx('quest')}
    else if(a==='done'&&(CHS.om|0)===2){CHS.om=3;GLD+=OM.r.g;addXp(OM.r.xp[0],OM.r.xp[1]);say('Quest complete: Opening Moves! "Well played. You will be a fine player."');msgT=5;sfx('quest')}
-   try{saveLocal(true)}catch(x){}rPn();return}return _oc(e)}}
+   try{saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'134-2')}rPn();return}return _oc(e)}}
  // in the quest log
  const ORLA={area:'hollow',x:(TBX-2)*16+8,y:(TBY+1)*16+8};
  (window.SQQEXTRA=window.SQQEXTRA||[]).push(()=>{const s=CHS.om|0,e={id:'c:om',cat:'Grandmaster Orla',area:'hollow',name:OM.n,rew:'100 gold · 300 Tactics XP',at:ORLA};
@@ -64,7 +64,7 @@
  function status(){if(PV.over)return;const left=Math.max(0,Math.ceil(LIMIT-(performance.now()-PV.at)/1000)),t=Math.floor(left/60)+':'+String(left%60).padStart(2,'0'),D=DD(),n=D?A().nameOf(D.foe):'They';
   stx.textContent=(mine()?(CE.inCheck(PV.st,PV.st.turn)?'Check! ':'')+'Your move ('+t+' left).':n+' is thinking... ('+t+')')}
  function ui(){document.getElementById('pvc_pvr').style.display=PV.over?'none':'';document.getElementById('pvc_pvl').style.display=PV.over?'':'none';drawB()}
- function apply(m,fromMe){const cap=m.cap!=='.';PV.st=CE.make(PV.st,m);PV.last=m;PV.sel=-1;PV.moves=[];PV.at=performance.now();try{sfx(cap?'hit':'talk')}catch(e){}
+ function apply(m,fromMe){const cap=m.cap!=='.';PV.st=CE.make(PV.st,m);PV.last=m;PV.sel=-1;PV.moves=[];PV.at=performance.now();try{sfx(cap?'hit':'talk')}catch(e){self.SQERR&&SQERR(e,'134-3')}
   if(fromMe){const D=DD();D.mv.push(enc(m));A().push()}checkEnd()}
  function checkEnd(){const s=CE.status(PV.st);if(!s&&PV.st.ply<300){status();ui();return}const D=DD();
   if(s==='mate'){const loser=PV.st.turn==='w'?'white':'black';if((loser==='white')===PV.white)A().lose('mate');else A().win('mate');return}
@@ -75,17 +75,17 @@
    for(const s of D.mv){const[f,t]=s.split('.').map(Number),m=CE.legal(PV.st).find(x=>x.f===f&&x.t===t);if(m){PV.st=CE.make(PV.st,m);PV.last=m}}
    const n=A().nameOf(D.foe);document.getElementById('pvc_pvt').textContent='CHESS vs '+n.toUpperCase();
    document.getElementById('pvc_pvw1').textContent=n+' plays '+(PV.white?'black':'white');document.getElementById('pvc_pvw2').textContent='You play '+(PV.white?'white':'black')+(D.esc&&(Object.keys(D.esc.th).length||D.esc.tg)?' · the winner takes both stakes':'');
-   PV.open=true;try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){}pnOpen=true;jx=jy=0;pn.style.display='none';el.style.display='block';sfx('quest');status();ui()},
+   PV.open=true;try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){self.SQERR&&SQERR(e,'134-4')}pnOpen=true;jx=jy=0;pn.style.display='none';el.style.display='block';sfx('quest');status();ui()},
   theirMoves(str){const D=DD();if(!D||!PV.open||PV.over)return;const L=str?str.split(' ').filter(Boolean):[];if(L.length<=D.mv.length)return;
    for(let i=0;i<D.mv.length;i++)if(L[i]!==D.mv[i])return;// not the same game: ignore
    for(const s of L.slice(D.mv.length)){if(mine())return;const[f,t]=s.split('.').map(Number),m=CE.legal(PV.st).find(x=>x.f===f&&x.t===t);if(!m)return;D.mv.push(s);apply(m,false);if(PV.over)return}},
   tick(){if(!PV.open||PV.over)return;const el2=(performance.now()-PV.at)/1000;if(mine()&&el2>LIMIT)A().lose('time');else if(!mine()&&el2>LIMIT+10)A().win('time');else status()},
   over(t){if(!PV.open)return;PV.over=true;PV.sel=-1;PV.moves=[];stx.textContent=t;ui()},
   cancel(){if(PV.open&&!PV.over){stx.textContent='The game was cancelled.';window.SQPVC.close()}},
-  close(){if(!PV.open)return;PV.open=false;PV.st=null;el.style.display='none';pnOpen=false;try{closePanel()}catch(e){}}};
+  close(){if(!PV.open)return;PV.open=false;PV.st=null;el.style.display='none';pnOpen=false;try{closePanel()}catch(e){self.SQERR&&SQERR(e,'134-5')}}};
  cv.addEventListener('pointerdown',e=>{e.preventDefault();if(!PV.open||PV.over||!mine())return;const r=cv.getBoundingClientRect(),c=Math.floor((e.clientX-r.left)/r.width*8),rw=Math.floor((e.clientY-r.top)/r.height*8);
   if(c<0||c>7||rw<0||rw>7)return;const sq=view(rw*8+c),mv=PV.moves.find(m=>m.t===sq);if(mv){apply(mv,true);return}
-  const p=PV.st.b[sq];if(p!=='.'&&CE.isW(p)===PV.white){PV.sel=sq;PV.moves=CE.legal(PV.st).filter(m=>m.f===sq);try{sfx('talk')}catch(x){}}else{PV.sel=-1;PV.moves=[]}drawB()});
+  const p=PV.st.b[sq];if(p!=='.'&&CE.isW(p)===PV.white){PV.sel=sq;PV.moves=CE.legal(PV.st).filter(m=>m.f===sq);try{sfx('talk')}catch(x){self.SQERR&&SQERR(x,'134-6')}}else{PV.sel=-1;PV.moves=[]}drawB()});
  document.getElementById('pvc_pvr').onclick=()=>{if(PV.open&&!PV.over)A().lose('resign')};
  document.getElementById('pvc_pvl').onclick=()=>{window.SQPVC.close()};
  window.SQPVCSTATE=PV})();

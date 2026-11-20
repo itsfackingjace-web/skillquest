@@ -94,7 +94,7 @@ const _r14=rPn;rPn=function(){if(ptab===2&&shop==='trader'){document.getElementB
 const _oc14=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.trb');if(b){traderAct(b.dataset.a);return}_oc14(e)};
 const _dmap14=drawMap;drawMap=function(){_dmap14();const c=document.getElementById('mpc');if(!c||!CAVE)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(CAVE.x-1,CAVE.y-1,3,3);x.fillStyle='#f8d848';x.fillRect(CAVE.x,CAVE.y,1,1)};
 // --- music: original chiptune loops ---
-let MUSIC=true;try{MUSIC=localStorage.getItem('sq_music')!=='0'}catch(e){}
+let MUSIC=true;try{MUSIC=localStorage.getItem('sq_music')!=='0'}catch(e){self.SQERR&&SQERR(e,'014-1')}
 const NOTE=s=>{const m=/^([A-G])(#?)(\d)$/.exec(s);return m?12*(+m[3]+1)+{C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]?1:0):0};
 function parseTrack(str){const tk=str.trim().split(/\s+/),ev=[];for(let i=0;i<tk.length;i++){if(tk[i]==='-'){const l=ev[ev.length-1];if(l&&l.end===i)l.end=i+1;continue}const m=NOTE(tk[i]);if(m)ev.push({s:i,end:i+1,m})}return{ev,len:tk.length}}
 const SONGS={day:{bpm:118,lead:'C5 E5 G5 E5 F5 A5 G5 - E5 G5 C6 B5 A5 G5 E5 - D5 F5 A5 F5 G5 B5 A5 G5 E5 D5 C5 D5 C5 - - -',bass:'C3 G3 C3 G3 F2 C3 F2 C3 C3 G3 C3 G3 A2 E3 A2 E3 D3 A3 D3 A3 G2 D3 G2 D3 A2 E3 F2 G2 C3 G2 C3 -'},
@@ -107,5 +107,5 @@ function playNote(m,t,d,type,vol){const o=ACX.createOscillator(),gn=ACX.createGa
 function wantSong(){if(SCENE)return SCENE.room.cave?'cave':'indoor';return dark()>.4?'night':'day'}
 setInterval(()=>{try{if(!ACX||ACX.state!=='running')return;if(!MG){MG=ACX.createGain();MG.gain.value=MUSIC?.5:0;MG.connect(ACX.destination)}
  MG.gain.value=MUSIC?.5*(typeof MUSV==='number'?MUSV:1)*(typeof MFADEF==='function'?MFADEF():1):0;if(!MUSIC)return;const now=ACX.currentTime,want=wantSong();if(want!==curSong){curSong=want;songT0=now+.15;nextBeat=0}
- const S=PARSED[curSong],spb=60/S.bpm;if(songT0+nextBeat*spb<now-.2)songT0=now+.05-nextBeat*spb;
- while(songT0+nextBeat*spb<now+.35){const b=nextBeat%S.lead.len,t=songT0+nextBeat*spb;for(const e of S.lead.ev)if(e.s===b)playNote(e.m,t,(e.end-e.s)*spb,'square',.045);for(const e of S.bass.ev)if(e.s===b)playNote(e.m,t,(e.end-e.s)*spb,'triangle',.08);nextBeat++}}catch(e){}},120);
+ const S=PARSED[curSong];if(!S)return;const spb=60/S.bpm;if(songT0+nextBeat*spb<now-.2)songT0=now+.05-nextBeat*spb;
+ while(songT0+nextBeat*spb<now+.35){const b=nextBeat%S.lead.len,t=songT0+nextBeat*spb;for(const e of S.lead.ev)if(e.s===b)playNote(e.m,t,(e.end-e.s)*spb,'square',.045);for(const e of S.bass.ev)if(e.s===b)playNote(e.m,t,(e.end-e.s)*spb,'triangle',.08);nextBeat++}}catch(e){self.SQERR&&SQERR(e,'014-2')}},120);

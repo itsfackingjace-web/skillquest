@@ -8,7 +8,7 @@
 (()=>{const FREE=k=>k==='house'||k==='castle'||(typeof isSeed==='function'&&isSeed(k))||(typeof SEED2CROP!=='undefined'&&!!SEED2CROP[k]);
  const atHome=()=>!!(SCENE&&SCENE.id==='home'&&SCENE.house);
  const MSG='You can only build inside your own house or castle, or in its backyard. Walk in through your door first.';
- {const _sb=startBuild;startBuild=function(k){if(!FREE(k)&&!atHome()&&(inv[k]|0)>0){say(MSG);msgT=6;try{sfx('swish')}catch(e){}try{closePanel()}catch(e){}return}return _sb.apply(this,arguments)}}
+ {const _sb=startBuild;startBuild=function(k){if(!FREE(k)&&!atHome()&&(inv[k]|0)>0){say(MSG);msgT=6;try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'173-1')}try{closePanel()}catch(e){self.SQERR&&SQERR(e,'173-2')}return}return _sb.apply(this,arguments)}}
  // a build mode started at home that somehow carries outside stops there
  {const _pb=placeBuild;placeBuild=function(){if(BUILD&&!FREE(BUILD.k)&&!atHome()){endBuild(MSG);return}return _pb.apply(this,arguments)}}
  // descriptions that still said "or outside"
@@ -18,11 +18,11 @@
  function packAll(){const got={};let inside=false,n=0;
   for(const[i,s]of[...STR]){if(!s||s._foreign||FREE(s.t))continue;STR.delete(i);if(BEDSP===i)BEDSP=-1;if(back(s,got))inside=true;n++}
   const R=window.SQRB;if(R)for(const id in R){const m=R[id];for(const[key,s]of[...m]){if(!s||FREE(s.t))continue;m.delete(key);if(back(s,got))inside=true;n++}}
-  if(n){try{rbSolidSync()}catch(e){}
+  if(n){try{rbSolidSync()}catch(e){self.SQERR&&SQERR(e,'173-3')}
    const nm=k=>String(INAME[k]||k).toLowerCase(),pl=k=>(typeof SN!=='undefined'&&SN[k])?SN[k].toLowerCase():nm(k).replace(/(ch|sh|s|x)$/,'$1e')+'s';
    const list=Object.entries(got).map(([k,c])=>c+' '+(c>1?pl(k):nm(k))).join(', ');
    const m='Building outside isn\'t allowed any more, so what you had built outside was packed into your bag: '+list+(inside?' (with everything that was inside)':'')+'. Place them in your house, castle or backyard.';
-   setTimeout(()=>{try{say(m);msgT=10;try{mpLog('game',m)}catch(e){}saveLocal(true);saveCloud(true)}catch(e){}},3000)}
+   setTimeout(()=>{try{say(m);msgT=10;try{mpLog('game',m)}catch(e){self.SQERR&&SQERR(e,'173-4')}saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'173-5')}},3000)}
   return n}
  {SQLOAD.after('173',(S)=>{try{packAll()}catch(e){console.warn(e)}})}
  window.SQHOMEBUILD={packAll,atHome,FREE}})();

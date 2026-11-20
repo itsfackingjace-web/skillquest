@@ -5,8 +5,8 @@
   const winApp=!window.sqDesktop&&/Windows/.test(navigator.userAgent)?'<a class="sb" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="https://github.com/itsfackingjace-web/skillquest/releases/latest/download/SkillQuest-Setup.exe">Get the Windows app</a>':'';
   if(k<0)return h+'<div class="tl" style="margin-top:16px">ONLINE</div>'+add+winApp;const e=h.indexOf('</button>',k)+9;return h.slice(0,e)+add+winApp+h.slice(e)};
  // sign out exactly the way the chat window's Sign out button does (its code lives with the online code), then wait for it
- const out=async()=>{try{if(typeof saveCloud==='function')await saveCloud(true)}catch(e){}const so=document.getElementById('mpso');if(so)so.click();
+ const out=async()=>{try{if(typeof saveCloud==='function')await saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'103-1')}const so=document.getElementById('mpso');if(so)so.click();
   for(let k=0;k<40&&window.SQMP&&SQMP.user;k++)await new Promise(r=>setTimeout(r,75))};
  pbd.addEventListener('click',async ev=>{const b=ev.target.closest('.mpacct');if(!b)return;ev.stopPropagation();const a=b.dataset.a;
-  if(a==='in'){mpSignIn();return}b.disabled=true;b.textContent='Signing out...';await out();try{rPn()}catch(e){}
+  if(a==='in'){mpSignIn();return}b.disabled=true;b.textContent='Signing out...';await out();try{rPn()}catch(e){self.SQERR&&SQERR(e,'103-2')}
   if(a==='switch'){say('Signed out. Pick the account to play on.');mpSignIn()}},true)}

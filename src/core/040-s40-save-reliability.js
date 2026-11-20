@@ -7,7 +7,7 @@
 // Now: saves keep the account-save id they're based on, the newest save wins, perk/quest changes save right away, and
 // hiding or closing the page writes both saves immediately.
 saveLocal=function(force){if(dead)return;const s=snap(),k=keyOf(s);if(k===lastLocal&&!force)return;lastLocal=k;s.savedAt=Date.now();LOCAL_AT=s.savedAt;if(lastWid!==null)s.wid=lastWid;
- try{localStorage.setItem(LS,JSON.stringify(s))}catch(e){}};
+ try{localStorage.setItem(LS,JSON.stringify(s))}catch(e){self.SQERR&&SQERR(e,'040-1')}};
 // a save asked for while another is still talking to the account runs as soon as that one finishes
 let CLOUD_PEND=null;
 const _sc40=saveCloud;saveCloud=async function(force){if(cloudBusy){CLOUD_PEND=CLOUD_PEND===true||!!force;return}await _sc40(force);
@@ -16,5 +16,5 @@ function saveNow(){saveLocal(true);saveCloud(true)}
 // page closing/hiding: write straight to the account (no read first) once this session has synced with it
 function cloudFlush(){if(!cloud||dead)return;if(lastWid===null){saveCloud(true);return}
  try{const s=snap(),k=keyOf(s);if(k===lastCloud)return;s.savedAt=Math.max(Date.now(),LOCAL_AT);s.wid=myDev+'-'+Date.now().toString(36);s.dev=myDev;
-  const pr=cloud.set(s);lastWid=s.wid;lastCloud=k;syncMark(s);if(pr&&pr.catch)pr.catch(()=>{})}catch(e){}}
-function saveHide(){if(dead)return;saveLocal(true);cloudFlush();try{localStorage.setItem(LS,JSON.stringify(Object.assign(JSON.parse(localStorage.getItem(LS)||'{}'),{wid:lastWid})))}catch(e){}}
+  const pr=cloud.set(s);lastWid=s.wid;lastCloud=k;syncMark(s);if(pr&&pr.catch)pr.catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'040-2')}}
+function saveHide(){if(dead)return;saveLocal(true);cloudFlush();try{localStorage.setItem(LS,JSON.stringify(Object.assign(JSON.parse(localStorage.getItem(LS)||'{}'),{wid:lastWid})))}catch(e){self.SQERR&&SQERR(e,'040-3')}}

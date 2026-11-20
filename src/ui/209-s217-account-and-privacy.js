@@ -33,22 +33,22 @@
  async function wipe(){const m=mp(),Fb=F();if(!m||!m.user||!Fb){say('Sign in first.');card=0;rPn();return}
   const u=m.user.uid,db=Fb.db,D=Fb.D,R=p=>db.ref(D,p);STOP=true;const failed=[];
   const rm=async p=>{try{await db.remove(R(p))}catch(e){failed.push(p)}};
-  try{const s=await db.get(R('pm/'+u));const v=s.val()||{};const up={};for(const id of Object.keys(v))up['pm/'+u+'/'+id]=null;if(Object.keys(up).length)await db.update(db.ref(D),up).catch(async()=>{for(const p of Object.keys(up))await rm(p)})}catch(e){}
-  try{const n=(typeof PNAME!=='undefined'&&PNAME)||'';if(n){const key=String(n).trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_').slice(0,12);const s=await db.get(R('names/'+key));if(s.val()===u)await rm('names/'+key)}}catch(e){}
+  try{const s=await db.get(R('pm/'+u));const v=s.val()||{};const up={};for(const id of Object.keys(v))up['pm/'+u+'/'+id]=null;if(Object.keys(up).length)await db.update(db.ref(D),up).catch(async()=>{for(const p of Object.keys(up))await rm(p)})}catch(e){self.SQERR&&SQERR(e,'209-1')}
+  try{const n=(typeof PNAME!=='undefined'&&PNAME)||'';if(n){const key=String(n).trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_').slice(0,12);const s=await db.get(R('names/'+key));if(s.val()===u)await rm('names/'+key)}}catch(e){self.SQERR&&SQERR(e,'209-2')}
   for(const p of['presence','lb','profiles','houses','yards','build','friends','trust','bak','saves','sess'])await rm(p+'/'+u);
-  try{const A=Fb.auth;if(A&&A.deleteUser&&Fb.A.currentUser)await A.deleteUser(Fb.A.currentUser)}catch(e){}
-  try{const so=document.getElementById('mpso');if(so)so.click()}catch(e){}
-  try{for(const k of Object.keys(localStorage))if(/^sq_|^hw_|^sq/.test(k))localStorage.removeItem(k)}catch(e){}
-  try{say(failed.length?'Your account was deleted, except '+failed.join(', ')+'. Report a bug and we\'ll finish it.':'Your account has been deleted.')}catch(e){}
-  setTimeout(()=>{try{location.reload()}catch(e){}},2500)}
+  try{const A=Fb.auth;if(A&&A.deleteUser&&Fb.A.currentUser)await A.deleteUser(Fb.A.currentUser)}catch(e){self.SQERR&&SQERR(e,'209-3')}
+  try{const so=document.getElementById('mpso');if(so)so.click()}catch(e){self.SQERR&&SQERR(e,'209-4')}
+  try{for(const k of Object.keys(localStorage))if(/^sq_|^hw_|^sq/.test(k))localStorage.removeItem(k)}catch(e){self.SQERR&&SQERR(e,'209-5')}
+  try{say(failed.length?'Your account was deleted, except '+failed.join(', ')+'. Report a bug and we\'ll finish it.':'Your account has been deleted.')}catch(e){self.SQERR&&SQERR(e,'209-6')}
+  setTimeout(()=>{try{location.reload()}catch(e){self.SQERR&&SQERR(e,'209-7')}},2500)}
  // ---- clearing out old data ----
  let pmDone='';
  async function prune(){const m=mp(),Fb=F();if(!m||!m.on||!m.user||!Fb)return;const u=m.user.uid,db=Fb.db,D=Fb.D,R=p=>db.ref(D,p),now=Date.now();
-  if(pmDone!==u){pmDone=u;try{const s=await db.get(db.query(R('pm/'+u),db.orderByKey(),db.limitToFirst(200)));const v=s.val()||{};for(const[id,x]of Object.entries(v))if(x&&typeof x.t==='number'&&x.t<now-90*DAY)db.remove(R('pm/'+u+'/'+id)).catch(()=>{})}catch(e){}}
-  let isDev=false;try{isDev=(await db.get(R('devs/'+u))).val()===true}catch(e){}if(!isDev)return;
-  const today=new Date(now).toISOString().slice(0,10);try{if(localStorage.getItem('sq_prune_day')===today)return;localStorage.setItem('sq_prune_day',today)}catch(e){}
+  if(pmDone!==u){pmDone=u;try{const s=await db.get(db.query(R('pm/'+u),db.orderByKey(),db.limitToFirst(200)));const v=s.val()||{};for(const[id,x]of Object.entries(v))if(x&&typeof x.t==='number'&&x.t<now-90*DAY)db.remove(R('pm/'+u+'/'+id)).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'209-8')}}
+  let isDev=false;try{isDev=(await db.get(R('devs/'+u))).val()===true}catch(e){self.SQERR&&SQERR(e,'209-9')}if(!isDev)return;
+  const today=new Date(now).toISOString().slice(0,10);try{if(localStorage.getItem('sq_prune_day')===today)return;localStorage.setItem('sq_prune_day',today)}catch(e){self.SQERR&&SQERR(e,'209-10')}
   const old=async(path,days)=>{try{const s=await db.get(db.query(R(path),db.orderByKey(),db.limitToFirst(300)));const v=s.val()||{};let n=0;for(const[id,x]of Object.entries(v))if(x&&typeof x.t==='number'&&x.t<now-days*DAY){n++;db.remove(R(path+'/'+id)).catch(()=>{})}return n}catch(e){return 0}};
-  await old('chat',90);await old('bugs',365);await old('reports',365);
-  try{const cut=new Date(now-365*DAY).toISOString().slice(0,10);const s=await db.get(db.query(R('stats/d'),db.orderByKey(),db.endAt(cut),db.limitToFirst(40)));for(const day of Object.keys(s.val()||{}))if(day<cut)db.remove(R('stats/d/'+day)).catch(()=>{})}catch(e){}}
+  await old('chat',90);await old('bugs',365);await old('reports',365);await old('errs',365);
+  try{const cut=new Date(now-365*DAY).toISOString().slice(0,10);const s=await db.get(db.query(R('stats/d'),db.orderByKey(),db.endAt(cut),db.limitToFirst(40)));for(const day of Object.keys(s.val()||{}))if(day<cut)db.remove(R('stats/d/'+day)).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'209-11')}}
  setInterval(()=>{prune().catch(()=>{})},60000);setTimeout(()=>{prune().catch(()=>{})},15000);
  window.SQACCOUNT={wipe,prune,get stopped(){return STOP}}})();

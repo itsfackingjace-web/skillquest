@@ -13,7 +13,7 @@ function hudDom(dt){
  if(isPC){if(hpAuto>0&&hp.style.display==='block'&&!pnOpen&&!menuOpen){hpAuto-=dt;if(hpAuto<=0)hp.style.display='none'}
   const showChip=helpOn&&hp.style.display!=='block'&&!pnOpen&&!menuOpen;hpc.style.display=showChip?'block':'none';if(showChip)hpc.textContent=GPON?'Controller help':'H: controls'}}
 document.addEventListener('keydown',e=>{if((e.key||'').toLowerCase()!=='h'||e.repeat)return;const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'))return;if(pnOpen||menuOpen||chessOpen)return;
- e.stopImmediatePropagation();e.preventDefault();if(!helpOn){helpOn=true;try{localStorage.setItem('sq_help','1')}catch(_){}}hp.style.display=hp.style.display==='block'?'none':'block';hpAuto=-1},true);
+ e.stopImmediatePropagation();e.preventDefault();if(!helpOn){helpOn=true;try{localStorage.setItem('sq_help','1')}catch(_){self.SQERR&&SQERR(_,'024-1')}}hp.style.display=hp.style.display==='block'?'none':'block';hpAuto=-1},true);
 // tap or click the text box to finish the line, or jump to the next page
 function msgTap(x,y){const b=MSGBOX;if(!b||msgT<=0||x<b.x||x>b.x+b.w||y<b.y||y>b.y+b.h)return false;const now=performance.now();
  if(!b.done)MP.pat=now-60000;else if(b.more){MP.p++;MP.pat=now;msgT=Math.max(msgT,2.6)}else msgT=Math.min(msgT,.25);b.done=false;b.more=false;return true}

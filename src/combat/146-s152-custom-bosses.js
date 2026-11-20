@@ -8,7 +8,7 @@
 // Attacks (the owner's game runs them; other players' copies are proxies): ring = a circle of fire bolts, charge = a
 // marked dash, slam = a marked circle where you stand that bursts after a second, summon = up to 4 helpers.
 // Once beaten it stays away for `rs` minutes on this device (localStorage sq_cbdead).
-(()=>{const CB={},LSK='sq_cbdead';let DEAD={};try{DEAD=JSON.parse(localStorage.getItem(LSK)||'{}')||{}}catch(e){}
+(()=>{const CB={},LSK='sq_cbdead';let DEAD={};try{DEAD=JSON.parse(localStorage.getItem(LSK)||'{}')||{}}catch(e){self.SQERR&&SQERR(e,'146-1')}
  const num=(v,lo,hi,d)=>{v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):d};
  const clean=(v,n)=>String(v==null?'':v).replace(/[<>&"]/g,'').slice(0,n);
  const MOBS=()=>window.SQISLIFE&&SQISLIFE.MOBS||{};
@@ -19,7 +19,7 @@
    const base=typeof b.base==='string'&&MOBS()[b.base]&&!/^cb:/.test(b.base)?b.base:'wolf',A=b.atk&&typeof b.atk==='object'?b.atk:{};
    const B={id,key,n:clean(b.n,30)||'Boss',base,hp:num(b.hp,10,5000,80)|0,sz:num(b.sz,1,3,1.6),dmg:num(b.dmg,1,6,2)|0,spd:num(b.spd,30,300,100),cd:num(b.cd,1.5,20,4),rs:num(b.rs,1,240,15),
     atk:['ring','charge','slam','summon'].filter(a=>A[a]),sk:typeof b.sk==='string'&&MOBS()[b.sk]&&!/^cb:/.test(b.sk)?b.sk:base};
-   CB[key]=B;MOBS()[key]={n:B.n+' (boss)',hp:B.hp,rg:null,boss:1}}try{window.SQPROPS&&SQPROPS.recat&&SQPROPS.recat()}catch(e){}}
+   CB[key]=B;MOBS()[key]={n:B.n+' (boss)',hp:B.hp,rg:null,boss:1}}try{window.SQPROPS&&SQPROPS.recat&&SQPROPS.recat()}catch(e){self.SQERR&&SQERR(e,'146-2')}}
  if(window.SQA)SQA.onApply(read);
  const deadKey=(B)=>B.key+'@'+(typeof curRegion==='function'?curRegion():'');
  const away=B=>(DEAD[deadKey(B)]||0)>Date.now();
@@ -32,29 +32,29 @@
  // ---- fighting ----
  const SH=[],TG=[];window.SQCBSH=SH;// fire bolts, slam marks (SQCBSH: 166 tags shots and draws Dev Suite looks)
  const canHurt=()=>!dead&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)&&!(window.SQDUEL&&SQDUEL.chess);
- const hit=(d,why)=>{if(!canHurt())return;P.hp-=d;hurt=1;try{sfx('hurt')}catch(e){}};
+ const hit=(d,why)=>{if(!canHurt())return;P.hp-=d;hurt=1;try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'146-3')}};
  function act(n,B,dt){const dx=P.x-n.x,dy=(P.y-2)-(n.y-4),dist=Math.hypot(dx,dy);
   // it walks at you itself (the base monster's own walking leaves big monsters alone)
-  if(!n.cbc&&dist>12+5*B.sz&&dist<240){const v=38*B.spd/100*dt;try{stepTo(n,dx/dist*v,dy/dist*v)}catch(e){}}
+  if(!n.cbc&&dist>12+5*B.sz&&dist<240){const v=38*B.spd/100*dt;try{stepTo(n,dx/dist*v,dy/dist*v)}catch(e){self.SQERR&&SQERR(e,'146-4')}}
   // contact
   if(dist<10+6*B.sz)hit(B.dmg);
   // a charge in progress
-  if(n.cbc){const c=n.cbc;c.t-=dt;if(c.t>0&&c.ph===0){/* winding up */}else if(c.ph===0){c.ph=1;c.t=.45;try{sfx('roar')}catch(e){}}
-   else if(c.t>0){try{stepTo(n,c.vx*260*dt,c.vy*260*dt)}catch(e){}if(dist<14+6*B.sz)hit(B.dmg+1)}else n.cbc=null;return}
+  if(n.cbc){const c=n.cbc;c.t-=dt;if(c.t>0&&c.ph===0){/* winding up */}else if(c.ph===0){c.ph=1;c.t=.45;try{sfx('roar')}catch(e){self.SQERR&&SQERR(e,'146-5')}}
+   else if(c.t>0){try{stepTo(n,c.vx*260*dt,c.vy*260*dt)}catch(e){self.SQERR&&SQERR(e,'146-6')}if(dist<14+6*B.sz)hit(B.dmg+1)}else n.cbc=null;return}
   n.cbt-=dt;if(n.cbt>0||!B.atk.length||dist>190)return;n.cbt=B.cd*(.8+Math.random()*.4);const a=B.atk[Math.floor(Math.random()*B.atk.length)];
-  if(a==='ring'){const k=10,o=Math.random()*6.28;for(let i=0;i<k;i++){const ang=o+i/k*6.283;SH.push({x:n.x,y:n.y-6*B.sz,vx:Math.cos(ang)*95,vy:Math.sin(ang)*95,t:2.4,d:B.dmg,_n:n})}try{sfx('swish')}catch(e){}}
+  if(a==='ring'){const k=10,o=Math.random()*6.28;for(let i=0;i<k;i++){const ang=o+i/k*6.283;SH.push({x:n.x,y:n.y-6*B.sz,vx:Math.cos(ang)*95,vy:Math.sin(ang)*95,t:2.4,d:B.dmg,_n:n})}try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'146-7')}}
   else if(a==='charge'){const l=dist||1;n.cbc={vx:dx/l,vy:dy/l,t:.65,ph:0}}
-  else if(a==='slam'){TG.push({x:P.x,y:P.y,r:26,t:1.05,d:B.dmg+1});try{sfx('talk')}catch(e){}}
-  else if(a==='summon'){const have=en.filter(m=>!m.dead&&m._cbs===n).length;for(let i=0;i<Math.min(2,4-have);i++){let sx=n.x+(i?18:-18),sy=n.y+8;if(solid(sx,sy)){sx=n.x;sy=n.y}const m=rgMake(B.sk,Math.max(4,Math.round(B.hp/12)),sx,sy);m._cbs=n;delete m.night;if(n.zc)m.zc=n.zc;try{RG_OWN.add(m)}catch(e){}en.push(m)}}}
- {SQUPD.wrap('146',_u=>function(dt){let pos=null;const L=[];try{if(!menuOpen&&!pnOpen&&!dead)for(const n of en){if(!n||!n.cb||n.dead||n._rp)continue;const B=CB[n.cb];if(!B)continue;if(away(B)){n.dead=1;n.dropped=1;continue}L.push([n,B,n.x,n.y])}}catch(e){}
+  else if(a==='slam'){TG.push({x:P.x,y:P.y,r:26,t:1.05,d:B.dmg+1});try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'146-8')}}
+  else if(a==='summon'){const have=en.filter(m=>!m.dead&&m._cbs===n).length;for(let i=0;i<Math.min(2,4-have);i++){let sx=n.x+(i?18:-18),sy=n.y+8;if(solid(sx,sy)){sx=n.x;sy=n.y}const m=rgMake(B.sk,Math.max(4,Math.round(B.hp/12)),sx,sy);m._cbs=n;delete m.night;if(n.zc)m.zc=n.zc;try{RG_OWN.add(m)}catch(e){self.SQERR&&SQERR(e,'146-9')}en.push(m)}}}
+ {SQUPD.wrap('146',_u=>function(dt){let pos=null;const L=[];try{if(!menuOpen&&!pnOpen&&!dead)for(const n of en){if(!n||!n.cb||n.dead||n._rp)continue;const B=CB[n.cb];if(!B)continue;if(away(B)){n.dead=1;n.dropped=1;continue}L.push([n,B,n.x,n.y])}}catch(e){self.SQERR&&SQERR(e,'146-10')}
    const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;
    try{for(const[n,B,x,y]of L){if(n.dead)continue;act(n,B,dt)}
     for(let i=SH.length-1;i>=0;i--){const s=SH[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.t-=dt;if(s.t<=0||solid(s.x,s.y)){SH.splice(i,1);continue}if(Math.hypot(s.x-P.x,s.y-(P.y-4))<8){const h0=P.hp;hit(s.d);if(P.hp<h0&&window.SQSHOTHIT)SQSHOTHIT(s);SH.splice(i,1)}}
     for(let i=TG.length-1;i>=0;i--){const q=TG[i];q.t-=dt;if(q.t<=0){if(Math.hypot(q.x-P.x,(q.y-P.y)*1.6)<q.r)hit(q.d);TG.splice(i,1)}}
     if(!L.length&&!en.some(n=>n&&n.cb&&!n.dead)){SH.length=0;TG.length=0}}catch(e){console.warn(e)}return out})}
  // beaten: remembered, announced
- {const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const B=n&&n.cb&&CB[n.cb];if(B&&!n._rp){DEAD[deadKey(B)]=Date.now()+B.rs*60000;try{localStorage.setItem(LSK,JSON.stringify(DEAD))}catch(e){}
-    addXp(0,Math.round(B.hp*2));setTimeout(()=>{try{say('You defeated '+B.n+'!');msgT=5;sfx('quest')}catch(e){}},300);for(const m of en)if(m._cbs===n&&!m.dead){m.dead=1;m.dropped=1}}}catch(e){}return out}}
+ {const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const B=n&&n.cb&&CB[n.cb];if(B&&!n._rp){DEAD[deadKey(B)]=Date.now()+B.rs*60000;try{localStorage.setItem(LSK,JSON.stringify(DEAD))}catch(e){self.SQERR&&SQERR(e,'146-11')}
+    addXp(0,Math.round(B.hp*2));setTimeout(()=>{try{say('You defeated '+B.n+'!');msgT=5;sfx('quest')}catch(e){self.SQERR&&SQERR(e,'146-12')}},300);for(const m of en)if(m._cbs===n&&!m.dead){m.dead=1;m.dropped=1}}}catch(e){self.SQERR&&SQERR(e,'146-13')}return out}}
  // ---- drawing: bigger, a health bar and name, the attacks ----
  {const _ps=pS;pS=function(n,tm){const B=n&&n.cb&&CB[n.cb];if(!B)return _ps.apply(this,arguments);const x=Math.round(n.x),y=Math.round(n.y);
    if(n.cbc&&n.cbc.ph===0){g.save();g.strokeStyle='rgba(255,70,40,'+(.5+.4*Math.sin(tm*30))+')';g.lineWidth=3;g.setLineDash([4,3]);g.beginPath();g.moveTo(x,y);g.lineTo(x+n.cbc.vx*120,y+n.cbc.vy*120);g.stroke();g.restore()}
@@ -63,8 +63,8 @@
    g.save();g.font='700 6px "Pixelify Sans",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(B.n,x,top-2);g.fillStyle='#ffd8c8';g.fillText(B.n,x,top-2);g.restore()}}
  {SQPP.before('146',(tm)=>{try{for(const q of TG){const p=1-q.t/1.05;g.fillStyle='rgba(255,60,30,'+(.15+.25*p)+')';g.strokeStyle='rgba(255,70,40,.85)';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,q.r,q.r/1.6,0,0,6.283);g.fill();g.stroke();
      g.beginPath();g.ellipse(q.x,q.y,q.r*p,q.r*p/1.6,0,0,6.283);g.stroke()}
-    for(const s of SH){if(window.SQSHOTDRAW&&SQSHOTDRAW(s))continue;g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(s.x,s.y,5,0,6.283);g.fill();Rg(Math.round(s.x)-2,Math.round(s.y)-2,4,4,'#181018');Rg(Math.round(s.x)-1,Math.round(s.y)-1,2,2,'#ffd060')}}catch(e){}})}
- window.SQBOSSES={CB,read,get dead(){return DEAD},clear(){DEAD={};try{localStorage.removeItem(LSK)}catch(e){}}};
+    for(const s of SH){if(window.SQSHOTDRAW&&SQSHOTDRAW(s))continue;g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(s.x,s.y,5,0,6.283);g.fill();Rg(Math.round(s.x)-2,Math.round(s.y)-2,4,4,'#181018');Rg(Math.round(s.x)-1,Math.round(s.y)-1,2,2,'#ffd060')}}catch(e){self.SQERR&&SQERR(e,'146-14')}})}
+ window.SQBOSSES={CB,read,get dead(){return DEAD},clear(){DEAD={};try{localStorage.removeItem(LSK)}catch(e){self.SQERR&&SQERR(e,'146-15')}}};
  // ---- Dev Suite > Bosses ----
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;const ST={sel:null,f:null};
  const sec=()=>S.draft.bosses||(S.draft.bosses={});const slug=n=>'cb_'+(String(n).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,20)||'boss');

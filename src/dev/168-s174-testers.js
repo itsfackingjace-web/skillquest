@@ -10,7 +10,7 @@
   try{const t=(await d.get(d.ref(F.D,'testers/'+u))).val()===true;if(!t){if(ON){ON=false;BETA=null}return}
    const B=(await d.get(d.ref(F.D,'assets/beta'))).val(),L=SQA.live;
    if(B&&L&&B.base===L.v){if(JSON.stringify(B)!==JSON.stringify(BETA)){BETA=B;ON=true;if(!SQA.previewing)SQA.preview(B);/* preview = applied without touching the stored live copy */}}
-   else if(ON){ON=false;BETA=null;if(!(window.SQSUITE&&SQSUITE.state&&SQSUITE.state.open))SQA.preview(null)}}catch(e){}}
+   else if(ON){ON=false;BETA=null;if(!(window.SQSUITE&&SQSUITE.state&&SQSUITE.state.open))SQA.preview(null)}}catch(e){self.SQERR&&SQERR(e,'168-1')}}
  setInterval(()=>{const u=uid();if(u&&checked!==u){checked=u;check()}tag.style.display=ON&&!(window.SQTITLE&&SQTITLE())?'block':'none'},1000);
  setInterval(check,5*60000);
  window.SQBETA={check,get on(){return ON},get beta(){return BETA}};
@@ -34,7 +34,7 @@
   const q=T.q.toLowerCase();if(q){const L=Object.entries(T.lb).filter(([u,r])=>r&&r.n&&!T.tst[u]&&String(r.n).toLowerCase().includes(q)).slice(0,12);
    h+=L.map(([u,r])=>'<div class="dv-hl"><span>'+E(r.n)+'</span><button class="dv-b" data-tsx="add:'+E(u)+'">Add</button></div>').join('')||'<p class="dv-mut">No match.</p>'}
   return h+'</div>'}
- document.addEventListener('input',e=>{if(S.tab!=='testers')return;const t=e.target;if(t.dataset&&t.dataset.tsq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-tsq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}},true);
+ document.addEventListener('input',e=>{if(S.tab!=='testers')return;const t=e.target;if(t.dataset&&t.dataset.tsq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-tsq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'168-2')}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='testers')return;const t=e.target.closest('[data-tsx]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();const[a,u]=t.dataset.tsx.split(':');
   try{if(a==='add'){await D().set(ref('testers/'+u),true);T.tst[u]=true;T.q='';toast(nm(u)+' is a tester.')}
    else if(a==='rm'){await D().set(ref('testers/'+u),null);delete T.tst[u];toast(nm(u)+' removed.')}

@@ -38,11 +38,11 @@
  box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.ch!=null)typeCh(b.dataset.ch);else op(b.dataset.op)});
  function open(el){K.open=true;K.el=el;K.num=el.type==='number'||el.inputMode==='numeric';K.buf=String(el.value||'');K.max=el.maxLength>0?el.maxLength:0;K.page=K.buf&&/[a-z]$/.test(K.buf)?'lo':'up';
   const lab=el.labels&&el.labels[0]?el.labels[0].textContent:el.getAttribute('aria-label')||el.placeholder||'';K.lbl=String(lab).trim().slice(0,40).toUpperCase()||'TYPE';
-  box.style.display='flex';draw();const f=box.querySelector('button');if(f)setFocus(f);try{sfx('talk')}catch(e){}}
+  box.style.display='flex';draw();const f=box.querySelector('button');if(f)setFocus(f);try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'150-1')}}
  function done(ok){const el=K.el;K.open=false;box.style.display='none';box.innerHTML='';K.el=null;if(!el)return;
   if(ok){let v=K.buf;if(K.num){const n=parseFloat(v);v=isFinite(n)?String(n):el.value}el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));
-   if(el.tagName==='INPUT'&&el.type!=='number'&&el.form&&v){try{el.form.requestSubmit?el.form.requestSubmit():el.form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))}catch(e){}}}
-  setTimeout(()=>{const r=navRoot();if(r&&r.contains(el)&&navItems(r).includes(el))setFocus(el);else setFocus(null)},0);try{sfx(ok?'pickup':'swish')}catch(e){}}
+   if(el.tagName==='INPUT'&&el.type!=='number'&&el.form&&v){try{el.form.requestSubmit?el.form.requestSubmit():el.form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))}catch(e){self.SQERR&&SQERR(e,'150-2')}}}
+  setTimeout(()=>{const r=navRoot();if(r&&r.contains(el)&&navItems(r).includes(el))setFocus(el);else setFocus(null)},0);try{sfx(ok?'pickup':'swish')}catch(e){self.SQERR&&SQERR(e,'150-3')}}
  window.SQOSK={open,done,state:K};
  // ---- 023's controller code: where the highlight lives, what it can reach, what ✕ does ----
  // a card inside a menu (the chest's item card, 011: any [role=dialog] in the panel) is its own screen: the highlight stays in
@@ -56,18 +56,18 @@
  const texty=e=>e&&(e.tagName==='TEXTAREA'||e.tagName==='INPUT'&&/^(text|search|number|email|url|tel|password|)$/.test(e.type||''));
  {const _np=navPress;navPress=function(){const el=GPF;if(GPON&&el&&!el.disabled){
     if(texty(el)){open(el);return}
-    if(el.tagName==='INPUT'&&(el.type==='checkbox'||el.type==='radio')){el.click();el.dispatchEvent(new Event('change',{bubbles:true}));try{sfx('talk')}catch(e){}return}
-    if(el.tagName==='SELECT'){const n=el.options.length;if(n){el.selectedIndex=(el.selectedIndex+1)%n;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));try{sfx('talk')}catch(e){}}return}}
+    if(el.tagName==='INPUT'&&(el.type==='checkbox'||el.type==='radio')){el.click();el.dispatchEvent(new Event('change',{bubbles:true}));try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'150-4')}return}
+    if(el.tagName==='SELECT'){const n=el.options.length;if(n){el.selectedIndex=(el.selectedIndex+1)%n;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'150-5')}}return}}
    return _np.apply(this,arguments)}}
  // ---- the keyboard's own buttons, and ○ on popups (taken before 023 sees them) ----
  const B={X:0,O:1,SQ:2,TRI:3,L1:4,R1:5,OPT:9};let prev=[];
- {const _pp=pollPad;pollPad=function(dt){let gp=null;try{const a=navigator.getGamepads?navigator.getGamepads():[];gp=(GPI!=null&&a[GPI])||[...a].find(g=>g&&g.connected)||null}catch(e){}
+ {const _pp=pollPad;pollPad=function(dt){let gp=null;try{const a=navigator.getGamepads?navigator.getGamepads():[];gp=(GPI!=null&&a[GPI])||[...a].find(g=>g&&g.connected)||null}catch(e){self.SQERR&&SQERR(e,'150-6')}
    if(gp&&GPON){const down=i=>!!(gp.buttons[i]&&(gp.buttons[i].pressed||gp.buttons[i].value>.5)),pr=i=>down(i)&&!prev[i]&&!GPPREV[i],take=i=>{GPPREV[i]=true};
     if(K.open){if(pr(B.O)){take(B.O);if(K.buf)op('del',GPF&&(GPF.dataset.ch||GPF.dataset.op));else done(false)}
      if(pr(B.TRI)&&!K.num){take(B.TRI);op('space')}if(pr(B.SQ)&&!K.num){take(B.SQ);op('case',GPF&&(GPF.dataset.ch||GPF.dataset.op))}
      if(pr(B.R1)&&!K.num){take(B.R1);op('sym',GPF&&(GPF.dataset.ch||GPF.dataset.op))}if(pr(B.OPT)){take(B.OPT);done(true)}if(down(B.L1))take(B.L1)}
     else{const r=popRoot();if(r&&pr(B.O)){take(B.O);const no=r.querySelector('.no');if(no)no.click()}if(r&&pr(B.OPT))take(B.OPT);
-     const c=!r&&pnOpen&&cardIn(pn);if(c&&(pr(B.O)||pr(B.OPT))){take(B.O);take(B.OPT);const x=cardClose(c);if(x){x.click();try{sfx('talk')}catch(e){}}}
+     const c=!r&&pnOpen&&cardIn(pn);if(c&&(pr(B.O)||pr(B.OPT))){take(B.O);take(B.OPT);const x=cardClose(c);if(x){x.click();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'150-7')}}}
      if(c){take(B.L1);take(B.R1)}}
     prev=gp.buttons.map(b=>b.pressed||b.value>.5)}
    return _pp.apply(this,arguments)}}

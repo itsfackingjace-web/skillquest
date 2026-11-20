@@ -16,7 +16,7 @@
   'bat':'Bat','skel':'Skeleton','skel:ember':'Ember skeleton','skel:dust':'Dust skeleton','skel:rime':'Rime skeleton','scorp':'Scorpion','beetle:cinder':'Cinder beetle','crab':'Reef crawler',
   'guard':'Drowned guardian','bandit':'Bandit','cacti':'Cacticus','gscorp':'Giant scorpion'};
  const MOBS={};for(const[k,n,hp,rg]of[['slime','Slime',3,null],['wolf','Wolf',5,null],['skel','Skeleton',6,null]])MOBS[k]={n,hp,rg};
- try{for(const rg in RG_FAUNA){const F=RG_FAUNA[rg];for(const e of(F.day||[]).concat(F.night||[]))if(!MOBS[e[0]])MOBS[e[0]]={n:NAMES[e[0]]||e[0],hp:e[1],rg}}}catch(e){}
+ try{for(const rg in RG_FAUNA){const F=RG_FAUNA[rg];for(const e of(F.day||[]).concat(F.night||[]))if(!MOBS[e[0]])MOBS[e[0]]={n:NAMES[e[0]]||e[0],hp:e[1],rg}}}catch(e){self.SQERR&&SQERR(e,'117-1')}
  const TOUGH=[1,1.6,2.5,4];
  // ---- monster zones ----
  const zonesOf=(id,I)=>{const out=(Array.isArray(I.zn)?I.zn:[]).slice(0,24).map((Z,k)=>Z&&{k,x:(Z.x|0)+A.ISL_PAD,y:(Z.y|0)+A.ISL_PAD,w:Math.max(1,Z.w|0),h:Math.max(1,Z.h|0),
@@ -43,12 +43,12 @@
   // monsters that wander far from their zone (and aren't chasing you) drift back
   if((leashT-=dt)>0)return;leashT=.5;for(const n of en){if(n.dead||n._rp||n.zc!==id||n.zi==='all')continue;const z=Z.find(q=>q.k===n.zi);if(!z){n.dead=1;continue}
    const cx=(z.x+z.w/2)*16,cy=(z.y+z.h/2)*16,out=n.x<(z.x-5)*16||n.x>(z.x+z.w+5)*16||n.y<(z.y-5)*16||n.y>(z.y+z.h+5)*16;
-   if(out&&Math.hypot(n.x-P.x,n.y-P.y)>130){const d=Math.hypot(cx-n.x,cy-n.y)||1;try{stepTo(n,(cx-n.x)/d*20,(cy-n.y)/d*20)}catch(e){}}}}
+   if(out&&Math.hypot(n.x-P.x,n.y-P.y)>130){const d=Math.hypot(cx-n.x,cy-n.y)||1;try{stepTo(n,(cx-n.x)/d*20,(cy-n.y)/d*20)}catch(e){self.SQERR&&SQERR(e,'117-2')}}}}
  const _ru=rgUpd;rgUpd=function(R,dt){const I=R&&isl(R.region);if(!I)return _ru.apply(this,arguments);
   rgTick(R,dt);// regrowing, landmarks
   // anything we didn't place (Hollow's night spawner) doesn't belong here; shared monsters from other players stay
   for(const n of en)if(!RG_OWN.has(n)){RG_OWN.add(n);if(n.type!=='boss'&&!n._rp&&n.zc!==R.region)n.dead=1}
-  const dkx=(R.dock[0]+.5)*16,dky=(R.dock[1]+.5)*16;for(const n of en){if(n.dead||n._rp)continue;const dd=Math.hypot(n.x-dkx,n.y-dky);if(dd<72&&!n.summon){const l=dd||1;try{stepTo(n,(n.x-dkx)/l*40*dt,(n.y-dky)/l*40*dt)}catch(e){}}}
+  const dkx=(R.dock[0]+.5)*16,dky=(R.dock[1]+.5)*16;for(const n of en){if(n.dead||n._rp)continue;const dd=Math.hypot(n.x-dkx,n.y-dky);if(dd<72&&!n.summon){const l=dd||1;try{stepTo(n,(n.x-dkx)/l*40*dt,(n.y-dky)/l*40*dt)}catch(e){self.SQERR&&SQERR(e,'117-3')}}}
   try{zoneTick(R,I,dt)}catch(e){console.warn('zones',e)}};
  // ---- people ----
  const SAID={};// "island:index" -> how many lines you've heard
@@ -56,7 +56,7 @@
  const npcs=()=>{if(!SCENE&&window.SQHOLLOWP)return SQHOLLOWP.npcs();const R=here();return R&&isl(R.region)?R.items.filter(it=>it.t==='lm'&&it.k==='npc'):[]};
  const near=()=>{let best=null,bd=26;for(const it of npcs()){const d=Math.hypot(it.x*16+8-P.x,it.y*16+10-P.y);if(d<bd){bd=d;best=it}}return best};
  function talkTo(it){const R=here()||(!SCENE&&window.SQHOLLOWP?SQHOLLOWP.R:null);if(!R)return;try{if(window.SQNPCROLE&&SQNPCROLE(it,R))return}catch(e){console.warn(e)}const L=it.lines&&it.lines.length?it.lines:['...'],k=R.region+':'+it.ni,i=(SAID[k]|0)%L.length;SAID[k]=i+1;
-  say(it.name+': "'+L[i]+'"');msgT=Math.max(4,Math.min(9,L[i].length/14));bub={it,tx:L[i],at:performance.now()};try{sfx('talk')}catch(e){}}
+  say(it.name+': "'+L[i]+'"');msgT=Math.max(4,Math.min(9,L[i].length/14));bub={it,tx:L[i],at:performance.now()};try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'117-4')}}
  const _uf=useFurn;useFurn=function(it){if(it&&it.use==='npc'){talkTo(it);return}return _uf.apply(this,arguments)};
  const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=near();if(n){talkTo(n);return}}return _t.apply(this,arguments)};
  tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=near();if(n){e.preventDefault();e.stopImmediatePropagation();talkTo(n)}},{passive:false,capture:true});
@@ -65,7 +65,7 @@
  function wrap(t,n){const w=t.split(' '),out=[];let l='';for(const x of w){if((l+' '+x).trim().length>n&&l){out.push(l);l=x}else l=(l+' '+x).trim()}if(l)out.push(l);return out.slice(0,4)}
  const _df=drawFurn;drawFurn=function(it,tm){
   if(it&&it.t==='lm'&&it.k==='npc'){const x=it.x*16+8,y=it.y*16+10,cl=Math.hypot(x-P.x,y-P.y)<60,dir=cl?(Math.abs(P.x-x)>Math.abs(P.y-y)?2:P.y<y?1:0):0,fl=cl&&P.x<x;
-   try{shd(x,y+6,12)}catch(e){}GC=g;try{cP(it.look||{},dir,0,x,y,fl)}catch(e){}
+   try{shd(x,y+6,12)}catch(e){self.SQERR&&SQERR(e,'117-5')}GC=g;try{cP(it.look||{},dir,0,x,y,fl)}catch(e){self.SQERR&&SQERR(e,'117-6')}
    g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.lineJoin='round';g.strokeStyle='#181018';g.strokeText(it.name,x,y-22);g.fillStyle='#e8ffe0';g.fillText(it.name,x,y-22);
    if(bub&&bub.it===it){const now=performance.now();window.SQNPCSAY={x,y,said:{m:bub.tx,at:bub.at},seen:now}}
    if(bub&&bub.it===it&&performance.now()-bub.at<5000&&!(window.SQBUBBLES&&SQBUBBLES.last&&SQBUBBLES.last.npc&&performance.now()-SQBUBBLES.last.npc<250)){const ls=wrap(bub.tx,26),w=Math.ceil(Math.max(...ls.map(l=>g.measureText(l).width)))+10,h=ls.length*8+6,bx=Math.round(x-w/2),by=y-35-h;
@@ -86,8 +86,8 @@
  const IMG=new Map(),LAY=new WeakMap();
  const okUrl=u=>typeof u==='string'&&u.length<12000&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(u);
  function img(u){let m=IMG.get(u);if(!m){m=new Image();m.src=u;IMG.set(u,m)}return m.complete&&m.naturalWidth?m:null}
- function layer(I){let L=LAY.get(I);if(L)return L;L=null;if(typeof I.c==='string'&&Array.isArray(I.ct)&&I.ct.length){try{const s=A.unpack(I.c);if(s.length===I.w*I.h)L=s}catch(e){}}LAY.set(I,L);return L}
+ function layer(I){let L=LAY.get(I);if(L)return L;L=null;if(typeof I.c==='string'&&Array.isArray(I.ct)&&I.ct.length){try{const s=A.unpack(I.c);if(s.length===I.w*I.h)L=s}catch(e){self.SQERR&&SQERR(e,'117-7')}}LAY.set(I,L);return L}
  const _bg=ROOMBG;ROOMBG=function(R2){const out=_bg.apply(this,arguments);try{const R=R2&&R2.region?R2:null,I=R&&isl(R.region);if(!I)return out;const L=layer(I);if(!L)return out;
    const v=rgView(),P0=A.ISL_PAD,x0=Math.max(0,Math.floor(v.x0/16)-P0),x1=Math.min(I.w-1,Math.ceil(v.x1/16)-P0),y0=Math.max(0,Math.floor(v.y0/16)-P0),y1=Math.min(I.h-1,Math.ceil(v.y1/16)-P0);
-   g.imageSmoothingEnabled=false;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const ch=L[y*I.w+x];if(!ch||ch==='.')continue;const T=I.ct[HEX.indexOf(ch)];if(!T||!okUrl(T.p))continue;const m=img(T.p);if(m)g.drawImage(m,(x+P0)*16,(y+P0)*16,16,16)}}catch(e){}return out};
+   g.imageSmoothingEnabled=false;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const ch=L[y*I.w+x];if(!ch||ch==='.')continue;const T=I.ct[HEX.indexOf(ch)];if(!T||!okUrl(T.p))continue;const m=img(T.p);if(m)g.drawImage(m,(x+P0)*16,(y+P0)*16,16,16)}}catch(e){self.SQERR&&SQERR(e,'117-8')}return out};
  window.SQISLIFE={MOBS,TOUGH,zonesOf,okUrl,talkTo,near}})();

@@ -38,7 +38,7 @@
   // its description: the stats line (food: heals / food, like the game's own food) + its own words, or a plain line when
   // it has none (an item saved with an empty description, or one that held only its stats, showed nothing at all)
   try{const own=window.SQSTRIPSTATS?SQSTRIPSTATS(o.d):o.d,st=o.t==='mat'?'':[o.heal?'Heals '+o.heal+' HP':'',o.t==='food'&&o.hun?'Food +'+o.hun:''].filter(Boolean).join(' · '),mn=o.t==='pot'&&o.mana?'Restores '+o.mana+' mana':'';
-   IDESC[k]=[st,mn].filter(Boolean).map(x=>x+'. ').join('')+(own||(o.t==='food'?'Something good to eat. EAT it to heal and fill up.':o.t==='pot'?'A potion. USE it from your bag.':'Used to make things.'))}catch(e){}
+   IDESC[k]=[st,mn].filter(Boolean).map(x=>x+'. ').join('')+(own||(o.t==='food'?'Something good to eat. EAT it to heal and fill up.':o.t==='pot'?'A potion. USE it from your bag.':'Used to make things.'))}catch(e){self.SQERR&&SQERR(e,'162-1')}
   if(PEND[k]){inv[k]=(inv[k]|0)+PEND[k];delete PEND[k]}else inv[k]=inv[k]|0}
  function items(L){const want={};for(const id in L){const o=L[id];if(!/^it_[a-z0-9_]{1,30}$/.test(id)||!o||typeof o!=='object')continue;const n=clean(o.n,30);if(!n)continue;
    const t=['food','pot'].includes(o.t)?o.t:'mat';want[id]={n,pl:clean(o.pl,32)||n,d:clean(o.d,300),v:num(o.v,0,1e7,1)|0,t,heal:num(o.heal,0,6,0)|0,hun:num(o.hun,0,100,t==='food'?20:0)|0,
@@ -47,19 +47,19 @@
   for(const k in MV)delete MV[k];for(const k in want)if(want[k].mv)MV[k]=want[k].mv;merge()}
  const MV={};// merged items: key -> the item it turns into
  function merge(){for(const k in MV){const t=MV[k];if(t===k||!INAME[t]||MV[t])continue;const n=inv[k]|0;if(n>0){inv[t]=(inv[t]|0)+n;inv[k]=0}}}
- {let mt=0;SQUPD.after('162',(dt)=>{if((mt+=dt)>2){mt=0;try{merge()}catch(e){}}})}
- {SQLOAD.after('162',()=>{try{merge()}catch(e){}})}
+ {let mt=0;SQUPD.after('162',(dt)=>{if((mt+=dt)>2){mt=0;try{merge()}catch(e){self.SQERR&&SQERR(e,'162-2')}}})}
+ {SQLOAD.after('162',()=>{try{merge()}catch(e){self.SQERR&&SQERR(e,'162-3')}})}
  {const _uf=useFood;useFood=function(k){const o=POT[k];if(!o)return _uf.apply(this,arguments);if((inv[k]|0)<1)return;inv[k]--;const got=[];
    if(o.heal){P.hp=Math.min(6,P.hp+o.heal);got.push('+'+o.heal+' HP')}if(o.mana){MANA=Math.min(typeof maxMP==='function'?maxMP():10,MANA+o.mana);got.push('+'+o.mana+' mana')}
    if(o.buff&&window.LUX&&LUX.BUFF){LUX.BUFF[o.buff]=performance.now()+o.bs*1000;got.push({str:'stronger hits',iron:'better blocks',swift:'free sprinting',wis:'+20% XP',regen:'regeneration'}[o.buff]+' for '+(o.bs>=120?Math.round(o.bs/60)+' min':o.bs+' s'))}
-   say('You drink the '+o.n.toLowerCase()+(got.length?': '+got.join(', '):'')+'.');try{sfx('quest')}catch(e){}saveLocal(true);if(pnOpen)rPn()}}
+   say('You drink the '+o.n.toLowerCase()+(got.length?': '+got.join(', '):'')+'.');try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'162-4')}saveLocal(true);if(pnOpen)rPn()}}
  {SQEAT.wrap('162 content potions are not eaten',_e=>function(){const keep={};for(const k in POT){keep[k]=inv[k]|0;inv[k]=0}try{return _e.apply(this,arguments)}finally{for(const k in keep)inv[k]=(inv[k]|0)+keep[k]}})}
- {SQSAVE.after('162:cq',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){}})}
+ {SQSAVE.after('162:cq',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];if(Object.keys(CQ).length)s.cq={...CQ}}catch(e){self.SQERR&&SQERR(e,'162-5')}})}
  {SQLOAD.wrap('162',_ap=>function(S){for(const k in PEND)delete PEND[k];const out=_ap.apply(this,arguments);
-   try{if(S&&S.inv)for(const k in S.inv)if(/^it_/.test(k)&&+S.inv[k]>0){if(REG.has(k))inv[k]=Math.min(1e6,+S.inv[k]|0);else PEND[k]=Math.min(1e6,+S.inv[k]|0)}}catch(e){}
-   for(const k in CQ)delete CQ[k];try{if(S&&S.cq&&typeof S.cq==='object')for(const k in S.cq){const v=+S.cq[k];if(/^q_[a-z0-9_]{1,30}[#@!]?$/.test(k)&&isFinite(v))CQ[k]=Math.max(0,Math.min(1e6,v|0))}}catch(e){}return out})}
+   try{if(S&&S.inv)for(const k in S.inv)if(/^it_/.test(k)&&+S.inv[k]>0){if(REG.has(k))inv[k]=Math.min(1e6,+S.inv[k]|0);else PEND[k]=Math.min(1e6,+S.inv[k]|0)}}catch(e){self.SQERR&&SQERR(e,'162-6')}
+   for(const k in CQ)delete CQ[k];try{if(S&&S.cq&&typeof S.cq==='object')for(const k in S.cq){const v=+S.cq[k];if(/^q_[a-z0-9_]{1,30}[#@!]?$/.test(k)&&isFinite(v))CQ[k]=Math.max(0,Math.min(1e6,v|0))}}catch(e){self.SQERR&&SQERR(e,'162-7')}return out})}
  {const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];for(const k in CQ)delete CQ[k];return _ng.apply(this,arguments)}}
- try{KNOWN49.add('cq')}catch(e){}
+ try{KNOWN49.add('cq')}catch(e){self.SQERR&&SQERR(e,'162-8')}
  // ======================= recipes =======================
  const ADDED={GOODS:[],SM:[],COOKS:[],STOVE:[]};
  const takeOut=(L,name)=>{for(const r of ADDED[name]){const i=L.indexOf(r);if(i>=0)L.splice(i,1)}ADDED[name]=[]};
@@ -71,7 +71,7 @@
    else if(sk==='stove'){const g={k:r.out,n,c,lv,xp,_cu:id};SVL.push(g);ADDED.STOVE.push(g)}// a meal on the cooking stove (184)
    else if(sk==='cook'){const raw=Object.keys(c)[0];const g={raw,ck:r.out,n:(INAME[raw]||raw).toLowerCase(),lv,xp,_cu:id};COOKS.push(g);ADDED.COOKS.push(g)}
    else{const g={k:r.out,n,c,lv,xp,_cu:id};if(sk==='smelt')g.smelt=1;SM.push(g);ADDED.SM.push(g)}}
-  try{if(typeof UL39==='function'&&typeof ulSmith!=='undefined'){const o=UL39(SM,r=>r.lv,r=>(r.smelt?'Smelt ':'Forge ')+r.n.toLowerCase()+(r.def?' (wear at Defence '+r.def+')':''));for(const k in ulSmith)delete ulSmith[k];Object.assign(ulSmith,o)}}catch(e){}
+  try{if(typeof UL39==='function'&&typeof ulSmith!=='undefined'){const o=UL39(SM,r=>r.lv,r=>(r.smelt?'Smelt ':'Forge ')+r.n.toLowerCase()+(r.def?' (wear at Defence '+r.def+')':''));for(const k in ulSmith)delete ulSmith[k];Object.assign(ulSmith,o)}}catch(e){self.SQERR&&SQERR(e,'162-9')}
   C.recipes=out}
  // ======================= shops =======================
  const SHOPL={gen:typeof GEN!=='undefined'?GEN:null,bw:typeof SHOPBW!=='undefined'?SHOPBW:null,af:typeof SHOPAF!=='undefined'?SHOPAF:null};
@@ -83,16 +83,16 @@
    else if(/^cs_[a-z0-9_]{1,30}$/.test(id))out[id]={n:clean(o.n,40)||'Shop',add:st}}
   C.shops=out}
  let CS=null;// the custom shop open now
- function openShop(id,who){const o=C.shops[id];if(!o)return false;CS={id,who};shop='cshop';pnOpen=true;ptab=2;jx=jy=0;try{fromMenu=false}catch(e){}pn.style.display='block';rPn();try{sfx('talk')}catch(e){}return true}
+ function openShop(id,who){const o=C.shops[id];if(!o)return false;CS={id,who};shop='cshop';pnOpen=true;ptab=2;jx=jy=0;try{fromMenu=false}catch(e){self.SQERR&&SQERR(e,'162-10')}pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'162-11')}return true}
  function shopHTML(){const o=C.shops[CS.id];if(!o)return'';let h='<div class="tl">'+esc(o.n)+'</div>'+(CS.who?'<div class="tl" style="font-weight:400;font-size:12px;opacity:.7;margin-top:-6px">Run by '+esc(CS.who)+'</div>':'')+'<div class="tl" style="margin-top:12px">Buy</div><div class="qc"><small>Gold: '+GLD+'</small></div>';
   o.add.forEach((q,i)=>{h+='<button class="sb" data-csh="b'+i+'" style="opacity:'+(GLD>=q.c?1:.45)+'">'+(q.m>1?q.m+' ':'')+esc(q.m>1?(SN[q.k]||INAME[q.k]):INAME[q.k])+'<br><small>'+q.c+' gold</small></button>'});
   if(!o.add.length)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing for sale right now.</div>';
   h+='<div class="tl" style="margin-top:12px">Sell</div>';let any=0;for(const k in SELLP){const c=inv[k]|0;if(c<=0||!SELLP[k])continue;any=1;h+='<button class="sb" data-csh="s'+k+'">Sell all '+esc(SN[k]||INAME[k]||k)+' ('+c+')<br><small>+'+c*SELLP[k]+' gold</small></button>'}
   if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing to sell</div>';return h}
- {const _r=rPn;rPn=function(){if(ptab===2&&shop==='cshop'&&CS){try{panelChrome('')}catch(e){}pbd.innerHTML=shopHTML();return}return _r.apply(this,arguments)}}
+ {const _r=rPn;rPn=function(){if(ptab===2&&shop==='cshop'&&CS){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'162-12')}pbd.innerHTML=shopHTML();return}return _r.apply(this,arguments)}}
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='cshop'&&CS){const b=e.target.closest('[data-csh]');if(b){const a=b.dataset.csh,o=C.shops[CS.id];
      if(a[0]==='b'){const q=o&&o.add[+a.slice(1)];if(!q)return;if(GLD<q.c){say('Not enough gold');sfx('swish');return}GLD-=q.c;inv[q.k]=(inv[q.k]|0)+q.m;say('Bought '+(q.m>1?q.m+' ':'')+(q.m>1?SN[q.k]||INAME[q.k]:INAME[q.k]).toLowerCase()+'.');sfx('coin')}
-     else{const k=a.slice(1),c=inv[k]|0;if(c>0&&SELLP[k]){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){}saveLocal(true);rPn();return}}return _oc(e)}}
+     else{const k=a.slice(1),c=inv[k]|0;if(c>0&&SELLP[k]){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){self.SQERR&&SQERR(_,'162-13')}saveLocal(true);rPn();return}}return _oc(e)}}
  {const _cp=closePanel;closePanel=function(){if(shop==='cshop'){CS=null;shop=null}return _cp.apply(this,arguments)}}
  // ======================= quests =======================
  // A quest is one or more steps handed in to the giver one after another (step 0 = the quest's own t/k/amt/take/d, then
@@ -134,17 +134,17 @@
  function finish(id,q,who,ci){const s=cur(id,q);if(s.take)inv[s.k]=Math.max(0,(inv[s.k]|0)-s.amt);CQ[id]=99;delete CQ[id+'#'];delete CQ[id+'@'];
   const c=ci!=null&&q.ch[ci]||null;if(c)CQ[id+'!']=ci;for(const r of c?[q,c]:[q]){if(r.g)GLD+=r.g;if(r.xp&&r.xs>=0)addXp(r.xs,r.xp);if(r.rk)inv[r.rk]=(inv[r.rk]|0)+r.rn}
   const R=[rw(q),c?rw(c):''].filter(Boolean).join(' · ');
-  say(who+': "'+((c&&c.say)||q.ld||'Thank you!')+'" Quest complete: '+q.n+(R?' ('+R+')':'')+'.');msgT=7;try{sfx('quest');svg()}catch(e){}saveLocal(true)}
+  say(who+': "'+((c&&c.say)||q.ld||'Thank you!')+'" Quest complete: '+q.n+(R?' ('+R+')':'')+'.');msgT=7;try{sfx('quest');svg()}catch(e){self.SQERR&&SQERR(e,'162-14')}saveLocal(true)}
  function advance(id,q,who){const s=cur(id,q);if(s.take)inv[s.k]=Math.max(0,(inv[s.k]|0)-s.amt);CQ[id+'@']=si(id,q)+1;CQ[id+'#']=0;const n=cur(id,q);
-  say(who+': "'+(n.say||'Good. There\'s more.')+'" Next'+ofN(id,q)+': '+stepTxt(n)+'.');msgT=Math.min(10,4+(n.say||'').length/20);try{sfx('quest');svg()}catch(e){}saveLocal(true)}
+  say(who+': "'+(n.say||'Good. There\'s more.')+'" Next'+ofN(id,q)+': '+stepTxt(n)+'.');msgT=Math.min(10,4+(n.say||'').length/20);try{sfx('quest');svg()}catch(e){self.SQERR&&SQERR(e,'162-15')}saveLocal(true)}
  // ---- the choice card (ptab 42) ----
  const CTAB=42;let CH=null;// {id, who}
- function openChoice(id,who){CH={id,who};pnOpen=true;ptab=CTAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){}}
+ function openChoice(id,who){CH={id,who};pnOpen=true;ptab=CTAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'162-16')}}
  function choiceHTML(){const q=CH&&C.quests[CH.id];if(!q)return'';let h='<div class="tl">'+esc(CH.who.toUpperCase())+'</div><div class="qc" style="font-size:13px"><b>'+esc(q.n)+'</b><br>'+esc(q.ld||'You did it. What would you like as thanks?')+'</div>';
   if(rw(q))h+='<div class="qc" style="font-size:12px;opacity:.8">Reward: '+esc(rw(q))+'</div>';
   q.ch.forEach((c,i)=>{h+='<button class="sb" data-qch="'+i+'" style="display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px"><b>'+esc(c.l)+'</b>'+(rw(c)?'<br><small>'+esc(rw(c))+'</small>':'')+'</button>'});
   return h+'<div class="qc" style="font-size:11px;opacity:.7">Your choice is final and can change what comes next.</div><div class="pmb"><button class="sb no" data-qch="x">NOT YET</button></div>'}
- {const _r=rPn;rPn=function(){if(ptab!==CTAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){}const q=CH&&C.quests[CH.id];if(!q||CQ[CH.id]!==1){closePanel();return}pbd.innerHTML=choiceHTML()}}
+ {const _r=rPn;rPn=function(){if(ptab!==CTAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'162-17')}const q=CH&&C.quests[CH.id];if(!q||CQ[CH.id]!==1){closePanel();return}pbd.innerHTML=choiceHTML()}}
  pbd.addEventListener('click',e=>{if(ptab!==CTAB||!pnOpen)return;const b=e.target.closest('[data-qch]');if(!b)return;e.stopPropagation();e.preventDefault();const v=b.dataset.qch,c=CH;closePanel();
   if(v==='x'||!c)return;const q=C.quests[c.id];if(q&&CQ[c.id]===1&&ready(c.id,q))finish(c.id,q,c.who,+v)},true);
  // ======================= island people with a job =======================
@@ -152,8 +152,8 @@
   m=/^quest:(.+)$/.exec(ro);if(!m)return false;const who=it.name||'Islander';
   for(const id of expand(m[1])){const q=C.quests[id];if(!q||!open(id,q))continue;
    if(CQ[id]===1){if(ready(id,q)){if(si(id,q)<q.S.length-1)advance(id,q,who);else if(q.ch.length)openChoice(id,who);else finish(id,q,who);return true}
-    const s=cur(id,q);say(who+': "'+(q.lp?q.lp+' ':'')+stepTxt(s)+(s.t==='visit'?'':' ('+prog(id,q)+'/'+s.amt+')')+'."');msgT=6;try{sfx('talk')}catch(e){}return true}
-   CQ[id]=1;CQ[id+'@']=0;CQ[id+'#']=0;say(who+': "'+(q.d||q.n)+'" New quest: '+q.n+ofN(id,q)+'. '+stepTxt(q.S[0])+'.');msgT=Math.min(10,4+(q.d||'').length/20);try{sfx('quest')}catch(e){}saveLocal(true);return true}
+    const s=cur(id,q);say(who+': "'+(q.lp?q.lp+' ':'')+stepTxt(s)+(s.t==='visit'?'':' ('+prog(id,q)+'/'+s.amt+')')+'."');msgT=6;try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'162-18')}return true}
+   CQ[id]=1;CQ[id+'@']=0;CQ[id+'#']=0;say(who+': "'+(q.d||q.n)+'" New quest: '+q.n+ofN(id,q)+'. '+stepTxt(q.S[0])+'.');msgT=Math.min(10,4+(q.d||'').length/20);try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'162-19')}saveLocal(true);return true}
   // nothing open: a quest that needs a level says so
   for(const id of expand(m[1])){const q=C.quests[id];if(q&&CQ[id]!==99&&q.rq&&!lvOk(q)&&(!q.after||CQ[q.after]===99)){say(who+': "Come back when your '+(SKN[q.rq.s]||'skill')+' is level '+q.rq.l+'."');msgT=5;return true}}
   return false};
@@ -161,12 +161,12 @@
  {const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{if(n&&!n._rp){const k=mkeyOf(n);
    for(const id in C.quests){const q=C.quests[id];if(CQ[id]!==1)continue;const s=cur(id,q);if(s.t==='kill'&&(s.k===k||s.k===n.type||s.k===n.rk)){CQ[id+'#']=(CQ[id+'#']|0)+1;if(CQ[id+'#']===s.amt){say('Quest: '+q.n+ofN(id,q)+' — done! Go back to '+(GIVERS[id]?GIVERS[id].name:'them')+'.');msgT=5}}}
    for(const tid in C.loot){const T=C.loot[tid];if(T.on.length&&(T.on.includes(k)||T.on.includes(n.type))&&Math.random()*100<T.p)give(roll(tid),'Loot')}}}catch(e){console.warn('content',e)}return out}}
- setInterval(()=>{try{const r=typeof curRegion==='function'?curRegion():'hollow';for(const id in C.quests){const q=C.quests[id];if(CQ[id]!==1)continue;const s=cur(id,q);if(s.t==='visit'&&s.k===r&&!CQ[id+'#']){CQ[id+'#']=1;say('Quest: '+q.n+ofN(id,q)+' — you made it! Go back to '+(GIVERS[id]?GIVERS[id].name:'them')+'.');msgT=5}}}catch(e){}},1000);
+ setInterval(()=>{try{const r=typeof curRegion==='function'?curRegion():'hollow';for(const id in C.quests){const q=C.quests[id];if(CQ[id]!==1)continue;const s=cur(id,q);if(s.t==='visit'&&s.k===r&&!CQ[id+'#']){CQ[id+'#']=1;say('Quest: '+q.n+ofN(id,q)+' — you made it! Go back to '+(GIVERS[id]?GIVERS[id].name:'them')+'.');msgT=5}}}catch(e){self.SQERR&&SQERR(e,'162-20')}},1000);
  // ======================= monsters =======================
  const keyOf=id=>'cm:'+id.slice(3).replace(/_/g,'').replace(/[0-9]/g,d=>'abcdefghij'[d]);const CM={};
  function mobs(L){for(const k in CM){delete MOBS()[k];delete CM[k]}const out={};for(const id in L){const m=L[id];if(!/^cm_[a-z0-9_]{1,24}$/.test(id)||!m||typeof m!=='object')continue;
    const base=typeof m.base==='string'&&MOBS()[m.base]&&!/^c[bm]:/.test(m.base)?m.base:'wolf',key=keyOf(id),o={n:clean(m.n,30)||'Monster',base,hp:num(m.hp,1,3000,10)|0,key};
-   CM[key]=o;MOBS()[key]={n:o.n,hp:o.hp,rg:null};out[id]=o}C.mobs=out;try{window.SQPROPS&&SQPROPS.recat&&SQPROPS.recat()}catch(e){}}
+   CM[key]=o;MOBS()[key]={n:o.n,hp:o.hp,rg:null};out[id]=o}C.mobs=out;try{window.SQPROPS&&SQPROPS.recat&&SQPROPS.recat()}catch(e){self.SQERR&&SQERR(e,'162-21')}}
  {const _mk=rgMake;rgMake=function(key,hp,x,y){const M=CM[key];if(!M)return _mk.apply(this,arguments);const n=_mk(M.base,hp,x,y);if(n){n.hp=n.mhp=M.hp;n.rk=key;delete n.rv;n.cm=key}return n}}
  // ======================= loot tables =======================
  function loot(L){const out={};for(const id in L){const T=L[id];if(!/^lt_[a-z0-9_]{1,30}$/.test(id)||!T||typeof T!=='object')continue;
@@ -177,7 +177,7 @@
  function roll(id){const T=C.loot[id],r={};if(!T)return r;if(T.g[1]>0){const v=rnd(T.g[0],T.g[1]);if(v)r.gold=v}const W=T.e.reduce((s,q)=>s+q.w,0);
   for(let i=0;i<T.r&&W>0;i++){let x=Math.random()*W;for(const q of T.e){x-=q.w;if(x<0){r[q.k]=(r[q.k]|0)+rnd(q.a,q.b);break}}}return r}
  function give(r,why){const parts=[];for(const k in r){if(k==='gold'){GLD+=r[k];parts.push(r[k]+' gold')}else if(INAME[k]){inv[k]=(inv[k]|0)+r[k];parts.push(r[k]+' '+(r[k]>1?SN[k]||INAME[k]:INAME[k]).toLowerCase())}}
-  if(parts.length){try{drops.push({x:P.x,y:P.y-18,t:0,tx:'+'+parts.join(', '),c:'#f8d848'})}catch(e){}try{svg()}catch(e){}}return parts}
+  if(parts.length){try{drops.push({x:P.x,y:P.y-18,t:0,tx:'+'+parts.join(', '),c:'#f8d848'})}catch(e){self.SQERR&&SQERR(e,'162-22')}try{svg()}catch(e){self.SQERR&&SQERR(e,'162-23')}}return parts}
  // ======================= apply =======================
  SQA.onApply(lib=>{LIB=lib||{};const L=LIB.content||{};try{items(L.items||{})}catch(e){console.warn('content items',e)}try{recipes(L.recipes||{})}catch(e){console.warn('content recipes',e)}
   try{shops(L.shops||{})}catch(e){console.warn('content shops',e)}try{mobs(L.mobs||{})}catch(e){console.warn('content mobs',e)}try{loot(L.loot||{})}catch(e){console.warn('content loot',e)}try{quests(L.quests||{})}catch(e){console.warn('content quests',e)}});

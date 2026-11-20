@@ -9,7 +9,7 @@
  bar.textContent='🔇 Your browser keeps the game silent until you click or press a key once. Click here for sound.';
  const st=document.createElement('style');st.textContent='#sqsnd{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:9998;display:none;max-width:min(92vw,560px);padding:9px 14px;background:#fff8e6;color:#3a2a18;border:3px solid #3a2a18;box-shadow:0 3px 0 #3a2a18;font:600 14px/1.35 system-ui,sans-serif;cursor:pointer;text-align:center}';
  document.head.appendChild(st);document.body.appendChild(bar);
- const wake=()=>{try{ac()}catch(e){}};
+ const wake=()=>{try{ac()}catch(e){self.SQERR&&SQERR(e,'196-1')}};
  bar.addEventListener('click',e=>{e.stopPropagation();wake();bar.style.display='none'});
  for(const ev of['pointerdown','keydown','touchstart'])addEventListener(ev,e=>{if(e.isTrusted&&!document.hidden){wake();if(bar.style.display!=='none')setTimeout(chk,50)}},{capture:true,passive:true});
  const asleep=()=>{try{const a=ac();return !!a&&a.state!=='running'}catch(e){return false}};
@@ -18,5 +18,5 @@
   if(!since)since=performance.now();if(performance.now()-since>1500)bar.style.display='block'}
  // a newly pressed button wakes the audio where that's allowed
  let PREV=[];{const _pp=pollPad;pollPad=function(dt){const out=_pp.apply(this,arguments);try{const gp=GPI!=null?navigator.getGamepads()[GPI]:null;
-   if(gp){const now=gp.buttons.map(b=>!!b.pressed);if(now.some((p,i)=>p&&!PREV[i]))wake();PREV=now}}catch(e){}return out}}
+   if(gp){const now=gp.buttons.map(b=>!!b.pressed);if(now.some((p,i)=>p&&!PREV[i]))wake();PREV=now}}catch(e){self.SQERR&&SQERR(e,'196-2')}return out}}
  setInterval(chk,500);window.SQPADSND={chk,asleep}})();

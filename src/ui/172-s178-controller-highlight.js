@@ -28,5 +28,5 @@
      const p=r.width<60||r.height<24?3:4,x=Math.round(r.left-p-1),y=Math.round(r.top-p-1),w=Math.round(r.width+2*p+2),h=Math.round(r.height+2*p+2),
       sm=r.width<300||r.left<24||innerWidth-r.right<24,k=x+','+y+','+w+','+h+','+sm;
      if(k!==last){last=k;R.style.transform='translate('+x+'px,'+y+'px)';R.style.width=w+'px';R.style.height=h+'px';R.classList.toggle('sm',sm)}show=true}}
-   if(show!==(R.style.display==='block')){R.style.display=show?'block':'none';if(!show)last=''}}catch(e){}requestAnimationFrame(tick)}
+   if(show!==(R.style.display==='block')){R.style.display=show?'block':'none';if(!show)last=''}}catch(e){self.SQERR&&SQERR(e,'172-1')}requestAnimationFrame(tick)}
  requestAnimationFrame(tick);window.SQGPRING=R})();

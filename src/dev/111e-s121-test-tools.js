@@ -31,13 +31,13 @@
  const mobs=()=>{const M=window.SQISLIFE&&SQISLIFE.MOBS||{};return Object.keys(M).map(k=>[k,M[k].n,M[k].hp,M[k].rg]).sort((a,b)=>a[1].localeCompare(b[1]))};
  function spawn(k,n,hp){const M=window.SQISLIFE&&SQISLIFE.MOBS&&SQISLIFE.MOBS[k];if(!M)return;let made=0;
   for(let j=0;j<n;j++)for(let t=0;t<20;t++){const a=Math.random()*6.283,d=40+Math.random()*30,x=P.x+Math.cos(a)*d,y=P.y+Math.sin(a)*d;if(solid(x,y))continue;
-   const h=hp>0?hp:M.hp,e=rgMake(k,h,x,y);e.mhp=h;if(M.rg)e.rg=M.rg;delete e.night;e._dev=1;try{RG_OWN.add(e)}catch(_){}en.push(e);DEVM.add(e);devScene=SCENE?SCENE.id:'hollow';made++;break}
+   const h=hp>0?hp:M.hp,e=rgMake(k,h,x,y);e.mhp=h;if(M.rg)e.rg=M.rg;delete e.night;e._dev=1;try{RG_OWN.add(e)}catch(_){self.SQERR&&SQERR(_,'111e-1')}en.push(e);DEVM.add(e);devScene=SCENE?SCENE.id:'hollow';made++;break}
   toast(made?'Spawned '+made+' '+M.n.toLowerCase()+(made>1?'s':'')+'.':'No room to spawn here.')}
  // ---- checkpoint: the whole save, kept on this device ----
  const CK='sq_dev_ckpt';const ck=()=>{try{return JSON.parse(localStorage.getItem(CK)||'null')}catch(e){return null}};
  function ckSave(){try{const s=snap();localStorage.setItem(CK,JSON.stringify({at:Date.now(),s}));toast('Checkpoint saved.')}catch(e){toast('Could not save a checkpoint: '+e.message)}}
  function ckLoad(){const c=ck();if(!c){toast('No checkpoint yet.');return}if(!confirm('Put your character back to the checkpoint from '+new Date(c.at).toLocaleString()+'? Everything since then is lost.'))return;
-  try{setGod(false);applySave(c.s);saveLocal(true);try{saveCloud(true)}catch(e){}toast('Back to the checkpoint.');api.draw()}catch(e){console.warn(e);toast('Could not load the checkpoint: '+e.message)}}
+  try{setGod(false);applySave(c.s);saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'111e-2')}toast('Back to the checkpoint.');api.draw()}catch(e){console.warn(e);toast('Could not load the checkpoint: '+e.message)}}
  // ---- the tab ----
  const tm=()=>{const p=time%DAYLEN;return p<DAYLIGHT?(p<160?'morning':p<330?'midday':'afternoon'):'night'};
  function render(){const items=Object.keys(INAME).filter(k=>INAME[k]&&(!T.q||INAME[k].toLowerCase().includes(T.q.toLowerCase())||k.includes(T.q.toLowerCase()))).sort((a,b)=>INAME[a].localeCompare(INAME[b])).slice(0,60);
@@ -67,10 +67,10 @@
   if(a==='spawn'){const k=T.mob||(mobs()[0]||[])[0];if(!k)return;SQSUITE.close();spawn(k,Math.max(1,Math.min(12,T.mobN|0)),T.mobHp|0);return}
   if(a==='clear'){let n=0;for(const m of en)if(!m.dead&&!m._rp&&m.type!=='boss'&&Math.hypot(m.x-P.x,m.y-P.y)<260){m.dead=1;m.dropped=1;n++}toast(n+' monster'+(n===1?'':'s')+' cleared.');return}
   if(a==='heal'){P.hp=6;toast('Healed.');return}
-  if(a==='give'){const n=Math.max(1,Math.min(100000,T.qty|0||1));inv[v]=(inv[v]|0)+n;try{saveLocal()}catch(_){}toast('+'+n+' '+INAME[v]+'.');api.draw();return}
-  if(a==='gold'){const i=root.querySelector('[data-ti="gold"]');GLD=Math.max(0,Math.min(1e8,+i.value|0));try{saveLocal()}catch(_){}toast('Gold set to '+GLD+'.');return}});
+  if(a==='give'){const n=Math.max(1,Math.min(100000,T.qty|0||1));inv[v]=(inv[v]|0)+n;try{saveLocal()}catch(_){self.SQERR&&SQERR(_,'111e-3')}toast('+'+n+' '+INAME[v]+'.');api.draw();return}
+  if(a==='gold'){const i=root.querySelector('[data-ti="gold"]');GLD=Math.max(0,Math.min(1e8,+i.value|0));try{saveLocal()}catch(_){self.SQERR&&SQERR(_,'111e-4')}toast('Gold set to '+GLD+'.');return}});
  root.addEventListener('change',e=>{const t=e.target;if(t.dataset.ti){const f=t.dataset.ti;if(f==='gold')return;T[f]=f==='q'||f==='mob'||f==='dun'?t.value:+t.value;if(f==='q')api.draw();return}
-  if(t.dataset.sk!=null){const i=+t.dataset.sk,L=Math.max(1,Math.min(99,t.value|0||1));XPS[i]=L>1?XT[L-1]:0;try{saveLocal()}catch(_){}toast(SKN[i]+' set to level '+L+'.')}});
+  if(t.dataset.sk!=null){const i=+t.dataset.sk,L=Math.max(1,Math.min(99,t.value|0||1));XPS[i]=L>1?XT[L-1]:0;try{saveLocal()}catch(_){self.SQERR&&SQERR(_,'111e-5')}toast(SKN[i]+' set to level '+L+'.')}});
  root.addEventListener('input',e=>{const t=e.target;if(t.dataset.ti==='q'){T.q=t.value;clearTimeout(T.qt);T.qt=setTimeout(()=>{api.draw();const s=root.querySelector('[data-ti="q"]');if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length)}},250)}});
  SQSUITE.addTab('test','Test',{render,after});
  window.SQTEST={setGod,spawn,goDun,goTown,goIsland,ckSave,ckLoad,get god(){return god}}})();

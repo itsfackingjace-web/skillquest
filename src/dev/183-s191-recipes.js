@@ -74,7 +74,7 @@
    (w.src==='content'&&w.cid?'<button class="dv-b '+(S.arm==='rcdel'?'dv-arm':'dv-bad')+'" data-rcx="del">'+(S.arm==='rcdel'?'Tap again':'Delete recipe')+'</button>':'')+'<button class="dv-b" data-rcx="close">Close</button>'+(ST.dirty?' <span class="dv-mut">Not saved yet</span>':'')+'</div></div>';
   return h}
  // ---- saving, each where it lives ----
- const prev=()=>{try{if(A.previewing)A.preview(S.draft)}catch(e){}};
+ const prev=()=>{try{if(A.previewing)A.preview(S.draft)}catch(e){self.SQERR&&SQERR(e,'183-1')}};
  async function save(){const w=ST.w,d=S.draft,c={};for(const q of w.c)if(q.k&&q.n>0)c[q.k]=(c[q.k]|0)+Math.min(9999,q.n|0);
   const lv=Math.max(1,Math.min(99,w.lv|0)),xp=w.xp===''||w.xp==null?null:Math.max(0,Math.min(5000,+w.xp|0));
   try{
@@ -87,7 +87,7 @@
     let id=w.cid;const C=d.content=d.content||{},R=C.recipes=C.recipes||{};if(!id){const base='r_'+String(w.out).replace(/^it_/,'').replace(/[^a-z0-9_]/g,'').slice(0,20)||'r_new';id=base;let i=2;while(R[id])id=base+'_'+(i++);w.cid=id}
     const o={sk:w.sk||'craft',out:w.out,c:Object.entries(c).map(([k,n])=>({k,n})),lv,xp:xp==null?10:xp};if(o.sk==='cook')o.c=o.c.slice(0,1);R[id]=o;await dset('draft/content/recipes/'+id,o);ST.sel='c:'+id}
    else if(w.src==='gear'){const G=window.SQGEAR,o={...(d.newgear[w.gk]||{})};if(!Object.keys(c).length)delete o.sm;else{o.sm={c,lv};if(w.st==='bench')o.sm.st='craft'}const r=G.ngClean(o,w.gk);if(r)d.newgear[w.gk]=r;
-    try{G.devItems(d.newgear)}catch(e){}await dset('draft/newgear/'+w.gk,r||null)}
+    try{G.devItems(d.newgear)}catch(e){self.SQERR&&SQERR(e,'183-2')}await dset('draft/newgear/'+w.gk,r||null)}
    else{const G=d.gather=d.gather||{},sec=G[w.gsec]=G[w.gsec]||{},o={...(sec[w.gid]||{}),ck:w.out||'',clv:lv,cxp:xp==null?40:xp};const cl=w.gsec==='fish'?SQGATHER.cleanFish(o):SQGATHER.cleanCrop(o);sec[w.gid]=cl;await dset('draft/gather/'+w.gsec+'/'+w.gid,cl)}
    ST.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}prev();if(ST.sel)open(ST.sel);API.draw()}
  // ---- events ----
@@ -110,7 +110,7 @@
   if(f==='on')w.off=!t.checked;else if(f==='stove')w.st=t.checked?'stove':'fire';else if(f==='st')w.st=t.value;
   else if(f==='sk'){w.sk=t.value;w.st={craft:'bench',smith:'anvil',smelt:'furnace',cook:'fire',stove:'stove'}[t.value]}
   else if(f==='out'){w.out=t.value;w.n=nm(t.value)}else if(f==='lv')w.lv=+t.value;else if(f==='xp')w.xp=t.value===''?'':+t.value;API.draw()},true);
- document.addEventListener('input',e=>{const t=e.target;if(!T(t)||!t.hasAttribute('data-rcq'))return;ST.q=t.value;const pos=t.selectionStart;API.draw();const i=document.querySelector('#dvs [data-rcq]');if(i){i.focus();try{i.setSelectionRange(pos,pos)}catch(x){}}},true);
+ document.addEventListener('input',e=>{const t=e.target;if(!T(t)||!t.hasAttribute('data-rcq'))return;ST.q=t.value;const pos=t.selectionStart;API.draw();const i=document.querySelector('#dvs [data-rcq]');if(i){i.focus();try{i.setSelectionRange(pos,pos)}catch(x){self.SQERR&&SQERR(x,'183-3')}}},true);
  {const st=document.createElement('style');st.textContent='#dvs .dv-rctab{border-collapse:collapse;width:100%}#dvs .dv-rctab td,#dvs .dv-rctab th{padding:4px 6px;text-align:left;vertical-align:middle;border-bottom:1px solid #222838}#dvs .dv-rctab tr.dv-on td{background:#2a3040}#dvs .dv-rctab tr:hover td{background:#1c2230}#dvs .dv-rctab tr.rcoff td{opacity:.5}';document.head.appendChild(st)}
  SQSUITE.addTab('recipes','Recipes',{render,dirty:()=>!!(ST.w&&ST.dirty),leave(){ST.sel=null;ST.w=null;ST.dirty=false}});
  window.SQRECIPES={list,open,state:ST}})();

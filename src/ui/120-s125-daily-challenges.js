@@ -34,22 +34,22 @@
  const gold=q=>Math.round(T[q.t].g*q.n*(1+lv(q.t)/50));
  const xp=q=>Math.round(T[q.t].x*q.n*(1+lv(q.t)/40));
  const bonus=s=>100*Math.min(7,Math.max(1,s));
- function pay(q){const t=T[q.t];q.c=1;PAYING=true;try{const g=gold(q),x=xp(q);GLD+=g;addXp(SK(t.s),x);say('Daily challenge done: '+t.w(q.n)+'! +'+g+' gold, +'+x+' '+t.s+' XP');msgT=4;sfx('quest')}catch(e){}finally{PAYING=false}
+ function pay(q){const t=T[q.t];q.c=1;PAYING=true;try{const g=gold(q),x=xp(q);GLD+=g;addXp(SK(t.s),x);say('Daily challenge done: '+t.w(q.n)+'! +'+g+' gold, +'+x+' '+t.s+' XP');msgT=4;sfx('quest')}catch(e){self.SQERR&&SQERR(e,'120-1')}finally{PAYING=false}
   if(D.q.every(z=>z.c)){const day=D.d;D.s=D.l===yday()?(D.s|0)+1:D.l===day?D.s|0:1;D.l=day;const b=bonus(D.s);GLD+=b;
-   setTimeout(()=>{say('All three daily challenges done! Streak: '+D.s+' day'+(D.s>1?'s':'')+'. Bonus +'+b+' gold');msgT=5;try{sfx('coin')}catch(e){}},1800)}
-  try{svg()}catch(e){}try{saveLocal(true)}catch(e){}}
+   setTimeout(()=>{say('All three daily challenges done! Streak: '+D.s+' day'+(D.s>1?'s':'')+'. Bonus +'+b+' gold');msgT=5;try{sfx('coin')}catch(e){self.SQERR&&SQERR(e,'120-2')}},1800)}
+  try{svg()}catch(e){self.SQERR&&SQERR(e,'120-3')}try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'120-4')}}
  function add(id,k){if(!D||!(k>0))return;for(const q of D.q)if(q.t===id&&!q.c){q.p=Math.min(q.n,q.p+k);if(q.p>=q.n)pay(q);else if(pnOpen&&ptab===6)rPn()}}
  // XP gains mark the skill for this frame
  const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);if(!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}return out};
  SQUPD.wrap('120',_u=>function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;
    if(!D||D.d!==today()){fresh();LASTINV=null;
-    if(TOLD!==D.d){TOLD=D.d;let gd=null;try{gd=window.SQGUIDE&&SQGUIDE()}catch(e){}if(!gd)setTimeout(()=>{if(!dead){say('New daily challenges! Find them in your quest log.');msgT=4}},2500)}}
+    if(TOLD!==D.d){TOLD=D.d;let gd=null;try{gd=window.SQGUIDE&&SQGUIDE()}catch(e){self.SQERR&&SQERR(e,'120-5')}if(!gd)setTimeout(()=>{if(!dead){say('New daily challenges! Find them in your quest log.');msgT=4}},2500)}}
    // what arrived this frame, for the skills that just gained XP
    if(LASTINV&&XPF.size){const got={};let tot=0;for(const k in inv){const v=(inv[k]|0)-(LASTINV[k]|0);if(v>0){got[k]=v;tot+=v}}
     for(const q of D.q){if(q.c)continue;const t=T[q.t],si=SK(t.s);if(t.kill||!XPF.has(si))continue;
      if(t.xpc)add(q.t,XPN[si]|0);else add(q.t,t.min1?Math.max(1,tot):tot)}}
    if(typeof kills==='number'){if(kills>LASTK&&LASTINV)add('kill',kills-LASTK);LASTK=kills}
-   XPF.clear();XPN={};LASTINV=Object.assign({},inv)}catch(e){}return out});
+   XPF.clear();XPN={};LASTINV=Object.assign({},inv)}catch(e){self.SQERR&&SQERR(e,'120-6')}return out});
  // the quest log: the three of today at the top (below the getting-started box if it's showing)
  function html(){if(!D)return'';let h='<div class="sqdl-h"><b>DAILY CHALLENGES</b><span>'+(D.s>0?'Streak: '+D.s+' day'+(D.s>1?'s':''):'New ones every day')+'</span></div>';
   for(const q of D.q){const t=T[q.t],pc=Math.round(q.p/q.n*100);h+='<div class="sqdl-r'+(q.c?' done':'')+'"><div class="sqdl-t"><span>'+(q.c?'✔ ':'')+esc(t.w(q.n))+'</span><i>'+q.p+'/'+q.n+'</i></div>'+
@@ -57,9 +57,9 @@
   const all=D.q.every(z=>z.c),next=D.l===yday()?(D.s|0)+1:D.l===D.d?D.s|0:1;
   h+='<small class="sqdl-f">'+(all?'All done for today. Come back tomorrow to keep your streak!':'Finish all three for a streak bonus of '+bonus(next)+' gold (more each day in a row, up to 7).')+'</small>';return h}
  const _rp=rPn;rPn=function(){const out=_rp.apply(this,arguments);try{if(pnOpen&&ptab===6&&D){const d=document.createElement('div');d.className='sqdl';d.innerHTML=html();
-   const gd=pbd.querySelector('.sqgd');if(gd)gd.after(d);else pbd.prepend(d)}}catch(e){}return out};
+   const gd=pbd.querySelector('.sqgd');if(gd)gd.after(d);else pbd.prepend(d)}}catch(e){self.SQERR&&SQERR(e,'120-7')}return out};
  // saves
- SQSAVE.after('120:dly',s=>{try{if(D)s.dly=JSON.parse(JSON.stringify(D))}catch(e){}});
+ SQSAVE.after('120:dly',s=>{try{if(D)s.dly=JSON.parse(JSON.stringify(D))}catch(e){self.SQERR&&SQERR(e,'120-8')}});
  SQLOAD.after('120',(Sv)=>{try{const v=Sv&&Sv.dly;
    if(v&&typeof v==='object'&&typeof v.d==='string'&&Array.isArray(v.q)){D={d:v.d,s:Math.max(0,v.s|0),l:typeof v.l==='string'?v.l:'',
      q:v.q.filter(q=>q&&T[q.t]).slice(0,3).map(q=>({t:q.t,n:Math.max(1,q.n|0),p:Math.max(0,q.p|0),c:q.c?1:0}))};if(!D.q.length)D=null}

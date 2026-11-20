@@ -42,7 +42,7 @@ function wbTick(){if(!MP.on||!FB||!MP.user)return;const now=wbNow(),F=window.SQW
  if(slot!==WB.slot){WB.slot=slot;WB.dmg=0;WB.pub=0;WB.all={};WB.lair=null;WB.lairKey='';if(WB.unsub){WB.unsub();WB.unsub=null}
   WB.unsub=FB.db.onValue(FB.db.ref(FB.D,'wb/'+slot+'/d'),s=>{WB.all=s.val()||{};if(MP.user&&typeof WB.all[MP.user.uid]==='number')WB.dmg=Math.max(WB.dmg,WB.all[MP.user.uid])})}
  WB.b=now<b.end?b:null;const B=WB.b;
- if(B&&WB.told!==slot){WB.told=slot;mpLog('game','WORLD BOSS! '+B.T.n+' has appeared on '+wbWhere(B)+'. It leaves in '+Math.max(1,Math.round((B.end-now)/60000))+' minute'+(Math.round((B.end-now)/60000)>1?'s':'')+'.');try{sfx('quest')}catch(e){}if(!MP.open){MP.unread++;mpRBtn()}}
+ if(B&&WB.told!==slot){WB.told=slot;mpLog('game','WORLD BOSS! '+B.T.n+' has appeared on '+wbWhere(B)+'. It leaves in '+Math.max(1,Math.round((B.end-now)/60000))+' minute'+(Math.round((B.end-now)/60000)>1?'s':'')+'.');try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'071-1')}if(!MP.open){MP.unread++;mpRBtn()}}
  // post my damage (once a second while it changes)
  if(WB.dmg>WB.pub&&performance.now()-WB.pubAt>1000){WB.pubAt=performance.now();WB.pub=WB.dmg;FB.db.set(FB.db.ref(FB.D,'wb/'+slot+'/d/'+MP.user.uid),Math.round(WB.dmg)).catch(e=>{WB.pub=0;mpErr(e)})}
  // it fell: share out the loot
@@ -53,20 +53,20 @@ function wbLoot(b){const me=MP.user&&MP.user.uid,mine=WB.dmg;mpLog('game','The '
  const T=b.T,g=Math.round((T.gold[0]+r()*(T.gold[1]-T.gold[0]))*(top?1.6:1)),got={};const add=(k,n)=>{if(n>0&&INAME[k]){inv[k]=(inv[k]|0)+n;got[k]=(got[k]|0)+n}};
  if(b.type==='wisp'){add('oaklog',3+Math.floor(r()*4));add('pot_heal',1+(r()<.5?1:0));if(r()<.35)add(r()<.5?'ruby':'sapphire',1);
   // the rare one: the Flame Crown (5% for everyone who fought, 8% for the top three)
-  if(r()<(top?.08:.05)||window.SQFCDROP){add('eq_fcrown',1);setTimeout(()=>{say('A FLAME CROWN! Wear it and your campfires call a little flame wisp.');try{sfx('level')}catch(e){}},400)}}
+  if(r()<(top?.08:.05)||window.SQFCDROP){add('eq_fcrown',1);setTimeout(()=>{say('A FLAME CROWN! Wear it and your campfires call a little flame wisp.');try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'071-2')}},400)}}
  else if(b.type==='giant'){add(r()<.5?'mbar':'mithore',3+Math.floor(r()*3));add('pot_str',1);if(r()<.4)add(r()<.6?'emerald':'diamond',1);
   // the rare one: a Castle (5% for everyone who fought, 8% for the top three)
-  if(r()<(top?.08:.05)||window.SQCASTLEDROP){add('castle',1);setTimeout(()=>{say('A CASTLE! Place it from your Bag like a house: monsters keep away from its torches.');try{sfx('level')}catch(e){}},400)}}
+  if(r()<(top?.08:.05)||window.SQCASTLEDROP){add('castle',1);setTimeout(()=>{say('A CASTLE! Place it from your Bag like a house: monsters keep away from its torches.');try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'071-3')}},400)}}
  else if(b.type==='demon'){add('abar',2+Math.floor(r()*2));add(['ruby','sapphire','emerald'][Math.floor(r()*3)],1+Math.floor(r()*2));if(r()<.12)add('elixir',1);
   // the rare one: an Imp pet (5% for everyone who fought, 8% for the top three)
-  if((r()<(top?.08:.05)||window.SQIMPDROP)&&window.LUX&&LUX.giveImp){const had=LUX.COS&&LUX.COS.pets.includes('imp');LUX.giveImp();setTimeout(()=>{say(had?'Another imp bows to you... you already have one.':'AN IMP PET! It follows you and stabs whatever hurts you.');try{sfx('level')}catch(e){}},400)}}
+  if((r()<(top?.08:.05)||window.SQIMPDROP)&&window.LUX&&LUX.giveImp){const had=LUX.COS&&LUX.COS.pets.includes('imp');LUX.giveImp();setTimeout(()=>{say(had?'Another imp bows to you... you already have one.':'AN IMP PET! It follows you and stabs whatever hurts you.');try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'071-4')}},400)}}
  else{add('abar',3+Math.floor(r()*3));add('diamond',1+(r()<.4?1:0));add('yewlog',4);if(r()<.2)add('elixir',1);
   // the rare one: 5% for everyone who fought, 8% for the top three
-  if(r()<(top?.08:.05)||window.SQDSOULDROP){add('ja_dsoul',1);setTimeout(()=>{say('A DRAGONSOUL AMULET! The dragon\'s spirit is yours.');try{sfx('level')}catch(e){}},400)}}
+  if(r()<(top?.08:.05)||window.SQDSOULDROP){add('ja_dsoul',1);setTimeout(()=>{say('A DRAGONSOUL AMULET! The dragon\'s spirit is yours.');try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'071-5')}},400)}}
  if(top)add(['ruby','sapphire','emerald','diamond'][Math.min(3,Math.floor(r()*4))],1);
  GLD+=g;if(!b.dev)WB.kills++;const list=Object.keys(got).map(k=>got[k]+' × '+INAME[k].toLowerCase()).concat([g+' gold']).join(', ');
- say((top?'#'+rank+' damage! ':'')+'Boss loot: '+list+'.');msgT=6;mpLog('game','Your share'+(top?' (#'+rank+' damage)':'')+': '+list+'.');try{sfx('quest');setTimeout(()=>sfx('coin'),200)}catch(e){}
- try{saveLocal(true);saveCloud(true)}catch(e){}}
+ say((top?'#'+rank+' damage! ':'')+'Boss loot: '+list+'.');msgT=6;mpLog('game','Your share'+(top?' (#'+rank+' damage)':'')+': '+list+'.');try{sfx('quest');setTimeout(()=>sfx('coin'),200)}catch(e){self.SQERR&&SQERR(e,'071-6')}
+ try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'071-7')}}
 setInterval(()=>{try{wbTick()}catch(e){console.warn(e)}},500);
 // ---- the boss in the world ----
 // It joins the monster list as a big enemy so every attack (sword, arrows, spells, ultimates) can hit it. Its own
@@ -101,7 +101,7 @@ function wbDrawAttacks(H,tm){const now=wbNow(),T=H.B.T;g.save();
    else if(now<a.hit+350){g.globalAlpha=1-(now-a.hit)/350;g.fillStyle=T.col;g.fillRect(0,-a.w/2,a.len,a.w);g.fillStyle=T.c2;g.fillRect(0,-a.w/4,a.len,a.w/2)}g.restore()}}
  g.restore()}
 // drawn over the world, under the HUD
-{SQHUD.before('071',()=>{const HB=wbHere();if(HB&&!menuOpen){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{wbDrawAttacks(HB,performance.now()/1000)}catch(e){}g.restore()}})}
+{SQHUD.before('071',()=>{const HB=wbHere();if(HB&&!menuOpen){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);try{wbDrawAttacks(HB,performance.now()/1000)}catch(e){self.SQERR&&SQERR(e,'071-8')}g.restore()}})}
 // ---- the four bosses ----
 function wbEll(cx,cy,rx,ry,col){g.fillStyle=col;for(let y=-ry;y<=ry;y++){const w=Math.round(rx*Math.sqrt(Math.max(0,1-(y*y)/(ry*ry))));g.fillRect(Math.round(cx-w),Math.round(cy+y),w*2,1)}}
 function wbEllO(cx,cy,rx,ry,col){wbEll(cx,cy,rx+1,ry+1,O);wbEll(cx,cy,rx,ry,col)}
@@ -151,9 +151,9 @@ setInterval(()=>{const B=WB.b,show=B&&MP.on&&!dead&&!pnOpen&&!menuOpen&&!TS.open
  const mini=(innerWidth<700||!isPC)&&!(H2&&Math.hypot(H2.L.x-P.x,H2.L.y-P.y)<=260);wbbEl.classList.toggle('mini',mini);
  wbbEl.innerHTML=mini?'<span>'+esc(B.T.ic)+' '+mm+'</span><div class="bar"><i style="width:'+(hp/B.mhp*100).toFixed(1)+'%"></i></div>':'<div class="t"><span>'+esc(B.T.ic+' '+B.T.n.toUpperCase())+'</span><b>'+mm+'</b></div><div class="bar"><i style="width:'+(hp/B.mhp*100).toFixed(1)+'%"></i></div><small>'+esc(sub)+' · '+Math.ceil(hp)+' / '+B.mhp+'</small>';
  // on narrow screens it would cover your health: sit under the left-hand HUD instead
- if(innerWidth<700&&HUDL){const d=window.devicePixelRatio||1;wbbEl.style.left=Math.round(HUDL.ins/d)+'px';wbbEl.style.transform='none';let tp=HUDL.stackBottom/d+6;try{const hb=window.SQHINTB;if(hb&&performance.now()-hb.f<400){const r=cv.getBoundingClientRect();tp=Math.max(tp,r.top+hb.b*r.height/cv.height+6)}}catch(e){}wbbEl.style.top=Math.round(tp)+'px';/* below the getting-started hint (it covered it) */wbbEl.style.width=mini?'auto':Math.round(HUDL.bw/d)+'px';wbbEl.classList.add('nar')}else{wbbEl.style.left=wbbEl.style.transform=wbbEl.style.top=wbbEl.style.width='';wbbEl.classList.remove('nar')}
+ if(innerWidth<700&&HUDL){const d=window.devicePixelRatio||1;wbbEl.style.left=Math.round(HUDL.ins/d)+'px';wbbEl.style.transform='none';let tp=HUDL.stackBottom/d+6;try{const hb=window.SQHINTB;if(hb&&performance.now()-hb.f<400){const r=cv.getBoundingClientRect();tp=Math.max(tp,r.top+hb.b*r.height/cv.height+6)}}catch(e){self.SQERR&&SQERR(e,'071-9')}wbbEl.style.top=Math.round(tp)+'px';/* below the getting-started hint (it covered it) */wbbEl.style.width=mini?'auto':Math.round(HUDL.bw/d)+'px';wbbEl.classList.add('nar')}else{wbbEl.style.left=wbbEl.style.transform=wbbEl.style.top=wbbEl.style.width='';wbbEl.classList.remove('nar')}
  // a message box you need to read (a sign, a door, someone talking) wins: the banner steps aside while it's up
- try{if(msgT>0&&msg&&MSGBOX){const r=wbbEl.getBoundingClientRect(),m=MSGBOX;if(r.left<m.x+m.w&&r.right>m.x&&r.top<m.y+m.h&&r.bottom>m.y)wbbEl.style.display='none'}}catch(e){}},150);
+ try{if(msgT>0&&msg&&MSGBOX){const r=wbbEl.getBoundingClientRect(),m=MSGBOX;if(r.left<m.x+m.w&&r.right>m.x&&r.top<m.y+m.h&&r.bottom>m.y)wbbEl.style.display='none'}}catch(e){self.SQERR&&SQERR(e,'071-10')}},150);
 // ---- saving, and the leaderboard ----
 {SQSAVE.after('071:wbk,wbc',s=>{if(WB.kills)s.wbk=WB.kills;const c=Object.keys(WB.claimed).slice(-20);if(c.length)s.wbc=c;})}
 {SQLOAD.after('071',(S)=>{WB.kills=Math.max(0,+(S&&S.wbk)||0);WB.claimed={};if(S&&Array.isArray(S.wbc))for(const k of S.wbc)WB.claimed[k]=1})}

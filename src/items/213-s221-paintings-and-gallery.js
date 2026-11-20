@@ -19,28 +19,28 @@
  const nameOf=id=>{const r=PT[id];return r&&r.n?String(r.n):'Painting'},byOf=id=>{const r=PT[id];return r&&r.by?String(r.by):'a Patron'};
  // ---- items ----
  function reg(id){if(!okId(id))return;const k='pt_'+id,w='pw_'+id;
-  if(!REG.has(id)){REG.add(id);if(!INVK.includes(k))INVK.push(k);for(const q of[k,w]){if(!BK.includes(q))BK.push(q);BHP[q]=1;try{FURN_ONLY.add(q)}catch(e){}}
-   try{if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k)}catch(e){}}
+  if(!REG.has(id)){REG.add(id);if(!INVK.includes(k))INVK.push(k);for(const q of[k,w]){if(!BK.includes(q))BK.push(q);BHP[q]=1;try{FURN_ONLY.add(q)}catch(e){self.SQERR&&SQERR(e,'213-1')}}
+   try{if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k)}catch(e){self.SQERR&&SQERR(e,'213-2')}}
   const n=nameOf(id),by=byOf(id);INAME[k]=INAME[w]=n+' (painting)';
   IDESC[k]=IDESC[w]='“'+n+'” by '+by+'. A painting by a SkillQuest Patron. At home, face a wall and PLACE to hang it, or place it on the floor to stand it on an easel.';
-  try{delete ICONC['ptg'+id]}catch(e){}}
+  try{delete ICONC['ptg'+id]}catch(e){self.SQERR&&SQERR(e,'213-3')}}
  function setRec(id,r){if(!okId(id)||!r||typeof r!=='object')return;PT[id]=r;FR.delete(id);reg(id)}
  // device cache, so paintings exist before the save loads
- try{const c=JSON.parse(localStorage.getItem('sq_paint')||'null');if(c&&typeof c==='object')for(const id in c)setRec(id,c[id])}catch(e){}
- const keepCache=()=>{try{localStorage.setItem('sq_paint',JSON.stringify(PT))}catch(e){}};
+ try{const c=JSON.parse(localStorage.getItem('sq_paint')||'null');if(c&&typeof c==='object')for(const id in c)setRec(id,c[id])}catch(e){self.SQERR&&SQERR(e,'213-4')}
+ const keepCache=()=>{try{localStorage.setItem('sq_paint',JSON.stringify(PT))}catch(e){self.SQERR&&SQERR(e,'213-5')}};
  // any painting key in a save becomes known (placeholder) before the save's loaders run
  function scan(o,d){if(d>7||!o)return;if(typeof o==='string'){const id=idOf(o);if(id&&!REG.has(id))reg(id);return}if(typeof o!=='object')return;
   for(const k in o){const id=idOf(k);if(id&&!REG.has(id))reg(id);scan(o[k],d+1)}}
  let GOT=new Set(),APPLIED=false;
- {SQLOAD.wrap('213',_a=>function(S){try{scan(S,0)}catch(e){}const r=_a.apply(this,arguments);try{GOT=new Set(Array.isArray(S&&S.ptg)?S.ptg.filter(okId):[]);APPLIED=true}catch(e){}return r})}
- {SQSAVE.after('213:ptg',o=>{try{if(GOT.size)o.ptg=[...GOT]}catch(e){}})}
- try{KNOWN49.add('ptg')}catch(e){}
+ {SQLOAD.wrap('213',_a=>function(S){try{scan(S,0)}catch(e){self.SQERR&&SQERR(e,'213-6')}const r=_a.apply(this,arguments);try{GOT=new Set(Array.isArray(S&&S.ptg)?S.ptg.filter(okId):[]);APPLIED=true}catch(e){self.SQERR&&SQERR(e,'213-7')}return r})}
+ {SQSAVE.after('213:ptg',o=>{try{if(GOT.size)o.ptg=[...GOT]}catch(e){self.SQERR&&SQERR(e,'213-8')}})}
+ try{KNOWN49.add('ptg')}catch(e){self.SQERR&&SQERR(e,'213-9')}
  {const _ng=newGame;newGame=function(){GOT=new Set();APPLIED=true;return _ng.apply(this,arguments)}}
  // ---- pictures ----
  const FR=new Map();// id -> [{c:canvas}]
  function frames(id){let L=FR.get(id);if(L)return L;L=[];const r=PT[id];
   try{if(r&&window.SQARTROOM)for(const fr of SQARTROOM.unpack(r)){const c=document.createElement('canvas');c.width=r.w;c.height=r.h;const x=c.getContext('2d');
-   for(let i=0;i<fr.f.length;i++){const v=fr.f[i];if(v&&fr.pal[v]){x.fillStyle=fr.pal[v];x.fillRect(i%r.w,(i/r.w)|0,1,1)}}L.push(c)}}catch(e){}
+   for(let i=0;i<fr.f.length;i++){const v=fr.f[i];if(v&&fr.pal[v]){x.fillStyle=fr.pal[v];x.fillRect(i%r.w,(i/r.w)|0,1,1)}}L.push(c)}}catch(e){self.SQERR&&SQERR(e,'213-10')}
   FR.set(id,L);return L}
  const frameAt=(id,tm)=>{const L=frames(id);if(!L.length)return null;const r=PT[id]||{};return L[Math.floor((tm||performance.now()/1000)*1000/Math.max(40,r.ms||200))%L.length]};
  // draw the picture fitted into a box (world pixels), with a frame around it
@@ -69,17 +69,17 @@
  const facingWall=()=>{const[x,y]=frontTile();return y===1&&face[1]<0?x:-1};
  {const _cp=canPlace;canPlace=function(x,y){if(BUILD&&idOf(BUILD.k)&&SCENE&&y===1)return wallOK(x);return _cp.apply(this,arguments)}}
  {const _pb=placeBuild;placeBuild=function(){const k=BUILD&&BUILD.k,id=idOf(k);if(!id||!SCENE)return _pb.apply(this,arguments);
-   const wx=facingWall();if(wx<0)return _pb.apply(this,arguments);if(!wallOK(wx)){say(inHomeRoom()?'You can\'t hang it there.':'Paintings only hang on the walls of a house or castle. Stand it on the floor instead.');try{sfx('swish')}catch(e){}return}
-   const R=SCENE.room;inv[k]--;SCENE.house.furn.set(2*R.w+wx,{t:'pw_'+id});try{sfx('chop')}catch(e){}say('You hung “'+nameOf(id)+'” on the wall.');saveLocal(true);try{saveCloud(true)}catch(e){}
+   const wx=facingWall();if(wx<0)return _pb.apply(this,arguments);if(!wallOK(wx)){say(inHomeRoom()?'You can\'t hang it there.':'Paintings only hang on the walls of a house or castle. Stand it on the floor instead.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'213-11')}return}
+   const R=SCENE.room;inv[k]--;SCENE.house.furn.set(2*R.w+wx,{t:'pw_'+id});try{sfx('chop')}catch(e){self.SQERR&&SQERR(e,'213-12')}say('You hung “'+nameOf(id)+'” on the wall.');saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'213-13')}
    if((inv[k]|0)<1)endBuild('')}}
  // a hung painting doesn't block the floor under it
  {const _so=solid;solid=function(px,py){if(inHomeRoom()){const R=SCENE.room,x=Math.floor(px/16),y=Math.floor(py/16),f=SCENE.house.furn.get(y*R.w+x);if(f&&/^pw_/.test(f.t)&&!_baseSolid(px,py))return false}return _so.apply(this,arguments)}}
  const _baseSolid=(px,py)=>{const R=SCENE.room,x=Math.floor(px/16),y=Math.floor(py/16);return x<0||y<2||x>=R.w||y>=R.h||(R.solid&&R.solid.has(y*R.w+x))};
  // picking it up: a hung painting comes back as the painting
- {const _pf=pickFurn;pickFurn=function(i){try{const h=SCENE&&SCENE.house,f=h&&h.furn.get(i);if(f&&/^pw_/.test(f.t))f.t='pt_'+idOf(f.t)}catch(e){}return _pf.apply(this,arguments)}}
+ {const _pf=pickFurn;pickFurn=function(i){try{const h=SCENE&&SCENE.house,f=h&&h.furn.get(i);if(f&&/^pw_/.test(f.t))f.t='pt_'+idOf(f.t)}catch(e){self.SQERR&&SQERR(e,'213-14')}return _pf.apply(this,arguments)}}
  // HIT facing a hung painting picks it up (it's stored on the tile you stand on)
  {SQHIT.wrap('213 paintings and gallery',next=>function(){try{if(!BUILD&&inHomeRoom()&&!dead&&!pnOpen&&!menuOpen&&swing<=0){const wx=facingWall();if(wx>=0){const R=SCENE.room,i=2*R.w+wx,f=SCENE.house.furn.get(i);
-     if(f&&/^pw_/.test(f.t)&&!SCENE.house.ro&&!SCENE.house._foreign){swing=.25;pickFurn(i);return}}}}catch(e){}
+     if(f&&/^pw_/.test(f.t)&&!SCENE.house.ro&&!SCENE.house._foreign){swing=.25;pickFurn(i);return}}}}catch(e){self.SQERR&&SQERR(e,'213-15')}
  return next.apply(this,arguments)})}
  // ---- who made it: a label when you face a painting ----
  function facedPainting(){if(!SCENE)return null;const R=SCENE.room;const[x,y]=frontTile();
@@ -90,7 +90,7 @@
     const u=Math.max(2,Math.round(Math.min(W,H)/160)),fs=Math.round(5.5*u),t1='“'+nameOf(id)+'”',t2='by '+byOf(id);g.save();g.setTransform(1,0,0,1,0,0);g.font='700 '+fs+'px '+PF;
     const w=Math.max(g.measureText(t1).width,g.measureText(t2).width)+fs*1.6,hh=fs*3.2,x=Math.round(W/2-w/2),y=Math.round(H*.16);
     g.fillStyle='rgba(32,20,24,.88)';g.fillRect(x,y,w,hh);g.fillStyle=GOLD;g.fillRect(x,y,w,Math.max(2,u));g.fillRect(x,y+hh-Math.max(2,u),w,Math.max(2,u));
-    g.textAlign='center';g.textBaseline='middle';g.fillStyle='#f8ecd0';g.fillText(t1,W/2,y+hh*.36);g.font='500 '+Math.round(fs*.85)+'px '+PF;g.fillStyle='#e8c878';g.fillText(t2,W/2,y+hh*.7);g.restore()}catch(e){}return out})}
+    g.textAlign='center';g.textBaseline='middle';g.fillStyle='#f8ecd0';g.fillText(t1,W/2,y+hh*.36);g.font='500 '+Math.round(fs*.85)+'px '+PF;g.fillStyle='#e8c878';g.fillText(t2,W/2,y+hh*.7);g.restore()}catch(e){self.SQERR&&SQERR(e,'213-16')}return out})}
  // ---- the gallery building ----
  // Its spot: the developer's choice (library `places.gallery` {tx,ty}, set in Dev Suite > Art Room with "Put the gallery
  // where I'm standing") or else the nearest free spot inside the village (players can't build there). Moving it puts back
@@ -109,25 +109,25 @@
    for(let ty=VY-30;ty<=VY+30;ty++)for(let tx=VX-30;tx<=VX+30;tx++){if(!fits(tx,ty,strict)||nearHome(tx,ty))continue;let inside=true;for(let y=ty;y<ty+3;y++)for(let x=tx;x<tx+5;x++)if(!inV(x,y))inside=false;
     const di=(ty+2)*N+tx+2;const d=Math.abs(tx+2-VX)+Math.abs(ty-VY)*1.2-(road(di)?6:0)+(inside?0:100);if(d<bd){bd=d;best={tx,ty}}}
    if(best)return best}return null}
- function unplace(){if(!BL)return;const i0=BLD.indexOf(BL);if(i0>=0)BLD.splice(i0,1);for(const[i,o]of UNDO.obj)if(!obj[i])obj[i]=o;for(const i of UNDO.bs)BS.delete(i);try{for(const i of UNDO.prot)PROT.delete(i)}catch(e){}
-  if(UNDO.sign>=0)try{SIGNS.delete(UNDO.sign)}catch(e){}UNDO.obj.clear();UNDO.bs.clear();UNDO.prot.clear();UNDO.sign=-1;BL=null;SPOT=null}
+ function unplace(){if(!BL)return;const i0=BLD.indexOf(BL);if(i0>=0)BLD.splice(i0,1);for(const[i,o]of UNDO.obj)if(!obj[i])obj[i]=o;for(const i of UNDO.bs)BS.delete(i);try{for(const i of UNDO.prot)PROT.delete(i)}catch(e){self.SQERR&&SQERR(e,'213-17')}
+  if(UNDO.sign>=0)try{SIGNS.delete(UNDO.sign)}catch(e){self.SQERR&&SQERR(e,'213-18')}UNDO.obj.clear();UNDO.bs.clear();UNDO.prot.clear();UNDO.sign=-1;BL=null;SPOT=null}
  function place(tx,ty){unplace();const b={k:'gallery',tx,ty,w:5,wall:'#f4ecf8',roof:'#7848c0',sc:'#e8b830',ic:'star',n:'Patron Art Gallery'};BLD.push(b);BL=b;SPOT={tx,ty};
-  const clr=i=>{if(obj[i]&&!UNDO.obj.has(i))UNDO.obj.set(i,obj[i]);obj[i]=null},bs=i=>{if(!BS.has(i)){BS.add(i);UNDO.bs.add(i)}},pr=i=>{try{if(!PROT.has(i)){PROT.add(i);UNDO.prot.add(i)}}catch(e){}};
+  const clr=i=>{if(obj[i]&&!UNDO.obj.has(i))UNDO.obj.set(i,obj[i]);obj[i]=null},bs=i=>{if(!BS.has(i)){BS.add(i);UNDO.bs.add(i)}},pr=i=>{try{if(!PROT.has(i)){PROT.add(i);UNDO.prot.add(i)}}catch(e){self.SQERR&&SQERR(e,'213-19')}};
   for(let y=ty;y<ty+2;y++)for(let x=tx;x<tx+5;x++){const i=y*N+x;clr(i);if(!(x===tx+2&&y===ty+1))bs(i);pr(i)}
   const fi=(ty+2)*N+tx+2;clr(fi);pr(fi);
   try{for(const[x,y]of[[tx+5,ty+1],[tx-1,ty+1],[tx+5,ty+2],[tx-1,ty+2]]){const i=y*N+x;if(tile[i]===0||obj[i]||BS.has(i)||SIGNS.has(i)||homeAt(x,y)||(typeof ROADS!=='undefined'&&ROADS.has(i)))continue;
-    SIGNS.set(i,'PATRON ART GALLERY - paintings by SkillQuest Patrons. Prints for sale inside.');UNDO.sign=i;bs(i);pr(i);break}}catch(e){}
-  try{if(typeof HMAP!=='undefined')HMAP=null}catch(e){}}
+    SIGNS.set(i,'PATRON ART GALLERY - paintings by SkillQuest Patrons. Prints for sale inside.');UNDO.sign=i;bs(i);pr(i);break}}catch(e){self.SQERR&&SQERR(e,'213-20')}
+  try{if(typeof HMAP!=='undefined')HMAP=null}catch(e){self.SQERR&&SQERR(e,'213-21')}}
  let CHOSEN=null;
  try{const s0=spot();if(s0)place(s0.tx,s0.ty)}catch(e){console.warn('gallery',e)}
  // the developer's spot, from the published library (or the draft while previewing)
- function applyChosen(c){if(!c||!(c.tx>1&&c.ty>1&&c.tx<N-6&&c.ty<N-4)){if(CHOSEN){CHOSEN=null;try{const s0=spot();if(s0&&!(SPOT&&SPOT.tx===s0.tx&&SPOT.ty===s0.ty))place(s0.tx,s0.ty)}catch(e){}}return}
+ function applyChosen(c){if(!c||!(c.tx>1&&c.ty>1&&c.tx<N-6&&c.ty<N-4)){if(CHOSEN){CHOSEN=null;try{const s0=spot();if(s0&&!(SPOT&&SPOT.tx===s0.tx&&SPOT.ty===s0.ty))place(s0.tx,s0.ty)}catch(e){self.SQERR&&SQERR(e,'213-22')}}return}
   if(SPOT&&SPOT.tx===(c.tx|0)&&SPOT.ty===(c.ty|0))return;CHOSEN={tx:c.tx|0,ty:c.ty|0};if(SCENE&&SCENE.id==='gallery')return;place(CHOSEN.tx,CHOSEN.ty)}
- try{if(window.SQA&&SQA.onApply)SQA.onApply(L=>{try{applyChosen(L&&L.places&&L.places.gallery)}catch(e){}})}catch(e){}
+ try{if(window.SQA&&SQA.onApply)SQA.onApply(L=>{try{applyChosen(L&&L.places&&L.places.gallery)}catch(e){self.SQERR&&SQERR(e,'213-23')}})}catch(e){self.SQERR&&SQERR(e,'213-24')}
  // where the developer is standing now, as the building's top-left (door just above the tile in front of you)
  // houses load after this runs: without a chosen spot, move away from any house it touches (checked every few seconds)
  setInterval(()=>{try{if(CHOSEN||!SPOT||SCENE)return;let hit=false;for(let y=SPOT.ty-1;y<SPOT.ty+4&&!hit;y++)for(let x=SPOT.tx-1;x<SPOT.tx+6;x++)if(homeAt(x,y)){hit=true;break}
-   if(!hit)return;const old=SPOT;unplace();const s1=spot();if(s1)place(s1.tx,s1.ty);else place(old.tx,old.ty)}catch(e){}},4000);
+   if(!hit)return;const old=SPOT;unplace();const s1=spot();if(s1)place(s1.tx,s1.ty);else place(old.tx,old.ty)}catch(e){self.SQERR&&SQERR(e,'213-25')}},4000);
  // where you stand = the gallery's doorstep (the tile in front of its door)
  function standHere(){if(SCENE)return null;const x=Math.floor(P.x/16),y=Math.floor(P.y/16);return{tx:x-2,ty:y-2}}
  // move it there if it fits (its own old spot doesn't count as taken); otherwise leave it where it was
@@ -155,10 +155,10 @@
     '<div style="flex:1;min-width:0;font-size:14px;line-height:1.35"><b>“'+E(nameOf(id))+'”</b><br>by '+E(byOf(id))+(have?'<br><small>You have '+have+'</small>':'')+'</div>'+
     '<button class="qb" data-ptbuy="'+E(id)+'" style="flex:none;width:auto;min-width:96px;margin:0;padding:8px 10px"'+(GLD<price(id)?' disabled':'')+'>'+price(id).toLocaleString('en-US')+' gold</button></div>'}
   return h}
- {const _r=rPn;rPn=function(){if(ptab===2&&shop===PTAB_SHOP&&pnOpen){try{panelChrome('Patron Art Gallery')}catch(e){}pbd.innerHTML=shopHTML();return}return _r.apply(this,arguments)}}
+ {const _r=rPn;rPn=function(){if(ptab===2&&shop===PTAB_SHOP&&pnOpen){try{panelChrome('Patron Art Gallery')}catch(e){self.SQERR&&SQERR(e,'213-26')}pbd.innerHTML=shopHTML();return}return _r.apply(this,arguments)}}
  pbd.addEventListener('click',e=>{if(!(ptab===2&&shop===PTAB_SHOP))return;const b=e.target.closest&&e.target.closest('[data-ptbuy]');if(!b)return;e.stopPropagation();e.preventDefault();const id=b.dataset.ptbuy;if(!PT[id]||PT[id].off)return;
-  const p=price(id);if(GLD<p){say('Not enough gold.');return}GLD-=p;inv['pt_'+id]=(inv['pt_'+id]|0)+1;say('You bought a print of “'+nameOf(id)+'” by '+byOf(id)+'. Hang it at home!');try{sfx('coin')}catch(x){try{sfx('pickup')}catch(y){}}
-  try{if(typeof svg==='function')svg()}catch(x){}saveLocal(true);try{saveCloud(true)}catch(x){}rPn()},true);
+  const p=price(id);if(GLD<p){say('Not enough gold.');return}GLD-=p;inv['pt_'+id]=(inv['pt_'+id]|0)+1;say('You bought a print of “'+nameOf(id)+'” by '+byOf(id)+'. Hang it at home!');try{sfx('coin')}catch(x){try{sfx('pickup')}catch(y){self.SQERR&&SQERR(y,'213-27')}}
+  try{if(typeof svg==='function')svg()}catch(x){self.SQERR&&SQERR(x,'213-28')}saveLocal(true);try{saveCloud(true)}catch(x){self.SQERR&&SQERR(x,'213-29')}rPn()},true);
  // ---- keeping up with new paintings ----
  let LIS='';
  function listen(){const m=window.SQMP,F=window.SQFB;if(!m||!m.user||!F)return;if(LIS===m.user.uid)return;LIS=m.user.uid;
@@ -167,8 +167,8 @@
  // the artist's own copy, once
  function give(){const u=uid();if(!u||!APPLIED||(window.SQTITLE&&SQTITLE()))return;let any=false;
   for(const id in PT){const r=PT[id];if(!r||r.u!==u||GOT.has(id))continue;GOT.add(id);inv['pt_'+id]=(inv['pt_'+id]|0)+1;any=true;
-   say('🖼️ “'+nameOf(id)+'” is now a painting in the Patron Art Gallery! Here is your own copy to hang at home.');try{sfx('quest')}catch(e){}}
-  if(any){saveLocal(true);try{saveCloud(true)}catch(e){}}}
+   say('🖼️ “'+nameOf(id)+'” is now a painting in the Patron Art Gallery! Here is your own copy to hang at home.');try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'213-30')}}
+  if(any){saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'213-31')}}}
  setInterval(give,5000);
  // your character as the Art Room draws wearables over it: the whole 96x112 worn layer (48x56 box at 2x, anchor 24,44),
  // bare (the look you made, no armour, capes or worn looks) or with your gear

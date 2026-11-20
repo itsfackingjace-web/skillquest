@@ -8,6 +8,6 @@
 //   treats every scene as indoors; 049 does the same fix for the islands).
 (()=>{let paused=false;
  document.addEventListener('visibilitychange',()=>{try{if(!ACX)return;if(document.hidden){if(ACX.state==='running'){paused=true;ACX.suspend()}}
-   else if(paused){paused=false;ACX.resume()}}catch(e){}});
- addEventListener('keydown',e=>{if(e.isTrusted&&!document.hidden)try{ac()}catch(_){}},{capture:true});
+   else if(paused){paused=false;ACX.resume()}}catch(e){self.SQERR&&SQERR(e,'153-1')}});
+ addEventListener('keydown',e=>{if(e.isTrusted&&!document.hidden)try{ac()}catch(_){self.SQERR&&SQERR(_,'153-2')}},{capture:true});
  {const _ws=wantSong;wantSong=function(){const R=SCENE&&SCENE.room;if(R&&(R.yard||R.court))return dark()>.4?'night':'day';return _ws.apply(this,arguments)}}})();

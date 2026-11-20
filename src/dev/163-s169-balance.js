@@ -75,7 +75,7 @@
  const setV=(path,val)=>{const[p,...rest]=path.split('.');const k=rest.join('.');const P2=part(p);const base=p==='xp'?100:p==='act'?OA[k]:pc(OP[k]);if(val===''||+val===base)delete P2[k];else P2[k]=+val};
  document.addEventListener('change',e=>{if(S.tab!=='balance')return;const t=e.target;if(!document.getElementById('dvs').contains(t))return;
   if(t.dataset.bx){setV(t.dataset.bx,t.value);ST.dirty=1;API.draw()}else if(t.dataset.bs){ST.sim[t.dataset.bs]=t.value;if(t.dataset.bs==='sk'){ST.sim.a='';ST.sim.sec='';ST.sim.mult=''}if(t.dataset.bs==='a')ST.sim.sec='';API.draw()}},true);
- document.addEventListener('input',e=>{if(S.tab!=='balance')return;const t=e.target;if(t.dataset&&t.dataset.bq){ST.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-bq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}},true);
+ document.addEventListener('input',e=>{if(S.tab!=='balance')return;const t=e.target;if(t.dataset&&t.dataset.bq){ST.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-bq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'163-1')}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='balance')return;const t=e.target.closest('[data-bv]');if(!t||!document.getElementById('dvs').contains(t))return;const v=t.dataset.bv;
   if(v==='save'){try{await dset('draft/balance',sec());ST.dirty=0;toast('Saved to draft. Publish it from the Publish tab.')}catch(e2){fail(e2)}if(SQA.previewing)SQA.preview(S.draft);API.draw();return}
   if(v==='reset'){S.draft.balance={};ST.dirty=1;API.draw();toast('Cleared. Save to draft to keep it.');return}

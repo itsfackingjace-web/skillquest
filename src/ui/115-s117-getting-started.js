@@ -34,32 +34,32 @@
  const N0=S.length;
  function stepStart(){STEP_AT=now();LASTP=STEP_AT;SHOW=STEP_AT;GAIN={wood:0,stone:0};FX0=XPS[5];for(const k in LAST)LAST[k]=inv[k]|0}
  function reward(r){if(!r)return'';const a=[];if(r.g){GLD+=r.g;a.push(r.g+' gold')}if(r.cooked){inv.cooked=(inv.cooked|0)+r.cooked;a.push(r.cooked+' cooked meat')}return a.join(' and ')}
- function advance(){const st=S[GD.s];const got=reward(st&&st.r);GD.s++;try{sfx('quest')}catch(e){}
-  if(GD.s>=N0){const g=reward({g:20});GD.s=DONE;try{say('Basics done! +'+g+'. Tap the quest box for your next job.');msgT=7}catch(e){}}
-  else{try{say('Done: '+st.n+'!'+(got?' +'+got:''));msgT=4}catch(e){}}
-  stepStart();try{saveLocal(true)}catch(e){}}
+ function advance(){const st=S[GD.s];const got=reward(st&&st.r);GD.s++;try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'115-1')}
+  if(GD.s>=N0){const g=reward({g:20});GD.s=DONE;try{say('Basics done! +'+g+'. Tap the quest box for your next job.');msgT=7}catch(e){self.SQERR&&SQERR(e,'115-2')}}
+  else{try{say('Done: '+st.n+'!'+(got?' +'+got:''));msgT=4}catch(e){self.SQERR&&SQERR(e,'115-3')}}
+  stepStart();try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'115-4')}}
  const active=()=>GD.s!=null&&GD.s<N0;
  // a game started without a save (a brand-new player on this device): decide once play begins
  const decide=()=>{GD.s=(Q.i>0||Q.on&&Q.k>0||lvTot()-XPS.length>6||GLD>100)?DONE:0;stepStart()};
  // progress
- SQUPD.after('115',(dt)=>{if(GD.s==null)decide();if(!active()||dead)return;for(const k in LAST){const v=inv[k]|0;if(v>LAST[k]){GAIN[k]+=v-LAST[k];LASTP=now()}LAST[k]=v}let guard=0;while(active()&&guard++<3){let d=false;try{d=S[GD.s].done()}catch(e){}if(!d)break;advance()}});
+ SQUPD.after('115',(dt)=>{if(GD.s==null)decide();if(!active()||dead)return;for(const k in LAST){const v=inv[k]|0;if(v>LAST[k]){GAIN[k]+=v-LAST[k];LASTP=now()}LAST[k]=v}let guard=0;while(active()&&guard++<3){let d=false;try{d=S[GD.s].done()}catch(e){self.SQERR&&SQERR(e,'115-5')}if(!d)break;advance()}});
  // the tracker: the step, its progress and where to go
- window.SQGUIDE=()=>{if(!active())return null;const st=S[GD.s];let t=null;try{t=outside()&&st.at?st.at():null}catch(e){}
-  let prog='';try{prog=st.prog?st.prog():''}catch(e){}
+ window.SQGUIDE=()=>{if(!active())return null;const st=S[GD.s];let t=null;try{t=outside()&&st.at?st.at():null}catch(e){self.SQERR&&SQERR(e,'115-6')}
+  let prog='';try{prog=st.prog?st.prog():''}catch(e){self.SQERR&&SQERR(e,'115-7')}
   return{e:{name:'Getting started '+(GD.s+1)+'/'+N0,step:st.n,prog,st:'active',ready:false,area:'hollow'},t}};
  // the hint: shown when a step starts and again if you get stuck; the button to press glows
  let lit=null;
  function light(id){if(lit===id)return;if(lit){const o=document.getElementById(lit);if(o)o.classList.remove('sqglow')}lit=id;if(id){const o=document.getElementById(id);if(o)o.classList.add('sqglow')}}
- SQHUD.after('115',()=>{if(!active()||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)){light(null);return}const st=S[GD.s],t=now(),stuck=t-LASTP>40,fresh=t-SHOW<9;let near=true;try{near=st.near?st.near():true}catch(e){}light(stuck||fresh||(st.near&&near)?st.btn:null);if(!stuck&&!fresh)return;let txt='';try{txt=st.how()}catch(e){}if(!txt)return;g.save();g.setTransform(1,0,0,1,0,0);const L=typeof HUDL!=='undefined'&&HUDL,U=(L&&L.U)||1,fs=11*U;g.font='600 '+fs+'px '+PF;const maxW=L?L.qw:Math.min(W-32*U,360*U),words=txt.split(' '),lines=[];let cur='';for(const w of words){const tt=cur?cur+' '+w:w;if(g.measureText(tt).width>maxW-24*U&&cur){lines.push(cur);cur=w}else cur=tt}if(cur)lines.push(cur);const bw=Math.min(maxW,Math.max(...lines.map(l=>g.measureText(l).width))+24*U),lh=fs*1.35,bh=lines.length*lh+(stuck?28:18)*U,bx=L?L.ins:(W-bw)/2;let by=L?L.stackBottom+4*U:Math.min(H-bh-120*U,H/2+30*Z);if(L&&window.SQHUDBTN){const r=cv.getBoundingClientRect();by=Math.max(by,(SQHUDBTN-r.top)*W/r.width+4*U)}const tx=L?bx+12*U:W/2,al=L?'left':'center';g3box(bx,by,bw,bh,U,'#f8f0d8');if(L)window.SQHINTB={b:by+bh,f:performance.now()};let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',tx,y,11,U,'#b06010',al,700);y+=lh}lines.forEach(l=>{g3text(l,tx,y,11,U,'#404040',al,600);y+=lh});g.restore()});
+ SQHUD.after('115',()=>{if(!active()||dead||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)){light(null);return}const st=S[GD.s],t=now(),stuck=t-LASTP>40,fresh=t-SHOW<9;let near=true;try{near=st.near?st.near():true}catch(e){self.SQERR&&SQERR(e,'115-8')}light(stuck||fresh||(st.near&&near)?st.btn:null);if(!stuck&&!fresh)return;let txt='';try{txt=st.how()}catch(e){self.SQERR&&SQERR(e,'115-9')}if(!txt)return;g.save();g.setTransform(1,0,0,1,0,0);const L=typeof HUDL!=='undefined'&&HUDL,U=(L&&L.U)||1,fs=11*U;g.font='600 '+fs+'px '+PF;const maxW=L?L.qw:Math.min(W-32*U,360*U),words=txt.split(' '),lines=[];let cur='';for(const w of words){const tt=cur?cur+' '+w:w;if(g.measureText(tt).width>maxW-24*U&&cur){lines.push(cur);cur=w}else cur=tt}if(cur)lines.push(cur);const bw=Math.min(maxW,Math.max(...lines.map(l=>g.measureText(l).width))+24*U),lh=fs*1.35,bh=lines.length*lh+(stuck?28:18)*U,bx=L?L.ins:(W-bw)/2;let by=L?L.stackBottom+4*U:Math.min(H-bh-120*U,H/2+30*Z);if(L&&window.SQHUDBTN){const r=cv.getBoundingClientRect();by=Math.max(by,(SQHUDBTN-r.top)*W/r.width+4*U)}const tx=L?bx+12*U:W/2,al=L?'left':'center';g3box(bx,by,bw,bh,U,'#f8f0d8');if(L)window.SQHINTB={b:by+bh,f:performance.now()};let y=by+10*U+fs*.5;if(stuck){g3text('Need a hand?',tx,y,11,U,'#b06010',al,700);y+=lh}lines.forEach(l=>{g3text(l,tx,y,11,U,'#404040',al,600);y+=lh});g.restore()});
  // tapping the quest box opens the quest log
  cv.addEventListener('pointerdown',e=>{if(menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)||typeof HUDL==='undefined'||!HUDL||(window.SQTRKOFF&&SQTRKOFF()))return;const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*(cv.width/r.width),sy=(e.clientY-r.top)*(cv.height/r.height),L=HUDL;
-  if(sx>=L.ins&&sx<=L.ins+L.qw&&sy>=L.qy&&sy<=L.qy+42*L.U){e.stopImmediatePropagation();e.preventDefault();try{openPanel(6)}catch(x){}}},true);
+  if(sx>=L.ins&&sx<=L.ins+L.qw&&sy>=L.qy&&sy<=L.qy+42*L.U){e.stopImmediatePropagation();e.preventDefault();try{openPanel(6)}catch(x){self.SQERR&&SQERR(x,'115-10')}}},true);
  // the quest log: where the guide is, and a way to skip it
  const _rp=rPn;rPn=function(){_rp.apply(this,arguments);if(!pnOpen||ptab!==6||!active())return;const d=document.createElement('div');d.className='sqgd';
   d.innerHTML='<b>Getting started '+(GD.s+1)+'/'+N0+':</b> '+S[GD.s].n+'<button data-gskip>Skip the guide</button>';pbd.prepend(d)};
- pbd.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('[data-gskip]'))return;GD.s=DONE;light(null);try{say('Guide skipped. Your quests are in the quest log.');saveLocal(true)}catch(x){}rPn()});
+ pbd.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('[data-gskip]'))return;GD.s=DONE;light(null);try{say('Guide skipped. Your quests are in the quest log.');saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'115-11')}rPn()});
  // saves
- SQSAVE.after('115:gd',s=>{try{if(GD.s!=null)s.gd=GD.s}catch(e){}});
+ SQSAVE.after('115:gd',s=>{try{if(GD.s!=null)s.gd=GD.s}catch(e){self.SQERR&&SQERR(e,'115-12')}});
  SQLOAD.after('115',(Sv)=>{try{const v=Sv&&Sv.gd;
    if(typeof v==='number'&&v>=0)GD.s=v>=N0?DONE:v|0;else decide()}catch(e){GD.s=DONE}});
  const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);GD.s=0;stepStart();return out};

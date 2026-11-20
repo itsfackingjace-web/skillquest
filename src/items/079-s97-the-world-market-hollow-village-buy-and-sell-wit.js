@@ -47,7 +47,7 @@
   // flags
   for(const fx of[X0-2,X0+w-1]){R(fx,base-70,2,24,'#5a4a3a');const wv=Math.round(Math.sin(tm*4+fx)*1.5);R(fx+2,base-70,9,6+wv,'#d83830');R(fx+2,base-70,9,2,'#f05040')}}
  function drawClerk(tm){const c=WMK.clerk,near=Math.hypot(c.x-P.x,c.y-P.y)<60,dir=near?(Math.abs(P.x-c.x)>Math.abs(P.y-c.y)?2:P.y<c.y?1:0):0;shd(c.x,c.y+6,12);GC=g;
-  try{cP({sk:1,hs:0,hc:2,sh:1,pn:1,ht:1,hcol:5,so:2},dir,0,Math.round(c.x),Math.round(c.y),near&&P.x<c.x)}catch(e){}
+  try{cP({sk:1,hs:0,hc:2,sh:1,pn:1,ht:1,hcol:5,so:2},dir,0,Math.round(c.x),Math.round(c.y),near&&P.x<c.x)}catch(e){self.SQERR&&SQERR(e,'079-1')}
   g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.strokeStyle=K;g.strokeText('Market clerk',c.x,c.y-22);g.fillStyle='#ffe8b0';g.fillText('Market clerk',c.x,c.y-22);g.restore();
   if(Object.keys(WMK.box).length&&Math.floor(tm*3)%2){Rg(c.x-2,c.y-36,4,8,K);Rg(c.x-1,c.y-35,2,5,'#f8d048');Rg(c.x-1,c.y-29,2,1,'#f8d048')}}
  if(sp){const _lh=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh(L,x0,y0,x1,y1,tm);const s=WMK.spot;if(s.tx+s.w<x0-3||s.tx>x1+3||s.ty>y1+5||s.ty+3<y0-4)return;L.push([(s.ty+2)*16,4,()=>drawMarket(tm)]);L.push([WMK.clerk.y+6,4,()=>drawClerk(tm)])};
@@ -58,9 +58,9 @@
  function wmStart(){if(WMK.unsub.length||!online())return;const d=FB.db;
   WMK.unsub.push(d.onValue(d.ref(FB.D,'market/offers'),s=>{const v=s.val()||{};WMK.offers=v;sweep();expireSoon();rematchSoon();if(pnOpen&&shop==='wmkt'&&!WMK.busy&&!(typeof typing==='function'&&typing()))rPn()},e=>mpErr(e)));
   WMK.unsub.push(d.onValue(d.ref(FB.D,'market/box/'+me()),s=>{const v=s.val()||{};const fresh=Object.keys(v).filter(k=>!WMK.seenBox.has(k));WMK.box=v;for(const k of fresh)WMK.seenBox.add(k);
-   if(fresh.length&&WMK.ready){say('World Market: one of your offers traded! Collect it at the World Market in Hollow Village.');msgT=5;try{sfx('coin')}catch(e){}}WMK.ready=true;if(pnOpen&&shop==='wmkt')rPn()},e=>mpErr(e)));
+   if(fresh.length&&WMK.ready){say('World Market: one of your offers traded! Collect it at the World Market in Hollow Village.');msgT=5;try{sfx('coin')}catch(e){self.SQERR&&SQERR(e,'079-2')}}WMK.ready=true;if(pnOpen&&shop==='wmkt')rPn()},e=>mpErr(e)));
   WMK.unsub.push(d.onValue(d.ref(FB.D,'market/last'),s=>{WMK.last=s.val()||{}},e=>{}))}
- {const _ms=mpStart;mpStart=async function(u){await _ms(u);try{wmStart()}catch(e){mpErr(e)}if(MP.on)MP.unsub.push(()=>{for(const f of WMK.unsub)try{f()}catch(e){}WMK.unsub.length=0;WMK.offers={};WMK.box={};WMK.ready=false})}}
+ {const _ms=mpStart;mpStart=async function(u){await _ms(u);try{wmStart()}catch(e){mpErr(e)}if(MP.on)MP.unsub.push(()=>{for(const f of WMK.unsub)try{f()}catch(e){self.SQERR&&SQERR(e,'079-3')}WMK.unsub.length=0;WMK.offers={};WMK.box={};WMK.ready=false})}}
  const mine=()=>Object.entries(WMK.offers).filter(([,o])=>o&&o.u===me());
  const tradeable=k=>!!(sqBookReg(k),INAME[k]&&SELLP[k]&&k!=='gold'&&!/^ja_?$/.test(k));
  const nm=(k,n)=>n===1?(INAME[k]||k):(SN[k]||INAME[k]||k);
@@ -78,14 +78,14 @@
   let up=false;try{await d.set(d.ref(FB.D,'market/offers/'+id),{u:me(),n:myName().slice(0,12),k,s:side,p,q,f:0,t:Date.now()});up=true;WMK.offers[id]={u:me(),k,s:side,p,q,f:0,t:Date.now()};
    say((side==='s'?'Selling ':'Buying ')+q+' '+nm(k,q).toLowerCase()+' at '+p+' gold each.');sfx('coin');await match(id)}
   catch(e){mpErr(e);if(!up){if(side==='s')inv[k]=(inv[k]|0)+q;else GLD+=q*p;say('The market couldn\'t take that offer. Try again.')}else say('Your offer is up, but it couldn\'t trade just now. It will keep trying, or you can cancel it.');saveNow()}
-  finally{WMK.busy=false;try{svg()}catch(e){}if(pnOpen&&shop==='wmkt'){WMK.tab='mine';WMK.form=null;rPn()}}}
+  finally{WMK.busy=false;try{svg()}catch(e){self.SQERR&&SQERR(e,'079-4')}if(pnOpen&&shop==='wmkt'){WMK.tab='mine';WMK.form=null;rPn()}}}
  async function match(id){if(WMK.matching.has(id))return;WMK.matching.add(id);try{return await match1(id)}finally{WMK.matching.delete(id);const o=WMK.offers[id];
    if(o&&o.u===me()&&o.f>=o.q)sweep()}}
  // A filled (or cancelled) offer stays up for HOLD ms before its owner removes it: the box delivery for the last trade is
  // written right after the trade and the database only takes it while the offer is still there.
  const HOLD=30000,FULL={};function sweep(){const d=FB.db,now=Date.now();for(const id in WMK.offers){const o=WMK.offers[id];if(!o||o.u!==me()||o.f<o.q||WMK.matching.has(id)){delete FULL[id];continue}
    if(!FULL[id])FULL[id]=now;else if(now-FULL[id]>=HOLD){delete FULL[id];d.remove(d.ref(FB.D,'market/offers/'+id)).catch(()=>{})}}}
- setInterval(()=>{try{if(online())sweep()}catch(e){}},5000);
+ setInterval(()=>{try{if(online())sweep()}catch(e){self.SQERR&&SQERR(e,'079-5')}},5000);
  async function match1(id){const d=FB.db,o=WMK.offers[id];if(!o||!live(o))return;let traded=0,got=0,spent=0,taxed=0;
   const others=Object.entries(WMK.offers).filter(([oid,c])=>oid!==id&&live(c)&&inBand(c.k,c.p)&&c.k===o.k&&c.s!==o.s&&c.u!==o.u&&(o.s==='s'?c.p>=o.p:c.p<=o.p))
    .sort((a,b)=>o.s==='s'?(b[1].p-a[1].p||a[1].t-b[1].t):(a[1].p-b[1].p||a[1].t-b[1].t));
@@ -103,23 +103,23 @@
    if(o.s==='s'){GLD+=tot-tx;got+=tot-tx;taxed+=tx;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:o.k,n:m,o:cid,b:me()}).catch(e=>mpErr(e))}
    else{inv[o.k]=(inv[o.k]|0)+m;GLD+=(o.p-price)*m;spent+=tot;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:'gold',n:tot-tx,o:cid,b:me()}).catch(e=>mpErr(e))}
    rec(o.k,price,m);saveNow()}
-  if(traded){say(o.s==='s'?'Sold '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+got+' gold'+(taxed?' ('+taxed+' market tax)':'')+'!':'Bought '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+spent+' gold!');msgT=5;try{sfx('quest')}catch(e){}}}
+  if(traded){say(o.s==='s'?'Sold '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+got+' gold'+(taxed?' ('+taxed+' market tax)':'')+'!':'Bought '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+spent+' gold!');msgT=5;try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'079-6')}}}
  // two offers can end up crossed and waiting (one was put up before the other player's list had loaded, or both at once):
  // whoever owns the newer one matches it a moment later
  let rmT=0;function rematchSoon(){clearTimeout(rmT);rmT=setTimeout(rematch,1500)}
  async function rematch(){if(!online()||WMK.busy)return;const all=Object.entries(WMK.offers);
   for(const[id,o]of all){if(!o||o.u!==me()||!live(o)||WMK.matching.has(id))continue;
    const cross=all.some(([cid,c])=>cid!==id&&live(c)&&inBand(c.k,c.p)&&c.k===o.k&&c.s!==o.s&&c.u!==o.u&&(o.s==='s'?c.p>=o.p:c.p<=o.p)&&(c.t||0)<=(o.t||0));
-   if(!cross)continue;WMK.busy=true;try{await match(id)}catch(e){mpErr(e)}finally{WMK.busy=false}try{svg()}catch(e){}if(pnOpen&&shop==='wmkt'&&!typing())rPn()}}
+   if(!cross)continue;WMK.busy=true;try{await match(id)}catch(e){mpErr(e)}finally{WMK.busy=false}try{svg()}catch(e){self.SQERR&&SQERR(e,'079-7')}if(pnOpen&&shop==='wmkt'&&!typing())rPn()}}
  let exT=0;function expireSoon(){clearTimeout(exT);exT=setTimeout(expire,2500)}
  async function expire(){if(!online()||WMK.busy)return;for(const[id,o]of mine()){if(o.f>=o.q||Date.now()<expAt(o)||WMK.matching.has(id))continue;try{await cancel(id,'exp')}catch(e){mpErr(e)}}if(pnOpen&&shop==='wmkt'&&!typing())rPn()}
- setInterval(()=>{try{if(online()&&mine().some(([,o])=>o.f<o.q&&Date.now()>=expAt(o)))expire()}catch(e){}},60000);
+ setInterval(()=>{try{if(online()&&mine().some(([,o])=>o.f<o.q&&Date.now()>=expAt(o)))expire()}catch(e){self.SQERR&&SQERR(e,'079-8')}},60000);
  async function cancel(id,why){const d=FB.db;let last=null;const r=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{last=cur?{...cur}:cur;if(!cur||cur.u!==me()||cur.x||cur.f>=cur.q)return;if(!cur.f)return null;cur.q=cur.f;cur.x=1;return cur}).catch(e=>{mpErr(e);return null});
   if(!r||!r.committed||!last)return;const left=Math.max(0,last.q-last.f);if(last.s==='s')inv[last.k]=(inv[last.k]|0)+left;else GLD+=left*last.p;delete WMK.offers[id];
-  say((why==='exp'?'World Market: your offer for '+nm(last.k,2).toLowerCase()+' expired after 7 days.':'Offer cancelled.')+(left?' Back to you: '+(last.s==='s'?left+' '+nm(last.k,left).toLowerCase():left*last.p+' gold')+'.':''));sfx('coin');saveNow();try{svg()}catch(e){}}
+  say((why==='exp'?'World Market: your offer for '+nm(last.k,2).toLowerCase()+' expired after 7 days.':'Offer cancelled.')+(left?' Back to you: '+(last.s==='s'?left+' '+nm(last.k,left).toLowerCase():left*last.p+' gold')+'.':''));sfx('coin');saveNow();try{svg()}catch(e){self.SQERR&&SQERR(e,'079-9')}}
  async function collect(){const d=FB.db;let items=0,gold=0;for(const bid of Object.keys(WMK.box)){let got=null;const r=await d.runTransaction(d.ref(FB.D,'market/box/'+me()+'/'+bid),cur=>{got=cur;return null}).catch(()=>null);
    if(!r||!r.committed||!got||!(got.n>0))continue;if(got.k==='gold'){GLD+=got.n;gold+=got.n}else if((sqBookReg(got.k),INAME[got.k])){inv[got.k]=(inv[got.k]|0)+got.n;items+=got.n}}
-  if(items||gold){say('Collected'+(gold?' '+gold+' gold':'')+(gold&&items?' and':'')+(items?' '+items+' item'+(items>1?'s':''):'')+' from the market.');sfx('coin');saveNow();try{svg()}catch(e){}}}
+  if(items||gold){say('Collected'+(gold?' '+gold+' gold':'')+(gold&&items?' and':'')+(items?' '+items+' item'+(items>1?'s':''):'')+' from the market.');sfx('coin');saveNow();try{svg()}catch(e){self.SQERR&&SQERR(e,'079-10')}}}
  // ---- the panel ----
  function wmOpen(){/* not "open": a function here (a bare block) becomes window.open */if(!online()){say('The World Market needs you to be signed in (Menu > Online).');sfx('swish');return}wmStart();shop='wmkt';WMK.tab='mine';WMK.form=null;pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');
   if(Object.keys(WMK.box).length)collect().then(()=>{if(pnOpen&&shop==='wmkt')rPn()})}
@@ -154,8 +154,8 @@
    const ks=Object.keys(INAME).filter(k=>tradeable(k)&&(!f||(INAME[k]||'').toLowerCase().includes(f))).sort((a,b)=>{const A=book(a).bs!=null,Bb=book(b).bs!=null;return(Bb-A)||(INAME[a]||'').localeCompare(INAME[b]||'')}).slice(0,60);
    for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:b:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+'<br><small>'+(B.bs!=null?B.qs+' for sale from '+fmt(B.bs):'none for sale')+(lastP(k)!=null?' · market '+fmt(lastP(k)):'')+'</small></button>'}}
   return h}
- {const _r=rPn;rPn=function(){if(ptab===2&&shop==='wmkt'){try{panelChrome('')}catch(e){}const fo=document.activeElement&&document.activeElement.id==='wmf';pbd.innerHTML=wmHTML();
-   const fi=document.getElementById('wmf');if(fi){fi.oninput=()=>{WMK.filter=fi.value;const pos=fi.selectionStart;rPn();const f2=document.getElementById('wmf');if(f2){f2.focus();try{f2.setSelectionRange(pos,pos)}catch(e){}}};if(fo){fi.focus()}}
+ {const _r=rPn;rPn=function(){if(ptab===2&&shop==='wmkt'){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'079-11')}const fo=document.activeElement&&document.activeElement.id==='wmf';pbd.innerHTML=wmHTML();
+   const fi=document.getElementById('wmf');if(fi){fi.oninput=()=>{WMK.filter=fi.value;const pos=fi.selectionStart;rPn();const f2=document.getElementById('wmf');if(f2){f2.focus();try{f2.setSelectionRange(pos,pos)}catch(e){self.SQERR&&SQERR(e,'079-12')}}};if(fo){fi.focus()}}
    // typing a number just updates the offer (no redraw: a redraw while typing ate your next tap, e.g. on SELL / BUY)
    for(const id of['wmq','wmp']){const el=document.getElementById(id);if(el)el.oninput=()=>{if(!WMK.form)return;const v=Math.max(1,Math.floor(+el.value||1));if(id==='wmq')WMK.form.q=v;else WMK.form.p=Math.min(1e7,v);wmTotal()}}return}_r()}}
  // keep the SELL/BUY button's total right while typing, without rebuilding the panel
@@ -181,5 +181,5 @@
  {let mineTk=false;SQUPD.after('079',(dt)=>{const n=!pnOpen&&!menuOpen&&!dead&&nearClerk();if(n){tk.style.display='flex';const lab='TRADE'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mineTk=true}else if(mineTk){mineTk=false;if(!pnOpen)tk.style.display='none'}if(sp&&!SCENE)for(const m of en)if(!m.dead&&!m.big&&Math.hypot(m.x-WMK.clerk.x,m.y-WMK.clerk.y)<90){m.dead=1;m.dropped=1}})}
  {SQHIT.wrap('079 the world market hollow village buy',_a=>function(){if(!sp||SCENE||dead||menuOpen||pnOpen||BUILD||swing>0)return _a();const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),s=WMK.spot;
    if(tx>=s.tx&&tx<s.tx+s.w&&ty>=s.ty&&ty<=s.ty+1&&!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)){wmOpen();return}return _a()})}
- try{WK_PLACES&&WK_PLACES.push&&WK_PLACES.push({n:'World Market',w:'Hollow Village',d:'Trade with every player: put up offers to buy or sell anything, and they match automatically.'})}catch(e){}
+ // (the wiki's Playing together tab describes the World Market; 075 never had a WK_PLACES list)
 }

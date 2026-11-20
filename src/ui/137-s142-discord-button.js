@@ -7,6 +7,6 @@
  clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px)}#sqts .tsmn a.tsdc:hover,#sqts .tsmn a.tsdc:focus-visible{background:#4752c4;outline:none}`;document.head.appendChild(st)}
  const add=()=>{if(tsMn.querySelector('.tsdc'))return;const o=tsMn.querySelector('[data-a="opt"]');if(!o)return;const a=document.createElement('a');a.className='tsdc';a.href=URL_;a.target='_blank';a.rel='noopener noreferrer';a.textContent='JOIN OUR DISCORD';
   // the title screen listens for taps too: keep this one to the link
-  for(const ev of['touchstart','pointerdown','mousedown'])a.addEventListener(ev,e=>e.stopPropagation());a.addEventListener('click',e=>{e.stopPropagation();try{sfx('talk')}catch(x){}});o.after(a)};
+  for(const ev of['touchstart','pointerdown','mousedown'])a.addEventListener(ev,e=>e.stopPropagation());a.addEventListener('click',e=>{e.stopPropagation();try{sfx('talk')}catch(x){self.SQERR&&SQERR(x,'137-1')}});o.after(a)};
  new MutationObserver(add).observe(tsMn,{childList:true});add();
  window.SQDISCORD=URL_})();

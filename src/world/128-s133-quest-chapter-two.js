@@ -31,15 +31,15 @@
  const cur=()=>Q.on?QS[Q.i]:null;
  const _qv=qVal;qVal=function(q){const t=q.type;
   if(t==='night'||t==='visit')return Q.k;if(t==='line')return SQ_SIDE[q.item]&&SQ_SIDE[q.item].completed?1:0;if(t==='ib')return IBK.size;return _qv(q)};
- const done1=q=>{say('Quest updated: '+q.n+' - return to Elder Rowan.');msgT=4;sfx('quest');try{saveLocal(true)}catch(e){}};
+ const done1=q=>{say('Quest updated: '+q.n+' - return to Elder Rowan.');msgT=4;sfx('quest');try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'128-1')}};
  SQUPD.wrap('128',_u=>function(dt){const out=_u.apply(this,arguments);try{const q=cur();if(!q){NW=0;return out}
    if(q.type==='night'&&Q.k<1){if(dead){if(NW===2){say('Night Watch: you fell. Try again tonight.');msgT=3}NW=0}else{const d=dark();
      if(NW===0&&d<.3)NW=1;else if(NW===1&&d>.6){NW=2;say('Night falls. Hold out until dawn!');msgT=3}else if(NW===2&&d<.05){Q.k=1;NW=0;done1(q)}}}
    else NW=0;
-   if(q.type==='visit'&&Q.k<1&&typeof curRegion==='function'&&curRegion()===q.item){Q.k=1;done1(q)}}catch(e){}return out});
- const _se=sqEvent;sqEvent=function(type,item){try{if(type==='islandboss'&&item&&!IBK.has(item)){IBK.add(item);const q=cur();if(q&&q.type==='ib'&&IBK.size>=q.amt)setTimeout(()=>done1(q),2500)}}catch(e){}return _se.apply(this,arguments)};
+   if(q.type==='visit'&&Q.k<1&&typeof curRegion==='function'&&curRegion()===q.item){Q.k=1;done1(q)}}catch(e){self.SQERR&&SQERR(e,'128-2')}return out});
+ const _se=sqEvent;sqEvent=function(type,item){try{if(type==='islandboss'&&item&&!IBK.has(item)){IBK.add(item);const q=cur();if(q&&q.type==='ib'&&IBK.size>=q.amt)setTimeout(()=>done1(q),2500)}}catch(e){self.SQERR&&SQERR(e,'128-3')}return _se.apply(this,arguments)};
  // Hollow's night slimes have no type: count them for the slime quests (048 counts the ones typed 'slime')
- const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const q=cur();if(q&&q.type==='kill'&&q.item==='slime'&&n&&!n.type&&!n._rp){Q.k++;if(Q.k===q.amt)done1(q)}}catch(e){}return out};
+ const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const q=cur();if(q&&q.type==='kill'&&q.item==='slime'&&n&&!n.type&&!n._rp){Q.k++;if(Q.k===q.amt)done1(q)}}catch(e){self.SQERR&&SQERR(e,'128-4')}return out};
  // ---- saves ----
  SQSAVE.after('128:qv,ibk',s=>{s.qv=10;s.ibk=[...IBK];});
  SQLOAD.after('128',(S)=>{try{IBK=new Set(Array.isArray(S&&S.ibk)?S.ibk.filter(k=>typeof k==='string').slice(0,10):[]);NW=0;

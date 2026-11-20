@@ -22,7 +22,7 @@
  {SQEAT.wrap('181 food picker and campfire menu',_e=>function(){if(BYPASS||dead||menuOpen||pnOpen||window.SQDO_STEP||(typeof SQDO!=='undefined'&&SQDO)||(typeof BUILD!=='undefined'&&BUILD))return _e.apply(this,arguments);
    if(atFire()){const L=cookable();if(L.filter(q=>q.ok).length>=2){openPick();return}if(L.length)return _e.apply(this,arguments)}
    const f=pick();if(!f){const any=FOODS.some(q=>(inv[q.k]|0)>0);if(!any)return _e.apply(this,arguments);say('Use potions and special meals from your Bag.');return}
-   if(!PIN&&P.hp>=6&&hunger>=95){say('You\'re full.');try{sfx('swish')}catch(e){}return}
+   if(!PIN&&P.hp>=6&&hunger>=95){say('You\'re full.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'181-1')}return}
    return front(FOODS,f,()=>_e.apply(this,arguments))})}
  // ---- the cooking picker ----
  function cook(raw,n){const e=COOKS.find(c=>c.raw===raw&&!c.st);if(!e)return;closePanel();const all=n==='all',cnt=all?(inv[raw]|0):1;
@@ -30,21 +30,21 @@
   if(typeof sqDo==='function'&&sqDo('cook',Math.max(1,cnt),step))return;step()}
  function cookAll(){closePanel();BYPASS++;try{eat()}finally{BYPASS--}}
  function eatNow(){closePanel();const f=pick();if(!f){say('Nothing to eat');return}BYPASS++;try{useFood(f.k)}finally{BYPASS--}}
- function openPick(){pnOpen=true;ptab=TAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){}}
+ function openPick(){pnOpen=true;ptab=TAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'181-2')}}
  function html(){const L=cookable();let h='<div class="tl">COOK AT THE FIRE</div><div class="qc" style="font-size:13px">What do you want to cook? (Cooking '+lvOf(4)+')</div>';
   for(const{c,ok}of L){const n=inv[c.raw]|0;h+='<div class="qc" style="display:flex;align-items:center;gap:8px"><img src="'+iconURL(c.raw)+'" style="width:28px;height:28px;image-rendering:pixelated"><div style="flex:1"><b>'+(INAME[c.raw]||c.raw)+'</b> ×'+n+'<br><small>→ '+(INAME[c.ck]||c.ck)+(ok?'':' · needs Cooking '+c.lv)+'</small></div>'+
    (ok?'<button class="sb" data-ck1="'+c.raw+'" style="min-width:0;padding:8px 10px">COOK 1</button>'+(n>1?'<button class="sb" data-cka="'+c.raw+'" style="min-width:0;padding:8px 10px">ALL '+n+'</button>':''):'')+'</div>'}
   return h+'<div class="pmb"><button class="sb" data-ckx="every">COOK EVERYTHING</button><button class="sb" data-ckx="eat">EAT INSTEAD</button><button class="sb no" data-ckx="close">CLOSE</button></div>'}
- {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){}if(!cookable().length){closePanel();return}pbd.innerHTML=html()}}
+ {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'181-3')}if(!cookable().length){closePanel();return}pbd.innerHTML=html()}}
  pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen)return;const b=e.target.closest('[data-ck1],[data-cka],[data-ckx]');if(!b)return;e.stopPropagation();e.preventDefault();
   if(b.dataset.ck1)return cook(b.dataset.ck1,1);if(b.dataset.cka)return cook(b.dataset.cka,'all');const a=b.dataset.ckx;if(a==='every')return cookAll();if(a==='eat')return eatNow();closePanel()},true);
  // ---- pinning a food in the bag ----
  {const _b=bagGridHTML;bagGridHTML=function(){let h=_b.apply(this,arguments);try{const k=invSel;if(k&&(inv[k]|0)>0&&FOODS.some(f=>f.k===k&&!isPot(f))){const on=PIN===k;
-    h=h.replace('<button class="use" data-k="'+k+'">USE</button>','<button class="use" data-k="'+k+'">USE</button><button class="use" data-eatpin="'+k+'" title="EAT uses this food first"'+(on?' style="background:#f8d048;color:#181018"':'')+'>'+(on?'★ EATS FIRST':'☆ EAT FIRST')+'</button>')}}catch(e){}return h}}
+    h=h.replace('<button class="use" data-k="'+k+'">USE</button>','<button class="use" data-k="'+k+'">USE</button><button class="use" data-eatpin="'+k+'" title="EAT uses this food first"'+(on?' style="background:#f8d048;color:#181018"':'')+'>'+(on?'★ EATS FIRST':'☆ EAT FIRST')+'</button>')}}catch(e){self.SQERR&&SQERR(e,'181-4')}return h}}
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-eatpin]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.eatpin;PIN=PIN===k?'':k;
-  say(PIN?'EAT will use '+(INAME[k]||k).toLowerCase()+' first.':'EAT picks food for you again.');try{sfx('talk');saveLocal()}catch(x){}try{rPn()}catch(x){}},true);
- {SQSAVE.after('181:eatp',s=>{try{s.eatp=PIN}catch(e){}})}
- {SQLOAD.after('181',(S)=>{try{PIN=S&&typeof S.eatp==='string'&&INAME[S.eatp]?S.eatp:''}catch(e){}})}
+  say(PIN?'EAT will use '+(INAME[k]||k).toLowerCase()+' first.':'EAT picks food for you again.');try{sfx('talk');saveLocal()}catch(x){self.SQERR&&SQERR(x,'181-5')}try{rPn()}catch(x){self.SQERR&&SQERR(x,'181-6')}},true);
+ {SQSAVE.after('181:eatp',s=>{try{s.eatp=PIN}catch(e){self.SQERR&&SQERR(e,'181-7')}})}
+ {SQLOAD.after('181',(S)=>{try{PIN=S&&typeof S.eatp==='string'&&INAME[S.eatp]?S.eatp:''}catch(e){self.SQERR&&SQERR(e,'181-8')}})}
  // window.SQEAT is 007's EAT step list; this section's helpers are SQEATPICK. eat(): eat now, never cook (used while a cook job runs).
  window.SQEATPICK={pick,cookable,get pin(){return PIN},set pin(v){PIN=v||''},open:openPick,cook,
   eat(){const f=pick();if(!f){say('Nothing to eat');return false}if(!PIN&&P.hp>=6&&hunger>=95){say('You\'re full.');return false}BYPASS++;try{useFood(f.k)}finally{BYPASS--}return true}}})();

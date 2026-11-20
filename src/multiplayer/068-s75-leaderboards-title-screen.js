@@ -5,13 +5,13 @@
 // Anyone can read the boards (even signed out); each player can only write their own row.
 const LB={open:false,cat:'tot',data:{},unsub:null,pubKey:'',pubAt:-1e9,pk:0};
 // PvP kills you've made (counted when the player you beat tells you so)
-{const _in=pvIncoming;pvIncoming=function(id,v){if(v&&v.k==='ko'&&typeof v.t==='number'&&mpNow()-v.t<=5000){LB.pk++;try{saveLocal(true)}catch(e){}}return _in(id,v)}}
+{const _in=pvIncoming;pvIncoming=function(id,v){if(v&&v.k==='ko'&&typeof v.t==='number'&&mpNow()-v.t<=5000){LB.pk++;try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'068-1')}}return _in(id,v)}}
 {SQSAVE.after('068:pvpk',s=>{if(LB.pk)s.pvpk=LB.pk;})}
 {SQLOAD.after('068',(S)=>{LB.pk=Math.max(0,+(S&&S.pvpk)||0)})}
 function lbTick(){if(!MP.on||!MP.user||!FB)return;const now=performance.now();if(now-LB.pubAt<20000)return;LB.pubAt=now;
- const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};try{const c=window.SQCHR&&SQCHR.row();if(c){row.cr=c.r;row.cg=c.g}}catch(e){}const k=JSON.stringify(row);if(k===LB.pubKey)return;
+ const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};try{const c=window.SQCHR&&SQCHR.row();if(c){row.cr=c.r;row.cg=c.g}}catch(e){self.SQERR&&SQERR(e,'068-2')}const k=JSON.stringify(row);if(k===LB.pubKey)return;
  LB.pubKey=k;FB.db.set(FB.db.ref(FB.D,'lb/'+MP.user.uid),Object.assign(row,{t:FB.db.serverTimestamp()})).catch(e=>{LB.pubKey='';mpErr(e)})}
-setInterval(()=>{try{lbTick()}catch(e){}},5000);
+setInterval(()=>{try{lbTick()}catch(e){self.SQERR&&SQERR(e,'068-3')}},5000);
 window.SQLB=LB;
 // ---- the categories ----
 const lbCats=()=>{const c=[{k:'tot',n:'Overall',sub:'Total level',ic:'★',col:'#f8d048'},{k:'qp',n:'Quests',sub:'Quest points',ic:'!',col:'#68b8f8'},{k:'pk',n:'PvP kills',sub:'Players defeated',ic:'☠',col:'#e85848'},{k:'mk',n:'Monsters',sub:'Monsters slain',ic:'⚔',col:'#a8a8b8'},{k:'bk',n:'World bosses',sub:'World bosses defeated',ic:'♛',col:'#c83020'},{k:'cr',n:'Chess',sub:'Chess rating (games against players)',ic:'♞',col:'#8058c0'}];
@@ -51,10 +51,10 @@ function lbRows(cat){const out=[];for(const u in LB.data){const r=LB.data[u];if(
 @media(max-width:480px){#sqlb .lbp .nm{font-size:13px}#sqlb .lbp .vl{font-size:17px}#sqlb .row{font-size:14px;grid-template-columns:36px 1fr auto}}`;document.head.appendChild(st)}
 const lbEl=el('div','sqlb','','<div class="lbw"><div class="lbh"><b>LEADERBOARDS</b><button data-lb="x" aria-label="Close">CLOSE</button></div><div class="lbc" id="lbc"></div><div class="lbb" id="lbb"></div><div class="lbf"><span id="lbn"></span><span>Updates live</span></div></div>');
 document.body.appendChild(lbEl);for(const ev of['touchstart','pointerdown','mousedown'])lbEl.addEventListener(ev,stop);
-function lbOpen(){LB.open=true;lbEl.style.display='flex';try{sfx('talk')}catch(e){}lbRender();
+function lbOpen(){LB.open=true;lbEl.style.display='flex';try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'068-4')}lbRender();
  if(!LB.unsub&&FB&&FB.db){try{LB.unsub=FB.db.onValue(FB.db.ref(FB.D,'lb'),s=>{LB.data=s.val()||{};if(LB.open)lbRender()},e=>{LB.err=1;lbRender()})}catch(e){LB.err=1}}
  setTimeout(()=>{const b=lbEl.querySelector('.lbc button.on');if(b&&(GPON||TS.kb))setFocus(b)},30)}
-function lbClose(){LB.open=false;lbEl.style.display='none';if(LB.unsub){try{LB.unsub()}catch(e){}LB.unsub=null}setFocus(null);try{sfx('talk')}catch(e){}
+function lbClose(){LB.open=false;lbEl.style.display='none';if(LB.unsub){try{LB.unsub()}catch(e){self.SQERR&&SQERR(e,'068-5')}LB.unsub=null}setFocus(null);try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'068-6')}
  if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="lb"]');if(b&&(GPON||TS.kb))setFocus(b)}}
 function lbRender(){const cats=lbCats(),C=cats.find(c=>c.k===LB.cat)||cats[0],me=MP.user&&MP.user.uid;
  $('lbc').innerHTML=cats.map(c=>'<button data-lbc="'+c.k+'" class="'+(c.k===C.k?'on':'')+'"><i style="background:'+c.col+'">'+esc(c.ic)+'</i>'+esc(c.n)+'</button>').join('');
@@ -74,7 +74,7 @@ function lbRender(){const cats=lbCats(),C=cats.find(c=>c.k===LB.cat)||cats[0],me
  if(wait.length)h+='<div class="emp" style="padding:16px 10px 6px;text-align:left"><b style="color:#485870">Not ranked yet</b><br>'+wait.map(esc).join(' · ')+'<br><small>They show up here automatically the next time they play.</small></div>';
  B.innerHTML=h}
 lbEl.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.lb==='x'){lbClose();return}
- if(b.dataset.lbc){LB.cat=b.dataset.lbc;try{sfx('talk')}catch(e2){}lbRender();const nb=lbEl.querySelector('[data-lbc="'+LB.cat+'"]');if(nb){nb.scrollIntoView({block:'nearest',inline:'center'});if(GPF)setFocus(nb)}$('lbb').scrollTop=0}});
+ if(b.dataset.lbc){LB.cat=b.dataset.lbc;try{sfx('talk')}catch(e2){self.SQERR&&SQERR(e2,'068-7')}lbRender();const nb=lbEl.querySelector('[data-lbc="'+LB.cat+'"]');if(nb){nb.scrollIntoView({block:'nearest',inline:'center'});if(GPF)setFocus(nb)}$('lbb').scrollTop=0}});
 // on the title menu
 {const _m=tsMenu;tsMenu=function(){const had=TS.mh;_m();if(tsMn.querySelector('[data-a="lb"]'))return;const o=tsMn.querySelector('[data-a="opt"]');if(!o)return;const b=document.createElement('button');b.dataset.a='lb';b.textContent='LEADERBOARDS';o.before(b)}}
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='lb')lbOpen()});

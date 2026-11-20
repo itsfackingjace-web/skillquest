@@ -12,7 +12,7 @@ const HDBY=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5].map(v=>(v+.5)/16);
 const hdQ=(v,n,x,y)=>Math.max(0,Math.min(n-1,Math.floor(v*(n-1)+HDBY[(y&3)*4+(x&3)])));
 const hdP=a=>a.map(hdC);
 function hdBuf(w,h){return{w,h,d:new Uint32Array(w*h),id:new Uint8Array(w*h)}}
-function hdCan(b){const c=document.createElement('canvas');c.width=b.w;c.height=b.h;c.hd=2;try{const x=c.getContext('2d'),im=x.createImageData(b.w,b.h);if(im.data.length===b.d.length*4){new Uint32Array(im.data.buffer).set(b.d);x.putImageData(im,0,0)}}catch(e){}return c}
+function hdCan(b){const c=document.createElement('canvas');c.width=b.w;c.height=b.h;c.hd=2;try{const x=c.getContext('2d'),im=x.createImageData(b.w,b.h);if(im.data.length===b.d.length*4){new Uint32Array(im.data.buffer).set(b.d);x.putImageData(im,0,0)}}catch(e){self.SQERR&&SQERR(e,'032-1')}return c}
 const hdSet=(b,x,y,col,id)=>{x|=0;y|=0;if(x<0||y<0||x>=b.w||y>=b.h)return;b.d[y*b.w+x]=col;b.id[y*b.w+x]=id||1};
 // a shaded dome / sphere (light from the upper left), dithered into the palette
 function hdSph(b,cx,cy,rx,ry,pal,o){o=o||{};const P2=pal.length;
@@ -254,7 +254,7 @@ try{const GPAL=hdP(['#1f5e24','#2a7a2e','#3a9438','#56b04a','#7ccc5e','#a8e47c']
     hdSet(b,X,Y,GPAL[hdQ(.08+t*.95-(q?.12:0),6,X,Y)],1)}}}
   hdOutline(b,{1:hdC('#123c18')});HDTG[v*2+fr]=hdCan(b)}
  tgC[0]=HDTG[0];tgC[1]=HDTG[1];
- TGDRAW=(x,y,tm)=>{const v=Math.floor(hdH(x*3,y*5)*3)%3;g.drawImage(HDTG[v*2+tgFrame(x,y,tm)],x*16-2,y*16-2,20,20)}}catch(e){}
+ TGDRAW=(x,y,tm)=>{const v=Math.floor(hdH(x*3,y*5)*3)%3;g.drawImage(HDTG[v*2+tgFrame(x,y,tm)],x*16-2,y*16-2,20,20)}}catch(e){self.SQERR&&SQERR(e,'032-2')}
 // ---------- the trainer, redrawn at 2x: round head, shaded clothes, faces, hair styles, hats/helmets/hoods ----------
 // texel space: 96x112, feet at (48,88); world size 48x56 anchored at (24,44) like the old sprite
 const hdPal4=c=>hdP([hdMix(c,'#000000',.4),hdMix(c,'#000000',.2),c,hdMix(c,'#ffffff',.25)]);

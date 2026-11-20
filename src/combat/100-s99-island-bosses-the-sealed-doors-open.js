@@ -31,13 +31,13 @@
  {const _ic=iconURL;iconURL=function(k,col){if(!/^ibs_/.test(k))return _ic(k,col);const key='ibs'+k;if(ICONC[key])return ICONC[key];const B=IB[k.slice(4)],c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
    for(let j=0;j<12;j++){const w=j<6?j+1:12-j;r(7-w,j+1,w*2,1,K)}for(let j=1;j<11;j++){const w=j<6?j:11-j;r(7-w,j+1,w*2,1,B.sc[1]);if(w>1)r(7-w+1,j+1,w-1,1,B.sc[0])}r(6,3,1,2,'#ffffff');return ICONC[key]=c.toDataURL()}}
  {const _ed=enemyDrop;enemyDrop=function(n){_ed(n);try{const R=SCENE&&SCENE.room,isl=(n&&n.rg)||(R&&R.region)||(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region);
-   if(!n||!IB[isl]||n.type==='ib'||n.summon||n._ibs)return;n._ibs=1;if(Math.random()<2/25||window.SQSHARDDROP){const k='ibs_'+isl;inv[k]=(inv[k]|0)+1;say('+1 '+INAME[k].toLowerCase()+' ('+inv[k]+'/5)');try{gTxt(n.x,n.y-20,'+1 shard',IB[isl].sc[0]);sfx('pickup')}catch(e){}}}catch(e){}}}
+   if(!n||!IB[isl]||n.type==='ib'||n.summon||n._ibs)return;n._ibs=1;if(Math.random()<2/25||window.SQSHARDDROP){const k='ibs_'+isl;inv[k]=(inv[k]|0)+1;say('+1 '+INAME[k].toLowerCase()+' ('+inv[k]+'/5)');try{gTxt(n.x,n.y-20,'+1 shard',IB[isl].sc[0]);sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'100-1')}}}catch(e){self.SQERR&&SQERR(e,'100-2')}}}
 
  // ---- the doors ----
  const doorOf=(R,it)=>R&&R.region&&IB[R.region]&&it&&it.t==='lm'&&it.k===IB[R.region].door;
  {const _rl=rgLook;rgLook=function(it){const R=SCENE&&SCENE.room;if(!doorOf(R,it))return _rl(it);const id=R.region,B=IB[id],k='ibs_'+id,have=inv[k]|0;
    if(have<5){say(B.lm+': a great sealed door. Five '+B.shard.toLowerCase()+'s would open it (you have '+have+'). The island\'s monsters drop them.');msgT=6;sfx('talk');return}
-   inv[k]-=5;saveNow();say('The five shards blaze with light. The door grinds open...');msgT=4;try{sfx('roar')}catch(e){}ibEnter(id,it)}}
+   inv[k]-=5;saveNow();say('The five shards blaze with light. The door grinds open...');msgT=4;try{sfx('roar')}catch(e){self.SQERR&&SQERR(e,'100-3')}ibEnter(id,it)}}
  // the doors glow when you have enough shards
  {const _dl=rgDrawLm;rgDrawLm=function(it,tm){_dl(it,tm);const R=SCENE&&SCENE.room;if(!doorOf(R,it))return;const have=inv['ibs_'+R.region]|0;if(have<5)return;const B=IB[R.region],x=it.x*16+(it.w||1)*8,y=it.y*16+(it.h||1)*8,p=.5+.5*Math.sin(tm*3);
    g.fillStyle='rgba('+parseInt(B.sc[0].slice(1,3),16)+','+parseInt(B.sc[0].slice(3,5),16)+','+parseInt(B.sc[0].slice(5,7),16)+','+(.15+.15*p)+')';g.beginPath();g.arc(x,y,22+4*p,0,6.283);g.fill()}}
@@ -61,7 +61,7 @@
  const ibOthers=id=>{const M=window.SQMP,out=[];if(M&&M.on&&M.players)for(const[u,r]of M.players)if(r.loc===ARENA(id)&&performance.now()-r.seen<20000)out.push(u);return out};
  function ibT(b){const now=performance.now();if(!b._tgAt||now-b._tgAt>3500){b._tgAt=now;const c=['me',...ibOthers(b.ib)];b._tg=c[Math.floor(Math.random()*c.length)]}
   if(b._tg&&b._tg!=='me'){const r=window.SQMP&&SQMP.players.get(b._tg);if(r&&r.loc===ARENA(b.ib)&&now-r.seen<20000)return{x:r.x,y:r.y};b._tgAt=0}return{x:P.x,y:P.y}}
- function ibScale(b){const n=1+ibOthers(b.ib).length;b._np=b._np||1;if(n>b._np){const add=Math.round(IB[b.ib].hp*.6*(n-b._np));b.mhp+=add;b.hp+=add;b._np=n;try{say('Another fighter joins! '+IB[b.ib].n+' grows stronger.');msgT=3}catch(e){}}}
+ function ibScale(b){const n=1+ibOthers(b.ib).length;b._np=b._np||1;if(n>b._np){const add=Math.round(IB[b.ib].hp*.6*(n-b._np));b.mhp+=add;b.hp+=add;b._np=n;try{say('Another fighter joins! '+IB[b.ib].n+' grows stronger.');msgT=3}catch(e){self.SQERR&&SQERR(e,'100-4')}}}
  // the owner's boss, as sent along with the shared monsters
  window.SQMOBX=()=>{const b=ST.boss||ST.done,R=SCENE&&SCENE.room;if(!b||b._rp||!R||R.ib!==b.ib||!b._mid)return null;if(b.dead&&performance.now()-(b._deadAt2||0)>4000)return null;
   const r1=v=>Math.round(v*10)/10;
@@ -84,7 +84,7 @@
    if(Math.hypot(P.x-p.x,P.y-6-p.y)<8&&!roll()){p.t=0;DONE.add('p'+p.id);if(hit(1,p.k==='web'?'You\'re caught in sticky web!':p.k==='ice'?'An icicle hits you!':p.k==='bullet'?'Black Jack\'s bullet hits you!':p.k==='bubble'?'A bubble bursts on you!':'A void orb hits you!')&&p.slow)SLOW43=2}}
   b.pr=b.pr.filter(p=>p.t>0);
   for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;DONE.add('h'+h.id);if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':h.kind==='water'?'A geyser bursts under you!':'The void bursts under you!');
-     if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){}}}
+     if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){self.SQERR&&SQERR(e,'100-5')}}}
    else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;DONE.add('h'+h.id);if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
   b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<(h.max||60));
   const A=b.act;if(A){A.t+=dt;const pd=Math.hypot(P.x-b.x,P.y-b.y);
@@ -104,17 +104,17 @@
   if(!b&&ST.wait&&performance.now()-ST.wait>4000)ibSpawn(R.ib)}
  function ibEnter(id,it){const key='ib_'+id,R=ibArena(id);ROOMS[key]=R;enterScene(key,null,{x:(it.x+((it.w||1)>>1))*16+8,y:(it.y+(it.h||1))*16+10});P.x=R.ex*16+8;P.y=(AH-2)*16+8;face=[0,-1];
   const B=IB[id];ST.id=id;ST.boss=null;
-  if(ibOthers(id).length){ST.wait=performance.now();setTimeout(()=>{try{say('You join the fight against '+B.n+'!');msgT=4}catch(e){}},500);return}
+  if(ibOthers(id).length){ST.wait=performance.now();setTimeout(()=>{try{say('You join the fight against '+B.n+'!');msgT=4}catch(e){self.SQERR&&SQERR(e,'100-6')}},500);return}
   ibSpawn(id)}
  function ibSpawn(id){const R=SCENE&&SCENE.room;if(!R||R.ib!==id)return;const B=IB[id],hp=B.hp,b={x:BX*16+8,y:BY*16+8,hp,mhp:hp,kx:0,ky:0,type:'ib',ib:id,big:1,t:0,cds:B.atk.map((a,i)=>1.5+i*1.2),pr:[],hz:[],act:null,face:1};R.mobs.push(b);en.push(b);ST.boss=b;ST.id=id;ST.wait=0;ST.done=null;
-  setTimeout(()=>{try{say(B.n.toUpperCase()+' awakens!');msgT=4}catch(e){}},500)}
+  setTimeout(()=>{try{say(B.n.toUpperCase()+' awakens!');msgT=4}catch(e){self.SQERR&&SQERR(e,'100-7')}},500)}
  // ---- attacks ----
  const roll=()=>typeof ROLLT!=='undefined'&&ROLLT>0;
  const hit=(d,msg)=>{if(dead)return false;return hurtP(d,msg)};
  // every attack that isn't a leap, charge or sweep gets a short wind-up first, so you can see it coming
  function start(b,a,o){if(a==='summon'&&o.half&&b.hp>=b.mhp/2)return;if(a==='leap'||a==='charge'||a==='sweep')return ibFire(b,a,o);b.wind={a,o,t:0,d:a==='blink'?.35:.45}}
  function ibFire(b,a,o){const T=ibT(b),B=IB[b.ib],dx=T.x-b.x,dy=T.y-b.y,d=Math.hypot(dx,dy)||1,an=Math.atan2(dy,dx),en2=b.hp<b.mhp/2;
-  if(a==='fan'){const shots=o.burst||1;for(let s=0;s<shots;s++)setTimeout(()=>{if(b.dead)return;const T2=ibT(b),an2=Math.atan2(T2.y-6-b.y+10,T2.x-b.x);for(let k=0;k<o.n;k++){const q=an2+(k-(o.n-1)/2)*o.spread;b.pr.push({id:++IBN,x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3,k:o.k,slow:o.slow})}try{sfx('swish')}catch(e){}},s*350)}
+  if(a==='fan'){const shots=o.burst||1;for(let s=0;s<shots;s++)setTimeout(()=>{if(b.dead)return;const T2=ibT(b),an2=Math.atan2(T2.y-6-b.y+10,T2.x-b.x);for(let k=0;k<o.n;k++){const q=an2+(k-(o.n-1)/2)*o.spread;b.pr.push({id:++IBN,x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3,k:o.k,slow:o.slow})}try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'100-8')}},s*350)}
   else if(a==='spiral'){const n=en2?o.n+4:o.n;b.sp0=(b.sp0||0)+.4;for(let k=0;k<n;k++){const q=k/n*6.283+b.sp0;b.pr.push({id:++IBN,x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3.4,k:o.k})}}
   else if(a==='circles'){const n=o.n+(en2?2:0);for(let k=0;k<n;k++){const r=k?20+Math.random()*50:0,q=Math.random()*6.283;b.hz.push({id:++IBN,k:'circ',x:T.x+Math.cos(q)*r,y:T.y+4+Math.sin(q)*r*.7,r:o.r,t:0,d:o.delay+k*.08,kind:o.k})}}
   else if(a==='ring')b.hz.push({id:++IBN,k:'ring',x:b.x,y:b.y,r:10,max:o.max,hit:false,t:0});
@@ -123,17 +123,17 @@
   else if(a==='sweep')b.act={id:++IBN,k:'sweep',t:0,d:.65,an,done:false};
   else if(a==='blink'){const R=SCENE&&SCENE.room;for(let t=0;t<30;t++){const x=(4+Math.random()*(AW-8))*16,y=(3+Math.random()*(AH-9))*16;if(R&&!R.solid.has(Math.floor(y/16)*AW+Math.floor(x/16))&&Math.hypot(x-T.x,y-T.y)>70){for(let k=0;k<14;k++)part(b.x,b.y-14,(Math.random()-.5)*90,(Math.random()-.5)*90,.4,B.sc[0],0,2);b.x=x+8;b.y=y+8;break}}}
   else if(a==='summon'){if(o.half&&!en2)return;const alive=en.filter(m=>m.summon&&!m.dead).length;for(let k=alive;k<Math.min(o.cap,alive+o.n);k++){const q=Math.random()*6.283,x=b.x+Math.cos(q)*40,y=b.y+Math.sin(q)*28;if(solid(x,y))continue;
-    let m;if(o.key==='spiderling')m={x,y,hp:12,mhp:12,kx:0,ky:0,type:'spiderling'};else{m=rgMake(o.key,o.key==='bandit'?30:40,x,y);m.rg=b.ib}m.summon=1;m._prov=9;en.push(m);try{if(window.RG_OWN)RG_OWN.add(m)}catch(e){}}}}
+    let m;if(o.key==='spiderling')m={x,y,hp:12,mhp:12,kx:0,ky:0,type:'spiderling'};else{m=rgMake(o.key,o.key==='bandit'?30:40,x,y);m.rg=b.ib}m.summon=1;m._prov=9;en.push(m);try{if(window.RG_OWN)RG_OWN.add(m)}catch(e){self.SQERR&&SQERR(e,'100-9')}}}}
  {SQUPD.wrap('100',_u=>function(dt){if(ST.boss&&!ST.boss._rp&&ST.boss.hp<=0&&!ST.boss._rew){try{ibReward(ST.boss)}catch(e){console.warn(e)}}ibShared(dt);const b=ST.boss,R=SCENE&&SCENE.room,live=b&&!b._rp&&!b.dead&&R&&R.ib===b.ib&&en.includes(b);const pre=live?[b.x,b.y]:null;_u(dt);if(!live||menuOpen||pnOpen)return;
-   const B=IB[b.ib],en2=b.hp<b.mhp/2;b.t+=dt;b.x=pre[0]+b.kx*.15;b.y=pre[1]+b.ky*.15;b.kx*=.5;b.ky*=.5;if(!b.half&&en2){b.half=1;say(B.n+' is enraged!');msgT=3;try{sfx('roar')}catch(e){}}
+   const B=IB[b.ib],en2=b.hp<b.mhp/2;b.t+=dt;b.x=pre[0]+b.kx*.15;b.y=pre[1]+b.ky*.15;b.kx*=.5;b.ky*=.5;if(!b.half&&en2){b.half=1;say(B.n+' is enraged!');msgT=3;try{sfx('roar')}catch(e){self.SQERR&&SQERR(e,'100-10')}}
    const T=ibT(b),dx=T.x-b.x,dy=T.y-b.y,d=Math.hypot(dx,dy)||1,pd=Math.hypot(P.x-b.x,P.y-b.y);b.face=dx<0?-1:1;ibScale(b);
    // wind-up, then the strike pose holds for a moment after the attack goes off
    b.mv=0;if(b.cast>0)b.cast-=dt;if(b.wind){b.wind.t+=dt;if(b.wind.t>=b.wind.d){const w=b.wind;b.wind=null;b.cast=.4;b.castA=w.a;ibFire(b,w.a,w.o)}}
    // current action
    const A=b.act;if(A){A.t+=dt;
-    if(A.k==='leap'){const p=Math.min(1,A.t/A.d);b.x=A.ox+(A.tx-A.ox)*p;b.y=A.oy+(A.ty-A.oy)*p;b.jump=Math.sin(p*Math.PI)*30;if(p>=1){b.jump=0;b.act=null;b.hz.push({id:++IBN,k:'ring',x:b.x,y:b.y,r:8,max:56,hit:false,t:0});if(Math.hypot(P.x-b.x,P.y-b.y)<26)hit(2,IB[b.ib].n+' lands on you!');try{sfx('mine')}catch(e){}}}
+    if(A.k==='leap'){const p=Math.min(1,A.t/A.d);b.x=A.ox+(A.tx-A.ox)*p;b.y=A.oy+(A.ty-A.oy)*p;b.jump=Math.sin(p*Math.PI)*30;if(p>=1){b.jump=0;b.act=null;b.hz.push({id:++IBN,k:'ring',x:b.x,y:b.y,r:8,max:56,hit:false,t:0});if(Math.hypot(P.x-b.x,P.y-b.y)<26)hit(2,IB[b.ib].n+' lands on you!');try{sfx('mine')}catch(e){self.SQERR&&SQERR(e,'100-11')}}}
     else if(A.k==='charge'){if(A.t>A.d){const sp=260*dt,nx=b.x+A.ax*sp,ny=b.y+A.ay*sp;if(!solid(nx,ny+6)&&A.run<.6){b.x=nx;b.y=ny;A.run+=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<22&&!A.hit){A.hit=1;hit(2,IB[b.ib].n+' tramples you!')}}else b.act=null}}
-    else if(A.k==='sweep'){if(A.t>A.d&&!A.done){A.done=1;const q=Math.atan2(P.y-b.y,P.x-b.x),da=Math.abs(((q-A.an+Math.PI*3)%(Math.PI*2))-Math.PI);if(pd<64&&da<1.1)hit(2,'The great sword cleaves you!');try{sfx('swish')}catch(e){}}if(A.t>A.d+.3)b.act=null}}
+    else if(A.k==='sweep'){if(A.t>A.d&&!A.done){A.done=1;const q=Math.atan2(P.y-b.y,P.x-b.x),da=Math.abs(((q-A.an+Math.PI*3)%(Math.PI*2))-Math.PI);if(pd<64&&da<1.1)hit(2,'The great sword cleaves you!');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'100-12')}}if(A.t>A.d+.3)b.act=null}}
    else{// walk toward (or keep a little away from) you
     const want=b.ib==='nomans'||b.ib==='shattered'?90:30;if(!b.wind){if(d>want+10){stepTo(b,dx/d*(en2?34:26)*dt,dy/d*(en2?34:26)*dt);b.mv=1}else if(d<want-10){stepTo(b,-dx/d*24*dt,-dy/d*24*dt);b.mv=1}}
     for(let i=0;i<B.atk.length;i++){b.cds[i]-=dt*(en2?1.35:1);if(b.cds[i]<=0&&!b.act&&!b.wind){b.cds[i]=B.atk[i][1]*(.85+Math.random()*.3);start(b,B.atk[i][0],B.atk[i][2]);break}}}
@@ -143,7 +143,7 @@
    b.pr=b.pr.filter(p=>p.t>0);
    // circles and rings
    for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':h.kind==='water'?'A geyser bursts under you!':'The void bursts under you!');
-       if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){}}}
+       if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){self.SQERR&&SQERR(e,'100-13')}}}
     else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
    b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<h.max);
    // the fight is over
@@ -153,8 +153,8 @@
  function ibReward(b){b._rew=1;b.dead=1;b.dropped=1;b.pr=[];b.hz=[];for(const m of en)if(m.summon&&!m.dead){m.dead=1;m.dropped=1}const B=IB[b.ib],g0=B.gold[0]+Math.floor(Math.random()*(B.gold[1]-B.gold[0]));GLD+=g0;const got=[g0+' gold'];
   for(const[k,n]of B.loot){inv[k]=(inv[k]|0)+n;const nm=INAME[k]||k;got.push(n+' '+(n>1?(SN[k]||(/s$/.test(nm)?nm:nm+'s')):nm).toLowerCase())}addXp(0,B.xp);addXp(7,Math.round(B.xp*.4));
   let rare=null;if(Math.random()<.05||window.SQIBRARE){const[rk,rn]=B.rare;rare=rn;if(window.SQNPET&&SQNPET[rk])SQGIVEPET(rk);else inv[rk]=(inv[rk]|0)+1}
-  if(!b._rp){b._deadAt2=performance.now();ST.done=b}ST.boss=null;try{sqEvent('islandboss',b.ib)}catch(e){}saveNow();try{svg()}catch(e){}
-  say(B.n+' is defeated! '+got.join(', ')+(rare?'. RARE DROP: '+rare.toUpperCase()+'!':'.'));msgT=7;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){}
+  if(!b._rp){b._deadAt2=performance.now();ST.done=b}ST.boss=null;try{sqEvent('islandboss',b.ib)}catch(e){self.SQERR&&SQERR(e,'100-14')}saveNow();try{svg()}catch(e){self.SQERR&&SQERR(e,'100-15')}
+  say(B.n+' is defeated! '+got.join(', ')+(rare?'. RARE DROP: '+rare.toUpperCase()+'!':'.'));msgT=7;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){self.SQERR&&SQERR(e,'100-16')}
   for(let k=0;k<30;k++){const q=k/30*6.283;part(b.x,b.y-16,Math.cos(q)*120,Math.sin(q)*90-30,.7,k%2?B.sc[0]:'#f8d048',120,2)}
   ibKick(b.ib)}
  // Once the boss falls, everyone in its lair is walked back out after a few seconds (time to read the reward). Staying inside
@@ -163,8 +163,8 @@
  const KICK=6000;let kickT=0;
  function ibKick(id){clearTimeout(kickT);kickT=setTimeout(()=>{try{const R=SCENE&&SCENE.room;if(!R||R.ib!==id)return;
    if(P.hp<=0){ibKick(id);return}
-   if(pnOpen){try{closePanel()}catch(e){}}
-   ST.boss=null;ST.wait=0;ST.done=null;leaveScene();say('The way into the lair closes behind you. Bring more sigil shards to face it again.');msgT=4}catch(e){}},KICK)}
+   if(pnOpen){try{closePanel()}catch(e){self.SQERR&&SQERR(e,'100-17')}}
+   ST.boss=null;ST.wait=0;ST.done=null;leaveScene();say('The way into the lair closes behind you. Bring more sigil shards to face it again.');msgT=4}catch(e){self.SQERR&&SQERR(e,'100-18')}},KICK)}
  window.SQIBREWARD=ibReward;window.SQIBKICK=ibKick;window.SQIBENTER=ibEnter;
  // ---- the boss bar ----
  {SQHUD.after('100',()=>{const b=ST.boss,R=SCENE&&SCENE.room;if(!b||b.dead||!R||R.ib!==b.ib||menuOpen)return;const B=IB[b.ib],w=Math.min(W*.6,420),x=(W-w)/2,y=Math.max(70,H*.1),f=Math.max(0,b.hp/b.mhp);g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(20,16,24,.82)';g.fillRect(x-4,y-20,w+8,34);g.fillStyle='#3a1a1a';g.fillRect(x,y,w,10);g.fillStyle=b.hp<b.mhp/2?'#f05030':B.col;g.fillRect(x,y,w*f,10);g.strokeStyle='#f8f0e0';g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,9);g.font='700 13px '+PF;g.fillStyle='#f8f0e0';g.textAlign='center';g.textBaseline='bottom';g.fillText(B.n.toUpperCase(),W/2,y-3);g.restore()})}
@@ -210,7 +210,7 @@
   for(const s of[-1,1]){const hx=x+s*18,hy=y-22+Math.round(Math.sin(tm*3+s)*3);R4(hx-4,hy-4,8,8,K);R4(hx-3,hy-3,6,6,'#9060e0');R4(hx-2,hy-2,2,2,'#e0c8ff')}
   for(let k=0;k<5;k++){const q=tm*1.5+k/5*6.283;R4(x+Math.cos(q)*26,y-20+Math.sin(q)*10,2,2,'#c8a0ff')}}
  function drawJack(b,tm){const x=Math.round(b.x),y=Math.round(b.y),h=hitW(b),fl=b.face<0;shd(x,y+6,16);GC=g;g.save();if(h)g.globalAlpha=.6;
-  g.translate(x,y);g.scale(1.5,1.5);g.translate(-x,-y);try{cP({sk:1,hs:0,hc:0,sh:7,pn:1,ht:0,hcol:4,so:2},2,b.mv?[1,0,2,0][Math.floor(tm*7)%4]:0,x,y,fl)}catch(e){}
+  g.translate(x,y);g.scale(1.5,1.5);g.translate(-x,-y);try{cP({sk:1,hs:0,hc:0,sh:7,pn:1,ht:0,hcol:4,so:2},2,b.mv?[1,0,2,0][Math.floor(tm*7)%4]:0,x,y,fl)}catch(e){self.SQERR&&SQERR(e,'100-19')}
   R4(x-11,y-16,22,3,K);R4(x-10,y-15,20,1,'#33333c');R4(x-11,y-17,3,2,K);R4(x+8,y-17,3,2,K);R4(x-5,y-21,10,6,K);R4(x-4,y-20,8,5,'#2a2a32');R4(x-1,y-21,2,2,K);R4(x-4,y-17,8,1,'#c8c8d8');R4(x-4+(fl?-1:1),y-7,8,2,'#202028');
   const s=fl?-1:1;for(const o of[0,3]){const gx=x+s*(5+o),gy=y-4+o;R4(Math.min(gx,gx+s*7),gy-1,8,4,K);R4(Math.min(gx,gx+s*6),gy,7,2,'#e8e0a0')}g.restore()}
  function drawSpiderling(n,tm){const x=Math.round(n.x),y=Math.round(n.y),h=hitW(n),B=h?'#fff':'#3e5a2a';shd(x,y+5,10);for(const s of[-1,1])for(let k=0;k<3;k++){const ph=Math.round(Math.sin(tm*12+k)*1);R4(x+s*(4+k*2),y-3+k*2+ph,3,1,K)}
@@ -241,7 +241,7 @@
   const _occ=occ;occ=function(slot){if(slot==='helm'&&HAT)return k;return _occ(slot)};
   const _ss=setSlot;setSlot=function(slot,kk){_ss(slot,kk);if(slot==='helm'){HAT=kk===k;if(HAT){ARM.helm=AH;CLS.helm=null}}};
   const _wu=watchUpgrades;watchUpgrades=function(){const was=HAT;_wu();if(was&&ARM.helm!==AH){if((inv['eq_helm'+AH]|0)>0)inv['eq_helm'+AH]--;inv[k]=(inv[k]|0)+1;HAT=false}};
-  SQSAVE.after('100:ohat',s=>{if(HAT)s.ohat=1;});SQLOAD.after('100',(S)=>{HAT=!!(S&&S.ohat)&&ARM.helm===AH});const _ng=newGame;newGame=function(){HAT=false;_ng()};try{KNOWN49.add('ohat')}catch(e){}
+  SQSAVE.after('100:ohat',s=>{if(HAT)s.ohat=1;});SQLOAD.after('100',(S)=>{HAT=!!(S&&S.ohat)&&ARM.helm===AH});const _ng=newGame;newGame=function(){HAT=false;_ng()};try{KNOWN49.add('ohat')}catch(e){self.SQERR&&SQERR(e,'100-20')}
   const _gc=gearCH;gearCH=function(){const c=_gc();if(HAT&&!(typeof HIDEH!=='undefined'&&HIDEH)){c.ht=0;delete c.mh;delete c.dyh;c.oh=1}return c};
   const OHC=new Map();const _ks=kitSprite;kitSprite=function(ch,dir,st,fl){const c=_ks(ch,dir,st,fl);if(!ch||!ch.oh)return c;const key=JSON.stringify(ch)+'|'+dir+'|'+st+'|'+(fl?1:0);let o=OHC.get(key);if(o)return o;
    const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let top=c.height,l=c.width,r=0;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(d[(y*c.width+x)*4+3]>0){if(y<top)top=y}
@@ -256,7 +256,7 @@
 
  // ---- the wiki ----
  try{for(const id of ISL){const B=IB[id];WK_RARE.push([B.rare[1],/^eq_|^ja_/.test(B.rare[0])?B.rare[0]:null,B.n,B.rare[2],'5% from '+B.n+' ('+B.lm+', '+WORLD_REGIONS[id].name+').',/^p/.test(B.rare[0])?B.rare[0]:undefined])}
-  WK_SKILL&&0}catch(e){}
+  WK_SKILL&&0}catch(e){self.SQERR&&SQERR(e,'100-21')}
  {const _wc=window.SQWK&&SQWK.cards;if(_wc){const mk=id=>()=>{const B=IB[id];return{x:0,y:0,hp:B.hp,mhp:B.hp,kx:0,ky:0,type:'ib',ib:id,big:1,t:0,pr:[],hz:[],face:1}};
    const wkE=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
    const IBP={};const ibPic=id=>{if(IBP[id]!=null)return IBP[id];try{const c=SQIBARTCAN(id,'idle','',0),x=c.getContext('2d'),d=x.getImageData(0,0,c.width,c.height).data;let x0=c.width,y0=c.height,x1=-1,y1=-1;

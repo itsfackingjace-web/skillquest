@@ -11,7 +11,7 @@
  WM_ROUTE[ID]={from:'Tidewatch',post:'tidewatch'};
  Object.assign(LM_NAMES,{deadmans_gulch:'Deadman\'s Gulch',rattlesnake_mesa:'Rattlesnake Mesa',silver_mine:'The Old Silver Mine',boot_hill:'Boot Hill',dustwater:'Dustwater (ghost town)',oasis:'Coyote Springs'});
  // ---- the voyage that charts it ----
- try{const tw=HARBOR_POSTS.find(p=>p.id==='tidewatch');if(tw)BUOYS.sw=buoySpot(boatWater(tw.x,tw.y),16,N-16)}catch(e){}
+ try{const tw=HARBOR_POSTS.find(p=>p.id==='tidewatch');if(tw)BUOYS.sw=buoySpot(boatWater(tw.x,tw.y),16,N-16)}catch(e){self.SQERR&&SQERR(e,'099-1')}
  VOYS.push({id:'lawless',name:'Lawless Waters',post:'tidewatch',needs:['briar'],buoy:'sw',gold:150,unlock:['nomansRoute'],
   d:'Nobody charts the south-western lane: it leads to No Man\'s Land, where there is no law and everyone fights everyone. Find the lane anyway, if you dare.',steps:['Sail your boat to the red buoy far south-west of Hollow Island','Report to Sera, the Navigator in Tidewatch']});
 
@@ -120,7 +120,7 @@
   nmBar(n,x,y-34)}
  const BLOOK=[{sk:2,hs:0,hc:0,sh:7,pn:2,ht:0,hcol:4,so:3},{sk:1,hs:1,hc:1,sh:4,pn:1,ht:0,hcol:4,so:3},{sk:3,hs:0,hc:0,sh:0,pn:2,ht:0,hcol:4,so:2}];
  function drawBandit(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs(n.kx)+Math.abs(n.ky)>.8,st=n.mv?[1,0,2,0][Math.floor(n.t*7)%4]:0,fl=!!n.fl,dir=2;shd(x,y+6,12);GC=g;
-  if(hit){g.save();g.globalAlpha=.6}try{cP(BLOOK[n.look||0],dir,st,x,y,fl)}catch(e){}if(hit)g.restore();
+  if(hit){g.save();g.globalAlpha=.6}try{cP(BLOOK[n.look||0],dir,st,x,y,fl)}catch(e){self.SQERR&&SQERR(e,'099-2')}if(hit)g.restore();
   const s=fl?-1:1,R=(a,b,c,d,e)=>Rg(a,b,c,d,e);
   // a bandana over the face and a wide cowboy hat
   R(x-4+(fl?-1:1),y-7,8,3,'#c03028');R(x-4+(fl?-1:1),y-7,8,1,'#e05048');
@@ -136,14 +136,14 @@
  {SQPP.after('099',(tm)=>{if(!nmR())return;for(const b of NMP){if(window.SQSHOTDRAW&&SQSHOTDRAW(b))continue;if(b.k==='bullet'){Rg(b.x-2,b.y-2,4,4,K);Rg(b.x-1,b.y-1,2,2,'#f8e070')}else{const a=Math.atan2(b.vy,b.vx);for(let i=0;i<5;i++)Rg(Math.round(b.x-Math.cos(a)*i),Math.round(b.y-Math.sin(a)*i),1,1,i?'#e8e0b0':'#ffffff')}}})}
  // what they drop
  {const _ed=enemyDrop;enemyDrop=function(n){if(!n||!(n.type==='bandit'||n.type==='cacti'||n.type==='gscorp'))return _ed(n);const got=[];
-   if(n.type==='bandit'){const gd=20+Math.floor(Math.random()*41);GLD+=gd;got.push(gd+' gold');if(Math.random()<.25){inv.iarrow=(inv.iarrow|0)+5;got.push('5 iron arrows')}if(Math.random()<.06){inv.pot_heal=(inv.pot_heal|0)+1;got.push('a healing potion')}try{sqEvent('kill','bandit')}catch(e){}}
+   if(n.type==='bandit'){const gd=20+Math.floor(Math.random()*41);GLD+=gd;got.push(gd+' gold');if(Math.random()<.25){inv.iarrow=(inv.iarrow|0)+5;got.push('5 iron arrows')}if(Math.random()<.06){inv.pot_heal=(inv.pot_heal|0)+1;got.push('a healing potion')}try{sqEvent('kill','bandit')}catch(e){self.SQERR&&SQERR(e,'099-3')}}
    if(n.type==='cacti'){const c=1+Math.floor(Math.random()*3);inv.cfruit=(inv.cfruit|0)+c;got.push(c+' cactus fruit')}
    if(n.type==='gscorp'){const gd=15+Math.floor(Math.random()*16);GLD+=gd;got.push(gd+' gold');if(Math.random()<.12){inv.sbar=(inv.sbar|0)+1;got.push('a steel bar')}}
-   say('+'+got.join(', '));try{svg()}catch(e){}}}
+   say('+'+got.join(', '));try{svg()}catch(e){self.SQERR&&SQERR(e,'099-4')}}}
 
  // ---- PvP is always on here ----
  let forced=false,was=false,warnAt=0;
- {SQUPD.after('099',(dt)=>{const PV=window.SQPVP;if(!PV)return;const here=curRegion()===ID||(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region===ID);if(here&&window.SQMPON&&SQMPON()){if(!PV.on){if(!forced){was=false;forced=true;const n=performance.now();if(n-warnAt>4000){warnAt=n;say('No Man\'s Land: there is no law here. PvP is ON for everyone.');msgT=5;try{sfx('quest')}catch(e){}}}else if(forced&&performance.now()-warnAt>2500){warnAt=performance.now();say('You can\'t turn PvP off in No Man\'s Land.')}PV.on=true}else if(!forced){forced=true;was=true}}
+ {SQUPD.after('099',(dt)=>{const PV=window.SQPVP;if(!PV)return;const here=curRegion()===ID||(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region===ID);if(here&&window.SQMPON&&SQMPON()){if(!PV.on){if(!forced){was=false;forced=true;const n=performance.now();if(n-warnAt>4000){warnAt=n;say('No Man\'s Land: there is no law here. PvP is ON for everyone.');msgT=5;try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'099-5')}}}else if(forced&&performance.now()-warnAt>2500){warnAt=performance.now();say('You can\'t turn PvP off in No Man\'s Land.')}PV.on=true}else if(!forced){forced=true;was=true}}
    else if(forced){forced=false;if(!was&&!(PV.fight&&performance.now()-PV.fight<30000)){PV.on=false;say('You leave No Man\'s Land. PvP is off again.')}}})}
 
  // ---- the world map draws every island's outline ahead of time (it used to take ~20s on a phone after opening it) ----
@@ -155,10 +155,10 @@
  {const _b=biomeHere;biomeHere=function(){const R=SCENE&&SCENE.room;if(R&&R.region===ID)return'desert';return _b()}}
  // ---- sailing between neighbours: Briarwood (north) and the Shattered Expanse (east) ----
  window.SQNEIGH={nomans:{north:'briarwood',east:'shattered'},briarwood:{south:'nomans'},shattered:{west:'nomans'}};
- {const _tc=travelCommit;travelCommit=function(T){_tc(T);if(T&&T.to===ID){NMP.length=0;setTimeout(()=>{try{say('No Man\'s Land. There is no law here: PvP is always on.');msgT=6}catch(e){}},400)}}}
+ {const _tc=travelCommit;travelCommit=function(T){_tc(T);if(T&&T.to===ID){NMP.length=0;setTimeout(()=>{try{say('No Man\'s Land. There is no law here: PvP is always on.');msgT=6}catch(e){self.SQERR&&SQERR(e,'099-6')}},400)}}}
 
  // ---- wiki ----
- try{WK_RGN&&Object.assign(WK_RGN,{bandit:'Desert bandit',cacti:'Cacticus',gscorp:'Giant scorpion'})}catch(e){}
+ try{WK_RGN&&Object.assign(WK_RGN,{bandit:'Desert bandit',cacti:'Cacticus',gscorp:'Giant scorpion'})}catch(e){self.SQERR&&SQERR(e,'099-7')}
 }
 // ---- island boss art, drawn with the world bosses' toolkit (shaded, outlined) ----
 // Each boss has poses: idle (4 frames), move (4-frame walk / crawl / slither / drift), and for attacks a wind-up

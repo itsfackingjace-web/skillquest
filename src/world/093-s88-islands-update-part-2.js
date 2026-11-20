@@ -20,7 +20,7 @@ FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);
   return ICONC[key]=c.toDataURL()}}
 const _cf=catchFish;catchFish=function(){const R=SCENE&&SCENE.room,L=lvOf(9),list=R&&R.region&&RFISH[R.region]?RFISH[R.region].filter(f=>L>=f.lv):[];
  if(!list.length||Math.random()>.5)return _cf();const f=list[Math.random()<.7?0:list.length-1];
- if(Math.random()<Math.min(.85,.45+L*.01)){inv[f.k]=(inv[f.k]|0)+1;addXp(9,f.xp);say('You catch a '+f.n.toLowerCase()+'!');sfx('pickup');try{gTxt(FISH.bx,FISH.by-24,f.n,'#58a8ff')}catch(e){}}else say('It got away...');
+ if(Math.random()<Math.min(.85,.45+L*.01)){inv[f.k]=(inv[f.k]|0)+1;addXp(9,f.xp);say('You catch a '+f.n.toLowerCase()+'!');sfx('pickup');try{gTxt(FISH.bx,FISH.by-24,f.n,'#58a8ff')}catch(e){self.SQERR&&SQERR(e,'093-1')}}else say('It got away...');
  FISH.t=0;FISH.bite=0;FISH.wait=(2+Math.random()*3)*Math.max(.6,1-L*.006)};
 window.SQRFISH=RFISH;
 // casting on the other islands (their attack goes through the island's own handler, which never reached fishing)
@@ -97,13 +97,13 @@ function icvPlace(R){if(R._icv||!R.region)return;R._icv=1;const W=R.w,walk=(x,y)
  const dun=R.reserved.filter(q=>(q.kind||q.t||q.id)==='dungeon'&&q.w>=6);
  for(const k in ICV){if(ICV[k].rg!==R.region)continue;let spot=null;const at=ICV[k].at;
   if(at.startsWith('mcamp')){const l=R.lms.find(q=>q.id===at);if(l)spot=near(l.x+4,l.y+2)}else{const q=dun[+at.slice(-1)];if(q)spot=near(q.x+Math.floor(q.w/2),q.y+Math.floor(q.h/2))}
-  if(!spot)continue;const[x,y]=spot;clear(x,y);const it={t:'icvdoor',kind:k,x,y,name:ICV[k].name,use:'icv',w:1,h:1};R.items.push(it);R.useItems.push(it);try{rgCellAdd(R,it)}catch(e){}
+  if(!spot)continue;const[x,y]=spot;clear(x,y);const it={t:'icvdoor',kind:k,x,y,name:ICV[k].name,use:'icv',w:1,h:1};R.items.push(it);R.useItems.push(it);try{rgCellAdd(R,it)}catch(e){self.SQERR&&SQERR(e,'093-2')}
   for(const[a,b]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1]])R.solid.add((y+b)*W+x+a)}}
 {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)icvPlace(R)}catch(e){console.warn(e)}return ok}}
 {const _uf=useFurn;useFurn=function(it){if(it&&it.use==='icv'){icvEnter(it);return}return _uf(it)}}
 {SQUPD.after('093',(dt)=>{if(dead||menuOpen||pnOpen||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;for(const it of R.useItems)if(it.use==='icv'&&Math.abs(P.x-(it.x*16+8))<8&&P.y<(it.y+1)*16+2&&P.y>it.y*16){icvEnter(it);return}})}
 // campfires in the caves: lit, drawn, cooking and keeping monsters away like outside
-{SQPP.before('093',(tm)=>{const R=SCENE&&SCENE.room;if(R&&R.icv)for(const f of fires)if(!f._glow)try{pF(f,tm)}catch(e){}})}
+{SQPP.before('093',(tm)=>{const R=SCENE&&SCENE.room;if(R&&R.icv)for(const f of fires)if(!f._glow)try{pF(f,tm)}catch(e){self.SQERR&&SQERR(e,'093-3')}})}
 window.SQICV=ICV;
 
 // ---- Ores and trees look like what they drop ----
@@ -130,15 +130,15 @@ function crystalFor(t,v){const base=rgSprite('crystal',v);if(!CTINT[t]||!base)re
 const NPET={pwolf:{n:'Wolf',src:'wolves on Hollow Island',v:{}},pbriar:{n:'Briar wolf',src:'briar wolves on Briarwood Isle',v:{rv:'briar'}},psnow:{n:'Snow wolf',src:'snow wolves',v:{vr:'snow'}},
  pvoid:{n:'Void wolf',src:'void wolves on the Shattered Expanse',v:{rv:'void'}},ptree:{n:'Treeling',src:'chopping trees (1 in 5,000)'}};
 if(window.LUX&&LUX.PETS)for(const k in NPET)if(!LUX.PETS.some(p=>p.k===k))LUX.PETS.push({k,n:NPET[k].n,v:0,rare:1,c:['#888','#666','#aaa']});
-function givePet(k){const C=LUX.COS;const had=C.pets.includes(k);if(!had)C.pets.push(k);C.pet=k;try{saveLocal(true);saveCloud(true)}catch(e){}
- setTimeout(()=>{say(had?'Another '+NPET[k].n.toLowerCase()+' wants to follow you... you already have one.':'A PET '+NPET[k].n.toUpperCase()+'! It follows you now. (START → Style to change pets)');msgT=6;try{sfx('level')}catch(e){}},300)}
+function givePet(k){const C=LUX.COS;const had=C.pets.includes(k);if(!had)C.pets.push(k);C.pet=k;try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'093-4')}
+ setTimeout(()=>{say(had?'Another '+NPET[k].n.toLowerCase()+' wants to follow you... you already have one.':'A PET '+NPET[k].n.toUpperCase()+'! It follows you now. (START → Style to change pets)');msgT=6;try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'093-5')}},300)}
 window.SQGIVEPET=givePet;
 const wolfPetOf=n=>{if(!n||n.type!=='wolf'||n._pet)return null;if(n.vr==='snow'||n.rv==='snow')return'psnow';if(n.rv==='briar')return'pbriar';if(n.rv==='void')return'pvoid';if(n.rv||n.vr)return null;return'pwolf'};
 function rollWolf(n){if(!n||n._petRoll)return;n._petRoll=1;const k=wolfPetOf(n);if(k&&(Math.random()<1/1000||window.SQPETDROP))givePet(k)}
-{const _ed=enemyDrop;enemyDrop=function(n){_ed(n);try{rollWolf(n)}catch(e){}}}
-if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead)rollWolf(n)}catch(e){}return r}}
+{const _ed=enemyDrop;enemyDrop=function(n){_ed(n);try{rollWolf(n)}catch(e){self.SQERR&&SQERR(e,'093-6')}}}
+if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead)rollWolf(n)}catch(e){self.SQERR&&SQERR(e,'093-7')}return r}}
 {SQHIT.wrap('093 islands update part 2',_a=>function(){let tt=null,tv=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;
-   if(R&&R.region){const it=rgObjAt(R,tx,ty);tt=it&&it.o.t;tv=it&&it.o.v}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];tt=o&&o.t;tv=o&&o.v}}catch(e){}
+   if(R&&R.region){const it=rgObjAt(R,tx,ty);tt=it&&it.o.t;tv=it&&it.o.v}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];tt=o&&o.t;tv=o&&o.v}}catch(e){self.SQERR&&SQERR(e,'093-8')}
   const w0=inv.wood|0;_a();if(tt&&tt!=='cactus'&&(inv.wood|0)>w0&&(Math.random()<1/5000||window.SQTREEDROP))givePet(window.SQTREEPET?SQTREEPET(tt,tv):'ptree')})}
 // drawing them
 const SIDEPAL={K:'#181018',W:'#f4f0e8',E:'#181018',N:'#e07080',R:'#3870d8'},SIDECOL={cat:{A:'#e88a38',B:'#b85e20',C:'#f8b868',T:'#c06a24',L:'#b85e20'},dog:{A:'#b07848',B:'#7c4e2c',C:'#d8a878',T:'#8a5a34',L:'#7c4e2c'},fox:{A:'#e86a20',B:'#a8440e',C:'#f89848',T:'#a8440e',L:'#3a2418'}};
@@ -167,7 +167,7 @@ function drawNPet(k,s,tm){if(window.SQDRAWTL&&k!=='ptree'&&SQDRAWTL(k,s,tm))retu
  if(k==='ptree'){const sp=treeSprite(s.mv>0?Math.floor(s.t)%2:0),bob=s.mv>0?(Math.floor(s.t)%2):0;shd(x,y+6,10);g.save();g.imageSmoothingEnabled=false;if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(sp,x-8,y-13-bob);g.restore();return}
  const n=Object.assign({x,y,kx:0,ky:0,type:'wolf',hp:5,_pet:1},NPET[k].v);const px=P.x,py=P.y;
  // a wolf faces the way it walks (the wolf sprite faces the player, so look from just ahead of it)
- P.x=x+(s.fl?-40:40);P.y=y;try{pS(n,tm)}catch(e){}finally{P.x=px;P.y=py}
+ P.x=x+(s.fl?-40:40);P.y=y;try{pS(n,tm)}catch(e){self.SQERR&&SQERR(e,'093-9')}finally{P.x=px;P.y=py}
  // the red collar
  const L=s.fl?x-7:x+3;g.fillStyle='#181018';g.fillRect(L,y-6,4,6);g.fillStyle='#d82828';g.fillRect(L+1,y-6,2,5);g.fillStyle='#ff6050';g.fillRect(L+1,y-6,1,2);g.fillStyle='#f8d048';g.fillRect(L+(s.fl?1:2),y-1,1,1)}
 {SQPP.wrap('093',_p=>function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||!(NPET[k]||SIDEMAP[k]))return _p(tm);
@@ -188,10 +188,10 @@ function nearWaterSpot(R){const sail=window.SQRSAIL&&SQRSAIL.on;if(sail)return[P
    const dP=Math.hypot(s.x-P.x,s.y-P.y);
    if(hunt&&dP<220){tx=spot[0];ty=spot[1];sp=58}else if(Math.hypot(tx-s.x,ty-s.y)<8||Math.random()<dt*.15){for(let k=0;k<8;k++){const a=Math.random()*6.283,d=40+Math.random()*90,x=s.x+Math.cos(a)*d,y=s.y+Math.sin(a)*d;if(wetW(R,x,y)){s.tx=x;s.ty=y;break}}tx=s.tx;ty=s.ty}
    const dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy);if(d>2){const m=Math.min(d,sp*dt),nx=s.x+dx/d*m,ny=s.y+dy/d*m;if(wetW(R,nx,s.y))s.x=nx;if(wetW(R,s.x,ny))s.y=ny;s.fl=dx<0}
-   if(hunt&&onW&&dP<22&&s.bite<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){s.bite=2.2;s.a=.5;P.hp--;hurt=1.5;say('A shark bites!');try{sfx('hurt')}catch(e){}}}})}
+   if(hunt&&onW&&dP<22&&s.bite<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){s.bite=2.2;s.a=.5;P.hp--;hurt=1.5;say('A shark bites!');try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'093-10')}}}})}
 {SQHIT.wrap('093 islands update part 2',next=>function(){const R=shkR();if(R&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0&&!FISH){const[fx,fy]=front(14);const s=SHK.list.find(q=>!q.dead&&Math.hypot(q.x-fx,q.y-fy)<20);
-   if(s){swing=.3;const dmg=1+(TL.sword|0)+(typeof meleeFlat==='function'?meleeFlat():0);s.hp-=dmg;s.hit=.25;try{DMGS.push({x:s.x,y:s.y-10,v:String(dmg),t:0,c:'#ffffff',sc:curScene()})}catch(e){}sfx('hit');
-    if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){}saveLocal()}return}}
+   if(s){swing=.3;const dmg=1+(TL.sword|0)+(typeof meleeFlat==='function'?meleeFlat():0);s.hp-=dmg;s.hit=.25;try{DMGS.push({x:s.x,y:s.y-10,v:String(dmg),t:0,c:'#ffffff',sc:curScene()})}catch(e){self.SQERR&&SQERR(e,'093-11')}sfx('hit');
+    if(s.hp<=0){s.dead=1;const gld=25+Math.floor(Math.random()*30);GLD+=gld;addXp(9,60);addXp(0,30);say('The shark sinks away. +'+gld+' gold');try{drops.push({x:s.x,y:s.y-16,t:0,tx:'+'+gld+' gold',c:'#f8d848'})}catch(e){self.SQERR&&SQERR(e,'093-12')}saveLocal()}return}}
  return next.apply(this,arguments)})}
 function drawShark(s,tm){const x=Math.round(s.x),y=Math.round(s.y),f=s.fl?-1:1,w=Math.sin(s.t*3)*1;
  g.fillStyle='rgba(20,40,70,.35)';g.beginPath();g.ellipse(x,y+2,15,5,0,0,6.283);g.fill();
@@ -200,7 +200,7 @@ function drawShark(s,tm){const x=Math.round(s.x),y=Math.round(s.y),f=s.fl?-1:1,w
  // the fin cutting through the water, with a wake
  g.fillStyle='rgba(232,248,255,.75)';g.fillRect(x-f*10-2+w,y+1,4,1);g.fillRect(x-f*14-1,y+2,3,1);
  Rg(x-4,y,9,2,'#e8f8ff');const c=s.hit>0?'#ffffff':'#5a6878';Rg(x-3,y-8,1,8,'#181018');for(let k=0;k<7;k++){const h=8-k;Rg(x-3+(f>0?k:0)-(f<0?k-6:0)+(f<0?-6:0)+1,y-h,1,h,k===0?'#181018':c)}Rg(x-4,y-1,10,1,'#181018')}
-{SQPP.wrap('093',_p=>function(tm){const R=shkR();if(R)for(const s of SHK.list)if(!s.dead&&!(s.a>0))try{drawShark(s,tm)}catch(e){}const out=_p(tm);if(R)for(const s of SHK.list)if(!s.dead&&s.a>0)try{drawShark(s,tm)}catch(e){}return out})}// a lunging shark goes over you (and your boat)
+{SQPP.wrap('093',_p=>function(tm){const R=shkR();if(R)for(const s of SHK.list)if(!s.dead&&!(s.a>0))try{drawShark(s,tm)}catch(e){self.SQERR&&SQERR(e,'093-13')}const out=_p(tm);if(R)for(const s of SHK.list)if(!s.dead&&s.a>0)try{drawShark(s,tm)}catch(e){self.SQERR&&SQERR(e,'093-14')}return out})}// a lunging shark goes over you (and your boat)
 window.SQSHK=SHK;
 
 // ---- Castles: the outside (two towers, a gate and two torches), the great hall inside, and where it would go ----
@@ -224,7 +224,7 @@ function drawCastle(b,tm){const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,S=['#5a5650
 {const _db=drBld;drBld=function(b,tm){if(b&&b.castle)return drawCastle(b,tm);return _db(b,tm)}}
 // where a castle would go, while placing
 {SQHUD.before('093',()=>{if(BUILD&&BUILD.k==='castle'&&!dead&&!menuOpen){const[x,y]=houseAnchor(),ok=canPlace(x,y),cx=camX(),cy=camY();
-   g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drawCastle({w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}})}
+   g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalAlpha=.55;try{drawCastle({w:7,tx:x-3,ty:y-1},performance.now()/1000)}catch(e){self.SQERR&&SQERR(e,'093-15')}g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32);g.restore()}})}
 // the great hall
 {const _rb=ROOMBG;ROOMBG=(R,W2,H2)=>{if(!R.castle)return _rb(R,W2,H2);const S=['#6a645a','#7a746a','#8a8478','#9a9488'];Rg(-5,-5,W2+10,H2+10,'#141016');
   // (mirrored left to right: the marks in the stone use the distance from the nearer side wall)

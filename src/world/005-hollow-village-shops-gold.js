@@ -1,7 +1,7 @@
 // ===== Hollow Village: shops + gold =====
 cb.remove();
-let GLD=0,shop=null,gsv=0;try{GLD=+localStorage.getItem('hw_g')||0}catch(e){}
-const svg=()=>{try{localStorage.setItem('hw_g',GLD)}catch(e){}};
+let GLD=0,shop=null,gsv=0;try{GLD=+localStorage.getItem('hw_g')||0}catch(e){self.SQERR&&SQERR(e,'005-1')}
+const svg=()=>{try{localStorage.setItem('hw_g',GLD)}catch(e){self.SQERR&&SQERR(e,'005-2')}};
 const VX=Math.floor(P.x/T),VY=Math.floor(P.y/T),BS=new Set();
 for(let y=VY-8;y<=VY+8;y++)for(let x=VX-11;x<=VX+11;x++)if(x>0&&y>0&&x<N-1&&y<N-1){tile[y*N+x]=2;obj[y*N+x]=undefined}
 const pth=(x,y)=>{if(x>0&&y>0&&x<N-1&&y<N-1)tile[y*N+x]=1};

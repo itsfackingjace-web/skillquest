@@ -14,5 +14,5 @@
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!near()||!!(_pu&&_pu())}
  let mine=false;{SQUPD.after('194',(dt)=>{try{const n=!pnOpen&&!menuOpen&&!dead&&!awake()?near():null;
    if(n&&(tk.style.display==='none'||mine)){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mine=true}
-   else if(!n&&mine){mine=false;if(!pnOpen)tk.style.display='none'}}catch(e){}})}
+   else if(!n&&mine){mine=false;if(!pnOpen)tk.style.display='none'}}catch(e){self.SQERR&&SQERR(e,'194-1')}})}
  window.SQSLEEPTALK={near}})();

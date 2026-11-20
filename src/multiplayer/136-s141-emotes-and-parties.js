@@ -10,7 +10,7 @@
 // START > Party lists the members and has LEAVE PARTY. The party id is kept on the device for 2 hours.
 (()=>{const Mp=()=>window.SQMP,Fm=()=>window.SQFB,on=()=>!!(Mp()&&Mp().on&&Mp().user&&Fm()),me=()=>Mp().user.uid,ref=p=>Fm().db.ref(Fm().D,p);
  const live=r=>!!r&&performance.now()-r.seen<20000;
- const LSG=k=>{try{return localStorage.getItem(k)}catch(e){return null}},LSS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
+ const LSG=k=>{try{return localStorage.getItem(k)}catch(e){return null}},LSS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){self.SQERR&&SQERR(e,'136-1')}};
  // ======== emotes: your character acts them out ========
  // The character is drawn into a small canvas (anchor 24,44 like 114's crouch), changed there (an arm raised, the head
  // lowered or shaken, sitting) and put back with a hop or a sway; little pixel effects (hearts, notes, confetti, Z's,
@@ -18,7 +18,7 @@
  const EM={wave:{n:'Wave',ic:'👋',d:3},bow:{n:'Bow',ic:'🙇',d:2.6},dance:{n:'Dance',ic:'💃',d:5},cheer:{n:'Cheer',ic:'🎉',d:3},laugh:{n:'Laugh',ic:'😂',d:3},
   love:{n:'Love',ic:'❤️',d:3},yes:{n:'Yes',ic:'👍',d:2.2},no:{n:'No',ic:'👎',d:2.2},think:{n:'Hmm',ic:'🤔',d:4},sit:{n:'Sit',ic:'🪑',d:30},sleep:{n:'Sleep',ic:'💤',d:30}};
  let MINE=null,SEQ=0,MX=0,MY=0;// {k, at}
- function emote(k){if(!EM[k]||dead||SAILING)return false;MINE={k,at:performance.now()};MX=P.x;MY=P.y;SEQ++;try{sfx('talk')}catch(e){}return true}
+ function emote(k){if(!EM[k]||dead||SAILING)return false;MINE={k,at:performance.now()};MX=P.x;MY=P.y;SEQ++;try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'136-2')}return true}
  const live1=(k,at)=>k&&EM[k]&&(performance.now()-at)/1000<EM[k].d;
  const OFF=document.createElement('canvas');OFF.width=48;OFF.height=56;OFF.hd2=true;const OX=OFF.getContext('2d');
  const INK='#282030';
@@ -86,7 +86,7 @@
  {const _cP=cP;cP=function(ch,dir,st,ox,oy,fl){try{let k=null,at=0;
     if(SELF&&MINE){k=MINE.k;at=MINE.at}
     else if(!SELF&&window.SQMP&&SQMP.players&&SQMP.players.size){for(const r of SQMP.players.values()){if(Math.round(r.x)===Math.round(ox)&&Math.round(r.y)===Math.round(oy)&&r._emK){k=r._emK;at=r._emAt;break}}}
-    if(k&&live1(k,at))return act(ch,dir,st,ox,oy,fl,k,(performance.now()-at)/1000,_cP)}catch(e){}
+    if(k&&live1(k,at))return act(ch,dir,st,ox,oy,fl,k,(performance.now()-at)/1000,_cP)}catch(e){self.SQERR&&SQERR(e,'136-3')}
    return _cP.apply(this,arguments)}}
  window.SQEMOTE={emote,list:EM,pres(){return MINE&&live1(MINE.k,MINE.at)?MINE.k+':'+SEQ:''},get mine(){return MINE}};
  // you: walking (or anything that moves you) ends it
@@ -96,18 +96,18 @@
   if(PT.id&&r.pt===PT.id){g.save();g.fillStyle='#58e070';g.strokeStyle='#183818';g.lineWidth=1;g.font='700 7px '+PF;g.textAlign='center';g.strokeText('★',Math.round(r.x),Math.round(r.y-33));g.fillText('★',Math.round(r.x),Math.round(r.y-33));g.restore()}});
  // ======== parties ========
  const MAX=4;const PT={id:'',sent:{},inv:null};
- {const s=LSG('sq_party');if(s){try{const o=JSON.parse(s);if(o&&typeof o.id==='string'&&Date.now()-o.at<7200000)PT.id=o.id.slice(0,12)}catch(e){}}}
+ {const s=LSG('sq_party');if(s){try{const o=JSON.parse(s);if(o&&typeof o.id==='string'&&Date.now()-o.at<7200000)PT.id=o.id.slice(0,12)}catch(e){self.SQERR&&SQERR(e,'136-4')}}}
  const keep=()=>LSS('sq_party',PT.id?JSON.stringify({id:PT.id,at:Date.now()}):null);
  const others=()=>{const L=[];if(!PT.id||!on())return L;for(const r of Mp().players.values())if(live(r)&&r.pt===PT.id&&r.uid!==me())L.push(r);return L};
  const nameOf=u=>{const r=Mp()&&Mp().players.get(u);return(r&&r.n)||'Player'};
  function invite(u){if(!on()){say('Sign in to make a party.');return}if(others().some(r=>r.uid===u)){say(nameOf(u)+' is already in your party.');return}
   if(others().length>=MAX-1){say('Your party is full (4 players).');sfx('swish');return}if(PT.sent[u]&&performance.now()-PT.sent[u]<60000)return;
   if(!PT.id){PT.id=Math.random().toString(36).slice(2,12);keep()}PT.sent[u]=performance.now();const db=Fm().db;
-  db.set(ref('dreq/'+u+'/'+me()),{n:String(pname()).slice(0,12),s:PT.id,k:'party',t:db.serverTimestamp()}).then(()=>{say('You invited '+nameOf(u)+' to your party.');try{mpLog('game','You invited '+nameOf(u)+' to your party.')}catch(e){}})
+  db.set(ref('dreq/'+u+'/'+me()),{n:String(pname()).slice(0,12),s:PT.id,k:'party',t:db.serverTimestamp()}).then(()=>{say('You invited '+nameOf(u)+' to your party.');try{mpLog('game','You invited '+nameOf(u)+' to your party.')}catch(e){self.SQERR&&SQERR(e,'136-5')}})
    .catch(e=>{delete PT.sent[u];say(/permission/i.test(String(e&&(e.code||e.message)))?'Parties need the latest database rules.':'Could not send the invite.')})}
  function join(id,from){const n=nameOf(from);const cnt=[...Mp().players.values()].filter(r=>live(r)&&r.pt===id&&r.uid!==me()).length;if(cnt>=MAX){say(n+'\'s party is full.');sfx('swish');return}
-  PT.id=id;keep();say('You joined '+n+'\'s party!');try{mpLog('game','You joined '+n+'\'s party. Talk to them in the chat\'s Party tab.')}catch(e){}sfx('quest');if(pnOpen&&ptab===PTAB)rPn()}
- function leave(){if(!PT.id)return;PT.id='';PT.sent={};keep();say('You left the party.');try{mpLog('game','You left the party.')}catch(e){}if(pnOpen&&ptab===PTAB)rPn()}
+  PT.id=id;keep();say('You joined '+n+'\'s party!');try{mpLog('game','You joined '+n+'\'s party. Talk to them in the chat\'s Party tab.')}catch(e){self.SQERR&&SQERR(e,'136-6')}sfx('quest');if(pnOpen&&ptab===PTAB)rPn()}
+ function leave(){if(!PT.id)return;PT.id='';PT.sent={};keep();say('You left the party.');try{mpLog('game','You left the party.')}catch(e){self.SQERR&&SQERR(e,'136-7')}if(pnOpen&&ptab===PTAB)rPn()}
  window.SQPARTY={get id(){return PT.id},members:others,invite,leave,join,has:u=>others().some(r=>r.uid===u),invited:u=>!!(PT.sent[u]&&performance.now()-PT.sent[u]<60000)&&!others().some(r=>r.uid===u)};
  // the invite pop-up
  {const st=document.createElement('style');st.textContent=`#ptpop{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 104px);z-index:31;display:none;align-items:center;gap:8px;padding:8px 10px;max-width:calc(100vw - 24px);box-sizing:border-box;font:600 14px ${PF};background:#f8f0d8;color:#404040;border:4px solid #485870;box-shadow:inset 0 0 0 2px #a8c0e0}
@@ -117,27 +117,27 @@
  const pop=document.createElement('div');pop.id='ptpop';pop.innerHTML='<span></span><button class="ok">JOIN</button><button class="no">NO</button>';document.body.appendChild(pop);
  for(const ev of['touchstart','pointerdown','mousedown'])pop.addEventListener(ev,e=>e.stopPropagation());
  let popT=0;const hidePop=()=>{PT.inv=null;pop.style.display='none';clearTimeout(popT)};
- window.SQPARTYINV=(u,q)=>{try{Fm().db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{})}catch(e){}if(typeof q.t==='number'&&Date.now()+((Mp()&&Mp().off)||0)-q.t>60000)return;const id=typeof q.s==='string'?q.s.slice(0,12):'';if(!id)return;
-  if(PT.id===id)return;PT.inv={u,id};pop.querySelector('span').textContent=nameOf(u)+' invites you to their party!';pop.style.display='flex';clearTimeout(popT);popT=setTimeout(hidePop,30000);try{sfx('talk')}catch(e){}
-  try{mpLog('game',nameOf(u)+' invites you to their party. Tap JOIN.')}catch(e){}};
+ window.SQPARTYINV=(u,q)=>{try{Fm().db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'136-8')}if(typeof q.t==='number'&&Date.now()+((Mp()&&Mp().off)||0)-q.t>60000)return;const id=typeof q.s==='string'?q.s.slice(0,12):'';if(!id)return;
+  if(PT.id===id)return;PT.inv={u,id};pop.querySelector('span').textContent=nameOf(u)+' invites you to their party!';pop.style.display='flex';clearTimeout(popT);popT=setTimeout(hidePop,30000);try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'136-9')}
+  try{mpLog('game',nameOf(u)+' invites you to their party. Tap JOIN.')}catch(e){self.SQERR&&SQERR(e,'136-10')}};
  pop.querySelector('.ok').onclick=()=>{const v=PT.inv;hidePop();if(v)join(v.id,v.u)};pop.querySelector('.no').onclick=hidePop;
  // +10% XP with a party member close by
- const near=()=>{let L=null;try{L=mpLoc()}catch(e){}return others().some(r=>r.loc===L&&Math.hypot(r.tx-P.x,r.ty-P.y)<=320)};
- {const _ax=addXp;addXp=function(i,x){if(x>0&&PT.id)try{if(near())x=Math.max(x+(x>=5?1:0),Math.round(x*1.1))}catch(e){}return _ax.call(this,i,x)}}
+ const near=()=>{let L=null;try{L=mpLoc()}catch(e){self.SQERR&&SQERR(e,'136-11')}return others().some(r=>r.loc===L&&Math.hypot(r.tx-P.x,r.ty-P.y)<=320)};
+ {const _ax=addXp;addXp=function(i,x){if(x>0&&PT.id)try{if(near())x=Math.max(x+(x>=5?1:0),Math.round(x*1.1))}catch(e){self.SQERR&&SQERR(e,'136-12')}return _ax.call(this,i,x)}}
  // party chat: one private message to each member, marked [Party] (061 files those under the Party tab)
  let lastSay=0;function partySay(t){const msg=String(t||'').replace(/\s+/g,' ').trim().slice(0,72);if(!msg)return;if(!on())return;
-  if(!PT.id||!others().length){try{mpLog('game','You\'re not in a party. Tap a player\'s name to invite them.')}catch(e){}return}
-  const n=performance.now();if(n-lastSay<1200){try{mpLog('game','Slow down a little!')}catch(e){}return}lastSay=n;
+  if(!PT.id||!others().length){try{mpLog('game','You\'re not in a party. Tap a player\'s name to invite them.')}catch(e){self.SQERR&&SQERR(e,'136-13')}return}
+  const n=performance.now();if(n-lastSay<1200){try{mpLog('game','Slow down a little!')}catch(e){self.SQERR&&SQERR(e,'136-14')}return}lastSay=n;
   const db=Fm().db;for(const r of others())db.push(ref('pm/'+r.uid),{f:me(),n:String(pname()).slice(0,12),m:'[Party] '+msg,t:db.serverTimestamp()}).catch(()=>{});
-  try{mpLog('pt',msg,{n:String(pname()).slice(0,12),uid:me(),me:1})}catch(e){}}
+  try{mpLog('pt',msg,{n:String(pname()).slice(0,12),uid:me(),me:1})}catch(e){self.SQERR&&SQERR(e,'136-15')}}
  window.SQPARTYSAY=partySay;
  // shared gold: when you beat a monster with party members close by (same area, within 20 steps), each of them gets
  // half the gold it gave you (the kill's own 2-6 gold counted as 4, plus what enemyDrop added; at most 100), sent as fx kind 'pg' {g, p: party id, x, y}
  {const _ed=enemyDrop;enemyDrop=function(n){const g0=GLD;const out=_ed.apply(this,arguments);try{if(PT.id&&on()&&n&&near()&&window.SQPVSEND){const dg=Math.max(0,GLD-g0);
-    SQPVSEND({k:'pg',g:Math.max(1,Math.min(100,Math.ceil((dg+4)/2))),p:PT.id,x:Math.round(P.x),y:Math.round(P.y)})}}catch(e){}return out}}
+    SQPVSEND({k:'pg',g:Math.max(1,Math.min(100,Math.ceil((dg+4)/2))),p:PT.id,x:Math.round(P.x),y:Math.round(P.y)})}}catch(e){self.SQERR&&SQERR(e,'136-16')}return out}}
  {const last={};(window.SQFXH=window.SQFXH||{}).pg=(r,v)=>{if(!PT.id||v.p!==PT.id||r.pt!==PT.id||dead)return;const x=+v.x,y=+v.y,g=Math.max(0,Math.min(100,v.g|0));if(!g||!isFinite(x)||!isFinite(y))return;
    if(Math.hypot(x-P.x,y-P.y)>320)return;const now=performance.now();if(now-(last[r.uid]||0)<400)return;last[r.uid]=now;GLD+=g;
-   try{gTxt(P.x,P.y-28,'+'+g+' gold','#f8d048')}catch(e){}try{sfx('coin')}catch(e){}PT.shared=(PT.shared|0)+g}}
+   try{gTxt(P.x,P.y-28,'+'+g+' gold','#f8d048')}catch(e){self.SQERR&&SQERR(e,'136-17')}try{sfx('coin')}catch(e){self.SQERR&&SQERR(e,'136-18')}PT.shared=(PT.shared|0)+g}}
  // chat: /p to the party, emotes by name
  {const _ms=mpSend;mpSend=function(t){const s=String(t||'').trim(),m=/^\/(\w+)\s*(.*)$/.exec(s);
    if(m){const c=m[1].toLowerCase();if(EM[c]&&!m[2]){emote(c);return}
@@ -156,7 +156,7 @@
   return h+'<div class="qc" style="margin-top:8px;font-size:12px"><p>+10% XP while a party member is close by, and when one of you beats a monster the others nearby get half its gold. Talk to your party in the chat\'s <b>Party</b> tab (or type <b>/p</b> and a message).</p></div><button class="sb" data-pt="leave" style="width:100%;margin-top:8px">LEAVE PARTY</button>'}
  function emotesHTML(){let h='<div class="tl">EMOTES</div><div class="emg">';for(const k in EM)h+='<button data-em="'+k+'"><span>'+EM[k].ic+'</span>'+EM[k].n+'</button>';
   return h+'</div><div class="qc" style="margin-top:10px;font-size:12px"><p>Everyone nearby sees it. In chat you can also type /'+Object.keys(EM).slice(0,4).join(', /')+' and so on.</p></div>'}
- {const _r=rPn;rPn=function(){if(ptab===PTAB){try{panelChrome('')}catch(e){}pbd.innerHTML=partyHTML();return}if(ptab===ETAB){try{panelChrome('')}catch(e){}pbd.innerHTML=emotesHTML();return}return _r.apply(this,arguments)}}
+ {const _r=rPn;rPn=function(){if(ptab===PTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'136-19')}pbd.innerHTML=partyHTML();return}if(ptab===ETAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'136-20')}pbd.innerHTML=emotesHTML();return}return _r.apply(this,arguments)}}
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab===PTAB){const b=e.target.closest('[data-pt]');if(b&&b.dataset.pt==='leave')leave();return}
    if(ptab===ETAB){const b=e.target.closest('[data-em]');if(b){closePanel();emote(b.dataset.em)}return}return _oc(e)}}
  // G opens the emotes (keyboard)
@@ -164,18 +164,18 @@
  // ---- the HUD: party members under the minimap ----
  {SQHUD.wrap('136',_dh=>function(){const out=_dh.apply(this,arguments);try{if(menuOpen||!PT.id)return out;const L=others().slice(0,3);if(!L.length)return out;const H=hudLayout(),U=H.U,w=100*U,x0=H.ins;
    // left column, under the quest box and its chips (the right side has the minimap, CHAT and BUG)
-   let y=(H.stackBottom||H.qy+30*U)+6*U;try{const wb=document.getElementById('wbb');if(wb&&wb.style.display==='block'){const r=wb.getBoundingClientRect(),k=cv.width/(cv.clientWidth||innerWidth);if(r.left*k<x0+w&&r.bottom>0)y=Math.max(y,r.bottom*k+6*U)}}catch(e){}
+   let y=(H.stackBottom||H.qy+30*U)+6*U;try{const wb=document.getElementById('wbb');if(wb&&wb.style.display==='block'){const r=wb.getBoundingClientRect(),k=cv.width/(cv.clientWidth||innerWidth);if(r.left*k<x0+w&&r.bottom>0)y=Math.max(y,r.bottom*k+6*U)}}catch(e){self.SQERR&&SQERR(e,'136-21')}
    // phones without a minimap (indoors) put CHAT and BUG in this column too (111's sqPlaceBtns, SQHUDBTN = their bottom in CSS px)
-   try{if(window.SQHUDBTN>0){const rc=cv.getBoundingClientRect(),k=cv.width/(rc.width||innerWidth);y=Math.max(y,(SQHUDBTN-rc.top)*k+6*U)}}catch(e){}
+   try{if(window.SQHUDBTN>0){const rc=cv.getBoundingClientRect(),k=cv.width/(rc.width||innerWidth);y=Math.max(y,(SQHUDBTN-rc.top)*k+6*U)}}catch(e){self.SQERR&&SQERR(e,'136-22')}
    // and under the getting-started hint when it was drawn this moment (115 records its bottom in canvas px)
-   try{const hb=window.SQHINTB;if(hb&&performance.now()-hb.f<100)y=Math.max(y,hb.b+6*U)}catch(e){}
+   try{const hb=window.SQHINTB;if(hb&&performance.now()-hb.f<100)y=Math.max(y,hb.b+6*U)}catch(e){self.SQERR&&SQERR(e,'136-23')}
    g.save();g.setTransform(1,0,0,1,0,0);for(const r of L){g3box(x0,y,w,26*U,U,'#eef8e8');g.font='700 '+9*U+'px '+PF;g.textAlign='left';g.textBaseline='middle';g.fillStyle='#284028';g.fillText(fitText('★ '+r.n,w-12*U),x0+6*U,y+9*U);
-    const f=Math.max(0,Math.min(1,(r.hpv||0)/6));g.fillStyle='#485870';g.fillRect(x0+6*U,y+16*U,w-12*U,5*U);g.fillStyle=f>.5?'#48c878':f>.2?'#f8c030':'#f05030';g.fillRect(x0+7*U,y+17*U,(w-14*U)*f,3*U);y+=29*U}g.restore()}catch(e){}return out})}
+    const f=Math.max(0,Math.min(1,(r.hpv||0)/6));g.fillStyle='#485870';g.fillRect(x0+6*U,y+16*U,w-12*U,5*U);g.fillStyle=f>.5?'#48c878':f>.2?'#f8c030':'#f05030';g.fillRect(x0+7*U,y+17*U,(w-14*U)*f,3*U);y+=29*U}g.restore()}catch(e){self.SQERR&&SQERR(e,'136-24')}return out})}
  // ---- the map and the minimap: party members in green ----
  const inArea=(r,area)=>(r.ar||'')===area&&isFinite(r.ax)&&isFinite(r.ay);
  {const _dm=drawMap;drawMap=function(){const out=_dm.apply(this,arguments);try{if(!PT.id||(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world'))return out;const c=document.getElementById('mpc');if(!c)return out;const area=curRegion(),x=c.getContext('2d'),s=Math.max(2,Math.round(c.width/70));
-   for(const r of others())if(inArea(r,area)){const tx=r.ax/16,ty=r.ay/16;x.fillStyle='#183818';x.fillRect(tx-s/2-1,ty-s/2-1,s+2,s+2);x.fillStyle='#58e070';x.fillRect(tx-s/2,ty-s/2,s,s)}}catch(e){}return out}}
+   for(const r of others())if(inArea(r,area)){const tx=r.ax/16,ty=r.ay/16;x.fillStyle='#183818';x.fillRect(tx-s/2-1,ty-s/2-1,s+2,s+2);x.fillStyle='#58e070';x.fillRect(tx-s/2,ty-s/2,s,s)}}catch(e){self.SQERR&&SQERR(e,'136-25')}return out}}
  if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{if(!PT.id)return out;const t=miniTarget();if(!t)return out;const area=t.k==='region'?t.R.region:'hollow';
    const H=hudLayout(),U=H.U,w=H.dw,hh=w*t.h/t.w,x0=H.dx,y0=H.top+H.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
-   for(const r of others())if(inArea(r,area)){const px=x0+(r.ax/16)/t.w*w,py=y0+(r.ay/16)/t.h*hh;g.fillStyle='#183818';g.fillRect(px-2.5*U,py-2.5*U,5*U,5*U);g.fillStyle='#58e070';g.fillRect(px-1.8*U,py-1.8*U,3.6*U,3.6*U)}g.restore()}catch(e){}return out}}
+   for(const r of others())if(inArea(r,area)){const px=x0+(r.ax/16)/t.w*w,py=y0+(r.ay/16)/t.h*hh;g.fillStyle='#183818';g.fillRect(px-2.5*U,py-2.5*U,5*U,5*U);g.fillStyle='#58e070';g.fillRect(px-1.8*U,py-1.8*U,3.6*U,3.6*U)}g.restore()}catch(e){self.SQERR&&SQERR(e,'136-26')}return out}}
 })();

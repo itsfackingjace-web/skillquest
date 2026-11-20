@@ -36,7 +36,7 @@ ROOMS.afforge=mkRoom({w:10,h:7,ex:5,floor:['#6a5a50','#625248'],wall:'#8a7464',t
 ROOMS.afhall=mkRoom({w:9,h:7,ex:4,floor:['#7a6656','#705c4c'],wall:'#a08c78',trim:'#a83818',items:[{t:'window',x:2,y:0},{t:'shelf',x:4,y:0,w:3,use:'look',name:'The camp ledger',text:'The warden\'s ledger: "Cinderdeep - north-east. The Emberlord woke again. Two more smiths hurt. Need someone brave."'},{t:'window',x:7,y:0},
  {t:'table',x:3,y:3,w:3,solid:1},{t:'bed',x:0,y:2,sh:2,solid:1},{t:'bed',x:8,y:2,sh:2,solid:1},{t:'barrel',x:0,y:5,solid:1},{t:'plant',x:8,y:5,solid:1},{t:'rug',x:3,y:5,w:3}]});
 const ROOMMSG={bwlodge:'The Ranger Lodge. Maps and bows line the walls.',bwinn:'The Sleepy Fern. A bed here heals you up.',afforge:'Emberwatch Forge. The heat hits you like a wall.',afhall:'The Warden\'s Hall. It smells of smoke and old maps.'};
-{const _uf=useFurn;useFurn=function(it){if(it&&it.use==='bwrest'){if(P.hp>=6&&hunger>40){say('You\'re already well rested.');return}P.hp=6;hunger=Math.max(hunger,60);say('You rest a while in a soft bed. Fully healed!');try{sfx('quest')}catch(e){}saveLocal(true);return}
+{const _uf=useFurn;useFurn=function(it){if(it&&it.use==='bwrest'){if(P.hp>=6&&hunger>40){say('You\'re already well rested.');return}P.hp=6;hunger=Math.max(hunger,60);say('You rest a while in a soft bed. Fully healed!');try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'096-1')}saveLocal(true);return}
   if(it&&it.use==='look'&&SCENE&&ROOMMSG[SCENE.id]){rgLook(it);return}return _uf(it)}}
 // doors: walk up into one (the same as a house)
 function vDoors(R){if(!R._doors)R._doors=R.items.filter(it=>it.room&&it.b);return R._doors}
@@ -71,8 +71,8 @@ function treelingSprite(k,f){const key=k+f;if(TLC[key])return TLC[key];const c=d
 
 // ======== Void Trees ========
 // the purple-leaved trees of the Shattered Expanse: their name floats up when you chop one
-{SQHIT.wrap('096 ashfall s forge camp and cinderdeep',_a=>function(){let vt=null;try{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const[fx,fy]=front(13),it=rgObjAt(R,Math.floor(fx/16),Math.floor(fy/16));if(it&&it.o.v==='dark'&&SKOF[it.o.t]===1)vt=it}}catch(e){}
-  _a();if(vt&&(swing>0)){const now=performance.now();if(!vt._vtn||now-vt._vtn>2500){vt._vtn=now;try{gTxt(vt.x*16+8,vt.y*16-34,'Void Tree','#c8a0ff')}catch(e){}}}})}
+{SQHIT.wrap('096 ashfall s forge camp and cinderdeep',_a=>function(){let vt=null;try{const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const[fx,fy]=front(13),it=rgObjAt(R,Math.floor(fx/16),Math.floor(fy/16));if(it&&it.o.v==='dark'&&SKOF[it.o.t]===1)vt=it}}catch(e){self.SQERR&&SQERR(e,'096-2')}
+  _a();if(vt&&(swing>0)){const now=performance.now();if(!vt._vtn||now-vt._vtn>2500){vt._vtn=now;try{gTxt(vt.x*16+8,vt.y*16-34,'Void Tree','#c8a0ff')}catch(e){self.SQERR&&SQERR(e,'096-3')}}}})}
 
 // ======== the Stone Sledgehammer ========
 var SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
@@ -84,7 +84,7 @@ var SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
 {SQSAVE.after('096:sld',s=>{if(SLEDGE)s.sld=1;})}
 {SQLOAD.after('096',(S)=>{SLEDGE=!!(S&&S.sld)&&TL.sword===3})}
 {const _ng=newGame;newGame=function(){SLEDGE=false;_ng()}}
-try{KNOWN49.add('sld');KNOWN49.add('emd')}catch(e){}
+try{KNOWN49.add('sld');KNOWN49.add('emd')}catch(e){self.SQERR&&SQERR(e,'096-4')}
 // its icon: a stone head on a wooden haft
 {let IC=null;const pic=()=>{if(IC)return IC;const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
   for(let i=0;i<9;i++){r(3+i,12-i,2,2,'#302010')}for(let i=0;i<8;i++)r(4+i,11-i,1,1,'#a87038');r(5,1,8,6,'#302010');r(6,2,6,4,'#9a9284');r(6,2,6,1,'#c8c0b0');r(6,5,6,1,'#6a645c');r(8,3,1,1,'#5a8a3a');r(10,4,1,1,'#6a645c');return IC=c.toDataURL()};
@@ -98,11 +98,11 @@ try{KNOWN49.add('sld');KNOWN49.add('emd')}catch(e){}
 function slamDmg(){return 12+Math.floor(lvOf(0)/3)+Math.floor(lvOf(2)/10)+(typeof meleeBonus==='function'?meleeBonus():0)}
 {const _cu=castUlt;castUlt=function(){if(!SLEDGE)return _cu();if(dead||menuOpen||pnOpen||BUILD)return;
   if(SCENE&&!SCENE.room.cave){say('Not indoors!');return}if(typeof SAILING!=='undefined'&&SAILING||window.SQRSAIL&&SQRSAIL.on){say('Not while sailing!');return}
-  if(SLAM.cd>0){say('Ground Slam is recharging ('+Math.ceil(SLAM.cd)+'s).');try{sfx('nomana')}catch(e){}return}
+  if(SLAM.cd>0){say('Ground Slam is recharging ('+Math.ceil(SLAM.cd)+'s).');try{sfx('nomana')}catch(e){self.SQERR&&SQERR(e,'096-5')}return}
   SLAM.cd=18;SLAM.t=.55;SLAM.x=P.x;SLAM.y=P.y+4;const dmg=slamDmg();let n0=0;
   for(const n of en){if(n.dead||n._pet)continue;const big=n.big||n.type==='boss'||n.type==='bonelord',dx=n.x-P.x,dy=n.y-P.y,d=Math.hypot(dx,dy)||1;if(d>SLAM.R+(big?20:0))continue;
    n0++;const k=d<34?1.4:1;hitE(n,Math.round(dmg*k),'#e8c890','slam');if(!big){n.kx=dx/d*3.2;n.ky=dy/d*3.2}}
-  if(n0)addXp(0,n0*20);say(n0?'GROUND SLAM! '+n0+' hit.':'GROUND SLAM!');try{sfx('mine');setTimeout(()=>sfx('mine'),70);if(typeof rumble==='function')rumble(350,1,.7)}catch(e){}
+  if(n0)addXp(0,n0*20);say(n0?'GROUND SLAM! '+n0+' hit.':'GROUND SLAM!');try{sfx('mine');setTimeout(()=>sfx('mine'),70);if(typeof rumble==='function')rumble(350,1,.7)}catch(e){self.SQERR&&SQERR(e,'096-6')}
   if(typeof FLASH!=='undefined')FLASH=.12;for(let k=0;k<40;k++){const an=k/40*6.283,sp=80+Math.random()*70;part(P.x,P.y+4,Math.cos(an)*sp,Math.sin(an)*sp*.6-20,.5+Math.random()*.2,k%3?'#9a8a78':'#c8b8a0',120,2)}}}
 {SQUPD.after('096',(dt)=>{if(SLAM.cd>0&&!menuOpen&&!pnOpen)SLAM.cd=Math.max(0,SLAM.cd-dt);if(SLAM.t>0)SLAM.t=Math.max(0,SLAM.t-dt)})}
 {SQPP.before('096',(tm)=>{if(SLAM.t>0){const p=1-SLAM.t/.55,r=SLAM.R*Math.min(1,p*1.6);g.strokeStyle='rgba(232,208,160,'+(.75*(1-p))+')';g.lineWidth=3;g.beginPath();g.ellipse(SLAM.x,SLAM.y,r,r*.6,0,0,6.283);g.stroke();
@@ -155,13 +155,13 @@ function drawBoulder(o,x,y,bx,by,s){const sp=boulderSprite(o.t,(x*7+y*3)&1);shd(
  function rgBoulders(R){if(!R||!R.region||R._boul||!RGB[R.region])return;R._boul=1;const[p,po]=RGB[R.region],W=R.w,H=R.h,seed=R.region.length*131.7+R.w;
   const res=(R.reserved||[]),inRes=(x,y)=>res.some(q=>x>=q.x-2&&y>=q.y-2&&x<q.x+q.w+2&&y<q.y+q.h+2);const far={briarwood:.2,ashfall:.6,ironcrest:.85,shattered:1}[R.region];
   for(let y=4;y<H-4;y++)for(let x=4;x<W-4;x++){const i=y*W+x;if(!RG_WALK[R.tiles[i]]||R.tiles[i]===14||R.solid.has(i))continue;const r=h92(x+seed,y-seed*.3);if(r>=p)continue;
-   if(near(x,y,(a,b)=>!RG_WALK[R.tiles[b*W+a]]||R.tiles[b*W+a]===14||R.solid.has(b*W+a))||rgObjAt(R,x-1,y)||rgObjAt(R,x+1,y))continue;if(inRes(x,y))continue;if(R.reach&&!R.reach[i])continue;try{if(typeof rfMap==='function'&&rfMap(R.region).has(x+','+y))continue}catch(e){}
+   if(near(x,y,(a,b)=>!RG_WALK[R.tiles[b*W+a]]||R.tiles[b*W+a]===14||R.solid.has(b*W+a))||rgObjAt(R,x-1,y)||rgObjAt(R,x+1,y))continue;if(inRes(x,y))continue;if(R.reach&&!R.reach[i])continue;try{if(typeof rfMap==='function'&&rfMap(R.region).has(x+','+y))continue}catch(e){self.SQERR&&SQERR(e,'096-7')}
    if(Math.hypot(x-(R.spawn?R.spawn[0]:-99),y-(R.spawn?R.spawn[1]:-99))<6)continue;
-   const kind=h92(y+seed,x)<po?oreFor(h92(x*3+seed,y*5),far):'boulder',it={t:'_obj',o:{t:kind,hp:OHP[kind]},x,y,solid:true};R.items.push(it);R.solid.add(i);try{rgCellAdd(R,it)}catch(e){}}}
+   const kind=h92(y+seed,x)<po?oreFor(h92(x*3+seed,y*5),far):'boulder',it={t:'_obj',o:{t:kind,hp:OHP[kind]},x,y,solid:true};R.items.push(it);R.solid.add(i);try{rgCellAdd(R,it)}catch(e){self.SQERR&&SQERR(e,'096-8')}}}
  window.SQRGBOUL=rgBoulders;
  {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)rgBoulders(R)}catch(e){console.warn(e)}return ok}}
  // caves and dungeons: some boulders hold ore (deeper floors: better ore)
- const _bf=buildFloor;buildFloor=function(kind,f){const R=_bf(kind,f);try{const rnd=dRng(today()*313+f*71+kind.length*17);for(const it of R.items)if(it.t==='boulder'&&rnd()<.3){const r=rnd(),deep=Math.min(1,.25+f*.13);it.ore=r<.1*deep?'oba':r<.28*deep?'obm':r<.55?'obg':'obi'}}catch(e){}return R}}
+ const _bf=buildFloor;buildFloor=function(kind,f){const R=_bf(kind,f);try{const rnd=dRng(today()*313+f*71+kind.length*17);for(const it of R.items)if(it.t==='boulder'&&rnd()<.3){const r=rnd(),deep=Math.min(1,.25+f*.13);it.ore=r<.1*deep?'oba':r<.28*deep?'obm':r<.55?'obg':'obi'}}catch(e){self.SQERR&&SQERR(e,'096-9')}return R}}
 // keep builds clear: a boulder never sits under a house, structure or farm plot on Hollow
 {let chk=0;SQUPD.after('096',(dt)=>{if((chk-=dt)>0)return;chk=2;for(let i=0;i<obj.length;i++){const o=obj[i];if(!o||!BOUL[o.t])continue;const x=i%N,y=(i/N)|0;
    if(STR.has(i)||BS.has(i)||(typeof FARM!=='undefined'&&FARM.has(i))||(typeof houseAt==='function'&&houseAt(x,y)))obj[i]=null}})}
@@ -173,10 +173,10 @@ function boulderHit(o,x,y,done){const B=BOUL[o.t];if(!B)return false;
  for(let k=0;k<5;k++)part(x*16+8,y*16+6,(Math.random()-.5)*90,-30-Math.random()*60,.4,k%2?'#9a8a78':'#6a645c',160,1);
  if(o.hp>0)return true;
  const got=B.give(),txt=[];for(const[k,n]of got){inv[k]=(inv[k]|0)+n;txt.push('+'+n+' '+(k==='stone'?'stone':INAME[k].toLowerCase()))}addXp(2,B.xp);
- say('The '+B.n+' cracks apart! '+txt.join(', '));try{gTxt(x*16+8,y*16-30,txt[0],'#e8d8b8');if(typeof rumble==='function')rumble(200,.7,.4);setTimeout(()=>sfx('pickup'),90)}catch(e){}
+ say('The '+B.n+' cracks apart! '+txt.join(', '));try{gTxt(x*16+8,y*16-30,txt[0],'#e8d8b8');if(typeof rumble==='function')rumble(200,.7,.4);setTimeout(()=>sfx('pickup'),90)}catch(e){self.SQERR&&SQERR(e,'096-10')}
  for(let k=0;k<18;k++){const an=k/18*6.283;part(x*16+8,y*16+6,Math.cos(an)*90,Math.sin(an)*60-30,.55,k%2?'#948a80':'#5a524a',200,2)}
- let stay=false;try{stay=Math.random()<sumP(2,STAYP)}catch(e){}// Mining's "stays standing" perks work on boulders too
- if(stay){o.hp=OHP[o.t]||40;try{gTxt(x*16+8,y*16-44,'Still standing!',SKC[2])}catch(e){}}else done();saveLocal();return true}
+ let stay=false;try{stay=Math.random()<sumP(2,STAYP)}catch(e){self.SQERR&&SQERR(e,'096-11')}// Mining's "stays standing" perks work on boulders too
+ if(stay){o.hp=OHP[o.t]||40;try{gTxt(x*16+8,y*16-44,'Still standing!',SKC[2])}catch(e){self.SQERR&&SQERR(e,'096-12')}}else done();saveLocal();return true}
 window.SQBOULDERHIT=boulderHit;
 {const BROKE=[];
  SQHIT.wrap('096 ashfall s forge camp and cinderdeep',_a=>function(){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0||(window.SQDF&&SQDF.on))return _a();
@@ -210,7 +210,7 @@ function afSetup(R){if(R.region!=='ashfall'||R._af)return;const site=(R.reserved
  const x0=site.x,y0=site.y,W=R.w,set=(x,y,t)=>{if(x>0&&y>0&&x<W-1&&y<R.h-1&&R.tiles[y*W+x]!==0)R.tiles[y*W+x]=t};
  for(let y=y0;y<y0+site.h;y++)for(let x=x0;x<x0+site.w;x++){const it=rgObjAt(R,x,y);if(it){it.gone=true;rgCellDel(R,it);R.solid.delete(y*W+x)}if(R.tiles[y*W+x]!==0)R.tiles[y*W+x]=10}
  for(let x=x0+1;x<x0+site.w-1;x++){set(x,y0+6,14);set(x,y0+7,14)}for(let y=y0+3;y<y0+site.h;y++){set(x0+9,y,14);set(x0+10,y,14)}
- const solidAt=(x,y)=>R.solid.add(y*W+x),add=it=>{R.items.push(it);try{rgCellAdd(R,it)}catch(e){}};
+ const solidAt=(x,y)=>R.solid.add(y*W+x),add=it=>{R.items.push(it);try{rgCellAdd(R,it)}catch(e){self.SQERR&&SQERR(e,'096-13')}};
  const blds=[{tx:x0+1,ty:y0+2,w:5,wall:'#8a7060',roof:'#a83818',name:'Warden\'s Hall',room:'afhall'},{tx:x0+12,ty:y0+2,w:7,wall:'#6a5a50',roof:'#3a3030',name:'The Forge',room:'afforge',smoke:1}];
  for(const b of blds){add({t:'afbld',b,room:b.room,x:b.tx+(b.w>>1),y:b.ty+1,w:b.w,h:2});for(let dy=0;dy<2;dy++)for(let dx=0;dx<b.w;dx++)solidAt(b.tx+dx,b.ty+dy)}
  for(const[k,x,y,w]of[['tent',x0+2,y0+9,2],['tent',x0+15,y0+10,2],['firepit',x0+6,y0+10,1],['crates',x0+17,y0+8,1],['cart',x0+12,y0+11,1],['crates',x0+1,y0+12,1]]){add({t:'lm',k,x,y,w,h:1,sh:1});for(let dx=0;dx<w;dx++)solidAt(x+dx,y)}
@@ -228,7 +228,7 @@ const afIn=(x,y)=>{const T=AF.town;return T&&x>=(T.x0-1)*16&&x<(T.x0+T.w+1)*16&&
 const afNear=()=>{if(!afR())return null;let best=null,bd=26;for(const n of AF.npcs){const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}return best};
 window.SQAFNEAR=afNear;
 {const _df=drawFurn;drawFurn=function(it,tm){if(!it||typeof it.t!=='string'||it.t.slice(0,2)!=='af')return _df(it,tm);const x=it.x*16,y=it.y*16;
-  if(it.t==='afbld'){const b=it.b;try{drBld({k:'home',w:b.w,wall:b.wall,roof:b.roof,sc:null,tx:b.tx,ty:b.ty},tm)}catch(e){}const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16;
+  if(it.t==='afbld'){const b=it.b;try{drBld({k:'home',w:b.w,wall:b.wall,roof:b.roof,sc:null,tx:b.tx,ty:b.ty},tm)}catch(e){self.SQERR&&SQERR(e,'096-14')}const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16;
    if(b.smoke){Rg(X0+w-22,base-46,8,14,K);Rg(X0+w-21,base-45,6,13,'#4a4040');for(let k=0;k<3;k++){const ph=(tm*.5+k/3)%1;g.fillStyle='rgba(90,80,80,'+(.45*(1-ph))+')';g.beginPath();g.arc(X0+w-18+Math.sin(ph*5+k)*3,base-48-ph*24,3+ph*5,0,6.283);g.fill()}
     const gl=.25+.15*Math.sin(tm*6);g.fillStyle='rgba(255,120,40,'+gl+')';g.fillRect(X0+10,base-14,10,8)}
    const tw=b.name.length*4+8,sx=Math.round(X0+w/2-tw/2);g.save();g.font='700 6px '+PF;g.fillStyle='#2a1410';g.fillRect(sx-1,base-35,tw+2,10);g.fillStyle='#f0d8b0';g.fillRect(sx,base-34,tw,8);g.fillStyle='#2a1410';g.textAlign='center';g.textBaseline='middle';g.fillText(b.name,X0+w/2,base-29.5);g.restore();return}
@@ -241,7 +241,7 @@ window.SQAFNEAR=afNear;
    if(dark()>.12){g.fillStyle='rgba(200,140,255,.10)';g.beginPath();g.arc(x+16,y+2,22,0,6.283);g.fill()}return}
   if(it.t==='afsign'){Rg(x+7,y-2,2,14,'#3a2414');Rg(x-4,y-12,24,11,K);Rg(x-3,y-11,22,9,'#8a6a48');Rg(x-3,y-11,22,1,'#b08860');g.save();g.font='700 5px '+PF;g.fillStyle='#f8e0b0';g.textAlign='center';g.textBaseline='middle';g.fillText('EMBERWATCH',x+8,y-6.5);g.restore();return}
   if(it.t==='afnpc'){const n=it.n,near=Math.hypot(n.x-P.x,n.y-P.y)<60,dir=near?(Math.abs(P.x-n.x)>Math.abs(P.y-n.y)?2:P.y<n.y?1:0):0,fl=near&&P.x<n.x;shd(n.x,n.y+6,12);GC=g;
-   try{cP(AFLOOK[n.id],dir,0,Math.round(n.x),Math.round(n.y),fl)}catch(e){}
+   try{cP(AFLOOK[n.id],dir,0,Math.round(n.x),Math.round(n.y),fl)}catch(e){self.SQERR&&SQERR(e,'096-15')}
    const q=sqCur('ashfall');if(q&&q.giver===n.id&&(!SQ_SIDE.ashfall.on||sqReady('ashfall'))){const bob=Math.round(Math.sin(tm*4));Rg(n.x-2,n.y-34+bob,4,8,K);Rg(n.x-1,n.y-33+bob,2,5,'#f8d048');Rg(n.x-1,n.y-27+bob,2,1,'#f8d048')}
    g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.strokeStyle=K;g.strokeText(n.id,n.x,n.y-22);g.fillStyle='#ffe8d0';g.fillText(n.id,n.x,n.y-22);g.restore();return}
   return _df(it,tm)}}
@@ -258,7 +258,7 @@ const SHOPAF=[{n:'Healing potion',c:180,k:'pot_heal',m:1},{n:'20 iron arrows',c:
 window.SHOPAF=SHOPAF;// (161b/162 edit and add to it from the Dev Suite)
 function afHTML(){const n=AF.npc;if(!n)return'';const L=AFSAYS[n.id],line=L[Math.floor(performance.now()/7000)%L.length];
  let h='<div class="tl">'+esc(n.id)+'</div><div class="qc"><p>"'+esc(line)+'"</p><small>'+(n.role==='shop'?'Forgemaster of Emberwatch':n.role==='quests'?'Warden of Emberwatch':n.role==='potions'?'Potion seller':'Camp cook')+'</small></div>';
- try{h+=sideCard(n)}catch(e){}
+ try{h+=sideCard(n)}catch(e){self.SQERR&&SQERR(e,'096-16')}
  if(n.role==='elder'&&!(sqCur('ashfall')&&sqCur('ashfall').giver===n.id))h+='<div class="qc" style="margin-top:8px"><p>"Cinderdeep is up in the north-east hills. Six floors down, and the last one is all lava. The Emberlord lives there. It wakes every day, and it does not like visitors."</p></div>';
  if(n.role==='shop'){h+='<div class="tl" style="margin-top:12px">Buy</div><div class="qc"><small>Gold: '+GLD+'</small></div>';
   SHOPAF.forEach((it,i)=>{if(it.k&&!INAME[it.k]&&!it.kit)return;h+='<button class="sb" data-af="b'+i+'" style="opacity:'+(GLD>=it.c?1:.45)+'">'+esc(it.n)+'<br><small>'+it.c+' gold</small></button>'});
@@ -270,17 +270,17 @@ function afHTML(){const n=AF.npc;if(!n)return'';const L=AFSAYS[n.id],line=L[Math
   for(const it of POTAF){const c=inv[it.k]|0;if(c<=0)continue;any=1;h+='<button class="sb" data-af="q'+it.k+'">Sell all '+esc(SN[it.k]||INAME[it.k])+' ('+c+')<br><small>+'+c*potBuy(it.k)+' gold</small></button>'}
   if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">No potions to sell. Brew some at a cauldron (Brewing).</div>'}
  return h}
-{const _r=rPn;rPn=function(){if(ptab===2&&shop==='afnpc'&&AF.npc){try{panelChrome('')}catch(e){}pbd.innerHTML=afHTML();return}_r()}}
+{const _r=rPn;rPn=function(){if(ptab===2&&shop==='afnpc'&&AF.npc){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'096-17')}pbd.innerHTML=afHTML();return}_r()}}
 {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='afnpc'&&AF.npc){const b=e.target.closest('[data-af]');if(b){const a=b.dataset.af;
     if(a[0]==='b'){const it=SHOPAF[+a.slice(1)];if(!it)return;if(GLD<it.c){say('Not enough gold');sfx('swish');return}GLD-=it.c;if(it.kit){inv.wood=(inv.wood|0)+3;inv.stone=(inv.stone|0)+1}else inv[it.k]=(inv[it.k]|0)+it.m;say('Bought '+it.n+'.');sfx('coin')}
     else if(a[0]==='p'){const it=POTAF[+a.slice(1)];if(!it||!INAME[it.k])return;if(GLD<it.c){say('Not enough gold');sfx('swish');return}GLD-=it.c;inv[it.k]=(inv[it.k]|0)+1;say('Bought a '+INAME[it.k].toLowerCase()+'.');sfx('coin')}
     else if(a[0]==='q'){const k=a.slice(1),c=inv[k]|0;if(c>0&&POTAF.some(q=>q.k===k)){const v=c*potBuy(k);GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}
-    else{const k=a.slice(1),c=inv[k]|0;if(c>0){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){}saveLocal(true);rPn();return}
+    else{const k=a.slice(1),c=inv[k]|0;if(c>0){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){self.SQERR&&SQERR(_,'096-18')}saveLocal(true);rPn();return}
    const q=e.target.closest('.xb');if(q&&/^sq_/.test(q.dataset.a||'')){sideAct(q.dataset.a.slice(3),AF.npc);saveLocal(true);rPn();return}}return _oc(e)}}
 {const _cp=closePanel;closePanel=function(){if(shop==='afnpc'){AF.npc=null;shop=null}return _cp()}}
 // quest progress: cinder beetles anywhere on Ashfall
 {const _ed=enemyDrop;enemyDrop=function(n){_ed(n);if(n&&n.type==='beetle'&&n.rv==='cinder'&&!n._afq){n._afq=1;sqEvent('kill','cinderbeetle');saveLocal(true)}}}
-if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead&&n.type==='beetle'&&n.rv==='cinder'&&!n._afq){n._afq=1;sqEvent('kill','cinderbeetle')}}catch(e){}return r}}
+if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead&&n.type==='beetle'&&n.rv==='cinder'&&!n._afq){n._afq=1;sqEvent('kill','cinderbeetle')}}catch(e){self.SQERR&&SQERR(e,'096-19')}return r}}
 
 // ---- Cinderdeep: six floors of lava ----
 const AFMOB=[['beetle:cinder',.3],['skel:ember',.55],['slime:magma',.8],['bat',.9],['scorp',1]];
@@ -294,30 +294,30 @@ window.SQICV.aflava={name:'Cinderdeep',floor:['#4a3430','#42302c'],wall:'#2e2220
 {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='aflavap'){const x=it.x*16,y=it.y*16,w=(it.w||1)*16,p=.5+.5*Math.sin(tm*2+it.x);Rg(x-1,y+1,w+2,14,'#2a1410');Rg(x,y+2,w,12,'#c83810');Rg(x+1,y+3,w-2,10,'#f06018');
    for(let k=0;k<w/4;k++){const ph=(tm*.7+k*.31+it.x*.1)%1;Rg(x+2+k*4,y+4+Math.round(ph*6),2,2,ph<.5?'#ffd060':'#f8a030')}g.fillStyle='rgba(255,120,30,'+(.12+.1*p)+')';g.beginPath();g.arc(x+w/2,y+8,w*.7+6,0,6.283);g.fill();return}return _df(it,tm)}}
 // the floor tiles of the lava pools draw under you (they're floor, not furniture)
-{/* _u */let burnT=0;SQUPD.after('096',(dt)=>{const R=SCENE&&SCENE.room;if(!R||!R.dun||R.dun.kind!=='aflava'||dead||menuOpen||pnOpen)return;burnT-=dt;const tx=Math.floor(P.x/16),ty=Math.floor((P.y+4)/16);const on=R.items.some(it=>it.t==='aflavap'&&ty===it.y&&tx>=it.x&&tx<it.x+(it.w||1));if(on&&burnT<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){burnT=1.2;P.hp--;hurt=1;say('Ow! Lava!');try{sfx('hurt')}catch(e){}}})}
+{/* _u */let burnT=0;SQUPD.after('096',(dt)=>{const R=SCENE&&SCENE.room;if(!R||!R.dun||R.dun.kind!=='aflava'||dead||menuOpen||pnOpen)return;burnT-=dt;const tx=Math.floor(P.x/16),ty=Math.floor((P.y+4)/16);const on=R.items.some(it=>it.t==='aflavap'&&ty===it.y&&tx>=it.x&&tx<it.x+(it.w||1));if(on&&burnT<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){burnT=1.2;P.hp--;hurt=1;say('Ow! Lava!');try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'096-20')}}})}
 {const _uf=useFurn;useFurn=function(it){return _uf(it)}}
 
 // ---- the Emberlord (floor 6 of Cinderdeep) ----
 const EL_HP=320;let EMDAY=-1;
 {const _da=dArrive;dArrive=function(R,from){_da(R,from);const D=R.dun;if(!D||D.kind!=='aflava'||D.f!==6||!D.boss||D._el)return;D._el=1;if(EMDAY===today()){say('Cinderdeep - the Emberlord\'s lair. The lava is cooling. It sleeps until tomorrow.');return}
-  const[bx,by]=D.boss;const b={x:bx*16+8,y:by*16+8,hp:EL_HP,mhp:EL_HP,kx:0,ky:0,type:'emberl',big:1,pcd:2.5,fcd:4,scd:0,half:false,pools:[],balls:[]};R.mobs.push(b);AF.boss=b;setTimeout(()=>{try{sfx('roar')}catch(e){}},300);say('The ground shakes. THE EMBERLORD rises from the lava!');msgT=4}}
+  const[bx,by]=D.boss;const b={x:bx*16+8,y:by*16+8,hp:EL_HP,mhp:EL_HP,kx:0,ky:0,type:'emberl',big:1,pcd:2.5,fcd:4,scd:0,half:false,pools:[],balls:[]};R.mobs.push(b);AF.boss=b;setTimeout(()=>{try{sfx('roar')}catch(e){self.SQERR&&SQERR(e,'096-21')}},300);say('The ground shakes. THE EMBERLORD rises from the lava!');msgT=4}}
 {SQUPD.wrap('096',_u=>function(dt){const pre=new Map();for(const n of en)if(n.type==='emberl'&&!n.dead)pre.set(n,[n.x,n.y]);_u(dt);
   for(const[n,[x,y]]of pre){if(n.dead)continue;n.x=x+(n.x-x)*.4;n.y=y+(n.y-y)*.4;n.kx*=.3;n.ky*=.3;n.t=(n.t||0)+dt;const roll=typeof ROLLT!=='undefined'&&ROLLT>0;
    // fire pools: orange rings under you, then they burst into flame for a few seconds
    if((n.pcd-=dt)<=0){n.pcd=n.half?2.4:3.4;for(let k=0;k<(n.half?3:2);k++){const a=Math.random()*6.283,r=k?14+Math.random()*28:0;n.pools.push({x:P.x+Math.cos(a)*r,y:P.y+4+Math.sin(a)*r*.7,t:1.2,life:3})}}
-   for(const q of n.pools){q.t-=dt;if(q.t<=0){q.life-=dt;q.hc=(q.hc||0)-dt;if(q.hc<=0&&Math.hypot(P.x-q.x,(P.y+4-q.y)*1.4)<15&&hurt<=0&&!roll&&!dead){q.hc=1;P.hp--;hurt=1.1;say('The ground erupts in flame!');try{sfx('hurt')}catch(e){}}}}
+   for(const q of n.pools){q.t-=dt;if(q.t<=0){q.life-=dt;q.hc=(q.hc||0)-dt;if(q.hc<=0&&Math.hypot(P.x-q.x,(P.y+4-q.y)*1.4)<15&&hurt<=0&&!roll&&!dead){q.hc=1;P.hp--;hurt=1.1;say('The ground erupts in flame!');try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'096-22')}}}}
    n.pools=n.pools.filter(q=>q.t>0||q.life>0);
    // fireballs: a fan of five aimed at you
-   if((n.fcd-=dt)<=0){n.fcd=n.half?2.8:4.2;const a0=Math.atan2(P.y-(n.y-20),P.x-n.x);for(let k=-2;k<=2;k++){const a=a0+k*.28;n.balls.push({x:n.x,y:n.y-20,vx:Math.cos(a)*85,vy:Math.sin(a)*85,t:3.2})}try{sfx('cfire')}catch(e){}}
-   for(const b of n.balls){b.t-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(solid(b.x,b.y))b.t=0;else if(Math.hypot(P.x-b.x,P.y-6-b.y)<9&&hurt<=0&&!roll&&!dead){b.t=0;P.hp--;hurt=1.1;say('A fireball hits you!');try{sfx('hurt')}catch(e){}}}
+   if((n.fcd-=dt)<=0){n.fcd=n.half?2.8:4.2;const a0=Math.atan2(P.y-(n.y-20),P.x-n.x);for(let k=-2;k<=2;k++){const a=a0+k*.28;n.balls.push({x:n.x,y:n.y-20,vx:Math.cos(a)*85,vy:Math.sin(a)*85,t:3.2})}try{sfx('cfire')}catch(e){self.SQERR&&SQERR(e,'096-23')}}
+   for(const b of n.balls){b.t-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(solid(b.x,b.y))b.t=0;else if(Math.hypot(P.x-b.x,P.y-6-b.y)<9&&hurt<=0&&!roll&&!dead){b.t=0;P.hp--;hurt=1.1;say('A fireball hits you!');try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'096-24')}}}
    n.balls=n.balls.filter(b=>b.t>0);
    // at half its life it calls magma slimes up out of the lava
    if(!n.half&&n.hp<=n.mhp/2){n.half=true;n.scd=0;say('The Emberlord roars, and the lava boils with slimes!');msgT=3}
    if(n.half&&(n.scd-=dt)<=0){n.scd=13;const alive=en.filter(o=>o.summon&&!o.dead).length;for(let k=alive;k<3;k++){const a=Math.random()*6.283,wx=n.x+Math.cos(a)*34,wy=n.y+Math.sin(a)*26;if(!solid(wx,wy))en.push({x:wx,y:wy,hp:30,mhp:30,kx:0,ky:0,type:'slime',vr:'magma',summon:1,_prov:9})}}}
-  {const n=AF.boss;if(n&&n.hp<=0&&!n._rew){AF.boss=null;n._rew=1;n.dead=1;n.dropped=1;n.pools=[];n.balls=[];EMDAY=today();try{saveLocal(true)}catch(e){}
+  {const n=AF.boss;if(n&&n.hp<=0&&!n._rew){AF.boss=null;n._rew=1;n.dead=1;n.dropped=1;n.pools=[];n.balls=[];EMDAY=today();try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'096-25')}
    GLD+=600;inv.gbar=(inv.gbar|0)+3;inv.iron=(inv.iron|0)+10;inv.ruby=(inv.ruby|0)+1;addXp(0,900);addXp(7,400);
    let rare='';if(Math.random()<.1||window.SQEMBERDROP){inv.ja_ember=(inv.ja_ember|0)+1;rare=' and an EMBER RING!'}
-   sqEvent('dungeonboss','emberlord');say('The Emberlord cracks and sinks into the lava. +600 gold, gold bars, iron ore, a ruby'+(rare||'.'));msgT=6;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){}}}})}
+   sqEvent('dungeonboss','emberlord');say('The Emberlord cracks and sinks into the lava. +600 gold, gold bars, iron ore, a ruby'+(rare||'.'));msgT=6;try{sfx('quest');if(rare)setTimeout(()=>sfx('level'),300)}catch(e){self.SQERR&&SQERR(e,'096-26')}}}})}
 function drawEmberl(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs(n.kx)+Math.abs(n.ky)>.3,t=n.t||0,sw=Math.round(Math.sin(t*2.5)*2),R=hit?'#ffffff':'#3a2c2a',Rd=hit?'#e0e0e0':'#241a18',Rl=hit?'#ffffff':'#54443e',C=hit?'#ffffff':'#f87020',Cl='#ffd060';
  for(const q of n.pools){if(q.t>0){const a=.4+.4*Math.sin(tm*14);g.strokeStyle='rgba(255,140,40,'+a+')';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.stroke()}
   else{g.fillStyle='rgba(255,100,20,.35)';g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.fill();for(let k=0;k<5;k++){const ph=(tm*1.8+k*.21)%1,fx=q.x-10+k*5,fh=Math.round(4+8*(1-ph));Rg(fx,q.y-fh,2,fh,k%2?'#f86020':'#f8b030');Rg(fx,q.y-fh,1,2,'#fff0a0')}}}
@@ -347,11 +347,11 @@ if(window.SQJK){SQGEMC.ember=['#f87020','#802008'];const j={k:'ja_ember',n:'Embe
   for(const[n,h]of hp0)if(!n.dead&&n.hp<h&&n.type!=='emberl'){n.burn=Math.max(n.burn||0,3);for(let k=0;k<4;k++)part(n.x,n.y-8,(Math.random()-.5)*60,-40-Math.random()*40,.4,k%2?'#f86020':'#f8b030',-30,1)}})}
 
 // ======== the wiki ========
-try{WK_DUN.push({n:'Cinderdeep',w:'North-east hills of the Ashfall Coast',boss:'The Emberlord',bhp:EL_HP,d:'Six floors of ash and lava pools (don\'t stand in them): cinder beetles, ember skeletons, magma slimes, bats and scorpions. The Emberlord sets the ground under you on fire (watch the orange rings), throws fans of fireballs and calls magma slimes at half health.',loot:'600 gold, 3 gold bars, iron ore, a ruby (once a day); rare: Ember ring (10%)'})}catch(e){}
+try{WK_DUN.push({n:'Cinderdeep',w:'North-east hills of the Ashfall Coast',boss:'The Emberlord',bhp:EL_HP,d:'Six floors of ash and lava pools (don\'t stand in them): cinder beetles, ember skeletons, magma slimes, bats and scorpions. The Emberlord sets the ground under you on fire (watch the orange rings), throws fans of fireballs and calls magma slimes at half health.',loot:'600 gold, 3 gold bars, iron ore, a ruby (once a day); rare: Ember ring (10%)'})}catch(e){self.SQERR&&SQERR(e,'096-27')}
 try{WK_RARE.push(['Ember ring','ja_ember','Emberlord','A ring: your melee hits set monsters on fire.','10% from the Emberlord (Cinderdeep, Ashfall).'],
   ['Stone sledgehammer','eq_sledge','Stone Giant','A main-hand hammer: your ultimate becomes Ground Slam (big damage all around you), and it breaks boulders (35-50 stone) and ore boulders.','5% for everyone who fought the Stone Giant, 8% for the top three.']);
  for(const k of['ptoak','ptwil','ptmap','ptyew','ptpine','ptvoid','ptdead'])WK_RARE.push([TLV[k].n+' (pet)',null,'Trees','A little walking tree that follows you around.','1 in 5,000 from '+TLV[k].src.replace(/ \(1 in 5,000\)/,'')+' you chop down.']);
- const tr=WK_RARE.find(r=>r[0]==='Treeling (pet)');if(tr)tr[4]='1 in 5,000 from plain trees you chop down. Every other kind of tree has its own treeling.'}catch(e){}
-try{WK_SKILL.Woodcutting+=' On the Shattered Expanse, the purple-leaved trees are Void Trees.';WK_SKILL.Mining+=' With the Stone sledgehammer (from the Stone Giant) you can break boulders and ore boulders.'}catch(e){}
-try{WK_RGN['slime:magma']='Magma slime'}catch(e){}
+ const tr=WK_RARE.find(r=>r[0]==='Treeling (pet)');if(tr)tr[4]='1 in 5,000 from plain trees you chop down. Every other kind of tree has its own treeling.'}catch(e){self.SQERR&&SQERR(e,'096-28')}
+try{WK_SKILL.Woodcutting+=' On the Shattered Expanse, the purple-leaved trees are Void Trees.';WK_SKILL.Mining+=' With the Stone sledgehammer (from the Stone Giant) you can break boulders and ore boulders.'}catch(e){self.SQERR&&SQERR(e,'096-29')}
+try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
 }

@@ -30,11 +30,11 @@
   else if(f==='rqs'||f==='rql'){const dq=b.rq||{s:0,l:0},q={...(cur.rq||dq)};if(f==='rqs')q.s=+v;else q.l=Math.max(0,Math.min(99,Math.round(Number(v))||0));
    if((q.s===dq.s&&q.l===dq.l)||(!q.l&&!dq.l))delete cur.rq;else cur.rq=q}
   const r=G.clean(cur,k);S.draft.gear=S.draft.gear||{};if(r)S.draft.gear[k]=r;else delete S.draft.gear[k];
-  try{await dset('draft/gear/'+k,r||null);toast('Saved to draft.')}catch(e){fail(e)}try{if(A.previewing)A.preview(S.draft)}catch(e){}API.draw()}
+  try{await dset('draft/gear/'+k,r||null);toast('Saved to draft.')}catch(e){fail(e)}try{if(A.previewing)A.preview(S.draft)}catch(e){self.SQERR&&SQERR(e,'175-1')}API.draw()}
  document.addEventListener('change',e=>{if(S.tab!=='gtable')return;const t=e.target.closest('[data-gt]');if(!t)return;const[k,f]=t.dataset.gt.split('|');save(k,f,t.value)},true);
- document.addEventListener('input',e=>{if(S.tab!=='gtable')return;const t=e.target;if(t.hasAttribute&&t.hasAttribute('data-gtq')){T.q=t.value;const pos=t.selectionStart;API.draw();const i=document.querySelector('#dvs [data-gtq]');if(i){i.focus();try{i.setSelectionRange(pos,pos)}catch(x){}}}},true);
+ document.addEventListener('input',e=>{if(S.tab!=='gtable')return;const t=e.target;if(t.hasAttribute&&t.hasAttribute('data-gtq')){T.q=t.value;const pos=t.selectionStart;API.draw();const i=document.querySelector('#dvs [data-gtq]');if(i){i.focus();try{i.setSelectionRange(pos,pos)}catch(x){self.SQERR&&SQERR(x,'175-2')}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='gtable')return;const t=e.target.closest('[data-gtk],[data-gtr]');if(!t)return;e.preventDefault();
   if(t.dataset.gtk){if(t.dataset.gtk==='refresh')T.base=null;else T.kind=t.dataset.gtk;API.draw();return}
-  const k=t.dataset.gtr;delete S.draft.gear[k];try{await dset('draft/gear/'+k,null);toast('Back to the game\'s own numbers (in your draft).')}catch(e2){fail(e2)}try{if(A.previewing)A.preview(S.draft)}catch(x){}API.draw()},true);
+  const k=t.dataset.gtr;delete S.draft.gear[k];try{await dset('draft/gear/'+k,null);toast('Back to the game\'s own numbers (in your draft).')}catch(e2){fail(e2)}try{if(A.previewing)A.preview(S.draft)}catch(x){self.SQERR&&SQERR(x,'175-3')}API.draw()},true);
  {const st=document.createElement('style');st.textContent='#dvs .dv-gtab td{padding:3px 4px;vertical-align:middle}#dvs .dv-gtab input{padding:3px 4px}#dvs .dv-chgrow td:first-child{box-shadow:inset 3px 0 #f8d848}';document.head.appendChild(st)}
  SQSUITE.addTab('gtable','Gear stats',{render})})();

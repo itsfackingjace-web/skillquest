@@ -12,7 +12,7 @@
  // the object on the tile HIT reaches, and its kind
  function frontObj(){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;let t=null;
   if(!SCENE){if(tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];t=o&&o.t}}
-  else if(R&&R.region){try{const it=rgObjAt(R,tx,ty);t=it&&!it.gone&&it.o?it.o.t:null}catch(e){}}
+  else if(R&&R.region){try{const it=rgObjAt(R,tx,ty);t=it&&!it.gone&&it.o?it.o.t:null}catch(e){self.SQERR&&SQERR(e,'122-1')}}
   else if(R){const it=(R.items||[]).find(q=>q.x===tx&&q.y===ty&&!q.gone&&(q.t==='_obj'||q.t==='boulder'));t=it?(it.t==='boulder'?(it.ore||'boulder'):it.o&&it.o.t):null}
   return{tx,ty,t,k:kindOf(t)}}
  const monsterAhead=()=>{const[fx,fy]=front(13);return en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<16)};
@@ -32,5 +32,5 @@
  SQPP.wrap('122',_pp=>function(tm){const now=performance.now();if(typeof CASTT!=='undefined'&&CASTT>0)castUntil=now+swing*1000+30;
   const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'),hide=swing>0&&(tool||now<castUntil),sw=swing;if(hide)swing=0;
   try{_pp.apply(this,arguments)}finally{swing=sw}
-  if(tool&&SCENE&&!(hurt>0&&Math.floor(tm*20)%2))try{drawAct(tm)}catch(e){}});
+  if(tool&&SCENE&&!(hurt>0&&Math.floor(tm*20)%2))try{drawAct(tm)}catch(e){self.SQERR&&SQERR(e,'122-2')}});
  window.SQTOOLSW={front:frontObj,kindOf}})();

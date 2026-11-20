@@ -21,7 +21,7 @@ function gpRefind(root){const sk=typeof scrKey==='function'?scrKey():'';if(!GPME
  if(GPMEM.uniq){const f=it.find(e=>gpLbl(e)===GPMEM.lbl);if(f)return f}
  if(GPMEM.gr){const grp=it.filter(e=>gpGrp(e)===GPMEM.gr);if(grp.length)return grp[Math.min(GPMEM.gi,grp.length-1)]}
  return it[Math.min(GPMEM.idx,it.length-1)]||null}
-function setFocus(el){if(GPF&&GPF!==el)GPF.classList.remove('gpf');GPF=el;if(el){const r=navRoot();if(r)GPMEM=gpRemember(r,el);el.classList.add('gpf');try{el.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}}}
+function setFocus(el){if(GPF&&GPF!==el)GPF.classList.remove('gpf');GPF=el;if(el){const r=navRoot();if(r)GPMEM=gpRemember(r,el);el.classList.add('gpf');try{el.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){self.SQERR&&SQERR(e,'023-1')}}}
 function navMove(dx,dy){const root=navRoot();if(!root)return;const items=navItems(root);if(!items.length)return;
  if(!GPF||!items.includes(GPF)){setFocus(items[0]);return}const a=GPF.getBoundingClientRect(),ax=a.left+a.width/2,ay=a.top+a.height/2;let best=null,bs=1e9;
  for(const e of items){if(e===GPF)continue;const r=e.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,px=(cx-ax)*dx+(cy-ay)*dy;if(px<=4)continue;const off=Math.abs((cx-ax)*dy)+Math.abs((cy-ay)*dx),s=px+off*2.2;if(s<bs){bs=s;best=e}}
@@ -42,7 +42,7 @@ function gpLabels(on){const L=on?{a:'R2',e:BUILD?'○':'□',f:'△',tk:'✕',rl
 const _sal23=setActionLabels;setActionLabels=function(){_sal23();if(GPON)gpLabels(true)};
 const HELP_PAD='<b>Controller</b><br>Left stick / D-pad: move · L3: sprint on/off<br>R2: sword, chop, mine, fish (hold to repeat)<br>Right stick: aim · R1: bow or wand in your off-hand<br>L1 + R1: wand ultimate (10 mana)<br>✕: talk, use, read (hits if nothing is there)<br>○: dodge roll · □: eat · △: campfire · L2: quests<br>Options: menu · Create: map (PC) · Touchpad or R3: bag<br>Building: R2 or ✕ place · ○ done<br>Menus: D-pad moves, ✕ picks, ○ back, L1 / R1 switch screens';
 let helpWas='';
-function gpActivate(on){if(on===GPON)return;GPON=on;gpLabels(on);if(on){helpWas=hp.innerHTML;let ds4=false;try{ds4=isDS4([...navigator.getGamepads()].find(x=>x&&x.connected))}catch(e){}hp.innerHTML=ds4?HELP_PAD.replace(/Create/g,'Share'):HELP_PAD;if(typeof PADBN!=='undefined')PADBN[8]=ds4?'Share':'Create';say('Controller connected! ✕ is A, ○ is B. Press Options for the menu.')}else{if(helpWas)hp.innerHTML=helpWas;setFocus(null);gpc.style.display='none'}}
+function gpActivate(on){if(on===GPON)return;GPON=on;gpLabels(on);if(on){helpWas=hp.innerHTML;let ds4=false;try{ds4=isDS4([...navigator.getGamepads()].find(x=>x&&x.connected))}catch(e){self.SQERR&&SQERR(e,'023-2')}hp.innerHTML=ds4?HELP_PAD.replace(/Create/g,'Share'):HELP_PAD;if(typeof PADBN!=='undefined')PADBN[8]=ds4?'Share':'Create';say('Controller connected! ✕ is A, ○ is B. Press Options for the menu.')}else{if(helpWas)hp.innerHTML=helpWas;setFocus(null);gpc.style.display='none'}}
 addEventListener('gamepadconnected',e=>{GPI=e.gamepad.index;gpActivate(true)});
 addEventListener('gamepaddisconnected',e=>{if(GPI===e.gamepad.index){GPI=null;gpActivate(false);for(const k in GPKEYS)gpKey(k,false);jx=jy=0;GPSPR=false;say('Controller disconnected.');if(!pnOpen&&!menuOpen&&!dead&&!chessOpen&&typeof openSM==='function')openSM()}});
 // keyboard or touch input hands control back
@@ -59,11 +59,11 @@ const isDS4=gp=>!!gp&&/054c/i.test(gp.id)&&/05c4|09cc|0ba0/i.test(gp.id)||!!gp&&
   const l2=ax.length>3?Math.max(v(6),(ax[3]+1)/2):v(6),r2=ax.length>4?Math.max(v(7),(ax[4]+1)/2):v(7);
   const btn=[v(1),v(2),v(0),v(3),v(4),v(5),l2,r2,v(8),v(9),v(10),v(11),+up,+dn,+lf,+rt,v(12),v(13)].map(B);
   return{id:gp.id,index:gp.index,connected:gp.connected,timestamp:gp.timestamp,mapping:'standard',buttons:btn,axes:[ax[0]||0,ax[1]||0,ax[2]||0,ax.length>5?ax[5]:(ax[3]||0)],vibrationActuator:gp.vibrationActuator}}
- try{navigator.getGamepads=function(){const a=raw();return Array.from(a,norm)}}catch(e){}})();
-function rumble(ms,s,w){try{const g2=navigator.getGamepads()[GPI];const a=g2&&g2.vibrationActuator;if(a&&a.playEffect)a.playEffect('dual-rumble',{duration:ms,strongMagnitude:s,weakMagnitude:w})}catch(e){}}
+ try{navigator.getGamepads=function(){const a=raw();return Array.from(a,norm)}}catch(e){self.SQERR&&SQERR(e,'023-3')}})();
+function rumble(ms,s,w){try{const g2=navigator.getGamepads()[GPI];const a=g2&&g2.vibrationActuator;if(a&&a.playEffect)a.playEffect('dual-rumble',{duration:ms,strongMagnitude:s,weakMagnitude:w})}catch(e){self.SQERR&&SQERR(e,'023-4')}}
 // --- polling ---
 const PADB={X:0,O:1,SQ:2,TRI:3,L1:4,R1:5,L2:6,R2:7,CREATE:8,OPT:9,L3:10,R3:11,UP:12,DOWN:13,LEFT:14,RIGHT:15,PS:16,PAD:17};
-function pollPad(dt){let gp=null;try{const all=navigator.getGamepads?navigator.getGamepads():[];if(GPI!=null)gp=all[GPI];if(!gp)for(const g2 of all)if(g2&&g2.connected){gp=g2;GPI=g2.index;break}}catch(e){}
+function pollPad(dt){let gp=null;try{const all=navigator.getGamepads?navigator.getGamepads():[];if(GPI!=null)gp=all[GPI];if(!gp)for(const g2 of all)if(g2&&g2.connected){gp=g2;GPI=g2.index;break}}catch(e){self.SQERR&&SQERR(e,'023-5')}
  if(!gp)return;if(!GPON&&gp.buttons.some(b=>b.pressed))gpActivate(true);if(!GPON)return;
  const btn=i=>!!(gp.buttons[i]&&(gp.buttons[i].pressed||gp.buttons[i].value>.5)),was=i=>!!GPPREV[i],pr=i=>btn(i)&&!was(i);
  const ax=gp.axes[0]||0,ay=gp.axes[1]||0,mag=Math.hypot(ax,ay);
@@ -111,13 +111,13 @@ function pollPad(dt){let gp=null;try{const all=navigator.getGamepads?navigator.g
    if(pr(PADB.OPT))gpTap('Escape');if(pr(PADB.CREATE)&&!(typeof isMobileOS!=='undefined'&&isMobileOS))gpTap('m');if(pr(PADB.PAD)||(pr(PADB.R3)&&gp.buttons.length<18))gpTap('b');if(pr(PADB.L2))gpTap('q')}}  // on phones Create is the system screenshot button; R3 opens the Bag when there's no touchpad button
  if(!chessOpen)gpc.style.display='none';
  GPPREV=gp.buttons.map(b=>b.pressed||b.value>.5)}
-let GPSPR=false,GPRUM=true;try{GPRUM=localStorage.getItem('sq_rumble')!=='0'}catch(e){}
+let GPSPR=false,GPRUM=true;try{GPRUM=localStorage.getItem('sq_rumble')!=='0'}catch(e){self.SQERR&&SQERR(e,'023-6')}
 const _rum23=rumble;rumble=function(ms,s,w){if(GPRUM)_rum23(ms,s,w)};
 // Options screen: controller layout and a rumble switch
 const _opt23=optionsHTML;optionsHTML=function(){const h=_opt23();if(!GPON)return h;const k=h.indexOf('<div class="tl" style="margin-top:22px');
  const add='<div class="tl" style="margin-top:16px">CONTROLLER</div><button class="sb gpo" data-o="rum">Rumble: '+(GPRUM?'ON':'OFF')+'</button><div class="qc" style="font-size:13px;line-height:1.6">'+HELP_PAD.replace('<b>Controller</b><br>','')+'</div>';
  return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
-const _oc23=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.gpo');if(b){GPRUM=!GPRUM;try{localStorage.setItem('sq_rumble',GPRUM?'1':'0')}catch(_){}if(GPRUM)rumble(120,.6,.3);rPn();return}_oc23(e)};
+const _oc23=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.gpo');if(b){GPRUM=!GPRUM;try{localStorage.setItem('sq_rumble',GPRUM?'1':'0')}catch(_){self.SQERR&&SQERR(_,'023-7')}if(GPRUM)rumble(120,.6,.3);rPn();return}_oc23(e)};
 // --- aiming the bow with the right stick ---
 const AIM={v:null,t:-1e9};
 const aimLive=()=>AIM.v&&performance.now()-AIM.t<1200;

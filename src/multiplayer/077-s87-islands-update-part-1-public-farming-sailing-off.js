@@ -16,7 +16,7 @@ function sfGrowth(r,now){if(!r||!r.c||!CROPS[r.c])return 0;const C=CROPS[r.c],ma
 function sfView(r,now){return{c:CROPS[r.c]?r.c:null,g:sfGrowth(r,now),w:CLK+Math.max(0,((+r.w||0)-now)/1000),e:Math.floor((+r.e||now)/1000)}}
 const sfClean=r=>({c:String(r.c||'').slice(0,10),g:Math.round((+r.g||0)*10)/10,t:Math.round(+r.t||0),w:Math.round(+r.w||0),e:Math.round(+r.e||0)});
 function sfWrite(area,k,r){const S=sfStore();if(!S[area])S[area]={};if(r)S[area][k]=sfClean(r);else delete S[area][k];
- if(sfOnline()){const ref=FB.db.ref(FB.D,'farm/'+(area==='hollow'?'hollow2':area)+'/'+k);(r?FB.db.set(ref,sfClean(r)):FB.db.remove(ref)).catch(e=>{try{mpErr(e)}catch(_){}})}else try{saveLocal(true)}catch(e){}}
+ if(sfOnline()){const ref=FB.db.ref(FB.D,'farm/'+(area==='hollow'?'hollow2':area)+'/'+k);(r?FB.db.set(ref,sfClean(r)):FB.db.remove(ref)).catch(e=>{try{mpErr(e)}catch(_){self.SQERR&&SQERR(_,'077-1')}})}else try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'077-2')}}
 // views: FARM (Hollow, by tile index) and rfMap(region) (by 'x,y') are rebuilt from the shared plots every frame,
 // so all the existing farming, drawing and map code keeps working unchanged
 function sfRebuild(){const now=sfNow(),S=sfStore();FARM.clear();const H=S.hollow||{};
@@ -34,20 +34,20 @@ function sfCommit(before){if(!before)return;const area=before.area,now=sfNow(),A
   if(p.w!==b.w&&p.w>CLK){sfWrite(area,k,{c:p.c||'',g:sfGrowth(old,now),t:now,w:now+(p.w-CLK)*1000,e:p.c?0:(+old.e||now)})}}}
 {SQHIT.wrap('077 islands update part 1 public farming',_a=>function(){const b=sfAround();_a();try{sfCommit(b)}catch(e){console.warn(e)}})}
 {const _p=placeBuild;placeBuild=function(){const b=BUILD&&isSeed(BUILD.k)?sfAround():null;_p();if(b)try{sfCommit(b)}catch(e){console.warn(e)}}}
-{SQUPD.after('077',(dt)=>{try{sfRebuild()}catch(e){}})}
+{SQUPD.after('077',(dt)=>{try{sfRebuild()}catch(e){self.SQERR&&SQERR(e,'077-3')}})}
 // nobody owns a plot any more: other players' old personal plots are no longer shown, and yours aren't published
 rfForeign=function(){return new Map()};
 {const _rp=rbPub;rbPub=function(){const o=_rp();if(o&&o._f)delete o._f;return o&&Object.keys(o).length?o:null}}
 // empty soil turns back into grass after 10 minutes, and rain waters every crop on the island you're on
 setInterval(()=>{const now=sfNow(),S=sfStore();
  for(const a in S)for(const k in S[a]){const r=S[a][k];if(!r.c&&now-(+r.e||now)>TILL_LIFE*1000)sfWrite(a,k,null)}
- const area=sfArea();if(!area||!rainingNow()||dark()>.95)return;let bm='grass';try{bm=biomeHere()}catch(e){}if(bm==='desert'||bm==='in')return;
+ const area=sfArea();if(!area||!rainingNow()||dark()>.95)return;let bm='grass';try{bm=biomeHere()}catch(e){self.SQERR&&SQERR(e,'077-4')}if(bm==='desert'||bm==='in')return;
  const A=S[area]||{};for(const k in A){const r=A[k];if(r.c&&(+r.w||0)-now<60000)sfWrite(area,k,{c:r.c,g:sfGrowth(r,now),t:now,w:now+WATER_FOR*1000,e:0})}},5000);
 // online: the shared fields, plus moving your old plots in
 function sfStart(){const d=FB.db;SF.unsub=d.onValue(d.ref(FB.D,'farm'),s=>{const v=Object.assign({},s.val()||{});const oldH=v.hollow;v.hollow=v.hollow2||{};delete v.hollow2;try{sfMigrateHollow(oldH,v.hollow)}catch(e){console.warn(e)}SF.data={};for(const a in v){if(!WORLD_REGIONS[a]||!v[a]||typeof v[a]!=='object')continue;SF.data[a]={};
    for(const k in v[a]){const r=v[a][k];if(r&&typeof r==='object'&&/^\d+_\d+$/.test(k))SF.data[a][k]=r}}
   const first=!SF.ready;SF.ready=true;
-  if(first){let moved=0;for(const a in SF.local)for(const k in SF.local[a]){if(SF.data[a]&&SF.data[a][k])continue;sfWrite(a,k,SF.local[a][k]);moved++}SF.local={};if(moved)try{saveLocal(true)}catch(e){}}});
+  if(first){let moved=0;for(const a in SF.local)for(const k in SF.local[a]){if(SF.data[a]&&SF.data[a][k])continue;sfWrite(a,k,SF.local[a][k]);moved++}SF.local={};if(moved)try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'077-5')}}});
  MP.unsub.push(()=>{if(SF.unsub)SF.unsub();SF.unsub=null;SF.ready=false;SF.data={}})}
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!SF.unsub)try{sfStart()}catch(e){mpErr(e)}}}
 // saves: the offline fields; old saves' own plots become shared plots
@@ -55,7 +55,7 @@ function sfStart(){const d=FB.db;SF.unsub=d.onValue(d.ref(FB.D,'farm'),s=>{const
 {SQLOAD.after('077',(S)=>{SF.local={};const now=Date.now();if(S&&S.sf&&typeof S.sf==='object'){for(const a in S.sf){if(!WORLD_REGIONS[a]||typeof S.sf[a]!=='object')continue;SF.local[a]={};for(const k in S.sf[a])if(/^\d+_\d+$/.test(k))SF.local[a][k]=sfClean(S.sf[a][k])}}
   else{const conv=(a,x,y,c,g,w)=>{(SF.local[a]||(SF.local[a]={}))[sfK(x,y)]={c:CROPS[c]?c:'',g:+g||0,t:now,w:w>CLK?now+(w-CLK)*1000:0,e:CROPS[c]?0:now}};
    if(Array.isArray(S&&S.farm))for(const e of S.farm)if(Array.isArray(e)){const i=e[0]|0;conv('hollow',i%N,(i/N)|0,e[1],e[2],+e[3]||0)}
-   if(S&&S.rfarm&&typeof S.rfarm==='object')for(const a in S.rfarm)if(WORLD_REGIONS[a]&&Array.isArray(S.rfarm[a]))for(const e of S.rfarm[a])if(Array.isArray(e))conv(a,e[0]|0,e[1]|0,e[2],e[3],+e[4]||0)}try{sfRebuild()}catch(e){}})}
+   if(S&&S.rfarm&&typeof S.rfarm==='object')for(const a in S.rfarm)if(WORLD_REGIONS[a]&&Array.isArray(S.rfarm[a]))for(const e of S.rfarm[a])if(Array.isArray(e))conv(a,e[0]|0,e[1]|0,e[2],e[3],+e[4]||0)}try{sfRebuild()}catch(e){self.SQERR&&SQERR(e,'077-6')}})}
 {const _ng=newGame;newGame=function(){SF.local={};_ng()}}
 window.SQSF=SF;window.SQSFR=sfRebuild;
 
@@ -90,7 +90,7 @@ function edgeSpot(Wt,Ht,side,frac,ok){const along=side==='west'||side==='east'?H
    say('You sail into '+WORLD_REGIONS[T.to].name+'.'+(fromR==='hollow'?' Sail back off the '+side+' edge to go home.':''));msgT=4}
   else if(!SCENE){const side=E.side,sp=edgeSpot(N,N,side,E.frac,(x,y)=>boatOK(x,y));
    if(sp){P.x=sp[0];P.y=sp[1];SAILING=true;face=side==='west'?[1,0]:side==='east'?[-1,0]:side==='north'?[0,1]:[0,-1]}say('Home waters: Hollow Island.');msgT=3}
-  try{saveNow()}catch(e){}}}
+  try{saveNow()}catch(e){self.SQERR&&SQERR(e,'077-7')}}}
 
 // ---- A small trading post at every island's pier: sell what you gather there ----
 {const _rh=routesHTML;routesHTML=function(){let h=_rh();if(curRegion()==='hollow')return h;
@@ -141,7 +141,7 @@ rhPack=(_rp=>function(h){if(!h||!h.castle)return _rp(h);const n0=inv.house|0;_rp
    if(fl)for(const q0 of fl){const q=arr(q0);if(!q)continue;const i=q[0]|0,t=q[1];if(i<2*CASTLE_W||i>=CASTLE_W*CASTLE_H||!BK.includes(t)||t==='house'||t==='castle')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:{}},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}}return h}}
 {const _rp=rbPub;rbPub=function(){const o=_rp();if(o&&Array.isArray(o._h))for(const e of o._h){const h=RH.find(q=>q.id===e[3]);if(h&&h.castle)e[5]=1}return o}}
 rhForeign=(_rf=>function(id){const out=_rf(id);try{for(const o in BLDS.data){const L=BLDS.data[o]&&BLDS.data[o].r&&BLDS.data[o].r._h;if(!L)continue;for(const e0 of(Array.isArray(L)?L:Object.values(L))){const e=Array.isArray(e0)?e0:Object.values(e0||{});
-   if(e[0]!==id||!e[5])continue;const h=out.find(q=>q._owner===o&&q.x===(e[1]|0)&&q.y===(e[2]|0));if(h&&!h.castle){const fresh=buildForeign(o,{id:e[3],x:e[1],y:e[2],w:7,f:e[4],c:1});h.castle=1;h.furn=fresh.furn}}}}catch(err){}return out})(rhForeign);
+   if(e[0]!==id||!e[5])continue;const h=out.find(q=>q._owner===o&&q.x===(e[1]|0)&&q.y===(e[2]|0));if(h&&!h.castle){const fresh=buildForeign(o,{id:e[3],x:e[1],y:e[2],w:7,f:e[4],c:1});h.castle=1;h.furn=fresh.furn}}}}catch(err){self.SQERR&&SQERR(err,'077-8')}return out})(rhForeign);
 // saving your castles
 {SQSAVE.after('077',s=>{if(Array.isArray(s.houses))for(const e of s.houses){const h=HOUSES.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}if(Array.isArray(s.rh))for(const e of s.rh){const h=RH.find(o=>o.id===e.id);if(h&&h.castle)e.c=1}})}
 {SQLOAD.after('077',(S)=>{const items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r},

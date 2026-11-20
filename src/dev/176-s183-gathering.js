@@ -56,7 +56,7 @@
  const repOf=t=>TIER[t]&&TIER[t]._g?TIER[t].rep:null;
  function placeHollow(){const W=N;for(let i=0;i<obj.length;i++){const o=obj[i];if(!o)continue;let base=o.t;const r=repOf(base);if(r)base=r;else if(base!=='tree'&&base!=='rock'&&base!=='ore')continue;
    const want=choose(base,i%W,(i/W)|0,'hollow')||base;if(want!==o.t)obj[i]={t:want,hp:OHP[want]||3}}
-  try{for(const e of REM){let base=e.t;const r=repOf(base);if(r)base=r;else if(base!=='tree'&&base!=='rock'&&base!=='ore')continue;e.t=choose(base,e.i%W,(e.i/W)|0,'hollow')||base}}catch(e){}}
+  try{for(const e of REM){let base=e.t;const r=repOf(base);if(r)base=r;else if(base!=='tree'&&base!=='rock'&&base!=='ore')continue;e.t=choose(base,e.i%W,(e.i/W)|0,'hollow')||base}}catch(e){self.SQERR&&SQERR(e,'176-1')}}
  function placeRegion(R){if(!R||!R.region||!R.items)return;const id=R.region,seed=hs(id)%1000;
   const fix=it=>{if(!it||it.t!=='_obj'||!it.o)return;let base=it.o.t;const r=repOf(base);if(r)base=r;else if(base!=='tree'&&base!=='rock'&&base!=='ore')return;
    const want=choose(base,it.x+seed,it.y,id)||base;if(want!==it.o.t){it.o.t=want;it.o.hp=OHP[want]||3;delete it.o.v}};
@@ -69,15 +69,15 @@
   const oc=hx(T.ore);return S.ore.map(sp=>recolor(sp,(r,g,b)=>r>170&&g>90&&g<190&&b<130?oc:null))}
  const sig=T=>JSON.stringify([T.base,T.col,T.ore]);
  function ensureSprites(S){if(!S||!S.tree||!S.ore)return;for(const k in TIER){const T=TIER[k];if(!T._g)continue;if(S['_sg'+k]!==sig(T)){S[k]=spritesFor(S,T);S['_sg'+k]=sig(T)}}}
- {const _hs=hdSprites;hdSprites=function(){const S=_hs.apply(this,arguments);try{ensureSprites(S)}catch(e){}return S}}
+ {const _hs=hdSprites;hdSprites=function(){const S=_hs.apply(this,arguments);try{ensureSprites(S)}catch(e){self.SQERR&&SQERR(e,'176-2')}return S}}
  // ---------- apply the library ----------
  function apply(lib){const G=(lib&&lib.gather)||{},nodes=G.nodes||{},fish=G.fish||{};ACT={};
   for(const id in nodes){if(!/^gn_[a-z0-9_]{1,30}$/.test(id))continue;const r=cleanNode(nodes[id]);if(!r)continue;const k=kindOf(id),sk=r.rep==='tree'?1:2;
    TIER[k]={_g:1,rep:r.rep,base:r.rep==='tree'?'tree':'ore',sk,lv:r.lv,hp:r.hp,item:r.item,xp:r.xp,...(sk===1?{axe:r.tool,col:r.col}:{pick:r.tool,ore:r.ore})};OHP[k]=r.hp;SKOF[k]=sk;ACT[k]=r}
-  try{if(typeof HDSP!=='undefined'&&HDSP)ensureSprites(HDSP)}catch(e){}
+  try{if(typeof HDSP!=='undefined'&&HDSP)ensureSprites(HDSP)}catch(e){self.SQERR&&SQERR(e,'176-3')}
   try{placeHollow()}catch(e){console.warn('gather hollow',e)}
   try{const R=SCENE&&SCENE.room;if(R&&R.region)placeRegion(R)}catch(e){console.warn('gather region',e)}
-  try{if(typeof HDCH!=='undefined'&&HDCH&&HDCH.clear)HDCH.clear()}catch(e){}
+  try{if(typeof HDCH!=='undefined'&&HDCH&&HDCH.clear)HDCH.clear()}catch(e){self.SQERR&&SQERR(e,'176-4')}
   // fish
   const F=window.SQGFISH;F.length=0;for(let i=COOKS.length-1;i>=0;i--)if(COOKS[i]._g)COOKS.splice(i,1);
   for(const id in fish){if(!/^gf_[a-z0-9_]{1,30}$/.test(id))continue;const r=cleanFish(fish[id]);if(!r||!INAME[r.item])continue;
@@ -91,8 +91,8 @@
    if(CROPS[r.item]&&!CROPS[r.item]._g)continue;CROPS[r.item]={n:r.n,seed:r.seed,lv:r.lv,st:r.gm*20,max:3,yield:[r.y0,r.y1],xp:r.xp,_g:1,sh:r.sh,col:r.col,id};SEED2CROP[r.seed]=r.item;
    if(r.buy>0){const sd=r.seed,lv=r.lv;GEN.push({n:'5 '+(INAME[sd]||sd).toLowerCase(),c:r.buy,f:()=>{inv[sd]=(inv[sd]|0)+5},hide:()=>lvOf(11)<lv,_gc:1})}
    if(r.ck&&INAME[r.ck]&&!COOKS.some(c=>c.raw===r.item))COOKS.push({raw:r.item,ck:r.ck,n:r.n.toLowerCase(),lv:r.clv,xp:r.cxp,_gc:1})}
-  try{if(window.SQPROPS)SQPROPS.recat()}catch(e){}}
- {const _lr=loadRegion;loadRegion=function(){const out=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region)placeRegion(R)}catch(e){}return out}}
+  try{if(window.SQPROPS)SQPROPS.recat()}catch(e){self.SQERR&&SQERR(e,'176-5')}}
+ {const _lr=loadRegion;loadRegion=function(){const out=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region)placeRegion(R)}catch(e){self.SQERR&&SQERR(e,'176-6')}return out}}
  SQA.onApply(lib=>{try{apply(lib)}catch(e){console.warn('gather',e)}});
  window.SQGATHER={cleanNode,cleanFish,cleanCrop,cropSp,SHAPES,kindOf,spritesFor,REG,regName,TOOLS,get active(){return ACT}};
  // ======================= Dev Suite > Gathering =======================
@@ -163,7 +163,7 @@
   return h}
  function set(f,v){if(!T.w)return;T.w[f]=v;T.dirty=true}
  async function save(){const k=SECK[T.kind],r=CLEAN[T.kind](T.w);sec(k)[T.sel]=r;
-  try{await dset('draft/gather/'+k+'/'+T.sel,r);T.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}try{if(SQA.previewing)SQA.preview(S.draft)}catch(e){}API.draw()}
+  try{await dset('draft/gather/'+k+'/'+T.sel,r);T.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}try{if(SQA.previewing)SQA.preview(S.draft)}catch(e){self.SQERR&&SQERR(e,'176-7')}API.draw()}
  // an item with the same name already (the game's or the draft's)? use it instead of making a second one (191)
  const sameName=n=>{const t=String(n).trim().toLowerCase(),ci=((S.draft.content||{}).items)||{};for(const k in ci)if(String(ci[k].n||'').trim().toLowerCase()===t)return k;for(const k of INVK)if(String(INAME[k]||'').trim().toLowerCase()===t&&!/^pet_|^eq_/.test(k))return k;return null};
  async function mkItem(key,o){const same=sameName(o.n);if(same){toast('Using the item +o.n+ you already have ('+same+').');return same}const ci=(S.draft.content=S.draft.content||{}).items=(S.draft.content.items||{});if(ci[key]){toast('That item already exists in the Content tab.');return key}
@@ -175,7 +175,7 @@
   if(a.startsWith('open:')){const[,s,id]=a.split(':');T.sel=id;T.kind=s==='nodes'?'node':s==='crops'?'crop':'fish';T.w=JSON.parse(JSON.stringify(sec(s)[id]));T.dirty=false;API.draw();return}
   if(a==='close'){T.sel=T.w=null;API.draw();return}
   if(a==='save'){await save();return}
-  if(a==='del')return arm('gdel',async()=>{const k=SECK[T.kind];delete sec(k)[T.sel];try{await dset('draft/gather/'+k+'/'+T.sel,null);toast('Deleted from your draft.')}catch(e2){fail(e2)}T.sel=T.w=null;try{if(SQA.previewing)SQA.preview(S.draft)}catch(x){}API.draw()});
+  if(a==='del')return arm('gdel',async()=>{const k=SECK[T.kind];delete sec(k)[T.sel];try{await dset('draft/gather/'+k+'/'+T.sel,null);toast('Deleted from your draft.')}catch(e2){fail(e2)}T.sel=T.w=null;try{if(SQA.previewing)SQA.preview(S.draft)}catch(x){self.SQERR&&SQERR(x,'176-8')}API.draw()});
   if(a==='mkitem'){const r=cleanNode(T.w),tree=r.rep==='tree',nm=tree?r.n.replace(/ tree$/i,'')+' logs':r.n.replace(/ (rock|vein)s?$/i,'')+' ore';
    const key='it_'+idOf(nm);await mkItem(key,{n:nm,pl:nm,d:tree?'Logs from a '+r.n.toLowerCase()+'.':'Ore from a '+r.n.toLowerCase()+'.',v:Math.max(2,Math.round(r.lv*1.2)),t:'mat'});T.w.item=key;T.dirty=true;toast('Made "'+nm+'" in the Content tab. Draw its icon in Sprites.');API.draw();return}
   if(a==='mkcrop'){const r=cleanCrop(T.w),b=idOf(r.n);const sd=await mkItem('it_'+b+'_seeds',{n:r.n+' seeds',pl:r.n+' seeds',d:'Plant on tilled soil'+(r.lv>1?' (Farming '+r.lv+')':'')+', then water. Grows into '+r.n.toLowerCase()+'.',v:Math.max(1,Math.round(r.buy/5)||1),t:'mat'});

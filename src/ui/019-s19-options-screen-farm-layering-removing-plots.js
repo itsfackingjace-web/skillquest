@@ -3,9 +3,9 @@
 // Fields are drawn as part of the ground (so people, trees and fences stand in front of them),
 // and you can fill a plot back in with the hoe.
 // --- options ---
-let SFXV=1,MUSV=1;try{const v=JSON.parse(localStorage.getItem('sq_vol')||'null');if(v){SFXV=+v.s;MUSV=+v.m}}catch(e){}
+let SFXV=1,MUSV=1;try{const v=JSON.parse(localStorage.getItem('sq_vol')||'null');if(v){SFXV=+v.s;MUSV=+v.m}}catch(e){self.SQERR&&SQERR(e,'019-1')}
 if(!(SFXV>=0&&SFXV<=1))SFXV=1;if(!(MUSV>=0&&MUSV<=1))MUSV=1;
-function saveVol(){try{localStorage.setItem('sq_vol',JSON.stringify({s:SFXV,m:MUSV}))}catch(e){}}
+function saveVol(){try{localStorage.setItem('sq_vol',JSON.stringify({s:SFXV,m:MUSV}))}catch(e){self.SQERR&&SQERR(e,'019-2')}}
 mb.style.display='none';
 SMI.splice(SMI.findIndex(x=>x.id==='exit'),0,{id:'options',l:()=>'Options'});
 const _ss19=showScreen;showScreen=function(id){if(id!=='options')return _ss19(id);pnOpen=true;ptab=8;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
@@ -18,7 +18,7 @@ function optionsHTML(){return'<div class="tl">OPTIONS</div>'+volRow('m','Music',
  +'<button class="ng" id="ngb">'+(ngArm?'Tap again to erase all progress':'Start a new game')+'</button>'}
 const _r19=rPn;rPn=function(){if(ptab===8){panelChrome('');pbd.innerHTML=optionsHTML();return}_r19()};
 function volAct(id,d){const step=x=>{const k=VOLS.indexOf(x);return VOLS[Math.max(0,Math.min(VOLS.length-1,(k<0?4:k)+d))]};
- if(id==='m'){if(d==='t'){MUSIC=!MUSIC;try{localStorage.setItem('sq_music',MUSIC?'1':'0')}catch(_){}}else{MUSV=step(MUSV);if(MUSV>0&&!MUSIC){MUSIC=true;try{localStorage.setItem('sq_music','1')}catch(_){}}}}
+ if(id==='m'){if(d==='t'){MUSIC=!MUSIC;try{localStorage.setItem('sq_music',MUSIC?'1':'0')}catch(_){self.SQERR&&SQERR(_,'019-3')}}else{MUSV=step(MUSV);if(MUSV>0&&!MUSIC){MUSIC=true;try{localStorage.setItem('sq_music','1')}catch(_){self.SQERR&&SQERR(_,'019-4')}}}}
  else{if(d==='t'){MUTE=!MUTE;mb.textContent=MUTE?'🔇':'🔊'}else{SFXV=step(SFXV);if(SFXV>0)MUTE=false}if(!MUTE)sfx('talk')}
  saveVol();saveLocal(true);rPn()}
 const _oc19=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.vo');if(b){volAct(b.dataset.v,b.dataset.d==='t'?'t':+b.dataset.d);return}_oc19(e)};
@@ -26,7 +26,7 @@ const _oc19=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.vo');if(b){vo
 const _tone19=tone;tone=function(f,d,type,v,slide,delay){if(SFXV<=0)return;return _tone19(f,d,type,(v||.06)*SFXV,slide,delay)};
 const _noise19=noise;noise=function(d,v,fq,delay){if(SFXV<=0)return;return _noise19(d,(v||.1)*SFXV,fq,delay)};
 // music ignores the sound-effects switch and follows only the music switch and volume
-setInterval(()=>{try{if(MG)MG.gain.value=MUSIC?.5*MUSV:0}catch(e){}},60);
+setInterval(()=>{try{if(MG)MG.gain.value=MUSIC?.5*MUSV:0}catch(e){self.SQERR&&SQERR(e,'019-5')}},60);
 // --- farm plots are part of the ground layer ---
 const _gh19=GROUNDHOOK;GROUNDHOOK=function(x0,y0,x1,y1,tm){if(!SCENE&&FARM.size)for(const[i,p]of FARM){const x=i%N,y=(i/N)|0;if(x<x0-1||x>x1+1||y<y0-1||y>y1+1)continue;drawPlot(i,p,tm)}if(_gh19)_gh19(x0,y0,x1,y1,tm)};
 // --- removing plots: with the hoe, press HIT twice on a plot to fill it back in ---

@@ -16,7 +16,7 @@
  SQHUD.wrap('187',_dh=>function(){const M=window.SQMP;if(!M||!M.on){return _dh.apply(this,arguments)}
   const hid=[];for(const r of M.players.values())if(r.said){hid.push([r,r.said]);r.said=null}const ss=M.selfSaid;M.selfSaid=null;
   let out;try{out=_dh.apply(this,arguments)}finally{for(const[r,s]of hid)r.said=s;M.selfSaid=ss}
-  try{draw(M,ss)}catch(e){}return out});
+  try{draw(M,ss)}catch(e){self.SQERR&&SQERR(e,'187-1')}return out});
  function draw(M,ss){const st=SQBUBBLES.last={n:0,overlap:false,dots:0};if(!M.T||performance.now()-M.Tat>120||pnOpen||menuOpen)return;const now=performance.now(),T=M.T;
   const u=Math.max(2,Math.round(Math.min(W,H)/160)),sz=Math.round(5*u),phone=!isPC||Math.min(W,H)<700*(window.devicePixelRatio||1);
   const list=[];const add=(x,y,said,named,who)=>{if(!said||!said.m)return;const age=now-said.at,d=dur(said.m);if(age<0||age>d)return;const p=T.transformPoint({x,y:y-27});
@@ -31,9 +31,9 @@
   g.save();g.setTransform(1,0,0,1,0,0);const fs=Math.round(sz*(phone?.92:.95));g.font='700 '+fs+'px '+PF;g.textBaseline='alphabetic';g.textAlign='left';
   const maxW=Math.round(Math.min(W*(phone?.42:.28),fs*16)),pad=Math.round(fs*.45),lh=Math.round(fs*1.18),tail=Math.round(fs*.55),edge=u*3,placed=[];
   // the HUD in the top corners isn't covered: a bubble slides sideways off it, or becomes a dot when it can't
-  const KO=[];try{const L=hudLayout(),U=L.U;KO.push({side:'l',x:0,y:0,w:L.ins+Math.max(L.bw,L.qw)+4*U,h:L.stackBottom+48*U},{side:'r',x:L.dx-6*U,y:0,w:W-L.dx+6*U,h:L.top+L.dh+(L.mw||L.dw)+70*U})}catch(e){}
+  const KO=[];try{const L=hudLayout(),U=L.U;KO.push({side:'l',x:0,y:0,w:L.ins+Math.max(L.bw,L.qw)+4*U,h:L.stackBottom+48*U},{side:'r',x:L.dx-6*U,y:0,w:W-L.dx+6*U,h:L.top+L.dh+(L.mw||L.dw)+70*U})}catch(e){self.SQERR&&SQERR(e,'187-2')}
   // touch buttons too (their screen boxes, in canvas pixels)
-  try{const k=W/innerWidth;for(const id of['a','e','f','tk','rl','ub','aimb','mpb','mpbug','sqsev','sqevp']){const el=document.getElementById(id);if(!el||!el.offsetWidth||getComputedStyle(el).display==='none'||getComputedStyle(el).visibility==='hidden')continue;const r=el.getBoundingClientRect();KO.push({side:'b',x:r.left*k,y:r.top*k,w:r.width*k,h:r.height*k})}}catch(e){}
+  try{const k=W/innerWidth;for(const id of['a','e','f','tk','rl','ub','aimb','mpb','mpbug','sqsev','sqevp']){const el=document.getElementById(id);if(!el||!el.offsetWidth||getComputedStyle(el).display==='none'||getComputedStyle(el).visibility==='hidden')continue;const r=el.getBoundingClientRect();KO.push({side:'b',x:r.left*k,y:r.top*k,w:r.width*k,h:r.height*k})}}catch(e){self.SQERR&&SQERR(e,'187-3')}
   for(const b of show){b.lines=wrap(b.said.m,maxW);const tw=Math.max(...b.lines.map(l=>g.measureText(l).width));b.w=Math.ceil(tw+pad*2);b.h=lh*b.lines.length+pad*1.4|0;
    let x=Math.round(b.p.x-b.w/2),y=Math.round(b.top-tail-b.h);x=Math.max(edge,Math.min(W-edge-b.w,x));let okp=false;
    const hitR=(q)=>x<q.x+q.w+u&&x+b.w+u>q.x&&y<q.y+q.h+u&&y+b.h+u>q.y;

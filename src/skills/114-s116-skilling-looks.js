@@ -15,7 +15,7 @@
   if(D){if(D.kind==='fire')return 1;if(D.kind==='cook')return 2;if(D.kind==='reel')return FISH?5:0;if(D.kind==='smelt')return 7;if(D.kind==='smith')return 8;if(D.kind==='craft')return 9}
   if(FISH)return FISH.bite>0?4:3;return 0}
  window.SQACT=()=>ACT.c;
- let FN=-1;SQUPD.after('114',(dt)=>{if(FISH){const n=fishN();if(FN>=0&&n>FN&&SQDO&&SQDO.kind==='reel'||FN>=0&&n>FN&&ACT.c===5)CATCH.at=now();FN=n}else FN=-1;const c=localAct();if(c>=7){const n=beat(c,now()-ACT.at);if(n!==MYB){MYB=n;if(n>=0&&c===ACT.c)try{sfx(BEATS[c])}catch(e){}}}else MYB=-9;if(c!==ACT.c){ACT.prev=ACT.c;ACT.c=c;ACT.at=now()}});
+ let FN=-1;SQUPD.after('114',(dt)=>{if(FISH){const n=fishN();if(FN>=0&&n>FN&&SQDO&&SQDO.kind==='reel'||FN>=0&&n>FN&&ACT.c===5)CATCH.at=now();FN=n}else FN=-1;const c=localAct();if(c>=7){const n=beat(c,now()-ACT.at);if(n!==MYB){MYB=n;if(n>=0&&c===ACT.c)try{sfx(BEATS[c])}catch(e){self.SQERR&&SQERR(e,'114-1')}}}else MYB=-9;if(c!==ACT.c){ACT.prev=ACT.c;ACT.c=c;ACT.at=now()}});
  // a fish you actually catch flies out of the water to you
  function fishN(){let n=inv.rainbow|0;for(const f of FISH_T)n+=inv[f.k]|0;return n}
  // ---- crouching (fire and cooking): the whole character, gear included, drawn shorter at the knees ----
@@ -71,7 +71,7 @@
  function drawFire(x,y,fx,fy,t,tm){const kx=Math.round(x+fx*16+(fx?0:3)),ky=Math.round(y+fy*16)+4;
   // kindling: a little teepee of sticks over a tuft of tinder
   // the sticks and first flames take the colours of the log being lit (220's SQFIRELOGS.lighting(); plain wood otherwise)
-  let LT=null;try{LT=window.SQFIRELOGS&&SQFIRELOGS.lighting&&SQFIRELOGS.lighting()}catch(e){}const S0=LT?LT.st[0]:'#8a5a2a',S1=LT?LT.st[1]:'#7a4a20',S2=LT?LT.st[2]:'#6a4020',F=LT?LT.fl:['#f86020','#ffb040','#f87830','#ffe080'];
+  let LT=null;try{LT=window.SQFIRELOGS&&SQFIRELOGS.lighting&&SQFIRELOGS.lighting()}catch(e){self.SQERR&&SQERR(e,'114-2')}const S0=LT?LT.st[0]:'#8a5a2a',S1=LT?LT.st[1]:'#7a4a20',S2=LT?LT.st[2]:'#6a4020',F=LT?LT.fl:['#f86020','#ffb040','#f87830','#ffe080'];
   line(kx-4,ky+1,kx,ky-4,O);line(kx+4,ky+1,kx,ky-4,O);line(kx-3,ky+1,kx,ky-3,S0);line(kx+3,ky+1,kx,ky-3,S1);
   Rg(kx-5,ky+1,11,2,O);Rg(kx-4,ky+1,9,1,S2);Rg(kx-1,ky-1,3,2,'#d8b860');px(kx,ky-2,'#f0d888');
   const ph=(performance.now()/380)%1,glow=Math.min(1,Math.max(0,(t-1.1)/1.2));
@@ -129,15 +129,15 @@
  // you: behind you when you face away, in front otherwise
  SQPP.wrap('114',_pp=>function(tm){const c=ACT.c,t=now()-ACT.at,x=Math.round(P.x),y=Math.round(P.y),fx=face[0],fy=fx?0:face[1];
   const B=FISH?[FISH.bx,FISH.by]:[x+fx*24,y+fy*24];const sk=c&&!dead&&!(hurt>0&&Math.floor(tm*20)%2);
-  const skc=skinOf(CH);if(sk&&fy<0)try{drawFor(c,ACT.prev,t,x,y,fx,fy,B,tm,0,skc)}catch(e){}
+  const skc=skinOf(CH);if(sk&&fy<0)try{drawFor(c,ACT.prev,t,x,y,fx,fy,B,tm,0,skc)}catch(e){self.SQERR&&SQERR(e,'114-3')}
   POSE=c===1||c===2?c:0;try{_pp.apply(this,arguments)}finally{POSE=0}
-  if(sk&&fy>=0)try{drawFor(c,ACT.prev,t,x,y,fx,fy,B,tm,0,skc)}catch(e){}});
+  if(sk&&fy>=0)try{drawFor(c,ACT.prev,t,x,y,fx,fy,B,tm,0,skc)}catch(e){self.SQERR&&SQERR(e,'114-4')}});
  // other players
  (window.SQPEERFX=window.SQPEERFX||[]).push((r,tm)=>{const c=r.ak|0;if(c!==(r._ak|0)){r._akPrev=r._ak|0;r._ak=c;r._akAt=now();
-   if(c===4&&Math.hypot(r.x-P.x,r.y-P.y)<160)try{sfx('splash')}catch(e){}if(c===3&&!r._akPrev&&Math.hypot(r.x-P.x,r.y-P.y)<160)try{sfx('cast')}catch(e){}}
+   if(c===4&&Math.hypot(r.x-P.x,r.y-P.y)<160)try{sfx('splash')}catch(e){self.SQERR&&SQERR(e,'114-5')}if(c===3&&!r._akPrev&&Math.hypot(r.x-P.x,r.y-P.y)<160)try{sfx('cast')}catch(e){self.SQERR&&SQERR(e,'114-6')}}
   if(!c||r.sl){r._fb=null;return}const x=Math.round(r.x),y=Math.round(r.y),fx=r.d===2?(r.fl?-1:1):0,fy=r.d===2?0:r.d===1?-1:1;
   if(c<3||c>6)r._fb=null;else if(!r._fb)r._fb=[x+fx*24,y+fy*24];
   // a hammer blow you can hear when you're close
-  if(c>=7&&Math.hypot(r.x-P.x,r.y-P.y)<130){const n=beat(c,now()-r._akAt);if(n!==r._clang){r._clang=n;if(n>=0)try{sfx(BEATS[c])}catch(e){}}}
+  if(c>=7&&Math.hypot(r.x-P.x,r.y-P.y)<130){const n=beat(c,now()-r._akAt);if(n!==r._clang){r._clang=n;if(n>=0)try{sfx(BEATS[c])}catch(e){self.SQERR&&SQERR(e,'114-7')}}}
   drawFor(c,r._akPrev|0,now()-r._akAt,x,y,fx,fy,r._fb||[x+fx*24,y+fy*24],tm,(r.uid||'').length,skinOf(r.ch))});
 })();

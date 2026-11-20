@@ -27,7 +27,7 @@
  // ---- going live (same steps as the Publish tab) ----
  async function goLive(L,msg){T.busy=true;API.draw();try{const old=S.live;if(old&&old.v)await dset('hist/'+old.v,old);
    const next={...body(L),v:((old&&old.v)|0)+1,at:Date.now()};await dset('live',next);S.live=next;A.setLive(next);S.hist=null;T.hist=null;
-   try{const H=await dget('hist');if(H){const ks=Object.keys(H).map(Number).sort((a,b)=>b-a);for(const k of ks.slice(20))await dset('hist/'+k,null)}}catch(e){}
+   try{const H=await dget('hist');if(H){const ks=Object.keys(H).map(Number).sort((a,b)=>b-a);for(const k of ks.slice(20))await dset('hist/'+k,null)}}catch(e){self.SQERR&&SQERR(e,'164-1')}
    toast(msg+' Players get v'+next.v+' within about 30 seconds.')}catch(e){fail(e)}T.busy=false;S.arm=null;API.draw()}
  async function loadHist(){if(T.lh)return;T.lh=1;try{const H=await dget('hist');T.hist=H?Object.values(H).filter(x=>x&&x.v).sort((a,b)=>b.v-a.v):[]}catch(e){T.hist=[]}T.lh=0;API.draw()}
  // ---- search ----
@@ -64,7 +64,7 @@
      (live?'':'<button class="dv-b '+(S.arm==='hr'+x.v?'dv-arm':'')+'" data-hr="'+x.v+'"'+(T.busy?' disabled':'')+'>'+(S.arm==='hr'+x.v?'Tap again to make it live':'Make live again')+'</button>')+'</span>'+
      (o?'<ul class="dv-cl" style="width:100%">'+(d.map(c=>'<li>'+E(label(c.p,c.how==='removed'?body(prev):body(x)))+' <small class="dv-mut">('+c.how+')</small></li>').join('')||'<li class="dv-mut">Same as the version before.</li>')+'</ul>':'')+'</div>'})}
   return h+'</div>'}
- document.addEventListener('input',e=>{if(S.tab!=='history')return;const t=e.target;if(t.dataset&&t.dataset.hq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-hq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}},true);
+ document.addEventListener('input',e=>{if(S.tab!=='history')return;const t=e.target;if(t.dataset&&t.dataset.hq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-hq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'164-2')}}}},true);
  document.addEventListener('change',e=>{if(S.tab!=='history')return;const t=e.target;if(t.dataset&&t.dataset.hp!=null){T.pick[t.dataset.hp]=t.checked;API.draw()}},true);
  document.addEventListener('click',e=>{if(S.tab!=='history')return;const t=e.target.closest('[data-ha],[data-hv],[data-hr],[data-hgo]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();
   if(t.dataset.hgo!=null){const r=T.R&&T.R[+t.dataset.hgo];if(r)goTo(r.go);return}

@@ -44,7 +44,7 @@
  for(let i=0;i<obj.length;i++){const o=obj[i];if(!o)continue;const x=i%N,y=(i/N)|0;
   if((o.t==='tree'||o.t==='pine')&&h01(x,y)<.4){obj[i]=null;continue}
   const far=Math.min(1,Math.hypot(x-VCX,y-VCY)/(N*.6)),nt=tierFor(o.t,x,y,far);if(nt!==o.t){obj[i]={t:nt,hp:OHP[nt]}}}
- if(typeof HDCH!=='undefined'&&HDCH&&HDCH.clear)try{HDCH.clear()}catch(e){}
+ if(typeof HDCH!=='undefined'&&HDCH&&HDCH.clear)try{HDCH.clear()}catch(e){self.SQERR&&SQERR(e,'083-1')}
  function tierRegion(R){if(!R||R._t64)return;R._t64=1;const seed=(R.region||'').split('').reduce((a,c)=>a*31+c.charCodeAt(0),7)%9973;const keep=[];
   for(const it of R.items){if(it.t!=='_obj'||!it.o){keep.push(it);continue}const t=it.o.t;
    if((t==='tree'||t==='pine')&&h01(it.x+seed,it.y)<.4){rgCellDel(R,it);R.solid.delete(it.y*R.w+it.x);continue}
@@ -67,8 +67,8 @@
   if(T){const n=1+(Math.random()<lvOf(sk)*.006?1:0);inv[T.item]=(inv[T.item]|0)+n;if(sk===1)inv.wood=(inv.wood|0)+1;say('+'+n+' '+INAME[T.item].toLowerCase()+(sk===1?' and +1 wood':''));addXp(sk,T.xp)}
   else if(o.t==='rock'){const n=2;inv.stone=(inv.stone|0)+n;say('+2 stone');addXp(2,18)}else{inv.iron=(inv.iron|0)+1;say('+1 iron ore');addXp(2,40)}
   // the Woodcutting/Mining "stays standing" perks (038's STAYP) work on these too
-  let stay=false;try{stay=Math.random()<sumP(sk,STAYP)}catch(e){}
-  if(stay){o.hp=OHP[o.t]||3;try{gTxt(P.x+face[0]*16,P.y-40,'Still standing!',SKC[sk])}catch(e){}}else done();setTimeout(()=>sfx('pickup'),90);saveLocal()}
+  let stay=false;try{stay=Math.random()<sumP(sk,STAYP)}catch(e){self.SQERR&&SQERR(e,'083-2')}
+  if(stay){o.hp=OHP[o.t]||3;try{gTxt(P.x+face[0]*16,P.y-40,'Still standing!',SKC[sk])}catch(e){self.SQERR&&SQERR(e,'083-3')}}else done();setTimeout(()=>sfx('pickup'),90);saveLocal()}
  SQHIT.wrap('083 world content fewer trees higher tier',next=>function(){if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0&&!facingNpc()){const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16);
    if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){
     if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const i=ty*N+tx,o=obj[i];if(o&&TIER[o.t]){tierHit(o,()=>{obj[i]=null;REM.push({i,t:o.t,at:CLK})});return}}

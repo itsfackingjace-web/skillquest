@@ -7,10 +7,10 @@
 // castUlt call (SLEDGE, SQJW.neck, WAND are put back right after).
 (()=>{let PICK=null;
  const WN={fire:'Inferno',ice:'Frost Nova',storm:'Thunderstorm',void:'Void Rift',meteor:'Meteor Fall'};
- const avail=()=>{const L=[];try{if(typeof SLEDGE!=='undefined'&&SLEDGE)L.push({k:'slam',n:'Ground Slam',from:'Stone Sledgehammer'})}catch(e){}
-  try{if(window.SQJW&&SQJW.neck==='ja_dsoul')L.push({k:'dragon',n:'Dragon Form',from:'Dragonsoul amulet'})}catch(e){}
-  try{if(WAND)L.push({k:'wand',n:WN[WAND]||'Wand ultimate',from:(INAME[occ('off')]||'your wand')})}catch(e){}
-  try{for(const x of(window.SQULTX||[]))if(x.ok())L.push({k:x.k,n:x.n,from:x.from()})}catch(e){}return L};
+ const avail=()=>{const L=[];try{if(typeof SLEDGE!=='undefined'&&SLEDGE)L.push({k:'slam',n:'Ground Slam',from:'Stone Sledgehammer'})}catch(e){self.SQERR&&SQERR(e,'159-1')}
+  try{if(window.SQJW&&SQJW.neck==='ja_dsoul')L.push({k:'dragon',n:'Dragon Form',from:'Dragonsoul amulet'})}catch(e){self.SQERR&&SQERR(e,'159-2')}
+  try{if(WAND)L.push({k:'wand',n:WN[WAND]||'Wand ultimate',from:(INAME[occ('off')]||'your wand')})}catch(e){self.SQERR&&SQERR(e,'159-3')}
+  try{for(const x of(window.SQULTX||[]))if(x.ok())L.push({k:x.k,n:x.n,from:x.from()})}catch(e){self.SQERR&&SQERR(e,'159-4')}return L};
  const chosen=()=>{const L=avail();if(!L.length)return null;return L.find(o=>o.k===PICK)||L[0]};
  {const _cu=castUlt;castUlt=function(){const L=avail(),c=chosen();if(L.length<2||!c)return _cu.apply(this,arguments);
    const sv={sl:SLEDGE,neck:window.SQJW&&SQJW.neck,w:WAND};
@@ -22,8 +22,8 @@
    for(const o of L){const on=c&&o.k===c.k;s+='<button class="sb'+(on?' sqult-on':'')+'" data-ultp="'+o.k+'" style="width:100%;margin:3px 0;text-align:left'+(on?';background:#fff6c8;border-color:#c89830':'')+'">'+(on?'★ ':'')+o.n+'<br><small>from '+esc(o.from)+'</small></button>'}
    return h+s+'</div>'}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ultp]');if(!b||ptab!==3)return;e.stopPropagation();e.preventDefault();PICK=b.dataset.ultp;
-  const o=avail().find(x=>x.k===PICK);say('Your ULT button now uses '+(o?o.n:'that ultimate')+'.');try{sfx('talk')}catch(_){}try{saveLocal(true)}catch(_){}rPn()},true);
+  const o=avail().find(x=>x.k===PICK);say('Your ULT button now uses '+(o?o.n:'that ultimate')+'.');try{sfx('talk')}catch(_){self.SQERR&&SQERR(_,'159-5')}try{saveLocal(true)}catch(_){self.SQERR&&SQERR(_,'159-6')}rPn()},true);
  {SQSAVE.after('159:ultp',s=>{if(PICK)s.ultp=PICK;})}
  {SQLOAD.after('159',(S)=>{PICK=S&&/^(slam|dragon|wand|dagger)$/.test(S.ultp)?S.ultp:null;})}
- try{KNOWN49.add('ultp')}catch(e){}
+ try{KNOWN49.add('ultp')}catch(e){self.SQERR&&SQERR(e,'159-7')}
  window.SQULT={avail,chosen,get pick(){return PICK},set pick(v){PICK=v}}})();

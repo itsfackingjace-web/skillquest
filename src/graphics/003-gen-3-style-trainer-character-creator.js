@@ -2,7 +2,7 @@
 const OPT={skin:[['#f8d0a8','#d8a880'],['#f0b890','#d09068'],['#c88858','#a06838'],['#8c5a34','#6a4020'],['#5c3a22','#442814']],hair:['#2a1a10','#6a3a18','#c88830','#e8d060','#d83020','#4060d8','#f0f0f0','#e060a0'],shirt:['#d83830','#3868d8','#38a838','#f0d030','#f08830','#8040c0','#f0f0f0','#303040'],pants:['#3050a0','#303040','#785028','#38783a','#a03030','#e8e8e8'],hatc:['#f0f0f0','#d83830','#3868d8','#38a838','#303040','#f0d030'],shoe:['#e8e8e8','#d83830','#303040','#785028','#3868d8']};
 const HNAME=['Short','Spiky','Long','Ponytail'],HATN=['None','Cap','Beanie'],LIM={sk:5,hs:4,hc:8,sh:8,pn:6,ht:3,hcol:6,so:5};
 let CH={sk:0,hs:0,hc:1,sh:2,pn:1,ht:2,hcol:0,so:0};
-try{const s=JSON.parse(localStorage.getItem('hw_ch'));if(s)Object.assign(CH,s)}catch(e){}
+try{const s=JSON.parse(localStorage.getItem('hw_ch'));if(s)Object.assign(CH,s)}catch(e){self.SQERR&&SQERR(e,'003-1')}
 for(const k in LIM)if(!(CH[k]>=0&&CH[k]<LIM[k]))CH[k]=0;
 const sh2=(c,f)=>{const n=parseInt(c.slice(1),16);return'#'+((1<<24)+(Math.round((n>>16)*f)<<16)+(Math.round(((n>>8)&255)*f)<<8)+Math.round((n&255)*f)).toString(16).slice(1)};
 let GC=null;
@@ -57,7 +57,7 @@ function build(){crows.innerHTML='';for(const[lb,k,ty,arr]of RD){const r=documen
   crows.appendChild(r)}}
 pc.onclick=()=>{pd=(pd+1)%4;rp()};
 setInterval(()=>{if(menuOpen){pt++;rp()}},280);
-document.getElementById('cgo').onclick=()=>{menuOpen=false;cm.style.display='none';try{localStorage.setItem('hw_ch',JSON.stringify(CH))}catch(e){}};
+document.getElementById('cgo').onclick=()=>{menuOpen=false;cm.style.display='none';try{localStorage.setItem('hw_ch',JSON.stringify(CH))}catch(e){self.SQERR&&SQERR(e,'003-2')}};
 cb.onclick=()=>{menuOpen=true;jx=jy=0;cm.style.display='flex';document.getElementById('cgo').textContent='DONE';build();rp()};
 SQUPD.wrap('003',_u=>function(dt){if(!menuOpen)_u(dt)});
 build();rp();

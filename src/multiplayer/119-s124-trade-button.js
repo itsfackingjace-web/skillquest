@@ -16,10 +16,10 @@
  // only the word counts: the key hint after it (T / ✕) is rewritten by the controller labels (023/124), and treating that as
  // someone else's label made the button let go and grab it again every 0.15 s (it flashed on controllers)
  const word=h=>String(h||'').split('<small')[0];
- const ask=()=>{const u=who;if(!u)return false;try{if(window.SQPLAYERMENU)SQPLAYERMENU(u);else{SQTRREQ(u);sfx('talk')}}catch(e){}return true};
+ const ask=()=>{const u=who;if(!u)return false;try{if(window.SQPLAYERMENU)SQPLAYERMENU(u);else{SQTRREQ(u);sfx('talk')}}catch(e){self.SQERR&&SQERR(e,'119-1')}return true};
  // the button is ours only while nothing else wants it: hide it before the game's own code runs each frame; if that
  // code shows it again (a person, a chest, a boat...), it's theirs, and their word goes back on it
- const giveBack=()=>{mine=false;who=null;tk.classList.remove('sqpn');if(word(tk.innerHTML)===word(lab)){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
+ const giveBack=()=>{mine=false;who=null;tk.classList.remove('sqpn');if(word(tk.innerHTML)===word(lab)){let w='TALK';try{if(typeof tkLab!=='undefined'&&tkLab)w=tkLab}catch(e){self.SQERR&&SQERR(e,'119-2')}tk.innerHTML=w+(isPC?'<small>T</small>':'')}};
  SQUPD.wrap('119',_u=>function(dt){if(mine)tk.style.display='none';const out=_u.apply(this,arguments);
   if(mine&&(tk.style.display!=='none'||word(tk.innerHTML)!==word(lab)))giveBack();
   if(mine&&!pnOpen&&!menuOpen&&!dead)tk.style.display='flex';

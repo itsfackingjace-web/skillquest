@@ -30,13 +30,13 @@
  let busy=false,LOCK=null;const lock=()=>{LOCK={x:P.x,y:P.y,s:SCENE}};
  function goOut(i){const S=SCENE,h=S.house,R=h.castle||S.room===ROOMS.castle?ROOMS.court:ROOMS.yard;
   if(h._owner&&window.SQMP&&SQMP.user&&h._owner!==SQMP.user.uid){if(busy)return;
-   if(typeof trustedBy==='function'&&!trustedBy(h._owner)){say('Only people its owner trusts can go out back.');msgT=4;try{sfx('swish')}catch(e){}P.y+=4;return}
+   if(typeof trustedBy==='function'&&!trustedBy(h._owner)){say('Only people its owner trusts can go out back.');msgT=4;try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-1')}P.y+=4;return}
    busy=true;const F=window.SQFB;F.db.get(F.db.ref(F.D,'yards/'+h._owner+'/'+(h._oid||h.id))).then(s=>{busy=false;readYard(h,s.val());enter(S,R,i,true)}).catch(()=>{busy=false;readYard(h,null);enter(S,R,i,true)});return}
   enter(S,R,i,false)}
  function enter(S,R,i,ro){if(SCENE!==S)return;const Y=yardOf(S.house,ro),dx=YDOOR(R)[Math.min(i,YDOOR(R).length-1)];
-  SCENE={id:'home',room:R,house:Y,ret:S.ret,prev:S.prev,yardOf:S,door:i};P.x=dx;P.y=DOORY*16+10;face=[0,1];lock();en=[];FISH=null;try{if(BUILD)endBuild()}catch(e){}FADE_AT=performance.now();try{sfx('door')}catch(e){}
+  SCENE={id:'home',room:R,house:Y,ret:S.ret,prev:S.prev,yardOf:S,door:i};P.x=dx;P.y=DOORY*16+10;face=[0,1];lock();en=[];FISH=null;try{if(BUILD)endBuild()}catch(e){self.SQERR&&SQERR(e,'145-2')}FADE_AT=performance.now();try{sfx('door')}catch(e){self.SQERR&&SQERR(e,'145-3')}
   if(ro)say('You step into '+(S.house._owner&&window.SQMP?(SQMP.players.get(S.house._owner)||{}).n||'your friend':'your friend')+'\'s '+(R.court?'courtyard':'backyard')+'. Have a look around!');}
- function goBack(){const S=SCENE,B=S.yardOf,i=S.door|0,hx=HDOOR(B.room)[Math.min(i,HDOOR(B.room).length-1)];SCENE=B;P.x=hx;P.y=2*16+12;face=[0,1];lock();FADE_AT=performance.now();try{if(BUILD)endBuild()}catch(e){}try{sfx('door')}catch(e){}}
+ function goBack(){const S=SCENE,B=S.yardOf,i=S.door|0,hx=HDOOR(B.room)[Math.min(i,HDOOR(B.room).length-1)];SCENE=B;P.x=hx;P.y=2*16+12;face=[0,1];lock();FADE_AT=performance.now();try{if(BUILD)endBuild()}catch(e){self.SQERR&&SQERR(e,'145-4')}try{sfx('door')}catch(e){self.SQERR&&SQERR(e,'145-5')}}
  {const _ls=leaveScene;leaveScene=function(){if(isYard()){goBack();return}return _ls.apply(this,arguments)}}
  // ---- every frame: doors, growing ----
  const keyUp=()=>face[1]<0,keyDn=()=>face[1]>0;
@@ -45,7 +45,7 @@
     if(LOCK&&(!keyUp()||P.y-LOCK.y>10||Math.abs(P.x-LOCK.x)>10||SCENE!==LOCK.s))LOCK=null;if(LOCK){if(isYard()&&P.y<DOORY*16+4)P.y=DOORY*16+4;return out}
     if(inHouse()&&P.y<2*16+9&&keyUp()){const L=HDOOR(SCENE.room);for(let i=0;i<L.length;i++)if(Math.abs(P.x-L[i])<7){goOut(i);break}}
     else if(isYard()&&P.y<DOORY*16+5&&keyUp()){for(const dx of YDOOR(SCENE.room))if(Math.abs(P.x-dx)<10){goBack();break}}}catch(e){console.warn(e)}return out})}
- {SQUPD.wrap('145',_u=>function(dt){const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;try{for(const h of mine())if(h.yp)for(const p of h.yp.values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}catch(e){}return out})}
+ {SQUPD.wrap('145',_u=>function(dt){const out=_u.apply(this,arguments);if(menuOpen||pnOpen)return out;try{for(const h of mine())if(h.yp)for(const p of h.yp.values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt}catch(e){self.SQERR&&SQERR(e,'145-6')}return out})}
  // your own houses only: HOUSES also holds other players' houses while online (_foreign); a friend's yard you visited
  // must never be packed into your bag when their house unloads
  const mine=()=>HOUSES.concat(window.SQRH||[]).filter(h=>h&&!h._foreign);
@@ -58,26 +58,26 @@
    if(Y.ro){if(p||Y.furn.has(i)){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}return _a.apply(this,arguments)}
    // keyboard and mouse: Space / left-click is melee only, the hoe and can work from X (140); a tool in the bag is swapped in
    const melee=!(window.SQOFFVIA&&SQOFFVIA()),off=()=>!TL.bow&&!WAND;
-   const want=k=>{if(melee)return false;const has=k==='eq_can'?TL.can:TL.hoe;if(has)return true;if((inv[k]|0)<1||!off()&&!(TL.hoe||TL.can))return false;try{equipItem(k)}catch(e){}return k==='eq_can'?!!TL.can:!!TL.hoe};
+   const want=k=>{if(melee)return false;const has=k==='eq_can'?TL.can:TL.hoe;if(has)return true;if((inv[k]|0)<1||!off()&&!(TL.hoe||TL.can))return false;try{equipItem(k)}catch(e){self.SQERR&&SQERR(e,'145-7')}return k==='eq_can'?!!TL.can:!!TL.hoe};
    if(p){swing=.25;if(ripe(p)){harvest(-1,p);saveLocal(true);pub();return}
-    if(p.c&&!wet(p)){if(!want('eq_can')){say(melee?(window.SQOFFHINT?SQOFFHINT('water it with your watering can')+'.':'Use your off-hand to water it.'):'Put your watering can in your off-hand to water it.');try{sfx('swish')}catch(e){}return}
-     p.w=CLK+WATER_FOR;addXp(11,3);say('Watered the '+CROPS[p.c].n.toLowerCase()+'.');try{sfx('splash')}catch(e){}saveLocal();return}
-    if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');try{sfx('swish')}catch(e){}return}
-    const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');try{sfx('swish')}catch(e){}return}
-   if(tillable(R,Y,x,y)&&!en.some(n=>!n.dead)&&(TL.hoe||TL.can||(inv.eq_hoe|0)>0)&&want('eq_hoe')){swing=.25;Y.plots.set(i,{c:null,g:0,w:0,e:nowS2()});addXp(11,4);try{sfx('chop')}catch(e){}saveLocal(true);pub();return}
-   if(R.lay(x,y)!==2&&!R.solid.has(i)&&!Y.furn.has(i)&&y>=2&&!onDoorTile(R,x,y)&&(TL.hoe||TL.can)&&!melee&&!en.some(n=>!n.dead)){swing=.2;say('You can only till grass.');try{sfx('swish')}catch(e){}return}
+    if(p.c&&!wet(p)){if(!want('eq_can')){say(melee?(window.SQOFFHINT?SQOFFHINT('water it with your watering can')+'.':'Use your off-hand to water it.'):'Put your watering can in your off-hand to water it.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-8')}return}
+     p.w=CLK+WATER_FOR;addXp(11,3);say('Watered the '+CROPS[p.c].n.toLowerCase()+'.');try{sfx('splash')}catch(e){self.SQERR&&SQERR(e,'145-9')}saveLocal();return}
+    if(!p.c){say('This soil is ready. Choose seeds in your Bag and tap PLANT.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-10')}return}
+    const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing. About '+Math.ceil(left/60)+' min of watered time left.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-11')}return}
+   if(tillable(R,Y,x,y)&&!en.some(n=>!n.dead)&&(TL.hoe||TL.can||(inv.eq_hoe|0)>0)&&want('eq_hoe')){swing=.25;Y.plots.set(i,{c:null,g:0,w:0,e:nowS2()});addXp(11,4);try{sfx('chop')}catch(e){self.SQERR&&SQERR(e,'145-12')}saveLocal(true);pub();return}
+   if(R.lay(x,y)!==2&&!R.solid.has(i)&&!Y.furn.has(i)&&y>=2&&!onDoorTile(R,x,y)&&(TL.hoe||TL.can)&&!melee&&!en.some(n=>!n.dead)){swing=.2;say('You can only till grass.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-13')}return}
    return _a.apply(this,arguments)})}
  // planting: PLANT mode with seeds from the Bag
  {const _sb=startBuild;startBuild=function(k){if(!isYard()||!SEED2CROP[k])return _sb.apply(this,arguments);if(SCENE.house.ro){say('You can\'t plant in a friend\'s yard.');closePanel();return}if((inv[k]|0)<1)return;
    BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')}}
  {const _pb=placeBuild;placeBuild=function(){if(!isYard()||!BUILD||!SEED2CROP[BUILD.k])return _pb.apply(this,arguments);const k=BUILD.k,R=SCENE.room,Y=SCENE.house,[x,y]=frontTile(),p=Y.plots.get(yi(R,x,y));
-   if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'Till the soil first with a hoe in your off-hand.');try{sfx('swish')}catch(e){}return}
-   if(p.c){say('Something is already growing there.');try{sfx('swish')}catch(e){}return}const c=SEED2CROP[k],C=CROPS[c];if(C.lv&&lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');return}
-   inv[k]--;p.c=c;p.g=0;addXp(11,5);try{sfx('rustle')}catch(e){}saveLocal(true);pub();if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
+   if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'Till the soil first with a hoe in your off-hand.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-14')}return}
+   if(p.c){say('Something is already growing there.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-15')}return}const c=SEED2CROP[k],C=CROPS[c];if(C.lv&&lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');return}
+   inv[k]--;p.c=c;p.g=0;addXp(11,5);try{sfx('rustle')}catch(e){self.SQERR&&SQERR(e,'145-16')}saveLocal(true);pub();if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
  {const _cp=canPlace;canPlace=function(x,y){if(isYard()&&BUILD&&SEED2CROP[BUILD.k]){const p=SCENE.house.plots.get(yi(SCENE.room,x,y));return!!p&&!p.c}return _cp.apply(this,arguments)}}
  // furniture: not on plots, the gate or a friend's yard
- {const _cp=canPlaceIn;canPlaceIn=function(x,y){if(isYard()){const R=SCENE.room,Y=SCENE.house;if(Y.ro||Y.plots.has(yi(R,x,y))||onDoorTile(R,x,y)||regrowing(R,yi(R,x,y)))return false;try{if(fishWaterAt(x,y))return false}catch(e){}/* ponds */}return _cp.apply(this,arguments)}}
- {const _t=talk;talk=function(){if(isYard()&&SCENE.house.ro&&!dead&&!pnOpen){try{if(nearFurn()){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;return}}catch(e){}}return _t.apply(this,arguments)}}
+ {const _cp=canPlaceIn;canPlaceIn=function(x,y){if(isYard()){const R=SCENE.room,Y=SCENE.house;if(Y.ro||Y.plots.has(yi(R,x,y))||onDoorTile(R,x,y)||regrowing(R,yi(R,x,y)))return false;try{if(fishWaterAt(x,y))return false}catch(e){self.SQERR&&SQERR(e,'145-17')}/* ponds */}return _cp.apply(this,arguments)}}
+ {const _t=talk;talk=function(){if(isYard()&&SCENE.house.ro&&!dead&&!pnOpen){try{if(nearFurn()){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;return}}catch(e){self.SQERR&&SQERR(e,'145-18')}}return _t.apply(this,arguments)}}
  // ---- drawing: the game's own ground (hdBakeR, like the islands), its trees, bushes and buildings ----
  // The ground comes from a small map of tile types (0 water, 2 grass, 7 forest floor, 11 paving), baked once per room.
  // Trees and bushes are the islands' own objects (room items {t:'_obj'}, solid); the house or castle is drawn by drBld,
@@ -88,8 +88,8 @@
   // the whole view is baked ground: the clearing, and forest floor all around it (no edge, no void)
   for(let ky=Math.floor((cy-16)/128);ky<=Math.floor((cy+vh+16)/128);ky++)for(let kx=Math.floor((cx-16)/128);kx<=Math.floor((cx+vw+16)/128);kx++){const c=chunk(R,kx,ky);if(c){g.drawImage(c,kx*128,ky*128,128,128);continue}if(kx<0||ky<0||kx*8>=R.w||ky*8>=R.h)continue;if(c)g.drawImage(c,kx*128,ky*128,128,128);for(let y=ky*8;y<Math.min(R.h,ky*8+8);y++)for(let x=kx*8;x<Math.min(R.w,kx*8+8);x++)Rg(x*16,y*16,16,16,R.lay(x,y)===11?'#b8b2a4':R.lay(x,y)===0?'#3a8ad8':'#5aa848')}
   // plots
-  const Y=SCENE&&SCENE.house;if(Y&&Y.plots){const has=(x,y)=>(dx,dy)=>Y.plots.has((y+dy)*R.w+x+dx);for(const[i,p]of Y.plots){const x=i%R.w,y=(i/R.w)|0;try{GC=g;drawPlot(-1,p,tm,x,y,has(x,y))}catch(e){}}}}
- {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_ybld'){try{drBld(it.b,tm)}catch(e){}return}
+  const Y=SCENE&&SCENE.house;if(Y&&Y.plots){const has=(x,y)=>(dx,dy)=>Y.plots.has((y+dy)*R.w+x+dx);for(const[i,p]of Y.plots){const x=i%R.w,y=(i/R.w)|0;try{GC=g;drawPlot(-1,p,tm,x,y,has(x,y))}catch(e){self.SQERR&&SQERR(e,'145-19')}}}}
+ {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_ybld'){try{drBld(it.b,tm)}catch(e){self.SQERR&&SQERR(e,'145-20')}return}
    // the forest around the clearing: only the trees on screen
    if(it&&it.ring){const x=it.x*16,y=it.y*16,cx=camX(),cy=camY();if(x<cx-48||x>cx+W/Z+48||y<cy-16||y>cy+H/Z+64)return}return _df.apply(this,arguments)}}
  // the layouts
@@ -140,12 +140,12 @@
    R.region='_yard';try{return _a.apply(this,arguments)}finally{delete R.region}})}
  {SQUPD.after('145',(dt)=>{try{for(const R of[ROOMS.yard,ROOMS.court])for(let j=R.gone.length-1;j>=0;j--){const g2=R.gone[j];if(CLK-g2.at<=240)continue;
     const it=g2.it,here=SCENE&&SCENE.room===R;if(here&&Math.hypot(P.x-(it.x*16+8),P.y-(it.y*16+8))<40)continue;
-    it.gone=false;it.o.hp=OHP[it.o.t]||3;rgCellAdd(R,it);R.solid.add(it.y*R.w+it.x);R.gone.splice(j,1)}}catch(e){}})}
+    it.gone=false;it.o.hp=OHP[it.o.t]||3;rgCellAdd(R,it);R.solid.add(it.y*R.w+it.x);R.gone.splice(j,1)}}catch(e){self.SQERR&&SQERR(e,'145-21')}})}
  {const _fw=fishWaterAt;fishWaterAt=function(tx,ty){if(isYard()){const R=SCENE.room;return tx>=0&&ty>=2&&tx<R.w&&ty<R.h&&R.lay(tx,ty)===0}return _fw.apply(this,arguments)}}
  {const _rb=ROOMBG;ROOMBG=function(R,W2,H2){if(R&&(R.yard||R.court))return drawYard(R,W2,H2);const out=_rb?_rb.apply(this,arguments):undefined;
    // the back door(s) on a house's or castle's back wall
    try{if(SCENE&&SCENE.room===R&&!SCENE.yardOf){for(const dx of HDOOR(R)){const stone=R===ROOMS.castle;Rg(dx-9,4,18,28,K);Rg(dx-8,5,16,27,stone?'#3a2a20':'#7a5030');Rg(dx-8,5,16,2,stone?'#5a4430':'#9a6a3c');
-     if(stone){Rg(dx-8,5,16,1,'#b2aa9a');Rg(dx-1,5,2,27,K)}else{Rg(dx-8,16,16,1,'#5a3a1e')}Rg(dx+(stone?3:4),19,2,2,'#f8d048')}}}catch(e){}return out}}
+     if(stone){Rg(dx-8,5,16,1,'#b2aa9a');Rg(dx-1,5,2,27,K)}else{Rg(dx-8,16,16,1,'#5a3a1e')}Rg(dx+(stone?3:4),19,2,2,'#f8d048')}}}catch(e){self.SQERR&&SQERR(e,'145-22')}return out}}
  // ---- saving (next to each house's own furniture) ----
  const items=o=>{const r={};if(o&&typeof o==='object')for(const k in o)if(INVK.includes(k))r[k]=Math.max(0,+o[k]||0);return r};
  const outF=h=>h.yf&&h.yf.size?[...h.yf].map(([i,f])=>f.nm?[i,f.t,f.items||null,f.nm]:[i,f.t,f.items||null]):null;
@@ -169,18 +169,18 @@
  // packing a house packs its yard (furniture and what's in its chests); one-home (149) packs extra homes the same way
  let KNOWN=new Set();
  function packYard(h){if(h._ypk)return;h._ypk=1;for(const f of(h.yf||new Map()).values()){inv[f.t]=(inv[f.t]|0)+1;if(f.items)for(const k in f.items)inv[k]=(inv[k]|0)+(f.items[k]|0)}h.yf=new Map();h.yp=new Map()}
- setInterval(()=>{try{const now=new Set(mine());for(const h of KNOWN)if(!now.has(h)&&((h.yf&&h.yf.size)||(h.yp&&h.yp.size))){packYard(h);try{saveLocal(true)}catch(e){}}KNOWN=now}catch(e){}},400);
+ setInterval(()=>{try{const now=new Set(mine());for(const h of KNOWN)if(!now.has(h)&&((h.yf&&h.yf.size)||(h.yp&&h.yp.size))){packYard(h);try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'145-23')}}KNOWN=now}catch(e){self.SQERR&&SQERR(e,'145-24')}},400);
  if(window.SQONEHOME){const _e=SQONEHOME.enforce;SQONEHOME.enforce=function(){const before=new Set(mine());const n=_e.apply(this,arguments);for(const h of before)if(!mine().includes(h))packYard(h);KNOWN=new Set(mine());return n}}
  {const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);KNOWN=new Set();return out}}
  // ---- what friends see: yards/<uid>/<house id> ----
  let pubKey='',pubAt=0;function pub(){pubAt=0}
  function yardsOut(){const o={};for(const h of mine()){const f=outF(h),p=h.yp&&h.yp.size?[...h.yp].map(([i,q])=>[i,q.c||'',q.c?Math.min(CROPS[q.c].max,Math.floor(q.g/CROPS[q.c].st)):0]):null;if(f||p)o[h.id]={f:f?f.map(e=>e[3]?[e[0],e[1],0,e[3]]:[e[0],e[1]]):[],p:p||[],w:RofH(h).w}}return o}
  setInterval(()=>{try{const M=window.SQMP,F=window.SQFB;if(!M||!M.on||!M.user||!F)return;const t=performance.now();if(t-pubAt<8000)return;pubAt=t;const o=yardsOut(),k=JSON.stringify(o);if(k===pubKey)return;pubKey=k;
-   F.db.set(F.db.ref(F.D,'yards/'+M.user.uid),Object.keys(o).length?o:null).catch(()=>{pubKey=''})}catch(e){}},2000);
+   F.db.set(F.db.ref(F.D,'yards/'+M.user.uid),Object.keys(o).length?o:null).catch(()=>{pubKey=''})}catch(e){self.SQERR&&SQERR(e,'145-25')}},2000);
  function readYard(h,v){const R=RofH(h),ow=+(v&&v.w)||OLDW(h),arr=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.values(x):[]);h.yf=new Map();h.yp=new Map();
   for(const q0 of arr(v&&v.f)){const q=arr(q0);const i=mv(q[0]|0,ow,R),t=q[1];if(i>=2*R.w&&i<R.w*R.h&&BK.includes(t))h.yf.set(i,Object.assign({t},t==='chest'?(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{}):{}))}
   for(const q0 of arr(v&&v.p)){const q=arr(q0);const i=mv(q[0]|0,ow,R),c=CROPS[q[1]]?q[1]:null;if(i>=2*R.w&&i<R.w*R.h)h.yp.set(i,{c,g:c?Math.max(0,Math.min(CROPS[c].max,q[2]|0))*CROPS[c].st:0,w:0,e:0})}settle(h,true);h._yd=null}
  // visiting: re-read the owner's yard every 8 s so their changes (chest names, new furniture, crops) show up without walking out and back
  setInterval(()=>{try{if(!isYard()||busy)return;const Y=SCENE.house,h=Y&&Y.base,F=window.SQFB;if(!Y.ro||!h||!h._owner||!F)return;const S0=SCENE;
-   F.db.get(F.db.ref(F.D,'yards/'+h._owner+'/'+(h._oid||h.id))).then(s=>{if(SCENE!==S0)return;readYard(h,s.val());S0.house=yardOf(h,true)}).catch(()=>{})}catch(e){}},8000);
+   F.db.get(F.db.ref(F.D,'yards/'+h._owner+'/'+(h._oid||h.id))).then(s=>{if(SCENE!==S0)return;readYard(h,s.val());S0.house=yardOf(h,true)}).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'145-26')}},8000);
  window.SQYARD={isYard,goOut,goBack,yardOf,yardsOut,HDOOR,YDOOR}})();

@@ -16,12 +16,12 @@ const grvAll=()=>{const a=[];for(const id in GRV.list)a.push(GRV.list[id]);for(c
 // outside its entrance (ar/ax/ay = the outdoor area and the spot you come out at), so you can always get back to it,
 // even without what it takes to open the door again. One whose entrance is on water (the Drowned Grotto) stays inside.
 const grvPos=g=>{if(g&&typeof g.loc==='string'&&g.loc.startsWith('in:')&&g.ar&&(g.ar==='hollow'||WORLD_REGIONS[g.ar])&&isFinite(g.ax)&&isFinite(g.ay)){
-  const x=+g.ax,y=+g.ay+8;let wet=false;try{wet=g.ar==='hollow'&&typeof boatOK==='function'&&boatOK(x,y)}catch(e){}
+  const x=+g.ax,y=+g.ay+8;let wet=false;try{wet=g.ar==='hollow'&&typeof boatOK==='function'&&boatOK(x,y)}catch(e){self.SQERR&&SQERR(e,'063-1')}
   if(!wet)return{loc:g.ar==='hollow'?'hollow':'r:'+g.ar,x,y,out:true}}return{loc:g.loc,x:g.x,y:g.y,out:false}};
 const grvMine=()=>grvAll().filter(g=>(g.local||(MP.user&&g.u===MP.user.uid))&&grvLeft(g)>0&&Object.keys(grvItems(g)).length);
 // offline graves live on this device
-try{const s=JSON.parse(localStorage.getItem('sq_graves')||'{}');for(const id in s){const g=s[id];if(g&&g.at+GRAVE_LIFE>Date.now()){g.local=true;g.id=id;GRV.local[id]=g}}}catch(e){}
-const grvSaveLocal=()=>{try{const o={};for(const id in GRV.local){const g=GRV.local[id];if(Object.keys(grvItems(g)).length&&grvLeft(g)>0)o[id]={u:g.u,n:g.n,loc:g.loc,x:g.x,y:g.y,ar:g.ar,ax:g.ax,ay:g.ay,at:g.at,i:g.i}}localStorage.setItem('sq_graves',JSON.stringify(o))}catch(e){}};
+try{const s=JSON.parse(localStorage.getItem('sq_graves')||'{}');for(const id in s){const g=s[id];if(g&&g.at+GRAVE_LIFE>Date.now()){g.local=true;g.id=id;GRV.local[id]=g}}}catch(e){self.SQERR&&SQERR(e,'063-2')}
+const grvSaveLocal=()=>{try{const o={};for(const id in GRV.local){const g=GRV.local[id];if(Object.keys(grvItems(g)).length&&grvLeft(g)>0)o[id]={u:g.u,n:g.n,loc:g.loc,x:g.x,y:g.y,ar:g.ar,ax:g.ax,ay:g.ay,at:g.at,i:g.i}}localStorage.setItem('sq_graves',JSON.stringify(o))}catch(e){self.SQERR&&SQERR(e,'063-3')}};
 // remember where you last stood on solid ground (mpLoc is blank once you've fallen)
 setInterval(()=>{if(dead||typeof SAILING!=='undefined'&&SAILING&&!SCENE||window.SQRSAIL&&SQRSAIL.on)return;const L=mpLoc();
  // the outdoor area and spot (inside a building or dungeon: its door), so the grave can go on the map
@@ -35,10 +35,10 @@ GRV.fell=false;GRV.fellN=0;
 // with no known spot for a grave, reset keeps your things in the bag instead of wiping them)
 function grvFall(){if(GRV.fell||NEWG)return;GRV.fell=true;GRV.nospot=false;const spot=GRV.lastSpot;if(!spot||typeof inv!=='object'){GRV.fellN=0;GRV.nospot=true;return}
  const lost={};for(const k in inv){const n=inv[k]|0;if(n>0&&!EQK.includes(k)&&INAME[k]){lost[k]=n;inv[k]=0}}GRV.fellN=Object.keys(lost).length;if(!GRV.fellN)return;
- grvMake(lost,spot);const hp0=P.hp;dead=false;P.hp=Math.max(1,hp0);try{saveLocal(true);saveCloud(true)}catch(e){}finally{dead=true;P.hp=hp0}}
+ grvMake(lost,spot);const hp0=P.hp;dead=false;P.hp=Math.max(1,hp0);try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'063-4')}finally{dead=true;P.hp=hp0}}
 setInterval(()=>{if(!dead){GRV.fell=false;return}grvFall()},100);
-{const _rs=reset;reset=function(){let keep=null;if(dead&&!NEWG){try{grvFall()}catch(e){}if(GRV.nospot&&typeof inv==='object'){keep={};for(const k in inv)if((inv[k]|0)>0&&!EQK.includes(k))keep[k]=inv[k]|0}}
- const out=_rs.apply(this,arguments);if(keep){for(const k in keep)inv[k]=(inv[k]|0)+keep[k];GRV.nospot=false;try{mpLog('game','You fell, but your things stayed in your bag.')}catch(e){}}return out}}
+{const _rs=reset;reset=function(){let keep=null;if(dead&&!NEWG){try{grvFall()}catch(e){self.SQERR&&SQERR(e,'063-5')}if(GRV.nospot&&typeof inv==='object'){keep={};for(const k in inv)if((inv[k]|0)>0&&!EQK.includes(k))keep[k]=inv[k]|0}}
+ const out=_rs.apply(this,arguments);if(keep){for(const k in keep)inv[k]=(inv[k]|0)+keep[k];GRV.nospot=false;try{mpLog('game','You fell, but your things stayed in your bag.')}catch(e){self.SQERR&&SQERR(e,'063-6')}}return out}}
 function grvMake(items,spot){const g={u:MP.user?MP.user.uid:'me',n:myName().slice(0,12),loc:spot.loc,x:spot.x,y:spot.y,i:items},mk=spot.ar&&isFinite(spot.ax)&&isFinite(spot.ay)?{ar:spot.ar,ax:spot.ax,ay:spot.ay}:{};Object.assign(g,mk);
  const local=()=>{const id='L'+Date.now().toString(36);g.at=Date.now();g.local=true;g.id=id;GRV.local[id]=g;grvSaveLocal()};
  const n=Object.values(items).reduce((a,b)=>a+b,0);const gp=grvPos(g);mpLog('game','You fell! '+n+' item'+(n>1?'s are':' is')+' in your grave ('+LOCN(gp.loc)+(gp.out?', outside the entrance':'')+'). Anyone can loot it, and it crumbles in 15 minutes.');
@@ -61,7 +61,7 @@ function grvDraw(g,tm){const gp=grvPos(g),x=Math.round(gp.x),y=Math.round(gp.y),
  Rg(x-1,y-8,2,8,D);Rg(x-3,y-6,6,2,D);Rg(x-6,y+2,12,2,'#6a4a2a');Rg(x-5,y+1,2,1,'#3a8a3a');Rg(x+3,y+1,2,1,'#3a8a3a');
  if(grvLeft(g)<60000&&Math.floor(tm*4)%2)Rg(x-4,y-10,8,13,'rgba(248,200,80,.35)'); // last minute: it flickers
  if(mine){const b=Math.round(Math.sin(tm*4)*1.5);Rg(x-1,y-17+b,3,3,'#f8d848');Rg(x,y-14+b,1,1,'#f8d848')}}
-{SQPP.before('063',(tm)=>{try{for(const gv of grvHere())grvDraw(gv,tm)}catch(e){}})}
+{SQPP.before('063',(tm)=>{try{for(const gv of grvHere())grvDraw(gv,tm)}catch(e){self.SQERR&&SQERR(e,'063-7')}})}
 // the hint when you're close, and your own grave's countdown
 {const st=document.createElement('style');st.textContent=`#grvh{position:fixed;left:50%;transform:translateX(-50%);top:58%;z-index:9;display:none;padding:6px 10px;font:600 13px ${PF};pointer-events:none;text-align:center;max-width:calc(100vw - 24px);box-sizing:border-box}
 #grvt{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0px) + 202px);z-index:9;display:none;padding:5px 9px;font:600 12px ${PF};pointer-events:none;color:#b03828;max-width:calc(100vw - 150px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}
@@ -87,7 +87,7 @@ async function grvTake(keys){const g0=GRV.open;if(!g0||GRV.busy)return;{const g=
     else{const s=await d.get(ref);n=+s.val()||0;if(n>0)await d.remove(ref)}
     if(n>0)got[k]=n}}
   const ks=Object.keys(got);for(const k of ks)inv[k]=(inv[k]|0)+got[k];
-  if(ks.length){say('You took '+ks.map(k=>got[k]+' × '+INAME[k].toLowerCase()).join(', ')+'.');sfx('pickup');try{saveLocal(true);saveCloud(true)}catch(e){}
+  if(ks.length){say('You took '+ks.map(k=>got[k]+' × '+INAME[k].toLowerCase()).join(', ')+'.');sfx('pickup');try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'063-8')}
    if(!g0.local&&MP.user&&g0.u!==MP.user.uid)mpLog('game','You looted '+g0.n+'\'s grave.')}else{say('Too slow! Someone already took that.');sfx('swish')}}
  finally{GRV.busy=false}if(pnOpen&&ptab===GTAB)rPn()}
 {const _r=rPn;rPn=function(){if(ptab===GTAB){panelChrome('');pbd.innerHTML=graveHTML();return}_r()}}

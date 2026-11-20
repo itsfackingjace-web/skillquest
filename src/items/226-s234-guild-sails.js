@@ -16,9 +16,9 @@
  // ---- the design ----
  const fromCh=ch=>{const C=GC();if(!C||!ch||!(ch.slc>0))return null;const P=C.PAL;return{c:P[(ch.slc-1)%P.length],s:P[(ch.sls|0)%P.length],p:ch.slp|0,t:!!ch.slt,e:Math.min(C.EM.length-1,ch.sle|0),x:P[(ch.slx|0)%P.length]}};
  const mine=()=>{const C=GC();if(!ON||!C||!inGuild())return null;try{const d=C.design();return fromCh({slc:d.c+1,sls:d.s,slp:d.p,slt:d.t,sle:d.e,slx:d.x})}catch(e){return null}};
- {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);try{const C=GC();if(ON&&C&&inGuild()){const d=C.design();c.slc=d.c+1;c.sls=d.s;c.slp=d.p;if(d.t)c.slt=1;c.sle=d.e;c.slx=d.x}}catch(e){}return c}}
- {SQSAVE.after('226:gsw',o=>{try{o.gsw=ON?1:0}catch(e){}})}
- {SQLOAD.after('226',(S)=>{try{ON=!!(S&&S.gsw)}catch(e){}})}
+ {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);try{const C=GC();if(ON&&C&&inGuild()){const d=C.design();c.slc=d.c+1;c.sls=d.s;c.slp=d.p;if(d.t)c.slt=1;c.sle=d.e;c.slx=d.x}}catch(e){self.SQERR&&SQERR(e,'226-1')}return c}}
+ {SQSAVE.after('226:gsw',o=>{try{o.gsw=ON?1:0}catch(e){self.SQERR&&SQERR(e,'226-2')}})}
+ {SQLOAD.after('226',(S)=>{try{ON=!!(S&&S.gsw)}catch(e){self.SQERR&&SQERR(e,'226-3')}})}
  {const _n=newGame;newGame=function(){ON=false;return _n.apply(this,arguments)}}
  // ---- recolouring the sail layer ----
  let CURD=null;const CACHE=new WeakMap();
@@ -52,25 +52,25 @@
      for(let yy=0;yy<SZ;yy++)for(let xx=0;xx<SZ;xx++){const i=(at.Y+yy)*w+at.X+xx;let col=null;
       if(em[yy*SZ+xx])col=mix(CX,.88+.12*lev[i]/3);
       else{let nb=false;for(let dy=-1;dy<=1&&!nb;dy++)for(let dx=-1;dx<=1;dx++){const X2=xx+dx,Y2=yy+dy;if(X2>=0&&Y2>=0&&X2<SZ&&Y2<SZ&&em[Y2*SZ+X2]){nb=true;break}}if(nb)col=OL}
-      if(col){d[i*4]=col[0];d[i*4+1]=col[1];d[i*4+2]=col[2]}}}}}catch(e){}
+      if(col){d[i*4]=col[0];d[i*4+1]=col[1];d[i*4+2]=col[2]}}}}}catch(e){self.SQERR&&SQERR(e,'226-4')}
   x.putImageData(im,0,0);r={c,ox:b.ox,oy:b.oy,ww:w,hh:h};M.set(dk,r);return r}
  {const _b=BOAT85.back;BOAT85.back=function(fc,sl,tm){const b=_b.apply(this,arguments);if(!CURD||!sl||!b)return b;try{return recolor(b,CURD)}catch(e){return b}}}
  // ---- whose boat ----
  const _db=drawBoat26;drawBoat26=function(tm){let D=null;try{const M=window.SQMP;let peer=null;
    if(M&&M.players)for(const[u,r]of M.players){if(r&&r.sl&&r.x===P.x&&r.y===P.y&&(!M.user||u!==M.user.uid)){peer=r;break}}
-   D=peer?fromCh(peer.ch):mine()}catch(e){}
+   D=peer?fromCh(peer.ch):mine()}catch(e){self.SQERR&&SQERR(e,'226-5')}
   const was=CURD;CURD=D;try{return _db.apply(this,arguments)}finally{CURD=was}};
  // ---- START > Style > Boat ----
  function boatPic(D){try{const was=CURD;CURD=D;let b;try{b=BOAT85.back([1,0],true,0)}finally{CURD=was}const f=BOAT85.front([1,0]);
    const ox=Math.min(b.ox,f.ox),oy=Math.min(b.oy,f.oy),W2=Math.max(b.ox+b.ww,f.ox+f.ww)-ox,H2=Math.max(b.oy+b.hh,f.oy+f.hh)-oy,c=document.createElement('canvas');c.width=W2;c.height=H2;
    const x=c.getContext('2d');x.drawImage(b.c,b.ox-ox,b.oy-oy);x.drawImage(f.c,f.ox-ox,f.oy-oy);return'<img alt="" src="'+c.toDataURL()+'" style="width:'+W2*2+'px;height:'+H2*2+'px;image-rendering:pixelated">'}catch(e){return''}}
- function section(){const ok=inGuild()&&GC(),on=ON&&ok;let gd=null;try{if(ok){const d=GC().design();gd=fromCh({slc:d.c+1,sls:d.s,slp:d.p,slt:d.t,sle:d.e,slx:d.x})}}catch(e){}
+ function section(){const ok=inGuild()&&GC(),on=ON&&ok;let gd=null;try{if(ok){const d=GC().design();gd=fromCh({slc:d.c+1,sls:d.s,slp:d.p,slt:d.t,sle:d.e,slx:d.x})}}catch(e){self.SQERR&&SQERR(e,'226-6')}
   const pk=(lab,act,sel)=>'<button class="gc sqbs" data-bsail="'+act+'" aria-pressed="'+(sel?'true':'false')+'" style="margin:3px;'+(sel?'background:#f8d878;color:#303030;box-shadow:0 0 0 3px #c88010':'opacity:.85')+'">'+(sel?'✓ ':'')+lab+'</button>';
   let h='<div class="qc" id="sqboatsec"><b>Boat</b><div style="display:flex;justify-content:center;margin:4px 0 6px">'+boatPic(on?gd:null)+'</div><div>'+pk('Plain sails','plain',!on);
   if(ok){const c=GC().PAL[GC().design().c];h+=pk('<span style="color:'+c+'">&#9632;</span> Guild sails','guild',on)}
   h+='</div>'+(ok?'<small>Guild sails match your guild\'s cape. The leader changes the design in START &gt; Guild &gt; Settings.</small>':'<small>Join a guild to fly its colours on your sails.</small>')+'</div>';return h}
- {const _r=rPn;rPn=function(){const out=_r.apply(this,arguments);try{if(pnOpen&&ptab===31&&!document.getElementById('sqboatsec'))pbd.insertAdjacentHTML('beforeend',section())}catch(e){}return out}}
+ {const _r=rPn;rPn=function(){const out=_r.apply(this,arguments);try{if(pnOpen&&ptab===31&&!document.getElementById('sqboatsec'))pbd.insertAdjacentHTML('beforeend',section())}catch(e){self.SQERR&&SQERR(e,'226-7')}return out}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-bsail]');if(!b||ptab!==31)return;e.stopPropagation();e.preventDefault();
-  ON=b.dataset.bsail==='guild'&&inGuild();try{say(ON?'Your boat now flies the guild\'s colours.':'Plain sails it is.')}catch(x){}try{sfx('talk')}catch(x){}try{saveLocal(true)}catch(x){}rPn()},true);
+  ON=b.dataset.bsail==='guild'&&inGuild();try{say(ON?'Your boat now flies the guild\'s colours.':'Plain sails it is.')}catch(x){self.SQERR&&SQERR(x,'226-8')}try{sfx('talk')}catch(x){self.SQERR&&SQERR(x,'226-9')}try{saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'226-10')}rPn()},true);
  window.SQSAILS={get on(){return ON},set on(v){ON=!!v},fromCh,mine,recolor,section};
 })();

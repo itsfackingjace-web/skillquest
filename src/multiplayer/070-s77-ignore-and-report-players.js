@@ -10,7 +10,7 @@ function ignSet(u,on){if(!u||!MP.user||u===MP.user.uid)return;const nm=trName(u)
   for(const r of[MP.players.get(u)])if(r)r.said=null;if(TR.inbox[u]){delete TR.inbox[u];trPopHide(u);FB.db.remove(FB.db.ref(FB.D,'treq/'+MP.user.uid+'/'+u)).catch(()=>{})}
   if(MP.req&&MP.req[u])FB.db.remove(FB.db.ref(FB.D,'freq/'+MP.user.uid+'/'+u)).catch(()=>{})}
  else{IGN.m.delete(u);mpLog('game','You no longer ignore '+nm+'.')}
- try{saveLocal(true);saveCloud(true)}catch(e){}if(MP.open)mpRList()}
+ try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'070-1')}if(MP.open)mpRList()}
 // what gets hidden
 {const _c=mpChat;mpChat=function(id,v){if(v&&ignored(v.u)){MP.seen.add(id);return}return _c(id,v)}}
 {SQSAVE.after('070:ign',s=>{if(IGN.m.size)s.ign=[...IGN.m].map(([u,n])=>[u,String(n).slice(0,12)]);})}
@@ -40,7 +40,7 @@ pmEl.addEventListener('click',async e=>{const b=e.target.closest('[data-pm]');if
  if(a==='send'){const R=IGN.rep;R.txt=($('pmtx')||{}).value||'';if(!R.why){$('pmst').textContent='Pick a reason first.';return}const also=$('pmig')&&$('pmig').checked;
   const msgs=MP.log.filter(m=>m.uid===u&&(m.k==='pub'||m.k==='pm')).slice(-10).map(m=>m.m).join(' | ').slice(0,800);
   // to the Moderation inbox (reports/<id>, 170), with what they said lately
-  const WK={Harassment:'chat',Spam:'spam',Cheating:'cheat','Bad name':'name',Other:'other'};let loc='';try{loc=SCENE&&SCENE.room&&SCENE.room.region||((typeof curRegion==='function')?curRegion():'')}catch(_){}
+  const WK={Harassment:'chat',Spam:'spam',Cheating:'cheat','Bad name':'name',Other:'other'};let loc='';try{loc=SCENE&&SCENE.room&&SCENE.room.region||((typeof curRegion==='function')?curRegion():'')}catch(_){self.SQERR&&SQERR(_,'070-2')}
   $('pmst').textContent='Sending...';try{const F=window.SQFB||FB,d=F.db;await d.push(d.ref(F.D,'reports'),{u,n:String(trName(u)).slice(0,12),by:MP.user.uid,byn:String(myName()).slice(0,12),why:WK[R.why]||'other',x:String(R.txt||'').slice(0,200),m:msgs.slice(0,800),loc:String(loc||'').slice(0,40),t:d.serverTimestamp()});
    if(also&&!ignored(u))ignSet(u,true);pmClose();say('Report sent. Thank you for keeping SkillQuest friendly.');mpLog('game','You reported '+trName(u)+'.')}
   catch(err){$('pmst').textContent='Could not send. Try again in a moment.';mpErr(err)}}});
@@ -61,4 +61,4 @@ window.SQIGN=IGN;window.SQIGNSET=ignSet;window.SQIGNORED=ignored;
   if(dk>.05&&MP.on){const cx=camX(),cy=camY();let st=false;
    for(const r of mpVis()){if(!r.au)continue;if(!st){g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';st=true}
     const sx=(r.x-cx)*Z,sy=(r.y-4-cy)*Z,rad=120*Z,gr=g.createRadialGradient(sx,sy,0,sx,sy,rad);gr.addColorStop(0,'rgba(255,215,150,'+(.4*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.2*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
-    g.fillStyle=gr;g.fillRect(sx-rad*1.1,sy-rad*1.1,rad*2.2,rad*2.2)}if(st)g.restore()}}catch(e){}})}
+    g.fillStyle=gr;g.fillRect(sx-rad*1.1,sy-rad*1.1,rad*2.2,rad*2.2)}if(st)g.restore()}}catch(e){self.SQERR&&SQERR(e,'070-3')}})}

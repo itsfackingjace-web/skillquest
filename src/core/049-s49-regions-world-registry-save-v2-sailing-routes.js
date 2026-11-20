@@ -50,10 +50,10 @@ const KNOWN49=new Set(('v sv ch xp tl gold arm q inv p hunger time kills fires r
 let KNOWN49_FULL=false;
 // a copy of the original save is kept before it is first migrated
 const PRE_V2='sq_save_pre_v2';
-function backupPre(S,key){try{if(localStorage.getItem(key)===null)localStorage.setItem(key,typeof S==='string'?S:JSON.stringify(S))}catch(e){}}
-try{const raw=localStorage.getItem(LS);if(raw){const b=JSON.parse(raw);if(b&&typeof b==='object'&&!(+b.sv>=2))backupPre(raw,PRE_V2)}}catch(e){}
+function backupPre(S,key){try{if(localStorage.getItem(key)===null)localStorage.setItem(key,typeof S==='string'?S:JSON.stringify(S))}catch(e){self.SQERR&&SQERR(e,'049-1')}}
+try{const raw=localStorage.getItem(LS);if(raw){const b=JSON.parse(raw);if(b&&typeof b==='object'&&!(+b.sv>=2))backupPre(raw,PRE_V2)}}catch(e){self.SQERR&&SQERR(e,'049-2')}
 SQLOAD.wrap('049',_ap49=>function(S){
- if(!KNOWN49_FULL){KNOWN49_FULL=true;try{for(const k of Object.keys(snap()))KNOWN49.add(k)}catch(e){}}
+ if(!KNOWN49_FULL){KNOWN49_FULL=true;try{for(const k of Object.keys(snap()))KNOWN49.add(k)}catch(e){self.SQERR&&SQERR(e,'049-3')}}
  let M;try{M=migrateSave(S)}catch(e){
   if(e&&e.future){SAVE_LOCK=true;say('This save is from a newer version of SkillQuest. It was left untouched; please update the game.');msgT=15;console.warn('save rejected:',e.message);return}
   console.warn('save migration failed, loading the original as it is',e);if(S&&typeof S==='object'&&!(+S.sv>=2))backupPre(S,PRE_V2+'_acct');_ap49(S);return}

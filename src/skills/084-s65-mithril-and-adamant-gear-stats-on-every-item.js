@@ -49,7 +49,7 @@
  const BASE={};for(const k in IDESC)BASE[k]=IDESC[k];
  const statsFor=k=>EQ[k]?eqStats(k):isFood(k)?foodStats(k):'';
  const wrapDesc=k=>{if(Object.getOwnPropertyDescriptor(IDESC,k)&&Object.getOwnPropertyDescriptor(IDESC,k).get)return;if(!(k in BASE))BASE[k]=strip(IDESC[k]);
-  Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){let s='';try{s=statsFor(k)}catch(e){}return(s?s+'. ':'')+strip(BASE[k]||'')},set(v){BASE[k]=strip(v)}})};
+  Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){let s='';try{s=statsFor(k)}catch(e){self.SQERR&&SQERR(e,'084-1')}return(s?s+'. ':'')+strip(BASE[k]||'')},set(v){BASE[k]=strip(v)}})};
  for(const k of new Set([...EQK,...FOODS.map(f=>f.k)]))wrapDesc(k);
  IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns.';
  window.SQSTATS=statsFor}

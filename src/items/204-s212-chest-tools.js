@@ -14,7 +14,7 @@
  const ownIt=s=>!!s&&!s._sh&&!s._foreign&&!(SCENE&&SCENE.house&&SCENE.house._foreign);
  // ---- sorting ----
  const MODES=[['type','TYPE'],['name','NAME'],['amount','AMOUNT'],['value','VALUE']];
- let mode='type';try{const m=localStorage.getItem('sq_chsort');if(MODES.some(x=>x[0]===m))mode=m}catch(e){}
+ let mode='type';try{const m=localStorage.getItem('sq_chsort');if(MODES.some(x=>x[0]===m))mode=m}catch(e){self.SQERR&&SQERR(e,'204-1')}
  const nameOf=k=>String(INAME[k]||k).toLowerCase();
  function order(keys,count){if(mode==='type')return keys;const pos=new Map(keys.map((k,i)=>[k,i])),a=keys.slice();
   const by=mode==='name'?(x,y)=>nameOf(x).localeCompare(nameOf(y)):mode==='amount'?(x,y)=>(count(y)-count(x)):(x,y)=>((SELLP[y]|0)-(SELLP[x]|0));
@@ -24,12 +24,12 @@
   const ks=Object.keys(s.items).filter(k=>(s.items[k]|0)>0);if(!ks.length){say('The chest is empty.');return}
   let n=0;for(const k of ks)n+=s.items[k]|0;
   if(s._sh){for(const k of ks)chestMove(k,'w')}
-  else{for(const k of ks){inv[k]=(inv[k]|0)+(s.items[k]|0);delete s.items[k]}try{sfx('pickup')}catch(e){}saveLocal(true);try{saveCloud(true)}catch(e){}}
+  else{for(const k of ks){inv[k]=(inv[k]|0)+(s.items[k]|0);delete s.items[k]}try{sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'204-2')}saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'204-3')}}
   CHCARD=null;say('Took '+n+' item'+(n===1?'':'s')+' out of the chest.');rPn()}
  // ---- renaming ----
  let REN=null;   // {s, v}: the chest being renamed and the text typed so far
  function rename(v){const s=REN&&REN.s;REN=null;if(!s||!ownIt(s)){rPn();return}const n=(window.SQCHNAME||clean)(v);if(n)s.nm=n;else delete s.nm;
-  saveLocal(true);try{saveCloud(true)}catch(e){}say(n?'Chest named “'+n+'”.':'Chest name removed.');rPn()}
+  saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'204-4')}say(n?'Chest named “'+n+'”.':'Chest name removed.');rPn()}
  // ---- the chest screen ----
  const CSS=document.createElement('style');CSS.textContent=
   '#pn .cht-h{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px}#pn .cht-n{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
@@ -48,10 +48,10 @@
     '<span class="cht-c" id="chtct">'+REN.v.length+'/'+NMAX+'</span><button class="sb cht-b" type="submit">SAVE</button><button class="sb cht-b" type="button" data-cht="cancel">CANCEL</button></form>';
    return head+h.slice(mark.length)}}
  {const _r=rPn;rPn=function(){const a=document.activeElement,typing=a&&a.id==='chtnm',pos=typing?a.selectionStart:0;_r.apply(this,arguments);
-   if(ptab!==7||!pnOpen){REN=null;return}const el=document.getElementById('chtnm');if(el&&(typing||REN&&REN.focus)){REN.focus=0;el.focus();try{el.setSelectionRange(typing?pos:el.value.length,typing?pos:el.value.length)}catch(e){}}}}
+   if(ptab!==7||!pnOpen){REN=null;return}const el=document.getElementById('chtnm');if(el&&(typing||REN&&REN.focus)){REN.focus=0;el.focus();try{el.setSelectionRange(typing?pos:el.value.length,typing?pos:el.value.length)}catch(e){self.SQERR&&SQERR(e,'204-5')}}}}
  pbd.addEventListener('click',e=>{if(ptab!==7)return;const b=e.target.closest&&e.target.closest('[data-cht]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.cht,s=chest();
   if(k==='take')takeAll();
-  else if(k==='sort'){const i=MODES.findIndex(x=>x[0]===mode);mode=MODES[(i+1)%MODES.length][0];try{localStorage.setItem('sq_chsort',mode)}catch(_){}rPn()}
+  else if(k==='sort'){const i=MODES.findIndex(x=>x[0]===mode);mode=MODES[(i+1)%MODES.length][0];try{localStorage.setItem('sq_chsort',mode)}catch(_){self.SQERR&&SQERR(_,'204-6')}rPn()}
   else if(k==='ren'){if(!s||!ownIt(s))return;REN=REN&&REN.s===s?null:{s,v:s.nm||'',focus:1};rPn()}
   else if(k==='cancel'){REN=null;rPn()}},true);
  pbd.addEventListener('submit',e=>{const f=e.target.closest&&e.target.closest('[data-cht-f]');if(!f)return;e.preventDefault();e.stopPropagation();const el=document.getElementById('chtnm');rename(el?el.value:'')},true);
@@ -68,6 +68,6 @@
    g.fillStyle='#f8ecc4';g.fillRect(px,py,pw,.5);                      // light top edge
    g.fillStyle='#b89858';g.fillRect(px,py+ph-.5,pw,.5);                // shadow along the bottom
    g.fillStyle='#8a6a30';for(const cx of[px+.6,px+pw-.6])g.fillRect(cx-.25,py+ph/2-.25,.5,.5);   // two little pins
-   g.fillStyle='#3a2410';g.textAlign='center';g.textBaseline='middle';g.fillText(t,x0+8,py+ph/2+.15,11.4)}catch(e){}g.restore()}
- {const _ds=drawStruct;drawStruct=function(i,s,ghost){const out=_ds.apply(this,arguments);try{if(s&&s.t==='chest'&&s.nm&&!ghost){const x0=(i%N)*16+(s.shake>0?Math.round(Math.sin(performance.now()/16)):0),y0=((i/N)|0)*16;placard(s.nm,x0,y0)}}catch(e){}return out}}
+   g.fillStyle='#3a2410';g.textAlign='center';g.textBaseline='middle';g.fillText(t,x0+8,py+ph/2+.15,11.4)}catch(e){self.SQERR&&SQERR(e,'204-7')}g.restore()}
+ {const _ds=drawStruct;drawStruct=function(i,s,ghost){const out=_ds.apply(this,arguments);try{if(s&&s.t==='chest'&&s.nm&&!ghost){const x0=(i%N)*16+(s.shake>0?Math.round(Math.sin(performance.now()/16)):0),y0=((i/N)|0)*16;placard(s.nm,x0,y0)}}catch(e){self.SQERR&&SQERR(e,'204-8')}return out}}
  window.SQCHEST={takeAll,rename(s,v){REN={s,v:''};rename(v)},get mode(){return mode},set mode(m){mode=m},order,NMAX,placard}})();

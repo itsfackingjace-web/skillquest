@@ -7,12 +7,12 @@
 (()=>{const st=document.createElement('style');st.textContent='#sqts .tshero canvas.sqtwh{position:absolute!important;image-rendering:pixelated;pointer-events:none;animation:tsbob 1.2s steps(2) infinite}';document.head.appendChild(st);
  let ov=null,last='';
  function draw(){const hero=document.querySelector('#sqts .tshero canvas:not(.sqtwh)');if(!hero)return;const vis=!(typeof SQTITLE==='function')||SQTITLE();
-  let ch=null;try{ch=gearCH()}catch(e){}const want=vis&&ch&&Array.isArray(ch.wr)&&ch.wr.length;
+  let ch=null;try{ch=gearCH()}catch(e){self.SQERR&&SQERR(e,'178-1')}const want=vis&&ch&&Array.isArray(ch.wr)&&ch.wr.length;
   if(!want){if(ov)ov.style.setProperty('display','none','important');hero.style.visibility='';last='';return}
   if(!ov){ov=document.createElement('canvas');ov.className='sqtwh';ov.width=96;ov.height=112;ov.hd2=1;hero.parentElement.appendChild(ov)}
   const k=hero.clientWidth/16||5,S=(p,v)=>ov.style.setProperty(p,v,'important');// 061's '.tshero canvas' rule forces size/position with !important
   S('width',48*k+'px');S('height',56*k+'px');S('position','absolute');S('inset','auto');S('left',hero.offsetLeft-16*k+'px');S('top',hero.offsetTop-19*k+'px');S('display','block');
   const key=JSON.stringify(ch)+'|'+(window.SQA&&SQA.live&&SQA.live.v);if(key!==last){last=key;const x=ov.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,96,112);x.imageSmoothingEnabled=false;x.setTransform(2,0,0,2,0,0);
-   const C=GC;GC=x;try{cP(ch,0,0,24,44,false)}catch(e){}finally{GC=C}}
+   const C=GC;GC=x;try{cP(ch,0,0,24,44,false)}catch(e){self.SQERR&&SQERR(e,'178-2')}finally{GC=C}}
   hero.style.visibility='hidden'}
- setInterval(()=>{try{draw()}catch(e){}},400);window.SQTITLEHERO={draw}})();
+ setInterval(()=>{try{draw()}catch(e){self.SQERR&&SQERR(e,'178-3')}},400);window.SQTITLEHERO={draw}})();

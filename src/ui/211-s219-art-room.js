@@ -28,11 +28,11 @@
  const mk=m=>m==='wear'?freshWear():m==='pet'?freshPet():fresh();
  function fresh(){return{mode:'pic',w:16,h:16,fr:[blank(16,16)],cur:0,pal:PAL0.slice(),col:1,tool:'pen',ms:200,onion:true,mirror:false,zoom:1,grid:true,name:'',kind:'item',note:'',undo:[],redo:[],view:'draw',mine:null,sent:''}}
  const LSK=m=>m==='wear'?'sq_art_wear':m==='pet'?'sq_art_pet':'sq_art_draft';
- function loadOne(m){try{const d=JSON.parse(localStorage.getItem(LSK(m))||'null');if(d&&d.w&&d.fr){const o=Object.assign(mk(m),d,{mode:m,fr:d.fr.map(s=>Uint8Array.from(s)),undo:[],redo:[],view:'draw',mine:null,sent:''});if(m==='pic'&&o.kind==='pet')o.kind='item';if(m==='pet'){o.kind='pet';if(o.fr.length!==4||o.w!==o.h||!PSZ.includes(o.w))return mk(m)}if(m!=='wear'||o.fr.length===3&&o.w===48&&o.h===76)return o}}catch(e){}return mk(m)}
- function load(){if(A)return;DR.pic=loadOne('pic');DR.wear=loadOne('wear');DR.pet=loadOne('pet');let m='pic';try{const v=localStorage.getItem('sq_art_mode');m=v==='wear'||v==='pet'?v:'pic'}catch(e){}A=DR[m]}
+ function loadOne(m){try{const d=JSON.parse(localStorage.getItem(LSK(m))||'null');if(d&&d.w&&d.fr){const o=Object.assign(mk(m),d,{mode:m,fr:d.fr.map(s=>Uint8Array.from(s)),undo:[],redo:[],view:'draw',mine:null,sent:''});if(m==='pic'&&o.kind==='pet')o.kind='item';if(m==='pet'){o.kind='pet';if(o.fr.length!==4||o.w!==o.h||!PSZ.includes(o.w))return mk(m)}if(m!=='wear'||o.fr.length===3&&o.w===48&&o.h===76)return o}}catch(e){self.SQERR&&SQERR(e,'211-1')}return mk(m)}
+ function load(){if(A)return;DR.pic=loadOne('pic');DR.wear=loadOne('wear');DR.pet=loadOne('pet');let m='pic';try{const v=localStorage.getItem('sq_art_mode');m=v==='wear'||v==='pet'?v:'pic'}catch(e){self.SQERR&&SQERR(e,'211-2')}A=DR[m]}
  const W=()=>A&&A.mode==='wear',PT=()=>A&&A.mode==='pet';
  let saveT=0;function keep(){clearTimeout(saveT);saveT=setTimeout(keepNow,400)}
- function keepNow(){clearTimeout(saveT);if(!A||A.edit)return;try{localStorage.setItem(LSK(A.mode),JSON.stringify({w:A.w,h:A.h,fr:A.fr.map(f=>Array.from(f)),cur:A.cur,pal:A.pal,col:A.col,tool:A.tool,ms:A.ms,onion:A.onion,mirror:A.mirror,zoom:A.zoom,grid:A.grid,name:A.name,kind:A.kind,note:A.note,sl:A.sl,under:A.under,gear:A.gear,pvm:A.pvm,scale:A.scale}));localStorage.setItem('sq_art_mode',A.mode)}catch(e){}}
+ function keepNow(){clearTimeout(saveT);if(!A||A.edit)return;try{localStorage.setItem(LSK(A.mode),JSON.stringify({w:A.w,h:A.h,fr:A.fr.map(f=>Array.from(f)),cur:A.cur,pal:A.pal,col:A.col,tool:A.tool,ms:A.ms,onion:A.onion,mirror:A.mirror,zoom:A.zoom,grid:A.grid,name:A.name,kind:A.kind,note:A.note,sl:A.sl,under:A.under,gear:A.gear,pvm:A.pvm,scale:A.scale}));localStorage.setItem('sq_art_mode',A.mode)}catch(e){self.SQERR&&SQERR(e,'211-3')}}
  const snapU=()=>{A.undo.push({fr:A.fr.map(f=>f.slice()),cur:A.cur,w:A.w,h:A.h});if(A.undo.length>60)A.undo.shift();A.redo=[]};
  // ---- the panel: tools on top, the canvas, the colours right under it, frames under those; name and sending on their own page ----
  {const st=document.createElement('style');st.textContent=`#pn.sqart .pc{max-width:980px}
@@ -123,7 +123,7 @@
   if(A.mirror){x.strokeStyle='rgba(56,112,216,.7)';x.setLineDash([4,4]);x.beginPath();x.moveTo(A.w*c/2+.5,0);x.lineTo(A.w*c/2+.5,A.h*c);x.stroke();x.setLineDash([])}
   thumbs();pv()}
  // the character under a wearable (211 shadows the game's CH, so 213 draws it): the 48x76 part of the 96x112 worn layer
- const UC=new Map();function under(d){const key=d+':'+(A.gear?1:0);if(UC.has(key))return UC.get(key);let c=null;try{const L=window.SQPAINT&&SQPAINT.charLayer(d,!!A.gear);if(L){c=document.createElement('canvas');c.width=48;c.height=76;c.getContext('2d').drawImage(L,WO[0],WO[1],48,76,0,0,48,76)}}catch(e){}UC.set(key,c);return c}
+ const UC=new Map();function under(d){const key=d+':'+(A.gear?1:0);if(UC.has(key))return UC.get(key);let c=null;try{const L=window.SQPAINT&&SQPAINT.charLayer(d,!!A.gear);if(L){c=document.createElement('canvas');c.width=48;c.height=76;c.getContext('2d').drawImage(L,WO[0],WO[1],48,76,0,0,48,76)}}catch(e){self.SQERR&&SQERR(e,'211-4')}UC.set(key,c);return c}
  function pv(){const cv=document.getElementById('arpv');if(!cv)return;if(PT())return petPv(cv);const i=W()?pvF%3:pvF%A.fr.length;if(!W())return drawFrame(cv,A.fr[i]||A.fr[0],A.w,A.h,A.pal);
   const x=cv.getContext('2d');x.clearRect(0,0,A.w,A.h);const u=under(i);if(u)x.drawImage(u,0,0);const t=document.createElement('canvas');t.width=A.w;t.height=A.h;drawFrame(t,A.fr[i],A.w,A.h,A.pal);x.drawImage(t,0,0)}
  // the pet preview: a strip of ground, the pet standing (Idle 1/2 every 0.5 s) or walking to and fro (Walk 1/2 every 125 ms, the game's step clock)
@@ -132,7 +132,7 @@
  const PTC=document.createElement('canvas'),PVH=()=>Math.max(A.h,32)+8;
  function petPv(cv){const now=performance.now(),walk=A.pvm==='walk',x=cv.getContext('2d'),gy=cv.height-4;x.imageSmoothingEnabled=false;x.clearRect(0,0,cv.width,cv.height);
   x.fillStyle='#7cc05a';x.fillRect(0,gy,cv.width,4);x.fillStyle='#5a9a40';for(let i=0;i<cv.width;i+=6)x.fillRect(i+((i/6)%2?2:0),gy,1,1);
-  if(A.scale){try{const L=window.SQPAINT&&SQPAINT.charLayer(2,false);if(L){x.globalAlpha=.85;x.drawImage(L,0,0,96,112,4-16,gy-51,48,56);x.globalAlpha=1}}catch(e){}}
+  if(A.scale){try{const L=window.SQPAINT&&SQPAINT.charLayer(2,false);if(L){x.globalAlpha=.85;x.drawImage(L,0,0,96,112,4-16,gy-51,48,56);x.globalAlpha=1}}catch(e){self.SQERR&&SQERR(e,'211-5')}}
   const i=petFrame(A.fr,walk,now),span=cv.width-A.w-(A.scale?22:4),per=span/24*1000,ph=walk?(now%(2*per))/per:0,right=ph<1;
   const px=Math.round((A.scale?22:2)+(walk?(right?ph:2-ph)*span:span/2));
   PTC.width=A.w;PTC.height=A.h;drawFrame(PTC,A.fr[i],A.w,A.h,A.pal);x.fillStyle='rgba(0,0,0,.18)';x.beginPath();x.ellipse(px+A.w/2,gy,Math.max(4,A.w*.35),2,0,0,7);x.fill();
@@ -147,7 +147,7 @@
  // two fingers on the canvas = move around (when zoomed) instead of drawing; the first finger's stroke is taken back
  const touches=new Map();
  pbd.addEventListener('pointerdown',e=>{if(ptab!==ATAB||e.target.id!=='arcv')return;e.preventDefault();e.stopPropagation();touches.set(e.pointerId,[e.clientX,e.clientY]);
-  const box=document.getElementById('arbox');try{e.target.setPointerCapture(e.pointerId)}catch(_){}
+  const box=document.getElementById('arbox');try{e.target.setPointerCapture(e.pointerId)}catch(_){self.SQERR&&SQERR(_,'211-6')}
   if(touches.size>=2||A.tool==='move'||space||e.button===1){if(drag&&touches.size>=2&&A.undo.length){const s=A.undo.pop();A.fr=s.fr;paint()}drag=null;pan={x:e.clientX,y:e.clientY,sl:box.scrollLeft,st:box.scrollTop};return}
   const p=at(e);if(!p)return;
   if(A.tool==='pick'){A.col=A.fr[A.cur][p[1]*A.w+p[0]];A.tool='pen';keep();rPn();return}
@@ -178,12 +178,12 @@
   else if(a==='fl'&&A.cur>0){snapU();[A.fr[A.cur-1],A.fr[A.cur]]=[A.fr[A.cur],A.fr[A.cur-1]];A.cur--}
   else if(a==='fr'&&A.cur<A.fr.length-1){snapU();[A.fr[A.cur+1],A.fr[A.cur]]=[A.fr[A.cur],A.fr[A.cur+1]];A.cur++}
   else if(a==='onion')A.onion=!A.onion;
-  else if(a==='mode'){if(A.mode!==v&&(v==='pic'||v==='wear'||v==='pet')){keepNow();A=DR[v]||(DR[v]=mk(v));A.view='draw';try{localStorage.setItem('sq_art_mode',v)}catch(x){}}}
+  else if(a==='mode'){if(A.mode!==v&&(v==='pic'||v==='wear'||v==='pet')){keepNow();A=DR[v]||(DR[v]=mk(v));A.view='draw';try{localStorage.setItem('sq_art_mode',v)}catch(x){self.SQERR&&SQERR(x,'211-7')}}}
   else if(a==='under'){A.under=A.under?0:1}else if(a==='gear'){A.gear=A.gear?0:1;UC.clear()}
   else if(a==='cpf'&&W()&&A.cur>0){snapU();A.fr[A.cur]=A.fr[0].slice()}
   else if(a==='cpi'&&PT()&&A.cur>0){snapU();A.fr[A.cur]=A.fr[0].slice()}else if(a==='cpw'&&PT()&&A.cur===3){snapU();A.fr[3]=A.fr[2].slice()}
   else if(a==='pvm'&&PT())A.pvm=v==='walk'?'walk':'idle';else if(a==='scale'&&PT())A.scale=A.scale?0:1;
-  else if(a==='new'){if(b&&b.dataset.sure){const m=A.mode;A=DR[m]=mk(m);try{localStorage.removeItem(LSK(m))}catch(x){}}else{if(b){b.dataset.sure=1;b.textContent='Sure? Tap again'}return}}
+  else if(a==='new'){if(b&&b.dataset.sure){const m=A.mode;A=DR[m]=mk(m);try{localStorage.removeItem(LSK(m))}catch(x){self.SQERR&&SQERR(x,'211-8')}}else{if(b){b.dataset.sure=1;b.textContent='Sure? Tap again'}return}}
   else if(a==='next'){if(!A.fr.some(f=>f.some(x=>x))){say('Draw something first.');return}if(PT()&&!has(A.fr[0])){say('Draw Idle 1 first: it\'s how your pet looks when it stands still.');return}A.view='send';A.sent=''}
   else if(a==='send'){send();return}
   else if(a==='mine'){A.view='mine';A.mine=null;rPn();loadMine();return}
@@ -224,16 +224,16 @@
    A.mine=Object.entries(v).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>(b.t||0)-(a.t||0))}catch(e){A.mine=[]}rPn()}
  const unpack=x=>{try{const d=JSON.parse(x.f);const pal=['',...d.p];return d.fr.map(s=>Uint8Array.from(s,c=>c==='.'?0:CH.indexOf(c)+1)).map(f=>({f,pal}))}catch(e){return[]}};
  // ---- the panel hook ----
- {const _r=rPn;rPn=function(){if(!(ptab===ATAB&&pnOpen))try{pn.classList.remove('sqart')}catch(e){}if(ptab===ATAB&&pnOpen){load();try{panelChrome('')}catch(e){}pbd.innerHTML=html();try{pn.classList.add('sqart')}catch(e){}if(A.view!=='mine')paint();else document.querySelectorAll('#pn [data-arm]').forEach(cv=>{const x=(A.mine||[]).find(m=>m.id===cv.dataset.arm);const fr=x?unpack(x):[];if(fr[0])drawFrame(cv,fr[0].f,x.w,x.h,fr[0].pal)});return}return _r.apply(this,arguments)}}
- function open(){if(!can()){say('The Art Room is for Patrons aged 13 and up.');return}load();if(A.view!=='send')A.view='draw';try{if(!pnOpen&&typeof openPanel==='function')openPanel(ATAB)}catch(e){}ptab=ATAB;pnOpen=true;try{pn.style.display='block'}catch(e){}rPn()}
+ {const _r=rPn;rPn=function(){if(!(ptab===ATAB&&pnOpen))try{pn.classList.remove('sqart')}catch(e){self.SQERR&&SQERR(e,'211-9')}if(ptab===ATAB&&pnOpen){load();try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'211-10')}pbd.innerHTML=html();try{pn.classList.add('sqart')}catch(e){self.SQERR&&SQERR(e,'211-11')}if(A.view!=='mine')paint();else document.querySelectorAll('#pn [data-arm]').forEach(cv=>{const x=(A.mine||[]).find(m=>m.id===cv.dataset.arm);const fr=x?unpack(x):[];if(fr[0])drawFrame(cv,fr[0].f,x.w,x.h,fr[0].pal)});return}return _r.apply(this,arguments)}}
+ function open(){if(!can()){say('The Art Room is for Patrons aged 13 and up.');return}load();if(A.view!=='send')A.view='draw';try{if(!pnOpen&&typeof openPanel==='function')openPanel(ATAB)}catch(e){self.SQERR&&SQERR(e,'211-12')}ptab=ATAB;pnOpen=true;try{pn.style.display='block'}catch(e){self.SQERR&&SQERR(e,'211-13')}rPn()}
  // ---- developer editing (Dev Suite > Art Room > Edit before approving): the piece opens in this editor, drafts on the device untouched ----
  let BEFORE=null;
  function edit(x,done){const fr=unpack(x);if(!fr.length)return false;const pal=fr[0].pal.slice();for(const c of PAL0.slice(1))if(!pal.includes(c))pal.push(c);
   const m=x.k==='wear'&&x.w===48&&x.h===76&&fr.length===3?'wear':x.k==='pet'&&fr.length===4&&x.w===x.h?'pet':'pic';
   BEFORE=A;A=Object.assign(mk(m),{w:x.w,h:x.h,fr:fr.map(o=>o.f.slice()),cur:0,pal,col:1,ms:x.ms|0||200,name:String(x.n||''),kind:x.k,note:x.note||'',sl:x.sl||'helm',zoom:1,
    edit:{u:x.u,id:x.id,who:x.who||'a Patron',fo:x.fo||x.f,fw:x.fo?x.fw||x.w:x.w,fh:x.fo?x.fh||x.h:x.h,fms:x.fo?x.fms||x.ms||200:x.ms||200,done,msg:''}});
-  try{if(window.SQSUITE)SQSUITE.close()}catch(e){}try{if(!pnOpen&&typeof openPanel==='function')openPanel(ATAB)}catch(e){}ptab=ATAB;pnOpen=true;try{pn.style.display='block'}catch(e){}rPn();return true}
- function endEdit(saved){const ed=A&&A.edit;A=BEFORE;BEFORE=null;try{if(typeof closePanel==='function')closePanel()}catch(e){}pnOpen=false;try{if(window.SQSUITE)SQSUITE.open()}catch(e){}if(ed&&ed.done)try{ed.done(saved)}catch(e){}}
+  try{if(window.SQSUITE)SQSUITE.close()}catch(e){self.SQERR&&SQERR(e,'211-14')}try{if(!pnOpen&&typeof openPanel==='function')openPanel(ATAB)}catch(e){self.SQERR&&SQERR(e,'211-15')}ptab=ATAB;pnOpen=true;try{pn.style.display='block'}catch(e){self.SQERR&&SQERR(e,'211-16')}rPn();return true}
+ function endEdit(saved){const ed=A&&A.edit;A=BEFORE;BEFORE=null;try{if(typeof closePanel==='function')closePanel()}catch(e){self.SQERR&&SQERR(e,'211-17')}pnOpen=false;try{if(window.SQSUITE)SQSUITE.open()}catch(e){self.SQERR&&SQERR(e,'211-18')}if(ed&&ed.done)try{ed.done(saved)}catch(e){self.SQERR&&SQERR(e,'211-19')}}
  async function saveEdit(){const ed=A.edit,Fb=F();if(!Fb){ed.msg='Not connected.';rPn();return}const n=String(A.name||'').trim().slice(0,24);if(!n){ed.msg='It needs a name.';rPn();return}
   if(!A.fr.some(f=>f.some(v=>v))){ed.msg='There\'s nothing drawn.';rPn();return}
   const up={n,w:A.w,h:A.h,f:pack(),ms:Math.max(40,Math.min(2000,A.ms|0)),fo:ed.fo,fw:ed.fw,fh:ed.fh,fms:ed.fms};ed.msg='Saving...';rPn();
@@ -312,7 +312,7 @@
   const w=x.w,h=x.h,o={w,h,s:2,ox:-Math.floor(w/2),oy:7-h};['a','c','b','d'].forEach((d,i)=>{const f=fr[i]&&fr[i].f;if(!f||!f.some(v=>v))return;o[d]={w,h,s:2,p:pal.join(','),r:SQA.pack(Array.from(f,v=>v?PX[v-1]:'.').join(''))}});
   return o.a?o:null}
  // a wearable preview: the facings in turn over the plain character
- function wearPv(cv,x,i){const fr=unpack(x);if(!fr[i])return;const c=cv.getContext('2d');c.clearRect(0,0,x.w,x.h);try{const L=window.SQPAINT&&SQPAINT.charLayer(i,false);if(L){c.globalAlpha=.55;c.drawImage(L,24,28,48,76,0,0,48,76);c.globalAlpha=1}}catch(e){}
+ function wearPv(cv,x,i){const fr=unpack(x);if(!fr[i])return;const c=cv.getContext('2d');c.clearRect(0,0,x.w,x.h);try{const L=window.SQPAINT&&SQPAINT.charLayer(i,false);if(L){c.globalAlpha=.55;c.drawImage(L,24,28,48,76,0,0,48,76);c.globalAlpha=1}}catch(e){self.SQERR&&SQERR(e,'211-20')}
   const t=document.createElement('canvas');t.width=x.w;t.height=x.h;drawFrame(t,fr[i].f,x.w,x.h,fr[i].pal);c.drawImage(t,0,0)}
  // animate the inbox previews
  setInterval(()=>{if(S.tab!=='artroom'||!T.list)return;const now=performance.now();document.querySelectorAll('#dvs [data-arp]').forEach(cv=>{const[u,id]=cv.dataset.arp.split('/');const x=T.list.find(y=>y.u===u&&y.id===id);if(!x)return;const fr=unpack(x);if(!fr.length)return;if(x.k==='wear'){wearPv(cv,x,Math.floor(now/900)%Math.min(3,fr.length));return}
@@ -322,12 +322,12 @@
   if(t.dataset&&t.dataset.arwk)T.wk[t.dataset.arwk]=t.value;
   if(t.dataset&&t.dataset.arpk)T.pk[t.dataset.arpk]=t.value;
   if(t.dataset&&t.dataset.arpc){T.pcf=T.pcf||{};T.pcf[t.dataset.arpc]=t.value.trim().slice(0,200)}
-  if(t.dataset&&t.dataset.arpq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-arpq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}},true);
+  if(t.dataset&&t.dataset.arpq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-arpq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'211-21')}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='artroom')return;const t=e.target.closest&&e.target.closest('[data-arx]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();
   const parts=t.dataset.arx.split(':'),a=parts[0];
   try{
    if(a==='clip'){const[u,id]=parts[1].split('/'),x=T.list.find(y=>y.u===u&&y.id===id),fr=unpack(x)[+parts[2]];if(!fr)return;const c={w:x.w,h:x.h,p:Array.from(fr.f,v=>v?fr.pal[v]||'':'')};
-    try{localStorage.setItem('sq_dev_clip',JSON.stringify(c))}catch(_){}toast('Frame copied. Open a picture editor and press Paste.')}
+    try{localStorage.setItem('sq_dev_clip',JSON.stringify(c))}catch(_){self.SQERR&&SQERR(_,'211-22')}toast('Frame copied. Open a picture editor and press Paste.')}
    else if(a==='edit'){const[u,id]=parts[1].split('/'),x=T.list.find(y=>y.u===u&&y.id===id);if(!x)return;
     if(!SQARTROOM.edit(x,saved=>{if(saved){Object.assign(x,saved);toast('Saved. Approve it or make it a painting now.')}API.draw()}))toast('This piece can\'t be opened (no frames).')}
    else if(a==='orig'){const[u,id]=parts[1].split('/'),x=T.list.find(y=>y.u===u&&y.id===id);if(!x||!x.fo)return;
@@ -336,12 +336,12 @@
    else if(a==='galhere'){const PG=window.SQPAINT;if(!PG)return;const c=PG.standHere();if(!c){toast('Go outside on Hollow Island first, then come back here.');return}
     if(!PG.tryPlace(c)){toast('Not enough room there: it needs 5 tiles across and 2 up clear of trees, rocks, houses and other buildings, above where you stand.');return}
     S.draft.places=S.draft.places||{};S.draft.places.gallery=c;await API.dset('draft/places/gallery',c);toast('Moved in your game. Publish it from the Publish tab and everyone sees it there.');API.draw()}
-   else if(a==='galauto'){if(S.draft.places)delete S.draft.places.gallery;await API.dset('draft/places/gallery',null);try{SQPAINT.applyChosen(null)}catch(_){}toast('The game picks its spot again (after you publish).');API.draw()}
+   else if(a==='galauto'){if(S.draft.places)delete S.draft.places.gallery;await API.dset('draft/places/gallery',null);try{SQPAINT.applyChosen(null)}catch(_){self.SQERR&&SQERR(_,'211-23')}toast('The game picks its spot again (after you publish).');API.draw()}
    else if(a==='paint'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id);if(!x||x.k==='wear')return;const p=Math.max(100,Math.min(1e6,T.pp[k]||2500));
     const rec={n:String(x.n||'Painting').slice(0,24),by:String(x.who||nm(u)).slice(0,12),u,w:x.w,h:x.h,f:x.f,ms:Math.max(40,Math.min(2000,x.ms|0||200)),p,t:D().serverTimestamp()};
     await D().set(ref('paintings/'+id),rec);if(x.st!=='ok'){await D().set(ref('art/'+u+'/'+id+'/st'),'ok');await D().set(ref('artcred/'+id),{n:rec.by,w:String(x.n||'Art').slice(0,40)});x.st='ok'}
-    const re=String(T.msg[k]||'').trim().slice(0,200);if(re)try{await D().set(ref('art/'+u+'/'+id+'/re'),re);x.re=re}catch(_){}
-    try{await D().set(ref('gifts/'+u+'/p'+Date.now().toString(36)),{m:('Your art "'+x.n+'" is now a painting in the Patron Art Gallery in Hollow Village, with your name on it! Your own copy is in your bag.'+(re?' '+re:'')).slice(0,300),t:D().serverTimestamp(),f:'dev'})}catch(_){}
+    const re=String(T.msg[k]||'').trim().slice(0,200);if(re)try{await D().set(ref('art/'+u+'/'+id+'/re'),re);x.re=re}catch(_){self.SQERR&&SQERR(_,'211-24')}
+    try{await D().set(ref('gifts/'+u+'/p'+Date.now().toString(36)),{m:('Your art "'+x.n+'" is now a painting in the Patron Art Gallery in Hollow Village, with your name on it! Your own copy is in your bag.'+(re?' '+re:'')).slice(0,300),t:D().serverTimestamp(),f:'dev'})}catch(_){self.SQERR&&SQERR(_,'211-25')}
     T.paint[id]=Object.assign({},rec,{t:Date.now()});toast('It\'s a painting now. It hangs in the gallery and the artist gets a copy.');API.draw()}
    else if(a==='poff'||a==='pon'){const k=parts[1],id=k.split('/')[1];if(!T.paint[id])return;await D().set(ref('paintings/'+id+'/off'),a==='poff'?true:null);if(a==='poff')T.paint[id].off=true;else delete T.paint[id].off;toast(a==='poff'?'No longer sold. Copies players have stay.':'Sold in the gallery again.');API.draw()}
    else if(a==='wear'){const k=parts[1],[u,id]=k.split('/'),x=T.list.find(y=>y.u===u&&y.id===id),key=T.wk[k];if(!x||!key||!EQ[key]){toast('Pick an item first.');return}
@@ -354,7 +354,7 @@
     const up={['art/'+u+'/'+id+'/st']:a};if(re)up['art/'+u+'/'+id+'/re']=re;if(a==='ok')up['artcred/'+id]={n:String(x.who||nm(u)).slice(0,12),w:String(x.n||'Art').slice(0,40)};
     for(const pth of Object.keys(up))await D().set(ref(pth),up[pth]);
     const m=(a==='ok'?'Your art "'+x.n+'" was approved! Thank you. It will show up in the game, and your name is in the credits.':'About your art "'+x.n+'": not this time.')+(re?' '+re:'');
-    try{await D().set(ref('gifts/'+u+'/a'+Date.now().toString(36)),{m:m.slice(0,300),t:D().serverTimestamp(),f:'dev'})}catch(_){}
+    try{await D().set(ref('gifts/'+u+'/a'+Date.now().toString(36)),{m:m.slice(0,300),t:D().serverTimestamp(),f:'dev'})}catch(_){self.SQERR&&SQERR(_,'211-26')}
     x.st=a;if(re)x.re=re;toast(a==='ok'?'Approved.':'Answered.');API.draw()}
    else if(a==='pm'){const u=parts[1],r=T.pat[u]||{},now=Date.now(),from=Math.max(now,r.u||0);const nr={s:r.s||now,u:from+30*864e5,c:true};await D().set(ref('patron/'+u),nr);T.pat[u]=nr;T.q='';toast(nm(u)+' is a Patron until '+new Date(nr.u).toLocaleDateString()+'.');API.draw()}
    else if(a==='pcsave'){const f=T.pcf||{},pc=T.pc||{};const up={};for(const k of['cid','cs','ws','camp','ct','crt'])if(f[k])up[k]=String(f[k]).trim().slice(0,k==='camp'?40:k==='ct'||k==='crt'?500:200);

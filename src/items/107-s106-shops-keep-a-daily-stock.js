@@ -11,14 +11,14 @@
  const isShop=()=>pnOpen&&ptab===2&&shop&&shop!=='wmkt';
  // a purchase = gold went down and items came in. Over today's stock: undo it.
  pbd.addEventListener('click',ev=>{if(!isShop())return;const b=ev.target.closest('[data-a]');if(!b)return;const inv0={...inv},g0=GLD;
-  const bk=/^b/.test(b.dataset.a||'')?keyOf((b.innerText||'').replace(/\n.*left today|\n.*restocks.*/,'')):null;if(bk&&!left(bk)){ev.stopImmediatePropagation();ev.preventDefault();say('Sold out of '+(SN[bk]||INAME[bk]||bk).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish')}catch(e){}return}
-  setTimeout(()=>{if(GLD>=g0)return;const got={};for(const k in inv){const d=(inv[k]|0)-(inv0[k]|0);if(d>0)got[k]=d}const ks=Object.keys(got);if(!ks.length){if(bk){cur().n[bk]=(cur().n[bk]|0)+1;try{if(isShop())rPn()}catch(e){}}return}
+  const bk=/^b/.test(b.dataset.a||'')?keyOf((b.innerText||'').replace(/\n.*left today|\n.*restocks.*/,'')):null;if(bk&&!left(bk)){ev.stopImmediatePropagation();ev.preventDefault();say('Sold out of '+(SN[bk]||INAME[bk]||bk).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'107-1')}return}
+  setTimeout(()=>{if(GLD>=g0)return;const got={};for(const k in inv){const d=(inv[k]|0)-(inv0[k]|0);if(d>0)got[k]=d}const ks=Object.keys(got);if(!ks.length){if(bk){cur().n[bk]=(cur().n[bk]|0)+1;try{if(isShop())rPn()}catch(e){self.SQERR&&SQERR(e,'107-2')}}return}
    const over=ks.find(k=>got[k]>left(k));
-   if(over){for(const k of ks)inv[k]=inv0[k]|0;GLD=g0;const L=left(over);say(L?'Only '+L+' '+(SN[over]||INAME[over]||over).toLowerCase()+' left in stock today. More arrive in the morning.':'Sold out of '+(SN[over]||INAME[over]||over).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish');svg();saveLocal(true)}catch(e){}}
+   if(over){for(const k of ks)inv[k]=inv0[k]|0;GLD=g0;const L=left(over);say(L?'Only '+L+' '+(SN[over]||INAME[over]||over).toLowerCase()+' left in stock today. More arrive in the morning.':'Sold out of '+(SN[over]||INAME[over]||over).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish');svg();saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'107-3')}}
    else{for(const k of ks)cur().n[k]=(cur().n[k]|0)+got[k];if(bk&&!got[bk])cur().n[bk]=(cur().n[bk]|0)+1}
-   try{if(isShop())rPn()}catch(e){}},0)},true);
+   try{if(isShop())rPn()}catch(e){self.SQERR&&SQERR(e,'107-4')}},0)},true);
  // show what's left on every shop button: match the button's words to an item
  const names=()=>{const L=[];for(const k in INAME){const n=(INAME[k]||'').toLowerCase().replace(/ \(.*\)$/,'');if(n.length>2)L.push([n,k]);const p=(SN[k]||'').toLowerCase();if(p.length>2)L.push([p,k])}return L.sort((a,b)=>b[0].length-a[0].length)};let NM=null;
  const keyOf=t=>{t=t.toLowerCase();if(/fire kit/.test(t))return null;NM=NM||names();for(const[n,k]of NM)if(t.includes(n))return k;return null};
  const _r=rPn;rPn=function(){_r();if(!isShop())return;try{for(const b of pbd.querySelectorAll('[data-a]')){const a=b.dataset.a||'';if(!/^b/.test(a))continue;const old=b.querySelector('.stk');if(old)old.remove();const k=keyOf(b.innerText||'');if(!k)continue;
-   const l=left(k),m=max(k),s=document.createElement('span');s.className='stk';b.style.opacity='';s.textContent=l?l+' / '+m+' left today':'Sold out · restocks in the morning';s.style.cssText='display:block;font:600 11px var(--pf);margin-top:2px;color:'+(l?l<=m/4?'#c06010':'#3a7a3a':'#c03030');b.appendChild(s);if(!l)b.style.opacity=.55}}catch(e){}}}
+   const l=left(k),m=max(k),s=document.createElement('span');s.className='stk';b.style.opacity='';s.textContent=l?l+' / '+m+' left today':'Sold out · restocks in the morning';s.style.cssText='display:block;font:600 11px var(--pf);margin-top:2px;color:'+(l?l<=m/4?'#c06010':'#3a7a3a':'#c03030');b.appendChild(s);if(!l)b.style.opacity=.55}}catch(e){self.SQERR&&SQERR(e,'107-5')}}}

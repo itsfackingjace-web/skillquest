@@ -90,7 +90,7 @@
  const inLog=k=>cats().some(([,L])=>L.includes(k));
  const colCount=()=>{let n=0;for(const[,L]of cats())for(const k of L)if(COL.has(k))n++;return n};
  const colTotal=()=>cats().reduce((s,[,L])=>s+L.length,0);
- function seed(){try{for(const k in inv)if((inv[k]|0)>0)COL.add(k);for(const s of['main','off','axe','pick','helm','body','legs','rod','hoe','can']){try{const k=occ(s);if(k)COL.add(k)}catch(e){}}for(const p of pets())COL.add('pet_'+p)}catch(e){}}
+ function seed(){try{for(const k in inv)if((inv[k]|0)>0)COL.add(k);for(const s of['main','off','axe','pick','helm','body','legs','rod','hoe','can']){try{const k=occ(s);if(k)COL.add(k)}catch(e){self.SQERR&&SQERR(e,'129-1')}}for(const p of pets())COL.add('pet_'+p)}catch(e){self.SQERR&&SQERR(e,'129-2')}}
  function note(k){if(COL.has(k)||!INAME[k]||!inLog(k))return;COL.add(k);const rare=cats().find(([n])=>n==='Rare finds')[1].includes(k)||/^pet_/.test(k);if(rare&&READY){say('New in your collection log: '+INAME[k].replace(/ \(pet\)$/,'')+'!');msgT=4}}
  // ---- counting ----
  const WHICH={1:'wc',2:'mine',3:'forage',9:'fish',4:'cook',11:'farm',6:'craft',10:'smith'},MIN1={craft:1,smith:1};
@@ -102,10 +102,10 @@
     if(XF.size)for(const i of XF){const c=WHICH[i];if(!c)continue;C[c]=cnt(c)+(MIN1[c]?Math.max(1,tot):tot)}}
    if(typeof kills==='number'){if(LK!=null&&kills>LK)C.kill=cnt('kill')+(kills-LK);LK=kills}
    XF.clear();LAST=Object.assign({},inv);
-   if((t-=dt)<=0){t=1;for(const s of['main','off','axe','pick','helm','body','legs']){try{const k=occ(s);if(k)note(k)}catch(e){}}for(const p of pets())note('pet_'+p);
-    try{const r=curRegion();if(r&&r!=='hollow')RG.add(r)}catch(e){}check()}}catch(e){}return out});
- function check(){for(const a of A){if(D[a.id])continue;let v=0;try{v=a.val()}catch(e){}if(v>=goalOf(a)){D[a.id]=Math.floor(Date.now()/864e5);if(a.gold)GLD+=a.gold;
-   say('Achievement unlocked: '+a.n+'!'+(a.gold?' +'+a.gold+' gold':''));msgT=5;try{sfx('level')}catch(e){}try{svg()}catch(e){}try{saveLocal(true)}catch(e){}if(pnOpen&&ptab===ATAB)rPn();break}}}
+   if((t-=dt)<=0){t=1;for(const s of['main','off','axe','pick','helm','body','legs']){try{const k=occ(s);if(k)note(k)}catch(e){self.SQERR&&SQERR(e,'129-3')}}for(const p of pets())note('pet_'+p);
+    try{const r=curRegion();if(r&&r!=='hollow')RG.add(r)}catch(e){self.SQERR&&SQERR(e,'129-4')}check()}}catch(e){self.SQERR&&SQERR(e,'129-5')}return out});
+ function check(){for(const a of A){if(D[a.id])continue;let v=0;try{v=a.val()}catch(e){self.SQERR&&SQERR(e,'129-6')}if(v>=goalOf(a)){D[a.id]=Math.floor(Date.now()/864e5);if(a.gold)GLD+=a.gold;
+   say('Achievement unlocked: '+a.n+'!'+(a.gold?' +'+a.gold+' gold':''));msgT=5;try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'129-7')}try{svg()}catch(e){self.SQERR&&SQERR(e,'129-8')}try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'129-9')}if(pnOpen&&ptab===ATAB)rPn();break}}}
  window.SQACH={add:(k,n)=>{C[k]=cnt(k)+(n||1)},get counters(){return C},get done(){return D},get col(){return COL},A,cats,check,colCount,colTotal};
  // ---- saves ----
  SQSAVE.after('129:ach',s=>{s.ach={c:Object.assign({},C),d:Object.assign({},D),col:[...COL],rg:[...RG]};});
@@ -127,12 +127,12 @@
  const ICO={};const ico=k=>{if(ICO[k])return ICO[k];try{return ICO[k]=(EQ[k]&&typeof eqIcon==='function')?eqIcon(k):iconURL(k)}catch(e){return''}};
  function html(){let h='<div class="tl">ACHIEVEMENTS</div><div style="display:flex;gap:6px;margin:4px 0 8px"><button class="sb" data-ac="tab:a" style="flex:1;opacity:'+(VIEW==='a'?1:.55)+'">Achievements</button><button class="sb" data-ac="tab:c" style="flex:1;opacity:'+(VIEW==='c'?1:.55)+'">Collection log</button></div>';
   if(VIEW==='a'){const n=A.filter(a=>D[a.id]).length;h+='<div class="qc" style="font-size:13px">'+n+' of '+A.length+' achievements · each pays gold the moment you reach it.</div>';let grp='';
-   for(const a of A){if(a.g!==grp){grp=a.g;h+='<div class="colh"><span>'+esc(grp)+'</span></div>'}const g=goalOf(a);let v=0;try{v=a.val()}catch(e){}const dn=!!D[a.id],pc=Math.min(100,Math.round(v/g*100));
+   for(const a of A){if(a.g!==grp){grp=a.g;h+='<div class="colh"><span>'+esc(grp)+'</span></div>'}const g=goalOf(a);let v=0;try{v=a.val()}catch(e){self.SQERR&&SQERR(e,'129-10')}const dn=!!D[a.id],pc=Math.min(100,Math.round(v/g*100));
     h+='<div class="ach'+(dn?' done':'')+'"><div class="ic">'+(dn?'✓':'?')+'</div><div class="tx"><b>'+esc(a.n)+'</b><small>'+esc(a.d)+'</small>'+(dn?'':'<div class="bar"><div style="width:'+pc+'%"></div></div><small>'+Math.min(v,g).toLocaleString()+' / '+g.toLocaleString()+'</small>')+'</div>'+(a.gold?'<div class="gd">'+a.gold.toLocaleString()+' g</div>':'')+'</div>'}}
   else{h+='<div class="qc" style="font-size:13px">'+colCount()+' of '+colTotal()+' found. '+'<b class="acpick">'+esc(PICK||'Tap a slot to see its name.')+'</b>'+'</div>';
    for(const[n,L]of cats()){const got=L.filter(k=>COL.has(k)).length;h+='<div class="colh"><span>'+esc(n)+'</span><span>'+got+'/'+L.length+'</span></div><div class="colg">';
     for(const k of L){const on=COL.has(k);h+='<button class="'+(on?'on':'')+'" data-acn="'+esc(on?INAME[k].replace(/ \(pet\)$/,''):'Not found yet')+'"><img alt="" src="'+ico(k)+'"></button>'}h+='</div>'}}
   return h}
- const _r=rPn;rPn=function(){if(ptab===ATAB){try{panelChrome('')}catch(e){}pbd.innerHTML=html();return}return _r.apply(this,arguments)};
+ const _r=rPn;rPn=function(){if(ptab===ATAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'129-11')}pbd.innerHTML=html();return}return _r.apply(this,arguments)};
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab!==ATAB)return _oc(e);const b=e.target.closest('[data-ac],[data-acn]');if(!b)return;
    if(b.dataset.ac){VIEW=b.dataset.ac.slice(4);PICK='';sfx('talk');rPn();return}PICK=b.dataset.acn;const q=pbd.querySelector('.acpick');if(q)q.textContent=PICK;else rPn()}}})();

@@ -38,7 +38,7 @@ const fwDmg=()=>2+Math.floor(lvOf(5)/20);
    for(let k=0;k<16;k++){const a=k/16*6.283;part(f.x,f.y-6,Math.cos(a)*60,Math.sin(a)*40-30,.5,k%2?'#f8e060':'#f88830',-20,2)}say(had?'Your flame wisp moves to the new fire.':'A little flame wisp answers your crown!')}}}
 const fwLive=()=>!!(FWP.f&&fires.includes(FWP.f)&&FWP.f.life>0);
 {SQUPD.after('091',(dt)=>{if(menuOpen||pnOpen)return;if(!fwLive()){if(FWP.f&&!fires.includes(FWP.f)&&FWP.f.life<=0)FWP.f=null;FWP.balls.length=0;return}const f=FWP.f;FWP.t+=dt;if((FWP.rt-=dt)<=0){FWP.rt=1.5+Math.random()*2;const a=Math.random()*6.283,r=10+Math.random()*(FW_R-18);FWP.tx=f.x+Math.cos(a)*r;FWP.ty=f.y-8+Math.sin(a)*r*.7}const dx=FWP.tx-FWP.x,dy=FWP.ty-FWP.y,d=Math.hypot(dx,dy);if(d>1){const sp=Math.min(d,28*dt);FWP.x+=dx/d*sp;FWP.y+=dy/d*sp}if((FWP.cd-=dt)<=0){let best=null,bd=1e9;for(const n of en){if(n.dead||n._wb)continue;const df=Math.hypot(n.x-f.x,n.y-f.y);if(df>FW_R+16)continue;const dd=Math.hypot(n.x-FWP.x,n.y-FWP.y);if(dd<bd){bd=dd;best=n}}
-   if(best){FWP.cd=1.2;FWP.balls.push({x:FWP.x,y:FWP.y-2,n:best,t:0});try{sfx('cfire')}catch(e){}}else FWP.cd=.3}for(let i=FWP.balls.length-1;i>=0;i--){const b=FWP.balls[i],n=b.n;b.t+=dt;if(!n||n.dead||b.t>2){FWP.balls.splice(i,1);continue}const ex=n.x-b.x,ey=n.y-6-b.y,el=Math.hypot(ex,ey);
+   if(best){FWP.cd=1.2;FWP.balls.push({x:FWP.x,y:FWP.y-2,n:best,t:0});try{sfx('cfire')}catch(e){self.SQERR&&SQERR(e,'091-1')}}else FWP.cd=.3}for(let i=FWP.balls.length-1;i>=0;i--){const b=FWP.balls[i],n=b.n;b.t+=dt;if(!n||n.dead||b.t>2){FWP.balls.splice(i,1);continue}const ex=n.x-b.x,ey=n.y-6-b.y,el=Math.hypot(ex,ey);
    if(el<5){FWP.balls.splice(i,1);spellHit({el:'fire',sc:curScene()},n,fwDmg());continue}const sp=Math.min(el,150*dt);b.x+=ex/el*sp;b.y+=ey/el*sp;if(Math.random()<.5)part(b.x,b.y,(Math.random()-.5)*20,-10,.25,'#f8a030',-20,1)}})}
 // drawing (above the world, like the ultimate effects)
 const FWC={};const fwCan=fr=>FWC[fr]||(window.SQWBART&&(FWC[fr]=SQWBART.wisp(fr,'s')));
@@ -50,5 +50,5 @@ let FWT=null,FWTat=0;
 {SQPP.before('091',(tm)=>{FWT=g.getTransform();FWTat=performance.now();})}
 {SQHUD.before('091',()=>{if(!menuOpen&&FWT&&performance.now()-FWTat<200)try{const live=fwLive(),peers=window.SQFWPEERS?SQFWPEERS():[];if(live||peers.length){const t=performance.now()/1000;g.save();g.setTransform(FWT);
    if(live){fwDraw(FWP.x,FWP.y,t,true);for(const b of FWP.balls){Rg(Math.round(b.x)-2,Math.round(b.y)-2,4,4,'#f86020');Rg(Math.round(b.x)-1,Math.round(b.y)-1,2,2,'#fff0a0')}}
-   for(const q of peers)fwDraw(q[0],q[1],t,true);g.restore()}}catch(e){}})}
+   for(const q of peers)fwDraw(q[0],q[1],t,true);g.restore()}}catch(e){self.SQERR&&SQERR(e,'091-2')}})}
 window.SQFW={state:FWP,live:fwLive,pres:()=>fwLive()?[Math.round(FWP.x),Math.round(FWP.y)]:0};

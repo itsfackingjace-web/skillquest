@@ -22,24 +22,24 @@
  let FRAME=0,SEEN=[];const _push=PROJ.push;// SEEN: the monsters at the start of this frame (some code sets en aside while the frame runs)
  PROJ.push=function(...ps){for(const p of ps)try{if(p&&p.hostile&&!p._mk){let best=null,bd=26;for(const n of en.length?en.concat(SEEN):SEEN){if(!n||n.dead)continue;const d=Math.hypot(n.x-p.x,n.y-8-p.y);if(d<bd){bd=d;best=n}}
     if(best){const k=mk(best);p._mk=k;p._jk='j:'+k.slice(2);best._shotAt=performance.now();const r=R[k];
-     if(r&&r.rate!==100&&best._rateF!==FRAME){best._rateF=FRAME;for(const f of['tcd','gcd'])if(best[f]>0)best[f]=best[f]*100/r.rate}}}}catch(e){}
+     if(r&&r.rate!==100&&best._rateF!==FRAME){best._rateF=FRAME;for(const f of['tcd','gcd'])if(best[f]>0)best[f]=best[f]*100/r.rate}}}}catch(e){self.SQERR&&SQERR(e,'160-1')}
   return _push.apply(this,ps)};
  // ---- the other shot lists: bandits / cacti (099) and Dev Suite bosses (146) ----
  const tagN=(p)=>{const n=p&&p._n;if(!n||p._mk)return;const k=mk(n);p._mk=k;p._jk='j:'+k.slice(2);n._shotAt=performance.now();const r=R[k];
   if(r&&r.rate!==100&&n._rateF!==FRAME){n._rateF=FRAME;for(const f of['cd','cbt','tcd','gcd'])if(n[f]>0)n[f]=n[f]*100/r.rate}};
- for(const L of[window.SQNMP,window.SQCBSH]){if(!L)continue;const _p=L.push;L.push=function(...ps){for(const p of ps)try{tagN(p)}catch(e){}return _p.apply(this,ps)}}
- window.SQSHOTHIT=p=>{try{const r=p&&p._mk&&R[p._mk];if(r&&!dead)apply(r)}catch(e){}};
- window.SQSHOTDRAW=p=>{if(!p||!p._jk||!SQPROPS.looks||!SQPROPS.looks[p._jk])return false;const a=Math.atan2(p.vy||0,p.vx||1);g.save();g.translate(Math.round(p.x),Math.round(p.y));g.rotate(Math.round(a/(Math.PI/8))*(Math.PI/8));try{SQPROPS.drawLook(p._jk,0,0,null,0,false)}catch(e){}g.restore();return true};
+ for(const L of[window.SQNMP,window.SQCBSH]){if(!L)continue;const _p=L.push;L.push=function(...ps){for(const p of ps)try{tagN(p)}catch(e){self.SQERR&&SQERR(e,'160-2')}return _p.apply(this,ps)}}
+ window.SQSHOTHIT=p=>{try{const r=p&&p._mk&&R[p._mk];if(r&&!dead)apply(r)}catch(e){self.SQERR&&SQERR(e,'160-3')}};
+ window.SQSHOTDRAW=p=>{if(!p||!p._jk||!SQPROPS.looks||!SQPROPS.looks[p._jk])return false;const a=Math.atan2(p.vy||0,p.vx||1);g.save();g.translate(Math.round(p.x),Math.round(p.y));g.rotate(Math.round(a/(Math.PI/8))*(Math.PI/8));try{SQPROPS.drawLook(p._jk,0,0,null,0,false)}catch(e){self.SQERR&&SQERR(e,'160-4')}g.restore();return true};
  const capDraw=t=>{const k=SHOOT[t];if(k==='bullet'){Rg(-2,-2,4,4,'#181018');Rg(-1,-1,2,2,'#f8e070');return}if(k==='needle'){for(let i=0;i<5;i++)Rg(-i,0,1,1,i?'#e8e0b0':'#ffffff');return}
   if(k==='fire'){g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(0,0,5,0,6.283);g.fill();Rg(-2,-2,4,4,'#181018');Rg(-1,-1,2,2,'#ffd060');return}
   drawProj({x:0,y:0,vx:1,vy:0,t:0,k,sc:curScene()})};
  // ---- drawing a shot with its look ----
- {const _dp=drawProj;drawProj=function(p){if(p&&p._jk&&SQPROPS.looks){const L=SQPROPS.looks[p._jk];if(L){const a=Math.atan2(p.vy||0,p.vx||1);g.save();g.translate(Math.round(p.x),Math.round(p.y));g.rotate(Math.round(a/(Math.PI/8))*(Math.PI/8));try{SQPROPS.drawLook(p._jk,0,0,null,0,false)}catch(e){}g.restore();return}}return _dp.apply(this,arguments)}}
+ {const _dp=drawProj;drawProj=function(p){if(p&&p._jk&&SQPROPS.looks){const L=SQPROPS.looks[p._jk];if(L){const a=Math.atan2(p.vy||0,p.vx||1);g.save();g.translate(Math.round(p.x),Math.round(p.y));g.rotate(Math.round(a/(Math.PI/8))*(Math.PI/8));try{SQPROPS.drawLook(p._jk,0,0,null,0,false)}catch(e){self.SQERR&&SQERR(e,'160-5')}g.restore();return}}return _dp.apply(this,arguments)}}
  // ---- hits and status effects ----
  const ST={slow:0,burn:0,freeze:0,poison:0,bt:0,pt:0};const NAMES={slow:'slowed',burn:'burning',freeze:'frozen',poison:'poisoned'};
  const COL={slow:'#80b0ff',burn:'#ff7a28',freeze:'#c8f0ff',poison:'#78d048'};
  function apply(r){if(r.dmg>0&&!dead)P.hp-=r.dmg;const got=[];for(const f in r.fx){const[c,t]=r.fx[f];if(Math.random()*100<c){ST[f]=Math.max(ST[f],t);got.push(NAMES[f])}}
-  if(got.length){say('You are '+got.join(' and ')+'!');try{sfx('hurt')}catch(e){}}}
+  if(got.length){say('You are '+got.join(' and ')+'!');try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'160-6')}}}
  {SQUPD.wrap('160',_u=>function(dt){FRAME++;SEEN=en.slice();const live=[],x0=P.x,y0=P.y,hp0=P.hp,h0=hurt;
    if(Object.keys(R).length)for(const p of PROJ)if(p&&!p.dead&&p.hostile&&p._mk&&R[p._mk])live.push(p);
    const out=_u.apply(this,arguments);
@@ -51,4 +51,4 @@
      if(ST.burn<=0)ST.bt=0;if(ST.poison<=0)ST.pt=0}}catch(e){console.warn('monster attacks',e)}
    return out})}
  window.SQMOBATK={SHOOT,FX,capDraw,get rules(){return R},status:ST,shoots:k=>!!SHOOT[String(k||'').replace(/^[mj]:/,'').split(':')[0]],clear(){for(const f of FX)ST[f]=0}};
- try{SQPROPS.recat()}catch(e){}})();
+ try{SQPROPS.recat()}catch(e){self.SQERR&&SQERR(e,'160-7')}})();

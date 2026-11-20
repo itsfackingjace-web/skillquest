@@ -27,7 +27,7 @@
   // island entrances that use a design take its number of floors
   for(const k in DKIND){const K=DKIND[k];if(K&&K.dgw&&DG[K.dgw])K.floors=DG[K.dgw].fl.length}
   // floors built today come back fresh (not the one you're on)
-  try{const here=SCENE&&SCENE.id;for(const k in DUN.floors){const R=DUN.floors[k];const kind=R&&R.dun&&R.dun.kind,K=DKIND[kind];if(k===here)continue;if((K&&(K.dg||K.dgw))||/^dg_/.test(kind||'')){try{HDRM.delete(R)}catch(e){}delete DUN.floors[k];delete ROOMS[k]}}}catch(e){}}
+  try{const here=SCENE&&SCENE.id;for(const k in DUN.floors){const R=DUN.floors[k];const kind=R&&R.dun&&R.dun.kind,K=DKIND[kind];if(k===here)continue;if((K&&(K.dg||K.dgw))||/^dg_/.test(kind||'')){try{HDRM.delete(R)}catch(e){self.SQERR&&SQERR(e,'189-1')}delete DUN.floors[k];delete ROOMS[k]}}}catch(e){self.SQERR&&SQERR(e,'189-2')}}
  SQA.onApply(apply);
  const designOf=kind=>{const K=DKIND[kind];if(!K)return null;return DG[K.dg]||DG[K.dgw]||null};
  function build(kind,f){const D=designOf(kind),K=DKIND[kind],F=D.fl[Math.max(0,Math.min(D.fl.length-1,f-1))],W=F.w,H=F.h,S=ST[D.st];
@@ -38,11 +38,11 @@
   if(f<D.fl.length&&!R.items.some(it=>it.t==='stairs')){// no stairs drawn: put them as far from the entrance as possible
    let best=-1,bd=-1;for(let i=0;i<W*H;i++)if(!G[i]&&!R.solid.has(i)){const d=Math.abs(i%W-F.ex)+Math.abs(((i/W)|0)-(H-1));if(d>bd){bd=d;best=i}}if(best>=0)R.items.push({t:'stairs',x:best%W,y:(best/W)|0})}
   const M=window.SQISLIFE&&SQISLIFE.MOBS||{};
-  for(const q of F.m){const T=M[q.k];if(!T)continue;const hp=q.hp||(q.b?Math.round(T.hp*4):T.hp);let m=null;try{m=rgMake(q.k,hp,q.x*16+8,q.y*16+8)}catch(e){}if(!m)continue;m.mhp=hp;m.icv=1;if(q.b){m.big=1;m._dgb=1}R.mobs.push(m)}
+  for(const q of F.m){const T=M[q.k];if(!T)continue;const hp=q.hp||(q.b?Math.round(T.hp*4):T.hp);let m=null;try{m=rgMake(q.k,hp,q.x*16+8,q.y*16+8)}catch(e){self.SQERR&&SQERR(e,'189-3')}if(!m)continue;m.mhp=hp;m.icv=1;if(q.b){m.big=1;m._dgb=1}R.mobs.push(m)}
   for(let i=0;i<W*H;i++)if(G[i])R.solid.add(i);return R}
  {const _bf=buildFloor;buildFloor=function(kind,f){if(designOf(kind)){try{return build(kind,f)}catch(e){console.warn('dungeon builder',e)}}return _bf.apply(this,arguments)}}
  // designed bosses: a health bar over them
- {const _ps=pS;pS=function(n){const out=_ps.apply(this,arguments);try{if(n&&n._dgb&&n.hp>0){const w=28,x=Math.round(n.x-w/2),y=Math.round(n.y-24);g.fillStyle='#000';g.fillRect(x-1,y-1,w+2,5);g.fillStyle='#c82828';g.fillRect(x,y,Math.round(w*Math.max(0,n.hp)/(n.mhp||n.hp)),3)}}catch(e){}return out}}
+ {const _ps=pS;pS=function(n){const out=_ps.apply(this,arguments);try{if(n&&n._dgb&&n.hp>0){const w=28,x=Math.round(n.x-w/2),y=Math.round(n.y-24);g.fillStyle='#000';g.fillRect(x-1,y-1,w+2,5);g.fillStyle='#c82828';g.fillRect(x,y,Math.round(w*Math.max(0,n.hp)/(n.mhp||n.hp)),3)}}catch(e){self.SQERR&&SQERR(e,'189-4')}return out}}
  window.SQDUNGEONS={get list(){return DG},ST,ITEMS,ORES,build,designOf};
  // ======================= Dev Suite > Dungeons =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;

@@ -40,7 +40,7 @@
  const phase=(x,y)=>((x*7+y*13)%17)/17*5;
  const okey=o=>'o:'+o.t+(o.v!=null&&o.v!==''?':'+o.v:'');
  // ---- world objects: Hollow draws them through OBJHD, islands through drawFurn ----
- const objDraw=(o,bx,by,s)=>{const k=okey(o),L=lookOf(k);if(!L)return false;try{shd(bx,by-1,Math.max(8,Math.min(30,L.w*L.s/2*.7)))}catch(e){}return drawLook(k,bx-8+(s||0),by-14,null,phase(bx>>4,by>>4))};
+ const objDraw=(o,bx,by,s)=>{const k=okey(o),L=lookOf(k);if(!L)return false;try{shd(bx,by-1,Math.max(8,Math.min(30,L.w*L.s/2*.7)))}catch(e){self.SQERR&&SQERR(e,'111d-1')}return drawLook(k,bx-8+(s||0),by-14,null,phase(bx>>4,by>>4))};
  const _oh=OBJHD;OBJHD=(o,x,y,bx,by,s,tm)=>{if(o&&objDraw(o,bx,by,s))return true;return _oh?_oh(o,x,y,bx,by,s,tm):false};
  // ---- things in rooms, dungeons, island villages, island props ----
  const SKIP=new Set(['_obj','lm','bwnpc','afnpc','npc','house','gwater']);
@@ -69,12 +69,12 @@
   // dungeon bosses keep the game's own glow, attack warnings and health bar: the game's drawer runs with every picture
   // (its body) left out (Frostfang Alpha, Sandclaw Matriarch, Tidekeeper); Thornroot's roots and the Emberlord's fire
   // pools and fireballs are drawn here since their bodies aren't pictures
-  const BX=n._wb||n.type==='ib'?'skip':BXFX[n.type];if(BX==='skip'){const di=g.drawImage;g.drawImage=function(){};try{_ps(n,tm)}catch(e){}finally{delete g.drawImage;if(g.drawImage!==di)g.drawImage=di}}
-  else if(BX)try{BX(n,tm,0)}catch(e){}
-  if(!BX)try{shd(x,y+5,Math.max(8,Math.min(40,w*.7)))}catch(e){}g.save();g.imageSmoothingEnabled=false;if(n.frozen>0)g.globalAlpha*=.85;if(fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,Math.round((x+L.ox)*2)/2,Math.round((y+L.oy)*2)/2,w,h);g.restore();
+  const BX=n._wb||n.type==='ib'?'skip':BXFX[n.type];if(BX==='skip'){const di=g.drawImage;g.drawImage=function(){};try{_ps(n,tm)}catch(e){self.SQERR&&SQERR(e,'111d-2')}finally{delete g.drawImage;if(g.drawImage!==di)g.drawImage=di}}
+  else if(BX)try{BX(n,tm,0)}catch(e){self.SQERR&&SQERR(e,'111d-3')}
+  if(!BX)try{shd(x,y+5,Math.max(8,Math.min(40,w*.7)))}catch(e){self.SQERR&&SQERR(e,'111d-4')}g.save();g.imageSmoothingEnabled=false;if(n.frozen>0)g.globalAlpha*=.85;if(fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,Math.round((x+L.ox)*2)/2,Math.round((y+L.oy)*2)/2,w,h);g.restore();
   if(n.frozen>0){g.save();g.globalAlpha=.35;g.fillStyle='#a8e0ff';g.fillRect(x+L.ox,y+L.oy,w,h);g.restore()}
   // bosses keep their health bar over their head
-  if(BX&&BX!=='skip')try{BX(n,tm,1,y+L.oy)}catch(e){}
+  if(BX&&BX!=='skip')try{BX(n,tm,1,y+L.oy)}catch(e){self.SQERR&&SQERR(e,'111d-5')}
   if(n.type==='boss'||n.type==='bonelord'){const mh=n.mhp||(n.type==='boss'?30:45),by=Math.round(y+L.oy-8);Rg(x-16,by,32,4,'#181018');Rg(x-15,by+1,Math.max(0,Math.round(30*n.hp/mh)),2,n.type==='boss'?'#e03030':'#a050e0')}return true}
  const bossBar=(n,x,top,col)=>{const w=40,f=Math.max(0,n.hp/(n.mhp||1)),K='#181018';Rg(x-w/2-1,top-8,w+2,5,K);Rg(x-w/2,top-7,w,3,'#3a1a1a');Rg(x-w/2,top-7,Math.round(w*f),3,col)};
  const BXFX={alpha:'skip',matri:'skip',tidek:'skip',
@@ -87,27 +87,27 @@
  const _ps=pS;pS=function(n,tm){if(mobDraw(n,tm))return;return _ps.apply(this,arguments)};
  // ---- village details and boats (globals the game calls by name) ----
  const wrapG=(name,fn)=>{if(typeof window[name]!=='function')return;const o=window[name];window[name]=function(){if(fn.apply(this,arguments))return;return o.apply(this,arguments)}};
- wrapG('drawLamp',(x,y)=>{if(!has('v:lamp'))return false;try{shd(x*16+8,y*16+15,10)}catch(e){}return drawLook('v:lamp',x*16,y*16,null,phase(x,y))});
- wrapG('drawWell',(x,y)=>{if(!has('v:well'))return false;try{shd(x*16+8,y*16+15,20)}catch(e){}return drawLook('v:well',x*16,y*16,null,phase(x,y))});
- wrapG('drawSign',i=>{if(!has('v:sign'))return false;const x=i%N,y=(i/N)|0;try{shd(x*16+8,y*16+15,10)}catch(e){}return drawLook('v:sign',x*16,y*16,null,phase(x,y))});
+ wrapG('drawLamp',(x,y)=>{if(!has('v:lamp'))return false;try{shd(x*16+8,y*16+15,10)}catch(e){self.SQERR&&SQERR(e,'111d-6')}return drawLook('v:lamp',x*16,y*16,null,phase(x,y))});
+ wrapG('drawWell',(x,y)=>{if(!has('v:well'))return false;try{shd(x*16+8,y*16+15,20)}catch(e){self.SQERR&&SQERR(e,'111d-7')}return drawLook('v:well',x*16,y*16,null,phase(x,y))});
+ wrapG('drawSign',i=>{if(!has('v:sign'))return false;const x=i%N,y=(i/N)|0;try{shd(x*16+8,y*16+15,10)}catch(e){self.SQERR&&SQERR(e,'111d-8')}return drawLook('v:sign',x*16,y*16,null,phase(x,y))});
  const bhoriz=i=>ROADS.has(i-1)||ROADS.has(i+1)||(tile[i-1]>0&&!BRIDGE.has(i-1)&&tile[i-1]!==undefined&&!BRIDGE.has(i+N)&&!BRIDGE.has(i-N));
  wrapG('drawBridge',i=>{const k=bhoriz(i)?'v:bridgeh':'v:bridgev';if(!has(k))return false;const x=i%N,y=(i/N)|0;return drawLook(k,x*16,y*16,null,phase(x,y))});
- wrapG('drawWreck',()=>{if(!has('v:wreck'))return false;const x0=(WRK.x-1)*16,y0=(WRK.y-1)*16;try{shd(x0+24,y0+28,48)}catch(e){}return drawLook('v:wreck',x0,y0)});
- wrapG('drawHut',()=>{if(!has('v:hut'))return false;const x0=(HRM.x-1)*16,y0=(HRM.y-1)*16;try{shd(x0+24,HRM.y*16-2,52)}catch(e){}return drawLook('v:hut',x0,y0)});
+ wrapG('drawWreck',()=>{if(!has('v:wreck'))return false;const x0=(WRK.x-1)*16,y0=(WRK.y-1)*16;try{shd(x0+24,y0+28,48)}catch(e){self.SQERR&&SQERR(e,'111d-9')}return drawLook('v:wreck',x0,y0)});
+ wrapG('drawHut',()=>{if(!has('v:hut'))return false;const x0=(HRM.x-1)*16,y0=(HRM.y-1)*16;try{shd(x0+24,HRM.y*16-2,52)}catch(e){self.SQERR&&SQERR(e,'111d-10')}return drawLook('v:hut',x0,y0)});
  if(typeof TGDRAW==='function'){const _tg=TGDRAW;TGDRAW=(x,y,tm)=>{if(has('v:grass')&&drawLook('v:grass',x*16,y*16,null,phase(x,y)))return;return _tg(x,y,tm)}}
  const DIRL=fc=>fc&&fc[0]>0?'e':fc&&fc[0]<0?'w':fc&&fc[1]<0?'n':'s';
  const sailKey=(fc,part)=>{const d=DIRL(fc);return['v:sail_'+(d==='w'?'e':d)+'_'+part,d==='w']};
- wrapG('drawBoat26',tm=>{const[k,fl]=sailKey(face,'back');if(!has(k))return false;const x=Math.round(P.x),y=Math.round(P.y)+Math.round(Math.sin(tm*2.6));try{BOAT85.foam(x,y,face,tm)}catch(e){}return drawLook(k,x,y,null,0,fl)});
+ wrapG('drawBoat26',tm=>{const[k,fl]=sailKey(face,'back');if(!has(k))return false;const x=Math.round(P.x),y=Math.round(P.y)+Math.round(Math.sin(tm*2.6));try{BOAT85.foam(x,y,face,tm)}catch(e){self.SQERR&&SQERR(e,'111d-11')}return drawLook(k,x,y,null,0,fl)});
  wrapG('drawBoatFront26',(x,y,fc,tm)=>{const[k,fl]=sailKey(fc,'front');if(!has(k))return false;return drawLook(k,x,y,null,0,fl)});
- wrapG('drawBoat',(x,y,tm)=>{if(!has('v:moored'))return false;const px=x*16+8,py=y*16+6+Math.round(Math.sin(tm*1.6+x));try{BOAT85.foam(px,py,[1,0],tm*.5)}catch(e){}return drawLook('v:moored',px,py,null,phase(x,y))});
+ wrapG('drawBoat',(x,y,tm)=>{if(!has('v:moored'))return false;const px=x*16+8,py=y*16+6+Math.round(Math.sin(tm*1.6+x));try{BOAT85.foam(px,py,[1,0],tm*.5)}catch(e){self.SQERR&&SQERR(e,'111d-12')}return drawLook('v:moored',px,py,null,phase(x,y))});
  // ---- things players build ----
- wrapG('drawStation',(t,x,y,st,tm)=>{const k=t==='planter'&&st&&st.ready&&has('p:planter:ready')?'p:planter:ready':'p:'+t;if(!has(k))return false;try{shd(x*16+8,y*16+14,12)}catch(e){}return drawLook(k,x*16,y*16,null,phase(x,y))});
+ wrapG('drawStation',(t,x,y,st,tm)=>{const k=t==='planter'&&st&&st.ready&&has('p:planter:ready')?'p:planter:ready':'p:'+t;if(!has(k))return false;try{shd(x*16+8,y*16+14,12)}catch(e){self.SQERR&&SQERR(e,'111d-13')}return drawLook(k,x*16,y*16,null,phase(x,y))});
  wrapG('drawPiece',(t,x,y,f,ghost)=>{if(t==='wwall'||t==='swall'||t==='door'||t==='bed'||t==='chest')return false;const k='p:'+t;if(!has(k))return false;return drawLook(k,x*16,y*16,null,phase(x,y),false,ghost?.55:null)});
  wrapG('drawStruct',(i,s,ghost)=>{if(!s||(s.t!=='chest'&&s.t!=='bed'))return false;const k='p:'+s.t;if(!has(k))return false;const x=i%N,y=(i/N)|0,sh=s.shake>0?Math.round(Math.sin(performance.now()/16)):0;
-  try{shd(x*16+8,y*16+14,14)}catch(e){}return drawLook(k,x*16+sh,y*16,null,phase(x,y),false,ghost?.55:null)});
- wrapG('pF',(f,tm)=>{if(!f||f._glow||!has('p:campfire'))return false;const x=Math.round(f.x),y=Math.round(f.y);try{shd(x,y+4,18)}catch(e){}return drawLook('p:campfire',x-8,y-8,null,phase(x>>4,y>>4))});
+  try{shd(x*16+8,y*16+14,14)}catch(e){self.SQERR&&SQERR(e,'111d-14')}return drawLook(k,x*16+sh,y*16,null,phase(x,y),false,ghost?.55:null)});
+ wrapG('pF',(f,tm)=>{if(!f||f._glow||!has('p:campfire'))return false;const x=Math.round(f.x),y=Math.round(f.y);try{shd(x,y+4,18)}catch(e){self.SQERR&&SQERR(e,'111d-15')}return drawLook('p:campfire',x-8,y-8,null,phase(x>>4,y>>4))});
  // fences and walls: the post/block, then a part towards each neighbour that's a fence too
- wrapG('drawFence',(i,s,ghost)=>{if(!s)return false;const t=s.t,x=i%N,y=(i/N)|0;let open=false;try{open=t==='door'&&!ghost&&doorOpen(i)}catch(e){}
+ wrapG('drawFence',(i,s,ghost)=>{if(!s)return false;const t=s.t,x=i%N,y=(i/N)|0;let open=false;try{open=t==='door'&&!ghost&&doorOpen(i)}catch(e){self.SQERR&&SQERR(e,'111d-16')}
   const ck=open&&has('f:door:o')?'f:door:o':'f:'+t+':c';if(!has(ck))return false;const px=x*16+(s.shake>0?Math.round(Math.sin(performance.now()/16)):0),py=y*16,a=ghost?.55:null,nb=(dx,dy)=>!ghost&&fenceNb(x+dx,y+dy);
   for(const[d,dx,dy]of[['n',0,-1],['w',-1,0],['e',1,0]])if(nb(dx,dy)&&has('f:'+t+':'+d))drawLook('f:'+t+':'+d,px,py,null,0,false,a);
   drawLook(ck,px,py,null,phase(x,y),false,a);if(nb(0,1)&&has('f:'+t+':s'))drawLook('f:'+t+':s',px,py,null,0,false,a);return true});
@@ -122,11 +122,11 @@
  function stumpsHollow(x0,y0,x1,y1){const out=[],seen=new Set(),add=(i,t)=>{if(seen.has(i)||obj[i]||!has('x:'+t))return;const x=i%N,y=(i/N)|0;if(x<x0-1||x>x1+1||y<y0-1||y>y1+2)return;seen.add(i);out.push([x,y,t])};
   for(const r of REM)add(r.i,r.t);const R=RES();if(R)for(const i in R.h){const v=R.h[i];if(v&&v.t)add(+i,v.t)}return out}
  if(typeof LHOOK!=='undefined'){const _lh=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{if(_lh)_lh(L,x0,y0,x1,y1,tm);if(SCENE||!anyX)return;
-   try{for(const[x,y,t]of stumpsHollow(x0,y0,x1,y1))L.push([y*16+13,4,()=>drawLook('x:'+t,x*16,y*16,null,phase(x,y))])}catch(e){}}}
+   try{for(const[x,y,t]of stumpsHollow(x0,y0,x1,y1))L.push([y*16+13,4,()=>drawLook('x:'+t,x*16,y*16,null,phase(x,y))])}catch(e){self.SQERR&&SQERR(e,'111d-17')}}}
  if(typeof ROOMBG!=='undefined'){const _bg=ROOMBG;ROOMBG=function(R2){const out=_bg.apply(this,arguments);try{const R=R2&&R2.region?R2:null;if(!R||!anyX)return out;const v=rgView(),seen=new Set();
    const put=(x,y,t)=>{const i=y*R.w+x;if(seen.has(i)||x<v.x0/16-1||x>v.x1/16+1||y<v.y0/16-1||y>v.y1/16+2||!has('x:'+t))return;const it=rgObjAt(R,x,y);if(it&&!it.gone)return;seen.add(i);drawLook('x:'+t,x*16,y*16,null,phase(x,y))};
    for(const g2 of R.gone||[])if(g2&&g2.it&&g2.it.o)put(g2.it.x,g2.it.y,g2.it.o.t);
-   const S=RES();if(S&&S.rloc==='r_'+R.region)for(const idx in S.r){const q=S.r[idx];if(q&&q.t)put(idx%R.w,Math.floor(idx/R.w),q.t)}}catch(e){}return out}}
+   const S=RES();if(S&&S.rloc==='r_'+R.region)for(const idx in S.r){const q=S.r[idx];if(q&&q.t)put(idx%R.w,Math.floor(idx/R.w),q.t)}}catch(e){self.SQERR&&SQERR(e,'111d-18')}return out}}
  // ---- what can be edited ----
  const TN={tree:'Tree',pine:'Pine',oak:'Oak tree',willow:'Willow',maple:'Maple',yew:'Yew',rock:'Rock',ore:'Iron ore',bush:'Berry bush',cactus:'Cactus',shroom:'Mushroom patch',nutbush:'Hazel bush',
   coal:'Coal',gold:'Gold ore',mith:'Mithril ore',adam:'Adamant ore',boulder:'Boulder'};
@@ -185,13 +185,13 @@
   // shops, homes, dungeons and caves: whatever their rooms hold (dungeons are built once here to see what's in them)
   const roomItems=(R,grp)=>{for(const it of R&&R.items||[]){if(!it||typeof it.t!=='string'||SKIP.has(it.t)||it.t[0]==='_'||it.n)continue;const k=rkey(it);if(seen.has(k))continue;
    const tpl={...it,x:0,y:0};delete tpl.open;add(k,(RN[it.t]||pretty(it.t))+((it.w|0)>1?' ('+it.w+' wide)':''),grp,()=>drawFurn(tpl,0))}};
-  try{for(const id in ROOMS){const R=ROOMS[id];if(!R||R.region||R.dun||/^dun_|^reg_/.test(id))continue;roomItems(R,'Inside shops and homes')}}catch(e){}
-  if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(const f of[1,DKIND[kind].floors||3])try{roomItems(buildFloor(kind,f),'Dungeons and caves')}catch(e){}}
+  try{for(const id in ROOMS){const R=ROOMS[id];if(!R||R.region||R.dun||/^dun_|^reg_/.test(id))continue;roomItems(R,'Inside shops and homes')}}catch(e){self.SQERR&&SQERR(e,'111d-19')}
+  if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(const f of[1,DKIND[kind].floors||3])try{roomItems(buildFloor(kind,f),'Dungeons and caves')}catch(e){self.SQERR&&SQERR(e,'111d-20')}}
   if(window.SQICV)for(const kind in SQICV){if(/^cv_/.test(kind))continue;add('r:icvdoor:'+kind,'Cave entrance: '+SQICV[kind].name,'Dungeons and caves',()=>drawFurn({t:'icvdoor',kind,x:0,y:0,name:SQICV[kind].name,w:1,h:1},0))}
   // monsters
   const MB=window.SQISLIFE&&SQISLIFE.MOBS||{},MX=[['boss','Slime King (boss)',30],['bonelord','Bone Lord (boss)',40],['alpha','Frostfang Alpha (boss)',38],['matri','Sandclaw Matriarch (boss)',55],['tidek','Tidekeeper (boss)',48],['thorn','Thornroot (boss)',120],['emberl','The Emberlord (boss)',150]];
   // island bosses (100's SQIB) and world bosses (071): drawn like the dungeon bosses, the game's own drawer with its pictures left out
-  try{for(const id in window.SQIB||{})MX.push(['ib:'+id,(SQIB[id].n||id)+' (island boss)',SQIB[id].hp||300])}catch(e){}
+  try{for(const id in window.SQIB||{})MX.push(['ib:'+id,(SQIB[id].n||id)+' (island boss)',SQIB[id].hp||300])}catch(e){self.SQERR&&SQERR(e,'111d-21')}
   for(const[k,n,hp]of[['wisp','Flame Wisp'],['giant','Stone Giant'],['demon','Demon'],['dragon','Ancient Dragon']].map(a=>[a[0],a[1],1000]))MX.push(['wb:'+k,n+' (world boss)',hp]);
   const BT={alpha:{big:1,as:'circle',at:2,ang:0,combo:0,scd:9,rcd:9,dmg:2},matri:{big:1,ms:'stalk',mt:1.5,seq:[],bcd:9,dmg:2},tidek:{big:1,ks:'move',kt:1.5,ang:0,bcd:9,scd:9,dmg:2},thorn:{big:1,rcd:3,scd:0,half:false,roots:[]},emberl:{big:1,pcd:2.5,fcd:4,scd:0,half:false,pools:[],balls:[]},bonelord:{tcd:9,scd:9}};
   const mobTpl=(k,hp)=>()=>{const[t,v]=k.split(':');if(t==='ib')return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:'ib',ib:v,big:1,st:'idle',t:0};if(t==='wb')return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:'wb',_wb:v,big:1,t:0};try{return MB[k]?rgMake(k,hp,0,0):{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}catch(e){return{x:0,y:0,hp,mhp:hp,kx:0,ky:0,type:t,...JSON.parse(JSON.stringify(BT[k]||{}))}}};
@@ -199,11 +199,11 @@
   for(const[k,n,hp]of MX)add('m:'+k,n,'Monsters',null,null,mobTpl(k,hp));
   // monsters that only live in dungeons, by their variant (Frostfang's snow wolves, the grotto's tide slimes...)
   {const have=new Set([...Object.keys(MB),...MX.map(e=>e[0])]),VN={dust:'Dust skeleton',snow:'Snow wolf',frost:'Frost slime',tide:'Tide slime',magma:'Magma slime'};
-   if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(let f=1;f<=(DKIND[kind].floors||3);f++){let R=null;try{R=buildFloor(kind,f)}catch(e){}
+   if(typeof DKIND!=='undefined'&&typeof buildFloor==='function')for(const kind in DKIND){if(/^cv_/.test(kind))continue;for(let f=1;f<=(DKIND[kind].floors||3);f++){let R=null;try{R=buildFloor(kind,f)}catch(e){self.SQERR&&SQERR(e,'111d-22')}
     for(const m of R&&R.mobs||[]){if(!m||!m.vr||m.rk||m.rv)continue;const k=(m.type||'slime')+':'+m.vr;if(have.has(k))continue;have.add(k);const tpl={...m,x:0,y:0};
      add('m:'+k,VN[m.vr]||pretty(m.vr+' '+m.type),'Monsters',null,null,()=>({...tpl}))}}}}
   // projectile looks for monsters that shoot (160 draws them): j:<monster key>, captured from the game's own projectile
-  try{const SH=window.SQMOBATK&&SQMOBATK.SHOOT||{};for(const q of out.slice())if(q.grp==='Monsters'&&/^m:/.test(q.k)){const t=q.k.slice(2).split(':')[0];if(SH[t])add('j:'+q.k.slice(2),q.n+' · projectile','Monsters',()=>{if(SQMOBATK.capDraw)SQMOBATK.capDraw(t);else drawProj({x:0,y:0,vx:1,vy:0,t:0,k:SH[t],sc:curScene()})})}}catch(e){}
+  try{const SH=window.SQMOBATK&&SQMOBATK.SHOOT||{};for(const q of out.slice())if(q.grp==='Monsters'&&/^m:/.test(q.k)){const t=q.k.slice(2).split(':')[0];if(SH[t])add('j:'+q.k.slice(2),q.n+' · projectile','Monsters',()=>{if(SQMOBATK.capDraw)SQMOBATK.capDraw(t);else drawProj({x:0,y:0,vx:1,vy:0,t:0,k:SH[t],sc:curScene()})})}}catch(e){self.SQERR&&SQERR(e,'111d-23')}
   // island props
   for(const kk in A.ISL_LM){const[k,v]=kk.split(':'),L=A.ISL_LM[kk];add('l:'+kk,L[0],'Island props',()=>drawFurn({t:'lm',k,v:L[3],x:0,y:0,w:L[1],h:L[2],sh:L[2],name:L[0]},0))}
   return CAT=out}

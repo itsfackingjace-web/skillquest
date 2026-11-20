@@ -165,7 +165,7 @@
   if(T){const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=32;c.height=32;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,32,32).data;
     for(let j=0;j<1024;j++)TE.ed.px[j]='#'+[d[j*4],d[j*4+1],d[j*4+2]].map(v=>v.toString(16).padStart(2,'0')).join('');tileDraw()};im.src=T.p}else tileFrom(2);tilePanel()}
  // start from one of the game's grounds (its real baked look)
- function tileFrom(v){try{const C=hdBakeR(0,0,()=>v),x=C.getContext?C.getContext('2d'):null;if(x){const d=x.getImageData(64,64,32,32).data;for(let j=0;j<1024;j++)TE.ed.px[j]='#'+[d[j*4],d[j*4+1],d[j*4+2]].map(q=>q.toString(16).padStart(2,'0')).join('')}}catch(e){}tileDraw()}
+ function tileFrom(v){try{const C=hdBakeR(0,0,()=>v),x=C.getContext?C.getContext('2d'):null;if(x){const d=x.getImageData(64,64,32,32).data;for(let j=0;j<1024;j++)TE.ed.px[j]='#'+[d[j*4],d[j*4+1],d[j*4+2]].map(q=>q.toString(16).padStart(2,'0')).join('')}}catch(e){self.SQERR&&SQERR(e,'111c-1')}tileDraw()}
  function tilePanel(){const box=document.getElementById('dvitile'),T=TE.ed;if(!box)return;if(!T){box.innerHTML='';return}
   box.innerHTML='<div class="dv-card" style="margin:6px 0"><div class="dv-row"><b>'+(T.i>=0?'Edit tile':'New tile')+'</b><input type="text" data-itf="n" maxlength="24" value="'+E(T.n)+'" style="width:140px"><span class="dv-sp1"></span>'+(T.i>=0?'<button class="dv-b dv-bad" data-ia="ctdel">Delete tile</button>':'')+'<button class="dv-b" data-ia="ctcancel">Cancel</button><button class="dv-b dv-pri" data-ia="ctsave">Use this tile</button></div>'+
    '<div class="dv-row" style="align-items:flex-start;margin-top:6px"><canvas id="dvitc" width="256" height="256" style="width:256px;height:256px;image-rendering:pixelated;touch-action:none;cursor:crosshair;border:1px solid #2a3240"></canvas>'+
@@ -394,11 +394,11 @@
   m[f]=f==='max'?Math.max(0,Math.min(30,t.value|0)):t.value;ed.dirty=true;ed.check=null;if(f==='mob'||f==='pier')redraw();else hint()});
  root.addEventListener('input',e=>{if(S.tab!=='islands')return;if(e.target.dataset.if==='newname')I.newName=e.target.value;if(e.target.dataset.im==='dens'&&I.ed){I.ed.dens=e.target.value|0;const l=e.target.parentElement;if(l&&l.lastChild&&l.lastChild.nodeType===3)l.lastChild.textContent=' '+I.ed.dens+'%'}});
  let tdown=false;
- root.addEventListener('pointerdown',e=>{if(e.target.id==='dvitc'&&TE.ed){e.preventDefault();tdown=true;try{e.target.setPointerCapture(e.pointerId)}catch(_){}tileUse(e,true);return}
+ root.addEventListener('pointerdown',e=>{if(e.target.id==='dvitc'&&TE.ed){e.preventDefault();tdown=true;try{e.target.setPointerCapture(e.pointerId)}catch(_){self.SQERR&&SQERR(_,'111c-2')}tileUse(e,true);return}
   if(e.target.id==='dvichart'&&I.ed){const r=e.target.getBoundingClientRect(),m=I.ed.meta;m.mx=Math.max(10,Math.min(350,Math.round((e.clientX-r.left)/r.width*360)));m.my=Math.max(10,Math.min(350,Math.round((e.clientY-r.top)/r.height*360)));I.ed.dirty=true;chart();hint();
    const b=root.querySelector('[data-ia="chartreset"]');if(!b)redraw();return}});
  root.addEventListener('pointermove',e=>{if(tdown&&e.target.id==='dvitc')tileUse(e,false)});addEventListener('pointerup',()=>{tdown=false});
- root.addEventListener('pointerdown',e=>{if(e.target.id!=='dvi'||!I.ed)return;e.preventDefault();try{e.target.setPointerCapture(e.pointerId)}catch(_){}
+ root.addEventListener('pointerdown',e=>{if(e.target.id!=='dvi'||!I.ed)return;e.preventDefault();try{e.target.setPointerCapture(e.pointerId)}catch(_){self.SQERR&&SQERR(_,'111c-3')}
   if(I.ed.tool==='pan'){const cv=document.getElementById('dvicv');pan={x:e.clientX,y:e.clientY,sx:cv.scrollLeft,sy:cv.scrollTop,cv};return}down=true;use(e,true)});
  root.addEventListener('pointermove',e=>{if(down&&e.pointerType==='mouse'&&!(e.buttons&1)){endStroke();return}if(pan){pan.cv.scrollLeft=pan.sx-(e.clientX-pan.x);pan.cv.scrollTop=pan.sy-(e.clientY-pan.y);return}if(down&&e.target.id==='dvi'&&I.ed)use(e,false)});
  const endStroke=()=>{const wasPan=pan;pan=null;if(wasPan&&I.ed&&I.ed.view==='art')paint(true);if(down){down=false;last=-1;if(shape)endShape();if(I.ed){I.ed.stroke=null;if(I.ed.view==='art')paint(true)}hint()}};

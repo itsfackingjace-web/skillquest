@@ -11,10 +11,10 @@
  for(const a of A){const k=a.k;if(!INVK.includes(k))INVK.push(k);INAME[k]=a.n;SN[k]=a.n;SHORT[k]=a.sh;SELLP[k]=a.v;inv[k]=inv[k]|0;IDESC[k]=a.d+' Any bow shoots your best arrows first.';
   {const j=EXTRA_BAG.indexOf('iarrow');if(!EXTRA_BAG.includes(k))EXTRA_BAG.splice(j>=0?j+1:EXTRA_BAG.length,0,k)}}
  // recipes, in level order after iron arrows
- try{const at=FREC.findIndex(r=>r.k==='bow2');for(const a of A)if(!FREC.some(r=>r.k===a.k))FREC.splice(at>=0?at+1:FREC.length,0,{k:a.k,n:'15 '+a.sh,c:{[a.bar]:1,[a.log]:2},lv:a.lv,xp:a.xp,f:()=>{inv[a.k]=(inv[a.k]|0)+15;say('Made 15 '+a.sh+'.')}})}catch(e){}
+ try{const at=FREC.findIndex(r=>r.k==='bow2');for(const a of A)if(!FREC.some(r=>r.k===a.k))FREC.splice(at>=0?at+1:FREC.length,0,{k:a.k,n:'15 '+a.sh,c:{[a.bar]:1,[a.log]:2},lv:a.lv,xp:a.xp,f:()=>{inv[a.k]=(inv[a.k]|0)+15;say('Made 15 '+a.sh+'.')}})}catch(e){self.SQERR&&SQERR(e,'224-1')}
  // saving
  {SQSAVE.after('224:inv',s=>{for(const a of A)if((inv[a.k]|0)>0){s.inv=s.inv||{};s.inv[a.k]=inv[a.k]|0}})}
- {SQLOAD.after('224',(S)=>{for(const a of A)try{inv[a.k]=S&&S.inv&&S.inv[a.k]!=null?Math.max(0,+S.inv[a.k]|0):0}catch(e){}})}
+ {SQLOAD.after('224',(S)=>{for(const a of A)try{inv[a.k]=S&&S.inv&&S.inv[a.k]!=null?Math.max(0,+S.inv[a.k]|0):0}catch(e){self.SQERR&&SQERR(e,'224-2')}})}
  // lending
  let BON=0;
  {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+BON}}

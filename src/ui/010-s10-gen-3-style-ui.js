@@ -2,7 +2,7 @@
 // START menu (name / Bag / Skills / Map / Quests / Exit), trainer card, bag, map, quest log,
 // battle-style HUD boxes and a bottom text box. All panels share the Gen 3 white box look.
 const PF='"SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';
-try{document.fonts&&(document.fonts.load('16px "Pixelify Sans"'),document.fonts.load('16px "SQ Digits"','0123456789'))}catch(e){}
+try{document.fonts&&(document.fonts.load('16px "Pixelify Sans"'),document.fonts.load('16px "SQ Digits"','0123456789'))}catch(e){self.SQERR&&SQERR(e,'010-1')}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // --- player name (saved) ---
 let PNAME='';
@@ -144,7 +144,7 @@ const _oc10=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
  if((b=t.closest('.bp'))){bagPk=(bagPk+(+b.dataset.d)+POCK.length)%POCK.length;bagSel=null;sfx('talk');rPn();return}
  if((b=t.closest('.use'))){useFood(b.dataset.k);return}
  if((b=t.closest('.bi'))){bagSel=b.dataset.k;rPn();return}
- if((b=t.closest('.opt'))){if(b.dataset.o==='snd')mb.onclick();else{helpOn=!helpOn;try{localStorage.setItem('sq_help',helpOn?'1':'0')}catch(_){}hp.style.display=helpOn?'block':'none'}rPn();return}
+ if((b=t.closest('.opt'))){if(b.dataset.o==='snd')mb.onclick();else{helpOn=!helpOn;try{localStorage.setItem('sq_help',helpOn?'1':'0')}catch(_){self.SQERR&&SQERR(_,'010-2')}hp.style.display=helpOn?'block':'none'}rPn();return}
  if(t.id==='nmi')return;_oc10(e)};
 pbd.addEventListener('input',e=>{if(e.target.id==='nmi'){PNAME=e.target.value.replace(/[<>]/g,'').trim().slice(0,10);saveLocal(true)}});
 pbd.addEventListener('change',e=>{if(e.target.id==='nmi')saveCloud(true)});

@@ -10,9 +10,9 @@
  const KEYS='rh str rb rfarm rh houses home farm cus jw ach dly wev chr gd tfx ultp cq ibk hsc qv cos petItems ohat offh wbk wbc thd sld emd fcr stk ss pvpk chb sf ign bw as wt seen cave dl dun rare perks phx sideQuests xdun qdone qhold plant wreck sail cls wand mp jobs gmd tomb chess name bsp yf yp yw'.split(' ');
  for(const k of KEYS)KNOWN49.add(k);
  const learn=s=>{if(!s||typeof s!=='object')return;for(const k of Object.keys(s))if(!(k in SAVE_EXTRA)||s[k]!==SAVE_EXTRA[k])KNOWN49.add(k)};
- const prune=()=>{try{for(const k of Object.keys(SAVE_EXTRA))if(KNOWN49.has(k))delete SAVE_EXTRA[k]}catch(e){}};
+ const prune=()=>{try{for(const k of Object.keys(SAVE_EXTRA))if(KNOWN49.has(k))delete SAVE_EXTRA[k]}catch(e){self.SQERR&&SQERR(e,'166-1')}};
  {SQSAVE.after('166',s=>{try{
    // a known field that only came from SAVE_EXTRA (same object) is stale: leave it out
-   for(const k in SAVE_EXTRA)if(KNOWN49.has(k)&&s[k]===SAVE_EXTRA[k])delete s[k];learn(s);prune()}catch(e){}})}
+   for(const k in SAVE_EXTRA)if(KNOWN49.has(k)&&s[k]===SAVE_EXTRA[k])delete s[k];learn(s);prune()}catch(e){self.SQERR&&SQERR(e,'166-2')}})}
  {SQLOAD.after('166',(S)=>{prune();})}
  window.SQSAVEKEYS={KEYS,prune}})();

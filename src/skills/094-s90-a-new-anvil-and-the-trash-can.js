@@ -23,6 +23,6 @@
    const i=h.lastIndexOf('<button class="ng stb" data-a="pickup"');return i>=0?h.slice(0,i)+L+h.slice(i):h+L}}
  {const _sa=stationAct;stationAct=function(a){if(typeof a!=='string'||!/^tr[1ay]_/.test(a))return _sa(a);const k=a.slice(4),n=inv[k]|0;if(n<=0){rPn();return}
    if(a.startsWith('tra_')){SURE=k;rPn();return}const m=a.startsWith('tr1_')?1:n;inv[k]=n-m;SURE=null;
-   if(STATION&&STATION.f)STATION.f.bump=.2;say('Threw away '+m+' × '+INAME[k].toLowerCase()+'.');try{sfx('swish')}catch(e){}saveLocal(true);rPn()}}
+   if(STATION&&STATION.f)STATION.f.bump=.2;say('Threw away '+m+' × '+INAME[k].toLowerCase()+'.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'094-1')}saveLocal(true);rPn()}}
  {const _cp=closePanel;closePanel=function(){SURE=null;return _cp()}}
 }

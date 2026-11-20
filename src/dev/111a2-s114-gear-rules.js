@@ -36,7 +36,7 @@
   return r}
  const _occ=occ;occ=function(slot){const k=_occ(slot),c=CUS[slot];return c&&EQ[c]&&k===EQ[c].base?c:k};
  function regNG(k,d){const fresh=!EQ[k];const e={...EQ[d.b],n:d.n,v:d.v,custom:1,base:d.b};delete e.pet;EQ[k]=e;
-  if(fresh){INVK.push(k);EXTRA_BAG.push(k);try{EQK.push(k)}catch(x){}}
+  if(fresh){INVK.push(k);EXTRA_BAG.push(k);try{EQK.push(k)}catch(x){self.SQERR&&SQERR(x,'111a2-1')}}
   INAME[k]=d.n;SN[k]=/s$/i.test(d.n)?d.n:d.n+'s';SHORT[k]=d.n.toLowerCase();SELLP[k]=d.v;hookDesc(k);
   if(PEND[k]){inv[k]=(inv[k]|0)+PEND[k];delete PEND[k]}
   for(const s in PCUS)if(PCUS[s]===k){if(_occ(s)===d.b)CUS[s]=k;delete PCUS[s]}
@@ -44,7 +44,7 @@
   if(d.sm){const br=SM.find(r=>r.k===d.b),xp=br&&br.xp||d.sm.lv*6;if(d.sm.st==='craft')GOODS.push({k,n:d.n,c:{...d.sm.c},req:d.sm.lv,xp,v:d.v|0,_cu:1});else SM.push({k,n:d.n,c:{...d.sm.c},lv:d.sm.lv,xp,_cu:1})}}
  function unregNG(k){if(!EQ[k]||!EQ[k].custom)return;if(inv[k]|0)PEND[k]=(PEND[k]|0)+(inv[k]|0);delete inv[k];
   for(const s of SLOTS)if(CUS[s]===k){PCUS[s]=k;CUS[s]=null}
-  for(const A of[INVK,EXTRA_BAG])for(let i=A.length-1;i>=0;i--)if(A[i]===k)A.splice(i,1);try{const i=EQK.indexOf(k);if(i>=0)EQK.splice(i,1)}catch(x){}
+  for(const A of[INVK,EXTRA_BAG])for(let i=A.length-1;i>=0;i--)if(A[i]===k)A.splice(i,1);try{const i=EQK.indexOf(k);if(i>=0)EQK.splice(i,1)}catch(x){self.SQERR&&SQERR(x,'111a2-2')}
   for(let i=SM.length-1;i>=0;i--)if(SM[i]._cu&&SM[i].k===k)SM.splice(i,1);for(let i=GOODS.length-1;i>=0;i--)if(GOODS[i]._cu===1&&GOODS[i].k===k)GOODS.splice(i,1);delete EQ[k];delete INAME[k];delete SN[k];delete SHORT[k];delete SELLP[k]}
  // wear an item for a moment (to read its numbers or its look), then put back what was there
  function wearing(k,f){const e=EQ[k];if(!e||!SLOTS.includes(e.slot))return f();const sl=e.slot,old=occ(sl);if(old===k)return f();
@@ -68,7 +68,7 @@
  // a wand's mana cost is per element; use the cost of the wand in your hand
  function setCosts(){for(const el in WSP0)WSP[el].cost=WSP0[el];const k=occ('off'),r=rule(k);if(r&&r.mp!=null&&EQ[k]&&EQ[k].kind==='wand'&&WSP[EQ[k].el])WSP[EQ[k].el].cost=r.mp}
  const _ss=setSlot;setSlot=function(slot,k){let out;if(k&&EQ[k]&&EQ[k].custom){out=_ss.call(this,slot,EQ[k].base);CUS[slot]=k}else{CUS[slot]=null;out=_ss.apply(this,arguments)}
-  if(slot==='off')try{setCosts()}catch(e){}return out};
+  if(slot==='off')try{setCosts()}catch(e){self.SQERR&&SQERR(e,'111a2-3')}return out};
  // requirements: a rule replaces the game's own checks for that item
  const _eq=equipItem;equipItem=function(k){const r=rule(k),e=EQ[k];if(!r||!r.rq||!e)return _eq.apply(this,arguments);if((inv[k]|0)<1)return;
   if(r.rq.l&&lvOf(r.rq.s)<r.rq.l){say('You need '+SKN[r.rq.s]+' '+r.rq.l+' to use the '+e.n.toLowerCase()+'.');sfx('swish');return}
@@ -77,31 +77,31 @@
  const _wu=watchUpgrades;watchUpgrades=function(){const was={...CUS},b0={};for(const s in was)if(was[s])b0[s]=inv[EQ[was[s]].base]|0;_wu.apply(this,arguments);
   for(const s in was){const c=was[s];if(!c||!EQ[c])continue;if(_occ(s)!==EQ[c].base){if((inv[EQ[c].base]|0)>b0[s]){inv[EQ[c].base]--;inv[c]=(inv[c]|0)+1}CUS[s]=null}}};
  // ---- special effects ----
- const fxSum=x=>{let t=0;for(const s of SLOTS){const r=rule(occ(s));if(r&&r.fx&&r.fx[x])t+=r.fx[x]}if(window.SQFXEXTRA)for(const f of SQFXEXTRA){try{t+=+f(x)||0}catch(e){}}return t};// SQFXEXTRA: more sources (186's perks)
+ const fxSum=x=>{let t=0;for(const s of SLOTS){const r=rule(occ(s));if(r&&r.fx&&r.fx[x])t+=r.fx[x]}if(window.SQFXEXTRA)for(const f of SQFXEXTRA){try{t+=+f(x)||0}catch(e){self.SQERR&&SQERR(e,'111a2-4')}}return t};// SQFXEXTRA: more sources (186's perks)
  const roll=p=>p>0&&Math.random()*100<p;
  function onHit(n,dealt,how){if(!n||!(dealt>0))return;
   // a critical hit makes this hit worth 1.5x to 2x: the extra lands at once and the hit's own number becomes the total, in pink
-  if(!n.dead&&roll(fxSum('crit'))){const extra=Math.max(1,Math.round(dealt*(.5+Math.random()*.5)));try{drops.push({x:n.x,y:n.y-26,t:0,tx:'CRIT',c:'#ff70a0'})}catch(e){}
-   let shown=null;try{for(let i=DMGS.length-1;i>=0&&i>=DMGS.length-8;i--){const d=DMGS[i];if(d&&d.t<.05&&Math.abs(d.x-n.x)<3&&String(d.v)===String(dealt)){shown=d;break}}}catch(e){}
+  if(!n.dead&&roll(fxSum('crit'))){const extra=Math.max(1,Math.round(dealt*(.5+Math.random()*.5)));try{drops.push({x:n.x,y:n.y-26,t:0,tx:'CRIT',c:'#ff70a0'})}catch(e){self.SQERR&&SQERR(e,'111a2-5')}
+   let shown=null;try{for(let i=DMGS.length-1;i>=0&&i>=DMGS.length-8;i--){const d=DMGS[i];if(d&&d.t<.05&&Math.abs(d.x-n.x)<3&&String(d.v)===String(dealt)){shown=d;break}}}catch(e){self.SQERR&&SQERR(e,'111a2-6')}
    if(shown){shown.v=String(dealt+extra);shown.c='#ff70a0';n.hp-=extra;if(n.hp<=0)killEnemy(n,how||'melee')}else hitE(n,extra,'#ff70a0',how)}
   if(!n.dead&&roll(fxSum('burn')))n.burn=Math.max(n.burn||0,3);
   if(!n.dead&&roll(fxSum('slow')))n.slow=Math.max(n.slow||0,3);
   if(P.hp<6&&roll(fxSum('ls')))healP(1,'life steal')}
  const anyFx=()=>{for(const s of SLOTS){const r=rule(occ(s));if(r&&r.fx)return true}if(window.SQFXEXTRA&&SQFXEXTRA.length)for(const k of['crit','burn','slow','ls'])if(fxSum(k)>0)return true;return false};// perks (SQFXEXTRA) count too
  SQHIT.wrap('111a2 gear rules',_atk=>function(){if(!anyFx())return _atk.apply(this,arguments);const hp0=new Map(en.map(n=>[n,n.hp])),np=PROJ.length,ns=SPELLS.length;const out=_atk.apply(this,arguments);
-  if(PROJ.length===np&&SPELLS.length===ns)for(const[n,h]of hp0)if(n.hp<h)try{onHit(n,h-n.hp,'melee')}catch(e){}return out});
- const _ah=arrowHit;arrowHit=function(p,n){const out=_ah.apply(this,arguments);if(p&&!p.hostile&&p.k==='arrow'&&anyFx())try{onHit(n,p.dmg|0,'arrow')}catch(e){}return out};
- const _sh=spellHit;spellHit=function(s,n,dmg){const out=_sh.apply(this,arguments);if(anyFx())try{onHit(n,dmg|0,'spell')}catch(e){}return out};
+  if(PROJ.length===np&&SPELLS.length===ns)for(const[n,h]of hp0)if(n.hp<h)try{onHit(n,h-n.hp,'melee')}catch(e){self.SQERR&&SQERR(e,'111a2-7')}return out});
+ const _ah=arrowHit;arrowHit=function(p,n){const out=_ah.apply(this,arguments);if(p&&!p.hostile&&p.k==='arrow'&&anyFx())try{onHit(n,p.dmg|0,'arrow')}catch(e){self.SQERR&&SQERR(e,'111a2-8')}return out};
+ const _sh=spellHit;spellHit=function(s,n,dmg){const out=_sh.apply(this,arguments);if(anyFx())try{onHit(n,dmg|0,'spell')}catch(e){self.SQERR&&SQERR(e,'111a2-9')}return out};
  const _ax=addXp;addXp=function(i,x){const b=fxSum('xp');if(b&&x>0)x=Math.max(x,Math.round(x*(1+b/100)));return _ax.call(this,i,x)};
  SQUPD.wrap('111a2',_up=>function(dt){const x0=P.x,y0=P.y;const out=_up.apply(this,arguments);try{const sp=fxSum('spd');if(sp&&!dead&&!SCENE){const dx=P.x-x0,dy=P.y-y0;
-   if((dx||dy)&&Math.hypot(dx,dy)<20){const f=sp/100,ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));if(ok(P.x+dx*f,P.y))P.x+=dx*f;if(ok(P.x,P.y+dy*f))P.y+=dy*f}}}catch(e){}return out});
+   if((dx||dy)&&Math.hypot(dx,dy)<20){const f=sp/100,ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));if(ok(P.x+dx*f,P.y))P.x+=dx*f;if(ok(P.x,P.y+dy*f))P.y+=dy*f}}}catch(e){self.SQERR&&SQERR(e,'111a2-10')}return out});
  // ---- saves keep new items (and what you wear) even if they haven't loaded yet ----
  SQSAVE.after('111a2:cus',s=>{try{for(const k in PEND)if(PEND[k])s.inv[k]=(s.inv[k]|0)+PEND[k];
-   const c={};for(const sl of SLOTS){if(CUS[sl])c[sl]=CUS[sl];else if(PCUS[sl])c[sl]=PCUS[sl]}if(Object.keys(c).length)s.cus=c}catch(e){}});
+   const c={};for(const sl of SLOTS){if(CUS[sl])c[sl]=CUS[sl];else if(PCUS[sl])c[sl]=PCUS[sl]}if(Object.keys(c).length)s.cus=c}catch(e){self.SQERR&&SQERR(e,'111a2-11')}});
  SQLOAD.wrap('111a2',_ap=>function(S){for(const k in PEND)delete PEND[k];for(const s of SLOTS){CUS[s]=null;delete PCUS[s]}const out=_ap.apply(this,arguments);
   try{if(S&&S.inv)for(const k in S.inv)if(ngKey(k)&&!EQ[k]&&+S.inv[k]>0)PEND[k]=Math.min(1e6,+S.inv[k]|0);
    if(S&&S.cus&&typeof S.cus==='object')for(const s of SLOTS){const k=S.cus[s];if(!ngKey(k))continue;if(EQ[k]&&EQ[k].custom){if(_occ(s)===EQ[k].base)CUS[s]=k}else PCUS[s]=k}
-   if(typeof snapEq==='function')snapEq();setCosts()}catch(e){}return out});
+   if(typeof snapEq==='function')snapEq();setCosts()}catch(e){self.SQERR&&SQERR(e,'111a2-12')}return out});
  const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];for(const s of SLOTS){CUS[s]=null;delete PCUS[s]}return _ng.apply(this,arguments)};
  // ---- icons: a new item without its own icon uses its base item's ----
  const _ic=iconURL;iconURL=function(k,col){const e=EQ[k];if(e&&e.custom&&!SQA.hasIcon(k))return _ic(e.base,col);return _ic(k,col)};
@@ -117,8 +117,8 @@
   if(r.fx)for(const x in FXN)if(r.fx[x])L.push(x==='hreg'?'Heals 1 heart every '+Math.round(600/r.fx[x])+' s':x==='hun'?'Hunger '+r.fx[x]+'% slower':FXN[x]+' '+(['spd','xp','mel','arc','mag','mreg','gold'].includes(x)?'+':'')+r.fx[x]+'%');
   const q=r.rq||defReq(k);if(q&&q.l)L.push('Needs '+SKN[q.s]+' '+q.l);return L.join(' · ')}
  function hookDesc(k){if(D0[k])return;const d=Object.getOwnPropertyDescriptor(IDESC,k)||{value:IDESC[k],writable:true};D0[k]=d;let plain=d.get?null:d.value;
-  const own=()=>{if(NG[k])return(NG[k].d?NG[k].d+' ':'')+'Equip it from your Bag or the equipment screen.';if(!d.get)return window.SQSTRIPSTATS?SQSTRIPSTATS(plain||''):plain||'';let s=d.get.call(IDESC);try{s=window.SQSTRIPSTATS?SQSTRIPSTATS(s):s}catch(e){}return s};
-  Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){if(!GR[k]&&!NG[k])return d.get?d.get.call(IDESC):plain;let s='';try{s=statLine(k)}catch(e){}const b=own();return(s?s+'. ':'')+b},
+  const own=()=>{if(NG[k])return(NG[k].d?NG[k].d+' ':'')+'Equip it from your Bag or the equipment screen.';if(!d.get)return window.SQSTRIPSTATS?SQSTRIPSTATS(plain||''):plain||'';let s=d.get.call(IDESC);try{s=window.SQSTRIPSTATS?SQSTRIPSTATS(s):s}catch(e){self.SQERR&&SQERR(e,'111a2-13')}return s};
+  Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){if(!GR[k]&&!NG[k])return d.get?d.get.call(IDESC):plain;let s='';try{s=statLine(k)}catch(e){self.SQERR&&SQERR(e,'111a2-14')}const b=own();return(s?s+'. ':'')+b},
    set(v){if(d.set)d.set.call(IDESC,v);else plain=window.SQSTRIPSTATS?SQSTRIPSTATS(v):v}})}
  // ---- apply the library (plus the developer's unpublished new items, on their own device) ----
  let LIB={},DEV=null;
@@ -127,7 +127,7 @@
   for(const k of Object.keys(NG))if(!want[k]){unregNG(k);delete NG[k]}
   for(const k in want){NG[k]=want[k];regNG(k,want[k])}
   for(const k in GR)delete GR[k];const G=LIB.gear||{};
-  for(const k in G){const r=clean(G[k],k);if(r){GR[k]=r;hookDesc(k)}}try{setCosts()}catch(e){}}
+  for(const k in G){const r=clean(G[k],k);if(r){GR[k]=r;hookDesc(k)}}try{setCosts()}catch(e){self.SQERR&&SQERR(e,'111a2-15')}}
  SQA.onApply(applyGear);
  window.SQGEAR={SLOTS,FXN,FXMAX,gearKeys,kindOf,clean,ngClean,ngKey,base,defReq,wearing,statLine,fxSum,
   get rules(){return GR},get items(){return NG},get worn(){return{...CUS}},

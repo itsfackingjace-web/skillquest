@@ -1104,6 +1104,16 @@
           }
         }
       }
+    },
+    "errs": {
+      ".read": "auth != null && root.child('devs').child(auth.uid).val() === true",
+      "$site": {
+        ".write": "auth != null && (newData.exists() || root.child('devs').child(auth.uid).val() === true)",
+        ".validate": "$site.matches(/^[A-Za-z0-9_-]{1,40}$/) && newData.hasChildren(['m','n','t']) && newData.child('m').isString() && newData.child('m').val().length <= 300 && newData.child('n').isNumber() && newData.child('n').val() >= 1 && newData.child('t').val() === now && (!newData.child('v').exists() || (newData.child('v').isString() && newData.child('v').val().length <= 20))",
+        "$other": {
+          ".validate": "$other === 'm' || $other === 'n' || $other === 't' || $other === 'v'"
+        }
+      }
     }
   }
 }

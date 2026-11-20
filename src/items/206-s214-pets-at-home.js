@@ -83,7 +83,7 @@
    s.h=h;s.hx=hx;s.hy=hy;out.push(s)}
   return out}
  function drawPet(s,tm,now){const hop=s.hopAt&&now-s.hopAt<700?Math.round(Math.abs(Math.sin((now-s.hopAt)/700*Math.PI*2))*4*(1-(now-s.hopAt)/700)):0;
-  const st={x:s.x,y:s.y-hop,mv:s.mv,t:s.t,fl:s.fl};try{drawAt(s.kind,st,tm)}catch(e){}
+  const st={x:s.x,y:s.y-hop,mv:s.mv,t:s.t,fl:s.fl};try{drawAt(s.kind,st,tm)}catch(e){self.SQERR&&SQERR(e,'206-1')}
   if(s.mode==='nap'){const p=(now/1400)%1;zee(s.x+5+p*4,s.y-14-p*10,3,1-p);const p2=((now/1400)+.5)%1;zee(s.x+3+p2*4,s.y-12-p2*10,2,(1-p2)*.8)}
   const j=JOY.get(s);if(j&&now-j<1500){const p=(now-j)/1500;heart(s.x,s.y-16-p*10,1-p*p)}else if(j)JOY.delete(s);
   if(s.mode==='zoom'||s.mode==='chase'){if(Math.floor(now/180)%2)px(s.x+(s.fl?6:-7),s.y+4,2,1,'rgba(240,240,220,.7)')}
@@ -94,7 +94,7 @@
    const out=_pP.apply(this,arguments);for(const s of list)if(s.y+6>by)drawPet(s,tm,now);return out})}
  // the old spot drawing: only the placement preview draws something (the pet itself is drawn with the player)
  {const _dp=drawPiece;drawPiece=function(t,x,y,f,ghost,tm){if(!isPet(t))return _dp.apply(this,arguments);if(!ghost)return;
-   try{drawAt(EQ[t].pet,{x:x*16+8,y:y*16+8,mv:0,t:0,fl:false},tm)}catch(e){}}}
+   try{drawAt(EQ[t].pet,{x:x*16+8,y:y*16+8,mv:0,t:0,fl:false},tm)}catch(e){self.SQERR&&SQERR(e,'206-2')}}}
  // ---- HIT: pet it; the owner's second HIT picks it up ----
  let arm=null;
  function front(){const h=home();if(!h)return null;const[fx,fy]=[P.x+face[0]*12,P.y+face[1]*12];let best=null,bd=17;
@@ -104,7 +104,7 @@
   return best?{h,i:best.i,f:h.furn.get(best.i),s:best}:null}
  {SQHIT.wrap('206 pets at home',next=>function(){try{if(!dead&&!menuOpen&&!pnOpen&&!BUILD&&swing<=0){const o=front();if(o&&o.f){swing=.25;const name=EQ[o.f.t].n,now=performance.now(),s=o.s;
      if(mine(o.h)&&arm&&arm.i===o.i&&arm.h===o.h&&now-arm.at<3000){arm=null;PS.delete(hid(o.h)+':'+o.i);pickFurn(o.i);say('Your '+name.toLowerCase()+' hops back into your bag.');return}
-     if(s){JOY.set(s,now);s.hopAt=now;s.mode='petted';s.until=now+3200;s.mv=0;s.fl=P.x<s.x;s.woke=0;s.next=null;s.greetCd=now+15000}try{sfx('talk')}catch(e){}
+     if(s){JOY.set(s,now);s.hopAt=now;s.mode='petted';s.until=now+3200;s.mv=0;s.fl=P.x<s.x;s.woke=0;s.next=null;s.greetCd=now+15000}try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'206-3')}
      if(mine(o.h)){arm={i:o.i,h:o.h,at:now};say('You pet your '+name.toLowerCase()+'. Hit it again to pick it up.')}else say('You pet the '+name.toLowerCase()+'. It looks very pleased.');
      return}}}catch(e){console.warn(e)}
  return next.apply(this,arguments)})}

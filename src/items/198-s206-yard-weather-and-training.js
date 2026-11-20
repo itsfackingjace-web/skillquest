@@ -10,15 +10,15 @@
 // so here it returns the Hollow biome around the house's door (snow/desert/grass), or grass for island homes.
 (()=>{const isYard=()=>!!(SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court)&&SCENE.yardOf);
  let FIGHT=0;
- for(const k of['yard','court']){const R=ROOMS[k];if(!R)continue;const own=R.cave;try{delete R.cave}catch(e){}
+ for(const k of['yard','court']){const R=ROOMS[k];if(!R)continue;const own=R.cave;try{delete R.cave}catch(e){self.SQERR&&SQERR(e,'198-1')}
   Object.defineProperty(R,'cave',{configurable:true,get(){return FIGHT>0||!!own},set(v){}})}
  const during=f=>function(){const y=isYard();if(y)FIGHT++;try{return f.apply(this,arguments)}finally{if(y)FIGHT--}};
  castSpell=during(castSpell);shootAim=during(shootAim);castUlt=during(castUlt);
  if(typeof drawCrosshair==='function')drawCrosshair=during(drawCrosshair);
  // rain/snow/haze in yards
- {SQHUD.before('198',()=>{try{if(isYard()&&typeof drawWeather==='function')drawWeather()}catch(e){}})}
+ {SQHUD.before('198',()=>{try{if(isYard()&&typeof drawWeather==='function')drawWeather()}catch(e){self.SQERR&&SQERR(e,'198-2')}})}
  {const _b=biomeHere;biomeHere=function(){if(!isYard())return _b();try{const r=SCENE.ret;if(r&&!(SCENE.yardOf&&SCENE.yardOf.room&&SCENE.yardOf.room.region)&&typeof tile!=='undefined'){
     const x=Math.floor(r.x/16),y=Math.floor(r.y/16);let s=0,d=0;for(let dy=-4;dy<=4;dy+=2)for(let dx=-5;dx<=5;dx+=2){const t=tile[(y+dy)*N+x+dx];if(t===4)s++;else if(t===5)d++}
-    return s>=10?'snow':d>=10?'desert':'grass'}}catch(e){}return'grass'}}
+    return s>=10?'snow':d>=10?'desert':'grass'}}catch(e){self.SQERR&&SQERR(e,'198-3')}return'grass'}}
  window.SQYARDOUT={isYard,get fight(){return FIGHT}};
 })();

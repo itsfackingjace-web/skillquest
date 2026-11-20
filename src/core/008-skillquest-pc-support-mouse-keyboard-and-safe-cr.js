@@ -1,5 +1,5 @@
 // ===== SkillQuest: PC support (mouse + keyboard) and safe cross-device sync =====
-let isPC=false;try{isPC=!!(window.matchMedia&&window.matchMedia('(hover: hover) and (pointer: fine)').matches)}catch(_){}
+let isPC=false;try{isPC=!!(window.matchMedia&&window.matchMedia('(hover: hover) and (pointer: fine)').matches)}catch(_){self.SQERR&&SQERR(_,'008-1')}
 function talk(){const n=nearNpc();if(n&&!pnOpen&&!menuOpen&&!dead){shop=n.kind;pnOpen=true;ptab=2;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}}
 function openPanel(tab){if(menuOpen||dead)return;if(pnOpen&&ptab==tab){closePanel();return}pnOpen=true;ptab=tab;jx=jy=0;pn.style.display='block';rPn()}
 function closePanel(){if(!pnOpen)return;pnOpen=false;pn.style.display='none'}
@@ -19,7 +19,7 @@ function onKey(e){const k=(e.key||'').toLowerCase();
  if(k==='k'||k==='tab'){openPanel(0);return}
  if(k==='c'){openPanel(1);return}
  if(k==='m'){mb.onclick();return}
- if(k==='h'){helpOn=!helpOn;try{localStorage.setItem('sq_help',helpOn?'1':'0')}catch(_){}hp.style.display=helpOn?'block':'none';return}
+ if(k==='h'){helpOn=!helpOn;try{localStorage.setItem('sq_help',helpOn?'1':'0')}catch(_){self.SQERR&&SQERR(_,'008-2')}hp.style.display=helpOn?'block':'none';return}
  if(pnOpen)return;
  if(k==='t'||k==='enter')talk()}
 addEventListener('keydown',onKey);
@@ -27,12 +27,12 @@ addEventListener('blur',()=>{for(const k in K)K[k]=0});
 document.addEventListener('click',e=>{const a=document.activeElement;if(!a||a===document.body||!a.blur)return;
  const typing=a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'||a.isContentEditable;if(typing&&(a===e.target||a.contains(e.target)))return;a.blur()});   // never steal focus from the text box you just clicked into
 // key hints + controls help on PC
-let helpOn=true;try{helpOn=localStorage.getItem('sq_help')!=='0'}catch(_){}
+let helpOn=true;try{helpOn=localStorage.getItem('sq_help')!=='0'}catch(_){self.SQERR&&SQERR(_,'008-3')}
 const st7=document.createElement('style');st7.textContent='.b small{display:block;font-size:10px;font-weight:400;opacity:.75;margin-top:2px}.b{flex-direction:column;cursor:pointer;user-select:none}#hp{position:fixed;left:14px;bottom:14px;z-index:5;max-width:300px;padding:10px 12px;border-radius:8px;background:rgba(10,14,28,.72);border:1px solid rgba(244,240,216,.3);color:#f4f0d8;font:12px/1.6 "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace;pointer-events:none}#hp b{color:#f8d848}#pb2,#mb{cursor:pointer}';document.head.appendChild(st7);
 const hp=document.createElement('div');hp.id='hp';hp.innerHTML='<b>Controls</b><br>WASD / arrows: move<br>Space: hit, chop, mine, fish<br>E: eat / cook at fire<br>F: build campfire<br>T or Enter: talk<br>K: skills · C: craft · Esc: close<br>M: mute · H: hide this help';document.body.appendChild(hp);
 if(isPC){for(const[id,lab,key]of[['a','HIT','Space'],['e','EAT','E'],['f','FIRE','F'],['tk','TALK','T']]){const el=document.getElementById(id);if(el)el.innerHTML=lab+'<small>'+key+'</small>'}pb2.title='Skills (K)';mb.title='Mute (M)'}
 hp.style.display=isPC&&helpOn?'block':'none';
-const _dr7=draw;draw=function(){_dr7();if(!isPC||menuOpen)return;let f=true;try{f=document.hasFocus()}catch(_){}if(f)return;
+const _dr7=draw;draw=function(){_dr7();if(!isPC||menuOpen)return;let f=true;try{f=document.hasFocus()}catch(_){self.SQERR&&SQERR(_,'008-4')}if(f)return;
  g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(0,0,0,.55)';g.fillRect(0,H/2-24*D,W,48*D);g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.font='700 '+16*D+'px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.fillText('Click the game to use your keyboard',W/2,H/2);g.restore()};
 // --- cross-device sync: never overwrite progress another device saved ---
 let lastWid=null;const myDev=Math.random().toString(36).slice(2,10);
@@ -47,12 +47,12 @@ SQLOAD.after('008',(S)=>{lastWid=wOf(S)});
 // opened saves straight away, so its old progress always looked "newest" and overwrote the account.)
 const sqPf=S=>{try{const xp=(S.xp||[]).reduce((a,v)=>a+(+v||0),0),iv=S.inv?Object.values(S.inv).reduce((a,v)=>a+(+v||0),0):0;return xp+'|'+(+S.gold||0)+'|'+(S.q?S.q.i:0)+'|'+iv}catch(e){return'?'}};
 const sqXpSum=S=>{try{return(S.xp||[]).reduce((a,v)=>a+(+v||0),0)}catch(e){return 0}};
-function syncMark(S){try{localStorage.setItem('sq_spf',JSON.stringify({wid:wOf(S),pf:sqPf(S)}))}catch(e){}}
+function syncMark(S){try{localStorage.setItem('sq_spf',JSON.stringify({wid:wOf(S),pf:sqPf(S)}))}catch(e){self.SQERR&&SQERR(e,'008-5')}}
 function syncDecide(L,S){// 'push' (the account hasn't changed since we synced), 'adopt' or 'ask'
- if(wOf(S)===lastWid)return'push';let rec=null;try{rec=JSON.parse(localStorage.getItem('sq_spf')||'null')}catch(e){}
+ if(wOf(S)===lastWid)return'push';let rec=null;try{rec=JSON.parse(localStorage.getItem('sq_spf')||'null')}catch(e){self.SQERR&&SQERR(e,'008-6')}
  const localSame=!!(rec&&rec.pf===sqPf(L));// no progress here since the last sync (or a device from before this was tracked)
  if((localSame||!rec)&&sqXpSum(S)>=sqXpSum(L))return'adopt';return'ask'}
-function adoptRemote(rs){const S=JSON.parse(JSON.stringify(rs));const L=snap();L.savedAt=LOCAL_AT;try{mpBackup('device',L)}catch(e){}applySave(S);FISH=null;hideCreator();closePanel();say('Synced progress from your other device');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
+function adoptRemote(rs){const S=JSON.parse(JSON.stringify(rs));const L=snap();L.savedAt=LOCAL_AT;try{mpBackup('device',L)}catch(e){self.SQERR&&SQERR(e,'008-7')}applySave(S);FISH=null;hideCreator();closePanel();say('Synced progress from your other device');saveLocal(true);lastCloud=keyOf(snap());syncMark(S)}
 function syncAsk(rs){if(window.SQMP&&SQMP.choose)return;const L=snap();L.savedAt=LOCAL_AT;const S=JSON.parse(JSON.stringify(rs));
  mpChooseSave(L,S,pick=>{if(pick==='account'){adoptRemote(S);say('Loaded your account save. This device\'s save is backed up.')}
   else{mpBackup('account',S);lastWid=wOf(S);LOCAL_AT=Date.now();saveCloud(true);say('Kept this device\'s save. The other one is backed up.')}})}
@@ -66,10 +66,10 @@ saveCloud=async function(force){if(!cloud||cloudBusy||dead||(window.SQMP&&SQMP.c
   if(dead)return;const s=snap(),k=keyOf(s);s.savedAt=Date.now();s.wid=myDev+'-'+Date.now().toString(36);s.dev=myDev;if(window.SQSTRICT)s.as=1;await cloud.set(s);lastWid=s.wid;lastCloud=k;cloudOk=performance.now()/1000;syncMark(s)}
  catch(e){const c=e&&e.code;if(c=='invalid_argument'||c=='revoked'||c=='not_granted'||c=='capability_disabled'||c=='capability_removed')cloud=null;
   // the server refused: another device or tab has taken over this account
-  if(window.SQSTRICT&&/PERMISSION_DENIED|permission/i.test(String(c||'')+' '+String(e&&e.message||'')))try{SQSTRICT.denied()}catch(e2){}}
+  if(window.SQSTRICT&&/PERMISSION_DENIED|permission/i.test(String(c||'')+' '+String(e&&e.message||'')))try{SQSTRICT.denied()}catch(e2){self.SQERR&&SQERR(e2,'008-8')}}
  finally{cloudBusy=false}};
 document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||!cloud||cloudBusy||window.SQSTRICT)return;
- try{const r=await cloud.get(),rs=r&&r.exists?r.data():null;syncCheck(rs)}catch(e){}});
+ try{const r=await cloud.get(),rs=r&&r.exists?r.data():null;syncCheck(rs)}catch(e){self.SQERR&&SQERR(e,'008-9')}});
 // ---- chess engine (board index 0 = a8, 63 = h1; uppercase = white) ----
 const CE=(()=>{
  const VAL={p:100,n:320,b:330,r:500,q:900,k:0};

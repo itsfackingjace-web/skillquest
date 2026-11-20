@@ -44,7 +44,7 @@
  setInterval(placeBtn,300);
  tb.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();
   // a hoe or watering can in the off-hand: one tap = till / water (140's off-hand use)
-  if(!WAND&&!TL.bow&&(TL.hoe||TL.can||(window.SQDAGGER&&SQDAGGER.dag))){tb.classList.add('on');setTimeout(()=>tb.classList.remove('on'),150);try{window.SQOFFHAND&&SQOFFHAND.use()}catch(_){}return}
+  if(!WAND&&!TL.bow&&(TL.hoe||TL.can||(window.SQDAGGER&&SQDAGGER.dag))){tb.classList.add('on');setTimeout(()=>tb.classList.remove('on'),150);try{window.SQOFFHAND&&SQOFFHAND.use()}catch(_){self.SQERR&&SQERR(_,'082-1')}return}
  const t=e.changedTouches[0];AIMX.touch={id:t.identifier,x:t.clientX,y:t.clientY,drag:false};AIMX.tHeld=0;tb.classList.add('on')},{passive:false});
  tb.addEventListener('touchmove',e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;for(const t of e.changedTouches){if(t.identifier!==T.id)continue;
   const dx=t.clientX-T.x,dy=t.clientY-T.y;if(Math.hypot(dx,dy)>14){T.drag=true;const l=Math.hypot(dx,dy);AIM.v=[dx/l,dy/l];AIM.t=performance.now()}}},{passive:false});
@@ -62,5 +62,5 @@
   const r=34,x=Math.round(P.x+dx*r),y=Math.round(P.y-4+dy*r),pu=Math.floor(tm*4)%2,c=tgt?'#f84030':(WAND?'#c8a8ff':'#f8f8f8'),k=tgt?3:4+pu;
   for(const[a,b,w,hh]of[[-k-2,-1,3,3],[k,-1,3,3],[-1,-k-2,3,3],[-1,k,3,3]])Rg(x+a-1,y+b-1,w+2,hh+2,O);
   Rg(x-k-2,y,3,1,c);Rg(x+k,y,3,1,c);Rg(x,y-k-2,1,3,c);Rg(x,y+k,1,3,c);Rg(x,y,1,1,c)}
- SQHUD.before('082',()=>{if(AIMX.T){g.save();g.setTransform(AIMX.T);try{aimCross(performance.now()/1000)}catch(e){}g.restore()}});
+ SQHUD.before('082',()=>{if(AIMX.T){g.save();g.setTransform(AIMX.T);try{aimCross(performance.now()/1000)}catch(e){self.SQERR&&SQERR(e,'082-2')}g.restore()}});
  window.SQAIM=AIMX}
