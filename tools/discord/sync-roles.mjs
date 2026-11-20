@@ -43,7 +43,9 @@ export async function sync({token,fetch:F=globalThis.fetch,dry=false,log=console
  const lb=(await dbGet('lb'))||{};
  for(const m of msgs){if(!m.author||m.author.bot)continue;const mt=String(m.content||'').toUpperCase().match(CODE);if(!mt)continue;const code=mt[0];
   let ok=false,uid=null;if(!seen.has(code)){seen.add(code);const v=await dbGet('dlink/'+code).catch(()=>null);const at=Date.parse(m.timestamp);
-   if(v&&typeof v.u==='string'&&typeof v.t==='number'&&at-v.t>-5*60e3&&at-v.t<864e5){ok=true;uid=v.u}}
+   if(v&&typeof v.u==='string'&&typeof v.t==='number'&&at-v.t>-5*60e3&&at-v.t<864e5){ok=true;uid=v.u}
+   else log('code from '+m.author.username+' not accepted: '+(!v?'no such code in the game':'made '+Math.round((at-v.t)/60e3)+' min before it was posted'))}
+  else if(!links.has(m.author.id))log('code from '+m.author.username+' was posted before by someone else');
   if(ok)links.set(m.author.id,uid);
   if(!answered.has(m.id)){const row=ok&&lb[uid];const txt=ok?'✅ Linked to **'+String(row&&row.n||'your character').replace(/[*_`~|@]/g,'')+'**. Your roles appear within half an hour, and follow your game from now on.'
     :seen.has(code)&&!ok?'❌ That code didn\'t work (it\'s used, too old, or mistyped). Make a new one in the game: Options > Link Discord.':'❌ That code didn\'t work.';
