@@ -56,11 +56,11 @@
  {const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const B=n&&n.cb&&CB[n.cb];if(B&&!n._rp){DEAD[deadKey(B)]=Date.now()+B.rs*60000;try{localStorage.setItem(LSK,JSON.stringify(DEAD))}catch(e){self.SQERR&&SQERR(e,'146-11')}
     addXp(0,Math.round(B.hp*2));setTimeout(()=>{try{say('You defeated '+B.n+'!');msgT=5;sfx('quest')}catch(e){self.SQERR&&SQERR(e,'146-12')}},300);for(const m of en)if(m._cbs===n&&!m.dead){m.dead=1;m.dropped=1}}}catch(e){self.SQERR&&SQERR(e,'146-13')}return out}}
  // ---- drawing: bigger, a health bar and name, the attacks ----
- {const _ps=pS;pS=function(n,tm){const B=n&&n.cb&&CB[n.cb];if(!B)return _ps.apply(this,arguments);const x=Math.round(n.x),y=Math.round(n.y);
+ {SQPS.wrap('146',_ps=>function(n,tm){const B=n&&n.cb&&CB[n.cb];if(!B)return _ps.apply(this,arguments);const x=Math.round(n.x),y=Math.round(n.y);
    if(n.cbc&&n.cbc.ph===0){g.save();g.strokeStyle='rgba(255,70,40,'+(.5+.4*Math.sin(tm*30))+')';g.lineWidth=3;g.setLineDash([4,3]);g.beginPath();g.moveTo(x,y);g.lineTo(x+n.cbc.vx*120,y+n.cbc.vy*120);g.stroke();g.restore()}
    g.save();g.translate(x,y);g.scale(B.sz,B.sz);g.translate(-x,-y);try{_ps.apply(this,arguments)}finally{g.restore()}
    const w=Math.round(26+10*B.sz),top=Math.round(y-18*B.sz-14),f=Math.max(0,n.hp/(n.mhp||1));Rg(x-w/2-1,top,w+2,5,'#181018');Rg(x-w/2,top+1,w,3,'#3a1a1a');Rg(x-w/2,top+1,Math.round(w*f),3,'#e04040');
-   g.save();g.font='700 6px "Pixelify Sans",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(B.n,x,top-2);g.fillStyle='#ffd8c8';g.fillText(B.n,x,top-2);g.restore()}}
+   g.save();g.font='700 6px "Pixelify Sans",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(B.n,x,top-2);g.fillStyle='#ffd8c8';g.fillText(B.n,x,top-2);g.restore()})}
  {SQPP.before('146',(tm)=>{try{for(const q of TG){const p=1-q.t/1.05;g.fillStyle='rgba(255,60,30,'+(.15+.25*p)+')';g.strokeStyle='rgba(255,70,40,.85)';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,q.r,q.r/1.6,0,0,6.283);g.fill();g.stroke();
      g.beginPath();g.ellipse(q.x,q.y,q.r*p,q.r*p/1.6,0,0,6.283);g.stroke()}
     for(const s of SH){if(window.SQSHOTDRAW&&SQSHOTDRAW(s))continue;g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(s.x,s.y,5,0,6.283);g.fill();Rg(Math.round(s.x)-2,Math.round(s.y)-2,4,4,'#181018');Rg(Math.round(s.x)-1,Math.round(s.y)-1,2,2,'#ffd060')}}catch(e){self.SQERR&&SQERR(e,'146-14')}})}

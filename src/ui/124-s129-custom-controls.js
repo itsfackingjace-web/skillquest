@@ -84,7 +84,7 @@
    h+='<button class="sb" data-ct="preset" style="width:100%;margin-top:10px">Reset buttons to the game\'s own</button>'}
   return h+'<button class="sb" data-ct="back" style="width:100%">Back to Options</button>'}
  function draw(){if(pnOpen&&ptab===CTAB)rPn()}
- const _r=rPn;rPn=function(){if(ptab===CTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'124-2')}pbd.innerHTML=html();return}return _r.apply(this,arguments)};
+ SQRPN.wrap('124',_r=>function(){if(ptab===CTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'124-2')}pbd.innerHTML=html();return}return _r.apply(this,arguments)});
  const open=()=>{VIEW=(typeof GPON!=='undefined'&&GPON)?'p':isPC?'k':'t';CAP=null;pnOpen=true;ptab=CTAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
  pbd.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.ctlb')){e.stopPropagation();open()}},true);
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab!==CTAB)return _oc(e);const b=e.target.closest('[data-ct]');if(!b)return;const a=b.dataset.ct;

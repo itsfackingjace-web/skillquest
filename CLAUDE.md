@@ -40,6 +40,9 @@
   **UPD** (`window.SQUPD`, created at the end of 001 right after its `upd`): 142 steps, every frame. **HUD** (`window.SQHUD`, end of 010,
   base = 010's `drawHUD`): 38 steps. **Player drawing** (`window.SQPP`, end of 003, base = 003's `pP`): 31 steps. **Never reassign `upd`,
   `drawHUD` or `pP`**; add a step (`SQUPD.after('<file no> <what>', dt=>{...})`, or `.wrap` when it must run before/around the frame or skip it).
+  **Monster drawing** (`window.SQPS`, end of 002, base = 002's `pS`): 16 steps (111d's look drawer keeps the inner drawer as `_ps` for
+  its own use). **Panels** (`window.SQRPN`, end of 004, base = 004's `rPn`): 54 steps. **Room items** (`window.SQFURN`, end of 012, base =
+  012's `drawFurn`): 33 steps. **Never reassign `pS`, `rPn` or `drawFurn`** either.
   The steps keep the names of the sections that made them, so `SQUPD.list()` shows what runs each frame, in order. `solid` is still a
   wrapper chain (012 calls its saved inner `_sol12` elsewhere, so it can't be converted without changing behaviour).
   `tools/refactor/` has the converters and the before/after comparisons (`compare-frames.cjs` for anything that runs every frame).

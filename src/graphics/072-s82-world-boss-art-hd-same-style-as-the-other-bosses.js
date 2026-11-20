@@ -349,9 +349,8 @@ function chOpenShared(owner,cid){if(CHS.open)try{CHS.open()}catch(e){self.SQERR&
     .catch(()=>{inv[k]=(inv[k]|0)+n;say('Could not put that in the chest. Try again.');rPn()})}
   else{let got=0;if(!(s.items[k]>0))return;FB.db.runTransaction(ref,cur=>{got=0;if(!cur)return cur;const i=chClean(cur.i);got=Math.min(i[k]|0,lim);if(!got)return;i[k]-=got;if(!(i[k]>0))delete i[k];return{i,v:(+cur.v|0)+1}})
     .then(r=>{if(r&&r.committed&&got>0){inv[k]=(inv[k]|0)+got;sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'072-13')}}else say('Someone else got to that first.');rPn()}).catch(()=>{say('Could not take that. Try again.')})}}}
-{const _r=rPn;rPn=function(){_r();if(!pnOpen)return;if(ptab===7&&CHEST_H&&CHEST_H._sh){const b=document.getElementById('chpk');if(b)b.remove();
-   pbd.insertAdjacentHTML('afterbegin','<div class="tl" style="font-size:12px;font-weight:400;opacity:.8;margin-bottom:6px">'+esc(fname(CHEST_H._sh.o))+'\'s chest'+(CHEST_H.err?' · could not open it (are you still trusted?)':CHEST_H.ok?'':' · loading...')+'</div>')}
-  if((ptab===2&&typeof STATION!=='undefined'&&STATION&&STATION._foreign)||(ptab===1&&typeof BENCH!=='undefined'&&BENCH&&BENCH._foreign))for(const b of pbd.querySelectorAll('[data-a="pickup"]'))b.remove()}}
+{SQRPN.after('072',()=>{if(!pnOpen)return;if(ptab===7&&CHEST_H&&CHEST_H._sh){const b=document.getElementById('chpk');if(b)b.remove();
+   pbd.insertAdjacentHTML('afterbegin','<div class="tl" style="font-size:12px;font-weight:400;opacity:.8;margin-bottom:6px">'+esc(fname(CHEST_H._sh.o))+'\'s chest'+(CHEST_H.err?' · could not open it (are you still trusted?)':CHEST_H.ok?'':' · loading...')+'</div>')}if((ptab===2&&typeof STATION!=='undefined'&&STATION&&STATION._foreign)||(ptab===1&&typeof BENCH!=='undefined'&&BENCH&&BENCH._foreign))for(const b of pbd.querySelectorAll('[data-a="pickup"]'))b.remove()})}
 // ---- what a visitor can do ----
 const inForeignHouse=()=>SCENE&&SCENE.house&&SCENE.house._foreign?SCENE.house:null;
 // furniture: never pick up someone else's (this used to hand out free copies)
@@ -416,7 +415,7 @@ setInterval(()=>{const t=nowS();let n=0;for(const[i,p]of[...FARM]){if(p._foreign
 {const _rn=rgNear;rgNear=function(R,x0,y0,x1,y1){const out=_rn(R,x0,y0,x1,y1);if(!R||!R.region||!(SCENE&&SCENE.room===R))return out;const M=rfMap(R.region),F=rfForeign(R.region);
   for(const[k,p]of M){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2)out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}
   for(const[k,f]of F){const[x,y]=rbXY(k);if(x>=x0-2&&x<=x1+2&&y>=y0-2&&y<=y1+2){const p={c:f.c,g:f.c?f.s*CROPS[f.c].st:0,w:f.w?CLK+60:0};out.push({t:'_rf',p,M,F,tx:x,ty:y,x:x+.5,y:y-.95})}}return out}}
-{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_rf'){const{M,F,tx,ty}=it;try{GC=g;drawPlot(-1,it.p,tm,tx,ty,(dx,dy)=>M.has(rbK(tx+dx,ty+dy))||F.has(rbK(tx+dx,ty+dy)))}catch(e){self.SQERR&&SQERR(e,'072-15')}return}return _df(it,tm)}}
+{SQFURN.wrap('072',_df=>function(it,tm){if(it&&it.t==='_rf'){const{M,F,tx,ty}=it;try{GC=g;drawPlot(-1,it.p,tm,tx,ty,(dx,dy)=>M.has(rbK(tx+dx,ty+dy))||F.has(rbK(tx+dx,ty+dy)))}catch(e){self.SQERR&&SQERR(e,'072-15')}return}return _df(it,tm)})}
 // saving
 {SQSAVE.after('072:rfarm',s=>{const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w),p.e|0])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;})}
 {SQLOAD.after('072',(S)=>{for(const id in RF)delete RF[id];const o=S&&S.rfarm;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id]||!Array.isArray(o[id]))continue;const M=rfMap(id);

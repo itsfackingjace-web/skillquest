@@ -97,3 +97,6 @@ const _nd12=NEWDRAW;NEWDRAW=function(...a){INDRAW=!!SCENE;if(SCENE){drawRoom(a[8
  let rd=false;for(const h of vis){const hw=((h.w||5)-1)/2,X0=(h.x-hw)*16,base=(h.y+1)*16;if(P.x>X0-6&&P.x<X0+(h.w||5)*16+6&&P.y+6>=base&&P.y-16<base)rd=true}if(rd&&!dead&&!SORTALL)pP(tm);
  if(BUILD&&BUILD.k==='house'&&!dead){const[x,y]=houseAnchor(),ok=houseFits();g.globalAlpha=.55;drBld({...HOUSE_STYLE,w:7,tx:x-3,ty:y-1},tm);g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32)}};
 setActionLabels();
+
+// room items/furniture drawing (drawFurn) as a step list (window.SQFURN; see 006's sqSteps)
+const SQFURN=sqSteps('drawFurn',drawFurn,f=>{drawFurn=f});window.SQFURN=SQFURN;

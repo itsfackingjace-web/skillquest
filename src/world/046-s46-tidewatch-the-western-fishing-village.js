@@ -59,11 +59,11 @@ Object.assign(ROOMS,{
  tw2:fhRoom(8,6,['#d0c0a0','#c4b494'],TWL,'#3a6ab0',[{t:'window',x:2,y:0},{t:'shelf',x:5,y:0,w:2},{t:'bed',x:1,y:2,sh:2,solid:1},{t:'table',x:4,y:3,w:2,solid:1},{t:'plant',x:7,y:2,solid:1},{t:'rug',x:3,y:4,w:2}]),
  tw3:fhRoom(8,6,TFL,TWL,'#5a9ad8',[{t:'window',x:2,y:0},{t:'rack',x:5,y:0,w:2},{t:'bed',x:1,y:2,sh:2,solid:1},{t:'table',x:4,y:3,w:2,solid:1},{t:'chest',x:7,y:2,solid:1},{t:'rug',x:3,y:4,w:2}]),
  tw4:fhRoom(8,6,['#c8b898','#bcac8c'],TWL,'#2a5a9a',[{t:'window',x:3,y:0},{t:'shelf',x:5,y:0,w:2},{t:'bed',x:1,y:2,sh:2,solid:1},{t:'bed',x:6,y:2,sh:2,solid:1},{t:'table',x:3,y:3,w:2,solid:1},{t:'rug',x:3,y:5,w:2}])});
-const _df46=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
+SQFURN.wrap('046',_df46=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='mapboard'){const w=(it.w||3)*16;Rg(x0+2,y0-6,w-4,20,O);Rg(x0+3,y0-5,w-6,18,'#e8dcb8');Rg(x0+5,y0-3,w-10,14,'#4a90d0');
   for(const[a,b,c,d]of[[8,-1,10,6],[22,1,8,5],[12,6,9,4],[30,5,6,4]])if(a+c<w-5)Rg(x0+a,y0+b,c,d,'#78b858');Rg(x0+18,y0+1,2,2,'#e04040');Rg(x0+w-12,y0+8,3,3,'#f8d848');return}
  if(it.t==='telescope'){shd(x0+8,y0+15,12);Rg(x0+7,y0+2,2,12,'#5a3418');Rg(x0+4,y0+12,8,2,'#5a3418');Rg(x0+1,y0-6,14,5,O);Rg(x0+2,y0-5,12,3,'#c89830');Rg(x0+2,y0-5,12,1,'#f0d070');Rg(x0+12,y0-6,3,5,'#3a3020');return}
- _df46(it,tm)};
+ _df46(it,tm)});
 // --- people ---
 const TWN=[
  {kind:'twfolk',id:'corin',name:'Corin',home:'tw1',work:'tw_tackle',wx:3*16,wy:2*16+10,bed:[1,2],ch:{sk:2,hs:0,hc:1,sh:2,pn:2,ht:2,hcol:4,so:2}},
@@ -100,8 +100,8 @@ function twPanel(n){const S=n.scene&&TWSHOP[n.scene];let h=head(S?S.title:n.scen
  if(S){h+=twShopHTML(S);if(n.id==='luma')h+=row('tw_rest',nightNow()||dark()>.3?'Rent a bed for the night':'Rest a while',(nightNow()||dark()>.3?'25 gold · sleep until morning, wake up healed':'25 gold · heal fully and get a hot meal'),GLD>=25)}
  if(n.id==='sera'&&n.scene==='tw_nav'){h+=seraNotes();h+=row('tw_scope','Look through the telescope','See the whole island and its seas on the map',true)}
  return h+jobCard(n)}
-const _r46=rPn;rPn=function(){if(ptab===2&&shop==='twfolk'){if(!TALKN||TALKN.kind!=='twfolk'){TALKN=nearNpc();const n=TALKN;TALKQ=n?(n.scene&&TWSHOPQ[n.id]&&Math.random()<.5?TWSHOPQ[n.id][Math.floor(Math.random()*2)]:pickLine(n)):''}
-  panelChrome('');if(!TALKN){closePanel();return}pbd.innerHTML=twPanel(TALKN);return}_r46()};
+SQRPN.wrap('046',_r46=>function(){if(ptab===2&&shop==='twfolk'){if(!TALKN||TALKN.kind!=='twfolk'){TALKN=nearNpc();const n=TALKN;TALKQ=n?(n.scene&&TWSHOPQ[n.id]&&Math.random()<.5?TWSHOPQ[n.id][Math.floor(Math.random()*2)]:pickLine(n)):''}
+  panelChrome('');if(!TALKN){closePanel();return}pbd.innerHTML=twPanel(TALKN);return}_r46()});
 const _cp46=closePanel;closePanel=function(){_cp46();if(TALKN&&TALKN.kind==='twfolk')TALKN=null};
 const _xa46=xAct;xAct=function(a){const n=TALKN;
  if(a.startsWith('twb_')){const m=a.match(/^twb_(.+)_(\d+)$/);if(!m)return;const k=m[1],q=+m[2],S=n&&TWSHOP[n.scene],it=S&&S.items.find(e=>e[0]===k);if(!it)return;

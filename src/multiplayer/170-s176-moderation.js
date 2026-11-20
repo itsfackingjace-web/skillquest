@@ -25,10 +25,10 @@
  const RTAB=40;let RU=null,RN='',RS=0;
  const WHY=[['chat','Rude or hurtful chat'],['cheat','Cheating or using a bug'],['scam','Scamming in a trade'],['name','Bad name'],['other','Something else']];
  window.SQREPORT=(u,n)=>{RU=u;RN=n||'';RS=0;pnOpen=true;ptab=RTAB;pn.style.display='block';rPn()};
- {const _r=rPn;rPn=function(){if(ptab!==RTAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'170-4')}
+ {SQRPN.wrap('170',_r=>function(){if(ptab!==RTAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'170-4')}
    pbd.innerHTML=RS?'<div class="tl">THANK YOU</div><div class="qc" style="text-align:center">Your report about '+esc(RN)+' was sent to the developer.</div><div class="pmb"><button class="sb" data-rp="close">CLOSE</button></div>'
     :'<div class="tl">REPORT '+esc(RN).toUpperCase()+'</div><div class="qc" style="font-size:13px">What happened? The developer sees the report and their recent chat.</div><div class="pmb">'+WHY.map(([k,l])=>'<button class="sb" data-rp="'+k+'">'+l+'</button>').join('')+
-     '<input id="sqrpx" maxlength="200" placeholder="Anything to add? (optional)" style="width:100%;box-sizing:border-box;margin:6px 0;padding:8px;font:500 14px '+PF+'"><button class="sb" data-rp="close">CANCEL</button></div>'}}
+     '<input id="sqrpx" maxlength="200" placeholder="Anything to add? (optional)" style="width:100%;box-sizing:border-box;margin:6px 0;padding:8px;font:500 14px '+PF+'"><button class="sb" data-rp="close">CANCEL</button></div>'})}
  pbd.addEventListener('click',async e=>{if(ptab!==RTAB)return;const b=e.target.closest('[data-rp]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.rp;
   if(k==='close'){closePanel();return}const F=FBx(),me=uid();if(!F||!me){say('Sign in to report.');return}if(RS)return;RS=1;
   const x=(document.getElementById('sqrpx')||{}).value||'';let loc='';try{loc=SCENE&&SCENE.room&&SCENE.room.region||((typeof curRegion==='function')?curRegion():'')}catch(_){self.SQERR&&SQERR(_,'170-5')}

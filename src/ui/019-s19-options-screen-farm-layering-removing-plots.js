@@ -16,7 +16,7 @@ function optionsHTML(){return'<div class="tl">OPTIONS</div>'+volRow('m','Music',
  +(isPC?'<button class="sb opt" data-o="help">Controls help: '+(helpOn?'ON':'OFF')+'</button>':'')
  +'<div class="tl" style="margin-top:22px;font-size:12px;font-weight:400;opacity:.7">Your game saves by itself, on this device and to your account.</div>'
  +'<button class="ng" id="ngb">'+(ngArm?'Tap again to erase all progress':'Start a new game')+'</button>'}
-const _r19=rPn;rPn=function(){if(ptab===8){panelChrome('');pbd.innerHTML=optionsHTML();return}_r19()};
+SQRPN.wrap('019',_r19=>function(){if(ptab===8){panelChrome('');pbd.innerHTML=optionsHTML();return}_r19()});
 function volAct(id,d){const step=x=>{const k=VOLS.indexOf(x);return VOLS[Math.max(0,Math.min(VOLS.length-1,(k<0?4:k)+d))]};
  if(id==='m'){if(d==='t'){MUSIC=!MUSIC;try{localStorage.setItem('sq_music',MUSIC?'1':'0')}catch(_){self.SQERR&&SQERR(_,'019-3')}}else{MUSV=step(MUSV);if(MUSV>0&&!MUSIC){MUSIC=true;try{localStorage.setItem('sq_music','1')}catch(_){self.SQERR&&SQERR(_,'019-4')}}}}
  else{if(d==='t'){MUTE=!MUTE;mb.textContent=MUTE?'🔇':'🔊'}else{SFXV=step(SFXV);if(SFXV>0)MUTE=false}if(!MUTE)sfx('talk')}

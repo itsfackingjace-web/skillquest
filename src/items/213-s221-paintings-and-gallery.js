@@ -142,7 +142,7 @@
   for(const[x,y]of EASELS){const pid=ids[n++];R.items.push({t:'_pte',x,y,solid:1,pid:pid||null})}
   R.solid=new Set();for(const it of R.items)if(it.solid)for(let dy=0;dy<(it.sh||1);dy++)for(let dx=0;dx<(it.w||1);dx++)R.solid.add((it.y+dy)*R.w+it.x+dx);R.n=ids.length}
  fill();
- {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_ptw'){if(it.pid)hung(it.pid,it.x,tm,true);return}if(it&&it.t==='_pte'){if(it.pid)easel(it.pid,it.x,it.y,tm);else{const x0=it.x*16,y0=it.y*16;shd(x0+8,y0+14,12);Rg(x0+3,y0-6,2,21,O);Rg(x0+11,y0-6,2,21,O);Rg(x0+7,y0-8,2,20,O);Rg(x0+2,y0+3,12,2,O);Rg(x0+1,y0-14,14,12,O);Rg(x0+2,y0-13,12,10,'#f4ecd8')}return}return _df.apply(this,arguments)}}
+ {SQFURN.wrap('213',_df=>function(it,tm){if(it&&it.t==='_ptw'){if(it.pid)hung(it.pid,it.x,tm,true);return}if(it&&it.t==='_pte'){if(it.pid)easel(it.pid,it.x,it.y,tm);else{const x0=it.x*16,y0=it.y*16;shd(x0+8,y0+14,12);Rg(x0+3,y0-6,2,21,O);Rg(x0+11,y0-6,2,21,O);Rg(x0+7,y0-8,2,20,O);Rg(x0+2,y0+3,12,2,O);Rg(x0+1,y0-14,14,12,O);Rg(x0+2,y0-13,12,10,'#f4ecd8')}return}return _df.apply(this,arguments)})}
  NPCS.push({kind:PTAB_SHOP,name:'Iris',scene:'gallery',x:8*16,y:2*16+10,dir:0,st:0,ch:{sk:1,hs:4,hc:6,sh:9,pn:2,hcol:7,so:1}});
  if(typeof LINES!=='undefined')LINES.gallery={d:['Welcome to the Patron Art Gallery! Every painting here was made by a SkillQuest Patron.','Take a print home and hang it on your wall.']};
  // ---- Iris's shop: prints of every painting ----
@@ -155,7 +155,7 @@
     '<div style="flex:1;min-width:0;font-size:14px;line-height:1.35"><b>“'+E(nameOf(id))+'”</b><br>by '+E(byOf(id))+(have?'<br><small>You have '+have+'</small>':'')+'</div>'+
     '<button class="qb" data-ptbuy="'+E(id)+'" style="flex:none;width:auto;min-width:96px;margin:0;padding:8px 10px"'+(GLD<price(id)?' disabled':'')+'>'+price(id).toLocaleString('en-US')+' gold</button></div>'}
   return h}
- {const _r=rPn;rPn=function(){if(ptab===2&&shop===PTAB_SHOP&&pnOpen){try{panelChrome('Patron Art Gallery')}catch(e){self.SQERR&&SQERR(e,'213-26')}pbd.innerHTML=shopHTML();return}return _r.apply(this,arguments)}}
+ {SQRPN.wrap('213',_r=>function(){if(ptab===2&&shop===PTAB_SHOP&&pnOpen){try{panelChrome('Patron Art Gallery')}catch(e){self.SQERR&&SQERR(e,'213-26')}pbd.innerHTML=shopHTML();return}return _r.apply(this,arguments)})}
  pbd.addEventListener('click',e=>{if(!(ptab===2&&shop===PTAB_SHOP))return;const b=e.target.closest&&e.target.closest('[data-ptbuy]');if(!b)return;e.stopPropagation();e.preventDefault();const id=b.dataset.ptbuy;if(!PT[id]||PT[id].off)return;
   const p=price(id);if(GLD<p){say('Not enough gold.');return}GLD-=p;inv['pt_'+id]=(inv['pt_'+id]|0)+1;say('You bought a print of “'+nameOf(id)+'” by '+byOf(id)+'. Hang it at home!');try{sfx('coin')}catch(x){try{sfx('pickup')}catch(y){self.SQERR&&SQERR(y,'213-27')}}
   try{if(typeof svg==='function')svg()}catch(x){self.SQERR&&SQERR(x,'213-28')}saveLocal(true);try{saveCloud(true)}catch(x){self.SQERR&&SQERR(x,'213-29')}rPn()},true);

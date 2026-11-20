@@ -144,8 +144,8 @@ function hdBeetleSp(fr,hit){const b=hdBuf(34,26),pal=hit?hdP(['#c0b8c8','#d8d0e0
 function drawBeetle(n,tm){if(n.under)return;const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs(n.kx)+Math.abs(n.ky)>.8,fr=Math.floor(tm*8+n.x)%2,f=P.x<n.x;shd(x,y+5,16);
  const sink=n.bs==='dig'?(1-n.bt/.35)*6:0,c=hdEn('bt'+fr+hit,()=>hdBeetleSp(fr,hit)),w=c.width/2,hh=c.height/2;
  g.save();g.beginPath();g.rect(x-w,y-hh-4,w*2,hh+10-sink);g.clip();hdDraw(c,x-w/2,y+6-hh+sink,f);g.restore()}
-const _pS45=pS;pS=function(n,tm){if(n.type==='scorp')return drawScorp(n,tm);if(n.type==='beetle')return drawBeetle(n,tm);if(n.type==='matri')return drawMatri(n,tm);
- _pS45(n,tm);if(n.type==='skel'&&n.vr==='dust'){const x=Math.round(n.x),y=Math.round(n.y),f=P.x<n.x?-1:1;Rg(x-5,y-25,10,3,'#8a6030');Rg(x-5,y-25,10,1,'#b88850');Rg(x-6,y-23,2,5,'#8a6030');Rg(x+4,y-23,2,5,'#8a6030');Rg(x-5,y-14,10,2,'#a07040');Rg(x-f*6-1,y-13,3,5,'#a07040')}};
+SQPS.wrap('045',_pS45=>function(n,tm){if(n.type==='scorp')return drawScorp(n,tm);if(n.type==='beetle')return drawBeetle(n,tm);if(n.type==='matri')return drawMatri(n,tm);
+ _pS45(n,tm);if(n.type==='skel'&&n.vr==='dust'){const x=Math.round(n.x),y=Math.round(n.y),f=P.x<n.x?-1:1;Rg(x-5,y-25,10,3,'#8a6030');Rg(x-5,y-25,10,1,'#b88850');Rg(x-6,y-23,2,5,'#8a6030');Rg(x+4,y-23,2,5,'#8a6030');Rg(x-5,y-14,10,2,'#a07040');Rg(x-f*6-1,y-13,3,5,'#a07040')}});
 // moving sand mounds (burrowed beetles and the Matriarch), strike flashes
 const _dr45=drawRoom;drawRoom=function(tm){_dr45(tm);if(!SCENE||!SCENE.room.dun)return;
  for(const n of en){if(n.dead||!n.under)continue;const big=n.type==='matri',x=n.mx,y=n.my,r=big?14:8,sh=(n.ms==='mark'||n.bs==='tele')?Math.sin(tm*50)*1.5:0;
@@ -154,14 +154,14 @@ const _dr45=drawRoom;drawRoom=function(tm){_dr45(tm);if(!SCENE||!SCENE.room.dun)
   if(Math.random()<.3)part(x+(Math.random()-.5)*r*2,y+2,(Math.random()-.5)*20,-25,.35,'#d8b880',160,1)}
  for(const e of EMERGE45){const k=e.t/.5;g.strokeStyle='rgba(255,240,200,'+(1-k)+')';g.lineWidth=2;g.beginPath();g.arc(e.x,e.y,e.r*(.5+k*.8),0,6.283);g.stroke()}};
 // decor: broken pillars, orange crystals, mine carts, pick racks, sand piles
-const _df45=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
+SQFURN.wrap('045',_df45=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='bpillar'){shd(x0+8,y0+15,16);Rg(x0+2,y0-6,12,21,O);Rg(x0+3,y0-5,10,19,'#c8a070');Rg(x0+4,y0-5,3,19,'#e0c090');Rg(x0+10,y0-5,2,19,'#a07848');Rg(x0+3,y0-7,4,3,O);Rg(x0+8,y0-9,5,5,O);Rg(x0+9,y0-8,3,3,'#c8a070');Rg(x0+6,y0+2,1,6,'#7a5a30');Rg(x0-2,y0+12,5,3,'#c8a070');return}
  if(it.t==='ocrystal'){const p=.6+.4*Math.sin(tm*2+x0);g.fillStyle='rgba(255,150,60,'+(.2*p)+')';g.beginPath();g.arc(x0+8,y0+4,14,0,6.283);g.fill();Rg(x0+4,y0-4,8,18,O);Rg(x0+5,y0-3,6,16,'#f08830');Rg(x0+6,y0-2,2,12,'#ffd090');Rg(x0+2,y0+6,4,8,O);Rg(x0+3,y0+7,2,6,'#c86018');return}
  if(it.t==='minecart'){shd(x0+8,y0+15,18);Rg(x0,y0+1,16,11,O);Rg(x0+1,y0+2,14,8,'#6a6a78');Rg(x0+1,y0+2,14,2,'#8a8a98');Rg(x0+2,y0-1,12,4,'#9a9aa8');for(const k of[2,6,9])Rg(x0+k,y0-2,3,2,'#808090');Rg(x0+2,y0+11,4,4,O);Rg(x0+10,y0+11,4,4,O);Rg(x0+3,y0+12,2,2,'#5a5a66');Rg(x0+11,y0+12,2,2,'#5a5a66');return}
  if(it.t==='pickrack'){shd(x0+8,y0+15,14);Rg(x0+1,y0-8,14,23,O);Rg(x0+2,y0-7,12,21,'#8a6038');Rg(x0+2,y0-1,12,2,'#5a3a1a');for(const k of[3,8]){Rg(x0+k+1,y0-6,1,12,'#7a4a20');Rg(x0+k-1,y0-6,5,2,'#a0a8b8')}return}
  if(it.t==='sandpile'){g.fillStyle='rgba(60,40,10,.25)';g.beginPath();g.ellipse(x0+8,y0+13,10,3.5,0,0,6.283);g.fill();for(const[r,cy,c]of[[9,11,'#a8803c'],[7.5,9.5,'#c8a058'],[5.5,8,'#dcb470'],[3.5,6.5,'#ecc888'],[1.8,5.5,'#f8dca0']]){g.fillStyle=c;g.beginPath();g.ellipse(x0+8-(9-r)*.15,y0+cy,r,r*.55,0,0,6.283);g.fill()}
   g.fillStyle='#8a6428';for(const[a,b]of[[3,11],[12,10],[6,12],[10,7]])g.fillRect(x0+a,y0+b,1,1);return}
- _df45(it,tm)};
+ _df45(it,tm)});
 SQSAVE.after('045:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
 SQLOAD.after('045',(S)=>{EMERGE45=[];for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1});
 const _ng45=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng45()};

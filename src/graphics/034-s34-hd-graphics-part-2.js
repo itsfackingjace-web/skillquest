@@ -87,7 +87,7 @@ function hdUrn(){return hdK('ur',0,-2,16,18,p=>{p.ell(16,18,10,11,CLAYP,.05);p.b
 function hdBones(){return hdK('bo',0,0,16,16,p=>{const BN=hdP(['#a89c88','#d8d2c2','#f0ece0']);p.box(4,16,22,19,BN,1);for(const[x,y]of[[4,16],[4,19],[22,16],[22,19]])p.ell(x,y,1.8,1.8,BN);
  p.ell(20,9,5,4.5,BN,.1);p.put(18,9,hdC('#2a2018'));p.put(21,9,hdC('#2a2018'));p.box(6,24,14,26,BN,1)},'#3a3024')}
 function hdCurtainFor(){const id=SCENE&&SCENE.id||'';return id==='home'?'#c84848':id==='gen'?'#3a8a5a':id==='smith'?'#6a6a80':'#4878c0'}
-const _df34=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16,W=it.w||1;
+SQFURN.wrap('034',_df34=>function(it,tm){const x0=it.x*16,y0=it.y*16,W=it.w||1;
  switch(it.t){
   case'table':shd(x0+W*8,y0+15,W*14);return hdPut(hdTable(W,it.goods),x0,y0);
   case'counter':return hdPut(hdCounter(W),x0,y0);
@@ -107,7 +107,7 @@ const _df34=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16,W=it.w
   case'pillar':shd(x0+8,y0+15,16);return hdPut(hdPillar(),x0,y0);
   case'urn':shd(x0+8,y0+15,12);return hdPut(hdUrn(),x0,y0);
   case'bones':return hdPut(hdBones(),x0,y0)}
- _df34(it,tm)};
+ _df34(it,tm)});
 const _dp34=drawPiece;drawPiece=function(t,x,y,f,ghost,tm){const x0=x*16,y0=y*16;
  if(t==='chair'){shd(x0+8,y0+15,10);return hdPut(hdChair(),x0,y0)}
  if(t==='shelf'){shd(x0+8,y0+15,14);return hdPut(hdShelf(1,-10,16,'psh'),x0,y0)}

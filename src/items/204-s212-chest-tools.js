@@ -47,8 +47,8 @@
    if(REN&&REN.s===s&&me)head+='<form class="cht-r" data-cht-f><input id="chtnm" maxlength="'+NMAX+'" value="'+esc(REN.v)+'" placeholder="Name on the chest" autocomplete="off" spellcheck="false" aria-label="Chest name">'+
     '<span class="cht-c" id="chtct">'+REN.v.length+'/'+NMAX+'</span><button class="sb cht-b" type="submit">SAVE</button><button class="sb cht-b" type="button" data-cht="cancel">CANCEL</button></form>';
    return head+h.slice(mark.length)}}
- {const _r=rPn;rPn=function(){const a=document.activeElement,typing=a&&a.id==='chtnm',pos=typing?a.selectionStart:0;_r.apply(this,arguments);
-   if(ptab!==7||!pnOpen){REN=null;return}const el=document.getElementById('chtnm');if(el&&(typing||REN&&REN.focus)){REN.focus=0;el.focus();try{el.setSelectionRange(typing?pos:el.value.length,typing?pos:el.value.length)}catch(e){self.SQERR&&SQERR(e,'204-5')}}}}
+ {SQRPN.wrap('204',_r=>function(){const a=document.activeElement,typing=a&&a.id==='chtnm',pos=typing?a.selectionStart:0;_r.apply(this,arguments);
+   if(ptab!==7||!pnOpen){REN=null;return}const el=document.getElementById('chtnm');if(el&&(typing||REN&&REN.focus)){REN.focus=0;el.focus();try{el.setSelectionRange(typing?pos:el.value.length,typing?pos:el.value.length)}catch(e){self.SQERR&&SQERR(e,'204-5')}}})}
  pbd.addEventListener('click',e=>{if(ptab!==7)return;const b=e.target.closest&&e.target.closest('[data-cht]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.cht,s=chest();
   if(k==='take')takeAll();
   else if(k==='sort'){const i=MODES.findIndex(x=>x[0]===mode);mode=MODES[(i+1)%MODES.length][0];try{localStorage.setItem('sq_chsort',mode)}catch(_){self.SQERR&&SQERR(_,'204-6')}rPn()}

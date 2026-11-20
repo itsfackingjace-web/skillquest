@@ -28,4 +28,6 @@ module.exports={
   if(spot){P.x=spot[0]*16+8;P.y=spot[1]*16+8;face=[0,-1]}inv.house=1;startBuild('house');placeBuild();if(BUILD)endBuild();S.frame(20,10);const h=HOUSES.find(o=>!o._foreign);
   if(h){P.x=h.x*16+8;P.y=(h.y+1)*16+8;face=[0,-1];S.key('arrowup',1);S.frame(40,10);S.key('arrowup',0);S.frame(30,10);
    for(const k of['arrowleft','arrowup','arrowright','arrowdown']){S.key(k,1);S.frame(30,10);S.key(k,0)}S.key('arrowdown',1);S.frame(90,10);S.key('arrowdown',0);S.frame(30,10)}},
+ panels(S){inv.wood=30;inv.stone=20;inv.iron=5;GLD=5000;for(const t of[0,1,2,3,4,5,6,7,8,31,35,38,39,41,43,44,45,46,47,48,49,50,51]){try{openPanel(t);rPn()}catch(e){}S.frame(3,3);S.rec('p'+t);try{closePanel()}catch(e){}S.frame(2,2)}
+  try{openSM();S.frame(5,5);S.rec('sm');closeSM()}catch(e){}},
 };

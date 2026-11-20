@@ -144,7 +144,7 @@ function hdBatSp(fr,hit){const b=hdBuf(40,28),OX=20,OY=20,pal=hit?hdP(['#b8c0d8'
 function drawBat(n,tm){const x=Math.round(n.x),y=Math.round(n.y)-10,hit=Math.abs(n.kx)+Math.abs(n.ky)>.8,fr=Math.floor(tm*12+n.ba*3)%2;shd(x,y+16,10);
  if(n.bs==='tele'){g.fillStyle='rgba(168,224,255,'+(.35+.3*Math.sin(tm*40))+')';g.beginPath();g.arc(x,y-1,9,0,6.283);g.fill()}
  const c=hdEn('bat'+fr+(hit||n.bs==='tele'),()=>hdBatSp(fr,hit||n.bs==='tele'));g.drawImage(c,x-c.width/4,y-c.height/4-2,c.width/2,c.height/2)}
-const _pS43=pS;pS=function(n,tm){if(n.type==='bat')return drawBat(n,tm);if(n.type==='alpha')return drawAlpha(n,tm);if(n.type==='wolf'&&n.vr==='snow')return drawSnowWolf(n,tm);_pS43(n,tm)};
+SQPS.wrap('043',_pS43=>function(n,tm){if(n.type==='bat')return drawBat(n,tm);if(n.type==='alpha')return drawAlpha(n,tm);if(n.type==='wolf'&&n.vr==='snow')return drawSnowWolf(n,tm);_pS43(n,tm)});
 // frost slimes: pale blue and glassy
 let HDFS=null;
 function hdFrost(f){if(!HDFS){HDFS=[];for(const fr of[0,1]){const ht=fr?20:23,b=hdBuf(34,26),cy=25,pal=hdP(['#2a5a8a','#4a8ac0','#7ab8e8','#b0dcf8','#f0faff']);
@@ -156,12 +156,12 @@ const _sl43=SLIMEHD;SLIMEHD=(n,tm)=>{if(n.vr!=='frost'||Math.abs(n.kx)+Math.abs(
 const _dr43=drawRoom;drawRoom=function(tm){_dr43(tm);if(ROAR43&&SCENE&&ROAR43.n&&!ROAR43.n.dead){const n=ROAR43.n,k=Math.min(1,ROAR43.t/.7);g.strokeStyle='rgba(168,224,255,'+(.4+.5*k)+')';g.lineWidth=1.5;g.beginPath();g.ellipse(n.x,n.y-4,64*k,48*k,0,0,6.283);g.stroke();
   g.strokeStyle='rgba(255,255,255,.5)';g.beginPath();g.ellipse(n.x,n.y-4,64,48,0,0,6.283);g.setLineDash([3,3]);g.stroke();g.setLineDash([])}};
 // ice decor
-const _df43=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
+SQFURN.wrap('043',_df43=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='icicle'){for(let k=0;k<3;k++){const ix=x0+3+k*5,ih=6+((it.x*3+k*7)%5);Rg(ix,y0-2,3,ih,'#e0f4ff');Rg(ix+1,y0-2,1,ih+2,'#ffffff');Rg(ix,y0-2,1,ih-1,'#a8d0f0')}return}
  if(it.t==='fpool'){g.fillStyle='#a8d0f0';g.beginPath();g.ellipse(x0+8,y0+9,9,5,0,0,6.283);g.fill();g.fillStyle='#d8f0ff';g.beginPath();g.ellipse(x0+6,y0+8,5,2.5,0,0,6.283);g.fill();g.fillStyle='#ffffff';g.fillRect(x0+4,y0+7,3,1);return}
  if(it.t==='crate'){shd(x0+8,y0+14,15);Rg(x0+1,y0,14,15,O);Rg(x0+2,y0+1,12,13,'#a87840');Rg(x0+2,y0+1,12,2,'#c89858');Rg(x0+2,y0+7,12,1,'#7a5228');Rg(x0+7,y0+1,1,13,'#7a5228');Rg(x0+1,y0-1,14,2,'#f4f8fc');return}
  if(it.t==='icepillar'){shd(x0+8,y0+15,16);Rg(x0+2,y0-18,12,33,O);Rg(x0+3,y0-17,10,31,'#9cc8ec');Rg(x0+4,y0-17,3,31,'#d8f0ff');Rg(x0+10,y0-17,2,31,'#6a9cc8');Rg(x0+1,y0-20,14,4,O);Rg(x0+2,y0-19,12,2,'#e8f8ff');return}
- _df43(it,tm)};
+ _df43(it,tm)});
 // saving: the Alpha's daily clear (older saves: never cleared)
 SQSAVE.after('043:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
 SQLOAD.after('043',(S)=>{SLOW43=0;ROAR43=null;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1});

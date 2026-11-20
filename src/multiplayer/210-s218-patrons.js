@@ -63,7 +63,7 @@
    (CR.a.length?'<h3>Player art</h3><ul>'+CR.a.map(a=>'<li>'+E(a.w)+' by '+E(a.n)+'</li>').join('')+'</ul>':'')+
    '<h3>Music</h3><p>Instrument samples from the FluidR3_GM SoundFont by Frank Wen (CC BY 3.0).</p>'+
    '<h3>Lettering</h3><p>Pixelify Sans by Stefie Justprince (SIL Open Font License).</p></div><button class="sb" data-pcr="back">Back</button>'}
- {const _r=rPn;rPn=function(){if(ptab===CTAB&&pnOpen){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'210-10')}pbd.innerHTML=creditsHTML();return}return _r.apply(this,arguments)}}
+ {SQRPN.wrap('210',_r=>function(){if(ptab===CTAB&&pnOpen){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'210-10')}pbd.innerHTML=creditsHTML();return}return _r.apply(this,arguments)})}
  const REDIRECT='https://us-central1-skillquest-913e2.cloudfunctions.net/patreonAuth';let LNK=null;
  const nonce=()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789',b=new Uint8Array(24);crypto.getRandomValues(b);return Array.from(b,x=>A[x%A.length]).join('')};
  // the click writes the one-time link before the browser leaves for Patreon (the server checks it when Patreon sends the player back)
@@ -98,7 +98,7 @@
    '<a class="sb sqpatlink" data-plink="1" href="'+linkURL(u)+'" target="_blank" rel="noopener">Link Patreon</a>';
   if(!u)h+='<p>Sign in to see your Patron perks.</p>';
   return h}
- {const _r=rPn;rPn=function(){if(ptab===PTAB&&pnOpen){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'210-15')}pbd.innerHTML=patronHTML();return}return _r.apply(this,arguments)}}
+ {SQRPN.wrap('210',_r=>function(){if(ptab===PTAB&&pnOpen){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'210-15')}pbd.innerHTML=patronHTML();return}return _r.apply(this,arguments)})}
  // START menu item, only for players who can see it (added/removed each time the menu is drawn)
  const ITEM={id:'patron',l:()=>'Patron'};
  if(typeof rSM==='function'){const _sm=rSM;rSM=function(){try{const at=SMI.indexOf(ITEM),want=showMenu();if(want&&at<0){const o=SMI.findIndex(x=>x.id==='options');SMI.splice(o>=0?o:SMI.length,0,ITEM)}else if(!want&&at>=0)SMI.splice(at,1)}catch(e){self.SQERR&&SQERR(e,'210-16')}return _sm.apply(this,arguments)}}

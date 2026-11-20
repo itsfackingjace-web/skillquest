@@ -171,9 +171,9 @@
    const out=_at.apply(this,arguments);try{for(const[n,hp]of H){if(n.hp<hp)onStrike(n,hp-n.hp)}}catch(e){self.SQERR&&SQERR(e,'218-26')}return out})}
  // ---- drawing: coated dagger, rings, lightning, flames on burning monsters, the coat timer ----
  const sxp=x=>(x-camX())*Z,syp=y=>(y-camY())*Z;
- {const _ps=pS;pS=function(n,tm){const out=_ps.apply(this,arguments);try{if(n&&n.burn>0&&!n.dead){const f=Math.floor(tm*9),w=(n.big||n.boss)?28:14;g.save();
+ {SQPS.after('218',(n,tm)=>{try{if(n&&n.burn>0&&!n.dead){const f=Math.floor(tm*9),w=(n.big||n.boss)?28:14;g.save();
      flame(Math.round(n.x-w*.32),Math.round(n.y+1),1,f,true);flame(Math.round(n.x+w*.05),Math.round(n.y-3),1,f+2,false);flame(Math.round(n.x+w*.34),Math.round(n.y+1),1,f+1,true);
-     for(let i=0;i<4;i++){const ph=(tm*1.2+i/4)%1;g.globalAlpha=1-ph;g.fillStyle=i%2?'#ffb030':'#ff6020';g.fillRect(Math.round(n.x+Math.sin(i*3.1+tm*2)*w*.45),Math.round(n.y-8-ph*20),1,1)}g.restore()}}catch(e){self.SQERR&&SQERR(e,'218-27')}return out}}
+     for(let i=0;i<4;i++){const ph=(tm*1.2+i/4)%1;g.globalAlpha=1-ph;g.fillStyle=i%2?'#ffb030':'#ff6020';g.fillRect(Math.round(n.x+Math.sin(i*3.1+tm*2)*w*.45),Math.round(n.y-8-ph*20),1,1)}g.restore()}}catch(e){self.SQERR&&SQERR(e,'218-27')}})}
  {SQPP.after('218',(tm)=>{try{if(COATK&&!SCENE||COATK&&SCENE){const f=Math.floor((tm||performance.now()/1000)*9),hx=Math.round(P.x+(face[0]<0?-6:6)),hy=Math.round(P.y+1);g.save();
      if(COATK==='pot_napalm'){flame(hx,hy,.8,f,face[0]<0)}
      else if(COATK==='pot_poison'){for(let i=0;i<3;i++){const ph=((tm||0)*1.5+i/3)%1;g.fillStyle=i%2?'#80e060':'#58c048';g.fillRect(hx-1+i,hy-6+ph*8,1,1)}}

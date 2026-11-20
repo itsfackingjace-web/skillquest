@@ -136,7 +136,7 @@ function drawWB(n,tm){const x=Math.round(n.x),y=Math.round(n.y),t=n._wb,fl=Math.
   for(let k=0;k<5;k++)wbTri([[x-12+k*6,y-32+b],[x-9+k*6,y-40+b],[x-6+k*6,y-32+b]],Y);
   if(Math.floor(tm*2)%5===0){for(let k=0;k<6;k++){const a=3.6+Math.random()*.5,d=8+Math.random()*16;g.fillStyle=k%2?'#f8e060':'#f88830';g.fillRect(Math.round(x-52+Math.cos(a)*d),Math.round(y-52+b+Math.sin(a)*d),3,3)}}}
  g.restore()}
-{const _ps=pS;pS=function(n,tm){if(n&&n._wb)return drawWB(n,tm);return _ps(n,tm)}}
+{SQPS.wrap('071',_ps=>function(n,tm){if(n&&n._wb)return drawWB(n,tm);return _ps(n,tm)})}
 // the shared-monster system leaves it alone (everyone has their own copy)
 // ---- banner: what, where, how long, and its health when you're there ----
 {const st=document.createElement('style');st.textContent=`#wbb{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 6px);z-index:9;display:none;width:min(340px,calc(100vw - 24px));box-sizing:border-box;padding:6px 10px 8px;font:700 13px ${PF};pointer-events:none;text-align:center;background:#2a1418!important;color:#f8e8d8!important;border-color:#702018!important;box-shadow:inset 0 0 0 2px #c04030!important}

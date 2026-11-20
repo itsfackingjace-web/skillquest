@@ -52,7 +52,7 @@ SQHIT.wrap('013 decorating houses a button interaction',_atk13=>function(){if(de
    useStructure(i);if(dark()<.3){bedPick={i,at:performance.now(),home:0};say('This bed is where you wake up now. Hit it again to pick it up.')}return}}
  _atk13()});
 // chest screen: pick the chest itself up
-const _r13=rPn;rPn=function(){_r13();if(ptab===7&&(CHEST_H||STR.get(CHEST_AT)))pbd.insertAdjacentHTML('beforeend','<button class="ng" id="chpk">Pick up this chest (contents go to your bag)</button>')};
+SQRPN.after('013',()=>{if(ptab===7&&(CHEST_H||STR.get(CHEST_AT)))pbd.insertAdjacentHTML('beforeend','<button class="ng" id="chpk">Pick up this chest (contents go to your bag)</button>')});
 const _oc13=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('#chpk')){const inside=!!CHEST_H&&CHEST_IDX>=0;closePanel();if(inside)pickFurn(CHEST_IDX);else pickStruct(CHEST_AT);CHEST_H=null;return}_oc13(e)};
 // --- drawing rooms: furniture, depth sorting, the walk cycle and the placement preview ---
 function drawPiece(t,x,y,f,ghost,tm){const x0=x*16,y0=y*16;

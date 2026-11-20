@@ -63,7 +63,7 @@ function forgeHTML(){let h='<div class="tl" style="margin-top:18px">Furnace &amp
  SM.forEach((r,i)=>{if(r.arm&&ARM[r.arm[0]]>=r.arm[1])return;const need=Object.entries(r.c),can=lvOf(10)>=r.lv&&!(r.def>lvOf(8))&&need.every(([a,b])=>(inv[a]|0)>=b);
   h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><div class="gi"><b>'+r.n+'</b>'+(r.k?' <small>(have '+(inv[r.k]|0)+')</small>':'')+'<br><small>'+need.map(([a,b])=>b+' '+(IN[a]||matN(a))).join(', ')+' · Smithing '+r.lv+(r.def?' · wear: Defence '+r.def:'')+' · '+r.xp+' xp'+(SELLP[r.k]?' · sells '+SELLP[r.k]+'g':'')+'</small></div><button class="fg" data-i="'+i+'" data-a="1">'+(r.arm?'Forge':'Make')+'</button>'+(r.arm?'':'<button class="fg" data-i="'+i+'" data-a="all">All</button>')+'</div>'});
  return h}
-const _r6=rPn;rPn=function(){_r6();if(ptab==2&&shop=='smith')pbd.insertAdjacentHTML('beforeend',forgeHTML())};
+SQRPN.after('007',()=>{if(ptab==2&&shop=='smith')pbd.insertAdjacentHTML('beforeend',forgeHTML())});
 const _oc6=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.fg');if(b){smithAct(+b.dataset.i,b.dataset.a=='all');return}_oc6(e)};
 // --- drawing: furnace, anvil, fishing line, HUD line ---
 function pline(x0,y0,x1,y1,c){const st=Math.max(Math.abs(x1-x0),Math.abs(y1-y0),1);for(let i=0;i<=st;i++)Rg(x0+(x1-x0)*i/st,y0+(y1-y0)*i/st,1,1,c)}

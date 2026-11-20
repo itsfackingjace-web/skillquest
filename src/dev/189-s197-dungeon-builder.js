@@ -42,7 +42,7 @@
   for(let i=0;i<W*H;i++)if(G[i])R.solid.add(i);return R}
  {const _bf=buildFloor;buildFloor=function(kind,f){if(designOf(kind)){try{return build(kind,f)}catch(e){console.warn('dungeon builder',e)}}return _bf.apply(this,arguments)}}
  // designed bosses: a health bar over them
- {const _ps=pS;pS=function(n){const out=_ps.apply(this,arguments);try{if(n&&n._dgb&&n.hp>0){const w=28,x=Math.round(n.x-w/2),y=Math.round(n.y-24);g.fillStyle='#000';g.fillRect(x-1,y-1,w+2,5);g.fillStyle='#c82828';g.fillRect(x,y,Math.round(w*Math.max(0,n.hp)/(n.mhp||n.hp)),3)}}catch(e){self.SQERR&&SQERR(e,'189-4')}return out}}
+ {SQPS.after('189',(n)=>{try{if(n&&n._dgb&&n.hp>0){const w=28,x=Math.round(n.x-w/2),y=Math.round(n.y-24);g.fillStyle='#000';g.fillRect(x-1,y-1,w+2,5);g.fillStyle='#c82828';g.fillRect(x,y,Math.round(w*Math.max(0,n.hp)/(n.mhp||n.hp)),3)}}catch(e){self.SQERR&&SQERR(e,'189-4')}})}
  window.SQDUNGEONS={get list(){return DG},ST,ITEMS,ORES,build,designOf};
  // ======================= Dev Suite > Dungeons =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;

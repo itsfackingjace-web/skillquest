@@ -89,7 +89,7 @@
   if(!o.add.length)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing for sale right now.</div>';
   h+='<div class="tl" style="margin-top:12px">Sell</div>';let any=0;for(const k in SELLP){const c=inv[k]|0;if(c<=0||!SELLP[k])continue;any=1;h+='<button class="sb" data-csh="s'+k+'">Sell all '+esc(SN[k]||INAME[k]||k)+' ('+c+')<br><small>+'+c*SELLP[k]+' gold</small></button>'}
   if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing to sell</div>';return h}
- {const _r=rPn;rPn=function(){if(ptab===2&&shop==='cshop'&&CS){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'162-12')}pbd.innerHTML=shopHTML();return}return _r.apply(this,arguments)}}
+ {SQRPN.wrap('162',_r=>function(){if(ptab===2&&shop==='cshop'&&CS){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'162-12')}pbd.innerHTML=shopHTML();return}return _r.apply(this,arguments)})}
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='cshop'&&CS){const b=e.target.closest('[data-csh]');if(b){const a=b.dataset.csh,o=C.shops[CS.id];
      if(a[0]==='b'){const q=o&&o.add[+a.slice(1)];if(!q)return;if(GLD<q.c){say('Not enough gold');sfx('swish');return}GLD-=q.c;inv[q.k]=(inv[q.k]|0)+q.m;say('Bought '+(q.m>1?q.m+' ':'')+(q.m>1?SN[q.k]||INAME[q.k]:INAME[q.k]).toLowerCase()+'.');sfx('coin')}
      else{const k=a.slice(1),c=inv[k]|0;if(c>0&&SELLP[k]){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){self.SQERR&&SQERR(_,'162-13')}saveLocal(true);rPn();return}}return _oc(e)}}
@@ -144,7 +144,7 @@
   if(rw(q))h+='<div class="qc" style="font-size:12px;opacity:.8">Reward: '+esc(rw(q))+'</div>';
   q.ch.forEach((c,i)=>{h+='<button class="sb" data-qch="'+i+'" style="display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px"><b>'+esc(c.l)+'</b>'+(rw(c)?'<br><small>'+esc(rw(c))+'</small>':'')+'</button>'});
   return h+'<div class="qc" style="font-size:11px;opacity:.7">Your choice is final and can change what comes next.</div><div class="pmb"><button class="sb no" data-qch="x">NOT YET</button></div>'}
- {const _r=rPn;rPn=function(){if(ptab!==CTAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'162-17')}const q=CH&&C.quests[CH.id];if(!q||CQ[CH.id]!==1){closePanel();return}pbd.innerHTML=choiceHTML()}}
+ {SQRPN.wrap('162',_r=>function(){if(ptab!==CTAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'162-17')}const q=CH&&C.quests[CH.id];if(!q||CQ[CH.id]!==1){closePanel();return}pbd.innerHTML=choiceHTML()})}
  pbd.addEventListener('click',e=>{if(ptab!==CTAB||!pnOpen)return;const b=e.target.closest('[data-qch]');if(!b)return;e.stopPropagation();e.preventDefault();const v=b.dataset.qch,c=CH;closePanel();
   if(v==='x'||!c)return;const q=C.quests[c.id];if(q&&CQ[c.id]===1&&ready(c.id,q))finish(c.id,q,c.who,+v)},true);
  // ======================= island people with a job =======================

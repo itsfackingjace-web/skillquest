@@ -56,3 +56,6 @@ function NEWDRAW(cx,cy,x0,y0,x1,y1,vw,vh,tm){
  }
  if(dark()>.25)for(let i=0;i<18;i++){if(Math.sin(tm*2.5+i*3)<0)continue;Rg(cx+h(i,3)*vw+Math.sin(tm*.7+i)*8,cy+h(i,4)*vh+Math.cos(tm*.9+i*2)*8,2,2,'#e8f870')}
 }
+
+// monster drawing (pS) as a step list: every later section adds a named step (window.SQPS; see 006's sqSteps)
+const SQPS=sqSteps('pS',pS,f=>{pS=f});window.SQPS=SQPS;

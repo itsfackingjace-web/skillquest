@@ -217,7 +217,7 @@
   R4(x-5,y-8,10,8,K);R4(x-4,y-7,8,6,B);R4(x-2,y-5,1,1,'#f04040');R4(x+1,y-5,1,1,'#f04040')}
  const DRAW={briarwood:drawQueen,ashfall:drawWarlord,ironcrest:drawWyrm,shattered:drawHerald,nomans:drawJack};
  window.SQIBDRAW=(id,b,tm)=>{if(!(window.SQIBART&&SQIBART(id,b,tm)))DRAW[id](b,tm)};
- {const _ps=pS;pS=function(n,tm){if(n&&n.type==='ib'){hzDraw(n,tm);SQIBDRAW(n.ib,n,tm);return}if(n&&n.type==='spiderling')return drawSpiderling(n,tm);return _ps(n,tm)}}
+ {SQPS.wrap('100',_ps=>function(n,tm){if(n&&n.type==='ib'){hzDraw(n,tm);SQIBDRAW(n.ib,n,tm);return}if(n&&n.type==='spiderling')return drawSpiderling(n,tm);return _ps(n,tm)})}
 
  // ---- the rare drops ----
  // Webling and Voidling (pets)

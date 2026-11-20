@@ -154,10 +154,10 @@
    const ks=Object.keys(INAME).filter(k=>tradeable(k)&&(!f||(INAME[k]||'').toLowerCase().includes(f))).sort((a,b)=>{const A=book(a).bs!=null,Bb=book(b).bs!=null;return(Bb-A)||(INAME[a]||'').localeCompare(INAME[b]||'')}).slice(0,60);
    for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:b:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+'<br><small>'+(B.bs!=null?B.qs+' for sale from '+fmt(B.bs):'none for sale')+(lastP(k)!=null?' · market '+fmt(lastP(k)):'')+'</small></button>'}}
   return h}
- {const _r=rPn;rPn=function(){if(ptab===2&&shop==='wmkt'){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'079-11')}const fo=document.activeElement&&document.activeElement.id==='wmf';pbd.innerHTML=wmHTML();
+ {SQRPN.wrap('079',_r=>function(){if(ptab===2&&shop==='wmkt'){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'079-11')}const fo=document.activeElement&&document.activeElement.id==='wmf';pbd.innerHTML=wmHTML();
    const fi=document.getElementById('wmf');if(fi){fi.oninput=()=>{WMK.filter=fi.value;const pos=fi.selectionStart;rPn();const f2=document.getElementById('wmf');if(f2){f2.focus();try{f2.setSelectionRange(pos,pos)}catch(e){self.SQERR&&SQERR(e,'079-12')}}};if(fo){fi.focus()}}
    // typing a number just updates the offer (no redraw: a redraw while typing ate your next tap, e.g. on SELL / BUY)
-   for(const id of['wmq','wmp']){const el=document.getElementById(id);if(el)el.oninput=()=>{if(!WMK.form)return;const v=Math.max(1,Math.floor(+el.value||1));if(id==='wmq')WMK.form.q=v;else WMK.form.p=Math.min(1e7,v);wmTotal()}}return}_r()}}
+   for(const id of['wmq','wmp']){const el=document.getElementById(id);if(el)el.oninput=()=>{if(!WMK.form)return;const v=Math.max(1,Math.floor(+el.value||1));if(id==='wmq')WMK.form.q=v;else WMK.form.p=Math.min(1e7,v);wmTotal()}}return}_r()})}
  // keep the SELL/BUY button's total right while typing, without rebuilding the panel
  function subTxt(F){const t=F.q*F.p,x=taxOf(t);return(x?'You get '+fmt(t-x)+' after the 1% market tax. ':'')+'Your items wait at the market until someone buys them.'}
  function wmTotal(){const F=WMK.form,b=pbd.querySelector('[data-w="go"]');if(!F||!b)return;const w=document.getElementById('wmwarn');if(w)w.textContent=warnTxt(F);const tot=F.q*F.p,ok=F.s==='s'?(inv[F.k]|0)>=F.q:GLD>=tot;b.style.opacity=ok?1:.45;const t=b.querySelector('b');if(t)t.textContent=(F.s==='s'?'SELL ':'BUY ')+F.q+' for '+fmt(tot)+' gold';const sb=document.getElementById('wmsub');if(sb&&F.s==='s')sb.textContent=subTxt(F)}

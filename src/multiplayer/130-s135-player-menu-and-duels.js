@@ -132,7 +132,7 @@
   if(ch){D.my.a='';D.my.c='';push();sfx('pickup');rPn()}}
  // ---- panel hooks ----
  function draw(){if(pnOpen&&(ptab===MTAB||ptab===DTAB))rPn()}
- const _r=rPn;rPn=function(){if(ptab===MTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'130-26')}pbd.innerHTML=menuHTML();return}if(ptab===DTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'130-27')}pbd.innerHTML=D.st==='idle'?'<div class="tl">DUEL</div>':stakeHTML();return}return _r.apply(this,arguments)};
+ SQRPN.wrap('130',_r=>function(){if(ptab===MTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'130-26')}pbd.innerHTML=menuHTML();return}if(ptab===DTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'130-27')}pbd.innerHTML=D.st==='idle'?'<div class="tl">DUEL</div>':stakeHTML();return}return _r.apply(this,arguments)});
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab===DTAB){const b=e.target.closest('[data-dl]');if(b&&!b.disabled)click(b);return}
    if(ptab===MTAB){const b=e.target.closest('[data-pm]');if(!b||b.disabled)return;const a=b.dataset.pm,u=MU;
     if(a==='close'){closePanel();return}if(a==='report'){try{SQREPORT(u,nameOf(u))}catch(x){self.SQERR&&SQERR(x,'130-28')}return}if(a==='ignore'){try{SQIGNSET(u,!SQIGNORED(u))}catch(x){self.SQERR&&SQERR(x,'130-29')}draw();return}if(a==='trade'){closePanel();try{SQTRREQ(u)}catch(x){self.SQERR&&SQERR(x,'130-30')}return}

@@ -89,9 +89,9 @@
   for(let ky=Math.floor((cy-16)/128);ky<=Math.floor((cy+vh+16)/128);ky++)for(let kx=Math.floor((cx-16)/128);kx<=Math.floor((cx+vw+16)/128);kx++){const c=chunk(R,kx,ky);if(c){g.drawImage(c,kx*128,ky*128,128,128);continue}if(kx<0||ky<0||kx*8>=R.w||ky*8>=R.h)continue;if(c)g.drawImage(c,kx*128,ky*128,128,128);for(let y=ky*8;y<Math.min(R.h,ky*8+8);y++)for(let x=kx*8;x<Math.min(R.w,kx*8+8);x++)Rg(x*16,y*16,16,16,R.lay(x,y)===11?'#b8b2a4':R.lay(x,y)===0?'#3a8ad8':'#5aa848')}
   // plots
   const Y=SCENE&&SCENE.house;if(Y&&Y.plots){const has=(x,y)=>(dx,dy)=>Y.plots.has((y+dy)*R.w+x+dx);for(const[i,p]of Y.plots){const x=i%R.w,y=(i/R.w)|0;try{GC=g;drawPlot(-1,p,tm,x,y,has(x,y))}catch(e){self.SQERR&&SQERR(e,'145-19')}}}}
- {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_ybld'){try{drBld(it.b,tm)}catch(e){self.SQERR&&SQERR(e,'145-20')}return}
+ {SQFURN.wrap('145',_df=>function(it,tm){if(it&&it.t==='_ybld'){try{drBld(it.b,tm)}catch(e){self.SQERR&&SQERR(e,'145-20')}return}
    // the forest around the clearing: only the trees on screen
-   if(it&&it.ring){const x=it.x*16,y=it.y*16,cx=camX(),cy=camY();if(x<cx-48||x>cx+W/Z+48||y<cy-16||y>cy+H/Z+64)return}return _df.apply(this,arguments)}}
+   if(it&&it.ring){const x=it.x*16,y=it.y*16,cx=camX(),cy=camY();if(x<cx-48||x>cx+W/Z+48||y<cy-16||y>cy+H/Z+64)return}return _df.apply(this,arguments)})}
  // the layouts
  // backyard 22 x 16: the house's door at x 10-11; a path down to a patio; a pond in the lower right
  function YARD_LAY(x,y){if(y<=1)return 7;{const dx=Math.abs(x-17),dy=Math.abs(y-12);if(dx<=3&&dy<=1||dx<=2&&dy<=2)return 0}
@@ -129,7 +129,7 @@
  for(const R of[ROOMS.yard,ROOMS.court]){R.cells=new Map();R.gone=[];for(const it of R.items)if(it.t==='_obj'&&!it.ring)rgCellAdd(R,it)}
  const objAt=(R,x,y)=>R.items.find(it=>it.t==='_obj'&&!it.ring&&!it.gone&&it.x===x&&it.y===y);
  const regrowing=(R,i)=>R.gone&&R.gone.some(g2=>g2.it.y*R.w+g2.it.x===i);
- {const _df=drawFurn;drawFurn=function(it){if(it&&it.t==='_obj'&&it.gone&&SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court))return;return _df.apply(this,arguments)}}
+ {SQFURN.wrap('145',_df=>function(it){if(it&&it.t==='_obj'&&it.gone&&SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court))return;return _df.apply(this,arguments)})}
  {SQHIT.wrap('145 backyards',_a=>function(){if(isYard()&&FISH&&!dead&&!menuOpen&&!pnOpen){FISH=null;say('You reel in your line');return}
    if(!isYard()||dead||menuOpen||pnOpen||BUILD||FISH||swing>0)return _a.apply(this,arguments);const R=SCENE.room,[x,y]=frontTile(),it=objAt(R,x,y);
    // casting (the house scene's own HIT, 012, would take it otherwise; this is 093's island cast)

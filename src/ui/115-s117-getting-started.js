@@ -55,8 +55,7 @@
  cv.addEventListener('pointerdown',e=>{if(menuOpen||(typeof pnOpen!=='undefined'&&pnOpen)||typeof HUDL==='undefined'||!HUDL||(window.SQTRKOFF&&SQTRKOFF()))return;const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*(cv.width/r.width),sy=(e.clientY-r.top)*(cv.height/r.height),L=HUDL;
   if(sx>=L.ins&&sx<=L.ins+L.qw&&sy>=L.qy&&sy<=L.qy+42*L.U){e.stopImmediatePropagation();e.preventDefault();try{openPanel(6)}catch(x){self.SQERR&&SQERR(x,'115-10')}}},true);
  // the quest log: where the guide is, and a way to skip it
- const _rp=rPn;rPn=function(){_rp.apply(this,arguments);if(!pnOpen||ptab!==6||!active())return;const d=document.createElement('div');d.className='sqgd';
-  d.innerHTML='<b>Getting started '+(GD.s+1)+'/'+N0+':</b> '+S[GD.s].n+'<button data-gskip>Skip the guide</button>';pbd.prepend(d)};
+ SQRPN.after('115',()=>{if(!pnOpen||ptab!==6||!active())return;const d=document.createElement('div');d.className='sqgd';d.innerHTML='<b>Getting started '+(GD.s+1)+'/'+N0+':</b> '+S[GD.s].n+'<button data-gskip>Skip the guide</button>';pbd.prepend(d)});
  pbd.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('[data-gskip]'))return;GD.s=DONE;light(null);try{say('Guide skipped. Your quests are in the quest log.');saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'115-11')}rPn()});
  // saves
  SQSAVE.after('115:gd',s=>{try{if(GD.s!=null)s.gd=GD.s}catch(e){self.SQERR&&SQERR(e,'115-12')}});

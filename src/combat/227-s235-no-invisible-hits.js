@@ -8,7 +8,7 @@
 //  - sends one automatic bug report a session describing the culprit, so the cause can be found (window.SQGHOSTHIT).
 (()=>{const SEEN=new WeakMap(),BORN=new WeakMap(),LOG=[];let reported=false;
  const fin=n=>Number.isFinite(n.x)&&Number.isFinite(n.y);
- {const _p=pS;pS=function(n,tm){try{if(n&&fin(n))SEEN.set(n,performance.now())}catch(e){self.SQERR&&SQERR(e,'227-1')}return _p.apply(this,arguments)}}
+ {SQPS.before('227',(n,tm)=>{try{if(n&&fin(n))SEEN.set(n,performance.now())}catch(e){self.SQERR&&SQERR(e,'227-1')}})}
  const exempt=n=>n.big||n.boss||n.type==='boss'||n.type==='ib'||n._wb||n.cb||n.under||n._pet;
  function describe(n,why){const o={why,type:n.type,rk:n.rk,x:n.x,y:n.y,hp:n.hp,dead:n.dead};for(const k of['_rp','_owner','_dev','_ev','zc','zi','rg','night','tx','ty','summon'])if(n[k]!=null)o[k]=n[k];
   o.keys=Object.keys(n).join(',').slice(0,300);const s=SEEN.get(n);o.seen=s?Math.round(performance.now()-s):-1;return o}

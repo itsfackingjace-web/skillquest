@@ -139,7 +139,7 @@ function drawBoulder(o,x,y,bx,by,s){const sp=boulderSprite(o.t,(x*7+y*3)&1);shd(
  if(BOUL[o.t].ore){const tm=performance.now()/1000;if(Math.sin(tm*2.2+x*3)>.92){const gx=bx-6+((x*5)%12),gy=by-14+((y*3)%8);Rg(gx,gy-1,1,3,'#ffffff');Rg(gx-1,gy,3,1,'#ffffff')}}}
 {const _o=OBJHD;OBJHD=(o,x,y,bx,by,s,tm)=>{if(o&&BOUL[o.t]){drawBoulder(o,x,y,bx,by,s||0);return true}return _o?_o(o,x,y,bx,by,s,tm):false}}
 // the cave and dungeon boulders use the same picture
-{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='boulder'&&!it.o){const o={t:'boulder'},s=it.shake>0?(it.shake-=.016,Math.round(Math.sin(tm*60))):0;drawBoulder(o,it.x,it.y,it.x*16+8,it.y*16+14,s);return}return _df(it,tm)}}
+{SQFURN.wrap('096',_df=>function(it,tm){if(it&&it.t==='boulder'&&!it.o){const o={t:'boulder'},s=it.shake>0?(it.shake-=.016,Math.round(Math.sin(tm*60))):0;drawBoulder(o,it.x,it.y,it.x*16+8,it.y*16+14,s);return}return _df(it,tm)})}
 // where they are: hills and far meadows on Hollow, all over the islands (same for every player)
 {const near=(x,y,f)=>{for(let b=-1;b<=1;b++)for(let a=-1;a<=1;a++)if(f(x+a,y+b))return true;return false};
  const oreFor=(r,far)=>r<.12*far?'oba':r<.3*far?'obm':r<.55?'obg':'obi';
@@ -190,7 +190,7 @@ window.SQBOULDERHIT=boulderHit;
  SQUPD.after('096',(dt)=>{if(!BROKE.length)return;const now=performance.now();for(let j=BROKE.length-1;j>=0;j--){const b=BROKE[j];if(now-b.at<3e5)continue;if(SCENE&&SCENE.room===b.R&&Math.hypot(P.x-(b.it.x*16+8),P.y-(b.it.y*16+8))<24)continue;
    b.it.gone=false;b.it.hp=null;if(!b.R.items.includes(b.it))b.R.items.push(b.it);b.R.solid.add(b.it.y*b.R.w+b.it.x);BROKE.splice(j,1)}})}
 // ore boulders in caves look like ore boulders
-{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='boulder'&&it.ore&&!it.o){const s=it.shake>0?(it.shake-=.016,Math.round(Math.sin(tm*60))):0;drawBoulder({t:it.ore},it.x,it.y,it.x*16+8,it.y*16+14,s);return}return _df(it,tm)}}
+{SQFURN.wrap('096',_df=>function(it,tm){if(it&&it.t==='boulder'&&it.ore&&!it.o){const s=it.shake>0?(it.shake-=.016,Math.round(Math.sin(tm*60))):0;drawBoulder({t:it.ore},it.x,it.y,it.x*16+8,it.y*16+14,s);return}return _df(it,tm)})}
 window.SQSLEDGE=()=>SLEDGE;
 
 // ======== Ashfall: Emberwatch and Cinderdeep ========
@@ -227,7 +227,7 @@ const afR=()=>{const R=SCENE&&SCENE.room;return R&&R.region==='ashfall'&&R._af?R
 const afIn=(x,y)=>{const T=AF.town;return T&&x>=(T.x0-1)*16&&x<(T.x0+T.w+1)*16&&y>=(T.y0-1)*16&&y<(T.y0+T.h+1)*16};
 const afNear=()=>{if(!afR())return null;let best=null,bd=26;for(const n of AF.npcs){const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}return best};
 window.SQAFNEAR=afNear;
-{const _df=drawFurn;drawFurn=function(it,tm){if(!it||typeof it.t!=='string'||it.t.slice(0,2)!=='af')return _df(it,tm);const x=it.x*16,y=it.y*16;
+{SQFURN.wrap('096',_df=>function(it,tm){if(!it||typeof it.t!=='string'||it.t.slice(0,2)!=='af')return _df(it,tm);const x=it.x*16,y=it.y*16;
   if(it.t==='afbld'){const b=it.b;try{drBld({k:'home',w:b.w,wall:b.wall,roof:b.roof,sc:null,tx:b.tx,ty:b.ty},tm)}catch(e){self.SQERR&&SQERR(e,'096-14')}const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16;
    if(b.smoke){Rg(X0+w-22,base-46,8,14,K);Rg(X0+w-21,base-45,6,13,'#4a4040');for(let k=0;k<3;k++){const ph=(tm*.5+k/3)%1;g.fillStyle='rgba(90,80,80,'+(.45*(1-ph))+')';g.beginPath();g.arc(X0+w-18+Math.sin(ph*5+k)*3,base-48-ph*24,3+ph*5,0,6.283);g.fill()}
     const gl=.25+.15*Math.sin(tm*6);g.fillStyle='rgba(255,120,40,'+gl+')';g.fillRect(X0+10,base-14,10,8)}
@@ -244,7 +244,7 @@ window.SQAFNEAR=afNear;
    try{cP(AFLOOK[n.id],dir,0,Math.round(n.x),Math.round(n.y),fl)}catch(e){self.SQERR&&SQERR(e,'096-15')}
    const q=sqCur('ashfall');if(q&&q.giver===n.id&&(!SQ_SIDE.ashfall.on||sqReady('ashfall'))){const bob=Math.round(Math.sin(tm*4));Rg(n.x-2,n.y-34+bob,4,8,K);Rg(n.x-1,n.y-33+bob,2,5,'#f8d048');Rg(n.x-1,n.y-27+bob,2,1,'#f8d048')}
    g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.strokeStyle=K;g.strokeText(n.id,n.x,n.y-22);g.fillStyle='#ffe8d0';g.fillText(n.id,n.x,n.y-22);g.restore();return}
-  return _df(it,tm)}}
+  return _df(it,tm)})}
 // talking
 function afOpen(n){AF.npc=n;shop='afnpc';pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk')}
 {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=afNear();if(n){afOpen(n);return}}return _t()}}
@@ -270,7 +270,7 @@ function afHTML(){const n=AF.npc;if(!n)return'';const L=AFSAYS[n.id],line=L[Math
   for(const it of POTAF){const c=inv[it.k]|0;if(c<=0)continue;any=1;h+='<button class="sb" data-af="q'+it.k+'">Sell all '+esc(SN[it.k]||INAME[it.k])+' ('+c+')<br><small>+'+c*potBuy(it.k)+' gold</small></button>'}
   if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">No potions to sell. Brew some at a cauldron (Brewing).</div>'}
  return h}
-{const _r=rPn;rPn=function(){if(ptab===2&&shop==='afnpc'&&AF.npc){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'096-17')}pbd.innerHTML=afHTML();return}_r()}}
+{SQRPN.wrap('096',_r=>function(){if(ptab===2&&shop==='afnpc'&&AF.npc){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'096-17')}pbd.innerHTML=afHTML();return}_r()})}
 {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='afnpc'&&AF.npc){const b=e.target.closest('[data-af]');if(b){const a=b.dataset.af;
     if(a[0]==='b'){const it=SHOPAF[+a.slice(1)];if(!it)return;if(GLD<it.c){say('Not enough gold');sfx('swish');return}GLD-=it.c;if(it.kit){inv.wood=(inv.wood|0)+3;inv.stone=(inv.stone|0)+1}else inv[it.k]=(inv[it.k]|0)+it.m;say('Bought '+it.n+'.');sfx('coin')}
     else if(a[0]==='p'){const it=POTAF[+a.slice(1)];if(!it||!INAME[it.k])return;if(GLD<it.c){say('Not enough gold');sfx('swish');return}GLD-=it.c;inv[it.k]=(inv[it.k]|0)+1;say('Bought a '+INAME[it.k].toLowerCase()+'.');sfx('coin')}
@@ -291,8 +291,8 @@ window.SQICV.aflava={name:'Cinderdeep',floor:['#4a3430','#42302c'],wall:'#2e2220
   const used=new Set();for(const it of R.items)for(let dy=0;dy<(it.sh||1);dy++)for(let dx=0;dx<(it.w||1);dx++)used.add((it.y+dy)*W+it.x+dx);
   const ok=(x,y)=>{if(x<3||y<4||x>W-5||y>H-6)return false;if(Math.abs(x-R.ex)<5&&y>H-9)return false;if(D.boss&&Math.hypot(x-D.boss[0],y-D.boss[1])<5)return false;for(let b=-1;b<=1;b++)for(let a=-1;a<=2;a++){const j=(y+b)*W+x+a;if(G[j]||used.has(j)||R.solid.has(j))return false}return true};
   let n=0;const want=5+f*2;for(let t=0;t<900&&n<want;t++){const x=3+Math.floor(rnd()*(W-6)),y=4+Math.floor(rnd()*(H-8));if(!ok(x,y))continue;const w=rnd()<.5?2:1;R.items.push({t:'aflavap',x,y,w,h:1,floor:1});for(let a=0;a<w;a++)used.add(y*W+x+a);n++}}catch(e){console.warn(e)}return R}}
-{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='aflavap'){const x=it.x*16,y=it.y*16,w=(it.w||1)*16,p=.5+.5*Math.sin(tm*2+it.x);Rg(x-1,y+1,w+2,14,'#2a1410');Rg(x,y+2,w,12,'#c83810');Rg(x+1,y+3,w-2,10,'#f06018');
-   for(let k=0;k<w/4;k++){const ph=(tm*.7+k*.31+it.x*.1)%1;Rg(x+2+k*4,y+4+Math.round(ph*6),2,2,ph<.5?'#ffd060':'#f8a030')}g.fillStyle='rgba(255,120,30,'+(.12+.1*p)+')';g.beginPath();g.arc(x+w/2,y+8,w*.7+6,0,6.283);g.fill();return}return _df(it,tm)}}
+{SQFURN.wrap('096',_df=>function(it,tm){if(it&&it.t==='aflavap'){const x=it.x*16,y=it.y*16,w=(it.w||1)*16,p=.5+.5*Math.sin(tm*2+it.x);Rg(x-1,y+1,w+2,14,'#2a1410');Rg(x,y+2,w,12,'#c83810');Rg(x+1,y+3,w-2,10,'#f06018');
+   for(let k=0;k<w/4;k++){const ph=(tm*.7+k*.31+it.x*.1)%1;Rg(x+2+k*4,y+4+Math.round(ph*6),2,2,ph<.5?'#ffd060':'#f8a030')}g.fillStyle='rgba(255,120,30,'+(.12+.1*p)+')';g.beginPath();g.arc(x+w/2,y+8,w*.7+6,0,6.283);g.fill();return}return _df(it,tm)})}
 // the floor tiles of the lava pools draw under you (they're floor, not furniture)
 {/* _u */let burnT=0;SQUPD.after('096',(dt)=>{const R=SCENE&&SCENE.room;if(!R||!R.dun||R.dun.kind!=='aflava'||dead||menuOpen||pnOpen)return;burnT-=dt;const tx=Math.floor(P.x/16),ty=Math.floor((P.y+4)/16);const on=R.items.some(it=>it.t==='aflavap'&&ty===it.y&&tx>=it.x&&tx<it.x+(it.w||1));if(on&&burnT<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){burnT=1.2;P.hp--;hurt=1;say('Ow! Lava!');try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'096-20')}}})}
 {const _uf=useFurn;useFurn=function(it){return _uf(it)}}
@@ -337,7 +337,7 @@ function drawEmberl(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs
  // fireballs
  for(const b of n.balls){g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(b.x,b.y,6,0,6.283);g.fill();Rg(b.x-3,b.y-3,6,6,K);Rg(b.x-2,b.y-2,4,4,'#f87020');Rg(b.x-1,b.y-2,2,2,'#fff0a0')}
  const w=44,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-62,w+2,5,K);Rg(x-w/2,y-61,w,3,'#3a1a1a');Rg(x-w/2,y-61,Math.round(w*f),3,'#f87020')}
-{const _pS=pS;pS=function(n,tm){if(n&&n.type==='emberl')return drawEmberl(n,tm);return _pS(n,tm)}}
+{SQPS.wrap('096',_pS=>function(n,tm){if(n&&n.type==='emberl')return drawEmberl(n,tm);return _pS(n,tm)})}
 {SQSAVE.after('096:emd',s=>{s.emd=EMDAY;})}
 {SQLOAD.after('096',(S)=>{EMDAY=isFinite(S&&S.emd)?+S.emd:-1})}
 // the Ember ring: your sword sets monsters burning

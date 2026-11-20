@@ -65,7 +65,7 @@
   if(f){h+='<div class="qc" style="font-size:13px">Your fire has <b>'+mmss(f.life)+'</b> left. Feed it a log (Firemaking '+lv()+').</div>';for(let i=0;i<T.length;i++)if(n(T[i].k)>0||i===0)h+=row(i,'f')}
   h+='<div class="tl" style="font-size:14px;margin-top:8px">BUILD A NEW CAMPFIRE</div>';for(let i=0;i<T.length;i++)if(i===0||n(T[i].k)>0||lv()>=T[i].lv)h+=row(i,'b');
   return h+'<div class="pmb"><button class="sb no" data-fmx="1">CLOSE</button></div>'}
- {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'220-7')}pbd.innerHTML=html()}}
+ {SQRPN.wrap('220',_r=>function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'220-7')}pbd.innerHTML=html()})}
  pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen)return;const b=e.target.closest('[data-fmb],[data-fmf],[data-fmx]');if(!b)return;e.stopPropagation();e.preventDefault();if(b.disabled)return;
   if(b.dataset.fmb){closePanel();build(+b.dataset.fmb);return}if(b.dataset.fmf){feed(+b.dataset.fmf);return}closePanel()},true);
  // a save while the 3 lent wood is out (the fire is still being lit) records the logs, not the wood (Nov 18)

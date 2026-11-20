@@ -63,7 +63,7 @@
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!near()||!!(_pu&&_pu())}
  let tkMine=false;SQUPD.after('117',(dt)=>{const n=!pnOpen&&!menuOpen&&!dead?near():null;if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;tkMine=true}else if(tkMine){tkMine=false;if(!pnOpen)tk.style.display='none'}});
  function wrap(t,n){const w=t.split(' '),out=[];let l='';for(const x of w){if((l+' '+x).trim().length>n&&l){out.push(l);l=x}else l=(l+' '+x).trim()}if(l)out.push(l);return out.slice(0,4)}
- const _df=drawFurn;drawFurn=function(it,tm){
+ SQFURN.wrap('117',_df=>function(it,tm){
   if(it&&it.t==='lm'&&it.k==='npc'){const x=it.x*16+8,y=it.y*16+10,cl=Math.hypot(x-P.x,y-P.y)<60,dir=cl?(Math.abs(P.x-x)>Math.abs(P.y-y)?2:P.y<y?1:0):0,fl=cl&&P.x<x;
    try{shd(x,y+6,12)}catch(e){self.SQERR&&SQERR(e,'117-5')}GC=g;try{cP(it.look||{},dir,0,x,y,fl)}catch(e){self.SQERR&&SQERR(e,'117-6')}
    g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.lineJoin='round';g.strokeStyle='#181018';g.strokeText(it.name,x,y-22);g.fillStyle='#e8ffe0';g.fillText(it.name,x,y-22);
@@ -81,7 +81,7 @@
    else if(sand){Rg(x-3,y-12,22,3,'#a07040');Rg(x-3,y-12,22,1,'#d8b080');Rg(x+19,y-6,2,10,'#5a3a20');Rg(x+18,y-8,4,3,'#c84020')}
    else{Rg(x+2,y-12,12,2,'#5a5a66');Rg(x-14,y+12,4,3,'#6a6a76');Rg(x+28,y+11,3,3,'#6a6a76')}
    g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.strokeStyle=K;g.strokeText(it.name,x+8,y-22);g.fillStyle='#f8e8c0';g.fillText(it.name,x+8,y-22);g.restore();return}
-  return _df.apply(this,arguments)};
+  return _df.apply(this,arguments)});
  // ---- custom ground tiles, drawn over the baked ground ----
  const IMG=new Map(),LAY=new WeakMap();
  const okUrl=u=>typeof u==='string'&&u.length<12000&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(u);

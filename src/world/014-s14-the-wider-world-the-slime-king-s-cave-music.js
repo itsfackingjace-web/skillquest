@@ -44,7 +44,7 @@ function drawBoss(n,tm){const x=Math.round(n.x),y=Math.round(n.y),fr=Math.floor(
  Rg(x-7,top-3,14,4,O);Rg(x-6,top-2,12,2,GD);for(const a of[-6,-1,4])Rg(x+a,top-5,2,3,GD);Rg(x-1,top-1,2,1,'#e03030');
  if(!hit){Rg(x-9,top+8,5,6,'#fff');Rg(x+4,top+8,5,6,'#fff');const dd=P.x>n.x?2:0;Rg(x-9+dd,top+10,3,4,O);Rg(x+4+dd,top+10,3,4,O)}
  Rg(x-16,top-10,32,4,O);Rg(x-15,top-9,Math.max(0,30*n.hp/30),2,'#e03030')}
-const _pS14=pS;pS=function(n,tm){if(n.type==='wolf')return drawWolf(n,tm);if(n.type==='skel')return drawSkel(n,tm);if(n.type==='boss')return drawBoss(n,tm);_pS14(n,tm)};
+SQPS.wrap('014',_pS14=>function(n,tm){if(n.type==='wolf')return drawWolf(n,tm);if(n.type==='skel')return drawSkel(n,tm);if(n.type==='boss')return drawBoss(n,tm);_pS14(n,tm)});
 // --- the Slime King's cave ---
 let CAVE_DAY=-1,CAVE=null;
 for(let y=12;y<N-12&&!CAVE;y++)for(let x=12;x<N-12;x++){const i=y*N+x;if(tile[i]===3&&tile[i-N]===3&&tile[i-2*N]===3&&tile[i-1]===3&&tile[i+1]===3&&[2,4,5].includes(tile[i+N])&&!inVillage(x,y)&&!BS.has(i)&&!houseAt(x,y)){CAVE={x,y};break}}
@@ -56,10 +56,10 @@ const _es14=enterScene;enterScene=function(id,house,ret){_es14(id,house,ret);if(
  for(const[x,y]of[[4,4],[14,6],[6,9],[12,3],[9,9]])en.push({x:x*16+8,y:y*16+8,hp:3,kx:0,ky:0,type:'slime'});
  if(CAVE_DAY!==day){en.push({x:9*16,y:5*16,hp:30,kx:0,ky:0,type:'boss'});say('The Slime King rules this cave! Defeat it for treasure.')}else say('The Slime King has fallen today. Come back tomorrow.')};
 const _dk14=dark;dark=function(){return SCENE&&SCENE.room.cave&&!INDRAW?.2:_dk14()};
-const _df14=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
+SQFURN.wrap('014',_df14=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='boulder'){shd(x0+8,y0+14,16);Rg(x0+1,y0-2,14,17,O);Rg(x0+2,y0-1,12,15,'#7a7068');Rg(x0+3,y0,6,4,'#9a9088');Rg(x0+2,y0+10,12,4,'#5a5048');return}
  if(it.t==='crystal'){const p=.6+.4*Math.sin(tm*2+x0);g.fillStyle='rgba(120,200,255,'+(.18*p)+')';g.beginPath();g.arc(x0+8,y0+4,14,0,6.283);g.fill();Rg(x0+4,y0-4,8,18,O);Rg(x0+5,y0-3,6,16,'#68b8f0');Rg(x0+6,y0-2,2,12,'#c8ecff');Rg(x0+2,y0+6,4,8,O);Rg(x0+3,y0+7,2,6,'#4890d0');return}
- _df14(it,tm)};
+ _df14(it,tm)});
 const _dr14=drawRoom;drawRoom=function(tm){_dr14(tm);if(!SCENE||!SCENE.room.cave||SCENE.room.region)return;for(const n of en)if(!n.dead)pS(n,tm);if(!dead)pP(tm);
  const au=window.SQAURA&&SQAURA()&&!dead,gr=g.createRadialGradient(P.x,P.y-4,au?70:28,P.x,P.y-4,au?190:118);// Flame Aura lights more of the cave
  gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(6,4,12,.88)');g.fillStyle=gr;g.fillRect(P.x-500,P.y-500,1000,1000)};
@@ -90,7 +90,7 @@ SQUPD.after('014',(dt)=>{if(menuOpen||pnOpen||dead)return;for(const n of en){if(
   if(n.type==='wolf'&&d<140&&!nearFire(n.x,n.y,70)){const s=16*dt,mx=dx/d*s,my=dy/d*s;if(!solid(n.x+mx,n.y))n.x+=mx;if(!solid(n.x,n.y+my))n.y+=my}
   if(n.type==='boss'&&d<18&&hurt<=0&&!(ROLLT>0)){P.hp-=1;hurt=1;say('The Slime King crushes you!');sfx('hurt')}}});
 // --- shops, bag, map ---
-const _r14=rPn;rPn=function(){if(ptab===2&&shop==='trader'){document.getElementById('t0').style.display='none';document.getElementById('t1').style.display='none';ptt.textContent='';pbd.innerHTML=traderHTML();return}_r14()};
+SQRPN.wrap('014',_r14=>function(){if(ptab===2&&shop==='trader'){document.getElementById('t0').style.display='none';document.getElementById('t1').style.display='none';ptt.textContent='';pbd.innerHTML=traderHTML();return}_r14()});
 const _oc14=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.trb');if(b){traderAct(b.dataset.a);return}_oc14(e)};
 const _dmap14=drawMap;drawMap=function(){_dmap14();const c=document.getElementById('mpc');if(!c||!CAVE)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(CAVE.x-1,CAVE.y-1,3,3);x.fillStyle='#f8d848';x.fillRect(CAVE.x,CAVE.y,1,1)};
 // --- music: original chiptune loops ---

@@ -44,7 +44,7 @@ const bwR=()=>{const R=SCENE&&SCENE.room;return R&&R.region==='briarwood'&&R._bw
 const inTown=(x,y)=>{const T=BW.town;return T&&x>=(T.x0-1)*16&&x<(T.x0+T.w+1)*16&&y>=(T.y0-1)*16&&y<(T.y0+T.h+1)*16};
 const bwNear=()=>{if(!bwR())return null;let best=null,bd=26;for(const n of BW.npcs){const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}return best};
 // ---- drawing ----
-{const _df=drawFurn;drawFurn=function(it,tm){if(!it||typeof it.t!=='string'||it.t.slice(0,2)!=='bw')return _df(it,tm);const x=it.x*16,y=it.y*16;
+{SQFURN.wrap('095',_df=>function(it,tm){if(!it||typeof it.t!=='string'||it.t.slice(0,2)!=='bw')return _df(it,tm);const x=it.x*16,y=it.y*16;
   if(it.t==='bwbld'){const b=it.b;try{drBld({k:'home',w:b.w,wall:b.wall,roof:b.roof,sc:null,tx:b.tx,ty:b.ty},tm)}catch(e){self.SQERR&&SQERR(e,'095-2')}
    const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,tw=b.name.length*4+8,sx=Math.round(X0+w/2-tw/2);g.save();g.font='700 6px '+PF;g.fillStyle='#3a2414';g.fillRect(sx-1,base-35,tw+2,10);g.fillStyle='#f4e8c8';g.fillRect(sx,base-34,tw,8);g.fillStyle='#3a2414';g.textAlign='center';g.textBaseline='middle';g.fillText(b.name,X0+w/2,base-29.5);g.restore();return}
   if(it.t==='bwstall'){const K='#181018';shd(x+24,y+15,46);Rg(x-1,y-2,50,18,K);Rg(x,y-1,48,16,'#8a5a30');Rg(x,y-1,48,3,'#a8743c');for(const[a,c]of[[4,'#e84850'],[12,'#f8c048'],[20,'#78c050'],[28,'#e88838'],[36,'#a878e0']])Rg(x+a,y+4,5,4,c);
@@ -55,7 +55,7 @@ const bwNear=()=>{if(!bwR())return null;let best=null,bd=26;for(const n of BW.np
   if(it.t==='bwnpc'){const n=it.n,near=Math.hypot(n.x-P.x,n.y-P.y)<60,dir=near?(Math.abs(P.x-n.x)>Math.abs(P.y-n.y)?2:P.y<n.y?1:0):0,fl=near&&P.x<n.x;shd(n.x,n.y+6,12);GC=g;
    try{cP(LOOK[n.id],dir,0,Math.round(n.x),Math.round(n.y),fl)}catch(e){self.SQERR&&SQERR(e,'095-5')}if(SQ_SIDE.briarwood&&(()=>{const q=sqCur('briarwood');return q&&q.giver===n.id&&(!SQ_SIDE.briarwood.on||sqReady('briarwood'))})()){const bob=Math.round(Math.sin(tm*4));Rg(n.x-2,n.y-34+bob,4,8,'#181018');Rg(n.x-1,n.y-33+bob,2,5,'#f8d048');Rg(n.x-1,n.y-27+bob,2,1,'#f8d048')}
    const nm=n.id;g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.strokeStyle='#181018';g.strokeText(nm,n.x,n.y-22);g.fillStyle='#e8ffe0';g.fillText(nm,n.x,n.y-22);g.restore();return}
-  return _df(it,tm)}}
+  return _df(it,tm)})}
 // ---- talking: TALK / T / ✕ next to them ----
 function bwOpen(n){BW.npc=n;BW.sure=null;shop='bwnpc';pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk')}
 {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=bwNear();if(n){bwOpen(n);return}}return _t()}}
@@ -73,7 +73,7 @@ function bwHTML(){const n=BW.npc;if(!n)return'';const line=SAYS[n.id][Math.floor
   h+='<div class="tl" style="margin-top:12px">Sell</div>';let any=0;for(const k in SELLP){const c=inv[k]|0;if(c<=0)continue;any=1;h+='<button class="sb" data-bw="s'+k+'">Sell all '+esc(SN[k]||INAME[k]||k)+' ('+c+')<br><small>+'+c*SELLP[k]+' gold</small></button>'}
   if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing to sell</div>'}
  return h}
-{const _r=rPn;rPn=function(){if(ptab===2&&shop==='bwnpc'&&BW.npc){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'095-7')}pbd.innerHTML=bwHTML();return}_r()}}
+{SQRPN.wrap('095',_r=>function(){if(ptab===2&&shop==='bwnpc'&&BW.npc){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'095-7')}pbd.innerHTML=bwHTML();return}_r()})}
 {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='bwnpc'&&BW.npc){const b=e.target.closest('[data-bw]');if(b){const a=b.dataset.bw;
     if(a[0]==='b'){const it=SHOPBW[+a.slice(1)];if(!it)return;if(GLD<it.c){say('Not enough gold');sfx('swish');return}GLD-=it.c;if(it.kit){inv.wood=(inv.wood|0)+3;inv.stone=(inv.stone|0)+1}else inv[it.k]=(inv[it.k]|0)+it.m;say('Bought '+it.n+'.');sfx('coin')}
     else{const k=a.slice(1),c=inv[k]|0;if(c>0){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){self.SQERR&&SQERR(_,'095-8')}saveLocal(true);rPn();return}
@@ -122,7 +122,7 @@ function drawThorn(n,tm){const x=Math.round(n.x),y=Math.round(n.y),K='#181018',h
  for(const[a,b]of[[-8,-50],[4,-46],[-14,-42],[10,-52]])Rg(x+a,y+b,3,2,'#78c858');for(const[a,b]of[[-3,-56],[9,-44],[-12,-36]])Rg(x+a,y+b,2,2,'#e84858');
  // health bar
  const w=40,f=Math.max(0,n.hp/n.mhp);Rg(x-w/2-1,y-66,w+2,5,K);Rg(x-w/2,y-65,w,3,'#3a1a1a');Rg(x-w/2,y-65,Math.round(w*f),3,'#78d050')}
-{const _pS=pS;pS=function(n,tm){if(n&&n.type==='thorn')return drawThorn(n,tm);return _pS(n,tm)}}
+{SQPS.wrap('095',_pS=>function(n,tm){if(n&&n.type==='thorn')return drawThorn(n,tm);return _pS(n,tm)})}
 // saving the boss day
 {SQSAVE.after('095:thd',s=>{s.thd=THDAY;})}
 {SQLOAD.after('095',(S)=>{THDAY=isFinite(S&&S.thd)?+S.thd:-1})}

@@ -73,9 +73,9 @@ Object.assign(ROOMS,{
  dh3:fhRoom(8,6,['#dcc094','#d0b488'],DWL,'#2a8a7a',[{t:'window',x:2,y:0},{t:'shelf',x:5,y:0,w:2},{t:'bed',x:1,y:2,sh:2,solid:1},{t:'table',x:4,y:3,w:2,solid:1},{t:'plant',x:7,y:2,solid:1},{t:'rug',x:3,y:4,w:2}]),
  dh4:fhRoom(8,6,['#c8a474','#bc9868'],DWL,'#6a4820',[{t:'window',x:3,y:0},{t:'orecase',x:5,y:0,w:2},{t:'bed',x:1,y:2,sh:2,solid:1},{t:'bed',x:6,y:2,sh:2,solid:1},{t:'table',x:3,y:3,w:2,solid:1},{t:'rug',x:3,y:5,w:2}])});
 // the ore collection: shelves of stone, iron ore, bars and a few gems
-const _df44=drawFurn;drawFurn=function(it,tm){if(it.t!=='orecase')return _df44(it,tm);const x0=it.x*16,y0=it.y*16,w=(it.w||2)*16;
+SQFURN.wrap('044',_df44=>function(it,tm){if(it.t!=='orecase')return _df44(it,tm);const x0=it.x*16,y0=it.y*16,w=(it.w||2)*16;
  Rg(x0,y0-6,w,22,O);Rg(x0+1,y0-5,w-2,20,'#8a6038');for(const yy of[y0+1,y0+9])Rg(x0+1,yy,w-2,2,'#5a3a1a');
- const C=['#9a9aa8','#b88a6a','#d0d0e0','#e03050','#3060e0','#30b060','#f8d848','#7a7a88'];for(let r=0;r<2;r++)for(let k=0;k<w/6-1;k++){const c=C[(k*3+r*5+it.x)%C.length],xx=x0+3+k*6,yy=y0-3+r*8;Rg(xx,yy,4,4,O);Rg(xx+.5,yy+.5,3,3,c);Rg(xx+.5,yy+.5,1,1,'#ffffff')}};
+ const C=['#9a9aa8','#b88a6a','#d0d0e0','#e03050','#3060e0','#30b060','#f8d848','#7a7a88'];for(let r=0;r<2;r++)for(let k=0;k<w/6-1;k++){const c=C[(k*3+r*5+it.x)%C.length],xx=x0+3+k*6,yy=y0-3+r*8;Rg(xx,yy,4,4,O);Rg(xx+.5,yy+.5,3,3,c);Rg(xx+.5,yy+.5,1,1,'#ffffff')}});
 // --- people ---
 const DHN=[
  {kind:'dhfolk',id:'zahra',name:'Zahra',home:'dh1',work:'dh_market',wx:3*16,wy:2*16+10,bed:[1,2],ch:{sk:3,hs:3,hc:0,sh:6,pn:4,ht:0,hcol:0,so:1}},
@@ -119,8 +119,8 @@ function dhPanel(n){const S=n.scene&&DHSHOP[n.scene];let h=head(S?S.title:n.scen
  if(S){h+=dhShopHTML(S);if(n.id==='mira')h+=row('dh_rest',nightNow()||dark()>.3?'Rent a bed for the night':'Rest a while',(nightNow()||dark()>.3?'30 gold · sleep until morning, wake up healed':'30 gold · heal fully and get a hot meal'),GLD>=30)}
  if(n.id==='doran'&&n.scene==='dh_hall'){h+=doranNotes();h+=forgeHTML()}
  return h+jobCard(n)}
-const _r44=rPn;rPn=function(){if(ptab===2&&shop==='dhfolk'){if(!TALKN||TALKN.kind!=='dhfolk'){TALKN=nearNpc();const n=TALKN;TALKQ=n?(n.scene&&DHSHOPQ[n.id]&&Math.random()<.5?DHSHOPQ[n.id][Math.floor(Math.random()*2)]:pickLine(n)):''}
-  panelChrome('');if(!TALKN){closePanel();return}pbd.innerHTML=dhPanel(TALKN);return}_r44()};
+SQRPN.wrap('044',_r44=>function(){if(ptab===2&&shop==='dhfolk'){if(!TALKN||TALKN.kind!=='dhfolk'){TALKN=nearNpc();const n=TALKN;TALKQ=n?(n.scene&&DHSHOPQ[n.id]&&Math.random()<.5?DHSHOPQ[n.id][Math.floor(Math.random()*2)]:pickLine(n)):''}
+  panelChrome('');if(!TALKN){closePanel();return}pbd.innerHTML=dhPanel(TALKN);return}_r44()});
 const _cp44=closePanel;closePanel=function(){_cp44();if(TALKN&&TALKN.kind==='dhfolk')TALKN=null};
 const _xa44=xAct;xAct=function(a){const n=TALKN;
  if(a.startsWith('dhb_')){const m=a.match(/^dhb_(.+)_(\d+)$/);if(!m)return;const k=m[1],q=+m[2],S=n&&DHSHOP[n.scene],it=S&&S.items.find(e=>e[0]===k);if(!it)return;

@@ -156,7 +156,7 @@
   return h+'<div class="qc" style="margin-top:8px;font-size:12px"><p>+10% XP while a party member is close by, and when one of you beats a monster the others nearby get half its gold. Talk to your party in the chat\'s <b>Party</b> tab (or type <b>/p</b> and a message).</p></div><button class="sb" data-pt="leave" style="width:100%;margin-top:8px">LEAVE PARTY</button>'}
  function emotesHTML(){let h='<div class="tl">EMOTES</div><div class="emg">';for(const k in EM)h+='<button data-em="'+k+'"><span>'+EM[k].ic+'</span>'+EM[k].n+'</button>';
   return h+'</div><div class="qc" style="margin-top:10px;font-size:12px"><p>Everyone nearby sees it. In chat you can also type /'+Object.keys(EM).slice(0,4).join(', /')+' and so on.</p></div>'}
- {const _r=rPn;rPn=function(){if(ptab===PTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'136-19')}pbd.innerHTML=partyHTML();return}if(ptab===ETAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'136-20')}pbd.innerHTML=emotesHTML();return}return _r.apply(this,arguments)}}
+ {SQRPN.wrap('136',_r=>function(){if(ptab===PTAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'136-19')}pbd.innerHTML=partyHTML();return}if(ptab===ETAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'136-20')}pbd.innerHTML=emotesHTML();return}return _r.apply(this,arguments)})}
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab===PTAB){const b=e.target.closest('[data-pt]');if(b&&b.dataset.pt==='leave')leave();return}
    if(ptab===ETAB){const b=e.target.closest('[data-em]');if(b){closePanel();emote(b.dataset.em)}return}return _oc(e)}}
  // G opens the emotes (keyboard)

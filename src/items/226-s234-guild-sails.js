@@ -69,7 +69,7 @@
   let h='<div class="qc" id="sqboatsec"><b>Boat</b><div style="display:flex;justify-content:center;margin:4px 0 6px">'+boatPic(on?gd:null)+'</div><div>'+pk('Plain sails','plain',!on);
   if(ok){const c=GC().PAL[GC().design().c];h+=pk('<span style="color:'+c+'">&#9632;</span> Guild sails','guild',on)}
   h+='</div>'+(ok?'<small>Guild sails match your guild\'s cape. The leader changes the design in START &gt; Guild &gt; Settings.</small>':'<small>Join a guild to fly its colours on your sails.</small>')+'</div>';return h}
- {const _r=rPn;rPn=function(){const out=_r.apply(this,arguments);try{if(pnOpen&&ptab===31&&!document.getElementById('sqboatsec'))pbd.insertAdjacentHTML('beforeend',section())}catch(e){self.SQERR&&SQERR(e,'226-7')}return out}}
+ {SQRPN.after('226',()=>{try{if(pnOpen&&ptab===31&&!document.getElementById('sqboatsec'))pbd.insertAdjacentHTML('beforeend',section())}catch(e){self.SQERR&&SQERR(e,'226-7')}})}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-bsail]');if(!b||ptab!==31)return;e.stopPropagation();e.preventDefault();
   ON=b.dataset.bsail==='guild'&&inGuild();try{say(ON?'Your boat now flies the guild\'s colours.':'Plain sails it is.')}catch(x){self.SQERR&&SQERR(x,'226-8')}try{sfx('talk')}catch(x){self.SQERR&&SQERR(x,'226-9')}try{saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'226-10')}rPn()},true);
  window.SQSAILS={get on(){return ON},set on(v){ON=!!v},fromCh,mine,recolor,section};

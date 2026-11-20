@@ -82,12 +82,12 @@ Object.assign(ROOMS,{
  fh3:fhRoom(8,6,['#c89a6a','#bc8e5e'],FWALL,'#8a5a2a',[{t:'window',x:3,y:0},{t:'shelf',x:5,y:0,w:2},{t:'bed',x:1,y:2,sh:2,solid:1},{t:'bed',x:6,y:2,sh:2,solid:1},{t:'table',x:3,y:3,w:2,solid:1},{t:'rug',x:3,y:5,w:2}]),
  fh4:fhRoom(8,6,['#b08458','#a4784c'],FWALL,'#3a6a5a',[{t:'window',x:2,y:0},{t:'rack',x:5,y:0,w:2},{t:'bed',x:1,y:2,sh:2,solid:1},{t:'table',x:4,y:3,w:2,solid:1},{t:'barrel',x:7,y:2,solid:1},{t:'rug',x:3,y:4,w:2}])});
 // room decor: hearths, a cooking stove and the training dummy
-const _df41=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
+SQFURN.wrap('041',_df41=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='fireplace'){const w=(it.w||2)*16;Rg(x0,y0-8,w,24,O);Rg(x0+1,y0-7,w-2,22,'#8a8890');for(let r=0;r<5;r++)for(let c=0;c<w/8;c++)Rg(x0+1+c*8+(r%2?4:0),y0-7+r*4,7,3,['#9a98a0','#86848c','#a4a2aa'][(r+c)%3]);
   Rg(x0+4,y0+2,w-8,12,O);Rg(x0+5,y0+3,w-10,11,'#1a1010');const k=tm*8+x0;for(let j=0;j<3;j++){const fx=x0+7+j*((w-14)/2),hh=5+Math.sin(k+j*2)*2;Rg(fx,y0+13-hh,4,hh,'#e86018');Rg(fx+1,y0+14-hh*.6,2,hh*.6,'#f8c040')}
   Rg(x0+5,y0+12,w-10,2,'#5a3418');Rg(x0-1,y0-10,w+2,3,O);Rg(x0,y0-9,w,1,'#b0aeb6');return}
  if(it.t==='stove'||it.t==='dummy')return drawStation(it.t,it.x,it.y,0,tm);
- _df41(it,tm)};
+ _df41(it,tm)});
 // --- people: shopkeepers work in their shops by day and go home at night; Pipkin plays by the pond ---
 const FHN=[
  {kind:'fhfolk',id:'elowen',name:'Elowen',home:'fh_lodge',work:'fh_lodge',wx:2*16,wy:2*16+10,bed:[10,2],ch:{sk:1,hs:3,hc:3,sh:6,pn:4,ht:0,hcol:0,so:1}},
@@ -135,8 +135,8 @@ function fhPanel(n){const S=n.scene&&FHSHOP[n.scene];let h=head(S?S.title:n.scen
    if(ck)h+='<div class="tl" style="font-size:13px;margin-top:10px">THE HEARTH</div>'+ck}}
  if(n.id==='torren'){h+=torrenNotes();if(SQ_SIDE.frosthollow.completed)h+=row('fh_tbed','Sleep in the cabin','Free for a friend of Frosthollow · '+(nightNow()||dark()>.3?'sleep until morning':'rest and heal'),true)}
  return h+jobCard(n)}
-const _r41=rPn;rPn=function(){if(ptab===2&&shop==='fhfolk'){if(!TALKN||TALKN.kind!=='fhfolk'){TALKN=nearNpc();const n=TALKN;TALKQ=n?(n.scene&&FHSHOPQ[n.id]&&Math.random()<.5?FHSHOPQ[n.id][Math.floor(Math.random()*2)]:pickLine(n)):''}
-  panelChrome('');if(!TALKN){closePanel();return}pbd.innerHTML=fhPanel(TALKN);return}_r41()};
+SQRPN.wrap('041',_r41=>function(){if(ptab===2&&shop==='fhfolk'){if(!TALKN||TALKN.kind!=='fhfolk'){TALKN=nearNpc();const n=TALKN;TALKQ=n?(n.scene&&FHSHOPQ[n.id]&&Math.random()<.5?FHSHOPQ[n.id][Math.floor(Math.random()*2)]:pickLine(n)):''}
+  panelChrome('');if(!TALKN){closePanel();return}pbd.innerHTML=fhPanel(TALKN);return}_r41()});
 function fhSleep(paid){if(paid&&GLD<25){say('Not enough gold');sfx('swish');return}if(paid)GLD-=25;P.hp=6;hunger=100;
  if(nightNow()||dark()>.3){time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;en=[];say(paid?'You slept at the Ember Lodge. Good morning!':'You slept by Torren\'s fire. Good morning!');closePanel()}else say('You rest by the fire. You feel great!');sfx('quest');saveNow()}
 const _xa41=xAct;xAct=function(a){const n=TALKN;

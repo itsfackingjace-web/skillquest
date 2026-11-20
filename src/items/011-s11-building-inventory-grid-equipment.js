@@ -153,8 +153,8 @@ function makeBuild(i,all){const r=BREC[i];if(!r)return;if(sqDo('craft',all?999:1
  addXp(6,r.xp*n);say('Made '+n+' '+r.n.toLowerCase()+(n>1?'s':'')+'.');sfx('chop');saveLocal(true);rPn()}
 // --- routing ---
 function panelChrome(title){document.getElementById('t0').style.display=ptab<=1?'':'none';document.getElementById('t1').style.display=ptab<=1?'':'none';ptt.textContent=title;if(mapT&&ptab!==5){clearInterval(mapT);mapT=null}}
-const _r11=rPn;rPn=function(){if(ptab===3){panelChrome('');pbd.innerHTML=equipHTML();drawCardSprite();return}if(ptab===4){panelChrome('BAG');pbd.innerHTML=bagGridHTML();return}
- if(ptab===7){panelChrome('');pbd.innerHTML=chestHTML();return}_r11();if(ptab===1)pbd.insertAdjacentHTML('beforeend',buildHTML())};
+SQRPN.wrap('011',_r11=>function(){if(ptab===3){panelChrome('');pbd.innerHTML=equipHTML();drawCardSprite();return}if(ptab===4){panelChrome('BAG');pbd.innerHTML=bagGridHTML();return}
+ if(ptab===7){panelChrome('');pbd.innerHTML=chestHTML();return}_r11();if(ptab===1)pbd.insertAdjacentHTML('beforeend',buildHTML())});
 const _oc11=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
  if((b=t.closest('.plc'))){startBuild(b.dataset.k);return}
  if((b=t.closest('.bc'))){makeBuild(+b.dataset.i,b.dataset.a==='all');return}

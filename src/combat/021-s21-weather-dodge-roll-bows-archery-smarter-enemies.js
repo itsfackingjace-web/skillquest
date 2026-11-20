@@ -53,18 +53,18 @@ const _es21=enterScene;enterScene=function(id,house,ret){_es21(id,house,ret);if(
  for(const[x,y]of[[4,5],[13,5],[6,9],[11,9]])en.push({x:x*16+8,y:y*16+8,hp:6,kx:0,ky:0,type:'skel',tcd:1+Math.random()*2});
  if(TOMB_DAY!==day){en.push({x:9*16,y:4*16,hp:45,kx:0,ky:0,type:'bonelord',tcd:2,scd:7});say('The Bone Lord stirs in the dark... Defeat it for treasure!');setTimeout(()=>sfx('roar'),300)}
  else say('The Bone Lord is dust... for today. Come back tomorrow.')};
-const _df21=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
+SQFURN.wrap('021',_df21=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='pillar'){shd(x0+8,y0+14,16);Rg(x0+1,y0-14,14,30,O);Rg(x0+2,y0-13,12,28,'#d8bc84');Rg(x0+2,y0-13,12,3,'#ecd6a4');Rg(x0+2,y0+11,12,4,'#a88858');for(const xx of[x0+5,x0+9])Rg(xx,y0-10,1,20,'#b89c68');return}
  if(it.t==='urn'){shd(x0+8,y0+14,12);Rg(x0+3,y0,10,15,O);Rg(x0+4,y0+1,8,13,'#b86838');Rg(x0+4,y0+5,8,2,'#3a6ab0');Rg(x0+5,y0-2,6,3,O);Rg(x0+6,y0-1,4,2,'#9a5028');return}
  if(it.t==='bones'){Rg(x0+2,y0+8,9,2,'#f0ece0');Rg(x0+1,y0+7,2,2,'#f0ece0');Rg(x0+10,y0+9,2,2,'#f0ece0');Rg(x0+6,y0+4,5,4,'#f0ece0');Rg(x0+7,y0+5,1,1,O);Rg(x0+9,y0+5,1,1,O);return}
- _df21(it,tm)};
+ _df21(it,tm)});
 const _dk21=dark;dark=function(){return SCENE&&SCENE.room.tomb&&!INDRAW?.2:_dk21()};
 function drawBoneLord(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs(n.kx)+Math.abs(n.ky)>.6,b=hit?'#ffd0d0':'#f0ece0',r=n.cast>0?'#b040e0':'#6838a0',st=Math.floor(tm*4)%2;shd(x,y+8,26);
  pp([[-8,-30,16,14,b],[-10,-16,20,18,r],[-14,-14,4,12,b],[10,-14,4,12,b],[-6+(st?0:1),2,4,6,b],[2-(st?0:1),2,4,6,b]],x,y,false);
  Rg(x-5,y-25,3,3,O);Rg(x+2,y-25,3,3,O);if(Math.sin(tm*6)>0){Rg(x-4,y-24,1,1,'#f04030');Rg(x+3,y-24,1,1,'#f04030')}Rg(x-3,y-20,6,1,O);Rg(x-2,y-19,1,1,O);Rg(x+1,y-19,1,1,O);
  Rg(x-9,y-36,18,6,O);Rg(x-8,y-35,16,4,GD);for(const a of[-8,-2,4])Rg(x+a,y-39,3,4,GD);Rg(x-1,y-34,2,2,'#e03030');Rg(x-10,y-12,20,2,'#4a2878');
  Rg(x-16,y-46,32,4,O);Rg(x-15,y-45,Math.max(0,30*n.hp/45),2,'#a050e0')}
-const _pS21=pS;pS=function(n,tm){if(n.type==='bonelord')return drawBoneLord(n,tm);_pS21(n,tm);if(n.type==='wolf'&&n.ls==='prep'&&Math.floor(tm*10)%2){const x=Math.round(n.x),y=Math.round(n.y);Rg(x-1,y-20,2,5,O);Rg(x-1,y-14,2,2,O);Rg(x,y-19,1,3,'#f84030');Rg(x,y-13,1,1,'#f84030')}};
+SQPS.wrap('021',_pS21=>function(n,tm){if(n.type==='bonelord')return drawBoneLord(n,tm);_pS21(n,tm);if(n.type==='wolf'&&n.ls==='prep'&&Math.floor(tm*10)%2){const x=Math.round(n.x),y=Math.round(n.y);Rg(x-1,y-20,2,5,O);Rg(x-1,y-14,2,2,O);Rg(x,y-19,1,3,'#f84030');Rg(x,y-13,1,1,'#f84030')}});
 const _ed21=enemyDrop;enemyDrop=function(n){if(n.type!=='bonelord')return _ed21(n);TOMB_DAY=Math.floor(time/DAYLEN);GLD+=250;inv.sbar=(inv.sbar|0)+3;inv.iarrow=(inv.iarrow|0)+10;addXp(0,500);addXp(8,300);
  if(Q.on&&QS[Q.i]&&QS[Q.i].type==='bonelord')Q.k++;for(const o of en)if(o!==n&&!o.dead)o.dead=1;
  say('The Bone Lord crumbles! +250 gold, 3 steel bars, 10 iron arrows');msgT=5;sfx('quest');saveLocal(true);saveCloud(true)};
@@ -153,7 +153,7 @@ function makeFletch(i,all){const r=FREC[i];if(!r||(r.hide&&r.hide()))return;if(l
  let n=0;const mx=all?999:1;
  let spoke=false;while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];{const _s=say;say=function(){spoke=true;return _s.apply(this,arguments)};try{r.f()}finally{say=_s}}n++;if(r.hide)break}
  if(!n){say('Missing materials');return}addXp(FL,r.xp*n);if(!r.hide&&!spoke)say(r.k==='arrow'||r.k==='iarrow'?'Made '+(n*10)+' '+(r.k==='iarrow'?'iron arrows':'arrows')+'.':'Made '+(n>1?n+' × ':'')+(INAME[r.k]||r.n)+'.');sfx('chop');saveLocal(true);rPn()}
-const _r21=rPn;rPn=function(){_r21();if(ptab===1&&pn.style.display!=='none')pbd.insertAdjacentHTML('beforeend',fletchHTML())};
+SQRPN.after('021',()=>{if(ptab===1&&pn.style.display!=='none')pbd.insertAdjacentHTML('beforeend',fletchHTML())});
 const _oc21=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.fc');if(b){makeFletch(+b.dataset.i,!!b.dataset.all);return}_oc21(e)};
 // equipment card: bow + arrows
 const _eq21=equipHTML;equipHTML=function(){const h=_eq21(),k='<div class="qc" style="margin-top:12px">',i=h.indexOf(k);if(i<0)return h;

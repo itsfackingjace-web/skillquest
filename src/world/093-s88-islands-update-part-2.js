@@ -119,11 +119,11 @@ function crystalFor(t,v){const base=rgSprite('crystal',v);if(!CTINT[t]||!base)re
  for(let i=0;i<d.length;i+=4){if(d[i+3]<10)continue;const r=d[i]/255,g2=d[i+1]/255,b=d[i+2]/255,mx=Math.max(r,g2,b),mn=Math.min(r,g2,b),l=(mx+mn)/2;if(mx-mn<.12)continue;
   const s=sat,q=l<.5?l*(1+s):l+s-l*s,p=2*l-q,h=hue/360,f=t2=>{let t=t2;if(t<0)t+=1;if(t>1)t-=1;return t<1/6?p+(q-p)*6*t:t<.5?q:t<2/3?p+(q-p)*(2/3-t)*6:p};
   d[i]=f(h+1/3)*255;d[i+1]=f(h)*255;d[i+2]=f(h-1/3)*255}x.putImageData(im,0,0);return CRYC[key]={c,ox:base.ox,oy:base.oy,ww:base.ww,hh:base.hh}}
-{const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_obj'&&it.o&&it.o.v&&TIER[it.o.t]){const o=it.o;
+{SQFURN.wrap('093',_df=>function(it,tm){if(it&&it.t==='_obj'&&it.o&&it.o.v&&TIER[it.o.t]){const o=it.o;
    if(o.v==='crystal'){const bx=it.x*16+8,by=it.y*16+14,s=o.shake>0?(o.shake-=.016,Math.round(Math.sin(tm*60))):0;shd(bx,by-1,12);hdPut(crystalFor(o.t,(it.x*7+it.y*3)&1),it.x*16+s,it.y*16);
     const gl={gold:'248,208,72',mith:'110,140,255',adam:'90,220,130'}[o.t]||'190,150,255';g.fillStyle='rgba('+gl+','+(.1+.08*Math.sin(tm*2+it.x))+')';g.beginPath();g.arc(bx,by-8,12,0,6.283);g.fill();return}
    const v=o.v;o.v=null;try{return _df(it,tm)}finally{o.v=v}}
-  return _df(it,tm)}}
+  return _df(it,tm)})}
 
 // ---- Pets: wolves (1 in 1,000 from each kind of wolf) and a little tree (1 in 5,000 trees chopped) ----
 // A pet wolf looks just like the wolves it comes from, with a red collar.
@@ -235,7 +235,7 @@ function drawCastle(b,tm){const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,S=['#5a5650
   const cx=R.w*8;Rg(cx-16,48,32,H2-48,'#8a1c22');Rg(cx-14,48,28,H2-48,'#c0303a');Rg(cx-14,48,2,H2-48,'#e8b830');Rg(cx+12,48,2,H2-48,'#e8b830');
   // the gate: two tiles wide in the middle of the south wall
   Rg(cx-16,H2-1,32,6,S[1]);Rg(cx-14,H2-7,28,7,'#c04030');Rg(cx-12,H2-5,24,1,'#e88868')}}
-{const _df=drawFurn;drawFurn=function(it,tm){if(!it||typeof it.t!=='string'||!/^c_|^ic_|^icvdoor$/.test(it.t))return _df(it,tm);const x=it.x*16,y=it.y*16,K='#181018';
+{SQFURN.wrap('093',_df=>function(it,tm){if(!it||typeof it.t!=='string'||!/^c_|^ic_|^icvdoor$/.test(it.t))return _df(it,tm);const x=it.x*16,y=it.y*16,K='#181018';
   if(it.t==='c_banner'){Rg(x+3,y+4,10,22,K);Rg(x+4,y+5,8,19,'#c83040');Rg(x+4,y+5,8,2,'#e8b830');Rg(x+6,y+10,4,4,'#e8b830');Rg(x+7,y+11,2,2,'#c83040');Rg(x+4,y+24,2,2,'#c83040');Rg(x+10,y+24,2,2,'#c83040');return}
   if(it.t==='c_window'){Rg(x+2,y+5,12,20,K);Rg(x+3,y+6,10,18,'#3a5a8a');Rg(x+3,y+6,10,3,'#5a8ac8');Rg(x+7,y+6,2,18,K);Rg(x+3,y+14,10,1,K);return}
   if(it.t==='c_torch'){Rg(x+6,y+14,4,10,K);Rg(x+7,y+15,2,8,'#7a5030');const f=Math.sin(tm*12+x)*1;Rg(x+5,y+8+f*.4,6,7,'#f8901c');Rg(x+6,y+6+f,4,6,'#ffc040');Rg(x+7,y+8+f,2,3,'#fff0a0');
@@ -262,7 +262,7 @@ function drawCastle(b,tm){const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,S=['#5a5650
    else if(I.rg==='briarwood'){for(const[a,b,w2]of[[-2,-12,20],[0,-10,3],[13,-10,3],[4,-11,2],[9,-11,2]])Rg(x+a,y+b,w2,2,'#5a3a1e');Rg(x-6,y-18,28,4,'#3a7a2a');Rg(x-4,y-19,6,2,'#58a040');Rg(x+12,y-19,8,2,'#58a040')}
    else{Rg(x+1,y-9,14,2,'#c8e0f0');Rg(x+3,y-7,2,3,'#c8e0f0');Rg(x+10,y-7,2,4,'#c8e0f0')}
    return}
-  return _df(it,tm)}}
+  return _df(it,tm)})}
 window.SQSHARKTEST=()=>SHK.list.length;
 }
 

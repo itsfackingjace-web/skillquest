@@ -125,7 +125,7 @@ function routesHTML(){const here=curRegion(),row=(id,label,sub,ok)=>'<button cla
   else h+=row(id,'🔒 '+D.name+' [LOCKED]',D.hint||'Uncharted',false)}
  return h}
 function openRoutes(){if(pnOpen||menuOpen||dead||TRAVEL49)return;shop='routes49';pnOpen=true;ptab=2;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}
-const _r49=rPn;rPn=function(){if(ptab===2&&shop==='routes49'){document.getElementById('t0').style.display='none';document.getElementById('t1').style.display='none';ptt.textContent='';pbd.innerHTML=routesHTML();return}_r49()};
+SQRPN.wrap('049',_r49=>function(){if(ptab===2&&shop==='routes49'){document.getElementById('t0').style.display='none';document.getElementById('t1').style.display='none';ptt.textContent='';pbd.innerHTML=routesHTML();return}_r49()});
 const _oc49=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.rt49');if(b){routeGo(b.dataset.r);return}_oc49(e)};
 // a trip: check the route, prepare the destination first, then a short crossing hides the switch
 function routeGo(id){if(TRAVEL49||dead)return;const here=curRegion();if(id===here)return;if(!routeOpen(id)){say('That route is not charted yet.');sfx('swish');return}
@@ -237,11 +237,11 @@ const _rbg49=ROOMBG;ROOMBG=(R,W2,H2)=>{if(!R.region)return _rbg49(R,W2,H2);const
  for(const[x,y]of R.pier){const x0=x*16,y0=y*16;Rg(x0-1,y0,18,16,'#4a3020');Rg(x0,y0,16,16,'#a87850');for(let k=0;k<4;k++)if(R.pierH)Rg(x0+k*4+3,y0,1,16,'#7a5434');else Rg(x0,y0+k*4+3,16,1,'#7a5434');Rg(x0+1,y0,1,16,'#c89868');Rg(x0-1,y0+15,2,5,'#3a2618');Rg(x0+15,y0+15,2,5,'#3a2618')}};
 function drawPost49(x,y,tm){shd(x,y+5,10);Rg(x-2,y-20,4,26,O);Rg(x-1,y-19,2,24,'#8a6038');Rg(x-9,y-18,18,9,O);Rg(x-8,y-17,16,7,'#c89868');Rg(x-6,y-15,12,1,'#7a5434');Rg(x-6,y-13,9,1,'#7a5434');
  const w=Math.sin(tm*4)*1.5;g.fillStyle='#3888d6';g.beginPath();g.moveTo(x+1,y-27);g.lineTo(x+10+w,y-24);g.lineTo(x+1,y-21);g.fill();Rg(x,y-28,2,9,O)}
-const _df49=drawFurn;drawFurn=function(it,tm){
+SQFURN.wrap('049',_df49=>function(it,tm){
  if(it.t==='_obj'){const o=it.o,bx=it.x*16+8,by=it.y*16+14;if(!(OBJHD&&OBJHD(o,it.x,it.y,bx,by,0,tm))){shd(bx,by-1,14);Rg(bx-6,by-12,12,12,o.t==='rock'?'#988a78':'#2e7048')}return}
  if(it.t==='_en'){pS(it.n,tm);return}
  if(it.t==='rgpost'){drawPost49(it.x*16+3,it.y*16+8,tm);return}
- _df49(it,tm)};
+ _df49(it,tm)});
 const _drm49=drawRoom;drawRoom=function(tm){const R=SCENE&&SCENE.room;if(!R||!R.region)return _drm49(tm);
  const v=rgView(),all=R.items,vis=rgNear(R,v.x0/16-2,v.y0/16-1,v.x1/16+2,v.y1/16+8);
  for(const n of en)if(!n.dead)vis.push({t:'_en',n,x:n.x/16,y:(n.y+6)/16-1});

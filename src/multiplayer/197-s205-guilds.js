@@ -143,12 +143,12 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
  let BLV='';const bkey=()=>glv(G.prog&&G.prog.qd)+':'+(window.SQGBOSS?SQGBOSS.key():'');
  {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){R._t64=1;applyNodes(R);applyBuildings(R);BLV=bkey()}}catch(e){console.warn('guild isle',e)}return ok}}
  // the banner: a pole and a flag in the guild's colour
- {const _df=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='lm'&&it.k==='gflag'){const x=it.x*16+8,y=it.y*16+16,w=Math.sin((tm||0)*3)*1.2,c=col();
+ {SQFURN.wrap('197',_df=>function(it,tm){if(it&&it.t==='lm'&&it.k==='gflag'){const x=it.x*16+8,y=it.y*16+16,w=Math.sin((tm||0)*3)*1.2,c=col();
    Rg(x-1,y-30,2,30,'#5a4028');Rg(x-2,y-2,4,2,'#3a2818');g.beginPath();g.moveTo(x+1,y-30);g.lineTo(x+17+w,y-29);g.lineTo(x+14+w,y-24.5);g.lineTo(x+17+w,y-19);g.lineTo(x+1,y-19);g.closePath();g.fillStyle=c;g.fill();g.lineWidth=1;g.strokeStyle='#202020';g.stroke();
    const tag=G.info&&G.info.tag||'';if(tag){g.save();g.font='700 4px '+PF;g.fillStyle=c==='#e8e8e8'?'#202020':'#fff';g.textAlign='center';g.fillText(tag,x+8+w/2,y-23);g.restore()}return}
   if(it&&it.t==='lm'&&it.k==='gstation'){try{drawStation(it.st,it.x,it.y,{},tm)}catch(e){self.SQERR&&SQERR(e,'197-14')}return}
   if(it&&it.t==='lm'&&it.k==='gportal'){try{SQGBOSS.drawPortal(it,tm)}catch(e){self.SQERR&&SQERR(e,'197-15')}return}
-  return _df.apply(this,arguments)}}
+  return _df.apply(this,arguments)})}
  // ---- database ----
  let OFF=[];const stopAll=()=>{for(const f of OFF)try{f()}catch(e){self.SQERR&&SQERR(e,'197-16')}OFF=[]};
  let started=false,meOff=null,invOff=null;
@@ -383,7 +383,7 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
     '<div class="qc"><b>Tag</b><p style="font-size:13px">2-4 letters or numbers, shown in [brackets] over every member\'s head. Changing it is free.</p><div class="gdgf"><input id="gtg" maxlength="4" value="'+esc(I.tag)+'" style="text-transform:uppercase"></div><button class="qb" data-g="retag">Change tag</button></div>'+(window.SQGCAPE?SQGCAPE.setCard():'')+
     '<div class="qc"><b>Colour</b><div class="gdgcl">'+COLS.map((c,i)=>'<button data-g="scol:'+i+'" class="'+(i===(I.col|0)?'on':'')+'" style="background:'+c+'" aria-label="Colour '+(i+1)+'"></button>').join('')+'</div></div>'}
   return h}
- {const _r=rPn;rPn=function(){if(ptab===GT){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'197-40')}pbd.innerHTML=html();return}return _r.apply(this,arguments)}}
+ {SQRPN.wrap('197',_r=>function(){if(ptab===GT){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'197-40')}pbd.innerHTML=html();return}return _r.apply(this,arguments)})}
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab!==GT)return _oc(e);const b=e.target.closest('[data-g]');if(!b||b.disabled)return;const[a,x,y]=b.dataset.g.split(':');
    if(a==='tab'){tab=x;rPn();return}if(a==='col'){newCol=+x;const n=document.getElementById('gfn').value,t=document.getElementById('gft').value;rPn();document.getElementById('gfn').value=n;document.getElementById('gft').value=t;return}
    if(a==='create'){create(document.getElementById('gfn').value,document.getElementById('gft').value,newCol);return}

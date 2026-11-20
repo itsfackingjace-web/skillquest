@@ -33,7 +33,7 @@ function rShop(){const sm=shop=='smith';let h='<div class="tl">'+(sm?'Blacksmith
 function shopAct(a){if(a[0]=='b'){const it=(shop=='smith'?smItems():genItems())[+a.slice(1)];if(!it)return;if(it.req>lvOf(8))say('Need Defence '+it.req);else if(GLD>=it.c){GLD-=it.c;it.f();say('Bought '+it.n)}else say('Not enough gold')}
  else{const k=a.slice(1),n=inv[k]|0;if(n>0){const v=n*sellP(k);GLD+=v;inv[k]=0;say('Sold for '+v+' gold');drops.push({x:P.x,y:P.y-16,t:0,tx:'+'+v+' gold',c:'#f8d848'})}}
  svg();rPn()}
-const _r=rPn;rPn=function(){if(ptab==2){document.getElementById('t0').className='';document.getElementById('t1').className='';rShop()}else _r()};
+SQRPN.wrap('005',_r=>function(){if(ptab==2){document.getElementById('t0').className='';document.getElementById('t1').className='';rShop()}else _r()});
 const _oc=pbd.onclick;pbd.onclick=e=>{const s=e.target.closest('.sb');if(s)shopAct(s.dataset.a);else _oc(e)};
 const st5=document.createElement('style');st5.textContent='.sb{display:block;width:100%;margin:8px 0;padding:12px;text-align:left;border-radius:8px;border:2px solid #f4f0d8;background:#2a6a22;color:#fff;font:700 14px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace}.sb small{font-weight:400;opacity:.85}';document.head.appendChild(st5);
 const nearNpc=()=>NPCS.find(n=>(n.scene||null)===curScene()&&Math.hypot(n.x-P.x,n.y-P.y)<(n.scene?58:28));

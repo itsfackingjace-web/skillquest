@@ -62,10 +62,9 @@ SQUPD.wrap('053',_u53=>function(dt){const R=SCENE&&SCENE.room,reg=R&&R.region,hp
 const _ed53=enemyDrop;enemyDrop=function(n){_ed53(n);const F=n.rg&&RG_FAUNA[n.rg];if(!F)return;GLD+=F.tier*2+Math.floor(Math.random()*(F.tier*2));addXp(0,Math.round(10*F.xp));
  if(n.rv==='cinder'&&Math.random()<.35){inv.iron=(inv.iron|0)+1;say('+1 iron ore (from the cinder beetle\'s shell)')}};
 // --- the regional variants' look (drawn over the base sprite) ---
-const _pS53=pS;pS=function(n,tm){_pS53(n,tm);if(!n.rv)return;const x=Math.round(n.x),y=Math.round(n.y),fl=Math.floor(tm*6+x)%2;
- if(n.rv==='briar'){for(const[a,b,c]of[[-6,-6,'#2f6a34'],[-2,-8,'#4a8a3a'],[2,-7,'#2f6a34'],[5,-5,'#6aa848'],[-4,-3,'#4a8a3a']])Rg(x+a,y+b,2,2,c);Rg(x-7,y-9,1,2,'#c8e070');Rg(x+3,y-10,1,2,'#c8e070')}
+SQPS.after('053',(n,tm)=>{if(!n.rv)return;const x=Math.round(n.x),y=Math.round(n.y),fl=Math.floor(tm*6+x)%2;if(n.rv==='briar'){for(const[a,b,c]of[[-6,-6,'#2f6a34'],[-2,-8,'#4a8a3a'],[2,-7,'#2f6a34'],[5,-5,'#6aa848'],[-4,-3,'#4a8a3a']])Rg(x+a,y+b,2,2,c);Rg(x-7,y-9,1,2,'#c8e070');Rg(x+3,y-10,1,2,'#c8e070')}
  else if(n.rv==='moss'){Rg(x-5,y-9,10,2,'#3f7f44');Rg(x-3,y-11,3,2,'#56ac46');Rg(x+1,y-12,3,3,'#7ab060');Rg(x-6,y-7,2,1,'#2d6236')}
  else if(n.rv==='cinder'||n.rv==='ember'){g.fillStyle='rgba(255,120,30,'+(.18+.1*Math.sin(tm*5+x))+')';g.beginPath();g.arc(x,y-4,12,0,6.283);g.fill();
   for(let k=0;k<3;k++){const ph=(tm*.8+k*.33+x*.01)%1;Rg(x-6+k*6,y-6-ph*14,1,1,ph<.5?'#ffd060':'#f06020')}if(n.rv==='ember'){Rg(x-2,y-11,2,2,'#ff7020');Rg(x+1,y-11,2,2,'#ff7020')}}
  else if(n.rv==='rime'){Rg(x-4,y-14,8,2,'#d8f0ff');Rg(x-5,y-6,2,6,'#a8d8ff');Rg(x+3,y-6,2,6,'#a8d8ff');g.fillStyle='rgba(160,220,255,.15)';g.beginPath();g.arc(x,y-5,11,0,6.283);g.fill()}
- else if(n.rv==='void'){g.fillStyle='rgba(150,90,230,'+(.16+.1*Math.sin(tm*3+x))+')';g.beginPath();g.arc(x,y-3,14,0,6.283);g.fill();if(fl)Rg(x+(P.x<n.x?-6:5),y-7,2,1,'#e0b0ff')}};
+ else if(n.rv==='void'){g.fillStyle='rgba(150,90,230,'+(.16+.1*Math.sin(tm*3+x))+')';g.beginPath();g.arc(x,y-3,14,0,6.283);g.fill();if(fl)Rg(x+(P.x<n.x?-6:5),y-7,2,1,'#e0b0ff')}});

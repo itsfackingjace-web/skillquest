@@ -45,11 +45,11 @@
  // ---- things in rooms, dungeons, island villages, island props ----
  const SKIP=new Set(['_obj','lm','bwnpc','afnpc','npc','house','gwater']);
  const rkey=it=>it.t==='icvdoor'?'r:icvdoor:'+it.kind:(it.t==='bwbld'||it.t==='afbld')&&it.b?'r:'+it.t+':'+it.b.name:'r:'+it.t+((it.w|0)>1?':'+(it.w|0):'');
- const _df=drawFurn;drawFurn=function(it,tm){
+ SQFURN.wrap('111d',_df=>function(it,tm){
   if(it&&it.t==='_obj'&&it.o&&has(okey(it.o))){const o=it.o,s=o.shake>0?(o.shake-=.016,Math.round(Math.sin(tm*60))):0;objDraw(o,it.x*16+8,it.y*16+14,s);return}
   if(it&&it.t==='lm'&&it.k!=='npc'){const k='l:'+it.k+(it.v!=null?':'+it.v:'');if(has(k)){drawLook(k,it.x*16,it.y*16,null,phase(it.x,it.y));return}}
   else if(anyR&&it&&typeof it.t==='string'&&!SKIP.has(it.t)&&it.t[0]!=='_'){const k=rkey(it);if(has(k)){const b=it.b,X=b?b.tx*16:it.x*16,Y=b?b.ty*16:it.y*16;drawLook(k,X,Y,null,phase(it.x|0,it.y|0));return}}
-  return _df.apply(this,arguments)};
+  return _df.apply(this,arguments)});
  // ---- buildings ----
  const HS=typeof HOUSE_STYLE!=='undefined'?HOUSE_STYLE:null;
  const bkey=b=>{if(!b)return null;if(b.castle)return'b:castle';if(HS&&b.k===HS.k&&b.wall===HS.wall&&b.roof===HS.roof)return'b:house'+(b.w|0);return typeof BLD!=='undefined'&&BLD.includes(b)?'b:'+b.k:null};
@@ -84,7 +84,8 @@
    if(after){for(const b of n.balls||[]){g.fillStyle='rgba(255,140,40,.35)';g.beginPath();g.arc(b.x,b.y,6,0,6.283);g.fill();Rg(b.x-3,b.y-3,6,6,K);Rg(b.x-2,b.y-2,4,4,'#f87020');Rg(b.x-1,b.y-2,2,2,'#fff0a0')}bossBar(n,x,Math.min(top,y-54),'#f87020');return}
    for(const q of n.pools||[]){if(q.t>0){const a=.4+.4*Math.sin(tm*14);g.strokeStyle='rgba(255,140,40,'+a+')';g.lineWidth=1.5;g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.stroke()}
     else{g.fillStyle='rgba(255,100,20,.35)';g.beginPath();g.ellipse(q.x,q.y,15,8,0,0,6.283);g.fill();for(let k=0;k<5;k++){const ph=(tm*1.8+k*.21)%1,fx=q.x-10+k*5,fh=Math.round(4+8*(1-ph));Rg(fx,q.y-fh,2,fh,k%2?'#f86020':'#f8b030');Rg(fx,q.y-fh,1,2,'#fff0a0')}}}shd(x,y+8,44)}};
- const _ps=pS;pS=function(n,tm){if(mobDraw(n,tm))return;return _ps.apply(this,arguments)};
+ // mobDraw (above) calls the inner monster drawer too: the wrap step keeps it in _ps whenever the list is put together
+ let _ps=pS;SQPS.wrap('111d',next=>{_ps=next;return function(n,tm){if(mobDraw(n,tm))return;return next.apply(this,arguments)}});
  // ---- village details and boats (globals the game calls by name) ----
  const wrapG=(name,fn)=>{if(typeof window[name]!=='function')return;const o=window[name];window[name]=function(){if(fn.apply(this,arguments))return;return o.apply(this,arguments)}};
  wrapG('drawLamp',(x,y)=>{if(!has('v:lamp'))return false;try{shd(x*16+8,y*16+15,10)}catch(e){self.SQERR&&SQERR(e,'111d-6')}return drawLook('v:lamp',x*16,y*16,null,phase(x,y))});

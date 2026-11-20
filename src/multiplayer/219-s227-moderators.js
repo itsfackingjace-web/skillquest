@@ -63,7 +63,7 @@
   h+='<div class="pmb"><button class="sb" data-mdt="close">CLOSE</button></div>';pbd.innerHTML=h;
   const us=new Set();for(const r of Object.values(V.rep))us.add(r.u);for(const m of V.chat.slice(0,100))us.add(m.u);for(const m of V.gch||[])us.add(m.u);if(V.pmU){us.add(V.pmU);for(const m of V.pm||[]){us.add(m.f);us.add(m.to)}}
   const need=[...us].filter(u=>u&&!(u in V.ages));if(need.length)ages(need).then(()=>{if(ptab===TAB)draw()})}
- {const _r=rPn;rPn=function(){if(ptab===TAB&&pnOpen){draw();return}return _r.apply(this,arguments)}}
+ {SQRPN.wrap('219',_r=>function(){if(ptab===TAB&&pnOpen){draw();return}return _r.apply(this,arguments)})}
  const byName=q=>{q=String(q||'').trim().toLowerCase();if(!q)return null;const e=Object.entries(V.lb).find(([u,v])=>v&&String(v.n||'').toLowerCase()===q)||Object.entries(V.lb).find(([u,v])=>v&&String(v.n||'').toLowerCase().startsWith(q));return e?e[0]:null};
  async function pmOf(u){V.v='pm';V.pmU=u;V.pmQ=nm(u);V.pm=null;V.busy=1;draw();
   try{const all=(await get('pm'))||{},L=[];for(const to in all)for(const id in all[to]){const m=all[to][id];if(m&&(to===u||m.f===u))L.push({...m,to,id})}

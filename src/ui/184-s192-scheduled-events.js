@@ -54,7 +54,7 @@
   const up=Object.entries(EVS).map(([id,e])=>[id,e,next(e,t)]).filter(x=>x[2]&&!A.some(a=>a.id===x[0])).sort((a,b)=>a[2]-b[2]).slice(0,3);
   if(up.length)h+='<div class="qc" style="font-size:12px"><b>Coming up</b><br>'+up.map(([,e,s])=>esc(e.n)+' · in '+left(s-t)).join('<br>')+'</div>';
   return h+'<div class="pmb"><button class="sb no" data-evx="1">CLOSE</button></div>'}
- {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'184-10')}pbd.innerHTML=cardHTML()}}
+ {SQRPN.wrap('184',_r=>function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'184-10')}pbd.innerHTML=cardHTML()})}
  pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen)return;const b=e.target.closest('[data-evshop],[data-evx]');if(!b)return;e.stopPropagation();e.preventDefault();
   if(b.dataset.evshop){const id=b.dataset.evshop;if(!active().some(a=>a.e.shop===id)){closePanel();return}closePanel();SQCONTENT.openShop(id,'Event shop');return}closePanel()},true);
  window.SQEVENTS={active,win,next,norm,force(id,min){FORCE[id]=Date.now()+(min||10)*60000},unforce(id){delete FORCE[id]},open:openCard,get list(){return EVS},EVM};

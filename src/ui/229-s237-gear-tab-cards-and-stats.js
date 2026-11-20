@@ -41,8 +41,8 @@
   try{const m=h.indexOf('<span>Block chance</span>');if(m>=0){const end=h.indexOf('</div>',m);if(end>=0)h=h.slice(0,end+6)+extraRows()+h.slice(end+6)}}catch(e){self.SQERR&&SQERR(e,'229-16')}
   return h};
  // a newly tapped slot scrolls its card into view (on phones it sits below the slot grid)
- {let last=null;const _r=rPn;rPn=function(){const out=_r.apply(this,arguments);try{const s=ptab===3&&pnOpen&&typeof EQSEL!=='undefined'?EQSEL:null;
-   if(s&&s!==last){const c=pbd.querySelector('.sqgcard')||pbd.querySelector('.eqo,.equ');if(c&&c.scrollIntoView)c.scrollIntoView({block:'nearest',behavior:'smooth'})}last=s}catch(e){self.SQERR&&SQERR(e,'229-17')}return out}}
+ {let last=null;SQRPN.after('229',()=>{try{const s=ptab===3&&pnOpen&&typeof EQSEL!=='undefined'?EQSEL:null;
+   if(s&&s!==last){const c=pbd.querySelector('.sqgcard')||pbd.querySelector('.eqo,.equ');if(c&&c.scrollIntoView)c.scrollIntoView({block:'nearest',behavior:'smooth'})}last=s}catch(e){self.SQERR&&SQERR(e,'229-17')}})}
  const st=document.createElement('style');st.textContent='#pn .sqgcard{display:flex;gap:10px;align-items:flex-start;text-align:left;margin:8px 0 6px;padding:8px;background:#f6f3ea;border:2px solid #c8bfa8}'+
   '#pn .sqjwn{font:inherit;font-weight:700;background:none;border:0;padding:0;color:inherit;text-decoration:underline dotted;cursor:pointer}#pn .sqgcard img{width:32px;height:32px;image-rendering:pixelated;flex:none}#pn .sqgcard b{display:block}#pn .sqgcard .sqgcd{font-size:13px;margin:2px 0 4px}#pn .sqgcard small{color:#7a5a20}';document.head.appendChild(st);
 })();

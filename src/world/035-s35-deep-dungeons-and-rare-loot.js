@@ -125,11 +125,11 @@ function hdStairs(tomb){return hdK('stc'+tomb,0,0,16,16,p=>{const SP=tomb?hdShad
 function hdDChest(open,boss){return hdK('dc'+(open?1:0)+(boss?1:0),0,-1,16,17,p=>{const BP=boss?hdShadeOf('#e0b030',4):hdShadeOf('#8a5a2c',4),BD=boss?GOLDP:METP;
  p.box(2,12,30,30,BP,1);for(const x of[6,24])p.F(x,12,x+2,30,BD[2]);p.F(2,12,30,13,BP[0]);
  if(open){p.box(2,-2,30,6,BP,2,.1);p.F(4,6,28,13,hdC('#1a0e06'));for(const x of[6,24])p.F(x,-2,x+2,6,BD[2])}else{p.box(2,3,30,13,BP,3,.1);for(const x of[6,24])p.F(x,3,x+2,13,BD[2]);p.box(13,9,19,16,boss?hdShadeOf('#f05050',4):GOLDP,1,.1)}})}
-const _df35=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
+SQFURN.wrap('035',_df35=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='stairs')return hdPut(hdStairs(SCENE&&SCENE.room.tomb?1:0),x0,y0);
  if(it.t==='dchest'){shd(x0+8,y0+15,14);if(!it.open){const pz=.5+.5*Math.sin(tm*3+x0);g.fillStyle=it.boss?'rgba(255,210,90,'+(.25*pz)+')':'rgba(255,230,150,'+(.12*pz)+')';g.beginPath();g.arc(x0+8,y0+8,it.boss?16:11,0,6.283);g.fill()}
   hdPut(hdDChest(it.open,it.boss),x0,y0);if(it.open&&it.glow&&(tm*2|0)%3!==0){g.fillStyle=it.glow;g.fillRect(x0+7+Math.sin(tm*5)*3,y0+2-((tm*8)%6),1,1)}return}
- _df35(it,tm)};
+ _df35(it,tm)});
 // magma slimes (deeper caverns): red-orange and glowing
 let HDMG=null;
 function hdMagma(f){if(!HDMG){HDMG=[];for(const fr of[0,1]){const ht=fr?20:23,b=hdBuf(34,26),cy=25,pal=hdP(['#5a1008','#a82810','#e05018','#f88830','#ffd070']);

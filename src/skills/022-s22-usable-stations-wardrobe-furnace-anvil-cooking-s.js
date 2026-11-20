@@ -62,7 +62,7 @@ function stationHTML(o){const S=STNS.find(s=>s.k===o.t);let h='<div class="tl">'
   h+=ready?row22('pick','Pick berries','+'+n+' berries · 15 Farming XP',true):'<div class="qc"><p>You picked it today. New berries grow overnight.</p></div>'}
  else if(o.t==='dummy')h+='<div class="qc"><p>Face the dummy and press HIT to practice. Attack level '+lvOf(0)+(lvOf(0)<30?' (it can teach you up to 30).':' (you\'ve outgrown it).')+'</p></div>';
  return h+'<button class="ng stb" data-a="pickup" style="margin-top:16px">Pick up this '+S.n.toLowerCase()+'</button>'}
-const _r22=rPn;rPn=function(){if(ptab===2&&shop==='station'&&STATION){panelChrome('');pbd.innerHTML=stationHTML(STATION);return}_r22()};
+SQRPN.wrap('022',_r22=>function(){if(ptab===2&&shop==='station'&&STATION){panelChrome('');pbd.innerHTML=stationHTML(STATION);return}_r22()});
 function stationAct(a){const o=STATION;if(!o)return;
  if(a==='pickup'){const k=plantKey(o.inside,o.i);delete PLANTD[k];closePanel();STATION=null;if(o.inside)pickFurn(o.i);else pickStruct(o.i);return}
  if(a==='pick'){const k=plantKey(o.inside,o.i);if(PLANTD[k]===today())return;PLANTD[k]=today();const n=3+Math.floor(lvOf(11)/10);inv.berry=(inv.berry|0)+n;addXp(11,15);say('Picked '+n+' berries.');sfx('pickup')}

@@ -56,8 +56,8 @@
    '<div class="sqdl-b"><div style="width:'+pc+'%"></div></div><small>'+(q.c?'Done!':'Reward: '+gold(q)+' gold, '+xp(q)+' '+t.s+' XP')+'</small></div>'}
   const all=D.q.every(z=>z.c),next=D.l===yday()?(D.s|0)+1:D.l===D.d?D.s|0:1;
   h+='<small class="sqdl-f">'+(all?'All done for today. Come back tomorrow to keep your streak!':'Finish all three for a streak bonus of '+bonus(next)+' gold (more each day in a row, up to 7).')+'</small>';return h}
- const _rp=rPn;rPn=function(){const out=_rp.apply(this,arguments);try{if(pnOpen&&ptab===6&&D){const d=document.createElement('div');d.className='sqdl';d.innerHTML=html();
-   const gd=pbd.querySelector('.sqgd');if(gd)gd.after(d);else pbd.prepend(d)}}catch(e){self.SQERR&&SQERR(e,'120-7')}return out};
+ SQRPN.after('120',()=>{try{if(pnOpen&&ptab===6&&D){const d=document.createElement('div');d.className='sqdl';d.innerHTML=html();
+   const gd=pbd.querySelector('.sqgd');if(gd)gd.after(d);else pbd.prepend(d)}}catch(e){self.SQERR&&SQERR(e,'120-7')}});
  // saves
  SQSAVE.after('120:dly',s=>{try{if(D)s.dly=JSON.parse(JSON.stringify(D))}catch(e){self.SQERR&&SQERR(e,'120-8')}});
  SQLOAD.after('120',(Sv)=>{try{const v=Sv&&Sv.dly;

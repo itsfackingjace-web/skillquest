@@ -122,7 +122,7 @@ function trClick(b){const a=b.dataset.tr,k=b.dataset.k;
 // hooks: START menu entry, screen, clicks
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'trade',l:()=>'Trade'});
 {const _ss=showScreen;showScreen=function(id){if(id!=='trade')return _ss(id);pnOpen=true;ptab=TTAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}}
-{const _r=rPn;rPn=function(){if(ptab===TTAB){panelChrome('');pbd.innerHTML=tradeHTML();return}_r()}}
+{SQRPN.wrap('062',_r=>function(){if(ptab===TTAB){panelChrome('');pbd.innerHTML=tradeHTML();return}_r()})}
 {const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-tr]');if(b&&ptab===TTAB){if(!b.disabled)trClick(b);return}_oc(e)}}
 // closing the window by any route (X, B button, Escape) declines; so does walking away or going offline
 setInterval(()=>{if(TR.st==='idle')return;if(!MP.on){trEnd('You went offline, so the trade was cancelled.');return}

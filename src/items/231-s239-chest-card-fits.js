@@ -11,7 +11,7 @@
   const c=bg.querySelector('.chc');if(c){c.style.maxHeight=Math.max(100,bot-top-20)+'px';c.style.overflow='auto'}
  }catch(e){self.SQERR&&SQERR(e,'231-1')}}
  window.SQCHFIT=fit;
- const _r=rPn;rPn=function(){const v=_r.apply(this,arguments);fit();return v};
+ SQRPN.after('231',()=>{fit();});
  const _c=closePanel;closePanel=function(){const v=_c.apply(this,arguments);try{pn.classList.remove('sqchlock')}catch(e){self.SQERR&&SQERR(e,'231-2')}return v};
  window.addEventListener('resize',fit);if(window.visualViewport)visualViewport.addEventListener('resize',fit);
 })();

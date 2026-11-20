@@ -150,13 +150,13 @@ function drawTideK(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.abs(
  g.fillStyle='rgba(168,255,240,'+(.5+.4*Math.sin(tm*5))+')';g.fillRect(x+(f?-16:13),y-60,3,3);
  if(cast){g.fillStyle='#ff5040';g.font='700 10px "Pixelify Sans",monospace';g.textAlign='center';g.fillText('!',x,y-66)}
  const bw=42,fr2=Math.max(0,n.hp)/n.mhp;Rg(x-bw/2-1,y-72,bw+2,5,O);Rg(x-bw/2,y-71,bw,3,'#203038');Rg(x-bw/2,y-71,bw*fr2,3,n.p2?'#48e8a8':'#a8e8f0');Rg(x-bw/2+bw*.6,y-71,.6,3,O)}
-const _pS47=pS;pS=function(n,tm){if(n.type==='crab')return drawCrab(n,tm);if(n.type==='guard')return drawGuard(n,tm);if(n.type==='tidek')return drawTideK(n,tm);_pS47(n,tm)};
+SQPS.wrap('047',_pS47=>function(n,tm){if(n.type==='crab')return drawCrab(n,tm);if(n.type==='guard')return drawGuard(n,tm);if(n.type==='tidek')return drawTideK(n,tm);_pS47(n,tm)});
 // decor: glowing pools and water, algae, coral, ship timbers, plank bridges
-const _df47=drawFurn;drawFurn=function(it,tm){const x0=it.x*16,y0=it.y*16;
+SQFURN.wrap('047',_df47=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='gpool'){const p=.5+.5*Math.sin(tm*1.8+x0*.1);g.fillStyle='#1a4a5a';g.beginPath();g.ellipse(x0+8,y0+9,9,5.5,0,0,6.283);g.fill();g.fillStyle='rgba(72,232,200,'+(.35+.25*p)+')';g.beginPath();g.ellipse(x0+8,y0+9,7,4,0,0,6.283);g.fill();g.fillStyle='#c8fff0';g.fillRect(x0+4+p*4,y0+8,2,1);return}
  if(it.t==='gwater'){const p=.5+.5*Math.sin(tm*1.6+(x0+y0)*.05);g.fillStyle='#123a4a';g.fillRect(x0,y0,16,16);g.fillStyle='rgba(72,232,200,'+(.3+.25*p)+')';g.fillRect(x0+1,y0+1,14,14);g.fillStyle='rgba(200,255,240,.7)';g.fillRect(x0+3+((tm*6+x0)%10),y0+5+(y0%6),3,1);return}
  if(it.t==='algae'){const p=.6+.4*Math.sin(tm*2.4+x0);g.fillStyle='rgba(90,255,170,'+(.18*p)+')';g.beginPath();g.arc(x0+8,y0+10,8,0,6.283);g.fill();for(const[a,b]of[[4,10],[7,12],[10,9],[12,12],[6,8]]){Rg(x0+a,y0+b,2,2,'#2a8a5a');Rg(x0+a,y0+b,1,1,'#88ffb8')}return}
  if(it.t==='coral'){shd(x0+8,y0+14,15);Rg(x0+2,y0-2,12,16,O);Rg(x0+3,y0-1,10,14,'#e86858');Rg(x0+4,y0-4,3,5,O);Rg(x0+4.5,y0-3.5,2,4,'#f88878');Rg(x0+10,y0-5,3,6,O);Rg(x0+10.5,y0-4.5,2,5,'#f88878');Rg(x0+4,y0+2,3,2,'#f8b0a0');Rg(x0+8,y0+6,2,2,'#b84838');return}
  if(it.t==='timber'){shd(x0+8,y0+14,16);g.save();g.translate(x0+8,y0+8);g.rotate(((it.x*7+it.y*3)%5-2)*.25);Rg(-8,-3,16,6,O);Rg(-7,-2,14,4,'#7a5a38');Rg(-7,-2,14,1,'#9a7a50');Rg(-3,-2,1,4,'#5a3a20');Rg(3,-2,1,4,'#5a3a20');g.restore();return}
  if(it.t==='plank'){g.fillStyle='#163a4c';g.fillRect(x0,y0,16,16);g.fillStyle='rgba(72,200,220,.25)';g.fillRect(x0,y0,16,16);Rg(x0+1,y0,14,16,'#5a3a20');for(let k=0;k<4;k++){Rg(x0+1,y0+k*4,14,3,k%2?'#8a6038':'#9a7040');Rg(x0+1,y0+k*4,14,.6,'#b08850')}return}
- _df47(it,tm)};
+ _df47(it,tm)});

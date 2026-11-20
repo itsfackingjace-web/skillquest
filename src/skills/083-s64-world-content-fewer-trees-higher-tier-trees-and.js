@@ -83,4 +83,4 @@
   if(!((inv.wood|0)>=3&&(inv.stone|0)>=1)){say('Need 3 wood + 1 stone');return}const[fx,fy]=front(16);if(solid(fx,fy)){say('No room there');return}
   inv.wood-=3;inv.stone--;const life=(150+lvOf(5)*3)*(1+(typeof fDur==='function'?fDur():0));fires.push({x:fx,y:fy,life,mx:life});say('Campfire built');addXp(5,40);sfx('fire');saveLocal()};
  const _rn64=rgNear;rgNear=function(R,...a){const out=_rn64(R,...a);if(SCENE&&SCENE.room===R)for(const f of fires)if(!f._glow)out.push({t:'_fire',f,x:f.x/16,y:(f.y+3)/16-1});return out};
- const _df64=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_fire'){pF(it.f,tm);return}return _df64(it,tm)}}
+ SQFURN.wrap('083',_df64=>function(it,tm){if(it&&it.t==='_fire'){pF(it.f,tm);return}return _df64(it,tm)})}

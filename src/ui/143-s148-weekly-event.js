@@ -72,8 +72,8 @@
   h+='<small>Your part: <b>'+W.c.toLocaleString('en-US')+'</b>'+(W.c<mn?' · gather '+(mn-W.c)+' more to earn the rewards':' · you\'ll get every tier the community reaches')+'</small>';
   if(TOP.length)h+='<small class="sqwe-top">Top helpers: '+TOP.map((r,i)=>(i+1)+'. '+esc(r.n)+' ('+r.c.toLocaleString('en-US')+')').join(' · ')+'</small>';
   return h}
- {const _rp=rPn;rPn=function(){const out=_rp.apply(this,arguments);try{if(pnOpen&&ptab===6){const d=document.createElement('div');d.className='sqwe';d.innerHTML=html();
-    const dl=pbd.querySelector('.sqdl')||pbd.querySelector('.sqgd');if(dl)dl.after(d);else pbd.prepend(d)}}catch(e){self.SQERR&&SQERR(e,'143-13')}return out}}
+ {SQRPN.after('143',()=>{try{if(pnOpen&&ptab===6){const d=document.createElement('div');d.className='sqwe';d.innerHTML=html();
+    const dl=pbd.querySelector('.sqdl')||pbd.querySelector('.sqgd');if(dl)dl.after(d);else pbd.prepend(d)}}catch(e){self.SQERR&&SQERR(e,'143-13')}})}
  {const st=document.createElement('style');st.textContent=`#pn .sqwe{background:#fdf6e4;border:2px solid #c09040;border-radius:8px;padding:8px 10px;margin:0 0 10px;font-size:13px;color:#404040;text-align:left}
 #pn .sqwe-h{display:flex;justify-content:space-between;align-items:center;gap:6px}#pn .sqwe-h b{letter-spacing:1px;color:#805010;font-size:13px}#pn .sqwe-h span{font-size:11px;color:#906030;white-space:nowrap}
 #pn .sqwe-g{font-weight:700;margin:4px 0 6px}#pn .sqwe-b{position:relative;height:10px;background:#e8dcc0;border:1px solid #a88850}#pn .sqwe-b div{height:100%}

@@ -35,7 +35,7 @@
   for(const{c,ok}of L){const n=inv[c.raw]|0;h+='<div class="qc" style="display:flex;align-items:center;gap:8px"><img src="'+iconURL(c.raw)+'" style="width:28px;height:28px;image-rendering:pixelated"><div style="flex:1"><b>'+(INAME[c.raw]||c.raw)+'</b> ×'+n+'<br><small>→ '+(INAME[c.ck]||c.ck)+(ok?'':' · needs Cooking '+c.lv)+'</small></div>'+
    (ok?'<button class="sb" data-ck1="'+c.raw+'" style="min-width:0;padding:8px 10px">COOK 1</button>'+(n>1?'<button class="sb" data-cka="'+c.raw+'" style="min-width:0;padding:8px 10px">ALL '+n+'</button>':''):'')+'</div>'}
   return h+'<div class="pmb"><button class="sb" data-ckx="every">COOK EVERYTHING</button><button class="sb" data-ckx="eat">EAT INSTEAD</button><button class="sb no" data-ckx="close">CLOSE</button></div>'}
- {const _r=rPn;rPn=function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'181-3')}if(!cookable().length){closePanel();return}pbd.innerHTML=html()}}
+ {SQRPN.wrap('181',_r=>function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'181-3')}if(!cookable().length){closePanel();return}pbd.innerHTML=html()})}
  pbd.addEventListener('click',e=>{if(ptab!==TAB||!pnOpen)return;const b=e.target.closest('[data-ck1],[data-cka],[data-ckx]');if(!b)return;e.stopPropagation();e.preventDefault();
   if(b.dataset.ck1)return cook(b.dataset.ck1,1);if(b.dataset.cka)return cook(b.dataset.cka,'all');const a=b.dataset.ckx;if(a==='every')return cookAll();if(a==='eat')return eatNow();closePanel()},true);
  // ---- pinning a food in the bag ----

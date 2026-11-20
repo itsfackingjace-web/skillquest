@@ -90,7 +90,7 @@ async function grvTake(keys){const g0=GRV.open;if(!g0||GRV.busy)return;{const g=
   if(ks.length){say('You took '+ks.map(k=>got[k]+' × '+INAME[k].toLowerCase()).join(', ')+'.');sfx('pickup');try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'063-8')}
    if(!g0.local&&MP.user&&g0.u!==MP.user.uid)mpLog('game','You looted '+g0.n+'\'s grave.')}else{say('Too slow! Someone already took that.');sfx('swish')}}
  finally{GRV.busy=false}if(pnOpen&&ptab===GTAB)rPn()}
-{const _r=rPn;rPn=function(){if(ptab===GTAB){panelChrome('');pbd.innerHTML=graveHTML();return}_r()}}
+{SQRPN.wrap('063',_r=>function(){if(ptab===GTAB){panelChrome('');pbd.innerHTML=graveHTML();return}_r()})}
 {const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-gr]');if(b&&ptab===GTAB){const g=GRV.open&&(GRV.open.local?GRV.local[GRV.open.id]:GRV.list[GRV.open.id]);if(!g)return;
   grvTake(b.dataset.gr==='all'?Object.keys(grvItems(g)):[b.dataset.k]);return}_oc(e)}}
 GRV.lostPreview=()=>GRV.fell?GRV.fellN:0;

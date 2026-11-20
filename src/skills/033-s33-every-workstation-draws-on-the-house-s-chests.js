@@ -8,7 +8,7 @@ const stUses=()=>shop==='station'&&STATION&&STCH.has(STATION.t);
 const _sh33=stationHTML;stationHTML=function(o){const h=_sh33(o);if(!STCH.has(o.t))return h;const n=benchChests(o).length,i=h.indexOf('</div>')+6;
  const note='<div class="tl" style="font-size:12px;font-weight:400;opacity:.75">'+(n?'Using your bag and '+n+' chest'+(n>1?'s':'')+(o.inside?' in this house':' nearby'):'Using your bag. Put chests '+(o.inside?'in this house':'nearby')+' and their materials count too.')+'</div>';
  return h.slice(0,i)+note+h.slice(i)};
-const _r33=rPn;rPn=function(){if(!(ptab===2&&stUses()&&pn.style.display!=='none'))return _r33();const m=stMerge(STATION);try{_r33()}finally{if(m)benchSplit()}};
+SQRPN.wrap('033',_r33=>function(){if(!(ptab===2&&stUses()&&pn.style.display!=='none'))return _r33();const m=stMerge(STATION);try{_r33()}finally{if(m)benchSplit()}});
 const _oc33=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('button');
  if(b&&stUses()&&b.dataset.a!=='pickup'){const m=stMerge(STATION);try{_oc33(e)}finally{if(m)benchSplit()}saveLocal(true);if(stUses())rPn();return}
  _oc33(e)};

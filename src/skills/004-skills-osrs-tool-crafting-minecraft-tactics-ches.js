@@ -63,3 +63,6 @@ const _nd=NEWDRAW;NEWDRAW=function(...a){_nd(...a);drawDrops()};
 
 // a material's name in recipe lists (191): the short name if there is one, else the item's name, else its key
 function matN(k){try{if(typeof SHORT!=='undefined'&&SHORT[k])return SHORT[k]}catch(e){self.SQERR&&SQERR(e,'004-4')}return INAME[k]?String(INAME[k]).toLowerCase():k}
+
+// panel screens (rPn) as a step list: every later section adds a named step (window.SQRPN; see 006's sqSteps)
+const SQRPN=sqSteps('rPn',rPn,f=>{rPn=f});window.SQRPN=SQRPN;

@@ -195,7 +195,7 @@ var SQA=(()=>{
  // painted islands keep exactly what was placed (generated islands thin out trees and upgrade tiers at random)
  const _rpI=rgPrepare;rgPrepare=function(id){const R=_rpI(id);if(R&&WORLD_REGIONS[id]&&WORLD_REGIONS[id].custom)R._t64=1;return R};
  // loot chests: drawn with the game's chest; each player can take what's inside once (remembered in their save)
- const _dfI=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='lm'&&it.k==='chest'){try{shd(it.x*16+8,it.y*16+15,14);hdPut(hdChestS(),it.x*16,it.y*16)}catch(e){self.SQERR&&SQERR(e,'111a-10')}return}return _dfI(it,tm)};
+ SQFURN.wrap('111a',_dfI=>function(it,tm){if(it&&it.t==='lm'&&it.k==='chest'){try{shd(it.x*16+8,it.y*16+15,14);hdPut(hdChestS(),it.x*16,it.y*16)}catch(e){self.SQERR&&SQERR(e,'111a-10')}return}return _dfI(it,tm)});
  const _ufI=useFurn;useFurn=function(it){if(it&&it.use==='loot'){const id=here(),W=WORLD_STATE[id]=WORLD_STATE[id]||{},got=W.loot=W.loot||[];
    if(got.includes(it.ci)){say('The chest is empty. You already took what was inside.');msgT=4;sfx('swish');return}
    const parts=[],G={};for(const k in it.loot||{}){const n=Math.max(0,Math.min(100000,it.loot[k]|0));if(!n)continue;if(/^lt_/.test(k)){if(window.SQCONTENT)for(let i=0;i<Math.min(n,20);i++){const r=SQCONTENT.roll(k);for(const q in r)G[q]=(G[q]|0)+r[q]}}else G[k]=(G[k]|0)+n}for(const k in G){const n=G[k];if(k==='gold'){GLD+=n;parts.push(n+' gold')}else if(INAME[k]){inv[k]=(inv[k]|0)+n;parts.push(n+' '+(n>1?(SN[k]||INAME[k]):INAME[k]).toLowerCase())}}

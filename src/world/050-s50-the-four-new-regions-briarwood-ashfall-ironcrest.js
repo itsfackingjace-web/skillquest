@@ -286,13 +286,13 @@ function rgDrawLm(it,tm){const x0=it.x*16,y0=it.y*16,w=(it.w||1)*16;if(it.k!=='f
  const sp=rgSprite(it.k,it.v);if(sp)hdPut(sp,x0,y0);
  if(it.k==='temple'||it.k==='spire'||it.k==='sealdoor'){const p=.5+.5*Math.sin(tm*2+it.x),cx=it.k==='temple'?x0+56:x0+16,cy=it.k==='temple'?y0+8:it.k==='spire'?y0-70:y0-4;
   g.fillStyle='rgba(176,128,255,'+(.12+.12*p)+')';g.beginPath();g.arc(cx,cy,it.k==='spire'?20:26,0,6.283);g.fill()}}
-const _df50=drawFurn;drawFurn=function(it,tm){
+SQFURN.wrap('050',_df50=>function(it,tm){
  if(it.t==='lm'){rgDrawLm(it,tm);return}
  if(it.t==='_obj'){const o=it.o,bx=it.x*16+8,by=it.y*16+14,s=o.shake>0?(o.shake-=.016,Math.round(Math.sin(tm*60))):0;
   if(o.v==='dead'||o.v==='dark'||o.v==='crystal'){shd(bx,by-1,o.v==='crystal'?12:18);hdPut(rgSprite(o.v,(it.x*7+it.y*3)&1),it.x*16+s,it.y*16);
    if(o.v==='crystal'){g.fillStyle='rgba(190,150,255,'+(.1+.08*Math.sin(tm*2+it.x))+')';g.beginPath();g.arc(bx,by-8,12,0,6.283);g.fill()}return}
   if(OBJHD&&OBJHD(o,it.x,it.y,bx+s,by,0,tm)){if(o.v==='moss'){Rg(bx-5+s,by-9,4,2,'#5a8a3a');Rg(bx+1+s,by-8,3,1,'#7ab060')}return}}
- _df50(it,tm)};
+ _df50(it,tm)});
 
 // --- drawing extras: bridges, stairs, lava shimmer, water glints; lava glows at night ---
 function rgOverlay(R,v){const W=R.w,x0=Math.floor(v.x0/16)-1,x1=Math.ceil(v.x1/16)+1,y0=Math.floor(v.y0/16)-1,y1=Math.ceil(v.y1/16)+1,T=R.tiles,inV=i=>{const x=i%W,y=(i/W)|0;return x>=x0&&x<=x1&&y>=y0&&y<=y1};

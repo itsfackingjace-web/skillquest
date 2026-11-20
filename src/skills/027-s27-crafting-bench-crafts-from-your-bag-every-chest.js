@@ -19,11 +19,11 @@ function benchSplit(){const M=BMERGE;if(!M)return;BMERGE=null;
   for(const c of M.chests){if(used<=0)break;const t=Math.min(c[k]|0,used);c[k]=(c[k]|0)-t;used-=t;if(!c[k])delete c[k]}}}
 function withChests(fn){const m=benchMerge();try{fn()}finally{if(m)benchSplit()}}
 const _os27=openStation;openStation=function(o){if(!o||o.t!=='bench')return _os27(o);BENCH=o;shop=null;fromMenu=false;pnOpen=true;ptab=1;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
-const _r27=rPn;rPn=function(){if(!(BENCH&&ptab===1&&pn.style.display!=='none'))return _r27();
+SQRPN.wrap('027',_r27=>function(){if(!(BENCH&&ptab===1&&pn.style.display!=='none'))return _r27();
  const m=benchMerge();try{_r27()}finally{if(m)benchSplit()}
  document.getElementById('t0').style.display='none';document.getElementById('t1').style.display='none';ptt.textContent='CRAFTING BENCH';
  const n=benchChests(BENCH).length;pbd.insertAdjacentHTML('afterbegin','<div class="qc" style="margin-bottom:8px;font-size:13px"><b>Crafting bench</b><p>Using your bag'+(n?' and '+n+' chest'+(n>1?'s':'')+(BENCH.inside?' in this house':' nearby'):'. Put chests '+(BENCH.inside?'in this house':'next to the bench')+' to use their materials too')+'. Your bag is used first.</p></div>');
- pbd.insertAdjacentHTML('beforeend','<button class="ng stb2" data-a="pickup" style="margin-top:16px">Pick up this crafting bench</button>')};
+ pbd.insertAdjacentHTML('beforeend','<button class="ng stb2" data-a="pickup" style="margin-top:16px">Pick up this crafting bench</button>')});
 const _oc27=pbd.onclick;pbd.onclick=e=>{
  if(BENCH){if(e.target.closest('.stb2')){const o=BENCH;BENCH=null;closePanel();if(o.inside)pickFurn(o.i);else pickStruct(o.i);return}
   if(e.target.closest('.rc,.gc,.fc')){withChests(()=>_oc27(e));saveLocal(true);rPn();return}}

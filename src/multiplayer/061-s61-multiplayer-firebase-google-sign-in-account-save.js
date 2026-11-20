@@ -295,7 +295,7 @@ const _rn61=rgNear;rgNear=function(R,...a){const out=_rn61(R,...a);if(SCENE&&SCE
 const _drr61=drawRoom;drawRoom=function(tm){const R=SCENE&&SCENE.room;if(!R||R.region||!MP.on||!/^(in|h):/.test(mpLoc()))return _drr61(tm);
  mpStepAll();const add=mpVis().map(r=>({t:'_mp',r,x:r.x/16,y:(r.y+6)/16-1}));if(!add.length)return _drr61(tm);
  const all=R.items;R.items=all.concat(add);try{_drr61(tm)}finally{R.items=all}};
-const _df61=drawFurn;drawFurn=function(it,tm){if(it&&it.t==='_mp'){mpDrawPeer(it.r,tm);return}return _df61(it,tm)};
+SQFURN.wrap('061',_df61=>function(it,tm){if(it&&it.t==='_mp'){mpDrawPeer(it.r,tm);return}return _df61(it,tm)});
 // remember the world transform every frame (the player is always drawn in world space)
 SQPP.before('061',(tm)=>{MP.T=g.getTransform();MP.Tat=performance.now();});
 // names and chat bubbles go over everything, in screen pixels

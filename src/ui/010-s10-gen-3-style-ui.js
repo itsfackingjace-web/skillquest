@@ -133,13 +133,13 @@ function questsHTML(){let h='<div class="tl">Quest points: '+Q.qp+' / '+QS.lengt
   else h+='<div class="qrow qx">? ? ?</div>'});
  if(Q.i>=QS.length)h+='<div class="qc"><b>Every quest complete!</b></div>';return h}
 // --- panel routing (screens 3-6 live in the same panel as skills and shops) ---
-const _r10=rPn;rPn=function(){const tabs=ptab<=1;document.getElementById('t0').style.display=tabs?'':'none';document.getElementById('t1').style.display=tabs?'':'none';
+SQRPN.wrap('010',_r10=>function(){const tabs=ptab<=1;document.getElementById('t0').style.display=tabs?'':'none';document.getElementById('t1').style.display=tabs?'':'none';
  ptt.textContent={4:'BAG',5:'MAP',6:'QUESTS'}[ptab]||'';if(mapT&&ptab!==5){clearInterval(mapT);mapT=null}
  
  if(ptab===4){pbd.innerHTML=bagHTML();return}
  if(ptab===5){pbd.innerHTML=mapHTML();drawMap();if(!mapT)mapT=setInterval(()=>{if(pn.style.display!=='none'&&ptab===5)drawMap()},350);return}
  if(ptab===6){pbd.innerHTML=questsHTML();return}
- _r10()};
+ _r10()});
 const _oc10=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
  if((b=t.closest('.bp'))){bagPk=(bagPk+(+b.dataset.d)+POCK.length)%POCK.length;bagSel=null;sfx('talk');rPn();return}
  if((b=t.closest('.use'))){useFood(b.dataset.k);return}

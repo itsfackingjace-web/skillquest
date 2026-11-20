@@ -133,6 +133,6 @@
    for(const[n,L]of cats()){const got=L.filter(k=>COL.has(k)).length;h+='<div class="colh"><span>'+esc(n)+'</span><span>'+got+'/'+L.length+'</span></div><div class="colg">';
     for(const k of L){const on=COL.has(k);h+='<button class="'+(on?'on':'')+'" data-acn="'+esc(on?INAME[k].replace(/ \(pet\)$/,''):'Not found yet')+'"><img alt="" src="'+ico(k)+'"></button>'}h+='</div>'}}
   return h}
- const _r=rPn;rPn=function(){if(ptab===ATAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'129-11')}pbd.innerHTML=html();return}return _r.apply(this,arguments)};
+ SQRPN.wrap('129',_r=>function(){if(ptab===ATAB){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'129-11')}pbd.innerHTML=html();return}return _r.apply(this,arguments)});
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(ptab!==ATAB)return _oc(e);const b=e.target.closest('[data-ac],[data-acn]');if(!b)return;
    if(b.dataset.ac){VIEW=b.dataset.ac.slice(4);PICK='';sfx('talk');rPn();return}PICK=b.dataset.acn;const q=pbd.querySelector('.acpick');if(q)q.textContent=PICK;else rPn()}}})();

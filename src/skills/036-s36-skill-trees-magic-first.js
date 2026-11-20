@@ -79,7 +79,7 @@ function treeHTML(sk){const T=TREES[sk],l=lvOf(sk),x=Math.floor(XPS[sk]),b=XT[l-
   else h+='<div class="trr'+(got?' got':' lock')+(cur?' cur':'')+'" data-lvl="'+lv+'"><span class="lv">'+lv+'</span><span>'+(g2.length?g2.join(' · '):'—')+'</span></div>'}
  h+='</div>';const any=PERKS[sk]&&Object.keys(PERKS[sk]).length;if(any)h+='<button class="ng" data-tr="reset" style="margin-top:12px">Reset '+SKN[sk]+' perks ('+respecCost(sk)+' gold)</button>';return h}
 const respecCost=sk=>50*Object.keys(PERKS[sk]||{}).length;
-const _r36=rPn;rPn=function(){if(!(ptab===0&&SKVIEW>=0&&pn.style.display!=='none'))return _r36();_r36();pbd.innerHTML=treeHTML(SKVIEW)};
+SQRPN.wrap('036',_r36=>function(){if(!(ptab===0&&SKVIEW>=0&&pn.style.display!=='none'))return _r36();_r36();pbd.innerHTML=treeHTML(SKVIEW)});
 // pending-choice badges on the skills grid
 const _skh36=skillsHTML;skillsHTML=function(){let h=_skh36();h=h.replace('Tap a skill to see your XP.','Tap a skill to see its tree: what every level gives you, and perks to choose.');for(const sk in TREES){const n=pendingChoices(+sk);if(n)h=h.replace('data-sk="'+sk+'"><span class="t">','data-sk="'+sk+'"><span class="t"><span class="bang">'+n+'</span>')}return h};
 function openTree(sk){SKVIEW=sk;if(typeof RKEY!=='undefined')RKEY=null;rPn();const row=pbd.querySelector('[data-lvl="'+Math.min(99,lvOf(sk))+'"]'),pend=pbd.querySelector('.trc:not(.lock) button:not(.pick):not(.no)');

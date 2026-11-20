@@ -168,11 +168,11 @@ function saltForgeHTML(){let h=head('Saltmere Forge','Brann',TALKQ)+'<div class=
  for(const k in FORGE_P){const c=inv[k]|0;if(c>0){any=1;h+=row('sm_'+k,'Sell all '+esc(iname(k))+' ('+c+')','+'+c*FORGE_P[k]+' gold',true)}}
  if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">No metalwork to sell</div>';return h}
 const SHOPQ={tackle:['Bait makes all the difference. Ask any fisher.','Fresh off the boat? I\'ll buy it.','Fish, fish, fish. Never gets old.'],inn:['Welcome, traveler! Stew\'s hot and the beds are soft.','Sit, sit! You look half starved.','The Gull\'s Rest never turns anyone away.'],forge:['Steel. Stronger than iron, harder to work. Worth it.','Bring me steel bars and I\'ll make you tools that last a lifetime.','Hollow\'s smith is good. I\'m better.']};
-const _r20=rPn;rPn=function(){if(ptab===2&&['folk','harbor','tackle','inn','forge'].includes(shop)){
+SQRPN.wrap('020',_r20=>function(){if(ptab===2&&['folk','harbor','tackle','inn','forge'].includes(shop)){
   if(!TALKN||TALKN.kind!==shop){TALKN=nearNpc();TALKQ=TALKN?(SHOPQ[shop]?SHOPQ[shop][Math.floor(Math.random()*3)]:pickLine(TALKN)):''}
   panelChrome('');const n=TALKN;if(!n){closePanel();return}
   if(shop==='harbor'){const q=QS[Q.i];if(Q.on&&q&&q.type==='talk'&&Q.k<1){Q.k=1;say('Quest updated: return to Elder Rowan.');sfx('quest');saveLocal(true)}}
-  pbd.innerHTML=shop==='tackle'?tackleHTML():shop==='inn'?innHTML():shop==='forge'?saltForgeHTML():folkHTML(n);return}_r20()};
+  pbd.innerHTML=shop==='tackle'?tackleHTML():shop==='inn'?innHTML():shop==='forge'?saltForgeHTML():folkHTML(n);return}_r20()});
 function xbuy(c,f,msg){if(GLD<c){say('Not enough gold');sfx('swish');return}GLD-=c;f();say(msg);sfx('coin')}
 function xAct(a){const n=TALKN;
  if(a==='job'&&n){const j=jobFor(n);if(j&&!j.done&&(inv[j.k]|0)>=j.amt){inv[j.k]-=j.amt;GLD+=j.g;addXp(j.s,j.xp);JOBD[n.id]=today();if(Q.on&&QS[Q.i]&&QS[Q.i].type==='jobs')Q.k++;

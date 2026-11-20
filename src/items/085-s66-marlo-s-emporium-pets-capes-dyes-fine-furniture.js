@@ -151,7 +151,7 @@ var LUX={};
   h+='</div></div>';if(!COS.pets.length&&!COS.capes.length&&!COS.dyes.length&&!(X&&X.opts().length))h+='<div class="tl" style="font-size:13px;font-weight:400">Nothing here yet. Visit Marlo\'s Emporium in Hollow Village.</div>';return h}
  SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'style',l:()=>'Style'});
  const _ss=showScreen;showScreen=function(id){if(id!=='style')return _ss(id);pnOpen=true;ptab=STAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
- const _r=rPn;rPn=function(){if(ptab===STAB){panelChrome('');pbd.innerHTML=styleHTML();return}if(ptab===2&&shop==='emporium'){panelChrome("Marlo's Emporium");pbd.innerHTML=emporiumHTML();return}_r()};
+ SQRPN.wrap('085',_r=>function(){if(ptab===STAB){panelChrome('');pbd.innerHTML=styleHTML();return}if(ptab===2&&shop==='emporium'){panelChrome("Marlo's Emporium");pbd.innerHTML=emporiumHTML();return}_r()});
  const _oc=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
   if((b=t.closest('.emt'))){EMT=b.dataset.t;rPn();return}if((b=t.closest('.emb'))){luxBuy(b.dataset.c,b.dataset.k);return}
   if((b=t.closest('.sty'))){const s=b.dataset.s,v=b.dataset.v;if(s==='xcape'){if(window.SQCAPEX)SQCAPEX.pick(v);COS.cape=0}else if(s==='pet')COS.pet=v||null;else{COS[s]=+v||0;if(s==='cape'&&window.SQCAPEX)SQCAPEX.pick('')}KITC.clear();saveLocal(true);rPn();return}_oc(e)};
