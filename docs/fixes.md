@@ -67,4 +67,5 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   test set-up writes without rules).
 - PvP hit rules: `pvp/$uid/$id` `d` may be 0-3 (154's `SQPVDMG` sends up to 3 hearts; the rules took 2 since Nov 13, so 3-heart hits were
   refused and 061's `mpErr` said "The online server refused that"). Check 38 tests the rules file directly with `RulesDB`.
+- 086 Dragon Form ends on a fall before the menu/panel check (a screen opened by the fall skipped it; Derek, Nov 20). Check 42.
 - 239 wiki "How to get it" reads `window.SQWIKIGET[item]` (HTML lines); 215 adds meteor strikes for `meteorore` and `stardust`. Check 25.
