@@ -30,10 +30,12 @@ const _sol13=solid;solid=function(px,py){if(_sol13(px,py))return true;if(!inHome
  if(!f||f.t==='rug')return false;return f.t==='door'?!doorOpen(y*N+x):true};
 // --- beds and chests at home ---
 nearFurn=function(){if(!inHome())return null;const R=SCENE.room;let best=null,bd=24;for(const[i,f]of SCENE.house.furn){if(f.t!=='bed'&&f.t!=='chest')continue;const cx=(i%R.w)*16+8,cy=((i/R.w)|0)*16+8,d=Math.hypot(P.x-cx,P.y-cy);if(d<bd){bd=d;best={i,f}}}return best};
-useFurn=function(o){if(!o||!inHome())return;const h=SCENE.house;
+// replaces 012's own useFurn (beds and chests at home) as the first step on its list: a step, never `useFurn=` (Nov 20: that
+// bypassed every later step, so harbor posts, island NPCs, guild boards and loot chests stopped answering)
+SQUSEFURN.wrap('013',_uf12=>function(o){if(!o||!inHome())return;const h=SCENE.house;
  if(o.f.t==='chest'){CHEST_H=o.f;CHEST_IDX=o.i;fromMenu=false;pnOpen=true;ptab=7;jx=jy=0;pn.style.display='block';rPn();sfx('talk');return}
  HOMESP=h.id;BEDSP=-1;if(dark()<.3){bedPick={i:o.i,at:performance.now(),home:1};say('You\'ll wake up here now. Hit the bed again to pick it up.');sfx('talk')}
- else{time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept soundly at home. Good morning!');sfx('quest')}saveLocal(true);saveCloud(true)};
+ else{time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept soundly at home. Good morning!');sfx('quest')}saveLocal(true);saveCloud(true)});
 const _us13=useStructure;useStructure=function(i){CHEST_IDX=-1;_us13(i)};
 // wake up beside your bed at home
 const _rs13=reset;reset=function(){_rs13();if(!inHome())return;const R=SCENE.room;let bed=null;for(const[i,f]of SCENE.house.furn)if(f.t==='bed'){bed=i;break}

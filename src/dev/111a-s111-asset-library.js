@@ -21,7 +21,8 @@
 var SQA=(()=>{
  const DBURL='https://skillquest-913e2-default-rtdb.firebaseio.com',LS='sq_assets_live',PXC='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-';
  const IB=window.SQIB||{},WB=window.SQWBT||{};
- const origIcon=iconURL;
+ // the game's icon without library sprites: the whole SQICON list with this file's step stepping aside
+ let RAWICO=0;const origIcon=(k,col)=>{RAWICO++;try{return iconURL(k,col)}finally{RAWICO--}};
  // the game's own values, captured before anything is applied, so edits can be undone and compared
  const ORIG={items:{},ib:{},wb:{}};
  const itemKeys=()=>[...new Set(INVK)].filter(k=>INAME[k]&&!/^xpb_/.test(k));
@@ -48,7 +49,8 @@ var SQA=(()=>{
  function render(sp){const c=document.createElement('canvas');c.width=sp.w*sp.s;c.height=sp.h*sp.s;const x=c.getContext('2d'),P=String(sp.p||'').split(','),d=pix(sp);
   for(let i=0;i<sp.w*sp.h;i++){const ch=d[i];if(!ch||ch==='.')continue;const col=P[PXC.indexOf(ch)];if(!col)continue;x.fillStyle=col;x.fillRect((i%sp.w)*sp.s,Math.floor(i/sp.w)*sp.s,sp.s,sp.s)}return c}
  const valid=sp=>sp&&sp.w>0&&sp.h>0&&sp.w<=160&&sp.h<=160&&sp.s>=1&&sp.s<=8&&pix(sp).length===sp.w*sp.h;
- iconURL=function(k,col){const sp=ICO[k];if(!sp)return origIcon(k,col);const key=k+'@'+ver;return cache[key]||(cache[key]=render(sp).toDataURL())};
+ // library sprites win over the game's own icons: a step on SQICON (later sections' steps still run around it)
+ SQICON.wrap('111a',_ic=>function(k,col){const sp=!RAWICO&&ICO[k];if(!sp)return _ic(k,col);const key=k+'@'+ver;return cache[key]||(cache[key]=render(sp).toDataURL())});
  if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return ICO[k]?iconURL(k):_ei(k)}}
  // ---- worn looks: gear drawn on the character (you and other players) ----
  const WSLOTS=['legs','body','helm','off','main'],WDIR=['f','b','s'],WW=96,WH=112,WORN={},wcache=new Map();

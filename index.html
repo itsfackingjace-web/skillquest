@@ -1565,10 +1565,12 @@ const _sol13=solid;solid=function(px,py){if(_sol13(px,py))return true;if(!inHome
  if(!f||f.t==='rug')return false;return f.t==='door'?!doorOpen(y*N+x):true};
 // --- beds and chests at home ---
 nearFurn=function(){if(!inHome())return null;const R=SCENE.room;let best=null,bd=24;for(const[i,f]of SCENE.house.furn){if(f.t!=='bed'&&f.t!=='chest')continue;const cx=(i%R.w)*16+8,cy=((i/R.w)|0)*16+8,d=Math.hypot(P.x-cx,P.y-cy);if(d<bd){bd=d;best={i,f}}}return best};
-useFurn=function(o){if(!o||!inHome())return;const h=SCENE.house;
+// replaces 012's own useFurn (beds and chests at home) as the first step on its list: a step, never `useFurn=` (Nov 20: that
+// bypassed every later step, so harbor posts, island NPCs, guild boards and loot chests stopped answering)
+SQUSEFURN.wrap('013',_uf12=>function(o){if(!o||!inHome())return;const h=SCENE.house;
  if(o.f.t==='chest'){CHEST_H=o.f;CHEST_IDX=o.i;fromMenu=false;pnOpen=true;ptab=7;jx=jy=0;pn.style.display='block';rPn();sfx('talk');return}
  HOMESP=h.id;BEDSP=-1;if(dark()<.3){bedPick={i:o.i,at:performance.now(),home:1};say('You\'ll wake up here now. Hit the bed again to pick it up.');sfx('talk')}
- else{time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept soundly at home. Good morning!');sfx('quest')}saveLocal(true);saveCloud(true)};
+ else{time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept soundly at home. Good morning!');sfx('quest')}saveLocal(true);saveCloud(true)});
 const _us13=useStructure;useStructure=function(i){CHEST_IDX=-1;_us13(i)};
 // wake up beside your bed at home
 const _rs13=reset;reset=function(){_rs13();if(!inHome())return;const R=SCENE.room;let bed=null;for(const[i,f]of SCENE.house.furn)if(f.t==='bed'){bed=i;break}
@@ -9477,6 +9479,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.20-1',d:'Nov 20, 2026',t:"Harbor posts work again",n:["Fixed: harbor posts on islands (guild islands too) didn't respond, so you couldn't sail home. Island folk, guild boards, the guild bank and loot chests on islands answer again too."]},
  {v:'2026.11.19-2',d:'Nov 19, 2026',t:"The Song Studio, new pets, song zones and a better wiki",n:["The wiki has a page for every item and monster: tap any name to see how to get it (recipes, shops, which monsters drop it and how often, where to gather it) and what it's used for. ◀ Back takes you where you were.","New wiki tabs: Brewing, Playing together (parties, trading, the market, duels, chess), Patrons and Achievements (with your progress). Home shows what you unlocked lately and skills you haven't tried yet, and search finds item and monster pages.","Patrons: the Song Studio is open (START > Patron > Song Studio). Pick a mood, tap notes on a grid and send your song in. No music experience needed: the grid only has notes that fit the song, the bright rows go with every chord, and \"Make me a tune\" and \"Pick chords for me\" give you a start. Approved songs can play in the game, with your name in the credits.","New pets can now come to the game, including pets Patrons draw in the Art Room.","Places on an island can now have music of their own, so a different song can play as you walk into them.","The HERE map now lists the players online under it, like the WORLD map, and marks the ones on your island."]},
  {v:'2026.11.18-5',d:'Nov 18, 2026',t:"Bug fixes, fishing behind menus and colourful campfires",n:["Campfires show what they're made of: oak burns golden, willow blue, maple crimson, yew green and void logs purple, and each one glows in its own colour at night. The kindling you're lighting shows the log's colour too.","You can eat while cooking at a fire: press EAT while your food cooks and you eat something without stopping the cooking.","Fixed: fishing stopped while a menu or screen was open. Bites now keep coming and the line reels in behind the menu.","Fixed: with a full bag, a chest's item card could be cut off at the bottom of the screen on iPhone, hiding its buttons. It now always fits on screen.","Fixed: on Ironcrest (and anywhere else a path meets a rocky plateau), you couldn't step from the path onto the plateau's side even though nothing was in the way. Paths now lead straight onto plateaus from the north, east and west. The cliff faces on the south side still need the stone stairs.","Fixed: since earlier today, HIT could do two things at once: reeling in a fish or placing something also swung your weapon, and other buttons that take over HIT did the same. HIT does one thing again.","Fixed: smelting, smithing or crafting at a station in your house (or next to chests outdoors) could save your game with the chests' contents counted in your bag as well. If you closed the game soon after, the next time it loaded those items were in both places. Saves now never count items borrowed from chests.","Fixed: getting up very quickly after falling could lose everything you carried without leaving a gravestone. Your things now always go into your grave, or stay in your bag if there's nowhere to put one.","Fixed: closing the game while lighting a campfire with oak or better logs could turn those logs into plain wood.","Fixed: on phones, the world boss bar covered the getting-started tips. It now sits below them."]},
  {v:'2026.11.17-3',d:'Nov 17, 2026',t:"Market prices set by players, better character screen",n:["Every item now has a market price worked out from what players actually paid for it on the World Market: the middle price of the last 30 days' sales. You'll see it when you buy or sell (with a little chart of recent sales), in your bag and on chest item cards. Items nobody has traded lately just show the shop price.","Sales on the World Market of 100 gold or more now pay a 1% market tax, taken from the seller's gold. It keeps gold from piling up, so prices stay fair for new players. The sell screen shows what you'll get after the tax.","Your character screen (the tab with your name): tap any slot with gear in it, or the name of the ring or amulet you're wearing, to see that item's card, with its stats, what a shop pays and its market price. The stats list now also shows health, armour, your block limit, critical hit chance, mana regen per second, every gear effect you're wearing (life steal, burn, bonus XP and so on), Turtle and Meteorite set pieces, and potion buffs with their time left.","Every item in your bag now shows what a shop pays for it next to its market price."]},
@@ -12937,7 +12940,8 @@ const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note
 var SQA=(()=>{
  const DBURL='https://skillquest-913e2-default-rtdb.firebaseio.com',LS='sq_assets_live',PXC='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-';
  const IB=window.SQIB||{},WB=window.SQWBT||{};
- const origIcon=iconURL;
+ // the game's icon without library sprites: the whole SQICON list with this file's step stepping aside
+ let RAWICO=0;const origIcon=(k,col)=>{RAWICO++;try{return iconURL(k,col)}finally{RAWICO--}};
  // the game's own values, captured before anything is applied, so edits can be undone and compared
  const ORIG={items:{},ib:{},wb:{}};
  const itemKeys=()=>[...new Set(INVK)].filter(k=>INAME[k]&&!/^xpb_/.test(k));
@@ -12964,7 +12968,8 @@ var SQA=(()=>{
  function render(sp){const c=document.createElement('canvas');c.width=sp.w*sp.s;c.height=sp.h*sp.s;const x=c.getContext('2d'),P=String(sp.p||'').split(','),d=pix(sp);
   for(let i=0;i<sp.w*sp.h;i++){const ch=d[i];if(!ch||ch==='.')continue;const col=P[PXC.indexOf(ch)];if(!col)continue;x.fillStyle=col;x.fillRect((i%sp.w)*sp.s,Math.floor(i/sp.w)*sp.s,sp.s,sp.s)}return c}
  const valid=sp=>sp&&sp.w>0&&sp.h>0&&sp.w<=160&&sp.h<=160&&sp.s>=1&&sp.s<=8&&pix(sp).length===sp.w*sp.h;
- iconURL=function(k,col){const sp=ICO[k];if(!sp)return origIcon(k,col);const key=k+'@'+ver;return cache[key]||(cache[key]=render(sp).toDataURL())};
+ // library sprites win over the game's own icons: a step on SQICON (later sections' steps still run around it)
+ SQICON.wrap('111a',_ic=>function(k,col){const sp=!RAWICO&&ICO[k];if(!sp)return _ic(k,col);const key=k+'@'+ver;return cache[key]||(cache[key]=render(sp).toDataURL())});
  if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return ICO[k]?iconURL(k):_ei(k)}}
  // ---- worn looks: gear drawn on the character (you and other players) ----
  const WSLOTS=['legs','body','helm','off','main'],WDIR=['f','b','s'],WW=96,WH=112,WORN={},wcache=new Map();
@@ -23080,7 +23085,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
  window.SQFIRELOGS={T,PAL,GLOW,STICK,myFire,lighting};
  // ---- building with a tier log ----
  let PEND=null;
- const _f=fire;
+
  function build(i){const t=T[i];if(!t)return;if(i===0){window.SQFIREDIRECT=1;try{fire()}finally{window.SQFIREDIRECT=0}return}
   if(!canBuild(t)){say(lv()<t.lv?'Burning '+nm(t.k).toLowerCase()+' needs Firemaking '+t.lv+'.':'Need 3 '+nm(t.k).toLowerCase()+' + 1 stone.');return}
   if(PEND)settle(true);
@@ -23098,11 +23103,11 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
   inv[t.k]-=1;f.life=Math.min(CAP,f.life+t.fs*(1+((typeof fDur==='function'&&fDur())||0)*.5));f.mx=Math.max(f.mx||0,f.life);if(i>(f.lg|0))f.lg=i;
   xtra(t.pl);try{sfx('fire')}catch(e){self.SQERR&&SQERR(e,'220-3')}try{gTxt(f.x,f.y-18,'+'+mmss(t.fs),i?PAL[i].c[2]:'#f88820')}catch(e){self.SQERR&&SQERR(e,'220-4')}try{saveLocal()}catch(e){self.SQERR&&SQERR(e,'220-5')}if(ptab===TAB&&pnOpen)rPn()}
  // ---- F ----
- fire=function(){if(window.SQFIREDIRECT||dead||menuOpen||pnOpen)return _f.apply(this,arguments);
+ SQFIRE.wrap('220',_f=>function(){if(window.SQFIREDIRECT||dead||menuOpen||pnOpen)return _f.apply(this,arguments);
   const near=myFire(),tier=T.slice(1).some(t=>n(t.k)>=3&&lv()>=t.lv);
   if(!near&&!tier)return _f.apply(this,arguments);
   if(near&&!tier&&!T.some(t=>n(t.k)>0&&lv()>=t.lv))return _f.apply(this,arguments);
-  pnOpen=true;ptab=TAB;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'220-6')}};
+  pnOpen=true;ptab=TAB;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'220-6')}});
  function row(i,mode){const t=T[i],have=n(t.k),ok=lv()>=t.lv,img='<img src="'+iconURL(t.k)+'" style="width:28px;height:28px;image-rendering:pixelated">';
   let info,btn='';if(mode==='b'){info=ok?(3*t.pl)+' XP · burns '+mmss(baseLife()*t.m)+' · needs 3 + 1 stone':'needs Firemaking '+t.lv;
    if(ok)btn='<button class="sb" data-fmb="'+i+'" style="min-width:0;padding:8px 10px"'+(canBuild(t)?'':' disabled')+'>BUILD</button>'}

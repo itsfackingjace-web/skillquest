@@ -6,6 +6,7 @@
 //            and a number ptab is set to or compared with (9 and up) belongs to some file.
 //   css      a class styled in two files (`.gr` from a station screen got restyled by the guild screen). The ones that were already
 //            shared on Nov 19 are listed in css-shared.txt; add to it only when a later file restyles a class on purpose.
+//   steps    a function with a step list (sqSteps) is never assigned again (`fn=function...`): add a step on its list.
 //   prompt   no prompt(): the Windows app doesn't support it.
 //   catches  no untagged empty `catch(e){}`: rerun tools/refactor/tag-catches.cjs (or write `/*quiet*/` inside).
 // Returns a list of problems (module) / prints them and exits 1 (command line).
@@ -16,6 +17,13 @@ function lint(){const P=[];const files=fs.readFileSync(ROOT+'/manifest.txt','utf
   try{process.argv=process.argv.slice(0,2);const {R}=require('../refactor/blocks.cjs');
     for(const r of R)P.push('blocks: bare { } block in src/'+r.file+(r.leaks.length?' (leaks '+r.leaks.slice(0,5).join(', ')+')':'')+': use (()=>{ ... })()')}
   catch(e){P.push('blocks: could not parse the game script: '+e.message)}
+  // steps: a function with a step list (sqSteps) is never assigned again after its list exists: the assignment bypasses every
+  // step added after it (Nov 20: 013's `useFurn=function` made harbor posts, island NPCs and guild boards stop answering)
+  try{const {ast,js,fileAt}=require('../refactor/blocks.cjs');const walk=require('/opt/node-tools/node_modules/acorn-walk');const regs=[];
+    walk.full(ast,n=>{if(n.type==='CallExpression'&&n.callee.type==='Identifier'&&n.callee.name==='sqSteps'&&n.arguments[1]&&n.arguments[1].type==='Identifier')regs.push({fn:n.arguments[1].name,pos:n.start,inst:n.arguments[2]})});
+    walk.full(ast,n=>{if(n.type!=='AssignmentExpression'||n.left.type!=='Identifier')return;const r=regs.find(r=>r.fn===n.left.name);
+      if(r&&n.start>r.pos&&!(r.inst&&n.start>=r.inst.start&&n.end<=r.inst.end))P.push('steps: '+r.fn+'= in src/'+fileAt(n.start).f+' after its step list (src/'+fileAt(r.pos).f+'): add a step instead ('+js.slice(n.start,n.start+60).replace(/\s+/g,' ')+'...)')})}
+  catch(e){P.push('steps: could not parse the game script: '+e.message)}
   // panels
   const owner=new Map(),used=new Map();
   for(const[f,s]of SRC){const names=new Set();for(const m of s.matchAll(/\bptab\s*(?:===?|!==?)\s*([A-Za-z_$][\w$]*)/g))names.add(m[1]);

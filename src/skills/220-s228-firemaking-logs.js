@@ -33,7 +33,7 @@
  window.SQFIRELOGS={T,PAL,GLOW,STICK,myFire,lighting};
  // ---- building with a tier log ----
  let PEND=null;
- const _f=fire;
+
  function build(i){const t=T[i];if(!t)return;if(i===0){window.SQFIREDIRECT=1;try{fire()}finally{window.SQFIREDIRECT=0}return}
   if(!canBuild(t)){say(lv()<t.lv?'Burning '+nm(t.k).toLowerCase()+' needs Firemaking '+t.lv+'.':'Need 3 '+nm(t.k).toLowerCase()+' + 1 stone.');return}
   if(PEND)settle(true);
@@ -51,11 +51,11 @@
   inv[t.k]-=1;f.life=Math.min(CAP,f.life+t.fs*(1+((typeof fDur==='function'&&fDur())||0)*.5));f.mx=Math.max(f.mx||0,f.life);if(i>(f.lg|0))f.lg=i;
   xtra(t.pl);try{sfx('fire')}catch(e){self.SQERR&&SQERR(e,'220-3')}try{gTxt(f.x,f.y-18,'+'+mmss(t.fs),i?PAL[i].c[2]:'#f88820')}catch(e){self.SQERR&&SQERR(e,'220-4')}try{saveLocal()}catch(e){self.SQERR&&SQERR(e,'220-5')}if(ptab===TAB&&pnOpen)rPn()}
  // ---- F ----
- fire=function(){if(window.SQFIREDIRECT||dead||menuOpen||pnOpen)return _f.apply(this,arguments);
+ SQFIRE.wrap('220',_f=>function(){if(window.SQFIREDIRECT||dead||menuOpen||pnOpen)return _f.apply(this,arguments);
   const near=myFire(),tier=T.slice(1).some(t=>n(t.k)>=3&&lv()>=t.lv);
   if(!near&&!tier)return _f.apply(this,arguments);
   if(near&&!tier&&!T.some(t=>n(t.k)>0&&lv()>=t.lv))return _f.apply(this,arguments);
-  pnOpen=true;ptab=TAB;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'220-6')}};
+  pnOpen=true;ptab=TAB;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'220-6')}});
  function row(i,mode){const t=T[i],have=n(t.k),ok=lv()>=t.lv,img='<img src="'+iconURL(t.k)+'" style="width:28px;height:28px;image-rendering:pixelated">';
   let info,btn='';if(mode==='b'){info=ok?(3*t.pl)+' XP · burns '+mmss(baseLife()*t.m)+' · needs 3 + 1 stone':'needs Firemaking '+t.lv;
    if(ok)btn='<button class="sb" data-fmb="'+i+'" style="min-width:0;padding:8px 10px"'+(canBuild(t)?'':' disabled')+'>BUILD</button>'}
