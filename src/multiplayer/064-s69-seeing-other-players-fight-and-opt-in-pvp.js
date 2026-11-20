@@ -67,7 +67,7 @@ function pvProjHits(){if(!PV.on&&!(window.SQDUEL&&SQDUEL.fighting))return;const 
 // ---- PvP: their hits on you ----
 function pvIncoming(id,v){FB.db.remove(FB.db.ref(FB.D,'pvp/'+MP.user.uid+'/'+id)).catch(()=>{});if(!v||typeof v!=='object')return;
  const u=String(v.f||''),r=MP.players.get(u);if(typeof v.t==='number'&&mpNow()-v.t>5000)return;
- if(v.k==='ko'){mpLog('game','You defeated '+String(v.n||trName(u)).slice(0,12)+'! Their grave is where they fell.');try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'064-7')}return}
+ if(v.k==='ko'){mpLog('game','You defeated '+String(v.n||trName(u)).slice(0,12)+'! Their grave is where they fell.');try{if(window.SQPVKO)SQPVKO(u)}catch(e){self.SQERR&&SQERR(e,'064-ko')}try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'064-7')}return}
  if(pvDuel(u)){if(dead||!r||r.loc!==mpLoc()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return}
  else if(!PV.on||dead||!r||!r.pk||r.loc!==mpLoc()||pvMeSafe()||Math.hypot(r.tx-P.x,r.ty-P.y)>260)return;
  let d=Math.max(1,Math.min(3,+v.d|0));try{if(window.SQPVARM)d=SQPVARM(d)}catch(e){self.SQERR&&SQERR(e,'064-8')}const who=String(v.n||r.n).slice(0,12);PV.fight=performance.now();PV.lastBy=u;PV.lastByAt=performance.now();

@@ -114,3 +114,12 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Talking to sleepers** (`world/194-s202-talk-to-sleepers.js`, `SQSLEEPTALK`): folk asleep (`n.scene` = room+'#bed') are found by bed
   position; the outermost `talk` puts the sleeper in the room's scene at the bed for that call (005's `nearNpc` then finds them), TALK
   button + `SQPADUSE`. 085's imp drops a target that's no longer in `en` (and isn't the world boss) or has no health left.
+- **Mine levels** (`world/242-s250-mine-levels.js`, `SQMINES`, Nov 20): DKIND entries with `mine:1` need Mining `req(kind,f)` = base + step x
+  floor((f-1)/2) (`REQ`: icmine 30/10, icmine2 45/10; others 15/10). Checked at the entrance (useFurn 'icv' step and `window.icvEnter`) and in a
+  wrapped `dGo` when going to a deeper floor (nudged off the stairs). A wrapped `buildFloor` doubles the floor's monsters (at least 8+3f), x1.25 hp.
+  `window.SQMINEFREE` skips the check (tests). Wiki > World lists the levels. Check 30.
+- **Outlaw Country** (`world/243-s251-outlaw-country.js`, `SQOUTLAW`, Nov 20): a village line `nomans` (042's system) given by Dusthaven's Mira
+  (her NPC keeps town 'dusthaven'; sideCard/sideAct/sqMark are wrapped to show the `nomans` line for her; `SQ_REGION.nomans='nomans'` so 049
+  counts progress only there). New sqEvent types: `nmlm` (landmarks, once each, `SQ_SIDE.nomans.seen`), `nmdeliver` (`nmsatchel` item to the
+  `dustwater` landmark; Mira gives a new one if it's lost), `nmmine` (Mining XP there), `nmpvp` (064's ko branch calls `SQPVKO(uid)`), plus
+  kill 'bandit' and islandboss 'nomans'. Check 31.
