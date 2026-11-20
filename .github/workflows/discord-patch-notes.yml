@@ -1,0 +1,30 @@
+# Posts new patch notes to Discord after they reach the live site (main). Only new bullets are posted, so several
+# deploys in a day each post just what they added. The webhook URL is the repo secret DISCORD_WEBHOOK_URL.
+# "Run workflow" from the Actions tab posts a test message (the first few lines of today's notes).
+name: Discord patch notes
+on:
+  push:
+    branches: [main]
+    paths: ['src/data/074-patch-notes.js']
+  workflow_dispatch:
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Post
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            node tools/discord/post-patch-notes.mjs - src/data/074-patch-notes.js --test
+          else
+            git show "$BEFORE:src/data/074-patch-notes.js" > /tmp/old.js 2>/dev/null || echo "" > /tmp/old.js
+            node tools/discord/post-patch-notes.mjs /tmp/old.js src/data/074-patch-notes.js
+          fi
