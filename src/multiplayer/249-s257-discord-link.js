@@ -20,12 +20,14 @@
  try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s&&typeof s.c==='string'&&Date.now()-s.at<864e5)CODE=s}catch(e){self.SQERR&&SQERR(e,'249-5')}
  const mk=()=>{const a=new Uint32Array(8);crypto.getRandomValues(a);return Array.from(a,v=>AB[v%AB.length]).join('')};
  async function make(){const F=window.SQFB,u=me();if(!F||!u){ERR='Sign in first: the code is tied to your account.';return null}
-  BUSY=true;ERR='';try{const old=CODE&&CODE.c;if(old)try{await F.db.remove(F.db.ref(F.D,'dlink/'+old))}catch(e){/*quiet*/}
-   const c=mk();await F.db.set(F.db.ref(F.D,'dlink/'+c),{u,t:F.db.serverTimestamp()});CODE={c,at:Date.now()};try{localStorage.setItem(LS,JSON.stringify(CODE))}catch(e){self.SQERR&&SQERR(e,'249-6')}return c}
+  // the same code all day (Nov 20: a player made a second code after posting the first, and the first one was deleted)
+  if(CODE&&CODE.u===u&&Date.now()-CODE.at<20*3600e3)return CODE.c;
+  BUSY=true;ERR='';try{
+   const c=mk();await F.db.set(F.db.ref(F.D,'dlink/'+c),{u,t:F.db.serverTimestamp()});CODE={c,u,at:Date.now()};try{localStorage.setItem(LS,JSON.stringify(CODE))}catch(e){self.SQERR&&SQERR(e,'249-6')}return c}
   catch(e){ERR='Couldn\'t make a code ('+String(e&&e.message||e).slice(0,60)+'). Try again in a moment.';return null}finally{BUSY=false}}
  SQOPTS.wrap('249',_o=>function(){const h=_o();if(!me())return h;
-  const box='<div class="sqdl"><button class="sb sqdl-btn">'+(BUSY?'Making a code...':CODE?'Link Discord: new code':'Link Discord (roles on our server)')+'</button>'
-   +(CODE?'<div class="qc sqdl-code">Your code: <b>'+CODE.c+'</b><br><small>Post it in <b>#link</b> on the SkillQuest Discord. Within half an hour you get roles for your Total Level, guild and more. The code works for a day.</small></div>':'')
+  const mine=CODE&&CODE.u===me()?CODE:null;const box='<div class="sqdl"><button class="sb sqdl-btn">'+(BUSY?'Making a code...':mine?'Link Discord: copy my code':'Link Discord (roles on our server)')+'</button>'
+   +(mine?'<div class="qc sqdl-code">Your code: <b>'+mine.c+'</b><br><small>Post it in <b>#link</b> on the SkillQuest Discord. Within half an hour you get roles for your Total Level, guild and more. The code works for a day.</small></div>':'')
    +(ERR?'<div class="qc sqdl-code"><small>'+ERR+'</small></div>':'')+'</div>';
   const k=h.indexOf('data-a="switch">Switch Google account</button>');if(k<0)return h+box;const e=h.indexOf('</button>',k)+9;return h.slice(0,e)+box+h.slice(e)});
  pbd.addEventListener('click',async ev=>{if(!ev.target.closest('.sqdl-btn'))return;ev.stopPropagation();if(BUSY)return;const p=make();try{rPn()}catch(e){self.SQERR&&SQERR(e,'249-7')}

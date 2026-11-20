@@ -126,3 +126,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   when you fill a buyer's offer yourself, and on COLLECT for gold boxes, which now carry `i` (item) and `m` (units). `slots()` = 8 + 1 per 20
   levels (max 12), 079's `maxO()`. 079's screens: `slotsHTML()` (offer boxes), `finder()` (search + `CATS` chips, `WMK.cat`, `catOf(k)`),
   item cards in `.wmgrid`; CSS classes `wm*`. Check 10 checks the Merchant XP.
+
+- **Chat length** (Nov 20): public chat, PMs, guild chat: up to 160 characters (061 `#mpi` maxlength, mpSend / send / mpChat / PM slices, 197
+  SQGUILDSAY and its log); party chat 152 + the "[Party] " prefix (136); rules `chat` m <= 160, `pm` m <= 168, `gchat` m <= 160. 187's
+  bubbles wrap to 5 lines, shown up to 12 s. Check 41.

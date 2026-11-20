@@ -20,6 +20,6 @@ module.exports={name:'Discord link codes and role fields on the leaderboard',asy
  t(!dl('a','abc',{u:'a',t:TS}).ok,'a badly formed code was accepted');
  t(dl('a','ABCD2345',null).ok,'removing your own code was refused');
  // the game: Options > Link Discord makes a code and stores it
- const r=await p.evaluate(async()=>{await new Promise(r=>setTimeout(r,500));const c=await SQDLINK.make();const F=window.SQFB;const v=c&&(await F.db.get(F.db.ref(F.D,'dlink/'+c))).val();
-  return{c,u:v&&v.u===SQMP.user.uid,ok:/^[A-HJ-NP-Z2-9]{8}$/.test(c||'')}});
- t(r.ok,'the code '+r.c+' isn\'t 8 letters/digits from the code alphabet');t(r.u,'the code wasn\'t stored for this player')}};
+ const r=await p.evaluate(async()=>{await new Promise(r=>setTimeout(r,500));const c=await SQDLINK.make(),c2=await SQDLINK.make();const F=window.SQFB;const v=c&&(await F.db.get(F.db.ref(F.D,'dlink/'+c))).val();
+  return{c,same:c===c2,u:v&&v.u===SQMP.user.uid,ok:/^[A-HJ-NP-Z2-9]{8}$/.test(c||'')}});
+ t(r.ok,'the code '+r.c+' isn\'t 8 letters/digits from the code alphabet');t(r.u,'the code wasn\'t stored for this player');t(r.same,'pressing Link Discord again made a new code (the posted one stops working)')}};

@@ -49,7 +49,7 @@ const css=document.createElement('style');css.textContent=`
 const el=(t,id,cls,html)=>{const e=document.createElement(t);if(id)e.id=id;if(cls)e.className=cls;if(html)e.innerHTML=html;return e};
 const btn=el('button','mpb','',''),ov=el('div','mpo'),pc=el('div','mpchat','g3',
  '<div class="hd"><button class="tb" data-t="all">All</button><button class="tb" data-t="pub">Public</button><button class="tb" data-t="game">Game</button><span class="sp" id="mpn"></span><button class="x" id="mpx" aria-label="Close chat">X</button></div>'+
- '<div id="mpl"></div><form id="mpf" autocomplete="off"><input id="mpi" maxlength="80" placeholder="Say something..." enterkeyhint="send" aria-label="Chat message"><button type="submit">SEND</button></form>'+
+ '<div id="mpl"></div><form id="mpf" autocomplete="off"><input id="mpi" maxlength="160" placeholder="Say something..." enterkeyhint="send" aria-label="Chat message"><button type="submit">SEND</button></form>'+
  '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px;color:#707070"><span id="mpu"></span><button type="button" class="so" id="mpso">Sign out</button></div>'),
  sg=el('div','mps','g3','<div style="font-weight:700;font-size:17px;letter-spacing:2px">PLAY ONLINE</div><p>Sign in with Google to see other players, chat, and keep your progress in your account on any device.</p><div class="bt"><button class="pri" id="mpgo">SIGN IN WITH GOOGLE</button><button id="mpno">NOT NOW</button></div>');
 for(const e of[btn,ov,pc,sg])document.body.appendChild(e);
@@ -307,10 +307,10 @@ SQHUD.after('061',()=>{if(!MP.on||!MP.T||performance.now()-MP.Tat>120||pnOpen||m
 const CHAT_KEEP=24*3600*1000;
 function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.seen.add(id);if(typeof v.t==='number'&&mpNow()-v.t>CHAT_KEEP)return; // older than a day: not shown
  const mine=MP.user&&v.u===MP.user.uid,fresh=typeof v.t==='number'&&mpNow()-v.t<15000;
- const m=v.m.slice(0,80),n=String(v.n||'?').replace(/[<>]/g,'').slice(0,12);
+ const m=v.m.slice(0,160),n=String(v.n||'?').replace(/[<>]/g,'').slice(0,12);
  const e={me:mine,n,uid:v.u,t:typeof v.t==='number'?v.t:0};mpLog('pub',m,e);const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
  if(fresh){if(mine)MP.selfSaid={m,at:performance.now()};else{const r=MP.players.get(v.u);if(r)r.said={m,at:performance.now()}}if(!MP.open&&!mine){MP.unread++;mpRBtn()}}}
-function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)return;if(!MP.on){mpOpenChat();return}if(window.SQMOD&&SQMOD.blockChat())return;
+function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,160);if(!t)return;if(!MP.on){mpOpenChat();return}if(window.SQMOD&&SQMOD.blockChat())return;
  const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;
  const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}window.mpSend=mpSend;
 // ---- Options: show your own name (and crown) over your head ----
@@ -629,7 +629,7 @@ mpSend=function(t){t=String(t||'').replace(/\s+/g,' ').trim();if(!t)return;if(!M
  let to=null,msg=t;const w=t.match(/^\/(?:w|msg|pm)\s+(\S+)\s+(.+)$/i);
  if(w){const nl=w[1].toLowerCase();to=Object.keys(MP.friends).find(u=>fname(u).toLowerCase()===nl)||[...MP.players.keys()].find(u=>(MP.players.get(u).n||'').toLowerCase()===nl);msg=w[2];if(!to){mpLog('game','No friend or nearby player called '+w[1]+'.');return}}
  else if(MP.tab==='pm'){to=MP.pmTo;if(!to){mpLog('game','Pick a friend in the Friends tab to message.');return}}
- msg=msg.slice(0,80);if(window.SQMOD&&SQMOD.blockChat())return;const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;const d=FB.db;
+ msg=msg.slice(0,160);if(window.SQMOD&&SQMOD.blockChat())return;const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;const d=FB.db;
  if(to){d.push(d.ref(FB.D,'pm/'+to),{f:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).then(()=>{mpLog('pm',msg,{dir:'to',n:fname(to),uid:to,t:mpNow()});MP.pmTo=to}).catch(e=>{mpLog('game','Could not send that message.');mpErr(e)});return}
  d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:msg,t:d.serverTimestamp()}).catch(mpErr)};
 // the overlay shows private messages to you too
@@ -643,7 +643,7 @@ function friendsStart(){const d=FB.db,D=FB.D,uid=MP.user.uid;
  MP.unsub.push(d.onValue(d.ref(D,'friends/'+uid),s=>{MP.friends=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()}));
  MP.unsub.push(d.onValue(d.ref(D,'profiles'),s=>{MP.prof=s.val()||{};if(MP.open&&MP.tab==='fr')mpRList()}));
  MP.unsub.push(d.onChildAdded(d.query(d.ref(D,'pm/'+uid),d.limitToLast(30)),s=>{const v=s.val();if(!v||typeof v.m!=='string'||MP.seen.has('pm'+s.key))return;MP.seen.add('pm'+s.key);if(ignored(v.f)){FB.db.remove(FB.db.ref(FB.D,'pm/'+uid+'/'+s.key)).catch(()=>{});return}
-  const fresh=typeof v.t==='number'&&mpNow()-v.t<15000;if(v.m.startsWith('[Party] '))mpLog('pt',v.m.slice(8,88),{n:String(v.n||'?').slice(0,12),uid:v.f,t:typeof v.t==='number'?v.t:0});else mpLog('pm',v.m.slice(0,80),{dir:'from',n:String(v.n||'?').slice(0,12),uid:v.f,t:typeof v.t==='number'?v.t:0});const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
+  const fresh=typeof v.t==='number'&&mpNow()-v.t<15000;if(v.m.startsWith('[Party] '))mpLog('pt',v.m.slice(8,168),{n:String(v.n||'?').slice(0,12),uid:v.f,t:typeof v.t==='number'?v.t:0});else mpLog('pm',v.m.slice(0,160),{dir:'from',n:String(v.n||'?').slice(0,12),uid:v.f,t:typeof v.t==='number'?v.t:0});const last=MP.log[MP.log.length-1];if(!fresh)last.at=-1e9;
   else{if(!v.m.startsWith('[Party] '))MP.pmTo=MP.pmTo||v.f;if(!MP.open){MP.unread++;mpRBtn()}try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'061-37')}}}));
  MP.req={};MP.unsub.push(d.onValue(d.ref(D,'freq/'+uid),s=>{const v=s.val()||{},old=MP.req||{};MP.req={};for(const k in v)if(v[k]&&typeof v[k]==='object')MP.req[k]=v[k];
   for(const k in MP.req)if(!old[k]&&!isFriend(k)&&!ignored(k)){mpLog('game',String(MP.req[k].n||'Someone')+' added you as a friend. Open Chat > Friends to add them back.');if(!MP.open){MP.unread++;mpRBtn()}}

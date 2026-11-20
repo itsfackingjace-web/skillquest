@@ -11,7 +11,8 @@
   Members + Message Content intents, permissions Manage Roles, Manage Channels, View Channels, Send Messages, Read Message History (invite:
   `https://discord.com/oauth2/authorize?client_id=1573430647484055733&scope=bot&permissions=268504080`). Token: repo secret
   `DISCORD_BOT_TOKEN`. **No Firebase service account**: the bot reads only public data.
-- Game side (`src/multiplayer/249-s257-discord-link.js`, `window.SQDLINK`): Options > ONLINE > Link Discord writes `dlink/<code>` =
+- Game side (`src/multiplayer/249-s257-discord-link.js`, `window.SQDLINK`): Options > ONLINE > Link Discord writes `dlink/<code>` (the
+  same code for 20 h per account, kept in localStorage `sq_dlink` {c,u,at}; old codes are never deleted, so a posted code keeps working) =
   {u, t} (8 characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`; rules: read one code only, write only your own, t = server time).
   `window.SQLBX` hooks (called by 068's `lbTick` while building `lb/<uid>`) add gid/gn/gt (guild), pa/pu (patron, paid-through),
   mo (mod), dv (dev); the `lb` rules accept each only when it's true (membership in `guilds/<gid>/m`, `patron/<uid>/u > now`,

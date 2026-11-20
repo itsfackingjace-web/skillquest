@@ -125,7 +125,7 @@
  const near=()=>{let L=null;try{L=mpLoc()}catch(e){self.SQERR&&SQERR(e,'136-11')}return others().some(r=>r.loc===L&&Math.hypot(r.tx-P.x,r.ty-P.y)<=320)};
  {SQADDXP.wrap('136',_ax=>function(i,x){if(x>0&&PT.id)try{if(near())x=Math.max(x+(x>=5?1:0),Math.round(x*1.1))}catch(e){self.SQERR&&SQERR(e,'136-12')}return _ax.call(this,i,x)})}
  // party chat: one private message to each member, marked [Party] (061 files those under the Party tab)
- let lastSay=0;function partySay(t){const msg=String(t||'').replace(/\s+/g,' ').trim().slice(0,72);if(!msg)return;if(!on())return;
+ let lastSay=0;function partySay(t){const msg=String(t||'').replace(/\s+/g,' ').trim().slice(0,152);if(!msg)return;if(!on())return;
   if(!PT.id||!others().length){try{mpLog('game','You\'re not in a party. Tap a player\'s name to invite them.')}catch(e){self.SQERR&&SQERR(e,'136-13')}return}
   const n=performance.now();if(n-lastSay<1200){try{mpLog('game','Slow down a little!')}catch(e){self.SQERR&&SQERR(e,'136-14')}return}lastSay=n;
   const db=Fm().db;for(const r of others())db.push(ref('pm/'+r.uid),{f:me(),n:String(pname()).slice(0,12),m:'[Party] '+msg,t:db.serverTimestamp()}).catch(()=>{});

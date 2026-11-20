@@ -1,13 +1,13 @@
 // ---- 195. Chat bubbles: speech bubbles instead of long yellow lines, kept apart and short on phones ----
 // 061's drawHUD wrapper draws names and what players said (one yellow line of up to 42 characters for 5 s). The outermost drawHUD
 // hides every `said` (other players' r.said and MP.selfSaid) for the inner call, so 061 draws only the names, then draws bubbles:
-// white rounded boxes with a tail, wrapped to at most 3 lines (narrower on phones), shown 4 s + 70 ms a character (max 9 s), popping
+// white rounded boxes with a tail, wrapped to at most 5 lines (narrower on phones; chat lines are up to 160 characters since Nov 20), shown 4 s + 70 ms a character (max 12 s), popping
 // in and fading out. They are placed newest first; one that would cover another moves up above it, and all stay on screen with the
 // tail still pointing at the speaker, never over the HUD corners (hudLayout keep-outs) or the touch buttons. At most 4 at once (5 on big screens);
 // older speakers, and bubbles with no room, get a small "…" dot instead.
 // SQBUBBLES.last = {n, overlap, dots} from the last frame (tests).
-(()=>{const MAXL=3;window.SQBUBBLES={last:{n:0,overlap:false,dots:0}};
- const dur=m=>Math.min(9000,4000+70*m.length);
+(()=>{const MAXL=5;window.SQBUBBLES={last:{n:0,overlap:false,dots:0}};
+ const dur=m=>Math.min(12000,4000+70*m.length);
  function wrap(m,maxW){const words=String(m).split(' ');const L=[];let cur='';
   for(let w of words){while(g.measureText(w).width>maxW&&w.length>4){let k=w.length-1;while(k>1&&g.measureText(w.slice(0,k)+'-').width>maxW)k--;if(cur){L.push(cur);cur=''}L.push(w.slice(0,k)+'-');w=w.slice(k)}
    const t=cur?cur+' '+w:w;if(g.measureText(t).width<=maxW)cur=t;else{if(cur)L.push(cur);cur=w}}if(cur)L.push(cur);

@@ -289,10 +289,10 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
  const SEEN=new Set();let CHOFF=null,CHGID='';
  function chatListen(){const gid=G.ready?G.id:'';if(gid===CHGID)return;if(CHOFF){try{CHOFF()}catch(e){self.SQERR&&SQERR(e,'197-34')}CHOFF=null}CHGID=gid;SEEN.clear();if(!gid||!on())return;let first=true;
   CHOFF=DB().onValue(ref('gchat/'+gid),sn=>{const v=sn.val()||{},L=Object.entries(v).filter(([,o])=>o&&typeof o.m==='string').sort((a,b)=>(a[1].t||0)-(b[1].t||0));
-   for(const[id,o]of L){if(SEEN.has(id))continue;SEEN.add(id);try{window.SQMPLOG&&SQMPLOG('gd',String(o.m).slice(0,80),{n:String(o.n||'?').slice(0,12),uid:o.u,t:o.t||0,me:o.u===me()});
+   for(const[id,o]of L){if(SEEN.has(id))continue;SEEN.add(id);try{window.SQMPLOG&&SQMPLOG('gd',String(o.m).slice(0,160),{n:String(o.n||'?').slice(0,12),uid:o.u,t:o.t||0,me:o.u===me()});
      if(first){const lg=Mp().log;if(lg&&lg.length)lg[lg.length-1].at=-1e9}}catch(e){self.SQERR&&SQERR(e,'197-35')}}
    first=false;if(boss()){const cut=now()-864e5;for(const[id,o]of L)if((o.t||0)<cut)DB().set(ref('gchat/'+gid+'/'+id),null).catch(()=>{})}},()=>{})}
- window.SQGUILDSAY=t=>{t=String(t||'').trim().slice(0,80);if(!t)return;if(!G.id||!G.ready){try{SQMPLOG('game','You are not in a guild. Found or join one in START > Guild.')}catch(e){self.SQERR&&SQERR(e,'197-36')}return}
+ window.SQGUILDSAY=t=>{t=String(t||'').trim().slice(0,160);if(!t)return;if(!G.id||!G.ready){try{SQMPLOG('game','You are not in a guild. Found or join one in START > Guild.')}catch(e){self.SQERR&&SQERR(e,'197-36')}return}
   if(window.SQMOD&&SQMOD.blockChat&&SQMOD.blockChat())return;
   DB().set(ref('gchat/'+G.id+'/'+uid8()),{u:me(),n:myN(),m:t,t:TS()}).catch(e=>{try{SQMPLOG('game','Guild message not sent. Try again.')}catch(x){self.SQERR&&SQERR(x,'197-37')}})};
  // ---- the guild leaderboard ----
