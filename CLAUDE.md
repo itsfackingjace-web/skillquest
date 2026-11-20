@@ -1043,3 +1043,10 @@
   entering. 169 checks the song exists. (Also fixed 111c's dungeon entrance panel: a missing `+` hid Layout and its monster list.)
 - **HERE map players** (`ui/238-s246-online-list-on-here-map.js`): the outermost mapHTML adds 061's "Players online" list (class `sqonl`)
   on the HERE view, players on your island marked (here).
+- **Wiki pages** (075 edited in place + `ui/239-s247-wiki-pages.js`, `window.SQWKPAGES`): 075 keeps `WK.pg` {k,id} and `WK.hist`; `SQWK.pages[kind](id)`
+  returns a page's HTML, opened by `data-wkp="kind:id"` (and every item link `data-wki`), ◀ Back = `data-wkb`; `SQWK.go(kind,id)` opens one from
+  anywhere; `SQWK.h` exposes 075's helpers and `WK2`/`WK_TABS`. 239 registers `item`, `mob` (`rg:<SQISLIFE key>` or `h:<075 WK_MK name>`) and
+  `place`, the tabs Brewing/Playing together/Patrons/Achievements, and Home's extra cards (calls the built-in `start` cards with `WK2.start` removed).
+  Drops come from `src/data/239a-wiki-drops.js` (`SQWKDROPS`, generated: **rerun `node tools/wiki/drops.cjs` after changing monster drops in code**)
+  plus live Dev Suite monster rules and Content loot tables. New recipe kinds go in 239's `recipes()`, new gathering in `gathered()`.
+

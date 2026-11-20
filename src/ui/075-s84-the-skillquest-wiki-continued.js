@@ -1,5 +1,5 @@
 window.SQPATCH=PATCH_NOTES;
-const WK={open:false,tab:'start',q:''},wk$=id=>document.getElementById(id);
+const WK={open:false,tab:'start',q:'',pg:null,hist:[]},WKPAGES={},wk$=id=>document.getElementById(id);
 const wkSeen=()=>{try{return localStorage.getItem('sq_seenv')||''}catch(e){return''}},wkNew=()=>wkSeen()!==PATCH_NOTES[0].v;
 function wkMarkSeen(){try{localStorage.setItem('sq_seenv',PATCH_NOTES[0].v)}catch(e){}const b=document.querySelector('#tsmn [data-a="wk"]');if(b)b.textContent='WIKI'}
 const WK_TABS=[['patch','Patch notes'],['start','Home'],['guides','Guides'],['skills','Skills'],['xp','XP'],['items','Items'],['craft','Crafting'],['shops','Shops'],['mobs','Monsters'],['bosses','Bosses'],
@@ -105,7 +105,7 @@ function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab](
  else if(tab==='items'){const R=wkRecipes(),made={},used={};for(const r of R){if(r.out)(made[r.out]=made[r.out]||[]).push(r);for(const k in r.c)(used[k]=used[k]||new Set()).add(r.out)}
   const keys=Object.keys(INAME).filter(k=>INAME[k]&&!/^_/.test(k)).sort((a,b)=>String(INAME[a]).localeCompare(String(INAME[b])));
   for(const k of keys){let d='';try{d=IDESC[k]||''}catch(e){}const sp=typeof SELLP!=='undefined'&&SELLP[k];
-   let h='<b>'+wkE(INAME[k])+'</b>'+(sp?' <small>· sells for '+sp+' gold</small>':'')+'<br>'+wkE(d);
+   let h='<b><span class="lk" data-wki="'+wkE(k)+'">'+wkE(INAME[k])+'</span></b>'+(sp?' <small>· sells for '+sp+' gold</small>':'')+'<br>'+wkE(d);
    if(made[k])h+='<br><small>Made: '+made[k].map(r=>r.at+' · '+r.sk+' '+r.lv+' · '+wkCost(r.c)).join(' | ')+'</small>';
    if(used[k]){const u=[...used[k]].filter(Boolean);if(u.length)h+='<br><small>Used to make: '+u.slice(0,12).map(wkLink).join(', ')+(u.length>12?' and more':'')+'</small>'}
    card(INAME[k]+' '+k+' '+d,wkIcon(k),h)}}
@@ -114,10 +114,10 @@ function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab](
    out.push({t:at+' '+by[at].map(r=>r.n).join(' '),h:h+'</table>'})}
   head('Farming');let h='<table><tr><th>Crop</th><th>Level</th><th>Seed</th><th>XP</th></tr>';for(const k in CROPS){const c=CROPS[k];h+='<tr><td>'+wkE(c.n)+'</td><td>Farming '+c.lv+'</td><td>'+(INAME[c.seed]?wkLink(c.seed):wkE(c.seed))+'</td><td>'+c.xp+'</td></tr>'}out.push({t:'farming crops '+Object.values(CROPS).map(c=>c.n).join(' '),h:h+'</table>'});
   head('Fishing');h='<table><tr><th>Fish</th><th>Level</th><th>XP</th><th>Cooked heals</th></tr>';for(const f of FISH_T)h+='<tr><td>'+(INAME[f.k]?wkLink(f.k):wkE(f.n))+'</td><td>Fishing '+f.lv+'</td><td>'+f.xp+'</td><td>'+(f.heal||0)+' heart'+(f.heal===1?'':'s')+'</td></tr>';out.push({t:'fishing fish '+FISH_T.map(f=>f.n).join(' '),h:h+'</table>'})}
- else if(tab==='mobs'){head('Hollow Island & its dungeons');for(const m of WK_MOBS)card(m.n+' '+m.w,WK_MK[m.n]?wkPic(m.n,WK_MK[m.n]):'','<b>'+wkE(m.n)+'</b> <span class="tag">'+wkHp(m.hp,WK_MK[m.n]&&WK_MK[m.n]())+' HP</span><br>'+wkE(m.d)+'<br><small>Where: '+wkE(m.w)+' · Drops: '+wkE(m.drop)+'</small>','mob');
+ else if(tab==='mobs'){head('Hollow Island & its dungeons');for(const m of WK_MOBS)card(m.n+' '+m.w,WK_MK[m.n]?wkPic(m.n,WK_MK[m.n]):'','<b><span class="lk" data-wkp="mob:h:'+wkE(m.n)+'">'+wkE(m.n)+'</span></b> <span class="tag">'+wkHp(m.hp,WK_MK[m.n]&&WK_MK[m.n]())+' HP</span><br>'+wkE(m.d)+'<br><small>Where: '+wkE(m.w)+' · Drops: '+wkE(m.drop)+'</small>','mob');
   if(typeof RG_FAUNA!=='undefined')for(const id in RG_FAUNA){const F=RG_FAUNA[id],R=WORLD_REGIONS[id];head((R?R.name:id)+(R&&R.lv?' (level '+R.lv+')':''));const seen={};
    for(const[when,L]of[['Day',F.day],['Night',F.night]])for(const e of L){const k=e[0];const s=seen[k]||(seen[k]={hp:e[1],when:[]});s.when.push(when)}
-   for(const k in seen){const nm=WK_RGN[k]||k;card(nm+' '+(R?R.name:id),wkPic('rg_'+k,()=>rgMake(k,seen[k].hp,0,0)),'<b>'+wkE(nm)+'</b> <span class="tag">'+wkHp(seen[k].hp,{rk:k})+' HP</span>'+(F.pack&&F.pack[k]?' <span class="tag">packs of '+F.pack[k]+'</span>':'')+'<br><small>'+seen[k].when.join(' and ')+' · stronger than on Hollow; more gold and XP</small>','mob')}}}
+   for(const k in seen){const nm=WK_RGN[k]||k;card(nm+' '+(R?R.name:id),wkPic('rg_'+k,()=>rgMake(k,seen[k].hp,0,0)),'<b><span class="lk" data-wkp="mob:rg:'+wkE(k)+'">'+wkE(nm)+'</span></b> <span class="tag">'+wkHp(seen[k].hp,{rk:k})+' HP</span>'+(F.pack&&F.pack[k]?' <span class="tag">packs of '+F.pack[k]+'</span>':'')+'<br><small>'+seen[k].when.join(' and ')+' · stronger than on Hollow; more gold and XP</small>','mob')}}}
  else if(tab==='bosses'){head('World bosses');out.push({t:'',h:'<p>A world boss appears every 30 minutes somewhere in the world and stays for 20. Everyone fights it together; the top three damage dealers get extra loot. Online only.</p>'});
   const T=window.SQWBT||{};for(const k in T){const b=T[k];let pic='';try{const c=SQWBART[k](0,'s'),u=c.toDataURL();pic=u}catch(e){}
    const rare=WK_RARE.filter(r=>r[2]===b.n||(k==='dragon'&&r[2]==='Ancient Dragon'));
@@ -145,7 +145,9 @@ function wkRoute(id){try{const R=WORLD_REGIONS[id];if(id==='hollow')return'Home:
   return v?'How to get there: the voyage "'+v.name+'" from Sera, the Navigator in Tidewatch'+(v.needs.some(n=>n[0]==='@')?' (needs a boat upgrade she fits)':'')+'.':'How to get there: ask Sera, the Navigator in Tidewatch.'}catch(e){return''}}
 function wkRender(){const t=wk$('wkt'),b=wk$('wkb'),q=WK.q.trim().toLowerCase();
  t.innerHTML=WK_TABS.map(([k,n])=>'<button data-wkt="'+k+'" class="'+(k===WK.tab&&!q?'on':'')+'">'+wkE(n)+'</button>').join('');
- let h='';if(!q){const cs=wkCards(WK.tab);h=wkGrid(cs.map(c=>c.h))}
+ let h='';if(!q&&WK.pg&&WKPAGES[WK.pg.k]){t.querySelectorAll('.on').forEach(x=>x.classList.remove('on'));let pg='';try{pg=WKPAGES[WK.pg.k](WK.pg.id)}catch(e){pg='<div class="emp">This page could not be shown.</div>';console.warn(e)}
+  h='<div class="wkbar"><button class="more" data-wkb="1" style="margin:0 0 8px">◀ Back</button></div>'+pg}
+ else if(!q){const cs=wkCards(WK.tab);h=wkGrid(cs.map(c=>c.h))}
  else{for(const[k,n]of WK_TABS){if(k==='start'||k==='patch')continue;const cs=wkCards(k,1).filter(c=>!c.head&&(c.t+' '+c.h.replace(/<[^>]+>/g,' ')).toLowerCase().includes(q));if(cs.length)h+='<h3>'+wkE(n)+' ('+cs.length+')</h3>'+wkGrid(cs.slice(0,40).map(c=>c.h)).concat('')}
   if(!h)h='<div class="emp">Nothing matches "'+wkE(WK.q)+'".</div>'}
  b.innerHTML=h||'<div class="emp">Nothing here yet.</div>';if(wk$('wkxr'))wkXpCalc()}
@@ -153,13 +155,15 @@ function wkOpen(tab,q){WK.open=true;for(const k in WKPIC)delete WKPIC[k];   // m
  if(tab)WK.tab=tab;else if(wkNew())WK.tab='patch';WK.q=q||'';wk$('wkq').value=WK.q;wkEl.style.display='flex';wkRender();wk$('wkb').scrollTop=0;try{sfx('talk')}catch(e){}
  setTimeout(()=>{const f=wkEl.querySelector('.wt button.on');if(f&&typeof GPON!=='undefined'&&(GPON||TS.kb))setFocus(f)},30)}
 function wkClose(){WK.open=false;wkEl.style.display='none';try{setFocus(null)}catch(e){}try{sfx('talk')}catch(e){}if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="wk"]');if(b&&(GPON||TS.kb))setFocus(b)}}
-wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt],[data-wki],[data-wks],[data-wkm]');if(!b)return;if(b.dataset.wk==='x'){wkClose();return}
+wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt],[data-wki],[data-wks],[data-wkm],[data-wkp],[data-wkb]');if(!b)return;if(b.dataset.wk==='x'){wkClose();return}
+ if(b.dataset.wkb){const h=WK.hist.pop();if(h){WK.tab=h.tab;WK.q=h.q;WK.pg=h.pg}else WK.pg=null;wk$('wkq').value=WK.q;wkRender();wk$('wkb').scrollTop=h?h.y||0:0;return}
+ if(b.dataset.wkp||(b.dataset.wki&&WKPAGES.item)){const v=b.dataset.wkp||'item:'+b.dataset.wki,i=v.indexOf(':');wkGo(v.slice(0,i),v.slice(i+1));return}
  if(b.dataset.wkm){WK.allp=1;const y=wk$('wkb').scrollTop;wkRender();wk$('wkb').scrollTop=y;return}
  if(b.dataset.wks){WK.sk=+b.dataset.wks;wkRender();return}
- if(b.dataset.wkt){WK.tab=b.dataset.wkt;WK.q='';wk$('wkq').value='';wkRender();wk$('wkb').scrollTop=0;const tb=wk$('wkt').querySelector('[data-wkt="'+WK.tab+'"]');if(tb)tb.scrollIntoView({block:'nearest',inline:'center'});return}
+ if(b.dataset.wkt){WK.tab=b.dataset.wkt;WK.q='';WK.pg=null;WK.hist.length=0;wk$('wkq').value='';wkRender();wk$('wkb').scrollTop=0;const tb=wk$('wkt').querySelector('[data-wkt="'+WK.tab+'"]');if(tb)tb.scrollIntoView({block:'nearest',inline:'center'});return}
  if(b.dataset.wki){const k=b.dataset.wki;WK.q=String(INAME[k]||k);wk$('wkq').value=WK.q;wkRender();wk$('wkb').scrollTop=0}});
 wkEl.addEventListener('input',e=>{if(e.target&&/^wkx/.test(e.target.id))wkXpCalc()});wkEl.addEventListener('change',e=>{if(e.target&&/^wkx/.test(e.target.id))wkXpCalc()});
-wk$('wkq').addEventListener('input',()=>{WK.q=wk$('wkq').value;wkRender();wk$('wkb').scrollTop=0});
+wk$('wkq').addEventListener('input',()=>{WK.q=wk$('wkq').value;WK.pg=null;wkRender();wk$('wkb').scrollTop=0});
 {const _nr=navRoot;navRoot=function(){if(WK.open)return wkEl;return _nr()}}
 // on the title menu (next to the leaderboards) and in the START menu
 {const _m=tsMenu;tsMenu=function(){_m();if(tsMn.querySelector('[data-a="wk"]'))return;const o=tsMn.querySelector('[data-a="opt"]');if(!o)return;const b=document.createElement('button');b.dataset.a='wk';b.textContent=wkNew()?'WIKI · NEW!':'WIKI';o.before(b)}}
@@ -300,5 +304,8 @@ WK2.skills=()=>{const i=Math.min(SKN.length-1,WK.sk|0),n=SKN[i],T=typeof TREES!=
  if(T&&T.choices){h+='<b>Perks</b> <small>(at each level you pick one; change them in the Skills screen)</small><table>';for(const lv of Object.keys(T.choices).sort((a,b)=>a-b))h+='<tr><td><b>'+lv+'</b></td><td>'+T.choices[lv].map(p=>'<b>'+wkE(p.n)+'</b>: '+wkE(p.d)).join('<br>')+'</td></tr>';h+='</table>'}
  if(T&&T.extra){const ex=Object.entries(T.extra);if(ex.length)h+='<b>Unlocks</b><table>'+ex.map(([l,t])=>'<tr><td><b>'+l+'</b></td><td>'+wkE(t)+'</td></tr>').join('')+'</table>'}
  return[{t:SKN.join(' '),h:h+'</div></div>'}]};
-window.SQWK={open:wkOpen,close:wkClose,cards:wkCards};
+// pages (item/monster/... registered by later sections in SQWK.pages): the current view goes on WK.hist, ◀ Back returns to it
+function wkGo(k,id){WK.hist.push({tab:WK.tab,q:WK.q,pg:WK.pg,y:wk$('wkb').scrollTop});if(WK.hist.length>40)WK.hist.shift();WK.pg={k,id};WK.q='';wk$('wkq').value='';wkRender();wk$('wkb').scrollTop=0}
+window.SQWK={open:wkOpen,close:wkClose,cards:wkCards,pages:WKPAGES,go:(k,id)=>{if(!WK.open)wkOpen();wkGo(k,id)},render:()=>{if(WK.open)wkRender()},get state(){return WK},
+ h:{E:wkE,name:wkName,icon:wkIcon,link:wkLink,cost:wkCost,recipes:wkRecipes,shops:wkShops,pic:wkPic,grid:wkGrid,hp:typeof wkHp==='function'?wkHp:null,tabs:WK_TABS,WK2}};
 addEventListener('keydown',e=>{if(WK.open&&e.key==='Escape'&&!TS.open){e.preventDefault();e.stopImmediatePropagation();wkClose()}},true);
