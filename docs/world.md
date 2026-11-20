@@ -96,6 +96,12 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   for 0.4 s out of reach for that update (600 ms grace after it first appears; big/boss/ib/_wb/cb/under/_pet exempt). The first one a session
   sends an `[auto]` bug report with its fields (Admin > Bug reports) so the source can be found. Anything that draws a monster without
   going through `pS` must mark it in `SEEN` or be exempted here.
+- **No hits from under houses** (`combat/247-s255-no-hits-from-under-houses.js`, `window.SQUNDER`): monsters drawn but covered by an island
+  house/castle (067's RH and other players', `window.rhList()` exported from 067): columns x-3..x+3, rows y-4..y of the door tile (`cover(R)`,
+  cached 0.5 s). Every 0.5 s a covered monster (not `_rp`, not exempt as in 227) is moved to the nearest free open tile outside (`moveOut`,
+  avoiding tiles next to you); one still covered within 24 px is taken out of `en` for that update and pushed back after it. **Don't keep a
+  monster out of reach by moving it far away** (227's trick): 001's `en` filter drops anything over 260 px from you, so it's gone for good.
+  Check 36 (also a foreign island castle's furniture).
 - **Plateau sides open to paths** (`world/232-s240-plateau-paths.js`, `SQPLATOPEN(R)`): 101's edge mask `R._pe` blocks every plateau side; only
   the south side is drawn as a cliff. 232's outermost `solid` replaces `R._pe` once per room (`R._peo` = the `R.plat` it was built for) with a mask
   whose N/E/W sides are open toward path tiles (14 trail, 11 flagstones). The room object isn't the one `rgFinish` returns, so don't set it there.

@@ -36,6 +36,8 @@ class RulesDB{
   const old=this.data;this.data=nt;this.log.push({uid,ups:Object.keys(U)});this.fire(old);return{ok:true}}
  get(uid,path){if(!this.canRead(uid,path))return{ok:false,why:'read denied: '+path};return{ok:true,v:clone(getAt(this.data,parts(path)))}}
  // compare-and-set for transactions
+ // test set-up only: write without rules (data as it was before a rule change)
+ force(ups){const old=this.data;let nt=clone(this.data);for(const p in ups)nt=setAt(nt,parts(p),ups[p]);this.data=nt;this.fire(old);return{ok:true}}
  cas(uid,path,oldJ,nv){const cur=getAt(this.data,parts(path));if(JSON.stringify(cur==null?null:cur)!==oldJ)return{ok:false,retry:true,cur:clone(cur)};return this.update(uid,{[path]:nv})}
  listen(page,uid,path,id){if(!this.canRead(uid,path))return{ok:false,why:'read denied: '+path};const key=(page.__k=page.__k||Math.random().toString(36).slice(2))+'|'+id;this.subs.set(key,{page,uid,path,last:undefined,id});this.push(key);return{ok:true}}
  unlisten(page,id){this.subs.delete((page.__k||'')+'|'+id)}

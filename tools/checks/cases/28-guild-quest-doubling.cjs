@@ -12,8 +12,15 @@ module.exports={name:'guild quests double for each one finished in that skill',a
   // an easy wood quest written by hand is refused
   await A.DB().set(A.ref('guilds/'+G.id+'/q'),null);await until(()=>!q(),4000);
   try{await A.DB().set(A.ref('guilds/'+G.id+'/q'),{k:'wood',goal:100000,p:0,t:Date.now(),by:A.me()});out.easy='accepted'}catch(e){out.easy='refused'}
-  A.pick('wood');await until(()=>q(),4000);out.g3=q()&&q().goal;out.prog=G.state.prog;return out});
+  A.pick('wood');await until(()=>q(),4000);out.g3=q()&&q().goal;out.prog=G.state.prog;
+  // Nov 20 report: a quest started before the goals changed (its goal no longer matches the ladder) must still take progress
+  await __dbForce({['guilds/'+G.id+'/q/goal']:50000,['guilds/'+G.id+'/q/p']:0});await until(()=>q()&&q().goal===50000,4000);
+  try{await A.DB().runTransaction(A.ref('guilds/'+G.id+'/q'),c=>{if(c){c.p=(c.p|0)+25}return c});out.old='accepted'}catch(e){out.old='refused'}
+  await until(()=>q()&&q().p===25,3000);out.oldp=q()&&q().p;
+  // but its goal can't be lowered
+  try{await A.DB().set(A.ref('guilds/'+G.id+'/q/goal'),30);out.lower='accepted'}catch(e){out.lower='refused'}return out});
  if(r.err){t(false,r.err);return}
  t.eq(r.first,100000,'first wood quest');t.eq(r.g1,100000,'first wood quest started');t(r.c1&&r.c2,'claiming a finished quest failed');
  t.eq(r.g2,200000,'second wood quest');t.eq(r.mine,100000,'first mining quest is unaffected');t.eq(r.easy,'refused','an easy wood quest by hand');
- t.eq(r.g3,400000,'third wood quest');t.eq((r.prog||{}).gwood,400000,'next wood goal stored')}};
+ t.eq(r.g3,400000,'third wood quest');t.eq((r.prog||{}).gwood,400000,'next wood goal stored');
+ t.eq(r.old,'accepted','progress on a quest started before the goals changed');t.eq(r.oldp,25,'its progress');t.eq(r.lower,'refused','lowering a quest goal')}};

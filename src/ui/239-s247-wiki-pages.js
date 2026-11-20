@@ -70,6 +70,8 @@
   const dk=allMobKeys().map(key=>[key,dropsOf(key).d[k]]).filter(x=>x[1]).sort((a,b)=>b[1].c-a[1].c);
   if(dk.length)get.push('<b>Dropped by</b>: '+dk.slice(0,14).map(([key,v])=>mlnk(key)+' ('+pct(v.c)+')').join(', ')+(dk.length>14?' and more':''));
   for(const g of gathered(k))get.push('<b>Gather it</b>: '+g);
+  // events and other places a section registers (window.SQWIKIGET[item] = list of HTML lines, e.g. 215's meteor strikes)
+  try{for(const g of(window.SQWIKIGET&&SQWIKIGET[k])||[])get.push(g)}catch(e){self.SQERR&&SQERR(e,'239-23')}
   try{for(const c of COOKS)if(c.ck===k)get.push('<b>Cook it</b>: '+lnk(c.raw)+' on a campfire (Cooking '+c.lv+')')}catch(e){self.SQERR&&SQERR(e,'239-15')}
   try{const rare=(window.WK_RARE||[]).filter(r=>String(r.n||'').toLowerCase()===String(nm(k)).toLowerCase());for(const r of rare)get.push('<b>Rare find</b>: '+E(r.w||r.d||''))}catch(e){self.SQERR&&SQERR(e,'239-16')}
   h+=card('How to get it',get.length?get.join('<hr style="border:0;border-top:1px solid #d8dce4;margin:6px 0">'):'Not found anywhere yet: it may come from a boss, a quest, an event or another player.');

@@ -4,6 +4,10 @@ Houses, castles, yards, pets at home, chests, building only at home, homes on gu
 
 Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follows). File numbers like 061 are the source files in `src/` (see `src/manifest.txt`).
 
+- **Visiting island castles** (067's `rhForeign`, 077): other players' island homes come from `build/<uid>.r._h` rows `[rg,x,y,id,furn,castle]`.
+  067 passes `c:e[5]` to `buildForeign` (wrapped by 077), so a castle's furniture is read with the 22x14 hall's tile numbers; it used to be
+  refreshed every call with a 14x10 house's filter (only the first 140 tiles: the back half of the hall, and walls built further in were
+  missing, Nov 19). Check 36.
 - **Castle hall symmetry** (077 `ROOMS.castle.ex=10.5`, 093's castle `ROOMBG`/`c_throne`): the hall stays 22 wide (furniture is keyed
   `y*w+x`, so never change a room's width); a half-tile `ex` = a two-tile gate on the centre line (012's `solid`/leave handle it,
   077's `canPlaceIn` keeps both gate tiles free). Floor marks are mirrored, the wall bricks are laid out from the middle.

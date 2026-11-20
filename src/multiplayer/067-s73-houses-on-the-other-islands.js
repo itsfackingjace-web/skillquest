@@ -8,8 +8,9 @@ const rhHere=()=>{const R=rbR();return R?RH.filter(h=>h.rg===R.region):[]};
 const RHF={};   // other players' island houses, kept as the same objects so a visit isn't interrupted
 function rhForeign(id){const out=[];for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const rec=BLDS.data[o],L=rec&&rec.r&&rec.r._h;if(!L)continue;
   for(const e0 of (Array.isArray(L)?L:Object.values(L))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(e[0]!==id||!isFinite(e[1])||!isFinite(e[2]))continue;
-   const oid=String(e[3]||(e[1]+'_'+e[2])).slice(0,12),key=o+'|'+oid,fresh=buildForeign(o,{id:oid,x:e[1],y:e[2],w:7,f:e[4]});let h=RHF[key];
-   if(!h||h.x!==fresh.x||h.y!==fresh.y){h=RHF[key]=fresh;h.rg=id}else h.furn=fresh.furn;out.push(h);
+   const oid=String(e[3]||(e[1]+'_'+e[2])).slice(0,12),key=o+'|'+oid,fresh=buildForeign(o,{id:oid,x:e[1],y:e[2],w:7,f:e[4],c:e[5]});let h=RHF[key];
+   // e[5]: a castle (077), so its 22-wide hall's furniture is read as such (Nov 19: visitors saw only the back half of a castle)
+   if(!h||h.x!==fresh.x||h.y!==fresh.y||!!h.castle!==!!fresh.castle){h=RHF[key]=fresh;h.rg=id}else h.furn=fresh.furn;out.push(h);
    if(!HS.frUnsub[o])HS.frUnsub[o]=FB.db.onValue(FB.db.ref(FB.D,'friends/'+o),s=>{HS.fr[o]=s.val()||{}})}}return out}
 const rhAt=(list,x,y)=>list.find(h=>x>=h.x-3&&x<=h.x+3&&y>=h.y-1&&y<=h.y)||null;
 function rhFits(R,x,y){for(let dy=-2;dy<=1;dy++)for(let dx=-3;dx<=3;dx++){const tx=x+dx,ty=y+dy;if(dy===1&&dx)continue;if(tx<1||ty<1||tx>=R.w-1||ty>=R.h-1)return false;
@@ -20,6 +21,8 @@ function rhFits(R,x,y){for(let dy=-2;dy<=1;dy++)for(let dx=-3;dx<=3;dx++){const 
 function rhSolidSync(){const R=rbR();if(!R)return;const want=new Set(),had=R._rhS||new Set();
  for(const h of rhHere().concat(rhForeign(R.region)))for(const[x,y]of rhTiles(h)){const i=y*R.w+x;if(had.has(i)||!R.solid.has(i))want.add(i)}
  for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rhS=want}window.rhSolidSync=rhSolidSync;
+// every island house and castle on this island (yours and other players'), for 247's monster check
+window.rhList=()=>{const R=rbR();return R?rhHere().concat(rhForeign(R.region)):[]};
 setInterval(rhSolidSync,500);
 // ---- placing ----
 {SQSTARTB.wrap('067',_sb=>function(k){const R=rbR();if(!R||k!=='house')return _sb(k);if((inv.house|0)<1)return;

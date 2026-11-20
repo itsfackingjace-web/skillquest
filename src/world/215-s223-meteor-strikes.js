@@ -42,6 +42,10 @@
  const ITEMS={meteorore:['Meteorite ore','meteorite ore',300,'A chunk of a fallen star, shot through with shimmering colour. 15 of them, 15 adamant ore and 3 stardust smelt into a meteorite bar (Smithing 80).'],
   stardust:['Stardust','stardust',40,'Glittering dust from the rim of a meteor crater. Used to smelt meteorite bars.'],
   metbar:['Meteorite bar','meteorite bars',6000,'A rare metal smelted from meteorite ore. Used for meteorite gear.']};
+ // the wiki's "How to get it" (239; Nov 20 chat: "the wiki doesn't say where meteorite drops")
+ {const W=window.SQWIKIGET=window.SQWIKIGET||{},ev='<b>Meteor strikes</b>: about once a day a meteor falls somewhere outdoors (Hollow, Ashfall, Briarwood, Ironcrest or the Shattered Expanse) and a banner says where. ';
+  (W.meteorore=W.meteorore||[]).push(ev+'Mine the meteorite veins round the crater (Mining '+CFG.vlv+', steel pickaxe or better) for 1-3 ore each, and everyone who hits the glowing core gets some when it breaks.');
+  (W.stardust=W.stardust||[]).push(ev+'HIT the sparkles on the crater\'s rim for 1-2 stardust each.')}
  for(const k in ITEMS){const[n,sh,v,d]=ITEMS[k];if(!INVK.includes(k))INVK.push(k);INAME[k]=n;SN[k]=n;SHORT[k]=sh;SELLP[k]=v;IDESC[k]=d;inv[k]=inv[k]|0;
   if(!EXTRA_BAG.includes(k)){const j=EXTRA_BAG.indexOf('adamore');EXTRA_BAG.splice(j>=0?j+1:EXTRA_BAG.length,0,k)}}
  try{if(!SM.some(r=>r.k==='metbar'))SM.push({k:'metbar',n:'Meteorite bar',smelt:1,c:{meteorore:15,adamore:15,stardust:3},lv:80,xp:600})}catch(e){self.SQERR&&SQERR(e,'215-2')}

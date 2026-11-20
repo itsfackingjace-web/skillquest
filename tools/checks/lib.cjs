@@ -13,7 +13,7 @@ async function world(n=1,co,init){// init: an extra script run in every page bef
   await ctx.addInitScript(u=>{window.__uid=u;try{if(!localStorage.getItem('sq_age_'+u))localStorage.setItem('sq_age_'+u,'a');localStorage.setItem('sq_strict','1')/* account-only saves, as on skillquestmmo.com */}catch(e){}},uid);if(init)await ctx.addInitScript(init);
   const p=await ctx.newPage();p.uid=uid;p.on('pageerror',e=>errors.push(uid+': '+e.message));
   await p.exposeBinding('__relay',(src,op,pp,v)=>relay(p,op,pp,v));await p.exposeFunction('__dbGet',(u,q)=>DB.get(u,q));await p.exposeFunction('__dbUpdate',(u,q)=>DB.update(u,q));
-  await p.exposeFunction('__dbCas',(u,q,o,v)=>DB.cas(u,q,o,v));await p.exposeFunction('__dbListen',(u,q,id)=>DB.listen(p,u,q,id));await p.exposeFunction('__dbUnlisten',id=>DB.unlisten(p,id));pages.push(p)}
+  await p.exposeFunction('__dbCas',(u,q,o,v)=>DB.cas(u,q,o,v));await p.exposeFunction('__dbForce',ups=>DB.force(ups));await p.exposeFunction('__dbListen',(u,q,id)=>DB.listen(p,u,q,id));await p.exposeFunction('__dbUnlisten',id=>DB.unlisten(p,id));pages.push(p)}
  for(const p of pages)await p.goto('http://sq.test/');
  await pages[0].waitForTimeout(1300);
  for(const p of pages){await p.click('#tsps');await p.click('#tsmn [data-a="in"]')}

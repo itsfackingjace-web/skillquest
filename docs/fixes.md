@@ -62,3 +62,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - 010's arrow chip = the arrow kind shot next (marrow > adarrow > mitharrow > iarrow > arrow) and its count; check 35.
 - Error reports: 093's `PST` (pet draw positions) is put on `window` (098/116/180 read it; it was never global); 213's `FR` is declared before
   the device cache's `setRec` calls (TDZ, the cache never loaded).
+- Guild quest rules: `guilds/$g/q` validates when the quest keeps its `k` and `goal` (`data.exists()`), or the goal matches the ladder. Quests
+  started before the doubling goals failed every progress write (Nov 20 chat). Check 28 writes an old goal with `__dbForce` (lib.cjs/rulesdb.cjs:
+  test set-up writes without rules).
+- 239 wiki "How to get it" reads `window.SQWIKIGET[item]` (HTML lines); 215 adds meteor strikes for `meteorore` and `stardust`. Check 25.
