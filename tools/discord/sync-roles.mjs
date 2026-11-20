@@ -34,6 +34,7 @@ export async function sync({token,fetch:F=globalThis.fetch,dry=false,log=console
  const gs=await api('GET','/users/@me/guilds');const G=guildId?gs.find(g=>g.id===guildId):gs.length===1?gs[0]:null;
  if(!G)throw new Error(gs.length?'The bot is in '+gs.length+' servers; set DISCORD_GUILD_ID.':'The bot isn\'t in any server yet: invite it first.');
  const chans=await api('GET','/guilds/'+G.id+'/channels');const ch=chans.find(c=>c.type===0&&c.name==='link');
+ if(dry){const cat=Object.fromEntries(chans.filter(c=>c.type===4).map(c=>[c.id,c.name]));for(const c of chans.filter(c=>c.type!==4&&/\[sq:/.test(c.topic||'')))log('guild channel #'+c.name+' in '+(cat[c.parent_id]||'no category')+', overwrites '+JSON.stringify((c.permission_overwrites||[]).map(o=>[o.id===G.id?'@everyone':o.id,o.allow,o.deny])))}
  // 1. link requests
  const msgs=[];if(ch){let before=null;for(let k=0;k<50;k++){const b=await api('GET','/channels/'+ch.id+'/messages?limit=100'+(before?'&before='+before:''));msgs.push(...b);if(b.length<100)break;before=b[b.length-1].id}}
  else log('No #link channel: make a text channel called "link" so players can post their codes.');
