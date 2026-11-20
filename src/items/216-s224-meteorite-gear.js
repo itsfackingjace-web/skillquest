@@ -37,7 +37,7 @@
  {const _kl=kitLook;kitLook=function(ch){const o=_kl.apply(this,arguments);const b=ch&&ch.mtk|0;if(!b)return o;
    if(b&2&&o.body==='plate'){o.bc=COL;o.ba=LIT}if(b&4&&o.legs==='greaves'){o.lc=COL;o.la=LIT}if(b&1&&o.head==='helm'){o.hc=COL;o.ha=LIT}return o};try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'216-5')}}
  // ---- bow ----
- add('eq_bow6',{slot:'off',kind:'bow',tier:6,n:'Meteorite bow',ic:'bow',col:'#8a60e0',v:16000,arch:L75,rq2:{s:FL,l:L75}},'A meteorite bow: the hardest-hitting, furthest-shooting bow there is. Needs Archery 75.');
+ add('eq_bow6',{slot:'off',kind:'bow',tier:6,n:'Meteorite bow',ic:'bow',col:'#8a60e0',v:16000,arch:L75,rq2:{s:FL,l:L75}},'A meteorite bow: hits harder and shoots further than adamant bows. Needs Archery 75.');
  {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+(TL.bow===6?3:0)+(LEND?3:0)}}
  {const _br=bowRange;bowRange=function(){return _br.apply(this,arguments)+(TL.bow===6?30:0)}}
  {SQSAVE.after('216:tl',s=>{if(TL.bow===6){s.tl=s.tl||{};s.tl.bow=6}})}

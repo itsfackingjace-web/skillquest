@@ -251,6 +251,7 @@ ui/238-s246-online-list-on-here-map.js
 data/239a-wiki-drops.js
 ui/239-s247-wiki-pages.js
 dev/240-s248-errors-tab.js
+combat/241-s249-guild-boss-mechanics.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

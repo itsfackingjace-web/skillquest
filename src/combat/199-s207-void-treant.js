@@ -25,7 +25,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  WSP.void={cost:3,col:'#9a5af0',c2:'#e8d0ff',sfx:'cvoid'};
  SFX.cvoid=()=>{noise(.14,.07,500);tone(170,.24,'sine',.045,-90);tone(340,.12,'triangle',.02,-200,.04)};
  {const e={slot:'off',kind:'wand',el:'void',n:'Void wand',ic:'wvoid',col:'#7a40c8',v:20000,lv:50};EQ[WV]=e;EQK.push(WV);INVK.push(WV);EXTRA_BAG.push(WV);INAME[WV]=e.n;SELLP[WV]=8000;SN[WV]=e.n+'s';SHORT[WV]=e.n.toLowerCase();inv[WV]=inv[WV]|0;
-  const base='From the Void Treant. Casts void bolts that hit harder than any other wand, and every fourth hit drains life back to you (+1 heart). Needs Magic 50.';
+  const base='From the Void Treant. Casts void bolts that hit harder than adamant wands, and every fourth hit drains life back to you (+1 heart). Needs Magic 50.';
   Object.defineProperty(IDESC,WV,{configurable:true,enumerable:true,get(){let s='';try{s='Damage '+spellDmg('void')+' · Costs '+WSP.void.cost+' mana. '}catch(e){self.SQERR&&SQERR(e,'199-4')}return s+base},set(v){}})}
  {const _sd=spellDmg;spellDmg=function(el){return _sd.apply(this,arguments)+(el==='void'?VB:0)}}
  {SQICON.wrap('199',_ic=>function(k,col){if(k!=='wvoid')return _ic(k,col);const key='g207wvoid';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
@@ -110,7 +110,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
   enterMsg:'You step through the void portal...',portalName:'Void portal',wakeMsg:'The Void Treant awakens! A void portal has opened on the guild island. Everyone who fights it gets a Void wand.',
   about:'An ancient tree swallowed by the void. Once a week the guild can feed it '+SUM.toLocaleString()+' void logs from the guild bank to wake it. A void portal opens on your guild island: go through together.',
   awakeTxt:'The void portal is in the middle of your guild island.',picW:75,
-  rewardTxt:'a <b>Void wand</b> (the strongest wand, Magic 50: its void bolts hit harder than any adamant wand and every fourth hit heals you a heart), 1,500-2,500 gold, 150 void logs, 25 yew logs. 5%: a Void treeling (pet).',
+  rewardTxt:'a <b>Void wand</b> (Magic 50: its void bolts hit harder than adamant wands and every fourth hit heals you a heart), 1,500-2,500 gold, 150 void logs, 25 yew logs. 5%: a Void treeling (pet).',
   tip:'Chop it! Your axe and Woodcutting level add damage to every melee hit. It gets 60% tougher for each extra fighter. Void logs come from void trees: on the Shattered Expanse, and void saplings planted on your guild island.',
   spots:R=>{const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;return[[bx+3,by+3],[bx-3,by+3],[bx,by+6],[bx+3,by+6],[bx-3,by+6],[bx,by+8]]},
   spr:()=>K.treant._s||(K.treant._s=mkSprite(TP,TR)),

@@ -120,7 +120,7 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
  const kfmt=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e4?(Math.floor(n/100)/10).toFixed(n%1000?1:0)+'k':n.toLocaleString();
  const VERB={wood:'Cut trees anywhere',mine:'Mine rocks and ores anywhere',forage:'Forage anywhere',fish:'Catch fish anywhere'};
  (window.SQQEXTRA=window.SQQEXTRA||[]).push(()=>{const G=GQ();if(!G)return[];const{q,K,S,id}=G,p=Math.min(q.goal,q.p|0);  const a=(window.SQCURAREA&&SQCURAREA())||'hollow',gn=(S.state.info&&S.state.info.n)||'your guild';
-  return[{id,cat:'Guild',area:/^scene:/.test(a)?'hollow':a,name:K.n,desc:K.verb+' together with '+gn+'. Everything every member gathers anywhere counts.',st:'active',
+  return[{id,cat:'Guild',area:/^scene:/.test(a)?'hollow':a,name:K.n,desc:(K.vt?K.vt.replace('#',(q.goal|0).toLocaleString('en-US')):K.verb)+' together with '+gn+'. Everything every member gathers anywhere counts.',st:'active',
    step:q.done?'Done! The leader or an officer picks the reward (START > Guild)':VERB[q.k]||K.verb,prog:kfmt(p)+' / '+kfmt(q.goal),ready:!!q.done,
    rew:'One reward for the guild bank: '+K.rw.map(r=>Object.entries(r).map(([k,n])=>n.toLocaleString()+' '+((INAME[k]||k).toLowerCase())).join(', ')).join(' or '),at:null,kind:'guild'}]});
  window.SQGQTRKBTN=()=>{const G=GQ();if(!G)return'';const on=window.SQTRKID&&SQTRKID()===G.id;

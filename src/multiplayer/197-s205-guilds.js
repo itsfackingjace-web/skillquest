@@ -53,12 +53,16 @@
  // ---- Guild Quests: one skill each; goals grow with the guild's size and level; rewards go into the bank ----
  // ---- Guild Quests: enormous shared goals (the whole guild, for weeks); when one is done the leader or an officer picks ONE
  // reward from its list, and it goes into the bank ----
- const QK={wood:{sk:'Woodcutting',n:'Woodcutting quest',verb:'Cut 100,000 trees',goal:100000,rw:[{gs_tree:50},{gs_oak:35},{gs_maple:20},{gs_yew:15},{gs_void:10}]},
-  mine:{sk:'Mining',n:'Mining quest',verb:'Mine 100,000 rocks and ores',goal:100000,rw:[{gv_rock:50},{gv_iron:35},{gv_gold:20},{gv_mith:15},{gv_adam:10}]},
-  forage:{sk:'Foraging',n:'Foraging quest',verb:'Forage 100,000 berries, nuts, mushrooms and cactus fruit',goal:100000,rw:[{gf_bush:50},{gf_nut:35},{gf_cactus:20},{gf_shroom:15}]},
-  fish:{sk:'Fishing',n:'Fishing quest',verb:'Catch 50,000 fish',goal:50000,rw:[{gp_trout:4},{gp_salmon:3},{gp_sword:2},{gp_moon:1},{gp_koi:1},{bait:100000}]}};
+ const QK={wood:{sk:'Woodcutting',n:'Woodcutting quest',vt:'Cut # trees',goal:100000,rw:[{gs_tree:50},{gs_oak:35},{gs_maple:20},{gs_yew:15},{gs_void:10}]},
+  mine:{sk:'Mining',n:'Mining quest',vt:'Mine # rocks and ores',goal:100000,rw:[{gv_rock:50},{gv_iron:35},{gv_gold:20},{gv_mith:15},{gv_adam:10}]},
+  forage:{sk:'Foraging',n:'Foraging quest',vt:'Forage # berries, nuts, mushrooms and cactus fruit',goal:100000,rw:[{gf_bush:50},{gf_nut:35},{gf_cactus:20},{gf_shroom:15}]},
+  fish:{sk:'Fishing',n:'Fishing quest',vt:'Catch # fish',goal:50000,rw:[{gp_trout:4},{gp_salmon:3},{gp_sword:2},{gp_moon:1},{gp_koi:1},{bait:100000}]}};
  const glv=qd=>1+(qd|0);                                      // guild level: one per finished quest
  const rank=k=>Math.min(RMAX,(G.prog&&G.prog[k])|0);
+ // each finished quest of a skill doubles that skill's next goal (Nov 20): the claim writes prog/g<k> = this goal x2 (capped at x1024),
+ // and the rules check a new quest's goal against it; guilds from before that start from base x 2^rank.
+ const goalOf=k=>{const P=G.prog||{};return P['g'+k]!=null?+P['g'+k]:QK[k].goal*Math.pow(2,Math.min(10,P[k]|0))};
+ for(const k in QK)Object.defineProperty(QK[k],'verb',{get(){return this.vt.replace('#',goalOf(k).toLocaleString('en-US'))}});
  const BLD=[{k:'horn',lv:2,n:'Guild horn',d:'Travel to the guild island from anywhere outdoors (once every 3 minutes).'},
   {k:'forge',lv:3,n:'Guild forge',d:'A furnace and an anvil on the island. Smithing there gives +20% XP.'},
   {k:'shrine',lv:4,n:'Guild shrine',d:'Pray once a day for a 20-minute blessing: +20% XP (wisdom) and regeneration.'},
@@ -209,7 +213,7 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
  function setPerm(rk,v){if(role()!=='l')return;DB().set(ref('guilds/'+G.id+'/perm/'+rk),v).catch(fail)}
  function setInfo(k,v){if(role()!=='l')return;DB().set(ref('guilds/'+G.id+'/info/'+k),v).catch(fail)}
  // quests
- function pick(k){if(!boss()||G.q||!QK[k])return;const goal=QK[k].goal;
+ function pick(k){if(!boss()||G.q||!QK[k])return;const goal=goalOf(k);
   DB().set(ref('guilds/'+G.id+'/q'),{k,goal,p:0,t:TS(),by:me()}).then(()=>{tell('New Guild Quest: '+QK[k].verb+'! Everyone in the guild helps, anywhere you play.');msgT=5;sfx('quest')}).catch(fail)}
  function cancelQ(){if(role()!=='l'||!G.q)return;DB().set(ref('guilds/'+G.id+'/q'),null).catch(fail)}
  let PEND=0,PK='',flushT=0,claiming=false;
@@ -218,7 +222,7 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
  let doneSaid='';
  function claimCheck(){const q=G.q;if(!q||!q.done||!G.ready)return;const key=G.id+':'+(q.t||0);if(doneSaid!==key){doneSaid=key;tell('Guild Quest complete! '+(boss()?'Pick the guild\'s reward in START > Guild.':'The leader or an officer picks the reward.'));msgT=6;try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'197-24')}}}
  function claim(i){const q=G.q;if(!boss()||!q||!q.done||claiming||!on()||!QK[q.k])return;const r=QK[q.k].rw[i|0];if(!r)return;claiming=true;const qd=(G.prog.qd|0)+1,up={};
-  up['guilds/'+G.id+'/q']=null;up['guilds/'+G.id+'/prog/qd']=qd;up['guilds/'+G.id+'/prog/'+q.k]=((G.prog[q.k])|0)+1;
+  up['guilds/'+G.id+'/q']=null;up['guilds/'+G.id+'/prog/qd']=qd;up['guilds/'+G.id+'/prog/'+q.k]=((G.prog[q.k])|0)+1;up['guilds/'+G.id+'/prog/g'+q.k]=Math.min((q.goal|0)*2,QK[q.k].goal*1024);
   bankUpdate(r,{w:'quest',k:q.k,d:rewTxt(r)},up).then(()=>{const nb=BLD.find(b=>b.lv===glv(qd));tell('The guild bank received '+rewTxt(r)+'. The guild is now level '+glv(qd)+' and '+QK[q.k].sk+' rank '+Math.min(RMAX,((G.prog[q.k])|0)+1)+'!'+(nb?' New: '+nb.n+'.':''));msgT=7;sfx('quest')}).catch(fail).finally(()=>{claiming=false})}
  // what members gather counts toward the quest: items arriving in a frame where the quest's skill gained XP (like 120's dailies)
  let LASTINV=null,XPF=new Set(),BONUSSAID=0;
@@ -342,7 +346,7 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
    h+='<p style="font-size:13px;opacity:.85">'+(boss()?'Invite players by walking up to them and choosing INVITE TO GUILD.':'Leaders and officers can invite new members.')+' Your guild island: sail there from any harbor post.</p><button class="qb" data-g="leave">Leave guild</button>'}
   else if(tab==='quest'){const q=G.q;
    if(q&&QK[q.k]){const K=QK[q.k],c=q.c||{},top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,8),p=q.p|0;
-    h+='<div class="qc"><b>'+K.n+(q.done?' ✓':'')+'</b><p>'+K.verb+'. Everyone in the guild counts, anywhere you play.</p><div class="gdgbar"><i style="width:'+Math.min(100,100*p/q.goal)+'%"></i></div><small>'+p.toLocaleString()+' / '+q.goal.toLocaleString()+' · you: '+((c[me()]|0)+PEND).toLocaleString()+'</small>'+
+    h+='<div class="qc"><b>'+K.n+(q.done?' ✓':'')+'</b><p>'+K.vt.replace('#',(q.goal|0).toLocaleString('en-US'))+'. Everyone in the guild counts, anywhere you play.</p><div class="gdgbar"><i style="width:'+Math.min(100,100*p/q.goal)+'%"></i></div><small>'+p.toLocaleString()+' / '+q.goal.toLocaleString()+' · you: '+((c[me()]|0)+PEND).toLocaleString()+'</small>'+
      (top.length?'<p><small>Top helpers: '+top.map(([u,n])=>esc((G.m[u]&&G.m[u].n)||'Player')+' '+n.toLocaleString()).join(' · ')+'</small></p>':'');
     try{if(!q.done&&window.SQGQTRKBTN)h+=SQGQTRKBTN()}catch(e){self.SQERR&&SQERR(e,'197-39')}
     if(q.done){h+='<p><b>Done! '+(boss()?'Pick one reward for the guild bank:':'The leader or an officer picks one of these rewards:')+'</b></p>';K.rw.forEach((r,i)=>{h+='<div class="gdgr">'+ic(Object.keys(r)[0])+'<div class="gdtx"><b>'+esc(rewTxt(r))+'</b></div>'+(boss()?'<button data-g="claim:'+i+'">Take this</button>':'')+'</div>'})}
@@ -406,7 +410,7 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
  // ---- others' tags: [TAG] over their heads in their guild colour (presence gt/gc) ----
  (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r||!r.gt)return;g.save();g.font='700 4px '+PF;g.textAlign='center';g.lineWidth=1.5;g.lineJoin='round';g.strokeStyle='#101418';const t='['+r.gt+']';
   g.strokeText(t,Math.round(r.x),Math.round(r.y-39));g.fillStyle=COLS[r.gc|0]||'#fff';g.fillText(t,Math.round(r.x),Math.round(r.y-39));g.restore()});
- window.SQGUILD={api:{create,deposit,withdraw,on,bankUpdate,tell,fail,boss,role,redraw,onIsle,me,TS,now,ref,DB,applyBuildings:()=>{try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){applyBuildings(R);BLV=bkey()}}catch(e){self.SQERR&&SQERR(e,'197-42')}},get rec(){return G.boss||null},get ready(){return G.ready}},pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
+ window.SQGUILD={api:{create,deposit,withdraw,pick,claim,goalOf,on,bankUpdate,tell,fail,boss,role,redraw,onIsle,me,TS,now,ref,DB,applyBuildings:()=>{try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){applyBuildings(R);BLV=bkey()}}catch(e){self.SQERR&&SQERR(e,'197-42')}},get rec(){return G.boss||null},get ready(){return G.ready}},pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
   test:{retag,depositMany,bagFor,horn,pray,rename,pubLB,loadTop,applyBuildings,has,rank,create,invite,accept,leave,pick,flush,deposit,withdraw,plant,dig,setRole,setPerm,claimCheck,claim,applyNodes,listen,startDB,stopDB,frontCell,canPlant}};
  // ---- every frame: start/stop with the connection, count quest progress, flush it, keep the island registered ----
  if(G.id)try{register()}catch(e){self.SQERR&&SQERR(e,'197-43')}

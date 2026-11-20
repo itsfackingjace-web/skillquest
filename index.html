@@ -473,7 +473,7 @@ const smItems=()=>{const a=[];['axe','pick','sword'].forEach((k,i)=>{const t=TL[
 const sellP=k=>shop=='smith'?(k=='iron'?15:k=='stone'?4:Math.round(SELLP[k]*1.2)):(k=='iron'?10:SELLP[k]);
 function rShop(){const sm=shop=='smith';let h='<div class="tl">'+(sm?'Blacksmith':'General Store')+'</div><div class="tl">Gold: '+GLD+'</div><div class="tl" style="font-size:12px">BUY</div>';
  (sm?smItems():genItems()).forEach((it,i)=>{h+='<button class="sb" data-a="b'+i+'" style="opacity:'+(GLD>=it.c&&!(it.req>lvOf(8))?1:.45)+'">'+it.n+'<br><small>'+it.c+' gold'+(it.req>1?' · Defence '+it.req:'')+'</small></button>'});
- if(sm&&!smItems().length)h+='<div class="tl" style="font-weight:400;opacity:.6">You own the best tools!</div>';
+ if(sm&&!smItems().length)h+='<div class="tl" style="font-weight:400;opacity:.6">You own the best tools this shop sells!</div>';
  h+='<div class="tl" style="font-size:12px;margin-top:12px">SELL</div>';let any=0;
  for(const k in SELLP){if(sm&&!SMB.has(k))continue;const n=inv[k]|0;if(n>0){any=1;h+='<button class="sb" data-a="s'+k+'">Sell all '+(SN[k]||INAME[k]||k)+' ('+n+')<br><small>+'+n*sellP(k)+' gold</small></button>'}}
  if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing to sell</div>';pbd.innerHTML=h}
@@ -1076,7 +1076,7 @@ SQCLOSEPN.after('010',()=>{closeScreenOnly();fromMenu=false;if(smOpen)closeSM()}
 const ptt=document.createElement('span');ptt.className='ptt';(()=>{const px=document.getElementById('px');px.parentNode.insertBefore(ptt,px)})();
 // --- bag ---
 const INAME={wood:'Wood',stone:'Stone',iron:'Iron ore',ibar:'Iron bar',sbar:'Steel bar',berry:'Berries',meat:'Raw meat',cooked:'Cooked meat',idag:'Iron dagger',sdag:'Steel dagger'};
-const IDESC={wood:'Chopped from trees. Used for campfires, crafting and as furnace fuel.',stone:'Mined from rocks. Used for campfires, crafting and steel.',iron:'Rare ore from rocks (Mining 15 and a stone pickaxe). Smelt it at the furnace.',ibar:'Smelted iron. Forge it into daggers and armor at the anvil.',sbar:'Strong steel. Forges the best armor in the land.',berry:'Sweet wild berries. Restores a little food.',meat:'Dropped by slimes. Cook it at a campfire before eating.',cooked:'Hearty cooked meat. Restores food and 2 hearts.',idag:'A simple iron dagger. The blacksmith pays well for these.',sdag:'A fine steel dagger. The blacksmith pays well for these.'};
+const IDESC={wood:'Chopped from trees. Used for campfires, crafting and as furnace fuel.',stone:'Mined from rocks. Used for campfires, crafting and steel.',iron:'Rare ore from rocks (Mining 15 and a stone pickaxe). Smelt it at the furnace.',ibar:'Smelted iron. Forge it into daggers and armor at the anvil.',sbar:'Strong steel. Forges steel armor and tools at the anvil.',berry:'Sweet wild berries. Restores a little food.',meat:'Dropped by slimes. Cook it at a campfire before eating.',cooked:'Hearty cooked meat. Restores food and 2 hearts.',idag:'A simple iron dagger. The blacksmith pays well for these.',sdag:'A fine steel dagger. The blacksmith pays well for these.'};
 for(const f of FISH_T){INAME[f.k]='Raw '+f.n.toLowerCase();INAME['c'+f.k]='Cooked '+f.n.toLowerCase();IDESC[f.k]='Caught at the shoreline. Cook it at a campfire (Cooking '+f.cook+').';IDESC['c'+f.k]='Restores food and '+f.heal+' heart'+(f.heal>1?'s':'')+'.'}
 for(const gd of GOODS){INAME[gd.k]=gd.n;IDESC[gd.k]='Crafted goods. The general store buys these for '+gd.v+' gold.'}
 const POCK=[{n:'ITEMS',k:['wood','stone','iron','ibar','sbar']},{n:'FOOD',k:['berry','meat','cooked',...FISH_T.map(f=>'c'+f.k),...FISH_T.map(f=>f.k)]},{n:'GOODS',k:[...GOODS.map(gd=>gd.k),'idag','sdag']},{n:'KEY ITEMS',key:1}];
@@ -3862,8 +3862,8 @@ TIER_N[5]='Crystal';TCOL[5]='#68d8f8';
 EQ.eq_sword5={slot:'main',kind:'sword',tier:5,n:'Crystal blade',ic:'sword',col:'#68d8f8',v:600};
 EQ.eq_bow3={slot:'off',kind:'bow',tier:3,n:'Bone bow',ic:'bow',v:500};
 for(const k of['eq_sword5','eq_bow3']){const e=EQ[k];EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=e.v;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase()}
-IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns. The strongest sword there is.';
-IDESC.eq_bow3='LEGENDARY. Carved from the Bone Lord\'s own bones. Shoots further and hits much harder than any other bow.';
+IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns. Hits harder than steel.';
+IDESC.eq_bow3='LEGENDARY. Carved from the Bone Lord\'s own bones. Shoots further and hits much harder than a shortbow or longbow.';
 const RARK={eq_sword5:'legendary',eq_bow3:'legendary',sbar:'uncommon',ibar:'common',arrow:'common',iarrow:'uncommon',cooked:'common'};
 const rarOf=k=>DITEM[k]?DITEM[k].r:RARK[k]||'common';
 const _ad35=arrowDmg;arrowDmg=function(){return _ad35()+(TL.bow>=3?2:0)};
@@ -9479,7 +9479,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.20-1',d:'Nov 20, 2026',t:"Harbor posts work again",n:["Fixed: harbor posts on islands (guild islands too) didn't respond, so you couldn't sail home. Island folk, guild boards, the guild bank and loot chests on islands answer again too."]},
+ {v:'2026.11.20-2',d:'Nov 20, 2026',t:"Guild bosses fight back, bigger guild quests",n:["The Void Treant and the Giant Turtle are real guild raids now: three times the health, faster attacks, and a second rage at a quarter health. The Treant's shockwave throws you back and can't be rolled through, it burrows and bursts up somewhere else, void poison washes over the whole arena, it sometimes glows green and HEALS from every hit (stop attacking!), and void saplings hunt one fighter each (they can't be hurt and switch targets every 8 seconds). The Turtle's tidal waves throw you back, its whirlpools pull you in, and it spins around in its shell where it can't be hurt. START > Guild > Bosses shows this week's top 5 damage.","Guild Quests grow: each quest your guild finishes in a skill doubles the next one in that skill (100,000 trees, then 200,000, then 400,000...). Quests already running keep their goal.","Item descriptions no longer claim to be the best in the game (that stopped being true as new gear came out). They say what they beat instead.","Fixed: harbor posts on islands (guild islands too) didn't respond, so you couldn't sail home. Island folk, guild boards, the guild bank and loot chests on islands answer again too."]},
  {v:'2026.11.19-2',d:'Nov 19, 2026',t:"The Song Studio, new pets, song zones and a better wiki",n:["The wiki has a page for every item and monster: tap any name to see how to get it (recipes, shops, which monsters drop it and how often, where to gather it) and what it's used for. ◀ Back takes you where you were.","New wiki tabs: Brewing, Playing together (parties, trading, the market, duels, chess), Patrons and Achievements (with your progress). Home shows what you unlocked lately and skills you haven't tried yet, and search finds item and monster pages.","Patrons: the Song Studio is open (START > Patron > Song Studio). Pick a mood, tap notes on a grid and send your song in. No music experience needed: the grid only has notes that fit the song, the bright rows go with every chord, and \"Make me a tune\" and \"Pick chords for me\" give you a start. Approved songs can play in the game, with your name in the credits.","New pets can now come to the game, including pets Patrons draw in the Art Room.","Places on an island can now have music of their own, so a different song can play as you walk into them.","The HERE map now lists the players online under it, like the WORLD map, and marks the ones on your island."]},
  {v:'2026.11.18-5',d:'Nov 18, 2026',t:"Bug fixes, fishing behind menus and colourful campfires",n:["Campfires show what they're made of: oak burns golden, willow blue, maple crimson, yew green and void logs purple, and each one glows in its own colour at night. The kindling you're lighting shows the log's colour too.","You can eat while cooking at a fire: press EAT while your food cooks and you eat something without stopping the cooking.","Fixed: fishing stopped while a menu or screen was open. Bites now keep coming and the line reels in behind the menu.","Fixed: with a full bag, a chest's item card could be cut off at the bottom of the screen on iPhone, hiding its buttons. It now always fits on screen.","Fixed: on Ironcrest (and anywhere else a path meets a rocky plateau), you couldn't step from the path onto the plateau's side even though nothing was in the way. Paths now lead straight onto plateaus from the north, east and west. The cliff faces on the south side still need the stone stairs.","Fixed: since earlier today, HIT could do two things at once: reeling in a fish or placing something also swung your weapon, and other buttons that take over HIT did the same. HIT does one thing again.","Fixed: smelting, smithing or crafting at a station in your house (or next to chests outdoors) could save your game with the chests' contents counted in your bag as well. If you closed the game soon after, the next time it loaded those items were in both places. Saves now never count items borrowed from chests.","Fixed: getting up very quickly after falling could lose everything you carried without leaving a gravestone. Your things now always go into your grave, or stay in your bag if there's nowhere to put one.","Fixed: closing the game while lighting a campfire with oak or better logs could turn those logs into plain wood.","Fixed: on phones, the world boss bar covered the getting-started tips. It now sits below them."]},
  {v:'2026.11.17-3',d:'Nov 17, 2026',t:"Market prices set by players, better character screen",n:["Every item now has a market price worked out from what players actually paid for it on the World Market: the middle price of the last 30 days' sales. You'll see it when you buy or sell (with a little chart of recent sales), in your bag and on chest item cards. Items nobody has traded lately just show the shop price.","Sales on the World Market of 100 gold or more now pay a 1% market tax, taken from the seller's gold. It keeps gold from piling up, so prices stay fair for new players. The sell screen shows what you'll get after the tax.","Your character screen (the tab with your name): tap any slot with gear in it, or the name of the ring or amulet you're wearing, to see that item's card, with its stats, what a shop pays and its market price. The stats list now also shows health, armour, your block limit, critical hit chance, mana regen per second, every gear effect you're wearing (life steal, burn, bonus XP and so on), Turtle and Meteorite set pieces, and potion buffs with their time left.","Every item in your bag now shows what a shop pays for it next to its market price."]},
@@ -9732,7 +9732,7 @@ WK2.guild=()=>{const out=[],G=(t,h,ic)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,'
  G('Planting','<br>Leaders and officers plant the saplings, ore veins, bushes, cactus seeds and mushroom spores the guild earns from quests. Every member can chop, mine and forage them, and everything grows back in a minute instead of four. Void saplings grow void trees, whose void logs summon the Void Treant.');
  G('The guild bank','<br>The bank chest on the island holds items for the whole guild. The leader sets how many withdrawals officers and members get each day, and the leader and officers can read a log of every deposit and withdrawal. Buttons put in all your void logs, raw fish, logs or ores at once, or everything in your bag (tap twice).');
  H('Guild Quests, levels and ranks');
- G('Guild Quests','<br>The leader or an officer starts one quest at a time, and everything members gather anywhere in the world counts toward it:<br>Woodcutting: cut <b>100,000</b> trees<br>Mining: mine <b>100,000</b> rocks and ores<br>Foraging: forage <b>100,000</b> berries, nuts, mushrooms and cactus fruit<br>Fishing: catch <b>50,000</b> fish<br>When it\'s done, the leader or an officer picks one reward for the bank: tree saplings (up to Void saplings), ore veins, berry and nut bushes, cactus seeds, mushroom spores, fishing ponds or a mountain of bait.');
+ G('Guild Quests','<br>The leader or an officer starts one quest at a time, and everything members gather anywhere in the world counts toward it:<br>Woodcutting: cut <b>100,000</b> trees<br>Mining: mine <b>100,000</b> rocks and ores<br>Foraging: forage <b>100,000</b> berries, nuts, mushrooms and cactus fruit<br>Fishing: catch <b>50,000</b> fish<br>Those are the first quests. Every quest of a skill the guild finishes doubles the next one of that skill (200,000 trees, then 400,000, and so on).<br>When it\'s done, the leader or an officer picks one reward for the bank: tree saplings (up to Void saplings), ore veins, berry and nut bushes, cactus seeds, mushroom spores, fishing ponds or a mountain of bait.');
  G('Fishing ponds','<br>The Fishing quest\'s rewards are ponds: 4 trout, 3 salmon or 2 swordfish ponds, or 1 moonfin or 1 koi pond. The leader or an officer digs one from the Bank tab, facing a 3x3 patch of open ground with land all around it. In a pond, its fish bites much more often (moonfin at any time of day; the ancient koi 15% of bites instead of 6%), with the same Fishing level as anywhere. Each pond holds 30 catches for each player and refills one every 2 minutes. Pond catches count toward Guild Quests.');
  G('Guild level','<br>The guild\'s level is 1 plus the number of quests it has finished. Higher levels unlock the guild buildings.');
  G('Skill ranks','<br>Every finished quest ranks the guild up in that quest\'s skill, up to <b>rank 5</b>. Each rank gives every member <b>+10% XP</b> in that skill and a <b>10% chance of an extra item</b> when they gather with it, anywhere in the world. Summoning a guild boss spends one rank of its skill (see below), and quests earn it back.');
@@ -9740,9 +9740,9 @@ WK2.guild=()=>{const out=[],G=(t,h,ic)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,'
  H('Guild bosses');
  G('How they work','<br>Each guild boss can be summoned once a week (weeks start on Monday) by the leader or an officer from START &gt; Guild &gt; Bosses. Summoning takes its cost from the guild bank <b>and one rank</b> in the boss\'s skill. A portal opens on the guild island: go through together. The boss gets tougher for every extra fighter and stays until your guild beats it that week. Every fighter gets the reward, every fight. When it falls, everyone is walked back out of the lair.');
  const tr=B.treant,tu=B.turtle;
- G('The Void Treant','<br><b>Cost:</b> '+n(tr?tr.need:50000)+' void logs and 1 Woodcutting rank.<br><b>Every fighter gets:</b> a <b>Void wand</b>, the strongest wand in the game (Magic 50): its purple void bolts hit harder than any adamant wand, every fourth hit heals you a heart, and its ultimate is Void Rift.<br><b>Tip:</b> chop it! Your axe and Woodcutting level add damage to every melee hit.',tr?pic(tr):'');
- G('The Giant Turtle','<br><b>Cost:</b> '+n(tu?tu.need:5000)+' raw fish (any kinds; the cheapest are used first) and 1 Fishing rank.<br><b>Every fighter gets:</b> a <b>Turt fragment</b> and 25 swordfish. Its portal is a whirlpool by the guild island\'s pier. It fires bubbles, sets off geysers, charges in its shell (watch for the red line) and calls crabs when hurt.<br><b>Tip:</b> your Fishing level and fishing rod add damage to every melee hit.',tu?pic(tu):'');
- G('Turtle armor','<br>Smith it from Turt fragments at an anvil: <b>Turtle helm</b> (1 fragment, Smithing 75), <b>Turtle legs</b> (2, Smithing 78) and <b>Turtle chestplate</b> (2, Smithing 80). Defence 50 to wear. It\'s the best armor in the game: each piece adds 3% block chance, two pieces add another 5%, and the full set adds 5% more and raises the block limit.');
+ G('The Void Treant','<br><b>Cost:</b> '+n(tr?tr.need:50000)+' void logs and 1 Woodcutting rank.<br><b>Every fighter gets:</b> a <b>Void wand</b> (Magic 50): its purple void bolts hit harder than adamant wands, every fourth hit heals you a heart, and its ultimate is Void Rift.<br><b>Bring the whole guild.</b> It has 18,000 health (more for every fighter). Its shockwave throws you back and can\'t be rolled through. It burrows and bursts up somewhere else (it can\'t be hurt underground). Void poison washes over the whole arena. When it glows green it drinks in every blow: <b>stop attacking</b> or you heal it. Void saplings each hunt one fighter, can\'t be hurt and hit for 3 hearts: run, and watch who they switch to every 8 seconds. Below a quarter health it attacks even faster. The guild screen\'s Bosses tab shows this week\'s top 5 damage.<br><b>Tip:</b> chop it! Your axe and Woodcutting level add damage to every melee hit.',tr?pic(tr):'');
+ G('The Giant Turtle','<br><b>Cost:</b> '+n(tu?tu.need:5000)+' raw fish (any kinds; the cheapest are used first) and 1 Fishing rank.<br><b>Every fighter gets:</b> a <b>Turt fragment</b> and 25 swordfish. Its portal is a whirlpool by the guild island\'s pier. It fires bubbles, sets off geysers, charges (watch for the red line) and calls crabs. It has 21,000 health (more for every fighter). Tidal waves throw you back and can\'t be rolled through; whirlpools pull you in and crush whoever is in the middle; it hides in its shell and spins around the arena, and can\'t be hurt while it does. The Bosses tab shows this week\'s top 5 damage.<br><b>Tip:</b> your Fishing level and fishing rod add damage to every melee hit.',tu?pic(tu):'');
+ G('Turtle armor','<br>Smith it from Turt fragments at an anvil: <b>Turtle helm</b> (1 fragment, Smithing 75), <b>Turtle legs</b> (2, Smithing 78) and <b>Turtle chestplate</b> (2, Smithing 80). Defence 50 to wear. Each piece adds 3% block chance, two pieces add another 5%, and the full set adds 5% more and raises the block limit.');
  H('Guild capes');
  G('Wearing the cape','<br>Every member can wear the guild cape: START &gt; Style &gt; Cape. Everyone sees it on you, and it takes the place of your Marlo cape while you wear it.');G('Guild sails','<br>Fly the guild\'s colours on your boat: START &gt; Style &gt; Boat &gt; Guild sails. The sails use the cape\'s design (colours, pattern, trim and emblem), and other players see them too.');
  G('Designing the cape','<br>The leader designs it in START &gt; Guild &gt; Settings: a main colour, a second colour, a pattern (plain, halves, centre stripe, bands or quarters), a trim, and one of '+((window.SQGCAPE&&SQGCAPE.EM.length-1)||13)+' emblems in any colour. Members see the new design once the leader taps Save.');
@@ -12263,7 +12263,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
    floor:['#56603e','#4e5838'],wall:'#3a4228',trim:'#1e2414',gold:[300,500],loot:[['oaklog',15],['willowlog',10],['emerald',1]],xp:1500,rare:['pweb','Webling (pet)','A little thorn spider that scuttles after you.'],
    atk:[['fan',2.6,{n:3,spread:.35,sp:85,k:'web',slow:1}],['leap',5.5,{}],['summon',9,{key:'spiderling',n:3,cap:5}]]},
   ashfall:{n:'The Iron Warlord',door:'sealgate',lm:'The Fallen Bastion',hp:620,col:'#a04020',shard:'Ember sigil shard',sc:['#f07030','#802010'],
-   floor:['#4a3430','#42302c'],wall:'#2e2220',trim:'#140c0a',gold:[450,750],loot:[['ibar',8],['gbar',3],['ruby',1]],xp:2200,rare:['eq_sword8','Warlord\'s blade','A red-hot greatsword: the strongest sword in the game (Attack 50).'],
+   floor:['#4a3430','#42302c'],wall:'#2e2220',trim:'#140c0a',gold:[450,750],loot:[['ibar',8],['gbar',3],['ruby',1]],xp:2200,rare:['eq_sword8','Warlord\'s blade','A red-hot greatsword: it hits harder than an adamant sword (Attack 50).'],
    atk:[['charge',4,{}],['sweep',3,{}],['circles',5,{n:5,r:20,delay:1.1,k:'fire'}]]},
   ironcrest:{n:'The Frost Wyrm',door:'sealdoor',lm:'The Giant\'s Stair',hp:820,col:'#78b8e0',shard:'Frost sigil shard',sc:['#b8e8ff','#4888c0'],
    floor:['#7c8ea0','#748698'],wall:'#506478',trim:'#2c3848',gold:[600,950],loot:[['mbar',3],['mithore',8],['sapphire',1]],xp:3000,rare:['ja_frost','Frostbite ring','A ring: your melee hits chill monsters, and one in five freezes them solid for a moment.'],
@@ -12319,7 +12319,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
   return{ib:{id:b._mid,dead:b.dead?1:0,pr:b.pr.slice(0,40).map(p=>[p.id|0,r1(p.x),r1(p.y),r1(p.vx),r1(p.vy),r1(p.t),p.k||'',p.slow?1:0]),
    hz:b.hz.slice(0,24).map(h=>[h.id|0,h.k,r1(h.x),r1(h.y),r1(h.r),r1(h.t),r1(h.d||0),h.kind||'',h.max||0,h.nohit?1:0,h.done?1:0]),
    act:b.act?{id:b.act.id|0,k:b.act.k,t:r1(b.act.t),d:b.act.d,ax:b.act.ax||0,ay:b.act.ay||0,an:b.act.an||0,done:b.act.done?1:0}:null,
-   wind:b.wind?{a:b.wind.a,t:r1(b.wind.t),d:b.wind.d}:null}}};
+   wind:b.wind?{a:b.wind.a,t:r1(b.wind.t),d:b.wind.d}:null,mir:r1(b.mir||0),inv:b.inv?1:0}}};
  const DONE=new Set();// attacks that already hit you (or that you already dodged) in this fight
  window.SQMOBRX=(owner,x)=>{const I=x&&x.ib;if(!I||typeof I.id!=='string')return;const M=window.SQMOB,p=M&&M.prox&&M.prox.get(I.id);if(!p||p.type!=='ib')return;
   p.pr=(Array.isArray(I.pr)?I.pr:Object.values(I.pr||{})).map(q=>({id:+q[0],x:+q[1],y:+q[2],vx:+q[3],vy:+q[4],t:+q[5],k:String(q[6]||''),slow:!!+q[7]})).filter(q=>!DONE.has('p'+q.id));
@@ -12327,6 +12327,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
   p.hz=(Array.isArray(I.hz)?I.hz:Object.values(I.hz||{})).map(q=>{const h={id:+q[0],k:String(q[1]),x:+q[2],y:+q[3],r:+q[4],t:+q[5],d:+q[6],kind:String(q[7]||''),max:+q[8],nohit:!!+q[9],done:!!+q[10]};
    const o=old.get(h.id);if(o){if(o.done)h.done=true;if(o.hit)h.hit=true;if(h.k==='ring'&&o.r>h.r)h.r=o.r}if(DONE.has('h'+h.id)){h.done=true;h.hit=true}return h});
   const A=I.act;if(A&&typeof A==='object'){if(!p.act||p.act.id!==A.id)p.act={id:+A.id,k:String(A.k),t:+A.t,d:+A.d,ax:+A.ax,ay:+A.ay,an:+A.an,done:!!A.done,mine:false};else p.act.t=Math.max(p.act.t,+A.t)}else p.act=null;
+  p.mir=+I.mir||0;p.inv=+I.inv?1:0;
   p.wind=I.wind&&typeof I.wind==='object'?{a:String(I.wind.a),t:+I.wind.t,d:+I.wind.d}:null;
   if(I.dead&&!p._rew){p._rew=1;try{ibReward(p)}catch(e){console.warn(e)}}};
  // another player's boss here: play its attacks against you
@@ -12336,8 +12337,9 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
   b.pr=b.pr.filter(p=>p.t>0);
   for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;DONE.add('h'+h.id);if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':h.kind==='water'?'A geyser bursts under you!':'The void bursts under you!');
      if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){self.SQERR&&SQERR(e,'100-5')}}}
-   else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;DONE.add('h'+h.id);if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
-  b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<(h.max||60));
+   else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);const un=window.SQIBRING&&SQIBRING.un(h);if(!h.hit&&dd>pr-6&&dd<h.r+6&&(un||!roll())){h.hit=1;DONE.add('h'+h.id);if(un)SQIBRING.hit(b,h);else if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}
+   else if(window.SQIBHZ)SQIBHZ(b,h,dt,false)}
+  b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.k==='ring'?h.r<(h.max||60):!h.done&&h.t<h.d);
   const A=b.act;if(A){A.t+=dt;const pd=Math.hypot(P.x-b.x,P.y-b.y);
    if(A.k==='leap'&&A.t>=A.d&&!A.mine){A.mine=1;if(pd<26)hit(2,IB[b.ib].n+' lands on you!')}
    else if(A.k==='charge'&&A.t>A.d&&A.t<A.d+.6&&!A.mine&&pd<22){A.mine=1;hit(2,IB[b.ib].n+' tramples you!')}
@@ -12363,7 +12365,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
  const roll=()=>typeof ROLLT!=='undefined'&&ROLLT>0;
  const hit=(d,msg)=>{if(dead)return false;return hurtP(d,msg)};
  // every attack that isn't a leap, charge or sweep gets a short wind-up first, so you can see it coming
- function start(b,a,o){if(a==='summon'&&o.half&&b.hp>=b.mhp/2)return;if(a==='leap'||a==='charge'||a==='sweep')return ibFire(b,a,o);b.wind={a,o,t:0,d:a==='blink'?.35:.45}}
+ function start(b,a,o){if(a==='summon'&&o.half&&b.hp>=b.mhp/2)return;if(a==='leap'||a==='charge'||a==='sweep'||(window.SQIBFIRE&&SQIBFIRE[a]&&SQIBFIRE[a].now))return ibFire(b,a,o);b.wind={a,o,t:0,d:a==='blink'?.35:.45}}
  function ibFire(b,a,o){const T=ibT(b),B=IB[b.ib],dx=T.x-b.x,dy=T.y-b.y,d=Math.hypot(dx,dy)||1,an=Math.atan2(dy,dx),en2=b.hp<b.mhp/2;
   if(a==='fan'){const shots=o.burst||1;for(let s=0;s<shots;s++)setTimeout(()=>{if(b.dead)return;const T2=ibT(b),an2=Math.atan2(T2.y-6-b.y+10,T2.x-b.x);for(let k=0;k<o.n;k++){const q=an2+(k-(o.n-1)/2)*o.spread;b.pr.push({id:++IBN,x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3,k:o.k,slow:o.slow})}try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'100-8')}},s*350)}
   else if(a==='spiral'){const n=en2?o.n+4:o.n;b.sp0=(b.sp0||0)+.4;for(let k=0;k<n;k++){const q=k/n*6.283+b.sp0;b.pr.push({id:++IBN,x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3.4,k:o.k})}}
@@ -12373,6 +12375,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
   else if(a==='charge')b.act={id:++IBN,k:'charge',t:0,d:.75,ax:dx/d,ay:dy/d,run:0};
   else if(a==='sweep')b.act={id:++IBN,k:'sweep',t:0,d:.65,an,done:false};
   else if(a==='blink'){const R=SCENE&&SCENE.room;for(let t=0;t<30;t++){const x=(4+Math.random()*(AW-8))*16,y=(3+Math.random()*(AH-9))*16;if(R&&!R.solid.has(Math.floor(y/16)*AW+Math.floor(x/16))&&Math.hypot(x-T.x,y-T.y)>70){for(let k=0;k<14;k++)part(b.x,b.y-14,(Math.random()-.5)*90,(Math.random()-.5)*90,.4,B.sc[0],0,2);b.x=x+8;b.y=y+8;break}}}
+  else if(window.SQIBFIRE&&SQIBFIRE[a])SQIBFIRE[a](b,o,T);
   else if(a==='summon'){if(o.half&&!en2)return;const alive=en.filter(m=>m.summon&&!m.dead).length;for(let k=alive;k<Math.min(o.cap,alive+o.n);k++){const q=Math.random()*6.283,x=b.x+Math.cos(q)*40,y=b.y+Math.sin(q)*28;if(solid(x,y))continue;
     let m;if(o.key==='spiderling')m={x,y,hp:12,mhp:12,kx:0,ky:0,type:'spiderling'};else{m=rgMake(o.key,o.key==='bandit'?30:40,x,y);m.rg=b.ib}m.summon=1;m._prov=9;en.push(m);try{if(window.RG_OWN)RG_OWN.add(m)}catch(e){self.SQERR&&SQERR(e,'100-9')}}}}
  {SQUPD.wrap('100',_u=>function(dt){if(ST.boss&&!ST.boss._rp&&ST.boss.hp<=0&&!ST.boss._rew){try{ibReward(ST.boss)}catch(e){console.warn(e)}}ibShared(dt);const b=ST.boss,R=SCENE&&SCENE.room,live=b&&!b._rp&&!b.dead&&R&&R.ib===b.ib&&en.includes(b);const pre=live?[b.x,b.y]:null;_u(dt);if(!live||menuOpen||pnOpen)return;
@@ -12384,6 +12387,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
    const A=b.act;if(A){A.t+=dt;
     if(A.k==='leap'){const p=Math.min(1,A.t/A.d);b.x=A.ox+(A.tx-A.ox)*p;b.y=A.oy+(A.ty-A.oy)*p;b.jump=Math.sin(p*Math.PI)*30;if(p>=1){b.jump=0;b.act=null;b.hz.push({id:++IBN,k:'ring',x:b.x,y:b.y,r:8,max:56,hit:false,t:0});if(Math.hypot(P.x-b.x,P.y-b.y)<26)hit(2,IB[b.ib].n+' lands on you!');try{sfx('mine')}catch(e){self.SQERR&&SQERR(e,'100-11')}}}
     else if(A.k==='charge'){if(A.t>A.d){const sp=260*dt,nx=b.x+A.ax*sp,ny=b.y+A.ay*sp;if(!solid(nx,ny+6)&&A.run<.6){b.x=nx;b.y=ny;A.run+=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<22&&!A.hit){A.hit=1;hit(2,IB[b.ib].n+' tramples you!')}}else b.act=null}}
+    else if(window.SQIBACT&&SQIBACT[A.k])SQIBACT[A.k](b,A,dt);
     else if(A.k==='sweep'){if(A.t>A.d&&!A.done){A.done=1;const q=Math.atan2(P.y-b.y,P.x-b.x),da=Math.abs(((q-A.an+Math.PI*3)%(Math.PI*2))-Math.PI);if(pd<64&&da<1.1)hit(2,'The great sword cleaves you!');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'100-12')}}if(A.t>A.d+.3)b.act=null}}
    else{// walk toward (or keep a little away from) you
     const want=b.ib==='nomans'||b.ib==='shattered'?90:30;if(!b.wind){if(d>want+10){stepTo(b,dx/d*(en2?34:26)*dt,dy/d*(en2?34:26)*dt);b.mv=1}else if(d<want-10){stepTo(b,-dx/d*24*dt,-dy/d*24*dt);b.mv=1}}
@@ -12395,8 +12399,9 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
    // circles and rings
    for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':h.kind==='water'?'A geyser bursts under you!':'The void bursts under you!');
        if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){self.SQERR&&SQERR(e,'100-13')}}}
-    else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
-   b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<h.max);
+    else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);const un=window.SQIBRING&&SQIBRING.un(h);if(!h.hit&&dd>pr-6&&dd<h.r+6&&(un||!roll())){h.hit=1;if(un)SQIBRING.hit(b,h);else if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}
+    else if(window.SQIBHZ)SQIBHZ(b,h,dt,true)}
+   b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.k==='ring'?h.r<h.max:!h.done&&h.t<h.d);
    // the fight is over
    if(b.hp<=0&&!b._rew)ibReward(b)})}
  // spiderlings: small, fast, weak
@@ -12425,7 +12430,8 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
     if(!h.done){g.strokeStyle='rgba('+c+','+(.5+.4*Math.sin(tm*16))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.7,0,0,6.283);g.stroke();g.fillStyle='rgba('+c+','+(.12+.25*p)+')';g.beginPath();g.ellipse(h.x,h.y,h.r*p,h.r*.7*p,0,0,6.283);g.fill();
      if(h.kind==='dyn'){const sx=h.x,sy=h.y-30*(1-p);R4(sx-2,sy-5,4,7,K);R4(sx-1,sy-4,2,5,'#d83020');R4(sx,sy-7,1,2,'#f8e060')}else if(h.kind==='ice'){const sy=h.y-60*(1-p);R4(h.x-2,sy-10,5,10,K);R4(h.x-1,sy-9,3,8,'#d8f4ff')}}
     else{g.fillStyle='rgba('+c+','+(.5*(1-(h.t-h.d)/.35))+')';g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.7,0,0,6.283);g.fill()}}
-   else{g.strokeStyle='rgba(240,230,210,'+(.8*(1-h.r/h.max))+')';g.lineWidth=3;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.62,0,0,6.283);g.stroke()}}
+   else if(h.k!=='ring'){if(window.SQIBHZDRAW)SQIBHZDRAW(b,h,tm)}
+   else{g.strokeStyle=(h.kind==='poison'?'rgba(120,230,90,':h.kind==='push'?'rgba(200,150,255,':'rgba(240,230,210,')+(.8*(1-h.r/h.max))+')';g.lineWidth=3;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.62,0,0,6.283);g.stroke()}}
   for(const p of b.pr||[]){if(p.k==='bullet'){R4(p.x-2,p.y-2,4,4,K);R4(p.x-1,p.y-1,2,2,'#f8e070')}else{const c=p.k==='web'?['#f0f0f0','#c8c8c8']:p.k==='ice'?['#e8f8ff','#78c0f0']:p.k==='bubble'?['#f0fcff','#58b0e8']:['#d8b0ff','#7040c0'];g.fillStyle='rgba(0,0,0,0)';R4(p.x-3,p.y-3,6,6,K);R4(p.x-2,p.y-2,4,4,c[1]);R4(p.x-1,p.y-2,2,2,c[0])}}
   if(b.act&&b.act.k==='charge'&&b.act.t<b.act.d){g.strokeStyle='rgba(255,80,60,'+(.4+.4*Math.sin(tm*20))+')';g.lineWidth=10;g.beginPath();g.moveTo(b.x,b.y);g.lineTo(b.x+b.act.ax*160,b.y+b.act.ay*160);g.stroke()}
   if(b.act&&b.act.k==='sweep'&&!b.act.done){g.fillStyle='rgba(255,90,60,'+(.15+.2*(b.act.t/b.act.d))+')';g.beginPath();g.moveTo(b.x,b.y);g.arc(b.x,b.y,64,b.act.an-1.1,b.act.an+1.1);g.closePath();g.fill()}}
@@ -12479,7 +12485,7 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
  for(const k in PSP){window.SQNPET[k]={n:PSP[k].n,src:'a rare drop from an island boss'};if(window.LUX&&LUX.PETS&&!LUX.PETS.some(p=>p.k===k))LUX.PETS.push({k,n:PSP[k].n,v:0,rare:1,c:['#888','#666','#aaa']});window.SQPETDRAW=window.SQPETDRAW||{};SQPETDRAW[k]=(k2,s,tm)=>PSP[k2].draw(s,tm)}
  // Warlord's blade: sword tier 8
  {TIER_N[8]='Warlord';TCOL[8]='#e04818';const k='eq_sword8',e={slot:'main',kind:'sword',tier:8,n:'Warlord\'s blade',ic:'sword',col:'#e04818',v:9000,atk:50};EQ[k]=e;EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=4500;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase();
-  IDESC[k]='RARE, from the Iron Warlord. A red-hot greatsword: the strongest sword there is. Wield at Attack 50.';inv[k]=inv[k]|0}
+  IDESC[k]='RARE, from the Iron Warlord. A red-hot greatsword that hits harder than an adamant sword. Wield at Attack 50.';inv[k]=inv[k]|0}
  // Frostbite ring
  if(window.SQJK){SQGEMC.frost=['#a8e0ff','#3870b0'];const j={k:'ja_frost',n:'Frostbite ring',s:'ring',g:'frost',v:6000,d:'Your melee hits chill monsters, and one in five freezes them solid for a moment.'};SQJK[j.k]=j;
   INVK.push(j.k);EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]='Ring (rare, from the Frost Wyrm): '+j.d+' Wear it from the Bag.';SELLP[j.k]=2500;SN[j.k]=j.n+'s';SHORT[j.k]=j.n.toLowerCase()}
@@ -20416,12 +20422,16 @@ window.SQA=SQA;
  // ---- Guild Quests: one skill each; goals grow with the guild's size and level; rewards go into the bank ----
  // ---- Guild Quests: enormous shared goals (the whole guild, for weeks); when one is done the leader or an officer picks ONE
  // reward from its list, and it goes into the bank ----
- const QK={wood:{sk:'Woodcutting',n:'Woodcutting quest',verb:'Cut 100,000 trees',goal:100000,rw:[{gs_tree:50},{gs_oak:35},{gs_maple:20},{gs_yew:15},{gs_void:10}]},
-  mine:{sk:'Mining',n:'Mining quest',verb:'Mine 100,000 rocks and ores',goal:100000,rw:[{gv_rock:50},{gv_iron:35},{gv_gold:20},{gv_mith:15},{gv_adam:10}]},
-  forage:{sk:'Foraging',n:'Foraging quest',verb:'Forage 100,000 berries, nuts, mushrooms and cactus fruit',goal:100000,rw:[{gf_bush:50},{gf_nut:35},{gf_cactus:20},{gf_shroom:15}]},
-  fish:{sk:'Fishing',n:'Fishing quest',verb:'Catch 50,000 fish',goal:50000,rw:[{gp_trout:4},{gp_salmon:3},{gp_sword:2},{gp_moon:1},{gp_koi:1},{bait:100000}]}};
+ const QK={wood:{sk:'Woodcutting',n:'Woodcutting quest',vt:'Cut # trees',goal:100000,rw:[{gs_tree:50},{gs_oak:35},{gs_maple:20},{gs_yew:15},{gs_void:10}]},
+  mine:{sk:'Mining',n:'Mining quest',vt:'Mine # rocks and ores',goal:100000,rw:[{gv_rock:50},{gv_iron:35},{gv_gold:20},{gv_mith:15},{gv_adam:10}]},
+  forage:{sk:'Foraging',n:'Foraging quest',vt:'Forage # berries, nuts, mushrooms and cactus fruit',goal:100000,rw:[{gf_bush:50},{gf_nut:35},{gf_cactus:20},{gf_shroom:15}]},
+  fish:{sk:'Fishing',n:'Fishing quest',vt:'Catch # fish',goal:50000,rw:[{gp_trout:4},{gp_salmon:3},{gp_sword:2},{gp_moon:1},{gp_koi:1},{bait:100000}]}};
  const glv=qd=>1+(qd|0);                                      // guild level: one per finished quest
  const rank=k=>Math.min(RMAX,(G.prog&&G.prog[k])|0);
+ // each finished quest of a skill doubles that skill's next goal (Nov 20): the claim writes prog/g<k> = this goal x2 (capped at x1024),
+ // and the rules check a new quest's goal against it; guilds from before that start from base x 2^rank.
+ const goalOf=k=>{const P=G.prog||{};return P['g'+k]!=null?+P['g'+k]:QK[k].goal*Math.pow(2,Math.min(10,P[k]|0))};
+ for(const k in QK)Object.defineProperty(QK[k],'verb',{get(){return this.vt.replace('#',goalOf(k).toLocaleString('en-US'))}});
  const BLD=[{k:'horn',lv:2,n:'Guild horn',d:'Travel to the guild island from anywhere outdoors (once every 3 minutes).'},
   {k:'forge',lv:3,n:'Guild forge',d:'A furnace and an anvil on the island. Smithing there gives +20% XP.'},
   {k:'shrine',lv:4,n:'Guild shrine',d:'Pray once a day for a 20-minute blessing: +20% XP (wisdom) and regeneration.'},
@@ -20572,7 +20582,7 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
  function setPerm(rk,v){if(role()!=='l')return;DB().set(ref('guilds/'+G.id+'/perm/'+rk),v).catch(fail)}
  function setInfo(k,v){if(role()!=='l')return;DB().set(ref('guilds/'+G.id+'/info/'+k),v).catch(fail)}
  // quests
- function pick(k){if(!boss()||G.q||!QK[k])return;const goal=QK[k].goal;
+ function pick(k){if(!boss()||G.q||!QK[k])return;const goal=goalOf(k);
   DB().set(ref('guilds/'+G.id+'/q'),{k,goal,p:0,t:TS(),by:me()}).then(()=>{tell('New Guild Quest: '+QK[k].verb+'! Everyone in the guild helps, anywhere you play.');msgT=5;sfx('quest')}).catch(fail)}
  function cancelQ(){if(role()!=='l'||!G.q)return;DB().set(ref('guilds/'+G.id+'/q'),null).catch(fail)}
  let PEND=0,PK='',flushT=0,claiming=false;
@@ -20581,7 +20591,7 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
  let doneSaid='';
  function claimCheck(){const q=G.q;if(!q||!q.done||!G.ready)return;const key=G.id+':'+(q.t||0);if(doneSaid!==key){doneSaid=key;tell('Guild Quest complete! '+(boss()?'Pick the guild\'s reward in START > Guild.':'The leader or an officer picks the reward.'));msgT=6;try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'197-24')}}}
  function claim(i){const q=G.q;if(!boss()||!q||!q.done||claiming||!on()||!QK[q.k])return;const r=QK[q.k].rw[i|0];if(!r)return;claiming=true;const qd=(G.prog.qd|0)+1,up={};
-  up['guilds/'+G.id+'/q']=null;up['guilds/'+G.id+'/prog/qd']=qd;up['guilds/'+G.id+'/prog/'+q.k]=((G.prog[q.k])|0)+1;
+  up['guilds/'+G.id+'/q']=null;up['guilds/'+G.id+'/prog/qd']=qd;up['guilds/'+G.id+'/prog/'+q.k]=((G.prog[q.k])|0)+1;up['guilds/'+G.id+'/prog/g'+q.k]=Math.min((q.goal|0)*2,QK[q.k].goal*1024);
   bankUpdate(r,{w:'quest',k:q.k,d:rewTxt(r)},up).then(()=>{const nb=BLD.find(b=>b.lv===glv(qd));tell('The guild bank received '+rewTxt(r)+'. The guild is now level '+glv(qd)+' and '+QK[q.k].sk+' rank '+Math.min(RMAX,((G.prog[q.k])|0)+1)+'!'+(nb?' New: '+nb.n+'.':''));msgT=7;sfx('quest')}).catch(fail).finally(()=>{claiming=false})}
  // what members gather counts toward the quest: items arriving in a frame where the quest's skill gained XP (like 120's dailies)
  let LASTINV=null,XPF=new Set(),BONUSSAID=0;
@@ -20705,7 +20715,7 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
    h+='<p style="font-size:13px;opacity:.85">'+(boss()?'Invite players by walking up to them and choosing INVITE TO GUILD.':'Leaders and officers can invite new members.')+' Your guild island: sail there from any harbor post.</p><button class="qb" data-g="leave">Leave guild</button>'}
   else if(tab==='quest'){const q=G.q;
    if(q&&QK[q.k]){const K=QK[q.k],c=q.c||{},top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,8),p=q.p|0;
-    h+='<div class="qc"><b>'+K.n+(q.done?' ✓':'')+'</b><p>'+K.verb+'. Everyone in the guild counts, anywhere you play.</p><div class="gdgbar"><i style="width:'+Math.min(100,100*p/q.goal)+'%"></i></div><small>'+p.toLocaleString()+' / '+q.goal.toLocaleString()+' · you: '+((c[me()]|0)+PEND).toLocaleString()+'</small>'+
+    h+='<div class="qc"><b>'+K.n+(q.done?' ✓':'')+'</b><p>'+K.vt.replace('#',(q.goal|0).toLocaleString('en-US'))+'. Everyone in the guild counts, anywhere you play.</p><div class="gdgbar"><i style="width:'+Math.min(100,100*p/q.goal)+'%"></i></div><small>'+p.toLocaleString()+' / '+q.goal.toLocaleString()+' · you: '+((c[me()]|0)+PEND).toLocaleString()+'</small>'+
      (top.length?'<p><small>Top helpers: '+top.map(([u,n])=>esc((G.m[u]&&G.m[u].n)||'Player')+' '+n.toLocaleString()).join(' · ')+'</small></p>':'');
     try{if(!q.done&&window.SQGQTRKBTN)h+=SQGQTRKBTN()}catch(e){self.SQERR&&SQERR(e,'197-39')}
     if(q.done){h+='<p><b>Done! '+(boss()?'Pick one reward for the guild bank:':'The leader or an officer picks one of these rewards:')+'</b></p>';K.rw.forEach((r,i)=>{h+='<div class="gdgr">'+ic(Object.keys(r)[0])+'<div class="gdtx"><b>'+esc(rewTxt(r))+'</b></div>'+(boss()?'<button data-g="claim:'+i+'">Take this</button>':'')+'</div>'})}
@@ -20769,7 +20779,7 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
  // ---- others' tags: [TAG] over their heads in their guild colour (presence gt/gc) ----
  (window.SQPEERFX=window.SQPEERFX||[]).push(r=>{if(!r||!r.gt)return;g.save();g.font='700 4px '+PF;g.textAlign='center';g.lineWidth=1.5;g.lineJoin='round';g.strokeStyle='#101418';const t='['+r.gt+']';
   g.strokeText(t,Math.round(r.x),Math.round(r.y-39));g.fillStyle=COLS[r.gc|0]||'#fff';g.fillText(t,Math.round(r.x),Math.round(r.y-39));g.restore()});
- window.SQGUILD={api:{create,deposit,withdraw,on,bankUpdate,tell,fail,boss,role,redraw,onIsle,me,TS,now,ref,DB,applyBuildings:()=>{try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){applyBuildings(R);BLV=bkey()}}catch(e){self.SQERR&&SQERR(e,'197-42')}},get rec(){return G.boss||null},get ready(){return G.ready}},pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
+ window.SQGUILD={api:{create,deposit,withdraw,pick,claim,goalOf,on,bankUpdate,tell,fail,boss,role,redraw,onIsle,me,TS,now,ref,DB,applyBuildings:()=>{try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){applyBuildings(R);BLV=bkey()}}catch(e){self.SQERR&&SQERR(e,'197-42')}},get rec(){return G.boss||null},get ready(){return G.ready}},pres:()=>G.id&&G.info&&G.ready?{t:String(G.info.tag||'').slice(0,4),c:(G.info.col|0)}:null,get id(){return G.id},get state(){return G},open,isle:isleId,NODE,QK,glv,COLS,
   test:{retag,depositMany,bagFor,horn,pray,rename,pubLB,loadTop,applyBuildings,has,rank,create,invite,accept,leave,pick,flush,deposit,withdraw,plant,dig,setRole,setPerm,claimCheck,claim,applyNodes,listen,startDB,stopDB,frontCell,canPlant}};
  // ---- every frame: start/stop with the connection, count quest progress, flush it, keep the island registered ----
  if(G.id)try{register()}catch(e){self.SQERR&&SQERR(e,'197-43')}
@@ -20836,7 +20846,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  WSP.void={cost:3,col:'#9a5af0',c2:'#e8d0ff',sfx:'cvoid'};
  SFX.cvoid=()=>{noise(.14,.07,500);tone(170,.24,'sine',.045,-90);tone(340,.12,'triangle',.02,-200,.04)};
  {const e={slot:'off',kind:'wand',el:'void',n:'Void wand',ic:'wvoid',col:'#7a40c8',v:20000,lv:50};EQ[WV]=e;EQK.push(WV);INVK.push(WV);EXTRA_BAG.push(WV);INAME[WV]=e.n;SELLP[WV]=8000;SN[WV]=e.n+'s';SHORT[WV]=e.n.toLowerCase();inv[WV]=inv[WV]|0;
-  const base='From the Void Treant. Casts void bolts that hit harder than any other wand, and every fourth hit drains life back to you (+1 heart). Needs Magic 50.';
+  const base='From the Void Treant. Casts void bolts that hit harder than adamant wands, and every fourth hit drains life back to you (+1 heart). Needs Magic 50.';
   Object.defineProperty(IDESC,WV,{configurable:true,enumerable:true,get(){let s='';try{s='Damage '+spellDmg('void')+' · Costs '+WSP.void.cost+' mana. '}catch(e){self.SQERR&&SQERR(e,'199-4')}return s+base},set(v){}})}
  {const _sd=spellDmg;spellDmg=function(el){return _sd.apply(this,arguments)+(el==='void'?VB:0)}}
  {SQICON.wrap('199',_ic=>function(k,col){if(k!=='wvoid')return _ic(k,col);const key='g207wvoid';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
@@ -20921,7 +20931,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
   enterMsg:'You step through the void portal...',portalName:'Void portal',wakeMsg:'The Void Treant awakens! A void portal has opened on the guild island. Everyone who fights it gets a Void wand.',
   about:'An ancient tree swallowed by the void. Once a week the guild can feed it '+SUM.toLocaleString()+' void logs from the guild bank to wake it. A void portal opens on your guild island: go through together.',
   awakeTxt:'The void portal is in the middle of your guild island.',picW:75,
-  rewardTxt:'a <b>Void wand</b> (the strongest wand, Magic 50: its void bolts hit harder than any adamant wand and every fourth hit heals you a heart), 1,500-2,500 gold, 150 void logs, 25 yew logs. 5%: a Void treeling (pet).',
+  rewardTxt:'a <b>Void wand</b> (Magic 50: its void bolts hit harder than adamant wands and every fourth hit heals you a heart), 1,500-2,500 gold, 150 void logs, 25 yew logs. 5%: a Void treeling (pet).',
   tip:'Chop it! Your axe and Woodcutting level add damage to every melee hit. It gets 60% tougher for each extra fighter. Void logs come from void trees: on the Shattered Expanse, and void saplings planted on your guild island.',
   spots:R=>{const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;return[[bx+3,by+3],[bx-3,by+3],[bx,by+6],[bx+3,by+6],[bx-3,by+6],[bx,by+8]]},
   spr:()=>K.treant._s||(K.treant._s=mkSprite(TP,TR)),
@@ -20994,7 +21004,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
   enterMsg:'You dive into the whirlpool...',portalName:'Whirlpool',wakeMsg:'The Giant Turtle stirs! A whirlpool has opened by your guild island\'s pier. Everyone who fights it gets a Turt fragment.',
   about:'An ancient sea turtle the size of a house. Once a week the guild can lure it with '+NEED.toLocaleString()+' raw fish from the guild bank (any kinds, the cheapest are used first). A whirlpool opens by your guild island\'s pier: dive in together.',
   awakeTxt:'The whirlpool is by your guild island\'s pier.',picW:90,
-  rewardTxt:'a <b>Turt fragment</b> (smith Turtle armor at an anvil: helm 1, legs 2, chestplate 2; the best armor there is, Defence 50), 1,500-2,500 gold, 25 swordfish. 5%: an extra Turt fragment.',
+  rewardTxt:'a <b>Turt fragment</b> (smith Turtle armor at an anvil: helm 1, legs 2, chestplate 2; Defence 50, with extra block chance per piece), 1,500-2,500 gold, 25 swordfish. 5%: an extra Turt fragment.',
   tip:'Your Fishing level and fishing rod add damage to every melee hit. Watch for its shell charge (the red line) and the geysers. It gets 60% tougher for each extra fighter.',
   spots:R=>{const L=[];for(const[px,py]of R.pier||[])for(let r=1;r<=4;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(Math.max(Math.abs(dx),Math.abs(dy))===r)L.push([px+dx,py+dy]);
    const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;return L.concat([[bx+5,by+6],[bx-5,by+6],[bx,by+9]])},
@@ -22376,7 +22386,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  // ---- items ----
  const ITEMS={meteorore:['Meteorite ore','meteorite ore',300,'A chunk of a fallen star, shot through with shimmering colour. 15 of them, 15 adamant ore and 3 stardust smelt into a meteorite bar (Smithing 80).'],
   stardust:['Stardust','stardust',40,'Glittering dust from the rim of a meteor crater. Used to smelt meteorite bars.'],
-  metbar:['Meteorite bar','meteorite bars',6000,'The finest metal there is, smelted from meteorite ore. Used for meteorite gear.']};
+  metbar:['Meteorite bar','meteorite bars',6000,'A rare metal smelted from meteorite ore. Used for meteorite gear.']};
  for(const k in ITEMS){const[n,sh,v,d]=ITEMS[k];if(!INVK.includes(k))INVK.push(k);INAME[k]=n;SN[k]=n;SHORT[k]=sh;SELLP[k]=v;IDESC[k]=d;inv[k]=inv[k]|0;
   if(!EXTRA_BAG.includes(k)){const j=EXTRA_BAG.indexOf('adamore');EXTRA_BAG.splice(j>=0?j+1:EXTRA_BAG.length,0,k)}}
  try{if(!SM.some(r=>r.k==='metbar'))SM.push({k:'metbar',n:'Meteorite bar',smelt:1,c:{meteorore:15,adamore:15,stardust:3},lv:80,xp:600})}catch(e){self.SQERR&&SQERR(e,'215-2')}
@@ -22619,7 +22629,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
  {const _kl=kitLook;kitLook=function(ch){const o=_kl.apply(this,arguments);const b=ch&&ch.mtk|0;if(!b)return o;
    if(b&2&&o.body==='plate'){o.bc=COL;o.ba=LIT}if(b&4&&o.legs==='greaves'){o.lc=COL;o.la=LIT}if(b&1&&o.head==='helm'){o.hc=COL;o.ha=LIT}return o};try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'216-5')}}
  // ---- bow ----
- add('eq_bow6',{slot:'off',kind:'bow',tier:6,n:'Meteorite bow',ic:'bow',col:'#8a60e0',v:16000,arch:L75,rq2:{s:FL,l:L75}},'A meteorite bow: the hardest-hitting, furthest-shooting bow there is. Needs Archery 75.');
+ add('eq_bow6',{slot:'off',kind:'bow',tier:6,n:'Meteorite bow',ic:'bow',col:'#8a60e0',v:16000,arch:L75,rq2:{s:FL,l:L75}},'A meteorite bow: hits harder and shoots further than adamant bows. Needs Archery 75.');
  {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+(TL.bow===6?3:0)+(LEND?3:0)}}
  {const _br=bowRange;bowRange=function(){return _br.apply(this,arguments)+(TL.bow===6?30:0)}}
  {SQSAVE.after('216:tl',s=>{if(TL.bow===6){s.tl=s.tl||{};s.tl.bow=6}})}
@@ -23382,7 +23392,7 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
  const kfmt=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e4?(Math.floor(n/100)/10).toFixed(n%1000?1:0)+'k':n.toLocaleString();
  const VERB={wood:'Cut trees anywhere',mine:'Mine rocks and ores anywhere',forage:'Forage anywhere',fish:'Catch fish anywhere'};
  (window.SQQEXTRA=window.SQQEXTRA||[]).push(()=>{const G=GQ();if(!G)return[];const{q,K,S,id}=G,p=Math.min(q.goal,q.p|0);  const a=(window.SQCURAREA&&SQCURAREA())||'hollow',gn=(S.state.info&&S.state.info.n)||'your guild';
-  return[{id,cat:'Guild',area:/^scene:/.test(a)?'hollow':a,name:K.n,desc:K.verb+' together with '+gn+'. Everything every member gathers anywhere counts.',st:'active',
+  return[{id,cat:'Guild',area:/^scene:/.test(a)?'hollow':a,name:K.n,desc:(K.vt?K.vt.replace('#',(q.goal|0).toLocaleString('en-US')):K.verb)+' together with '+gn+'. Everything every member gathers anywhere counts.',st:'active',
    step:q.done?'Done! The leader or an officer picks the reward (START > Guild)':VERB[q.k]||K.verb,prog:kfmt(p)+' / '+kfmt(q.goal),ready:!!q.done,
    rew:'One reward for the guild bank: '+K.rw.map(r=>Object.entries(r).map(([k,n])=>n.toLocaleString()+' '+((INAME[k]||k).toLowerCase())).join(', ')).join(' or '),at:null,kind:'guild'}]});
  window.SQGQTRKBTN=()=>{const G=GQ();if(!G)return'';const on=window.SQTRKID&&SQTRKID()===G.id;
@@ -24151,6 +24161,126 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  document.addEventListener('click',async e=>{if(S.tab!=='errors')return;const t=e.target.closest&&e.target.closest('[data-erx]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();e.stopPropagation();
   const a=t.dataset.erx;try{if(a==='reload'){T.list=null;API.draw()}else if(a.startsWith('clr:')){const k=a.slice(4);await F().db.remove(F().db.ref(F().D,'errs/'+k));T.list=T.list.filter(x=>x.k!==k);toast('Cleared.');API.draw()}}catch(err){fail(err)}},true);
  window.SQERRTAB={load};SQSUITE.addTab('errors','Errors',{render})})();
+// ---- 249. Harder guild bosses: real raid mechanics (window.SQGBMECH) ----
+// The Void Treant was a walk-over (Nov 20). Both guild bosses now have three times the health, attack more often, enrage again at a
+// quarter health, and have mechanics that make a guild work together (ideas from #ideas, approved):
+//   Void Treant: the shockwave knocks you back and can't be rolled through ('push' ring); it burrows and bursts up somewhere else
+//     (act 'burrow', can't be hurt underground); void poison washes over the whole arena ('poison' ring, can't be dodged: lose half
+//     a heart every 1.5 s for 9 s); "drink" phase (`b.mir` seconds): hits HEAL it, so stop attacking; void saplings ('seek' hazards)
+//     lock on to one fighter each, can't be hurt, walk slowly after them and hit for 3 hearts; they switch targets every 8 s, so a
+//     guild has to call out who's being chased.
+//   Giant Turtle: tidal waves knock you back ('push' ring); whirlpools pull you in and crush whoever is in the middle (hz 'pull');
+//     it hides in its shell and spins around the arena (act 'shell': can't be hurt, tramples for 2 hearts).
+// Engine hooks added to 100 for these (all guild-boss only): SQIBFIRE[kind](b,o,T) new attacks (`.now` = no wind-up), SQIBACT[k](b,A,dt)
+// new actions (owner), SQIBHZ(b,h,dt,owner) new hazards (owner and other fighters), SQIBHZDRAW(b,h,tm), SQIBRING.un/hit (rings that
+// can't be rolled through). `b.mir` and `b.inv` travel with the shared boss (SQMOBX/SQMOBRX), hazards and actions already did.
+// Damage board: every fighter counts the damage they deal (the boss's health drop during their own frame) and writes it when the
+// boss falls: `guilds/<g>/bd/<boss|turt>/<uid>` {n,d,w,t}; the Bosses tab shows this week's top 5 (rules: guilds.$g.bd).
+(()=>{const GB=()=>window.SQGBOSS;if(!GB()||!GB().K)return;
+ const isG=id=>/^g[tu]_/.test(String(id||'')),kindOf=id=>{try{return GB().kindOf(id)}catch(e){return null}};
+ const myId=()=>{const M=window.SQMP;return M&&M.on&&M.user?M.user.uid:'me'};
+ const others=id=>{const M=window.SQMP,out=[];if(M&&M.on&&M.players)for(const[u,r]of M.players)if(r.loc==='in:ib_'+id&&performance.now()-r.seen<20000)out.push(u);return out};
+ const posOf=u=>{if(u==='me'||u===myId())return{x:P.x,y:P.y};const r=window.SQMP&&SQMP.players&&SQMP.players.get(u);return r?{x:r.x,y:r.y}:null};
+ const hit=(d,msg)=>{if(dead)return false;return hurtP(d,msg)};
+ const free=(x,y)=>{try{return!solid(x,y)}catch(e){return false}};
+ // where a shove or a whirlpool may move YOU: never onto the bottom rows, where the arena's way out is (Nov 20: a shockwave threw
+ // the tester out of the fight)
+ const pfree=(x,y)=>{const R=SCENE&&SCENE.room;if(R&&y>R.h*16-28&&y>P.y)return false;return free(x,y)};
+ let IDN=5e8;const R4=(a,b,w,h,c)=>Rg(Math.round(a),Math.round(b),w,h,c);// hazard ids of our own, far from 100's counter
+ // ---- the bosses themselves ----
+ const T=GB().K.treant,U=GB().K.turtle;
+ if(T){Object.assign(T.DEF,{hp:18000,
+   atk:[['circles',3.0,{n:7,r:22,delay:1.0,k:'void'}],['fan',2.3,{n:6,spread:.28,sp:105,k:'void'}],['spiral',4.2,{n:16,sp:78,k:'void'}],['ring',6.0,{max:130,k:'push'}],
+    ['burrow',11,{}],['seek',9,{cap:2,life:14}],['poison',16,{}],['mirror',21,{d:5}],['summon',13,{key:'wolf:void',n:2,cap:4}]]})}
+ if(U){Object.assign(U.DEF,{hp:21000,
+   atk:[['fan',2.2,{n:6,spread:.28,sp:100,k:'bubble'}],['circles',3.4,{n:7,r:22,delay:1.0,k:'water'}],['charge',5.0,{}],['ring',6.5,{max:150,k:'push'}],
+    ['pull',9,{r:72,d:4}],['shell',14,{d:3.2}],['summon',11,{key:'crab',n:3,cap:5}]]})}
+ // ---- new attacks (owner side) ----
+ const F=window.SQIBFIRE=window.SQIBFIRE||{};
+ // 100's own ring attack has no kind: the guild bosses' rings get the kind from their attack list
+ {SQUPD.wrap('241 ring kinds',next=>function(dt){const b=boss();if(b&&!b._rp&&b.hz)for(const h of b.hz)if(h.k==='ring'&&!h.kind&&!h._k){h._k=1;const a=(IB()[b.ib]||{}).atk||[];const r=a.find(x=>x[0]==='ring');if(r&&r[2].k)h.kind=r[2].k}return next.apply(this,arguments)})}
+ F.burrow=function(b){b.act={id:++IDN,k:'burrow',t:0,d:1.6,done:0};b.inv=1;say((IB()[b.ib]||{}).n+' sinks into the ground!');msgT=2};F.burrow.now=1;
+ F.seek=function(b,o){const alive=b.hz.filter(h=>h.k==='seek'&&!h.done).length;if(alive>=(o.cap||2))return;const L=[myId(),...others(b.ib)];b._sk=(b._sk|0)+1;const u=L[b._sk%L.length];
+  b.hz.push({id:++IDN,k:'seek',x:b.x+(Math.random()-.5)*30,y:b.y+14,r:10,t:0,d:o.life||14,kind:u,swap:8});say('A void sapling crawls out of the roots!');msgT=2};
+ F.poison=function(b){b.hz.push({id:++IDN,k:'ring',x:b.x,y:b.y,r:10,max:300,hit:false,t:0,kind:'poison'});say('Void poison washes over the arena!');msgT=2};
+ F.mirror=function(b,o){b.mir=o.d||5;say((IB()[b.ib]||{}).n+' drinks in every blow! Stop attacking!');msgT=3};
+ F.pull=function(b,o,Tg){const q=Math.random()*6.283,x=Tg.x+Math.cos(q)*24,y=Tg.y+Math.sin(q)*18;b.hz.push({id:++IDN,k:'pull',x,y,r:o.r||70,t:0,d:o.d||4,kind:''});say('A whirlpool opens!');msgT=2};
+ F.shell=function(b,o){const q=Math.random()*6.283;b.act={id:++IDN,k:'shell',t:0,d:o.d||3,ax:Math.cos(q),ay:Math.sin(q),done:0};b.inv=1;say((IB()[b.ib]||{}).n+' hides in its shell and spins!');msgT=2};F.shell.now=1;
+ // ---- new actions (owner side) ----
+ const A=window.SQIBACT=window.SQIBACT||{};
+ A.burrow=function(b,a){if(a.t>.7&&!a.mv){a.mv=1;const Tg=posOf(myId())||{x:P.x,y:P.y},R=SCENE&&SCENE.room;for(let i=0;i<40;i++){const x=(4+Math.random()*(AW-8))*16+8,y=(4+Math.random()*(AH-10))*16+8;
+    const dd=Math.hypot(x-Tg.x,y-Tg.y);if(free(x,y)&&free(x,y+6)&&dd>90&&dd<200){b.x=x;b.y=y;break}}}
+  if(a.t>1.2&&!a.up){a.up=1;b.inv=0;b.hz.push({id:++IDN,k:'ring',x:b.x,y:b.y,r:8,max:90,hit:false,t:0,kind:'push'});try{sfx('mine')}catch(e){self.SQERR&&SQERR(e,'241-1')}}
+  if(a.t>=a.d){b.inv=0;b.act=null}};
+ A.shell=function(b,a,dt){const sp=150*dt,nx=b.x+a.ax*sp,ny=b.y+a.ay*sp;if(free(nx,ny+6)&&free(nx,ny-6))b.x=nx,b.y=ny;else{// bounce off the walls
+   if(!free(nx,b.y+6))a.ax=-a.ax;if(!free(b.x,ny+6)||!free(b.x,ny-6))a.ay=-a.ay}
+  if(a.t>=a.d){b.inv=0;b.act=null}};
+ // ---- hazards (everyone in the fight) ----
+ const DONE=new Set();
+ window.SQIBHZ=function(b,h,dt,owner){
+  if(h.k==='seek'){if(owner){const L=[myId(),...others(b.ib)];h.swap-=dt;if(h.swap<=0&&L.length>1){h.swap=8;const i=L.indexOf(h.kind);h.kind=L[(i+1)%L.length]}
+    const p=posOf(h.kind);if(!p){h.kind=myId();return}const dx=p.x-h.x,dy=p.y-h.y,d=Math.hypot(dx,dy)||1,sp=40*dt;const nx=h.x+dx/d*sp,ny=h.y+dy/d*sp;if(free(nx,ny))h.x=nx,h.y=ny;else if(free(nx,h.y))h.x=nx;else if(free(h.x,ny))h.y=ny}
+   if(h.kind===myId()&&!h.done&&!DONE.has('s'+h.id)&&Math.hypot(P.x-h.x,P.y-h.y)<10){DONE.add('s'+h.id);h.done=1;hit(3,'A void sapling catches you!')}}
+  else if(h.k==='pull'){const dd=Math.hypot(P.x-h.x,(P.y-h.y)*1.3);if(dd<h.r&&!dead&&h.t<h.d){const k=Math.min(1,(1-dd/h.r)*1.4)*46*dt,dx=h.x-P.x,dy=h.y-P.y,d=Math.hypot(dx,dy)||1;
+     const nx=P.x+dx/d*k,ny=P.y+dy/d*k;if(pfree(nx,ny))P.x=nx,P.y=ny}
+   if(h.t>=h.d&&!h.done){h.done=1;if(!DONE.has('w'+h.id)&&Math.hypot(P.x-h.x,(P.y-h.y)*1.3)<20){DONE.add('w'+h.id);hit(2,'The whirlpool crushes you!')}}}};
+ window.SQIBRING={un:h=>h.kind==='push'||h.kind==='poison',hit(b,h){
+  if(h.kind==='poison'){poison(9);return}
+  hit(1,'The shockwave throws you back!');const dx=P.x-h.x,dy=P.y-h.y,d=Math.hypot(dx,dy)||1;KB={x:dx/d,y:dy/d,t:.25}}};
+ let KB=null;
+ // ---- void poison ----
+ const POI={t:0,k:0};function poison(s){POI.t=Math.max(POI.t,s);POI.k=Math.min(POI.k||1.5,1.5);say('Void poison! You lose health for a while.');msgT=3}
+ {SQUPD.after('241 poison and knockback',dt=>{if(menuOpen||pnOpen)return;
+   if(KB){const sp=200*dt,nx=P.x+KB.x*sp,ny=P.y+KB.y*sp;if(pfree(nx,ny))P.x=nx,P.y=ny;KB.t-=dt;if(KB.t<=0)KB=null}
+   if(POI.t>0){if(dead){POI.t=0;return}POI.t-=dt;POI.k-=dt;if(POI.k<=0){POI.k=1.5;hit(.5,'The void poison burns!')}}})}
+ // ---- drawing ----
+ window.SQIBHZDRAW=function(b,h,tm){
+  if(h.k==='seek'&&!h.done){const x=Math.round(h.x),y=Math.round(h.y),me=h.kind===myId(),bob=Math.floor(tm*6+h.id)%2;
+   if(me){g.strokeStyle='rgba(255,60,60,'+(.5+.4*Math.sin(tm*12))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(P.x,P.y+6,12,6,0,0,6.283);g.stroke()}
+   R4(x-1,y-8+bob,3,9,'#2a1c30');R4(x-5,y-15+bob,11,8,'#120a18');R4(x-4,y-14+bob,9,6,me?'#c050ff':'#8a50d0');R4(x-2,y-12+bob,1,1,me?'#ff4040':'#fff');R4(x+1,y-12+bob,1,1,me?'#ff4040':'#fff');
+   R4(x-3,y+1,2,1,'#2a1c30');R4(x+2,y+1,2,1,'#2a1c30')}
+  else if(h.k==='pull'){const p=Math.min(1,h.t/h.d);for(let i=0;i<3;i++){g.strokeStyle='rgba(120,200,255,'+(.25+.2*i)+')';g.lineWidth=1.5;g.beginPath();
+    g.ellipse(h.x,h.y,h.r*(1-i*.3)*(1-.15*Math.sin(tm*8+i)),h.r*.7*(1-i*.3),tm*2+i,0,5);g.stroke()}g.fillStyle='rgba(30,90,160,'+(.15+.3*p)+')';g.beginPath();g.ellipse(h.x,h.y,20,14,0,0,6.283);g.fill()}};
+ // underground: just a moving mound; drinking: a pulsing green halo; shell: the shell spins
+ {const _art=window.SQIBART;window.SQIBART=function(id,b,tm){if(isG(id)&&b){const a=b.act;
+   if(a&&a.k==='burrow'&&a.t>.45&&a.t<1.25){const x=Math.round(b.x),y=Math.round(b.y);g.fillStyle='rgba(20,10,30,.6)';g.beginPath();g.ellipse(x,y+4,18,7,0,0,6.283);g.fill();
+    for(let i=0;i<4;i++)R4(x-12+i*7+Math.round(Math.sin(tm*20+i)*2),y-1,4,3,'#3a2a46');return true}
+   if((b.mir||0)>0){g.fillStyle='rgba(90,255,120,'+(.18+.12*Math.sin(tm*10))+')';g.beginPath();g.ellipse(b.x,b.y-20,42,46,0,0,6.283);g.fill()}}
+  return _art?_art.apply(this,arguments):false}}
+ // ---- the fight, every frame: drinking/underground/shell protect it, second enrage, other fighters' contact with the shell ----
+ const IB=()=>window.SQIB||{};
+ // (035 hides dungeon-room monsters more than 230 px away; a guild boss stays in the fight however far it burrows or you're thrown)
+ const boss=()=>{for(const n of en)if(n&&n.type==='ib'&&isG(n.ib)&&!n.dead)return n;const R=SCENE&&SCENE.room;if(R&&R.mobs&&isG(R.ib))for(const n of R.mobs)if(n&&n.type==='ib'&&!n.dead&&!n._rp){en.push(n);return n}return null};
+ let last=null,mine=0,fightId='',told=0,mirSeen=0,shellHitAt=0;
+ {SQUPD.wrap('241 guild boss fight',next=>function(dt){const b=boss();let pre=null;
+   if(b){const fid=b.ib+':'+(b._mid||'')+':'+(b._rp?'p':'o');if(fid!==fightId){fightId=fid;mine=0;told=0;last=null}
+    if(!b._rp){// owner: blows that landed between frames (other fighters' hits) while it can't be hurt / is drinking
+     if(last!=null&&b.hp<last&&(b.inv||(b.mir||0)>0)){const dmg=last-b.hp;b.hp=Math.min(b.mhp,b.inv?last:last+dmg);if(b.dead&&b.hp>0)b.dead=0}
+     if((b.mir||0)>0)b.mir=Math.max(0,b.mir-dt);
+     if(b.hp<b.mhp*.25&&!b._q){b._q=1;say((IB()[b.ib]||{}).n+' is furious!');msgT=3}if(b._q&&b.cds)for(let i=0;i<b.cds.length;i++)b.cds[i]-=dt*.4}
+    else{if((b.mir||0)>0&&!mirSeen){say((IB()[b.ib]||{}).n+' drinks in every blow! Stop attacking!');msgT=3}mirSeen=(b.mir||0)>0?1:0;
+     const a=b.act;if(a&&a.k==='shell'&&a.t<a.d&&Math.hypot(P.x-b.x,P.y-b.y)<22&&performance.now()-shellHitAt>900){shellHitAt=performance.now();hit(2,'The spinning shell slams into you!')}}
+    pre=b.hp}
+   const out=next.apply(this,arguments);
+   if(b&&pre!=null){if(b.hp<pre){const dmg=pre-b.hp;
+     if(!b._rp&&(b.inv||(b.mir||0)>0)){b.hp=Math.min(b.mhp,b.inv?pre:pre+dmg);if(b.dead&&b.hp>0)b.dead=0}else mine+=dmg}
+    if(!b._rp){const a=b.act;if(a&&a.k==='shell'&&Math.hypot(P.x-b.x,P.y-b.y)<22&&performance.now()-shellHitAt>900){shellHitAt=performance.now();hit(2,'The spinning shell slams into you!')}}
+    last=b.hp;if((b.dead||b.hp<=0)&&!told){told=1;board(b)}else if(!b._rp&&!en.includes(b))en.push(b)}
+   return out})}
+ // ---- damage board ----
+ const BD={};// path -> {at, list}
+ function pathOf(id){const B=kindOf(id);return B?B.path:''}
+ function board(b){const S=window.SQGUILD,a=S&&S.api,path=pathOf(b.ib);if(!a||!a.on()||!S.id||!path||mine<1)return;
+  let n='';try{n=(typeof PNAME!=='undefined'&&PNAME)||'Adventurer'}catch(e){n='Adventurer'}
+  a.DB().set(a.ref('guilds/'+S.id+'/bd/'+path+'/'+a.me()),{n:String(n).replace(/[<>]/g,'').slice(0,12),d:Math.min(1e7,Math.round(mine)),w:GB().WEEK(),t:a.TS()}).then(()=>{delete BD[path];say('You dealt '+Math.round(mine).toLocaleString()+' damage. See the guild\'s top 5 in START > Guild > Bosses.');msgT=4}).catch(e=>{self.SQERR&&SQERR(e,'241-2')})}
+ function top(path){const S=window.SQGUILD,a=S&&S.api;if(!a||!a.on()||!S.id)return null;const c=BD[path];
+  if(!c||Date.now()-c.at>30000){BD[path]={at:Date.now(),list:c?c.list:null};a.DB().get(a.ref('guilds/'+S.id+'/bd/'+path)).then(s=>{const v=s.val()||{},w=GB().WEEK();
+    BD[path].list=Object.values(v).filter(x=>x&&x.w===w).sort((x,y)=>y.d-x.d).slice(0,5);try{a.redraw()}catch(e){self.SQERR&&SQERR(e,'241-3')}}).catch(e=>{self.SQERR&&SQERR(e,'241-4')})}
+  return BD[path].list}
+ {const _h=GB().html;GB().html=function(){let h=_h.apply(this,arguments);try{const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    for(const k of Object.keys(GB().K)){const B=GB().K[k],L=top(B.path);if(!L||!L.length)continue;
+     h+='<div class="qc"><b>'+esc(B.DEF.n)+': top damage this week</b><p style="font-size:13px">'+L.map((x,i)=>(i+1)+'. '+esc(x.n)+' · '+(x.d|0).toLocaleString()).join('<br>')+'</p></div>'}}catch(e){self.SQERR&&SQERR(e,'241-5')}return h}}
+ window.SQGBMECH={poison,POI,top,mine:()=>mine,board}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

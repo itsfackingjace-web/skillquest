@@ -26,7 +26,7 @@ const smItems=()=>{const a=[];['axe','pick','sword'].forEach((k,i)=>{const t=TL[
 const sellP=k=>shop=='smith'?(k=='iron'?15:k=='stone'?4:Math.round(SELLP[k]*1.2)):(k=='iron'?10:SELLP[k]);
 function rShop(){const sm=shop=='smith';let h='<div class="tl">'+(sm?'Blacksmith':'General Store')+'</div><div class="tl">Gold: '+GLD+'</div><div class="tl" style="font-size:12px">BUY</div>';
  (sm?smItems():genItems()).forEach((it,i)=>{h+='<button class="sb" data-a="b'+i+'" style="opacity:'+(GLD>=it.c&&!(it.req>lvOf(8))?1:.45)+'">'+it.n+'<br><small>'+it.c+' gold'+(it.req>1?' · Defence '+it.req:'')+'</small></button>'});
- if(sm&&!smItems().length)h+='<div class="tl" style="font-weight:400;opacity:.6">You own the best tools!</div>';
+ if(sm&&!smItems().length)h+='<div class="tl" style="font-weight:400;opacity:.6">You own the best tools this shop sells!</div>';
  h+='<div class="tl" style="font-size:12px;margin-top:12px">SELL</div>';let any=0;
  for(const k in SELLP){if(sm&&!SMB.has(k))continue;const n=inv[k]|0;if(n>0){any=1;h+='<button class="sb" data-a="s'+k+'">Sell all '+(SN[k]||INAME[k]||k)+' ('+n+')<br><small>+'+n*sellP(k)+' gold</small></button>'}}
  if(!any)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing to sell</div>';pbd.innerHTML=h}

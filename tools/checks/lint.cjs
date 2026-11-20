@@ -7,6 +7,7 @@
 //   css      a class styled in two files (`.gr` from a station screen got restyled by the guild screen). The ones that were already
 //            shared on Nov 19 are listed in css-shared.txt; add to it only when a later file restyles a class on purpose.
 //   steps    a function with a step list (sqSteps) is never assigned again (`fn=function...`): add a step on its list.
+//   claims   no "the strongest X / best X there is / than any other" in item text: new gear makes it false.
 //   prompt   no prompt(): the Windows app doesn't support it.
 //   catches  no untagged empty `catch(e){}`: rerun tools/refactor/tag-catches.cjs (or write `/*quiet*/` inside).
 // Returns a list of problems (module) / prints them and exits 1 (command line).
@@ -46,6 +47,10 @@ function lint(){const P=[];const files=fs.readFileSync(ROOT+'/manifest.txt','utf
     const st=out.slice(0,a0).match(/<style>([\s\S]*?)<\/style>/g)||[];for(const x of st)scan(x.replace(/<\/?style>/g,''),SRC[0][0])}
   catch(e){P.push('css: could not read the script: '+e.message)}
   for(const[c,F0]of css){const F=[...F0];if(F.length>1&&!base.has(c))P.push('css: .'+c+' is styled in '+F.join(' and ')+': prefix the new panel\'s classes (or add "'+c+'" to tools/checks/css-shared.txt if the restyle is on purpose)')}
+  // claims: item text that says it's the best of its kind stops being true when better gear comes out (Nov 20 players were misled)
+  for(const[f,s]of SRC){if(/^(dev|data)\//.test(f))continue;const code=s.replace(/^\s*\/\/.*$/gm,'');
+    for(const m of code.matchAll(/(strongest|weakest|best (?:armou?r|sword|bow|wand|tools?|gear|weapon|pickaxe|axe|rod|helm|shield|ring|amulet|pet|cape|arrows?)\b[^'"<.]{0,30}(?:there is|in the game|in the land|ever)|than any other|(?:finest|best) [a-z]+ there is)/gi))
+      P.push('claims: "'+m[0]+'" in src/'+f+': say what it beats (e.g. "harder than adamant"), not that it is the best: better gear comes later')}
   // prompt, catches
   for(const[f,s]of SRC){if(/(?<![\w$.])prompt\s*\(/.test(s.replace(/\/\/.*$/gm,'').replace(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g,"''")))P.push('prompt: prompt() in src/'+f+': ask with an input on the page');
     const e=s.replace(/^\s*\/\/.*$/gm,'').match(/catch\s*\(\s*[\w$]*\s*\)\s*\{\s*\}|catch\s*\{\s*\}/g);if(e)P.push('catches: '+e.length+' untagged empty catch in src/'+f+': run node tools/refactor/tag-catches.cjs')}

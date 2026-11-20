@@ -76,8 +76,8 @@ TIER_N[5]='Crystal';TCOL[5]='#68d8f8';
 EQ.eq_sword5={slot:'main',kind:'sword',tier:5,n:'Crystal blade',ic:'sword',col:'#68d8f8',v:600};
 EQ.eq_bow3={slot:'off',kind:'bow',tier:3,n:'Bone bow',ic:'bow',v:500};
 for(const k of['eq_sword5','eq_bow3']){const e=EQ[k];EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=e.v;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase()}
-IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns. The strongest sword there is.';
-IDESC.eq_bow3='LEGENDARY. Carved from the Bone Lord\'s own bones. Shoots further and hits much harder than any other bow.';
+IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns. Hits harder than steel.';
+IDESC.eq_bow3='LEGENDARY. Carved from the Bone Lord\'s own bones. Shoots further and hits much harder than a shortbow or longbow.';
 const RARK={eq_sword5:'legendary',eq_bow3:'legendary',sbar:'uncommon',ibar:'common',arrow:'common',iarrow:'uncommon',cooked:'common'};
 const rarOf=k=>DITEM[k]?DITEM[k].r:RARK[k]||'common';
 const _ad35=arrowDmg;arrowDmg=function(){return _ad35()+(TL.bow>=3?2:0)};

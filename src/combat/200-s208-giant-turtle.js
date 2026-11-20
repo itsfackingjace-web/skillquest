@@ -51,7 +51,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
   enterMsg:'You dive into the whirlpool...',portalName:'Whirlpool',wakeMsg:'The Giant Turtle stirs! A whirlpool has opened by your guild island\'s pier. Everyone who fights it gets a Turt fragment.',
   about:'An ancient sea turtle the size of a house. Once a week the guild can lure it with '+NEED.toLocaleString()+' raw fish from the guild bank (any kinds, the cheapest are used first). A whirlpool opens by your guild island\'s pier: dive in together.',
   awakeTxt:'The whirlpool is by your guild island\'s pier.',picW:90,
-  rewardTxt:'a <b>Turt fragment</b> (smith Turtle armor at an anvil: helm 1, legs 2, chestplate 2; the best armor there is, Defence 50), 1,500-2,500 gold, 25 swordfish. 5%: an extra Turt fragment.',
+  rewardTxt:'a <b>Turt fragment</b> (smith Turtle armor at an anvil: helm 1, legs 2, chestplate 2; Defence 50, with extra block chance per piece), 1,500-2,500 gold, 25 swordfish. 5%: an extra Turt fragment.',
   tip:'Your Fishing level and fishing rod add damage to every melee hit. Watch for its shell charge (the red line) and the geysers. It gets 60% tougher for each extra fighter.',
   spots:R=>{const L=[];for(const[px,py]of R.pier||[])for(let r=1;r<=4;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(Math.max(Math.abs(dx),Math.abs(dy))===r)L.push([px+dx,py+dy]);
    const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;return L.concat([[bx+5,by+6],[bx-5,by+6],[bx,by+9]])},

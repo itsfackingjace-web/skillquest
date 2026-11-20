@@ -41,7 +41,7 @@
  // ---- items ----
  const ITEMS={meteorore:['Meteorite ore','meteorite ore',300,'A chunk of a fallen star, shot through with shimmering colour. 15 of them, 15 adamant ore and 3 stardust smelt into a meteorite bar (Smithing 80).'],
   stardust:['Stardust','stardust',40,'Glittering dust from the rim of a meteor crater. Used to smelt meteorite bars.'],
-  metbar:['Meteorite bar','meteorite bars',6000,'The finest metal there is, smelted from meteorite ore. Used for meteorite gear.']};
+  metbar:['Meteorite bar','meteorite bars',6000,'A rare metal smelted from meteorite ore. Used for meteorite gear.']};
  for(const k in ITEMS){const[n,sh,v,d]=ITEMS[k];if(!INVK.includes(k))INVK.push(k);INAME[k]=n;SN[k]=n;SHORT[k]=sh;SELLP[k]=v;IDESC[k]=d;inv[k]=inv[k]|0;
   if(!EXTRA_BAG.includes(k)){const j=EXTRA_BAG.indexOf('adamore');EXTRA_BAG.splice(j>=0?j+1:EXTRA_BAG.length,0,k)}}
  try{if(!SM.some(r=>r.k==='metbar'))SM.push({k:'metbar',n:'Meteorite bar',smelt:1,c:{meteorore:15,adamore:15,stardust:3},lv:80,xp:600})}catch(e){self.SQERR&&SQERR(e,'215-2')}

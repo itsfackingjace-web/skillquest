@@ -8,7 +8,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `guilds/<g>/{info{n,tag,col,lead,t}, m/<uid>{r l|o|m,n,j}, q{k,goal,p,c,t,by,done}, prog{qd}, perm{o,m} (withdrawals a day, -1 none), bank{i,v,lid},
   isl/<cell>=node key, wd/<uid>{d,n}}`, `glog/<g>/<id>` (create-only, read by leader/officers), `gname`, `gmem/<uid>`, `ginv/<uid>/<g>`. Every bank change
   is one multi-path update (`bankUpdate`): counts + `v` exactly +1 + `lid` naming a new glog entry in the same write, so the rules refuse stale/duplicate
-  changes and unlogged ones. Quests `QK` (fixed goals, the rules check them: wood/mine/forage 100,000, fish 50,000); progress counts like 120's dailies
+  changes and unlogged ones. Quests `QK` (next goal = `prog/g<k>` (each claim writes this goal x2, capped at x1024; base wood/mine/forage 100,000, fish 50,000), or base x 2^rank for guilds from before Nov 20 (`goalOf(k)`; the rules check both); progress counts like 120's dailies
   (items arriving in a frame with that skill's XP) and is added with a transaction every 8 s (max +5,000 a write); when `done`, a leader/officer `claim(i)`s
   one of `QK[k].rw` (prog/qd +1 with q removed). Island = region `gi_<g>` registered only on members' games (`register`, cached in localStorage
   `sq_guild`; `routeOpen` wrapped, other `gi_` ids closed); the outermost `loadRegion` removes stray objects and plants `NODE` items from `isl`
@@ -88,3 +88,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   sle slx` while worn in a guild. The outermost `drawBoat26` finds whose boat it is (a sailing peer exactly at P, else you) and sets `CURD`;
   `BOAT85.back` is wrapped to return a recoloured sail layer (SA colours → main colour, RD band/pennant → second colour, pattern by position,
   trim on edges, emblem as large as fits (4x4 at 3x/2x, 8x8 at 2x/1x) with a contrasting outline, on cloth outside the sailor's box x±9, y -38..2, nearest the free cloth's centroid; end-on sails (symmetric about the mast) put it on the centre line and only search its height), cached per canvas + design. Furled/moored boats stay plain. Wiki > Guilds mentions it.
+- **Guild boss mechanics** (`combat/241-s249-guild-boss-mechanics.js`, `SQGBMECH`, Nov 20): both bosses' `DEF` hp x3 and new attack lists. New engine hooks in 100:
+  `SQIBFIRE[kind](b,o,T)` (`.now` skips the wind-up), `SQIBACT[k](b,A,dt)` (owner), `SQIBHZ(b,h,dt,owner)` and `SQIBHZDRAW` for new hazard kinds,
+  `SQIBRING.un/hit` for rings that can't be rolled through (`kind` 'push' knocks back, 'poison' = `SQGBMECH.POI` 9 s of half-hearts). Treant: burrow
+  (act, `b.inv`), seek (hz `kind` = the hunted uid, owner moves it and swaps target every 8 s, the hunted player's own game checks the hit),
+  poison, mirror (`b.mir` seconds: hits heal; owner undoes drops between and during frames). Turtle: pull (hz), shell (act, `b.inv`, contact 2).
+  `mir`/`inv` ride on SQMOBX/SQMOBRX. Knockback/pull never move you into the arena's bottom rows (its exit). 035 drops far dungeon monsters from
+  `en`; 241 puts the guild boss back. Damage board: each fighter's own damage = boss hp drop during their own frame; `guilds/<g>/bd/<boss|turt>/<uid>`
+  {n,d,w,t} written at the kill, the Bosses tab shows this week's top 5. Check 29.

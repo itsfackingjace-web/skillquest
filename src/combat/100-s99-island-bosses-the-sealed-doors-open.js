@@ -12,7 +12,7 @@
    floor:['#56603e','#4e5838'],wall:'#3a4228',trim:'#1e2414',gold:[300,500],loot:[['oaklog',15],['willowlog',10],['emerald',1]],xp:1500,rare:['pweb','Webling (pet)','A little thorn spider that scuttles after you.'],
    atk:[['fan',2.6,{n:3,spread:.35,sp:85,k:'web',slow:1}],['leap',5.5,{}],['summon',9,{key:'spiderling',n:3,cap:5}]]},
   ashfall:{n:'The Iron Warlord',door:'sealgate',lm:'The Fallen Bastion',hp:620,col:'#a04020',shard:'Ember sigil shard',sc:['#f07030','#802010'],
-   floor:['#4a3430','#42302c'],wall:'#2e2220',trim:'#140c0a',gold:[450,750],loot:[['ibar',8],['gbar',3],['ruby',1]],xp:2200,rare:['eq_sword8','Warlord\'s blade','A red-hot greatsword: the strongest sword in the game (Attack 50).'],
+   floor:['#4a3430','#42302c'],wall:'#2e2220',trim:'#140c0a',gold:[450,750],loot:[['ibar',8],['gbar',3],['ruby',1]],xp:2200,rare:['eq_sword8','Warlord\'s blade','A red-hot greatsword: it hits harder than an adamant sword (Attack 50).'],
    atk:[['charge',4,{}],['sweep',3,{}],['circles',5,{n:5,r:20,delay:1.1,k:'fire'}]]},
   ironcrest:{n:'The Frost Wyrm',door:'sealdoor',lm:'The Giant\'s Stair',hp:820,col:'#78b8e0',shard:'Frost sigil shard',sc:['#b8e8ff','#4888c0'],
    floor:['#7c8ea0','#748698'],wall:'#506478',trim:'#2c3848',gold:[600,950],loot:[['mbar',3],['mithore',8],['sapphire',1]],xp:3000,rare:['ja_frost','Frostbite ring','A ring: your melee hits chill monsters, and one in five freezes them solid for a moment.'],
@@ -68,7 +68,7 @@
   return{ib:{id:b._mid,dead:b.dead?1:0,pr:b.pr.slice(0,40).map(p=>[p.id|0,r1(p.x),r1(p.y),r1(p.vx),r1(p.vy),r1(p.t),p.k||'',p.slow?1:0]),
    hz:b.hz.slice(0,24).map(h=>[h.id|0,h.k,r1(h.x),r1(h.y),r1(h.r),r1(h.t),r1(h.d||0),h.kind||'',h.max||0,h.nohit?1:0,h.done?1:0]),
    act:b.act?{id:b.act.id|0,k:b.act.k,t:r1(b.act.t),d:b.act.d,ax:b.act.ax||0,ay:b.act.ay||0,an:b.act.an||0,done:b.act.done?1:0}:null,
-   wind:b.wind?{a:b.wind.a,t:r1(b.wind.t),d:b.wind.d}:null}}};
+   wind:b.wind?{a:b.wind.a,t:r1(b.wind.t),d:b.wind.d}:null,mir:r1(b.mir||0),inv:b.inv?1:0}}};
  const DONE=new Set();// attacks that already hit you (or that you already dodged) in this fight
  window.SQMOBRX=(owner,x)=>{const I=x&&x.ib;if(!I||typeof I.id!=='string')return;const M=window.SQMOB,p=M&&M.prox&&M.prox.get(I.id);if(!p||p.type!=='ib')return;
   p.pr=(Array.isArray(I.pr)?I.pr:Object.values(I.pr||{})).map(q=>({id:+q[0],x:+q[1],y:+q[2],vx:+q[3],vy:+q[4],t:+q[5],k:String(q[6]||''),slow:!!+q[7]})).filter(q=>!DONE.has('p'+q.id));
@@ -76,6 +76,7 @@
   p.hz=(Array.isArray(I.hz)?I.hz:Object.values(I.hz||{})).map(q=>{const h={id:+q[0],k:String(q[1]),x:+q[2],y:+q[3],r:+q[4],t:+q[5],d:+q[6],kind:String(q[7]||''),max:+q[8],nohit:!!+q[9],done:!!+q[10]};
    const o=old.get(h.id);if(o){if(o.done)h.done=true;if(o.hit)h.hit=true;if(h.k==='ring'&&o.r>h.r)h.r=o.r}if(DONE.has('h'+h.id)){h.done=true;h.hit=true}return h});
   const A=I.act;if(A&&typeof A==='object'){if(!p.act||p.act.id!==A.id)p.act={id:+A.id,k:String(A.k),t:+A.t,d:+A.d,ax:+A.ax,ay:+A.ay,an:+A.an,done:!!A.done,mine:false};else p.act.t=Math.max(p.act.t,+A.t)}else p.act=null;
+  p.mir=+I.mir||0;p.inv=+I.inv?1:0;
   p.wind=I.wind&&typeof I.wind==='object'?{a:String(I.wind.a),t:+I.wind.t,d:+I.wind.d}:null;
   if(I.dead&&!p._rew){p._rew=1;try{ibReward(p)}catch(e){console.warn(e)}}};
  // another player's boss here: play its attacks against you
@@ -85,8 +86,9 @@
   b.pr=b.pr.filter(p=>p.t>0);
   for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;DONE.add('h'+h.id);if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':h.kind==='water'?'A geyser bursts under you!':'The void bursts under you!');
      if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){self.SQERR&&SQERR(e,'100-5')}}}
-   else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;DONE.add('h'+h.id);if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
-  b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<(h.max||60));
+   else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);const un=window.SQIBRING&&SQIBRING.un(h);if(!h.hit&&dd>pr-6&&dd<h.r+6&&(un||!roll())){h.hit=1;DONE.add('h'+h.id);if(un)SQIBRING.hit(b,h);else if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}
+   else if(window.SQIBHZ)SQIBHZ(b,h,dt,false)}
+  b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.k==='ring'?h.r<(h.max||60):!h.done&&h.t<h.d);
   const A=b.act;if(A){A.t+=dt;const pd=Math.hypot(P.x-b.x,P.y-b.y);
    if(A.k==='leap'&&A.t>=A.d&&!A.mine){A.mine=1;if(pd<26)hit(2,IB[b.ib].n+' lands on you!')}
    else if(A.k==='charge'&&A.t>A.d&&A.t<A.d+.6&&!A.mine&&pd<22){A.mine=1;hit(2,IB[b.ib].n+' tramples you!')}
@@ -112,7 +114,7 @@
  const roll=()=>typeof ROLLT!=='undefined'&&ROLLT>0;
  const hit=(d,msg)=>{if(dead)return false;return hurtP(d,msg)};
  // every attack that isn't a leap, charge or sweep gets a short wind-up first, so you can see it coming
- function start(b,a,o){if(a==='summon'&&o.half&&b.hp>=b.mhp/2)return;if(a==='leap'||a==='charge'||a==='sweep')return ibFire(b,a,o);b.wind={a,o,t:0,d:a==='blink'?.35:.45}}
+ function start(b,a,o){if(a==='summon'&&o.half&&b.hp>=b.mhp/2)return;if(a==='leap'||a==='charge'||a==='sweep'||(window.SQIBFIRE&&SQIBFIRE[a]&&SQIBFIRE[a].now))return ibFire(b,a,o);b.wind={a,o,t:0,d:a==='blink'?.35:.45}}
  function ibFire(b,a,o){const T=ibT(b),B=IB[b.ib],dx=T.x-b.x,dy=T.y-b.y,d=Math.hypot(dx,dy)||1,an=Math.atan2(dy,dx),en2=b.hp<b.mhp/2;
   if(a==='fan'){const shots=o.burst||1;for(let s=0;s<shots;s++)setTimeout(()=>{if(b.dead)return;const T2=ibT(b),an2=Math.atan2(T2.y-6-b.y+10,T2.x-b.x);for(let k=0;k<o.n;k++){const q=an2+(k-(o.n-1)/2)*o.spread;b.pr.push({id:++IBN,x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3,k:o.k,slow:o.slow})}try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'100-8')}},s*350)}
   else if(a==='spiral'){const n=en2?o.n+4:o.n;b.sp0=(b.sp0||0)+.4;for(let k=0;k<n;k++){const q=k/n*6.283+b.sp0;b.pr.push({id:++IBN,x:b.x,y:b.y-10,vx:Math.cos(q)*o.sp,vy:Math.sin(q)*o.sp,t:3.4,k:o.k})}}
@@ -122,6 +124,7 @@
   else if(a==='charge')b.act={id:++IBN,k:'charge',t:0,d:.75,ax:dx/d,ay:dy/d,run:0};
   else if(a==='sweep')b.act={id:++IBN,k:'sweep',t:0,d:.65,an,done:false};
   else if(a==='blink'){const R=SCENE&&SCENE.room;for(let t=0;t<30;t++){const x=(4+Math.random()*(AW-8))*16,y=(3+Math.random()*(AH-9))*16;if(R&&!R.solid.has(Math.floor(y/16)*AW+Math.floor(x/16))&&Math.hypot(x-T.x,y-T.y)>70){for(let k=0;k<14;k++)part(b.x,b.y-14,(Math.random()-.5)*90,(Math.random()-.5)*90,.4,B.sc[0],0,2);b.x=x+8;b.y=y+8;break}}}
+  else if(window.SQIBFIRE&&SQIBFIRE[a])SQIBFIRE[a](b,o,T);
   else if(a==='summon'){if(o.half&&!en2)return;const alive=en.filter(m=>m.summon&&!m.dead).length;for(let k=alive;k<Math.min(o.cap,alive+o.n);k++){const q=Math.random()*6.283,x=b.x+Math.cos(q)*40,y=b.y+Math.sin(q)*28;if(solid(x,y))continue;
     let m;if(o.key==='spiderling')m={x,y,hp:12,mhp:12,kx:0,ky:0,type:'spiderling'};else{m=rgMake(o.key,o.key==='bandit'?30:40,x,y);m.rg=b.ib}m.summon=1;m._prov=9;en.push(m);try{if(window.RG_OWN)RG_OWN.add(m)}catch(e){self.SQERR&&SQERR(e,'100-9')}}}}
  {SQUPD.wrap('100',_u=>function(dt){if(ST.boss&&!ST.boss._rp&&ST.boss.hp<=0&&!ST.boss._rew){try{ibReward(ST.boss)}catch(e){console.warn(e)}}ibShared(dt);const b=ST.boss,R=SCENE&&SCENE.room,live=b&&!b._rp&&!b.dead&&R&&R.ib===b.ib&&en.includes(b);const pre=live?[b.x,b.y]:null;_u(dt);if(!live||menuOpen||pnOpen)return;
@@ -133,6 +136,7 @@
    const A=b.act;if(A){A.t+=dt;
     if(A.k==='leap'){const p=Math.min(1,A.t/A.d);b.x=A.ox+(A.tx-A.ox)*p;b.y=A.oy+(A.ty-A.oy)*p;b.jump=Math.sin(p*Math.PI)*30;if(p>=1){b.jump=0;b.act=null;b.hz.push({id:++IBN,k:'ring',x:b.x,y:b.y,r:8,max:56,hit:false,t:0});if(Math.hypot(P.x-b.x,P.y-b.y)<26)hit(2,IB[b.ib].n+' lands on you!');try{sfx('mine')}catch(e){self.SQERR&&SQERR(e,'100-11')}}}
     else if(A.k==='charge'){if(A.t>A.d){const sp=260*dt,nx=b.x+A.ax*sp,ny=b.y+A.ay*sp;if(!solid(nx,ny+6)&&A.run<.6){b.x=nx;b.y=ny;A.run+=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<22&&!A.hit){A.hit=1;hit(2,IB[b.ib].n+' tramples you!')}}else b.act=null}}
+    else if(window.SQIBACT&&SQIBACT[A.k])SQIBACT[A.k](b,A,dt);
     else if(A.k==='sweep'){if(A.t>A.d&&!A.done){A.done=1;const q=Math.atan2(P.y-b.y,P.x-b.x),da=Math.abs(((q-A.an+Math.PI*3)%(Math.PI*2))-Math.PI);if(pd<64&&da<1.1)hit(2,'The great sword cleaves you!');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'100-12')}}if(A.t>A.d+.3)b.act=null}}
    else{// walk toward (or keep a little away from) you
     const want=b.ib==='nomans'||b.ib==='shattered'?90:30;if(!b.wind){if(d>want+10){stepTo(b,dx/d*(en2?34:26)*dt,dy/d*(en2?34:26)*dt);b.mv=1}else if(d<want-10){stepTo(b,-dx/d*24*dt,-dy/d*24*dt);b.mv=1}}
@@ -144,8 +148,9 @@
    // circles and rings
    for(const h of b.hz){h.t+=dt;if(h.k==='circ'){if(h.t>=h.d&&!h.done){h.done=1;if(!h.nohit&&Math.hypot(P.x-h.x,(P.y+4-h.y)*1.4)<h.r&&!roll())hit(h.kind==='dyn'?2:1,h.kind==='fire'?'Fire rains down on you!':h.kind==='ice'?'An icicle crashes onto you!':h.kind==='dyn'?'Dynamite!':h.kind==='water'?'A geyser bursts under you!':'The void bursts under you!');
        if(h.kind==='dyn'||h.kind==='fire'||h.kind==='water')for(let k=0;k<10;k++)part(h.x,h.y,(Math.random()-.5)*110,-40-Math.random()*60,.45,h.kind==='water'?(k%2?'#c8f0ff':'#58b0e8'):k%2?'#f8b030':'#f05020',160,2);try{sfx(h.kind==='dyn'?'mine':'swish')}catch(e){self.SQERR&&SQERR(e,'100-13')}}}
-    else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);if(!h.hit&&dd>pr-6&&dd<h.r+6&&!roll()){h.hit=1;if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}}
-   b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.r<h.max);
+    else if(h.k==='ring'){const pr=h.r;h.r+=150*dt;const dd=Math.hypot(P.x-h.x,P.y-h.y);const un=window.SQIBRING&&SQIBRING.un(h);if(!h.hit&&dd>pr-6&&dd<h.r+6&&(un||!roll())){h.hit=1;if(un)SQIBRING.hit(b,h);else if(hit(1,'A shockwave knocks into you!')&&b.ib==='ironcrest')SLOW43=1.5}}
+    else if(window.SQIBHZ)SQIBHZ(b,h,dt,true)}
+   b.hz=b.hz.filter(h=>h.k==='circ'?h.t<h.d+.35:h.k==='ring'?h.r<h.max:!h.done&&h.t<h.d);
    // the fight is over
    if(b.hp<=0&&!b._rew)ibReward(b)})}
  // spiderlings: small, fast, weak
@@ -174,7 +179,8 @@
     if(!h.done){g.strokeStyle='rgba('+c+','+(.5+.4*Math.sin(tm*16))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.7,0,0,6.283);g.stroke();g.fillStyle='rgba('+c+','+(.12+.25*p)+')';g.beginPath();g.ellipse(h.x,h.y,h.r*p,h.r*.7*p,0,0,6.283);g.fill();
      if(h.kind==='dyn'){const sx=h.x,sy=h.y-30*(1-p);R4(sx-2,sy-5,4,7,K);R4(sx-1,sy-4,2,5,'#d83020');R4(sx,sy-7,1,2,'#f8e060')}else if(h.kind==='ice'){const sy=h.y-60*(1-p);R4(h.x-2,sy-10,5,10,K);R4(h.x-1,sy-9,3,8,'#d8f4ff')}}
     else{g.fillStyle='rgba('+c+','+(.5*(1-(h.t-h.d)/.35))+')';g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.7,0,0,6.283);g.fill()}}
-   else{g.strokeStyle='rgba(240,230,210,'+(.8*(1-h.r/h.max))+')';g.lineWidth=3;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.62,0,0,6.283);g.stroke()}}
+   else if(h.k!=='ring'){if(window.SQIBHZDRAW)SQIBHZDRAW(b,h,tm)}
+   else{g.strokeStyle=(h.kind==='poison'?'rgba(120,230,90,':h.kind==='push'?'rgba(200,150,255,':'rgba(240,230,210,')+(.8*(1-h.r/h.max))+')';g.lineWidth=3;g.beginPath();g.ellipse(h.x,h.y,h.r,h.r*.62,0,0,6.283);g.stroke()}}
   for(const p of b.pr||[]){if(p.k==='bullet'){R4(p.x-2,p.y-2,4,4,K);R4(p.x-1,p.y-1,2,2,'#f8e070')}else{const c=p.k==='web'?['#f0f0f0','#c8c8c8']:p.k==='ice'?['#e8f8ff','#78c0f0']:p.k==='bubble'?['#f0fcff','#58b0e8']:['#d8b0ff','#7040c0'];g.fillStyle='rgba(0,0,0,0)';R4(p.x-3,p.y-3,6,6,K);R4(p.x-2,p.y-2,4,4,c[1]);R4(p.x-1,p.y-2,2,2,c[0])}}
   if(b.act&&b.act.k==='charge'&&b.act.t<b.act.d){g.strokeStyle='rgba(255,80,60,'+(.4+.4*Math.sin(tm*20))+')';g.lineWidth=10;g.beginPath();g.moveTo(b.x,b.y);g.lineTo(b.x+b.act.ax*160,b.y+b.act.ay*160);g.stroke()}
   if(b.act&&b.act.k==='sweep'&&!b.act.done){g.fillStyle='rgba(255,90,60,'+(.15+.2*(b.act.t/b.act.d))+')';g.beginPath();g.moveTo(b.x,b.y);g.arc(b.x,b.y,64,b.act.an-1.1,b.act.an+1.1);g.closePath();g.fill()}}
@@ -228,7 +234,7 @@
  for(const k in PSP){window.SQNPET[k]={n:PSP[k].n,src:'a rare drop from an island boss'};if(window.LUX&&LUX.PETS&&!LUX.PETS.some(p=>p.k===k))LUX.PETS.push({k,n:PSP[k].n,v:0,rare:1,c:['#888','#666','#aaa']});window.SQPETDRAW=window.SQPETDRAW||{};SQPETDRAW[k]=(k2,s,tm)=>PSP[k2].draw(s,tm)}
  // Warlord's blade: sword tier 8
  {TIER_N[8]='Warlord';TCOL[8]='#e04818';const k='eq_sword8',e={slot:'main',kind:'sword',tier:8,n:'Warlord\'s blade',ic:'sword',col:'#e04818',v:9000,atk:50};EQ[k]=e;EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=4500;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase();
-  IDESC[k]='RARE, from the Iron Warlord. A red-hot greatsword: the strongest sword there is. Wield at Attack 50.';inv[k]=inv[k]|0}
+  IDESC[k]='RARE, from the Iron Warlord. A red-hot greatsword that hits harder than an adamant sword. Wield at Attack 50.';inv[k]=inv[k]|0}
  // Frostbite ring
  if(window.SQJK){SQGEMC.frost=['#a8e0ff','#3870b0'];const j={k:'ja_frost',n:'Frostbite ring',s:'ring',g:'frost',v:6000,d:'Your melee hits chill monsters, and one in five freezes them solid for a moment.'};SQJK[j.k]=j;
   INVK.push(j.k);EXTRA_BAG.push(j.k);INAME[j.k]=j.n;IDESC[j.k]='Ring (rare, from the Frost Wyrm): '+j.d+' Wear it from the Bag.';SELLP[j.k]=2500;SN[j.k]=j.n+'s';SHORT[j.k]=j.n.toLowerCase()}
