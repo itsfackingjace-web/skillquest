@@ -18,7 +18,7 @@
   live site). The cases in `cases/` cover start-up, saves, crafting from chests, graves, campfires, house chests, gathering/eating, island
   trips, trading, the World Market, the guild bank, dungeons, fishing behind menus, HIT/EAT, the Dev Suite tabs, patron art, new pets,
   the Song Studio, song zones, the wiki and the error reporter. First come the **source rules** (`tools/checks/lint.cjs`, also on its own):
-  no bare top-level `{ }` blocks (besides the multiplayer block), unique panel numbers, no class styled in two files unless listed in
+  no bare top-level `{ }` blocks, unique panel numbers, no class styled in two files unless listed in
   `tools/checks/css-shared.txt`, no `prompt()`, no untagged empty catches. A full run takes about 4 minutes. **Run them after building and before
   every release; never release with a failing check.** When fixing a bug, add a case that fails without the fix. Script errors on the page
   fail a case. Errors that tagged catches swallowed during the run are written to `tools/checks/caught-errors.txt` (code errors are
@@ -63,13 +63,15 @@
   the top. The version shown in Options, the wiki's "NEW!" badge and the update check (125) all come from that first entry, so
   any player-facing change must bump it. Leave out Dev Suite / developer-tool changes that don't change anything for players.
 - Write patch notes for players, not developers: what's new or fixed and how to use it.
-- The multiplayer code (061 to 080) is one big `{ }` block: `MP`, `PV`, `pvSend`, `pvFx`, `mpDrawPeer` live inside it and can't be
-  wrapped from later files. Use its hooks instead: `SQFXH[kind](player,event)` for new fx event kinds, `SQPEERFX` drawers run
+- The multiplayer code (061 to 080) is one big `(()=>{ ... })();` (it opens in 061 and closes in 080): `MP`, `PV`, `pvSend`, `pvFx`,
+  `mpDrawPeer` live inside it and can't be wrapped from later files. The names later files use are put on `window` right after their
+  declarations (mpLoc, mpLog, mpBackup, saveInfo, mpChooseSave, mpSignIn, mpVis, mpSend, releaseMenu, pvTarget, rbSolidSync, rhSolidSync,
+  lbOpen, wbLair, wbPos, trustedBy, rfForeign, rfCanTill): export a new one the same way (`window.f=f;`). Use its hooks instead: `SQFXH[kind](player,event)` for new fx event kinds, `SQPEERFX` drawers run
   for each other player, `SQPVSEND(event)` to send, `SQPVQUIET` to keep attacks from being sent as swings (`window.SQMP`,
   `window.SQPVP` expose the state).
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
   `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`). Every bare block
-  except the multiplayer one became `(()=>{ })();` on Nov 19, and the source rules fail on a new one.
+  became `(()=>{ })();` on Nov 19-20 (tools/refactor/blocks-to-iife.cjs), and the source rules fail on a new one.
 - **Panel numbers (`ptab`) must be unique**: 124's Custom Controls used 34, which is 064's PvP screen, so START > PvP opened Custom
   Controls (Nov 15; now 45). In use: 0-8 (built-in screens), 31 style, 32 trade, 33 graves, 34 PvP, 35 achievements, 36/37 player menu/duel,
   38 party, 39 emotes, 40 report, 41 eating, 42 quest choice, 43 events, 44 guild, 45 controls, 46 credits, 47 Art Room,

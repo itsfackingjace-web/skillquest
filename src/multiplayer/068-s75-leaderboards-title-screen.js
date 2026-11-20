@@ -53,7 +53,7 @@ const lbEl=el('div','sqlb','','<div class="lbw"><div class="lbh"><b>LEADERBOARDS
 document.body.appendChild(lbEl);for(const ev of['touchstart','pointerdown','mousedown'])lbEl.addEventListener(ev,stop);
 function lbOpen(){LB.open=true;lbEl.style.display='flex';try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'068-4')}lbRender();
  if(!LB.unsub&&FB&&FB.db){try{LB.unsub=FB.db.onValue(FB.db.ref(FB.D,'lb'),s=>{LB.data=s.val()||{};if(LB.open)lbRender()},e=>{LB.err=1;lbRender()})}catch(e){LB.err=1}}
- setTimeout(()=>{const b=lbEl.querySelector('.lbc button.on');if(b&&(GPON||TS.kb))setFocus(b)},30)}
+ setTimeout(()=>{const b=lbEl.querySelector('.lbc button.on');if(b&&(GPON||TS.kb))setFocus(b)},30)}window.lbOpen=lbOpen;
 function lbClose(){LB.open=false;lbEl.style.display='none';if(LB.unsub){try{LB.unsub()}catch(e){self.SQERR&&SQERR(e,'068-5')}LB.unsub=null}setFocus(null);try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'068-6')}
  if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="lb"]');if(b&&(GPON||TS.kb))setFocus(b)}}
 function lbRender(){const cats=lbCats(),C=cats.find(c=>c.k===LB.cat)||cats[0],me=MP.user&&MP.user.uid;

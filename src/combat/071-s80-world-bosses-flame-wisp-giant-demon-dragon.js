@@ -27,10 +27,10 @@ function wbLair(b){const key=b.slot+':'+b.where;if(WB.lairKey===key)return WB.la
  else{const R=SCENE&&SCENE.room;if(!R||R.region!==b.where)return null;const r=rng(b.slot*31+9),sp=R.spawn||[R.w/2,R.h/2];
   for(let k=0;k<800&&!found;k++){const x=8+Math.floor(r()*(R.w-16)),y=8+Math.floor(r()*(R.h-16)),d=Math.hypot(x-sp[0],y-sp[1]);if(d<22||d>95)continue;let ok=true;
    for(let dy=-3;dy<=3&&ok;dy++)for(let dx=-4;dx<=4;dx++){const i=(y+dy)*R.w+x+dx;if(R.tiles[i]===0||(R.reach&&!R.reach[i])){ok=false;break}}/* Nov 13: the whole patch it moves over must be walkable and reachable (a dragon over cliffs/lava on Ashfall couldn't be reached) */if(ok)found={x:x*16+8,y:y*16+8}}}
- WB.lair=found;WB.lairKey=found?key:'';return found}
+ WB.lair=found;WB.lairKey=found?key:'';return found}window.wbLair=wbLair;
 // where it is right now, and the attacks it's making (pure functions of the shared clock)
 const wbNow=()=>MP.on?mpNow():Date.now();
-function wbPos(b,L,t){const s=(t-b.start)/1000;return{x:L.x+Math.cos(s*.21)*28+Math.sin(s*.53)*8,y:L.y+Math.sin(s*.29)*16}}
+function wbPos(b,L,t){const s=(t-b.start)/1000;return{x:L.x+Math.cos(s*.21)*28+Math.sin(s*.53)*8,y:L.y+Math.sin(s*.29)*16}}window.wbPos=wbPos;
 function wbAttacks(b,L,t){const T=b.T,per=T.per,c=Math.floor((t-b.start)/per),out=[];for(const cc of[c-1,c]){if(cc<0)continue;const t0=b.start+cc*per,hit=t0+1600,pat=T.pats[cc%T.pats.length],r=rng(b.slot*1009+cc*97),bp=wbPos(b,L,hit);
   if(pat==='rain'||pat==='rocks'||pat==='meteors'||pat==='pools'){const n={rain:5,rocks:7,meteors:9,pools:9}[pat],rad={rain:22,rocks:26,meteors:24,pools:18}[pat];
    for(let i=0;i<n;i++){const a=r()*6.283,d=30+r()*140;out.push({k:'c',x:bp.x+Math.cos(a)*d,y:bp.y+Math.sin(a)*d*.8,r:rad,t0,hit,id:cc+'c'+i,pat})}}

@@ -7284,7 +7284,7 @@ img,canvas,.slot img,#pn img{image-rendering:pixelated;image-rendering:crisp-edg
 //   over their heads, and chat messages appear over the speaker's head in yellow.
 // - Chat: chat/<id>, RuneScape-style box with All / Public / Game tabs; Game repeats the game's own messages.
 // - Your skills, quests, items and world progress stay yours: nothing here changes what anyone else has.
-{
+(()=>{
 const MP={og:{},ogTold:false,on:false,user:null,players:new Map(),log:[],tab:'all',seen:new Set(),unsub:[],off:0,T:null,Tat:0,selfSaid:null,lastSend:0,unread:0,open:false};
 const FBV='10.12.2',FBC={apiKey:"AIzaSyDqKBIszPeg7y-cto-YRDzgPUfENSVXPjk",authDomain:"skillquest-913e2.firebaseapp.com",
  databaseURL:"https://skillquest-913e2-default-rtdb.firebaseio.com",projectId:"skillquest-913e2",storageBucket:"skillquest-913e2.firebasestorage.app",
@@ -7306,7 +7306,7 @@ const mpNow=()=>Date.now()+MP.off;
 // ---- where am I (only outdoors is shared) ----
 // outdoors (Hollow or a region), public buildings (shops, inns, forges...), caves and dungeon floors are shared; your own house is private
 function mpLoc(){if(dead||(typeof TRAVEL49!=='undefined'&&TRAVEL49))return'';if(!SCENE)return'hollow';const R=SCENE.room;if(!R)return'';if(R.region)return'r:'+R.region;
- if(SCENE.house)return houseLocOf(SCENE.house);if(SCENE.id==='home'||!ROOMS[SCENE.id])return'';return'in:'+SCENE.id}
+ if(SCENE.house)return houseLocOf(SCENE.house);if(SCENE.id==='home'||!ROOMS[SCENE.id])return'';return'in:'+SCENE.id}window.mpLoc=mpLoc;
 // ---- UI ----
 const css=document.createElement('style');css.textContent=`
 #mpb{position:fixed;left:8px;top:52%;z-index:30;min-width:72px;height:40px;padding:0 10px;background:#f8f8f8;color:#404040;border:3px solid #485870;box-shadow:inset 0 0 0 2px #a8c0e0;font:700 14px ${PF};letter-spacing:1px;cursor:pointer;touch-action:manipulation;
@@ -7361,7 +7361,7 @@ window.SQMPLOG=(k,m,extra)=>mpLog(k,m,extra);
 function mpLog(k,m,extra){const e=Object.assign({k,m,at:performance.now(),id:Math.random().toString(36).slice(2)},extra||{});MP.log.push(e);
  // each tab keeps its own last 100 lines (game messages used to push public chat out of the history)
  {let n=0;for(let i=MP.log.length-1;i>=0;i--)if(MP.log[i].k===k&&++n>100){MP.log.splice(i,1);break}}if(MP.log.length>450)MP.log.shift();
- if(MP.open&&(MP.tab==='all'||MP.tab===k)){lst.appendChild(mpLine(e));while(lst.children.length>120)lst.firstChild.remove();lst.scrollTop=lst.scrollHeight}}
+ if(MP.open&&(MP.tab==='all'||MP.tab===k)){lst.appendChild(mpLine(e));while(lst.children.length>120)lst.firstChild.remove();lst.scrollTop=lst.scrollHeight}}window.mpLog=mpLog;
 // the game's own messages go to the Game tab
 const _say61=say;let lastGame='',lastGameAt=0;say=function(s){_say61(s);const t=String(s||'');const n=performance.now();if(t&&(t!==lastGame||n-lastGameAt>4000)){lastGame=t;lastGameAt=n;mpLog('game',t)}};
 // ---- OG crown: players who first signed in before the cutoff (server-enforced in database.rules.json) ----
@@ -7379,13 +7379,13 @@ const crownImg=()=>{const i=document.createElement('img');i.src=crownURL;i.alt='
 // Once linked, the cross-device rule from section 8 applies (newest save wins, another device's newer save is adopted).
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){self.SQERR&&SQERR(e,'061-4')}};
 function mpBackup(tag,S){try{const keys=Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort();while(keys.length>=4)localStorage.removeItem(keys.shift());
- localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){self.SQERR&&SQERR(e,'061-5')}cloudBak(tag,S)}
+ localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){self.SQERR&&SQERR(e,'061-5')}cloudBak(tag,S)}window.mpBackup=mpBackup;
 // the same backups also go to your account (bak/<uid>, the last 8), so any device can restore them (Options → Backups)
 function cloudBak(tag,S){try{window.sqCloudBak&&sqCloudBak(tag,S)}catch(e){self.SQERR&&SQERR(e,'061-6')}}
 const lvFromXp=x=>{let l=1;while(l<99&&(+x||0)>=XT[l])l++;return l};
 function saveInfo(S){const xp=Array.isArray(S.xp)?S.xp:[];let tl=0;for(let i=0;i<SKN.length;i++)tl+=lvFromXp(xp[i]);
  const qi=Math.max(0,+(S.q&&S.q.i)||0);return{name:String(S.name||'?').slice(0,10),tl,q:Math.min(qi,QS.length),gold:Math.max(0,+S.gold||0),at:+S.savedAt||0,
-  inv:S.inv?Object.values(S.inv).reduce((a,v)=>a+(+v||0),0):0}}
+  inv:S.inv?Object.values(S.inv).reduce((a,v)=>a+(+v||0),0):0}}window.saveInfo=saveInfo;
 const ago=t=>{if(!t)return'unknown';const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
 const localHasProgress=()=>!!(hadLocal||oldPlayer||PNAME&&!menuOpen);
 async function mpLinkSave(uid,adapter){const r=await adapter.get(),linked=lsGet('sq_acct')===uid;
@@ -7414,7 +7414,7 @@ function mpChooseSave(L,S,cb){const a=saveInfo(L),b=saveInfo(S);const box=el('di
  const card=(k,t,i)=>'<button class="sv" data-k="'+k+'"><b>'+t+'</b><span>Player</span><span>'+esc(i.name)+'</span><span>Total level</span><span>'+i.tl+'</span><span>Quest</span><span>'+i.q+' / '+QS.length+'</span><span>Gold</span><span>'+i.gold+'</span><span>Saved</span><span>'+ago(i.at)+'</span></button>';
  box.innerHTML='<div class="h">WHICH SAVE DO YOU WANT?</div><p>This device and your account have different progress. Pick the one to keep. The other is backed up on this device.</p>'+card('device','THIS DEVICE',a)+card('account','YOUR ACCOUNT',b);
  document.body.appendChild(box);for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])box.addEventListener(ev,stop);
- MP.choose=box;box.onclick=e=>{const c=e.target.closest('.sv');if(!c)return;box.remove();MP.choose=null;setFocus(null);cb(c.dataset.k)}}
+ MP.choose=box;box.onclick=e=>{const c=e.target.closest('.sv');if(!c)return;box.remove();MP.choose=null;setFocus(null);cb(c.dataset.k)}}window.mpChooseSave=mpChooseSave;
 {const st=document.createElement('style');st.textContent=`#mpsave{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:96;max-width:520px;margin:0 auto;background:#f8f8f8;color:#404040;font:500 14px ${PF};padding:14px;box-sizing:border-box;max-height:calc(100vh - 16px);overflow-y:auto}
 #mpsave .h{font-weight:700;font-size:17px;letter-spacing:1px;text-align:center}#mpsave p{line-height:1.4;margin:8px 0 12px}
 #mpsave .sv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;width:100%;text-align:left;margin-top:10px;padding:12px 14px;background:#fff;border:3px solid #485870;font:500 14px ${PF};color:#404040;cursor:pointer}
@@ -7455,7 +7455,7 @@ window.SQGSI=GSI;
 function mpSignIn(){if(!FB){say('Still connecting to the server... try again in a moment.');return}
  // in the Windows app: sign in through your browser, then come back here
  if(window.sqDesktop&&sqDesktop.signIn){say('Finish signing in with Google in your web browser, then come back here.');sqDesktop.signIn().then(r=>{if(r&&r.idToken)return FB.auth.signInWithCredential(FB.A,FB.auth.GoogleAuthProvider.credential(r.idToken));if(r&&r.error&&r.error!=='cancelled')gsiNote(r.error)}).catch(e=>{mpErr(e);gsiNote(e)});return}if(GSI.on())return gsiGo();const A=FB.auth,p=new A.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
- A.signInWithPopup(FB.A,p).catch(e=>{const c=e&&e.code||'';if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'){if(GSI.on())gsiGo();else A.signInWithRedirect(FB.A,p).catch(e=>{mpErr(e);gsiNote(e)})}else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){mpErr(e);gsiNote(e)}})}
+ A.signInWithPopup(FB.A,p).catch(e=>{const c=e&&e.code||'';if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'){if(GSI.on())gsiGo();else A.signInWithRedirect(FB.A,p).catch(e=>{mpErr(e);gsiNote(e)})}else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){mpErr(e);gsiNote(e)}})}window.mpSignIn=mpSignIn;
 window.sqCloudBak=(tag,S)=>{const u=MP.user;if(!FB||!u||!S||S.v!=1)return Promise.resolve(false);const d=FB.db,D=FB.D,base='bak/'+u.uid;
  return d.set(d.ref(D,base+'/'+Date.now()+'_'+String(tag).slice(0,12)),{json:JSON.stringify(S),at:Date.now(),tag:String(tag).slice(0,12)}).then(async()=>{
   const s=await d.get(d.ref(D,base));if(!s.exists())return true;const ks=Object.keys(s.val()).sort();while(ks.length>8)await d.remove(d.ref(D,base+'/'+ks.shift()));return true}).catch(e=>{mpErr(e);return false})};
@@ -7561,7 +7561,7 @@ let mpLastF=performance.now();
 function mpStepAll(){const n=performance.now(),dt=Math.min(.1,(n-mpLastF)/1000);mpLastF=n;
  for(const r of MP.players.values()){const dx=r.tx-r.x,dy=r.ty-r.y,dd=Math.hypot(dx,dy),k=Math.min(1,dt*9);r.x+=dx*k;r.y+=dy*k;r.mv=dd>.6||r.m;r.w=r.mv?r.w+dt*15:0}}
 function mpVis(){if(!MP.on)return[];const loc=mpLoc();if(!loc)return[];const out=[];const rx=W/Z+48,ry=H/Z+64;
- for(const r of MP.players.values())if(r.loc===loc&&live(r)&&Math.abs(r.x-P.x)<rx&&Math.abs(r.y-P.y)<ry)out.push(r);return out}
+ for(const r of MP.players.values())if(r.loc===loc&&live(r)&&Math.abs(r.x-P.x)<rx&&Math.abs(r.y-P.y)<ry)out.push(r);return out}window.mpVis=mpVis;
 function mpDrawPeer(r,tm){const x=Math.round(r.x),y=Math.round(r.y),st=r.mv?[1,0,2,0][Math.floor(r.w)%4]:0;GC=g;shd(x,y+6,12);
  try{cP(r.ak?{...r.ch,ak:r.ak}:r.ch,r.d,st,x,y,r.fl)}catch(e){self.SQERR&&SQERR(e,'061-29')}MP.T=g.getTransform();MP.Tat=performance.now()}
 // Hollow: join the y-sorted list
@@ -7589,7 +7589,7 @@ function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.se
  if(fresh){if(mine)MP.selfSaid={m,at:performance.now()};else{const r=MP.players.get(v.u);if(r)r.said={m,at:performance.now()}}if(!MP.open&&!mine){MP.unread++;mpRBtn()}}}
 function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)return;if(!MP.on){mpOpenChat();return}if(window.SQMOD&&SQMOD.blockChat())return;
  const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;
- const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}
+ const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}window.mpSend=mpSend;
 // ---- Options: show your own name (and crown) over your head ----
 MP.selfName=false;try{MP.selfName=localStorage.getItem('sq_myname')==='1'}catch(e){self.SQERR&&SQERR(e,'061-30')}
 SQOPTS.wrap('061',_opt61=>function(){const h=_opt61(),k=h.indexOf('<div class="tl" style="margin-top:22px');
@@ -7600,7 +7600,7 @@ const _oc61=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mpo');if(b){M
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'online',l:()=>MP.on?'Chat':'Play online'});
 SQSHOWSCR.wrap('061',_ss61=>function(id){if(id!=='online')return _ss61(id);releaseMenu();mpOpenChat()});
 // the START menu leaves pnOpen set for the screen it opens; our own boxes aren't that screen, so let go of it
-function releaseMenu(){if(pn.style.display==='none'){pnOpen=false;fromMenu=false}jx=jy=0}
+function releaseMenu(){if(pn.style.display==='none'){pnOpen=false;fromMenu=false}jx=jy=0}window.releaseMenu=releaseMenu;
 SQNAVROOT.wrap('061',_nr61=>function(){if(sg.style.display==='block')return sg;if(MP.open)return pc;return _nr61()});
 // ○ / Options arrive as an Escape key press; close our boxes first (the chat input handles its own Escape)
 addEventListener('keydown',e=>{if(e.key!=='Escape'||e.target===inp)return;
@@ -8273,7 +8273,7 @@ function trStart(){const d=FB.db,uid=MP.user.uid;TR.inbox={};
 {const _fv=friendsView;friendsView=function(){_fv();for(const row of lst.querySelectorAll('.fr')){const msg=[...row.querySelectorAll('button')].find(b=>b.textContent==='MESSAGE');if(!msg)continue;
   const nm=row.querySelector('.fn b');const u=Object.keys(MP.friends).find(k=>fname(k)===(nm&&nm.textContent));if(!u||!trNear(u))continue;const b=document.createElement('button');b.textContent='TRADE';
   b.onclick=()=>{if(typeof mpCloseChat==='function')try{mpCloseChat()}catch(e){self.SQERR&&SQERR(e,'062-9')}trRequest(u)};msg.after(b)}}}
-window.SQTRADE=TR;window.SQTRREQ=u=>trRequest(u);window.SQTRNEAR=()=>trNearList();
+window.SQTRADE=TR;window.SQTRREQ=u=>trRequest(u);window.SQTRNEAR=()=>trNearList();window.SQTRCLICK=b=>trClick(b);/* tools/checks 09: a trade button press without the screen */
 // ---------------------------------------------------------------- 68. Gravestones
 // When you fall, everything you'd normally lose (what's in your bag except gear) goes into a gravestone where you
 // fell instead. Graves are strictly public: anyone who finds one can loot it, the owner included, and it crumbles
@@ -8394,7 +8394,7 @@ function pvSafeAt(loc,x,y){if(!loc)return true;if(loc.startsWith('h:'))return tr
  if(loc==='hollow'&&Math.hypot(x/16-VX,y/16-VY)<PVSAFE)return true;return false}
 const pvMeSafe=()=>pvSafeAt(mpLoc(),P.x,P.y);
 const pvDuel=u=>!!(window.SQDUEL&&SQDUEL.fighting&&u&&SQDUEL.foe===u);// a duel: the two can fight anywhere, PvP on or off
-function pvTarget(r){if(r&&pvDuel(r.uid))return MP.on&&live(r)&&!dead&&r.loc===mpLoc();return PV.on&&MP.on&&r&&r.pk&&live(r)&&!dead&&r.loc===mpLoc()&&!pvMeSafe()&&!pvSafeAt(r.loc,r.tx,r.ty)}
+function pvTarget(r){if(r&&pvDuel(r.uid))return MP.on&&live(r)&&!dead&&r.loc===mpLoc();return PV.on&&MP.on&&r&&r.pk&&live(r)&&!dead&&r.loc===mpLoc()&&!pvMeSafe()&&!pvSafeAt(r.loc,r.tx,r.ty)}window.pvTarget=pvTarget;
 // ---- sending what you do ----
 function pvSend(ev){if(!MP.on||!MP.user)return;const L=mpLoc();if(!L)return;ev.s=++PV.fxSeq;ev.loc=L;ev.t=FB.db.serverTimestamp();FB.db.set(FB.db.ref(FB.D,'fx/'+MP.user.uid),ev).catch(()=>{})}
 const r2=v=>Math.round(v*100)/100;
@@ -8501,7 +8501,7 @@ function rbOpen(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y*R.
 // walls block the way (gates don't); kept in step with your builds and other players'
 function rbSolidSync(){const R=rbR();if(!R)return;const want=new Set(),had=R._rbS||new Set(),add=(x,y,t)=>{if(t==='door')return;const i=y*R.w+x;if(had.has(i)||!R.solid.has(i))want.add(i)};
  for(const[k,s]of rbMap(R.region)){const[x,y]=rbXY(k);add(x,y,s.t)}for(const f of rbForeign(R.region))add(f.x,f.y,f.t);
- for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rbS=want}
+ for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rbS=want}window.rbSolidSync=rbSolidSync;
 setInterval(rbSolidSync,500);
 // ---- building ----
 {SQSTARTB.wrap('065',_sb=>function(k){const R=rbR();if(!R)return _sb(k);if((inv[k]|0)<1)return;
@@ -8604,7 +8604,7 @@ function rhFits(R,x,y){for(let dy=-2;dy<=1;dy++)for(let dx=-3;dx<=3;dx++){const 
 // walls of the house block the way (the door doesn't)
 function rhSolidSync(){const R=rbR();if(!R)return;const want=new Set(),had=R._rhS||new Set();
  for(const h of rhHere().concat(rhForeign(R.region)))for(const[x,y]of rhTiles(h)){const i=y*R.w+x;if(had.has(i)||!R.solid.has(i))want.add(i)}
- for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rhS=want}
+ for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rhS=want}window.rhSolidSync=rhSolidSync;
 setInterval(rhSolidSync,500);
 // ---- placing ----
 {SQSTARTB.wrap('067',_sb=>function(k){const R=rbR();if(!R||k!=='house')return _sb(k);if((inv.house|0)<1)return;
@@ -8703,7 +8703,7 @@ const lbEl=el('div','sqlb','','<div class="lbw"><div class="lbh"><b>LEADERBOARDS
 document.body.appendChild(lbEl);for(const ev of['touchstart','pointerdown','mousedown'])lbEl.addEventListener(ev,stop);
 function lbOpen(){LB.open=true;lbEl.style.display='flex';try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'068-4')}lbRender();
  if(!LB.unsub&&FB&&FB.db){try{LB.unsub=FB.db.onValue(FB.db.ref(FB.D,'lb'),s=>{LB.data=s.val()||{};if(LB.open)lbRender()},e=>{LB.err=1;lbRender()})}catch(e){LB.err=1}}
- setTimeout(()=>{const b=lbEl.querySelector('.lbc button.on');if(b&&(GPON||TS.kb))setFocus(b)},30)}
+ setTimeout(()=>{const b=lbEl.querySelector('.lbc button.on');if(b&&(GPON||TS.kb))setFocus(b)},30)}window.lbOpen=lbOpen;
 function lbClose(){LB.open=false;lbEl.style.display='none';if(LB.unsub){try{LB.unsub()}catch(e){self.SQERR&&SQERR(e,'068-5')}LB.unsub=null}setFocus(null);try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'068-6')}
  if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="lb"]');if(b&&(GPON||TS.kb))setFocus(b)}}
 function lbRender(){const cats=lbCats(),C=cats.find(c=>c.k===LB.cat)||cats[0],me=MP.user&&MP.user.uid;
@@ -8866,10 +8866,10 @@ function wbLair(b){const key=b.slot+':'+b.where;if(WB.lairKey===key)return WB.la
  else{const R=SCENE&&SCENE.room;if(!R||R.region!==b.where)return null;const r=rng(b.slot*31+9),sp=R.spawn||[R.w/2,R.h/2];
   for(let k=0;k<800&&!found;k++){const x=8+Math.floor(r()*(R.w-16)),y=8+Math.floor(r()*(R.h-16)),d=Math.hypot(x-sp[0],y-sp[1]);if(d<22||d>95)continue;let ok=true;
    for(let dy=-3;dy<=3&&ok;dy++)for(let dx=-4;dx<=4;dx++){const i=(y+dy)*R.w+x+dx;if(R.tiles[i]===0||(R.reach&&!R.reach[i])){ok=false;break}}/* Nov 13: the whole patch it moves over must be walkable and reachable (a dragon over cliffs/lava on Ashfall couldn't be reached) */if(ok)found={x:x*16+8,y:y*16+8}}}
- WB.lair=found;WB.lairKey=found?key:'';return found}
+ WB.lair=found;WB.lairKey=found?key:'';return found}window.wbLair=wbLair;
 // where it is right now, and the attacks it's making (pure functions of the shared clock)
 const wbNow=()=>MP.on?mpNow():Date.now();
-function wbPos(b,L,t){const s=(t-b.start)/1000;return{x:L.x+Math.cos(s*.21)*28+Math.sin(s*.53)*8,y:L.y+Math.sin(s*.29)*16}}
+function wbPos(b,L,t){const s=(t-b.start)/1000;return{x:L.x+Math.cos(s*.21)*28+Math.sin(s*.53)*8,y:L.y+Math.sin(s*.29)*16}}window.wbPos=wbPos;
 function wbAttacks(b,L,t){const T=b.T,per=T.per,c=Math.floor((t-b.start)/per),out=[];for(const cc of[c-1,c]){if(cc<0)continue;const t0=b.start+cc*per,hit=t0+1600,pat=T.pats[cc%T.pats.length],r=rng(b.slot*1009+cc*97),bp=wbPos(b,L,hit);
   if(pat==='rain'||pat==='rocks'||pat==='meteors'||pat==='pools'){const n={rain:5,rocks:7,meteors:9,pools:9}[pat],rad={rain:22,rocks:26,meteors:24,pools:18}[pat];
    for(let i=0;i<n;i++){const a=r()*6.283,d=30+r()*140;out.push({k:'c',x:bp.x+Math.cos(a)*d,y:bp.y+Math.sin(a)*d*.8,r:rad,t0,hit,id:cc+'c'+i,pat})}}
@@ -9294,7 +9294,7 @@ function sessPassive(){if(MP.passive||window.SQSTRICT)return;/* account-only sav
 // trusted friend's take/put is a transaction, so the same items can't be taken twice.
 const TRU={mine:{},of:{},subs:{},sub:null};
 function trustSub(o){if(!MP.on||!MP.user||!o||o===MP.user.uid||TRU.subs[o])return;TRU.subs[o]=FB.db.onValue(FB.db.ref(FB.D,'trust/'+o),s=>{TRU.of[o]=s.val()||{}},()=>{TRU.of[o]=TRU.of[o]||{}})}
-function trustedBy(o){if(!MP.on||!MP.user||!o||o===MP.user.uid)return false;trustSub(o);return!!(TRU.of[o]&&TRU.of[o][MP.user.uid]===true)}
+function trustedBy(o){if(!MP.on||!MP.user||!o||o===MP.user.uid)return false;trustSub(o);return!!(TRU.of[o]&&TRU.of[o][MP.user.uid]===true)}window.trustedBy=trustedBy;
 // the first time you touch something of theirs their trust list may not have arrived yet: wait for it, then act
 function trustThen(o,fn){if(!MP.on||!MP.user)return noTrust(o);trustSub(o);if(TRU.of[o]){if(TRU.of[o][MP.user.uid]===true)fn();else noTrust(o);return}
  swing=.25;FB.db.get(FB.db.ref(FB.D,'trust/'+o)).then(s=>{TRU.of[o]=s.val()||{};if(TRU.of[o][MP.user.uid]===true)fn();else noTrust(o)}).catch(()=>noTrust(o))}
@@ -9380,12 +9380,12 @@ window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};window.SQTRUTHEN=trustThen;
 const RF={};const rfMap=id=>RF[id]||(RF[id]=new Map());
 const RF_OK=new Set([2,4,6,7,10,13,14,15]);   // grass, snow, dirt, forest floor, ash, crystal ground... (not sand, rock, lava, floors, ice or water)
 function rfForeign(id){const out=new Map();for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const r=BLDS.data[o]&&BLDS.data[o].r,f=r&&r._f&&r._f[id];if(!f)continue;
-  for(const e0 of(Array.isArray(f)?f:Object.values(f))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(!e[2]&&+e[5]&&nowS()-e[5]>TILL_LIFE)continue;out.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,s:e[3]|0,w:!!e[4],_foreign:o})}}return out}
+  for(const e0 of(Array.isArray(f)?f:Object.values(f))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(!e[2]&&+e[5]&&nowS()-e[5]>TILL_LIFE)continue;out.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,s:e[3]|0,w:!!e[4],_foreign:o})}}return out}window.rfForeign=rfForeign;
 function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y*R.w+x;if(!RF_OK.has(R.tiles[i])||R.solid.has(i)||rgObjAt(R,x,y))return false;const k=rbK(x,y);
  if(rfMap(R.region).has(k)||rfForeign(R.region).has(k)||rbMap(R.region).has(k)||rbForeignAt(R.region,x,y))return false;
  for(const p of[R.spawn,R.dock])if(p&&Math.hypot(x-p[0],y-p[1])<4)return false;
  if(typeof rhAt==='function'&&(rhAt(rhHere(),x,y)||rhAt(rhForeign(R.region),x,y)))return false;
- return!fires.some(f=>Math.abs(f.x-(x*16+8))<12&&Math.abs(f.y-(y*16+8))<12)}
+ return!fires.some(f=>Math.abs(f.x-(x*16+8))<12&&Math.abs(f.y-(y*16+8))<12)}window.rfCanTill=rfCanTill;
 // HIT: harvest, water, check, or till
 {SQHIT.wrap('072 world boss art hd same style',_a=>function(){const R=rbR();if(!R||dead||menuOpen||pnOpen||BUILD||swing>0||FISH||facingNpc())return _a();
   const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),k=rbK(tx,ty);if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _a();
@@ -10249,7 +10249,7 @@ window.SQMP=MP;
 // The chat box sends through window.mpSend: hand it the block's mpSend with every wrapper above (062/070/072), so
 // sections after the block (111b's /suite, 136's emotes and /p) wrap the full chain instead of the bare original.
 window.mpSend=mpSend;
-}
+})();
 // ---------------------------------------------------------------- 62. Controller pass
 // - The highlight is drawn inside each button (an inset ring), because the Gen 3 pixel frames clip anything drawn outside.
 // - Moving either stick or the D-pad wakes the controller up, not just a button press.

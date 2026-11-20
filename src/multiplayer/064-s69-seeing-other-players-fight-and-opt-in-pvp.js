@@ -18,7 +18,7 @@ function pvSafeAt(loc,x,y){if(!loc)return true;if(loc.startsWith('h:'))return tr
  if(loc==='hollow'&&Math.hypot(x/16-VX,y/16-VY)<PVSAFE)return true;return false}
 const pvMeSafe=()=>pvSafeAt(mpLoc(),P.x,P.y);
 const pvDuel=u=>!!(window.SQDUEL&&SQDUEL.fighting&&u&&SQDUEL.foe===u);// a duel: the two can fight anywhere, PvP on or off
-function pvTarget(r){if(r&&pvDuel(r.uid))return MP.on&&live(r)&&!dead&&r.loc===mpLoc();return PV.on&&MP.on&&r&&r.pk&&live(r)&&!dead&&r.loc===mpLoc()&&!pvMeSafe()&&!pvSafeAt(r.loc,r.tx,r.ty)}
+function pvTarget(r){if(r&&pvDuel(r.uid))return MP.on&&live(r)&&!dead&&r.loc===mpLoc();return PV.on&&MP.on&&r&&r.pk&&live(r)&&!dead&&r.loc===mpLoc()&&!pvMeSafe()&&!pvSafeAt(r.loc,r.tx,r.ty)}window.pvTarget=pvTarget;
 // ---- sending what you do ----
 function pvSend(ev){if(!MP.on||!MP.user)return;const L=mpLoc();if(!L)return;ev.s=++PV.fxSeq;ev.loc=L;ev.t=FB.db.serverTimestamp();FB.db.set(FB.db.ref(FB.D,'fx/'+MP.user.uid),ev).catch(()=>{})}
 const r2=v=>Math.round(v*100)/100;

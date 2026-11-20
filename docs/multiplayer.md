@@ -101,7 +101,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   else and tied to an offer of the owner's for that item. So the offer must still exist when the box is written: filled offers
   are removed by their owner after `HOLD` (30 s, `sweep()`), and cancelling an offer that already traded keeps it as `x:1`
   with `q=f` (removed by the same sweep). Offers with `f>=q` don't count toward the caps and aren't listed.
-- **World Market rules** (`items/079`, a bare block, so edit it in place): `SQWMRULES` = per-item cap (`PERK` 2 of the 8),
+- **World Market rules** (`items/079`, inside the multiplayer block, so edit it in place): `SQWMRULES` = per-item cap (`PERK` 2 of the 8),
   price band `lo(k)`..`hi(k)`: at least half the shop value (`SELLP`), no top price since Nov 13 (`hi` = 1e7, the database's limit), expiry `expAt(o)` = 7 days from `t`
   (old offers from `RULES_AT`). Matching, browsing and the order book ignore expired and out-of-band offers; the owner's
   client cancels its own expired offers (refund). The database rules keep `t` unchanged when others fill an offer and

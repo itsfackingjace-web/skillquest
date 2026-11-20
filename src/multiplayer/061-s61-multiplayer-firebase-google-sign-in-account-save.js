@@ -7,7 +7,7 @@
 //   over their heads, and chat messages appear over the speaker's head in yellow.
 // - Chat: chat/<id>, RuneScape-style box with All / Public / Game tabs; Game repeats the game's own messages.
 // - Your skills, quests, items and world progress stay yours: nothing here changes what anyone else has.
-{
+(()=>{
 const MP={og:{},ogTold:false,on:false,user:null,players:new Map(),log:[],tab:'all',seen:new Set(),unsub:[],off:0,T:null,Tat:0,selfSaid:null,lastSend:0,unread:0,open:false};
 const FBV='10.12.2',FBC={apiKey:"AIzaSyDqKBIszPeg7y-cto-YRDzgPUfENSVXPjk",authDomain:"skillquest-913e2.firebaseapp.com",
  databaseURL:"https://skillquest-913e2-default-rtdb.firebaseio.com",projectId:"skillquest-913e2",storageBucket:"skillquest-913e2.firebasestorage.app",
@@ -29,7 +29,7 @@ const mpNow=()=>Date.now()+MP.off;
 // ---- where am I (only outdoors is shared) ----
 // outdoors (Hollow or a region), public buildings (shops, inns, forges...), caves and dungeon floors are shared; your own house is private
 function mpLoc(){if(dead||(typeof TRAVEL49!=='undefined'&&TRAVEL49))return'';if(!SCENE)return'hollow';const R=SCENE.room;if(!R)return'';if(R.region)return'r:'+R.region;
- if(SCENE.house)return houseLocOf(SCENE.house);if(SCENE.id==='home'||!ROOMS[SCENE.id])return'';return'in:'+SCENE.id}
+ if(SCENE.house)return houseLocOf(SCENE.house);if(SCENE.id==='home'||!ROOMS[SCENE.id])return'';return'in:'+SCENE.id}window.mpLoc=mpLoc;
 // ---- UI ----
 const css=document.createElement('style');css.textContent=`
 #mpb{position:fixed;left:8px;top:52%;z-index:30;min-width:72px;height:40px;padding:0 10px;background:#f8f8f8;color:#404040;border:3px solid #485870;box-shadow:inset 0 0 0 2px #a8c0e0;font:700 14px ${PF};letter-spacing:1px;cursor:pointer;touch-action:manipulation;
@@ -84,7 +84,7 @@ window.SQMPLOG=(k,m,extra)=>mpLog(k,m,extra);
 function mpLog(k,m,extra){const e=Object.assign({k,m,at:performance.now(),id:Math.random().toString(36).slice(2)},extra||{});MP.log.push(e);
  // each tab keeps its own last 100 lines (game messages used to push public chat out of the history)
  {let n=0;for(let i=MP.log.length-1;i>=0;i--)if(MP.log[i].k===k&&++n>100){MP.log.splice(i,1);break}}if(MP.log.length>450)MP.log.shift();
- if(MP.open&&(MP.tab==='all'||MP.tab===k)){lst.appendChild(mpLine(e));while(lst.children.length>120)lst.firstChild.remove();lst.scrollTop=lst.scrollHeight}}
+ if(MP.open&&(MP.tab==='all'||MP.tab===k)){lst.appendChild(mpLine(e));while(lst.children.length>120)lst.firstChild.remove();lst.scrollTop=lst.scrollHeight}}window.mpLog=mpLog;
 // the game's own messages go to the Game tab
 const _say61=say;let lastGame='',lastGameAt=0;say=function(s){_say61(s);const t=String(s||'');const n=performance.now();if(t&&(t!==lastGame||n-lastGameAt>4000)){lastGame=t;lastGameAt=n;mpLog('game',t)}};
 // ---- OG crown: players who first signed in before the cutoff (server-enforced in database.rules.json) ----
@@ -102,13 +102,13 @@ const crownImg=()=>{const i=document.createElement('img');i.src=crownURL;i.alt='
 // Once linked, the cross-device rule from section 8 applies (newest save wins, another device's newer save is adopted).
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){self.SQERR&&SQERR(e,'061-4')}};
 function mpBackup(tag,S){try{const keys=Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort();while(keys.length>=4)localStorage.removeItem(keys.shift());
- localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){self.SQERR&&SQERR(e,'061-5')}cloudBak(tag,S)}
+ localStorage.setItem('sq_bak_'+Date.now()+'_'+tag,JSON.stringify(S))}catch(e){self.SQERR&&SQERR(e,'061-5')}cloudBak(tag,S)}window.mpBackup=mpBackup;
 // the same backups also go to your account (bak/<uid>, the last 8), so any device can restore them (Options → Backups)
 function cloudBak(tag,S){try{window.sqCloudBak&&sqCloudBak(tag,S)}catch(e){self.SQERR&&SQERR(e,'061-6')}}
 const lvFromXp=x=>{let l=1;while(l<99&&(+x||0)>=XT[l])l++;return l};
 function saveInfo(S){const xp=Array.isArray(S.xp)?S.xp:[];let tl=0;for(let i=0;i<SKN.length;i++)tl+=lvFromXp(xp[i]);
  const qi=Math.max(0,+(S.q&&S.q.i)||0);return{name:String(S.name||'?').slice(0,10),tl,q:Math.min(qi,QS.length),gold:Math.max(0,+S.gold||0),at:+S.savedAt||0,
-  inv:S.inv?Object.values(S.inv).reduce((a,v)=>a+(+v||0),0):0}}
+  inv:S.inv?Object.values(S.inv).reduce((a,v)=>a+(+v||0),0):0}}window.saveInfo=saveInfo;
 const ago=t=>{if(!t)return'unknown';const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
 const localHasProgress=()=>!!(hadLocal||oldPlayer||PNAME&&!menuOpen);
 async function mpLinkSave(uid,adapter){const r=await adapter.get(),linked=lsGet('sq_acct')===uid;
@@ -137,7 +137,7 @@ function mpChooseSave(L,S,cb){const a=saveInfo(L),b=saveInfo(S);const box=el('di
  const card=(k,t,i)=>'<button class="sv" data-k="'+k+'"><b>'+t+'</b><span>Player</span><span>'+esc(i.name)+'</span><span>Total level</span><span>'+i.tl+'</span><span>Quest</span><span>'+i.q+' / '+QS.length+'</span><span>Gold</span><span>'+i.gold+'</span><span>Saved</span><span>'+ago(i.at)+'</span></button>';
  box.innerHTML='<div class="h">WHICH SAVE DO YOU WANT?</div><p>This device and your account have different progress. Pick the one to keep. The other is backed up on this device.</p>'+card('device','THIS DEVICE',a)+card('account','YOUR ACCOUNT',b);
  document.body.appendChild(box);for(const ev of['touchstart','pointerdown','mousedown','keydown','keyup'])box.addEventListener(ev,stop);
- MP.choose=box;box.onclick=e=>{const c=e.target.closest('.sv');if(!c)return;box.remove();MP.choose=null;setFocus(null);cb(c.dataset.k)}}
+ MP.choose=box;box.onclick=e=>{const c=e.target.closest('.sv');if(!c)return;box.remove();MP.choose=null;setFocus(null);cb(c.dataset.k)}}window.mpChooseSave=mpChooseSave;
 {const st=document.createElement('style');st.textContent=`#mpsave{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:96;max-width:520px;margin:0 auto;background:#f8f8f8;color:#404040;font:500 14px ${PF};padding:14px;box-sizing:border-box;max-height:calc(100vh - 16px);overflow-y:auto}
 #mpsave .h{font-weight:700;font-size:17px;letter-spacing:1px;text-align:center}#mpsave p{line-height:1.4;margin:8px 0 12px}
 #mpsave .sv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;width:100%;text-align:left;margin-top:10px;padding:12px 14px;background:#fff;border:3px solid #485870;font:500 14px ${PF};color:#404040;cursor:pointer}
@@ -178,7 +178,7 @@ window.SQGSI=GSI;
 function mpSignIn(){if(!FB){say('Still connecting to the server... try again in a moment.');return}
  // in the Windows app: sign in through your browser, then come back here
  if(window.sqDesktop&&sqDesktop.signIn){say('Finish signing in with Google in your web browser, then come back here.');sqDesktop.signIn().then(r=>{if(r&&r.idToken)return FB.auth.signInWithCredential(FB.A,FB.auth.GoogleAuthProvider.credential(r.idToken));if(r&&r.error&&r.error!=='cancelled')gsiNote(r.error)}).catch(e=>{mpErr(e);gsiNote(e)});return}if(GSI.on())return gsiGo();const A=FB.auth,p=new A.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
- A.signInWithPopup(FB.A,p).catch(e=>{const c=e&&e.code||'';if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'){if(GSI.on())gsiGo();else A.signInWithRedirect(FB.A,p).catch(e=>{mpErr(e);gsiNote(e)})}else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){mpErr(e);gsiNote(e)}})}
+ A.signInWithPopup(FB.A,p).catch(e=>{const c=e&&e.code||'';if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'){if(GSI.on())gsiGo();else A.signInWithRedirect(FB.A,p).catch(e=>{mpErr(e);gsiNote(e)})}else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){mpErr(e);gsiNote(e)}})}window.mpSignIn=mpSignIn;
 window.sqCloudBak=(tag,S)=>{const u=MP.user;if(!FB||!u||!S||S.v!=1)return Promise.resolve(false);const d=FB.db,D=FB.D,base='bak/'+u.uid;
  return d.set(d.ref(D,base+'/'+Date.now()+'_'+String(tag).slice(0,12)),{json:JSON.stringify(S),at:Date.now(),tag:String(tag).slice(0,12)}).then(async()=>{
   const s=await d.get(d.ref(D,base));if(!s.exists())return true;const ks=Object.keys(s.val()).sort();while(ks.length>8)await d.remove(d.ref(D,base+'/'+ks.shift()));return true}).catch(e=>{mpErr(e);return false})};
@@ -284,7 +284,7 @@ let mpLastF=performance.now();
 function mpStepAll(){const n=performance.now(),dt=Math.min(.1,(n-mpLastF)/1000);mpLastF=n;
  for(const r of MP.players.values()){const dx=r.tx-r.x,dy=r.ty-r.y,dd=Math.hypot(dx,dy),k=Math.min(1,dt*9);r.x+=dx*k;r.y+=dy*k;r.mv=dd>.6||r.m;r.w=r.mv?r.w+dt*15:0}}
 function mpVis(){if(!MP.on)return[];const loc=mpLoc();if(!loc)return[];const out=[];const rx=W/Z+48,ry=H/Z+64;
- for(const r of MP.players.values())if(r.loc===loc&&live(r)&&Math.abs(r.x-P.x)<rx&&Math.abs(r.y-P.y)<ry)out.push(r);return out}
+ for(const r of MP.players.values())if(r.loc===loc&&live(r)&&Math.abs(r.x-P.x)<rx&&Math.abs(r.y-P.y)<ry)out.push(r);return out}window.mpVis=mpVis;
 function mpDrawPeer(r,tm){const x=Math.round(r.x),y=Math.round(r.y),st=r.mv?[1,0,2,0][Math.floor(r.w)%4]:0;GC=g;shd(x,y+6,12);
  try{cP(r.ak?{...r.ch,ak:r.ak}:r.ch,r.d,st,x,y,r.fl)}catch(e){self.SQERR&&SQERR(e,'061-29')}MP.T=g.getTransform();MP.Tat=performance.now()}
 // Hollow: join the y-sorted list
@@ -312,7 +312,7 @@ function mpChat(id,v){if(MP.seen.has(id)||!v||typeof v.m!=='string')return;MP.se
  if(fresh){if(mine)MP.selfSaid={m,at:performance.now()};else{const r=MP.players.get(v.u);if(r)r.said={m,at:performance.now()}}if(!MP.open&&!mine){MP.unread++;mpRBtn()}}}
 function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)return;if(!MP.on){mpOpenChat();return}if(window.SQMOD&&SQMOD.blockChat())return;
  const n=performance.now();if(n-MP.lastSend<1200){mpLog('game','Slow down a little!');return}MP.lastSend=n;
- const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}
+ const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}window.mpSend=mpSend;
 // ---- Options: show your own name (and crown) over your head ----
 MP.selfName=false;try{MP.selfName=localStorage.getItem('sq_myname')==='1'}catch(e){self.SQERR&&SQERR(e,'061-30')}
 SQOPTS.wrap('061',_opt61=>function(){const h=_opt61(),k=h.indexOf('<div class="tl" style="margin-top:22px');
@@ -323,7 +323,7 @@ const _oc61=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mpo');if(b){M
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'online',l:()=>MP.on?'Chat':'Play online'});
 SQSHOWSCR.wrap('061',_ss61=>function(id){if(id!=='online')return _ss61(id);releaseMenu();mpOpenChat()});
 // the START menu leaves pnOpen set for the screen it opens; our own boxes aren't that screen, so let go of it
-function releaseMenu(){if(pn.style.display==='none'){pnOpen=false;fromMenu=false}jx=jy=0}
+function releaseMenu(){if(pn.style.display==='none'){pnOpen=false;fromMenu=false}jx=jy=0}window.releaseMenu=releaseMenu;
 SQNAVROOT.wrap('061',_nr61=>function(){if(sg.style.display==='block')return sg;if(MP.open)return pc;return _nr61()});
 // ○ / Options arrive as an Escape key press; close our boxes first (the chat input handles its own Escape)
 addEventListener('keydown',e=>{if(e.key!=='Escape'||e.target===inp)return;

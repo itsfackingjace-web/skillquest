@@ -3,16 +3,18 @@
 // Names the block leaks that other code really uses stay global:
 //   function f(){}  -> `window.f=f;` is added right after the declaration
 //   var v=...;      -> becomes `v=...;` and `var v;` goes just before the block (other code may assign to it)
-// The block that spans several files (the multiplayer block, 061-080) is skipped.
+// A block that spans several files (the multiplayer block, 061-080) is converted only with --multi (and then only those).
+// Exact: in a bare block a function's global copy is set where its declaration stands (Annex B), and code in the block
+// already uses the block's own binding, so `window.f=f;` right after the declaration behaves the same.
 // A `;` is put in front when the statement before could otherwise run into the `(`.
 const fs=require('fs'),path=require('path');const DRY=process.argv.includes('--dry');
-const oi=process.argv.indexOf('--only'),ONLY=oi>0?process.argv[oi+1]:null;
+const MULTI=process.argv.includes('--multi');const oi=process.argv.indexOf('--only'),ONLY=oi>0?process.argv[oi+1]:null;
 process.argv=process.argv.slice(0,2);// blocks.cjs prints when run directly only
 const {R,ast,js,fileAt}=require('./blocks.cjs');const ROOT=path.join(__dirname,'..','..','src');
 const walk=require('/opt/node-tools/node_modules/acorn-walk');
 const edits={};const ed=(pos,del,ins)=>{const at=fileAt(pos);(edits[at.f]=edits[at.f]||[]).push([at.off,del,ins])};
 const body=ast.body;let n=0,exp=[];
-for(const r of R){if(r.file!==r.endFile)continue;if(ONLY&&!r.file.includes(ONLY))continue;
+for(const r of R){if((r.file!==r.endFile)!==MULTI)continue;if(ONLY&&!r.file.includes(ONLY))continue;
   const B=body.find(s=>s.start===r.start);const i=body.indexOf(B),prev=body[i-1];
   const usedNames=new Set(r.used.map(u=>u.replace(/\(.*$/,'')));
   let pre='';

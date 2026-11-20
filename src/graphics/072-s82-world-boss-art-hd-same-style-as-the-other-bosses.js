@@ -295,7 +295,7 @@ function sessPassive(){if(MP.passive||window.SQSTRICT)return;/* account-only sav
 // trusted friend's take/put is a transaction, so the same items can't be taken twice.
 const TRU={mine:{},of:{},subs:{},sub:null};
 function trustSub(o){if(!MP.on||!MP.user||!o||o===MP.user.uid||TRU.subs[o])return;TRU.subs[o]=FB.db.onValue(FB.db.ref(FB.D,'trust/'+o),s=>{TRU.of[o]=s.val()||{}},()=>{TRU.of[o]=TRU.of[o]||{}})}
-function trustedBy(o){if(!MP.on||!MP.user||!o||o===MP.user.uid)return false;trustSub(o);return!!(TRU.of[o]&&TRU.of[o][MP.user.uid]===true)}
+function trustedBy(o){if(!MP.on||!MP.user||!o||o===MP.user.uid)return false;trustSub(o);return!!(TRU.of[o]&&TRU.of[o][MP.user.uid]===true)}window.trustedBy=trustedBy;
 // the first time you touch something of theirs their trust list may not have arrived yet: wait for it, then act
 function trustThen(o,fn){if(!MP.on||!MP.user)return noTrust(o);trustSub(o);if(TRU.of[o]){if(TRU.of[o][MP.user.uid]===true)fn();else noTrust(o);return}
  swing=.25;FB.db.get(FB.db.ref(FB.D,'trust/'+o)).then(s=>{TRU.of[o]=s.val()||{};if(TRU.of[o][MP.user.uid]===true)fn();else noTrust(o)}).catch(()=>noTrust(o))}
@@ -381,12 +381,12 @@ window.SQTRU={TRU,CHS,trustedBy,trustSet,chSync};window.SQTRUTHEN=trustThen;
 const RF={};const rfMap=id=>RF[id]||(RF[id]=new Map());
 const RF_OK=new Set([2,4,6,7,10,13,14,15]);   // grass, snow, dirt, forest floor, ash, crystal ground... (not sand, rock, lava, floors, ice or water)
 function rfForeign(id){const out=new Map();for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const r=BLDS.data[o]&&BLDS.data[o].r,f=r&&r._f&&r._f[id];if(!f)continue;
-  for(const e0 of(Array.isArray(f)?f:Object.values(f))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(!e[2]&&+e[5]&&nowS()-e[5]>TILL_LIFE)continue;out.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,s:e[3]|0,w:!!e[4],_foreign:o})}}return out}
+  for(const e0 of(Array.isArray(f)?f:Object.values(f))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(!e[2]&&+e[5]&&nowS()-e[5]>TILL_LIFE)continue;out.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,s:e[3]|0,w:!!e[4],_foreign:o})}}return out}window.rfForeign=rfForeign;
 function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y*R.w+x;if(!RF_OK.has(R.tiles[i])||R.solid.has(i)||rgObjAt(R,x,y))return false;const k=rbK(x,y);
  if(rfMap(R.region).has(k)||rfForeign(R.region).has(k)||rbMap(R.region).has(k)||rbForeignAt(R.region,x,y))return false;
  for(const p of[R.spawn,R.dock])if(p&&Math.hypot(x-p[0],y-p[1])<4)return false;
  if(typeof rhAt==='function'&&(rhAt(rhHere(),x,y)||rhAt(rhForeign(R.region),x,y)))return false;
- return!fires.some(f=>Math.abs(f.x-(x*16+8))<12&&Math.abs(f.y-(y*16+8))<12)}
+ return!fires.some(f=>Math.abs(f.x-(x*16+8))<12&&Math.abs(f.y-(y*16+8))<12)}window.rfCanTill=rfCanTill;
 // HIT: harvest, water, check, or till
 {SQHIT.wrap('072 world boss art hd same style',_a=>function(){const R=rbR();if(!R||dead||menuOpen||pnOpen||BUILD||swing>0||FISH||facingNpc())return _a();
   const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),k=rbK(tx,ty);if(en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<18))return _a();

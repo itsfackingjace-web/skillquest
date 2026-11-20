@@ -5,7 +5,7 @@ module.exports={name:'trading between two players moves items and gold exactly o
  await A.evaluate(()=>{inv.ibar=10;inv.berry=0;GLD=1000});await B.evaluate(()=>{inv.ibar=0;inv.berry=20;GLD=500});
  // wait until each sees the other close by
  for(let i=0;i<30;i++){const ok=await A.evaluate(()=>SQTRNEAR().includes('bob'))&&await B.evaluate(()=>SQTRNEAR().includes('ann'));if(ok)break;await W(300)}
- const click=(p,tr,k,v)=>p.evaluate(([tr,k,v])=>trClick({dataset:{tr,k,v},disabled:false}),[tr,k,v]);
+ const click=(p,tr,k,v)=>p.evaluate(([tr,k,v])=>SQTRCLICK({dataset:{tr,k,v},disabled:false}),[tr,k,v]);
  await A.evaluate(()=>SQTRREQ('bob'));await W(1500);await B.evaluate(()=>SQTRREQ('ann'));await W(1500);
  const st=[await A.evaluate(()=>SQTRADE.st),await B.evaluate(()=>SQTRADE.st)];t.eq(st,['offer','offer'],'trade window open on both');if(st[0]!=='offer')return;
  await click(A,'add','ibar','5');await click(A,'g',undefined,'100');await click(B,'add','berry','all');await W(1500);

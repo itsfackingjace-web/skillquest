@@ -29,5 +29,5 @@ Used to replace wrapper chains with ordered step lists without changing behaviou
 - `blocks.cjs` lists the bare top-level `{ }` blocks and what each leaks to the global scope (function declarations and `var`s, Annex B),
   with scope-aware uses elsewhere (eslint-scope). `blocks-to-iife.cjs [--dry] [--only <file>]` turns them into `(()=>{ ... })();`: a leaked
   name other code uses stays global (`window.f=f;` after a function, `var v;` before the block for a `var`), and a `;` goes first when the
-  statement before could run into the `(`. Nov 19: 67 blocks in 48 files (kept global: icvEnter, petFollow, SLEDGE, EATCD); only the
-  multiplayer block (061-080) is left. `tools/checks/lint.cjs` now fails on any new bare block.
+  statement before could run into the `(`. Nov 19: 67 blocks in 48 files (kept global: icvEnter, petFollow, SLEDGE, EATCD); then the
+  multiplayer block (061-080) with `--multi` (18 names kept global). `tools/checks/lint.cjs` now fails on any bare block.

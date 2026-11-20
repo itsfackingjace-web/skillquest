@@ -1,6 +1,6 @@
 // Source checks (no browser), run first by run.cjs and on their own:  node tools/checks/lint.cjs
 // Each rule comes from a bug that happened (see CLAUDE.md > Pitfalls):
-//   blocks   no bare top-level `{ }` blocks except the multiplayer block (061-080): a `function f(){}` or `var` in one becomes a
+//   blocks   no bare top-level `{ }` blocks (the last ones, the multiplayer block included, went on Nov 19-20): a `function f(){}` or `var` in one becomes a
 //            global and can replace another (it broke `draw`). Use `(()=>{ ... })()`. tools/refactor/blocks-to-iife.cjs converts them.
 //   panels   every panel number (a `XTAB=N` / `GT=N` const compared with `ptab`) belongs to one file (34 was used twice on Nov 15),
 //            and a number ptab is set to or compared with (9 and up) belongs to some file.
@@ -14,7 +14,7 @@ function lint(){const P=[];const files=fs.readFileSync(ROOT+'/manifest.txt','utf
   const SRC=files.map(f=>[f,fs.readFileSync(path.join(ROOT,f),'utf8')]);const no=f=>f.split('/')[1].replace(/-.*$/,'');
   // blocks
   try{process.argv=process.argv.slice(0,2);const {R}=require('../refactor/blocks.cjs');
-    for(const r of R)if(r.file===r.endFile)P.push('blocks: bare { } block in src/'+r.file+(r.leaks.length?' (leaks '+r.leaks.slice(0,5).join(', ')+')':'')+': use (()=>{ ... })()')}
+    for(const r of R)P.push('blocks: bare { } block in src/'+r.file+(r.leaks.length?' (leaks '+r.leaks.slice(0,5).join(', ')+')':'')+': use (()=>{ ... })()')}
   catch(e){P.push('blocks: could not parse the game script: '+e.message)}
   // panels
   const owner=new Map(),used=new Map();

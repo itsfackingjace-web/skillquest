@@ -20,7 +20,7 @@ function rbOpen(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y*R.
 // walls block the way (gates don't); kept in step with your builds and other players'
 function rbSolidSync(){const R=rbR();if(!R)return;const want=new Set(),had=R._rbS||new Set(),add=(x,y,t)=>{if(t==='door')return;const i=y*R.w+x;if(had.has(i)||!R.solid.has(i))want.add(i)};
  for(const[k,s]of rbMap(R.region)){const[x,y]=rbXY(k);add(x,y,s.t)}for(const f of rbForeign(R.region))add(f.x,f.y,f.t);
- for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rbS=want}
+ for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rbS=want}window.rbSolidSync=rbSolidSync;
 setInterval(rbSolidSync,500);
 // ---- building ----
 {SQSTARTB.wrap('065',_sb=>function(k){const R=rbR();if(!R)return _sb(k);if((inv[k]|0)<1)return;

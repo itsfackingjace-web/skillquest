@@ -19,7 +19,7 @@ function rhFits(R,x,y){for(let dy=-2;dy<=1;dy++)for(let dx=-3;dx<=3;dx++){const 
 // walls of the house block the way (the door doesn't)
 function rhSolidSync(){const R=rbR();if(!R)return;const want=new Set(),had=R._rhS||new Set();
  for(const h of rhHere().concat(rhForeign(R.region)))for(const[x,y]of rhTiles(h)){const i=y*R.w+x;if(had.has(i)||!R.solid.has(i))want.add(i)}
- for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rhS=want}
+ for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rhS=want}window.rhSolidSync=rhSolidSync;
 setInterval(rhSolidSync,500);
 // ---- placing ----
 {SQSTARTB.wrap('067',_sb=>function(k){const R=rbR();if(!R||k!=='house')return _sb(k);if((inv.house|0)<1)return;
