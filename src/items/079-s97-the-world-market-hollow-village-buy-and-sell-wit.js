@@ -6,7 +6,7 @@
 // Data: market/offers/<id> {u,n,k,s:'b'|'s',p,q,f,t}, market/box/<uid>/<id> {k,n,o,b} (k 'gold' for coins; o = the box owner's offer it pays for, b = who wrote it: the
 // database rules only take deliveries from someone else, tied to an offer of the box owner's for that item), market/last/<k> {p,t}.
 {const K='#181018',WMK={offers:{},box:{},last:{},unsub:[],busy:false,matching:new Set(),tab:'mine',form:null,seenBox:new Set(),spot:null,clerk:null,filter:''};window.SQWMK=WMK;
- const MAXO=8,me=()=>MP.user&&MP.user.uid,online=()=>MP.on&&!!me();
+ const MAXO=8,maxO=()=>{try{return window.SQMERCH?SQMERCH.slots():MAXO}catch(e){return MAXO}},me=()=>MP.user&&MP.user.uid,online=()=>MP.on&&!!me();
  // ---- market rules: at most 2 offers per item, prices within a sane range of the item's value, offers expire after 7 days ----
  // (offers from before these rules count their 7 days from when the rules came in)
  const PERK=2,DAY=864e5,LIFE=7*DAY,RULES_AT=Date.UTC(2026,10,12);
@@ -69,7 +69,7 @@
  // ---- placing an offer, then matching it ----
  async function place(side,k,q,p){if(!online()){say('The World Market needs you to be signed in.');return}if(WMK.busy)return;q=Math.floor(q);p=Math.floor(p);
   if(!tradeable(k)||!(q>=1)||!(p>=1)||p>1e7||q>1e5){say('That offer doesn\'t work.');return}
-  if(mine().filter(([,o])=>o.f<o.q).length>=MAXO){say('You already have '+MAXO+' offers. Cancel one first.');sfx('swish');return}
+  if(mine().filter(([,o])=>o.f<o.q).length>=maxO()){say('You already have '+maxO()+' offers. Cancel one first.');sfx('swish');return}
   if(mine().filter(([,o])=>o.k===k&&o.f<o.q).length>=PERK){say('You can have up to '+PERK+' offers for the same item. Cancel one first.');sfx('swish');return}
   if(!inBand(k,p)){say('The market only takes '+(INAME[k]||k).toLowerCase()+' offers of '+fmt(lo(k))+' gold or more each.');sfx('swish');return}
   if(side==='s'){if((inv[k]|0)<q){say('You don\'t have '+q+' '+nm(k,q).toLowerCase()+'.');sfx('swish');return}inv[k]-=q}
@@ -100,8 +100,8 @@
    if(!m)continue;traded+=m;
    const bid='b'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);
    const tot=m*price,tx=taxOf(tot);
-   if(o.s==='s'){GLD+=tot-tx;got+=tot-tx;taxed+=tx;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:o.k,n:m,o:cid,b:me()}).catch(e=>mpErr(e))}
-   else{inv[o.k]=(inv[o.k]|0)+m;GLD+=(o.p-price)*m;spent+=tot;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:'gold',n:tot-tx,o:cid,b:me()}).catch(e=>mpErr(e))}
+   if(o.s==='s'){GLD+=tot-tx;got+=tot-tx;taxed+=tx;try{window.SQMERCH&&SQMERCH.sale(o.k,m,price)}catch(e){self.SQERR&&SQERR(e,'079-m1')}await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:o.k,n:m,o:cid,b:me()}).catch(e=>mpErr(e))}
+   else{inv[o.k]=(inv[o.k]|0)+m;GLD+=(o.p-price)*m;spent+=tot;await d.set(d.ref(FB.D,'market/box/'+owner+'/'+bid),{k:'gold',n:tot-tx,o:cid,b:me(),i:o.k,m}).catch(e=>mpErr(e))}
    rec(o.k,price,m);saveNow()}
   if(traded){say(o.s==='s'?'Sold '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+got+' gold'+(taxed?' ('+taxed+' market tax)':'')+'!':'Bought '+traded+' '+nm(o.k,traded).toLowerCase()+' for '+spent+' gold!');msgT=5;try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'079-6')}}}
  // two offers can end up crossed and waiting (one was put up before the other player's list had loaded, or both at once):
@@ -118,7 +118,7 @@
   if(!r||!r.committed||!last)return;const left=Math.max(0,last.q-last.f);if(last.s==='s')inv[last.k]=(inv[last.k]|0)+left;else GLD+=left*last.p;delete WMK.offers[id];
   say((why==='exp'?'World Market: your offer for '+nm(last.k,2).toLowerCase()+' expired after 7 days.':'Offer cancelled.')+(left?' Back to you: '+(last.s==='s'?left+' '+nm(last.k,left).toLowerCase():left*last.p+' gold')+'.':''));sfx('coin');saveNow();try{svg()}catch(e){self.SQERR&&SQERR(e,'079-9')}}
  async function collect(){const d=FB.db;let items=0,gold=0;for(const bid of Object.keys(WMK.box)){let got=null;const r=await d.runTransaction(d.ref(FB.D,'market/box/'+me()+'/'+bid),cur=>{got=cur;return null}).catch(()=>null);
-   if(!r||!r.committed||!got||!(got.n>0))continue;if(got.k==='gold'){GLD+=got.n;gold+=got.n}else if((sqBookReg(got.k),INAME[got.k])){inv[got.k]=(inv[got.k]|0)+got.n;items+=got.n}}
+   if(!r||!r.committed||!got||!(got.n>0))continue;if(got.k==='gold'){GLD+=got.n;gold+=got.n;try{if(window.SQMERCH&&typeof got.i==='string'&&got.m>0)SQMERCH.sale(got.i,got.m|0,(got.n+taxOf(got.n))/got.m)}catch(e){self.SQERR&&SQERR(e,'079-m2')}}else if((sqBookReg(got.k),INAME[got.k])){inv[got.k]=(inv[got.k]|0)+got.n;items+=got.n}}
   if(items||gold){say('Collected'+(gold?' '+gold+' gold':'')+(gold&&items?' and':'')+(items?' '+items+' item'+(items>1?'s':''):'')+' from the market.');sfx('coin');saveNow();try{svg()}catch(e){self.SQERR&&SQERR(e,'079-10')}}}
  // ---- the panel ----
  function wmOpen(){/* not "open": a function here (a bare block) becomes window.open */if(!online()){say('The World Market needs you to be signed in (Menu > Online).');sfx('swish');return}wmStart();shop='wmkt';WMK.tab='mine';WMK.form=null;pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');
@@ -139,21 +139,39 @@
   h+='<div id="wmwarn" style="text-align:center;font-size:12px;color:#a02020;min-height:14px">'+warnTxt(F)+'</div>';
   const tot=F.q*F.p,ok=side==='s'?(inv[k]|0)>=F.q:GLD>=tot;h+='<button class="sb" data-w="go" style="width:100%;margin-top:10px;opacity:'+(ok?1:.45)+'"><b>'+(side==='s'?'SELL ':'BUY ')+F.q+' for '+fmt(tot)+' gold</b><br><small id="wmsub">'+(side==='s'?subTxt(F):'Your gold waits at the market until someone sells.')+'</small></button>';
   h+='<button class="sb" data-w="back" style="width:100%">Back</button>';return h}
+ // ---- GE-style screens (Nov 20, #ideas: "more like the GE, not one big long list"): offer slots, categories and search ----
+ const CATS=[['all','All'],['ore','Ores & bars'],['wood','Logs'],['food','Fish & food'],['gear','Gear'],['pot','Potions'],['gem','Gems & jewelry'],['farm','Farming'],['other','Other']];
+ const ORE=/^(stone|iron|coal|gold|mith|adam|meteor|metore|silver|copper|tin)$|bar$|ore$/,GEM=/^(ruby|sapphire|emerald|diamond|amber|pearl)$|^j[ra]_/;
+ function catOf(k){try{if(EQ[k])return'gear';if(/^pot_/.test(k)||(typeof FOODS!=='undefined'&&FOODS.some(f=>f.k===k&&f.pot)))return'pot';if(GEM.test(k))return'gem';if(ORE.test(k))return'ore';
+   if(k==='wood'||/log$/.test(k))return'wood';if(/seed$|crop$/.test(k)||['wheat','carrot','potato','pumpkin','cotton'].includes(k))return'farm';
+   if((typeof FOODS!=='undefined'&&FOODS.some(f=>f.k===k))||(typeof FISH_T!=='undefined'&&FISH_T.some(f=>f.k===k))||(typeof COOKS!=='undefined'&&COOKS.some(c=>c.ck===k||c.raw===k)))return'food'}catch(e){self.SQERR&&SQERR(e,'079-c1')}return'other'}
+ const pass=k=>{const f=(WMK.filter||'').toLowerCase(),c=WMK.cat||'all';return(c==='all'||catOf(k)===c)&&(!f||(INAME[k]||'').toLowerCase().includes(f))};
+ function finder(){return'<input id="wmf" placeholder="Search for an item..." value="'+esc(WMK.filter)+'" style="width:100%;box-sizing:border-box;font:500 14px '+PF+';padding:6px;margin:4px 0">'+
+   '<div class="wmcats">'+CATS.map(([c,l])=>'<button class="sb" data-w="cat:'+c+'" style="opacity:'+((WMK.cat||'all')===c?1:.55)+'">'+l+'</button>').join('')+'</div>'}
+ const card=(a,k,sub)=>'<button class="sb wmcard" data-w="'+a+'">'+ic(k)+'<b>'+esc(INAME[k]||k)+'</b><br><small>'+sub+'</small></button>';
+ function slotsHTML(){const L=mine().filter(([,o])=>o.f<o.q).sort((a,b)=>a[1].t-b[1].t),n=maxO();let h='<div class="wmslots">';
+  for(let i=0;i<n;i++){const e=L[i];if(!e){h+='<div class="wmslot wmfree"><small>Empty slot</small><div><button class="sb" data-w="tab:buy">Buy</button><button class="sb" data-w="tab:sell">Sell</button></div></div>';continue}
+   const[id,o]=e,pr=Math.round(o.f/o.q*100);h+='<div class="wmslot"><div class="wmst" style="color:'+(o.s==='s'?'#a87010':'#287828')+'">'+(o.s==='s'?'SELL':'BUY')+'</div>'+ic(o.k)+'<b>'+esc(nm(o.k,o.q))+'</b><br><small>'+o.q+' @ '+fmt(o.p)+' · '+o.f+' done<br>'+left(o)+'</small>'+
+    '<div class="wmbar"><i style="width:'+pr+'%;background:'+(o.s==='s'?'#d8a020':'#38a838')+'"></i></div><button class="sb" data-w="x:'+id+'">Cancel</button></div>'}
+  return h+'</div>'}
  function wmHTML(){if(WMK.form)return'<div class="tl">WORLD MARKET</div>'+formHTML();
   const tabs=[['mine','My offers'],['browse','Browse'],['sell','Sell'],['buy','Buy']];let h='<div class="tl">WORLD MARKET</div><div style="display:flex;gap:4px;margin:4px 0">'+tabs.map(([t,l])=>'<button class="sb" data-w="tab:'+t+'" style="flex:1;opacity:'+(WMK.tab===t?1:.55)+'">'+l+'</button>').join('')+'</div>';
   const bx=Object.values(WMK.box);if(bx.length)h+='<button class="sb" data-w="collect" style="width:100%;background:#f8e8b0"><b>COLLECT</b> ('+bx.length+' waiting)</button>';
-  if(WMK.tab==='mine'){const L=mine().filter(([,o])=>o.f<o.q).sort((a,b)=>b[1].t-a[1].t);h+='<div class="qc"><small>Offers trade with other players automatically, even while you\'re away. Up to '+MAXO+' at once (2 per item). Offers last 7 days; then whatever hasn\'t traded comes back to you. Sales of 100 gold or more pay a 1% market tax.</small></div>';
-   if(!L.length)h+='<div class="tl" style="font-weight:400;opacity:.6">No offers yet. Use Sell or Buy.</div>';
-   for(const[id,o]of L){const pr=Math.round(o.f/o.q*100);h+='<div class="qc" style="display:flex;align-items:center;gap:6px;text-align:left"><div style="flex:1;min-width:0"><b>'+(o.s==='s'?'Selling':'Buying')+'</b> '+ic(o.k)+o.q+' '+esc(nm(o.k,o.q))+' @ '+fmt(o.p)+'<br><small>'+o.f+' / '+o.q+' done · '+left(o)+'</small><div style="height:5px;background:#ccc;margin-top:2px"><div style="height:5px;width:'+pr+'%;background:'+(o.s==='s'?'#d8a020':'#38a838')+'"></div></div></div><button class="sb" data-w="x:'+id+'" style="flex:0 0 auto;width:auto;min-width:0;padding:6px 10px">Cancel</button></div>'}}
-  else if(WMK.tab==='browse'){const ks=[...new Set(Object.values(WMK.offers).filter(o=>live(o)&&inBand(o.k,o.p)).map(o=>o.k))].filter(tradeable).sort((a,b)=>(INAME[a]||a).localeCompare(INAME[b]||b));
-   if(!ks.length)h+='<div class="tl" style="font-weight:400;opacity:.6">Nobody is trading anything right now. Be the first!</div>';
-   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:b:'+k+'" style="width:100%;text-align:left">'+ic(k)+'<b>'+esc(INAME[k])+'</b><br><small>'+(B.bs!=null?'For sale: '+B.qs+' from '+fmt(B.bs):'None for sale')+' · '+(B.bb!=null?'Wanted: '+B.qb+' up to '+fmt(B.bb):'Nobody buying')+'</small></button>'}}
-  else if(WMK.tab==='sell'){const ks=INVK.filter(k=>(inv[k]|0)>0&&tradeable(k));h+='<div class="qc"><small>Pick something from your bag to sell.</small></div>';if(!ks.length)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing in your bag can be sold.</div>';
-   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:s:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+' ('+inv[k]+')<br><small>'+(B.bb!=null?'buyers up to '+fmt(B.bb):'market '+(lastP(k)!=null?fmt(lastP(k)):'-'))+'</small></button>'}}
-  else{h+='<input id="wmf" placeholder="Search for an item..." value="'+esc(WMK.filter)+'" style="width:100%;box-sizing:border-box;font:500 14px '+PF+';padding:6px;margin:4px 0">';const f=WMK.filter.toLowerCase();
-   const ks=Object.keys(INAME).filter(k=>tradeable(k)&&(!f||(INAME[k]||'').toLowerCase().includes(f))).sort((a,b)=>{const A=book(a).bs!=null,Bb=book(b).bs!=null;return(Bb-A)||(INAME[a]||'').localeCompare(INAME[b]||'')}).slice(0,60);
-   for(const k of ks){const B=book(k);h+='<button class="sb" data-w="pick:b:'+k+'" style="width:49%">'+ic(k)+esc(INAME[k])+'<br><small>'+(B.bs!=null?B.qs+' for sale from '+fmt(B.bs):'none for sale')+(lastP(k)!=null?' · market '+fmt(lastP(k)):'')+'</small></button>'}}
+  if(WMK.tab==='mine'){h+='<div class="qc"><small>Offers trade with other players automatically, even while you\'re away: '+maxO()+' slots (2 offers per item; Merchant levels add slots). Offers last 7 days; then whatever hasn\'t traded comes back to you. Sales of 100 gold or more pay a 1% market tax. Every sale gives Merchant XP.</small></div>'+slotsHTML()}
+  else if(WMK.tab==='browse'){h+=finder();const act={};for(const o of Object.values(WMK.offers))if(live(o)&&inBand(o.k,o.p))act[o.k]=(act[o.k]|0)+1;
+   const ks=Object.keys(act).filter(k=>tradeable(k)&&pass(k)).sort((a,b)=>act[b]-act[a]||(INAME[a]||a).localeCompare(INAME[b]||b));
+   if(!ks.length)h+='<div class="tl" style="font-weight:400;opacity:.6">'+(Object.keys(act).length?'Nothing here. Try another category.':'Nobody is trading anything right now. Be the first!')+'</div>';
+   h+='<div class="wmgrid">';for(const k of ks){const B=book(k);h+=card('pick:b:'+k,k,(B.bs!=null?B.qs+' for sale from '+fmt(B.bs):'none for sale')+'<br>'+(B.bb!=null?B.qb+' wanted, up to '+fmt(B.bb):'nobody buying'))}h+='</div>'}
+  else if(WMK.tab==='sell'){h+=finder();const ks=INVK.filter(k=>(inv[k]|0)>0&&tradeable(k)&&pass(k));if(!ks.length)h+='<div class="tl" style="font-weight:400;opacity:.6">Nothing in your bag can be sold'+((WMK.filter||WMK.cat!=='all')&&WMK.cat?' here':'')+'.</div>';
+   h+='<div class="wmgrid">';for(const k of ks){const B=book(k);h+=card('pick:s:'+k,k,'you have '+inv[k]+'<br>'+(B.bb!=null?'buyers up to '+fmt(B.bb):'market '+(lastP(k)!=null?fmt(lastP(k)):'-')))}h+='</div>'}
+  else{h+=finder();const ks=Object.keys(INAME).filter(k=>tradeable(k)&&pass(k)).sort((a,b)=>{const A=book(a).bs!=null,Bb=book(b).bs!=null;return(Bb-A)||(INAME[a]||'').localeCompare(INAME[b]||'')}).slice(0,90);
+   h+='<div class="wmgrid">';for(const k of ks){const B=book(k);h+=card('pick:b:'+k,k,(B.bs!=null?B.qs+' from '+fmt(B.bs):'none for sale')+'<br>'+(lastP(k)!=null?'market '+fmt(lastP(k)):'no trades yet'))}h+='</div>'}
   return h}
+ {const st=document.createElement('style');st.textContent='.wmcats{display:flex;flex-wrap:wrap;gap:3px;margin:2px 0 6px}.wmcats .sb{flex:1 1 30%;min-width:0;min-height:0!important;height:auto!important;margin:0!important;padding:3px 2px!important;font:600 11px '+PF+'!important}'+
+   '.wmgrid{display:flex;flex-wrap:wrap;gap:4px}.wmgrid .wmcard{flex:1 1 31%;max-width:33%;min-width:0;text-align:left;padding:5px!important;margin:0!important;font:600 12px '+PF+'!important;overflow:hidden}.wmgrid .wmcard small{font-size:10px;opacity:.8}'+
+   '.wmslots{display:grid;grid-template-columns:1fr 1fr;gap:5px}.wmslot{border:2px solid #181018;background:#f4ecd8;padding:5px;text-align:left;font-size:12px;position:relative;min-height:84px}.wmslot .sb{width:100%;padding:3px;margin-top:3px;font-size:11px}'+
+   '.wmfree{background:#e4dcc8;opacity:.8;text-align:center}.wmfree div{display:flex;gap:3px}.wmst{font-weight:700;font-size:10px;position:absolute;right:5px;top:3px}.wmbar{height:5px;background:#ccc;margin-top:3px}.wmbar i{display:block;height:5px}'+
+   '@media (max-width:520px){.wmgrid .wmcard{flex-basis:47%;max-width:50%}}';document.head.appendChild(st)}
  {SQRPN.wrap('079',_r=>function(){if(ptab===2&&shop==='wmkt'){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'079-11')}const fo=document.activeElement&&document.activeElement.id==='wmf';pbd.innerHTML=wmHTML();
    const fi=document.getElementById('wmf');if(fi){fi.oninput=()=>{WMK.filter=fi.value;const pos=fi.selectionStart;rPn();const f2=document.getElementById('wmf');if(f2){f2.focus();try{f2.setSelectionRange(pos,pos)}catch(e){self.SQERR&&SQERR(e,'079-12')}}};if(fo){fi.focus()}}
    // typing a number just updates the offer (no redraw: a redraw while typing ate your next tap, e.g. on SELL / BUY)
@@ -165,6 +183,7 @@
  const typing=()=>{const a=document.activeElement;return!!(a&&(a.id==='wmq'||a.id==='wmp'||a.id==='wmf'))};
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='wmkt'){const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w,F=WMK.form;
    if(a.startsWith('tab:')){WMK.tab=a.slice(4)}
+   else if(a.startsWith('cat:')){WMK.cat=a.slice(4)}
    else if(a==='collect'){collect().then(()=>rPn());return}
    else if(a.startsWith('x:')){cancel(a.slice(2)).then(()=>rPn());return}
    else if(a.startsWith('pick:')){const[,s,k]=a.split(':');const B=book(k);WMK.form={s,k,q:s==='s'?Math.max(1,inv[k]|0):1,p:clampP(k,s==='s'?(B.bb!=null?B.bb:guide(k)):(B.bs!=null?B.bs:guide(k)))}}

@@ -121,3 +121,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   every 5 min), `stats/f/<uid>` first day, `stats/dz/<day>/<where~monster>` deaths (+1 transactions). The tab shows players per
   day, new players and next-day / week returns, deaths, and (reading saves) the quest/guide step/total level of players who
   stopped. Rules: `stats` (publish them).
+- **Merchant skill and GE-style market** (`skills/246-s254-merchant.js`, `SQMERCH`, + 079 in place, Nov 20): skill added after Brewing (never
+  insert a skill before an existing one: saves keep XP by index). `sale(k,m,price)` = m x min(price, 3 x SELLP) / 6 XP (cap 50,000): 079 calls it
+  when you fill a buyer's offer yourself, and on COLLECT for gold boxes, which now carry `i` (item) and `m` (units). `slots()` = 8 + 1 per 20
+  levels (max 12), 079's `maxO()`. 079's screens: `slotsHTML()` (offer boxes), `finder()` (search + `CATS` chips, `WMK.cat`, `catOf(k)`),
+  item cards in `.wmgrid`; CSS classes `wm*`. Check 10 checks the Merchant XP.

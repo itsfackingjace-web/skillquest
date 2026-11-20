@@ -256,6 +256,7 @@ world/242-s250-mine-levels.js
 world/243-s251-outlaw-country.js
 skills/244-s252-gluttony-bonus-xp-background.js
 ui/245-s253-town-names.js
+skills/246-s254-merchant.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js
