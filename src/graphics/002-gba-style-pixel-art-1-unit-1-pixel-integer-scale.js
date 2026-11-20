@@ -14,7 +14,7 @@ const dsT=[0,1].map(()=>cvs(16,16,c=>{R(c,0,0,16,16,'#e8bc70');for(let i=0;i<10;
 const GP=[O,'#2c7828','#48a838','#78d058'];
 const tC=[blob(26,24,orr(ell(13,10,12,9),ell(6,14,6,6),ell(20,14,6,6),ell(13,5,8,5)),GP),blob(26,24,orr(ell(13,11,11,10),ell(13,5,9,5),ell(5,15,5,5),ell(21,15,5,5)),GP)];
 const rC=blob(14,11,orr(ell(7,7,7,4.5),ell(6,5,5,4)),[ '#202028','#68687a','#9898a8','#d0d0e0']);R(rC.getContext('2d'),8,4,1,3,'#505060');
-const bC=blob(14,11,orr(ell(4,6,4,4),ell(10,6,4,4),ell(7,4,5,4)),GP);{const x=bC.getContext('2d');for(const[a,b]of[[3,5],[9,3],[8,7],[5,8]]){R(x,a,b,2,2,'#e82838');R(x,a,b+1,1,1,'#a01020')}}
+const bC=blob(14,11,orr(ell(4,6,4,4),ell(10,6,4,4),ell(7,4,5,4)),GP);(()=>{const x=bC.getContext('2d');for(const[a,b]of[[3,5],[9,3],[8,7],[5,8]]){R(x,a,b,2,2,'#e82838');R(x,a,b+1,1,1,'#a01020')}})();
 const slS=[blob(16,12,ell(8,11.5,8,10.5),['#101850','#2848c0','#4880f0','#98c8ff']),blob(16,11,ell(8,10.5,8,9.5),['#101850','#2848c0','#4880f0','#98c8ff'])];
 const slW=[blob(16,12,ell(8,11.5,8,10.5),['#202030','#d0d0e0','#f0f0f8','#fff']),blob(16,11,ell(8,10.5,8,9.5),['#202030','#d0d0e0','#f0f0f8','#fff'])];
 const Rg=(x,y,w,hh,col)=>{g.fillStyle=col;g.fillRect(Math.round(x),Math.round(y),w,hh)};

@@ -3,7 +3,7 @@
 //   wield at Attack 30) and Adamant (Smithing 65-72, Defence 40, Attack 40). Swords are tiers 6 and 7, armor tiers 4 and 5.
 // - Every weapon, armor piece, tool and food shows its stats in its description (damage, block, range, mana, healing,
 //   set bonuses, requirements) and how it compares with what you have equipped.
-{const MITH=['#5868c8','#a8b8f8'],ADAM=['#3a8a50','#98e0a8'];
+(()=>{const MITH=['#5868c8','#a8b8f8'],ADAM=['#3a8a50','#98e0a8'];
  TIER_N.push('Crystal','Mithril','Adamant');TCOL[5]=TCOL[5]||'#68d8f8';TCOL.push('#7888e0','#48b060');AT.push('Mithril','Adamant');AC3.push(MITH[0],ADAM[0]);
  const add=(k,e,d)=>{EQ[k]=e;EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=e.v;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase();IDESC[k]=d};
  add('eq_sword6',{slot:'main',kind:'sword',tier:6,n:'Mithril sword',ic:'sword',col:'#7888e0',v:320,atk:30},'A light, razor-sharp blade.');
@@ -52,4 +52,4 @@
   Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,get(){let s='';try{s=statsFor(k)}catch(e){self.SQERR&&SQERR(e,'084-1')}return(s?s+'. ':'')+strip(BASE[k]||'')},set(v){BASE[k]=strip(v)}})};
  for(const k of new Set([...EQK,...FOODS.map(f=>f.k)]))wrapDesc(k);
  IDESC.eq_sword5='LEGENDARY. A blade of living crystal from the depths of the Slime Caverns.';
- window.SQSTATS=statsFor}
+ window.SQSTATS=statsFor})();

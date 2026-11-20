@@ -3,7 +3,7 @@
 // each corner, dark navy outside, light blue inside, flat fill; the sailing crossing card is redrawn in flat bands with
 // the pixel boat. A stylesheet squares off every menu, card, button, slot and bar (stepped corners on the big frames,
 // pixel octagons for the touch buttons) and keeps images and canvases crisp.
-{const px=U=>Math.max(2,Math.round(U));
+(()=>{const px=U=>Math.max(2,Math.round(U));
  g3box=function(x,y,w,h,U,fill){const p=px(U);x=Math.round(x);y=Math.round(y);w=Math.round(w);h=Math.round(h);
   g.fillStyle='#485870';g.fillRect(x+p,y,w-2*p,h);g.fillRect(x,y+p,w,h-2*p);
   g.fillStyle='#a8c0e0';g.fillRect(x+2*p,y+p,w-4*p,h-2*p);g.fillRect(x+p,y+2*p,w-2*p,h-4*p);
@@ -27,4 +27,4 @@
 .b{border-radius:0!important;border-width:3px!important;clip-path:polygon(30% 0,70% 0,70% 3px,85% 3px,85% 8%,92% 8%,92% 15%,97% 15%,97% 30%,100% 30%,100% 70%,97% 70%,97% 85%,92% 85%,92% 92%,85% 92%,85% 97%,70% 97%,70% 100%,30% 100%,30% 97%,15% 97%,15% 92%,8% 92%,8% 85%,3% 85%,3% 70%,0 70%,0 30%,3% 30%,3% 15%,8% 15%,8% 8%,15% 8%,15% 3%,30% 3%)}
 img,canvas,.slot img,#pn img{image-rendering:pixelated;image-rendering:crisp-edges}
 .gpf{box-shadow:none!important;outline:3px solid #f8a020!important}
-#gpcur{border-radius:0!important}`;document.head.appendChild(css)}
+#gpcur{border-radius:0!important}`;document.head.appendChild(css)})();

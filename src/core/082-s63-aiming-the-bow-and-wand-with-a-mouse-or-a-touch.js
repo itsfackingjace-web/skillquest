@@ -4,7 +4,7 @@
 // Touch: a BOW / CAST button appears above HIT. Tap it to fire at the nearest enemy in range (any direction);
 // press and drag it to aim yourself (a crosshair shows), release to fire; keep holding to keep firing.
 // Keyboard and controller play are unchanged (Space / HIT still auto-shoots at an enemy in front of you).
-{const AIMX={T:null,mouse:null,mIn:false,rHeld:false,rT:0,touch:null,tHeld:0,lastFire:0};
+(()=>{const AIMX={T:null,mouse:null,mIn:false,rHeld:false,rT:0,touch:null,tHeld:0,lastFire:0};
  const offhand=()=>!!(WAND||TL.bow);
  SQPP.before('082',(tm)=>{AIMX.T=g.getTransform();});
  const toWorld=(cx,cy)=>{if(!AIMX.T)return null;try{const p=AIMX.T.inverse().transformPoint({x:cx*D,y:cy*D});return p}catch(e){return null}};
@@ -63,4 +63,4 @@
   for(const[a,b,w,hh]of[[-k-2,-1,3,3],[k,-1,3,3],[-1,-k-2,3,3],[-1,k,3,3]])Rg(x+a-1,y+b-1,w+2,hh+2,O);
   Rg(x-k-2,y,3,1,c);Rg(x+k,y,3,1,c);Rg(x,y-k-2,1,3,c);Rg(x,y+k,1,3,c);Rg(x,y,1,1,c)}
  SQHUD.before('082',()=>{if(AIMX.T){g.save();g.setTransform(AIMX.T);try{aimCross(performance.now()/1000)}catch(e){self.SQERR&&SQERR(e,'082-2')}g.restore()}});
- window.SQAIM=AIMX}
+ window.SQAIM=AIMX})();

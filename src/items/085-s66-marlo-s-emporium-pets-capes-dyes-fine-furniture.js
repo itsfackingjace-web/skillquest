@@ -7,7 +7,7 @@
 // - Potions: Healing (full HP), Strength (+2 melee damage), Iron skin (+15% block), Swiftness (run without spending
 //   extra food) - the buffs last 2 minutes. Use them from the Bag. EAT never drinks your potions.
 var LUX={};
-{const PETS=[{k:'cat',n:'Cat',v:5000,c:['#e89048','#b86020','#f8d8b0']},{k:'dog',n:'Dog',v:5000,c:['#a87048','#704020','#e8d0b0']},{k:'slime',n:'Slime',v:8000,c:['#58b8f8','#2878c8','#d0f0ff']},{k:'fox',n:'Fox',v:12000,c:['#f07028','#b04010','#f8f8f0']},{k:'imp',n:'Imp',v:0,rare:1,c:['#b8302a','#7a1a1a','#e8604a']}];
+(()=>{const PETS=[{k:'cat',n:'Cat',v:5000,c:['#e89048','#b86020','#f8d8b0']},{k:'dog',n:'Dog',v:5000,c:['#a87048','#704020','#e8d0b0']},{k:'slime',n:'Slime',v:8000,c:['#58b8f8','#2878c8','#d0f0ff']},{k:'fox',n:'Fox',v:12000,c:['#f07028','#b04010','#f8f8f0']},{k:'imp',n:'Imp',v:0,rare:1,c:['#b8302a','#7a1a1a','#e8604a']}];
  const CAPES=[{n:'Red',c:'#c83040',v:2000},{n:'Blue',c:'#3858c8',v:2000},{n:'Green',c:'#3a8a3a',v:2000},{n:'Purple',c:'#7848c0',v:4000},{n:'Black',c:'#303038',v:4000},{n:'Gold',c:'#e8b830',v:15000}];
  const DYES=[{n:'Crimson',c:'#c83040'},{n:'Orange',c:'#e07030'},{n:'Gold',c:'#e8b830'},{n:'Forest',c:'#3a8a3a'},{n:'Teal',c:'#2aa098'},{n:'Royal',c:'#3858c8'},{n:'Violet',c:'#7848c0'},{n:'Pink',c:'#e070a8'},{n:'Black',c:'#303038'},{n:'White',c:'#e8e8f0'}],DYEV=800;
  const FURN2=[{k:'fpaint',n:'Painting',v:3000,d:'A landscape of Hollow Island in a gilded frame.'},{k:'fclock',n:'Grandfather clock',v:4000,d:'Tick, tock. Keeps the island\'s time.'},{k:'ffire',n:'Fireplace',v:6000,d:'A stone fireplace with a cozy fire.'},
@@ -156,4 +156,4 @@ var LUX={};
   if((b=t.closest('.emt'))){EMT=b.dataset.t;rPn();return}if((b=t.closest('.emb'))){luxBuy(b.dataset.c,b.dataset.k);return}
   if((b=t.closest('.sty'))){const s=b.dataset.s,v=b.dataset.v;if(s==='xcape'){if(window.SQCAPEX)SQCAPEX.pick(v);COS.cape=0}else if(s==='pet')COS.pet=v||null;else{COS[s]=+v||0;if(s==='cape'&&window.SQCAPEX)SQCAPEX.pick('')}KITC.clear();saveLocal(true);rPn();return}_oc(e)};
  // talking to Marlo
- if(typeof LINES!=='undefined')LINES.marlo={d:['Finest goods on the island! Pets, capes, dyes, furniture, potions.','Gold burning a hole in your pocket? I can help with that.']}}
+ if(typeof LINES!=='undefined')LINES.marlo={d:['Finest goods on the island! Pets, capes, dyes, furniture, potions.','Gold burning a hole in your pocket? I can help with that.']}})();

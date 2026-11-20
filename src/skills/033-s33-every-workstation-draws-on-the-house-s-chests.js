@@ -13,7 +13,7 @@ const _oc33=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('button');
  if(b&&stUses()&&b.dataset.a!=='pickup'){const m=stMerge(STATION);try{_oc33(e)}finally{if(m)benchSplit()}saveLocal(true);if(stUses())rPn();return}
  _oc33(e)};
 // --- the training dummy: trains Attack (HIT), Archery (arrows) and Magic (spells) up to level 30 ---
-{const S=STNS.find(s=>s.k==='dummy');if(S)S.d='Practice target. Hit it, shoot it or cast at it: teaches Attack, Archery and Magic up to level 30. Press USE next to it to pick it up.'}
+(()=>{const S=STNS.find(s=>s.k==='dummy');if(S)S.d='Practice target. Hit it, shoot it or cast at it: teaches Attack, Archery and Magic up to level 30. Press USE next to it to pick it up.'})();
 IDESC.dummy='Practice target. Hit it, shoot arrows at it or cast spells at it: it teaches Attack, Archery and Magic up to level 30. Stand next to it and press USE (T, L1 or the USE button) to pick it up.';
 const DUMCAP=30,useKey=()=>GPON?'L1':isPC?'T':'the USE button';
 let dumHintT=-99;

@@ -17,7 +17,9 @@
   real game (fresh Chromium page per case, fake Firebase in `tools/checks/fake/`, rules via `rulesdb.cjs`, account-only saves on as on the
   live site). The cases in `cases/` cover start-up, saves, crafting from chests, graves, campfires, house chests, gathering/eating, island
   trips, trading, the World Market, the guild bank, dungeons, fishing behind menus, HIT/EAT, the Dev Suite tabs, patron art, new pets,
-  the Song Studio, song zones, the wiki and the error reporter. A full run takes about 4 minutes. **Run them after building and before
+  the Song Studio, song zones, the wiki and the error reporter. First come the **source rules** (`tools/checks/lint.cjs`, also on its own):
+  no bare top-level `{ }` blocks (besides the multiplayer block), unique panel numbers, no class styled in two files unless listed in
+  `tools/checks/css-shared.txt`, no `prompt()`, no untagged empty catches. A full run takes about 4 minutes. **Run them after building and before
   every release; never release with a failing check.** When fixing a bug, add a case that fails without the fix. Script errors on the page
   fail a case. Errors that tagged catches swallowed during the run are written to `tools/checks/caught-errors.txt` (code errors are
   counted at the end): fix them, or mark an expected one `/*quiet*/`.
@@ -66,11 +68,12 @@
   for each other player, `SQPVSEND(event)` to send, `SQPVQUIET` to keep attacks from being sent as swings (`window.SQMP`,
   `window.SQPVP` expose the state).
 - Sections live in one shared script: wrap new sections in `(()=>{ ... })()` rather than a bare `{ }` block. A plain
-  `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`).
+  `function name(){}` inside a bare block also replaces any global with the same name (this once broke `draw`). Every bare block
+  except the multiplayer one became `(()=>{ })();` on Nov 19, and the source rules fail on a new one.
 - **Panel numbers (`ptab`) must be unique**: 124's Custom Controls used 34, which is 064's PvP screen, so START > PvP opened Custom
-  Controls (Nov 15; now 45). In use: 0-8 (built-in screens), 31 style, 32 trade, 34 PvP, 35 achievements, 36/37 player menu/duel,
+  Controls (Nov 15; now 45). In use: 0-8 (built-in screens), 31 style, 32 trade, 33 graves, 34 PvP, 35 achievements, 36/37 player menu/duel,
   38 party, 39 emotes, 40 report, 41 eating, 42 quest choice, 43 events, 44 guild, 45 controls, 46 credits, 47 Art Room,
-  48 patron, 49 moderation, 50 campfire, 51 Song Studio. Grep `TAB=` and `ptab=` before picking one.
+  48 patron, 49 moderation, 50 campfire, 51 Song Studio. Grep `TAB=` and `ptab=` before picking one; give it a const (`const XTAB=52`) so the source rules can check it.
 - **No `prompt()`**: the Windows app (Electron) doesn't support it ("Prompt () is and will not be supported"). Ask for text with an
   input on the page instead (Moderation's reason box, Admin's reply box).
 - **Save keys** (`core/166-s172-save-keys.js`, `SQSAVEKEYS`): 049 keeps unknown save fields (`SAVE_EXTRA`) and writes them back; it

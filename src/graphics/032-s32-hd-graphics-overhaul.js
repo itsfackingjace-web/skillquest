@@ -336,7 +336,7 @@ const _cP32b=cP;cP=function(ch,dir,st,ox,oy,fl){const C=GC;if(!(C===g||C&&C.canv
  const key=JSON.stringify(ch)+dir+st+(fl?1:0);let c=HDTR.get(key);if(!c){try{c=hdTrainer(ch,dir,st,fl)}catch(e){return _cP32b(ch,dir,st,ox,oy,fl)}if(HDTR.size>400)HDTR.clear();HDTR.set(key,c)}
  C.drawImage(c,Math.round(ox)-24,Math.round(oy)-44,48,56)};
 // the character creator preview and the equipment card show the new sprite at full detail
-{const pc2=document.getElementById('cpv');if(pc2&&pc2.getContext){pc2.width=96;pc2.height=96;pc2.hd2=true}}
+(()=>{const pc2=document.getElementById('cpv');if(pc2&&pc2.getContext){pc2.width=96;pc2.height=96;pc2.hd2=true}})();
 const _rp32=rp;rp=function(){if(px2&&px2.canvas.hd2){px2.setTransform(2,0,0,2,0,0)}_rp32()};
 const _dcs32=drawCardSprite;drawCardSprite=function(){const c=document.getElementById('tcs');if(c&&c.width!==64){c.width=64;c.height=80;c.hd2=true}if(c){const x=c.getContext('2d');x.setTransform(2,0,0,2,0,0);x.imageSmoothingEnabled=false}_dcs32()};
 const _wz32b=wizOverlay;wizOverlay=function(ox,oy,dir,st,fl){if(GC&&GC.canvas&&GC.canvas.hd2&&GC!==g){const g0=GC;const c=hdCache('w'+dir+st+(fl?1:0),48,56,24,44,(ax,ay)=>_wz32(ax,ay,dir,st,fl));g0.drawImage(c,Math.round(ox)-24,Math.round(oy)-44,48,56);return}_wz32b(ox,oy,dir,st,fl)};

@@ -4,7 +4,7 @@
 // --- sprites ---
 const pineC=blob(24,28,orr(ell(12,5,4,5),ell(12,12,7,5),ell(12,19,10,5),ell(12,24,12,4)),[O,'#1c5030','#2e7048','#e8f0f8']);
 const cacC=blob(16,22,orr(ell(8,12,3.5,10),ell(3,9,2,4),ell(13,7,2,4)),[O,'#286824','#3c9a38','#70c860']);
-const oreC=blob(14,11,orr(ell(7,7,7,4.5),ell(6,5,5,4)),['#202028','#58586a','#88889a','#c0c0d0']);{const oc=oreC.getContext('2d');for(const[a,b]of[[4,5],[8,4],[6,7],[10,7],[3,7]])R(oc,a,b,2,1,'#e88838')}
+const oreC=blob(14,11,orr(ell(7,7,7,4.5),ell(6,5,5,4)),['#202028','#58586a','#88889a','#c0c0d0']);(()=>{const oc=oreC.getContext('2d');for(const[a,b]of[[4,5],[8,4],[6,7],[10,7],[3,7]])R(oc,a,b,2,1,'#e88838')})();
 Object.assign(OHP,{ore:5,pine:3,cactus:2});
 // --- new items ---
 INVK.push('pelt','bone');Object.assign(INAME,{pelt:'Wolf pelt',bone:'Bone'});
@@ -60,7 +60,7 @@ SQFURN.wrap('014',_df14=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  _df14(it,tm)});
 SQDRAWROOM.after('014',(tm)=>{if(!SCENE||!SCENE.room.cave||SCENE.room.region)return;for(const n of en)if(!n.dead)pS(n,tm);if(!dead)pP(tm);const au=window.SQAURA&&SQAURA()&&!dead,gr=g.createRadialGradient(P.x,P.y-4,au?70:28,P.x,P.y-4,au?190:118);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(6,4,12,.88)');g.fillStyle=gr;g.fillRect(P.x-500,P.y-500,1000,1000)});
 // --- the desert trader ---
-let TRADER=null;{const cx=N>>1;outer:for(let y=N-8;y>N/2;y--)for(let dx=0;dx<30*HSC;dx++)for(const x of[cx+dx,cx-dx]){let ok=true;for(let a=-1;a<=2;a++)for(let b=-1;b<=1;b++){const i=(y+b)*N+x+a;if(tile[i]!==5||obj[i]||BS.has(i))ok=false}if(ok){TRADER={x,y};break outer}}}
+let TRADER=null;(()=>{const cx=N>>1;outer:for(let y=N-8;y>N/2;y--)for(let dx=0;dx<30*HSC;dx++)for(const x of[cx+dx,cx-dx]){let ok=true;for(let a=-1;a<=2;a++)for(let b=-1;b<=1;b++){const i=(y+b)*N+x+a;if(tile[i]!==5||obj[i]||BS.has(i))ok=false}if(ok){TRADER={x,y};break outer}}})();
 if(TRADER){BS.add(TRADER.y*N+TRADER.x+1);NPCS.push({kind:'trader',x:TRADER.x*16+8,y:(TRADER.y+1)*16+4,ch:{sk:2,hs:0,hc:0,sh:4,pn:2,ht:1,hcol:5,so:3}})}
 SQNEWDRAW.wrap('014',_nd14=>function(...a){_nd14(...a);if(SCENE)return;const tm=a[8];
  if(TRADER){const x0=(TRADER.x+1)*16,y0=TRADER.y*16;shd(x0+8,y0+14,18);Rg(x0-1,y0+5,18,10,O);Rg(x0,y0+6,16,8,'#a87850');for(let i=0;i<4;i++)Rg(x0+2+i*4,y0+7,3,3,['#e88838','#f0ece0','#8890a0','#48a838'][i]);

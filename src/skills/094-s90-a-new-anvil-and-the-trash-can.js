@@ -2,7 +2,7 @@
 // The anvil (your own and the blacksmith's) is redrawn: a steel anvil with a horn on a wooden stump.
 // The trash can is furniture for your house (Craft menu, Building): face it and press HIT to get rid of things
 // you don't want any more, one at a time or all at once (you're asked twice before a whole stack goes).
-{const ANV=["..KKKKKKKKKKKKK.",".KCCCCCCCCCCCCCK","KAAAAAAAAAAAAAAK",".KKAAAAAAAAAAABK","...KKKBAAAABKKK.",".....KBAAABK....",".....KBAAABK....","....KBAAAAABK...","...KKKKKKKKKKK..","...KWWwWWwWWWK..","...KWwWWWwWWwK..","...KwwwwwwwwwK..","...KKKKKKKKKKK.."];
+(()=>{const ANV=["..KKKKKKKKKKKKK.",".KCCCCCCCCCCCCCK","KAAAAAAAAAAAAAAK",".KKAAAAAAAAAAABK","...KKKBAAAABKKK.",".....KBAAABK....",".....KBAAABK....","....KBAAAAABK...","...KKKKKKKKKKK..","...KWWwWWwWWWK..","...KWwWWWwWWwK..","...KwwwwwwwwwK..","...KKKKKKKKKKK.."];
  const TRS=["....KKKKKKKK....","...KCCCCCCCCK...","..KKKKKKKKKKKK..","..KCAAAAAAAABK..","...KAABAABABK...","...KAABAABABK...","...KAABAABABK...","...KAABAABABK...","...KAABAABABK...","...KAAAAAAABK...","...KKKKKKKKKK..."];
  const pal={K:'#181018',A:'#6a7284',B:'#464c5c',C:'#c8d0e0',W:'#a06a38',w:'#7a4a24'},tpal={K:'#181018',A:'#7a8a7a',B:'#56645a',C:'#a8b8a8'};
  const paint=(rows,P2)=>{const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const x=c.getContext('2d');rows.forEach((r,y)=>{for(let i=0;i<r.length;i++){const col=P2[r[i]];if(col){x.fillStyle=col;x.fillRect(i,y,1,1)}}});return c};
@@ -25,4 +25,4 @@
    if(a.startsWith('tra_')){SURE=k;rPn();return}const m=a.startsWith('tr1_')?1:n;inv[k]=n-m;SURE=null;
    if(STATION&&STATION.f)STATION.f.bump=.2;say('Threw away '+m+' × '+INAME[k].toLowerCase()+'.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'094-1')}saveLocal(true);rPn()}}
  {SQCLOSEPN.before('094',()=>{SURE=null;})}
-}
+})();

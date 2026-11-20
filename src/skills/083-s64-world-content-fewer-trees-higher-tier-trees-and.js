@@ -5,7 +5,7 @@
 //   ores smelt into bars at a furnace (Smithing 30 / 45 / 60).
 // - Dungeon floors have rocks and ore veins to mine (they come back with the floor each day).
 // - Campfires can be built on the other islands too.
-{const h01=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233)*43758.5453;return v-Math.floor(v)};
+(()=>{const h01=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233)*43758.5453;return v-Math.floor(v)};
  const SMI_=SKN.indexOf('Smithing');
  const TIER={
   oak:{base:'tree',sk:1,lv:15,hp:6,axe:1,item:'oaklog',xp:60,col:['#3f8a2c','#5aa83a','#7cc650','#2a6420']},
@@ -83,4 +83,4 @@
   if(!((inv.wood|0)>=3&&(inv.stone|0)>=1)){say('Need 3 wood + 1 stone');return}const[fx,fy]=front(16);if(solid(fx,fy)){say('No room there');return}
   inv.wood-=3;inv.stone--;const life=(150+lvOf(5)*3)*(1+(typeof fDur==='function'?fDur():0));fires.push({x:fx,y:fy,life,mx:life});say('Campfire built');addXp(5,40);sfx('fire');saveLocal()});
  const _rn64=rgNear;rgNear=function(R,...a){const out=_rn64(R,...a);if(SCENE&&SCENE.room===R)for(const f of fires)if(!f._glow)out.push({t:'_fire',f,x:f.x/16,y:(f.y+3)/16-1});return out};
- SQFURN.wrap('083',_df64=>function(it,tm){if(it&&it.t==='_fire'){pF(it.f,tm);return}return _df64(it,tm)})}
+ SQFURN.wrap('083',_df64=>function(it,tm){if(it&&it.t==='_fire'){pF(it.f,tm);return}return _df64(it,tm)})})();

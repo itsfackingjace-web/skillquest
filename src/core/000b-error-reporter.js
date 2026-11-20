@@ -9,10 +9,10 @@
  const CODE=/^(TypeError|ReferenceError|RangeError)$/,BENIGN=/AudioContext|NotAllowedError|play\(\) request|QuotaExceeded|The operation is insecure|Failed to fetch|NetworkError|Load failed|ResizeObserver|Permission denied|The user aborted|AbortError/i;
  function where(e){try{const s=String(e&&e.stack||'').split('\n').find(l=>/:\d+:\d+/.test(l)&&!/000b|SQERR/.test(l));const m=s&&s.match(/:(\d+):(\d+)\)?\s*$/);return m?' @'+m[1]+':'+m[2]:''}catch(_){return''}}
  function send(site,msg){const F=self.SQFB,MP=self.SQMP;if(!F||!F.db||!MP||!MP.user){if(Q.length<10)Q.push([site,msg]);return}
-  try{const d=F.db,r=d.ref(F.D,'errs/'+site);d.runTransaction(r,cur=>{const o=cur&&typeof cur==='object'?cur:{};return{m:msg,n:Math.min(1e9,(+o.n||0)+1),v:String(self.SQVER||'').slice(0,20),t:d.serverTimestamp()}}).catch(()=>{})}catch(_){}}
+  try{const d=F.db,r=d.ref(F.D,'errs/'+site);d.runTransaction(r,cur=>{const o=cur&&typeof cur==='object'?cur:{};return{m:msg,n:Math.min(1e9,(+o.n||0)+1),v:String(self.SQVER||'').slice(0,20),t:d.serverTimestamp()}}).catch(()=>{})}catch(_){/*quiet*/}}
  function SQERR(e,site){try{site=String(site||'x').replace(/[^A-Za-z0-9_-]/g,'_').slice(0,40);const name=e&&e.name||'Error',msg=(name+': '+String(e&&e.message||e)).slice(0,220);
    let L=LOG.get(site);if(!L){L={m:msg,n:0,w:where(e)};LOG.set(site,L)}L.n++;
-   if(!CODE.test(name)||BENIGN.test(msg)||SENT.has(site)||sentN>=6)return;SENT.add(site);sentN++;send(site,(msg+L.w).slice(0,300))}catch(_){}}
+   if(!CODE.test(name)||BENIGN.test(msg)||SENT.has(site)||sentN>=6)return;SENT.add(site);sentN++;send(site,(msg+L.w).slice(0,300))}catch(_){/*quiet*/}}
  SQERR.log=LOG;SQERR.flush=()=>{const q=Q.splice(0);for(const[s,m]of q)send(s,m)};
  SQERR.list=()=>[...LOG].map(([s,v])=>s+' ×'+v.n+' '+v.m+v.w);
  self.SQERR=SQERR;

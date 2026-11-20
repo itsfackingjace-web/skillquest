@@ -34,7 +34,7 @@ for(let x=VX-8;x<=VX+8;x++)tpath(x,VY+6);for(let y=VY+5;y<=VY+6;y++)tpath(VX,y);
 for(const[x,y]of[[TX-4,TY-1],[TX+3,TY-1],[TX-11,TY+1],[TX+10,TY+1]]){LAMPS.push([x,y]);BS.add(y*N+x);PROT.add(y*N+x)}
 BS.add(WELL[1]*N+WELL[0]);PROT.add(WELL[1]*N+WELL[0]);
 // --- the road: cheapest route from the village's east gate to Saltmere's west gate ---
-{const sx=VX+11,sy=VY-2,ex=TX-13,ey=TY,INF=1e9,D4=[[1,0],[0,1],[-1,0],[0,-1]];
+(()=>{const sx=VX+11,sy=VY-2,ex=TX-13,ey=TY,INF=1e9,D4=[[1,0],[0,1],[-1,0],[0,-1]];
  for(let x=VX+9;x<=VX+11;x++)tpath(x,VY-2);
  const blocked=i=>{const x=i%N,y=(i/N)|0;if(x<2||y<2||x>N-3||y>N-3)return true;if(BS.has(i)||inVillage(x,y))return true;if(TOWNZ.has(i))return true;
   if(TRADER&&Math.abs(x-TRADER.x)<=2&&Math.abs(y-TRADER.y)<=2)return true;if(CAVE&&Math.abs(x-CAVE.x)<=1&&Math.abs(y-CAVE.y)<=2)return true;return false};
@@ -47,7 +47,7 @@ BS.add(WELL[1]*N+WELL[0]);PROT.add(WELL[1]*N+WELL[0]);
  while(H.length){const[d,s]=pop();if(d>dist[s])continue;const i=s>>2,dir=s&3,x=i%N,y=(i/N)|0;if(x===ex-0&&y===ey){goal=s;break}
   for(let nd=0;nd<4;nd++){const nx=x+D4[nd][0],ny=y+D4[nd][1],ni=ny*N+nx;if(!(nx===ex&&ny===ey)&&(blocked(ni)))continue;
    const c=d+cost(ni)+(nd!==dir&&s!==s0?2.2:0),ns=ni*4+nd;if(c<dist[ns]){dist[ns]=c;prev[ns]=s;push(c,ns)}}}
- for(let s=goal;s>=0;s=prev[s]){const i=s>>2;if(tile[i]===0)BRIDGE.add(i);ROADS.add(i);tile[i]=1;obj[i]=null;PROT.add(i)}}
+ for(let s=goal;s>=0;s=prev[s]){const i=s>>2;if(tile[i]===0)BRIDGE.add(i);ROADS.add(i);tile[i]=1;obj[i]=null;PROT.add(i)}})();
 SIGNS.set((VY-3)*N+VX+10,'East: the port of Saltmere. Follow the road across the bridge.');
 SIGNS.set((TY-1)*N+TX-12,'SALTMERE - port of the east. West: Hollow Village.');
 for(const i of SIGNS.keys()){tile[i]=tile[i]===0?2:tile[i];obj[i]=null;BS.add(i);PROT.add(i)}

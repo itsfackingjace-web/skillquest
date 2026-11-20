@@ -98,7 +98,7 @@ cv.addEventListener('pointerdown',()=>{if(smOpen)closeSM()});
 pb2.textContent='MENU';pb2.title='Menu (Esc)';pb2.onclick=()=>{if(smOpen)closeSM();else openSM()};
 document.getElementById('px').onclick=backScreen;
 SQCLOSEPN.after('010',()=>{closeScreenOnly();fromMenu=false;if(smOpen)closeSM()});
-const ptt=document.createElement('span');ptt.className='ptt';{const px=document.getElementById('px');px.parentNode.insertBefore(ptt,px)}
+const ptt=document.createElement('span');ptt.className='ptt';(()=>{const px=document.getElementById('px');px.parentNode.insertBefore(ptt,px)})();
 // --- bag ---
 const INAME={wood:'Wood',stone:'Stone',iron:'Iron ore',ibar:'Iron bar',sbar:'Steel bar',berry:'Berries',meat:'Raw meat',cooked:'Cooked meat',idag:'Iron dagger',sdag:'Steel dagger'};
 const IDESC={wood:'Chopped from trees. Used for campfires, crafting and as furnace fuel.',stone:'Mined from rocks. Used for campfires, crafting and steel.',iron:'Rare ore from rocks (Mining 15 and a stone pickaxe). Smelt it at the furnace.',ibar:'Smelted iron. Forge it into daggers and armor at the anvil.',sbar:'Strong steel. Forges the best armor in the land.',berry:'Sweet wild berries. Restores a little food.',meat:'Dropped by slimes. Cook it at a campfire before eating.',cooked:'Hearty cooked meat. Restores food and 2 hearts.',idag:'A simple iron dagger. The blacksmith pays well for these.',sdag:'A fine steel dagger. The blacksmith pays well for these.'};
@@ -149,8 +149,8 @@ const _oc10=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
 pbd.addEventListener('input',e=>{if(e.target.id==='nmi'){PNAME=e.target.value.replace(/[<>]/g,'').trim().slice(0,10);saveLocal(true)}});
 pbd.addEventListener('change',e=>{if(e.target.id==='nmi')saveCloud(true)});
 // name field in the character creator
-{const nr=document.createElement('div');nr.className='cr';nr.innerHTML='<span class="cl">Name</span><input id="cni" maxlength="10" autocomplete="off" placeholder="Your name">';crows.parentNode.insertBefore(nr,crows);
- const ci=document.getElementById('cni');if(ci){ci.value=PNAME;ci.addEventListener('input',()=>{PNAME=ci.value.replace(/[<>]/g,'').trim().slice(0,10)})}}
+(()=>{const nr=document.createElement('div');nr.className='cr';nr.innerHTML='<span class="cl">Name</span><input id="cni" maxlength="10" autocomplete="off" placeholder="Your name">';crows.parentNode.insertBefore(nr,crows);
+ const ci=document.getElementById('cni');if(ci){ci.value=PNAME;ci.addEventListener('input',()=>{PNAME=ci.value.replace(/[<>]/g,'').trim().slice(0,10)})}})();
 // --- keyboard: menu navigation and hotkeys (runs before the older handlers) ---
 document.addEventListener('keydown',e=>{const tg=e.target;
  if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA')){e.stopPropagation();if(e.key==='Enter'){tg.blur();if(menuOpen&&tg.id==='cni')document.getElementById('cgo').click()}return}

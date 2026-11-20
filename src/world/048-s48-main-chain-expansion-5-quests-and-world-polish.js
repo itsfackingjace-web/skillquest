@@ -13,7 +13,7 @@ const QNEW=[
  ['Green Thumb',{n:'Desert Provisions',d:'"Travelers heading toward Dusthaven need provisions." Bring 5 bread (bake wheat at a campfire or stove, or buy it).',type:'give',item:'bread',amt:5,r:{g:200,xp:[4,550]},fin:'A fine meal makes a difficult journey easier.'}],
  ['The Road East',{n:'Across the Western Sea',d:'"Tidewatch could use a little help with its fishing." Catch 5 trout (Fishing 10) for the village on the western shore.',type:'give',item:'trout',amt:5,r:{g:180,xp:[9,500]},fin:'Those fish will make a fine supper.'}]];
 for(const[after,q]of QNEW){const i=QS.findIndex(o=>o.n===after);QS.splice(i>=0?i+1:QS.length-1,0,q)}
-{const gi=QS.findIndex(q=>q.n==='Grandmaster');QS.splice(gi>=0?gi:QS.length,0,{n:'Three Villages, One Island',d:'"Hollow Island is growing. Its villages need someone they can trust." Complete the quest lines of Frosthollow (north), Dusthaven (south) and Tidewatch (west).',type:'village',amt:3,r:{g:750,xp:[7,1800]},fin:'You\'ve become a friend to every corner of this island.'})}
+(()=>{const gi=QS.findIndex(q=>q.n==='Grandmaster');QS.splice(gi>=0?gi:QS.length,0,{n:'Three Villages, One Island',d:'"Hollow Island is growing. Its villages need someone they can trust." Complete the quest lines of Frosthollow (north), Dusthaven (south) and Tidewatch (west).',type:'village',amt:3,r:{g:750,xp:[7,1800]},fin:'You\'ve become a friend to every corner of this island.'})})();
 function villageQuestProgress(){return['frosthollow','dusthaven','tidewatch'].filter(id=>SQ_SIDE[id]&&SQ_SIDE[id].completed).length}
 const _qv48=qVal;qVal=function(q){return q.type==='village'?villageQuestProgress():_qv48(q)};
 // kills: a quest that names an enemy only counts that enemy (wolves include snow wolves)
@@ -39,14 +39,14 @@ const _qh48=questsHTML;questsHTML=function(){const full=_qh48(),cut=full.indexOf
 // shop prices: iron nails sell for 24 gold, so buying them for 12 would be free money; the villages charge 30
 for(const S of[FHSHOP.fh_pine,FHSHOP.fh_work,DHSHOP.dh_forge,TWSHOP.tw_post])for(const it of S.items)if(it[0]==='nails')it[2]=30;
 // a signpost by the Elder pointing to every settlement
-{const cand=[];for(let y=VY-1;y<=VY+5;y++)for(let x=VX-6;x<=VX+6;x++){const i=y*N+x;if(tile[i]!==2||obj[i]||BS.has(i)||STR.has(i))continue;let road=false;for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]])if(tile[(y+b)*N+x+a]===1)road=true;if(!road)continue;if(NPCS.some(n=>!n.scene&&Math.abs(n.x/16-x)<1.5&&Math.abs(n.y/16-y)<1.5))continue;cand.push([Math.hypot(x-VX+2,y-VY-2),i])}
- cand.sort((a,b)=>a[0]-b[0]);if(cand.length){const i=cand[0][1];SIGNS.set(i,'HOLLOW VILLAGE. North: Frosthollow (snow, wolves, Frostfang Den). South: Dusthaven (desert, Scorpion Hollow). West: Tidewatch (the sea, the Drowned Grotto). East: Saltmere (the port).');BS.add(i);PROT.add(i)}}
+(()=>{const cand=[];for(let y=VY-1;y<=VY+5;y++)for(let x=VX-6;x<=VX+6;x++){const i=y*N+x;if(tile[i]!==2||obj[i]||BS.has(i)||STR.has(i))continue;let road=false;for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]])if(tile[(y+b)*N+x+a]===1)road=true;if(!road)continue;if(NPCS.some(n=>!n.scene&&Math.abs(n.x/16-x)<1.5&&Math.abs(n.y/16-y)<1.5))continue;cand.push([Math.hypot(x-VX+2,y-VY-2),i])}
+ cand.sort((a,b)=>a[0]-b[0]);if(cand.length){const i=cand[0][1];SIGNS.set(i,'HOLLOW VILLAGE. North: Frosthollow (snow, wolves, Frostfang Den). South: Dusthaven (desert, Scorpion Hollow). West: Tidewatch (the sea, the Drowned Grotto). East: Saltmere (the port).');BS.add(i);PROT.add(i)}})();
 // biome touches: snowmen in Frosthollow, clay pots in Dusthaven, crates and barrels on the Tidewatch dock
 const DECO48=[];
-{const put=(x,y,t)=>{const i=y*N+x;if(tile[i]===0||BS.has(i)||obj[i]||FHPATH.has(i)||DHPATH.has(i)||TWPATH.has(i)||BRIDGE.has(i)||ROADS.has(i))return;BS.add(i);PROT.add(i);DECO48.push([x,y,t])};
+(()=>{const put=(x,y,t)=>{const i=y*N+x;if(tile[i]===0||BS.has(i)||obj[i]||FHPATH.has(i)||DHPATH.has(i)||TWPATH.has(i)||BRIDGE.has(i)||ROADS.has(i))return;BS.add(i);PROT.add(i);DECO48.push([x,y,t])};
  if(FHON)for(const[dx,dy]of[[-8,-1],[9,-1]])put(FX+dx,FY+dy,'snowman');
  if(DHON)for(const[dx,dy]of[[-3,-2],[3,-2],[2,-3]])put(DX+dx,DY+dy,'pot');
- if(TWON&&TWDOCK.length){const top=TWDOCK[0],px=top%N,py=(top/N)|0;for(const[dx,dy,t]of[[-1,-1,'crate'],[1,-1,'barrel'],[-2,-1,'barrel'],[2,-2,'crate']])put(px+dx,py+dy,t)}}
+ if(TWON&&TWDOCK.length){const top=TWDOCK[0],px=top%N,py=(top/N)|0;for(const[dx,dy,t]of[[-1,-1,'crate'],[1,-1,'barrel'],[-2,-1,'barrel'],[2,-2,'crate']])put(px+dx,py+dy,t)}})();
 function drawDeco48(x,y,t,tm){const px=x*16,py=y*16;
  if(t==='snowman'){shd(px+8,py+15,14);for(const[r,cy]of[[6,11],[4.5,3],[3.4,-3.5]]){g.fillStyle=O;g.beginPath();g.arc(px+8,py+cy,r+1,0,6.283);g.fill();g.fillStyle='#f4f8fc';g.beginPath();g.arc(px+8,py+cy,r,0,6.283);g.fill();g.fillStyle='#d8e2ee';g.fillRect(px+8-r*.6,py+cy+r*.4,r*1.2,1)}
   Rg(px+6,py-5,1,1,O);Rg(px+9,py-5,1,1,O);Rg(px+8,py-3.5,3,1,'#f08830');Rg(px+4,py-8,8,2,O);Rg(px+5,py-12,6,4,O);Rg(px+5,py+1,6,1.5,'#d83838');for(const k of[3,5])Rg(px+7.5,py+k,1,1,O)}

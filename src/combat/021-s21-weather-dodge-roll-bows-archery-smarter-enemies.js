@@ -43,8 +43,8 @@ function killEnemy(n,how){if(n.dead)return;n.dead=1;n.dropped=1;kills++;GLD+=2+M
  if(n.type!=='boss'&&n.type!=='bonelord'&&Math.random()<.6)inv.meat=(inv.meat|0)+1;enemyDrop(n)}
 // --- the Bone Lord's tomb ---
 let TOMB=null,TOMB_DAY=-1;
-{let best=null,bd=1e9;for(let y=72*HSC;y<N-6;y++)for(let x=8;x<70*HSC;x++){let ok=true;for(let dy=-3;dy<=2&&ok;dy++)for(let dx=-3;dx<=3;dx++){const i=(y+dy)*N+x+dx;if(tile[i]!==5||obj[i]||BS.has(i)||PROT.has(i)){ok=false;break}}
-  if(!ok||(TRADER&&Math.hypot(TRADER.x-x,TRADER.y-y)<12*HSC))continue;const d=Math.hypot(x-36*HSC,y-86*HSC);if(d<bd){bd=d;best={x,y}}}TOMB=best}
+(()=>{let best=null,bd=1e9;for(let y=72*HSC;y<N-6;y++)for(let x=8;x<70*HSC;x++){let ok=true;for(let dy=-3;dy<=2&&ok;dy++)for(let dx=-3;dx<=3;dx++){const i=(y+dy)*N+x+dx;if(tile[i]!==5||obj[i]||BS.has(i)||PROT.has(i)){ok=false;break}}
+  if(!ok||(TRADER&&Math.hypot(TRADER.x-x,TRADER.y-y)<12*HSC))continue;const d=Math.hypot(x-36*HSC,y-86*HSC);if(d<bd){bd=d;best={x,y}}}TOMB=best})();
 if(TOMB){for(const[dx,dy]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1],[-1,-2],[0,-2],[1,-2]]){const i=(TOMB.y+dy)*N+TOMB.x+dx;BS.add(i);PROT.add(i);obj[i]=null}PROT.add(TOMB.y*N+TOMB.x);PROT.add((TOMB.y+1)*N+TOMB.x)}
 ROOMS.tomb={w:18,h:12,ex:9,cave:1,tomb:1,floor:['#c8a870','#bc9c64'],wall:'#9a7848',trim:'#5a4020',items:[[3,3,'pillar'],[14,3,'pillar'],[3,8,'pillar'],[14,8,'pillar'],[8,2,'urn'],[9,2,'urn'],[1,10,'urn'],[16,10,'urn'],[6,5,'bones'],[12,7,'bones']].map(([x,y,t])=>({t,x,y,solid:t!=='bones'}))};
 ROOMS.tomb.solid=new Set(ROOMS.tomb.items.filter(it=>it.solid).map(it=>it.y*18+it.x));

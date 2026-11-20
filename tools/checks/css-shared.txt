@@ -1,0 +1,24 @@
+# Classes more than one file styles on purpose (tools/checks/lint.cjs 'css' rule). Nov 19: 059 is the Gen 3 restyle of the
+# built-in screens, .b/.gpf are restyled by later passes. Add a class here only when a later file restyles it on purpose.
+sw  # 003 and 059
+ab  # 003 and 059
+sk  # 004 and 059
+br  # 004 and 059
+rc  # 004 and 059
+sb  # 005 and 059
+gr  # 006 and 059
+gc  # 006 and 059
+fg  # 006 and 059
+qc  # 006 and 059
+qb  # 006 and 059
+ng  # 006 and 059
+b  # 008 and 010 and 059 and 115 and 126 and 000
+g3  # 010 and 059
+pk  # 010 and 059
+bl  # 010 and 059
+bd  # 010 and 011
+ig  # 011 and 059
+slot  # 011 and 059
+gpf  # 023 and 059 and 081 and 172
+skc  # 025 and 059
+skd  # 025 and 059

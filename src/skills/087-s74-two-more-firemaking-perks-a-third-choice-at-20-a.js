@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------- 74. Two more Firemaking perks (a third choice at 20 and 40)
 // Level 20, Lone Bonfire: your campfires burn for 30 minutes, but only one can be lit at a time (a new one puts the
 // old one out, on any island). Level 40, Hearthkeeper: while you stand near a campfire, your FOOD doesn't drain.
-{TREES[5].choices[20].push({id:'fi_lone',n:'Lone Bonfire',d:'Your campfires burn for 30 minutes, but only one can be lit at a time: building a new one puts out the old one.'});
+(()=>{TREES[5].choices[20].push({id:'fi_lone',n:'Lone Bonfire',d:'Your campfires burn for 30 minutes, but only one can be lit at a time: building a new one puts out the old one.'});
  TREES[5].choices[40].push({id:'fi_hearth',n:'Hearthkeeper',d:'While you stand near a campfire, your FOOD doesn\'t drain.'});
  const LONE=30*60;
  SQFIRE.wrap('087',_f=>function(){const mine=fires.filter(f=>!f._rp),n0=fires.length;_f();if(fires.length<=n0||!perk(5,'fi_lone'))return;const nf=fires[fires.length-1];
@@ -22,9 +22,9 @@
  SQHUD.before('087',()=>{try{const indoors=SCENE&&!(SCENE.room&&(SCENE.room.region||SCENE.room.cave));const dk=indoors?0:dark();
    if(dk>.05&&!dead&&perk(5,'fi_aura')){const cx=camX(),cy=camY(),sx=(P.x-cx)*Z,sy=(P.y-4-cy)*Z,r=120*Z,fl=1+Math.sin(performance.now()/180)*.03;
     g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(sx,sy,0,sx,sy,r*fl);gr.addColorStop(0,'rgba(255,215,150,'+(.22*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.1*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
-    g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){self.SQERR&&SQERR(e,'087-1')}})}
+    g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){self.SQERR&&SQERR(e,'087-1')}})})();
 // the leaderboards take the controller / keyboard while they're open (title screen)
-{SQNAVROOT.wrap('087',_n=>function(){const lb=document.getElementById('sqlb');if(lb&&lb.style.display==='flex')return lb;return _n()})}
+(()=>{SQNAVROOT.wrap('087',_n=>function(){const lb=document.getElementById('sqlb');if(lb&&lb.style.display==='flex')return lb;return _n()})})();
 // a LOOT button when you stand at a grave (phones had no button to press)
-{let on=false;SQUPD.after('087',(dt)=>{const n=window.SQGRVNEAR&&SQGRVNEAR()&&!(typeof nearNpc==='function'&&nearNpc());if(n){tk.style.display='flex';if(!tk.innerHTML.startsWith('LOOT'))tk.innerHTML='LOOT'+(isPC?'<small>T</small>':'');on=true}
-  else if(on){on=false;if(tk.innerHTML.startsWith('LOOT')){tk.innerHTML='TALK'+(isPC?'<small>T</small>':'');tk.style.display='none';if(typeof tkLab!=='undefined')tkLab=''}}})}
+(()=>{let on=false;SQUPD.after('087',(dt)=>{const n=window.SQGRVNEAR&&SQGRVNEAR()&&!(typeof nearNpc==='function'&&nearNpc());if(n){tk.style.display='flex';if(!tk.innerHTML.startsWith('LOOT'))tk.innerHTML='LOOT'+(isPC?'<small>T</small>':'');on=true}
+  else if(on){on=false;if(tk.innerHTML.startsWith('LOOT')){tk.innerHTML='TALK'+(isPC?'<small>T</small>':'');tk.style.display='none';if(typeof tkLab!=='undefined')tkLab=''}}})})();

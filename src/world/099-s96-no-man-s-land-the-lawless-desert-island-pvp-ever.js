@@ -4,7 +4,7 @@
 // and desert bandits (they keep their distance and shoot; watch for the "!" and roll). PvP is always on here.
 // Getting there: the "Lawless Waters" voyage from Sera, the Navigator in Tidewatch (after Into Briarwood), or sail off
 // Briarwood's south edge / the Shattered Expanse's west edge once the route is charted.
-{const K='#181018',ID='nomans';
+(()=>{const K='#181018',ID='nomans';
  WORLD_REGIONS[ID]={id:ID,name:'No Man\'s Land',width:170,height:150,seed:2291.3,generationVersion:1,biome:'Lawless desert: mesas, cactus flats and a ghost town. PvP is always on',lv:'45–75',dir:'south-west',unlock:'nomansRoute',hint:'Chart the Lawless Waters from Tidewatch.'};
  ROUTE_ORDER.push(ID);REGION_SPAWNS[ID]={maxEnemies:26};RG_LMCOUNT[ID]=6;TRAVEL_KEYS.push('nomansRoute');if(TRAVEL_UNLOCKS.nomansRoute==null)TRAVEL_UNLOCKS.nomansRoute=false;
  WM.W=WM.H=360;Object.assign(WM_POS,{hollow:[180,180],briarwood:[62,170],ashfall:[302,176],ironcrest:[180,58],shattered:[196,302],nomans:[64,300]});
@@ -159,11 +159,11 @@
 
  // ---- wiki ----
  try{WK_RGN&&Object.assign(WK_RGN,{bandit:'Desert bandit',cacti:'Cacticus',gscorp:'Giant scorpion'})}catch(e){self.SQERR&&SQERR(e,'099-7')}
-}
+})();
 // ---- island boss art, drawn with the world bosses' toolkit (shaded, outlined) ----
 // Each boss has poses: idle (4 frames), move (4-frame walk / crawl / slither / drift), and for attacks a wind-up
 // pose and a strike pose (which pose depends on the attack: the warlord's overhead swing vs. his charge, etc.).
-{const KIT=()=>window.SQKIT,CACHE={};
+(()=>{const KIT=()=>window.SQKIT,CACHE={};
  function art(id,pose,atk,fr){const key=id+'|'+pose+'|'+atk+'|'+fr;if(CACHE[key])return CACHE[key];return CACHE[key]=ART[id](pose,atk,fr)}
  const ART={
  // ---------- The Briar Queen ----------
@@ -320,4 +320,4 @@
   if(id==='briarwood'&&pose==='wind')for(let k=0;k<3;k++)Rg(Math.round(x-6+k*6),Math.round(tp+(44-4)*S),1,4,'#e8e8e8');
   return true};
  window.SQIBARTCAN=(id,pose,atk,fr)=>art(id,pose||'idle',atk||'',fr||0);
-}
+})();

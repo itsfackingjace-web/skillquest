@@ -164,7 +164,7 @@ const _oc11=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
  if(ptab===7&&t.closest('.chc'))return;
  if((b=t.closest('.slot[data-k]'))){if(b.dataset.a){CHCARD={k:b.dataset.k,side:b.dataset.a};sfx('talk');rPn()}else{invSel=b.dataset.k;rPn()}return}
  _oc11(e)};
-{SQCLOSEPN.before('011',()=>{CHCARD=null;})}
+(()=>{SQCLOSEPN.before('011',()=>{CHCARD=null;})})();
 // a tap anywhere outside the card closes it
 document.addEventListener('click',e=>{if(!CHCARD||!pnOpen||ptab!==7)return;const t=e.target;if(!t||!t.closest||!t.isConnected||t.closest('.chc')||pbd.contains(t))return;CHCARD=null;rPn()});
 // typing an amount: the game's own key handlers must not see these keys; Enter moves that many
@@ -198,9 +198,9 @@ const st11=document.createElement('style');st11.textContent=`
 .eqs .ei{font-size:14px;line-height:1.2;min-width:0}.eqs small{display:block;opacity:.6;font-size:11px;letter-spacing:1px}
 .eqs.none .ei{color:#909090}`;document.head.appendChild(st11);
 // --- name is chosen in the character creator ---
-{const ci=document.getElementById('cni'),go=document.getElementById('cgo'),prev=go.onclick;
+(()=>{const ci=document.getElementById('cni'),go=document.getElementById('cgo'),prev=go.onclick;
  go.onclick=()=>{if(!PNAME){ci.style.borderColor='#d05030';ci.placeholder='Enter a name first';ci.focus();sfx('swish');return}ci.style.borderColor='';prev();saveLocal(true);saveCloud(true)};
- setTimeout(()=>{if(!PNAME&&!menuOpen&&!dead){menuOpen=true;cm.style.display='flex';go.textContent='DONE';build();rp();ci.value='';ci.placeholder='Choose your name'}},2500)}
+ setTimeout(()=>{if(!PNAME&&!menuOpen&&!dead){menuOpen=true;cm.style.display='flex';go.textContent='DONE';build();rp();ci.value='';ci.placeholder='Choose your name'}},2500)})();
 SMI[0].l=()=>pname();
 hp.innerHTML=hp.innerHTML.replace('P: trainer card','P: equipment');
 setActionLabels();

@@ -2,7 +2,7 @@
 // One quest log for everything (Elder Rowan's quests, every village's quests, the voyages), in three tabs: Active,
 // Available and Done. Track one quest: the HUD shows its next step, an arrow points the way (to the person to talk to,
 // the nearest tree, wolf or buoy you need, or the harbor post to report to), and the map marks the spot.
-{const E=s=>typeof esc==='function'?esc(String(s)):String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+(()=>{const E=s=>typeof esc==='function'?esc(String(s)):String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  const nm=(k,n)=>{const s=INAME[k]||k;return(n>1?(typeof SN!=='undefined'&&SN[k])||(/s$/.test(s)?s:s+'s'):s).toLowerCase()};
  const town=t=>(typeof SQTOWN!=='undefined'&&SQTOWN[t])||({briarwood:'Thornbrook',ashfall:'Emberwatch'})[t]||t;
  const isl=a=>a==='hollow'?'Hollow Island':(WORLD_REGIONS[a]&&WORLD_REGIONS[a].name)||a;
@@ -135,4 +135,4 @@
   if((b=t.closest('[data-qt]'))){TRK=b.dataset.qt;try{localStorage.setItem('sq_trk',TRK)}catch(e){self.SQERR&&SQERR(e,'102-9')}TGT_AT=0;sfx(TRK==='none'?'swish':'quest');if(TRK==='none')say('Quest tracking off. Track any quest from the quest log.');rPn();return}
   if((b=t.closest('[data-qx]'))){const id=b.dataset.qx;QOPEN=QOPEN===id?'':id;sfx('talk');rPn();return}});
  // new quests jump to the front of the tracker when you start them
- let lastAct=null;setInterval(()=>{try{const ids=qAll().filter(e=>e.st==='active').map(e=>e.id);if(lastAct){const nw=ids.find(i=>!lastAct.includes(i));if(nw&&TRK!=='none'){TRK=nw;try{localStorage.setItem('sq_trk',TRK)}catch(e){self.SQERR&&SQERR(e,'102-10')}TGT_AT=0}}lastAct=ids}catch(e){self.SQERR&&SQERR(e,'102-11')}},1500)}
+ let lastAct=null;setInterval(()=>{try{const ids=qAll().filter(e=>e.st==='active').map(e=>e.id);if(lastAct){const nw=ids.find(i=>!lastAct.includes(i));if(nw&&TRK!=='none'){TRK=nw;try{localStorage.setItem('sq_trk',TRK)}catch(e){self.SQERR&&SQERR(e,'102-10')}TGT_AT=0}}lastAct=ids}catch(e){self.SQERR&&SQERR(e,'102-11')}},1500)})();

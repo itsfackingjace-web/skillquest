@@ -5,7 +5,7 @@
 // south-west, ends at the lair of the Thornheart, a huge walking tree that wakes once a day. It throws roots up from the
 // ground (watch the green rings) and calls briar wolves when it's hurt. Its rare drop is the Thorn amulet: anything that
 // hits you gets hurt back.
-{
+(()=>{
 const BW={town:null,npcs:[],sure:null,bossDay:-1};window.SQBW=BW;
 // ---- quests (the village quest system) ----
 SQ_SIDE.briarwood={index:0,on:false,k:0,completed:false};SQTOWN.briarwood='Thornbrook';
@@ -136,4 +136,4 @@ if(window.SQJK){SQGEMC.thorn=['#78d050','#2a6a20'];const j={k:'ja_thorn',n:'Thor
 try{WK_DUN.push({n:'Thornroot Hollow',w:'South-west Briarwood Isle',boss:'The Thornheart',bhp:TH_HP,d:'Six floors of roots and ruins: moss slimes, briar wolves, bats and skeletons. The Thornheart throws roots up out of the ground (watch the green rings) and calls briar wolves at half health.',loot:'450 gold, oak and willow logs, an emerald (once a day); rare: Thorn amulet (10%)'},
   {n:'Ironcrest mines and caves',w:'Ironcrest Highlands: two mines by the mining camps, two caves in the cliffs',boss:'None',bhp:0,d:'Six floors each, packed with ore veins (gold, mithril and adamant deeper down), chests, snow wolves, rime skeletons, frost slimes and bats. Campfires work inside.',loot:'Ore and chest loot'})}catch(e){self.SQERR&&SQERR(e,'095-16')}
 try{WK_RARE.push(['Thorn amulet','ja_thorn','Thornheart','An amulet: anything that hurts you takes 4 damage back.','10% from the Thornheart (Thornroot Hollow, Briarwood).'])}catch(e){self.SQERR&&SQERR(e,'095-17')}
-}
+})();

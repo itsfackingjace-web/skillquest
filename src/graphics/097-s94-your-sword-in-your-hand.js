@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------- 94. Your sword in your hand
 // Every swing shows the sword you actually hold: wooden, stone, iron, steel, the Crystal blade, mithril or adamant
 // (blade colour, length, width, guard and grip all differ). No sword: a quick punch. Other players see your sword too.
-{const K='#181018';
+(()=>{const K='#181018';
  // blade light, blade dark, edge, guard, grip, pommel, length, width, glow
  const SW={1:['#d8b078','#9a6a38','#f0d8a8','#7a4a20','#5a3418','#7a4a20',10,2,null],2:['#b8b8c0','#7a7a84','#e0e0e8','#6a6a72','#5a3a20','#6a6a72',11,3,null],
   3:['#e0e6ec','#9aa2ac','#ffffff','#5a6068','#4a2c18','#5a6068',12,2,null],4:['#c8d8f0','#7a90b8','#f4f8ff','#e0b030','#3a2a5a','#e0b030',13,2,null],
@@ -31,4 +31,4 @@
  {SQPP.wrap('097',_pp=>function(tm){const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
    if(!(swing>0)||dead||tool||CASTT>0||BOWT>0||(window.SQDF&&SQDF.on)||(typeof SAILING!=='undefined'&&SAILING)||(window.SQRSAIL&&SQRSAIL.on))return _pp(tm);
    const sw=swing;if(!pP._d0)pP._d0=sw;swing=0;try{_pp(tm)}finally{swing=sw}if(hurt>0&&Math.floor(tm*20)%2)return;
-   const t=(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0);SQSWING(P.x,P.y,face[0],face[1],1-sw/.25,t,tm)})}}
+   const t=(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0);SQSWING(P.x,P.y,face[0],face[1],1-sw/.25,t,tm)})}})();

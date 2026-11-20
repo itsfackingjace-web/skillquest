@@ -7,7 +7,7 @@
 //   Ironcrest   - The Giant's Stair rune door - The Frost Wyrm    (rare: Frostbite ring - hits can freeze)
 //   Shattered   - The Fractured Temple        - The Void Herald   (rare: Voidling pet)
 //   No Man's Land - The Old Silver Mine       - Black Jack, the Outlaw King (rare: Outlaw's hat)
-{const K='#181018';
+(()=>{const K='#181018';
  const IB={briarwood:{n:'The Briar Queen',door:'vault',lm:'Whispering Ruins',hp:420,col:'#5a8a3a',shard:'Briar sigil shard',sc:['#68b048','#2e6a28'],
    floor:['#56603e','#4e5838'],wall:'#3a4228',trim:'#1e2414',gold:[300,500],loot:[['oaklog',15],['willowlog',10],['emerald',1]],xp:1500,rare:['pweb','Webling (pet)','A little thorn spider that scuttles after you.'],
    atk:[['fan',2.6,{n:3,spread:.35,sp:85,k:'web',slow:1}],['leap',5.5,{}],['summon',9,{key:'spiderling',n:3,cap:5}]]},
@@ -270,4 +270,4 @@
    window.SQIBWIKI=(tab,out,card,head,pic)=>{if(tab!=='bosses'&&tab!=='dungeons')return;head('Island bosses');
     out.push({t:'island bosses',h:'<p>Every island hides a boss behind its great sealed landmark. Its monsters drop sigil shards (about 1 in 25): five open the door for one fight. Bosses get faster at half health. Watch the warning circles, rings and red lines, and roll through them.</p>'});
     for(const id of ISL){const B=IB[id];card(B.n+' '+B.lm+' '+WORLD_REGIONS[id].name,ibPic(id)||pic('ib_'+id,mk(id)),'<b>'+wkE(B.n)+'</b> <span class="tag">'+B.hp+' HP</span><br><small>Behind '+wkE(B.lm)+' on '+wkE(WORLD_REGIONS[id].name)+' · Key: 5 '+wkE(B.shard.toLowerCase())+'s<br>Reward: '+B.gold[0]+'–'+B.gold[1]+' gold, '+B.loot.map(([k,n])=>n+' '+wkE((n>1?(SN[k]||INAME[k]):INAME[k])||k).toLowerCase()).join(', ')+'<br><b>How it fights:</b> '+wkE(HOW[id])+'</small><br><span class="tag">RARE DROP</span> <b>'+wkE(B.rare[1])+'</b> (5%): '+wkE(B.rare[2]))}}}}
-}
+})();

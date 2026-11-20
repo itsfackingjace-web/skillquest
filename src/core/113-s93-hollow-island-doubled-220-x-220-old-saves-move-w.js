@@ -2,7 +2,7 @@
 // Saves from before the change (no "hsc" field) are scaled up as they load: your position, houses and castles, the
 // things you built outside, berry planters, beds and farm plots all move to the matching spot on the bigger island.
 // Anything that lands in the water, on rock, or inside a town is packed into your bag instead (with what was in it).
-{const OLD=110,sc=i=>{const x=i%OLD,y=(i/OLD)|0;return(y*HSC)*N+x*HSC};
+(()=>{const OLD=110,sc=i=>{const x=i%OLD,y=(i/OLD)|0;return(y*HSC)*N+x*HSC};
  let OWN=new Set();const bad=i=>i<0||i>=N*N||tile[i]===0||tile[i]===3||PROT.has(i)||(BS.has(i)&&!OWN.has(i))||TOWNZ.has(i)||inVillage(i%N,(i/N)|0);
  const addInv=(S,k,n)=>{if(!S.inv||typeof S.inv!=='object')S.inv={};S.inv[k]=(+S.inv[k]||0)+n};
  const addItems=(S,o)=>{if(o&&typeof o==='object')for(const k in o){const n=Math.max(0,+o[k]||0);if(n)addInv(S,k,n)}};
@@ -29,4 +29,4 @@
     if(w===1&&h===1&&last&&X===last[0]+1&&Y===last[1]+1){last=null;return fr.call(this,X+.5-HSC/2+.5,Y+.5-HSC/2+.5,HSC,HSC)}last=null;return fr.call(this,X,Y,w,h)};
    try{return _dm()}finally{x.fillRect=fr}})}
  // nothing grows under a build (the bigger island has new trees where old builds now stand)
- let chk=0;SQUPD.after('113',(dt)=>{if((chk-=dt)>0)return;chk=1.5;for(const i of STR.keys())if(obj[i])obj[i]=null;for(const i of FARM.keys())if(obj[i])obj[i]=null;for(const h of HOUSES){try{for(const i of houseTiles(h))if(obj[i])obj[i]=null}catch(e){self.SQERR&&SQERR(e,'113-5')}}})}
+ let chk=0;SQUPD.after('113',(dt)=>{if((chk-=dt)>0)return;chk=1.5;for(const i of STR.keys())if(obj[i])obj[i]=null;for(const i of FARM.keys())if(obj[i])obj[i]=null;for(const h of HOUSES){try{for(const i of houseTiles(h))if(obj[i])obj[i]=null}catch(e){self.SQERR&&SQERR(e,'113-5')}}})})();

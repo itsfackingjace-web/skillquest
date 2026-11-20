@@ -3,7 +3,7 @@
 // take them off on the equipment screen. Worn jewelry is safe when you fall, like the rest of your gear.
 // Also: every item that exists now always shows in the bag (and chests), which fixes gold ore and bars, the new logs
 // and the mithril/adamant ores and bars not showing up.
-{const JWL=[
+(()=>{const JWL=[
   {k:'jr_gold',n:'Gold ring',s:'ring',g:'',b:1,lv:8,xp:40,v:150,d:'+3% block chance.'},
   {k:'jr_sapphire',n:'Sapphire ring',s:'ring',g:'sapphire',b:1,lv:18,xp:70,v:400,d:'Mana comes back 50% faster.'},
   {k:'jr_emerald',n:'Emerald ring',s:'ring',g:'emerald',b:1,lv:28,xp:100,v:700,d:'+10% XP in Woodcutting, Mining, Foraging, Fishing and Farming.'},
@@ -107,7 +107,7 @@
  SQSAVE.after('086:jw',s=>{if(JW.ring||JW.neck)s.jw={ring:JW.ring,neck:JW.neck};});
  SQLOAD.after('086',(S)=>{JW.ring=JW.neck=null;const w=S&&S.jw;if(w){if(JK[w.ring]&&JK[w.ring].s==='ring')JW.ring=w.ring;if(JK[w.neck]&&JK[w.neck].s==='neck')JW.neck=w.neck}});
  SQNEWGAME.before('086',()=>{JW.ring=JW.neck=null;});
- window.SQJW=JW;window.SQJK=JK;window.SQGEMC=GEMC}
+ window.SQJW=JW;window.SQJK=JK;window.SQGEMC=GEMC})();
 // every item shows in the bag and in chests
-{const seen=new Set(BAG_ORDER());const order=['oaklog','willowlog','maplelog','yewlog','goldore','mithore','adamore','gbar','mbar','abar'];
- for(const k of order.concat([...INVK]))if(INAME[k]&&!seen.has(k)){seen.add(k);EXTRA_BAG.push(k)}}
+(()=>{const seen=new Set(BAG_ORDER());const order=['oaklog','willowlog','maplelog','yewlog','goldore','mithore','adamore','gbar','mbar','abar'];
+ for(const k of order.concat([...INVK]))if(INAME[k]&&!seen.has(k)){seen.add(k);EXTRA_BAG.push(k)}})();

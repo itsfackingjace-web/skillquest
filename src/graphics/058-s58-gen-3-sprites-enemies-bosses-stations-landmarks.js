@@ -47,7 +47,7 @@ function post(x,y,tm){shd(x,y+5,10);Rg(x-2,y-20,4,26,'#2a1a10');Rg(x-1,y-19,2,24
  Rg(x,y-29,2,10,'#2a1a10');const fr=Math.floor(tm*4)%2;for(let k=0;k<8;k++){const hgt=Math.max(1,6-Math.round(k*.7)),off=fr&&k>3?1:0;Rg(x+2+k,y-28+Math.round(k*.35)+off,1,hgt,k===0?'#2a68b8':'#3888d6');Rg(x+2+k,y-28+Math.round(k*.35)+off,1,1,'#78b8f0')}}
 return{pixelate,icon,slime,post}})();
 // ---------- hook it in ----------
-{const _hdCan58=hdCan;hdCan=function(b){let p;try{p=G3S.pixelate(b)}catch(e){p=b}return _hdCan58(p)}}
+(()=>{const _hdCan58=hdCan;hdCan=function(b){let p;try{p=G3S.pixelate(b)}catch(e){p=b}return _hdCan58(p)}})();
 // rebuild anything the HD sections already made, now through the filter
 HDK.clear();HDEN.clear();HDRM.clear();HDSL=null;HDMG=null;HDFS=null;HDTS=null;HDBAT=null;HDBT=null;HDDUM=null;HDFIRE.base=null;HDFIRE.length=0;
 SLIMEHD=(n,tm)=>G3S.slime(n,tm);

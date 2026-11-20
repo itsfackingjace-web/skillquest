@@ -6,6 +6,8 @@
 const fs=require('fs'),path=require('path');const {world,expect}=require('./lib.cjs');
 (async()=>{const only=process.argv[2]||'';const dir=path.join(__dirname,'cases');
  const files=fs.readdirSync(dir).filter(f=>f.endsWith('.cjs')&&f.includes(only)).sort();let bad=0;const t0=Date.now();const ERRS=new Map();
+ // source rules first (lint.cjs: bare blocks, panel numbers, shared CSS classes, prompt(), untagged catches)
+ let nLint=0;if(!only||'source rules'.includes(only)){nLint=1;const P=require('./lint.cjs').lint();if(P.length){bad++;console.log('FAIL source rules');for(const m of P)console.log('     - '+m)}else console.log('ok   source rules')}
  for(const f of files){const c=require(path.join(dir,f));const s=Date.now();let W=null,fails=[];
   try{W=await world(c.players||1);const t=expect();await c.run(W.pages.length>1?W.pages:W.pages[0],t);fails=t.fails.concat(W.errors.map(e=>'script error: '+e))}
   catch(e){fails=[String(e&&e.stack||e).split('\n').slice(0,3).join(' | ')].concat(W?W.errors.map(e=>'script error: '+e):[])}
@@ -15,4 +17,4 @@ const fs=require('fs'),path=require('path');const {world,expect}=require('./lib.
  const code=[...ERRS.values()].filter(o=>/(TypeError|ReferenceError|RangeError)/.test(o.l)&&!/Failed to fetch|NetworkError/.test(o.l));
  fs.writeFileSync(path.join(__dirname,'caught-errors.txt'),[...ERRS.values()].map(o=>o.l+'   ['+[...o.cases].join('; ')+']').join('\n')+'\n');
  if(code.length)console.log(code.length+' caught code errors (TypeError/ReferenceError/RangeError), see tools/checks/caught-errors.txt');
- console.log((bad?bad+' of '+files.length+' checks failed':'all '+files.length+' checks passed')+' in '+((Date.now()-t0)/1000).toFixed(0)+'s');process.exit(bad?1:0)})();
+ console.log((bad?bad+' of '+(files.length+nLint)+' checks failed':'all '+(files.length+nLint)+' checks passed')+' in '+((Date.now()-t0)/1000).toFixed(0)+'s');process.exit(bad?1:0)})();

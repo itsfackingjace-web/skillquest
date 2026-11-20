@@ -2,7 +2,7 @@
 // The game backs up a save on this device whenever it replaces it (up to the last 4): when another device's progress
 // is loaded, when you pick between two saves, or when you switch accounts. Options → Backups lists them; Restore puts
 // that save back (and on your account), after backing up what you have now.
-{let armed=null,ACC=null,ACC_LOAD=0;const ago=t=>{if(!t)return'a while ago';const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
+(()=>{let armed=null,ACC=null,ACC_LOAD=0;const ago=t=>{if(!t)return'a while ago';const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
  const list=()=>{try{return Object.keys(localStorage).filter(k=>k.startsWith('sq_bak_')).sort().reverse()}catch(e){return[]}};
  // Since Nov 14 players don't restore backups themselves (restoring after trading duplicated items/gold): Options shows one
  // line instead, and devs restore through Dev Suite > Admin > Players (161's `fixes` restore). The old list is kept below, unused.
@@ -26,4 +26,4 @@
   let S=null;if(btn.dataset.c!=null){const e=ACC&&ACC.l[+btn.dataset.c];S=e?JSON.parse(JSON.stringify(e.S)):null}else try{S=JSON.parse(localStorage.getItem(k))}catch(e){self.SQERR&&SQERR(e,'106-3')}if(!S||S.v!=1){say('That backup can\'t be read.');return}ACC=null;
   const cur=snap();cur.savedAt=LOCAL_AT;mpBackup('device',cur);applySave(JSON.parse(JSON.stringify(S)));hideCreator();
   try{if(cloud){const r=await cloud.get(),rs=r&&r.exists?r.data():null;if(rs)lastWid=wOf(rs)}}catch(e){self.SQERR&&SQERR(e,'106-4')}
-  saveLocal(true);LOCAL_AT=Date.now();try{await saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'106-5')}closePanel();say('Backup restored'+(cloud?' and saved to your account':'')+'. What you had before is backed up too.');sfx('quest')},true)}
+  saveLocal(true);LOCAL_AT=Date.now();try{await saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'106-5')}closePanel();say('Backup restored'+(cloud?' and saved to your account':'')+'. What you had before is backed up too.');sfx('quest')},true)})();

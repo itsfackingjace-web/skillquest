@@ -3,7 +3,7 @@
 // the whole top of every big plateau is walkable, right up to its edges. A thin strip along each edge stops you
 // walking off (the cliff face on the south side), and wide stone stairways climb the cliff faces from the ground.
 // The ground is still rock, so the plateaus keep their look. The tops get some ore, rocks and the odd tree or cactus.
-{const _rf=rgFinish;rgFinish=function(C){try{plateaus(C)}catch(e){console.warn('plateaus',e)}const G=_rf(C);
+(()=>{const _rf=rgFinish;rgFinish=function(C){try{plateaus(C)}catch(e){console.warn('plateaus',e)}const G=_rf(C);
   if(C.plat)for(let i=0;i<C.N2;i++)if(C.plat[i]&&!C.O[i]&&!C.lmSolid[i])G.solid.delete(i);G.plat=C.plat||null;G.platSt=C.platSt||[];return G};
  const PICK={ironcrest:r=>r<.022?'ore':r<.032?'rock':r<.05?'pine':null,nomans:r=>r<.016?'rock':r<.028?'ore':r<.038?'cactus':r<.043?'tree:dead':null,
   ashfall:r=>r<.022?'ore':r<.032?'rock':null,briarwood:r=>r<.02?'ore':r<.03?'rock':r<.05?'pine':null,shattered:r=>r<.024?'ore':r<.034?'rock':null};
@@ -55,4 +55,4 @@
     Rg(X,y1,16,1,'rgba(0,0,0,.25)');Rg(X,y1+1,16,1,'rgba(0,0,0,.12)');
     if(L){Rg(X,y0,2,y1-y0,ST[4]);Rg(X+2,y0,1,y1-y0,ST[0])}if(Rt){Rg(X+14,y0,2,y1-y0,ST[4]);Rg(X+13,y0,1,y1-y0,ST[0])}}
    else{// a ramp over a side or the back edge
-    const vert=b!==0;Rg(X,Y,16,16,ST[1]);for(let k=0;k<4;k++){if(vert){Rg(X,Y+k*4,16,1,ST[3]);Rg(X,Y+k*4+3,16,1,ST[0])}else{const tx=a>0?X+k*4:X+15-k*4;Rg(tx,Y,1,16,ST[3]);Rg(tx+(a>0?3:-3),Y,1,16,ST[0])}}}}}}
+    const vert=b!==0;Rg(X,Y,16,16,ST[1]);for(let k=0;k<4;k++){if(vert){Rg(X,Y+k*4,16,1,ST[3]);Rg(X,Y+k*4+3,16,1,ST[0])}else{const tx=a>0?X+k*4:X+15-k*4;Rg(tx,Y,1,16,ST[3]);Rg(tx+(a>0?3:-3),Y,1,16,ST[0])}}}}}})();

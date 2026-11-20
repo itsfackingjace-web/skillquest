@@ -3,7 +3,7 @@ const SKN=['Attack','Woodcutting','Mining','Foraging','Cooking','Firemaking','Cr
 let XPS=[0,0,0,0,0,0,0,0],TL={axe:0,pick:0,sword:0},drops=[],pnOpen=false;
 try{const s=JSON.parse(localStorage.getItem('hw_sk'));if(s){if(Array.isArray(s.x)&&s.x.length==8)XPS=s.x.map(v=>+v||0);if(s.t)for(const k in TL)TL[k]=Math.max(0,Math.min(3,+s.t[k]||0))}}catch(e){self.SQERR&&SQERR(e,'004-1')}
 const svs=()=>{try{localStorage.setItem('hw_sk',JSON.stringify({x:XPS,t:TL}))}catch(e){self.SQERR&&SQERR(e,'004-2')}};
-const XT=[0];{let a=0;for(let l=1;l<99;l++){a+=Math.floor(l+300*Math.pow(2,l/7));XT.push(Math.floor(a/4))}}
+const XT=[0];(()=>{let a=0;for(let l=1;l<99;l++){a+=Math.floor(l+300*Math.pow(2,l/7));XT.push(Math.floor(a/4))}})();
 const lvOf=i=>{let l=1;while(l<99&&XPS[i]>=XT[l])l++;return l};
 function addXp(i,x){const b=lvOf(i);XPS[i]+=x;const a=lvOf(i);drops.push({x:P.x,y:P.y-16-(drops.length%3)*6,t:0,tx:'+'+x+' '+AB[i],c:SKC[i]});if(a>b){say('LEVEL UP! '+SKN[i]+' '+a);msgT=4}svs()}
 function attack(){

@@ -9,7 +9,7 @@ function sqPlaceBtns(){const a=document.getElementById('mpb'),b=document.getElem
   set(a,l+'px','auto',t+'px');set(b,(l+a.offsetWidth+6)+'px','auto',t+'px');if(a.offsetWidth)window.SQHUDBTN=t+a.offsetHeight}
  else{set(a,'','','');set(b,'','','')}}
 setInterval(sqPlaceBtns,400);
-{const st=document.createElement('style');st.textContent='#mpb,#mpbug{height:30px!important;min-width:0!important;padding:0 8px!important;font-size:12px!important;letter-spacing:.5px!important}';document.head.appendChild(st)}
+(()=>{const st=document.createElement('style');st.textContent='#mpb,#mpbug{height:30px!important;min-width:0!important;padding:0 8px!important;font-size:12px!important;letter-spacing:.5px!important}';document.head.appendChild(st)})();
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
-{SQOPTS.wrap('111',_o=>function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'})}
+(()=>{SQOPTS.wrap('111',_o=>function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'})})();

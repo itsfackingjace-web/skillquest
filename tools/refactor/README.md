@@ -24,3 +24,10 @@ Used to replace wrapper chains with ordered step lists without changing behaviou
   It caught a deliberate 0.2-pixel nudge in `upd` in every scene.
 - `convfn.cjs` refuses: a `before` step with any `return` (it would no longer stop the call), and a wrapper whose saved inner function is
   used anywhere else in its block (scope-aware). Text between `const _x=fn` and `fn=function` is kept.
+- `convfn.cjs` makes an `after` step only when the wrapper never mentions its own result variable (Nov 19: `const ok=_lr(...);if(ok)...;return ok`
+  became an `after` step where `ok` didn't exist, and island boulders stopped being drawn; the frame comparison caught it).
+- `blocks.cjs` lists the bare top-level `{ }` blocks and what each leaks to the global scope (function declarations and `var`s, Annex B),
+  with scope-aware uses elsewhere (eslint-scope). `blocks-to-iife.cjs [--dry] [--only <file>]` turns them into `(()=>{ ... })();`: a leaked
+  name other code uses stays global (`window.f=f;` after a function, `var v;` before the block for a `var`), and a `;` goes first when the
+  statement before could run into the `(`. Nov 19: 67 blocks in 48 files (kept global: icvEnter, petFollow, SLEDGE, EATCD); only the
+  multiplayer block (061-080) is left. `tools/checks/lint.cjs` now fails on any new bare block.

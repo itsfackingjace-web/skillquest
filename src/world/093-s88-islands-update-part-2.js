@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------- 88. Islands update, part 2
 // Fishing and weather on every island, each island's own fish, calmer monsters, the Ironcrest caves and mines,
 // ores and trees that look like what they drop, wolf and tree pets, Shattered Expanse sharks, and how castles look.
-{
+(()=>{
 // ---- Fishing: each island's own fish (the water check itself now reads the island you're on) ----
 const RFISH={briarwood:[{k:'pike',n:'Pike',lv:15,xp:55,heal:3,hun:50,raw:10,ckv:22,c:'#7a9a50',cc:'#a8783c'},{k:'gcarp',n:'Golden carp',lv:30,xp:85,heal:3,hun:60,raw:24,ckv:40,c:'#f0b030',cc:'#c88830'}],
  ashfall:[{k:'eeel',n:'Ember eel',lv:30,xp:90,heal:4,hun:65,raw:18,ckv:36,c:'#e85a28',cc:'#a84020'},{k:'lsnap',n:'Lava snapper',lv:45,xp:120,heal:4,hun:75,raw:28,ckv:50,c:'#c83838',cc:'#902818'}],
@@ -83,7 +83,7 @@ window.fireKey64=()=>SCENE&&SCENE.room&&SCENE.room.icv?'icv:'+SCENE.id:curRegion
 {SQENTER.wrap('093',_es=>function(id,house,ret){const carry=SCENE&&SCENE.prev&&SCENE.room&&SCENE.room.icv?SCENE.prev:null;_es(id,house,ret);if(carry&&SCENE&&!SCENE.prev&&SCENE.room&&SCENE.room.icv)SCENE.prev=carry})}
 {const _ls=leaveScene;leaveScene=function(){const R=SCENE&&SCENE.room;if(R&&R.icv&&R.dun&&R.dun.f>1){dGo(R.dun.kind,R.dun.f-1,'below');return}return _ls()}}
 function icvEnter(it){if(dead||TRAVEL49)return;const kind=it.kind,R=dFloor(kind,1);enterScene(dKey(kind,1),null,{x:it.x*16+8,y:(it.y+1)*16+8});dArrive(R,null);
- const nf=+ICV[kind].floors||6,NW=['','One floor','Two floors','Three floors','Four floors','Five floors','Six floors'];say('You enter '+ICV[kind].name+'. '+(NW[nf]||nf+' floors')+(nf>1?' deep':'')+(ICV[kind].noboss?', rich in ore':', and something old waits at the bottom')+'. Campfires work down here.');msgT=5}
+ const nf=+ICV[kind].floors||6,NW=['','One floor','Two floors','Three floors','Four floors','Five floors','Six floors'];say('You enter '+ICV[kind].name+'. '+(NW[nf]||nf+' floors')+(nf>1?' deep':'')+(ICV[kind].noboss?', rich in ore':', and something old waits at the bottom')+'. Campfires work down here.');msgT=5}window.icvEnter=icvEnter;
 // the entrances on Ironcrest
 function icvPlace(R){if(R._icv||!R.region)return;R._icv=1;const W=R.w,walk=(x,y)=>x>1&&y>1&&x<W-2&&y<R.h-2&&RG_WALK[R.tiles[y*W+x]]&&!R.solid.has(y*W+x);
  const fit=(x,y)=>{for(let dy=-1;dy<=2;dy++)for(let dx=-1;dx<=1;dx++)if(!walk(x+dx,y+dy))return false;return true};
@@ -146,7 +146,7 @@ const SIDEC={};function sideSprite(k,f){const key=k+f;if(SIDEC[key])return SIDEC
 const PST=new Map();
 function petFollow(id,ox,oy,fc){let s=PST.get(id);const now=performance.now();if(!s){s={x:ox-16,y:oy+4,t:0,lt:now,fl:false};PST.set(id,s)}const dt=Math.min(.1,(now-s.lt)/1000);s.lt=now;
  const tx=ox-(fc&&fc[0]?fc[0]*18:12),ty=oy+(fc&&fc[1]?-fc[1]*12:4)+2,dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy);
- if(d>170){s.x=tx;s.y=ty}else if(d>6){const sp=Math.min(d,(d>40?115:62)*dt);s.x+=dx/d*sp;s.y+=dy/d*sp;s.t+=dt*8;if(Math.abs(dx)>1)s.fl=dx<0;s.mv=.2}else s.mv=Math.max(0,(s.mv||0)-dt);return s}
+ if(d>170){s.x=tx;s.y=ty}else if(d>6){const sp=Math.min(d,(d>40?115:62)*dt);s.x+=dx/d*sp;s.y+=dy/d*sp;s.t+=dt*8;if(Math.abs(dx)>1)s.fl=dx<0;s.mv=.2}else s.mv=Math.max(0,(s.mv||0)-dt);return s}window.petFollow=petFollow;
 const TREEPET={};
 function treeSprite(f){if(TREEPET[f])return TREEPET[f];const c=document.createElement('canvas');c.width=16;c.height=20;const x=c.getContext('2d'),r=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)},K='#18200c';
  // canopy
@@ -260,6 +260,6 @@ function drawCastle(b,tm){const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,S=['#5a5650
    return}
   return _df(it,tm)})}
 window.SQSHARKTEST=()=>SHK.list.length;
-}
+})();
 
 

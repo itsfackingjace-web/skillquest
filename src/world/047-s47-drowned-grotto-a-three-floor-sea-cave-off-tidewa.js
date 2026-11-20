@@ -11,11 +11,11 @@ EXTRA_DUNGEON_DAYS.tidekeeper=-1;
 DKIND.tidekeeper={name:'Drowned Grotto',floor:['#4e6e7c','#466674'],wall:'#24406a',trim:'#0e1e34',W:58,H:44,label:'Grotto'};
 var GRDEN=null;let GROTTO_BOAT=false;
 // the islet: rock all round, cave mouth facing south onto open water, nearest the spec's spot
-{const okW=(x,y)=>{for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const xx=x+dx,yy=y+dy;if(xx<3||yy<3||xx>N-4||yy>N-4)return false;const i=yy*N+xx;if(tile[i]!==0||PROT.has(i)||BS.has(i)||BRIDGE.has(i))return false}
+(()=>{const okW=(x,y)=>{for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const xx=x+dx,yy=y+dy;if(xx<3||yy<3||xx>N-4||yy>N-4)return false;const i=yy*N+xx;if(tile[i]!==0||PROT.has(i)||BS.has(i)||BRIDGE.has(i))return false}
   for(let yy=y+4;yy<=y+5;yy++)for(let xx=x-1;xx<=x+1;xx++)if(tile[yy*N+xx]!==0)return false;return true};
  let best=null,bd=1e9;for(let y=4;y<N-6;y++)for(let x=4;x<N-4;x++){const d=Math.hypot(x-7*HSC,y-61*HSC);if(d<bd&&d<30*HSC&&okW(x,y)){bd=d;best=[x,y]}}
  if(best){const[x,y]=best;GRDEN={x,y};for(let dy=-1;dy<=0;dy++)for(let dx=-1;dx<=1;dx++){const i=(y+dy)*N+x+dx;tile[i]=3;obj[i]=null;PROT.add(i)}
-  for(const[dx,dy]of[[-2,0],[2,0],[0,-2]]){const i=(y+dy)*N+x+dx;tile[i]=3;PROT.add(i)}}}
+  for(const[dx,dy]of[[-2,0],[2,0],[0,-2]]){const i=(y+dy)*N+x+dx;tile[i]=3;PROT.add(i)}}})();
 function drawGrottoMouth(tm){if(!GRDEN)return;const x0=GRDEN.x*16,y0=GRDEN.y*16;
  e54DrawCave('sea',x0,y0);const p=.5+.5*Math.sin(tm*2.2);g.fillStyle='rgba(72,232,168,'+(.12+.16*p)+')';g.beginPath();g.ellipse(x0+8,y0+13,6.5,3.2,0,0,6.283);g.fill();
  for(let k=0;k<3;k++){const ph=(tm*.6+k*.33)%1;g.fillStyle='rgba(184,255,224,'+(.55*Math.sin(ph*Math.PI)).toFixed(3)+')';g.fillRect(x0+3+k*3.5+ph*2,y0+11+k%2*2.5,2.5,.5)}for(let k=0;k<6;k++){const fx=x0-6+k*5,fy=y0+15.5+Math.sin(tm*3+k)*.8;Rg(fx,fy,4,1,'rgba(240,250,255,.85)')}}

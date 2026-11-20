@@ -8,7 +8,7 @@
 // - Ashfall: the forge camp of Emberwatch on the old town site (Forgemaster Brann's shop, Warden Kesh and Old Pell give; Vessa's potion stall sells potions and buys brewed ones for 1.5x
 //   the quests), and Cinderdeep: six floors of lava and ash ending at the Emberlord (rare: the Ember ring).
 // - Quest progress counts on the right island (killing briar wolves on Briarwood now counts toward Wren's quest).
-{
+var SLEDGE;(()=>{
 const h92=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233+4.1)*43758.5453;return v-Math.floor(v)};
 const K='#181018';
 // ======== quests count on the island you're on (and in its caves) ========
@@ -75,7 +75,7 @@ function treelingSprite(k,f){const key=k+f;if(TLC[key])return TLC[key];const c=d
   _a();if(vt&&(swing>0)){const now=performance.now();if(!vt._vtn||now-vt._vtn>2500){vt._vtn=now;try{gTxt(vt.x*16+8,vt.y*16-34,'Void Tree','#c8a0ff')}catch(e){self.SQERR&&SQERR(e,'096-3')}}}})}
 
 // ======== the Stone Sledgehammer ========
-var SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
+SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
 {const k='eq_sledge',e={slot:'main',kind:'sword',tier:3,n:'Stone sledgehammer',ic:'sword',col:'#a8a090',v:2500};EQ[k]=e;EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=e.v;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase();
  IDESC[k]='A rare hammer of living stone from the Stone Giant. Wield it in your main hand: it hits like an iron sword, your ultimate becomes a GROUND SLAM (big damage all around you, no wand needed, 18s cooldown), and it breaks boulders and ore boulders.';inv[k]=inv[k]|0}
 {const _occ=occ;occ=function(slot){if(slot==='main'&&SLEDGE)return'eq_sledge';return _occ(slot)}}
@@ -354,4 +354,4 @@ try{WK_RARE.push(['Ember ring','ja_ember','Emberlord','A ring: your melee hits s
  const tr=WK_RARE.find(r=>r[0]==='Treeling (pet)');if(tr)tr[4]='1 in 5,000 from plain trees you chop down. Every other kind of tree has its own treeling.'}catch(e){self.SQERR&&SQERR(e,'096-28')}
 try{WK_SKILL.Woodcutting+=' On the Shattered Expanse, the purple-leaved trees are Void Trees.';WK_SKILL.Mining+=' With the Stone sledgehammer (from the Stone Giant) you can break boulders and ore boulders.'}catch(e){self.SQERR&&SQERR(e,'096-29')}
 try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
-}
+})();

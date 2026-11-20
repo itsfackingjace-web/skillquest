@@ -14,7 +14,7 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;//
  SQDO={kind,n:Math.max(1,n|0),fn,t:0,d:D,x:P.x,y:P.y,done:0,st,chests};try{if(pnOpen&&kind!=='reel')closePanel()}catch(e){self.SQERR&&SQERR(e,'109-1')}jx=jy=0;// a bite while a screen is open reels in behind it
  
  say({fire:'Lighting a fire...',cook:'Cooking...',smelt:'Smelting...',smith:'Hammering at the anvil...',craft:'Crafting...',reel:'Reeling it in...'}[kind]||'Working...');return true}
-{SQFIRE.wrap('109',_f=>function(){if(sqDo('fire',1,()=>_f()))return;return _f()});
+(()=>{SQFIRE.wrap('109',_f=>function(){if(sqDo('fire',1,()=>_f()))return;return _f()});
  SQEAT.wrap('109 cooking at a fire takes time',_e=>function(){if(dead||menuOpen||pnOpen)return _e();// cooking at a fire takes time; eating doesn't
   if(nearFire(P.x,P.y,45)&&(typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st)||(inv.meat|0)>0&&nearFire(P.x,P.y,45))){let n=0;for(const c of COOKS)if(lvOf(4)>=c.lv&&!c.st)n+=inv[c.raw]|0;if(sqDo('cook',Math.max(1,n),()=>_e()))return}return _e()});
  const _cf=catchFish;catchFish=function(){if(window.SQDO_STEP||!FISH)return _cf();FISH.t=-999;FISH.bite=0;sqDo('reel',1,()=>{if(FISH)_cf()});};
@@ -32,4 +32,4 @@ function sqDo(kind,n,fn){if(window.SQDO_STEP)return false;if(dead)return true;//
    const hit=(D.t%0.7)<.12;if(hit)for(let k=0;k<6;k++){const a=Math.random()*6.283,r=(2+Math.random()*7)*z;P2(fx+Math.cos(a)*r,fy-3*z+Math.sin(a)*r*.6,1,Math.random()<.5?'#ffe080':'#ffb040')}}
   else if(D.kind==='craft'){if((D.t%0.7)<.15)for(let k=0;k<4;k++)P2(fx+(Math.random()-.5)*9*z,fy-2*z-(Math.random()*5)*z,1,'#c8a070')}
   else if(D.kind==='reel'&&FISH){const bx=W/2+(FISH.bx-P.x)*Z,by=H/2+(FISH.by-P.y)*Z,k=pr;const x=bx+(sx-bx)*k*.7,y=by+(sy-by)*k*.7;for(let j=0;j<3;j++){const ph=(tm*3+j/3)%1;g.globalAlpha=1-ph;g.strokeStyle='#e8f8ff';g.lineWidth=Math.max(1,z*.6);g.beginPath();g.ellipse(x,y+2*z,(2+ph*6)*z,(1+ph*3)*z,0,0,6.283);g.stroke()}g.globalAlpha=1;P2(x-z,y-z+Math.sin(tm*20)*z,2,'#e04040')}g.restore()});
-}
+})();

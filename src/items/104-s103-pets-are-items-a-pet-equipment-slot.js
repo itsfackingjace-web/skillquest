@@ -2,7 +2,7 @@
 // Every pet is now a real item. The one in your PET slot follows you; the rest wait in your bag, where you can equip,
 // sell, trade (World Market) or release them. New pets (bought, dropped, given) go straight into the PET slot, and the
 // pet they replace goes into your bag. Old saves: every pet you owned is put in your bag (your current one stays out).
-{const C=()=>LUX.COS,PL=()=>LUX.PETS||[],PK=[];
+(()=>{const C=()=>LUX.COS,PL=()=>LUX.PETS||[],PK=[];
  for(const p of PL()){const k='pet_'+p.k;PK.push(k);EQ[k]={slot:'pet',n:p.n,ic:'pet:'+p.k,v:p.rare?250:Math.floor(p.v/4),pet:p.k};EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);
   INAME[k]=p.n+' (pet)';SN[k]=p.n+' pets';SHORT[k]=p.n.toLowerCase()+' pet';SELLP[k]=EQ[k].v;
   IDESC[k]=(p.rare?'A rare pet. ':'A pet from Marlo\'s Emporium. ')+'Put it in your PET slot (Equip) and it follows you everywhere; other players see it too.'+(['psquir','pgiron','pggold','pgmith','pgadam'].includes(p.k)?' It brings you things it finds.':'')+' You can sell it, trade it at the World Market, or release it.'}
@@ -36,4 +36,4 @@
  pbd.addEventListener('click',ev=>{const b=ev.target.closest('.petrel');if(!b)return;ev.stopPropagation();const k=b.dataset.k;
   if(relArm!==k){relArm=k;setTimeout(()=>{if(relArm===k){relArm=null;try{rPn()}catch(e){self.SQERR&&SQERR(e,'104-6')}}},3500);rPn();return}
   relArm=null;if((inv[k]|0)>0){inv[k]--;sync();say('You let the '+EQ[k].n.toLowerCase()+' go. It wanders off happily.');sfx('talk');saveLocal(true)}rPn()},true);
-}
+})();

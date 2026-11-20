@@ -4,7 +4,7 @@
 //   Adamant bow (3 adamant bars + 3 yew logs, Smithing 67; Archery 40): arrows +4 over a longbow, range 220
 //   Mithril fire / ice / storm wand (2 mithril bars + a ruby / sapphire / emerald, Smithing 54; Magic 30): +1 spell damage
 //   Adamant fire / ice / storm wand (2 adamant bars + 2 of that gem, Smithing 69; Magic 40): +2 spell damage
-{const MITH='#7888e0',ADAM='#48b060';let WT=0;   // the equipped wand's tier: 0 normal, 1 mithril, 2 adamant
+(()=>{const MITH='#7888e0',ADAM='#48b060';let WT=0;   // the equipped wand's tier: 0 normal, 1 mithril, 2 adamant
  const add=(k,e,d)=>{EQ[k]=e;EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=e.v;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase();IDESC[k]=d;inv[k]=inv[k]|0};
  add('eq_bow4',{slot:'off',kind:'bow',tier:4,n:'Mithril bow',ic:'bow',col:MITH,v:420,arch:30},'A mithril bow: arrows hit harder and fly further than a longbow. Needs Archery 30.');
  add('eq_bow5',{slot:'off',kind:'bow',tier:5,n:'Adamant bow',ic:'bow',col:ADAM,v:840,arch:40},'An adamant bow: the hardest-hitting, furthest-shooting bow you can make. Needs Archery 40.');
@@ -38,4 +38,4 @@
   img.onload=()=>{try{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const x=c.getContext('2d');x.drawImage(img,0,0);const d=x.getImageData(0,0,c.width,c.height),p=d.data,tc=e.col.match(/\w\w/g).map(h=>parseInt(h,16));
     for(let i=0;i<p.length;i+=4){if(p[i+3]<10)continue;const r=p[i],g2=p[i+1],b=p[i+2];if(r>g2+15&&r>b+25){const l=Math.max(.35,(r+g2+b)/3/150);p[i]=Math.min(255,tc[0]*l);p[i+1]=Math.min(255,tc[1]*l);p[i+2]=Math.min(255,tc[2]*l)}}
     x.putImageData(d,0,0);ICONC[key]=c.toDataURL();if(typeof pnOpen!=='undefined'&&pnOpen)rPn()}catch(err){self.SQERR&&SQERR(err,'088-2')}};img.src=src;return src});
- window.SQWT=()=>WT}
+ window.SQWT=()=>WT})();

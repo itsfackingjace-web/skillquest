@@ -32,7 +32,7 @@ function boatWater(px,py){const seen=new Uint8Array(N*N),q=[];for(let b=-2;b<=2;
 function buoySpot(W,tx,ty){let best=null,bd=1e9;for(let y=2;y<N-2;y++)for(let x=2;x<N-2;x++){const i=y*N+x;if(!W[i]||tile[i]!==0)continue;let ok=true;for(let b=-2;b<=2&&ok;b++)for(let a=-2;a<=2;a++)if(!isWaterT(x+a,y+b)){ok=false;break}
   if(!ok)continue;const d=Math.hypot(x-tx,y-ty);if(d<bd){bd=d;best={x,y}}}return best}
 const HARBOR_POSTS=[];if(RG_POST)HARBOR_POSTS.push({id:'tidewatch',name:'Tidewatch',x:RG_POST.x,y:RG_POST.y});
-{const s=shorePost(TX,TY-6,12,(x,y)=>y>TY?20:0);if(s)HARBOR_POSTS.push({id:'saltmere',name:'Saltmere',x:s.x,y:s.y})}
+(()=>{const s=shorePost(TX,TY-6,12,(x,y)=>y>TY?20:0);if(s)HARBOR_POSTS.push({id:'saltmere',name:'Saltmere',x:s.x,y:s.y})})();
 if(FHON){const s=shorePost(FX,FY,18);if(s)HARBOR_POSTS.push({id:'frosthollow',name:'Frosthollow',x:s.x,y:s.y})}
 const BUOYS=(()=>{const tw=HARBOR_POSTS.find(p=>p.id==='tidewatch'),sm=HARBOR_POSTS.find(p=>p.id==='saltmere'),A=tw?boatWater(tw.x,tw.y):new Uint8Array(N*N),B=sm?boatWater(sm.x,sm.y):A;
  return{west:buoySpot(A,0,tw?tw.y+2:WY),east:buoySpot(B,N-1,sm?sm.y-4:TY-12),south:buoySpot(A,tw?tw.x+6:N>>1,N-1)}})();
@@ -155,5 +155,5 @@ function navCards(){const V=VQ(),cards=[],later=[];
  const done=VOYS.filter(q=>V[q.id]===99).map(q=>q.name);
  return'<div class="tl" style="margin-top:10px;font-size:13px">VOYAGES</div>'+(cards.length?cards.join(''):'<div class="qc"><p>'+(done.length===VOYS.length?'Every sea route is charted. The captains sing your name.':'Nothing for you right now. Finish what\'s listed below and come back.')+'</p></div>')+
   (later.length?'<div class="qc" style="margin-top:8px"><b>Coming later</b><small>'+later.map(t=>'<br>· '+t).join('')+'</small></div>':'')+(done.length?'<div class="qrow qd">✓ '+done.join(' · ')+'</div>':'')}
-{const _tp=twPanel;twPanel=function(n){let h=_tp(n);if(n&&n.id==='sera')h+=navCards();return h}}
-{const _xa=xAct;xAct=function(a){if(typeof a==='string'&&a.startsWith('nav_')){if(!TALKN||TALKN.id!=='sera')return;voyAct(a.slice(4),true);if(pnOpen)rPn();return}return _xa.apply(this,arguments)}}
+(()=>{const _tp=twPanel;twPanel=function(n){let h=_tp(n);if(n&&n.id==='sera')h+=navCards();return h}})();
+(()=>{const _xa=xAct;xAct=function(a){if(typeof a==='string'&&a.startsWith('nav_')){if(!TALKN||TALKN.id!=='sera')return;voyAct(a.slice(4),true);if(pnOpen)rPn();return}return _xa.apply(this,arguments)}})();

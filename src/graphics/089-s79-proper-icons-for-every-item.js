@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------- 79. Proper icons for every item
 // The fine furniture and potions from Marlo's Emporium used a placeholder rock icon, and the shortbow, longbow and
 // bone bow all shared one bow. Each now has its own 14x14 sprite (bag, chests, shops, equipment screen).
-{const PAL={O:'#202838',G:'#e8b830',s:'#78b8f0',y:'#f8e070',g:'#58a848',d:'#3a7a30',W:'#9a6034',f:'#f4ecd8',k:'#202020',D:'#503018',S:'#a8a8b8',t:'#c8c8d4',r:'#f06020',b:'#6a4020',
+(()=>{const PAL={O:'#202838',G:'#e8b830',s:'#78b8f0',y:'#f8e070',g:'#58a848',d:'#3a7a30',W:'#9a6034',f:'#f4ecd8',k:'#202020',D:'#503018',S:'#a8a8b8',t:'#c8c8d4',r:'#f06020',b:'#6a4020',
   l:'#a8d8f8',w:'#5898e0',o:'#f08830',e:'#f8e048',a:'#e8d8a0',Y:'#c89020',R:'#e83848',P:'#c8c8d0',c:'#a07040',v:'#d8e8f8',H:'#ffffff',q:'#e8c040'};
  const ART={
   fpaint:['..............','OOOOOOOOOOOOOO','OGGGGGGGGGGGGO','OGssssssyyssGO','OGssssssyyssGO','OGssssssssssGO','OGsssggsssssGO','OGsgggggsgssGO','OGggggggggggGO','OGgdggggdgggGO','OGGGGGGGGGGGGO','OOOOOOOOOOOOOO','..............','..............'],
@@ -24,4 +24,4 @@
  const MADE={};const icon=k=>{if(MADE[k])return MADE[k];if(ART[k])return MADE[k]=paint(ART[k]);
   if(k==='eq_bow1')return MADE[k]=bow(9,3,'#c08048','#f0d090');if(k==='eq_bow2')return MADE[k]=bow(12,4,'#8a5020','#d8b070');if(k==='eq_bow3')return MADE[k]=bow(12,5,'#ece4cc','#ffffff','#a89878');return null};
  SQICON.wrap('089',_ic=>function(k,col){return icon(k)||_ic(k,col)});
- if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return icon(k)||_ei(k)}}}
+ if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return icon(k)||_ei(k)}}})();

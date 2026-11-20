@@ -5,7 +5,7 @@
 //   cactus fruit, a few coins, or (rarely) a healing potion.
 // - Ore golems: 1 in 2,000 from mining iron, gold, mithril or adamant ore. Each stands idle with a little bob, curls up and
 //   rolls to keep up with you, and now and then digs up its own ore for you.
-{const K='#181018',h95=(a,b)=>{const v=Math.sin(a*41.31+b*17.77+9.3)*43758.5453;return v-Math.floor(v)};
+(()=>{const K='#181018',h95=(a,b)=>{const v=Math.sin(a*41.31+b*17.77+9.3)*43758.5453;return v-Math.floor(v)};
  // ---- the items ----
  const IT={cfruit:['Cactus fruit','Sweet, prickly fruit from a cactus. Eat it raw, or sell it.',4],nuts:['Nuts','Hazelnuts from a hazel bush. A handful fills you up; roast them at a campfire.',5],
   shroom:['Mushrooms','Wild mushrooms from the forest floor. Better cooked.',6],cshroom:['Roasted mushrooms','Mushrooms roasted over a fire. Heals 2 hearts.',14],rnuts:['Roasted nuts','Toasty and filling. Heals 1 heart.',11]};
@@ -110,4 +110,4 @@
  try{WK_RARE.push(['Squirrel (pet)',null,'Berry bushes','A squirrel that forages for you: every so often it brings berries, nuts, mushrooms, cactus fruit, a few coins, or (rarely) a healing potion.','1 in 1,000 from picking berry bushes.']);
   for(const k of['pgiron','pggold','pgmith','pgadam'])WK_RARE.push([PETS[k].n+' (pet)',null,'Mining','A little rock golem that rolls along behind you and now and then digs up '+INAME[PETS[k].ore].toLowerCase()+' for you.','1 in 2,000 from '+PETS[k].src.replace(/ \(1 in 2,000\)/,'')+'.'])}catch(e){self.SQERR&&SQERR(e,'098-8')}
  try{WK_SKILL.Foraging='Pick berries from bushes, mushrooms from the patches that grow by trees (Foraging 5), nuts from hazel bushes (Foraging 10) and fruit from cacti. Roast mushrooms and nuts at a campfire.'}catch(e){self.SQERR&&SQERR(e,'098-9')}
-}
+})();
