@@ -8,8 +8,8 @@
 
 ## Roles (SQ Bot)
 - Bot app "SQ Bot" (Discord developer portal, application 1573430647484055733): private (Install Link: None, Public Bot off), Server
-  Members + Message Content intents, permissions Manage Roles, View Channels, Send Messages, Read Message History (invite:
-  `https://discord.com/oauth2/authorize?client_id=1573430647484055733&scope=bot&permissions=268504064`). Token: repo secret
+  Members + Message Content intents, permissions Manage Roles, Manage Channels, View Channels, Send Messages, Read Message History (invite:
+  `https://discord.com/oauth2/authorize?client_id=1573430647484055733&scope=bot&permissions=268504080`). Token: repo secret
   `DISCORD_BOT_TOKEN`. **No Firebase service account**: the bot reads only public data.
 - Game side (`src/multiplayer/249-s257-discord-link.js`, `window.SQDLINK`): Options > ONLINE > Link Discord writes `dlink/<code>` =
   {u, t} (8 characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`; rules: read one code only, write only your own, t = server time).
@@ -21,4 +21,8 @@
   day before the post, a member's latest working code wins; replies once to each request (its replies are how it knows). Roles it
   owns (creates when needed, the only ones it adds/removes): `Total Level 100+` ... `1750+`, `Total Level Maxed`, `Guild: <name>
   [TAG]`, `Game Patron`, `Game Moderator`, `Game Developer`; empty guild roles are deleted. The bot's role must be above them.
-- Checks 39 (rules + code) and 40 (sync against a pretend server).
+- Guild channels: each guild with at least one linked member in the server gets a private text channel (slug of its name) under
+  a "Guilds" category: @everyone can't view, its guild role can view/send/read history, the bot can view/send/manage. Found again by
+  `[sq:<guild id>]` in the topic, so a renamed guild's channel is renamed; the role's overwrite is re-added if the role was remade.
+  Channels are never deleted (history stays; with the role gone only admins see it).
+- Checks 39 (rules + code) and 40 (sync against a pretend server, including the guild channels).

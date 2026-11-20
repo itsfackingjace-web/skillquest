@@ -8,6 +8,7 @@
 //  2. Roles (created by the bot when first needed, and the only roles it ever adds or removes):
 //     "Total Level 100+" ... "Total Level 1750+", "Total Level Maxed" (one at a time), "Guild: <name> [TAG]", "Game Patron",
 //     "Game Moderator", "Game Developer". Guild roles nobody has any more are deleted.
+//  3. Each guild with linked members gets a private text channel under a "Guilds" category that only its role can see.
 //  The bot's own role must be above these roles (Server Settings > Roles) or Discord refuses to hand them out.
 const API='https://discord.com/api/v10',DB='https://skillquest-913e2-default-rtdb.firebaseio.com';
 export const TIERS=[1750,1500,1250,1000,750,500,250,100];
@@ -58,6 +59,20 @@ export async function sync({token,fetch:F=globalThis.fetch,dry=false,log=console
   const have=new Set(mem.roles||[]);
   for(const id of wantIds)if(!have.has(id)){changes++;await act('give '+nameOf(id)+' to '+mem.user.username,()=>api('PUT','/guilds/'+G.id+'/members/'+mem.user.id+'/roles/'+id))}
   for(const id of have){const r=roles.find(x=>x.id===id);if(r&&isManaged(r.name)&&!wantIds.has(id)){changes++;await act('take '+r.name+' from '+mem.user.username,()=>api('DELETE','/guilds/'+G.id+'/members/'+mem.user.id+'/roles/'+id))}}}
+ // 3. a private channel for each guild with linked members, under a "Guilds" category (needs Manage Channels). Found again by the
+ //    [sq:<guild id>] mark in its topic, so renaming the guild renames the channel. Channels are never deleted (their history stays;
+ //    when a guild's role goes, only admins can still see it).
+ const VIEW=1024,SEND=2048,HIST=65536,MANCH=16,MEMBER=String(VIEW|SEND|HIST),BOT=String(VIEW|SEND|HIST|MANCH);
+ const slug=n=>String(n).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,90)||'guild';
+ const active=new Map();for(const[du,uid]of links){const row=lb[uid];if(row&&row.gid&&row.gn&&row.gt&&members.some(m=>m.user&&m.user.id===du))active.set(row.gid,row)}
+ if(active.size){let cat=chans.find(c=>c.type===4&&/^guilds$/i.test(c.name));
+  if(!cat)await act('create category Guilds',async()=>{cat=await api('POST','/guilds/'+G.id+'/channels',{name:'Guilds',type:4,permission_overwrites:[{id:G.id,type:0,deny:String(VIEW),allow:'0'},{id:me.id,type:1,allow:BOT,deny:'0'}]})});
+  for(const[gid,row]of active){const role=byName.get(guildRole(row));if(!role)continue;const mark='[sq:'+gid+']',name=slug(row.gn);
+   const topic='Guild chat for '+String(row.gn).slice(0,40)+' ['+String(row.gt).slice(0,4)+']. Only its members can see this channel. '+mark;
+   let c=chans.find(x=>x.type===0&&String(x.topic||'').includes(mark));
+   if(!c){await act('create channel #'+name,async()=>{c=await api('POST','/guilds/'+G.id+'/channels',{name,type:0,topic,parent_id:cat&&cat.id,permission_overwrites:[{id:G.id,type:0,deny:String(VIEW),allow:'0'},{id:role.id,type:0,allow:MEMBER,deny:'0'},{id:me.id,type:1,allow:BOT,deny:'0'}]})});continue}
+   if(c.name!==name||c.topic!==topic)await act('rename #'+c.name+' to #'+name,()=>api('PATCH','/channels/'+c.id,{name,topic}));
+   const ow=(c.permission_overwrites||[]).find(o=>o.id===role.id);if(!ow||ow.allow!==MEMBER)await act('let '+role.name+' into #'+name,()=>api('PUT','/channels/'+c.id+'/permissions/'+role.id,{type:0,allow:MEMBER,deny:'0'}))}}
  for(const r of byName.values())if(/^Guild: /.test(r.name)&&!used.get(r.id)&&!String(r.id).startsWith('dry-'))await act('delete empty role '+r.name,()=>api('DELETE','/guilds/'+G.id+'/roles/'+r.id));
  log('server '+G.name+': '+links.size+' linked, '+changes+' role changes');return{links,changes}}
 if(import.meta.url===`file://${process.argv[1]}`){const token=process.env.DISCORD_BOT_TOKEN;if(!token){console.error('DISCORD_BOT_TOKEN is not set');process.exit(1)}

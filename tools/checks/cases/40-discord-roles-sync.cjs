@@ -1,10 +1,10 @@
 // Nov 20: the SQ Bot's role sync (tools/discord/sync-roles.mjs) against a pretend Discord server and database: links from #link,
-// the right roles, replies once, only touches its own roles, deletes empty guild roles.
+// the right roles, a private channel per guild, replies once, only touches its own roles, deletes empty guild roles.
 const path=require('path'),{pathToFileURL}=require('url');
-module.exports={name:'SQ Bot gives the right Discord roles',async run(p,t){
+module.exports={name:'SQ Bot gives the right Discord roles and guild channels',async run(p,t){
  const{sync}=await import(pathToFileURL(path.join(__dirname,'..','..','discord','sync-roles.mjs')).href);
  const now=Date.now(),iso=ms=>new Date(ms).toISOString();
- const S={roles:[{id:'r0',name:'@everyone'},{id:'rMod',name:'Moderator'},{id:'rOld',name:'Guild: Gone [GN]'}],nid:100,
+ const S={chans:[{id:'C',type:0,name:'link'}],roles:[{id:'r0',name:'@everyone'},{id:'rMod',name:'Moderator'},{id:'rOld',name:'Guild: Gone [GN]'}],nid:100,
   msgs:[{id:'m1',author:{id:'u1',username:'jace'},content:'here is my code abcd2345',timestamp:iso(now-6e5)},
         {id:'m2',author:{id:'u2',username:'copycat'},content:'ABCD2345',timestamp:iso(now-5e5)},
         {id:'m3',author:{id:'u3',username:'kev'},content:'ZZZZ9999',timestamp:iso(now-4e5)}],
@@ -15,7 +15,10 @@ module.exports={name:'SQ Bot gives the right Discord roles',async run(p,t){
   if(url.startsWith('https://skillquest')){const k=url.split('.com/')[1].replace(/\.json$/,'');return res(200,S.db[k]===undefined?null:S.db[k])}
   const pth=url.replace('https://discord.com/api/v10','');S.calls.push(m+' '+pth);
   if(pth==='/users/@me')return res(200,{id:'b'});if(pth==='/users/@me/guilds')return res(200,[{id:'G',name:'SkillQuest'}]);
-  if(pth==='/guilds/G/channels')return res(200,[{id:'C',type:0,name:'link'}]);
+  if(pth==='/guilds/G/channels'&&m==='GET')return res(200,S.chans);
+  if(pth==='/guilds/G/channels'&&m==='POST'){const c=Object.assign({id:'ch'+(S.nid++)},b);S.chans.push(c);return res(200,c)}
+  let y=pth.match(/^\/channels\/(\w+)\/permissions\/(\w+)$/);if(y&&m==='PUT'){const c=S.chans.find(q=>q.id===y[1]);c.permission_overwrites=(c.permission_overwrites||[]).filter(o=>o.id!==y[2]).concat([Object.assign({id:y[2]},b)]);return res(204,null)}
+  y=pth.match(/^\/channels\/(\w+)$/);if(y&&m==='PATCH'){Object.assign(S.chans.find(q=>q.id===y[1]),b);return res(200,{})}
   if(pth.startsWith('/channels/C/messages')&&m==='GET')return res(200,S.msgs.slice().reverse());
   if(pth==='/channels/C/messages'&&m==='POST'){S.msgs.push({id:'r'+(S.nid++),author:{id:'b',username:'bot',bot:true},content:b.content,message_reference:b.message_reference,timestamp:iso(now)});return res(200,{})}
   if(pth==='/guilds/G/roles'&&m==='GET')return res(200,S.roles);
@@ -31,5 +34,8 @@ module.exports={name:'SQ Bot gives the right Discord roles',async run(p,t){
  t(!S.roles.some(r=>r.name==='Guild: Gone [GN]'),'an empty guild role was kept');
  const replies=S.msgs.filter(m=>m.author.id==='b');t.eq(replies.length,3,'replies in #link');
  t(/Linked to \*\*Jace\*\*/.test(replies[0].content),'the reply to a working code: '+replies[0].content);
+ const cat=S.chans.find(c=>c.type===4),gc=S.chans.find(c=>c.type===0&&/\[sq:g1\]/.test(c.topic||'')),owl=S.roles.find(r=>r.name==='Guild: Night Owls [OWL]');
+ t(cat&&cat.name==='Guilds','no Guilds category');t(gc&&gc.name==='night-owls'&&gc.parent_id===cat.id,'no #night-owls channel in it');
+ t(gc&&gc.permission_overwrites.some(o=>o.id==='G'&&o.deny==='1024')&&gc.permission_overwrites.some(o=>o.id===owl.id&&o.allow==='68608'),'the guild channel isn\'t private to the guild role');
  const n0=S.calls.length;await sync({token:'x',fetch:F,log:()=>{},now});
  t.eq(S.calls.slice(n0).filter(c=>!c.startsWith('GET')),[],'changes made by a second run with nothing new')}};
