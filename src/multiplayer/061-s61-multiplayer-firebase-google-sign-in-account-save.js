@@ -292,9 +292,9 @@ const _lh61=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{if(_lh61)_lh61(L,x0,y0,x1,y1,tm);mp
 // regions: ride along as room items
 const _rn61=rgNear;rgNear=function(R,...a){const out=_rn61(R,...a);if(SCENE&&SCENE.room===R){mpStepAll();for(const r of mpVis())out.push({t:'_mp',r,x:r.x/16,y:(r.y+6)/16-1})}return out};
 // public buildings: other players join the room's y-sorted list as room items
-const _drr61=drawRoom;drawRoom=function(tm){const R=SCENE&&SCENE.room;if(!R||R.region||!MP.on||!/^(in|h):/.test(mpLoc()))return _drr61(tm);
+SQDRAWROOM.wrap('061',_drr61=>function(tm){const R=SCENE&&SCENE.room;if(!R||R.region||!MP.on||!/^(in|h):/.test(mpLoc()))return _drr61(tm);
  mpStepAll();const add=mpVis().map(r=>({t:'_mp',r,x:r.x/16,y:(r.y+6)/16-1}));if(!add.length)return _drr61(tm);
- const all=R.items;R.items=all.concat(add);try{_drr61(tm)}finally{R.items=all}};
+ const all=R.items;R.items=all.concat(add);try{_drr61(tm)}finally{R.items=all}});
 SQFURN.wrap('061',_df61=>function(it,tm){if(it&&it.t==='_mp'){mpDrawPeer(it.r,tm);return}return _df61(it,tm)});
 // remember the world transform every frame (the player is always drawn in world space)
 SQPP.before('061',(tm)=>{MP.T=g.getTransform();MP.Tat=performance.now();});
@@ -321,10 +321,10 @@ SQOPTS.wrap('061',_opt61=>function(){const h=_opt61(),k=h.indexOf('<div class="t
 const _oc61=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mpo');if(b){MP.selfName=!MP.selfName;try{localStorage.setItem('sq_myname',MP.selfName?'1':'0')}catch(_){self.SQERR&&SQERR(_,'061-31')}rPn();return}_oc61(e)};
 // ---- controller: START menu entry, highlight navigation in the chat and sign-in boxes, ○ / Options closes them ----
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'online',l:()=>MP.on?'Chat':'Play online'});
-const _ss61=showScreen;showScreen=function(id){if(id!=='online')return _ss61(id);releaseMenu();mpOpenChat()};
+SQSHOWSCR.wrap('061',_ss61=>function(id){if(id!=='online')return _ss61(id);releaseMenu();mpOpenChat()});
 // the START menu leaves pnOpen set for the screen it opens; our own boxes aren't that screen, so let go of it
 function releaseMenu(){if(pn.style.display==='none'){pnOpen=false;fromMenu=false}jx=jy=0}
-const _nr61=navRoot;navRoot=function(){if(sg.style.display==='block')return sg;if(MP.open)return pc;return _nr61()};
+SQNAVROOT.wrap('061',_nr61=>function(){if(sg.style.display==='block')return sg;if(MP.open)return pc;return _nr61()});
 // ○ / Options arrive as an Escape key press; close our boxes first (the chat input handles its own Escape)
 addEventListener('keydown',e=>{if(e.key!=='Escape'||e.target===inp)return;
  if(sg.style.display==='block'){sg.style.display='none';e.stopImmediatePropagation();e.preventDefault()}
@@ -420,7 +420,7 @@ addEventListener('keydown',e=>{if(!TS.open||(window.SQSUITE&&SQSUITE.state.open)
  TS.kb=true;if(k==='ArrowDown'||k==='s'){e.preventDefault();navMove(0,1)}else if(k==='ArrowUp'||k==='w'){e.preventDefault();navMove(0,-1)}else if(k==='Enter'||k===' '||k==='z'){e.preventDefault();navPress()}},true);
 addEventListener('keyup',e=>{if(TS.open&&!(e.target&&e.target.closest&&e.target.closest('#mpbugf')))e.stopImmediatePropagation()},true);
 // controller: the title is the screen being navigated
-const _nr62=navRoot;navRoot=function(){if(TS.open)return TS.stage?tsMn:tsEl;return _nr62()};
+SQNAVROOT.wrap('061',_nr62=>function(){if(TS.open)return TS.stage?tsMn:tsEl;return _nr62()});
 // the world is frozen while the title is up
 SQUPD.wrap('061',_u62=>function(dt){if(TS.open){try{pollPad(dt)}catch(e){self.SQERR&&SQERR(e,'061-35')}return}_u62(dt)}); // the controller still drives the title
 let tsLast=0;const tsLoop=function(t){if(!TS.open)return;const s=t/1000;TS.cl.forEach((e,i)=>e.style.backgroundPositionX=Math.round(-s*[6,14,24][i])+'px');
@@ -428,7 +428,7 @@ let tsLast=0;const tsLoop=function(t){if(!TS.open)return;const s=t/1000;TS.cl.fo
  if(t-tsLast>700){tsLast=t;tsDrawHero();tsFoot();if(TS.stage)tsMenu()}requestAnimationFrame(tsLoop)};tsLoop(0);
 setTimeout(()=>{tsDrawHero();tsFoot()},0);
 // the save chooser sits above everything, the title included
-const _nr63=navRoot;navRoot=function(){if(MP.choose)return MP.choose;return _nr63()};
+SQNAVROOT.wrap('061',_nr63=>function(){if(MP.choose)return MP.choose;return _nr63()});
 // ---- Shared NPCs: villagers wander on a schedule from the shared clock, so every player sees them in the same spot ----
 // While an NPC is at home (not heading somewhere for a routine), its position is a pure function of the time:
 // every 5 s it picks a new spot near home from a hash of (NPC, time slot) and walks there at the usual pace.
@@ -690,13 +690,13 @@ setInterval(()=>{bugBtn.style.display=(pnOpen||menuOpen||chessOpen||TS.open||bug
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);try{bugFlush()}catch(e){self.SQERR&&SQERR(e,'061-40')}}}
 // also in the START menu, the title screen and Options
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'bug',l:()=>'Report a bug'});
-{const _ss=showScreen;showScreen=function(id){if(id!=='bug')return _ss(id);releaseMenu();bugOpen()}}
+{SQSHOWSCR.wrap('061',_ss=>function(id){if(id!=='bug')return _ss(id);releaseMenu();bugOpen()})}
 {SQOPTS.wrap('061',_opt=>function(){const h=_opt(),k=h.indexOf('<div class="tl" style="margin-top:22px');const add='<button class="sb mpbg" data-o="bug">Report a bug</button>';return k<0?h+add:h.slice(0,k)+add+h.slice(k)})}
 {const _oc=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('.mpbg')){closePanel();bugOpen();return}_oc(e)}}
 {const _tm=tsMenu;tsMenu=function(){_tm();if(!tsMn.querySelector('[data-a="bug"]')){const b=document.createElement('button');b.dataset.a='bug';b.textContent='REPORT A BUG';const st=tsMn.querySelector('.tsst');tsMn.insertBefore(b,st)}}}
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='bug'){bugOpen()}});
 // controller: the form is navigable, ○ closes it
-{const _nr=navRoot;navRoot=function(){if(bugF.style.display==='block')return bugF;return _nr()}}
+{SQNAVROOT.wrap('061',_nr=>function(){if(bugF.style.display==='block')return bugF;return _nr()})}
 addEventListener('keydown',e=>{if(e.key==='Escape'&&bugF.style.display==='block'&&!e.isTrusted){bugClose();e.stopImmediatePropagation()}},true);
 // ---- Houses in the shared world: everyone's houses stand on the island; friends can go inside ----
 // houses/<uid>: your houses (where they stand and their furniture; chest contents stay private).
@@ -732,8 +732,8 @@ function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now(
 {SQENTER.wrap('061',_es=>function(id,house,ret){if(house&&house._foreign&&!canEnter(house)){const now=performance.now();if(now-HS.msgAt>2500){HS.msgAt=now;const nm=fname(house._owner);say('This is '+nm+'\'s house. Only '+nm+'\'s friends can go in.');sfx('swish')}P.y+=6;return}
  _es(id,house,ret);if(house&&house._foreign)say('You visit '+fname(house._owner)+'\'s house.')})}
 // inside someone else's house: look, don't touch
-{const _uf=useFurn;useFurn=function(it){const h=SCENE&&SCENE.house;if(h&&h._foreign){const st=it&&(it.f?it.f.t:it.t);if(st&&typeof STN!=='undefined'&&STN.has(st)&&window.SQTRUTHEN){SQTRUTHEN(h._owner,()=>openStation({t:st,inside:true,i:it.i,f:it.f||{t:st},_foreign:h._owner,_ok:1}));return}say(it&&it.use==='chest'?'That chest belongs to '+fname(h._owner)+'.':it&&it.use==='bed'?'That\'s '+fname(h._owner)+'\'s bed.':'Better ask '+fname(h._owner)+' first.');sfx('swish');return}return _uf(it)}}
-{const _sb=startBuild;startBuild=function(k){const h=SCENE&&SCENE.house;if(h&&h._foreign){say('You can only decorate your own house.');closePanel();return}return _sb(k)}}
+{SQUSEFURN.wrap('061',_uf=>function(it){const h=SCENE&&SCENE.house;if(h&&h._foreign){const st=it&&(it.f?it.f.t:it.t);if(st&&typeof STN!=='undefined'&&STN.has(st)&&window.SQTRUTHEN){SQTRUTHEN(h._owner,()=>openStation({t:st,inside:true,i:it.i,f:it.f||{t:st},_foreign:h._owner,_ok:1}));return}say(it&&it.use==='chest'?'That chest belongs to '+fname(h._owner)+'.':it&&it.use==='bed'?'That\'s '+fname(h._owner)+'\'s bed.':'Better ask '+fname(h._owner)+' first.');sfx('swish');return}return _uf(it)})}
+{SQSTARTB.wrap('061',_sb=>function(k){const h=SCENE&&SCENE.house;if(h&&h._foreign){say('You can only decorate your own house.');closePanel();return}return _sb(k)})}
 // ---- START menu: Friends, and Save & quit to title ----
 function tsReopen(){try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'061-42')}closePanel();if(typeof closeSM==='function'&&typeof smOpen!=='undefined'&&smOpen)closeSM();if(MP.open)mpCloseChat();
  TS.open=true;TS.mh='';tsEl.style.display='flex';tsStage(0);tsDrawHero();tsFoot();requestAnimationFrame(tsLoop);say('Game saved.')}
@@ -741,7 +741,7 @@ SMI.splice(SMI.findIndex(x=>x.id==='online')+1,0,{id:'friends',l:()=>'Friends'})
 // Craft straight from the START menu (it used to hide behind Skills > Craft)
 if(!SMI.some(x=>x.id==='craft'))SMI.splice(SMI.findIndex(x=>x.id==='skills')+1,0,{id:'craft',l:()=>'Craft'});
 SMI.splice(SMI.findIndex(x=>x.id==='exit'),0,{id:'title',l:()=>'Save & quit'});
-{const _ss=showScreen;showScreen=function(id){if(id==='friends'){releaseMenu();if(!MP.on){sg.style.display='block';return}MP.tab='fr';mpOpenChat();return}if(id==='title'){releaseMenu();tsReopen();return}return _ss(id)}}
+{SQSHOWSCR.wrap('061',_ss=>function(id){if(id==='friends'){releaseMenu();if(!MP.on){sg.style.display='block';return}MP.tab='fr';mpOpenChat();return}if(id==='title'){releaseMenu();tsReopen();return}return _ss(id)})}
 // ---- Other players' farms, built things and boats; nobody can damage what isn't theirs ----
 // build/<uid>: your farm plots (crop, growth, water) and the things you built outside (fences, walls, chests, stations...;
 // chest contents stay private). Other players' plots and builds appear on your island (marked _foreign, never saved).
@@ -810,7 +810,7 @@ $('nmf').onsubmit=async e=>{e.preventDefault();const n=cleanName($('nmin').value
  else $('nmst').textContent=r==='taken'?'"'+n+'" is taken too. Try another.':'Could not check that name. Try again in a moment.'};
 addEventListener('keydown',e=>{const t=e.target;if(!t||!nmBox.contains(t))return;e.stopImmediatePropagation();if(e.key==='Enter'&&!e.isComposing){e.preventDefault();$('nmf').requestSubmit()}},true);
 addEventListener('keyup',e=>{if(e.target&&nmBox.contains(e.target))e.stopImmediatePropagation()},true);
-{const _nr=navRoot;navRoot=function(){if(nmBox.style.display==='block')return nmBox;return _nr()}}
+{SQNAVROOT.wrap('061',_nr=>function(){if(nmBox.style.display==='block')return nmBox;return _nr()})}
 // keep the claim in step with your name (waits while you're typing it)
 async function nameCheck(){if(!MP.on||!MP.user||NM.busy||NM.box)return;const n=cleanName(myName());if(!n||nameKey(n)===NM.key)return;
  const a=document.activeElement;if(menuOpen||TS.open||(a&&(a.id==='cni'||a.id==='nmi')))return;

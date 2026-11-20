@@ -14,11 +14,11 @@ const inHome=()=>SCENE&&SCENE.id==='home'&&SCENE.house;
 function canPlaceIn(x,y){if(!inHome())return false;const R=SCENE.room,h=SCENE.house;if(x<0||x>=R.w||y<2||y>=R.h)return false;if(x===R.ex&&y>=R.h-1)return false;if(h.furn.has(y*R.w+x))return false;
  const cx=x*16+8,cy=y*16+8;if(Math.abs(P.x-cx)<13&&Math.abs(P.y-cy)<13&&BUILD&&BUILD.k!=='rug')return false;return true}
 const _cpl13=canPlace;canPlace=function(x,y){return SCENE?canPlaceIn(x,y):_cpl13(x,y)};
-const _sb13=startBuild;startBuild=function(k){if((inv[k]|0)<1)return;
+SQSTARTB.wrap('013',_sb13=>function(k){if((inv[k]|0)<1)return;
  if(SCENE){if(!inHome()){say('You can only decorate your own house.');closePanel();return}if(k==='house'){say('Houses go outside.');closePanel();return}BUILD={k};closePanel();setActionLabels();say('Decorate: face a spot and press PLACE. Press DONE when finished.');return}
- if(FURN_ONLY.has(k)){say('Furniture goes inside your house. Walk in through the door first.');closePanel();return}_sb13(k)};
-const _pb13=placeBuild;placeBuild=function(){if(!SCENE)return _pb13();const k=BUILD.k,[x,y]=frontTile();if(!canPlaceIn(x,y)){say('You can\'t put that there.');sfx('swish');return}
- const R=SCENE.room;inv[k]--;SCENE.house.furn.set(y*R.w+x,k==='chest'?{t:k,items:{}}:{t:k});sfx(k==='swall'?'mine':'chop');saveLocal(true);saveCloud(true);if((inv[k]|0)<1)endBuild('Placed your last '+INAME[k].toLowerCase()+'.')};
+ if(FURN_ONLY.has(k)){say('Furniture goes inside your house. Walk in through the door first.');closePanel();return}_sb13(k)});
+SQPLACEB.wrap('013',_pb13=>function(){if(!SCENE)return _pb13();const k=BUILD.k,[x,y]=frontTile();if(!canPlaceIn(x,y)){say('You can\'t put that there.');sfx('swish');return}
+ const R=SCENE.room;inv[k]--;SCENE.house.furn.set(y*R.w+x,k==='chest'?{t:k,items:{}}:{t:k});sfx(k==='swall'?'mine':'chop');saveLocal(true);saveCloud(true);if((inv[k]|0)<1)endBuild('Placed your last '+INAME[k].toLowerCase()+'.')});
 const _ls13=leaveScene;leaveScene=function(){if(BUILD)endBuild();_ls13()};
 function pickFurn(i){const h=SCENE&&SCENE.house;if(!h)return;const f=h.furn.get(i);if(!f)return;h.furn.delete(i);inv[f.t]=(inv[f.t]|0)+1;let extra='';
  if(f.items){for(const k in f.items)inv[k]=(inv[k]|0)+f.items[k];if(Object.values(f.items).some(v=>v>0))extra=' and everything inside'}
@@ -76,3 +76,6 @@ function drawRoom(tm){qm=Math.hypot(P.x-qL.x,P.y-qL.y)>.01;qL.x=P.x;qL.y=P.y;if(
  for(const n of NPCS)if(n.scene===SCENE.id)L.push([n.y+6,1,n]);L.push([P.y+6,2]);L.sort((a,b)=>a[0]-b[0]);
  for(const e of L){if(e[1]===0)drawFurn(e[2],tm);else if(e[1]===3)drawPiece(e[2].t,e[3]%R.w,(e[3]/R.w)|0,e[2],false,tm);else if(e[1]===1){const n=e[2];shd(n.x,n.y+6,12);GC=g;cP(n.ch,0,0,Math.round(n.x),Math.round(n.y),false)}else if(!dead)pP(tm)}
  if(BUILD&&h){const[x,y]=frontTile(),ok=canPlace(x,y);/* the whole canPlace chain (145: seeds on yard plots), not just furniture's canPlaceIn */g.globalAlpha=.6;drawPiece(BUILD.k,x,y,{t:BUILD.k},true,tm);g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.35)':'rgba(240,60,60,.35)';g.fillRect(x*16,y*16,16,16)}};
+
+// drawRoom as a step list: later sections add named steps (window.SQDRAWROOM; see 006's sqSteps)
+const SQDRAWROOM=sqSteps('drawRoom',drawRoom,f=>{drawRoom=f});window.SQDRAWROOM=SQDRAWROOM;

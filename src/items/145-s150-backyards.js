@@ -68,12 +68,12 @@
    if(R.lay(x,y)!==2&&!R.solid.has(i)&&!Y.furn.has(i)&&y>=2&&!onDoorTile(R,x,y)&&(TL.hoe||TL.can)&&!melee&&!en.some(n=>!n.dead)){swing=.2;say('You can only till grass.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-13')}return}
    return _a.apply(this,arguments)})}
  // planting: PLANT mode with seeds from the Bag
- {const _sb=startBuild;startBuild=function(k){if(!isYard()||!SEED2CROP[k])return _sb.apply(this,arguments);if(SCENE.house.ro){say('You can\'t plant in a friend\'s yard.');closePanel();return}if((inv[k]|0)<1)return;
-   BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')}}
- {const _pb=placeBuild;placeBuild=function(){if(!isYard()||!BUILD||!SEED2CROP[BUILD.k])return _pb.apply(this,arguments);const k=BUILD.k,R=SCENE.room,Y=SCENE.house,[x,y]=frontTile(),p=Y.plots.get(yi(R,x,y));
+ {SQSTARTB.wrap('145',_sb=>function(k){if(!isYard()||!SEED2CROP[k])return _sb.apply(this,arguments);if(SCENE.house.ro){say('You can\'t plant in a friend\'s yard.');closePanel();return}if((inv[k]|0)<1)return;
+   BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')})}
+ {SQPLACEB.wrap('145',_pb=>function(){if(!isYard()||!BUILD||!SEED2CROP[BUILD.k])return _pb.apply(this,arguments);const k=BUILD.k,R=SCENE.room,Y=SCENE.house,[x,y]=frontTile(),p=Y.plots.get(yi(R,x,y));
    if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'Till the soil first with a hoe in your off-hand.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-14')}return}
    if(p.c){say('Something is already growing there.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-15')}return}const c=SEED2CROP[k],C=CROPS[c];if(C.lv&&lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');return}
-   inv[k]--;p.c=c;p.g=0;addXp(11,5);try{sfx('rustle')}catch(e){self.SQERR&&SQERR(e,'145-16')}saveLocal(true);pub();if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
+   inv[k]--;p.c=c;p.g=0;addXp(11,5);try{sfx('rustle')}catch(e){self.SQERR&&SQERR(e,'145-16')}saveLocal(true);pub();if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')})}
  {const _cp=canPlace;canPlace=function(x,y){if(isYard()&&BUILD&&SEED2CROP[BUILD.k]){const p=SCENE.house.plots.get(yi(SCENE.room,x,y));return!!p&&!p.c}return _cp.apply(this,arguments)}}
  // furniture: not on plots, the gate or a friend's yard
  {const _cp=canPlaceIn;canPlaceIn=function(x,y){if(isYard()){const R=SCENE.room,Y=SCENE.house;if(Y.ro||Y.plots.has(yi(R,x,y))||onDoorTile(R,x,y)||regrowing(R,yi(R,x,y)))return false;try{if(fishWaterAt(x,y))return false}catch(e){self.SQERR&&SQERR(e,'145-17')}/* ponds */}return _cp.apply(this,arguments)}}

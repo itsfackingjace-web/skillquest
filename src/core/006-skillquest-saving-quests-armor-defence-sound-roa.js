@@ -97,7 +97,7 @@ SQHIT.wrap('006 skillquest saving quests armor defence sound',_atk5=>function(){
  if(en.reduce((a,n)=>a+n.hp,0)<eh)sfx('hit');else if(o&&o.hp<oh)sfx(o.t=='tree'?'chop':o.t=='rock'?'mine':'rustle');else sfx('swish');
  if(o&&okk&&!obj[ti]){REM.push({i:ti,t:o.t,at:CLK});setTimeout(()=>sfx('pickup'),90)}});
 /* 006's EAT wrapper (cooking sound + quest count) was removed Nov 18: 007 replaces eat() entirely and does both itself, so it never ran. */
-const _fi5=fire;fire=function(){const n0=fires.length;_fi5();if(fires.length>n0)sfx('fire')};
+SQFIRE.wrap('006',_fi5=>function(){const n0=fires.length;_fi5();if(fires.length>n0)sfx('fire')});
 SQADDXP.wrap('006',_ax5=>function(i,x){const b=lvOf(i);_ax5(i,x);if(lvOf(i)>b)sfx('level')});
 const _sa5=shopAct;shopAct=function(a){const g0=GLD;_sa5(a);if(GLD!==g0)sfx('coin');saveLocal(true)};
 const SPX=VX*16+8,SPY=(VY+2)*16+8;
@@ -116,9 +116,9 @@ SQUPD.wrap('006',_u5=>function(dt){
  roamNPCs(dt);
  if(!dead){if((saveT+=dt)>3){saveT=0;saveLocal()}if((cloudT+=dt)>15){cloudT=0;saveCloud()}}});
 // --- drawing: quest marker + HUD ---
-const _nd5=NEWDRAW;NEWDRAW=function(...a){_nd5(...a);const tm=a[8],q=QS[Q.i];if(!q)return;
+SQNEWDRAW.wrap('006',_nd5=>function(...a){_nd5(...a);const tm=a[8],q=QS[Q.i];if(!q)return;
  for(const n of NPCS){if(n.kind!='elder')continue;const mk=!Q.on?'!':qDone(q)?'?':'';if(!mk)continue;const bx=Math.round(n.x),by=Math.round(n.y-30+Math.sin(tm*4)*1.5);
-  g.save();g.font='700 11px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.textBaseline='alphabetic';g.lineWidth=3;g.lineJoin='round';g.strokeStyle=O;g.strokeText(mk,bx,by);g.fillStyle='#f8d848';g.fillText(mk,bx,by);g.restore()}};
+  g.save();g.font='700 11px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.textBaseline='alphabetic';g.lineWidth=3;g.lineJoin='round';g.strokeStyle=O;g.strokeText(mk,bx,by);g.fillStyle='#f8d848';g.fillText(mk,bx,by);g.restore()}});
 // (quest tracker and save indicator are drawn by drawHUD in section 10)
 // --- saving ---
 function snap(){return{v:1,ch:{...CH},xp:XPS.slice(),tl:{...TL},gold:GLD,arm:{...ARM},q:{...Q},
@@ -194,3 +194,6 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='
 
 // newGame as a step list: later sections add named steps (window.SQNEWGAME; see 006's sqSteps)
 const SQNEWGAME=sqSteps('newGame',newGame,f=>{newGame=f});window.SQNEWGAME=SQNEWGAME;
+
+// gearCH as a step list: later sections add named steps (window.SQGEARCH; see 006's sqSteps)
+const SQGEARCH=sqSteps('gearCH',gearCH,f=>{gearCH=f});window.SQGEARCH=SQGEARCH;

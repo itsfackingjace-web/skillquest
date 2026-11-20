@@ -10,4 +10,4 @@
  document.addEventListener('visibilitychange',()=>{try{if(!ACX)return;if(document.hidden){if(ACX.state==='running'){paused=true;ACX.suspend()}}
    else if(paused){paused=false;ACX.resume()}}catch(e){self.SQERR&&SQERR(e,'153-1')}});
  addEventListener('keydown',e=>{if(e.isTrusted&&!document.hidden)try{ac()}catch(_){self.SQERR&&SQERR(_,'153-2')}},{capture:true});
- {const _ws=wantSong;wantSong=function(){const R=SCENE&&SCENE.room;if(R&&(R.yard||R.court))return dark()>.4?'night':'day';return _ws.apply(this,arguments)}}})();
+ {SQWANTSONG.wrap('153',_ws=>function(){const R=SCENE&&SCENE.room;if(R&&(R.yard||R.court))return dark()>.4?'night':'day';return _ws.apply(this,arguments)})}})();

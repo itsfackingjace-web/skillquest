@@ -113,11 +113,11 @@ function drawCombatFx(tm){const sc=curScene();for(const gh of GHOST){if(gh.sc!==
 function drawGulls(tm){if(dark()>.3)return;for(let k=0;k<3;k++){const a=tm*(.25+k*.07)+k*2.1,r=60+k*28,x=Math.round(TX*16+8+Math.cos(a)*r*1.4),y=Math.round(TY*16-40+Math.sin(a)*r*.6);
   if(Math.abs(x-P.x)>W/Z||Math.abs(y-P.y)>H/Z)continue;const f=Math.floor(tm*6+k)%2;g.fillStyle='rgba(0,0,0,.18)';g.fillRect(x-3,y+34,6,2);
   Rg(x-5,y-(f?2:0),2,1,O);Rg(x-3,y-(f?1:0),2,1,O);Rg(x-1,y,2,2,'#f8f8f8');Rg(x+1,y-(f?1:0),2,1,O);Rg(x+3,y-(f?2:0),2,1,O);Rg(x-1,y+1,2,1,'#c0c8d0')}}
-const _nd21=NEWDRAW;NEWDRAW=function(...a){_nd21(...a);if(SCENE)return;const tm=a[8];drawCombatFx(tm);
+SQNEWDRAW.wrap('021',_nd21=>function(...a){_nd21(...a);if(SCENE)return;const tm=a[8];drawCombatFx(tm);
  if(RAINV>.05){g.fillStyle='rgba(210,230,255,'+(.55*RAINV)+')';const t=tm;for(let k=0;k<Math.round(26*RAINV);k++){const sx=Math.floor((hsh(k,Math.floor(t*6))%1000)/1000*(W/Z))+camX(),sy=Math.floor((hsh(k+99,Math.floor(t*6))%1000)/1000*(H/Z))+camY();
   const ti=tile[Math.floor(sy/16)*N+Math.floor(sx/16)];if(ti===0){g.fillRect(sx-2,sy,1,1);g.fillRect(sx+2,sy,1,1);g.fillRect(sx-1,sy-1,3,1)}else{g.fillRect(sx-1,sy,1,1);g.fillRect(sx+1,sy,1,1);g.fillRect(sx,sy-1,1,1)}}}
- if(Math.abs(P.x-TX*16)<500&&Math.abs(P.y-TY*16)<400)drawGulls(tm);};
-const _dr21=drawRoom;drawRoom=function(tm){_dr21(tm);if(!SCENE)return;drawCombatFx(tm)};
+ if(Math.abs(P.x-TX*16)<500&&Math.abs(P.y-TY*16)<400)drawGulls(tm);});
+SQDRAWROOM.after('021',(tm)=>{if(!SCENE)return;drawCombatFx(tm)});
 // screen-space weather (after the night tint so rain stays visible), fireflies, HUD icon
 function drawWeather(){const tm=performance.now()/1000,cx=camX(),cy=camY();
  if(RAINV>.03){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(40,52,78,'+(.22*RAINV)+')';g.fillRect(0,0,W,H);g.fillStyle='rgba(200,220,255,'+(.55*RAINV)+')';
@@ -170,4 +170,4 @@ SQSAVE.after('021:qv,tomb,gmd',s=>{s.qv=7;s.tomb=TOMB_DAY;s.gmd=GMDONE?1:0;});
 SQLOAD.after('021',(S)=>{if(S.q)remap21(S.qv||0);TOMB_DAY=isFinite(S.tomb)?+S.tomb:-1;if(Array.isArray(S.xp))XPS[FL]=Math.max(0,+S.xp[FL]||0);if(S.inv){inv.arrow=Math.max(0,+S.inv.arrow||0);inv.iarrow=Math.max(0,+S.inv.iarrow||0)}TL.bow=S.tl?Math.max(0,Math.min(2,+S.tl.bow||0)):0});
 SQNEWGAME.before('021',()=>{TL.bow=0;TOMB_DAY=-1;PROJ.length=0;});
 SQDRAWMAP.after('021',()=>{const c=document.getElementById('mpc');if(!c||!TOMB)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(TOMB.x-1,TOMB.y-1,3,3);x.fillStyle='#b070f0';x.fillRect(TOMB.x,TOMB.y,1,1)});
-const _ws21=wantSong;wantSong=function(){return SCENE&&SCENE.room.tomb?'cave':_ws21()};
+SQWANTSONG.wrap('021',_ws21=>function(){return SCENE&&SCENE.room.tomb?'cave':_ws21()});

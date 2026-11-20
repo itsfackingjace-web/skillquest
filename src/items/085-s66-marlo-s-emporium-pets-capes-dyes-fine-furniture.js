@@ -40,7 +40,7 @@ var LUX={};
  SQSAVE.after('085:cos',s=>{s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};});
  SQLOAD.after('085',(S)=>{const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);COS.pet=COS.pets.includes(c.pet)?c.pet:null;COS.cape=COS.capes.includes(+c.cape)?+c.cape:0;for(const k of['db','dl','dh'])COS[k]=COS.dyes.includes(+c[k])?+c[k]:0;KITC.clear()});
  // ---- looks: capes and dyes are part of the character sprite, so other players see them too ----
- const _gc=gearCH;gearCH=function(){const c=_gc();if(COS.cape)c.cape=COS.cape;if(COS.db)c.dyb=COS.db;if(COS.dl)c.dyl=COS.dl;if(COS.dh)c.dyh=COS.dh;return c};
+ SQGEARCH.wrap('085',_gc=>function(){const c=_gc();if(COS.cape)c.cape=COS.cape;if(COS.db)c.dyb=COS.db;if(COS.dl)c.dyl=COS.dl;if(COS.dh)c.dyh=COS.dh;return c});
  const _kl=kitLook;kitLook=function(ch){const o=_kl(ch),d=i=>DYES[(i|0)-1];if(d(ch.dyb)&&o.body)o.bc=d(ch.dyb).c;if(d(ch.dyl)&&o.legs)o.lc=d(ch.dyl).c;if(d(ch.dyh)&&o.head)o.hc=d(ch.dyh).c;return o};
  const shade=(hex,f)=>'#'+[1,3,5].map(i=>Math.max(0,Math.min(255,Math.round(parseInt(hex.slice(i,i+2),16)*f))).toString(16).padStart(2,'0')).join('');
  const _kb=kitBuild;kitBuild=function(ch,dir,st){const base=_kb(ch,dir,st),cp=CAPES[(ch.cape|0)-1];if(!cp)return base;const c=document.createElement('canvas');c.width=16;c.height=32;const x=c.getContext('2d'),C=cp.c,Dk=shade(C,.7),Lt=shade(C,1.2),K='#181018';
@@ -150,7 +150,7 @@ var LUX={};
   for(const[slot,lab]of[['db','Top / chestplate dye'],['dl','Legs dye'],['dh','Hat / helmet dye']]){h+='</div></div><div class="qc"><b>'+lab+'</b><div>'+pick('Original',!COS[slot],'data-s="'+slot+'" data-v="0"');for(const i of COS.dyes)h+=pick('<span style="color:'+DYES[i-1].c+'">&#9632;</span> '+DYES[i-1].n,COS[slot]===i,'data-s="'+slot+'" data-v="'+i+'"')}
   h+='</div></div>';if(!COS.pets.length&&!COS.capes.length&&!COS.dyes.length&&!(X&&X.opts().length))h+='<div class="tl" style="font-size:13px;font-weight:400">Nothing here yet. Visit Marlo\'s Emporium in Hollow Village.</div>';return h}
  SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'style',l:()=>'Style'});
- const _ss=showScreen;showScreen=function(id){if(id!=='style')return _ss(id);pnOpen=true;ptab=STAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
+ SQSHOWSCR.wrap('085',_ss=>function(id){if(id!=='style')return _ss(id);pnOpen=true;ptab=STAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')});
  SQRPN.wrap('085',_r=>function(){if(ptab===STAB){panelChrome('');pbd.innerHTML=styleHTML();return}if(ptab===2&&shop==='emporium'){panelChrome("Marlo's Emporium");pbd.innerHTML=emporiumHTML();return}_r()});
  const _oc=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
   if((b=t.closest('.emt'))){EMT=b.dataset.t;rPn();return}if((b=t.closest('.emb'))){luxBuy(b.dataset.c,b.dataset.k);return}

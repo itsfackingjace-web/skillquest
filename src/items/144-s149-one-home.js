@@ -23,7 +23,7 @@
  // (with backyards (150) loaded, 150 calls SQONEHOME.enforce itself once the yards are read, so they get packed too)
  {SQLOAD.after('144',(S)=>{try{if(!window.SQYARD)enforce()}catch(e){console.warn(e)}})}
  // placing a second one is refused
- {const _sb=startBuild;startBuild=function(k){if((k==='house'||k==='castle')&&homes().length){const o=homes()[0];
+ {SQSTARTB.wrap('144',_sb=>function(k){if((k==='house'||k==='castle')&&homes().length){const o=homes()[0];
     say('You already have a '+what(o.h)+' on '+where(o)+'. You can only have one home: pack that one up first (HIT its walls), then place this one.');msgT=7;try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'144-5')}try{closePanel()}catch(e){self.SQERR&&SQERR(e,'144-6')}return}
-   return _sb.apply(this,arguments)}}
+   return _sb.apply(this,arguments)})}
  window.SQONEHOME={homes,enforce}})();

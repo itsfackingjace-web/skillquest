@@ -50,7 +50,7 @@
    if((t==='tree'||t==='pine')&&h01(it.x+seed,it.y)<.4){rgCellDel(R,it);R.solid.delete(it.y*R.w+it.x);continue}
    const nt=tierFor(t,it.x+seed*.37,it.y+seed*.11,.55+h01(seed,it.x*.01)*.3);if(nt!==t){it.o.t=nt;it.o.hp=OHP[nt]}keep.push(it)}
   R.items.length=0;R.items.push(...keep)}
- const _lr64=loadRegion;loadRegion=function(id,want,ret){const ok=_lr64(id,want,ret);try{const R=SCENE&&SCENE.room;if(R&&R.region)tierRegion(R)}catch(e){console.warn(e)}return ok};
+ SQLOADRG.after('083',(id,want,ret)=>{try{const R=SCENE&&SCENE.room;if(R&&R.region)tierRegion(R)}catch(e){console.warn(e)}});
  // dungeon floors: rocks and ore veins in open spots
  const _bf64=buildFloor;buildFloor=function(kind,f){const R=_bf64(kind,f);try{const D=R.dun,G=D&&D.G,W=R.w,H=R.h;if(!G)return R;const used=new Set();for(const it of R.items)for(let dy=0;dy<(it.sh||1);dy++)for(let dx=0;dx<(it.w||1);dx++)used.add((it.y+dy)*W+it.x+dx);
   const open=i=>{const x=i%W,y=(i/W)|0;if(x<2||y<3||x>W-3||y>H-3)return false;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const j=(y+dy)*W+x+dx;if(G[j]||used.has(j))return false}return Math.abs(x-R.ex)>3||y<H-4};
@@ -79,8 +79,8 @@
  // campfires on the other islands: each island keeps its own fires
  const fireStash={};window.FIRESTASH=fireStash;let fireReg=curRegion();
  SQUPD.before('083',(dt)=>{const r=window.fireKey64?fireKey64():curRegion();if(r!==fireReg){fireStash[fireReg]=fires.filter(f=>!f._rp);fires=(fireStash[r]||[]).filter(f=>f.life>0);fireReg=r}});
- const _fi64=fire;fire=function(){const R=SCENE&&SCENE.room;if(!R||!R.region)return _fi64();if(dead||(typeof SAILING!=='undefined'&&SAILING))return;
+ SQFIRE.wrap('083',_fi64=>function(){const R=SCENE&&SCENE.room;if(!R||!R.region)return _fi64();if(dead||(typeof SAILING!=='undefined'&&SAILING))return;
   if(!((inv.wood|0)>=3&&(inv.stone|0)>=1)){say('Need 3 wood + 1 stone');return}const[fx,fy]=front(16);if(solid(fx,fy)){say('No room there');return}
-  inv.wood-=3;inv.stone--;const life=(150+lvOf(5)*3)*(1+(typeof fDur==='function'?fDur():0));fires.push({x:fx,y:fy,life,mx:life});say('Campfire built');addXp(5,40);sfx('fire');saveLocal()};
+  inv.wood-=3;inv.stone--;const life=(150+lvOf(5)*3)*(1+(typeof fDur==='function'?fDur():0));fires.push({x:fx,y:fy,life,mx:life});say('Campfire built');addXp(5,40);sfx('fire');saveLocal()});
  const _rn64=rgNear;rgNear=function(R,...a){const out=_rn64(R,...a);if(SCENE&&SCENE.room===R)for(const f of fires)if(!f._glow)out.push({t:'_fire',f,x:f.x/16,y:(f.y+3)/16-1});return out};
  SQFURN.wrap('083',_df64=>function(it,tm){if(it&&it.t==='_fire'){pF(it.f,tm);return}return _df64(it,tm)})}

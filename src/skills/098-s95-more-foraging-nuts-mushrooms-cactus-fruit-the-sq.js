@@ -49,7 +49,7 @@
    const r=h95(x+seed,y),byTree=near8((a,b)=>{const it=rgObjAt(R,x+a,y+b);return it&&isTree(it.o.t)});let k=null;
    if(byTree&&r<ps)k='shroom';else if(!byTree&&pn&&r>1-pn&&R.tiles[i]===2)k='nutbush';if(!k)continue;
    const it={t:'_obj',o:{t:k,hp:OHP[k],v:k==='shroom'?v||undefined:undefined},x,y,solid:true};R.items.push(it);R.solid.add(i);try{rgCellAdd(R,it)}catch(e){self.SQERR&&SQERR(e,'098-3')}}}
- {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)rgForage(R)}catch(e){console.warn(e)}return ok}}
+ {SQLOADRG.wrap('098',_lr=>function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)rgForage(R)}catch(e){console.warn(e)}return ok})}
  // picking them (HIT, like a berry bush)
  function forageHit(o,x,y,done){const F=FOR[o.t];if(!F)return false;if(lvOf(3)<F.lv){swing=.25;say('You need Foraging '+F.lv+' to pick from a '+F.n+'.');sfx('swish');return true}
   swing=.25;o.shake=.15;sfx('rustle');ACTW[3]=10;o.hp=(o.hp==null?F.hp:o.hp)-1;if(o.hp>0)return true;

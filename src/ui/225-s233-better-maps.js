@@ -103,7 +103,7 @@
 #pn .sqmpl{position:absolute;inset:3px;pointer-events:none;overflow:hidden}#pn .sqmpl span{position:absolute;transform:translate(-50%,-125%);white-space:nowrap;font:700 10px var(--pf),monospace;color:#fff;letter-spacing:.2px;
 text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1a1420,-1px -1px #1a1420,1px -1px #1a1420,-1px 1px #1a1420;line-height:1}
 #pn .sqmpl span.d{color:#ffd8a0}#pn .sqmpl span.p{color:#a8ffb0;font-size:9px}#pn .sqmpl span.h{color:#a8e8ff;font-size:9px}#pn .sqmpl span.l{color:#f0f0f0;font-size:9px}#pn .sqmph{text-align:center;font:600 12px var(--pf);color:#485870;margin:-2px 0 4px}`;document.head.appendChild(st)}
- {const _mh=mapHTML;mapHTML=function(){let h=_mh.apply(this,arguments);try{if(!isHere())return h;const i=h.indexOf('<canvas id="mpc"');if(i<0)return h;const j=h.indexOf('</canvas>',i)+9;
+ {SQMAPHTML.wrap('225',_mh=>function(){let h=_mh.apply(this,arguments);try{if(!isHere())return h;const i=h.indexOf('<canvas id="mpc"');if(i<0)return h;const j=h.indexOf('</canvas>',i)+9;
     const m=/width="(\d+)" height="(\d+)"/.exec(h.slice(i,j));const CW=m?+m[1]:N,CH=m?+m[2]:N;
     // greedy placement: bigger places first, skip a label that would overlap one already placed (sizes in % of the map)
     const L=labels().sort((p,q)=>'ptdhl'.indexOf(p.c)-'ptdhl'.indexOf(q.c)),placed=[],px=380;let sp='';
@@ -114,7 +114,7 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
     // the legend: drop entries that only name labelled places
     const named=new Set(L.filter(o=>o.on).map(o=>o.n));
     h=h.replace(/<span><i style="background:[^"]*"><\/i>([^<]*)<\/span>/g,(all,txt)=>{const parts=txt.split(' · ').map(s=>s.trim()).filter(Boolean);return parts.length&&parts.every(p=>named.has(p))?'':all});
-    h=h.replace('<div class="lg">','<div class="lg"><span><i style="background:'+PINK+'"></i>Pin</span><span><i style="background:'+GOLD+'"></i>Quest</span>'+(PP.length?'<span><i style="background:'+PCOL+'"></i>Party pin</span>':''))}catch(e){self.SQERR&&SQERR(e,'225-25')}return h}}
+    h=h.replace('<div class="lg">','<div class="lg"><span><i style="background:'+PINK+'"></i>Pin</span><span><i style="background:'+GOLD+'"></i>Quest</span>'+(PP.length?'<span><i style="background:'+PCOL+'"></i>Party pin</span>':''))}catch(e){self.SQERR&&SQERR(e,'225-25')}return h})}
  // ---------------- guild quests in the quest log / tracker ----------------
  const GQ=()=>{try{const S=window.SQGUILD;if(!S||!S.id||!S.state)return null;const q=S.state.q;if(!q||!S.QK||!S.QK[q.k])return null;return{S,q,K:S.QK[q.k],id:'gq:'+S.id+':'+(q.t||0)}}catch(e){return null}};
  const kfmt=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e4?(Math.floor(n/100)/10).toFixed(n%1000?1:0)+'k':n.toLocaleString();

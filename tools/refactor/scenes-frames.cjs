@@ -32,5 +32,7 @@ module.exports={
   try{openSM();S.frame(5,5);S.rec('sm');closeSM()}catch(e){}},
  misc(S){for(const id of['map','options','style','emotes','patron','bag','card','skills','quests','craft']){try{showScreen(id)}catch(e){}S.frame(4,4);S.rec('s:'+id);try{closePanel()}catch(e){}S.frame(2,2)}
   try{newGame()}catch(e){}S.frame(10,10);S.rec('ng');const h=JSON.stringify(snap());let x=2166136261;for(let i=0;i<h.length;i++){x^=h.charCodeAt(i);x=Math.imul(x,16777619)}S.rec('snap'+(x>>>0).toString(36));
-  for(let i=0;i<3;i++){addXp(1,500);S.frame(5,5)}S.rec('xp')},
+  for(let i=0;i<3;i++){addXp(1,500);S.frame(5,5)}S.rec('xp');
+  for(const k of['eq_sword2','eq_axe2','eq_helm1','eq_body1','eq_bow1','eq_wand1']){try{inv[k]=(inv[k]|0)+1;equipItem(k)}catch(e){}S.frame(3,3);S.rec('eq:'+k)}
+  try{startBuild('wall');S.frame(3,3);S.rec('build');placeBuild();S.frame(3,3);S.rec('placed');if(BUILD)endBuild()}catch(e){}},
 };

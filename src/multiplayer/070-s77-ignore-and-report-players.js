@@ -46,7 +46,7 @@ pmEl.addEventListener('click',async e=>{const b=e.target.closest('[data-pm]');if
   catch(err){$('pmst').textContent='Could not send. Try again in a moment.';mpErr(err)}}});
 // tapping a name in chat opens the menu (instead of jumping straight to messages)
 lst.addEventListener('click',e=>{const b=e.target.closest('b.nm');if(!b||!b.dataset.u||!MP.user||b.dataset.u===MP.user.uid)return;e.stopImmediatePropagation();pmOpen(b.dataset.u)},true);
-{const _nr=navRoot;navRoot=function(){if(pmEl.style.display==='flex')return pmEl;return _nr()}}
+{SQNAVROOT.wrap('070',_nr=>function(){if(pmEl.style.display==='flex')return pmEl;return _nr()})}
 // Friends tab: the ignore list
 {const _fv=friendsView;friendsView=function(){_fv();if(!IGN.m.size)return;const h=document.createElement('div');h.className='fh';h.textContent='IGNORED: you don\'t see their chat. Tap UNIGNORE to see it again.';lst.appendChild(h);
   for(const[u,n]of IGN.m){const row=document.createElement('div');row.className='fr';const nm=document.createElement('div');nm.className='fn';const b=document.createElement('b');b.textContent=n;nm.append(b);

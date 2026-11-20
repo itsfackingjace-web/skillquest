@@ -25,7 +25,7 @@
   NM[s]+': adamant defence +5% block. Meteorite set: two pieces +5% block, all three another +5% and a higher block limit. Needs Defence 75.');
  const worn=()=>(MT.helm?1:0)+(MT.body?1:0)+(MT.legs?1:0);
  {const _occ=occ;occ=function(slot){if(MT[slot]&&ARM[slot]===5)return KEY[slot];return _occ.apply(this,arguments)}}
- {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot in MT)MT[slot]=!!k&&k===KEY[slot];return out}}
+ {SQSETSLOT.after('216',(slot,k)=>{if(slot in MT)MT[slot]=!!k&&k===KEY[slot];})}
  {const _wu=watchUpgrades;watchUpgrades=function(){const was={...MT};const out=_wu.apply(this,arguments);for(const s in MT)if(was[s]&&ARM[s]!==5){if((inv['eq_'+s+'5']|0)>0)inv['eq_'+s+'5']--;inv[KEY[s]]=(inv[KEY[s]]|0)+1;MT[s]=false}return out}}
  {SQSAVE.after('216:mta,inv',s=>{const t=(MT.helm?'h':'')+(MT.body?'b':'')+(MT.legs?'l':'');if(t)s.mta=t;if((inv.marrow|0)>0){s.inv=s.inv||{};s.inv.marrow=inv.marrow|0}})}
  {SQLOAD.after('216',(S)=>{const t=String(S&&S.mta||'');MT.helm=t.includes('h')&&ARM.helm===5;MT.body=t.includes('b')&&ARM.body===5;MT.legs=t.includes('l')&&ARM.legs===5;try{if(S&&S.inv&&S.inv.marrow!=null)inv.marrow=Math.max(0,+S.inv.marrow|0)}catch(e){self.SQERR&&SQERR(e,'216-2')}try{snapEq()}catch(e){self.SQERR&&SQERR(e,'216-3')}})}
@@ -33,7 +33,7 @@
  try{KNOWN49.add('mta')}catch(e){self.SQERR&&SQERR(e,'216-4')}
  {const _bb=blockBonus;blockBonus=function(){const n=worn();return _bb.apply(this,arguments)+n*.05+(n>=2?.05:0)+(n>=3?.05:0)}}
  {const _bc=blockCap;blockCap=function(){return _bc.apply(this,arguments)+(worn()>=3?.08:0)}}
- {const _gc=gearCH;gearCH=function(){const c=_gc.apply(this,arguments);const b=(MT.helm&&ARM.helm===5?1:0)|(MT.body&&ARM.body===5?2:0)|(MT.legs&&ARM.legs===5?4:0);if(b)c.mtk=b;return c}}
+ {SQGEARCH.wrap('216',_gc=>function(){const c=_gc.apply(this,arguments);const b=(MT.helm&&ARM.helm===5?1:0)|(MT.body&&ARM.body===5?2:0)|(MT.legs&&ARM.legs===5?4:0);if(b)c.mtk=b;return c})}
  {const _kl=kitLook;kitLook=function(ch){const o=_kl.apply(this,arguments);const b=ch&&ch.mtk|0;if(!b)return o;
    if(b&2&&o.body==='plate'){o.bc=COL;o.ba=LIT}if(b&4&&o.legs==='greaves'){o.lc=COL;o.la=LIT}if(b&1&&o.head==='helm'){o.hc=COL;o.ha=LIT}return o};try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'216-5')}}
  // ---- bow ----

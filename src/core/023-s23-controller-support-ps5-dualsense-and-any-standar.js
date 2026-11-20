@@ -145,3 +145,6 @@ SQPP.wrap('023',_pP25=>function(tm){if(BOWT<=0)return _pP25(tm);const sw=swing;s
  for(const[x,y]of pts)Rg(x,y,2,2,'#a86830');Rg(pts[6][0],pts[6][1],2,2,'#7a4a20')});
 SQUPD.after('023',(dt)=>{BOWT=Math.max(0,BOWT-dt)});
 SQUPD.wrap('023',_u23=>function(dt){pollPad(dt);const hp0=P.hp;_u23(dt);if(GPON){if(GPAX.aim&&ROLLT<=0&&!pnOpen)face=GPAX.aim;const sm=tk.querySelector('small');if(sm&&sm.textContent!=='✕')sm.textContent='✕';else if(!sm&&tk.style.display!=='none')tk.insertAdjacentHTML('beforeend','<small>✕</small>')}if(GPON&&P.hp<hp0)rumble(140,.7,.4);if(GPON&&dead&&GPHP>0)rumble(400,1,1);GPHP=dead?0:P.hp});
+
+// navRoot as a step list: later sections add named steps (window.SQNAVROOT; see 006's sqSteps)
+const SQNAVROOT=sqSteps('navRoot',navRoot,f=>{navRoot=f});window.SQNAVROOT=SQNAVROOT;

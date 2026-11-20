@@ -57,7 +57,7 @@
  const near=()=>{let best=null,bd=26;for(const it of npcs()){const d=Math.hypot(it.x*16+8-P.x,it.y*16+10-P.y);if(d<bd){bd=d;best=it}}return best};
  function talkTo(it){const R=here()||(!SCENE&&window.SQHOLLOWP?SQHOLLOWP.R:null);if(!R)return;try{if(window.SQNPCROLE&&SQNPCROLE(it,R))return}catch(e){console.warn(e)}const L=it.lines&&it.lines.length?it.lines:['...'],k=R.region+':'+it.ni,i=(SAID[k]|0)%L.length;SAID[k]=i+1;
   say(it.name+': "'+L[i]+'"');msgT=Math.max(4,Math.min(9,L[i].length/14));bub={it,tx:L[i],at:performance.now()};try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'117-4')}}
- const _uf=useFurn;useFurn=function(it){if(it&&it.use==='npc'){talkTo(it);return}return _uf.apply(this,arguments)};
+ SQUSEFURN.wrap('117',_uf=>function(it){if(it&&it.use==='npc'){talkTo(it);return}return _uf.apply(this,arguments)});
  SQTALK.wrap('117',_t=>function(){if(!pnOpen&&!menuOpen&&!dead){const n=near();if(n){talkTo(n);return}}return _t.apply(this,arguments)});
  tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=near();if(n){e.preventDefault();e.stopImmediatePropagation();talkTo(n)}},{passive:false,capture:true});
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!near()||!!(_pu&&_pu())}

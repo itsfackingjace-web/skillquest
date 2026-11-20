@@ -229,3 +229,9 @@ const SQHUD=sqSteps('drawHUD',drawHUD,f=>{drawHUD=f});window.SQHUD=SQHUD;
 
 // drawMap as a step list: later sections add named steps (window.SQDRAWMAP; see 006's sqSteps)
 const SQDRAWMAP=sqSteps('drawMap',drawMap,f=>{drawMap=f});window.SQDRAWMAP=SQDRAWMAP;
+
+// showScreen as a step list: later sections add named steps (window.SQSHOWSCR; see 006's sqSteps)
+const SQSHOWSCR=sqSteps('showScreen',showScreen,f=>{showScreen=f});window.SQSHOWSCR=SQSHOWSCR;
+
+// mapHTML as a step list: later sections add named steps (window.SQMAPHTML; see 006's sqSteps)
+const SQMAPHTML=sqSteps('mapHTML',mapHTML,f=>{mapHTML=f});window.SQMAPHTML=SQMAPHTML;

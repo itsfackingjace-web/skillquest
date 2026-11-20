@@ -47,7 +47,7 @@
  const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-jw]');if(b){const a=b.dataset.jw;if(a==='wear')jwWear(b.dataset.k);else if(a==='off')jwOff(b.dataset.s);else if(a==='make')jwMake(b.dataset.k);else if(a==='all')jwMake(b.dataset.k,true);return}_oc(e)};
  // ---- hide helmet: your helmet / hood / wizard hat still counts (defence, class bonuses), it just isn't drawn,
  // for you or for anyone else. A checkbox on the Equipment screen; remembered with your save.
- {const _g=gearCH;gearCH=function(){const c=_g();if(HIDEH){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.dyh}return c};
+ {SQGEARCH.wrap('086',_g=>function(){const c=_g();if(HIDEH){c.ht=CH.ht;c.hcol=CH.hcol;delete c.mh;delete c.dyh}return c});
   const _eh2=equipHTML;equipHTML=function(){const h=_eh2();const row='<button class="sb" data-hideh="1" style="margin:8px 0 2px">Hide helmet: '+(HIDEH?'ON':'OFF')+'</button>';
    const k='<div class="qc" style="margin-top:12px">',i=h.indexOf(k);return i<0?h+row:h.slice(0,i)+row+h.slice(i)};
   pbd.addEventListener('click',e=>{const b=e.target.closest('[data-hideh]');if(!b)return;e.stopPropagation();e.preventDefault();HIDEH=!HIDEH;say(HIDEH?'Your helmet is hidden. It still protects you.':'Your helmet is showing again.');

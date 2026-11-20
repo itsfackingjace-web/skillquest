@@ -32,11 +32,7 @@ window.SQRFISH=RFISH;
      const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:2+Math.random()*3,bite:0};sfx('cast');say('You cast your line...');return}}}
  return next.apply(this,arguments)})}
 // the line and bobber, drawn on the other islands too
-{const _dr=drawRoom;drawRoom=function(tm){_dr(tm);const R=SCENE&&SCENE.room;if(!FISH||!R||!R.region||window.SQSKFX)return;
-  const hx=Math.round(P.x+face[0]*6),hy=Math.round(P.y-3+(face[1]>0?2:0)),rx=Math.round(P.x+face[0]*13+(face[1]?4:0)),ry=Math.round(P.y-13+face[1]*7),bx=Math.round(FISH.bx),by=Math.round(FISH.by)+(FISH.bite>0?2:Math.round(Math.sin(tm*3)));
-  pline(hx,hy,rx,ry,'#7a4a20');pline(rx,ry,bx,by-1,'rgba(240,240,255,.75)');
-  if(FISH.bite>0){const r=3+Math.round((.45-FISH.bite)*14);for(let k=0;k<12;k++){const an=k/12*6.283;Rg(bx+Math.cos(an)*r,by+1+Math.sin(an)*r*.5,1,1,'#e8f8ff')}}
-  Rg(bx-2,by-3,4,5,O);Rg(bx-1,by-2,2,2,'#e83030');Rg(bx-1,by,2,1,'#fff')}}
+{SQDRAWROOM.after('093',(tm)=>{const R=SCENE&&SCENE.room;if(!FISH||!R||!R.region||window.SQSKFX)return;const hx=Math.round(P.x+face[0]*6),hy=Math.round(P.y-3+(face[1]>0?2:0)),rx=Math.round(P.x+face[0]*13+(face[1]?4:0)),ry=Math.round(P.y-13+face[1]*7),bx=Math.round(FISH.bx),by=Math.round(FISH.by)+(FISH.bite>0?2:Math.round(Math.sin(tm*3)));pline(hx,hy,rx,ry,'#7a4a20');pline(rx,ry,bx,by-1,'rgba(240,240,255,.75)');if(FISH.bite>0){const r=3+Math.round((.45-FISH.bite)*14);for(let k=0;k<12;k++){const an=k/12*6.283;Rg(bx+Math.cos(an)*r,by+1+Math.sin(an)*r*.5,1,1,'#e8f8ff')}}Rg(bx-2,by-3,4,5,O);Rg(bx-1,by-2,2,2,'#e83030');Rg(bx-1,by,2,1,'#fff')})}
 
 // ---- Weather on every island: rain in Briarwood and the Shattered Expanse, snow in Ironcrest's high country, ash haze on Ashfall ----
 {const _b=biomeHere;biomeHere=function(){const R=SCENE&&SCENE.room;if(!(R&&R.region))return _b();if(R.region==='ashfall')return'desert';
@@ -99,8 +95,8 @@ function icvPlace(R){if(R._icv||!R.region)return;R._icv=1;const W=R.w,walk=(x,y)
   if(at.startsWith('mcamp')){const l=R.lms.find(q=>q.id===at);if(l)spot=near(l.x+4,l.y+2)}else{const q=dun[+at.slice(-1)];if(q)spot=near(q.x+Math.floor(q.w/2),q.y+Math.floor(q.h/2))}
   if(!spot)continue;const[x,y]=spot;clear(x,y);const it={t:'icvdoor',kind:k,x,y,name:ICV[k].name,use:'icv',w:1,h:1};R.items.push(it);R.useItems.push(it);try{rgCellAdd(R,it)}catch(e){self.SQERR&&SQERR(e,'093-2')}
   for(const[a,b]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1]])R.solid.add((y+b)*W+x+a)}}
-{const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)icvPlace(R)}catch(e){console.warn(e)}return ok}}
-{const _uf=useFurn;useFurn=function(it){if(it&&it.use==='icv'){icvEnter(it);return}return _uf(it)}}
+{SQLOADRG.wrap('093',_lr=>function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)icvPlace(R)}catch(e){console.warn(e)}return ok})}
+{SQUSEFURN.wrap('093',_uf=>function(it){if(it&&it.use==='icv'){icvEnter(it);return}return _uf(it)})}
 {SQUPD.after('093',(dt)=>{if(dead||menuOpen||pnOpen||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;for(const it of R.useItems)if(it.use==='icv'&&Math.abs(P.x-(it.x*16+8))<8&&P.y<(it.y+1)*16+2&&P.y>it.y*16){icvEnter(it);return}})}
 // campfires in the caves: lit, drawn, cooking and keeping monsters away like outside
 {SQPP.before('093',(tm)=>{const R=SCENE&&SCENE.room;if(R&&R.icv)for(const f of fires)if(!f._glow)try{pF(f,tm)}catch(e){self.SQERR&&SQERR(e,'093-3')}})}

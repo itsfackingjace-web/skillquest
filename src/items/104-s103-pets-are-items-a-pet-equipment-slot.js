@@ -9,7 +9,7 @@
  SLOTS.push(['pet','PET']);
  const _occ=occ;occ=function(s){if(s==='pet'){const c=C();return c&&c.pet&&EQ['pet_'+c.pet]?'pet_'+c.pet:null}return _occ(s)};
  let lastE=null,lastOwn=null,MIG=true;
- const _ss=setSlot;setSlot=function(s,k){if(s==='pet'){const c=C();c.pet=k?EQ[k].pet:null;lastE=c.pet;try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'104-1')}return}return _ss(s,k)};
+ SQSETSLOT.wrap('104',_ss=>function(s,k){if(s==='pet'){const c=C();c.pet=k?EQ[k].pet:null;lastE=c.pet;try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'104-1')}return}return _ss(s,k)});
  const _us=unequipSlot;unequipSlot=function(s){if(s!=='pet')return _us(s);const old=occ('pet');if(!old)return;inv[old]=(inv[old]|0)+1;setSlot('pet',null);say('Your '+EQ[old].n.toLowerCase()+' waits in your bag.');sfx('talk');saveLocal(true)};
  // keep pet items, the PET slot and the old owned-pets list in step, whichever way a pet arrives or leaves
  function sync(){const c=C();if(!c)return;const own=k=>(inv['pet_'+k]|0)>0||c.pet===k;

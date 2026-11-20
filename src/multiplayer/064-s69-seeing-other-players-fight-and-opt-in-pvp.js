@@ -94,7 +94,7 @@ function pvpHTML(){const l=pvLock(),on=PV.on;let h='<div class="tl">PLAYER VS PL
  if(!MP.on)return h+'<div class="qc"><p>Sign in on the title screen to use PvP.</p></div>';
  h+='<div class="tra"><button class="'+(on?'n':'y')+'" data-pv="t"'+(on&&PV.fight&&l>0?' disabled style="opacity:.5"':'')+'>'+(on?(PV.fight&&l>0?'LOCKED ('+Math.ceil(l/1000)+'s)':'TURN PVP OFF'):'TURN PVP ON')+'</button></div>';if(on&&pvMeSafe())h+='<div class="trst">You\'re in a safe zone right now.</div>';return h}
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'pvp',l:()=>'PvP: '+(PV.on?'ON':'OFF')});
-{const _ss=showScreen;showScreen=function(id){if(id!=='pvp')return _ss(id);pnOpen=true;ptab=PTAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}}
+{SQSHOWSCR.wrap('064',_ss=>function(id){if(id!=='pvp')return _ss(id);pnOpen=true;ptab=PTAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')})}
 {SQRPN.wrap('064',_r=>function(){if(ptab===PTAB){panelChrome('');pbd.innerHTML=pvpHTML();return}_r()})}
 {const _oc=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('[data-pv]');if(b&&ptab===PTAB){if(!b.disabled)pvToggle();return}_oc(e)}}
 setInterval(()=>{if(pnOpen&&ptab===PTAB&&PV.on&&PV.fight)rPn()},1000);

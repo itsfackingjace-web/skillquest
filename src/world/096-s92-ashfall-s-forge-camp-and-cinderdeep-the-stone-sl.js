@@ -36,12 +36,12 @@ ROOMS.afforge=mkRoom({w:10,h:7,ex:5,floor:['#6a5a50','#625248'],wall:'#8a7464',t
 ROOMS.afhall=mkRoom({w:9,h:7,ex:4,floor:['#7a6656','#705c4c'],wall:'#a08c78',trim:'#a83818',items:[{t:'window',x:2,y:0},{t:'shelf',x:4,y:0,w:3,use:'look',name:'The camp ledger',text:'The warden\'s ledger: "Cinderdeep - north-east. The Emberlord woke again. Two more smiths hurt. Need someone brave."'},{t:'window',x:7,y:0},
  {t:'table',x:3,y:3,w:3,solid:1},{t:'bed',x:0,y:2,sh:2,solid:1},{t:'bed',x:8,y:2,sh:2,solid:1},{t:'barrel',x:0,y:5,solid:1},{t:'plant',x:8,y:5,solid:1},{t:'rug',x:3,y:5,w:3}]});
 const ROOMMSG={bwlodge:'The Ranger Lodge. Maps and bows line the walls.',bwinn:'The Sleepy Fern. A bed here heals you up.',afforge:'Emberwatch Forge. The heat hits you like a wall.',afhall:'The Warden\'s Hall. It smells of smoke and old maps.'};
-{const _uf=useFurn;useFurn=function(it){if(it&&it.use==='bwrest'){if(P.hp>=6&&hunger>40){say('You\'re already well rested.');return}P.hp=6;hunger=Math.max(hunger,60);say('You rest a while in a soft bed. Fully healed!');try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'096-1')}saveLocal(true);return}
-  if(it&&it.use==='look'&&SCENE&&ROOMMSG[SCENE.id]){rgLook(it);return}return _uf(it)}}
+{SQUSEFURN.wrap('096',_uf=>function(it){if(it&&it.use==='bwrest'){if(P.hp>=6&&hunger>40){say('You\'re already well rested.');return}P.hp=6;hunger=Math.max(hunger,60);say('You rest a while in a soft bed. Fully healed!');try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'096-1')}saveLocal(true);return}
+  if(it&&it.use==='look'&&SCENE&&ROOMMSG[SCENE.id]){rgLook(it);return}return _uf(it)})}
 // doors: walk up into one (the same as a house)
 function vDoors(R){if(!R._doors)R._doors=R.items.filter(it=>it.room&&it.b);return R._doors}
 {SQUPD.after('096',(dt)=>{if(menuOpen||pnOpen||dead||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;for(const it of vDoors(R)){const b=it.b,cx=(b.tx+(b.w>>1))*16+8;if(Math.abs(P.x-cx)<9&&P.y<(b.ty+2)*16+6&&P.y>(b.ty+1)*16-4){enterScene(it.room,null,{x:cx,y:(b.ty+2)*16+8});if(ROOMMSG[it.room])say(ROOMMSG[it.room]);return}}})}
-{const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region==='briarwood'&&!R._bwd){R._bwd=1;R._doors=null;for(const it of R.items)if(it.t==='bwbld'&&it.b)it.room=/Inn|Fern/.test(it.b.name)?'bwinn':'bwlodge'}}catch(e){console.warn(e)}return ok}}
+{SQLOADRG.wrap('096',_lr=>function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region==='briarwood'&&!R._bwd){R._bwd=1;R._doors=null;for(const it of R.items)if(it.t==='bwbld'&&it.b)it.room=/Inn|Fern/.test(it.b.name)?'bwinn':'bwlodge'}}catch(e){console.warn(e)}return ok})}
 
 // ======== treelings: one for each kind of tree ========
 const TLV={ptree:{n:'Treeling',src:'trees (1 in 5,000)'},ptoak:{n:'Oak treeling',src:'oak trees (1 in 5,000)'},ptwil:{n:'Willow treeling',src:'willow trees (1 in 5,000)'},ptmap:{n:'Maple treeling',src:'maple trees (1 in 5,000)'},
@@ -79,7 +79,7 @@ var SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
 {const k='eq_sledge',e={slot:'main',kind:'sword',tier:3,n:'Stone sledgehammer',ic:'sword',col:'#a8a090',v:2500};EQ[k]=e;EQK.push(k);INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;SELLP[k]=e.v;SN[k]=e.n+'s';SHORT[k]=e.n.toLowerCase();
  IDESC[k]='A rare hammer of living stone from the Stone Giant. Wield it in your main hand: it hits like an iron sword, your ultimate becomes a GROUND SLAM (big damage all around you, no wand needed, 18s cooldown), and it breaks boulders and ore boulders.';inv[k]=inv[k]|0}
 {const _occ=occ;occ=function(slot){if(slot==='main'&&SLEDGE)return'eq_sledge';return _occ(slot)}}
-{const _ss=setSlot;setSlot=function(slot,k){_ss(slot,k);if(slot==='main'){SLEDGE=k==='eq_sledge';if(SLEDGE)TL.sword=3}}}
+{SQSETSLOT.after('096',(slot,k)=>{if(slot==='main'){SLEDGE=k==='eq_sledge';if(SLEDGE)TL.sword=3}})}
 {const _wu=watchUpgrades;watchUpgrades=function(){const was=SLEDGE;_wu();if(was&&TL.sword!==3){if((inv.eq_sword3|0)>0)inv.eq_sword3--;inv.eq_sledge=(inv.eq_sledge|0)+1;SLEDGE=false}}}
 {SQSAVE.after('096:sld',s=>{if(SLEDGE)s.sld=1;})}
 {SQLOAD.after('096',(S)=>{SLEDGE=!!(S&&S.sld)&&TL.sword===3})}
@@ -159,7 +159,7 @@ function drawBoulder(o,x,y,bx,by,s){const sp=boulderSprite(o.t,(x*7+y*3)&1);shd(
    if(Math.hypot(x-(R.spawn?R.spawn[0]:-99),y-(R.spawn?R.spawn[1]:-99))<6)continue;
    const kind=h92(y+seed,x)<po?oreFor(h92(x*3+seed,y*5),far):'boulder',it={t:'_obj',o:{t:kind,hp:OHP[kind]},x,y,solid:true};R.items.push(it);R.solid.add(i);try{rgCellAdd(R,it)}catch(e){self.SQERR&&SQERR(e,'096-8')}}}
  window.SQRGBOUL=rgBoulders;
- {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)rgBoulders(R)}catch(e){console.warn(e)}return ok}}
+ {SQLOADRG.wrap('096',_lr=>function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)rgBoulders(R)}catch(e){console.warn(e)}return ok})}
  // caves and dungeons: some boulders hold ore (deeper floors: better ore)
  const _bf=buildFloor;buildFloor=function(kind,f){const R=_bf(kind,f);try{const rnd=dRng(today()*313+f*71+kind.length*17);for(const it of R.items)if(it.t==='boulder'&&rnd()<.3){const r=rnd(),deep=Math.min(1,.25+f*.13);it.ore=r<.1*deep?'oba':r<.28*deep?'obm':r<.55?'obg':'obi'}}catch(e){self.SQERR&&SQERR(e,'096-9')}return R}}
 // keep builds clear: a boulder never sits under a house, structure or farm plot on Hollow
@@ -222,7 +222,7 @@ function afSetup(R){if(R.region!=='ashfall'||R._af)return;const site=(R.reserved
  for(const n of AF.npcs){n.town='ashfall';n.hx=n.x;n.hy=n.y;add({t:'afnpc',n,x:n.x/16,y:n.y/16})}
  AF.town={x0,y0,w:site.w,h:site.h};R._doors=null;
  if(!R.lms.some(l=>l.id==='emberwatch'))R.lms.push({id:'emberwatch',name:'Emberwatch',x:x0+10,y:y0+6});LM_NAMES.emberwatch='Emberwatch';LM_NAMES.cinderdeep='Cinderdeep'}
-{const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region==='ashfall'){afSetup(R);const d=R.useItems.find(u=>u.kind==='aflava');if(d&&!R.lms.some(l=>l.id==='cinderdeep'))R.lms.push({id:'cinderdeep',name:'Cinderdeep',x:d.x,y:d.y})}}catch(e){console.warn(e)}return ok}}
+{SQLOADRG.wrap('096',_lr=>function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region==='ashfall'){afSetup(R);const d=R.useItems.find(u=>u.kind==='aflava');if(d&&!R.lms.some(l=>l.id==='cinderdeep'))R.lms.push({id:'cinderdeep',name:'Cinderdeep',x:d.x,y:d.y})}}catch(e){console.warn(e)}return ok})}
 const afR=()=>{const R=SCENE&&SCENE.room;return R&&R.region==='ashfall'&&R._af?R:null};
 const afIn=(x,y)=>{const T=AF.town;return T&&x>=(T.x0-1)*16&&x<(T.x0+T.w+1)*16&&y>=(T.y0-1)*16&&y<(T.y0+T.h+1)*16};
 const afNear=()=>{if(!afR())return null;let best=null,bd=26;for(const n of AF.npcs){const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}return best};
@@ -295,7 +295,7 @@ window.SQICV.aflava={name:'Cinderdeep',floor:['#4a3430','#42302c'],wall:'#2e2220
    for(let k=0;k<w/4;k++){const ph=(tm*.7+k*.31+it.x*.1)%1;Rg(x+2+k*4,y+4+Math.round(ph*6),2,2,ph<.5?'#ffd060':'#f8a030')}g.fillStyle='rgba(255,120,30,'+(.12+.1*p)+')';g.beginPath();g.arc(x+w/2,y+8,w*.7+6,0,6.283);g.fill();return}return _df(it,tm)})}
 // the floor tiles of the lava pools draw under you (they're floor, not furniture)
 {/* _u */let burnT=0;SQUPD.after('096',(dt)=>{const R=SCENE&&SCENE.room;if(!R||!R.dun||R.dun.kind!=='aflava'||dead||menuOpen||pnOpen)return;burnT-=dt;const tx=Math.floor(P.x/16),ty=Math.floor((P.y+4)/16);const on=R.items.some(it=>it.t==='aflavap'&&ty===it.y&&tx>=it.x&&tx<it.x+(it.w||1));if(on&&burnT<=0&&hurt<=0&&!(typeof ROLLT!=='undefined'&&ROLLT>0)){burnT=1.2;P.hp--;hurt=1;say('Ow! Lava!');try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'096-20')}}})}
-{const _uf=useFurn;useFurn=function(it){return _uf(it)}}
+{SQUSEFURN.wrap('096',_uf=>function(it){return _uf(it)})}
 
 // ---- the Emberlord (floor 6 of Cinderdeep) ----
 const EL_HP=320;let EMDAY=-1;

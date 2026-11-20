@@ -113,7 +113,7 @@
   if(o.bar&&!SM.some(r=>r.k===k))SM.push({k,n:o.n,c:o.mc||{[o.bar]:2},lv:o.sm,xp:o.sm*6})}
  let DAG=null,DPIN='',COATK=null,COATU=0,DCD=0;
  {const _occ=occ;occ=function(slot){if(slot==='off'&&DAG)return DAG;return _occ.apply(this,arguments)}}
- {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot==='off')DAG=k&&EQ[k]&&EQ[k].kind==='dagger'?k:null;return out}}
+ {SQSETSLOT.after('218',(slot,k)=>{if(slot==='off')DAG=k&&EQ[k]&&EQ[k].kind==='dagger'?k:null;})}
  {const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.kind==='dagger'&&e.rq2&&lvOf(e.rq2.s)<e.rq2.l){say('You need Attack '+e.rq2.l+' to use the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){self.SQERR&&SQERR(x,'218-5')}return}return _eq.apply(this,arguments)}}
  {const _mf=meleeFlat;meleeFlat=function(){return _mf.apply(this,arguments)+(DAG&&DAGS[DAG]?DAGS[DAG].t:0)}}
  // a bow/wand/hoe/can that got into the hand some other way pushes the dagger to the bag

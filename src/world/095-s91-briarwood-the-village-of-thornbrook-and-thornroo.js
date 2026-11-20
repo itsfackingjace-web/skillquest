@@ -39,7 +39,7 @@ function bwSetup(R){if(R.region!=='briarwood'||R._bw)return;const site=R.reserve
  BW.town={x0,y0,w:site.w,h:site.h};
  // a landmark, so it shows on the maps and gets "discovered"
  if(!R.lms.some(l=>l.id==='thornbrook'))R.lms.push({id:'thornbrook',name:'Thornbrook',x:x0+9,y:y0+6});LM_NAMES.thornbrook='Thornbrook';LM_NAMES.thornroot='Thornroot Hollow'}
-{const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region==='briarwood'){bwSetup(R);const d=R.useItems.find(u=>u.kind==='bwroot');if(d&&!R.lms.some(l=>l.id==='thornroot'))R.lms.push({id:'thornroot',name:'Thornroot Hollow',x:d.x,y:d.y})}}catch(e){console.warn(e)}return ok}}
+{SQLOADRG.wrap('095',_lr=>function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region==='briarwood'){bwSetup(R);const d=R.useItems.find(u=>u.kind==='bwroot');if(d&&!R.lms.some(l=>l.id==='thornroot'))R.lms.push({id:'thornroot',name:'Thornroot Hollow',x:d.x,y:d.y})}}catch(e){console.warn(e)}return ok})}
 const bwR=()=>{const R=SCENE&&SCENE.room;return R&&R.region==='briarwood'&&R._bw?R:null};
 const inTown=(x,y)=>{const T=BW.town;return T&&x>=(T.x0-1)*16&&x<(T.x0+T.w+1)*16&&y>=(T.y0-1)*16&&y<(T.y0+T.h+1)*16};
 const bwNear=()=>{if(!bwR())return null;let best=null,bd=26;for(const n of BW.npcs){const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;best=n}}return best};

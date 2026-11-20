@@ -7,7 +7,7 @@
 (()=>{if(typeof navRoot!=='function'||!window.SQSUITE)return;
  const dvs=()=>document.getElementById('dvs');const open=()=>SQSUITE.state&&SQSUITE.state.open&&dvs()&&dvs().style.display!=='none';
  const EXTRA='.dv-qb,.dv-evr,[data-simrow],[data-simsort],#dvc';
- {const _nr=navRoot;navRoot=function(){const r=_nr.apply(this,arguments);if(!open())return r;if(r&&(r.id==='sqosk'||/^(trpop|ptpop|dlpop|updbar|sqlost|sqsess)$/.test(r.id)))return r;return dvs()}}
+ {SQNAVROOT.wrap('188',_nr=>function(){const r=_nr.apply(this,arguments);if(!open())return r;if(r&&(r.id==='sqosk'||/^(trpop|ptpop|dlpop|updbar|sqlost|sqsess)$/.test(r.id)))return r;return dvs()})}
  {const _ni=navItems;navItems=function(root){const base=_ni.apply(this,arguments);if(!root||root.id!=='dvs')return base;
    const more=[...root.querySelectorAll(EXTRA)].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0});
    const all=[...new Set([...base,...more])].filter(e=>!e.disabled&&!(e.type==='hidden'));

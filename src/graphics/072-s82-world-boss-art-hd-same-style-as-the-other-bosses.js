@@ -357,11 +357,11 @@ const inForeignHouse=()=>SCENE&&SCENE.house&&SCENE.house._foreign?SCENE.house:nu
 {const _pf=pickFurn;pickFurn=function(i){const h=inForeignHouse();if(h){notYours(h._owner);return}return _pf(i)}}
 {const _ps=pickStruct;pickStruct=function(i){const s=STR.get(i);if(s&&s._foreign){notYours(s._foreign);return}return _ps(i)}}
 // chests and beds
-{const _uf=useFurn;useFurn=function(o){const h=inForeignHouse();if(!h)return _uf(o);const t=o&&(o.f?o.f.t:o.use);if(t!=='chest'&&t!=='bed')return _uf(o);
+{SQUSEFURN.wrap('072',_uf=>function(o){const h=inForeignHouse();if(!h)return _uf(o);const t=o&&(o.f?o.f.t:o.use);if(t!=='chest'&&t!=='bed')return _uf(o);
   trustThen(h._owner,()=>{
   if(t==='chest'){if(!o.f||o.i==null){say('That chest belongs to '+fname(h._owner)+'.');return}chOpenShared(h._owner,'h_'+h._oid+'_'+o.i);return}
   if(dark()<.3){say('A comfy bed. Rest here at night to sleep through it.');sfx('talk');return}
-  time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept at '+fname(h._owner)+'\'s. Good morning!');sfx('quest');saveLocal(true)})}}
+  time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept at '+fname(h._owner)+'\'s. Good morning!');sfx('quest');saveLocal(true)})})}
 // crafting stations inside their houses
 {const _os=openStation;openStation=function(o){const h=inForeignHouse();if(o&&h&&o.inside&&!o._ok){trustThen(h._owner,()=>{o._foreign=h._owner;o._ok=1;_os(o)});return}return _os(o)}}
 // outside on Hollow: their chests and stations
@@ -401,11 +401,11 @@ function rfCanTill(R,x,y){if(x<1||y<1||x>=R.w-1||y>=R.h-1)return false;const i=y
   if(TL.hoe&&!rbMap(R.region).has(k)&&rfCanTill(R,tx,ty)){swing=.25;rfMap(R.region).set(k,{c:null,g:0,w:0,e:nowS()});addXp(11,4);sfx('chop');saveLocal(true);say('Tilled! Plant seeds from your Bag.');return}
   return _a()})}
 // planting
-{const _sb=startBuild;startBuild=function(k){const R=rbR();if(!R||!isSeed(k))return _sb(k);if((inv[k]|0)<1)return;const C=CROPS[SEED2CROP[k]];
-  if(lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');closePanel();return}BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')}}
-{const _pb=placeBuild;placeBuild=function(){const R=rbR();if(!R||!BUILD||!isSeed(BUILD.k))return _pb();const k=BUILD.k,[x,y]=frontTile(),p=rfMap(R.region).get(rbK(x,y));
+{SQSTARTB.wrap('072',_sb=>function(k){const R=rbR();if(!R||!isSeed(k))return _sb(k);if((inv[k]|0)<1)return;const C=CROPS[SEED2CROP[k]];
+  if(lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');closePanel();return}BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')})}
+{SQPLACEB.wrap('072',_pb=>function(){const R=rbR();if(!R||!BUILD||!isSeed(BUILD.k))return _pb();const k=BUILD.k,[x,y]=frontTile(),p=rfMap(R.region).get(rbK(x,y));
   if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'You need tilled soil. Craft a hoe (Craft menu) or buy one at the general store.');sfx('swish');return}
-  if(p.c){say('Something is already growing there.');sfx('swish');return}inv[k]--;p.c=SEED2CROP[k];p.g=0;addXp(11,5);sfx('rustle');saveLocal(true);if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')}}
+  if(p.c){say('Something is already growing there.');sfx('swish');return}inv[k]--;p.c=SEED2CROP[k];p.g=0;addXp(11,5);sfx('rustle');saveLocal(true);if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')})}
 // growing (every island's plots grow while you play, like Hollow's)
 {SQUPD.after('072',(dt)=>{if(menuOpen||pnOpen)return;for(const id in RF)for(const p of RF[id].values())if(p.c&&wet(p)&&!ripe(p))p.g+=dt})}
 // empty tilled soil turns back into grass after a while (so nobody can cover the world in dirt)

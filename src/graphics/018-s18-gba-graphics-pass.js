@@ -54,8 +54,8 @@ const _gh18=GROUNDHOOK;GROUNDHOOK=function(x0,y0,x1,y1,tm){if(_gh18)_gh18(x0,y0,
 function tgCover(cx,fy,hw,hh,tm){const tx=Math.floor(cx/16),ty=Math.floor(fy/16);if(!tgOK(ty*N+tx))return;
  g.save();g.beginPath();g.rect(Math.round(cx-hw),Math.round(fy-hh),hw*2,hh+3);g.clip();
  for(let y=ty-1;y<=ty+1;y++)for(let x=tx-1;x<=tx+1;x++){const i=y*N+x;if(x>=0&&y>=0&&x<N&&y<N&&tgOK(i))(TGDRAW?TGDRAW(x,y,tm):g.drawImage(tgC[tgFrame(x,y,tm)],x*16,y*16,16,16))}g.restore()}
-const _nd18=NEWDRAW;NEWDRAW=function(...a){_nd18(...a);if(SCENE)return;const tm=a[8];
- if(!dead)tgCover(P.x,P.y+7,9,7,tm);for(const n of en)if(n.type!=='boss')tgCover(n.x,n.y+6,9,4,tm)};
+SQNEWDRAW.wrap('018',_nd18=>function(...a){_nd18(...a);if(SCENE)return;const tm=a[8];
+ if(!dead)tgCover(P.x,P.y+7,9,7,tm);for(const n of en)if(n.type!=='boss')tgCover(n.x,n.y+6,9,4,tm)});
 // --- night: blue palette tint instead of a flat dark overlay, and lit windows ---
 SQHUD.before('018',()=>{const dk=SCENE?0:dark();if(dk>.25){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
   const lit=(X0,w,base,k)=>{for(const wx of[X0+8,X0+w-20]){g.fillStyle='rgba(255,210,110,'+(.55*dk)+')';g.fillRect(wx,base-22,12,10);g.fillStyle='rgba(255,200,100,'+(.12*dk)+')';g.fillRect(wx-4,base-26,20,18)}};

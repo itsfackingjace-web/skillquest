@@ -239,10 +239,10 @@
   IDESC[k]='RARE, from Black Jack, the Outlaw King. A black cowboy hat with a silver band. Defence like an adamant helmet.';inv[k]=inv[k]|0;
   let HAT=false;const AH=5;
   const _occ=occ;occ=function(slot){if(slot==='helm'&&HAT)return k;return _occ(slot)};
-  const _ss=setSlot;setSlot=function(slot,kk){_ss(slot,kk);if(slot==='helm'){HAT=kk===k;if(HAT){ARM.helm=AH;CLS.helm=null}}};
+  SQSETSLOT.after('100',(slot,kk)=>{if(slot==='helm'){HAT=kk===k;if(HAT){ARM.helm=AH;CLS.helm=null}}});
   const _wu=watchUpgrades;watchUpgrades=function(){const was=HAT;_wu();if(was&&ARM.helm!==AH){if((inv['eq_helm'+AH]|0)>0)inv['eq_helm'+AH]--;inv[k]=(inv[k]|0)+1;HAT=false}};
   SQSAVE.after('100:ohat',s=>{if(HAT)s.ohat=1;});SQLOAD.after('100',(S)=>{HAT=!!(S&&S.ohat)&&ARM.helm===AH});SQNEWGAME.before('100',()=>{HAT=false;});try{KNOWN49.add('ohat')}catch(e){self.SQERR&&SQERR(e,'100-20')}
-  const _gc=gearCH;gearCH=function(){const c=_gc();if(HAT&&!(typeof HIDEH!=='undefined'&&HIDEH)){c.ht=0;delete c.mh;delete c.dyh;c.oh=1}return c};
+  SQGEARCH.wrap('100',_gc=>function(){const c=_gc();if(HAT&&!(typeof HIDEH!=='undefined'&&HIDEH)){c.ht=0;delete c.mh;delete c.dyh;c.oh=1}return c});
   const OHC=new Map();const _ks=kitSprite;kitSprite=function(ch,dir,st,fl){const c=_ks(ch,dir,st,fl);if(!ch||!ch.oh)return c;const key=JSON.stringify(ch)+'|'+dir+'|'+st+'|'+(fl?1:0);let o=OHC.get(key);if(o)return o;
    const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let top=c.height,l=c.width,r=0;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(d[(y*c.width+x)*4+3]>0){if(y<top)top=y}
    for(let x=0;x<c.width;x++)for(let y=top;y<top+6;y++)if(d[(y*c.width+x)*4+3]>0){if(x<l)l=x;if(x>r)r=x}

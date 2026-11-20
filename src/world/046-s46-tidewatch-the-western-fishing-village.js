@@ -131,11 +131,11 @@ const _lh46=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh46(L,x0,y0,x1,y1,tm);if(!TWON)re
  for(const[x,y]of TWNET)if(inV(x,y))L.push([(y+1)*16-2,4,()=>drawNetRack(x,y,tm)]);
  if(TWLIGHT&&inV(TWLIGHT[0],TWLIGHT[1]))L.push([(TWLIGHT[1]+1)*16-2,4,()=>drawLighthouse(TWLIGHT[0],TWLIGHT[1],tm)])};
 SQDRAWMAP.after('046',()=>{if(!TWON)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(WX-2,WY-2,5,5);x.fillStyle='#78c8f8';x.fillRect(WX-1,WY-1,3,3);if(GRDEN){x.fillStyle='#101010';x.fillRect(GRDEN.x-1,GRDEN.y-1,3,3);x.fillStyle='#48e8a8';x.fillRect(GRDEN.x,GRDEN.y,1,1)}});
-const _mh46=mapHTML;mapHTML=function(){const h=_mh46();return TWON?h.replace('</span>','</span><span><i style="background:#78c8f8"></i>Tidewatch</span><span><i style="background:#48e8a8"></i>Drowned Grotto</span>'):h};
+SQMAPHTML.wrap('046',_mh46=>function(){const h=_mh46();return TWON?h.replace('</span>','</span><span><i style="background:#78c8f8"></i>Tidewatch</span><span><i style="background:#48e8a8"></i>Drowned Grotto</span>'):h});
 SONGS.tide={bpm:92,lead:'G5 - E5 D5 - B4 - D5 E5 - G5 - A5 - G5 E5 - D5 - - - C5 - E5 G5 - A5 - G5 E5 D5 B4 - D5 - - -',
  bass:'G2 - D3 - G2 - D3 - C3 - G3 - C3 - G3 - E2 - B2 - E2 - B2 - C3 - G3 - D3 - - -'};
 PARSED.tide={bpm:SONGS.tide.bpm,lead:parseTrack(SONGS.tide.lead),bass:parseTrack(SONGS.tide.bass)};
-const _ws46=wantSong;wantSong=function(){const w=_ws46();if(!TWON)return w;if(!SCENE&&(w==='day'||w==='port')&&inTWBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'tide';if(SCENE&&TWNAMES[SCENE.id])return'tide';return w};
+SQWANTSONG.wrap('046',_ws46=>function(){const w=_ws46();if(!TWON)return w;if(!SCENE&&(w==='day'||w==='port')&&inTWBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'tide';if(SCENE&&TWNAMES[SCENE.id])return'tide';return w});
 SQNEWGAME.after('046',()=>{for(const n of TWN){n.scene=n.work;if(n.work){n.x=n.wx;n.y=n.wy}else{n.x=n.hx0;n.y=n.hy0}}});
 // --- Tidewatch's quest line ---
 SIDE_QS.tidewatch.push(

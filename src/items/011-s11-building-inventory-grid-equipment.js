@@ -59,11 +59,11 @@ function drawStruct(i,s,ghost){const x=i%N,y=(i/N)|0,px=x*16+(s.shake>0?Math.rou
   if(op){Rg(px+3,py-1,10,16,'#302018');Rg(px+1,py-1,2,16,'#a06030');Rg(px+13,py-1,2,16,'#a06030')}else{Rg(px+1,py-1,14,16,'#a06030');Rg(px+3,py+1,10,5,'#885020');Rg(px+3,py+8,10,5,'#885020');Rg(px+11,py+6,2,2,GD)}}
  else if(s.t==='bed'){shd(px+8,py+13,14);Rg(px+1,py,14,16,O);Rg(px+2,py+1,12,14,'#7a4a20');Rg(px+3,py+2,10,4,'#f8f8f8');Rg(px+3,py+6,10,8,'#58a858');Rg(px+3,py+6,10,2,'#78c878');Rg(px+3,py+2,10,1,'#fff')}
  else if(s.t==='chest'){shd(px+8,py+14,14);Rg(px+1,py+2,14,13,O);Rg(px+2,py+3,12,5,'#c88840');Rg(px+2,py+8,12,6,'#a86830');Rg(px+2,py+7,12,1,'#604020');Rg(px+7,py+6,2,4,GD);Rg(px+2,py+3,12,1,'#e0a860')}}
-const _nd11=NEWDRAW;NEWDRAW=function(...a){_nd11(...a);const[,,x0,y0,x1,y1,,,tm]=a;const list=[];
+SQNEWDRAW.wrap('011',_nd11=>function(...a){_nd11(...a);const[,,x0,y0,x1,y1,,,tm]=a;const list=[];
  for(const[i,s]of STR){const x=i%N,y=(i/N)|0;if(x>=x0-1&&x<=x1+1&&y>=y0-1&&y<=y1+2)list.push([i,s])}
  list.sort((p,q)=>p[0]-q[0]);if(!SORTALL)for(const[i,s]of list)drawStruct(i,s,false);
  let front=false;for(const[i]of list){const x=i%N,y=(i/N)|0,b=(y+1)*16;if(Math.abs(P.x-(x*16+8))<15&&P.y+6>b&&P.y-16<b)front=true}if(front&&!dead&&!SORTALL)pP(tm);
- if(BUILD&&!dead){const[x,y]=frontTile(),ok=canPlace(x,y);g.globalAlpha=.6;drawStruct(y*N+x,{t:BUILD.k},true);g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.35)':'rgba(240,60,60,.35)';g.fillRect(x*16,y*16,16,16)}};
+ if(BUILD&&!dead){const[x,y]=frontTile(),ok=canPlace(x,y);g.globalAlpha=.6;drawStruct(y*N+x,{t:BUILD.k},true);g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.35)':'rgba(240,60,60,.35)';g.fillRect(x*16,y*16,16,16)}});
 // --- pixel item icons ---
 const ICONC={};
 function iconURL(k,col){const key=k+(col||'');if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d');
@@ -207,3 +207,9 @@ setActionLabels();
 
 // iconURL as a step list: later sections add named steps (window.SQICON; see 006's sqSteps)
 const SQICON=sqSteps('iconURL',iconURL,f=>{iconURL=f});window.SQICON=SQICON;
+
+// startBuild as a step list: later sections add named steps (window.SQSTARTB; see 006's sqSteps)
+const SQSTARTB=sqSteps('startBuild',startBuild,f=>{startBuild=f});window.SQSTARTB=SQSTARTB;
+
+// placeBuild as a step list: later sections add named steps (window.SQPLACEB; see 006's sqSteps)
+const SQPLACEB=sqSteps('placeBuild',placeBuild,f=>{placeBuild=f});window.SQPLACEB=SQPLACEB;

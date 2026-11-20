@@ -49,7 +49,7 @@
  // it and ○ closes it (its × / [data-chx]) instead of leaving the whole menu
  const cardIn=r=>{if(!r)return null;for(const d of r.querySelectorAll('[role="dialog"]'))if(vis(d))return d;return null};
  const cardClose=d=>d.querySelector('[data-chx],[aria-label="Close"],.chc-c')||[...d.querySelectorAll('button')].find(b=>/^[×✕x]$/i.test((b.textContent||'').trim()));
- {const _nr=navRoot;navRoot=function(){if(K.open)return box;const p=popRoot();if(p)return p;const r=_nr();return r&&r===pn&&cardIn(pn)||r}}
+ {SQNAVROOT.wrap('150',_nr=>function(){if(K.open)return box;const p=popRoot();if(p)return p;const r=_nr();return r&&r===pn&&cardIn(pn)||r})}
  {const _ni=navItems;navItems=function(root){const base=_ni(root);if(!root||root===box)return base;
    const more=[...root.querySelectorAll('textarea,select')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility!=='hidden'&&!e.disabled});
    if(!more.length)return base;const all=new Set(base.concat(more));return[...root.querySelectorAll('button,input,textarea,select')].filter(e=>all.has(e))}}

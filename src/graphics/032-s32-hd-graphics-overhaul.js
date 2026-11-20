@@ -341,7 +341,7 @@ const _rp32=rp;rp=function(){if(px2&&px2.canvas.hd2){px2.setTransform(2,0,0,2,0,
 const _dcs32=drawCardSprite;drawCardSprite=function(){const c=document.getElementById('tcs');if(c&&c.width!==64){c.width=64;c.height=80;c.hd2=true}if(c){const x=c.getContext('2d');x.setTransform(2,0,0,2,0,0);x.imageSmoothingEnabled=false}_dcs32()};
 const _wz32b=wizOverlay;wizOverlay=function(ox,oy,dir,st,fl){if(GC&&GC.canvas&&GC.canvas.hd2&&GC!==g){const g0=GC;const c=hdCache('w'+dir+st+(fl?1:0),48,56,24,44,(ax,ay)=>_wz32(ax,ay,dir,st,fl));g0.drawImage(c,Math.round(ox)-24,Math.round(oy)-44,48,56);return}_wz32b(ox,oy,dir,st,fl)};
 // mage gear is part of the sprite now, so it moves with every walking frame
-const _gc32=gearCH;gearCH=function(){const c=_gc32();if(CLS.body==='m')c.mr=1;if(CLS.helm==='m')c.mh=1;return c};
+SQGEARCH.wrap('032',_gc32=>function(){const c=_gc32();if(CLS.body==='m')c.mr=1;if(CLS.helm==='m')c.mh=1;return c});
 const _wz32c=wizOverlay;wizOverlay=function(ox,oy,dir,st,fl){if(GC===g||GC&&GC.canvas&&GC.canvas.hd2)return;_wz32c(ox,oy,dir,st,fl)};
 // ---------- one depth-sorted list: people, trees and rocks, buildings, houses, fences and stations, lamps, the well,
 // signs, the shipwreck and the hermit's hut are all drawn back-to-front by where they touch the ground ----------

@@ -47,7 +47,7 @@
  setInterval(check,700);
  // the game waits while the question is up
  {SQUPD.wrap('207',_u=>function(){if(asking)return;return _u.apply(this,arguments)})}
- {const _nr=navRoot;navRoot=function(){if(asking)return box;return _nr()}}
+ {SQNAVROOT.wrap('207',_nr=>function(){if(asking)return box;return _nr()})}
  // ---- chat: phrases only for under 13 ----
  {const _s=window.mpSend;window.mpSend=function(t){if(API.child()){const s=String(t||'').replace(/\s+/g,' ').trim();
     const w=/^\/(?:w|msg|pm|g|guild|p|party)\s+(?:(\S+)\s+)?(.+)$/i.exec(s);const body=w?(/^\/(?:g|guild|p|party)\s/i.test(s)?s.replace(/^\/\S+\s+/,''):w[2]):s;

@@ -12,7 +12,8 @@ const src=n=>js.slice(n.start,n.end);const edits={};const cnt={after:0,before:0,
 const plain=(stmts,inner,noRet)=>{let ok=true;for(const st of stmts)walk.recursive(st,null,{Function(){},ArrowFunctionExpression(){},FunctionExpression(){},FunctionDeclaration(){},
   ReturnStatement(n){if(n.argument||noRet)ok=false},Identifier(n){if(n.name===inner||n.name==='arguments')ok=false},ThisExpression(){ok=false}},walk.base);return ok};
 // `const h=inner();h=h.replace(...);return h` changes the value it returns: it can't be an after step (Nov 19: 210's optionsHTML lost its buttons)
-const reassigns=(stmts,v)=>{let hit=false;for(const st of stmts)walk.full(st,x=>{if((x.type==='AssignmentExpression'&&x.left.type==='Identifier'&&x.left.name===v)||(x.type==='UpdateExpression'&&x.argument.type==='Identifier'&&x.argument.name===v))hit=true});return hit};
+// any mention of the wrapper's result variable (read or write) keeps it a wrap step: an `after` step can't see that variable
+const reassigns=(stmts,v)=>{let hit=false;for(const st of stmts)walk.full(st,x=>{if(x.type==='Identifier'&&x.name===v)hit=true});return hit};
 for(const r of res){if(!r.decl)continue;const inner=r.inner,f=r.fnode,S=f.body.body,params=f.params;
  const pn=params.every(p=>p.type==='Identifier')?params.map(p=>p.name):null;
  const isCall=e=>{if(!e)return false;if(e.type==='ExpressionStatement')e=e.expression;else if(e.type==='ReturnStatement')e=e.argument;if(!e||e.type!=='CallExpression')return false;

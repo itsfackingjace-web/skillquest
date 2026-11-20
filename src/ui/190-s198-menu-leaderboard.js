@@ -4,9 +4,9 @@
 // the menu when it was opened from there (like backScreen).
 (()=>{if(typeof SMI==='undefined'||typeof lbOpen!=='function')return;let OURS=false,FROM=false;
  const at=SMI.findIndex(x=>x.id==='achievements');SMI.splice(at>=0?at+1:SMI.findIndex(x=>x.id==='options'),0,{id:'leaderboard',l:()=>'Leaderboards'});
- {const _ss=showScreen;showScreen=function(id){if(id!=='leaderboard')return _ss.apply(this,arguments);
+ {SQSHOWSCR.wrap('190',_ss=>function(id){if(id!=='leaderboard')return _ss.apply(this,arguments);
    FROM=typeof fromMenu!=='undefined'&&fromMenu;try{if(typeof smOpen!=='undefined'&&smOpen)closeSM()}catch(e){self.SQERR&&SQERR(e,'190-1')}
-   pnOpen=true;jx=jy=0;OURS=true;lbOpen()}}
+   pnOpen=true;jx=jy=0;OURS=true;lbOpen()})}
  setInterval(()=>{if(!OURS||!window.SQLB)return;
   if(SQLB.open){pnOpen=true;return}
   OURS=false;if(FROM){FROM=false;try{fromMenu=false}catch(e){self.SQERR&&SQERR(e,'190-2')}if(!dead&&!menuOpen){openSM();return}}

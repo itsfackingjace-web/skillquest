@@ -2,7 +2,7 @@
 (()=>{
  // Beds at home: the first tap sets you to wake up there and arms 013's bedPick (3 s); a second HIT picks the bed up, but a second
  // TALK/USE slept again and re-armed it, so on touch screens (both buttons said SLEEP) the bed could never be picked up.
- {const _uf=useFurn;useFurn=function(it){try{if(it&&it.f&&it.f.t==='bed'&&typeof bedPick!=='undefined'&&bedPick&&bedPick.home&&bedPick.i===it.i&&performance.now()-bedPick.at<3000&&typeof inHome==='function'&&inHome()){bedPick=null;pickFurn(it.i);return}}catch(e){self.SQERR&&SQERR(e,'205-1')}return _uf.apply(this,arguments)}}
+ {SQUSEFURN.wrap('205',_uf=>function(it){try{if(it&&it.f&&it.f.t==='bed'&&typeof bedPick!=='undefined'&&bedPick&&bedPick.home&&bedPick.i===it.i&&performance.now()-bedPick.at<3000&&typeof inHome==='function'&&inHome()){bedPick=null;pickFurn(it.i);return}}catch(e){self.SQERR&&SQERR(e,'205-1')}return _uf.apply(this,arguments)})}
  // Rain waters backyard/courtyard crops too (021 only watered Hollow's FARM plots). Same rule: watered for at least 90 more seconds.
  {let acc=0;SQUPD.after('205',(dt)=>{try{if((acc+=dt||0)>1){acc=0;if(typeof rainingNow==='function'&&rainingNow()){
    const homes=(typeof HOUSES!=='undefined'?HOUSES:[]).concat(window.SQRH||[]);for(const h of homes){if(!h||h._foreign||!h.yp)continue;for(const p of h.yp.values())if(p&&p.c)p.w=Math.max(+p.w||0,CLK+90)}}}}catch(e){self.SQERR&&SQERR(e,'205-2')}})}
@@ -44,7 +44,7 @@
    let near=false;for(let b=-1;b<=1&&!near;b++)for(let a=-1;a<=1;a++){const nx=x+a,ny=y+b;if(nx>=0&&ny>=0&&nx<W&&ny<H&&seen[ny*W+nx]){near=true;break}}
    if(near)continue;try{rgCellDel(R,it)}catch(e){self.SQERR&&SQERR(e,'205-7')}R.solid.delete(y*W+x);R.items.splice(j,1);n++}
   REACH.removed+=n;REACH.last={region:R.region,removed:n,reached:q.length,land}}
- {const _lr=loadRegion;loadRegion=function(){const out=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region&&!/^gi_/.test(R.region))pruneUnreachable(R)}catch(e){console.warn(e)}return out}}
+ {SQLOADRG.after('205',()=>{try{const R=SCENE&&SCENE.room;if(R&&R.region&&!/^gi_/.test(R.region))pruneUnreachable(R)}catch(e){console.warn(e)}})}
  // The CHAT/ONLINE and BUG buttons (061's #mpb/#mpbug, z-index 30) sat on top of open panels (z 20), covering the map on phones.
  // They're hidden while a panel or the START menu is open.
  {const st=document.createElement('style');st.textContent='body.sqpnup #mpb,body.sqpnup #mpbug{visibility:hidden!important}';document.head.appendChild(st);

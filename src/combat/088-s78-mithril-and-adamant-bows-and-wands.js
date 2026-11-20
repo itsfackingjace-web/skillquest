@@ -16,7 +16,7 @@
  for(const el in GEM){SM.push({k:'eq_w'+el+'_m',n:'Mithril '+el+' wand',c:{mbar:2,[GEM[el]]:1},lv:54,xp:320});SM.push({k:'eq_w'+el+'_a',n:'Adamant '+el+' wand',c:{abar:2,[GEM[el]]:2},lv:69,xp:520})}
  // what's in your off-hand
  const _occ=occ;occ=function(slot){const k=_occ(slot);if(slot==='off'&&WAND&&WT)return'eq_w'+WAND+(WT===2?'_a':'_m');return k};
- const _ss=setSlot;setSlot=function(slot,k){_ss(slot,k);if(slot==='off'){const e=k?EQ[k]:null;WT=e&&e.kind==='wand'?(e.wt|0):0}};
+ SQSETSLOT.after('088',(slot,k)=>{if(slot==='off'){const e=k?EQ[k]:null;WT=e&&e.kind==='wand'?(e.wt|0):0}});
  const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.arch&&lvOf(FL)<e.arch){say('You need Archery '+e.arch+' to use the '+e.n.toLowerCase()+'.');sfx('swish');return}return _eq(k)};
  // a crafted bow that knocks your wand out of your hand gives back the right wand
  const _wu=watchUpgrades;watchUpgrades=function(){const wk=WAND&&WT?occ('off'):null;_wu();if(wk&&!WAND){const base='eq_w'+wk.slice(4).split('_')[0];if((inv[base]|0)>0){inv[base]--;inv[wk]=(inv[wk]|0)+1}WT=0}};

@@ -19,11 +19,11 @@
  {SQDRAWMAP.after('076',()=>{if(MAPVIEW==='world')return;const c=document.getElementById('mpc');if(!c)return;const R=SCENE&&SCENE.room,area=R&&R.region?R.region:'hollow',[aw]=areaSize(area);if(c.width!==aw)return;const x=c.getContext('2d'),s=Math.max(1,Math.round(aw/90));for(const o of mine())if(o.w.ar===area)tomb(x,o.w.x/16,o.w.y/16,s,blink())})}
  {const _dw=drawWorld52;drawWorld52=function(){_dw();const c=document.getElementById('wmc');if(!c)return;const x=c.getContext('2d');
    for(const o of mine()){const r=wmRect(o.w.ar),[aw,ah]=areaSize(o.w.ar);tomb(x,r.x+(o.w.x/16)/aw*r.w,r.y+(o.w.y/16)/ah*r.h,1,blink())}}}
- {const _mh=mapHTML;mapHTML=function(){let h=_mh();const M=mine();if(!M.length)return h;
+ {SQMAPHTML.wrap('076',_mh=>function(){let h=_mh();const M=mine();if(!M.length)return h;
    h=h.replace(/(<div class="lg">)/,'$1<span><i style="background:#c8c8dc;outline:1px solid #181018"></i>Your grave</span>');
    const rows=M.map(o=>{const left=Math.max(1,Math.ceil(grvLeft(o.g)/60000)),nm=o.w.ar==='hollow'?'Hollow Island':WORLD_REGIONS[o.w.ar].name,out=grvPos(o.g).out,inside=!out&&o.g.loc&&(o.g.loc.startsWith('in:')||o.g.loc.startsWith('h:'));
     return '<br>'+esc(nm)+(out?' (outside the entrance)':inside?' (inside, by the door)':'')+' · crumbles in '+left+' min'}).join('');
-   return h+'<div class="qc" style="margin-top:8px"><b>Your grave'+(M.length>1?'s':'')+'</b><small>'+rows+'</small></div>'}}
+   return h+'<div class="qc" style="margin-top:8px"><b>Your grave'+(M.length>1?'s':'')+'</b><small>'+rows+'</small></div>'})}
  // an arrow at the side of the screen pointing to your grave (same area, not on screen)
  {SQHUD.after('076',()=>{if(dead||menuOpen||pnOpen||window.SQTS&&SQTS.open)return;const R=SCENE&&SCENE.room;if(SCENE&&!(R&&R.region))return;const area=curRegion();for(const o of mine()){if(o.w.ar!==area)continue;const dx=o.w.x-P.x,dy=o.w.y-P.y;if(Math.abs(dx)*Z<W/2-20&&Math.abs(dy)*Z<H/2-20)continue;
     const a=Math.atan2(dy,dx),rx=Math.min(W,H)*.38,cx=W/2+Math.cos(a)*rx,cy=H/2+Math.sin(a)*rx*.85,u=Math.max(2,Math.round(Math.min(W,H)/200)),d=Math.hypot(dx,dy)/16;

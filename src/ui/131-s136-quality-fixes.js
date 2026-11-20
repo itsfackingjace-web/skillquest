@@ -41,7 +41,7 @@
    for(let j=L.length-1;j>=0;j--){const y=q.hi?Math.round(P.y+12+off2+q.t*2):Math.round(P.y-28-off-q.t*4);g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(L[j],x,y);g.fillStyle='#fff';g.fillText(L[j],x,y);if(q.hi)off2+=5.5;else off+=5.5}if(q.hi)off2+=1;else off+=1}
   g.restore();for(let i=QL.length-1;i>=0;i--)if(QL[i].t>=1.8)QL.splice(i,1)}
 
- {const _nd=NEWDRAW;NEWDRAW=function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){self.SQERR&&SQERR(e,'131-3')}try{drawQL()}catch(e){self.SQERR&&SQERR(e,'131-4')}return out}}
+ {SQNEWDRAW.wrap('131',_nd=>function(...a){const out=_nd(...a);if(SCENE)try{drawDrops()}catch(e){self.SQERR&&SQERR(e,'131-3')}try{drawQL()}catch(e){self.SQERR&&SQERR(e,'131-4')}return out})}
 
  // ---- a castle's warmth keeps monsters away and heals you, but cooking needs a real campfire
  {const _nf=nearFire;nearFire=function(x,y,r){const v=_nf(x,y,r);if(!v||r!==45||x!==P.x||y!==P.y)return v;

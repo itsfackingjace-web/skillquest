@@ -146,7 +146,7 @@
  // ---- START > Party and START > Emotes ----
  const PTAB=38,ETAB=39;
  SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'party',l:()=>PT.id&&others().length?'Party ('+(others().length+1)+')':'Party'},{id:'emotes',l:()=>'Emotes'});
- {const _ss=showScreen;showScreen=function(id){if(id==='party'||id==='emotes'){pnOpen=true;ptab=id==='party'?PTAB:ETAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk');return}return _ss.apply(this,arguments)}}
+ {SQSHOWSCR.wrap('136',_ss=>function(id){if(id==='party'||id==='emotes'){pnOpen=true;ptab=id==='party'?PTAB:ETAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk');return}return _ss.apply(this,arguments)})}
  const areaName=r=>{try{const a=r.ar||'';if(!a)return'';const D=WORLD_REGIONS[a];return D?D.name:a}catch(e){return''}};
  function partyHTML(){const L=others();let h='<div class="tl">PARTY</div>';
   if(!on())return h+'<div class="qc"><p>Sign in to play online and make a party with friends.</p></div>';

@@ -33,7 +33,7 @@ function sfCommit(before){if(!before)return;const area=before.area,now=sfNow(),A
   if((b.c||null)!==(p.c||null)){if(!p.c)sfWrite(area,k,{c:'',g:0,t:now,w:0,e:now});else{const ww=Math.max(+old.w||0,p.w>CLK?now+(p.w-CLK)*1000:0);sfWrite(area,k,{c:p.c,g:0,t:now,w:ww,e:0})}continue}
   if(p.w!==b.w&&p.w>CLK){sfWrite(area,k,{c:p.c||'',g:sfGrowth(old,now),t:now,w:now+(p.w-CLK)*1000,e:p.c?0:(+old.e||now)})}}}
 {SQHIT.wrap('077 islands update part 1 public farming',_a=>function(){const b=sfAround();_a();try{sfCommit(b)}catch(e){console.warn(e)}})}
-{const _p=placeBuild;placeBuild=function(){const b=BUILD&&isSeed(BUILD.k)?sfAround():null;_p();if(b)try{sfCommit(b)}catch(e){console.warn(e)}}}
+{SQPLACEB.wrap('077',_p=>function(){const b=BUILD&&isSeed(BUILD.k)?sfAround():null;_p();if(b)try{sfCommit(b)}catch(e){console.warn(e)}})}
 {SQUPD.after('077',(dt)=>{try{sfRebuild()}catch(e){self.SQERR&&SQERR(e,'077-3')}})}
 // nobody owns a plot any more: other players' old personal plots are no longer shown, and yours aren't published
 rfForeign=function(){return new Map()};
@@ -123,14 +123,14 @@ ROOMS.castle={w:CASTLE_W,h:CASTLE_H,ex:10.5,castle:1,floor:['#8a8478','#7e786c']
 {const _cp=canPlaceIn;canPlaceIn=function(x,y){const R=SCENE&&SCENE.room;if(R&&R.castle&&(R.solid.has(y*R.w+x)||(y>=R.h-1&&Math.abs(x+.5-(R.ex+.5))<1.01)))return false;return _cp(x,y)}}
 // placing
 const castleIn=()=>{const R=rbR();return R?rhHere().concat(rhForeign(R.region)):(!SCENE?HOUSES:[])};
-{const _sb=startBuild;startBuild=function(k){if(k!=='castle')return _sb(k);if((inv.castle|0)<1)return;if(SCENE&&!rbR()){say('Go outside to build.');closePanel();return}
-  BUILD={k};closePanel();setActionLabels();say('Stand where the castle gate should go, facing up, and press PLACE. Press DONE to stop.')}}
-{const _pb=placeBuild;placeBuild=function(){if(!BUILD||BUILD.k!=='castle')return _pb();if((inv.castle|0)<1){endBuild();return}const R=rbR(),[x,y]=houseAnchor();
+{SQSTARTB.wrap('077',_sb=>function(k){if(k!=='castle')return _sb(k);if((inv.castle|0)<1)return;if(SCENE&&!rbR()){say('Go outside to build.');closePanel();return}
+  BUILD={k};closePanel();setActionLabels();say('Stand where the castle gate should go, facing up, and press PLACE. Press DONE to stop.')})}
+{SQPLACEB.wrap('077',_pb=>function(){if(!BUILD||BUILD.k!=='castle')return _pb();if((inv.castle|0)<1){endBuild();return}const R=rbR(),[x,y]=houseAnchor();
   if(R){if(!rhFits(R,x,y)){say('Not enough clear space for a castle here.');sfx('swish');return}
    const h={id:Math.random().toString(36).slice(2,8),rg:R.region,x,y,w:7,furn:new Map(),hp:24,castle:1};RH.push(h);rhSolidSync()}
   else{if(SCENE){say('You can only build outside.');return}if(!houseFits()){say(inVillage(x,y)?'You can\'t build inside the village.':'Not enough clear space for a castle here.');sfx('swish');return}
    const h={id:Math.random().toString(36).slice(2,8),x,y,w:7,furn:new Map(),hp:24,castle:1};HOUSES.push(h);addHouseBS(h)}
-  inv.castle--;P.y=Math.max(P.y,(y+1)*16+5);sfx('mine');setTimeout(()=>sfx('quest'),150);endBuild('Your castle stands! Walk in through the gate.');saveLocal(true);saveCloud(true)}}
+  inv.castle--;P.y=Math.max(P.y,(y+1)*16+5);sfx('mine');setTimeout(()=>sfx('quest'),150);endBuild('Your castle stands! Walk in through the gate.');saveLocal(true);saveCloud(true)})}
 {const _cp=canPlace;canPlace=function(x,y){if(BUILD&&BUILD.k==='castle'){const R=rbR();return R?rhFits(R,...houseAnchor()):houseFits()}return _cp(x,y)}}
 // packing a castle gives the castle back (not a house)
 {const _hh=hitHouse;hitHouse=function(h){if(!h||!h.castle)return _hh(h);const n0=inv.house|0;_hh(h);if((inv.house|0)>n0){inv.house=n0;inv.castle=(inv.castle|0)+1;say('You packed up your castle and everything inside it.')}}}

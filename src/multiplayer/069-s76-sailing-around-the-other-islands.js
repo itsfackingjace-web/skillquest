@@ -32,11 +32,11 @@ tk.addEventListener('touchstart',e=>{if(pnOpen||!rsR()||nearNpc())return;if(rsCa
 {SQPP.wrap('069',_p=>function(tm){if(!RSAIL.on||!rsR())return _p(tm);const bob=Math.round(Math.sin(tm*2.6));drawBoat26(tm);
   g.save();g.translate(0,(window.BOAT85?BOAT85.dy:3)+bob);_p(tm);g.restore();drawBoatFront26(Math.round(P.x),Math.round(P.y)+bob,face,tm)})}
 // no campfires, building or rolling from a boat
-{const _f=fire;fire=function(){if(RSAIL.on){say('Not on a boat!');return}_f()}}
-{const _sb=startBuild;startBuild=function(k){if(RSAIL.on){say('Go ashore to build.');closePanel();return}_sb(k)}}
+{SQFIRE.wrap('069',_f=>function(){if(RSAIL.on){say('Not on a boat!');return}_f()})}
+{SQSTARTB.wrap('069',_sb=>function(k){if(RSAIL.on){say('Go ashore to build.');closePanel();return}_sb(k)})}
 {const _r=roll;roll=function(){if(RSAIL.on)return;_r()}}
 // leaving the island, falling, travelling: back on foot
-{const _lr=loadRegion;loadRegion=function(...a){rsStop();return _lr(...a)}}
+{SQLOADRG.wrap('069',_lr=>function(...a){rsStop();return _lr(...a)})}
 {const _lv=leaveRegion;leaveRegion=function(){rsStop();return _lv()}}
 {const _rs=reset;reset=function(){rsStop();_rs()}}
 {SQENTER.wrap('069',_es=>function(...a){rsStop();return _es(...a)})}

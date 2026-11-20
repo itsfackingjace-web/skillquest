@@ -40,8 +40,8 @@ function lootWreck(){const d=Math.floor(time/DAYLEN);if(WRECK_DAY===d){say('You\
 SQTALK.wrap('026',_talk26=>function(){if(!pnOpen&&!menuOpen&&!dead&&!SCENE&&!nearNpc()){if(nearWreck()){lootWreck();return}if(SAILING?canLand():(nearStruct()===null&&canBoard())){sailToggle();return}}_talk26()});
 tk.addEventListener('touchstart',e=>{if(pnOpen||nearNpc())return;if(nearWreck()){e.preventDefault();lootWreck();return}if(canBoard()||canLand()){e.preventDefault();sailToggle()}},{passive:false});
 const _roll26=roll;roll=function(){if(SAILING)return;_roll26()};
-const _fire26=fire;fire=function(){if(SAILING){say('Not on a boat!');return}_fire26()};
-const _sb26=startBuild;startBuild=function(k){if(SAILING){say('Go ashore to build.');closePanel();return}_sb26(k)};
+SQFIRE.wrap('026',_fire26=>function(){if(SAILING){say('Not on a boat!');return}_fire26()});
+SQSTARTB.wrap('026',_sb26=>function(k){if(SAILING){say('Go ashore to build.');closePanel();return}_sb26(k)});
 // movement while sailing: the boat glides over water and under bridges
 let sailLab=false;
 SQUPD.wrap('026',_u26=>function(dt){const paused=menuOpen||pnOpen;
@@ -81,11 +81,11 @@ function drawHut(){const x0=(HRM.x-1)*16,base=HRM.y*16-2;shd(x0+24,base,48);Rg(x
 const _gh26=GROUNDHOOK;GROUNDHOOK=function(x0,y0,x1,y1,tm){if(_gh26)_gh26(x0,y0,x1,y1,tm);if(SCENE)return;
  if(Math.abs(GULL.x-(x0+x1)/2)<30&&Math.abs(GULL.y-(y0+y1)/2)<30)for(let k=0;k<18;k++){const a=k*2.4+tm*.3,r=4.4+((k*7)%5)*.4,sx=Math.round((GULL.x+.5+Math.cos(a)*r)*16),sy=Math.round((GULL.y+.5+Math.sin(a)*r*.8)*16),on=Math.sin(tm*4+k*1.7)>.3;
   if(on&&tile[Math.floor(sy/16)*N+Math.floor(sx/16)]===0){Rg(sx,sy,1,1,'#fff');Rg(sx-1,sy+1,3,1,['#f86878','#f8d848','#68d8f8','#98f868'][k%4])}}};
-const _nd26=NEWDRAW;NEWDRAW=function(...a){_nd26(...a);if(SCENE)return;const tm=a[8],vis=(x,y)=>Math.abs(x*16-P.x)<W/Z+60&&Math.abs(y*16-P.y)<H/Z+60;let rd=false;
+SQNEWDRAW.wrap('026',_nd26=>function(...a){_nd26(...a);if(SCENE)return;const tm=a[8],vis=(x,y)=>Math.abs(x*16-P.x)<W/Z+60&&Math.abs(y*16-P.y)<H/Z+60;let rd=false;
  if(vis(WRK.x,WRK.y)&&!SORTALL){drawWreck(tm);if(Math.abs(P.x-(WRK.x*16+8))<30&&P.y>WRK.y*16+10&&P.y<WRK.y*16+40)rd=true}
  if(vis(HRM.x,HRM.y)&&!SORTALL){drawHut();if(Math.abs(P.x-(HRM.x*16+8))<30&&P.y>HRM.y*16-4&&P.y<HRM.y*16+20)rd=true}
  if(rd&&!dead)pP(tm);
- const q=QS[Q.i];if(Q.on&&q&&q.type==='hermit'&&Q.k<1){const n=NPCS.find(o=>o.id==='hermit');if(n&&vis(n.x/16,n.y/16)){const bx=Math.round(n.x),by=Math.round(n.y-30+Math.sin(tm*4)*1.5);g.save();g.font='700 11px "SQ Digits","Pixelify Sans",monospace';g.textAlign='center';g.lineWidth=3;g.lineJoin='round';g.strokeStyle=O;g.strokeText('!',bx,by);g.fillStyle='#f8d848';g.fillText('!',bx,by);g.restore()}}};
+ const q=QS[Q.i];if(Q.on&&q&&q.type==='hermit'&&Q.k<1){const n=NPCS.find(o=>o.id==='hermit');if(n&&vis(n.x/16,n.y/16)){const bx=Math.round(n.x),by=Math.round(n.y-30+Math.sin(tm*4)*1.5);g.save();g.font='700 11px "SQ Digits","Pixelify Sans",monospace';g.textAlign='center';g.lineWidth=3;g.lineJoin='round';g.strokeStyle=O;g.strokeText('!',bx,by);g.fillStyle='#f8d848';g.fillText('!',bx,by);g.restore()}}});
 // --- the hermit ---
 NPCS.push({kind:'folk',id:'hermit',name:'Old Hermit',isle:'Hermit\'s Isle',hx0:HRM.x*16+8,hy0:(HRM.y+1)*16+6,x:HRM.x*16+8,y:(HRM.y+1)*16+6,ch:{sk:0,hs:2,hc:6,sh:2,pn:2,ht:0,hcol:0,so:3}});
 LINES.hermit={m:['Hm? A visitor? Nobody visits.','The gulls brought you, did they?'],d:['I came out here forty years ago to get away from people. It worked.','The water around Gull Rock sparkles. Rainbow fish bite there, if you\'re patient.','There\'s an old wreck to the southeast. The tide washes new salvage onto it every day.'],e:['Sunset is the only clock I keep.','Mind the rocks on your way back.'],n:['Can\'t sleep. Never can.','The stars out here are something else.'],x:['Before the bridge, Saltmere and Hollow didn\'t even speak. Funny what a road does.']};
@@ -106,7 +106,7 @@ SQLOAD.after('026',(S)=>{if(S.q)remap26(S.qv||0);WRECK_DAY=isFinite(S.wreck)?+S.
 SQNEWGAME.before('026',()=>{SAILING=false;WRECK_DAY=-1;});
 // map markers and music
 SQDRAWMAP.after('026',()=>{const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');for(const[s,col]of[[GULL,'#68d8f8'],[WRK,'#c88848'],[HRM,'#f8d848']]){x.fillStyle='#101010';x.fillRect(s.x-1,s.y-1,3,3);x.fillStyle=col;x.fillRect(s.x,s.y,1,1)}});
-const _ws26=wantSong;wantSong=function(){const w=_ws26();return SAILING&&w==='day'?'port':w};
+SQWANTSONG.wrap('026',_ws26=>function(){const w=_ws26();return SAILING&&w==='day'?'port':w});
 SQICON.wrap('026',_icon26=>function(k,col){if(k!=='rainbow'&&k!=='crainbow')return _icon26(k,col);const key='g26'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  const C=k==='rainbow'?['#f86878','#f8b848','#f8e848','#68d878','#68a8f8','#a878f8']:['#c86048','#c88838','#c8a838','#78a858','#5888b8','#8868b8'];
  for(let i=0;i<6;i++)r(2+i,5,1,4,C[i]);r(3,4,5,1,C[2]);r(3,9,5,1,C[3]);r(8,5,1,4,C[5]);r(9,4,2,1,C[0]);r(10,5,1,4,C[0]);r(9,9,2,1,C[0]);r(3,6,1,1,'#202020');

@@ -60,9 +60,9 @@ SONGS.sandcave={bpm:96,lead:'E5 - F5 E5 - D5 - C5 - B4 - C5 - D5 - - E5 - - G5 F
 SONGS.seacave={bpm:76,lead:'G4 - B4 - D5 - - - C5 - B4 - A4 - - - G4 - B4 - E5 - D5 - C5 - - - B4 - - -',bass:'E2 - - - B2 - - - C2 - - - G2 - - - A1 - - - E2 - - - B1 - - - F#2 - - -'};
 for(const k of['icecave','sandcave','seacave'])PARSED[k]={bpm:SONGS[k].bpm,lead:parseTrack(SONGS[k].lead),bass:parseTrack(SONGS[k].bass)};
 const DSONG={frostfang:'icecave',scorpion:'sandcave',tidekeeper:'seacave'};
-const _ws48=wantSong;wantSong=function(){const w=_ws48();const R=SCENE&&SCENE.room;if(R&&R.dun&&DSONG[R.dun.kind])return DSONG[R.dun.kind];return w};
+SQWANTSONG.wrap('048',_ws48=>function(){const w=_ws48();const R=SCENE&&SCENE.room;if(R&&R.dun&&DSONG[R.dun.kind])return DSONG[R.dun.kind];return w});
 // the map legend: towns first, then each village followed by its dungeon
-const _mh48=mapHTML;mapHTML=function(){const h=_mh48(),re=/<span><i style="background:[^"]*"><\/i>[^<]*<\/span>/g,sp=h.match(re);if(!sp)return h;
+SQMAPHTML.wrap('048',_mh48=>function(){const h=_mh48(),re=/<span><i style="background:[^"]*"><\/i>[^<]*<\/span>/g,sp=h.match(re);if(!sp)return h;
  const ord=['You','Hollow Village','Frosthollow','Frostfang Den','Dusthaven','Scorpion Hollow','Tidewatch','Drowned Grotto','Bridge','Islets'],key=x=>{const t=x.replace(/<[^>]*>/g,'');const i=ord.findIndex(o=>t.startsWith(o));return i<0?99:i};
- const sorted=sp.slice().sort((a,b)=>key(a)-key(b));let k=0;return h.replace(re,()=>sorted[k++])};
+ const sorted=sp.slice().sort((a,b)=>key(a)-key(b));let k=0;return h.replace(re,()=>sorted[k++])});
 var MFT=-9,MLAST=null;function MFADEF(){if(typeof ACX==='undefined'||!ACX)return 1;const w=wantSong();if(w!==MLAST){MLAST=w;MFT=ACX.currentTime}return Math.min(1,Math.max(0,(ACX.currentTime-MFT)/1.4))}

@@ -164,12 +164,12 @@ wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt]
  if(b.dataset.wki){const k=b.dataset.wki;WK.q=String(INAME[k]||k);wk$('wkq').value=WK.q;wkRender();wk$('wkb').scrollTop=0}});
 wkEl.addEventListener('input',e=>{if(e.target&&/^wkx/.test(e.target.id))wkXpCalc()});wkEl.addEventListener('change',e=>{if(e.target&&/^wkx/.test(e.target.id))wkXpCalc()});
 wk$('wkq').addEventListener('input',()=>{WK.q=wk$('wkq').value;WK.pg=null;wkRender();wk$('wkb').scrollTop=0});
-{const _nr=navRoot;navRoot=function(){if(WK.open)return wkEl;return _nr()}}
+{SQNAVROOT.wrap('075',_nr=>function(){if(WK.open)return wkEl;return _nr()})}
 // on the title menu (next to the leaderboards) and in the START menu
 {const _m=tsMenu;tsMenu=function(){_m();if(tsMn.querySelector('[data-a="wk"]'))return;const o=tsMn.querySelector('[data-a="opt"]');if(!o)return;const b=document.createElement('button');b.dataset.a='wk';b.textContent=wkNew()?'WIKI · NEW!':'WIKI';o.before(b)}}
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='wk')wkOpen()});
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'wiki',l:()=>wkNew()?'Wiki · NEW!':'Wiki'});
-{const _ss=showScreen;showScreen=function(id){if(id==='wiki'){try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){self.SQERR&&SQERR(e,'075-9')}wkOpen();return}return _ss(id)}}
+{SQSHOWSCR.wrap('075',_ss=>function(id){if(id==='wiki'){try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){self.SQERR&&SQERR(e,'075-9')}wkOpen();return}return _ss(id)})}
 // ---- Wiki, part 2: guides, an XP table and calculator, shops, NPCs, island maps, monster pictures, a skill picker ----
 const WK2={};
 // how to train each skill (what gives XP, and how much)

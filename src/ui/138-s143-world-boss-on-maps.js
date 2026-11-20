@@ -21,9 +21,9 @@
  // area map (local view)
  {SQDRAWMAP.wrap('138',_dm=>function(){const out=_dm.apply(this,arguments);try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return out;const b=B();if(!b||b.where!==curRegion())return out;const p=pos(b);if(!p)return out;
    const c=document.getElementById('mpc');if(!c)return out;const x=c.getContext('2d');mark(x,p.x/16,p.y/16,Math.max(3,c.width/45),b,null)}catch(e){self.SQERR&&SQERR(e,'138-3')}return out})}
- {const _mh=mapHTML;mapHTML=function(){let h=_mh.apply(this,arguments);try{const b=B();if(b){const here=b.where===curRegion();
+ {SQMAPHTML.wrap('138',_mh=>function(){let h=_mh.apply(this,arguments);try{const b=B();if(b){const here=b.where===curRegion();
    const line='<div style="margin:4px 0;padding:5px 8px;background:#3a1818;color:#ffd8d0;border:2px solid #a83030;font-size:13px;text-align:center">'+esc(b.T.ic+' WORLD BOSS: '+b.T.n)+' · '+esc(here?'here on this island':'on '+where(b))+' · '+left(b)+' left</div>';
-   const i=h.indexOf('<canvas');h=i>=0?h.slice(0,i)+line+h.slice(i):line+h}}catch(e){self.SQERR&&SQERR(e,'138-4')}return h}}
+   const i=h.indexOf('<canvas');h=i>=0?h.slice(0,i)+line+h.slice(i):line+h}}catch(e){self.SQERR&&SQERR(e,'138-4')}return h})}
  // HUD minimap
  if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{const b=B();if(!b)return out;const t=miniTarget();if(!t)return out;const area=t.k==='region'?t.R.region:'hollow';if(area!==b.where)return out;
    const p=pos(b);if(!p)return out;const H=hudLayout(),U=H.U,w=H.dw,hh=w*t.h/t.w,x0=H.dx,y0=H.top+H.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);

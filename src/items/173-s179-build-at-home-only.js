@@ -8,9 +8,9 @@
 (()=>{const FREE=k=>k==='house'||k==='castle'||(typeof isSeed==='function'&&isSeed(k))||(typeof SEED2CROP!=='undefined'&&!!SEED2CROP[k]);
  const atHome=()=>!!(SCENE&&SCENE.id==='home'&&SCENE.house);
  const MSG='You can only build inside your own house or castle, or in its backyard. Walk in through your door first.';
- {const _sb=startBuild;startBuild=function(k){if(!FREE(k)&&!atHome()&&(inv[k]|0)>0){say(MSG);msgT=6;try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'173-1')}try{closePanel()}catch(e){self.SQERR&&SQERR(e,'173-2')}return}return _sb.apply(this,arguments)}}
+ {SQSTARTB.wrap('173',_sb=>function(k){if(!FREE(k)&&!atHome()&&(inv[k]|0)>0){say(MSG);msgT=6;try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'173-1')}try{closePanel()}catch(e){self.SQERR&&SQERR(e,'173-2')}return}return _sb.apply(this,arguments)})}
  // a build mode started at home that somehow carries outside stops there
- {const _pb=placeBuild;placeBuild=function(){if(BUILD&&!FREE(BUILD.k)&&!atHome()){endBuild(MSG);return}return _pb.apply(this,arguments)}}
+ {SQPLACEB.wrap('173',_pb=>function(){if(BUILD&&!FREE(BUILD.k)&&!atHome()){endBuild(MSG);return}return _pb.apply(this,arguments)})}
  // descriptions that still said "or outside"
  for(const k of BK)if(typeof IDESC[k]==='string')IDESC[k]=IDESC[k].replace('Place it in your house or outside,','Place it in your house, castle or backyard,');
  // ---- packing what is still built outside ----

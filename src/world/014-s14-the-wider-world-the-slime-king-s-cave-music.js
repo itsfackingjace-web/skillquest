@@ -58,16 +58,14 @@ SQFURN.wrap('014',_df14=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='boulder'){shd(x0+8,y0+14,16);Rg(x0+1,y0-2,14,17,O);Rg(x0+2,y0-1,12,15,'#7a7068');Rg(x0+3,y0,6,4,'#9a9088');Rg(x0+2,y0+10,12,4,'#5a5048');return}
  if(it.t==='crystal'){const p=.6+.4*Math.sin(tm*2+x0);g.fillStyle='rgba(120,200,255,'+(.18*p)+')';g.beginPath();g.arc(x0+8,y0+4,14,0,6.283);g.fill();Rg(x0+4,y0-4,8,18,O);Rg(x0+5,y0-3,6,16,'#68b8f0');Rg(x0+6,y0-2,2,12,'#c8ecff');Rg(x0+2,y0+6,4,8,O);Rg(x0+3,y0+7,2,6,'#4890d0');return}
  _df14(it,tm)});
-const _dr14=drawRoom;drawRoom=function(tm){_dr14(tm);if(!SCENE||!SCENE.room.cave||SCENE.room.region)return;for(const n of en)if(!n.dead)pS(n,tm);if(!dead)pP(tm);
- const au=window.SQAURA&&SQAURA()&&!dead,gr=g.createRadialGradient(P.x,P.y-4,au?70:28,P.x,P.y-4,au?190:118);// Flame Aura lights more of the cave
- gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(6,4,12,.88)');g.fillStyle=gr;g.fillRect(P.x-500,P.y-500,1000,1000)};
+SQDRAWROOM.after('014',(tm)=>{if(!SCENE||!SCENE.room.cave||SCENE.room.region)return;for(const n of en)if(!n.dead)pS(n,tm);if(!dead)pP(tm);const au=window.SQAURA&&SQAURA()&&!dead,gr=g.createRadialGradient(P.x,P.y-4,au?70:28,P.x,P.y-4,au?190:118);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(6,4,12,.88)');g.fillStyle=gr;g.fillRect(P.x-500,P.y-500,1000,1000)});
 // --- the desert trader ---
 let TRADER=null;{const cx=N>>1;outer:for(let y=N-8;y>N/2;y--)for(let dx=0;dx<30*HSC;dx++)for(const x of[cx+dx,cx-dx]){let ok=true;for(let a=-1;a<=2;a++)for(let b=-1;b<=1;b++){const i=(y+b)*N+x+a;if(tile[i]!==5||obj[i]||BS.has(i))ok=false}if(ok){TRADER={x,y};break outer}}}
 if(TRADER){BS.add(TRADER.y*N+TRADER.x+1);NPCS.push({kind:'trader',x:TRADER.x*16+8,y:(TRADER.y+1)*16+4,ch:{sk:2,hs:0,hc:0,sh:4,pn:2,ht:1,hcol:5,so:3}})}
-const _nd14=NEWDRAW;NEWDRAW=function(...a){_nd14(...a);if(SCENE)return;const tm=a[8];
+SQNEWDRAW.wrap('014',_nd14=>function(...a){_nd14(...a);if(SCENE)return;const tm=a[8];
  if(TRADER){const x0=(TRADER.x+1)*16,y0=TRADER.y*16;shd(x0+8,y0+14,18);Rg(x0-1,y0+5,18,10,O);Rg(x0,y0+6,16,8,'#a87850');for(let i=0;i<4;i++)Rg(x0+2+i*4,y0+7,3,3,['#e88838','#f0ece0','#8890a0','#48a838'][i]);
   Rg(x0-2,y0-8,20,8,O);for(let i=0;i<5;i++)Rg(x0-1+i*4,y0-7,4,6,i%2?'#f8f0e0':'#d84838');Rg(x0,y0-1,2,7,O);Rg(x0+14,y0-1,2,7,O)}
-};
+});
 function traderHTML(){const row=(k,act,label,sub,ok)=>'<button class="sb trb" data-a="'+act+'" style="opacity:'+(ok?1:.45)+'">'+label+'<br><small>'+sub+'</small></button>';
  return'<div class="tl">Desert Trader</div><div class="qc"><p>"Sand in my boots, gold in my pockets. I trade with travelers from the snow and the sand."</p></div><div class="tl" style="margin-top:8px">Gold: '+GLD+'</div><div class="tl" style="font-size:13px">BUY</div>'
  +row('iron','biron','Iron ore','18 gold each',GLD>=18)+row('iron','biron5','5 iron ore','85 gold',GLD>=85)
@@ -110,3 +108,6 @@ setInterval(()=>{try{if(!ACX||ACX.state!=='running')return;if(!MG){MG=ACX.create
 
 // enemyDrop as a step list: later sections add named steps (window.SQDROP; see 006's sqSteps)
 const SQDROP=sqSteps('enemyDrop',enemyDrop,f=>{enemyDrop=f});window.SQDROP=SQDROP;
+
+// wantSong as a step list: later sections add named steps (window.SQWANTSONG; see 006's sqSteps)
+const SQWANTSONG=sqSteps('wantSong',wantSong,f=>{wantSong=f});window.SQWANTSONG=SQWANTSONG;

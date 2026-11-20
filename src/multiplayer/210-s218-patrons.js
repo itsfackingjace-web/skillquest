@@ -42,7 +42,7 @@
  let WEAR=false;
  {SQSAVE.after('210:fcw',o=>{try{o.fcw=WEAR?1:0}catch(e){self.SQERR&&SQERR(e,'210-5')}})}
  {SQLOAD.after('210',(s)=>{try{WEAR=!!(s&&s.fcw)}catch(e){self.SQERR&&SQERR(e,'210-6')}})}
- {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);if(WEAR&&cape(uid()))c.fcp=1;else delete c.fcp;return c}}
+ {SQGEARCH.wrap('210',_g=>function(){const c=_g.apply(this,arguments);if(WEAR&&cape(uid()))c.fcp=1;else delete c.fcp;return c})}
  {SQUPD.before('210',()=>{try{const m=mp();if(m&&m.players)for(const [u2,r] of m.players){if(r&&r.ch&&r.ch.fcp&&!cape(u2||r.uid))delete r.ch.fcp}}catch(e){self.SQERR&&SQERR(e,'210-7')}})}
  // ---- credits ----
  let credPref=true;try{credPref=localStorage.getItem('sq_pcred')!=='0'}catch(e){self.SQERR&&SQERR(e,'210-8')}
@@ -102,7 +102,7 @@
  // START menu item, only for players who can see it (added/removed each time the menu is drawn)
  const ITEM={id:'patron',l:()=>'Patron'};
  if(typeof rSM==='function'){const _sm=rSM;rSM=function(){try{const at=SMI.indexOf(ITEM),want=showMenu();if(want&&at<0){const o=SMI.findIndex(x=>x.id==='options');SMI.splice(o>=0?o:SMI.length,0,ITEM)}else if(!want&&at>=0)SMI.splice(at,1)}catch(e){self.SQERR&&SQERR(e,'210-16')}return _sm.apply(this,arguments)}}
- {const _ss=showScreen;showScreen=function(id){if(id!=='patron')return _ss.apply(this,arguments);pnOpen=true;ptab=PTAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'210-17')}}}
+ {SQSHOWSCR.wrap('210',_ss=>function(id){if(id!=='patron')return _ss.apply(this,arguments);pnOpen=true;ptab=PTAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'210-17')}})}
  // Options: Credits for everyone, one button to the Patron screen
  {SQOPTS.wrap('210',_o=>function(){let h=_o();
    h=h.replace('<div class="aclinks">','<button class="sb" data-pcr="credits">Credits</button>'+(showMenu()?'<button class="sb" data-pcr="open"><img class="sqpf" src="'+flameURL+'" alt="">Patron</button>':'')+'<div class="aclinks">');

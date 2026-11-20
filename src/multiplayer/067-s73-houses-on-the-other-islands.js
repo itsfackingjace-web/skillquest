@@ -22,12 +22,12 @@ function rhSolidSync(){const R=rbR();if(!R)return;const want=new Set(),had=R._rh
  for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rhS=want}
 setInterval(rhSolidSync,500);
 // ---- placing ----
-{const _sb=startBuild;startBuild=function(k){const R=rbR();if(!R||k!=='house')return _sb(k);if((inv.house|0)<1)return;
-  BUILD={k};closePanel();setActionLabels();say('Stand where the front door should go, facing up, and press PLACE. Press DONE to stop.')}}
-{const _pb=placeBuild;placeBuild=function(){const R=rbR();if(!R||!BUILD||BUILD.k!=='house')return _pb();if((inv.house|0)<1){endBuild();return}
+{SQSTARTB.wrap('067',_sb=>function(k){const R=rbR();if(!R||k!=='house')return _sb(k);if((inv.house|0)<1)return;
+  BUILD={k};closePanel();setActionLabels();say('Stand where the front door should go, facing up, and press PLACE. Press DONE to stop.')})}
+{SQPLACEB.wrap('067',_pb=>function(){const R=rbR();if(!R||!BUILD||BUILD.k!=='house')return _pb();if((inv.house|0)<1){endBuild();return}
   const[x,y]=houseAnchor();if(!rhFits(R,x,y)){say('Not enough clear space for a house here.');sfx('swish');return}
   const h={id:Math.random().toString(36).slice(2,8),rg:R.region,x,y,w:7,furn:new Map(),hp:12};RH.push(h);inv.house--;rhSolidSync();P.y=Math.max(P.y,(y+1)*16+5);
-  sfx('chop');setTimeout(()=>sfx('quest'),150);endBuild('Your new house on '+WORLD_REGIONS[R.region].name+' is ready! Walk in through the door.');saveLocal(true);saveCloud(true)}}
+  sfx('chop');setTimeout(()=>sfx('quest'),150);endBuild('Your new house on '+WORLD_REGIONS[R.region].name+' is ready! Walk in through the door.');saveLocal(true);saveCloud(true)})}
 // ---- hitting: pack it up ----
 function rhPack(h){const j=RH.indexOf(h);if(j<0)return;RH.splice(j,1);rhSolidSync();inv.house=(inv.house|0)+1;
  for(const f of h.furn.values()){inv[f.t]=(inv[f.t]|0)+1;if(f.items)for(const k in f.items)inv[k]=(inv[k]|0)+f.items[k]}if(HOMESP===h.id)HOMESP=null;

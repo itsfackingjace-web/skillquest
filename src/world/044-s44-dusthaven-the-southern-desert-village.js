@@ -182,11 +182,11 @@ const _lh44=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh44(L,x0,y0,x1,y1,tm);if(!DHON)re
  if(DHRUIN&&inV(DHRUIN.x,DHRUIN.y))L.push([(DHRUIN.y+1)*16,4,()=>drawRuins(tm)])};
 // map, music
 SQDRAWMAP.after('044',()=>{if(!DHON)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#c8a068';for(const i of DHPATH)x.fillRect(i%N,(i/N)|0,1,1);x.fillStyle='#101010';x.fillRect(DX-2,DY-2,5,5);x.fillStyle='#f0a848';x.fillRect(DX-1,DY-1,3,3);if(DHRUIN){x.fillStyle='#101010';x.fillRect(DHRUIN.x-1,DHRUIN.y-1,3,3);x.fillStyle='#ff7830';x.fillRect(DHRUIN.x,DHRUIN.y,1,1)}});
-const _mh44=mapHTML;mapHTML=function(){const h=_mh44();return DHON?h.replace('</span>','</span><span><i style="background:#f0a848"></i>Dusthaven</span><span><i style="background:#ff7830"></i>Scorpion Hollow</span>'):h};
+SQMAPHTML.wrap('044',_mh44=>function(){const h=_mh44();return DHON?h.replace('</span>','</span><span><i style="background:#f0a848"></i>Dusthaven</span><span><i style="background:#ff7830"></i>Scorpion Hollow</span>'):h});
 SONGS.desert={bpm:108,lead:'D5 - F5 E5 D5 - A4 - C5 D5 - - E5 F5 E5 C5 D5 - - - A4 - D5 F5 G5 - F5 E5 D5 C5 A4 - D5 - - -',
  bass:'D2 - A2 - D2 - A2 - C2 - G2 - C2 - G2 - D2 - A2 - D2 - A2 - A1 - E2 - D2 - - -'};
 PARSED.desert={bpm:SONGS.desert.bpm,lead:parseTrack(SONGS.desert.lead),bass:parseTrack(SONGS.desert.bass)};
-const _ws44=wantSong;wantSong=function(){const w=_ws44();if(!DHON)return w;if(!SCENE&&w==='day'&&inDHBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'desert';if(SCENE&&DHNAMES[SCENE.id])return'desert';return w};
+SQWANTSONG.wrap('044',_ws44=>function(){const w=_ws44();if(!DHON)return w;if(!SCENE&&w==='day'&&inDHBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'desert';if(SCENE&&DHNAMES[SCENE.id])return'desert';return w});
 SQNEWGAME.after('044',()=>{for(const n of DHN){n.scene=n.work;if(n.work){n.x=n.wx;n.y=n.wy}else{n.x=n.hx0;n.y=n.hy0}}});
 // --- Dusthaven's quest line ---
 SIDE_QS.dusthaven.push(

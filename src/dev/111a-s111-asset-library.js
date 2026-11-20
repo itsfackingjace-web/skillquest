@@ -77,10 +77,10 @@ var SQA=(()=>{
    C.drawImage(c,Math.round(ox)-24,Math.round(oy)-44,48,56)}}
  const wornCanvasFrom=(w,dir,fl,dc,k,st)=>{let sp=frameOf(w,k,dir,st|0);if(!sp)return null;if(dc&&w.dy)sp=recol(sp,dyeMap(w.dy,dc));const r=render(sp);if(!fl)return r;const c=document.createElement('canvas');c.width=WW;c.height=WH;const x=c.getContext('2d');x.translate(WW,0);x.scale(-1,1);x.drawImage(r,0,0);return c};
  // what you have on travels with your look (ch.wr) so other players' games draw it too
- const _gch=gearCH;gearCH=function(){const c=_gch();const wr=[];
+ SQGEARCH.wrap('111a',_gch=>function(){const c=_gch();const wr=[];
   for(const sl of WSLOTS){let k=null;try{k=occ(sl)}catch(e){self.SQERR&&SQERR(e,'111a-1')}if(!k||!WORN[k])continue;wr.push(k)}
   // your own hat, shirt and trousers, so a game that has a look marked "hide" can take the game's piece off you
-  if(wr.length){c.wr=wr;c.wht=CH.ht|0;c.whc=CH.hcol|0;c.wsh=CH.sh|0;c.wpn=CH.pn|0}return c};
+  if(wr.length){c.wr=wr;c.wht=CH.ht|0;c.whc=CH.hcol|0;c.wsh=CH.sh|0;c.wpn=CH.pn|0}return c});
  // "hide" is decided by the game drawing you (it needs the look in its library), not by the game you play on
  const hideFor=ch=>{let o=null;if(!ch||!Array.isArray(ch.wr)||ch.wsh==null)return ch;for(const k of ch.wr){const w=WORN[k],sl=EQ[k]&&EQ[k].slot;if(!w||!w.h)continue;o=o||{...ch};
    if(sl==='helm'){o.ht=ch.wht;o.hcol=ch.whc;delete o.mh;delete o.fc;delete o.oh}else if(sl==='body'){o.sh=ch.wsh;delete o.mr}else if(sl==='legs')o.pn=ch.wpn}return o||ch};
@@ -196,11 +196,11 @@ var SQA=(()=>{
  const _rpI=rgPrepare;rgPrepare=function(id){const R=_rpI(id);if(R&&WORLD_REGIONS[id]&&WORLD_REGIONS[id].custom)R._t64=1;return R};
  // loot chests: drawn with the game's chest; each player can take what's inside once (remembered in their save)
  SQFURN.wrap('111a',_dfI=>function(it,tm){if(it&&it.t==='lm'&&it.k==='chest'){try{shd(it.x*16+8,it.y*16+15,14);hdPut(hdChestS(),it.x*16,it.y*16)}catch(e){self.SQERR&&SQERR(e,'111a-10')}return}return _dfI(it,tm)});
- const _ufI=useFurn;useFurn=function(it){if(it&&it.use==='loot'){const id=here(),W=WORLD_STATE[id]=WORLD_STATE[id]||{},got=W.loot=W.loot||[];
+ SQUSEFURN.wrap('111a',_ufI=>function(it){if(it&&it.use==='loot'){const id=here(),W=WORLD_STATE[id]=WORLD_STATE[id]||{},got=W.loot=W.loot||[];
    if(got.includes(it.ci)){say('The chest is empty. You already took what was inside.');msgT=4;sfx('swish');return}
    const parts=[],G={};for(const k in it.loot||{}){const n=Math.max(0,Math.min(100000,it.loot[k]|0));if(!n)continue;if(/^lt_/.test(k)){if(window.SQCONTENT)for(let i=0;i<Math.min(n,20);i++){const r=SQCONTENT.roll(k);for(const q in r)G[q]=(G[q]|0)+r[q]}}else G[k]=(G[k]|0)+n}for(const k in G){const n=G[k];if(k==='gold'){GLD+=n;parts.push(n+' gold')}else if(INAME[k]){inv[k]=(inv[k]|0)+n;parts.push(n+' '+(n>1?(SN[k]||INAME[k]):INAME[k]).toLowerCase())}}
    got.push(it.ci);say(parts.length?'You open the '+(it.name||'chest').toLowerCase()+': '+parts.join(', ')+'!':'The chest is empty.');msgT=6;try{sfx(parts.length?'coin':'swish');saveNow();svg()}catch(e){self.SQERR&&SQERR(e,'111a-11')}return}
-  return _ufI(it)};
+  return _ufI(it)});
  // custom islands are open as soon as they're published (no voyage needed)
  const _ro=routeOpen;routeOpen=function(id){const D=WORLD_REGIONS[id];if(D&&D.custom)return!!RG_GEN[id];return _ro(id)};
  // a save on an island that no longer exists comes back to Hollow Island

@@ -59,3 +59,6 @@ function NEWDRAW(cx,cy,x0,y0,x1,y1,vw,vh,tm){
 
 // monster drawing (pS) as a step list: every later section adds a named step (window.SQPS; see 006's sqSteps)
 const SQPS=sqSteps('pS',pS,f=>{pS=f});window.SQPS=SQPS;
+
+// NEWDRAW as a step list: later sections add named steps (window.SQNEWDRAW; see 006's sqSteps)
+const SQNEWDRAW=sqSteps('NEWDRAW',NEWDRAW,f=>{NEWDRAW=f});window.SQNEWDRAW=SQNEWDRAW;

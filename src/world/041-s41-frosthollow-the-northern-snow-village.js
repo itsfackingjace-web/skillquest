@@ -188,11 +188,11 @@ const _lh41=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh41(L,x0,y0,x1,y1,tm);if(!FHON)re
  if(FHDEN&&FHDEN.x>=x0-3&&FHDEN.x<=x1+3&&FHDEN.y>=y0-3&&FHDEN.y<=y1+4)L.push([(FHDEN.y+1)*16-6,4,()=>drawDenMouth(tm)])};
 // map
 SQDRAWMAP.after('041',()=>{if(!FHON)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#8a92a2';for(const i of FHPATH)x.fillRect(i%N,(i/N)|0,1,1);x.fillStyle='#101010';x.fillRect(FX-2,FY-2,5,5);x.fillStyle='#a8e0ff';x.fillRect(FX-1,FY-1,3,3);if(FHDEN){x.fillStyle='#101010';x.fillRect(FHDEN.x-1,FHDEN.y-1,3,3);x.fillStyle='#58c8ff';x.fillRect(FHDEN.x,FHDEN.y,1,1)}});
-const _mh41=mapHTML;mapHTML=function(){const h=_mh41();return FHON?h.replace('</span>','</span><span><i style="background:#a8e0ff"></i>Frosthollow</span><span><i style="background:#58c8ff"></i>Frostfang Den</span>'):h};
+SQMAPHTML.wrap('041',_mh41=>function(){const h=_mh41();return FHON?h.replace('</span>','</span><span><i style="background:#a8e0ff"></i>Frosthollow</span><span><i style="background:#58c8ff"></i>Frostfang Den</span>'):h});
 // music: quiet bells over soft strings
 SONGS.frost={bpm:84,lead:'E5 - B4 - G4 - B4 - E5 - F#5 - G5 - - - F#5 - D5 - A4 - D5 - F#5 - E5 - - - - E5 - B4 - C5 - D5 - E5 - B4 - G4 - - - A4 - B4 - E4 - - - - - - -',
  bass:'E2 - - - B2 - - - E2 - - - B2 - - - D2 - - - A2 - - - D2 - - - A2 - - - C2 - - - G2 - - - G2 - - - D2 - - - E2 - - - B2 - - - E2 - - - - - - -'};
 PARSED.frost={bpm:SONGS.frost.bpm,lead:parseTrack(SONGS.frost.lead),bass:parseTrack(SONGS.frost.bass)};
-const _ws41=wantSong;wantSong=function(){const w=_ws41();if(!FHON)return w;if(!SCENE&&w==='day'&&inFHBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'frost';if(SCENE&&FHNAMES[SCENE.id])return'frost';return w};
+SQWANTSONG.wrap('041',_ws41=>function(){const w=_ws41();if(!FHON)return w;if(!SCENE&&w==='day'&&inFHBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'frost';if(SCENE&&FHNAMES[SCENE.id])return'frost';return w});
 SQCLOSEPN.after('041',()=>{if(TALKN&&TALKN.kind==='fhfolk')TALKN=null});
 SQNEWGAME.after('041',()=>{for(const n of FHN){n.scene=n.work;if(n.work){n.x=n.wx;n.y=n.wy}else{n.x=n.hx0;n.y=n.hy0}}});

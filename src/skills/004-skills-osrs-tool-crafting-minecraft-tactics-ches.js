@@ -59,7 +59,7 @@ SQUPD.wrap('004',_u2=>function(dt){if(!pnOpen)_u2(dt)});
 function drawDrops(){g.save();g.font='700 4.5px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace';g.textAlign='center';g.lineWidth=1.3;g.lineJoin='round';
  for(const d of drops){d.t+=.016;g.globalAlpha=Math.max(0,1-d.t/1.6);const y=Math.round(P.y-16-d.t*14-(d.y-P.y+16)*0),x=Math.round(d.x);g.strokeStyle='#000';g.strokeText(d.tx,x,Math.round(d.y-d.t*14));g.fillStyle=d.c;g.fillText(d.tx,x,Math.round(d.y-d.t*14))}
  g.restore();drops=drops.filter(d=>d.t<1.6)}
-const _nd=NEWDRAW;NEWDRAW=function(...a){_nd(...a);drawDrops()};
+SQNEWDRAW.wrap('004',_nd=>function(...a){_nd(...a);drawDrops()});
 
 // a material's name in recipe lists (191): the short name if there is one, else the item's name, else its key
 function matN(k){try{if(typeof SHORT!=='undefined'&&SHORT[k])return SHORT[k]}catch(e){self.SQERR&&SQERR(e,'004-4')}return INAME[k]?String(INAME[k]).toLowerCase():k}
@@ -69,3 +69,6 @@ const SQRPN=sqSteps('rPn',rPn,f=>{rPn=f});window.SQRPN=SQRPN;
 
 // addXp as a step list: later sections add named steps (window.SQADDXP; see 006's sqSteps)
 const SQADDXP=sqSteps('addXp',addXp,f=>{addXp=f});window.SQADDXP=SQADDXP;
+
+// fire as a step list: later sections add named steps (window.SQFIRE; see 006's sqSteps)
+const SQFIRE=sqSteps('fire',fire,f=>{fire=f});window.SQFIRE=SQFIRE;

@@ -143,12 +143,10 @@ function drawBeetle(n,tm){if(n.under)return;const x=Math.round(n.x),y=Math.round
 SQPS.wrap('045',_pS45=>function(n,tm){if(n.type==='scorp')return drawScorp(n,tm);if(n.type==='beetle')return drawBeetle(n,tm);if(n.type==='matri')return drawMatri(n,tm);
  _pS45(n,tm);if(n.type==='skel'&&n.vr==='dust'){const x=Math.round(n.x),y=Math.round(n.y),f=P.x<n.x?-1:1;Rg(x-5,y-25,10,3,'#8a6030');Rg(x-5,y-25,10,1,'#b88850');Rg(x-6,y-23,2,5,'#8a6030');Rg(x+4,y-23,2,5,'#8a6030');Rg(x-5,y-14,10,2,'#a07040');Rg(x-f*6-1,y-13,3,5,'#a07040')}});
 // moving sand mounds (burrowed beetles and the Matriarch), strike flashes
-const _dr45=drawRoom;drawRoom=function(tm){_dr45(tm);if(!SCENE||!SCENE.room.dun)return;
- for(const n of en){if(n.dead||!n.under)continue;const big=n.type==='matri',x=n.mx,y=n.my,r=big?14:8,sh=(n.ms==='mark'||n.bs==='tele')?Math.sin(tm*50)*1.5:0;
+SQDRAWROOM.after('045',(tm)=>{if(!SCENE||!SCENE.room.dun)return;for(const n of en){if(n.dead||!n.under)continue;const big=n.type==='matri',x=n.mx,y=n.my,r=big?14:8,sh=(n.ms==='mark'||n.bs==='tele')?Math.sin(tm*50)*1.5:0;
   if(n.ms==='mark'){g.strokeStyle='rgba(255,120,60,'+(.5+.4*Math.sin(tm*20))+')';g.lineWidth=2;g.beginPath();g.ellipse(x,y+2,28,16,0,0,6.283);g.stroke()}
   g.fillStyle='#8a6a3a';g.beginPath();g.ellipse(x+sh,y+3,r+2,r*.55+1,0,0,6.283);g.fill();g.fillStyle='#d8b880';g.beginPath();g.ellipse(x+sh,y+2,r,r*.5,0,0,6.283);g.fill();g.fillStyle='#f0d8a8';g.fillRect(x-r*.4+sh,y,r*.6,1.5);
-  if(Math.random()<.3)part(x+(Math.random()-.5)*r*2,y+2,(Math.random()-.5)*20,-25,.35,'#d8b880',160,1)}
- for(const e of EMERGE45){const k=e.t/.5;g.strokeStyle='rgba(255,240,200,'+(1-k)+')';g.lineWidth=2;g.beginPath();g.arc(e.x,e.y,e.r*(.5+k*.8),0,6.283);g.stroke()}};
+  if(Math.random()<.3)part(x+(Math.random()-.5)*r*2,y+2,(Math.random()-.5)*20,-25,.35,'#d8b880',160,1)}for(const e of EMERGE45){const k=e.t/.5;g.strokeStyle='rgba(255,240,200,'+(1-k)+')';g.lineWidth=2;g.beginPath();g.arc(e.x,e.y,e.r*(.5+k*.8),0,6.283);g.stroke()}});
 // decor: broken pillars, orange crystals, mine carts, pick racks, sand piles
 SQFURN.wrap('045',_df45=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='bpillar'){shd(x0+8,y0+15,16);Rg(x0+2,y0-6,12,21,O);Rg(x0+3,y0-5,10,19,'#c8a070');Rg(x0+4,y0-5,3,19,'#e0c090');Rg(x0+10,y0-5,2,19,'#a07848');Rg(x0+3,y0-7,4,3,O);Rg(x0+8,y0-9,5,5,O);Rg(x0+9,y0-8,3,3,'#c8a070');Rg(x0+6,y0+2,1,6,'#7a5a30');Rg(x0-2,y0+12,5,3,'#c8a070');return}

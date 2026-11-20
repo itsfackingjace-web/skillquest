@@ -65,7 +65,7 @@ function clearProt(){for(let j=REM.length-1;j>=0;j--)if(PROT.has(REM[j].i))REM.s
 const _cpl20=canPlace;canPlace=function(x,y){if(PROT.has(y*N+x)||inTownTiles(x,y))return false;return _cpl20(x,y)};
 const _hf20=houseFits;houseFits=function(){const[x,y]=houseAnchor();for(let dy=-2;dy<=1;dy++)for(let dx=-3;dx<=3;dx++)if(PROT.has((y+dy)*N+x+dx))return false;return _hf20()};
 const _ct20=canTill;canTill=function(x,y){return!PROT.has(y*N+x)&&_ct20(x,y)};
-const _pb20=placeBuild;placeBuild=function(){if(BUILD&&!SCENE){const[x,y]=frontTile();if(BUILD.k==='house'?(()=>{const[ax,ay]=houseAnchor();for(let dy=-2;dy<=1;dy++)for(let dx=-3;dx<=3;dx++)if(PROT.has((ay+dy)*N+ax+dx))return true;return false})():PROT.has(y*N+x)){say('That\'s town land or the road. Build somewhere else.');sfx('swish');return}}_pb20()};
+SQPLACEB.wrap('020',_pb20=>function(){if(BUILD&&!SCENE){const[x,y]=frontTile();if(BUILD.k==='house'?(()=>{const[ax,ay]=houseAnchor();for(let dy=-2;dy<=1;dy++)for(let dx=-3;dx<=3;dx++)if(PROT.has((ay+dy)*N+ax+dx))return true;return false})():PROT.has(y*N+x)){say('That\'s town land or the road. Build somewhere else.');sfx('swish');return}}_pb20()});
 // --- rooms ---
 const cottage=(floor,extra)=>({w:8,h:6,ex:4,floor,wall:'#f4e8d4',trim:'#8a6038',items:[{t:'window',x:2,y:0},{t:'window',x:5,y:0},{t:'rug',x:3,y:4,w:2},{t:'bed',x:1,y:2,sh:2,solid:1},...extra]});
 Object.assign(ROOMS,{
@@ -233,14 +233,14 @@ function drawLamp(x,y,tm){const px=x*16,py=y*16;shd(px+8,py+13,10);Rg(px+6,py-10
 function drawWell(x,y){const px=x*16,py=y*16;shd(px+8,py+14,16);Rg(px,py-2,16,17,O);Rg(px+1,py-1,14,15,'#a0a0b0');for(const yy of[py+3,py+8])Rg(px+1,yy,14,1,'#787888');Rg(px+3,py,10,4,'#2850a0');
  Rg(px,py-16,2,16,O);Rg(px+14,py-16,2,16,O);Rg(px-2,py-20,20,5,O);Rg(px-1,py-19,18,3,'#a83838');Rg(px+7,py-15,2,8,'#7a4a20')}
 function drawSign(i){const px=(i%N)*16,py=((i/N)|0)*16;shd(px+8,py+14,10);Rg(px+7,py+2,3,13,O);Rg(px+8,py+3,1,12,'#7a4a20');Rg(px+1,py-6,14,10,O);Rg(px+2,py-5,12,8,'#c89858');Rg(px+2,py-5,12,1,'#e8c088');Rg(px+4,py-3,8,1,'#7a4a20');Rg(px+4,py-1,6,1,'#7a4a20')}
-const _nd20=NEWDRAW;NEWDRAW=function(...a){_nd20(...a);if(SCENE)return;const tm=a[8],vx=(x,y)=>Math.abs(x*16-P.x)<W/Z+40&&Math.abs(y*16-P.y)<H/Z+40;let rd=false;
+SQNEWDRAW.wrap('020',_nd20=>function(...a){_nd20(...a);if(SCENE)return;const tm=a[8],vx=(x,y)=>Math.abs(x*16-P.x)<W/Z+40&&Math.abs(y*16-P.y)<H/Z+40;let rd=false;
  const front=(x,y,hw)=>{if(Math.abs(P.x-(x*16+8))<hw&&P.y+6>(y+1)*16-2&&P.y-18<(y+1)*16)rd=true};
  if(!SORTALL){for(const[x,y]of LAMPS)if(vx(x,y)){drawLamp(x,y,tm);front(x,y,10)}
  if(vx(...WELL)){drawWell(...WELL);front(WELL[0],WELL[1],14)}
  for(const i of SIGNS.keys()){const x=i%N,y=(i/N)|0;if(vx(x,y)){drawSign(i);front(x,y,10)}}
  if(rd&&!dead)pP(tm)}
  // quest marker over Captain Ida
- const q=QS[Q.i];if(Q.on&&q&&q.type==='talk'&&Q.k<1){const n=FOLK.find(o=>o.id==='ida');if(n&&!n.scene){const bx=Math.round(n.x),by=Math.round(n.y-30+Math.sin(tm*4)*1.5);g.save();g.font='700 11px "SQ Digits","Pixelify Sans",monospace';g.textAlign='center';g.lineWidth=3;g.lineJoin='round';g.strokeStyle=O;g.strokeText('!',bx,by);g.fillStyle='#f8d848';g.fillText('!',bx,by);g.restore()}}};
+ const q=QS[Q.i];if(Q.on&&q&&q.type==='talk'&&Q.k<1){const n=FOLK.find(o=>o.id==='ida');if(n&&!n.scene){const bx=Math.round(n.x),by=Math.round(n.y-30+Math.sin(tm*4)*1.5);g.save();g.font='700 11px "SQ Digits","Pixelify Sans",monospace';g.textAlign='center';g.lineWidth=3;g.lineJoin='round';g.strokeStyle=O;g.strokeText('!',bx,by);g.fillStyle='#f8d848';g.fillText('!',bx,by);g.restore()}}});
 // building signs and the forge chimney
 const _drb20=drBld;drBld=function(b,tm){if(!TBK.has(b.k))return _drb20(b,tm);_drb20({...b,sc:null},tm);if(!b.sc&&!b.smoke)return;
  const X0=b.tx*16,w=b.w*16,base=(b.ty+2)*16,dx=X0+(w>>1)-6;
@@ -250,16 +250,15 @@ const _drb20=drBld;drBld=function(b,tm){if(!TBK.has(b.k))return _drb20(b,tm);_dr
   else{Rg(dx+1,base-24,10,2,'#303040');Rg(dx+4,base-22,4,2,'#303040')}}
  if(b.smoke){Rg(X0+w-15,base-64,10,16,O);Rg(X0+w-14,base-63,8,15,'#887870');for(let i=0;i<3;i++)Rg(X0+w-11+Math.sin(tm*2+i*2)*2,base-67-((tm*12+i*7)%20),2,2,'rgba(220,220,230,.7)')}};
 // sleepers: heads on the pillows and little z's
-const _dr20=drawRoom;drawRoom=function(tm){_dr20(tm);if(!SCENE)return;
- for(const n of FOLK){if(n.scene!==SCENE.id+'#bed')continue;const x0=n.bed[0]*16,y0=n.bed[1]*16,sk=OPT.skin[n.ch.sk][0],hr=OPT.hair[n.ch.hc];
+SQDRAWROOM.after('020',(tm)=>{if(!SCENE)return;for(const n of FOLK){if(n.scene!==SCENE.id+'#bed')continue;const x0=n.bed[0]*16,y0=n.bed[1]*16,sk=OPT.skin[n.ch.sk][0],hr=OPT.hair[n.ch.hc];
   Rg(x0+4,y0,8,8,O);Rg(x0+5,y0+1,6,6,sk);Rg(x0+5,y0+1,6,2,hr);Rg(x0+4,y0+2,1,3,hr);Rg(x0+11,y0+2,1,3,hr);Rg(x0+6,y0+5,2,1,O);Rg(x0+9,y0+5,2,1,O);
-  const k=(tm*.8+n.bed[0]*.3)%1;g.save();g.globalAlpha=1-k;g.font='700 8px "Pixelify Sans",monospace';g.fillStyle='#ffffff';g.strokeStyle=O;g.lineWidth=2;g.strokeText('z',x0+12+k*6,y0-2-k*12);g.fillText('z',x0+12+k*6,y0-2-k*12);g.restore()}};
+  const k=(tm*.8+n.bed[0]*.3)%1;g.save();g.globalAlpha=1-k;g.font='700 8px "Pixelify Sans",monospace';g.fillStyle='#ffffff';g.strokeStyle=O;g.lineWidth=2;g.strokeText('z',x0+12+k*6,y0-2-k*12);g.fillText('z',x0+12+k*6,y0-2-k*12);g.restore()}});
 // lamp glow at night
 SQHUD.before('020',()=>{const dk=SCENE?0:dark();if(dk>.15){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
   for(const[x,y]of LAMPS){if(Math.abs(x*16-P.x)>W/Z||Math.abs(y*16-P.y)>H/Z)continue;const gr=g.createRadialGradient(x*16+8,y*16-12,2,x*16+8,y*16-12,40);gr.addColorStop(0,'rgba(255,210,120,'+(.5*dk)+')');gr.addColorStop(1,'rgba(255,200,100,0)');g.fillStyle=gr;g.fillRect(x*16-34,y*16-54,84,84)}g.restore()}});
 // map: towns, road, bridge
 SQDRAWMAP.after('020',()=>{const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#a86830';for(const i of BRIDGE)x.fillRect(i%N,(i/N)|0,1,1);x.fillStyle='#101010';for(const[a,b]of[[VX,VY-6],[TX,TY-6]])x.fillRect(a-2,b-2,5,5);x.fillStyle='#f8d848';for(const[a,b]of[[VX,VY-6],[TX,TY-6]])x.fillRect(a-1,b-1,3,3)});
-const _mh20=mapHTML;mapHTML=function(){return _mh20().replace('<span><i style="background:#c85040"></i>Hollow Village</span>','<span><i style="background:#f8d848"></i>Hollow Village · Saltmere</span><span><i style="background:#a86830"></i>Bridge</span><span><i style="background:#68d8f8"></i>Islets</span>')};
+SQMAPHTML.wrap('020',_mh20=>function(){return _mh20().replace('<span><i style="background:#c85040"></i>Hollow Village</span>','<span><i style="background:#f8d848"></i>Hollow Village · Saltmere</span><span><i style="background:#a86830"></i>Bridge</span><span><i style="background:#68d8f8"></i>Islets</span>')});
 // icons
 SQICON.wrap('020',_icon20=>function(k,col){if(k!=='stew'&&k!=='bait')return _icon20(k,col);const key='g20'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  if(k==='stew'){r(1,6,12,6,O);r(2,7,10,4,'#c88848');r(2,7,10,1,'#e8a868');r(2,5,10,2,'#f0d070');r(4,5,2,1,'#e87830');r(8,5,2,1,'#78b848');r(4,1,1,3,'#e8eef4');r(8,2,1,2,'#e8eef4')}
@@ -268,4 +267,4 @@ SQICON.wrap('020',_icon20=>function(k,col){if(k!=='stew'&&k!=='bait')return _ico
 // music: a sea shanty in Saltmere
 SONGS.port={bpm:132,lead:'G4 B4 D5 - B4 D5 G5 - F#5 E5 D5 - B4 C5 D5 - E5 - C5 E5 G5 E5 D5 - B4 G4 A4 B4 G4 - - -',bass:'G2 D3 G2 D3 G2 D3 G2 D3 D2 A2 D2 A2 G2 D3 G2 D3 C3 G3 C3 G3 G2 D3 G2 D3 D2 A2 D2 A2 G2 D3 G2 -'};
 PARSED.port={bpm:SONGS.port.bpm,lead:parseTrack(SONGS.port.lead),bass:parseTrack(SONGS.port.bass)};
-const _ws20=wantSong;wantSong=function(){const w=_ws20();if(w==='day'&&!SCENE&&inTownBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'port';if(SCENE&&(SCENE.id==='inn'||SCENE.id==='tackle'))return'port';return w};
+SQWANTSONG.wrap('020',_ws20=>function(){const w=_ws20();if(w==='day'&&!SCENE&&inTownBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'port';if(SCENE&&(SCENE.id==='inn'||SCENE.id==='tackle'))return'port';return w});

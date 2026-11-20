@@ -9,5 +9,5 @@
   for(const[u,r]of rows){const f=fr(u),where=r.ar&&typeof WORLD_REGIONS!=='undefined'&&WORLD_REGIONS[r.ar]?WORLD_REGIONS[r.ar].name:'At sea';
    t+='<br><span style="color:'+(f?'#28a048':'#3070c0')+'">&#9632;</span> '+esc(r.n||'?')+(f?' (friend)':'')+' · '+esc(where)+(here(r)?' <b>(here)</b>':'')}
   return t+'</small></div>'}
- const _mh=mapHTML;mapHTML=function(){const h=_mh.apply(this,arguments);try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return h;return h+listHTML()}catch(e){return h}};
+ SQMAPHTML.wrap('238',_mh=>function(){const h=_mh.apply(this,arguments);try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return h;return h+listHTML()}catch(e){return h}});
  window.SQONLINELIST=listHTML})();

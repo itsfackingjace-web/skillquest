@@ -47,11 +47,11 @@ let farmTip=false;
 // planting uses the Bag's PLANT button (plant mode works like build mode)
 const isSeed=k=>!!SEED2CROP[k];
 const _cpl16=canPlace;canPlace=function(x,y){if(BUILD&&isSeed(BUILD.k)){const p=FARM.get(y*N+x);return!!p&&!p.c}return _cpl16(x,y)};
-const _sb16=startBuild;startBuild=function(k){if(!isSeed(k))return _sb16(k);if((inv[k]|0)<1)return;if(SCENE){say('Plant seeds outside on tilled soil.');closePanel();return}
- const C=CROPS[SEED2CROP[k]];if(lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');closePanel();return}BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')};
-const _pb16=placeBuild;placeBuild=function(){if(!BUILD||!isSeed(BUILD.k))return _pb16();const k=BUILD.k,[x,y]=frontTile(),p=FARM.get(y*N+x);
+SQSTARTB.wrap('016',_sb16=>function(k){if(!isSeed(k))return _sb16(k);if((inv[k]|0)<1)return;if(SCENE){say('Plant seeds outside on tilled soil.');closePanel();return}
+ const C=CROPS[SEED2CROP[k]];if(lvOf(11)<C.lv){say('You need Farming '+C.lv+' to plant '+C.n.toLowerCase()+'.');closePanel();return}BUILD={k};closePanel();setActionLabels();say('Plant mode: face tilled soil and press PLANT. Press DONE when finished.')});
+SQPLACEB.wrap('016',_pb16=>function(){if(!BUILD||!isSeed(BUILD.k))return _pb16();const k=BUILD.k,[x,y]=frontTile(),p=FARM.get(y*N+x);
  if(!p){say(TL.hoe?'Till the soil first: face grass and press HIT.':'You need tilled soil. Craft a hoe (Craft menu) or buy one at the general store.');sfx('swish');return}
- if(p.c){say('Something is already growing there.');sfx('swish');return}inv[k]--;p.c=SEED2CROP[k];p.g=0;addXp(11,5);sfx('rustle');saveLocal(true);if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')};
+ if(p.c){say('Something is already growing there.');sfx('swish');return}inv[k]--;p.c=SEED2CROP[k];p.g=0;addXp(11,5);sfx('rustle');saveLocal(true);if((inv[k]|0)<1)endBuild('Planted your last '+INAME[k].toLowerCase()+'.')});
 const _sal16=setActionLabels;setActionLabels=function(){_sal16();if(BUILD&&isSeed(BUILD.k)){const a=document.getElementById('a');if(a)a.innerHTML='PLANT'+(isPC?'<small>Space</small>':'')}};
 const _bag16=bagGridHTML;bagGridHTML=function(){let h=_bag16();if(invSel&&isSeed(invSel)&&(inv[invSel]|0)>0)h=h.replace('<div class="bd">','<div class="bd"><button class="use plc" data-k="'+invSel+'">PLANT</button>');return h};
 // growth while you play

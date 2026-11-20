@@ -196,10 +196,10 @@
  // ---------- which song ----------
  const BOSSR=220;let bossUntil=0;
  const bossNear=()=>{try{if(SCENE&&/^ib_/.test(SCENE.id||''))return true;const dun=!!(SCENE&&SCENE.room&&SCENE.room.dun);for(const m of en)if(m&&!m.dead&&!m._rp&&(m.boss||m._wb||m.cb||m.type==='boss'||m.type==='ib'||(m.big&&dun))&&Math.hypot(m.x-P.x,m.y-P.y)<BOSSR)return true}catch(e){self.SQERR&&SQERR(e,'155-2')}return false};
- {const _w=wantSong;wantSong=function(){const w=_w.apply(this,arguments);try{
+ {SQWANTSONG.wrap('155',_w=>function(){const w=_w.apply(this,arguments);try{
    const now=performance.now();if(!dead&&bossNear())bossUntil=now+6000;if(now<bossUntil)return'boss';
    if(typeof SAILING!=='undefined'&&SAILING)return'sail';
-   if(w==='day'){const R=SCENE&&SCENE.room;const rg=R&&R.region;if(rg&&REGION_SONG[rg])return REGION_SONG[rg]}}catch(e){self.SQERR&&SQERR(e,'155-3')}return w}}
+   if(w==='day'){const R=SCENE&&SCENE.room;const rg=R&&R.region;if(rg&&REGION_SONG[rg])return REGION_SONG[rg]}}catch(e){self.SQERR&&SQERR(e,'155-3')}return w})}
  // ---------- the old player stays quiet ----------
  const hush=()=>{try{for(const k in PARSED){const p=PARSED[k];if(p&&p.lead&&p.lead.ev.length){p.lead.ev=[];p.bass.ev=[]}}}catch(e){self.SQERR&&SQERR(e,'155-4')}};hush();
  // ---------- scheduler ----------

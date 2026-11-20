@@ -17,7 +17,7 @@
  const DEFREQ={4:30,5:40},needs=e=>e.arm>=4?['Defence',8,DEFREQ[e.arm]]:e.atk?['Attack',0,e.atk]:null;
  const _eq65=equipItem;equipItem=function(k){const e=EQ[k];const n=e&&needs(e);if(n&&lvOf(n[1])<n[2]){say('You need '+n[0]+' '+n[2]+' to use the '+e.n.toLowerCase()+'.');sfx('swish');return}return _eq65(k)};
  // how they look on you
- const _gc65=gearCH;gearCH=function(){const c=_gc65();if(ARM.helm>=4){c.ht=2;c.hcol=HB+5+ARM.helm-4}if(ARM.body>=4)c.sh=SB+5+ARM.body-4;if(ARM.legs>=4)c.pn=PB+5+ARM.legs-4;return c};
+ SQGEARCH.wrap('084',_gc65=>function(){const c=_gc65();if(ARM.helm>=4){c.ht=2;c.hcol=HB+5+ARM.helm-4}if(ARM.body>=4)c.sh=SB+5+ARM.body-4;if(ARM.legs>=4)c.pn=PB+5+ARM.legs-4;return c});
  const _kl65=kitLook;kitLook=function(ch){const o=_kl65(ch),tc=i=>i===0?MITH:ADAM,sh=ch.sh|0,pn=ch.pn|0,hc=ch.hcol|0;
   if(!ch.mr&&(sh===SB+5||sh===SB+6)){const t=tc(sh-SB-5);o.body='plate';o.bc=t[0];o.ba=t[1]}
   if(pn===PB+5||pn===PB+6){const t=tc(pn-PB-5);o.legs='greaves';o.lc=t[0];o.la=t[1]}

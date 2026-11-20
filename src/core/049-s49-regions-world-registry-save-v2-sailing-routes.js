@@ -148,9 +148,9 @@ const _cb49=canBoard;canBoard=function(){return nearPost49()?false:_cb49()};
 // things you can USE in a region (the pier post, landmarks): measured to the edge of their footprint
 const _nfu49=nearFurn;nearFurn=function(){const R=SCENE&&SCENE.room;if(R&&R.region){let best=null,bd=14;for(const it of R.useItems){const x0=it.x*16,y0=it.y*16,x1=x0+(it.w||1)*16,y1=y0+(it.h||1)*16,
   d=Math.hypot(Math.max(x0-P.x,0,P.x-x1),Math.max(y0-P.y,0,P.y-y1));if(d<bd){bd=d;best=it}}return best}return _nfu49()};
-const _uf49=useFurn;useFurn=function(it){if(it&&it.use==='regdock'){openRoutes();return}if(it&&it.use==='look'){rgLook(it);return}_uf49(it)};
+SQUSEFURN.wrap('049',_uf49=>function(it){if(it&&it.use==='regdock'){openRoutes();return}if(it&&it.use==='look'){rgLook(it);return}_uf49(it)});
 const _nf49=nearFire;nearFire=function(x,y,r){return curRegion()!=='hollow'?false:_nf49(x,y,r)};   // Hollow campfires don't burn in other lands
-const _fi49=fire;fire=function(){if(curRegion()!=='hollow'&&!(SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court))){say('Too windy out here for a campfire.');return}_fi49()};
+SQFIRE.wrap('049',_fi49=>function(){if(curRegion()!=='hollow'&&!(SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court))){say('Too windy out here for a campfire.');return}_fi49()});
 
 // --- update: travel, quest regions, spawns ---
 const RG_OWN=new WeakSet();let RG_SPT=0;
@@ -178,7 +178,7 @@ function rgUpd(R,dt){rgTick(R,dt);const cap=(REGION_SPAWNS[R.region]||{maxEnemie
 
 // --- outdoor light and music inside a region ---
 const _dk49=dark;dark=function(){const R=SCENE&&SCENE.room;if(R&&R.region){const s=SCENE;SCENE=null;try{return _dk49()}finally{SCENE=s}}return _dk49()};
-const _ws49=wantSong;wantSong=function(){const R=SCENE&&SCENE.room;if(R&&R.region)return dark()>.4?'night':'day';return _ws49()};
+SQWANTSONG.wrap('049',_ws49=>function(){const R=SCENE&&SCENE.room;if(R&&R.region)return dark()>.4?'night':'day';return _ws49()});
 const _drw49=draw;draw=function(){const R=SCENE&&SCENE.room;if(R&&R.region){const f=fires;fires=rgGlows(R).map(o=>Object.assign({},o,{_glow:1})).concat(f);try{_drw49()}finally{fires=f}}else _drw49()};   // (your campfires glow too)   // lava glows at night like campfires
 
 // --- drawing the region: baked terrain chunks (same painter as Hollow), culled objects ---
@@ -242,10 +242,10 @@ SQFURN.wrap('049',_df49=>function(it,tm){
  if(it.t==='_en'){pS(it.n,tm);return}
  if(it.t==='rgpost'){drawPost49(it.x*16+3,it.y*16+8,tm);return}
  _df49(it,tm)});
-const _drm49=drawRoom;drawRoom=function(tm){const R=SCENE&&SCENE.room;if(!R||!R.region)return _drm49(tm);
+SQDRAWROOM.wrap('049',_drm49=>function(tm){const R=SCENE&&SCENE.room;if(!R||!R.region)return _drm49(tm);
  const v=rgView(),all=R.items,vis=rgNear(R,v.x0/16-2,v.y0/16-1,v.x1/16+2,v.y1/16+8);
  for(const n of en)if(!n.dead)vis.push({t:'_en',n,x:n.x/16,y:(n.y+6)/16-1});
- R.items=vis;try{_drm49(tm)}finally{R.items=all}};
+ R.items=vis;try{_drm49(tm)}finally{R.items=all}});
 const _lh49=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh49(L,x0,y0,x1,y1,tm);if(RG_POST&&RG_POST.x>=x0-2&&RG_POST.x<=x1+2&&RG_POST.y>=y0-2&&RG_POST.y<=y1+3)L.push([RG_POST.y*16+13,4,()=>drawPost49(RG_POST.x*16+(RG_POST.x<TWDOCK[0]%N?3:13),RG_POST.y*16+8,tm)])};
 
 // --- the crossing, the region minimap ---
@@ -273,11 +273,14 @@ function worldHTML(){const here=curRegion();let h='<div class="tl" style="margin
   h+='<details class="qrow"'+(id===here?' open':'')+'><summary>'+(id===here?'📍 ':'')+D.name+'</summary><small>'+D.biome+(towns.length?'<br>Towns: '+towns.join(', '):'')+(duns.length?'<br>Dungeons: '+duns.join(', '):'')+
    (id!=='hollow'?'<br>Landmarks found: '+((WORLD_STATE[id]&&WORLD_STATE[id].seen||[]).length)+' / '+(RG_LMCOUNT[id]||0)+'<br>Suggested combat: '+D.lv:'')+'<br>Routes: '+(id==='hollow'?(RG_POST?'harbor post on the Tidewatch pier':'none'):'pier post, home to Hollow Island (free)')+'</small></details>'}
  return h}
-const _mh49=mapHTML;mapHTML=function(){const R=SCENE&&SCENE.room;if(R&&R.region){const D=WORLD_REGIONS[R.region];
+SQMAPHTML.wrap('049',_mh49=>function(){const R=SCENE&&SCENE.room;if(R&&R.region){const D=WORLD_REGIONS[R.region];
   return'<div class="tl" style="font-size:17px">'+D.name.toUpperCase()+'</div><canvas id="mpc" width="'+R.w+'" height="'+R.h+'" style="height:calc(min(84vw,52vh,380px)*'+(R.h/R.w).toFixed(4)+')"></canvas><div class="lg"><span><i style="background:#f83030"></i>You</span><span><i style="background:#f8d848"></i>Pier</span><span><i style="background:#f8f8f8"></i>Landmark (found)</span></div>'+rgLmList(R)+worldHTML()}
- return _mh49()+worldHTML()};
+ return _mh49()+worldHTML()});
 SQDRAWMAP.wrap('049',_dmap49=>function(){const R=SCENE&&SCENE.room;if(!R||!R.region)return _dmap49();const c=document.getElementById('mpc');if(!c||c.width!==R.w)return;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(rgFogCanvas(R),0,0);   // fogged (section 52)
  x.fillStyle='#f8d848';x.fillRect(R.dock[0]-1,R.dock[1]-1,3,3);x.fillStyle='#f8f8f8';for(const l of R.lms)if(rgSeen(R.region,l.id))x.fillRect(l.x-1,l.y-1,3,3);
  const px=Math.floor(P.x/16),py=Math.floor(P.y/16);if(Math.floor(performance.now()/350)%2){x.fillStyle='#f83030';x.fillRect(px-1,py-1,3,3)}x.fillStyle='#fff';x.fillRect(px,py,1,1)});
 // side quests from Hollow towns only count in Hollow (the region-aware check; old objectives default to Hollow)
 const _sqe49=sqEvent;sqEvent=function(type,item,test){const r=curRegion();return _sqe49(type,item,t=>(SQ_REGION[t]||'hollow')===r&&(!test||test(t)))};
+
+// loadRegion as a step list: later sections add named steps (window.SQLOADRG; see 006's sqSteps)
+const SQLOADRG=sqSteps('loadRegion',loadRegion,f=>{loadRegion=f});window.SQLOADRG=SQLOADRG;

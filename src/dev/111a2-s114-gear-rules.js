@@ -67,8 +67,8 @@
  blockBonus=function(){let b=_bb.apply(this,arguments);for(const s of SLOTS){const r=rule(occ(s));if(r&&r.blk)b+=r.blk/100}return b};
  // a wand's mana cost is per element; use the cost of the wand in your hand
  function setCosts(){for(const el in WSP0)WSP[el].cost=WSP0[el];const k=occ('off'),r=rule(k);if(r&&r.mp!=null&&EQ[k]&&EQ[k].kind==='wand'&&WSP[EQ[k].el])WSP[EQ[k].el].cost=r.mp}
- const _ss=setSlot;setSlot=function(slot,k){let out;if(k&&EQ[k]&&EQ[k].custom){out=_ss.call(this,slot,EQ[k].base);CUS[slot]=k}else{CUS[slot]=null;out=_ss.apply(this,arguments)}
-  if(slot==='off')try{setCosts()}catch(e){self.SQERR&&SQERR(e,'111a2-3')}return out};
+ SQSETSLOT.wrap('111a2',_ss=>function(slot,k){let out;if(k&&EQ[k]&&EQ[k].custom){out=_ss.call(this,slot,EQ[k].base);CUS[slot]=k}else{CUS[slot]=null;out=_ss.apply(this,arguments)}
+  if(slot==='off')try{setCosts()}catch(e){self.SQERR&&SQERR(e,'111a2-3')}return out});
  // requirements: a rule replaces the game's own checks for that item
  const _eq=equipItem;equipItem=function(k){const r=rule(k),e=EQ[k];if(!r||!r.rq||!e)return _eq.apply(this,arguments);if((inv[k]|0)<1)return;
   if(r.rq.l&&lvOf(r.rq.s)<r.rq.l){say('You need '+SKN[r.rq.s]+' '+r.rq.l+' to use the '+e.n.toLowerCase()+'.');sfx('swish');return}

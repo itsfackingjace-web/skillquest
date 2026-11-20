@@ -68,10 +68,10 @@
   const sv=BUILD&&BUILD.k;try{if(BUILD)BUILD.k='rug';return canPlaceIn(x,2)}catch(e){return false}finally{if(BUILD)BUILD.k=sv}}
  const facingWall=()=>{const[x,y]=frontTile();return y===1&&face[1]<0?x:-1};
  {const _cp=canPlace;canPlace=function(x,y){if(BUILD&&idOf(BUILD.k)&&SCENE&&y===1)return wallOK(x);return _cp.apply(this,arguments)}}
- {const _pb=placeBuild;placeBuild=function(){const k=BUILD&&BUILD.k,id=idOf(k);if(!id||!SCENE)return _pb.apply(this,arguments);
+ {SQPLACEB.wrap('213',_pb=>function(){const k=BUILD&&BUILD.k,id=idOf(k);if(!id||!SCENE)return _pb.apply(this,arguments);
    const wx=facingWall();if(wx<0)return _pb.apply(this,arguments);if(!wallOK(wx)){say(inHomeRoom()?'You can\'t hang it there.':'Paintings only hang on the walls of a house or castle. Stand it on the floor instead.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'213-11')}return}
    const R=SCENE.room;inv[k]--;SCENE.house.furn.set(2*R.w+wx,{t:'pw_'+id});try{sfx('chop')}catch(e){self.SQERR&&SQERR(e,'213-12')}say('You hung “'+nameOf(id)+'” on the wall.');saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'213-13')}
-   if((inv[k]|0)<1)endBuild('')}}
+   if((inv[k]|0)<1)endBuild('')})}
  // a hung painting doesn't block the floor under it
  {const _so=solid;solid=function(px,py){if(inHomeRoom()){const R=SCENE.room,x=Math.floor(px/16),y=Math.floor(py/16),f=SCENE.house.furn.get(y*R.w+x);if(f&&/^pw_/.test(f.t)&&!_baseSolid(px,py))return false}return _so.apply(this,arguments)}}
  const _baseSolid=(px,py)=>{const R=SCENE.room,x=Math.floor(px/16),y=Math.floor(py/16);return x<0||y<2||x>=R.w||y>=R.h||(R.solid&&R.solid.has(y*R.w+x))};

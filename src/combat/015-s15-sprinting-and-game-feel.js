@@ -21,7 +21,7 @@ SQHIT.wrap('015 sprinting and game feel',_atk15=>function(){const before=en.map(
 function drawFx(){const sc=curScene();for(const d of DUST){if(d.sc!==sc)continue;const a=1-d.t/.45;g.globalAlpha=a*.8;Rg(d.x-1,d.y-d.t*10,2+Math.round(d.t*4),2,d.c)}g.globalAlpha=1;
  g.save();g.font='700 9px '+PF;g.textAlign='center';g.textBaseline='middle';g.lineWidth=3;g.lineJoin='round';
  for(const d of DMGS){if(d.sc!==sc)continue;g.globalAlpha=Math.max(0,1-d.t/.9);const y=Math.round(d.y-d.t*16);g.strokeStyle='#181018';g.strokeText(d.v,Math.round(d.x),y);g.fillStyle=d.c;g.fillText(d.v,Math.round(d.x),y)}g.restore()}
-const _nd15=NEWDRAW;NEWDRAW=function(...a){_nd15(...a);if(!SCENE)drawFx()};
-const _dr15=drawRoom;drawRoom=function(tm){_dr15(tm);drawFx()};
+SQNEWDRAW.wrap('015',_nd15=>function(...a){_nd15(...a);if(!SCENE)drawFx()});
+SQDRAWROOM.after('015',(tm)=>{drawFx()});
 SQHUD.before('015',()=>{if(FLASH>0){g.save();g.setTransform(1,0,0,1,0,0);g.fillStyle='rgba(240,40,40,'+(FLASH*.5)+')';g.fillRect(0,0,W,H);g.restore()}});
 hp.innerHTML=hp.innerHTML.replace('WASD / arrows: move','WASD / arrows: move<br>Shift: sprint');

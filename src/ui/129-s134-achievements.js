@@ -117,7 +117,7 @@
  // ---- the screen ----
  const ATAB=35;let VIEW='a',PICK='';
  SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'achievements',l:()=>'Achievements'});
- {const _ss=showScreen;showScreen=function(id){if(id!=='achievements')return _ss(id);pnOpen=true;ptab=ATAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}}
+ {SQSHOWSCR.wrap('129',_ss=>function(id){if(id!=='achievements')return _ss(id);pnOpen=true;ptab=ATAB;jx=jy=0;pn.style.display='block';rPn();sfx('talk')})}
  const st=document.createElement('style');st.textContent=`#pn .ach{display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #d8e0f0;color:#404040}#pn .ach.done{background:#f4f8e8}
 #pn .ach .ic{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid #485870;background:#e8e8f0;color:#485870}#pn .ach.done .ic{background:#f8d048;border-color:#a07010;color:#604000}
 #pn .ach .tx{flex:1;min-width:0}#pn .ach b{display:block;font-size:14px}#pn .ach small{display:block;font-size:12px;opacity:.85}#pn .ach .bar{height:5px;background:#d0d8e8;margin-top:4px}#pn .ach .bar div{height:5px;background:#5878c0}

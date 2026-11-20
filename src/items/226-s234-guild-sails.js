@@ -16,7 +16,7 @@
  // ---- the design ----
  const fromCh=ch=>{const C=GC();if(!C||!ch||!(ch.slc>0))return null;const P=C.PAL;return{c:P[(ch.slc-1)%P.length],s:P[(ch.sls|0)%P.length],p:ch.slp|0,t:!!ch.slt,e:Math.min(C.EM.length-1,ch.sle|0),x:P[(ch.slx|0)%P.length]}};
  const mine=()=>{const C=GC();if(!ON||!C||!inGuild())return null;try{const d=C.design();return fromCh({slc:d.c+1,sls:d.s,slp:d.p,slt:d.t,sle:d.e,slx:d.x})}catch(e){return null}};
- {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);try{const C=GC();if(ON&&C&&inGuild()){const d=C.design();c.slc=d.c+1;c.sls=d.s;c.slp=d.p;if(d.t)c.slt=1;c.sle=d.e;c.slx=d.x}}catch(e){self.SQERR&&SQERR(e,'226-1')}return c}}
+ {SQGEARCH.wrap('226',_g=>function(){const c=_g.apply(this,arguments);try{const C=GC();if(ON&&C&&inGuild()){const d=C.design();c.slc=d.c+1;c.sls=d.s;c.slp=d.p;if(d.t)c.slt=1;c.sle=d.e;c.slx=d.x}}catch(e){self.SQERR&&SQERR(e,'226-1')}return c})}
  {SQSAVE.after('226:gsw',o=>{try{o.gsw=ON?1:0}catch(e){self.SQERR&&SQERR(e,'226-2')}})}
  {SQLOAD.after('226',(S)=>{try{ON=!!(S&&S.gsw)}catch(e){self.SQERR&&SQERR(e,'226-3')}})}
  {SQNEWGAME.before('226',()=>{ON=false;})}

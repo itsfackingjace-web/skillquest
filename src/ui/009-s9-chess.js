@@ -12,10 +12,10 @@ SQLOAD.after('009',(S)=>{if((S.qv||0)<3&&S.q&&Q.i>=3)Q.i++;if(S.chess)for(const 
 // Orla and her table
 NPCS.push({kind:'chess',x:(VX+3)*16+8,y:(VY+1)*16+8,ch:{sk:3,hs:1,hc:0,sh:7,pn:1,ht:1,hcol:4,so:2}});
 const TBX=VX+5,TBY=VY+1;BS.add(TBY*N+TBX);
-const _nd9=NEWDRAW;NEWDRAW=function(...a){_nd9(...a);const tm=a[8],cx=TBX*16+8,b=(TBY+1)*16-2;
+SQNEWDRAW.wrap('009',_nd9=>function(...a){_nd9(...a);const tm=a[8],cx=TBX*16+8,b=(TBY+1)*16-2;
  shd(cx,b-1,16);Rg(cx-8,b-11,16,7,O);Rg(cx-7,b-10,14,5,'#a87850');for(let i=0;i<7;i++)for(let j=0;j<2;j++)if((i+j)%2)Rg(cx-7+i*2,b-10+j*2,2,2,'#f0e0b8');
  Rg(cx-6,b-4,2,4,O);Rg(cx+4,b-4,2,4,O);Rg(cx-5,b-4,1,3,'#7a4a20');Rg(cx+5,b-4,1,3,'#7a4a20');
- if(!dead&&Math.abs(P.x-cx)<15&&P.y+6>b&&P.y-16<b)pP(tm)};
+ if(!dead&&Math.abs(P.x-cx)<15&&P.y+6>b&&P.y-16<b)pP(tm)});
 // lobby (opened by talking to Orla)
 function chessLobby(){const T=lvOf(7);let h='<div class="tl">Grandmaster Orla</div><div class="qc"><p>"Care for a game? Beat me and I will pay you. Win or lose, you will sharpen your Tactics."</p><p style="opacity:.75">Your record: '+CHS.w+' wins · '+CHS.d+' draws · '+CHS.l+' losses · Tactics '+T+'</p></div>';
  CLV.forEach((L,i)=>{const ok=T>=L.req;h+='<button class="cg sb" data-l="'+i+'" style="opacity:'+(ok?1:.45)+'">'+L.n+(ok?'':' (Tactics '+L.req+')')+'<br><small>Win: '+L.xp+' Tactics XP + '+L.g+' gold · draw: half</small></button>'});

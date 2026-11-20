@@ -23,7 +23,7 @@
  // the guild's design (old guilds: their colour and the emblem picked before designs existed)
  const design=()=>{const I=info(),d=I.cp&&typeof I.cp==='object'?I.cp:{};return{c:clampI(d.c!=null?d.c:(I.col|0),PAL.length),s:clampI(d.s!=null?d.s:15,PAL.length),p:clampI(d.p,PAT.length),t:d.t!=null?(d.t?1:0):0,e:clampI(d.e!=null?d.e:(I.em|0),EM.length),x:clampI(d.x!=null?d.x:8,PAL.length)}};
  const toCh=(c,d)=>{c.gcp=d.c+1;c.gcs=d.s;c.gpt=d.p;if(d.t)c.gtr=1;else delete c.gtr;c.gce=d.e;c.gex=d.x;delete c.cape;return c};
- {const _gc=gearCH;gearCH=function(){const c=_gc.apply(this,arguments);if(WEAR&&inGuild())toCh(c,design());return c}}
+ {SQGEARCH.wrap('201',_gc=>function(){const c=_gc.apply(this,arguments);if(WEAR&&inGuild())toCh(c,design());return c})}
  const shade=(hex,f)=>'#'+[1,3,5].map(i=>Math.max(0,Math.min(255,Math.round(parseInt(hex.slice(i,i+2),16)*f))).toString(16).padStart(2,'0')).join('');
  // which cape a character wears: the guild's, a Marlo cape, or none
  function spec(ch){if(!ch)return null;if(ch.fcp>0)return{c:'#c8300e',s:'#e8581a',p:0,t:false,e:0,x:'#f8c040',fire:1};if(ch.gcp>0)return{c:PAL[(ch.gcp-1)%PAL.length],s:PAL[(ch.gcs|0)%PAL.length],p:ch.gpt|0,t:!!ch.gtr,e:ch.gce|0,x:PAL[(ch.gex|0)%PAL.length]};

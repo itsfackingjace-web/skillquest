@@ -17,7 +17,7 @@
  IDESC.eq_hoe='An off-hand tool. Face grass and press HIT (or X on a keyboard) to till soil for planting. It takes the off-hand, so put your bow or wand away to farm. Farming swaps it with your watering can by itself.';
  for(const sl of['hoe','can']){const i=SLOTS.findIndex(s=>s[0]===sl);if(i>=0)SLOTS.splice(i,1)}
  const _occ=occ;occ=function(slot){if(slot==='hoe'||slot==='can')return null;const k=_occ.apply(this,arguments);if(slot==='off'&&!k&&!TL.bow&&!WAND){if(TL.hoe)return'eq_hoe';if(TL.can)return'eq_can'}return k};
- const _ss=setSlot;setSlot=function(slot,k){if(slot==='hoe'||slot==='can')slot='off';const out=_ss.call(this,slot,k);if(slot==='off'){const e=k?EQ[k]:null;TL.hoe=e&&e.kind==='hoe'?1:0;TL.can=e&&e.kind==='can'?1:0}return out};
+ SQSETSLOT.wrap('140',_ss=>function(slot,k){if(slot==='hoe'||slot==='can')slot='off';const out=_ss.call(this,slot,k);if(slot==='off'){const e=k?EQ[k]:null;TL.hoe=e&&e.kind==='hoe'?1:0;TL.can=e&&e.kind==='can'?1:0}return out});
  // a hoe together with a bow or wand: the hoe goes in the bag
  // (the same for the watering can, and a hoe together with a can: the can goes in the bag)
  let told=false;const fix=()=>{const fight=TL.bow||WAND;let moved=0;

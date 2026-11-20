@@ -141,7 +141,7 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
   // guild boss portals (199/200), while this week's summoned boss is still standing
   if(window.SQGBOSS)for(const p of SQGBOSS.portals(R))add(p)}
  let BLV='';const bkey=()=>glv(G.prog&&G.prog.qd)+':'+(window.SQGBOSS?SQGBOSS.key():'');
- {const _lr=loadRegion;loadRegion=function(id,want,ret){const ok=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){R._t64=1;applyNodes(R);applyBuildings(R);BLV=bkey()}}catch(e){console.warn('guild isle',e)}return ok}}
+ {SQLOADRG.after('197',(id,want,ret)=>{try{const R=SCENE&&SCENE.room;if(R&&R.region===REG&&REG){R._t64=1;applyNodes(R);applyBuildings(R);BLV=bkey()}}catch(e){console.warn('guild isle',e)}})}
  // the banner: a pole and a flag in the guild's colour
  {SQFURN.wrap('197',_df=>function(it,tm){if(it&&it.t==='lm'&&it.k==='gflag'){const x=it.x*16+8,y=it.y*16+16,w=Math.sin((tm||0)*3)*1.2,c=col();
    Rg(x-1,y-30,2,30,'#5a4028');Rg(x-2,y-2,4,2,'#3a2818');g.beginPath();g.moveTo(x+1,y-30);g.lineTo(x+17+w,y-29);g.lineTo(x+14+w,y-24.5);g.lineTo(x+17+w,y-19);g.lineTo(x+1,y-19);g.closePath();g.fillStyle=c;g.fill();g.lineWidth=1;g.strokeStyle='#202020';g.stroke();
@@ -299,14 +299,14 @@ function rename(n){if(role()!=='l')return;n=String(n||'').replace(/\s+/g,' ').tr
  // ---- the island's board and bank chest ----
  let atChest=false;
  const nearChest=()=>{if(!onIsle())return false;const R=SCENE.room;return R.items.some(it=>it.use==='gbank'&&Math.hypot(it.x*16+8-P.x,it.y*16+8-P.y)<40)};
- {const _uf=useFurn;useFurn=function(it){if(it&&it.use==='gboard'){open('quest');return}if(it&&it.use==='gbank'){open('bank');return}if(it&&it.use==='ghall'){open('perks');return}
-  if(it&&it.use==='gshrine'){pray();return}if(it&&it.use==='gtreant'){try{SQGBOSS.enter(it)}catch(e){console.warn(e)}return}if(it&&it.use==='gstation'){try{openStation({t:it.st,f:{}})}catch(e){self.SQERR&&SQERR(e,'197-38')}return}return _uf.apply(this,arguments)}}
+ {SQUSEFURN.wrap('197',_uf=>function(it){if(it&&it.use==='gboard'){open('quest');return}if(it&&it.use==='gbank'){open('bank');return}if(it&&it.use==='ghall'){open('perks');return}
+  if(it&&it.use==='gshrine'){pray();return}if(it&&it.use==='gtreant'){try{SQGBOSS.enter(it)}catch(e){console.warn(e)}return}if(it&&it.use==='gstation'){try{openStation({t:it.st,f:{}})}catch(e){self.SQERR&&SQERR(e,'197-38')}return}return _uf.apply(this,arguments)})}
  // ---- panel ----
  let tab='home',sel=-1;
  function open(t){tab=t||(G.id?'home':'home');pnOpen=true;ptab=GT;jx=jy=0;pn.style.display='block';rPn();sfx('talk');startDB()}
  const redraw=()=>{if(pnOpen&&ptab===GT)rPn()};
  SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'guild',l:()=>G.id&&G.info?'Guild ['+(G.info.tag||'')+']':'Guild'});
- {const _ss=showScreen;showScreen=function(id){if(id==='guild'){open(G.id?'home':'home');return}return _ss.apply(this,arguments)}}
+ {SQSHOWSCR.wrap('197',_ss=>function(id){if(id==='guild'){open(G.id?'home':'home');return}return _ss.apply(this,arguments)})}
  const st=document.createElement('style');st.textContent=`#pn .gdgtb{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}#pn .gdgtb button{flex:1 1 auto;font:700 13px ${PF};padding:7px 8px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#pn .gdgtb button.on{background:#485870;color:#fff}
 #pn .gdgh{display:flex;align-items:center;gap:10px;padding:10px;border:3px solid #485870;background:#fff;margin-bottom:6px}#pn .gdgh .gdfl{width:26px;height:34px;flex:none;clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)}
 #pn .gdgh b{font-size:17px;color:#283c68}#pn .gdgr{display:flex;align-items:center;gap:8px;padding:7px 6px;border-bottom:1px solid #d8e0f0;color:#404040}#pn .gdgr .gdtx{flex:1;min-width:0;text-align:left}#pn .gdgr b{color:#283c68}#pn .gdgr .gdgi{flex:none}#pn .gdgr{text-align:left;justify-content:flex-start}#pn .gdgr small{display:block;font-size:12px;opacity:.75}

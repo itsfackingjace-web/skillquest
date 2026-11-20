@@ -26,9 +26,9 @@ function addHouseBS(h){for(const i of houseTiles(h)){BS.add(i);obj[i]=null}obj[h
 function placeHouse(){if(SCENE){say('You can only build outside.');return}if(!houseFits()){const[x,y]=houseAnchor();say(inVillage(x,y)?'You can\'t build inside the village.':'Not enough clear space for a house here.');sfx('swish');return}
  const[x,y]=houseAnchor();const h={id:Math.random().toString(36).slice(2,8),x,y,w:7,furn:new Map(),hp:12};HOUSES.push(h);addHouseBS(h);inv.house--;P.y=Math.max(P.y,(y+1)*16+5);
  sfx('chop');setTimeout(()=>sfx('quest'),150);endBuild('Your new house is ready! It\'s empty inside: craft furniture and decorate it.');saveLocal(true);saveCloud(true)}
-const _pb12=placeBuild;placeBuild=function(){if(BUILD&&BUILD.k==='house'){placeHouse();return}if(SCENE){say('You can only build outside.');return}_pb12()};
+SQPLACEB.wrap('012',_pb12=>function(){if(BUILD&&BUILD.k==='house'){placeHouse();return}if(SCENE){say('You can only build outside.');return}_pb12()});
 const _cpl12=canPlace;canPlace=function(x,y){return BUILD&&BUILD.k==='house'?houseFits():_cpl12(x,y)};
-const _sb12=startBuild;startBuild=function(k){if(SCENE){say('Go outside to build.');closePanel();return}_sb12(k)};
+SQSTARTB.wrap('012',_sb12=>function(k){if(SCENE){say('Go outside to build.');closePanel();return}_sb12(k)});
 function hitHouse(h){h.hp=(h.hp||12)-(1+TL.axe);sfx('chop');if(h.hp>0){if(h.hp<=4)say('The house is about to come down...');return}
  HOUSES=HOUSES.filter(o=>o!==h);for(const i of houseTiles(h))BS.delete(i);inv.house=(inv.house|0)+1;for(const f of h.furn.values()){inv[f.t]=(inv[f.t]|0)+1;if(f.items)for(const k in f.items)inv[k]=(inv[k]|0)+f.items[k]}if(HOMESP===h.id)HOMESP=null;
  say('You packed up your house and everything inside it.');setTimeout(()=>sfx('pickup'),90);saveLocal(true);saveCloud(true)}
@@ -65,7 +65,7 @@ tk.addEventListener('touchstart',e=>{if(SCENE&&!nearNpc()&&!pnOpen){const it=nea
 // actions that only make sense outdoors
 SQHIT.wrap('012 interiors and houses',next=>function(){if(dead||menuOpen||pnOpen)return;if(SCENE){if(swing<=0){swing=.25;sfx('swish')}return}if(!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile(),h=houseAt(x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;hitHouse(h);return}}
  return next.apply(this,arguments)});
-const _fi12=fire;fire=function(){if(SCENE&&!(SCENE.room&&(SCENE.room.icv||SCENE.room.yard||SCENE.room.court))){say('Better not light a fire indoors.');return}_fi12()};
+SQFIRE.wrap('012',_fi12=>function(){if(SCENE&&!(SCENE.room&&(SCENE.room.icv||SCENE.room.yard||SCENE.room.court))){say('Better not light a fire indoors.');return}_fi12()});
 // respawn: home bed beats a field bed beats the village
 const _rs12=reset;reset=function(){SCENE=null;_rs12();const h=HOUSES.find(o=>o.id===HOMESP);if(h){enterScene('home',h,{x:h.x*16+8,y:(h.y+1)*16+6});P.x=2*16+10;P.y=3*16+8;face=[0,1];say('You wake up at home, safe and sound.')}};
 SQNEWGAME.before('012',()=>{for(const h of HOUSES)for(const i of houseTiles(h))BS.delete(i);HOUSES=[];HOMESP=null;SCENE=null;});
@@ -91,11 +91,11 @@ function drawFurn(it,tm){const x0=it.x*16,y0=it.y*16,w=(it.w||1)*16;
   case'barrel':shd(x0+8,y0+14,12);Rg(x0+2,y0,12,15,O);Rg(x0+3,y0+1,10,13,'#a86830');Rg(x0+3,y0+3,10,1,'#604020');Rg(x0+3,y0+10,10,1,'#604020');Rg(x0+3,y0+1,10,1,'#c88840');break;
   case'bed':Rg(x0+1,y0-2,14,33,O);Rg(x0+2,y0-1,12,31,'#7a4a20');Rg(x0+3,y0+1,10,6,'#f8f8f8');Rg(x0+3,y0+8,10,20,'#5878b8');Rg(x0+3,y0+8,10,2,'#88a8e0');Rg(x0+3,y0+1,10,1,'#fff');break;
   case'chest':shd(x0+8,y0+14,14);Rg(x0+1,y0+2,14,13,O);Rg(x0+2,y0+3,12,5,'#c88840');Rg(x0+2,y0+8,12,6,'#a86830');Rg(x0+2,y0+7,12,1,'#604020');Rg(x0+7,y0+6,2,4,GD);Rg(x0+2,y0+3,12,1,'#e0a860');break}}
-const _nd12=NEWDRAW;NEWDRAW=function(...a){INDRAW=!!SCENE;if(SCENE){drawRoom(a[8]);return}_nd12(...a);const tm=a[8];
+SQNEWDRAW.wrap('012',_nd12=>function(...a){INDRAW=!!SCENE;if(SCENE){drawRoom(a[8]);return}_nd12(...a);const tm=a[8];
  const vis=HOUSES.filter(h=>Math.abs(h.x*16-P.x)<W/Z+120&&Math.abs(h.y*16-P.y)<H/Z+120);
  if(!SORTALL)for(const h of vis)drBld({...HOUSE_STYLE,w:h.w||5,tx:h.x-((h.w||5)-1)/2,ty:h.y-1,castle:!!h.castle},tm);
  let rd=false;for(const h of vis){const hw=((h.w||5)-1)/2,X0=(h.x-hw)*16,base=(h.y+1)*16;if(P.x>X0-6&&P.x<X0+(h.w||5)*16+6&&P.y+6>=base&&P.y-16<base)rd=true}if(rd&&!dead&&!SORTALL)pP(tm);
- if(BUILD&&BUILD.k==='house'&&!dead){const[x,y]=houseAnchor(),ok=houseFits();g.globalAlpha=.55;drBld({...HOUSE_STYLE,w:7,tx:x-3,ty:y-1},tm);g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32)}};
+ if(BUILD&&BUILD.k==='house'&&!dead){const[x,y]=houseAnchor(),ok=houseFits();g.globalAlpha=.55;drBld({...HOUSE_STYLE,w:7,tx:x-3,ty:y-1},tm);g.globalAlpha=1;g.fillStyle=ok?'rgba(80,240,120,.3)':'rgba(240,60,60,.3)';g.fillRect((x-3)*16,(y-1)*16,112,32)}});
 setActionLabels();
 
 // room items/furniture drawing (drawFurn) as a step list (window.SQFURN; see 006's sqSteps)
@@ -103,3 +103,6 @@ const SQFURN=sqSteps('drawFurn',drawFurn,f=>{drawFurn=f});window.SQFURN=SQFURN;
 
 // enterScene as a step list: later sections add named steps (window.SQENTER; see 006's sqSteps)
 const SQENTER=sqSteps('enterScene',enterScene,f=>{enterScene=f});window.SQENTER=SQENTER;
+
+// useFurn as a step list: later sections add named steps (window.SQUSEFURN; see 006's sqSteps)
+const SQUSEFURN=sqSteps('useFurn',useFurn,f=>{useFurn=f});window.SQUSEFURN=SQUSEFURN;

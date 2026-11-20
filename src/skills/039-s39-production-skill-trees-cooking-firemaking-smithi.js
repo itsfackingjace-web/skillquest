@@ -139,7 +139,7 @@ const _cr39=craft;craft=function(r){if(!r||!r.c)return _cr39(r);const b0={},x0=X
 const fDur=()=>pSecond(5)+sum39(5,[['fi_long',.15],['fi_endure',.2],['fi_master',.25],['fi_eternal',.35],['fi_guard',.5]]);
 const fFuel=()=>pThird(5)+sum39(5,[['fi_saver',.1],['fi_fuelm',.2]]);
 let FSOV39=0;
-const _fire39=fire;fire=function(){const n0=fires.length,kin=P39(5,'fi_kindle')&&(inv.wood|0)>=2&&(inv.wood|0)<3;if(kin)inv.wood=(inv.wood|0)+1;const w0=inv.wood|0,s0=inv.stone|0;
+SQFIRE.wrap('039',_fire39=>function(){const n0=fires.length,kin=P39(5,'fi_kindle')&&(inv.wood|0)>=2&&(inv.wood|0)<3;if(kin)inv.wood=(inv.wood|0)+1;const w0=inv.wood|0,s0=inv.stone|0;
  _fire39();if(fires.length<=n0){if(kin)inv.wood--;return}
  const f=fires[fires.length-1];let mult=1+fDur();if(P39(5,'fi_dchar')&&Math.random()<.12){mult*=2;gTxt(P.x,P.y-40,'Charcoal bed: burns twice as long!',SKC[5])}f.life*=mult;f.mx=f.life;
  let wUsed=w0-(inv.wood|0),sUsed=s0-(inv.stone|0);
@@ -149,7 +149,7 @@ const _fire39=fire;fire=function(){const n0=fires.length,kin=P39(5,'fi_kindle')&
  if(P39(5,'fi_sov')&&++FSOV39>=5){FSOV39=0;wb=wUsed;gTxt(P.x,P.y-46,'Flame sovereign: no wood used!',SKC[5])}
  else{if(Math.random()<fFuel())wb++;if(P39(5,'fi_eff')){for(let u=wb;u<wUsed;u++)if(Math.random()<.15)wb++;for(let u=0;u<sUsed;u++)if(Math.random()<.15)sb++}}
  wb=Math.min(wb,wUsed);sb=Math.min(sb,sUsed);if(wb){inv.wood=(inv.wood|0)+wb;gTxt(P.x,P.y-30,'+'+wb+' wood saved',SKC[5])}if(sb){inv.stone=(inv.stone|0)+sb;gTxt(P.x,P.y-36,'+'+sb+' stone saved',SKC[5])}
- saveLocal(true)};
+ saveLocal(true)});
 // warmth ring (50), the "monsters keep away" ring (70) and the glow scale with the light perks; cached once per frame
 let NF50=50,NF70=70;
 function fireLR(){return NF70/70}

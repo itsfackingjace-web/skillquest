@@ -39,7 +39,7 @@ function nearStation(){if(SCENE){if(!inHome())return null;const R=SCENE.room;let
 function openStation(o){if(!o)return;if(o.t==='wardrobe'){const ci=document.getElementById('cni');if(ci&&PNAME)ci.value=PNAME;menuOpen=true;jx=jy=0;cm.style.display='flex';document.getElementById('cgo').textContent='DONE';build();rp();sfx('talk');return}
  STATION=o;shop='station';fromMenu=false;pnOpen=true;ptab=2;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}
 const _nf22=nearFurn;nearFurn=function(){const r=_nf22();if(r)return r;const s=nearStation();return s&&s.inside?{i:s.i,f:s.f,stn:s}:null};
-const _uf22=useFurn;useFurn=function(o){if(o&&o.f&&STN.has(o.f.t)){openStation(o.stn||{t:o.f.t,inside:true,i:o.i,f:o.f});return}_uf22(o)};
+SQUSEFURN.wrap('022',_uf22=>function(o){if(o&&o.f&&STN.has(o.f.t)){openStation(o.stn||{t:o.f.t,inside:true,i:o.i,f:o.f});return}_uf22(o)});
 const _ns22=nearStruct;nearStruct=function(){const r=_ns22();if(r!==null)return r;const s=nearStation();return s&&!s.inside?s.i:null};
 const _us22=useStructure;useStructure=function(i){const s=STR.get(i);if(s&&STN.has(s.t)){openStation({t:s.t,inside:false,i,f:s});return}_us22(i)};
 // HIT: use the station you face (the dummy is for hitting)

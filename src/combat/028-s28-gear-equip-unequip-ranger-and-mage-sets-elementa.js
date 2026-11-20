@@ -86,8 +86,8 @@ SQHIT.wrap('028 gear equip unequip ranger and mage',_atk28=>function(){
  else if(pl&&plC&&!plW&&FARM.get(pi)&&wet(FARM.get(pi))){type='water';tx=px;ty=py}
  else if(!had&&FARM.has(pi)){type='till';tx=px;ty=py}
  if(type){ACTN={type,t:0,dur:type==='water'?.6:type==='harvest'?.35:.32,face:[face[0],face[1]],tx,ty,hit:false,crop:plC,tree:o&&o.t};if(type==='water')swing=Math.max(swing,.45)}});
-const _pb28=placeBuild;placeBuild=function(){if(!BUILD||SCENE||typeof isSeed!=='function'||!isSeed(BUILD.k))return _pb28();const[x,y]=frontTile(),i=y*N+x,b=FARM.get(i),before=b?b.c:null;_pb28();const a=FARM.get(i);
- if(a&&a.c&&!before)ACTN={type:'plant',t:0,dur:.45,face:[face[0],face[1]],tx:x,ty:y,hit:false}};
+SQPLACEB.wrap('028',_pb28=>function(){if(!BUILD||SCENE||typeof isSeed!=='function'||!isSeed(BUILD.k))return _pb28();const[x,y]=frontTile(),i=y*N+x,b=FARM.get(i),before=b?b.c:null;_pb28();const a=FARM.get(i);
+ if(a&&a.c&&!before)ACTN={type:'plant',t:0,dur:.45,face:[face[0],face[1]],tx:x,ty:y,hit:false}});
 function drawToolLine(kind,ang,hx,hy,tier){const dx=Math.cos(ang),dy=Math.sin(ang),px=-dy,py=dx,pts=[],head=[],hc=TCOL[tier]||'#c8d0d8';
  for(let i=1;i<=10;i++)pts.push([hx+dx*i,hy+dy*i]);
  if(kind==='axe')for(let i=7;i<=10;i++)for(let k=1;k<=3;k++)head.push([hx+dx*i+px*k,hy+dy*i+py*k]);
@@ -124,8 +124,8 @@ function drawWand(){if(CASTT<=0||!WAND)return;const[dx,dy]=CASTD,hx=P.x+dx*6,hy=
 SQPP.wrap('028',_pP28=>function(tm){const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');const sw=swing;if(tool||CASTT>0)swing=0;
  const kneel=ACTN&&(ACTN.type==='plant'||ACTN.type==='harvest')&&ACTN.t/ACTN.dur<.7;if(kneel){g.save();g.translate(0,1)}try{_pP28(tm)}finally{swing=sw;if(kneel)g.restore()}
  if(hurt>0&&Math.floor(tm*20)%2)return;if(tool&&!SCENE)drawAct(tm);drawWand()});
-const _nd28=NEWDRAW;NEWDRAW=function(...a){_nd28(...a);if(!SCENE){drawSpells(a[8]);drawParts()}};
-const _dr28=drawRoom;drawRoom=function(tm){_dr28(tm);drawSpells(tm);drawParts()};
+SQNEWDRAW.wrap('028',_nd28=>function(...a){_nd28(...a);if(!SCENE){drawSpells(a[8]);drawParts()}});
+SQDRAWROOM.after('028',(tm)=>{drawSpells(tm);drawParts()});
 // wand crosshair (controller)
 SQHUD.before('028',()=>{if(typeof GPON!=='undefined'&&GPON&&WAND&&!menuOpen&&typeof aimLive==='function'&&aimLive()&&!dead){const cx=camX(),cy=camY(),[dx,dy]=castDir(),x=Math.round(P.x+dx*34),y=Math.round(P.y-4+dy*34),c=WSP[WAND].col;
   g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);for(const[a,b]of[[-6,-1],[4,-1],[-1,-6],[-1,4]])Rg(x+a-1,y+b-1,5,5,O);Rg(x-6,y,3,1,c);Rg(x+4,y,3,1,c);Rg(x,y-6,1,3,c);Rg(x,y+4,1,3,c);Rg(x,y,1,1,c);g.restore()}});
@@ -174,7 +174,7 @@ const _oc28=pbd.onclick;pbd.onclick=e=>{let b;
  _oc28(e)};
 // --- gear sprites (ranger green, wizard purple) ---
 OPT.hatc.push('#4a8a3a','#6848b8');OPT.shirt.push('#4a8a3a','#6848b8');OPT.pants.push(sh2('#4a8a3a',.85),sh2('#6848b8',.85));
-const _gc28=gearCH;gearCH=function(){const c=_gc28();const ix=v=>v==='r'?3:4;if(CLS.helm==='r'){c.ht=2;c.hcol=HB+3}else if(CLS.helm==='m')c.ht=0;if(CLS.body)c.sh=SB+ix(CLS.body);if(CLS.legs)c.pn=PB+ix(CLS.legs);return c};
+SQGEARCH.wrap('028',_gc28=>function(){const c=_gc28();const ix=v=>v==='r'?3:4;if(CLS.helm==='r'){c.ht=2;c.hcol=HB+3}else if(CLS.helm==='m')c.ht=0;if(CLS.body)c.sh=SB+ix(CLS.body);if(CLS.legs)c.pn=PB+ix(CLS.legs);return c});
 // --- where to get it: ranger gear is fletched from wolf pelts; the hermit sells wands and wizard clothes ---
 FREC.push({k:'eq_rhelm',n:'Ranger hood',c:{pelt:2,wood:1},lv:10,xp:60,f:()=>{inv.eq_rhelm=(inv.eq_rhelm|0)+1;say('Made a ranger hood. Equip it from your Bag.')}},
  {k:'eq_rlegs',n:'Ranger chaps',c:{pelt:3,wood:1},lv:12,xp:80,f:()=>{inv.eq_rlegs=(inv.eq_rlegs|0)+1;say('Made ranger chaps. Equip them from your Bag.')}},
@@ -209,3 +209,6 @@ function wizOverlay(ox,oy,dir,st,fl){const C=GC;if(!C)return;const R=(a,b,w,hh,c
 SQPP.after('028',(tm)=>{if(!(CLS.helm==='m'||CLS.body==='m')||SCENE&&false)return;if(hurt>0&&Math.floor(tm*20)%2)return;if(typeof SAILING!=='undefined'&&SAILING)return;const st=qm?[1,0,2,0][Math.floor(qW)%4]:0,dir=face[0]?2:face[1]<0?1:0;GC=g;wizOverlay(Math.round(P.x),Math.round(P.y)+(ACTN&&(ACTN.type==='plant'||ACTN.type==='harvest')&&ACTN.t/ACTN.dur<.7?1:0),dir,st,face[0]<0)});
 const _dcs=drawCardSprite;drawCardSprite=function(){_dcs();const c=document.getElementById('tcs');if(c&&(CLS.helm==='m'||CLS.body==='m')){GC=c.getContext('2d');wizOverlay(16,29,0,0,false)}};
 
+
+// setSlot as a step list: later sections add named steps (window.SQSETSLOT; see 006's sqSteps)
+const SQSETSLOT=sqSteps('setSlot',setSlot,f=>{setSlot=f});window.SQSETSLOT=SQSETSLOT;

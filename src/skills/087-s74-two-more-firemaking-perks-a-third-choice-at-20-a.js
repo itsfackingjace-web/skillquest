@@ -4,10 +4,10 @@
 {TREES[5].choices[20].push({id:'fi_lone',n:'Lone Bonfire',d:'Your campfires burn for 30 minutes, but only one can be lit at a time: building a new one puts out the old one.'});
  TREES[5].choices[40].push({id:'fi_hearth',n:'Hearthkeeper',d:'While you stand near a campfire, your FOOD doesn\'t drain.'});
  const LONE=30*60;
- const _f=fire;fire=function(){const mine=fires.filter(f=>!f._rp),n0=fires.length;_f();if(fires.length<=n0||!perk(5,'fi_lone'))return;const nf=fires[fires.length-1];
+ SQFIRE.wrap('087',_f=>function(){const mine=fires.filter(f=>!f._rp),n0=fires.length;_f();if(fires.length<=n0||!perk(5,'fi_lone'))return;const nf=fires[fires.length-1];
   nf.life=LONE;nf.mx=LONE;let out=0;for(const f of mine){const j=fires.indexOf(f);if(j>=0){fires.splice(j,1);out++}}
   const st=window.FIRESTASH;if(st)for(const k in st)if(Array.isArray(st[k])){const b=st[k].length;st[k]=st[k].filter(f=>f._rp);out+=b-st[k].length}
-  if(out)say('Your old campfire goes out. The new one will burn for 30 minutes.');saveLocal(true)};
+  if(out)say('Your old campfire goes out. The new one will burn for 30 minutes.');saveLocal(true)});
  SQUPD.wrap('087',_u=>function(dt){const h0=hunger,L0=new Map();for(const f of fires)L0.set(f,f.life);_u(dt);if(!dead&&hunger<h0&&perk(5,'fi_hearth')&&nearFire(P.x,P.y,50))hunger=h0;
   // campfires on other islands burn down too, but only the ones nothing else burned down this frame (001's loop runs on
   // islands now as well; burning them here too made every island campfire last half as long)
@@ -24,7 +24,7 @@
     g.save();g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(sx,sy,0,sx,sy,r*fl);gr.addColorStop(0,'rgba(255,215,150,'+(.22*dk)+')');gr.addColorStop(.55,'rgba(255,180,90,'+(.1*dk)+')');gr.addColorStop(1,'rgba(255,160,60,0)');
     g.fillStyle=gr;g.fillRect(sx-r*1.1,sy-r*1.1,r*2.2,r*2.2);g.restore()}}catch(e){self.SQERR&&SQERR(e,'087-1')}})}
 // the leaderboards take the controller / keyboard while they're open (title screen)
-{const _n=navRoot;navRoot=function(){const lb=document.getElementById('sqlb');if(lb&&lb.style.display==='flex')return lb;return _n()}}
+{SQNAVROOT.wrap('087',_n=>function(){const lb=document.getElementById('sqlb');if(lb&&lb.style.display==='flex')return lb;return _n()})}
 // a LOOT button when you stand at a grave (phones had no button to press)
 {let on=false;SQUPD.after('087',(dt)=>{const n=window.SQGRVNEAR&&SQGRVNEAR()&&!(typeof nearNpc==='function'&&nearNpc());if(n){tk.style.display='flex';if(!tk.innerHTML.startsWith('LOOT'))tk.innerHTML='LOOT'+(isPC?'<small>T</small>':'');on=true}
   else if(on){on=false;if(tk.innerHTML.startsWith('LOOT')){tk.innerHTML='TALK'+(isPC?'<small>T</small>':'');tk.style.display='none';if(typeof tkLab!=='undefined')tkLab=''}}})}

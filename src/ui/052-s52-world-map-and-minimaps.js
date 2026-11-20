@@ -100,8 +100,8 @@ function drawWorld52(){const c=document.getElementById('wmc');if(!c)return;const
   else if(RG_THUMB[id]&&wmKnown(id)){const th=RG_THUMB[id],seen=(WORLD_STATE[id]&&WORLD_STATE[id].seen)||[];dot(th.dock[0],th.dock[1],th.w,th.h,'#f8d848',3);for(const l of th.lms)if(seen.includes(l.id))dot(l.x,l.y,th.w,th.h,'#f8f8f8',2)}
   if(id===cur&&bl){const W=id==='hollow'?N:WORLD_REGIONS[id].width,H=id==='hollow'?N:WORLD_REGIONS[id].height,wp=id==='hollow'?worldPos():{x:P.x,y:P.y};dot(wp.x/16-.5,wp.y/16-.5,W,H,'#f83030',4)}}}
 // HERE / WORLD switch on the map screen
-const _mh52=mapHTML;mapHTML=function(){const tabs='<div style="display:flex;gap:6px;justify-content:center;margin:2px 0 4px"><button class="sb mp52" data-m="local" style="flex:1;opacity:'+(MAPVIEW==='local'?1:.55)+'">HERE</button><button class="sb mp52" data-m="world" style="flex:1;opacity:'+(MAPVIEW==='world'?1:.55)+'">WORLD</button></div>';
- return tabs+(MAPVIEW==='world'?worldHTML52():_mh52())};
+SQMAPHTML.wrap('052',_mh52=>function(){const tabs='<div style="display:flex;gap:6px;justify-content:center;margin:2px 0 4px"><button class="sb mp52" data-m="local" style="flex:1;opacity:'+(MAPVIEW==='local'?1:.55)+'">HERE</button><button class="sb mp52" data-m="world" style="flex:1;opacity:'+(MAPVIEW==='world'?1:.55)+'">WORLD</button></div>';
+ return tabs+(MAPVIEW==='world'?worldHTML52():_mh52())});
 SQDRAWMAP.wrap('052',_dmap52=>function(){if(MAPVIEW==='world'){drawWorld52();return}_dmap52()});
 const _oc52=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mp52');if(b){MAPVIEW=b.dataset.m;WSEL=null;rPn();return}
  if(e.target&&e.target.id==='wmc'){const c=e.target,rc=c.getBoundingClientRect(),mx=(e.clientX-rc.left)/rc.width*c.width,my=(e.clientY-rc.top)/rc.height*c.height;

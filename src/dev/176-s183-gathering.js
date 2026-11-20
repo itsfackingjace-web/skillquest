@@ -92,7 +92,7 @@
    if(r.buy>0){const sd=r.seed,lv=r.lv;GEN.push({n:'5 '+(INAME[sd]||sd).toLowerCase(),c:r.buy,f:()=>{inv[sd]=(inv[sd]|0)+5},hide:()=>lvOf(11)<lv,_gc:1})}
    if(r.ck&&INAME[r.ck]&&!COOKS.some(c=>c.raw===r.item))COOKS.push({raw:r.item,ck:r.ck,n:r.n.toLowerCase(),lv:r.clv,xp:r.cxp,_gc:1})}
   try{if(window.SQPROPS)SQPROPS.recat()}catch(e){self.SQERR&&SQERR(e,'176-5')}}
- {const _lr=loadRegion;loadRegion=function(){const out=_lr.apply(this,arguments);try{const R=SCENE&&SCENE.room;if(R&&R.region)placeRegion(R)}catch(e){self.SQERR&&SQERR(e,'176-6')}return out}}
+ {SQLOADRG.after('176',()=>{try{const R=SCENE&&SCENE.room;if(R&&R.region)placeRegion(R)}catch(e){self.SQERR&&SQERR(e,'176-6')}})}
  SQA.onApply(lib=>{try{apply(lib)}catch(e){console.warn('gather',e)}});
  window.SQGATHER={cleanNode,cleanFish,cleanCrop,cropSp,SHAPES,kindOf,spritesFor,REG,regName,TOOLS,get active(){return ACT}};
  // ======================= Dev Suite > Gathering =======================

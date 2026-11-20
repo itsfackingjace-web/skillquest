@@ -23,7 +23,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  SM.push({k:KEY.helm,n:'Turtle helm',c:{[FR]:1},lv:75,xp:900,def:DEF},{k:KEY.legs,n:'Turtle legs',c:{[FR]:2},lv:78,xp:1500,def:DEF},{k:KEY.body,n:'Turtle chestplate',c:{[FR]:2},lv:80,xp:1700,def:DEF});
  const worn=()=>(TT.helm?1:0)+(TT.body?1:0)+(TT.legs?1:0);
  {const _occ=occ;occ=function(slot){if(TT[slot]&&ARM[slot]===5)return KEY[slot];return _occ.apply(this,arguments)}}
- {const _ss=setSlot;setSlot=function(slot,k){const out=_ss.apply(this,arguments);if(slot in TT)TT[slot]=!!k&&k===KEY[slot];return out}}
+ {SQSETSLOT.after('200',(slot,k)=>{if(slot in TT)TT[slot]=!!k&&k===KEY[slot];})}
  {const _eq=equipItem;equipItem=function(k){const e=EQ[k];if(e&&e.tt&&lvOf(8)<DEF){say('You need Defence '+DEF+' to wear the '+e.n.toLowerCase()+'.');try{sfx('swish')}catch(x){self.SQERR&&SQERR(x,'200-1')}return}return _eq.apply(this,arguments)}}
  {const _wu=watchUpgrades;watchUpgrades=function(){const was={...TT};const out=_wu.apply(this,arguments);for(const s in TT)if(was[s]&&ARM[s]!==5){if((inv['eq_'+s+'5']|0)>0)inv['eq_'+s+'5']--;inv[KEY[s]]=(inv[KEY[s]]|0)+1;TT[s]=false}return out}}
  {SQSAVE.after('200:tta',s=>{const t=(TT.helm?'h':'')+(TT.body?'b':'')+(TT.legs?'l':'');if(t)s.tta=t;})}
@@ -33,7 +33,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  {const _bb=blockBonus;blockBonus=function(){const n=worn();return _bb.apply(this,arguments)+n*.03+(n>=2?.05:0)+(n>=3?.05:0)}}
  {const _bc=blockCap;blockCap=function(){return _bc.apply(this,arguments)+(worn()>=3?.05:0)}}
  // the look: the plate pieces in shell green with a sand trim
- {const _gc=gearCH;gearCH=function(){const c=_gc.apply(this,arguments);const b=(TT.helm&&ARM.helm===5?1:0)|(TT.body&&ARM.body===5?2:0)|(TT.legs&&ARM.legs===5?4:0);if(b)c.ttk=b;return c}}
+ {SQGEARCH.wrap('200',_gc=>function(){const c=_gc.apply(this,arguments);const b=(TT.helm&&ARM.helm===5?1:0)|(TT.body&&ARM.body===5?2:0)|(TT.legs&&ARM.legs===5?4:0);if(b)c.ttk=b;return c})}
  {const _kl=kitLook;kitLook=function(ch){const o=_kl.apply(this,arguments);const b=ch&&ch.ttk|0;if(!b)return o;
    if(b&2&&o.body==='plate'){o.bc=TCOL;o.ba=TLIT}if(b&4&&o.legs==='greaves'){o.lc=TCOL;o.la=TLIT}if(b&1&&o.head==='helm'){o.hc=TCOL;o.ha=TLIT}return o};if(typeof KITC!=='undefined')KITC.clear()}
 

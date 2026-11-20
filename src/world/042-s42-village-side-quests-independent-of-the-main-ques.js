@@ -48,8 +48,8 @@ function sqMark(n){const t=n.town;if(!t)return'';const q=sqCur(t);if(!q||q.giver
 function sqDrawMarks(tm,inScene){for(const n of NPCS){if(!n.town)continue;if(inScene?n.scene!==SCENE.id:n.scene)continue;const mk=sqMark(n);if(!mk)continue;
   const bx=Math.round(n.x),by=Math.round(n.y-30+Math.sin(tm*4)*1.5);g.save();g.font='700 11px "SQ Digits","Pixelify Sans",monospace';g.textAlign='center';g.textBaseline='alphabetic';g.lineWidth=3;g.lineJoin='round';
   g.strokeStyle=O;g.strokeText(mk,bx,by);g.fillStyle=mk==='?'?'#a8e0ff':'#f8d848';g.fillText(mk,bx,by);g.restore()}}
-const _nd42=NEWDRAW;NEWDRAW=function(...a){_nd42(...a);if(!SCENE)sqDrawMarks(a[8],false)};
-const _dr42=drawRoom;drawRoom=function(tm){_dr42(tm);if(SCENE)sqDrawMarks(tm,true)};
+SQNEWDRAW.wrap('042',_nd42=>function(...a){_nd42(...a);if(!SCENE)sqDrawMarks(a[8],false)});
+SQDRAWROOM.after('042',(tm)=>{if(SCENE)sqDrawMarks(tm,true)});
 // saving: optional field, older saves start every line fresh
 SQSAVE.after('042:sideQuests',s=>{s.sideQuests=JSON.parse(JSON.stringify(SQ_SIDE));});
 function sqReset(){for(const t in SQ_SIDE)Object.assign(SQ_SIDE[t],{index:0,on:false,k:0,completed:false})}

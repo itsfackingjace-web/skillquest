@@ -40,8 +40,5 @@ const nearNpc=()=>NPCS.find(n=>(n.scene||null)===curScene()&&Math.hypot(n.x-P.x,
 const tk=document.createElement('div');tk.className='b';tk.id='tk';tk.textContent='TALK';tk.style.cssText='width:64px;height:64px;right:34px;bottom:calc(env(safe-area-inset-bottom,0px) + 140px);display:none;font-size:13px';document.body.appendChild(tk);
 tk.addEventListener('touchstart',e=>{e.preventDefault();const n=nearNpc();if(n&&!pnOpen){shop=n.kind;pnOpen=true;ptab=2;jx=jy=0;pn.style.display='block';rPn()}},{passive:false});
 SQUPD.after('005',(dt)=>{tk.style.display=(!dead&&!pnOpen&&!menuOpen&&nearNpc())?'flex':'none';en=en.filter(n=>!(n.x>(VX-11)*16&&n.x<(VX+12)*16&&n.y>(VY-8)*16&&n.y<(VY+9)*16));if((gsv+=dt)>3){gsv=0;svg()}});
-const _nd2=NEWDRAW;NEWDRAW=function(a,b,x0,y0,x1,y1,vw,vh,tm){_nd2(a,b,x0,y0,x1,y1,vw,vh,tm);g.imageSmoothingEnabled=false;
- if(!SORTALL)for(const bl of BLD)drBld(bl,tm);GC=g;for(const n of NPCS){if(n.scene||NPCSORT)continue;shd(n.x,n.y+6,12);cP(n.ch,n.dir||0,n.st||0,Math.round(n.x),Math.round(n.y),!!n.fl)}
- let rd=false;for(const bl of BLD){const X0=bl.tx*16,base=(bl.ty+2)*16;if(P.x>X0-6&&P.x<X0+bl.w*16+6&&P.y+6>=base&&P.y-16<base)rd=true}
- for(const n of NPCS)if(!n.scene&&Math.abs(P.x-n.x)<12&&P.y>n.y&&P.y-n.y<22)rd=true;if(rd&&!dead)pP(tm)};
+SQNEWDRAW.after('005',(a,b,x0,y0,x1,y1,vw,vh,tm)=>{g.imageSmoothingEnabled=false;if(!SORTALL)for(const bl of BLD)drBld(bl,tm);GC=g;for(const n of NPCS){if(n.scene||NPCSORT)continue;shd(n.x,n.y+6,12);cP(n.ch,n.dir||0,n.st||0,Math.round(n.x),Math.round(n.y),!!n.fl)}let rd=false;for(const bl of BLD){const X0=bl.tx*16,base=(bl.ty+2)*16;if(P.x>X0-6&&P.x<X0+bl.w*16+6&&P.y+6>=base&&P.y-16<base)rd=true}for(const n of NPCS)if(!n.scene&&Math.abs(P.x-n.x)<12&&P.y>n.y&&P.y-n.y<22)rd=true;if(rd&&!dead)pP(tm)});
 say('Welcome to Hollow Village! Shops are just north.');

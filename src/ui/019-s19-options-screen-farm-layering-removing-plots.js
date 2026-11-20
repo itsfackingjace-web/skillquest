@@ -8,7 +8,7 @@ if(!(SFXV>=0&&SFXV<=1))SFXV=1;if(!(MUSV>=0&&MUSV<=1))MUSV=1;
 function saveVol(){try{localStorage.setItem('sq_vol',JSON.stringify({s:SFXV,m:MUSV}))}catch(e){self.SQERR&&SQERR(e,'019-2')}}
 mb.style.display='none';
 SMI.splice(SMI.findIndex(x=>x.id==='exit'),0,{id:'options',l:()=>'Options'});
-const _ss19=showScreen;showScreen=function(id){if(id!=='options')return _ss19(id);pnOpen=true;ptab=8;jx=jy=0;pn.style.display='block';rPn();sfx('talk')};
+SQSHOWSCR.wrap('019',_ss19=>function(id){if(id!=='options')return _ss19(id);pnOpen=true;ptab=8;jx=jy=0;pn.style.display='block';rPn();sfx('talk')});
 const VOLS=[0,.25,.5,.75,1];
 function volRow(id,label,on,v){return'<div class="gr"><div class="gi"><b>'+label+'</b><br><small>'+(on?'Volume '+Math.round(v*100)+'%':'Off')+'</small></div>'
  +'<button class="gc vo" data-v="'+id+'" data-d="-1"'+(on?'':' style="opacity:.45"')+'>−</button><button class="gc vo" data-v="'+id+'" data-d="1"'+(on?'':' style="opacity:.45"')+'>+</button><button class="gc vo" data-v="'+id+'" data-d="t" style="min-width:58px">'+(on?'ON':'OFF')+'</button></div>'}

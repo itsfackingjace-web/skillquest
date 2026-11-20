@@ -23,15 +23,15 @@ function rbSolidSync(){const R=rbR();if(!R)return;const want=new Set(),had=R._rb
  for(const i of had)if(!want.has(i))R.solid.delete(i);for(const i of want)R.solid.add(i);R._rbS=want}
 setInterval(rbSolidSync,500);
 // ---- building ----
-{const _sb=startBuild;startBuild=function(k){const R=rbR();if(!R)return _sb(k);if((inv[k]|0)<1)return;
+{SQSTARTB.wrap('065',_sb=>function(k){const R=rbR();if(!R)return _sb(k);if((inv[k]|0)<1)return;
   if(k==='house'){say('Houses can only be built on Hollow Island.');closePanel();return}
   if(FURN_ONLY.has(k)){say('Furniture goes inside your house on Hollow Island.');closePanel();return}
   if(typeof isSeed==='function'&&isSeed(k)){say('Farm plots are on Hollow Island.');closePanel();return}
-  BUILD={k};closePanel();setActionLabels();say('Build mode: face an empty spot and press PLACE. Press DONE to stop.')}}
-{const _pb=placeBuild;placeBuild=function(){const R=rbR();if(!R||!BUILD)return _pb();const k=BUILD.k;if((inv[k]|0)<1){endBuild('You have no more '+INAME[k].toLowerCase()+'s.');return}
+  BUILD={k};closePanel();setActionLabels();say('Build mode: face an empty spot and press PLACE. Press DONE to stop.')})}
+{SQPLACEB.wrap('065',_pb=>function(){const R=rbR();if(!R||!BUILD)return _pb();const k=BUILD.k;if((inv[k]|0)<1){endBuild('You have no more '+INAME[k].toLowerCase()+'s.');return}
   const[x,y]=frontTile();if(!rbOpen(R,x,y)){say('You can\'t build there.');sfx('swish');return}
   inv[k]--;const s={t:k,hp:BHP[k]||4};if(k==='chest')s.items={};rbMap(R.region).set(rbK(x,y),s);rbSolidSync();sfx(k==='swall'?'mine':'chop');saveLocal(true);saveCloud();
-  if((inv[k]|0)<1)endBuild('Placed your last '+INAME[k].toLowerCase()+'.')}}
+  if((inv[k]|0)<1)endBuild('Placed your last '+INAME[k].toLowerCase()+'.')})}
 function rbPick(R,x,y){const m=rbMap(R.region),s=m.get(rbK(x,y));if(!s)return;m.delete(rbK(x,y));rbSolidSync();inv[s.t]=(inv[s.t]|0)+1;let extra='';
  if(s.items){for(const k in s.items)inv[k]=(inv[k]|0)+s.items[k];if(Object.values(s.items).some(v=>v>0))extra=' and everything inside'}
  say('Picked up the '+INAME[s.t].toLowerCase()+extra+'.');setTimeout(()=>sfx('pickup'),90);saveLocal(true);saveCloud()}
