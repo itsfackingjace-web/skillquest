@@ -17,7 +17,7 @@
   `window.SQLBX` hooks (called by 068's `lbTick` while building `lb/<uid>`) add gid/gn/gt (guild), pa/pu (patron, paid-through),
   mo (mod), dv (dev); the `lb` rules accept each only when it's true (membership in `guilds/<gid>/m`, `patron/<uid>/u > now`,
   `mods/<uid>`, `devs/<uid>`). Flags are as fresh as the player's last leaderboard write (every 20 s while online).
-- Sync (`tools/discord/sync-roles.mjs`, `.github/workflows/discord-roles.yml`, every 30 min at :07/:37; "Run workflow" with
+- Sync (`tools/discord/sync-roles.mjs`, `.github/workflows/discord-roles.yml`, every 30 min at :07/:37 and after every push to main (timed runs are best-effort); "Run workflow" with
   "dry run" lists changes): reads #link (needs a text channel named `link`), first post of a code wins, code must be made at most a
   day before the post, a member's latest working code wins; replies once to each request (its replies are how it knows). Roles it
   owns (creates when needed, the only ones it adds/removes): `Total Level 100+` ... `1750+`, `Total Level Maxed`, `Guild: <name>
