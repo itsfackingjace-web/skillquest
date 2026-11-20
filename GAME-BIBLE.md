@@ -106,6 +106,11 @@ Rules:
   sales of 100+ gold is the sink that grows with trade.
 - **Never add a gold or item source without a matching sink** in mind. Use Admin > Economy to watch total gold.
 - Rare items should stay rare. Pets drop at 1 in 5,000 from a matching node. The boss pet chance is 5%.
+- **Boss drops (standard since Nov 20, from #ideas):** every new boss has three tiers of rare drops: a material only that boss drops
+  (30-50%, used in crafting), a 5% rare, and an ultra-rare at 1% or less. Older bosses get the missing tiers as they're revisited.
+- **Item text never says "the best" or "the strongest"**: say what it beats ("hits harder than adamant"). New gear always comes. The
+  source rules (`tools/checks/lint.cjs`) refuse it.
+- **Holiday events last the week of the holiday** (the Nov 17 poll).
 
 ## 8. Money (Patrons)
 
