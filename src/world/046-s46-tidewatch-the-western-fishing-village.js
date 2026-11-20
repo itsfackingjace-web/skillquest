@@ -102,7 +102,7 @@ function twPanel(n){const S=n.scene&&TWSHOP[n.scene];let h=head(S?S.title:n.scen
  return h+jobCard(n)}
 SQRPN.wrap('046',_r46=>function(){if(ptab===2&&shop==='twfolk'){if(!TALKN||TALKN.kind!=='twfolk'){TALKN=nearNpc();const n=TALKN;TALKQ=n?(n.scene&&TWSHOPQ[n.id]&&Math.random()<.5?TWSHOPQ[n.id][Math.floor(Math.random()*2)]:pickLine(n)):''}
   panelChrome('');if(!TALKN){closePanel();return}pbd.innerHTML=twPanel(TALKN);return}_r46()});
-const _cp46=closePanel;closePanel=function(){_cp46();if(TALKN&&TALKN.kind==='twfolk')TALKN=null};
+SQCLOSEPN.after('046',()=>{if(TALKN&&TALKN.kind==='twfolk')TALKN=null});
 const _xa46=xAct;xAct=function(a){const n=TALKN;
  if(a.startsWith('twb_')){const m=a.match(/^twb_(.+)_(\d+)$/);if(!m)return;const k=m[1],q=+m[2],S=n&&TWSHOP[n.scene],it=S&&S.items.find(e=>e[0]===k);if(!it)return;
   xbuy(it[2]*q,()=>{if(k==='bait10')inv.bait=(inv.bait|0)+10;else if(k==='bait50')inv.bait=(inv.bait|0)+50;else inv[k]=(inv[k]|0)+q},'Bought '+(q>1?q+' × ':'')+it[1].toLowerCase());svg();saveLocal(true);rPn();return}
@@ -110,9 +110,7 @@ const _xa46=xAct;xAct=function(a){const n=TALKN;
  if(a==='tw_rest'){if(GLD<25){say('Not enough gold');sfx('swish');return}GLD-=25;P.hp=6;hunger=100;if(nightNow()||dark()>.3){time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;en=[];say('You slept to the sound of the waves. Good morning!');closePanel()}else say('You rest and eat. You feel great!');sfx('quest');saveNow();if(pnOpen)rPn();return}
  if(a==='tw_scope'){TALKN=null;shop=null;ptab=5;rPn();say('Through the telescope you can see the whole island.');return}
  const was=n&&n.kind==='twfolk'&&a==='job'?JOBD[n.id]:null;_xa46(a);if(n&&n.kind==='twfolk'&&a==='job'&&JOBD[n.id]!==was){TALKQ=TWTHANKS[n.id]||'Thank you!';saveNow();rPn()}};
-const _es46=enterScene;enterScene=function(id,house,ret){_es46(id,house,ret);if(!TWNAMES[id])return;
- const k=TWN.find(n=>n.work===id);if(k&&k.scene!==id&&k.id!=='luma'){say(TWNAMES[id][0].toUpperCase()+TWNAMES[id].slice(1)+' is closed for the night. '+k.name+' has gone home.');return}
- say({tw_tackle:'Silverhook Tackle. Nets, rods and the smell of the sea.',tw_kitchen:'The Seabreeze Kitchen. Something delicious is bubbling.',tw_post:'The Driftwood Trading Post. Half of it washed ashore.',tw_nav:'The Navigator\'s House: charts on every wall and a brass telescope by the window.'}[id]||('This is '+TWNAMES[id]+'.'))};
+SQENTER.after('046',(id,house,ret)=>{if(!TWNAMES[id])return;const k=TWN.find(n=>n.work===id);if(k&&k.scene!==id&&k.id!=='luma'){say(TWNAMES[id][0].toUpperCase()+TWNAMES[id].slice(1)+' is closed for the night. '+k.name+' has gone home.');return}say({tw_tackle:'Silverhook Tackle. Nets, rods and the smell of the sea.',tw_kitchen:'The Seabreeze Kitchen. Something delicious is bubbling.',tw_post:'The Driftwood Trading Post. Half of it washed ashore.',tw_nav:'The Navigator\'s House: charts on every wall and a brass telescope by the window.'}[id]||('This is '+TWNAMES[id]+'.'))});
 let twPrev=false;
 SQUPD.after('046',(dt)=>{if(menuOpen||!TWON)return;townRoutine(TWN,dt,'luma');if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inTWBox(x,y);twPrev=inT;en=en.filter(n=>!inTWBox(Math.floor(n.x/16),Math.floor(n.y/16)))});
 // --- drawing: blue-and-white houses (the normal HD house with crisp white walls), drying nets, the lighthouse ---
@@ -132,14 +130,13 @@ function drawLighthouse(x,y,tm){const px=x*16,py=y*16;shd(px+8,py+15,22);Rg(px-1
 const _lh46=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh46(L,x0,y0,x1,y1,tm);if(!TWON)return;const inV=(x,y)=>x>=x0-3&&x<=x1+3&&y>=y0-3&&y<=y1+6;
  for(const[x,y]of TWNET)if(inV(x,y))L.push([(y+1)*16-2,4,()=>drawNetRack(x,y,tm)]);
  if(TWLIGHT&&inV(TWLIGHT[0],TWLIGHT[1]))L.push([(TWLIGHT[1]+1)*16-2,4,()=>drawLighthouse(TWLIGHT[0],TWLIGHT[1],tm)])};
-const _dmap46=drawMap;drawMap=function(){_dmap46();if(!TWON)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');
- x.fillStyle='#101010';x.fillRect(WX-2,WY-2,5,5);x.fillStyle='#78c8f8';x.fillRect(WX-1,WY-1,3,3);if(GRDEN){x.fillStyle='#101010';x.fillRect(GRDEN.x-1,GRDEN.y-1,3,3);x.fillStyle='#48e8a8';x.fillRect(GRDEN.x,GRDEN.y,1,1)}};
+SQDRAWMAP.after('046',()=>{if(!TWON)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(WX-2,WY-2,5,5);x.fillStyle='#78c8f8';x.fillRect(WX-1,WY-1,3,3);if(GRDEN){x.fillStyle='#101010';x.fillRect(GRDEN.x-1,GRDEN.y-1,3,3);x.fillStyle='#48e8a8';x.fillRect(GRDEN.x,GRDEN.y,1,1)}});
 const _mh46=mapHTML;mapHTML=function(){const h=_mh46();return TWON?h.replace('</span>','</span><span><i style="background:#78c8f8"></i>Tidewatch</span><span><i style="background:#48e8a8"></i>Drowned Grotto</span>'):h};
 SONGS.tide={bpm:92,lead:'G5 - E5 D5 - B4 - D5 E5 - G5 - A5 - G5 E5 - D5 - - - C5 - E5 G5 - A5 - G5 E5 D5 B4 - D5 - - -',
  bass:'G2 - D3 - G2 - D3 - C3 - G3 - C3 - G3 - E2 - B2 - E2 - B2 - C3 - G3 - D3 - - -'};
 PARSED.tide={bpm:SONGS.tide.bpm,lead:parseTrack(SONGS.tide.lead),bass:parseTrack(SONGS.tide.bass)};
 const _ws46=wantSong;wantSong=function(){const w=_ws46();if(!TWON)return w;if(!SCENE&&(w==='day'||w==='port')&&inTWBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'tide';if(SCENE&&TWNAMES[SCENE.id])return'tide';return w};
-const _ng46=newGame;newGame=function(){_ng46();for(const n of TWN){n.scene=n.work;if(n.work){n.x=n.wx;n.y=n.wy}else{n.x=n.hx0;n.y=n.hy0}}};
+SQNEWGAME.after('046',()=>{for(const n of TWN){n.scene=n.work;if(n.work){n.x=n.wx;n.y=n.wy}else{n.x=n.hx0;n.y=n.hy0}}});
 // --- Tidewatch's quest line ---
 SIDE_QS.tidewatch.push(
  {n:'A Fisherman\'s Favor',d:'Bring Corin 5 trout.',type:'give',item:'trout',amt:5,r:{g:120,xp:[9,350]},giver:'corin',req:[9,10],start:'The fish haven\'t been biting lately.',finish:'Those are some fine-looking trout!'},

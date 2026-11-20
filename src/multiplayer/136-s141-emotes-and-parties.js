@@ -123,7 +123,7 @@
  pop.querySelector('.ok').onclick=()=>{const v=PT.inv;hidePop();if(v)join(v.id,v.u)};pop.querySelector('.no').onclick=hidePop;
  // +10% XP with a party member close by
  const near=()=>{let L=null;try{L=mpLoc()}catch(e){self.SQERR&&SQERR(e,'136-11')}return others().some(r=>r.loc===L&&Math.hypot(r.tx-P.x,r.ty-P.y)<=320)};
- {const _ax=addXp;addXp=function(i,x){if(x>0&&PT.id)try{if(near())x=Math.max(x+(x>=5?1:0),Math.round(x*1.1))}catch(e){self.SQERR&&SQERR(e,'136-12')}return _ax.call(this,i,x)}}
+ {SQADDXP.wrap('136',_ax=>function(i,x){if(x>0&&PT.id)try{if(near())x=Math.max(x+(x>=5?1:0),Math.round(x*1.1))}catch(e){self.SQERR&&SQERR(e,'136-12')}return _ax.call(this,i,x)})}
  // party chat: one private message to each member, marked [Party] (061 files those under the Party tab)
  let lastSay=0;function partySay(t){const msg=String(t||'').replace(/\s+/g,' ').trim().slice(0,72);if(!msg)return;if(!on())return;
   if(!PT.id||!others().length){try{mpLog('game','You\'re not in a party. Tap a player\'s name to invite them.')}catch(e){self.SQERR&&SQERR(e,'136-13')}return}
@@ -133,8 +133,8 @@
  window.SQPARTYSAY=partySay;
  // shared gold: when you beat a monster with party members close by (same area, within 20 steps), each of them gets
  // half the gold it gave you (the kill's own 2-6 gold counted as 4, plus what enemyDrop added; at most 100), sent as fx kind 'pg' {g, p: party id, x, y}
- {const _ed=enemyDrop;enemyDrop=function(n){const g0=GLD;const out=_ed.apply(this,arguments);try{if(PT.id&&on()&&n&&near()&&window.SQPVSEND){const dg=Math.max(0,GLD-g0);
-    SQPVSEND({k:'pg',g:Math.max(1,Math.min(100,Math.ceil((dg+4)/2))),p:PT.id,x:Math.round(P.x),y:Math.round(P.y)})}}catch(e){self.SQERR&&SQERR(e,'136-16')}return out}}
+ {SQDROP.wrap('136',_ed=>function(n){const g0=GLD;const out=_ed.apply(this,arguments);try{if(PT.id&&on()&&n&&near()&&window.SQPVSEND){const dg=Math.max(0,GLD-g0);
+    SQPVSEND({k:'pg',g:Math.max(1,Math.min(100,Math.ceil((dg+4)/2))),p:PT.id,x:Math.round(P.x),y:Math.round(P.y)})}}catch(e){self.SQERR&&SQERR(e,'136-16')}return out})}
  {const last={};(window.SQFXH=window.SQFXH||{}).pg=(r,v)=>{if(!PT.id||v.p!==PT.id||r.pt!==PT.id||dead)return;const x=+v.x,y=+v.y,g=Math.max(0,Math.min(100,v.g|0));if(!g||!isFinite(x)||!isFinite(y))return;
    if(Math.hypot(x-P.x,y-P.y)>320)return;const now=performance.now();if(now-(last[r.uid]||0)<400)return;last[r.uid]=now;GLD+=g;
    try{gTxt(P.x,P.y-28,'+'+g+' gold','#f8d048')}catch(e){self.SQERR&&SQERR(e,'136-17')}try{sfx('coin')}catch(e){self.SQERR&&SQERR(e,'136-18')}PT.shared=(PT.shared|0)+g}}
@@ -173,8 +173,8 @@
     const f=Math.max(0,Math.min(1,(r.hpv||0)/6));g.fillStyle='#485870';g.fillRect(x0+6*U,y+16*U,w-12*U,5*U);g.fillStyle=f>.5?'#48c878':f>.2?'#f8c030':'#f05030';g.fillRect(x0+7*U,y+17*U,(w-14*U)*f,3*U);y+=29*U}g.restore()}catch(e){self.SQERR&&SQERR(e,'136-24')}return out})}
  // ---- the map and the minimap: party members in green ----
  const inArea=(r,area)=>(r.ar||'')===area&&isFinite(r.ax)&&isFinite(r.ay);
- {const _dm=drawMap;drawMap=function(){const out=_dm.apply(this,arguments);try{if(!PT.id||(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world'))return out;const c=document.getElementById('mpc');if(!c)return out;const area=curRegion(),x=c.getContext('2d'),s=Math.max(2,Math.round(c.width/70));
-   for(const r of others())if(inArea(r,area)){const tx=r.ax/16,ty=r.ay/16;x.fillStyle='#183818';x.fillRect(tx-s/2-1,ty-s/2-1,s+2,s+2);x.fillStyle='#58e070';x.fillRect(tx-s/2,ty-s/2,s,s)}}catch(e){self.SQERR&&SQERR(e,'136-25')}return out}}
+ {SQDRAWMAP.wrap('136',_dm=>function(){const out=_dm.apply(this,arguments);try{if(!PT.id||(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world'))return out;const c=document.getElementById('mpc');if(!c)return out;const area=curRegion(),x=c.getContext('2d'),s=Math.max(2,Math.round(c.width/70));
+   for(const r of others())if(inArea(r,area)){const tx=r.ax/16,ty=r.ay/16;x.fillStyle='#183818';x.fillRect(tx-s/2-1,ty-s/2-1,s+2,s+2);x.fillStyle='#58e070';x.fillRect(tx-s/2,ty-s/2,s,s)}}catch(e){self.SQERR&&SQERR(e,'136-25')}return out})}
  if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{if(!PT.id)return out;const t=miniTarget();if(!t)return out;const area=t.k==='region'?t.R.region:'hollow';
    const H=hudLayout(),U=H.U,w=H.dw,hh=w*t.h/t.w,x0=H.dx,y0=H.top+H.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
    for(const r of others())if(inArea(r,area)){const px=x0+(r.ax/16)/t.w*w,py=y0+(r.ay/16)/t.h*hh;g.fillStyle='#183818';g.fillRect(px-2.5*U,py-2.5*U,5*U,5*U);g.fillStyle='#58e070';g.fillRect(px-1.8*U,py-1.8*U,3.6*U,3.6*U)}g.restore()}catch(e){self.SQERR&&SQERR(e,'136-26')}return out}}

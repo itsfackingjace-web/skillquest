@@ -29,7 +29,7 @@
  SQLOAD.wrap('234',_ap=>function(S){for(const k in PEND)delete PEND[k];PPET=null;const out=_ap.apply(this,arguments);
   try{if(S&&S.inv)for(const k in S.inv)if(/^pet_np_/.test(k)&&!EQ[k]&&+S.inv[k]>0)PEND[k]=Math.min(1e6,+S.inv[k]|0);
    const c=S&&S.cos;if(c&&typeof c.pet==='string'&&/^np_/.test(c.pet)&&!REG.has(c.pet))PPET=c.pet}catch(e){self.SQERR&&SQERR(e,'234-5')}return out});
- {const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];PPET=null;return _ng.apply(this,arguments)}}
+ {SQNEWGAME.before('234',()=>{for(const k in PEND)delete PEND[k];PPET=null;})}
  window.SQNEWPETS={sync,REG,PEND,get ppet(){return PPET},ok,clean};
  // ======================= Dev Suite > New pets =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,toast,fail}=API;

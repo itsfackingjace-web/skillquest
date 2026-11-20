@@ -22,14 +22,14 @@
  window.SQPETSYNC=sync;
  SQLOAD.after('104',(S)=>{MIG=!!(S&&S.petItems);lastOwn=null;lastE=null;sync()});
  SQSAVE.wrap('104:petItems',_sn=>function(){try{sync()}catch(e){self.SQERR&&SQERR(e,'104-2')}const s=_sn();s.petItems=1;return s});
- const _ng=newGame;newGame=function(){_ng();MIG=true;lastOwn=null;lastE=null};
+ SQNEWGAME.after('104',()=>{MIG=true;lastOwn=null;lastE=null});
  let st=0;SQUPD.after('104',(dt)=>{st+=dt;if(st>.4){st=0;try{sync()}catch(e){self.SQERR&&SQERR(e,'104-3')}}});
  const _eq=equipItem;equipItem=function(k){_eq(k);if(EQ[k]&&EQ[k].slot==='pet'){try{sync()}catch(e){self.SQERR&&SQERR(e,'104-4')}}};
  // icons: the pet itself
- const _ic=iconURL;iconURL=function(k,col){if(typeof k==='string'&&k.startsWith('pet:')){const key='ip'+k;if(ICONC[key])return ICONC[key];let u='';try{u=window.SQPETPIC?SQPETPIC(k.slice(4)):''}catch(e){self.SQERR&&SQERR(e,'104-5')}if(u)return ICONC[key]=u;k='pet'}
+ SQICON.wrap('104',_ic=>function(k,col){if(typeof k==='string'&&k.startsWith('pet:')){const key='ip'+k;if(ICONC[key])return ICONC[key];let u='';try{u=window.SQPETPIC?SQPETPIC(k.slice(4)):''}catch(e){self.SQERR&&SQERR(e,'104-5')}if(u)return ICONC[key]=u;k='pet'}
   if(k==='pet'){const key='ipaw';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
    r(4,7,6,5,'#7a5a3a');r(5,8,4,3,'#a07850');for(const[a,b]of[[2,4],[5,2],[8,2],[11,4]]){r(a,b,2,3,'#7a5a3a');r(a,b+1,1,1,'#a07850')}return ICONC[key]=c.toDataURL()}
-  return _ic(k,col)};
+  return _ic(k,col)});
  // bag: release a pet you don't want (tap twice)
  let relArm=null;const _bg=bagGridHTML;bagGridHTML=function(){const h=_bg(),k=invSel;if(!k||!EQ[k]||EQ[k].slot!=='pet'||(inv[k]|0)<1)return h;
   return h.replace('<div class="bd">','<div class="bd"><button class="use petrel" data-k="'+k+'" style="background:#c85050">'+(relArm===k?'TAP AGAIN':'RELEASE')+'</button>')};

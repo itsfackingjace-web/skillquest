@@ -342,7 +342,7 @@ setInterval(()=>{try{chSync()}catch(e){console.warn(e)}},1000);
 function chOpenShared(owner,cid){if(CHS.open)try{CHS.open()}catch(e){self.SQERR&&SQERR(e,'072-10')}const box={t:'chest',items:{},_sh:{o:owner,cid}};CHEST_H=box;CHEST_AT=-1;CHEST_IDX=-1;
  CHS.open=FB.db.onValue(FB.db.ref(FB.D,'chests/'+owner+'/'+cid),s=>{const v=s.val();box.items=chClean(v&&v.i);box.ok=true;if(pnOpen&&ptab===7&&CHEST_H===box)rPn()},()=>{box.err=true;if(pnOpen&&ptab===7)rPn()});
  fromMenu=false;pnOpen=true;ptab=7;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}
-{const _cp=closePanel;closePanel=function(){_cp();if(CHS.open&&!(pnOpen&&ptab===7)){try{CHS.open()}catch(e){self.SQERR&&SQERR(e,'072-11')}CHS.open=null;if(CHEST_H&&CHEST_H._sh)CHEST_H=null}}}
+{SQCLOSEPN.after('072',()=>{if(CHS.open&&!(pnOpen&&ptab===7)){try{CHS.open()}catch(e){self.SQERR&&SQERR(e,'072-11')}CHS.open=null;if(CHEST_H&&CHEST_H._sh)CHEST_H=null}})}
 {const _cm=chestMove;chestMove=function(k,a,q){const s=CHEST_H;if(!s||!s._sh)return _cm(k,a,q);const lim=q>0?q|0:1e9;const{o,cid}=s._sh,ref=FB.db.ref(FB.D,'chests/'+o+'/'+cid);
   if(a==='d'){const n=Math.min(inv[k]|0,lim);if(n<1)return;inv[k]-=n;s.items[k]=(s.items[k]|0)+n;sfx('pickup');rPn();
    FB.db.runTransaction(ref,cur=>{const i=chClean(cur&&cur.i);i[k]=(i[k]|0)+n;return{i,v:((cur&&+cur.v)|0)+1}}).then(r=>{if(!r||!r.committed)throw new Error('no')}).then(()=>{saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'072-12')}})
@@ -420,7 +420,7 @@ setInterval(()=>{const t=nowS();let n=0;for(const[i,p]of[...FARM]){if(p._foreign
 {SQSAVE.after('072:rfarm',s=>{const o={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',Math.round(p.g),Math.round(p.w),p.e|0])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rfarm=o;})}
 {SQLOAD.after('072',(S)=>{for(const id in RF)delete RF[id];const o=S&&S.rfarm;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id]||!Array.isArray(o[id]))continue;const M=rfMap(id);
    for(const e of o[id])if(Array.isArray(e)&&isFinite(e[0])&&isFinite(e[1]))M.set(rbK(e[0]|0,e[1]|0),{c:CROPS[e[2]]?e[2]:null,g:Math.max(0,+e[3]||0),w:+e[4]||0,e:+e[5]||nowS()})}})}
-{const _ng=newGame;newGame=function(){for(const id in RF)delete RF[id];_ng()}}
+{SQNEWGAME.before('072',()=>{for(const id in RF)delete RF[id];})}
 // others see them
 {const _rp=rbPub;rbPub=function(){const o=_rp()||{};const f={};for(const id in RF){const a=[];for(const[k,p]of RF[id]){const[x,y]=rbXY(k);a.push([x,y,p.c||'',p.c?stageOf(p):0,wet(p)?1:0,p.e|0])}if(a.length)f[id]=a}if(Object.keys(f).length)o._f=f;return Object.keys(o).length?o:null}}
 // region builds can't go on a plot

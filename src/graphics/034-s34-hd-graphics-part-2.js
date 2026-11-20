@@ -211,7 +211,7 @@ function hdIconPost(src){const w=src.width,h=src.height,x=src.getContext('2d',{w
  for(let Y=1;Y<H2;Y++)for(let X=1;X<W2;X++){const i=Y*W2+X;if(!(d[i]>>>24))continue;if(!(d[i-W2]>>>24)||!(d[i-1]>>>24)){const v=d[i],r=v&255,gg=(v>>8)&255,bb=(v>>16)&255,L=t=>Math.min(255,t+Math.round((255-t)*.35));out[i]=(v&0xff000000)|(L(bb)<<16)|(L(gg)<<8)|L(r)}}
  const c=document.createElement('canvas');c.width=W2;c.height=H2;const cx=c.getContext('2d'),im=cx.createImageData(W2,H2);new Uint32Array(im.data.buffer).set(out);cx.putImageData(im,0,0);return c}
 if(typeof HTMLCanvasElement!=='undefined'){const _tdu=HTMLCanvasElement.prototype.toDataURL;let inIcon=0;
- const _ic34=iconURL;iconURL=function(k,col){if(inIcon)return _ic34(k,col);inIcon=1;const P0=HTMLCanvasElement.prototype.toDataURL;
+ SQICON.wrap('034',_ic34=>function(k,col){if(inIcon)return _ic34(k,col);inIcon=1;const P0=HTMLCanvasElement.prototype.toDataURL;
   HTMLCanvasElement.prototype.toDataURL=function(...a){if(this.width<=24&&this.height<=24){try{return _tdu.apply(hdIconPost(this),a)}catch(e){self.SQERR&&SQERR(e,'034-1')}}return _tdu.apply(this,a)};
-  try{return _ic34(k,col)}finally{HTMLCanvasElement.prototype.toDataURL=P0;inIcon=0}};
+  try{return _ic34(k,col)}finally{HTMLCanvasElement.prototype.toDataURL=P0;inIcon=0}});
  for(const k in ICONC)delete ICONC[k]}

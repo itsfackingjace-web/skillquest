@@ -59,8 +59,7 @@ rgUpd=function(R,dt){rgTick(R,dt);const F=RG_FAUNA[R.region];if(!F)return;const 
 SQUPD.wrap('053',_u53=>function(dt){const R=SCENE&&SCENE.room,reg=R&&R.region,hp0=P.hp,h0=hurt;RG53_UPD=!!reg;try{_u53(dt)}finally{RG53_UPD=false}
  if(!reg||dead||menuOpen||pnOpen)return;const F=RG_FAUNA[reg];if(F&&F.extra&&h0<=0&&hurt>0&&P.hp<hp0&&en.some(n=>!n.dead&&n.rg===reg&&Math.hypot(n.x-P.x,n.y-P.y)<16))PEND43+=F.extra});
 // regional bounty: a little more XP and gold the further out you go
-const _ed53=enemyDrop;enemyDrop=function(n){_ed53(n);const F=n.rg&&RG_FAUNA[n.rg];if(!F)return;GLD+=F.tier*2+Math.floor(Math.random()*(F.tier*2));addXp(0,Math.round(10*F.xp));
- if(n.rv==='cinder'&&Math.random()<.35){inv.iron=(inv.iron|0)+1;say('+1 iron ore (from the cinder beetle\'s shell)')}};
+SQDROP.after('053',(n)=>{const F=n.rg&&RG_FAUNA[n.rg];if(!F)return;GLD+=F.tier*2+Math.floor(Math.random()*(F.tier*2));addXp(0,Math.round(10*F.xp));if(n.rv==='cinder'&&Math.random()<.35){inv.iron=(inv.iron|0)+1;say('+1 iron ore (from the cinder beetle\'s shell)')}});
 // --- the regional variants' look (drawn over the base sprite) ---
 SQPS.after('053',(n,tm)=>{if(!n.rv)return;const x=Math.round(n.x),y=Math.round(n.y),fl=Math.floor(tm*6+x)%2;if(n.rv==='briar'){for(const[a,b,c]of[[-6,-6,'#2f6a34'],[-2,-8,'#4a8a3a'],[2,-7,'#2f6a34'],[5,-5,'#6aa848'],[-4,-3,'#4a8a3a']])Rg(x+a,y+b,2,2,c);Rg(x-7,y-9,1,2,'#c8e070');Rg(x+3,y-10,1,2,'#c8e070')}
  else if(n.rv==='moss'){Rg(x-5,y-9,10,2,'#3f7f44');Rg(x-3,y-11,3,2,'#56ac46');Rg(x+1,y-12,3,3,'#7ab060');Rg(x-6,y-7,2,1,'#2d6236')}

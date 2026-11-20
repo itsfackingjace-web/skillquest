@@ -61,26 +61,22 @@ const _da47=dArrive;dArrive=function(R,from){const D=R.dun;if(D.kind!=='tidekeep
 const _dg47=dGo;dGo=function(kind,f,from){_dg47(kind,f,from);if(kind!=='tidekeeper')return;const R=SCENE.room,quiet=R.dun.bossDone||EXTRA_DUNGEON_DAYS.tidekeeper===today();
  say('Drowned Grotto - '+['','Tidal Entrance','Sunken Chambers','Tidekeeper\'s Shrine'][f]+' (floor '+f+' of 3)'+(f===3?(quiet?'. The shrine is still today.':'. The water glows... something stirs.'):''))};
 // entering from the boat: the boat waits at the mouth; leaving floor 1 puts you back in it
-const _es47=enterScene;enterScene=function(id,house,ret){if(id!=='tidekeeper')return _es47(id,house,ret);
+SQENTER.wrap('047',_es47=>function(id,house,ret){if(id!=='tidekeeper')return _es47(id,house,ret);
  if(!SAILING&&!TL.boat){say('The cave mouth opens onto deep water. You need a boat.');return}
  if(SAILING){SAILING=false;GROTTO_BOAT=true}const R=dFloor('tidekeeper',1);_es47(dKey('tidekeeper',1),null,ret);dArrive(R,null);
- say('You tie up the boat and wade into the Drowned Grotto. Green light ripples on the walls.')};
+ say('You tie up the boat and wade into the Drowned Grotto. Green light ripples on the walls.')});
 const _ls47=leaveScene;leaveScene=function(){_ls47();if(!SCENE&&GROTTO_BOAT){GROTTO_BOAT=false;if(TL.boat&&boatOK(P.x,P.y)){SAILING=true;say('You climb back into your boat.')}}};
 const _rs47=reset;reset=function(){GROTTO_BOAT=false;_rs47()};
 SQSAVE.after('047:sail,xdun',s=>{if(GROTTO_BOAT&&SCENE&&TL.boat)s.sail=1;s.xdun={...EXTRA_DUNGEON_DAYS};});
 SQLOAD.wrap('047',_ap47=>function(S){GROTTO_BOAT=false;_ap47(S);for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1});
-const _ng47=newGame;newGame=function(){GROTTO_BOAT=false;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng47()};
+SQNEWGAME.before('047',()=>{GROTTO_BOAT=false;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;});
 // loot: the caverns' table (gems, elixir, the Crystal blade, rarely) plus a piece of magic gear you don't own yet
 const MAGEQ=['eq_wfire','eq_wice','eq_wstorm','eq_mhelm','eq_mbody','eq_mlegs'];
 const _dl47=dLoot;dLoot=function(kind,f,boss){if(kind!=='tidekeeper')return _dl47(kind,f,boss);const out=_dl47('cave',f,boss);
  if(boss){const sw=out.findIndex(e=>e[0]==='eq_sword5');if(sw>=0&&Math.random()>.33)out.splice(sw,1);if(!out.some(e=>e[0]==='elixir'))out.push(['elixir',1]);
   const m=MAGEQ.filter(k=>EQ[k]&&!owns(k));if(m.length)out.push([m[Math.floor(Math.random()*m.length)],1])}else if(f===1&&Math.random()<.3)out.push(['cshrimp',3]);return out};
-const _ed47=enemyDrop;enemyDrop=function(n){_ed47(n);if(n.type!=='tidek')return;const R=SCENE&&SCENE.room;
- if(R&&R.dun){R.dun.bossDone=1;R.items.push({t:'dchest',x:Math.floor(n.x/16),y:Math.floor(n.y/16),use:'dchest',id:'tidekeeperboss',boss:1})}
- for(const o of en)if(o.summon&&!o.dead)o.dead=1;
- if(EXTRA_DUNGEON_DAYS.tidekeeper!==today()){markDungeonCleared('tidekeeper');GLD+=250;inv.csalmon=(inv.csalmon|0)+5;addXp(ML,500);addXp(9,400);
-  say('The Tidekeeper sinks beneath the water! +250 gold, 5 cooked salmon. A golden chest appears!');msgT=5}else say('The Tidekeeper sinks beneath the water!');
- sfx('quest');sqEvent('dungeonboss','tidekeeper');saveNow()};
+SQDROP.after('047',(n)=>{if(n.type!=='tidek')return;const R=SCENE&&SCENE.room;if(R&&R.dun){R.dun.bossDone=1;R.items.push({t:'dchest',x:Math.floor(n.x/16),y:Math.floor(n.y/16),use:'dchest',id:'tidekeeperboss',boss:1})}for(const o of en)if(o.summon&&!o.dead)o.dead=1;if(EXTRA_DUNGEON_DAYS.tidekeeper!==today()){markDungeonCleared('tidekeeper');GLD+=250;inv.csalmon=(inv.csalmon|0)+5;addXp(ML,500);addXp(9,400);
+  say('The Tidekeeper sinks beneath the water! +250 gold, 5 cooked salmon. A golden chest appears!');msgT=5}else say('The Tidekeeper sinks beneath the water!');sfx('quest');sqEvent('dungeonboss','tidekeeper');saveNow()});
 // --- monster behaviour ---
 function waterBolt(n,ang,sp,dmg){PROJ.push({x:n.x,y:n.y-8,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,t:0,life:n.type==='tidek'?1.6:1.1,k:'water',sc:curScene(),hostile:1,wd:dmg});sfx('splash')}
 SQUPD.wrap('047',_u47=>function(dt){const paused=menuOpen||pnOpen||dead;const pos=paused?null:en.map(n=>[n,n.x,n.y]),hp0=P.hp,wp=paused?null:PROJ.filter(p=>p.k==='water'&&!p.dead);_u47(dt);if(paused)return;const hit=P.hp<hp0;

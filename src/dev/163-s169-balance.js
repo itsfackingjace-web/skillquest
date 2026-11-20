@@ -32,7 +32,7 @@
   const P=B.perk||{},DS={};for(const p of PERKL()){const id=p.e[0],k=pk(p),o=OP[k];if(o==null)continue;const v=P[k]!=null?num(P[k],0,100,pc(o))/100:o;p.e[1]=v;
    if(OD[id]!=null){if(DS[id]==null)DS[id]=OD[id];if(v!==o)DS[id]=DS[id].replace(new RegExp('(^|[^0-9.])'+String(pc(o)).replace('.','\\.')+'%'),'$1'+pc(v)+'%')}}
   for(const id in DS){const ob=perkObj(id);if(ob)ob.c.d=DS[id]}});
- {const _ax=addXp;addXp=function(i,x){if(x>0&&XPM[i]!=null)x=Math.max(0,Math.round(x*XPM[i]/100));return _ax.call(this,i,x)}}
+ {SQADDXP.wrap('163',_ax=>function(i,x){if(x>0&&XPM[i]!=null)x=Math.max(0,Math.round(x*XPM[i]/100));return _ax.call(this,i,x)})}
  // ---- simulator ----
  const SECS={cook:2.4,craft:2.4,smelt:2.4,smith:2.6,gather:3.5};
  function sim(o){// {sk, from, to, xp per action, sec per action, mult %, val gold per action}

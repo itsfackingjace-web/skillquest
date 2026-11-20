@@ -83,12 +83,12 @@ var SLEDGE=false;const SLAM={cd:0,t:0,x:0,y:0,R:84};window.SQSLAM=SLAM;
 {const _wu=watchUpgrades;watchUpgrades=function(){const was=SLEDGE;_wu();if(was&&TL.sword!==3){if((inv.eq_sword3|0)>0)inv.eq_sword3--;inv.eq_sledge=(inv.eq_sledge|0)+1;SLEDGE=false}}}
 {SQSAVE.after('096:sld',s=>{if(SLEDGE)s.sld=1;})}
 {SQLOAD.after('096',(S)=>{SLEDGE=!!(S&&S.sld)&&TL.sword===3})}
-{const _ng=newGame;newGame=function(){SLEDGE=false;_ng()}}
+{SQNEWGAME.before('096',()=>{SLEDGE=false;})}
 try{KNOWN49.add('sld');KNOWN49.add('emd')}catch(e){self.SQERR&&SQERR(e,'096-4')}
 // its icon: a stone head on a wooden haft
 {let IC=null;const pic=()=>{if(IC)return IC;const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
   for(let i=0;i<9;i++){r(3+i,12-i,2,2,'#302010')}for(let i=0;i<8;i++)r(4+i,11-i,1,1,'#a87038');r(5,1,8,6,'#302010');r(6,2,6,4,'#9a9284');r(6,2,6,1,'#c8c0b0');r(6,5,6,1,'#6a645c');r(8,3,1,1,'#5a8a3a');r(10,4,1,1,'#6a645c');return IC=c.toDataURL()};
- const _ic=iconURL;iconURL=function(k,col){if(k==='eq_sledge')return pic();return _ic(k,col)};if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return k==='eq_sledge'?pic():_ei(k)}}}
+ SQICON.wrap('096',_ic=>function(k,col){if(k==='eq_sledge')return pic();return _ic(k,col)});if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return k==='eq_sledge'?pic():_ei(k)}}}
 // swinging it: a stone hammer instead of a blade
 {SQPP.wrap('096',_pp=>function(tm){if(!SLEDGE||!(swing>0)||dead||(window.SQDF&&SQDF.on))return _pp(tm);const sw=swing;swing=0;try{_pp(tm)}finally{swing=sw}
   if(hurt>0&&Math.floor(tm*20)%2)return;const fx=face[0],fy=face[1],a=Math.atan2(fy,fx),pr=1-swing/.25,an=a+(pr-.5)*2.2,hx=Math.round(P.x+fx*4),hy=Math.round(P.y-4+fy*4);
@@ -247,7 +247,7 @@ window.SQAFNEAR=afNear;
   return _df(it,tm)})}
 // talking
 function afOpen(n){AF.npc=n;shop='afnpc';pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk')}
-{const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=afNear();if(n){afOpen(n);return}}return _t()}}
+{SQTALK.wrap('096',_t=>function(){if(!pnOpen&&!menuOpen&&!dead){const n=afNear();if(n){afOpen(n);return}}return _t()})}
 tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=afNear();if(n){e.preventDefault();e.stopImmediatePropagation();afOpen(n)}},{passive:false,capture:true});
 {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!afNear()||!!(_pu&&_pu())}
 {let mine=false;SQUPD.after('096',(dt)=>{const n=!pnOpen&&!menuOpen&&!dead?afNear():null;if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mine=true}else if(mine){mine=false;if(!pnOpen)tk.style.display='none'}if(afR()&&AF.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&afIn(m.x,m.y)){m.dead=1;m.dropped=1}})}
@@ -277,9 +277,9 @@ function afHTML(){const n=AF.npc;if(!n)return'';const L=AFSAYS[n.id],line=L[Math
     else if(a[0]==='q'){const k=a.slice(1),c=inv[k]|0;if(c>0&&POTAF.some(q=>q.k===k)){const v=c*potBuy(k);GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}
     else{const k=a.slice(1),c=inv[k]|0;if(c>0){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){self.SQERR&&SQERR(_,'096-18')}saveLocal(true);rPn();return}
    const q=e.target.closest('.xb');if(q&&/^sq_/.test(q.dataset.a||'')){sideAct(q.dataset.a.slice(3),AF.npc);saveLocal(true);rPn();return}}return _oc(e)}}
-{const _cp=closePanel;closePanel=function(){if(shop==='afnpc'){AF.npc=null;shop=null}return _cp()}}
+{SQCLOSEPN.before('096',()=>{if(shop==='afnpc'){AF.npc=null;shop=null}})}
 // quest progress: cinder beetles anywhere on Ashfall
-{const _ed=enemyDrop;enemyDrop=function(n){_ed(n);if(n&&n.type==='beetle'&&n.rv==='cinder'&&!n._afq){n._afq=1;sqEvent('kill','cinderbeetle');saveLocal(true)}}}
+{SQDROP.after('096',(n)=>{if(n&&n.type==='beetle'&&n.rv==='cinder'&&!n._afq){n._afq=1;sqEvent('kill','cinderbeetle');saveLocal(true)}})}
 if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead&&n.type==='beetle'&&n.rv==='cinder'&&!n._afq){n._afq=1;sqEvent('kill','cinderbeetle')}}catch(e){self.SQERR&&SQERR(e,'096-19')}return r}}
 
 // ---- Cinderdeep: six floors of lava ----

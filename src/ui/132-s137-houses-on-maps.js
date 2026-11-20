@@ -6,9 +6,9 @@
  // a little house: roof and walls, s = size of one "pixel"
  function glyph(x,cx,cy,s,roof,wall){x.fillStyle='#201810';x.fillRect(cx-3*s,cy-3*s,6*s,6*s);x.fillStyle=roof;x.fillRect(cx-2*s,cy-2*s,4*s,2*s);x.fillStyle=wall;x.fillRect(cx-2*s,cy,4*s,2*s);x.fillStyle='#201810';x.fillRect(cx-s/2,cy+s,s,s)}
  const draw=(x,list,aw,s,toX,toY)=>{for(const[h,own]of list){const hm=own&&home(h);glyph(x,toX(h.x+.5),toY(h.y),s,own?(hm?'#f8e050':'#d8a030'):'#7890b0',own?'#f8f0d8':'#c8d0e0')}};
- const _dm=drawMap;drawMap=function(){const out=_dm.apply(this,arguments);try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return out;const c=document.getElementById('mpc');if(!c)return out;
+ SQDRAWMAP.wrap('132',_dm=>function(){const out=_dm.apply(this,arguments);try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return out;const c=document.getElementById('mpc');if(!c)return out;
    const R=SCENE&&SCENE.room,area=R&&R.region?R.region:(SCENE?null:'hollow');if(!area)return out;const x=c.getContext('2d'),aw=c.width,s=Math.max(1,Math.round(aw/110));
-   const L=area==='hollow'?theirs().map(h=>[h,false]).concat(mineH().map(h=>[h,true])):isle(area).map(h=>[h,true]);draw(x,L,aw,s,v=>v,v=>v)}catch(e){self.SQERR&&SQERR(e,'132-1')}return out};
+   const L=area==='hollow'?theirs().map(h=>[h,false]).concat(mineH().map(h=>[h,true])):isle(area).map(h=>[h,true]);draw(x,L,aw,s,v=>v,v=>v)}catch(e){self.SQERR&&SQERR(e,'132-1')}return out});
  {const _mh=mapHTML;mapHTML=function(){const h=_mh.apply(this,arguments);return h.replace('<div class="lg">','<div class="lg"><span><i style="background:#d8a030"></i>Your house</span>'+(theirs().length?'<span><i style="background:#7890b0"></i>Other players\' houses</span>':''))}}
  // the HUD minimap
  if(typeof drawMini52==='function'){const _dmm=drawMini52;drawMini52=function(){const out=_dmm.apply(this,arguments);try{const t=miniTarget();if(!t)return out;

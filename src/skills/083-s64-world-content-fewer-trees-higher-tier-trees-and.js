@@ -23,12 +23,12 @@
  for(const k in ITEMS){INVK.push(k);INAME[k]=ITEMS[k][0];if(typeof IDESC!=='undefined')IDESC[k]=ITEMS[k][1];SELLP[k]=ITEMS[k][2];SN[k]=ITEMS[k][0];if(typeof SHORT!=='undefined')SHORT[k]=ITEMS[k][0].toLowerCase()}
  SM.push({k:'gbar',n:'Gold bar',smelt:1,c:{goldore:1,wood:1},lv:30,xp:70},{k:'mbar',n:'Mithril bar',smelt:1,c:{mithore:1,wood:2},lv:45,xp:110},{k:'abar',n:'Adamant bar',smelt:1,c:{adamore:2,wood:2},lv:60,xp:170});
  // icons
- const _ic64=iconURL;iconURL=function(k,col){const L=ITEMS[k];if(!L)return _ic64(k,col);const key='t64'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a+1,b+1,w,h)};
+ SQICON.wrap('083',_ic64=>function(k,col){const L=ITEMS[k];if(!L)return _ic64(k,col);const key='t64'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a+1,b+1,w,h)};
   const LOG={oaklog:['#8a5a28','#b07838','#d8a868'],willowlog:['#a89058','#c8b070','#e8d8a0'],maplelog:['#9a4a28','#c06a38','#e8a070'],yewlog:['#5a3a20','#7a5030','#b08858']},BAR={gbar:['#f8f0a0','#f0c838','#b88a18'],mbar:['#c8d8f8','#6880e0','#3848a0'],abar:['#b8f0c0','#48b860','#287838']},ORE={goldore:'#f8d048',mithore:'#6880f0',adamore:'#48c070'};
   if(LOG[k]){const[a,b,cc]=LOG[k];r(1,4,10,5,a);r(1,4,10,1,b);r(9,4,2,5,cc);r(10,5,1,3,a)}
   else if(BAR[k]){const[a,b,cc]=BAR[k];r(3,4,6,1,a);r(2,5,8,2,b);r(1,7,10,2,cc)}
   else{for(let j=0;j<12;j++)for(let i=0;i<12;i++)if(((i+.5-6)/5)**2+((j+.5-7)/3.8)**2<=1)r(i,j,1,1,'#8888a0');r(3,6,2,1,ORE[k]);r(7,8,2,1,ORE[k]);r(6,4,1,1,ORE[k]);r(4,9,1,1,ORE[k])}
-  return ICONC[key]=c.toDataURL()};
+  return ICONC[key]=c.toDataURL()});
  // sprites: recolor the tree and ore-vein sprites for each tier
  const recolor=(src,fn)=>{const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const x=c.getContext('2d');x.drawImage(src,0,0);const im=x.getImageData(0,0,c.width,c.height),d=im.data;
   for(let i=0;i<d.length;i+=4){if(!d[i+3])continue;const o=fn(d[i],d[i+1],d[i+2]);if(o){d[i]=o[0];d[i+1]=o[1];d[i+2]=o[2]}}x.putImageData(im,0,0);return c};

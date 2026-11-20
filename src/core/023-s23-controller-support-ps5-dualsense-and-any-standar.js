@@ -114,9 +114,9 @@ function pollPad(dt){let gp=null;try{const all=navigator.getGamepads?navigator.g
 let GPSPR=false,GPRUM=true;try{GPRUM=localStorage.getItem('sq_rumble')!=='0'}catch(e){self.SQERR&&SQERR(e,'023-6')}
 const _rum23=rumble;rumble=function(ms,s,w){if(GPRUM)_rum23(ms,s,w)};
 // Options screen: controller layout and a rumble switch
-const _opt23=optionsHTML;optionsHTML=function(){const h=_opt23();if(!GPON)return h;const k=h.indexOf('<div class="tl" style="margin-top:22px');
+SQOPTS.wrap('023',_opt23=>function(){const h=_opt23();if(!GPON)return h;const k=h.indexOf('<div class="tl" style="margin-top:22px');
  const add='<div class="tl" style="margin-top:16px">CONTROLLER</div><button class="sb gpo" data-o="rum">Rumble: '+(GPRUM?'ON':'OFF')+'</button><div class="qc" style="font-size:13px;line-height:1.6">'+HELP_PAD.replace('<b>Controller</b><br>','')+'</div>';
- return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
+ return k<0?h+add:h.slice(0,k)+add+h.slice(k)});
 const _oc23=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.gpo');if(b){GPRUM=!GPRUM;try{localStorage.setItem('sq_rumble',GPRUM?'1':'0')}catch(_){self.SQERR&&SQERR(_,'023-7')}if(GPRUM)rumble(120,.6,.3);rPn();return}_oc23(e)};
 // --- aiming the bow with the right stick ---
 const AIM={v:null,t:-1e9};

@@ -37,7 +37,7 @@ function lootWreck(){const d=Math.floor(time/DAYLEN);if(WRECK_DAY===d){say('You\
  WRECK_DAY=d;const g2=120+Math.floor(Math.random()*80);GLD+=g2;inv.sbar=(inv.sbar|0)+1;inv.iarrow=(inv.iarrow|0)+10;let extra='';if(Math.random()<.35){inv.lantern=(inv.lantern|0)+1;extra=', an iron lantern'}
  say('Salvage! +'+g2+' gold, a steel bar, 10 iron arrows'+extra+'.');sfx('quest');setTimeout(()=>sfx('coin'),200);saveLocal(true);saveCloud()}
 // talking / USE / ✕: set sail, go ashore, search the wreck
-const _talk26=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead&&!SCENE&&!nearNpc()){if(nearWreck()){lootWreck();return}if(SAILING?canLand():(nearStruct()===null&&canBoard())){sailToggle();return}}_talk26()};
+SQTALK.wrap('026',_talk26=>function(){if(!pnOpen&&!menuOpen&&!dead&&!SCENE&&!nearNpc()){if(nearWreck()){lootWreck();return}if(SAILING?canLand():(nearStruct()===null&&canBoard())){sailToggle();return}}_talk26()});
 tk.addEventListener('touchstart',e=>{if(pnOpen||nearNpc())return;if(nearWreck()){e.preventDefault();lootWreck();return}if(canBoard()||canLand()){e.preventDefault();sailToggle()}},{passive:false});
 const _roll26=roll;roll=function(){if(SAILING)return;_roll26()};
 const _fire26=fire;fire=function(){if(SAILING){say('Not on a boat!');return}_fire26()};
@@ -103,11 +103,11 @@ const _qv26=qVal;qVal=function(q){return q.type==='hermit'?Q.k:_qv26(q)};
 const remap26=qv=>{if(qv>=8)return;if(Q.i===GI26){Q.on=false;Q.k=0}else if(Q.i>GI26){Q.i=GI26;Q.on=false;Q.k=0;GMDONE=true}};
 SQSAVE.after('026:qv,gmd,wreck',s=>{s.qv=8;s.gmd=GMDONE?1:0;s.wreck=WRECK_DAY;s.sail=SAILING?1:0;});
 SQLOAD.after('026',(S)=>{if(S.q)remap26(S.qv||0);WRECK_DAY=isFinite(S.wreck)?+S.wreck:-1;TL.boat=S.tl&&S.tl.boat?1:0;SAILING=false;if(S.sail&&S.p&&TL.boat){const x=+S.p.x,y=+S.p.y;if(isFinite(x)&&isFinite(y)&&boatOK(x,y)){P.x=x;P.y=y;SAILING=true}}});
-const _ng26=newGame;newGame=function(){SAILING=false;WRECK_DAY=-1;_ng26()};
+SQNEWGAME.before('026',()=>{SAILING=false;WRECK_DAY=-1;});
 // map markers and music
-const _dmap26=drawMap;drawMap=function(){_dmap26();const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');for(const[s,col]of[[GULL,'#68d8f8'],[WRK,'#c88848'],[HRM,'#f8d848']]){x.fillStyle='#101010';x.fillRect(s.x-1,s.y-1,3,3);x.fillStyle=col;x.fillRect(s.x,s.y,1,1)}};
+SQDRAWMAP.after('026',()=>{const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');for(const[s,col]of[[GULL,'#68d8f8'],[WRK,'#c88848'],[HRM,'#f8d848']]){x.fillStyle='#101010';x.fillRect(s.x-1,s.y-1,3,3);x.fillStyle=col;x.fillRect(s.x,s.y,1,1)}});
 const _ws26=wantSong;wantSong=function(){const w=_ws26();return SAILING&&w==='day'?'port':w};
-const _icon26=iconURL;iconURL=function(k,col){if(k!=='rainbow'&&k!=='crainbow')return _icon26(k,col);const key='g26'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+SQICON.wrap('026',_icon26=>function(k,col){if(k!=='rainbow'&&k!=='crainbow')return _icon26(k,col);const key='g26'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  const C=k==='rainbow'?['#f86878','#f8b848','#f8e848','#68d878','#68a8f8','#a878f8']:['#c86048','#c88838','#c8a838','#78a858','#5888b8','#8868b8'];
  for(let i=0;i<6;i++)r(2+i,5,1,4,C[i]);r(3,4,5,1,C[2]);r(3,9,5,1,C[3]);r(8,5,1,4,C[5]);r(9,4,2,1,C[0]);r(10,5,1,4,C[0]);r(9,9,2,1,C[0]);r(3,6,1,1,'#202020');
- return ICONC[key]=c.toDataURL()};
+ return ICONC[key]=c.toDataURL()});

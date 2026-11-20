@@ -132,3 +132,9 @@ const CE=(()=>{
   res.sort((a,b)=>b[0]-a[0]);return res[0][1]}
  return{start,legal,make,status,inCheck,best,low,isW,get nodes(){return nodes}}
 })();
+
+// talk as a step list: later sections add named steps (window.SQTALK; see 006's sqSteps)
+const SQTALK=sqSteps('talk',talk,f=>{talk=f});window.SQTALK=SQTALK;
+
+// closePanel as a step list: later sections add named steps (window.SQCLOSEPN; see 006's sqSteps)
+const SQCLOSEPN=sqSteps('closePanel',closePanel,f=>{closePanel=f});window.SQCLOSEPN=SQCLOSEPN;

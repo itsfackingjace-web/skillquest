@@ -98,7 +98,7 @@ SQHIT.wrap('006 skillquest saving quests armor defence sound',_atk5=>function(){
  if(o&&okk&&!obj[ti]){REM.push({i:ti,t:o.t,at:CLK});setTimeout(()=>sfx('pickup'),90)}});
 /* 006's EAT wrapper (cooking sound + quest count) was removed Nov 18: 007 replaces eat() entirely and does both itself, so it never ran. */
 const _fi5=fire;fire=function(){const n0=fires.length;_fi5();if(fires.length>n0)sfx('fire')};
-const _ax5=addXp;addXp=function(i,x){const b=lvOf(i);_ax5(i,x);if(lvOf(i)>b)sfx('level')};
+SQADDXP.wrap('006',_ax5=>function(i,x){const b=lvOf(i);_ax5(i,x);if(lvOf(i)>b)sfx('level')});
 const _sa5=shopAct;shopAct=function(a){const g0=GLD;_sa5(a);if(GLD!==g0)sfx('coin');saveLocal(true)};
 const SPX=VX*16+8,SPY=(VY+2)*16+8;
 const _rs5=reset;reset=function(){_rs5();P.x=SPX;P.y=SPY;inv.cooked=0;inv.iron=0;lastK=kills;saveLocal(true);saveCloud()};
@@ -191,3 +191,6 @@ if(hadLocal)say('Welcome back to SkillQuest!');
 }catch(e){self.SQERR&&SQERR(e,'006-6')}})();
 addEventListener('pagehide',()=>saveHide());addEventListener('beforeunload',()=>saveHide());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='hidden')saveHide()});
+
+// newGame as a step list: later sections add named steps (window.SQNEWGAME; see 006's sqSteps)
+const SQNEWGAME=sqSteps('newGame',newGame,f=>{newGame=f});window.SQNEWGAME=SQNEWGAME;

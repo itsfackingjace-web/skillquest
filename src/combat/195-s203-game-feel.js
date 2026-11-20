@@ -36,7 +36,7 @@
    if(SH>0){SH-=dt;const a=SH>0?SHA*Math.min(1,SH*8):0;cv.style.transform=a>0?'translate('+((Math.random()*2-1)*a).toFixed(1)+'px,'+((Math.random()*2-1)*a).toFixed(1)+'px) scale(1.012)':'';if(SH<=0)SHA=0}
   }catch(e){console.warn('game feel',e)}})}
  // Options: screen shake on/off
- const _o=optionsHTML;optionsHTML=function(){const h=_o(),add='<button class="sb sqshk">Screen shake: '+(on?'ON':'OFF')+'</button>';
-  let k=h.indexOf('<div class="tl" style="margin-top:16px">CONTROLLER</div>');if(k<0)k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
+ SQOPTS.wrap('195',_o=>function(){const h=_o(),add='<button class="sb sqshk">Screen shake: '+(on?'ON':'OFF')+'</button>';
+  let k=h.indexOf('<div class="tl" style="margin-top:16px">CONTROLLER</div>');if(k<0)k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)});
  pbd.addEventListener('click',e=>{if(!e.target.closest('.sqshk'))return;e.stopPropagation();on=!on;try{localStorage.setItem('sq_shake',on?'1':'0')}catch(err){self.SQERR&&SQERR(err,'195-4')}if(!on){SH=0;cv.style.transform=''}else shake(3,.2);try{sfx('talk')}catch(err){self.SQERR&&SQERR(err,'195-5')}try{rPn()}catch(err){self.SQERR&&SQERR(err,'195-6')}},true);
  window.SQFEEL={shake,puff,spark,get on(){return on}}})();

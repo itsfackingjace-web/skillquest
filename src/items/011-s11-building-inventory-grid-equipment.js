@@ -39,13 +39,13 @@ SQEAT.wrap('011 stop building',next=>function(){if(BUILD){endBuild('Stopped buil
 addEventListener('keydown',e=>{if(BUILD&&e.key==='Escape'){endBuild('Stopped building.');e.preventDefault();e.stopImmediatePropagation()}},true);
 // respawn beside your bed; a new game also clears everything you built
 const _rs11=reset;reset=function(){_rs11();const b=STR.get(BEDSP);if(b&&b.t==='bed'){const bx=BEDSP%N,by=(BEDSP/N)|0;for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]]){const px=(bx+dx)*16+8,py=(by+dy)*16+8;if(!(solid(px-5,py-3)||solid(px+5,py-3)||solid(px-5,py+6)||solid(px+5,py+6))){P.x=px;P.y=py;break}}saveLocal(true)}};
-const _ng11=newGame;newGame=function(){STR.clear();BEDSP=-1;BUILD=null;_ng11();setActionLabels()};
+SQNEWGAME.wrap('011',_ng11=>function(){STR.clear();BEDSP=-1;BUILD=null;_ng11();setActionLabels()});
 // --- beds and chests (TALK/USE next to them) ---
 function nearStruct(){let best=null,bd=24;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const x=Math.floor(P.x/16)+dx,y=Math.floor(P.y/16)+dy,i=y*N+x,s=STR.get(i);if(!s||(s.t!=='chest'&&s.t!=='bed'))continue;const d=Math.hypot(P.x-(x*16+8),P.y-(y*16+8));if(d<bd){bd=d;best=i}}return best}
 function sleepBed(i){BEDSP=i;if(dark()<.3){say('This bed is now where you wake up. Sleep here at night.');sfx('talk');saveLocal(true);saveCloud(true);return}
  time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;en=[];P.hp=Math.min(6,P.hp+2);hunger=Math.max(0,hunger-15*FOOD_RATE);say('You slept soundly. Good morning!');sfx('quest');saveLocal(true);saveCloud(true)}
 function useStructure(i){const s=STR.get(i);if(!s)return;if(s.t==='bed')sleepBed(i);else if(s.t==='chest'){CHEST_AT=i;fromMenu=false;pnOpen=true;ptab=7;jx=jy=0;pn.style.display='block';rPn();sfx('talk')}}
-const _talk11=talk;talk=function(){if(nearNpc())return _talk11();const i=nearStruct();if(i!==null&&!pnOpen&&!menuOpen&&!dead)useStructure(i)};
+SQTALK.wrap('011',_talk11=>function(){if(nearNpc())return _talk11();const i=nearStruct();if(i!==null&&!pnOpen&&!menuOpen&&!dead)useStructure(i)});
 tk.addEventListener('touchstart',e=>{if(!nearNpc()&&!pnOpen){const i=nearStruct();if(i!==null){e.preventDefault();useStructure(i)}}},{passive:false});
 let tkLab='';
 SQUPD.after('011',(dt)=>{if(BUILD&&(dead||(inv[BUILD.k]|0)<1))endBuild();const npc=nearNpc(),si=(!npc&&!dead&&!pnOpen&&!menuOpen)?nearStruct():null;if(si!==null)tk.style.display='flex';const lab=npc||si===null?'TALK':'USE';if(lab!==tkLab){tkLab=lab;tk.innerHTML=lab+(isPC?'<small>T</small>':'')}for(const s of STR.values())if(s.shake>0)s.shake-=dt;if((CLK|0)%2===0)for(const i of STR.keys())if(obj[i])obj[i]=null});
@@ -164,7 +164,7 @@ const _oc11=pbd.onclick;pbd.onclick=e=>{const t=e.target;let b;
  if(ptab===7&&t.closest('.chc'))return;
  if((b=t.closest('.slot[data-k]'))){if(b.dataset.a){CHCARD={k:b.dataset.k,side:b.dataset.a};sfx('talk');rPn()}else{invSel=b.dataset.k;rPn()}return}
  _oc11(e)};
-{const _cp=closePanel;closePanel=function(){CHCARD=null;return _cp.apply(this,arguments)}}
+{SQCLOSEPN.before('011',()=>{CHCARD=null;})}
 // a tap anywhere outside the card closes it
 document.addEventListener('click',e=>{if(!CHCARD||!pnOpen||ptab!==7)return;const t=e.target;if(!t||!t.closest||!t.isConnected||t.closest('.chc')||pbd.contains(t))return;CHCARD=null;rPn()});
 // typing an amount: the game's own key handlers must not see these keys; Enter moves that many
@@ -204,3 +204,6 @@ const st11=document.createElement('style');st11.textContent=`
 SMI[0].l=()=>pname();
 hp.innerHTML=hp.innerHTML.replace('P: trainer card','P: equipment');
 setActionLabels();
+
+// iconURL as a step list: later sections add named steps (window.SQICON; see 006's sqSteps)
+const SQICON=sqSteps('iconURL',iconURL,f=>{iconURL=f});window.SQICON=SQICON;

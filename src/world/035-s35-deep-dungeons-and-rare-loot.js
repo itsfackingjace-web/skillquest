@@ -55,8 +55,8 @@ function dArrive(R,from){en=[];const D=R.dun,W=R.w;
   R.mobs.push(D.kind==='cave'?{x:bx*16+8,y:by*16+8,hp:30,kx:0,ky:0,type:'boss'}:{x:bx*16+8,y:by*16+8,hp:45,kx:0,ky:0,type:'bonelord',tcd:2,scd:7});D.bossSpawned=1}}}
 function dGo(kind,f,from){const ret=SCENE.ret,R=dFloor(kind,f);enterScene(dKey(kind,f),null,ret);dArrive(R,from);
  say(DKIND[kind].name+' - floor '+f+' of '+(DKIND[kind].floors||3)+(f===(DKIND[kind].floors||3)&&!DKIND[kind].noboss?(R.dun.bossDone||(kind==='cave'?CAVE_DAY===today():TOMB_DAY===today())?'. The lair is quiet today.':'. Something big lurks here...'):''));if(f===(DKIND[kind].floors||3)&&!R.dun.bossDone&&!DKIND[kind].noboss)setTimeout(()=>sfx('roar'),300)}
-const _es35=enterScene;enterScene=function(id,house,ret){if(id==='cave'||id==='tomb'){const R=dFloor(id,1);_es35(dKey(id,1),null,ret);dArrive(R,null);
-  say('You enter the '+DKIND[id].name+'. Three floors deep - find the stairs down. Chests hold rare loot!');return}_es35(id,house,ret)};
+SQENTER.wrap('035',_es35=>function(id,house,ret){if(id==='cave'||id==='tomb'){const R=dFloor(id,1);_es35(dKey(id,1),null,ret);dArrive(R,null);
+  say('You enter the '+DKIND[id].name+'. Three floors deep - find the stairs down. Chests hold rare loot!');return}_es35(id,house,ret)});
 const _ls35=leaveScene;leaveScene=function(){const R=SCENE&&SCENE.room;if(R&&R.dun&&R.dun.f>1){dGo(R.dun.kind,R.dun.f-1,'below');return}_ls35()};
 // waking monsters, taking stairs, mapping, and the Elixir of Life
 SQUPD.wrap('035',_u35=>function(dt){const R=SCENE&&SCENE.room;
@@ -94,8 +94,7 @@ function dOpen(it){if(it.open||DUN.opened.has(it.id))return;const R=SCENE.room;D
  it.glow=RARC[best];sfx(best==='legendary'||best==='epic'?'quest':'pickup');
  say((best==='legendary'?'LEGENDARY! ':best==='epic'?'Epic find! ':'')+'Chest: '+names.join(', '));msgT=best==='legendary'?6:3.5;if(best==='legendary')FLASH=.4;saveLocal(true)}
 // boss chest appears where the boss falls
-const _ed35=enemyDrop;enemyDrop=function(n){_ed35(n);const R=SCENE&&SCENE.room;if(!R||!R.dun||(n.type!=='boss'&&n.type!=='bonelord'))return;R.dun.bossDone=1;
- const x=Math.floor(n.x/16),y=Math.floor(n.y/16);R.items.push({t:'dchest',x,y,use:'dchest',id:R.dun.kind+'boss',boss:1});say('A golden chest appears where the '+(n.type==='boss'?'Slime King':'Bone Lord')+' fell!');msgT=4};
+SQDROP.after('035',(n)=>{const R=SCENE&&SCENE.room;if(!R||!R.dun||(n.type!=='boss'&&n.type!=='bonelord'))return;R.dun.bossDone=1;const x=Math.floor(n.x/16),y=Math.floor(n.y/16);R.items.push({t:'dchest',x,y,use:'dchest',id:R.dun.kind+'boss',boss:1});say('A golden chest appears where the '+(n.type==='boss'?'Slime King':'Bone Lord')+' fell!');msgT=4});
 // opening chests: HIT or USE when you face one
 function dChestNear(){const R=SCENE&&SCENE.room;if(!R||!R.dun)return null;const[fx,fy]=front(12);let best=null,bd=22;for(const it of R.items){if(it.t!=='dchest'||it.open)continue;const d=Math.hypot(it.x*16+8-fx,it.y*16+8-fy);if(d<bd){bd=d;best=it}}return best}
 SQHIT.wrap('035 deep dungeons and rare loot',next=>function(){if(!dead&&!menuOpen&&!pnOpen&&swing<=0){const it=dChestNear();if(it&&!en.some(n=>!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<30)){swing=.2;dOpen(it);return}}
@@ -138,12 +137,12 @@ const _sl35=SLIMEHD;SLIMEHD=(n,tm)=>{if(n.vr!=='magma'||Math.abs(n.kx)+Math.abs(
  g.fillStyle='rgba(255,120,40,.18)';g.beginPath();g.arc(x,y,12,0,6.283);g.fill();shd(x,y+5,15);const sp=hdMagma(f),w=sp.width/2,hh=sp.height/2,top=y+6.5-hh;g.drawImage(sp,x-w/2,top,w,hh);
  const e=top+(f?4.5:5.5),d=P.x>n.x?.5:-.5;g.fillStyle='#fff4c0';for(const ex of[x-4.5,x+1.5])g.fillRect(ex,e,3,3.5);g.fillStyle='#3a0804';for(const ex of[x-4.5,x+1.5])g.fillRect(ex+1+d,e+1,1.5,2)};
 // loot icons
-const _ic35=iconURL;iconURL=function(k,col){if(!DITEM[k])return _ic35(k,col);const key='g35'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+SQICON.wrap('035',_ic35=>function(k,col){if(!DITEM[k])return _ic35(k,col);const key='g35'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  if(k==='coin'){r(3,3,8,8,'#c89820');r(4,2,6,10,'#c89820');r(2,4,10,6,'#c89820');r(4,4,6,6,'#f8d848');r(5,3,4,1,'#fff0a0');r(6,5,2,4,'#a07010')}
  else if(k==='elixir'){r(6,1,2,2,'#a86830');r(5,3,4,2,'#d8e8f0');r(3,5,8,7,'#d8e8f0');r(4,6,6,5,'#e83878');r(4,6,2,2,'#ff98c0');r(4,11,6,1,'#a82050')}
  else{const C={ruby:['#a01030','#e03050','#ff8098'],sapphire:['#102a90','#3060e0','#90b0ff'],emerald:['#0a6030','#30b060','#90f0b0'],diamond:['#7090b0','#d8f0ff','#ffffff']}[k];
   r(4,2,6,2,C[1]);r(2,4,10,3,C[1]);r(3,7,8,2,C[0]);r(4,9,6,2,C[0]);r(6,11,2,1,C[0]);r(4,2,2,2,C[2]);r(3,4,3,2,C[2]);r(7,5,2,1,C[2])}
- return ICONC[key]=c.toDataURL()};
+ return ICONC[key]=c.toDataURL()});
 // minimap of what you've explored (top right, under the day box)
 SQHUD.after('035',()=>{const R=SCENE&&SCENE.room;if(!R||!R.dun||menuOpen||dead)return;const D=R.dun;if(!D.mm){D.mm=document.createElement('canvas');D.mm.width=R.w;D.mm.height=R.h;D.mmDirty=1}if(D.mmDirty){D.mmDirty=0;const x=D.mm.getContext('2d'),im=x.createImageData(R.w,R.h),u=new Uint32Array(im.data.buffer);for(let i=0;i<R.w*R.h;i++)if(D.seen[i])u[i]=D.G[i]?hdC('#3a3448'):hdC(R.tomb?'#c8a870':'#8a8070');
   for(const it of R.items){const i=it.y*R.w+it.x;if(!D.seen[i])continue;if(it.t==='stairs')u[i]=hdC('#f8f8f8');else if(it.t==='dchest'&&!it.open)u[i]=hdC('#f8d848')}x.putImageData(im,0,0)}const L=HUDL||hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*R.h/R.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;g.fillStyle='rgba(10,8,16,.72)';g.fillRect(x0-3*U,y0-3*U,w+6*U,hh+16*U);g.drawImage(D.mm,x0,y0,w,hh);const px=x0+P.x/16/R.w*w,py=y0+P.y/16/R.h*hh;g.fillStyle=(performance.now()/300|0)%2?'#ff4060':'#ffffff';g.fillRect(px-1.5*U,py-1.5*U,3*U,3*U);if(D.boss&&D.seen[D.boss[1]*R.w+D.boss[0]]&&!D.bossDone){g.fillStyle='#ff3030';g.fillRect(x0+(D.boss[0]+.5)/R.w*w-2*U,y0+(D.boss[1]+.5)/R.h*hh-2*U,4*U,4*U)}g.fillStyle='#f4f0d8';g.font='700 '+(9*U)+'px "SQ Digits","Pixelify Sans",monospace';g.textAlign='left';g.textBaseline='top';g.fillText((D.label||(R.tomb?'Tomb':'Caverns'))+' F'+D.f,x0,y0+hh+2*U);g.restore()});

@@ -23,7 +23,7 @@
  const _mf=meleeFlat;meleeFlat=function(){return _mf()+(has('jr_ruby')?1:0)+(has('jr_diamond')?1:0)+(has('ja_diamond')?1:0)};
  const _ad=arrowDmg;arrowDmg=function(){return _ad()+(has('ja_emerald')?1:0)+(has('ja_diamond')?1:0)};
  const _sd=spellDmg;spellDmg=function(el){return _sd(el)+(has('ja_sapphire')?1:0)+(has('ja_diamond')?1:0)};
- const _ax=addXp;addXp=function(i,x){if(x>0){const m=1+(has('ja_gold')?.05:0)+(has('jr_emerald')&&GATHER.has(i)?.1:0);if(m>1)x=Math.max(x+1,Math.round(x*m))}return _ax(i,x)};
+ SQADDXP.before('086',(i,x)=>{if(x>0){const m=1+(has('ja_gold')?.05:0)+(has('jr_emerald')&&GATHER.has(i)?.1:0);if(m>1)x=Math.max(x+1,Math.round(x*m))}});
  SQUPD.after('086',(dt)=>{if(!menuOpen&&!pnOpen&&!dead&&has('jr_sapphire')&&typeof MANA!=='undefined')MANA=Math.min(maxMP(),MANA+dt*.25)});
  // ---- wearing ----
  function jwWear(k){const j=JK[k];if(!j||(inv[k]|0)<1)return;const old=JW[j.s];if(old)inv[old]=(inv[old]|0)+1;inv[k]--;JW[j.s]=k;say('You put on the '+j.n.toLowerCase()+'. '+j.d);sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'086-1')}rPn()}
@@ -54,7 +54,7 @@
    try{saveLocal(true);saveCloud(true)}catch(err){self.SQERR&&SQERR(err,'086-4')}try{rPn()}catch(err){self.SQERR&&SQERR(err,'086-5')}},true);
   SQSAVE.after('086:hh',o=>{o.hh=HIDEH?1:0;});
   SQLOAD.after('086',(S)=>{HIDEH=!!(S&&S.hh)});
-  const _ng=newGame;newGame=function(){HIDEH=false;_ng()}}
+  SQNEWGAME.before('086',()=>{HIDEH=false;})}
  // ---- Dragonsoul amulet (a rare drop from the Dragon world boss) ----
  // While worn, your ultimate (V / L1+R1 / the ULT button) becomes Dragon Form: you turn into a small dragon for
  // 2 minutes. Hold attack to breathe a continuous cone of fire. Press the ultimate again to change back early.
@@ -98,15 +98,15 @@
  const _ub=ubUpdate;ubUpdate=function(){if(!dsoul())return _ub();const show=!isPC&&!GPON&&!menuOpen&&!dead,lab=!show?'':DF.on?'BACK<small>'+Math.ceil(DF.t)+'s</small>':DF.cd>0?'ULT<small>'+Math.ceil(DF.cd)+'s</small>':'ULT';
   const k='ds'+show+'|'+lab;if(k===lastUb)return;lastUb=k;ubt.style.display=show?'flex':'none';ubt.innerHTML=lab;ubt.style.opacity=DF.cd>0&&!DF.on?'.55':'1';ubt.style.color=DF.cd>0&&!DF.on?'':'#e05020'};
  // ---- icons ----
- const _ic=iconURL;iconURL=function(k,col){const j=JK[k];if(!j)return _ic(k,col);const key='g71'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+ SQICON.wrap('086',_ic=>function(k,col){const j=JK[k];if(!j)return _ic(k,col);const key='g71'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
   const G='#f8d848',GD2='#a87818',O2='#302010',[gc,gd]=GEMC[j.g];
   if(j.s==='ring'){for(let yy=0;yy<14;yy++)for(let xx=0;xx<14;xx++){const d=Math.hypot(xx+.5-7,yy+.5-8.5);if(d>2.2&&d<5)r(xx,yy,1,1,d>4.1||d<2.9?O2:(yy<8?G:GD2))}if(j.g){r(5,1,4,4,O2);r(6,2,2,2,gc);r(6,2,1,1,'#fff')}else{r(6,3,2,1,'#fff8c0')}}
   else{for(const[a,b]of[[2,1],[3,2],[3,3],[4,4],[5,5],[11,1],[10,2],[10,3],[9,4],[8,5]])r(a,b,1,1,GD2);r(4,6,6,7,O2);r(5,7,4,5,G);r(6,8,2,3,gc);r(6,8,1,1,'#fff');r(8,10,1,1,gd)}
-  return ICONC[key]=c.toDataURL()};
+  return ICONC[key]=c.toDataURL()});
  // ---- saving ----
  SQSAVE.after('086:jw',s=>{if(JW.ring||JW.neck)s.jw={ring:JW.ring,neck:JW.neck};});
  SQLOAD.after('086',(S)=>{JW.ring=JW.neck=null;const w=S&&S.jw;if(w){if(JK[w.ring]&&JK[w.ring].s==='ring')JW.ring=w.ring;if(JK[w.neck]&&JK[w.neck].s==='neck')JW.neck=w.neck}});
- const _ng=newGame;newGame=function(){JW.ring=JW.neck=null;_ng()};
+ SQNEWGAME.before('086',()=>{JW.ring=JW.neck=null;});
  window.SQJW=JW;window.SQJK=JK;window.SQGEMC=GEMC}
 // every item shows in the bag and in chests
 {const seen=new Set(BAG_ORDER());const order=['oaklog','willowlog','maplelog','yewlog','goldore','mithore','adamore','gbar','mbar','abar'];

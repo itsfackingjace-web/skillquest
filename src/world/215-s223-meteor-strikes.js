@@ -45,12 +45,12 @@
  for(const k in ITEMS){const[n,sh,v,d]=ITEMS[k];if(!INVK.includes(k))INVK.push(k);INAME[k]=n;SN[k]=n;SHORT[k]=sh;SELLP[k]=v;IDESC[k]=d;inv[k]=inv[k]|0;
   if(!EXTRA_BAG.includes(k)){const j=EXTRA_BAG.indexOf('adamore');EXTRA_BAG.splice(j>=0?j+1:EXTRA_BAG.length,0,k)}}
  try{if(!SM.some(r=>r.k==='metbar'))SM.push({k:'metbar',n:'Meteorite bar',smelt:1,c:{meteorore:15,adamore:15,stardust:3},lv:80,xp:600})}catch(e){self.SQERR&&SQERR(e,'215-2')}
- {const _ic=iconURL;iconURL=function(k,col){if(!ITEMS[k])return _ic.apply(this,arguments);const key='g223'+k;if(ICONC[key])return ICONC[key];
+ {SQICON.wrap('215',_ic=>function(k,col){if(!ITEMS[k])return _ic.apply(this,arguments);const key='g223'+k;if(ICONC[key])return ICONC[key];
    const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
    if(k==='meteorore'){r(3,4,8,7,'#120e14');r(2,5,10,5,'#120e14');r(3,5,8,5,'#3a3248');r(4,4,6,1,'#4a4058');r(3,9,8,1,'#2c2638');r(4,6,1,1,'#ff80d8');r(7,5,1,1,'#70e8ff');r(9,7,1,1,'#e070ff');r(6,8,1,1,'#70e8ff');r(5,7,1,1,'#ffffff')}
    else if(k==='stardust'){r(3,9,8,3,'#4a3878');r(4,8,6,1,'#6a50a8');r(5,7,4,1,'#8868d8');r(6,2,1,4,'#ffffff');r(4,4,5,1,'#ffffff');r(6,4,1,1,'#fff0ff');r(10,6,1,1,'#c8a8ff');r(2,7,1,1,'#c8a8ff');r(8,10,1,1,'#ffffff')}
    else{r(1,5,12,5,'#120e14');r(2,6,10,3,'#3a3050');r(2,6,10,1,'#6a5a88');r(3,7,2,1,'#ff80d8');r(7,7,1,1,'#70e8ff');r(9,6,2,1,'#e070ff');r(11,6,1,3,'#2a2238')}
-   return ICONC[key]=c.toDataURL()}}
+   return ICONC[key]=c.toDataURL()})}
  // ---- settings from the library ----
  try{if(window.SQA&&SQA.onApply)SQA.onApply(L=>{const m=L&&L.meteor;Object.assign(CFG,JSON.parse(JSON.stringify(DEF)));if(m&&typeof m==='object'){
    for(const k of['per','win','hp','vhp','vlv'])if(typeof m[k]==='number'&&isFinite(m[k]))CFG[k]=m[k];
@@ -225,7 +225,7 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
   x.fillStyle='rgba(20,12,32,.85)';x.beginPath();x.arc(cx,cy,s*.8,0,6.283);x.fill();x.font=Math.round(s*1.15)+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('☄️',cx,cy+s*.05);x.restore()}
  if(typeof drawMini52==='function'){const _dm=drawMini52;drawMini52=function(){const out=_dm.apply(this,arguments);try{if(!here())return out;const t=miniTarget();if(!t||(t.k==='hollow')!==(CUR.loc==='hollow'))return out;const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;
    g.save();g.setTransform(1,0,0,1,0,0);mark(g,x0+CUR.tx/t.w*w,y0+CUR.ty/t.h*hh,4*U);g.restore()}catch(e){self.SQERR&&SQERR(e,'215-40')}return out}}
- if(typeof drawMap==='function'){const _dmp=drawMap;drawMap=function(){const out=_dmp.apply(this,arguments);try{if(!here()||CUR.loc!=='hollow'||(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world'))return out;const c=document.getElementById('mpc');if(!c)return out;mark(c.getContext('2d'),CUR.tx,CUR.ty,Math.max(3,c.width/45))}catch(e){self.SQERR&&SQERR(e,'215-41')}return out}}
+ if(typeof drawMap==='function'){SQDRAWMAP.wrap('215',_dmp=>function(){const out=_dmp.apply(this,arguments);try{if(!here()||CUR.loc!=='hollow'||(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world'))return out;const c=document.getElementById('mpc');if(!c)return out;mark(c.getContext('2d'),CUR.tx,CUR.ty,Math.max(3,c.width/45))}catch(e){self.SQERR&&SQERR(e,'215-41')}return out})}
  // ---- the dev command: /meteorite [here|stop] ----
  function summon(how){const F=Fb();if(!(window.SQDEV&&SQDEV()))return false;if(!F||!me()){say('Sign in first.');return true}
   if(how==='stop'){F.db.set(F.db.ref(F.D,'events/met'),null).then(()=>say('Meteor called off.')).catch(e=>say('Couldn\'t stop it: '+(e&&e.message||e)));return true}

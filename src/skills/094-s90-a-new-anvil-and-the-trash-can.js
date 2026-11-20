@@ -14,7 +14,7 @@
  STNS.push({k:'trash',n:'Trash can',c:{stone:6,wood:2},req:2,xp:15,hp:2,d:'Get rid of things you don\'t want.'});STN.add('trash');
  BREC.push({k:'trash',n:'Trash can',c:{stone:6,wood:2},req:2,xp:15,hp:2});BK.push('trash');BHP.trash=2;INVK.push('trash');INAME.trash='Trash can';SELLP.trash=3;SN.trash='Trash cans';if(typeof SHORT!=='undefined')SHORT.trash='trash can';
  IDESC.trash='Furniture for your house. Face it and press HIT to throw away items you don\'t want.';FURN_ONLY.add('trash');if(typeof EXTRA_BAG!=='undefined')EXTRA_BAG.push('trash');
- {const _ic=iconURL;iconURL=function(k,col){if(k!=='trash')return _ic(k,col);const key='trash14';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(trs(),-1,2);return ICONC[key]=c.toDataURL()}}
+ {SQICON.wrap('094',_ic=>function(k,col){if(k!=='trash')return _ic(k,col);const key='trash14';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(trs(),-1,2);return ICONC[key]=c.toDataURL()})}
  let SURE=null;
  {const _sh=stationHTML;stationHTML=function(o){const h=_sh(o);if(o.t!=='trash')return h;const keys=Object.keys(inv).filter(k=>(inv[k]|0)>0&&INAME[k]).sort((a,b)=>INAME[a].localeCompare(INAME[b]));
    let L='<div class="qc"><p>Throw away anything you don\'t want. It\'s gone for good.</p></div>';if(!keys.length)L+='<div class="tl" style="font-weight:400;opacity:.6">Your bag is empty.</div>';
@@ -24,5 +24,5 @@
  {const _sa=stationAct;stationAct=function(a){if(typeof a!=='string'||!/^tr[1ay]_/.test(a))return _sa(a);const k=a.slice(4),n=inv[k]|0;if(n<=0){rPn();return}
    if(a.startsWith('tra_')){SURE=k;rPn();return}const m=a.startsWith('tr1_')?1:n;inv[k]=n-m;SURE=null;
    if(STATION&&STATION.f)STATION.f.bump=.2;say('Threw away '+m+' × '+INAME[k].toLowerCase()+'.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'094-1')}saveLocal(true);rPn()}}
- {const _cp=closePanel;closePanel=function(){SURE=null;return _cp()}}
+ {SQCLOSEPN.before('094',()=>{SURE=null;})}
 }

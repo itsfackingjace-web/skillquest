@@ -73,7 +73,7 @@
   for(const it of ITEMS){if(!it.use||it.use==='npc'||it.use==='icv')continue;const inside=tx>=it.x&&ty>=it.y&&tx<it.x+(it.w||1)&&ty<it.y+(it.h||1);
    const d=Math.hypot(Math.max(it.x*T,Math.min(P.x,(it.x+(it.w||1))*T))-P.x,Math.max(it.y*T,Math.min(P.y,(it.y+(it.h||1))*T))-P.y);if(inside)return it;if(d<bd){bd=d;best=it}}return best};
  const useIt=()=>{const it=onHollow()&&!pnOpen&&!menuOpen&&!dead?front():null;if(!it)return false;try{useFurn(it)}catch(e){console.warn(e)}return true};
- {const _t=talk;talk=function(){if(useIt())return;return _t.apply(this,arguments)}}
+ {SQTALK.wrap('193',_t=>function(){if(useIt())return;return _t.apply(this,arguments)})}
  tk.addEventListener('touchstart',e=>{if(!onHollow()||pnOpen||menuOpen||dead)return;const it=front();if(it&&mineTk){e.preventDefault();e.stopImmediatePropagation();useIt()}},{passive:false,capture:true});
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>(onHollow()&&!!front())||!!(_pu&&_pu())}
  let mineTk=false,zt=0;const KEEP=new Set(),TOUGH=[1,1.6,2.4,3.5];

@@ -104,9 +104,9 @@
  if(typeof rSM==='function'){const _sm=rSM;rSM=function(){try{const at=SMI.indexOf(ITEM),want=showMenu();if(want&&at<0){const o=SMI.findIndex(x=>x.id==='options');SMI.splice(o>=0?o:SMI.length,0,ITEM)}else if(!want&&at>=0)SMI.splice(at,1)}catch(e){self.SQERR&&SQERR(e,'210-16')}return _sm.apply(this,arguments)}}
  {const _ss=showScreen;showScreen=function(id){if(id!=='patron')return _ss.apply(this,arguments);pnOpen=true;ptab=PTAB;jx=jy=0;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'210-17')}}}
  // Options: Credits for everyone, one button to the Patron screen
- {const _o=optionsHTML;optionsHTML=function(){let h=_o();
+ {SQOPTS.wrap('210',_o=>function(){let h=_o();
    h=h.replace('<div class="aclinks">','<button class="sb" data-pcr="credits">Credits</button>'+(showMenu()?'<button class="sb" data-pcr="open"><img class="sqpf" src="'+flameURL+'" alt="">Patron</button>':'')+'<div class="aclinks">');
-   return h}}
+   return h})}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pcr]');if(!b)return;e.stopPropagation();e.preventDefault();const a=b.dataset.pcr;
   if(a==='credits'){ptab=CTAB;loadCredits();rPn()}else if(a==='back'){ptab=8;rPn()}
   else if(a==='style'){try{showScreen('style')}catch(x){self.SQERR&&SQERR(x,'210-18')}}

@@ -99,11 +99,11 @@
  // ---- icons ----
  const DAGS={idag:{t:1,c:'#c8ccd8',n:'Iron dagger'},sdag:{t:2,c:'#e0e4f0',n:'Steel dagger'},mdag:{t:3,c:'#70a8e0',n:'Mithril dagger',lv:30,bar:'mbar',sm:35},adag:{t:4,c:'#58c088',n:'Adamant dagger',lv:45,bar:'abar',sm:50},
   stdag:{t:5,c:'#f0d8ff',n:'Starsteel dagger',lv:60,bar:'abar',mc:{abar:2,stardust:4},sm:66},metdag:{t:6,c:'#a070f0',n:'Meteorite dagger',lv:75,bar:'metbar',sm:82}};
- {const _ic=iconURL;iconURL=function(k,col){const key='g226'+k;if(ICONC[key])return ICONC[key];let draw=null;
+ {SQICON.wrap('218',_ic=>function(k,col){const key='g226'+k;if(ICONC[key])return ICONC[key];let draw=null;
    if(k==='brew'||k==='cauldron')draw=r=>{r(3,5,8,7,'#16121c');r(2,6,10,5,'#16121c');r(3,6,8,5,'#434158');r(4,6,2,3,'#64627e');r(2,4,10,2,'#16121c');r(3,4,8,1,'#62cc48');r(5,2,1,1,'#a8f070');r(8,1,1,1,'#a8f070');r(3,12,1,1,'#16121c');r(10,12,1,1,'#16121c')};
    else if(COAT[k]){const c=COAT[k].ic;draw=r=>{r(6,1,2,1,'#5a3418');r(5,2,4,1,'#16121c');r(6,3,2,2,'#16121c');r(4,5,6,7,'#16121c');r(3,6,8,5,'#16121c');r(4,6,6,5,c);r(5,7,1,2,'#ffffff');r(4,10,6,1,'rgba(0,0,0,.25)');if(k==='pot_zap'){r(7,7,1,1,'#ffffff');r(6,8,1,1,'#ffffff');r(7,9,1,1,'#ffffff')}}}
    else if(DAGS[k]&&k!=='idag'&&k!=='sdag'){const c=DAGS[k].c;draw=r=>{r(3,10,1,1,'#16121c');r(2,11,2,1,'#5a3418');r(4,9,2,2,'#5a3418');r(3,8,4,1,'#b88850');for(let i=0;i<6;i++){r(6+i,7-i,1,1,c);r(5+i,7-i,1,1,'#16121c')}r(11,1,1,1,'#fff')}}
-   if(!draw)return _ic.apply(this,arguments);const cv2=document.createElement('canvas');cv2.width=14;cv2.height=14;const x=cv2.getContext('2d');draw((a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)});return ICONC[key]=cv2.toDataURL()}}
+   if(!draw)return _ic.apply(this,arguments);const cv2=document.createElement('canvas');cv2.width=14;cv2.height=14;const x=cv2.getContext('2d');draw((a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)});return ICONC[key]=cv2.toDataURL()})}
  // ---- daggers (off-hand) ----
  const ICK=k=>k;
  for(const k in DAGS){const o=DAGS[k];if(!INVK.includes(k))INVK.push(k);INAME[k]=o.n;SN[k]=o.n+'s';SHORT[k]=o.n.toLowerCase();inv[k]=inv[k]|0;if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k);
@@ -120,7 +120,7 @@
  {SQUPD.after('218',(dt)=>{if(DAG&&(TL.bow||WAND||TL.hoe||TL.can)){inv[DAG]=(inv[DAG]|0)+1;DAG=null;try{snapEq()}catch(e){self.SQERR&&SQERR(e,'218-6')}}if(DCD>0)DCD=Math.max(0,DCD-(dt||0));if(COATK&&performance.now()>COATU){COATK=null;try{say('Your dagger\'s coating wore off.')}catch(e){self.SQERR&&SQERR(e,'218-7')}}})}
  {SQSAVE.after('218:dag,dpin',s=>{s.dag=DAG||'';s.dpin=DPIN||'';})}
  {SQLOAD.after('218',(S)=>{try{const d=S&&S.dag;DAG=d&&DAGS[d]&&!TL.bow&&!WAND&&!TL.hoe&&!TL.can?d:null;DPIN=S&&typeof S.dpin==='string'?S.dpin:'';COATK=null;try{snapEq()}catch(e){self.SQERR&&SQERR(e,'218-8')}}catch(e){self.SQERR&&SQERR(e,'218-9')}})}
- {const _ng=newGame;newGame=function(){DAG=null;DPIN='';COATK=null;return _ng.apply(this,arguments)}}
+ {SQNEWGAME.before('218',()=>{DAG=null;DPIN='';COATK=null;})}
  // ---- pinning a potion for the dagger ult ----
  {const _b=bagGridHTML;bagGridHTML=function(){let h=_b.apply(this,arguments);try{const k=invSel;if(k&&(inv[k]|0)>0&&isPotion(k)){const on=DPIN===k;
    const btn='<button class="use" data-dpin="'+k+'" title="Your dagger\'s ULT uses this potion"'+(on?' style="background:#b070f0;color:#fff"':'')+'>'+(on?'★ DAGGER ULT':'☆ DAGGER ULT')+'</button>';

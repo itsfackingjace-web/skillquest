@@ -39,7 +39,7 @@
    if(q.type==='visit'&&Q.k<1&&typeof curRegion==='function'&&curRegion()===q.item){Q.k=1;done1(q)}}catch(e){self.SQERR&&SQERR(e,'128-2')}return out});
  const _se=sqEvent;sqEvent=function(type,item){try{if(type==='islandboss'&&item&&!IBK.has(item)){IBK.add(item);const q=cur();if(q&&q.type==='ib'&&IBK.size>=q.amt)setTimeout(()=>done1(q),2500)}}catch(e){self.SQERR&&SQERR(e,'128-3')}return _se.apply(this,arguments)};
  // Hollow's night slimes have no type: count them for the slime quests (048 counts the ones typed 'slime')
- const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const q=cur();if(q&&q.type==='kill'&&q.item==='slime'&&n&&!n.type&&!n._rp){Q.k++;if(Q.k===q.amt)done1(q)}}catch(e){self.SQERR&&SQERR(e,'128-4')}return out};
+ SQDROP.after('128',(n)=>{try{const q=cur();if(q&&q.type==='kill'&&q.item==='slime'&&n&&!n.type&&!n._rp){Q.k++;if(Q.k===q.amt)done1(q)}}catch(e){self.SQERR&&SQERR(e,'128-4')}});
  // ---- saves ----
  SQSAVE.after('128:qv,ibk',s=>{s.qv=10;s.ibk=[...IBK];});
  SQLOAD.after('128',(S)=>{try{IBK=new Set(Array.isArray(S&&S.ibk)?S.ibk.filter(k=>typeof k==='string').slice(0,10):[]);NW=0;
@@ -48,5 +48,5 @@
     if(name&&Q.on){const was=by(name);QHOLD={n:name,on:true,k:was&&(was.type==='night'||was.type==='visit')?0:Q.k}}
     Q.i=0;Q.on=false;Q.k=0;qSkip();if(QHOLD&&QS[Q.i]&&QS[Q.i].n!==QHOLD.n){Q.on=false;Q.k=0}}
    Q.i=Math.max(0,Math.min(QS.length,Q.i))}catch(e){console.warn(e)}});
- const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);IBK=new Set();NW=0;return out};
+ SQNEWGAME.after('128',()=>{IBK=new Set();NW=0;});
  window.SQCH2={get ibk(){return IBK},get nw(){return NW},QOLD9}})();

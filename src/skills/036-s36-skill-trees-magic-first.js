@@ -52,7 +52,7 @@ SQUPD.wrap('036',_u36=>function(dt){const hp0=P.hp,was=dead,t0=time,m0=MANA;_u36
  if(dead&&!was&&perk(ML,'phoenix')&&PHX_DAY!==today()){PHX_DAY=today();dead=false;time=t0;P.hp=6;MANA=maxMP();hurt=1.6;FLASH=.6;say('PHOENIX WARD! You rise from the flames.');msgT=4;sfx('quest');
   for(let k=0;k<40;k++){const a=k/40*6.283;part(P.x,P.y-6,Math.cos(a)*110,Math.sin(a)*90-30,.7,k%2?'#f88830':'#f8e060',-40,2)}saveLocal(true)}});
 // tell the player when a choice opens up
-const _ax36=addXp;addXp=function(i,x){const b=lvOf(i);_ax36(i,x);const a=lvOf(i);if(a>b&&TREES[i]&&TREES[i].choices[a]&&!(PERKS[i]&&PERKS[i][a])){say(SKN[i]+' '+a+': a new perk to choose! Open Skills and tap '+SKN[i]+'.');msgT=5}};
+SQADDXP.wrap('036',_ax36=>function(i,x){const b=lvOf(i);_ax36(i,x);const a=lvOf(i);if(a>b&&TREES[i]&&TREES[i].choices[a]&&!(PERKS[i]&&PERKS[i][a])){say(SKN[i]+' '+a+': a new perk to choose! Open Skills and tap '+SKN[i]+'.');msgT=5}});
 // --- saving ---
 SQSAVE.after('036:perks,phx',s=>{s.perks=PERKS;s.phx=PHX_DAY;});
 SQLOAD.after('036',(S)=>{PERKS={};if(S.perks&&typeof S.perks==='object')for(const k in S.perks){const o=S.perks[k];if(!o||typeof o!=='object')continue;PERKS[k]={};for(const lv in o)if(o[lv]==='a'||o[lv]==='b'||o[lv]==='c')PERKS[k][lv]=o[lv]}PHX_DAY=isFinite(S.phx)?+S.phx:-1});
@@ -91,4 +91,4 @@ const _oc36=pbd.onclick;pbd.onclick=e=>{const sk=e.target.closest('.skc');if(sk&
   if(PERKS[s2][lv]===ab)return;PERKS[s2][lv]=ab;const c=TREES[s2].choices[lv][{a:0,b:1,c:2}[ab]];if(!c)return;say('Learned '+c.n+'!');sfx('quest');saveNow();rPn();return}
  _oc36(e)};
 const _bs36=backScreen;backScreen=function(){if(SKVIEW>=0&&ptab===0){SKVIEW=-1;if(typeof RKEY!=='undefined')RKEY=null;rPn();pn.scrollTop=0;return}_bs36()};
-const _cp36=closePanel;closePanel=function(){SKVIEW=-1;_cp36()};
+SQCLOSEPN.before('036',()=>{SKVIEW=-1;});

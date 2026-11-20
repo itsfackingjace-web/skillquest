@@ -135,11 +135,11 @@
  {SQPS.wrap('099',_ps=>function(n,tm){if(n){if(n.type==='cacti')return drawCacti(n,tm);if(n.type==='bandit')return drawBandit(n,tm);if(n.type==='gscorp')return drawGScorp(n,tm)}return _ps(n,tm)})}
  {SQPP.after('099',(tm)=>{if(!nmR())return;for(const b of NMP){if(window.SQSHOTDRAW&&SQSHOTDRAW(b))continue;if(b.k==='bullet'){Rg(b.x-2,b.y-2,4,4,K);Rg(b.x-1,b.y-1,2,2,'#f8e070')}else{const a=Math.atan2(b.vy,b.vx);for(let i=0;i<5;i++)Rg(Math.round(b.x-Math.cos(a)*i),Math.round(b.y-Math.sin(a)*i),1,1,i?'#e8e0b0':'#ffffff')}}})}
  // what they drop
- {const _ed=enemyDrop;enemyDrop=function(n){if(!n||!(n.type==='bandit'||n.type==='cacti'||n.type==='gscorp'))return _ed(n);const got=[];
+ {SQDROP.wrap('099',_ed=>function(n){if(!n||!(n.type==='bandit'||n.type==='cacti'||n.type==='gscorp'))return _ed(n);const got=[];
    if(n.type==='bandit'){const gd=20+Math.floor(Math.random()*41);GLD+=gd;got.push(gd+' gold');if(Math.random()<.25){inv.iarrow=(inv.iarrow|0)+5;got.push('5 iron arrows')}if(Math.random()<.06){inv.pot_heal=(inv.pot_heal|0)+1;got.push('a healing potion')}try{sqEvent('kill','bandit')}catch(e){self.SQERR&&SQERR(e,'099-3')}}
    if(n.type==='cacti'){const c=1+Math.floor(Math.random()*3);inv.cfruit=(inv.cfruit|0)+c;got.push(c+' cactus fruit')}
    if(n.type==='gscorp'){const gd=15+Math.floor(Math.random()*16);GLD+=gd;got.push(gd+' gold');if(Math.random()<.12){inv.sbar=(inv.sbar|0)+1;got.push('a steel bar')}}
-   say('+'+got.join(', '));try{svg()}catch(e){self.SQERR&&SQERR(e,'099-4')}}}
+   say('+'+got.join(', '));try{svg()}catch(e){self.SQERR&&SQERR(e,'099-4')}})}
 
  // ---- PvP is always on here ----
  let forced=false,was=false,warnAt=0;

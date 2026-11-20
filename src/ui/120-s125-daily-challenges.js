@@ -40,7 +40,7 @@
   try{svg()}catch(e){self.SQERR&&SQERR(e,'120-3')}try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'120-4')}}
  function add(id,k){if(!D||!(k>0))return;for(const q of D.q)if(q.t===id&&!q.c){q.p=Math.min(q.n,q.p+k);if(q.p>=q.n)pay(q);else if(pnOpen&&ptab===6)rPn()}}
  // XP gains mark the skill for this frame
- const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);if(!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}return out};
+ SQADDXP.after('120',(i,x)=>{if(!PAYING&&x>0){XPF.add(i);if(!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}});
  SQUPD.wrap('120',_u=>function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;
    if(!D||D.d!==today()){fresh();LASTINV=null;
     if(TOLD!==D.d){TOLD=D.d;let gd=null;try{gd=window.SQGUIDE&&SQGUIDE()}catch(e){self.SQERR&&SQERR(e,'120-5')}if(!gd)setTimeout(()=>{if(!dead){say('New daily challenges! Find them in your quest log.');msgT=4}},2500)}}
@@ -64,7 +64,7 @@
    if(v&&typeof v==='object'&&typeof v.d==='string'&&Array.isArray(v.q)){D={d:v.d,s:Math.max(0,v.s|0),l:typeof v.l==='string'?v.l:'',
      q:v.q.filter(q=>q&&T[q.t]).slice(0,3).map(q=>({t:q.t,n:Math.max(1,q.n|0),p:Math.max(0,q.p|0),c:q.c?1:0}))};if(!D.q.length)D=null}
    else D=null;LASTINV=null;LASTK=typeof kills==='number'?kills:0}catch(e){D=null}});
- const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);D=null;LASTINV=null;LASTK=0;return out};
+ SQNEWGAME.after('120',()=>{D=null;LASTINV=null;LASTK=0;});
  {const st=document.createElement('style');st.textContent=`#pn .sqdl{background:#eef4fc;border:2px solid #7890b8;border-radius:8px;padding:8px 10px;margin:0 0 10px;font-size:13px;color:#404040;text-align:left}
 #pn .sqdl-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}#pn .sqdl-h b{letter-spacing:1px;color:#304870}#pn .sqdl-h span{font-size:12px;color:#b06010;font-weight:700}
 #pn .sqdl-r{margin:6px 0}#pn .sqdl-r.done{opacity:.6}#pn .sqdl-t{display:flex;justify-content:space-between;font-weight:700}#pn .sqdl-t i{font-style:normal}

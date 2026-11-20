@@ -42,7 +42,11 @@
   `drawHUD` or `pP`**; add a step (`SQUPD.after('<file no> <what>', dt=>{...})`, or `.wrap` when it must run before/around the frame or skip it).
   **Monster drawing** (`window.SQPS`, end of 002, base = 002's `pS`): 16 steps (111d's look drawer keeps the inner drawer as `_ps` for
   its own use). **Panels** (`window.SQRPN`, end of 004, base = 004's `rPn`): 54 steps. **Room items** (`window.SQFURN`, end of 012, base =
-  012's `drawFurn`): 33 steps. **Never reassign `pS`, `rPn` or `drawFurn`** either.
+  012's `drawFurn`): 33 steps. Also step lists (Nov 19): `addXp` (`SQADDXP`, end of 004), `newGame` (`SQNEWGAME`, end of 006), `talk`
+  (`SQTALK`) and `closePanel` (`SQCLOSEPN`, end of 008), `drawMap` (`SQDRAWMAP`, end of 010), `iconURL` (`SQICON`, end of 011), `enterScene`
+  (`SQENTER`, end of 012), `enemyDrop` (`SQDROP`, end of 014), `optionsHTML` (`SQOPTS`, end of 019). **Never reassign any of these** either.
+  Notes that say "the outermost X" now mean "a step on X's list". `convfn.cjs` no longer makes an `after` step from a wrapper that
+  reassigns the value it returns (`const h=inner();h=h.replace(...);return h`).
   The steps keep the names of the sections that made them, so `SQUPD.list()` shows what runs each frame, in order. `solid` is still a
   wrapper chain (012 calls its saved inner `_sol12` elsewhere, so it can't be converted without changing behaviour).
   `tools/refactor/` has the converters and the before/after comparisons (`compare-frames.cjs` for anything that runs every frame).

@@ -18,13 +18,13 @@
   COOKS.push({raw:f.k,ck:'c'+f.k,n:f.n.toLowerCase(),lv:f.lv,xp:Math.round(f.xp*1.3)});FOODS.push({k:'c'+f.k,n:'cooked '+f.n.toLowerCase(),heal:f.heal,hun:f.hun});FC[f.k]=f.c;FC['c'+f.k]=f.cc}
  FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);
  window.SQFISHX=F.map(f=>({k:f.k,n:f.n,lv:f.lv,xp:f.xp,p:f.p,where:f.where,ok:f.ok}));window.SQDEEPFISH=F;
- {const _ic=iconURL;iconURL=function(k,col){if(!FC[k])return _ic(k,col);const key='df_'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),cl=FC[k];
+ {SQICON.wrap('221',_ic=>function(k,col){if(!FC[k])return _ic(k,col);const key='df_'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),cl=FC[k];
    const r=(a,b,w,h,q)=>{x.fillStyle=q;x.fillRect(a+1,b+1,w,h)},e=(cx,cy,rx,ry,q)=>{x.fillStyle=q;for(let j=0;j<12;j++)for(let i=0;i<12;i++)if(((i+.5-cx)/rx)**2+((j+.5-cy)/ry)**2<=1)x.fillRect(i+1,j+1,1,1)};
    const raw=k[0]!=='c',base=raw?k:k.slice(1);
    if(base==='abeel'){e(6,6,5.6,1.7,'#202838');e(6,6,5.2,1.3,cl);r(1,5,1,2,cl);r(9,5,1,1,'#e0e8ff');r(3,6,5,1,'#ffffff30')}
    else{e(5.5,6,4.7,2.8,'#202838');e(5.5,6,4.3,2.4,cl);r(9,4,2,1,cl);r(10,5,1,2,cl);r(9,7,2,1,cl);r(2,5,1,1,'#202020');r(3,7,4,1,'#ffffff40');
     if(base==='akoi'){r(4,4,1,1,'#ffffff');r(6,5,1,1,'#ffffff')}if(base==='moonfin'){r(3,4,3,1,'#ffffffa0')}}
    if(!raw)r(4,4,3,1,'#00000030');
-   return ICONC[key]=c.toDataURL()}}
+   return ICONC[key]=c.toDataURL()})}
  if(typeof treeGains==='function'){const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if(sk===9){const f=F.find(q=>q.lv===l);if(f)a.push('Catch the '+f.n.toLowerCase()+' '+f.w+' ('+f.xp+' XP)')}}catch(e){self.SQERR&&SQERR(e,'221-1')}return a}}
 })();

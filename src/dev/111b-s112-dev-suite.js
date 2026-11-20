@@ -684,6 +684,6 @@
   addTab(key,label,ext){EXT[key]=ext;const i=TABS.findIndex(t=>t[0]===key);if(i>=0)TABS[i][1]=label;else TABS.splice(TABS.length-1,0,[key,label]);if(S.open)draw()},
   api:{S,A,E,dget,dset,toast,fail,arm,same,body,clone,confirmLeave,draw:()=>draw(),thumb:k=>thumb(k)}};
  // entry points: Options (developer only) and /suite in chat
- const _o=optionsHTML;optionsHTML=function(){const h=_o();return window.SQDEV&&SQDEV()?h+'<div class="dv-tl" style="margin-top:16px">DEVELOPER</div><button class="sb dvopen">Dev Suite</button>':h};
+ SQOPTS.wrap('111b',_o=>function(){const h=_o();return window.SQDEV&&SQDEV()?h+'<div class="dv-tl" style="margin-top:16px">DEVELOPER</div><button class="sb dvopen">Dev Suite</button>':h});
  pbd.addEventListener('click',e=>{if(e.target.closest('.dvopen')){e.stopPropagation();openSuite()}},true);
  const _ms=mpSend;mpSend=function(t){if(/^\/suite\s*$/i.test(String(t||'').trim())&&window.SQDEV&&SQDEV()){openSuite();return}return _ms(t)}})();

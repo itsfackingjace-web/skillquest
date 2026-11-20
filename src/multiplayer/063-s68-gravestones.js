@@ -72,7 +72,7 @@ setInterval(()=>{const busy=dead||pnOpen||menuOpen||TS.open;const g=busy?null:gr
  if(g){const mine=g.local||(MP.user&&g.u===MP.user.uid);grvH.textContent=(mine?'Your grave':g.n+'\'s grave')+' · crumbles in '+mmss(grvLeft(g))+' · '+(GPON?'✕ to loot':isPC?'T to loot':'tap LOOT');grvH.style.display='block'}else grvH.style.display='none';
  const m=busy?[]:grvMine().sort((a,b)=>grvLeft(a)-grvLeft(b));if(m.length){const a=m[0];grvT.textContent='Your grave '+mmss(grvLeft(a))+' · '+LOCN(grvPos(a).loc)+(grvPos(a).out?' (outside)':'')+(m.length>1?' (+'+(m.length-1)+')':'');grvT.style.display='block'}else grvT.style.display='none'},250);
 // ---- looting ----
-{const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const g=grvNear();if(g){GRV.open=g;pnOpen=true;ptab=GTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');return}}return _t()}}
+{SQTALK.wrap('063',_t=>function(){if(!pnOpen&&!menuOpen&&!dead){const g=grvNear();if(g){GRV.open=g;pnOpen=true;ptab=GTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');return}}return _t()})}
 function graveHTML(){const g=GRV.open&&(GRV.open.local?GRV.local[GRV.open.id]:GRV.list[GRV.open.id]);if(!g)return'<div class="tl">GRAVE</div><div class="qc"><p>Nothing left here.</p></div>';
  const mine=g.local||(MP.user&&g.u===MP.user.uid),it=grvItems(g),ks=Object.keys(it);
  let h='<div class="tl">'+(mine?'YOUR GRAVE':esc(g.n).toUpperCase()+'\'S GRAVE')+'</div><div class="trst" style="text-align:center;font-size:13px;margin:4px 0 8px">Crumbles in '+mmss(grvLeft(g))+(mine?'':(grvLock(g)>0?' · locked to '+esc(g.n)+' for '+mmss(grvLock(g)):' · finders keepers!'))+'</div>';

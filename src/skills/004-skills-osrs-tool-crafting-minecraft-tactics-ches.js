@@ -66,3 +66,6 @@ function matN(k){try{if(typeof SHORT!=='undefined'&&SHORT[k])return SHORT[k]}cat
 
 // panel screens (rPn) as a step list: every later section adds a named step (window.SQRPN; see 006's sqSteps)
 const SQRPN=sqSteps('rPn',rPn,f=>{rPn=f});window.SQRPN=SQRPN;
+
+// addXp as a step list: later sections add named steps (window.SQADDXP; see 006's sqSteps)
+const SQADDXP=sqSteps('addXp',addXp,f=>{addXp=f});window.SQADDXP=SQADDXP;

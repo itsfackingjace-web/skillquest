@@ -97,7 +97,7 @@ sm.addEventListener('pointermove',e=>{const b=e.target.closest('button');if(b&&+
 cv.addEventListener('pointerdown',()=>{if(smOpen)closeSM()});
 pb2.textContent='MENU';pb2.title='Menu (Esc)';pb2.onclick=()=>{if(smOpen)closeSM();else openSM()};
 document.getElementById('px').onclick=backScreen;
-const _cp10=closePanel;closePanel=function(){_cp10();closeScreenOnly();fromMenu=false;if(smOpen)closeSM()};
+SQCLOSEPN.after('010',()=>{closeScreenOnly();fromMenu=false;if(smOpen)closeSM()});
 const ptt=document.createElement('span');ptt.className='ptt';{const px=document.getElementById('px');px.parentNode.insertBefore(ptt,px)}
 // --- bag ---
 const INAME={wood:'Wood',stone:'Stone',iron:'Iron ore',ibar:'Iron bar',sbar:'Steel bar',berry:'Berries',meat:'Raw meat',cooked:'Cooked meat',idag:'Iron dagger',sdag:'Steel dagger'};
@@ -226,3 +226,6 @@ function drawDead(){const U=uiS();g.save();g.fillStyle='rgba(0,0,0,.6)';g.fillRe
 
 // HUD drawing (drawHUD): the game's own above; later sections add named steps (window.SQHUD, sqSteps in 006).
 const SQHUD=sqSteps('drawHUD',drawHUD,f=>{drawHUD=f});window.SQHUD=SQHUD;
+
+// drawMap as a step list: later sections add named steps (window.SQDRAWMAP; see 006's sqSteps)
+const SQDRAWMAP=sqSteps('drawMap',drawMap,f=>{drawMap=f});window.SQDRAWMAP=SQDRAWMAP;

@@ -105,9 +105,9 @@
     const an=Math.atan2(t.y-P.y,t.x-P.x),cx=W/2,cy=H/2-6*Z,r=26*Z,ax=cx+Math.cos(an)*r,ay=cy+Math.sin(an)*r*.8;drawTri(ax,ay,an,Math.max(7*U,3.2*Z)+Math.sin(tm*5)*U);
     g.font='700 '+11*U+'px '+PF;g.textAlign='center';g.textBaseline='middle';const lx=cx+Math.cos(an)*(r+14*U+3*Z),ly=cy+Math.sin(an)*(r*.8+10*U+2*Z);g.lineWidth=3*U;g.strokeStyle='#302818';g.strokeText(dist+'m',lx,ly);g.fillStyle='#f8f0d8';g.fillText(dist+'m',lx,ly)}}g.restore()});
  // ---------- the map marks the spot ----------
- {const _dm=drawMap;drawMap=function(){_dm();try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return;refresh();const t=TGT;if(!t||t.x==null)return;const c=document.getElementById('mpc');if(!c)return;
+ {SQDRAWMAP.after('102',()=>{try{if(typeof MAPVIEW!=='undefined'&&MAPVIEW==='world')return;refresh();const t=TGT;if(!t||t.x==null)return;const c=document.getElementById('mpc');if(!c)return;
    const R=SCENE&&SCENE.room,area=R&&R.region?R.region:SCENE?null:'hollow';if(t.area!==area)return;const x=c.getContext('2d'),tx=t.x/16,ty=t.y/16,ph=(performance.now()/350)%2<1;
-   x.save();x.strokeStyle='#302818';x.lineWidth=3;x.beginPath();x.arc(tx,ty,ph?5:6.5,0,6.283);x.stroke();x.strokeStyle='#f8d048';x.lineWidth=1.6;x.beginPath();x.arc(tx,ty,ph?5:6.5,0,6.283);x.stroke();x.fillStyle='#f8d048';x.fillRect(Math.round(tx)-1,Math.round(ty)-1,3,3);x.restore()}catch(e){self.SQERR&&SQERR(e,'102-8')}}}
+   x.save();x.strokeStyle='#302818';x.lineWidth=3;x.beginPath();x.arc(tx,ty,ph?5:6.5,0,6.283);x.stroke();x.strokeStyle='#f8d048';x.lineWidth=1.6;x.beginPath();x.arc(tx,ty,ph?5:6.5,0,6.283);x.stroke();x.fillStyle='#f8d048';x.fillRect(Math.round(tx)-1,Math.round(ty)-1,3,3);x.restore()}catch(e){self.SQERR&&SQERR(e,'102-8')}})}
  // ---------- the quest log ----------
  {const st=document.createElement('style');st.textContent=`#pn .qtabs{display:flex;gap:6px;margin:0 0 10px}#pn .qtabs button{flex:1;padding:9px 4px;border-radius:8px;border:2px solid #384870;background:#fff;color:#384870;font:700 15px var(--pf);cursor:pointer}
 #pn .qtabs button.on{background:#5878b8;color:#fff}#pn .qe{background:#fff;border:2px solid #c8d0e0;border-radius:8px;margin:7px 0;color:#404040;font-family:var(--pf)}

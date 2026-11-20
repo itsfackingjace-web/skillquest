@@ -11,10 +11,10 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  // ---- Turt fragments ----
  INVK.push(FR);EXTRA_BAG.push(FR);INAME[FR]='Turt fragment';SN[FR]='Turt fragments';SHORT[FR]='turt fragment';SELLP[FR]=2500;inv[FR]=inv[FR]|0;
  IDESC[FR]='A piece of the Giant Turtle\'s shell, harder than adamant. Smith Turtle armor from it at an anvil: helm 1, legs 2, chestplate 2.';
- {const _ic=iconURL;iconURL=function(k,col){if(k!==FR)return _ic(k,col);const key='g208frag';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+ {SQICON.wrap('200',_ic=>function(k,col){if(k!==FR)return _ic(k,col);const key='g208frag';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
    r(4,1,6,1,'#0c1418');r(2,2,10,1,'#0c1418');r(1,3,12,8,'#0c1418');r(2,11,10,1,'#0c1418');r(4,12,6,1,'#0c1418');
    r(4,2,6,1,'#5a9a6c');r(2,3,10,8,'#3c7658');r(3,11,8,1,'#2c5a46');r(3,3,5,3,'#8cc890');r(4,4,2,1,'#c8f0c8');
-   r(5,6,4,1,'#16302a');r(4,7,1,2,'#16302a');r(9,7,1,2,'#16302a');r(5,9,4,1,'#16302a');r(10,9,1,1,'#e0d098');return ICONC[key]=c.toDataURL()}}
+   r(5,6,4,1,'#16302a');r(4,7,1,2,'#16302a');r(9,7,1,2,'#16302a');r(5,9,4,1,'#16302a');r(10,9,1,1,'#e0d098');return ICONC[key]=c.toDataURL()})}
  // ---- Turtle armor: adamant defence (armor tier 5) plus block per piece and a set bonus; Defence 50 ----
  const KEY={helm:'eq_thelm',body:'eq_tbody',legs:'eq_tlegs'},NM={helm:'Turtle helm',body:'Turtle chestplate',legs:'Turtle legs'},TT={helm:false,body:false,legs:false},DEF=50;
  const TCOL='#2c7a62',TLIT='#e0c878';
@@ -28,7 +28,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  {const _wu=watchUpgrades;watchUpgrades=function(){const was={...TT};const out=_wu.apply(this,arguments);for(const s in TT)if(was[s]&&ARM[s]!==5){if((inv['eq_'+s+'5']|0)>0)inv['eq_'+s+'5']--;inv[KEY[s]]=(inv[KEY[s]]|0)+1;TT[s]=false}return out}}
  {SQSAVE.after('200:tta',s=>{const t=(TT.helm?'h':'')+(TT.body?'b':'')+(TT.legs?'l':'');if(t)s.tta=t;})}
  {SQLOAD.after('200',(S)=>{const t=String(S&&S.tta||'');TT.helm=t.includes('h')&&ARM.helm===5;TT.body=t.includes('b')&&ARM.body===5;TT.legs=t.includes('l')&&ARM.legs===5;try{snapEq()}catch(e){self.SQERR&&SQERR(e,'200-2')}})}
- {const _ng=newGame;newGame=function(){TT.helm=TT.body=TT.legs=false;return _ng.apply(this,arguments)}}
+ {SQNEWGAME.before('200',()=>{TT.helm=TT.body=TT.legs=false;})}
  try{KNOWN49.add('tta')}catch(e){self.SQERR&&SQERR(e,'200-3')}
  {const _bb=blockBonus;blockBonus=function(){const n=worn();return _bb.apply(this,arguments)+n*.03+(n>=2?.05:0)+(n>=3?.05:0)}}
  {const _bc=blockCap;blockCap=function(){return _bc.apply(this,arguments)+(worn()>=3?.05:0)}}

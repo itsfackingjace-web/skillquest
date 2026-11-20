@@ -92,7 +92,7 @@
   if(PROJ.length===np&&SPELLS.length===ns)for(const[n,h]of hp0)if(n.hp<h)try{onHit(n,h-n.hp,'melee')}catch(e){self.SQERR&&SQERR(e,'111a2-7')}return out});
  const _ah=arrowHit;arrowHit=function(p,n){const out=_ah.apply(this,arguments);if(p&&!p.hostile&&p.k==='arrow'&&anyFx())try{onHit(n,p.dmg|0,'arrow')}catch(e){self.SQERR&&SQERR(e,'111a2-8')}return out};
  const _sh=spellHit;spellHit=function(s,n,dmg){const out=_sh.apply(this,arguments);if(anyFx())try{onHit(n,dmg|0,'spell')}catch(e){self.SQERR&&SQERR(e,'111a2-9')}return out};
- const _ax=addXp;addXp=function(i,x){const b=fxSum('xp');if(b&&x>0)x=Math.max(x,Math.round(x*(1+b/100)));return _ax.call(this,i,x)};
+ SQADDXP.wrap('111a2',_ax=>function(i,x){const b=fxSum('xp');if(b&&x>0)x=Math.max(x,Math.round(x*(1+b/100)));return _ax.call(this,i,x)});
  SQUPD.wrap('111a2',_up=>function(dt){const x0=P.x,y0=P.y;const out=_up.apply(this,arguments);try{const sp=fxSum('spd');if(sp&&!dead&&!SCENE){const dx=P.x-x0,dy=P.y-y0;
    if((dx||dy)&&Math.hypot(dx,dy)<20){const f=sp/100,ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));if(ok(P.x+dx*f,P.y))P.x+=dx*f;if(ok(P.x,P.y+dy*f))P.y+=dy*f}}}catch(e){self.SQERR&&SQERR(e,'111a2-10')}return out});
  // ---- saves keep new items (and what you wear) even if they haven't loaded yet ----
@@ -102,9 +102,9 @@
   try{if(S&&S.inv)for(const k in S.inv)if(ngKey(k)&&!EQ[k]&&+S.inv[k]>0)PEND[k]=Math.min(1e6,+S.inv[k]|0);
    if(S&&S.cus&&typeof S.cus==='object')for(const s of SLOTS){const k=S.cus[s];if(!ngKey(k))continue;if(EQ[k]&&EQ[k].custom){if(_occ(s)===EQ[k].base)CUS[s]=k}else PCUS[s]=k}
    if(typeof snapEq==='function')snapEq();setCosts()}catch(e){self.SQERR&&SQERR(e,'111a2-12')}return out});
- const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];for(const s of SLOTS){CUS[s]=null;delete PCUS[s]}return _ng.apply(this,arguments)};
+ SQNEWGAME.before('111a2',()=>{for(const k in PEND)delete PEND[k];for(const s of SLOTS){CUS[s]=null;delete PCUS[s]}});
  // ---- icons: a new item without its own icon uses its base item's ----
- const _ic=iconURL;iconURL=function(k,col){const e=EQ[k];if(e&&e.custom&&!SQA.hasIcon(k))return _ic(e.base,col);return _ic(k,col)};
+ SQICON.wrap('111a2',_ic=>function(k,col){const e=EQ[k];if(e&&e.custom&&!SQA.hasIcon(k))return _ic(e.base,col);return _ic(k,col)});
  if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){const e=EQ[k];if(e&&e.custom&&!SQA.hasIcon(k))return eqIcon(e.base);return _ei(k)}}
  {const oi=SQA.origIcon;SQA.origIcon=(k,c)=>oi(EQ[k]&&EQ[k].custom?EQ[k].base:k,c)}
  // ---- descriptions show the numbers that are really in play ----

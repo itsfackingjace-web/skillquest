@@ -30,6 +30,6 @@
   else if(mine){giveBack();tk.style.display='none'}
   return out});
  tk.addEventListener('touchstart',e=>{if(!mine||pnOpen||menuOpen||dead)return;e.preventDefault();e.stopImmediatePropagation();ask()},{passive:false,capture:true});
- const _t=talk;talk=function(){if(mine&&!pnOpen&&!menuOpen&&!dead&&ask())return;return _t.apply(this,arguments)};
+ SQTALK.wrap('119',_t=>function(){if(mine&&!pnOpen&&!menuOpen&&!dead&&ask())return;return _t.apply(this,arguments)});
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!(mine&&who)||!!(_pu&&_pu())}
  window.SQTRBTN={nearest,get on(){return mine},get who(){return who}}})();

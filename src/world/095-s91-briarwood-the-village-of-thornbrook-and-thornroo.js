@@ -58,7 +58,7 @@ const bwNear=()=>{if(!bwR())return null;let best=null,bd=26;for(const n of BW.np
   return _df(it,tm)})}
 // ---- talking: TALK / T / ✕ next to them ----
 function bwOpen(n){BW.npc=n;BW.sure=null;shop='bwnpc';pnOpen=true;ptab=2;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk')}
-{const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead){const n=bwNear();if(n){bwOpen(n);return}}return _t()}}
+{SQTALK.wrap('095',_t=>function(){if(!pnOpen&&!menuOpen&&!dead){const n=bwNear();if(n){bwOpen(n);return}}return _t()})}
 tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead)return;const n=bwNear();if(n){e.preventDefault();e.stopImmediatePropagation();bwOpen(n)}},{passive:false,capture:true});
 {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!bwNear()||!!(_pu&&_pu())}
 let tkMine=false;{SQUPD.after('095',(dt)=>{const n=!pnOpen&&!menuOpen&&!dead?bwNear():null;if(n){tk.style.display='flex';const lab='TALK'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;tkMine=true}else if(tkMine){tkMine=false;if(!pnOpen)tk.style.display='none'}const R=bwR();if(R&&BW.town)for(const m of en)if(!m.dead&&!m.big&&!m._rp&&inTown(m.x,m.y)){m.dead=1;m.dropped=1}})}
@@ -78,9 +78,9 @@ function bwHTML(){const n=BW.npc;if(!n)return'';const line=SAYS[n.id][Math.floor
     if(a[0]==='b'){const it=SHOPBW[+a.slice(1)];if(!it)return;if(GLD<it.c){say('Not enough gold');sfx('swish');return}GLD-=it.c;if(it.kit){inv.wood=(inv.wood|0)+3;inv.stone=(inv.stone|0)+1}else inv[it.k]=(inv[it.k]|0)+it.m;say('Bought '+it.n+'.');sfx('coin')}
     else{const k=a.slice(1),c=inv[k]|0;if(c>0){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){self.SQERR&&SQERR(_,'095-8')}saveLocal(true);rPn();return}
    const q=e.target.closest('.xb');if(q&&/^sq_/.test(q.dataset.a||'')){sideAct(q.dataset.a.slice(3),BW.npc);saveLocal(true);rPn();return}}return _oc(e)}}
-{const _cp=closePanel;closePanel=function(){if(shop==='bwnpc'){BW.npc=null;shop=null}return _cp()}}
+{SQCLOSEPN.before('095',()=>{if(shop==='bwnpc'){BW.npc=null;shop=null}})}
 // quest progress: briar wolves anywhere on Briarwood
-{const _ed=enemyDrop;enemyDrop=function(n){_ed(n);if(n&&n.type==='wolf'&&n.rv==='briar'&&!n._bwq){n._bwq=1;sqEvent('kill','briarwolf');saveLocal(true)}}}
+{SQDROP.after('095',(n)=>{if(n&&n.type==='wolf'&&n.rv==='briar'&&!n._bwq){n._bwq=1;sqEvent('kill','briarwolf');saveLocal(true)}})}
 if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead&&n.type==='wolf'&&n.rv==='briar'&&!n._bwq){n._bwq=1;sqEvent('kill','briarwolf')}}catch(e){self.SQERR&&SQERR(e,'095-9')}return r}}
 
 // ---- the Thornheart (floor 6 of Thornroot Hollow) ----

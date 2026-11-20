@@ -33,8 +33,8 @@ function sideAct(a,n){const t=n&&n.town,q=t&&sqCur(t),s=t&&SQ_SIDE[t];if(!q||q.g
 function sqEvent(type,item,test){for(const t in SQ_SIDE){const s=SQ_SIDE[t],q=sqCur(t);if(!q||!s.on||q.type!==type||q.item!==item)continue;if(test&&!test(t))continue;if(s.k>=q.amt)continue;
   s.k++;if(s.k>=q.amt){say('Quest updated: '+q.n+' - return to '+sqGiverName(q.giver)+' in '+SQTOWN[t]+'.');msgT=3;sfx('quest')}else drops.push({x:P.x,y:P.y-30,t:0,tx:q.n+' '+s.k+'/'+q.amt,c:'#a8e0ff'})}}
 // kills: wolves (and snow wolves) count for Hungry Wolves when they fall near Frosthollow or inside Frostfang Den
-const _ed42=enemyDrop;enemyDrop=function(n){_ed42(n);if(n.type==='wolf'){const R=SCENE&&SCENE.room,inDen=!!(R&&R.dun&&R.dun.kind==='frostfang');
-  sqEvent('kill','wolf',t=>t!=='frosthollow'||inDen||(!SCENE&&FHON&&Math.hypot(n.x/16-FX,n.y/16-FY)<40));saveLocal(true)}};
+SQDROP.after('042',(n)=>{if(n.type==='wolf'){const R=SCENE&&SCENE.room,inDen=!!(R&&R.dun&&R.dun.kind==='frostfang');
+  sqEvent('kill','wolf',t=>t!=='frosthollow'||inDen||(!SCENE&&FHON&&Math.hypot(n.x/16-FX,n.y/16-FY)<40));saveLocal(true)}});
 // the quest screen lists village quests under the main line
 const _qh42=questsHTML;questsHTML=function(){let h=_qh42(),any='';
  for(const t in SIDE_QS){const L=SIDE_QS[t],s=SQ_SIDE[t];if(!L.length)continue;if(t==='frosthollow'&&!FHON)continue;
@@ -55,4 +55,4 @@ SQSAVE.after('042:sideQuests',s=>{s.sideQuests=JSON.parse(JSON.stringify(SQ_SIDE
 function sqReset(){for(const t in SQ_SIDE)Object.assign(SQ_SIDE[t],{index:0,on:false,k:0,completed:false})}
 SQLOAD.after('042',(S)=>{sqReset();const o=S.sideQuests;if(!o||typeof o!=='object')return;for(const t in SQ_SIDE){const v=o[t];if(!v||typeof v!=='object')continue;const L=SIDE_QS[t].length,s=SQ_SIDE[t];
   s.index=Math.max(0,Math.min(L,+v.index||0));s.completed=!!v.completed||(L>0&&s.index>=L);s.on=!s.completed&&!!v.on;s.k=Math.max(0,+v.k||0)}});
-const _ng42=newGame;newGame=function(){sqReset();_ng42()};
+SQNEWGAME.before('042',()=>{sqReset();});

@@ -51,7 +51,7 @@
   g.save();g.font='700 6px '+PF;g.textAlign='center';g.textBaseline='bottom';g.lineWidth=2;g.strokeStyle=K;g.strokeText('Market clerk',c.x,c.y-22);g.fillStyle='#ffe8b0';g.fillText('Market clerk',c.x,c.y-22);g.restore();
   if(Object.keys(WMK.box).length&&Math.floor(tm*3)%2){Rg(c.x-2,c.y-36,4,8,K);Rg(c.x-1,c.y-35,2,5,'#f8d048');Rg(c.x-1,c.y-29,2,1,'#f8d048')}}
  if(sp){const _lh=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh(L,x0,y0,x1,y1,tm);const s=WMK.spot;if(s.tx+s.w<x0-3||s.tx>x1+3||s.ty>y1+5||s.ty+3<y0-4)return;L.push([(s.ty+2)*16,4,()=>drawMarket(tm)]);L.push([WMK.clerk.y+6,4,()=>drawClerk(tm)])};
-  const _dm=drawMap;drawMap=function(){_dm();const c=document.getElementById('mpc'),R=SCENE&&SCENE.room;if(!c||R&&R.region||MAPVIEW==='world')return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(sp.tx+2,sp.ty-2,6,6);x.fillStyle='#f8d048';x.fillRect(sp.tx+3,sp.ty-1,4,4)}}
+  SQDRAWMAP.after('079',()=>{const c=document.getElementById('mpc'),R=SCENE&&SCENE.room;if(!c||R&&R.region||MAPVIEW==='world')return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(sp.tx+2,sp.ty-2,6,6);x.fillStyle='#f8d048';x.fillRect(sp.tx+3,sp.ty-1,4,4)})}
  const nearClerk=()=>sp&&!SCENE&&Math.hypot(WMK.clerk.x-P.x,WMK.clerk.y-P.y)<26;
  const atMarket=()=>sp&&!SCENE&&Math.hypot(WMK.clerk.x-P.x,WMK.clerk.y-P.y)<70;
  // ---- data ----
@@ -173,9 +173,9 @@
    else if(F&&a.startsWith('p:')){const v=a.slice(2),B=book(F.k);if(v==='match')F.p=F.s==='s'?B.bb:B.bs;else if(v.endsWith('%'))F.p=Math.max(1,Math.round(F.p*(1+(+v.slice(0,-1))/100))+(+v.slice(0,-1)>0?0:0));else F.p=Math.max(1,F.p+(+v));F.p=Math.min(1e7,F.p);if(v!=='match')F.p=Math.min(F.p,hi(F.k))}
    else if(F&&a==='go'){if(WMK.busy)return;const q=document.getElementById('wmq'),p=document.getElementById('wmp');if(q)F.q=Math.max(1,Math.floor(+q.value||1));if(p)F.p=Math.max(1,Math.floor(+p.value||1));if(!inBand(F.k,F.p)){rPn();sfx('swish');return}if(odd(F)&&F.ok!==F.p+':'+F.q){F.ok=F.p+':'+F.q;rPn();sfx('swish');return}place(F.s,F.k,F.q,F.p);return}
    rPn();return}return _oc(e)}}
- {const _cp=closePanel;closePanel=function(){if(shop==='wmkt'){shop=null;WMK.form=null}return _cp()}}
+ {SQCLOSEPN.before('079',()=>{if(shop==='wmkt'){shop=null;WMK.form=null}})}
  // talking to the clerk (T / TALK / ✕) or hitting the stalls opens it
- {const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead&&nearClerk()){wmOpen();return}return _t()}}
+ {SQTALK.wrap('079',_t=>function(){if(!pnOpen&&!menuOpen&&!dead&&nearClerk()){wmOpen();return}return _t()})}
  tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead||!nearClerk())return;e.preventDefault();e.stopImmediatePropagation();wmOpen()},{passive:false,capture:true});
  {const _pu=window.SQPADUSE;window.SQPADUSE=()=>!!nearClerk()||!!(_pu&&_pu())}
  {let mineTk=false;SQUPD.after('079',(dt)=>{const n=!pnOpen&&!menuOpen&&!dead&&nearClerk();if(n){tk.style.display='flex';const lab='TRADE'+(isPC?'<small>T</small>':(typeof GPON!=='undefined'&&GPON?'<small>✕</small>':''));if(tk.innerHTML!==lab)tk.innerHTML=lab;mineTk=true}else if(mineTk){mineTk=false;if(!pnOpen)tk.style.display='none'}if(sp&&!SCENE)for(const m of en)if(!m.dead&&!m.big&&Math.hypot(m.x-WMK.clerk.x,m.y-WMK.clerk.y)<90){m.dead=1;m.dropped=1}})}

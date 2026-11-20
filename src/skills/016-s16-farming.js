@@ -58,5 +58,5 @@ const _bag16=bagGridHTML;bagGridHTML=function(){let h=_bag16();if(invSel&&isSeed
 SQUPD.after('016',(dt)=>{if(menuOpen||pnOpen)return;for(const[i,p]of FARM){if(obj[i])obj[i]=null;if(p.c&&wet(p)&&!ripe(p))p.g+=dt}});
 // equipment: hoe and watering can
 const _eq16=equipHTML;equipHTML=function(){return _eq16().replace('<div class="qc" style="margin-top:12px">','<div class="eqg" style="margin-top:6px">'+eqSlot('HOE','hoe','',TL.hoe?'Hoe':'')+eqSlot('WATER','can','',TL.can?'Watering can':'')+'</div><div class="qc" style="margin-top:12px">')};
-const _dmap16=drawMap;drawMap=function(){_dmap16();const c=document.getElementById('mpc');if(!c||!FARM.size)return;const x=c.getContext('2d');for(const[i,p]of FARM){x.fillStyle=ripe(p)?'#f0c848':'#8a5a30';x.fillRect(i%N,(i/N)|0,1,1)}};
-const _ng16=newGame;newGame=function(){FARM.clear();TL.hoe=0;TL.can=0;_ng16()};
+SQDRAWMAP.after('016',()=>{const c=document.getElementById('mpc');if(!c||!FARM.size)return;const x=c.getContext('2d');for(const[i,p]of FARM){x.fillStyle=ripe(p)?'#f0c848':'#8a5a30';x.fillRect(i%N,(i/N)|0,1,1)}});
+SQNEWGAME.before('016',()=>{FARM.clear();TL.hoe=0;TL.can=0;});

@@ -61,7 +61,7 @@ SQHUD.before('018',()=>{const dk=SCENE?0:dark();if(dk>.25){const cx=camX(),cy=ca
   const lit=(X0,w,base,k)=>{for(const wx of[X0+8,X0+w-20]){g.fillStyle='rgba(255,210,110,'+(.55*dk)+')';g.fillRect(wx,base-22,12,10);g.fillStyle='rgba(255,200,100,'+(.12*dk)+')';g.fillRect(wx-4,base-26,20,18)}};
   for(const b of BLD)lit(b.tx*16,b.w*16,(b.ty+2)*16);for(const h of HOUSES){const w=(h.w||5);lit((h.x-(w-1)/2)*16,w*16,(h.y+1)*16)}g.restore()}});
 // --- fence icon ---
-const _icon18=iconURL;iconURL=function(k,col){if(k!=='wwall'&&k!=='door')return _icon18(k,col);const key='g18'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+SQICON.wrap('018',_icon18=>function(k,col){if(k!=='wwall'&&k!=='door')return _icon18(k,col);const key='g18'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  if(k==='wwall'){r(1,4,12,7,O);r(1,5,12,2,WD.lt);r(1,9,12,1,WD.lt);for(const a of[2,9]){r(a,1,4,12,O);r(a+1,2,2,10,WD.md);r(a+1,2,2,1,WD.hi)}}
  else{r(1,1,4,12,O);r(9,1,4,12,O);r(2,2,2,10,WD.md);r(10,2,2,10,WD.md);r(4,3,6,9,O);r(5,4,4,7,WD.md);r(5,4,4,1,WD.lt);r(5,8,4,1,WD.lt);r(8,7,1,1,GD)}
- return ICONC[key]=c.toDataURL()};
+ return ICONC[key]=c.toDataURL()});

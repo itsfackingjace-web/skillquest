@@ -13,7 +13,7 @@ var CROWN=false;
  const crownMake=(rows,flip)=>{const w=rows[0].length,c=document.createElement('canvas');c.width=w;c.height=8;const x=c.getContext('2d');rows.forEach((row,j)=>{for(let i=0;i<w;i++){const ch=row[flip?w-1-i:i];if(PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(i,j,1,1)}}});
   const o=document.createElement('canvas');o.width=w+2;o.height=10;const ox=o.getContext('2d'),d=x.getImageData(0,0,w,8).data;ox.fillStyle='#3a1a08';for(let j=0;j<8;j++)for(let i=0;i<w;i++)if(d[(j*w+i)*4+3])for(const[a,b]of[[0,1],[2,1],[1,0],[1,2]])ox.fillRect(i+a,j+b,1,1);ox.drawImage(c,1,1);return o};
  const crownCan=crownMake(CR),crownBack=crownMake(CRB),crownR=crownMake(CRS),crownL=crownMake(CRS,true);
- let ICON=null;const _ic=iconURL;iconURL=function(k,col){if(k!=='eq_fcrown')return _ic(k,col);if(!ICON){const c=document.createElement('canvas');c.width=14;c.height=14;c.getContext('2d').drawImage(crownCan,0,2);ICON=c.toDataURL()}return ICON};
+ let ICON=null;SQICON.wrap('091',_ic=>function(k,col){if(k!=='eq_fcrown')return _ic(k,col);if(!ICON){const c=document.createElement('canvas');c.width=14;c.height=14;c.getContext('2d').drawImage(crownCan,0,2);ICON=c.toDataURL()}return ICON});
  if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return k==='eq_fcrown'?iconURL(k):_ei(k)}}
  // wearing it: a tier-3 helmet as far as the game's stats are concerned
  const _occ=occ;occ=function(slot){if(slot==='helm'&&CROWN)return'eq_fcrown';return _occ(slot)};
@@ -21,7 +21,7 @@ var CROWN=false;
  const _wu=watchUpgrades;watchUpgrades=function(){const was=CROWN;_wu();if(was&&ARM.helm!==3){if((inv.eq_helm3|0)>0)inv.eq_helm3--;inv.eq_fcrown=(inv.eq_fcrown|0)+1;CROWN=false}};
  SQSAVE.after('091:fcr',s=>{if(CROWN)s.fcr=1;});
  SQLOAD.after('091',(S)=>{CROWN=!!(S&&S.fcr)&&ARM.helm===3});
- const _ng=newGame;newGame=function(){CROWN=false;_ng()};
+ SQNEWGAME.before('091',()=>{CROWN=false;});
  // how it looks: hair showing, the crown on top (for you and everyone who sees you)
  const _gc=gearCH;gearCH=function(){const c=_gc();if(CROWN&&!(typeof HIDEH!=='undefined'&&HIDEH)){c.ht=0;delete c.mh;delete c.dyh;c.fc=1}return c};
  const FCC=new Map();const _ks=kitSprite;kitSprite=function(ch,dir,st,fl){const c=_ks(ch,dir,st,fl);if(!ch||!ch.fc)return c;const key=JSON.stringify(ch)+'|'+dir+'|'+st+'|'+(fl?1:0);let o=FCC.get(key);if(o)return o;

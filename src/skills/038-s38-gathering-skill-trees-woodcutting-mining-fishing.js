@@ -9,11 +9,11 @@
 const GTH={heartwood:{n:'Heartwood',v:60,d:'Rare, deep-amber wood from the heart of an old tree. Sells for a good price.'},honey:{n:'Wild honey',v:30,d:'A rare forager\'s find. Eat it to heal 2 hearts and fill up.'},goldcrop:{n:'Golden produce',v:120,d:'A rare, gleaming crop. Sells for a lot of gold.'}};
 for(const k in GTH){const e=GTH[k];INVK.push(k);EXTRA_BAG.push(k);INAME[k]=e.n;IDESC[k]=e.d;SELLP[k]=e.v;SN[k]=e.n;SHORT[k]=e.n.toLowerCase()}
 FOODS.push({k:'honey',n:'wild honey',heal:2,hun:50});FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);
-const _ic38=iconURL;iconURL=function(k,col){if(!GTH[k])return _ic38(k,col);const key='g38'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+SQICON.wrap('038',_ic38=>function(k,col){if(!GTH[k])return _ic38(k,col);const key='g38'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  if(k==='heartwood'){r(1,5,12,5,'#8a3a14');r(1,5,12,1,'#c8642a');r(2,6,2,3,'#f0a050');r(3,7,1,1,'#7a2a0a');r(11,6,1,3,'#5a1e08')}
  else if(k==='honey'){r(4,2,6,2,'#c89838');r(3,4,8,8,'#e8a020');r(4,5,6,6,'#f8c848');r(5,6,2,2,'#fff0a0');r(3,12,8,1,'#a87010')}
  else{r(5,2,4,2,'#3a8a3a');r(3,4,8,7,'#d8a018');r(4,5,6,5,'#f8d848');r(5,6,2,2,'#fff8c0');r(4,11,6,1,'#a07010')}
- return ICONC[key]=c.toDataURL()};
+ return ICONC[key]=c.toDataURL()});
 // --- tree data ---
 const GSK={1:{sp:'chopping speed',ex:'extra-log chance',ra:'rare-wood chance (Heartwood)'},2:{sp:'mining speed',ex:'extra-ore chance',ra:'gem chance'},9:{sp:'fishing speed',ex:'extra-fish chance',ra:'rare-fish chance (rainbow fish, anywhere)'},
  3:{sp:'gathering speed',ex:'extra-item chance',ra:'rare-ingredient chance (Wild honey)'},11:{sp:'crop growth speed',ex:'extra-crop chance',ra:'rare-crop chance (Golden produce)'}};

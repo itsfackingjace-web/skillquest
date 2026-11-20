@@ -20,7 +20,7 @@
  SQA.onApply(lib=>{EVS=norm(lib&&lib.sched)});
  const playing=()=>!(window.SQTITLE&&SQTITLE())&&typeof dead!=='undefined'&&!dead;
  // ---- XP and gold ----
- {const _ax=addXp;addXp=function(i,x){if(x>0){let m=1;for(const a of active())if(a.e.xp>1&&(a.e.xs<0||a.e.xs===i))m=Math.max(m,a.e.xp);if(m>1)x=Math.round(x*m)}return _ax.call(this,i,x)}}
+ {SQADDXP.wrap('184',_ax=>function(i,x){if(x>0){let m=1;for(const a of active())if(a.e.xp>1&&(a.e.xs<0||a.e.xs===i))m=Math.max(m,a.e.xp);if(m>1)x=Math.round(x*m)}return _ax.call(this,i,x)})}
  {const _ed=killEnemy;killEnemy=function(n){const g0=GLD,out=_ed.apply(this,arguments);try{if(n&&!n._rp){let p=0;for(const a of active())p=Math.max(p,a.e.gold);const got=GLD-g0;if(p>0&&got>0){const add=Math.max(1,Math.round(got*p/100));GLD+=add;try{drops.push({x:n.x,y:n.y-24,t:0,tx:'+'+add+' event gold',c:'#f8d848'})}catch(e){self.SQERR&&SQERR(e,'184-1')}}}}catch(e){self.SQERR&&SQERR(e,'184-2')}return out}}
  // ---- event monsters ----
  const EVM=new Set();let evScene=null;

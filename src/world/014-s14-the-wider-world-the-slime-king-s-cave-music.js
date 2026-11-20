@@ -52,9 +52,7 @@ if(CAVE)for(const[dx,dy]of[[0,0],[0,1],[-1,1],[1,1],[0,2]])obj[(CAVE.y+dy)*N+CAV
 ROOMS.cave={w:18,h:12,ex:9,cave:1,floor:['#6a6058','#625850'],wall:'#4a423c',trim:'#2e2824',items:[[2,3,'boulder'],[15,4,'boulder'],[4,8,'boulder'],[13,9,'boulder'],[16,8,'boulder'],[7,2,'crystal'],[11,2,'crystal'],[1,10,'crystal']].map(([x,y,t])=>({t,x,y,solid:1}))};
 ROOMS.cave.solid=new Set(ROOMS.cave.items.map(it=>it.y*18+it.x));
 const _en14=entrances;entrances=function(){const a=_en14();if(CAVE)a.push({x:CAVE.x,y:CAVE.y,id:'cave',house:null});return a};
-const _es14=enterScene;enterScene=function(id,house,ret){_es14(id,house,ret);if(id!=='cave')return;const day=Math.floor(time/DAYLEN);
- for(const[x,y]of[[4,4],[14,6],[6,9],[12,3],[9,9]])en.push({x:x*16+8,y:y*16+8,hp:3,kx:0,ky:0,type:'slime'});
- if(CAVE_DAY!==day){en.push({x:9*16,y:5*16,hp:30,kx:0,ky:0,type:'boss'});say('The Slime King rules this cave! Defeat it for treasure.')}else say('The Slime King has fallen today. Come back tomorrow.')};
+SQENTER.after('014',(id,house,ret)=>{if(id!=='cave')return;const day=Math.floor(time/DAYLEN);for(const[x,y]of[[4,4],[14,6],[6,9],[12,3],[9,9]])en.push({x:x*16+8,y:y*16+8,hp:3,kx:0,ky:0,type:'slime'});if(CAVE_DAY!==day){en.push({x:9*16,y:5*16,hp:30,kx:0,ky:0,type:'boss'});say('The Slime King rules this cave! Defeat it for treasure.')}else say('The Slime King has fallen today. Come back tomorrow.')});
 const _dk14=dark;dark=function(){return SCENE&&SCENE.room.cave&&!INDRAW?.2:_dk14()};
 SQFURN.wrap('014',_df14=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='boulder'){shd(x0+8,y0+14,16);Rg(x0+1,y0-2,14,17,O);Rg(x0+2,y0-1,12,15,'#7a7068');Rg(x0+3,y0,6,4,'#9a9088');Rg(x0+2,y0+10,12,4,'#5a5048');return}
@@ -92,7 +90,7 @@ SQUPD.after('014',(dt)=>{if(menuOpen||pnOpen||dead)return;for(const n of en){if(
 // --- shops, bag, map ---
 SQRPN.wrap('014',_r14=>function(){if(ptab===2&&shop==='trader'){document.getElementById('t0').style.display='none';document.getElementById('t1').style.display='none';ptt.textContent='';pbd.innerHTML=traderHTML();return}_r14()});
 const _oc14=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.trb');if(b){traderAct(b.dataset.a);return}_oc14(e)};
-const _dmap14=drawMap;drawMap=function(){_dmap14();const c=document.getElementById('mpc');if(!c||!CAVE)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(CAVE.x-1,CAVE.y-1,3,3);x.fillStyle='#f8d848';x.fillRect(CAVE.x,CAVE.y,1,1)};
+SQDRAWMAP.after('014',()=>{const c=document.getElementById('mpc');if(!c||!CAVE)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(CAVE.x-1,CAVE.y-1,3,3);x.fillStyle='#f8d848';x.fillRect(CAVE.x,CAVE.y,1,1)});
 // --- music: original chiptune loops ---
 let MUSIC=true;try{MUSIC=localStorage.getItem('sq_music')!=='0'}catch(e){self.SQERR&&SQERR(e,'014-1')}
 const NOTE=s=>{const m=/^([A-G])(#?)(\d)$/.exec(s);return m?12*(+m[3]+1)+{C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]?1:0):0};
@@ -109,3 +107,6 @@ setInterval(()=>{try{if(!ACX||ACX.state!=='running')return;if(!MG){MG=ACX.create
  MG.gain.value=MUSIC?.5*(typeof MUSV==='number'?MUSV:1)*(typeof MFADEF==='function'?MFADEF():1):0;if(!MUSIC)return;const now=ACX.currentTime,want=wantSong();if(want!==curSong){curSong=want;songT0=now+.15;nextBeat=0}
  const S=PARSED[curSong];if(!S)return;const spb=60/S.bpm;if(songT0+nextBeat*spb<now-.2)songT0=now+.05-nextBeat*spb;
  while(songT0+nextBeat*spb<now+.35){const b=nextBeat%S.lead.len,t=songT0+nextBeat*spb;for(const e of S.lead.ev)if(e.s===b)playNote(e.m,t,(e.end-e.s)*spb,'square',.045);for(const e of S.bass.ev)if(e.s===b)playNote(e.m,t,(e.end-e.s)*spb,'triangle',.08);nextBeat++}}catch(e){self.SQERR&&SQERR(e,'014-2')}},120);
+
+// enemyDrop as a step list: later sections add named steps (window.SQDROP; see 006's sqSteps)
+const SQDROP=sqSteps('enemyDrop',enemyDrop,f=>{enemyDrop=f});window.SQDROP=SQDROP;

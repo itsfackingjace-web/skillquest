@@ -121,15 +121,13 @@ function dhPanel(n){const S=n.scene&&DHSHOP[n.scene];let h=head(S?S.title:n.scen
  return h+jobCard(n)}
 SQRPN.wrap('044',_r44=>function(){if(ptab===2&&shop==='dhfolk'){if(!TALKN||TALKN.kind!=='dhfolk'){TALKN=nearNpc();const n=TALKN;TALKQ=n?(n.scene&&DHSHOPQ[n.id]&&Math.random()<.5?DHSHOPQ[n.id][Math.floor(Math.random()*2)]:pickLine(n)):''}
   panelChrome('');if(!TALKN){closePanel();return}pbd.innerHTML=dhPanel(TALKN);return}_r44()});
-const _cp44=closePanel;closePanel=function(){_cp44();if(TALKN&&TALKN.kind==='dhfolk')TALKN=null};
+SQCLOSEPN.after('044',()=>{if(TALKN&&TALKN.kind==='dhfolk')TALKN=null});
 const _xa44=xAct;xAct=function(a){const n=TALKN;
  if(a.startsWith('dhb_')){const m=a.match(/^dhb_(.+)_(\d+)$/);if(!m)return;const k=m[1],q=+m[2],S=n&&DHSHOP[n.scene],it=S&&S.items.find(e=>e[0]===k);if(!it)return;
   xbuy(it[2]*q,()=>{inv[k]=(inv[k]|0)+q},'Bought '+(q>1?q+' × ':'')+it[1].toLowerCase());svg();saveLocal(true);rPn();return}
  if(a==='dh_rest'){if(GLD<30){say('Not enough gold');sfx('swish');return}GLD-=30;P.hp=6;hunger=100;if(nightNow()||dark()>.3){time=(Math.floor(time/DAYLEN)+1)*DAYLEN+1;en=[];say('You slept at the Oasis Rest. Good morning!');closePanel()}else say('You rest in the shade. You feel great!');sfx('quest');saveNow();if(pnOpen)rPn();return}
  const was=n&&n.kind==='dhfolk'&&a==='job'?JOBD[n.id]:null;_xa44(a);if(n&&n.kind==='dhfolk'&&a==='job'&&JOBD[n.id]!==was){TALKQ=DHTHANKS[n.id]||'Thank you!';saveNow();rPn()}};
-const _es44=enterScene;enterScene=function(id,house,ret){_es44(id,house,ret);if(!DHNAMES[id])return;
- const k=DHN.find(n=>n.work===id);if(k&&k.scene!==id&&k.id!=='mira'){say(DHNAMES[id][0].toUpperCase()+DHNAMES[id].slice(1)+' is closed for the night. '+k.name+' has gone home.');return}
- say({dh_market:'The Sandstone Market. Spices and dust in the air.',dh_forge:'The Copper Sun Forge. Two furnaces glow orange.',dh_rest:'The Oasis Rest. Cool shade at last.',dh_hall:'The Excavator\'s Hall: ore samples on every shelf, a furnace and an anvil.'}[id]||('This is '+DHNAMES[id]+'.'))};
+SQENTER.after('044',(id,house,ret)=>{if(!DHNAMES[id])return;const k=DHN.find(n=>n.work===id);if(k&&k.scene!==id&&k.id!=='mira'){say(DHNAMES[id][0].toUpperCase()+DHNAMES[id].slice(1)+' is closed for the night. '+k.name+' has gone home.');return}say({dh_market:'The Sandstone Market. Spices and dust in the air.',dh_forge:'The Copper Sun Forge. Two furnaces glow orange.',dh_rest:'The Oasis Rest. Cool shade at last.',dh_hall:'The Excavator\'s Hall: ore samples on every shelf, a furnace and an anvil.'}[id]||('This is '+DHNAMES[id]+'.'))});
 let dhPrev=false;
 SQUPD.after('044',(dt)=>{if(menuOpen||!DHON)return;townRoutine(DHN,dt,'mira');if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inDHBox(x,y);dhPrev=inT;en=en.filter(n=>!inDHBox(Math.floor(n.x/16),Math.floor(n.y/16)))});
 // --- drawing: sandstone flagstones, flat-roofed clay buildings with awnings, palms, the watchtower, the ruins ---
@@ -183,15 +181,13 @@ const _lh44=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh44(L,x0,y0,x1,y1,tm);if(!DHON)re
  if(DHTOWER&&inV(...DHTOWER))L.push([(DHTOWER[1]+1)*16-2,4,()=>drawTower(...DHTOWER)]);
  if(DHRUIN&&inV(DHRUIN.x,DHRUIN.y))L.push([(DHRUIN.y+1)*16,4,()=>drawRuins(tm)])};
 // map, music
-const _dmap44=drawMap;drawMap=function(){_dmap44();if(!DHON)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');
- x.fillStyle='#c8a068';for(const i of DHPATH)x.fillRect(i%N,(i/N)|0,1,1);x.fillStyle='#101010';x.fillRect(DX-2,DY-2,5,5);x.fillStyle='#f0a848';x.fillRect(DX-1,DY-1,3,3);
- if(DHRUIN){x.fillStyle='#101010';x.fillRect(DHRUIN.x-1,DHRUIN.y-1,3,3);x.fillStyle='#ff7830';x.fillRect(DHRUIN.x,DHRUIN.y,1,1)}};
+SQDRAWMAP.after('044',()=>{if(!DHON)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#c8a068';for(const i of DHPATH)x.fillRect(i%N,(i/N)|0,1,1);x.fillStyle='#101010';x.fillRect(DX-2,DY-2,5,5);x.fillStyle='#f0a848';x.fillRect(DX-1,DY-1,3,3);if(DHRUIN){x.fillStyle='#101010';x.fillRect(DHRUIN.x-1,DHRUIN.y-1,3,3);x.fillStyle='#ff7830';x.fillRect(DHRUIN.x,DHRUIN.y,1,1)}});
 const _mh44=mapHTML;mapHTML=function(){const h=_mh44();return DHON?h.replace('</span>','</span><span><i style="background:#f0a848"></i>Dusthaven</span><span><i style="background:#ff7830"></i>Scorpion Hollow</span>'):h};
 SONGS.desert={bpm:108,lead:'D5 - F5 E5 D5 - A4 - C5 D5 - - E5 F5 E5 C5 D5 - - - A4 - D5 F5 G5 - F5 E5 D5 C5 A4 - D5 - - -',
  bass:'D2 - A2 - D2 - A2 - C2 - G2 - C2 - G2 - D2 - A2 - D2 - A2 - A1 - E2 - D2 - - -'};
 PARSED.desert={bpm:SONGS.desert.bpm,lead:parseTrack(SONGS.desert.lead),bass:parseTrack(SONGS.desert.bass)};
 const _ws44=wantSong;wantSong=function(){const w=_ws44();if(!DHON)return w;if(!SCENE&&w==='day'&&inDHBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'desert';if(SCENE&&DHNAMES[SCENE.id])return'desert';return w};
-const _ng44=newGame;newGame=function(){_ng44();for(const n of DHN){n.scene=n.work;if(n.work){n.x=n.wx;n.y=n.wy}else{n.x=n.hx0;n.y=n.hy0}}};
+SQNEWGAME.after('044',()=>{for(const n of DHN){n.scene=n.work;if(n.work){n.x=n.wx;n.y=n.wy}else{n.x=n.hx0;n.y=n.hy0}}});
 // --- Dusthaven's quest line ---
 SIDE_QS.dusthaven.push(
  {n:'Tools of the Trade',d:'Bring Doran 8 iron ore.',type:'give',item:'iron',amt:8,r:{g:160,xp:[2,400]},giver:'doran',start:'We need more iron for the excavation.',finish:'Perfect. These should keep the tools working.'},
@@ -199,5 +195,4 @@ SIDE_QS.dusthaven.push(
  {n:'Steel for the Expedition',d:'Bring 3 steel bars to Kellan.',type:'give',item:'sbar',amt:3,r:{g:300,xp:[10,650]},giver:'kellan',req:[10,20],start:'The expedition needs proper steel equipment.',finish:'Beautiful bars. They\'ll make excellent tools.'},
  {n:'Beneath the Dunes',d:'Defeat the Sandclaw Matriarch.',type:'dungeonboss',item:'scorpion',amt:1,r:{g:450,xp:[8,1100]},giver:'doran',start:'We\'ve uncovered a nest beneath the ruins.',finish:'The tunnels are safe again. Mostly.',note:'Attack 20 and Defence 20 recommended.'});
 // skeletons count for Market Trouble near Dusthaven or inside Scorpion Hollow
-const _ed44=enemyDrop;enemyDrop=function(n){_ed44(n);if(n.type!=='skel')return;const R=SCENE&&SCENE.room,inHollow=!!(R&&R.dun&&R.dun.kind==='scorpion');
- sqEvent('kill','skel',t=>t!=='dusthaven'||inHollow||(!SCENE&&DHON&&Math.hypot(n.x/16-DX,n.y/16-DY)<40));saveLocal(true)};
+SQDROP.after('044',(n)=>{if(n.type!=='skel')return;const R=SCENE&&SCENE.room,inHollow=!!(R&&R.dun&&R.dun.kind==='scorpion');sqEvent('kill','skel',t=>t!=='dusthaven'||inHollow||(!SCENE&&DHON&&Math.hypot(n.x/16-DX,n.y/16-DY)<40));saveLocal(true)});

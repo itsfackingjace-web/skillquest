@@ -16,17 +16,17 @@
  {const ts=document.getElementById('sqts');if(ts){const d=document.createElement('div');d.id='sqlegal';d.innerHTML=LINKS;for(const ev of['touchstart','pointerdown','mousedown'])d.addEventListener(ev,e=>{if(e.target.closest('a'))e.stopPropagation()});ts.appendChild(d)}}
  // ---- Options ----
  let card=0;   // 0 = closed, 1 = asking, 2 = working
- {const _o=optionsHTML;optionsHTML=function(){let h=_o();const u=mp()&&mp().user;
+ {SQOPTS.wrap('209',_o=>function(){let h=_o();const u=mp()&&mp().user;
    let add='<div class="tl" style="margin-top:16px">ABOUT</div><div class="aclinks">'+LINKS+'</div>';
    if(u){add+=card===0?'<button class="sb acdel" data-acd="open">Delete my account</button>':
     card===1?'<div class="acc" role="dialog" aria-label="Delete my account"><b>Delete your account?</b><br>This deletes your character, save, backups, houses, friends and leaderboard entry for good. It can\'t be undone.<label for="acdin" style="display:block;margin-top:8px">Type DELETE to confirm</label><input id="acdin" autocomplete="off" spellcheck="false"><button class="sb acdel" data-acd="go">DELETE FOREVER</button><button class="sb" data-acd="cancel" aria-label="Close">Cancel</button></div>':
     '<div class="acc">Deleting your account...</div>'}
-   return h+add}}
+   return h+add})}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-acd]');if(!b)return;e.stopPropagation();e.preventDefault();const a=b.dataset.acd;
   if(a==='open'){if(window.SQGUILD&&SQGUILD.id){say('Leave your guild first (START > Guild), then delete your account.');return}card=1;rPn();setTimeout(()=>{const i=document.getElementById('acdin');if(i)i.focus()},30)}
   else if(a==='cancel'){card=0;rPn()}
   else if(a==='go'){const i=document.getElementById('acdin');if(!i||i.value.trim().toUpperCase()!=='DELETE'){say('Type DELETE in the box to confirm.');return}card=2;rPn();wipe()}},true);
- {const _cp=closePanel;closePanel=function(){if(card!==2)card=0;return _cp.apply(this,arguments)}}
+ {SQCLOSEPN.before('209',()=>{if(card!==2)card=0;})}
  // ---- deleting ----
  let STOP=false;
  for(const k of['saveLocal','saveCloud']){const f=window[k];if(typeof f!=='function')continue;const w=function(){if(STOP)return Promise.resolve();return f.apply(this,arguments)};window[k]=w}

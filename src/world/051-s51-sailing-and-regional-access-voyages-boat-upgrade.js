@@ -128,9 +128,7 @@ const _lh51=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh51(L,x0,y0,x1,y1,tm);const inV=(
  for(const p of HARBOR_POSTS)if(p.id!=='tidewatch'&&inV(p.x,p.y))L.push([p.y*16+13,4,()=>drawPost49(p.x*16+3,p.y*16+8,tm)]);
  for(const k in BUOYS){const b=BUOYS[k];if(b&&inV(b.x,b.y)){const q=VOYS.find(v=>v.buoy===k);L.push([b.y*16+12,4,()=>drawBuoy51(b.x*16+8,b.y*16+8,tm,V[q.id]===1)])}}
  if(CAIRN&&inV(CAIRN.x,CAIRN.y))L.push([CAIRN.y*16+13,4,()=>drawCairn51(CAIRN.x*16+8,CAIRN.y*16+10)])};
-const _dmap51=drawMap;drawMap=function(){_dmap51();if(SCENE&&SCENE.room&&SCENE.room.region)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d'),V=VQ(),bl=Math.floor(performance.now()/350)%2;
- x.fillStyle='#58d8ff';for(const p of HARBOR_POSTS)x.fillRect(p.x-1,p.y-1,3,3);
- for(const q of VOYS)if(V[q.id]===1){const t=q.buoy?BUOYS[q.buoy]:q.cairn?CAIRN:null;if(t&&bl){x.fillStyle='#f83030';x.fillRect(t.x-1,t.y-1,3,3)}}};
+SQDRAWMAP.after('051',()=>{if(SCENE&&SCENE.room&&SCENE.room.region)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d'),V=VQ(),bl=Math.floor(performance.now()/350)%2;x.fillStyle='#58d8ff';for(const p of HARBOR_POSTS)x.fillRect(p.x-1,p.y-1,3,3);for(const q of VOYS)if(V[q.id]===1){const t=q.buoy?BUOYS[q.buoy]:q.cairn?CAIRN:null;if(t&&bl){x.fillStyle='#f83030';x.fillRect(t.x-1,t.y-1,3,3)}}});
 const _mh51=mapHTML;mapHTML=function(){const h=_mh51();return SCENE&&SCENE.room&&SCENE.room.region?h:h.replace('<div class="tl" style="margin-top:10px">WORLD</div>','<div class="lg"><span><i style="background:#58d8ff"></i>Harbor post</span><span><i style="background:#f83030"></i>Voyage goal</span></div><div class="tl" style="margin-top:10px">WORLD</div>')};
 const _wh51=worldHTML;worldHTML=function(){return _wh51().replace('harbor post on the Tidewatch pier','harbor posts at '+HARBOR_POSTS.map(p=>p.name).join(', '))};
 // --- Sera, the Navigator in Tidewatch, runs every voyage: take them on, report back, hand in the High Pass materials ---

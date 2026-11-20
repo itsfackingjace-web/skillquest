@@ -13,7 +13,7 @@ function rsToggle(){const[tx,ty]=frontT();
  if(rsCanBoard()){RSAIL.on=true;RSAIL.lx=P.x;RSAIL.ly=P.y;P.x=tx*16+8;P.y=ty*16+6;FISH=null;sfx('splash');say('You set sail! Face land and press '+(isPC?'T':'USE')+' to go ashore.');return true}
  const L=rsCanLand();if(L){RSAIL.on=false;P.x=L[0]*16+8;P.y=L[1]*16+8;sfx('door');say('You go ashore.');saveLocal(true);return true}return false}
 const rsStop=()=>{RSAIL.on=false};
-{const _t=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead&&rsR()&&!nearNpc()){if(RSAIL.on?rsCanLand():rsCanBoard()){rsToggle();return}if(RSAIL.on)return}return _t()}}
+{SQTALK.wrap('069',_t=>function(){if(!pnOpen&&!menuOpen&&!dead&&rsR()&&!nearNpc()){if(RSAIL.on?rsCanLand():rsCanBoard()){rsToggle();return}if(RSAIL.on)return}return _t()})}
 tk.addEventListener('touchstart',e=>{if(pnOpen||!rsR()||nearNpc())return;if(rsCanBoard()||rsCanLand()){e.preventDefault();e.stopImmediatePropagation();rsToggle()}},{passive:false,capture:true});
 // the boat glides over water; you can't walk off it
 {SQUPD.wrap('069',_u=>function(dt){const paused=menuOpen||pnOpen;if(RSAIL.on&&(!rsR()||dead))RSAIL.on=false;
@@ -39,6 +39,6 @@ tk.addEventListener('touchstart',e=>{if(pnOpen||!rsR()||nearNpc())return;if(rsCa
 {const _lr=loadRegion;loadRegion=function(...a){rsStop();return _lr(...a)}}
 {const _lv=leaveRegion;leaveRegion=function(){rsStop();return _lv()}}
 {const _rs=reset;reset=function(){rsStop();_rs()}}
-{const _es=enterScene;enterScene=function(...a){rsStop();return _es(...a)}}
+{SQENTER.wrap('069',_es=>function(...a){rsStop();return _es(...a)})}
 // a save made at sea puts you back where you set sail
 {SQSAVE.after('069',s=>{if(RSAIL.on&&s.region&&s.region.id!=='hollow'){s.region.x=Math.floor(RSAIL.lx/16);s.region.y=Math.floor(RSAIL.ly/16)}})}

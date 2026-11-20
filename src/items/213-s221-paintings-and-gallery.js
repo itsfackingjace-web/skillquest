@@ -35,7 +35,7 @@
  {SQLOAD.wrap('213',_a=>function(S){try{scan(S,0)}catch(e){self.SQERR&&SQERR(e,'213-6')}const r=_a.apply(this,arguments);try{GOT=new Set(Array.isArray(S&&S.ptg)?S.ptg.filter(okId):[]);APPLIED=true}catch(e){self.SQERR&&SQERR(e,'213-7')}return r})}
  {SQSAVE.after('213:ptg',o=>{try{if(GOT.size)o.ptg=[...GOT]}catch(e){self.SQERR&&SQERR(e,'213-8')}})}
  try{KNOWN49.add('ptg')}catch(e){self.SQERR&&SQERR(e,'213-9')}
- {const _ng=newGame;newGame=function(){GOT=new Set();APPLIED=true;return _ng.apply(this,arguments)}}
+ {SQNEWGAME.before('213',()=>{GOT=new Set();APPLIED=true;})}
  // ---- pictures ----
  const FR=new Map();// id -> [{c:canvas}]
  function frames(id){let L=FR.get(id);if(L)return L;L=[];const r=PT[id];
@@ -57,9 +57,9 @@
   Rg(x0+7,y0-8,2,20,O);Rg(x0+7,y0-7,1,18,'#7a4a20');Rg(x0+2,y0+3,12,2,O);Rg(x0+3,y0+3,10,1,'#b88050');framed(id,x0+8,y0-8,13,13,tm)}
  {const _dp=drawPiece;drawPiece=function(t,x,y,f,ghost,tm){const id=idOf(t);if(!id)return _dp.apply(this,arguments);
    if(t[1]==='w')hung(id,x,tm);else if(y===1)hung(id,x,tm);else easel(id,x,y,tm)}}
- {const _ic=iconURL;iconURL=function(k,col){const id=idOf(k);if(!id)return _ic(k,col);const key='ptg'+id;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d');
+ {SQICON.wrap('213',_ic=>function(k,col){const id=idOf(k);if(!id)return _ic(k,col);const key='ptg'+id;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d');
    x.fillStyle=O;x.fillRect(0,1,14,12);x.fillStyle=GOLD;x.fillRect(1,2,12,10);const L=frames(id);x.imageSmoothingEnabled=false;if(L[0]){const r=PT[id],s=Math.min(10/r.w,8/r.h),w=Math.max(2,Math.round(r.w*s)),h=Math.max(2,Math.round(r.h*s));x.fillStyle='#f4ecd8';x.fillRect(2,3,10,8);x.drawImage(L[0],7-w/2|0,7-h/2|0,w,h)}
-   else{x.fillStyle='#9cc4e8';x.fillRect(2,3,10,8);x.fillStyle='#58a848';x.fillRect(2,8,10,3)}const u=c.toDataURL();if(L[0])ICONC[key]=u;return u}}
+   else{x.fillStyle='#9cc4e8';x.fillRect(2,3,10,8);x.fillStyle='#58a848';x.fillRect(2,8,10,3)}const u=c.toDataURL();if(L[0])ICONC[key]=u;return u})}
  // ---- placing at home: wall or easel ----
  const inHomeRoom=()=>typeof inHome==='function'&&inHome()&&SCENE.room&&!SCENE.room.yard&&!SCENE.room.court;
  const wallCols=R=>{const s=new Set();for(const it of R.items||[])if((it.y|0)<=1&&!/^_/.test(it.t))for(let d=0;d<(it.w||1);d++)s.add(it.x+d);return s};

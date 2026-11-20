@@ -78,8 +78,7 @@ Object.assign(ROOMS,{
  hv1:cottage(['#dcbc8c','#ceae7e'],[{t:'table',x:5,y:3,w:2,solid:1,goods:1},{t:'plant',x:7,y:2,solid:1}]),
  hv2:cottage(['#d8c098','#ccb48c'],[{t:'rack',x:5,y:0,w:2},{t:'table',x:5,y:3,w:2,solid:1},{t:'barrel',x:7,y:2,solid:1}])});
 for(const id of TBK){const R=ROOMS[id];R.solid=new Set();for(const it of R.items)if(it.solid)for(let dy=0;dy<(it.sh||1);dy++)for(let dx=0;dx<(it.w||1);dx++)R.solid.add((it.y+dy)*R.w+it.x+dx)}
-const _es20=enterScene;enterScene=function(id,house,ret){_es20(id,house,ret);const m={tackle:'Saltmere Tackle. It smells like the sea in here.',inn:'Welcome to the Gull\'s Rest inn!',forge:'The Saltmere Forge. Two furnaces roar.'}[id];
- if(m)say(m);else if(TBK.has(id)){const who=FOLK.filter(n=>n.room===id).map(n=>n.name);say(who.length?'This is '+who.join(' and ')+'\'s house.':'A cozy little house.')}};
+SQENTER.after('020',(id,house,ret)=>{const m={tackle:'Saltmere Tackle. It smells like the sea in here.',inn:'Welcome to the Gull\'s Rest inn!',forge:'The Saltmere Forge. Two furnaces roar.'}[id];if(m)say(m);else if(TBK.has(id)){const who=FOLK.filter(n=>n.room===id).map(n=>n.name);say(who.length?'This is '+who.join(' and ')+'\'s house.':'A cozy little house.')}});
 // --- people ---
 const mk=(o)=>Object.assign({x:o.hx0,y:o.hy0},o);
 const FOLK=[
@@ -214,7 +213,7 @@ const _qa20=questAct;questAct=function(a){_qa20(a);if(GMDONE&&QS[Q.i]&&QS[Q.i].n
 SQSAVE.after('020:qv,jobs,gmd',s=>{s.qv=6;s.jobs={...JOBD};s.gmd=GMDONE?1:0;});
 SQLOAD.after('020',(S)=>{GMDONE=false;if(S.q)remap20(S.qv||0,S.gmd);JOBD={};if(S.jobs&&typeof S.jobs==='object')for(const k in S.jobs)if(JOBS[k])JOBD[k]=+S.jobs[k]||0;if(S.tl)for(const k of['axe','pick','sword'])TL[k]=Math.max(0,Math.min(4,+S.tl[k]||0));if(S.inv){inv.stew=Math.max(0,+S.inv.stew||0);inv.bait=Math.max(0,+S.inv.bait||0)}clearProt()});
 
-const _ng20=newGame;newGame=function(){JOBD={};GMDONE=false;_ng20();for(const n of FOLK)if(n.room&&n.scene)comeOut(n)};
+SQNEWGAME.wrap('020',_ng20=>function(){JOBD={};GMDONE=false;_ng20();for(const n of FOLK)if(n.room&&n.scene)comeOut(n)});
 clearProt();
 // --- update: safe streets, welcome message ---
 let inTownPrev=false,protT=0;
@@ -259,14 +258,13 @@ const _dr20=drawRoom;drawRoom=function(tm){_dr20(tm);if(!SCENE)return;
 SQHUD.before('020',()=>{const dk=SCENE?0:dark();if(dk>.15){const cx=camX(),cy=camY();g.save();g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);g.globalCompositeOperation='lighter';
   for(const[x,y]of LAMPS){if(Math.abs(x*16-P.x)>W/Z||Math.abs(y*16-P.y)>H/Z)continue;const gr=g.createRadialGradient(x*16+8,y*16-12,2,x*16+8,y*16-12,40);gr.addColorStop(0,'rgba(255,210,120,'+(.5*dk)+')');gr.addColorStop(1,'rgba(255,200,100,0)');g.fillStyle=gr;g.fillRect(x*16-34,y*16-54,84,84)}g.restore()}});
 // map: towns, road, bridge
-const _dmap20=drawMap;drawMap=function(){_dmap20();const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#a86830';for(const i of BRIDGE)x.fillRect(i%N,(i/N)|0,1,1);
- x.fillStyle='#101010';for(const[a,b]of[[VX,VY-6],[TX,TY-6]])x.fillRect(a-2,b-2,5,5);x.fillStyle='#f8d848';for(const[a,b]of[[VX,VY-6],[TX,TY-6]])x.fillRect(a-1,b-1,3,3)};
+SQDRAWMAP.after('020',()=>{const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#a86830';for(const i of BRIDGE)x.fillRect(i%N,(i/N)|0,1,1);x.fillStyle='#101010';for(const[a,b]of[[VX,VY-6],[TX,TY-6]])x.fillRect(a-2,b-2,5,5);x.fillStyle='#f8d848';for(const[a,b]of[[VX,VY-6],[TX,TY-6]])x.fillRect(a-1,b-1,3,3)});
 const _mh20=mapHTML;mapHTML=function(){return _mh20().replace('<span><i style="background:#c85040"></i>Hollow Village</span>','<span><i style="background:#f8d848"></i>Hollow Village · Saltmere</span><span><i style="background:#a86830"></i>Bridge</span><span><i style="background:#68d8f8"></i>Islets</span>')};
 // icons
-const _icon20=iconURL;iconURL=function(k,col){if(k!=='stew'&&k!=='bait')return _icon20(k,col);const key='g20'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+SQICON.wrap('020',_icon20=>function(k,col){if(k!=='stew'&&k!=='bait')return _icon20(k,col);const key='g20'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  if(k==='stew'){r(1,6,12,6,O);r(2,7,10,4,'#c88848');r(2,7,10,1,'#e8a868');r(2,5,10,2,'#f0d070');r(4,5,2,1,'#e87830');r(8,5,2,1,'#78b848');r(4,1,1,3,'#e8eef4');r(8,2,1,2,'#e8eef4')}
  else{r(3,2,8,10,O);r(4,3,6,8,'#a07850');r(4,3,6,2,'#c09868');r(5,6,1,1,'#e86080');r(7,8,1,1,'#e86080');r(8,5,1,1,'#e86080')}
- return ICONC[key]=c.toDataURL()};
+ return ICONC[key]=c.toDataURL()});
 // music: a sea shanty in Saltmere
 SONGS.port={bpm:132,lead:'G4 B4 D5 - B4 D5 G5 - F#5 E5 D5 - B4 C5 D5 - E5 - C5 E5 G5 E5 D5 - B4 G4 A4 B4 G4 - - -',bass:'G2 D3 G2 D3 G2 D3 G2 D3 D2 A2 D2 A2 G2 D3 G2 D3 C3 G3 C3 G3 G2 D3 G2 D3 D2 A2 D2 A2 G2 D3 G2 -'};
 PARSED.port={bpm:SONGS.port.bpm,lead:parseTrack(SONGS.port.lead),bass:parseTrack(SONGS.port.bass)};

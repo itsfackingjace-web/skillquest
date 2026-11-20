@@ -54,17 +54,13 @@ const _da45=dArrive;dArrive=function(R,from){const D=R.dun;if(D.kind!=='scorpion
 const _dg45=dGo;dGo=function(kind,f,from){_dg45(kind,f,from);if(kind!=='scorpion')return;const R=SCENE.room,quiet=R.dun.bossDone||EXTRA_DUNGEON_DAYS.scorpion===today();
  say('Scorpion Hollow - '+['','Abandoned Dig','Buried Ruins','Scorpion Nest'][f]+' (floor '+f+' of 3)'+(f===3?(quiet?'. The nest is quiet today.':'. Claws click somewhere in the dark...'):''))};
 const _en45=entrances;entrances=function(){const a=_en45();if(DHRUIN)a.push({x:DHRUIN.x,y:DHRUIN.y,id:'scorpion',house:null});return a};
-const _es45=enterScene;enterScene=function(id,house,ret){if(id!=='scorpion')return _es45(id,house,ret);const R=dFloor('scorpion',1);_es45(dKey('scorpion',1),null,ret);dArrive(R,null);
- say('You climb down into Scorpion Hollow. Old picks and carts lie where the diggers fled. Three levels deep.')};
+SQENTER.wrap('045',_es45=>function(id,house,ret){if(id!=='scorpion')return _es45(id,house,ret);const R=dFloor('scorpion',1);_es45(dKey('scorpion',1),null,ret);dArrive(R,null);
+ say('You climb down into Scorpion Hollow. Old picks and carts lie where the diggers fled. Three levels deep.')});
 // loot: the tomb's table (gems, elixirs, the Bone bow) plus steel from the Matriarch
 const _dl45=dLoot;dLoot=function(kind,f,boss){if(kind!=='scorpion')return _dl45(kind,f,boss);const out=_dl45('tomb',f,boss);
  if(boss){const bw=out.findIndex(e=>e[0]==='eq_bow3');if(bw>=0&&Math.random()>.33)out.splice(bw,1);if(!out.some(e=>e[0]==='elixir'))out.push(['elixir',1]);out.push(['sdag',1],['sbar',1])}else if(f===1&&Math.random()<.3)out.push(['iron',3]);return out};
-const _ed45=enemyDrop;enemyDrop=function(n){_ed45(n);if(n.type!=='matri')return;const R=SCENE&&SCENE.room;
- if(R&&R.dun){R.dun.bossDone=1;R.items.push({t:'dchest',x:Math.floor(n.bx!=null?n.bx/16:n.x/16),y:Math.floor(n.by!=null?n.by/16:n.y/16),use:'dchest',id:'scorpionboss',boss:1})}
- for(const o of en)if(o.summon&&!o.dead)o.dead=1;
- if(EXTRA_DUNGEON_DAYS.scorpion!==today()){markDungeonCleared('scorpion');GLD+=300;inv.sbar=(inv.sbar|0)+3;addXp(0,600);addXp(10,400);
-  say('The Sandclaw Matriarch falls! +300 gold, 3 steel bars. A golden chest appears!');msgT=5}else say('The Sandclaw Matriarch falls!');
- sfx('quest');sqEvent('dungeonboss','scorpion');saveNow()};
+SQDROP.after('045',(n)=>{if(n.type!=='matri')return;const R=SCENE&&SCENE.room;if(R&&R.dun){R.dun.bossDone=1;R.items.push({t:'dchest',x:Math.floor(n.bx!=null?n.bx/16:n.x/16),y:Math.floor(n.by!=null?n.by/16:n.y/16),use:'dchest',id:'scorpionboss',boss:1})}for(const o of en)if(o.summon&&!o.dead)o.dead=1;if(EXTRA_DUNGEON_DAYS.scorpion!==today()){markDungeonCleared('scorpion');GLD+=300;inv.sbar=(inv.sbar|0)+3;addXp(0,600);addXp(10,400);
+  say('The Sandclaw Matriarch falls! +300 gold, 3 steel bars. A golden chest appears!');msgT=5}else say('The Sandclaw Matriarch falls!');sfx('quest');sqEvent('dungeonboss','scorpion');saveNow()});
 // --- monster behaviour ---
 const HIDE45=200;// burrowed things are parked out of reach (and out of sight) while a sand mound moves underground
 function hideAt(n){n.x=P.x+HIDE45;n.y=P.y}
@@ -164,4 +160,4 @@ SQFURN.wrap('045',_df45=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  _df45(it,tm)});
 SQSAVE.after('045:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
 SQLOAD.after('045',(S)=>{EMERGE45=[];for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1});
-const _ng45=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng45()};
+SQNEWGAME.before('045',()=>{for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;});

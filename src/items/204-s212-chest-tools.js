@@ -58,7 +58,7 @@
  pbd.addEventListener('input',e=>{if(e.target.id!=='chtnm'||!REN)return;REN.v=e.target.value.slice(0,NMAX);const c=document.getElementById('chtct');if(c)c.textContent=REN.v.length+'/'+NMAX},true);
  // 010's document keydown (capture) stops every key typed into an input and blurs on Enter, so Enter/Escape are taken on window first
  addEventListener('keydown',e=>{if(!e.target||e.target.id!=='chtnm')return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();REN=null;rPn()}else if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();rename(e.target.value)}},true);
- {const _cp=closePanel;closePanel=function(){REN=null;return _cp.apply(this,arguments)}}
+ {SQCLOSEPN.before('204',()=>{REN=null;})}
  // ---- the placard ----
  function placard(nm,x0,y0){const t=clean(nm);if(!t)return;g.save();try{
    g.font='700 3px '+PF;let fs=2.8;g.font='700 '+fs+'px '+PF;while(fs>2&&g.measureText(t).width>11.4){fs-=.1;g.font='700 '+fs.toFixed(2)+'px '+PF}

@@ -33,8 +33,8 @@
    if(best){const loss=hp0-P.hp,want=loss*best.dmg/100,k=Math.floor(want)+(Math.random()<want%1?1:0);P.hp=hp0-k}}}catch(e){self.SQERR&&SQERR(e,'111f-2')}
   if(watch)for(const[n,r]of watch){if(n._mrd||!(n.type==='thorn'||n.type==='emberl')||!n._rew)continue;if(r.rep&&s0)takeBack(s0);give(n,r)}
   if(pos)for(const[n,x,y,k]of pos){if(n.dead)continue;const nx=x+(n.x-x)*k,ny=y+(n.y-y)*k;if(!solid(nx,n.y))n.x=nx;if(!solid(n.x,ny))n.y=ny}return out});
- const _ed=enemyDrop;enemyDrop=function(n){const r=rule(n);if(!r||n._mrd)return _ed.apply(this,arguments);const s0=r.rep?snapInv():null;const out=_ed.apply(this,arguments);
-  try{if(s0)takeBack(s0);give(n,r)}catch(e){self.SQERR&&SQERR(e,'111f-3')}return out};
+ SQDROP.wrap('111f',_ed=>function(n){const r=rule(n);if(!r||n._mrd)return _ed.apply(this,arguments);const s0=r.rep?snapInv():null;const out=_ed.apply(this,arguments);
+  try{if(s0)takeBack(s0);give(n,r)}catch(e){self.SQERR&&SQERR(e,'111f-3')}return out});
  // island bosses pay every fighter from 100's defeat (sqEvent 'islandboss'); world bosses from 071's reward (SQWB.kills
  // goes up): their rules' gold and drops are given then ("instead of" isn't possible for these two)
  if(typeof sqEvent==='function'){const _ev=sqEvent;sqEvent=function(k,id){const out=_ev.apply(this,arguments);try{if(k==='islandboss'){const r=MR['m:ib:'+id];if(r)give({},r)}}catch(e){self.SQERR&&SQERR(e,'111f-4')}return out}}

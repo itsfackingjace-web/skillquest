@@ -12,6 +12,6 @@
  }catch(e){self.SQERR&&SQERR(e,'231-1')}}
  window.SQCHFIT=fit;
  SQRPN.after('231',()=>{fit();});
- const _c=closePanel;closePanel=function(){const v=_c.apply(this,arguments);try{pn.classList.remove('sqchlock')}catch(e){self.SQERR&&SQERR(e,'231-2')}return v};
+ SQCLOSEPN.after('231',()=>{try{pn.classList.remove('sqchlock')}catch(e){self.SQERR&&SQERR(e,'231-2')}});
  window.addEventListener('resize',fit);if(window.visualViewport)visualViewport.addEventListener('resize',fit);
 })();

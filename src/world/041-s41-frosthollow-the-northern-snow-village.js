@@ -148,9 +148,7 @@ const _xa41=xAct;xAct=function(a){const n=TALKN;
  if(a.startsWith('sq_')){sideAct(a.slice(3),n);saveNow();rPn();return}
  const was=n&&n.kind==='fhfolk'&&a==='job'?JOBD[n.id]:null;_xa41(a);if(n&&n.kind==='fhfolk'&&a==='job'&&JOBD[n.id]!==was){TALKQ=FHTHANKS[n.id]||'Thank you!';saveNow();rPn()}};
 // --- entering rooms ---
-const _es41=enterScene;enterScene=function(id,house,ret){_es41(id,house,ret);if(!FHNAMES[id])return;
- const k=FHN.find(n=>n.work===id);if(k&&k.scene!==id&&k.id!=='elowen'){say(FHNAMES[id][0].toUpperCase()+FHNAMES[id].slice(1)+' is closed for the night. '+k.name+' has gone home.');return}
- say({fh_pine:'Pine & Plank. It smells of fresh sawdust.',fh_lodge:'The Ember Lodge. A fire crackles in the hearth.',fh_work:'The Northwind Workshop. Tools hang on every wall.',fh_ranger:'The Ranger\'s Cabin. Maps, shields and a well-hit training dummy.'}[id]||('This is '+FHNAMES[id]+'.'))};
+SQENTER.after('041',(id,house,ret)=>{if(!FHNAMES[id])return;const k=FHN.find(n=>n.work===id);if(k&&k.scene!==id&&k.id!=='elowen'){say(FHNAMES[id][0].toUpperCase()+FHNAMES[id].slice(1)+' is closed for the night. '+k.name+' has gone home.');return}say({fh_pine:'Pine & Plank. It smells of fresh sawdust.',fh_lodge:'The Ember Lodge. A fire crackles in the hearth.',fh_work:'The Northwind Workshop. Tools hang on every wall.',fh_ranger:'The Ranger\'s Cabin. Maps, shields and a well-hit training dummy.'}[id]||('This is '+FHNAMES[id]+'.'))});
 // --- update: routines, safe streets, welcome ---
 let fhPrev=false;
 SQUPD.after('041',(dt)=>{if(menuOpen||!FHON)return;fhRoutine(dt);if(pnOpen||SCENE)return;const x=Math.floor(P.x/16),y=Math.floor(P.y/16),inT=inFHBox(x,y);fhPrev=inT;en=en.filter(n=>!inFHBox(Math.floor(n.x/16),Math.floor(n.y/16)))});
@@ -189,15 +187,12 @@ const _lh41=LHOOK;LHOOK=(L,x0,y0,x1,y1,tm)=>{_lh41(L,x0,y0,x1,y1,tm);if(!FHON)re
  if(FHWELL&&FHWELL[0]>=x0-3&&FHWELL[0]<=x1+3&&FHWELL[1]>=y0-3&&FHWELL[1]<=y1+4)L.push([(FHWELL[1]+1)*16-2,4,()=>drawWell(FHWELL[0],FHWELL[1])]);
  if(FHDEN&&FHDEN.x>=x0-3&&FHDEN.x<=x1+3&&FHDEN.y>=y0-3&&FHDEN.y<=y1+4)L.push([(FHDEN.y+1)*16-6,4,()=>drawDenMouth(tm)])};
 // map
-const _dmap41=drawMap;drawMap=function(){_dmap41();if(!FHON)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');
- x.fillStyle='#8a92a2';for(const i of FHPATH)x.fillRect(i%N,(i/N)|0,1,1);
- x.fillStyle='#101010';x.fillRect(FX-2,FY-2,5,5);x.fillStyle='#a8e0ff';x.fillRect(FX-1,FY-1,3,3);
- if(FHDEN){x.fillStyle='#101010';x.fillRect(FHDEN.x-1,FHDEN.y-1,3,3);x.fillStyle='#58c8ff';x.fillRect(FHDEN.x,FHDEN.y,1,1)}};
+SQDRAWMAP.after('041',()=>{if(!FHON)return;const c=document.getElementById('mpc');if(!c)return;const x=c.getContext('2d');x.fillStyle='#8a92a2';for(const i of FHPATH)x.fillRect(i%N,(i/N)|0,1,1);x.fillStyle='#101010';x.fillRect(FX-2,FY-2,5,5);x.fillStyle='#a8e0ff';x.fillRect(FX-1,FY-1,3,3);if(FHDEN){x.fillStyle='#101010';x.fillRect(FHDEN.x-1,FHDEN.y-1,3,3);x.fillStyle='#58c8ff';x.fillRect(FHDEN.x,FHDEN.y,1,1)}});
 const _mh41=mapHTML;mapHTML=function(){const h=_mh41();return FHON?h.replace('</span>','</span><span><i style="background:#a8e0ff"></i>Frosthollow</span><span><i style="background:#58c8ff"></i>Frostfang Den</span>'):h};
 // music: quiet bells over soft strings
 SONGS.frost={bpm:84,lead:'E5 - B4 - G4 - B4 - E5 - F#5 - G5 - - - F#5 - D5 - A4 - D5 - F#5 - E5 - - - - E5 - B4 - C5 - D5 - E5 - B4 - G4 - - - A4 - B4 - E4 - - - - - - -',
  bass:'E2 - - - B2 - - - E2 - - - B2 - - - D2 - - - A2 - - - D2 - - - A2 - - - C2 - - - G2 - - - G2 - - - D2 - - - E2 - - - B2 - - - E2 - - - - - - -'};
 PARSED.frost={bpm:SONGS.frost.bpm,lead:parseTrack(SONGS.frost.lead),bass:parseTrack(SONGS.frost.bass)};
 const _ws41=wantSong;wantSong=function(){const w=_ws41();if(!FHON)return w;if(!SCENE&&w==='day'&&inFHBox(Math.floor(P.x/16),Math.floor(P.y/16)))return'frost';if(SCENE&&FHNAMES[SCENE.id])return'frost';return w};
-const _cp41=closePanel;closePanel=function(){_cp41();if(TALKN&&TALKN.kind==='fhfolk')TALKN=null};
-const _ng41=newGame;newGame=function(){_ng41();for(const n of FHN){n.scene=n.work;if(n.work){n.x=n.wx;n.y=n.wy}else{n.x=n.hx0;n.y=n.hy0}}};
+SQCLOSEPN.after('041',()=>{if(TALKN&&TALKN.kind==='fhfolk')TALKN=null});
+SQNEWGAME.after('041',()=>{for(const n of FHN){n.scene=n.work;if(n.work){n.x=n.wx;n.y=n.wy}else{n.x=n.hx0;n.y=n.hy0}}});

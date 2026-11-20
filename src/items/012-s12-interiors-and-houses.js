@@ -60,7 +60,7 @@ function useFurn(it){if(!SCENE||!it)return;const h=SCENE.house;if(!h)return;
 const _ns12=nearStruct;nearStruct=function(){return SCENE?null:_ns12()};
 const _us12=useStructure;useStructure=function(i){CHEST_H=null;_us12(i)};
 const _sbd12=sleepBed;sleepBed=function(i){HOMESP=null;_sbd12(i)};
-const _tk12=talk;talk=function(){if(SCENE&&!nearNpc()){const it=nearFurn();if(it&&!pnOpen&&!menuOpen)useFurn(it);return}_tk12()};
+SQTALK.wrap('012',_tk12=>function(){if(SCENE&&!nearNpc()){const it=nearFurn();if(it&&!pnOpen&&!menuOpen)useFurn(it);return}_tk12()});
 tk.addEventListener('touchstart',e=>{if(SCENE&&!nearNpc()&&!pnOpen){const it=nearFurn();if(it){e.preventDefault();useFurn(it)}}},{passive:false});
 // actions that only make sense outdoors
 SQHIT.wrap('012 interiors and houses',next=>function(){if(dead||menuOpen||pnOpen)return;if(SCENE){if(swing<=0){swing=.25;sfx('swish')}return}if(!BUILD&&swing<=0&&!FISH){const[x,y]=frontTile(),h=houseAt(x,y);if(h&&!(x===h.x&&y===h.y)){swing=.25;hitHouse(h);return}}
@@ -68,7 +68,7 @@ SQHIT.wrap('012 interiors and houses',next=>function(){if(dead||menuOpen||pnOpen
 const _fi12=fire;fire=function(){if(SCENE&&!(SCENE.room&&(SCENE.room.icv||SCENE.room.yard||SCENE.room.court))){say('Better not light a fire indoors.');return}_fi12()};
 // respawn: home bed beats a field bed beats the village
 const _rs12=reset;reset=function(){SCENE=null;_rs12();const h=HOUSES.find(o=>o.id===HOMESP);if(h){enterScene('home',h,{x:h.x*16+8,y:(h.y+1)*16+6});P.x=2*16+10;P.y=3*16+8;face=[0,1];say('You wake up at home, safe and sound.')}};
-const _ng12=newGame;newGame=function(){for(const h of HOUSES)for(const i of houseTiles(h))BS.delete(i);HOUSES=[];HOMESP=null;SCENE=null;_ng12()};
+SQNEWGAME.before('012',()=>{for(const h of HOUSES)for(const i of houseTiles(h))BS.delete(i);HOUSES=[];HOMESP=null;SCENE=null;});
 // --- update: doors, indoor rules, USE label ---
 SQUPD.after('012',(dt)=>{if(menuOpen||pnOpen||dead)return;if(SCENE){if(!SCENE.room.cave)en=[];const R=SCENE.room;if(P.y>R.h*16-5&&Math.abs(P.x-(R.ex*16+8))<9){leaveScene();return}
   const it=nearFurn();if(it||nearNpc()){tk.style.display='flex';const lab=nearNpc()?'TALK':'USE';if(tkLab!==lab){tkLab=lab;tk.innerHTML=lab+(isPC?'<small>T</small>':'')}}else tk.style.display='none';return}for(const d of entrances()){const cx=d.x*16+8;if(face[1]<0&&Math.abs(P.x-cx)<9&&P.y<(d.y+1)*16+6&&P.y>d.y*16-4){enterScene(d.id,d.house,{x:cx,y:(d.y+1)*16+7});return}}});
@@ -100,3 +100,6 @@ setActionLabels();
 
 // room items/furniture drawing (drawFurn) as a step list (window.SQFURN; see 006's sqSteps)
 const SQFURN=sqSteps('drawFurn',drawFurn,f=>{drawFurn=f});window.SQFURN=SQFURN;
+
+// enterScene as a step list: later sections add named steps (window.SQENTER; see 006's sqSteps)
+const SQENTER=sqSteps('enterScene',enterScene,f=>{enterScene=f});window.SQENTER=SQENTER;

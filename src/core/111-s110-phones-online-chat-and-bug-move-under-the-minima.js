@@ -12,4 +12,4 @@ setInterval(sqPlaceBtns,400);
 {const st=document.createElement('style');st.textContent='#mpb,#mpbug{height:30px!important;min-width:0!important;padding:0 8px!important;font-size:12px!important;letter-spacing:.5px!important}';document.head.appendChild(st)}
 var HIDEH=false;   // Equipment > Hide helmet
 const SQ_VERSION=(window.SQPATCH&&SQPATCH[0].v)||'?';   // the newest patch note's version
-{const _o=optionsHTML;optionsHTML=function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'}}
+{SQOPTS.wrap('111',_o=>function(){return _o()+'<div class="tl" style="margin-top:10px;font-size:11px;font-weight:400;opacity:.55">Game version '+SQ_VERSION+'</div>'})}

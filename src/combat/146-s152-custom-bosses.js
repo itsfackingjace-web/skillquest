@@ -53,8 +53,8 @@
     for(let i=TG.length-1;i>=0;i--){const q=TG[i];q.t-=dt;if(q.t<=0){if(Math.hypot(q.x-P.x,(q.y-P.y)*1.6)<q.r)hit(q.d);TG.splice(i,1)}}
     if(!L.length&&!en.some(n=>n&&n.cb&&!n.dead)){SH.length=0;TG.length=0}}catch(e){console.warn(e)}return out})}
  // beaten: remembered, announced
- {const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{const B=n&&n.cb&&CB[n.cb];if(B&&!n._rp){DEAD[deadKey(B)]=Date.now()+B.rs*60000;try{localStorage.setItem(LSK,JSON.stringify(DEAD))}catch(e){self.SQERR&&SQERR(e,'146-11')}
-    addXp(0,Math.round(B.hp*2));setTimeout(()=>{try{say('You defeated '+B.n+'!');msgT=5;sfx('quest')}catch(e){self.SQERR&&SQERR(e,'146-12')}},300);for(const m of en)if(m._cbs===n&&!m.dead){m.dead=1;m.dropped=1}}}catch(e){self.SQERR&&SQERR(e,'146-13')}return out}}
+ {SQDROP.after('146',(n)=>{try{const B=n&&n.cb&&CB[n.cb];if(B&&!n._rp){DEAD[deadKey(B)]=Date.now()+B.rs*60000;try{localStorage.setItem(LSK,JSON.stringify(DEAD))}catch(e){self.SQERR&&SQERR(e,'146-11')}
+    addXp(0,Math.round(B.hp*2));setTimeout(()=>{try{say('You defeated '+B.n+'!');msgT=5;sfx('quest')}catch(e){self.SQERR&&SQERR(e,'146-12')}},300);for(const m of en)if(m._cbs===n&&!m.dead){m.dead=1;m.dropped=1}}}catch(e){self.SQERR&&SQERR(e,'146-13')}})}
  // ---- drawing: bigger, a health bar and name, the attacks ----
  {SQPS.wrap('146',_ps=>function(n,tm){const B=n&&n.cb&&CB[n.cb];if(!B)return _ps.apply(this,arguments);const x=Math.round(n.x),y=Math.round(n.y);
    if(n.cbc&&n.cbc.ph===0){g.save();g.strokeStyle='rgba(255,70,40,'+(.5+.4*Math.sin(tm*30))+')';g.lineWidth=3;g.setLineDash([4,3]);g.beginPath();g.moveTo(x,y);g.lineTo(x+n.cbc.vx*120,y+n.cbc.vy*120);g.stroke();g.restore()}

@@ -28,10 +28,10 @@
  // ---- the shards ----
  for(const id of ISL){const k='ibs_'+id,B=IB[id];INVK.push(k);EXTRA_BAG.push(k);INAME[k]=B.shard;SN[k]=B.shard+'s';SHORT[k]=B.shard.toLowerCase();SELLP[k]=40;
   IDESC[k]='A glowing shard from '+WORLD_REGIONS[id].name+'. Five of them open '+B.lm+', where '+B.n+' waits. Dropped by the island\'s monsters.';inv[k]=inv[k]|0}
- {const _ic=iconURL;iconURL=function(k,col){if(!/^ibs_/.test(k))return _ic(k,col);const key='ibs'+k;if(ICONC[key])return ICONC[key];const B=IB[k.slice(4)],c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
-   for(let j=0;j<12;j++){const w=j<6?j+1:12-j;r(7-w,j+1,w*2,1,K)}for(let j=1;j<11;j++){const w=j<6?j:11-j;r(7-w,j+1,w*2,1,B.sc[1]);if(w>1)r(7-w+1,j+1,w-1,1,B.sc[0])}r(6,3,1,2,'#ffffff');return ICONC[key]=c.toDataURL()}}
- {const _ed=enemyDrop;enemyDrop=function(n){_ed(n);try{const R=SCENE&&SCENE.room,isl=(n&&n.rg)||(R&&R.region)||(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region);
-   if(!n||!IB[isl]||n.type==='ib'||n.summon||n._ibs)return;n._ibs=1;if(Math.random()<2/25||window.SQSHARDDROP){const k='ibs_'+isl;inv[k]=(inv[k]|0)+1;say('+1 '+INAME[k].toLowerCase()+' ('+inv[k]+'/5)');try{gTxt(n.x,n.y-20,'+1 shard',IB[isl].sc[0]);sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'100-1')}}}catch(e){self.SQERR&&SQERR(e,'100-2')}}}
+ {SQICON.wrap('100',_ic=>function(k,col){if(!/^ibs_/.test(k))return _ic(k,col);const key='ibs'+k;if(ICONC[key])return ICONC[key];const B=IB[k.slice(4)],c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+   for(let j=0;j<12;j++){const w=j<6?j+1:12-j;r(7-w,j+1,w*2,1,K)}for(let j=1;j<11;j++){const w=j<6?j:11-j;r(7-w,j+1,w*2,1,B.sc[1]);if(w>1)r(7-w+1,j+1,w-1,1,B.sc[0])}r(6,3,1,2,'#ffffff');return ICONC[key]=c.toDataURL()})}
+ {SQDROP.after('100',(n)=>{try{const R=SCENE&&SCENE.room,isl=(n&&n.rg)||(R&&R.region)||(SCENE&&SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region);
+   if(!n||!IB[isl]||n.type==='ib'||n.summon||n._ibs)return;n._ibs=1;if(Math.random()<2/25||window.SQSHARDDROP){const k='ibs_'+isl;inv[k]=(inv[k]|0)+1;say('+1 '+INAME[k].toLowerCase()+' ('+inv[k]+'/5)');try{gTxt(n.x,n.y-20,'+1 shard',IB[isl].sc[0]);sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'100-1')}}}catch(e){self.SQERR&&SQERR(e,'100-2')}})}
 
  // ---- the doors ----
  const doorOf=(R,it)=>R&&R.region&&IB[R.region]&&it&&it.t==='lm'&&it.k===IB[R.region].door;
@@ -241,7 +241,7 @@
   const _occ=occ;occ=function(slot){if(slot==='helm'&&HAT)return k;return _occ(slot)};
   const _ss=setSlot;setSlot=function(slot,kk){_ss(slot,kk);if(slot==='helm'){HAT=kk===k;if(HAT){ARM.helm=AH;CLS.helm=null}}};
   const _wu=watchUpgrades;watchUpgrades=function(){const was=HAT;_wu();if(was&&ARM.helm!==AH){if((inv['eq_helm'+AH]|0)>0)inv['eq_helm'+AH]--;inv[k]=(inv[k]|0)+1;HAT=false}};
-  SQSAVE.after('100:ohat',s=>{if(HAT)s.ohat=1;});SQLOAD.after('100',(S)=>{HAT=!!(S&&S.ohat)&&ARM.helm===AH});const _ng=newGame;newGame=function(){HAT=false;_ng()};try{KNOWN49.add('ohat')}catch(e){self.SQERR&&SQERR(e,'100-20')}
+  SQSAVE.after('100:ohat',s=>{if(HAT)s.ohat=1;});SQLOAD.after('100',(S)=>{HAT=!!(S&&S.ohat)&&ARM.helm===AH});SQNEWGAME.before('100',()=>{HAT=false;});try{KNOWN49.add('ohat')}catch(e){self.SQERR&&SQERR(e,'100-20')}
   const _gc=gearCH;gearCH=function(){const c=_gc();if(HAT&&!(typeof HIDEH!=='undefined'&&HIDEH)){c.ht=0;delete c.mh;delete c.dyh;c.oh=1}return c};
   const OHC=new Map();const _ks=kitSprite;kitSprite=function(ch,dir,st,fl){const c=_ks(ch,dir,st,fl);if(!ch||!ch.oh)return c;const key=JSON.stringify(ch)+'|'+dir+'|'+st+'|'+(fl?1:0);let o=OHC.get(key);if(o)return o;
    const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let top=c.height,l=c.width,r=0;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(d[(y*c.width+x)*4+3]>0){if(y<top)top=y}
@@ -251,8 +251,8 @@
    rr(cx-hw-3,by-1,hw*2+6,3,K);rr(cx-hw-2,by,hw*2+4,1,'#33333c');rr(cx-hw-4,by-3,3,3,K);rr(cx+hw+1,by-3,3,3,K);rr(cx-hw-3,by-2,1,1,'#33333c');rr(cx+hw+2,by-2,1,1,'#33333c');rr(cx-hw+3,by-6,hw*2-6,6,K);rr(cx-hw+4,by-5,hw*2-8,5,'#2a2a32');rr(cx-1,by-5,2,1,K);rr(cx-hw+4,by-2,hw*2-8,1,'#c8c8d8');if(OHC.size>300)OHC.clear();
    OHC.set(key,o);return o};
   // the hat's icon
-  const _ic=iconURL;iconURL=function(kk,col){if(kk!==k)return _ic(kk,col);const key='ohat';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
-   r(0,8,14,4,K);r(1,9,12,2,'#2a2a32');r(3,2,8,8,K);r(4,3,6,6,'#2a2a32');r(4,7,6,1,'#c8c8d8');return ICONC[key]=c.toDataURL()};if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(kk){return kk===k?iconURL(kk):_ei(kk)}}}
+  SQICON.wrap('100',_ic=>function(kk,col){if(kk!==k)return _ic(kk,col);const key='ohat';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+   r(0,8,14,4,K);r(1,9,12,2,'#2a2a32');r(3,2,8,8,K);r(4,3,6,6,'#2a2a32');r(4,7,6,1,'#c8c8d8');return ICONC[key]=c.toDataURL()});if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(kk){return kk===k?iconURL(kk):_ei(kk)}}}
 
  // ---- the wiki ----
  try{for(const id of ISL){const B=IB[id];WK_RARE.push([B.rare[1],/^eq_|^ja_/.test(B.rare[0])?B.rare[0]:null,B.n,B.rare[2],'5% from '+B.n+' ('+B.lm+', '+WORLD_REGIONS[id].name+').',/^p/.test(B.rare[0])?B.rare[0]:undefined])}

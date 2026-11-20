@@ -58,7 +58,7 @@
  {SQLOAD.wrap('162',_ap=>function(S){for(const k in PEND)delete PEND[k];const out=_ap.apply(this,arguments);
    try{if(S&&S.inv)for(const k in S.inv)if(/^it_/.test(k)&&+S.inv[k]>0){if(REG.has(k))inv[k]=Math.min(1e6,+S.inv[k]|0);else PEND[k]=Math.min(1e6,+S.inv[k]|0)}}catch(e){self.SQERR&&SQERR(e,'162-6')}
    for(const k in CQ)delete CQ[k];try{if(S&&S.cq&&typeof S.cq==='object')for(const k in S.cq){const v=+S.cq[k];if(/^q_[a-z0-9_]{1,30}[#@!]?$/.test(k)&&isFinite(v))CQ[k]=Math.max(0,Math.min(1e6,v|0))}}catch(e){self.SQERR&&SQERR(e,'162-7')}return out})}
- {const _ng=newGame;newGame=function(){for(const k in PEND)delete PEND[k];for(const k in CQ)delete CQ[k];return _ng.apply(this,arguments)}}
+ {SQNEWGAME.before('162',()=>{for(const k in PEND)delete PEND[k];for(const k in CQ)delete CQ[k];})}
  try{KNOWN49.add('cq')}catch(e){self.SQERR&&SQERR(e,'162-8')}
  // ======================= recipes =======================
  const ADDED={GOODS:[],SM:[],COOKS:[],STOVE:[]};
@@ -93,7 +93,7 @@
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='cshop'&&CS){const b=e.target.closest('[data-csh]');if(b){const a=b.dataset.csh,o=C.shops[CS.id];
      if(a[0]==='b'){const q=o&&o.add[+a.slice(1)];if(!q)return;if(GLD<q.c){say('Not enough gold');sfx('swish');return}GLD-=q.c;inv[q.k]=(inv[q.k]|0)+q.m;say('Bought '+(q.m>1?q.m+' ':'')+(q.m>1?SN[q.k]||INAME[q.k]:INAME[q.k]).toLowerCase()+'.');sfx('coin')}
      else{const k=a.slice(1),c=inv[k]|0;if(c>0&&SELLP[k]){const v=c*SELLP[k];GLD+=v;inv[k]=0;say('Sold for '+v+' gold');sfx('coin')}}try{svg()}catch(_){self.SQERR&&SQERR(_,'162-13')}saveLocal(true);rPn();return}}return _oc(e)}}
- {const _cp=closePanel;closePanel=function(){if(shop==='cshop'){CS=null;shop=null}return _cp.apply(this,arguments)}}
+ {SQCLOSEPN.before('162',()=>{if(shop==='cshop'){CS=null;shop=null}})}
  // ======================= quests =======================
  // A quest is one or more steps handed in to the giver one after another (step 0 = the quest's own t/k/amt/take/d, then
  // `steps` [{t,k,amt,take,say}]). `ch` = choices at the end [{l,say,g,xs,xp,rk,rn}]: the player picks one reward, kept as
@@ -158,9 +158,9 @@
   for(const id of expand(m[1])){const q=C.quests[id];if(q&&CQ[id]!==99&&q.rq&&!lvOk(q)&&(!q.after||CQ[q.after]===99)){say(who+': "Come back when your '+(SKN[q.rq.s]||'skill')+' is level '+q.rq.l+'."');msgT=5;return true}}
   return false};
  // kills and visits
- {const _ed=enemyDrop;enemyDrop=function(n){const out=_ed.apply(this,arguments);try{if(n&&!n._rp){const k=mkeyOf(n);
+ {SQDROP.after('162',(n)=>{try{if(n&&!n._rp){const k=mkeyOf(n);
    for(const id in C.quests){const q=C.quests[id];if(CQ[id]!==1)continue;const s=cur(id,q);if(s.t==='kill'&&(s.k===k||s.k===n.type||s.k===n.rk)){CQ[id+'#']=(CQ[id+'#']|0)+1;if(CQ[id+'#']===s.amt){say('Quest: '+q.n+ofN(id,q)+' — done! Go back to '+(GIVERS[id]?GIVERS[id].name:'them')+'.');msgT=5}}}
-   for(const tid in C.loot){const T=C.loot[tid];if(T.on.length&&(T.on.includes(k)||T.on.includes(n.type))&&Math.random()*100<T.p)give(roll(tid),'Loot')}}}catch(e){console.warn('content',e)}return out}}
+   for(const tid in C.loot){const T=C.loot[tid];if(T.on.length&&(T.on.includes(k)||T.on.includes(n.type))&&Math.random()*100<T.p)give(roll(tid),'Loot')}}}catch(e){console.warn('content',e)}})}
  setInterval(()=>{try{const r=typeof curRegion==='function'?curRegion():'hollow';for(const id in C.quests){const q=C.quests[id];if(CQ[id]!==1)continue;const s=cur(id,q);if(s.t==='visit'&&s.k===r&&!CQ[id+'#']){CQ[id+'#']=1;say('Quest: '+q.n+ofN(id,q)+' — you made it! Go back to '+(GIVERS[id]?GIVERS[id].name:'them')+'.');msgT=5}}}catch(e){self.SQERR&&SQERR(e,'162-20')}},1000);
  // ======================= monsters =======================
  const keyOf=id=>'cm:'+id.slice(3).replace(/_/g,'').replace(/[0-9]/g,d=>'abcdefghij'[d]);const CM={};

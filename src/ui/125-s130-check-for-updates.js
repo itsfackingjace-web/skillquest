@@ -18,7 +18,7 @@
  // ---- Options ----
  function row(){const t=U.st==='checking'?'Checking…':U.st==='latest'?'You have the newest version ('+CUR+').':U.st==='fail'?'Couldn\'t reach the website. Check your connection and try again.':U.st==='saving'?'Saving your game and updating…':U.st==='new'?'Update '+U.v+' is ready!':'You have version '+CUR+'.';
   return'<div class="upd-r"><button class="sb upb" data-up="'+(U.st==='new'?'go':'check')+'" style="width:100%;margin-top:8px'+(U.st==='new'?';background:#f8e8b0':'')+'"'+(U.busy||U.st==='saving'?' disabled':'')+'><b>'+(U.st==='new'?'UPDATE NOW':'Check for updates')+'</b><br><small>'+t+'</small></button></div>'}
- const _oh=optionsHTML;optionsHTML=function(){const h=_oh(),k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+row():h.slice(0,k)+row()+h.slice(k)};
+ SQOPTS.wrap('125',_oh=>function(){const h=_oh(),k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+row():h.slice(0,k)+row()+h.slice(k)});
  function draw(){try{if(pnOpen&&ptab===8){const el=pbd.querySelector('.upd-r');if(el)el.outerHTML=row();else rPn()}}catch(e){self.SQERR&&SQERR(e,'125-4')}}
  pbd.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-up]');if(!b)return;e.stopPropagation();if(b.dataset.up==='go')update();else check()},true);
  // ---- the "update ready" bar ----
@@ -28,7 +28,7 @@
  for(const ev of['touchstart','pointerdown','mousedown'])el.addEventListener(ev,e=>e.stopPropagation());
  el.querySelector('.ok').onclick=()=>update();el.querySelector('.no').onclick=()=>{U.dismissed=U.v;bar()};
  function bar(){const show=U.v&&U.dismissed!==U.v&&!(window.SQTS&&SQTS.open)&&!pnOpen&&!menuOpen&&U.st!=='saving';el.style.display=show?'flex':'none';if(show)el.querySelector('span').textContent='Update '+U.v+' is ready.'}
- {const _cp=closePanel;closePanel=function(){const r=_cp.apply(this,arguments);try{bar()}catch(e){self.SQERR&&SQERR(e,'125-5')}return r}}
+ {SQCLOSEPN.after('125',()=>{try{bar()}catch(e){self.SQERR&&SQERR(e,'125-5')}})}
  setInterval(()=>{bar();if(!document.hidden&&Date.now()-U.at>10*60e3)check()},60e3);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-U.at>5*60e3)check()});
  setTimeout(()=>{if(!U.at)check()},20e3);

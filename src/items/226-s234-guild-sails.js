@@ -19,7 +19,7 @@
  {const _g=gearCH;gearCH=function(){const c=_g.apply(this,arguments);try{const C=GC();if(ON&&C&&inGuild()){const d=C.design();c.slc=d.c+1;c.sls=d.s;c.slp=d.p;if(d.t)c.slt=1;c.sle=d.e;c.slx=d.x}}catch(e){self.SQERR&&SQERR(e,'226-1')}return c}}
  {SQSAVE.after('226:gsw',o=>{try{o.gsw=ON?1:0}catch(e){self.SQERR&&SQERR(e,'226-2')}})}
  {SQLOAD.after('226',(S)=>{try{ON=!!(S&&S.gsw)}catch(e){self.SQERR&&SQERR(e,'226-3')}})}
- {const _n=newGame;newGame=function(){ON=false;return _n.apply(this,arguments)}}
+ {SQNEWGAME.before('226',()=>{ON=false;})}
  // ---- recolouring the sail layer ----
  let CURD=null;const CACHE=new WeakMap();
  const mix=(rgb,f)=>rgb.map(v=>Math.max(0,Math.min(255,Math.round(v*f))));

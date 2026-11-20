@@ -46,11 +46,11 @@ const rbFront=R=>{const[x,y]=frontTile();return{x,y,s:rbMap(R.region).get(rbK(x,
     if(STN.has(s.t)){rbOpenStation(R,x,y,s);return}rbHit(R,x,y,s);return}
    const f=rbForeignAt(R.region,x,y);if(f){notYours(f.owner);return}}
  return next.apply(this,arguments)})}
-{const _t=talk;talk=function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!nearNpc()){let hit=null;
+{SQTALK.wrap('065',_t=>function(){const R=rbR();if(R&&!dead&&!menuOpen&&!pnOpen&&!nearNpc()){let hit=null;
    for(const[dx,dy]of[[0,0],[face[0],face[1]],[0,1],[0,-1],[1,0],[-1,0]]){const x=Math.floor(P.x/16)+dx,y=Math.floor((P.y+(face[1]>0?4:0))/16)+dy,s=rbMap(R.region).get(rbK(x,y));if(s&&(s.t==='chest'||s.t==='bed'||STN.has(s.t))){hit={x,y,s};break}}
    if(!hit){const{x,y,s}=rbFront(R);if(s)hit={x,y,s}}
    if(hit){const{x,y,s}=hit;if(s.t==='chest'){CHEST_H=s;CHEST_AT=-1;fromMenu=false;pnOpen=true;ptab=7;jx=jy=0;pn.style.display='block';rPn();sfx('talk');return}
-    if(s.t==='bed'){say('A comfy bed. You always wake up on Hollow Island, though.');return}if(STN.has(s.t)){rbOpenStation(R,x,y,s);return}}}return _t()}}
+    if(s.t==='bed'){say('A comfy bed. You always wake up on Hollow Island, though.');return}if(STN.has(s.t)){rbOpenStation(R,x,y,s);return}}}return _t()})}
 // ---- drawing ----
 {const _fn=fenceNb;fenceNb=function(x,y){const D=RBQ.draw;if(!D)return _fn(x,y);const rx=x-1+D.x,ry=y-1+D.y,s=rbMap(D.R.region).get(rbK(rx,ry));if(s)return WALLISH.has(s.t);const f=rbForeignAt(D.R.region,rx,ry);return!!f&&WALLISH.has(f.t)}}
 function rbDraw(R,x,y,s,tm){if(STN.has(s.t)){if(s.t==='planter')s.ready=PLANTD[plantKey(false,rbIdx(R,x,y))]!==today();drawStation(s.t,x,y,s,tm);return}
@@ -64,7 +64,7 @@ function rbDraw(R,x,y,s,tm){if(STN.has(s.t)){if(s.t==='planter')s.ready=PLANTD[p
 {SQSAVE.after('065:rb',s=>{const o={};for(const id in RB){const a=[];for(const[k,v]of RB[id]){const[x,y]=rbXY(k);a.push(v.items?[x,y,v.t,v.items]:[x,y,v.t])}if(a.length)o[id]=a}if(Object.keys(o).length)s.rb=o;})}
 {SQLOAD.after('065',(S)=>{for(const id in RB)delete RB[id];const o=S&&S.rb;if(o&&typeof o==='object')for(const id in o){if(!WORLD_REGIONS[id])continue;const m=rbMap(id);
    for(const e of (Array.isArray(o[id])?o[id]:[])){if(!Array.isArray(e)||!BK.includes(e[2]))continue;const s={t:e[2],hp:BHP[e[2]]||4};if(e[2]==='chest')s.items=(e[3]&&typeof e[3]==='object')?{...e[3]}:{};m.set(rbK(e[0]|0,e[1]|0),s)}}try{rbSolidSync()}catch(e){self.SQERR&&SQERR(e,'065-2')}})}
-{const _ng=newGame;newGame=function(){for(const id in RB)delete RB[id];_ng()}}
+{SQNEWGAME.before('065',()=>{for(const id in RB)delete RB[id];})}
 // shared with other players alongside your Hollow builds
 function rbPub(){const o={};for(const id in RB){const a=[];for(const[k,v]of RB[id]){const[x,y]=rbXY(k);a.push([x,y,v.t])}if(a.length)o[id]=a}return Object.keys(o).length?o:null}
 // cooking: a campfire on another island is a real fire

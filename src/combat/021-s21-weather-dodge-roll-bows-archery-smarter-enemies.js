@@ -49,10 +49,8 @@ if(TOMB){for(const[dx,dy]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1],[-1,-2],[0,-2],[1
 ROOMS.tomb={w:18,h:12,ex:9,cave:1,tomb:1,floor:['#c8a870','#bc9c64'],wall:'#9a7848',trim:'#5a4020',items:[[3,3,'pillar'],[14,3,'pillar'],[3,8,'pillar'],[14,8,'pillar'],[8,2,'urn'],[9,2,'urn'],[1,10,'urn'],[16,10,'urn'],[6,5,'bones'],[12,7,'bones']].map(([x,y,t])=>({t,x,y,solid:t!=='bones'}))};
 ROOMS.tomb.solid=new Set(ROOMS.tomb.items.filter(it=>it.solid).map(it=>it.y*18+it.x));
 const _en21=entrances;entrances=function(){const a=_en21();if(TOMB)a.push({x:TOMB.x,y:TOMB.y,id:'tomb',house:null});return a};
-const _es21=enterScene;enterScene=function(id,house,ret){_es21(id,house,ret);if(id!=='tomb')return;const day=Math.floor(time/DAYLEN);
- for(const[x,y]of[[4,5],[13,5],[6,9],[11,9]])en.push({x:x*16+8,y:y*16+8,hp:6,kx:0,ky:0,type:'skel',tcd:1+Math.random()*2});
- if(TOMB_DAY!==day){en.push({x:9*16,y:4*16,hp:45,kx:0,ky:0,type:'bonelord',tcd:2,scd:7});say('The Bone Lord stirs in the dark... Defeat it for treasure!');setTimeout(()=>sfx('roar'),300)}
- else say('The Bone Lord is dust... for today. Come back tomorrow.')};
+SQENTER.after('021',(id,house,ret)=>{if(id!=='tomb')return;const day=Math.floor(time/DAYLEN);for(const[x,y]of[[4,5],[13,5],[6,9],[11,9]])en.push({x:x*16+8,y:y*16+8,hp:6,kx:0,ky:0,type:'skel',tcd:1+Math.random()*2});if(TOMB_DAY!==day){en.push({x:9*16,y:4*16,hp:45,kx:0,ky:0,type:'bonelord',tcd:2,scd:7});say('The Bone Lord stirs in the dark... Defeat it for treasure!');setTimeout(()=>sfx('roar'),300)}
+ else say('The Bone Lord is dust... for today. Come back tomorrow.')});
 SQFURN.wrap('021',_df21=>function(it,tm){const x0=it.x*16,y0=it.y*16;
  if(it.t==='pillar'){shd(x0+8,y0+14,16);Rg(x0+1,y0-14,14,30,O);Rg(x0+2,y0-13,12,28,'#d8bc84');Rg(x0+2,y0-13,12,3,'#ecd6a4');Rg(x0+2,y0+11,12,4,'#a88858');for(const xx of[x0+5,x0+9])Rg(xx,y0-10,1,20,'#b89c68');return}
  if(it.t==='urn'){shd(x0+8,y0+14,12);Rg(x0+3,y0,10,15,O);Rg(x0+4,y0+1,8,13,'#b86838');Rg(x0+4,y0+5,8,2,'#3a6ab0');Rg(x0+5,y0-2,6,3,O);Rg(x0+6,y0-1,4,2,'#9a5028');return}
@@ -65,9 +63,9 @@ function drawBoneLord(n,tm){const x=Math.round(n.x),y=Math.round(n.y),hit=Math.a
  Rg(x-9,y-36,18,6,O);Rg(x-8,y-35,16,4,GD);for(const a of[-8,-2,4])Rg(x+a,y-39,3,4,GD);Rg(x-1,y-34,2,2,'#e03030');Rg(x-10,y-12,20,2,'#4a2878');
  Rg(x-16,y-46,32,4,O);Rg(x-15,y-45,Math.max(0,30*n.hp/45),2,'#a050e0')}
 SQPS.wrap('021',_pS21=>function(n,tm){if(n.type==='bonelord')return drawBoneLord(n,tm);_pS21(n,tm);if(n.type==='wolf'&&n.ls==='prep'&&Math.floor(tm*10)%2){const x=Math.round(n.x),y=Math.round(n.y);Rg(x-1,y-20,2,5,O);Rg(x-1,y-14,2,2,O);Rg(x,y-19,1,3,'#f84030');Rg(x,y-13,1,1,'#f84030')}});
-const _ed21=enemyDrop;enemyDrop=function(n){if(n.type!=='bonelord')return _ed21(n);TOMB_DAY=Math.floor(time/DAYLEN);GLD+=250;inv.sbar=(inv.sbar|0)+3;inv.iarrow=(inv.iarrow|0)+10;addXp(0,500);addXp(8,300);
+SQDROP.wrap('021',_ed21=>function(n){if(n.type!=='bonelord')return _ed21(n);TOMB_DAY=Math.floor(time/DAYLEN);GLD+=250;inv.sbar=(inv.sbar|0)+3;inv.iarrow=(inv.iarrow|0)+10;addXp(0,500);addXp(8,300);
  if(Q.on&&QS[Q.i]&&QS[Q.i].type==='bonelord')Q.k++;for(const o of en)if(o!==n&&!o.dead)o.dead=1;
- say('The Bone Lord crumbles! +250 gold, 3 steel bars, 10 iron arrows');msgT=5;sfx('quest');saveLocal(true);saveCloud(true)};
+ say('The Bone Lord crumbles! +250 gold, 3 steel bars, 10 iron arrows');msgT=5;sfx('quest');saveLocal(true);saveCloud(true)});
 // --- update: roll, projectiles, enemy behaviors, weather ---
 let wTick=0;
 SQUPD.wrap('021',_u21=>function(dt){const paused=menuOpen||pnOpen;const pos=paused?null:en.map(n=>[n,n.x,n.y]);_u21(dt);if(paused)return;
@@ -158,10 +156,10 @@ const _oc21=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.fc');if(b){ma
 // equipment card: bow + arrows
 const _eq21=equipHTML;equipHTML=function(){const h=_eq21(),k='<div class="qc" style="margin-top:12px">',i=h.indexOf(k);if(i<0)return h;
  return h.slice(0,i)+'<div class="eqg" style="margin-top:6px">'+eqSlot('BOW','bow','',TL.bow?(TL.bow>=2?'Longbow':'Shortbow'):'')+eqSlot('ARROWS','arrow','',((inv.arrow|0)+(inv.iarrow|0)+(inv.marrow|0)+(inv.adarrow|0)+(inv.mitharrow|0))?((inv.marrow|0)?(inv.marrow|0)+' meteorite · ':'')+((inv.adarrow|0)?(inv.adarrow|0)+' adamant · ':'')+((inv.mitharrow|0)?(inv.mitharrow|0)+' mithril · ':'')+((inv.iarrow|0)?(inv.iarrow|0)+' iron · ':'')+(inv.arrow|0)+' arrows':'')+'</div>'+h.slice(i)};
-const _icon21=iconURL;iconURL=function(k,col){if(k!=='bow'&&k!=='arrow'&&k!=='iarrow')return _icon21(k,col);const key='g21'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+SQICON.wrap('021',_icon21=>function(k,col){if(k!=='bow'&&k!=='arrow'&&k!=='iarrow')return _icon21(k,col);const key='g21'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  if(k==='bow'){for(let i=0;i<10;i++){const xx=3+Math.round(Math.sin(i/9*Math.PI)*5);r(xx,2+i,2,1,'#a86830')}r(3,2,1,10,'#e8e8e8');r(2,1,2,2,'#7a4a20');r(2,11,2,2,'#7a4a20')}
  else{for(let i=0;i<9;i++)r(3+i,10-i,1,1,'#8a5a30');r(10,2,3,1,k==='iarrow'?'#c8d0dc':'#9898a8');r(11,2,1,3,k==='iarrow'?'#c8d0dc':'#9898a8');r(2,10,2,2,'#f0f0f0');r(3,11,1,2,'#e05040')}
- return ICONC[key]=c.toDataURL()};
+ return ICONC[key]=c.toDataURL()});
 // --- quest: the Bone Lord (before Grandmaster) ---
 const GI21=QS.findIndex(q=>q.n==='Grandmaster');
 QS.splice(GI21,0,{n:'The Bone Lord',d:'A tomb lies buried in the southern desert. Find it and defeat the Bone Lord. (Bring arrows: dodge roll with R or ROLL.)',type:'bonelord',amt:1,r:{g:400,xp:[FL,1200]}});
@@ -170,6 +168,6 @@ const remap21=qv=>{if(qv>=7)return;if(Q.i===GI21){Q.on=false;Q.k=0}else if(Q.i>G
 
 SQSAVE.after('021:qv,tomb,gmd',s=>{s.qv=7;s.tomb=TOMB_DAY;s.gmd=GMDONE?1:0;});
 SQLOAD.after('021',(S)=>{if(S.q)remap21(S.qv||0);TOMB_DAY=isFinite(S.tomb)?+S.tomb:-1;if(Array.isArray(S.xp))XPS[FL]=Math.max(0,+S.xp[FL]||0);if(S.inv){inv.arrow=Math.max(0,+S.inv.arrow||0);inv.iarrow=Math.max(0,+S.inv.iarrow||0)}TL.bow=S.tl?Math.max(0,Math.min(2,+S.tl.bow||0)):0});
-const _ng21=newGame;newGame=function(){TL.bow=0;TOMB_DAY=-1;PROJ.length=0;_ng21()};
-const _dmap21=drawMap;drawMap=function(){_dmap21();const c=document.getElementById('mpc');if(!c||!TOMB)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(TOMB.x-1,TOMB.y-1,3,3);x.fillStyle='#b070f0';x.fillRect(TOMB.x,TOMB.y,1,1)};
+SQNEWGAME.before('021',()=>{TL.bow=0;TOMB_DAY=-1;PROJ.length=0;});
+SQDRAWMAP.after('021',()=>{const c=document.getElementById('mpc');if(!c||!TOMB)return;const x=c.getContext('2d');x.fillStyle='#101010';x.fillRect(TOMB.x-1,TOMB.y-1,3,3);x.fillStyle='#b070f0';x.fillRect(TOMB.x,TOMB.y,1,1)});
 const _ws21=wantSong;wantSong=function(){return SCENE&&SCENE.room.tomb?'cave':_ws21()};

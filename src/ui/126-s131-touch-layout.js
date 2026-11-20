@@ -48,7 +48,7 @@
   c.x=Math.max(0,Math.min(1,(e.clientX+d.dx)/innerWidth));c.y=Math.max(0,Math.min(1,(e.clientY+d.dy)/innerHeight));apply()},true);
  for(const ev of['pointerup','pointercancel'])addEventListener(ev,e=>{if(!ED.on)return;e.stopImmediatePropagation();if(ED.drag&&e.pointerId===ED.drag.pid){ED.drag=null;save()}},true);
  // any way of closing (Esc, a controller's back button) finishes editing; the game's code may hide buttons each frame
- {const _cp=closePanel;closePanel=function(){if(ED.on){done();return}return _cp.apply(this,arguments)}}
+ {SQCLOSEPN.wrap('126',_cp=>function(){if(ED.on){done();return}return _cp.apply(this,arguments)})}
  {SQUPD.after('126',(dt)=>{try{if(ED.on){pnOpen=true;for(const id of IDS){const el=$(id);if(el&&el.style.display==='none')el.style.display='flex'}}apply()}catch(e){self.SQERR&&SQERR(e,'126-3')}})}
  setTimeout(apply,0);
  // ---- the Touch tab in Options > Controls ----

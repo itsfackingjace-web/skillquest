@@ -28,7 +28,7 @@ const _oc27=pbd.onclick;pbd.onclick=e=>{
  if(BENCH){if(e.target.closest('.stb2')){const o=BENCH;BENCH=null;closePanel();if(o.inside)pickFurn(o.i);else pickStruct(o.i);return}
   if(e.target.closest('.rc,.gc,.fc')){withChests(()=>_oc27(e));saveLocal(true);rPn();return}}
  _oc27(e)};
-const _cp27=closePanel;closePanel=function(){_cp27();BENCH=null};
+SQCLOSEPN.after('027',()=>{BENCH=null});
 const _bs27=backScreen;backScreen=function(){if(BENCH){closePanel();return}_bs27()};
 // tabs: leaving the Craft list ends bench mode
 document.getElementById('t0').addEventListener('click',()=>{BENCH=null},true);
@@ -37,5 +37,5 @@ document.getElementById('px').addEventListener('click',()=>{BENCH=null},true);
 const _dst27=drawStation;drawStation=function(t,x,y,st,tm){if(t!=='bench')return _dst27(t,x,y,st,tm);const x0=x*16,y0=y*16;shd(x0+8,y0+14,16);
  Rg(x0,y0-2,16,9,O);Rg(x0+1,y0-1,14,5,'#c89858');Rg(x0+1,y0-1,14,1,'#e8c088');Rg(x0+1,y0+4,14,2,'#9a6c3c');Rg(x0+2,y0+6,2,9,O);Rg(x0+12,y0+6,2,9,O);Rg(x0+2,y0+11,12,2,O);
  Rg(x0+3,y0-4,6,2,'#a8b0b8');Rg(x0+3,y0-4,1,3,'#7a4a20');Rg(x0+10,y0-6,2,5,'#7a4a20');Rg(x0+9,y0-7,4,2,'#808890')};
-const _icon27=iconURL;iconURL=function(k,col){if(k!=='bench')return _icon27(k,col);const key='g27bench';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
- r(1,5,12,3,'#c89858');r(1,8,12,1,'#9a6c3c');r(2,9,2,4,'#7a4a20');r(10,9,2,4,'#7a4a20');r(3,3,4,2,'#a8b0b8');r(9,1,2,4,'#7a4a20');r(8,1,4,1,'#808890');return ICONC[key]=c.toDataURL()};
+SQICON.wrap('027',_icon27=>function(k,col){if(k!=='bench')return _icon27(k,col);const key='g27bench';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+ r(1,5,12,3,'#c89858');r(1,8,12,1,'#9a6c3c');r(2,9,2,4,'#7a4a20');r(10,9,2,4,'#7a4a20');r(3,3,4,2,'#a8b0b8');r(9,1,2,4,'#7a4a20');r(8,1,4,1,'#808890');return ICONC[key]=c.toDataURL()});

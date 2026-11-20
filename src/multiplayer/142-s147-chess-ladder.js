@@ -35,4 +35,4 @@
  {SQLOAD.after('142',(S)=>{try{const v=S&&S.chr;Object.assign(ST,{r:1000,g:0,w:0,l:0,d:0,pk:1000,f:{}});
    if(v&&typeof v==='object'){ST.r=Math.max(100,Math.min(3000,+v.r||1000));for(const k of['g','w','l','d'])ST[k]=Math.max(0,v[k]|0);ST.pk=Math.max(ST.r,+v.pk||0);
     if(v.f&&typeof v.f==='object')for(const u in v.f){const a=v.f[u];if(Array.isArray(a))ST.f[u]=[a[0]|0,a[1]|0]}}}catch(e){self.SQERR&&SQERR(e,'142-8')}})}
- {const _ng=newGame;newGame=function(){Object.assign(ST,{r:1000,g:0,w:0,l:0,d:0,pk:1000,f:{}});return _ng.apply(this,arguments)}}})();
+ {SQNEWGAME.before('142',()=>{Object.assign(ST,{r:1000,g:0,w:0,l:0,d:0,pk:1000,f:{}});})}})();

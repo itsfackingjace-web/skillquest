@@ -80,11 +80,11 @@
  // ---------------- the map screen: pin, labels, legend ----------------
  const mapArea=()=>{const R=SCENE&&SCENE.room;return R&&R.region?R.region:'hollow'};
  const isHere=()=>typeof MAPVIEW==='undefined'||MAPVIEW!=='world';
- {const _dmap=drawMap;drawMap=function(){const out=_dmap.apply(this,arguments);try{if(!isHere())return out;const c=document.getElementById('mpc');if(!c)return out;
+ {SQDRAWMAP.wrap('225',_dmap=>function(){const out=_dmap.apply(this,arguments);try{if(!isHere())return out;const c=document.getElementById('mpc');if(!c)return out;
     const list=PP.filter(q=>q.a===mapArea()).map(q=>[q.x,q.y,PCOL]);if(PIN&&PIN.a===mapArea())list.push([PIN.x,PIN.y,PINK]);
     for(const[X,Y,COL]of list){const x=c.getContext('2d'),S2=c.width>=200?2:1,r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(X+.5+(a-.5)*S2,Y+1+(b-1)*S2,w*S2,h*S2)},bob=(performance.now()/400|0)%2;
     // a little pixel pin with its point on the tile
-    const ART=['.ooo.','oppwo','opppo','opppo','.opo.','..o..'],CL={o:DARK,p:COL,w:'#fff'};ART.forEach((row,j)=>{for(let k=0;k<5;k++){const ch=row[k];if(ch!=='.')r(k-2,j-5-bob,1,1,CL[ch])}})}}catch(e){self.SQERR&&SQERR(e,'225-16')}return out}}
+    const ART=['.ooo.','oppwo','opppo','opppo','.opo.','..o..'],CL={o:DARK,p:COL,w:'#fff'};ART.forEach((row,j)=>{for(let k=0;k<5;k++){const ch=row[k];if(ch!=='.')r(k-2,j-5-bob,1,1,CL[ch])}})}}catch(e){self.SQERR&&SQERR(e,'225-16')}return out})}
  pbd.addEventListener('click',e=>{const c=e.target;if(!c||c.id!=='mpc'||!isHere())return;const rc=c.getBoundingClientRect(),cw=c.clientWidth||rc.width,chh=c.clientHeight||rc.height;
   const tx=Math.floor((e.clientX-rc.left-(c.clientLeft||0))/cw*c.width),ty=Math.floor((e.clientY-rc.top-(c.clientTop||0))/chh*c.height);if(tx<0||ty<0||tx>=c.width||ty>=c.height)return;
   const a=mapArea(),near=Math.max(4,c.width/40);

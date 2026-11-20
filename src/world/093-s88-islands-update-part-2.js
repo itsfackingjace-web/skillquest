@@ -14,10 +14,10 @@ for(const id in RFISH)for(const f of RFISH[id]){const isle=WORLD_REGIONS[id].nam
  if(typeof SHORT!=='undefined'){SHORT[f.k]='raw '+f.n.toLowerCase();SHORT['c'+f.k]='cooked '+f.n.toLowerCase()}
  COOKS.push({raw:f.k,ck:'c'+f.k,n:f.n.toLowerCase(),lv:f.lv,xp:Math.round(f.xp*1.3)});FOODS.push({k:'c'+f.k,n:'cooked '+f.n.toLowerCase(),heal:f.heal,hun:f.hun});FCOL[f.k]=f.c;FCOL['c'+f.k]=f.cc}
 FOODS.sort((a,b)=>b.heal-a.heal||b.hun-a.hun);
-{const _ic=iconURL;iconURL=function(k,col){if(!FCOL[k])return _ic(k,col);const key='rf_'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),cl=FCOL[k];
+{SQICON.wrap('093',_ic=>function(k,col){if(!FCOL[k])return _ic(k,col);const key='rf_'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),cl=FCOL[k];
   const r=(a,b,w,h,q)=>{x.fillStyle=q;x.fillRect(a+1,b+1,w,h)},e=(cx,cy,rx,ry,q)=>{x.fillStyle=q;for(let j=0;j<12;j++)for(let i=0;i<12;i++)if(((i+.5-cx)/rx)**2+((j+.5-cy)/ry)**2<=1)x.fillRect(i+1,j+1,1,1)};
   e(5.5,6,4.7,2.8,'#202838');e(5.5,6,4.3,2.4,cl);r(9,4,2,1,cl);r(10,5,1,2,cl);r(9,7,2,1,cl);r(2,5,1,1,'#202020');r(3,7,4,1,'#ffffff40');if(k[0]==='c')r(4,4,3,1,'#00000030');
-  return ICONC[key]=c.toDataURL()}}
+  return ICONC[key]=c.toDataURL()})}
 const _cf=catchFish;catchFish=function(){const R=SCENE&&SCENE.room,L=lvOf(9),list=R&&R.region&&RFISH[R.region]?RFISH[R.region].filter(f=>L>=f.lv):[];
  if(!list.length||Math.random()>.5)return _cf();const f=list[Math.random()<.7?0:list.length-1];
  if(Math.random()<Math.min(.85,.45+L*.01)){inv[f.k]=(inv[f.k]|0)+1;addXp(9,f.xp);say('You catch a '+f.n.toLowerCase()+'!');sfx('pickup');try{gTxt(FISH.bx,FISH.by-24,f.n,'#58a8ff')}catch(e){self.SQERR&&SQERR(e,'093-1')}}else say('It got away...');
@@ -84,7 +84,7 @@ window.fireKey64=()=>SCENE&&SCENE.room&&SCENE.room.icv?'icv:'+SCENE.id:curRegion
    const m=rgMake(e[0],e[0]==='bat'?Math.round(hp*.7):hp,x,y);m.icv=1;R.mobs.push(m)}
   return R}}
 // going in (and every floor keeps the way back out to Ironcrest)
-{const _es=enterScene;enterScene=function(id,house,ret){const carry=SCENE&&SCENE.prev&&SCENE.room&&SCENE.room.icv?SCENE.prev:null;_es(id,house,ret);if(carry&&SCENE&&!SCENE.prev&&SCENE.room&&SCENE.room.icv)SCENE.prev=carry}}
+{SQENTER.wrap('093',_es=>function(id,house,ret){const carry=SCENE&&SCENE.prev&&SCENE.room&&SCENE.room.icv?SCENE.prev:null;_es(id,house,ret);if(carry&&SCENE&&!SCENE.prev&&SCENE.room&&SCENE.room.icv)SCENE.prev=carry})}
 {const _ls=leaveScene;leaveScene=function(){const R=SCENE&&SCENE.room;if(R&&R.icv&&R.dun&&R.dun.f>1){dGo(R.dun.kind,R.dun.f-1,'below');return}return _ls()}}
 function icvEnter(it){if(dead||TRAVEL49)return;const kind=it.kind,R=dFloor(kind,1);enterScene(dKey(kind,1),null,{x:it.x*16+8,y:(it.y+1)*16+8});dArrive(R,null);
  const nf=+ICV[kind].floors||6,NW=['','One floor','Two floors','Three floors','Four floors','Five floors','Six floors'];say('You enter '+ICV[kind].name+'. '+(NW[nf]||nf+' floors')+(nf>1?' deep':'')+(ICV[kind].noboss?', rich in ore':', and something old waits at the bottom')+'. Campfires work down here.');msgT=5}
@@ -135,7 +135,7 @@ function givePet(k){const C=LUX.COS;const had=C.pets.includes(k);if(!had)C.pets.
 window.SQGIVEPET=givePet;
 const wolfPetOf=n=>{if(!n||n.type!=='wolf'||n._pet)return null;if(n.vr==='snow'||n.rv==='snow')return'psnow';if(n.rv==='briar')return'pbriar';if(n.rv==='void')return'pvoid';if(n.rv||n.vr)return null;return'pwolf'};
 function rollWolf(n){if(!n||n._petRoll)return;n._petRoll=1;const k=wolfPetOf(n);if(k&&(Math.random()<1/1000||window.SQPETDROP))givePet(k)}
-{const _ed=enemyDrop;enemyDrop=function(n){_ed(n);try{rollWolf(n)}catch(e){self.SQERR&&SQERR(e,'093-6')}}}
+{SQDROP.after('093',(n)=>{try{rollWolf(n)}catch(e){self.SQERR&&SQERR(e,'093-6')}})}
 if(typeof killEnemy==='function'){const _ke=killEnemy;killEnemy=function(n,...a){const r=_ke(n,...a);try{if(n&&n.dead)rollWolf(n)}catch(e){self.SQERR&&SQERR(e,'093-7')}return r}}
 {SQHIT.wrap('093 islands update part 2',_a=>function(){let tt=null,tv=null;try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;
    if(R&&R.region){const it=rgObjAt(R,tx,ty);tt=it&&it.o.t;tv=it&&it.o.v}else if(!SCENE&&tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];tt=o&&o.t;tv=o&&o.v}}catch(e){self.SQERR&&SQERR(e,'093-8')}

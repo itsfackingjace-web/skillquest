@@ -37,7 +37,7 @@ function rhPack(h){const j=RH.indexOf(h);if(j<0)return;RH.splice(j,1);rhSolidSyn
    const f=rhAt(rhForeign(R.region),x,y);if(f){notYours(f._owner);return}}
  return next.apply(this,arguments)})}
 // ---- going in and coming out ----
-{const _es=enterScene;enterScene=function(id,house,ret){const prev=SCENE&&SCENE.room&&SCENE.room.region?SCENE:null;_es(id,house,ret);if(prev&&SCENE&&!(SCENE.room&&SCENE.room.region))SCENE.prev=prev}}// an island never gets another island as `prev` (leaving an island always goes home; with one, sailing to Hollow could drop you back on the old island)
+{SQENTER.wrap('067',_es=>function(id,house,ret){const prev=SCENE&&SCENE.room&&SCENE.room.region?SCENE:null;_es(id,house,ret);if(prev&&SCENE&&!(SCENE.room&&SCENE.room.region))SCENE.prev=prev})}// an island never gets another island as `prev` (leaving an island always goes home; with one, sailing to Hollow could drop you back on the old island)
 {const _ls=leaveScene;leaveScene=function(){const S=SCENE;if(!S||!S.prev)return _ls();if(typeof BUILD!=='undefined'&&BUILD)endBuild();const r=S.ret;SCENE=S.prev;P.x=r.x;P.y=r.y;face=[0,1];FADE_AT=performance.now();sfx('door');rhSolidSync()}}
 {SQUPD.after('067',(dt)=>{if(menuOpen||pnOpen||dead)return;const R=rbR();if(!R||face[1]>=0)return;for(const h of rhHere()){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+6&&P.y>h.y*16-4){enterScene('home',h,{x:cx,y:(h.y+1)*16+7});return}}for(const h of rhForeign(R.region)){const cx=h.x*16+8;if(Math.abs(P.x-cx)<9&&P.y<(h.y+1)*16+6&&P.y>h.y*16-4){enterScene('home',h,{x:cx,y:(h.y+1)*16+7});return}}})}
 // waking up in a house on another island
@@ -59,7 +59,7 @@ function rhSign(h){const nm=h._foreign?fname(h._owner):(MP.on?myName():pname());
   if(S&&Array.isArray(S.rh))for(const e of S.rh){if(!e||!WORLD_REGIONS[e.rg]||!isFinite(e.x)||!isFinite(e.y))continue;const h={id:String(e.id||'').slice(0,12)||Math.random().toString(36).slice(2,8),rg:e.rg,x:e.x|0,y:e.y|0,w:7,furn:new Map(),hp:12};
    if(Array.isArray(e.f))for(const q of e.f){if(!Array.isArray(q))continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RHt||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:items(q[2])},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):{t})}RH.push(h)}
   if(keepHome&&RH.some(h=>h.id===keepHome))HOMESP=keepHome;try{rhSolidSync()}catch(e){self.SQERR&&SQERR(e,'067-4')}})}
-{const _ng=newGame;newGame=function(){RH.length=0;_ng()}}
+{SQNEWGAME.before('067',()=>{RH.length=0;})}
 // shared: other players see where your island houses are
 {const _rp=rbPub;rbPub=function(){const o=_rp()||{};if(RH.length)o._h=RH.map(h=>[h.rg,h.x,h.y,h.id,[...h.furn].map(([i,f])=>f.nm?[i,f.t,0,f.nm]:[i,f.t])]);return Object.keys(o).length?o:null}}
 window.SQRH=RH;

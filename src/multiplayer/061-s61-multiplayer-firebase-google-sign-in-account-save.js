@@ -315,9 +315,9 @@ function mpSend(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,80);if(!t)
  const d=FB.db;d.push(d.ref(FB.D,'chat'),{u:MP.user.uid,n:myName().slice(0,12),m:t,t:d.serverTimestamp()}).catch(mpErr)}
 // ---- Options: show your own name (and crown) over your head ----
 MP.selfName=false;try{MP.selfName=localStorage.getItem('sq_myname')==='1'}catch(e){self.SQERR&&SQERR(e,'061-30')}
-const _opt61=optionsHTML;optionsHTML=function(){const h=_opt61(),k=h.indexOf('<div class="tl" style="margin-top:22px');
+SQOPTS.wrap('061',_opt61=>function(){const h=_opt61(),k=h.indexOf('<div class="tl" style="margin-top:22px');
  const add='<div class="tl" style="margin-top:16px">ONLINE</div><button class="sb mpo" data-o="myname">Show my name overhead: '+(MP.selfName?'ON':'OFF')+'</button>';
- return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
+ return k<0?h+add:h.slice(0,k)+add+h.slice(k)});
 const _oc61=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mpo');if(b){MP.selfName=!MP.selfName;try{localStorage.setItem('sq_myname',MP.selfName?'1':'0')}catch(_){self.SQERR&&SQERR(_,'061-31')}rPn();return}_oc61(e)};
 // ---- controller: START menu entry, highlight navigation in the chat and sign-in boxes, ○ / Options closes them ----
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'online',l:()=>MP.on?'Chat':'Play online'});
@@ -691,7 +691,7 @@ setInterval(()=>{bugBtn.style.display=(pnOpen||menuOpen||chessOpen||TS.open||bug
 // also in the START menu, the title screen and Options
 SMI.splice(SMI.findIndex(x=>x.id==='options'),0,{id:'bug',l:()=>'Report a bug'});
 {const _ss=showScreen;showScreen=function(id){if(id!=='bug')return _ss(id);releaseMenu();bugOpen()}}
-{const _opt=optionsHTML;optionsHTML=function(){const h=_opt(),k=h.indexOf('<div class="tl" style="margin-top:22px');const add='<button class="sb mpbg" data-o="bug">Report a bug</button>';return k<0?h+add:h.slice(0,k)+add+h.slice(k)}}
+{SQOPTS.wrap('061',_opt=>function(){const h=_opt(),k=h.indexOf('<div class="tl" style="margin-top:22px');const add='<button class="sb mpbg" data-o="bug">Report a bug</button>';return k<0?h+add:h.slice(0,k)+add+h.slice(k)})}
 {const _oc=pbd.onclick;pbd.onclick=e=>{if(e.target.closest('.mpbg')){closePanel();bugOpen();return}_oc(e)}}
 {const _tm=tsMenu;tsMenu=function(){_tm();if(!tsMn.querySelector('[data-a="bug"]')){const b=document.createElement('button');b.dataset.a='bug';b.textContent='REPORT A BUG';const st=tsMn.querySelector('.tsst');tsMn.insertBefore(b,st)}}}
 tsMn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.a==='bug'){bugOpen()}});
@@ -729,8 +729,8 @@ function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now(
 // never save other people's houses into your game
 {SQSAVE.after('061:houses,home',s=>{if(Array.isArray(s.houses)){const fids=new Set(HOUSES.filter(h=>h._foreign).map(h=>h.id));s.houses=s.houses.filter(h=>!fids.has(h.id))}if(s.home&&HOUSES.some(h=>h._foreign&&h.id===s.home))s.home=null;})}
 // the door: friends only
-{const _es=enterScene;enterScene=function(id,house,ret){if(house&&house._foreign&&!canEnter(house)){const now=performance.now();if(now-HS.msgAt>2500){HS.msgAt=now;const nm=fname(house._owner);say('This is '+nm+'\'s house. Only '+nm+'\'s friends can go in.');sfx('swish')}P.y+=6;return}
- _es(id,house,ret);if(house&&house._foreign)say('You visit '+fname(house._owner)+'\'s house.')}}
+{SQENTER.wrap('061',_es=>function(id,house,ret){if(house&&house._foreign&&!canEnter(house)){const now=performance.now();if(now-HS.msgAt>2500){HS.msgAt=now;const nm=fname(house._owner);say('This is '+nm+'\'s house. Only '+nm+'\'s friends can go in.');sfx('swish')}P.y+=6;return}
+ _es(id,house,ret);if(house&&house._foreign)say('You visit '+fname(house._owner)+'\'s house.')})}
 // inside someone else's house: look, don't touch
 {const _uf=useFurn;useFurn=function(it){const h=SCENE&&SCENE.house;if(h&&h._foreign){const st=it&&(it.f?it.f.t:it.t);if(st&&typeof STN!=='undefined'&&STN.has(st)&&window.SQTRUTHEN){SQTRUTHEN(h._owner,()=>openStation({t:st,inside:true,i:it.i,f:it.f||{t:st},_foreign:h._owner,_ok:1}));return}say(it&&it.use==='chest'?'That chest belongs to '+fname(h._owner)+'.':it&&it.use==='bed'?'That\'s '+fname(h._owner)+'\'s bed.':'Better ask '+fname(h._owner)+' first.');sfx('swish');return}return _uf(it)}}
 {const _sb=startBuild;startBuild=function(k){const h=SCENE&&SCENE.house;if(h&&h._foreign){say('You can only decorate your own house.');closePanel();return}return _sb(k)}}

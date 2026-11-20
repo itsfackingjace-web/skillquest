@@ -55,7 +55,7 @@
   setTimeout(()=>{try{if(!dead&&on()){const e=E();mpLog('game','New weekly event: '+e.n+'! '+e.w(e.goal)+'. See your quest log.')}}catch(er){self.SQERR&&SQERR(er,'143-11')}},3000)}
  function add(k){if(!(k>0)||!on())return;const was=W.c;W.c+=k;W.q+=k;if(was<mins(E())&&W.c>=mins(E()))pay(E(),tierOf(TOT,E()));if(pnOpen&&ptab===6)rPn()}
  // ---- counting ----
- {const _ax=addXp;addXp=function(i,x){const out=_ax.apply(this,arguments);if(!PAYING&&x>0){XPF.add(i);if(x<=200&&!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}return out}}// (big gains are rewards, not fires)
+ {SQADDXP.after('143',(i,x)=>{if(!PAYING&&x>0){XPF.add(i);if(x<=200&&!window.SQFIREXTRA)XPN[i]=(XPN[i]|0)+1}})}// (big gains are rewards, not fires)
  {SQUPD.wrap('143',_u=>function(dt){const out=_u.apply(this,arguments);try{if(dead)return out;rollover();watch();const e=E(),si=SK(e.s);
    if(LASTINV&&!e.kill&&XPF.has(si)){if(e.xpc)add(XPN[si]|0);else{let tot=0;for(const k in inv){const v=(inv[k]|0)-(LASTINV[k]|0);if(v>0)tot+=v}add(e.min1?Math.max(1,tot):tot)}}
    if(typeof kills==='number'){if(e.kill&&kills>LASTK&&LASTINV)add(kills-LASTK);LASTK=kills}
@@ -84,5 +84,5 @@
  {SQSAVE.after('143:wev',s=>{try{if(W.c||W.got)s.wev={w:W.w,c:W.c,got:W.got,q:W.q}}catch(e){self.SQERR&&SQERR(e,'143-14')}})}
  {SQLOAD.after('143',(S)=>{try{const v=S&&S.wev;W=v&&typeof v==='object'&&isFinite(+v.w)?{w:+v.w|0,c:Math.max(0,v.c|0),got:Math.max(0,Math.min(3,v.got|0)),q:Math.max(0,v.q|0)}:{w:weekOf(now()),c:0,got:0,q:0};
    TOT=0;TOP=[];NP=0;subW=-1;if(unsub){try{unsub()}catch(e){self.SQERR&&SQERR(e,'143-15')}unsub=null}LASTINV=null;LASTK=typeof kills==='number'?kills:0}catch(e){self.SQERR&&SQERR(e,'143-16')}})}
- {const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);W={w:weekOf(now()),c:0,got:0,q:0};LASTINV=null;LASTK=0;return out}}
+ {SQNEWGAME.after('143',()=>{W={w:weekOf(now()),c:0,got:0,q:0};LASTINV=null;LASTK=0;})}
  window.SQWEEK={EV,TIERS,REW,weekOf,evOf,get state(){return W},set state(v){W=v},get total(){return TOT},html,mins,send,tierOf}})();

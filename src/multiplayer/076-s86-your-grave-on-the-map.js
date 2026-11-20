@@ -16,8 +16,7 @@
    const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=w*t.h/t.w,x0=L.dx+L.dw-w,y0=L.top+L.dh+46*U;g.save();g.setTransform(1,0,0,1,0,0);
    for(const o of M)tomb(g,x0+(o.w.x/16)/t.w*w,y0+(o.w.y/16)/t.h*hh,Math.max(1,Math.round(U*.9)),blink());g.restore()}}
  // the map: HERE (1 pixel per tile) and WORLD
- {const _dm=drawMap;drawMap=function(){_dm();if(MAPVIEW==='world')return;const c=document.getElementById('mpc');if(!c)return;const R=SCENE&&SCENE.room,area=R&&R.region?R.region:'hollow',[aw]=areaSize(area);if(c.width!==aw)return;
-   const x=c.getContext('2d'),s=Math.max(1,Math.round(aw/90));for(const o of mine())if(o.w.ar===area)tomb(x,o.w.x/16,o.w.y/16,s,blink())}}
+ {SQDRAWMAP.after('076',()=>{if(MAPVIEW==='world')return;const c=document.getElementById('mpc');if(!c)return;const R=SCENE&&SCENE.room,area=R&&R.region?R.region:'hollow',[aw]=areaSize(area);if(c.width!==aw)return;const x=c.getContext('2d'),s=Math.max(1,Math.round(aw/90));for(const o of mine())if(o.w.ar===area)tomb(x,o.w.x/16,o.w.y/16,s,blink())})}
  {const _dw=drawWorld52;drawWorld52=function(){_dw();const c=document.getElementById('wmc');if(!c)return;const x=c.getContext('2d');
    for(const o of mine()){const r=wmRect(o.w.ar),[aw,ah]=areaSize(o.w.ar);tomb(x,r.x+(o.w.x/16)/aw*r.w,r.y+(o.w.y/16)/ah*r.h,1,blink())}}}
  {const _mh=mapHTML;mapHTML=function(){let h=_mh();const M=mine();if(!M.length)return h;

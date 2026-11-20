@@ -17,7 +17,7 @@ for(const[after,q]of QNEW){const i=QS.findIndex(o=>o.n===after);QS.splice(i>=0?i
 function villageQuestProgress(){return['frosthollow','dusthaven','tidewatch'].filter(id=>SQ_SIDE[id]&&SQ_SIDE[id].completed).length}
 const _qv48=qVal;qVal=function(q){return q.type==='village'?villageQuestProgress():_qv48(q)};
 // kills: a quest that names an enemy only counts that enemy (wolves include snow wolves)
-const _ed48=enemyDrop;enemyDrop=function(n){_ed48(n);const q=QS[Q.i];if(Q.on&&q&&q.type==='kill'&&q.item&&n.type===q.item){Q.k++;if(Q.k===q.amt){say('Quest updated: '+q.n+' - return to Elder Rowan.');msgT=3;sfx('quest')}saveLocal(true)}};
+SQDROP.after('048',(n)=>{const q=QS[Q.i];if(Q.on&&q&&q.type==='kill'&&q.item&&n.type===q.item){Q.k++;if(Q.k===q.amt){say('Quest updated: '+q.n+' - return to Elder Rowan.');msgT=3;sfx('quest')}saveLocal(true)}});
 // finished quests by name, so the chain can skip what an old save already did
 var QDONE=new Set(),QHOLD=null;
 function qSkip(){while(QS[Q.i]&&QDONE.has(QS[Q.i].n))Q.i++;if(QHOLD&&QS[Q.i]&&QS[Q.i].n===QHOLD.n){Q.on=QHOLD.on;Q.k=QHOLD.k;QHOLD=null}}
@@ -27,7 +27,7 @@ SQLOAD.after('048',(S)=>{QDONE=new Set();QHOLD=null;if(!S.q)return;if((S.qv||0)<
   const done=QOLD8.slice(0,Math.min(Q.i,QOLD8.length));if(GMDONE||Q.i>=QOLD8.length)done.push('Grandmaster');for(const n of done)QDONE.add(n);
   const cur=QOLD8[Q.i];if(cur&&Q.on)QHOLD={n:cur,on:true,k:Q.k};Q.i=0;Q.on=false;Q.k=0;qSkip();if(QHOLD&&QS[Q.i]&&QS[Q.i].n!==QHOLD.n){Q.on=false;Q.k=0}}
  else{if(Array.isArray(S.qdone))for(const n of S.qdone)if(typeof n==='string'&&QS.some(q=>q.n===n))QDONE.add(n);if(S.qhold&&typeof S.qhold.n==='string')QHOLD={n:S.qhold.n,on:!!S.qhold.on,k:Math.max(0,+S.qhold.k||0)}}Q.i=Math.max(0,Math.min(QS.length,Q.i))});
-const _ng48=newGame;newGame=function(){QDONE=new Set();QHOLD=null;_ng48()};
+SQNEWGAME.before('048',()=>{QDONE=new Set();QHOLD=null;});
 // the quest list shows finished quests by name (an old save may have done later ones before an earlier new one)
 const _qh48=questsHTML;questsHTML=function(){const full=_qh48(),cut=full.indexOf('<div class="tl" style="margin-top:14px">'),side=cut>=0?full.slice(cut):'';
  let h='<div class="tl">Quest points: '+Q.qp+' / '+QS.length+'</div>';

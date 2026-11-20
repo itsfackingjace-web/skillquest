@@ -30,4 +30,7 @@ module.exports={
    for(const k of['arrowleft','arrowup','arrowright','arrowdown']){S.key(k,1);S.frame(30,10);S.key(k,0)}S.key('arrowdown',1);S.frame(90,10);S.key('arrowdown',0);S.frame(30,10)}},
  panels(S){inv.wood=30;inv.stone=20;inv.iron=5;GLD=5000;for(const t of[0,1,2,3,4,5,6,7,8,31,35,38,39,41,43,44,45,46,47,48,49,50,51]){try{openPanel(t);rPn()}catch(e){}S.frame(3,3);S.rec('p'+t);try{closePanel()}catch(e){}S.frame(2,2)}
   try{openSM();S.frame(5,5);S.rec('sm');closeSM()}catch(e){}},
+ misc(S){for(const id of['map','options','style','emotes','patron','bag','card','skills','quests','craft']){try{showScreen(id)}catch(e){}S.frame(4,4);S.rec('s:'+id);try{closePanel()}catch(e){}S.frame(2,2)}
+  try{newGame()}catch(e){}S.frame(10,10);S.rec('ng');const h=JSON.stringify(snap());let x=2166136261;for(let i=0;i<h.length;i++){x^=h.charCodeAt(i);x=Math.imul(x,16777619)}S.rec('snap'+(x>>>0).toString(36));
+  for(let i=0;i<3;i++){addXp(1,500);S.frame(5,5)}S.rec('xp')},
 };

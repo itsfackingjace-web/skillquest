@@ -107,7 +107,7 @@ function arrowHit(p,n){if(p.crit)drops.push({x:n.x,y:n.y-26,t:0,tx:'CRIT',c:'#ff
  if(perk(FL,'explosive')&&p.iron){for(const o of en)if(o!==n&&!o.dead&&Math.hypot(o.x-n.x,o.y-n.y)<24)hitE(o,Math.ceil(p.dmg/2),'#f8a040','arrow');for(let k=0;k<12;k++){const a=k/12*6.283;part(n.x,n.y-6,Math.cos(a)*90,Math.sin(a)*70,.3,k%2?'#f88830':'#f8e060',0)}}
  if(perk(FL,'ricochet')&&!p.ric){let b=null,bd=72;for(const o of en){if(o===n||o.dead)continue;const d=Math.hypot(o.x-n.x,o.y-n.y);if(d<bd){bd=d;b=o}}
   if(b){const dx=b.x-n.x,dy=(b.y-4)-(n.y-4),d=Math.hypot(dx,dy)||1;PROJ.push({...p,x:n.x+dx/d*10,y:n.y-4+dy/d*10,vx:dx/d*270,vy:dy/d*270,t:0,life:1,dmg:Math.max(1,Math.ceil(p.dmg/2)),ric:1,extra:1,dead:0,crit:0,ghost:0,pierced:1})}}}
-const _ed37=enemyDrop;enemyDrop=function(n){_ed37(n);if(n.type==='wolf'&&perk(FL,'hunter')){inv.pelt=(inv.pelt|0)+1}};
+SQDROP.after('037',(n)=>{if(n.type==='wolf'&&perk(FL,'hunter')){inv.pelt=(inv.pelt|0)+1}});
 // --- Tactics: crits ---
 function critCh(n){if(NEXTCRIT||(perk(7,'sucker')&&n&&!n.tapped))return 1;return lvOf(7)*.006+(perk(7,'battletac')?.05:0)+(perk(7,'focus')?.08:0)+(perk(7,'checkstrike')?.1:0)+(perk(7,'grandstrat')?.15:0)}
 function critMul(n){if(perk(7,'coupdegrace')&&n&&n.mhp&&n.hp>=n.mhp)return 4;return perk(7,'flank')||perk(7,'checkstrike')?3:2}

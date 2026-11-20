@@ -72,7 +72,7 @@
  {const st=document.createElement('style');st.textContent=`#pn .ctr{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #d8e0f0;font-size:14px;color:#404040}
 #pn .ctr span{flex:1;min-width:0;line-height:1.3}#pn .ctr b{flex:none;min-width:92px;text-align:center}
 #pn .ctc{flex:none;width:auto;padding:7px 12px;border:2px solid #485870;border-radius:6px;background:#fff;color:#304060;font:700 13px var(--pf,inherit);cursor:pointer}`;document.head.appendChild(st)}
- const _oh=optionsHTML;optionsHTML=function(){const h=_oh(),add='<button class="sb ctlb" style="width:100%;margin-top:8px">Controls: keys and buttons</button>',k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)};
+ SQOPTS.wrap('124',_oh=>function(){const h=_oh(),add='<button class="sb ctlb" style="width:100%;margin-top:8px">Controls: keys and buttons</button>',k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)});
  function html(){const gp=typeof GPON!=='undefined'&&GPON,pk=CAP&&CAP.kind==='p',kk=CAP&&CAP.kind==='k';
   let h='<div class="tl">CONTROLS</div><div style="display:flex;gap:6px;margin:4px 0 8px"><button class="sb" data-ct="tab:k" style="flex:1;opacity:'+(VIEW==='k'?1:.55)+'">Keyboard & mouse</button><button class="sb" data-ct="tab:p" style="flex:1;opacity:'+(VIEW==='p'?1:.55)+'">Controller</button><button class="sb" data-ct="tab:t" style="flex:1;opacity:'+(VIEW==='t'?1:.55)+'">Touch</button></div>';
   if(VIEW==='t'){h+=window.SQTOUCH?SQTOUCH.html():''}
@@ -96,5 +96,5 @@
    else if(a==='back'){CAP=null;ptab=8}
    else if(a.startsWith('t')&&window.SQTOUCH){CAP=null;if(SQTOUCH.act(a)===false)return}
    sfx('talk');rPn()}}
- {const _cp=closePanel;closePanel=function(){CAP=null;return _cp.apply(this,arguments)}}
+ {SQCLOSEPN.before('124',()=>{CAP=null;})}
  window.SQKEYS={get keys(){return KB},get pad(){return PM},KDEF,PDEF,bindKey,bindPad,open,labels}})();

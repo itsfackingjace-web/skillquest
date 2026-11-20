@@ -23,5 +23,5 @@
   const m=px[Math.round(h/2)];x.fillStyle='#d8b070';x.fillRect(m[0],m[1]-1,1,3);return c.toDataURL()};
  const MADE={};const icon=k=>{if(MADE[k])return MADE[k];if(ART[k])return MADE[k]=paint(ART[k]);
   if(k==='eq_bow1')return MADE[k]=bow(9,3,'#c08048','#f0d090');if(k==='eq_bow2')return MADE[k]=bow(12,4,'#8a5020','#d8b070');if(k==='eq_bow3')return MADE[k]=bow(12,5,'#ece4cc','#ffffff','#a89878');return null};
- const _ic=iconURL;iconURL=function(k,col){return icon(k)||_ic(k,col)};
+ SQICON.wrap('089',_ic=>function(k,col){return icon(k)||_ic(k,col)});
  if(typeof eqIcon==='function'){const _ei=eqIcon;eqIcon=function(k){return icon(k)||_ei(k)}}}

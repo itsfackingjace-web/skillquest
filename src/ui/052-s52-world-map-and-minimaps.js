@@ -102,8 +102,8 @@ function drawWorld52(){const c=document.getElementById('wmc');if(!c)return;const
 // HERE / WORLD switch on the map screen
 const _mh52=mapHTML;mapHTML=function(){const tabs='<div style="display:flex;gap:6px;justify-content:center;margin:2px 0 4px"><button class="sb mp52" data-m="local" style="flex:1;opacity:'+(MAPVIEW==='local'?1:.55)+'">HERE</button><button class="sb mp52" data-m="world" style="flex:1;opacity:'+(MAPVIEW==='world'?1:.55)+'">WORLD</button></div>';
  return tabs+(MAPVIEW==='world'?worldHTML52():_mh52())};
-const _dmap52=drawMap;drawMap=function(){if(MAPVIEW==='world'){drawWorld52();return}_dmap52()};
+SQDRAWMAP.wrap('052',_dmap52=>function(){if(MAPVIEW==='world'){drawWorld52();return}_dmap52()});
 const _oc52=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.mp52');if(b){MAPVIEW=b.dataset.m;WSEL=null;rPn();return}
  if(e.target&&e.target.id==='wmc'){const c=e.target,rc=c.getBoundingClientRect(),mx=(e.clientX-rc.left)/rc.width*c.width,my=(e.clientY-rc.top)/rc.height*c.height;
   for(const id of ROUTE_ORDER){const r=wmRect(id);if(mx>=r.x-6&&mx<=r.x+r.w+6&&my>=r.y-6&&my<=r.y+r.h+6){WSEL=id;rPn();return}}return}_oc52(e)};
-const _ng52=newGame;newGame=function(){for(const id in RG_CACHE)if(RG_CACHE[id]){RG_CACHE[id].fog=null;RG_CACHE[id].fogDirty=false;RG_CACHE[id].mmF=null}MAPVIEW='local';_ng52()};
+SQNEWGAME.before('052',()=>{for(const id in RG_CACHE)if(RG_CACHE[id]){RG_CACHE[id].fog=null;RG_CACHE[id].fogDirty=false;RG_CACHE[id].mmF=null}MAPVIEW='local';});

@@ -146,7 +146,7 @@ SQUPD.wrap('028',_u28=>function(dt){watchUpgrades();const paused=menuOpen||pnOpe
 // --- gear is safe when you fall; a new game clears it ---
 let NEWG=false;
 const _rs28=reset;reset=function(){const keep=NEWG?{}:Object.fromEntries(EQK.map(k=>[k,inv[k]|0]));_rs28();for(const k in keep)if(keep[k])inv[k]=keep[k];SPELLS.length=0};
-const _ng28=newGame;newGame=function(){NEWG=true;try{_ng28()}finally{NEWG=false}CLS={helm:null,body:null,legs:null};WAND=null;MANA=10;for(const k of EQK)inv[k]=0;snapEq()};
+SQNEWGAME.wrap('028',_ng28=>function(){NEWG=true;try{_ng28()}finally{NEWG=false}CLS={helm:null,body:null,legs:null};WAND=null;MANA=10;for(const k of EQK)inv[k]=0;snapEq()});
 // --- saving ---
 SQSAVE.after('028:cls,wand,mp',s=>{s.cls={...CLS};s.wand=WAND;s.mp=Math.round(MANA);s.offh=1;});
 SQLOAD.after('028',(S)=>{CLS={helm:null,body:null,legs:null};if(S.cls)for(const s of['helm','body','legs'])CLS[s]=S.cls[s]==='r'||S.cls[s]==='m'?(ARM[s]?null:S.cls[s]):null;WAND=S.wand&&WSP[S.wand]?S.wand:null;if(Array.isArray(S.xp))XPS[ML]=Math.max(0,+S.xp[ML]||0);MANA=Math.min(maxMP(),isFinite(S.mp)?+S.mp:10);if(TL.bow&&WAND){inv['eq_w'+WAND]=(inv['eq_w'+WAND]|0)+1;WAND=null}if(!S.offh&&!TL.bow&&!WAND){for(const t of[2,1])if((inv['eq_bow'+t]|0)>0){inv['eq_bow'+t]--;TL.bow=t;break}}snapEq()});
@@ -185,9 +185,9 @@ const _fh28=folkHTML;folkHTML=function(n){let h=_fh28(n);if(n.id!=='hermit')retu
  for(const[k,c]of HSHOP){const e=EQ[k];h+='<button class="sb xb" data-a="hb_'+k+'" style="opacity:'+(GLD>=c?1:.45)+'">'+esc(e.n)+'<br><small>'+c+' gold'+(e.lv?' · Magic '+e.lv:'')+(e.kind==='wand'?' · '+WSP[e.el].cost+' mana per cast':'')+'</small></button>'}return h};
 const _xa28=xAct;xAct=function(a){if(a.startsWith('hb_')){const k=a.slice(3),row=HSHOP.find(r=>r[0]===k);if(!row)return;if(GLD<row[1]){say('Not enough gold');sfx('swish');return}GLD-=row[1];inv[k]=(inv[k]|0)+1;say('Bought the '+EQ[k].n.toLowerCase()+'. Equip it from your Bag.');sfx('coin');saveLocal(true);rPn();return}_xa28(a)};
 // --- icons: wands (and fallbacks for helm / body / legs / can) ---
-const _icon28=iconURL;iconURL=function(k,col){if(k==='wfire'||k==='wice'||k==='wstorm'){const key='g28'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};const W2=WSP[k.slice(1)];
+SQICON.wrap('028',_icon28=>function(k,col){if(k==='wfire'||k==='wice'||k==='wstorm'){const key='g28'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};const W2=WSP[k.slice(1)];
   for(let i=0;i<8;i++)r(2+i,11-i,2,2,'#7a4a20');r(9,1,4,4,W2.col);r(10,2,2,2,W2.c2);return ICONC[key]=c.toDataURL()}
- if(EQ[k])return iconURL(EQ[k].ic,EQ[k].col);return _icon28(k,col)};
+ if(EQ[k])return iconURL(EQ[k].ic,EQ[k].col);return _icon28(k,col)});
 // mana bar on the HUD, Magic in the help
 hp.innerHTML=hp.innerHTML.replace('Shift: sprint · R: dodge roll','Shift: sprint · R: dodge roll<br>P: equipment (equip tools, weapons, armor)');
 if(typeof HELP_PAD!=='undefined'){}

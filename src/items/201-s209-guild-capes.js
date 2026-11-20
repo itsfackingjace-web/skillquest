@@ -125,7 +125,7 @@
  // saving the choice to wear it
  {SQSAVE.after('201:gcw',s=>{if(WEAR)s.gcw=1;})}
  {SQLOAD.after('201',(S)=>{WEAR=!!(S&&S.gcw);try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'201-3')}})}
- {const _ng=newGame;newGame=function(){WEAR=false;return _ng.apply(this,arguments)}}
+ {SQNEWGAME.before('201',()=>{WEAR=false;})}
  try{KNOWN49.add('gcw')}catch(e){self.SQERR&&SQERR(e,'201-4')}
  // pictures for the guild screen: the cape on your character, back and front
  function pic(d,dir){try{const ch=toCh(Object.assign({},gearCH()),d),c=document.createElement('canvas');c.width=72;c.height=96;c.hd2=true;const x=c.getContext('2d');x.imageSmoothingEnabled=false;

@@ -71,17 +71,17 @@ function stationAct(a){const o=STATION;if(!o)return;
   say('Cooked '+ok+(burnt?', burnt '+burnt:'')+'.');sfx('sizzle')}
  saveLocal(true);rPn()}
 const _oc22=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.stb');if(b){stationAct(b.dataset.a);return}_oc22(e)};
-const _cp22=closePanel;closePanel=function(){_cp22();if(shop==='station'){STATION=null;shop=null}};
+SQCLOSEPN.after('022',()=>{if(shop==='station'){STATION=null;shop=null}});
 // --- saving the planters ---
 SQSAVE.after('022:plant',s=>{s.plant={...PLANTD};});
 SQLOAD.after('022',(S)=>{PLANTD={};if(S.plant&&typeof S.plant==='object')for(const k in S.plant)PLANTD[k]=+S.plant[k]||0});
-const _ng22=newGame;newGame=function(){PLANTD={};_ng22()};
+SQNEWGAME.before('022',()=>{PLANTD={};});
 // icons
-const _icon22=iconURL;iconURL=function(k,col){if(!STN.has(k))return _icon22(k,col);const key='g22'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+SQICON.wrap('022',_icon22=>function(k,col){if(!STN.has(k))return _icon22(k,col);const key='g22'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
  if(k==='wardrobe'){r(2,0,10,14,'#7a4a20');r(3,1,8,12,'#b87838');r(6,1,2,12,'#7a4a20');r(5,6,1,2,GD);r(8,6,1,2,GD)}
  else if(k==='furnace'){r(2,1,10,12,'#8a7a6a');r(2,4,10,1,'#6a5a4a');r(2,8,10,1,'#6a5a4a');r(4,7,6,5,'#202020');r(5,8,4,4,'#f88830');r(6,10,2,2,'#f8e060')}
  else if(k==='anvil'){r(1,4,12,3,'#a0a8b8');r(1,4,12,1,'#d0d8e0');r(4,7,6,3,'#606878');r(2,10,10,3,'#4a505c')}
  else if(k==='stove'){r(2,4,10,9,'#585e68');r(4,7,6,4,'#f88830');r(3,1,8,3,'#9098a8');r(6,0,1,1,'#e8eef4')}
  else if(k==='planter'){r(1,8,12,5,'#a86830');r(2,2,10,7,'#3c9a38');r(3,3,2,2,'#d83040');r(8,4,2,2,'#d83040');r(5,6,2,2,'#d83040')}
  else{r(6,6,2,8,'#7a4a20');r(1,4,12,2,'#a86830');r(4,5,6,6,'#d8b860');r(5,0,4,4,'#e8d090')}
- return ICONC[key]=c.toDataURL()};
+ return ICONC[key]=c.toDataURL()});

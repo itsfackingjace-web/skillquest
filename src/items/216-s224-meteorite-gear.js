@@ -29,7 +29,7 @@
  {const _wu=watchUpgrades;watchUpgrades=function(){const was={...MT};const out=_wu.apply(this,arguments);for(const s in MT)if(was[s]&&ARM[s]!==5){if((inv['eq_'+s+'5']|0)>0)inv['eq_'+s+'5']--;inv[KEY[s]]=(inv[KEY[s]]|0)+1;MT[s]=false}return out}}
  {SQSAVE.after('216:mta,inv',s=>{const t=(MT.helm?'h':'')+(MT.body?'b':'')+(MT.legs?'l':'');if(t)s.mta=t;if((inv.marrow|0)>0){s.inv=s.inv||{};s.inv.marrow=inv.marrow|0}})}
  {SQLOAD.after('216',(S)=>{const t=String(S&&S.mta||'');MT.helm=t.includes('h')&&ARM.helm===5;MT.body=t.includes('b')&&ARM.body===5;MT.legs=t.includes('l')&&ARM.legs===5;try{if(S&&S.inv&&S.inv.marrow!=null)inv.marrow=Math.max(0,+S.inv.marrow|0)}catch(e){self.SQERR&&SQERR(e,'216-2')}try{snapEq()}catch(e){self.SQERR&&SQERR(e,'216-3')}})}
- {const _ng=newGame;newGame=function(){MT.helm=MT.body=MT.legs=false;return _ng.apply(this,arguments)}}
+ {SQNEWGAME.before('216',()=>{MT.helm=MT.body=MT.legs=false;})}
  try{KNOWN49.add('mta')}catch(e){self.SQERR&&SQERR(e,'216-4')}
  {const _bb=blockBonus;blockBonus=function(){const n=worn();return _bb.apply(this,arguments)+n*.05+(n>=2?.05:0)+(n>=3?.05:0)}}
  {const _bc=blockCap;blockCap=function(){return _bc.apply(this,arguments)+(worn()>=3?.08:0)}}
@@ -92,11 +92,11 @@
      for(let k=0;k<32;k++){const a=k/32*6.283;Rg(Math.round(f.x+Math.cos(a)*r)-1,Math.round(f.y-2+Math.sin(a)*r*.6)-1,2,2,k%2?'#ff70c0':'#ffe0a0')}
      if(p<.35){g.globalAlpha=(.35-p)*2;g.fillStyle='#fff4d8';g.beginPath();g.arc(f.x,f.y-4,10+p*40,0,6.283);g.fill()}g.globalAlpha=1}}}catch(e){self.SQERR&&SQERR(e,'216-21')}g.restore()}})}
  // ---- icons ----
- {const _ic=iconURL;iconURL=function(k,col){if(k!=='wmeteor'&&k!==MA)return _ic.apply(this,arguments);const key='g224'+k;if(ICONC[key])return ICONC[key];
+ {SQICON.wrap('216',_ic=>function(k,col){if(k!=='wmeteor'&&k!==MA)return _ic.apply(this,arguments);const key='g224'+k;if(ICONC[key])return ICONC[key];
    const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
    if(k==='wmeteor'){for(let i=0;i<8;i++)r(2+i,11-i,2,2,i<1?'#120e14':'#3a2c60');for(let i=1;i<7;i++)r(3+i,11-i,1,1,'#6a48b8');r(8,1,5,5,'#120e14');r(9,2,3,3,'#4a4058');r(10,2,1,1,'#ff80d8');r(11,3,1,1,'#ffb060');r(9,4,1,1,'#70e8ff');r(13,0,1,1,'#ffe0a0');r(7,0,1,1,'#ff70c0')}
    else{for(let i=0;i<9;i++)r(3+i,10-i,1,1,'#5a3a20');r(10,1,3,3,'#120e14');r(11,2,1,1,'#ff70c0');r(11,1,2,1,'#6a48b8');r(2,10,2,2,'#e0a8ff');r(3,11,1,2,'#8a60e0')}
-   return ICONC[key]=c.toDataURL()}}
+   return ICONC[key]=c.toDataURL()})}
  // ---- recipes (anvil; arrows are fletched in the Craft tab) ----
  SM.push({k:'eq_pick9',n:'Meteorite pickaxe',c:{metbar:2,wood:1},lv:81,xp:900},{k:'eq_axe9',n:'Meteorite axe',c:{metbar:2,wood:1},lv:81,xp:900},
   {k:KEY.helm,n:'Meteorite helmet',c:{metbar:2},lv:82,xp:1000,def:L75},{k:KEY.legs,n:'Meteorite legs',c:{metbar:3},lv:84,xp:1500,def:L75},{k:KEY.body,n:'Meteorite chestplate',c:{metbar:4},lv:86,xp:2000,def:L75},

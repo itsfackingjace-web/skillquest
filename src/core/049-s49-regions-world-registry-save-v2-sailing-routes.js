@@ -71,7 +71,7 @@ const _sl49=saveLocal;saveLocal=function(f){if(SAVE_LOCK)return;_sl49(f)};
 const _sc49=saveCloud;saveCloud=async function(f){if(SAVE_LOCK)return;return _sc49(f)};
 const _cf49=cloudFlush;cloudFlush=function(){if(SAVE_LOCK)return;_cf49()};
 const _sh49=saveHide;saveHide=function(){if(SAVE_LOCK)return;_sh49()};
-const _ng49=newGame;newGame=function(){WORLD_STATE={hollow:{}};UNLOCKED_REGIONS=['hollow'];TRAVEL_UNLOCKS=Object.fromEntries(TRAVEL_KEYS.map(k=>[k,false]));SAVE_EXTRA={};TRAVEL49=null;_ng49()};
+SQNEWGAME.before('049',()=>{WORLD_STATE={hollow:{}};UNLOCKED_REGIONS=['hollow'];TRAVEL_UNLOCKS=Object.fromEntries(TRAVEL_KEYS.map(k=>[k,false]));SAVE_EXTRA={};TRAVEL49=null;});
 
 // --- region generation (deterministic; never Math.random) ---
 function rgRand(seed){let s=(Math.floor(seed*1000)>>>0)||1;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
@@ -141,7 +141,7 @@ function travelCommit(T){const id=T.to;let ok;
 if(typeof SFX!=='undefined'&&!SFX.splash)SFX.splash=()=>{noise(.35,.06,500)};
 
 // --- input: TALK / T / X at the post, or at the region pier ---
-const _tk49=talk;talk=function(){if(!pnOpen&&!menuOpen&&!dead&&!TRAVEL49&&nearPost49()&&!nearNpc()){openRoutes();return}_tk49()};
+SQTALK.wrap('049',_tk49=>function(){if(!pnOpen&&!menuOpen&&!dead&&!TRAVEL49&&nearPost49()&&!nearNpc()){openRoutes();return}_tk49()});
 tk.addEventListener('touchstart',e=>{if(!pnOpen&&!menuOpen&&!dead&&nearPost49()&&!nearNpc()){e.preventDefault();openRoutes()}},{passive:false});
 const _fn49=facingNpc;facingNpc=function(){const n=_fn49();if(n)return n;return nearPost49()&&!en.some(e=>!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)<40)?{routes49:1}:null};   // monsters next to you still get hit
 const _cb49=canBoard;canBoard=function(){return nearPost49()?false:_cb49()};
@@ -276,8 +276,8 @@ function worldHTML(){const here=curRegion();let h='<div class="tl" style="margin
 const _mh49=mapHTML;mapHTML=function(){const R=SCENE&&SCENE.room;if(R&&R.region){const D=WORLD_REGIONS[R.region];
   return'<div class="tl" style="font-size:17px">'+D.name.toUpperCase()+'</div><canvas id="mpc" width="'+R.w+'" height="'+R.h+'" style="height:calc(min(84vw,52vh,380px)*'+(R.h/R.w).toFixed(4)+')"></canvas><div class="lg"><span><i style="background:#f83030"></i>You</span><span><i style="background:#f8d848"></i>Pier</span><span><i style="background:#f8f8f8"></i>Landmark (found)</span></div>'+rgLmList(R)+worldHTML()}
  return _mh49()+worldHTML()};
-const _dmap49=drawMap;drawMap=function(){const R=SCENE&&SCENE.room;if(!R||!R.region)return _dmap49();const c=document.getElementById('mpc');if(!c||c.width!==R.w)return;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(rgFogCanvas(R),0,0);   // fogged (section 52)
+SQDRAWMAP.wrap('049',_dmap49=>function(){const R=SCENE&&SCENE.room;if(!R||!R.region)return _dmap49();const c=document.getElementById('mpc');if(!c||c.width!==R.w)return;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(rgFogCanvas(R),0,0);   // fogged (section 52)
  x.fillStyle='#f8d848';x.fillRect(R.dock[0]-1,R.dock[1]-1,3,3);x.fillStyle='#f8f8f8';for(const l of R.lms)if(rgSeen(R.region,l.id))x.fillRect(l.x-1,l.y-1,3,3);
- const px=Math.floor(P.x/16),py=Math.floor(P.y/16);if(Math.floor(performance.now()/350)%2){x.fillStyle='#f83030';x.fillRect(px-1,py-1,3,3)}x.fillStyle='#fff';x.fillRect(px,py,1,1)};
+ const px=Math.floor(P.x/16),py=Math.floor(P.y/16);if(Math.floor(performance.now()/350)%2){x.fillStyle='#f83030';x.fillRect(px-1,py-1,3,3)}x.fillStyle='#fff';x.fillRect(px,py,1,1)});
 // side quests from Hollow towns only count in Hollow (the region-aware check; old objectives default to Hollow)
 const _sqe49=sqEvent;sqEvent=function(type,item,test){const r=curRegion();return _sqe49(type,item,t=>(SQ_REGION[t]||'hollow')===r&&(!test||test(t)))};

@@ -18,7 +18,7 @@
  setInterval(()=>{try{const t=document.querySelector('#mpchat .tb.on[data-t="pm"],#mpchat .tb.on[data-t="gd"]'),l=document.getElementById('mpl');if(!t||!l||l.querySelector('.mdpn'))return;
    const d=document.createElement('div');d.className='mdpn';d.style.cssText='font-size:11px;opacity:.7;padding:2px 4px 4px';d.textContent='Moderators can read private messages and guild chat to keep players safe. Never share personal information.';l.prepend(d)}catch(e){self.SQERR&&SQERR(e,'219-2')}},700);
  // ---- entry points ----
- {const _o=optionsHTML;optionsHTML=function(){const h=_o.apply(this,arguments);return can()?h+'<div class="dv-tl" style="margin-top:16px">MODERATION</div><button class="sb mdpopen">Moderation</button>':h}}
+ {SQOPTS.wrap('219',_o=>function(){const h=_o.apply(this,arguments);return can()?h+'<div class="dv-tl" style="margin-top:16px">MODERATION</div><button class="sb mdpopen">Moderation</button>':h})}
  pbd.addEventListener('click',e=>{if(e.target.closest('.mdpopen')){e.stopPropagation();e.preventDefault();openP()}},true);
  if(typeof window.mpSend==='function'){const _ms=window.mpSend;window.mpSend=function(t){if(/^\/mod\s*$/i.test(String(t||'').trim())){if(can())openP();else try{SQMPLOG('game','Only moderators can use /mod.')}catch(e){self.SQERR&&SQERR(e,'219-3')}return}return _ms.apply(this,arguments)}}
  // ---- the panel ----

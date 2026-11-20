@@ -222,8 +222,8 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
   bankUpdate(r,{w:'quest',k:q.k,d:rewTxt(r)},up).then(()=>{const nb=BLD.find(b=>b.lv===glv(qd));tell('The guild bank received '+rewTxt(r)+'. The guild is now level '+glv(qd)+' and '+QK[q.k].sk+' rank '+Math.min(RMAX,((G.prog[q.k])|0)+1)+'!'+(nb?' New: '+nb.n+'.':''));msgT=7;sfx('quest')}).catch(fail).finally(()=>{claiming=false})}
  // what members gather counts toward the quest: items arriving in a frame where the quest's skill gained XP (like 120's dailies)
  let LASTINV=null,XPF=new Set(),BONUSSAID=0;
- {const _ax=addXp;addXp=function(i,x){if(x>0&&G.id&&G.ready){let m=1;const k=Object.keys(QK).find(q=>SKN.indexOf(QK[q].sk)===i);if(k)m+=.1*rank(k);if(has('hall'))m+=.05;
-   if(has('forge')&&onIsle()&&SKN[i]==='Smithing')m+=.2;if(m>1){arguments[1]=Math.round(x*m*100)/100}}const out=_ax.apply(this,arguments);if(x>0)XPF.add(i);return out}}
+ {SQADDXP.wrap('197',_ax=>function(i,x){if(x>0&&G.id&&G.ready){let m=1;const k=Object.keys(QK).find(q=>SKN.indexOf(QK[q].sk)===i);if(k)m+=.1*rank(k);if(has('hall'))m+=.05;
+   if(has('forge')&&onIsle()&&SKN[i]==='Smithing')m+=.2;if(m>1){arguments[1]=Math.round(x*m*100)/100}}const out=_ax.apply(this,arguments);if(x>0)XPF.add(i);return out})}
  // bank
  const wdToday=()=>{const w=G.wd&&G.wd[me()];return w&&w.d===day()?w.n|0:0};
  const wdLimit=()=>{const r=role();return r==='l'?-1:r==='o'?(G.perm.o==null?-1:G.perm.o):(G.perm.m==null?20:G.perm.m)};

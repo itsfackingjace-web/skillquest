@@ -141,7 +141,7 @@
     if(a==='party'){try{SQPARTY.invite(u)}catch(x){self.SQERR&&SQERR(x,'130-33')}setTimeout(draw,400);return}
     if(a==='duel'||a==='chess'){if(D.inbox[u]&&D.inbox[u].k===a){closePanel();answer(u,true);return}ask(u,a);setTimeout(draw,300);return}return}
    return _oc(e)}}
- {const _cp=closePanel;closePanel=function(){const r=_cp.apply(this,arguments);if((D.st==='stake'||D.st==='confirm')&&ptab===DTAB)end('You declined the '+WHAT(D.kind)+'.');return r}}
+ {SQCLOSEPN.after('130',()=>{if((D.st==='stake'||D.st==='confirm')&&ptab===DTAB)end('You declined the '+WHAT(D.kind)+'.');})}
  // ---- watching: requests, the other player, the clock ----
  let started=false,reqOff=null;
  function start(){started=true;D.inbox={};const db=Fm().db;reqOff=db.onValue(ref('dreq/'+me()),s=>{const v=s.val()||{},old=D.inbox;D.inbox={};

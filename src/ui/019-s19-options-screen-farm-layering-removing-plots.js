@@ -41,3 +41,6 @@ SQHIT.wrap('019 options screen farm layering removing plots',_atk19=>function(){
  swing=.25;sfx('swish');fillArm={i,t:CLK,c:p.c};
  if(p.c){const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing'+(wet(p)?', about '+Math.ceil(left/60)+' min left':'')+'. Press HIT again to dig it up.')}
  else say('Ready for seeds (plant from your Bag). Press HIT again to fill it in.')});
+
+// optionsHTML as a step list: later sections add named steps (window.SQOPTS; see 006's sqSteps)
+const SQOPTS=sqSteps('optionsHTML',optionsHTML,f=>{optionsHTML=f});window.SQOPTS=SQOPTS;

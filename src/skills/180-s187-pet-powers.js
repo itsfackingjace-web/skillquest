@@ -61,7 +61,7 @@
   else{SH.push({x:p.x,y:p.y-6,n:t,v:r.at==='magic'?150:230,s:r.at,c:r.col,life:2.5,r,d});try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'180-11')}send({s:r.at,x:R2(p.x),y:R2(p.y-6),tx:R2(t.x),ty:R2(t.y-6),c:r.col})}}
  // the extra-item power: items that arrive in a frame where a gathering skill got XP
  const XPF=new Set();let INV0=null;
- {const _ax=addXp;addXp=function(i,x){const r=rule();if(r&&r.xp&&x>0)x=Math.round(x*(1+r.xp/100));XPF.add(i);return _ax.call(this,i,x)}}
+ {SQADDXP.wrap('180',_ax=>function(i,x){const r=rule();if(r&&r.xp&&x>0)x=Math.round(x*(1+r.xp/100));XPF.add(i);return _ax.call(this,i,x)})}
  {const _ke=killEnemy;killEnemy=function(){const r=rule(),g0=GLD,out=_ke.apply(this,arguments);try{if(r&&r.gold&&GLD>g0){GLD+=Math.round((GLD-g0)*r.gold/100);try{svg()}catch(e){self.SQERR&&SQERR(e,'180-12')}}}catch(e){self.SQERR&&SQERR(e,'180-13')}return out}}
  {SQUPD.wrap('180',_u=>function(dt){const hp0=P.hp,out=_u.apply(this,arguments);try{tick(dt,hp0)}catch(e){console.warn('pet powers',e)}return out})}
  function tick(dt,hp0){const k=LUX.COS&&LUX.COS.pet,r=k&&RU[k];

@@ -51,18 +51,14 @@ const _da43=dArrive;dArrive=function(R,from){const D=R.dun;if(D.kind!=='frostfan
 const _dg43=dGo;dGo=function(kind,f,from){_dg43(kind,f,from);if(kind!=='frostfang')return;const R=SCENE.room,quiet=R.dun.bossDone||EXTRA_DUNGEON_DAYS.frostfang===today();
  say('Frostfang Den - '+['','Frozen Entrance','Crystal Tunnels','Alpha\'s Lair'][f]+' (floor '+f+' of 3)'+(f===3?(quiet?'. The lair is quiet today.':'. Something growls in the dark...'):''))};
 const _en43=entrances;entrances=function(){const a=_en43();if(FHDEN)a.push({x:FHDEN.x,y:FHDEN.y,id:'frostfang',house:null});return a};
-const _es43=enterScene;enterScene=function(id,house,ret){if(id!=='frostfang')return _es43(id,house,ret);const R=dFloor('frostfang',1);_es43(dKey('frostfang',1),null,ret);dArrive(R,null);
- say('You enter Frostfang Den. Your breath turns to mist. Three floors deep - find the stairs down.')};
+SQENTER.wrap('043',_es43=>function(id,house,ret){if(id!=='frostfang')return _es43(id,house,ret);const R=dFloor('frostfang',1);_es43(dKey('frostfang',1),null,ret);dArrive(R,null);
+ say('You enter Frostfang Den. Your breath turns to mist. Three floors deep - find the stairs down.')});
 // loot: the caverns' table (gems, elixirs, the Crystal blade) plus iron gear from the Alpha
 const _dl43=dLoot;dLoot=function(kind,f,boss){if(kind!=='frostfang')return _dl43(kind,f,boss);const out=_dl43('cave',f,boss);
  if(boss){const sw=out.findIndex(e=>e[0]==='eq_sword5');if(sw>=0&&Math.random()>.33)out.splice(sw,1);if(!out.some(e=>e[0]==='elixir'))out.push(['elixir',1]);out.push(['idag',1],['ibar',2])}else if(f===1&&Math.random()<.35)out.push(['cooked',2]);return out};
 // the Alpha falls: a golden chest, the daily reward (once per in-game day), and Heart of Frostfang
-const _ed43=enemyDrop;enemyDrop=function(n){_ed43(n);if(n.type!=='alpha')return;const R=SCENE&&SCENE.room;
- if(R&&R.dun){R.dun.bossDone=1;R.items.push({t:'dchest',x:Math.floor(n.x/16),y:Math.floor(n.y/16),use:'dchest',id:'frostfangboss',boss:1})}
- for(const o of en)if(o.summon&&!o.dead){o.dead=1}
- if(EXTRA_DUNGEON_DAYS.frostfang!==today()){markDungeonCleared('frostfang');GLD+=180;inv.ibar=(inv.ibar|0)+2;addXp(0,500);addXp(8,300);
-  say('The Frostfang Alpha falls! +180 gold, 2 iron bars. A golden chest appears!');msgT=5}else say('The Frostfang Alpha falls!');
- sfx('quest');sqEvent('dungeonboss','frostfang');saveNow()};
+SQDROP.after('043',(n)=>{if(n.type!=='alpha')return;const R=SCENE&&SCENE.room;if(R&&R.dun){R.dun.bossDone=1;R.items.push({t:'dchest',x:Math.floor(n.x/16),y:Math.floor(n.y/16),use:'dchest',id:'frostfangboss',boss:1})}for(const o of en)if(o.summon&&!o.dead){o.dead=1}if(EXTRA_DUNGEON_DAYS.frostfang!==today()){markDungeonCleared('frostfang');GLD+=180;inv.ibar=(inv.ibar|0)+2;addXp(0,500);addXp(8,300);
+  say('The Frostfang Alpha falls! +180 gold, 2 iron bars. A golden chest appears!');msgT=5}else say('The Frostfang Alpha falls!');sfx('quest');sqEvent('dungeonboss','frostfang');saveNow()});
 // --- monster behaviour (runs after the normal enemy update, so it extends the existing AI) ---
 let SLOW43=0,ROAR43=null,PEND43=0;
 const losClear=(ax,ay,bx,by)=>{for(let k=1;k<10;k++){const t=k/10;if(solid(ax+(bx-ax)*t,ay+(by-ay)*t))return false}return true};
@@ -165,4 +161,4 @@ SQFURN.wrap('043',_df43=>function(it,tm){const x0=it.x*16,y0=it.y*16;
 // saving: the Alpha's daily clear (older saves: never cleared)
 SQSAVE.after('043:xdun',s=>{s.xdun={...EXTRA_DUNGEON_DAYS};});
 SQLOAD.after('043',(S)=>{SLOW43=0;ROAR43=null;for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=S.xdun&&isFinite(S.xdun[k])?+S.xdun[k]:-1});
-const _ng43=newGame;newGame=function(){for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;_ng43()};
+SQNEWGAME.before('043',()=>{for(const k in EXTRA_DUNGEON_DAYS)EXTRA_DUNGEON_DAYS[k]=-1;});

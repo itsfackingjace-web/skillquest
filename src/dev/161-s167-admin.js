@@ -53,7 +53,7 @@
   nb.style.display=on&&!pnOpen&&!menuOpen?'block':'none';if(on)nb.querySelector('span').textContent='📢 '+NEWS.m}
  // ---- events (XP multiplier) ----
  const evOn=()=>EV&&EV.xp>1&&EV.until>Date.now();
- {const _ax=addXp;addXp=function(i,x){if(x>0&&evOn())x=Math.round(x*Math.min(5,EV.xp));return _ax.call(this,i,x)}}
+ {SQADDXP.wrap('161',_ax=>function(i,x){if(x>0&&evOn())x=Math.round(x*Math.min(5,EV.xp));return _ax.call(this,i,x)})}
  const pill=document.createElement('div');pill.id='sqevp';pill.style.cssText='position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:25;display:none;background:#2a1838;color:#f8e0ff;border:2px solid #a050d0;padding:3px 9px;font:700 12px '+PF+';pointer-events:none';document.body.appendChild(pill);
  function showEv(){const on=evOn()&&!(window.SQTITLE&&SQTITLE())&&!pnOpen&&!menuOpen;pill.style.display=on?'block':'none';if(on){const m=Math.max(0,Math.ceil((EV.until-Date.now())/60000));pill.textContent='✨ '+(EV.n||'Bonus XP')+' · ×'+EV.xp+' XP · '+(m>90?Math.round(m/60)+' h':m+' min')+' left'}}
  let wired=false;function wire(){const F=FBx();if(!F||wired||!uid())return;wired=true;const d=F.db;

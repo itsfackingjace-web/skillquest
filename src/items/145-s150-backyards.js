@@ -77,7 +77,7 @@
  {const _cp=canPlace;canPlace=function(x,y){if(isYard()&&BUILD&&SEED2CROP[BUILD.k]){const p=SCENE.house.plots.get(yi(SCENE.room,x,y));return!!p&&!p.c}return _cp.apply(this,arguments)}}
  // furniture: not on plots, the gate or a friend's yard
  {const _cp=canPlaceIn;canPlaceIn=function(x,y){if(isYard()){const R=SCENE.room,Y=SCENE.house;if(Y.ro||Y.plots.has(yi(R,x,y))||onDoorTile(R,x,y)||regrowing(R,yi(R,x,y)))return false;try{if(fishWaterAt(x,y))return false}catch(e){self.SQERR&&SQERR(e,'145-17')}/* ponds */}return _cp.apply(this,arguments)}}
- {const _t=talk;talk=function(){if(isYard()&&SCENE.house.ro&&!dead&&!pnOpen){try{if(nearFurn()){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;return}}catch(e){self.SQERR&&SQERR(e,'145-18')}}return _t.apply(this,arguments)}}
+ {SQTALK.wrap('145',_t=>function(){if(isYard()&&SCENE.house.ro&&!dead&&!pnOpen){try{if(nearFurn()){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;return}}catch(e){self.SQERR&&SQERR(e,'145-18')}}return _t.apply(this,arguments)})}
  // ---- drawing: the game's own ground (hdBakeR, like the islands), its trees, bushes and buildings ----
  // The ground comes from a small map of tile types (0 water, 2 grass, 7 forest floor, 11 paving), baked once per room.
  // Trees and bushes are the islands' own objects (room items {t:'_obj'}, solid); the house or castle is drawn by drBld,
@@ -171,7 +171,7 @@
  function packYard(h){if(h._ypk)return;h._ypk=1;for(const f of(h.yf||new Map()).values()){inv[f.t]=(inv[f.t]|0)+1;if(f.items)for(const k in f.items)inv[k]=(inv[k]|0)+(f.items[k]|0)}h.yf=new Map();h.yp=new Map()}
  setInterval(()=>{try{const now=new Set(mine());for(const h of KNOWN)if(!now.has(h)&&((h.yf&&h.yf.size)||(h.yp&&h.yp.size))){packYard(h);try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'145-23')}}KNOWN=now}catch(e){self.SQERR&&SQERR(e,'145-24')}},400);
  if(window.SQONEHOME){const _e=SQONEHOME.enforce;SQONEHOME.enforce=function(){const before=new Set(mine());const n=_e.apply(this,arguments);for(const h of before)if(!mine().includes(h))packYard(h);KNOWN=new Set(mine());return n}}
- {const _ng=newGame;newGame=function(){const out=_ng.apply(this,arguments);KNOWN=new Set();return out}}
+ {SQNEWGAME.after('145',()=>{KNOWN=new Set();})}
  // ---- what friends see: yards/<uid>/<house id> ----
  let pubKey='',pubAt=0;function pub(){pubAt=0}
  function yardsOut(){const o={};for(const h of mine()){const f=outF(h),p=h.yp&&h.yp.size?[...h.yp].map(([i,q])=>[i,q.c||'',q.c?Math.min(CROPS[q.c].max,Math.floor(q.g/CROPS[q.c].st)):0]):null;if(f||p)o[h.id]={f:f?f.map(e=>e[3]?[e[0],e[1],0,e[3]]:[e[0],e[1]]):[],p:p||[],w:RofH(h).w}}return o}

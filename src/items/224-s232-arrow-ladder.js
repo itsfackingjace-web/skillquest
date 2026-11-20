@@ -26,9 +26,9 @@
  // HIT's auto-shot (021's bowTarget) only counts arrow/iarrow: count these too
  {const _bt=bowTarget;bowTarget=function(){if(TL.bow&&((inv.arrow|0)+(inv.iarrow|0))<1){const x=(inv.marrow|0)+A.reduce((n,a)=>n+(inv[a.k]|0),0);if(x>0){const i0=inv.iarrow|0;inv.iarrow=i0+x;try{return _bt.apply(this,arguments)}finally{inv.iarrow=i0}}}return _bt.apply(this,arguments)}}
  // icons
- {const _ic=iconURL;iconURL=function(k,col){const a=A.find(q=>q.k===k);if(!a)return _ic.apply(this,arguments);const key='g232'+k;if(ICONC[key])return ICONC[key];
+ {SQICON.wrap('224',_ic=>function(k,col){const a=A.find(q=>q.k===k);if(!a)return _ic.apply(this,arguments);const key='g232'+k;if(ICONC[key])return ICONC[key];
    const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(p,q,w,h,cl)=>{x.fillStyle=cl;x.fillRect(p,q,w,h)};
    for(const o of[-1,2]){for(let i=0;i<8;i++)r(2+i+o,11-i,1,1,'#7a5430');r(9+o,2,3,1,'#16121c');r(10+o,1,2,3,'#16121c');r(10+o,2,1,1,a.hd);r(11+o,1,1,1,a.hd);r(1+o,10,2,2,'#e8e0d0');r(2+o,12,1,1,'#b8b0a0')}
-   return ICONC[key]=c.toDataURL()}}
+   return ICONC[key]=c.toDataURL()})}
  window.SQARROWS={A,bonus:()=>BON};
 })();

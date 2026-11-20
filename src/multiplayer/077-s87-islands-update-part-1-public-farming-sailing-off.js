@@ -56,7 +56,7 @@ function sfStart(){const d=FB.db;SF.unsub=d.onValue(d.ref(FB.D,'farm'),s=>{const
   else{const conv=(a,x,y,c,g,w)=>{(SF.local[a]||(SF.local[a]={}))[sfK(x,y)]={c:CROPS[c]?c:'',g:+g||0,t:now,w:w>CLK?now+(w-CLK)*1000:0,e:CROPS[c]?0:now}};
    if(Array.isArray(S&&S.farm))for(const e of S.farm)if(Array.isArray(e)){const i=e[0]|0;conv('hollow',i%N,(i/N)|0,e[1],e[2],+e[3]||0)}
    if(S&&S.rfarm&&typeof S.rfarm==='object')for(const a in S.rfarm)if(WORLD_REGIONS[a]&&Array.isArray(S.rfarm[a]))for(const e of S.rfarm[a])if(Array.isArray(e))conv(a,e[0]|0,e[1]|0,e[2],e[3],+e[4]||0)}try{sfRebuild()}catch(e){self.SQERR&&SQERR(e,'077-6')}})}
-{const _ng=newGame;newGame=function(){SF.local={};_ng()}}
+{SQNEWGAME.before('077',()=>{SF.local={};})}
 window.SQSF=SF;window.SQSFR=sfRebuild;
 
 // ---- Sail off the edge of the map to an island you've unlocked ----
@@ -119,7 +119,7 @@ ROOMS.castle={w:CASTLE_W,h:CASTLE_H,ex:10.5,castle:1,floor:['#8a8478','#7e786c']
  {t:'c_throne',x:10,y:2,w:2,solid:1}],solid:new Set()};
 {const R=ROOMS.castle;for(const it of R.items)if(it.solid)for(let dy=0;dy<(it.sh||1);dy++)for(let dx=0;dx<(it.w||1);dx++)R.solid.add((it.y+dy)*R.w+it.x+dx)}
 // going in: the castle hall instead of the house room (it is still "home", so furniture and beds work the same)
-{const _es=enterScene;enterScene=function(id,house,ret){if(id==='home'&&house&&house.castle){_es('castle',house,ret);if(SCENE&&SCENE.room===ROOMS.castle)SCENE.id='home';return}return _es(id,house,ret)}}
+{SQENTER.wrap('077',_es=>function(id,house,ret){if(id==='home'&&house&&house.castle){_es('castle',house,ret);if(SCENE&&SCENE.room===ROOMS.castle)SCENE.id='home';return}return _es(id,house,ret)})}
 {const _cp=canPlaceIn;canPlaceIn=function(x,y){const R=SCENE&&SCENE.room;if(R&&R.castle&&(R.solid.has(y*R.w+x)||(y>=R.h-1&&Math.abs(x+.5-(R.ex+.5))<1.01)))return false;return _cp(x,y)}}
 // placing
 const castleIn=()=>{const R=rbR();return R?rhHere().concat(rhForeign(R.region)):(!SCENE?HOUSES:[])};

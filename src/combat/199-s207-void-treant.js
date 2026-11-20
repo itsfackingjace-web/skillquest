@@ -12,8 +12,8 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  // the bag lists BAG_ORDER (011) = ... + EXTRA_BAG, which 086 filled with every item known then; later items must add themselves
  {const j=EXTRA_BAG.indexOf('yewlog');if(!EXTRA_BAG.includes(VL))EXTRA_BAG.splice(j>=0?j+1:EXTRA_BAG.length,0,VL)}
  IDESC[VL]='Dark wood that hums faintly, from void trees. A guild spends '+(50000).toLocaleString()+' of them from the guild bank to summon the Void Treant.';
- {const _ic=iconURL;iconURL=function(k,col){if(k!==VL)return _ic(k,col);const key='g207vlog';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a+1,b+1,w,h)};
-   r(1,4,10,5,'#3c2a3c');r(1,4,10,1,'#56404e');r(9,4,2,5,'#a890d0');r(10,5,1,3,'#7a40c8');r(3,6,1,1,'#9a6ae0');r(6,7,1,1,'#9a6ae0');return ICONC[key]=c.toDataURL()}}
+ {SQICON.wrap('199',_ic=>function(k,col){if(k!==VL)return _ic(k,col);const key='g207vlog';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a+1,b+1,w,h)};
+   r(1,4,10,5,'#3c2a3c');r(1,4,10,1,'#56404e');r(9,4,2,5,'#a890d0');r(10,5,1,3,'#7a40c8');r(3,6,1,1,'#9a6ae0');r(6,7,1,1,'#9a6ae0');return ICONC[key]=c.toDataURL()})}
  const isLog=k=>k==='wood'||/log$/.test(k);
  const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);return it&&it.o}}catch(e){self.SQERR&&SQERR(e,'199-1')}return null};
  {SQHIT.wrap('199 void treant',_a=>function(){let o=null;try{o=treeAt()}catch(e){self.SQERR&&SQERR(e,'199-2')}if(!o||o.v!=='dark'||SKOF[o.t]!==1)return _a.apply(this,arguments);
@@ -28,8 +28,8 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
   const base='From the Void Treant. Casts void bolts that hit harder than any other wand, and every fourth hit drains life back to you (+1 heart). Needs Magic 50.';
   Object.defineProperty(IDESC,WV,{configurable:true,enumerable:true,get(){let s='';try{s='Damage '+spellDmg('void')+' · Costs '+WSP.void.cost+' mana. '}catch(e){self.SQERR&&SQERR(e,'199-4')}return s+base},set(v){}})}
  {const _sd=spellDmg;spellDmg=function(el){return _sd.apply(this,arguments)+(el==='void'?VB:0)}}
- {const _ic=iconURL;iconURL=function(k,col){if(k!=='wvoid')return _ic(k,col);const key='g207wvoid';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
-   for(let i=0;i<8;i++)r(2+i,11-i,2,2,i%3?'#3c2a3c':'#56404e');r(1,12,2,1,'#221626');r(8,0,6,6,'#0c0814');r(9,1,4,4,'#7a40c8');r(10,2,2,2,'#e8d0ff');r(13,3,1,1,'#c8a0ff');r(8,5,1,1,'#c8a0ff');return ICONC[key]=c.toDataURL()}}
+ {SQICON.wrap('199',_ic=>function(k,col){if(k!=='wvoid')return _ic(k,col);const key='g207wvoid';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
+   for(let i=0;i<8;i++)r(2+i,11-i,2,2,i%3?'#3c2a3c':'#56404e');r(1,12,2,1,'#221626');r(8,0,6,6,'#0c0814');r(9,1,4,4,'#7a40c8');r(10,2,2,2,'#e8d0ff');r(13,3,1,1,'#c8a0ff');r(8,5,1,1,'#c8a0ff');return ICONC[key]=c.toDataURL()})}
  let VD=0,VU=0;
  {const _sh=spellHit;spellHit=function(s,n,dmg){if(VU&&s&&s.el==='storm')s=Object.assign({},s,{el:'void'});const out=_sh.call(this,s,n,dmg);
    try{if(s&&s.el==='void'&&!s.sub&&!dead){for(let k=0;k<4;k++)part(n.x,n.y-8,(P.x-n.x)*(.8+Math.random()*.6),(P.y-8-n.y)*(.8+Math.random()*.6),.5,k%2?'#c8a0ff':'#7a40c8',0,1);
