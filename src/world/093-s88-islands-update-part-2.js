@@ -143,7 +143,7 @@ const SIDEMAP={cat:[["............K...K.","..K........KAK.KAK",".KAK.......KAAKA
  fox:[["..............K.K.",".............KAKAK","............KAAAAK","..KKK.......KAEAAKK",".KCAAK......KAAAAACK","KWCAAAK.....KWAACCKK","KWAAAAKKKKKKKWWWKK..",".KWAAAAAAAAAAAAWK...","..KKAAAAAAAAAAAWK...","....KAAAAAAAAAABK...","....KBBBBBBBBBBBK..."],["....KLK.KK..KLK.KK..","....KK..KLK..KK.KLK.","....KLK.KK..KLK.KK..","....KK..KLK..KK.KLK."]]};
 const SIDEC={};function sideSprite(k,f){const key=k+f;if(SIDEC[key])return SIDEC[key];const[rows,legs]=SIDEMAP[k],all=rows.concat([legs[f*2],legs[f*2+1]]),w=Math.max(...all.map(r=>r.length)),c=document.createElement('canvas');c.width=w;c.height=all.length;
  const x=c.getContext('2d'),P2=Object.assign({},SIDEPAL,SIDECOL[k]);all.forEach((r,y)=>{for(let i=0;i<r.length;i++){const col=P2[r[i]];if(col){x.fillStyle=col;x.fillRect(i,y,1,1)}}});return SIDEC[key]=c}
-const PST=new Map();
+const PST=new Map();window.PST=PST;// where each pet is drawn: 098, 116 and 180 read it (it was never global; Nov 20 error reports 098-6, 116-1)
 function petFollow(id,ox,oy,fc){let s=PST.get(id);const now=performance.now();if(!s){s={x:ox-16,y:oy+4,t:0,lt:now,fl:false};PST.set(id,s)}const dt=Math.min(.1,(now-s.lt)/1000);s.lt=now;
  const tx=ox-(fc&&fc[0]?fc[0]*18:12),ty=oy+(fc&&fc[1]?-fc[1]*12:4)+2,dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy);
  if(d>170){s.x=tx;s.y=ty}else if(d>6){const sp=Math.min(d,(d>40?115:62)*dt);s.x+=dx/d*sp;s.y+=dy/d*sp;s.t+=dt*8;if(Math.abs(dx)>1)s.fl=dx<0;s.mv=.2}else s.mv=Math.max(0,(s.mv||0)-dt);return s}window.petFollow=petFollow;

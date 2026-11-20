@@ -151,6 +151,6 @@ Each area has its own notes file in `docs/`. Read the one for the area you're ch
 - **`docs/music.md`** — Music: The soundtrack engine, the Dev Suite song editor, the Patron Song Studio and song zones.
   Covers: Soundtrack, Song editor, Song Studio, Song zones.
 - **`docs/fixes.md`** — Dated fix collections: Batches of small fixes, by day. Each names the file it lives in.
-  Covers: Quality fixes, Audit fixes, Player-report fixes, Bug sweep Nov 15, Bug fixes Nov 15 (afternoon), Nov 16 report fixes, Nov 18 evening fixes, Nov 20 harbor posts.
+  Covers: Quality fixes, Audit fixes, Player-report fixes, Bug sweep Nov 15, Bug fixes Nov 15 (afternoon), Nov 16 report fixes, Nov 18 evening fixes, Nov 20 harbor posts, Nov 20 report fixes.
 
 When you add something, put its note in the right `docs/` file (or a new one listed here), not in this file. Keep this file to rules and the index.

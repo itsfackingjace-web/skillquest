@@ -24,6 +24,7 @@
   const n=nameOf(id),by=byOf(id);INAME[k]=INAME[w]=n+' (painting)';
   IDESC[k]=IDESC[w]='“'+n+'” by '+by+'. A painting by a SkillQuest Patron. At home, face a wall and PLACE to hang it, or place it on the floor to stand it on an easel.';
   try{delete ICONC['ptg'+id]}catch(e){self.SQERR&&SQERR(e,'213-3')}}
+ const FR=new Map();// id -> [{c:canvas}] the pictures, built on first use
  function setRec(id,r){if(!okId(id)||!r||typeof r!=='object')return;PT[id]=r;FR.delete(id);reg(id)}
  // device cache, so paintings exist before the save loads
  try{const c=JSON.parse(localStorage.getItem('sq_paint')||'null');if(c&&typeof c==='object')for(const id in c)setRec(id,c[id])}catch(e){self.SQERR&&SQERR(e,'213-4')}
@@ -37,7 +38,7 @@
  try{KNOWN49.add('ptg')}catch(e){self.SQERR&&SQERR(e,'213-9')}
  {SQNEWGAME.before('213',()=>{GOT=new Set();APPLIED=true;})}
  // ---- pictures ----
- const FR=new Map();// id -> [{c:canvas}]
+ // (FR moved up to the top: the device cache below calls setRec, which clears FR, while the file is still loading; Nov 20 error report 213-4)
  function frames(id){let L=FR.get(id);if(L)return L;L=[];const r=PT[id];
   try{if(r&&window.SQARTROOM)for(const fr of SQARTROOM.unpack(r)){const c=document.createElement('canvas');c.width=r.w;c.height=r.h;const x=c.getContext('2d');
    for(let i=0;i<fr.f.length;i++){const v=fr.f[i];if(v&&fr.pal[v]){x.fillStyle=fr.pal[v];x.fillRect(i%r.w,(i/r.w)|0,1,1)}}L.push(c)}}catch(e){self.SQERR&&SQERR(e,'213-10')}

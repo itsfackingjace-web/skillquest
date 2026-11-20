@@ -177,7 +177,7 @@ const uiS=()=>D*Math.max(1,Math.min(1.6,Math.min(innerWidth,innerHeight)/480));
 const HUDIMG={};function hudIcon(k){if(!HUDIMG[k]){const im=new Image();im.src=iconURL(k);HUDIMG[k]=im}return HUDIMG[k]}
 let MP={at:-1,p:0,pat:0},MSGBOX=null,HUDL=null;
 function hudLayout(){const U=uiS(),ins=12*U,top=50*U,bw=180*U,bh=74*U,qy=top+bh+4*U,qw=Math.min(W-2*ins,250*U),dw=100*U,dh=34*U;
- const chips=[];if(typeof TL!=='undefined'&&TL.bow)chips.push(['arrow',String((inv.arrow|0)+(inv.iarrow|0)+(inv.marrow|0)+(inv.adarrow|0)+(inv.mitharrow|0))]);if((inv.bait|0)>0)chips.push(['bait',String(inv.bait|0)]);if(typeof GPSPR!=='undefined'&&GPSPR&&GPON)chips.push(['run','RUN']);if(typeof ultReady==='function'&&WAND)chips.push(['ult',ultReady()?'ULT':'ULT '+Math.ceil(ULTCD)+'s']);
+ const chips=[];if(typeof TL!=='undefined'&&TL.bow){/* the arrows your bow shoots next (best first, like 216/224) with their own picture and count (Nov 20 report: iron and adamant seemed to hit the same, the adamant ones were being shot both times) */const ak=['marrow','adarrow','mitharrow','iarrow','arrow'].find(k=>(inv[k]|0)>0)||'arrow';chips.push([ak,String(inv[ak]|0)])}if((inv.bait|0)>0)chips.push(['bait',String(inv.bait|0)]);if(typeof GPSPR!=='undefined'&&GPSPR&&GPON)chips.push(['run','RUN']);if(typeof ultReady==='function'&&WAND)chips.push(['ult',ultReady()?'ULT':'ULT '+Math.ceil(ULTCD)+'s']);
  const cy=qy+30*U,stackBottom=chips.length?cy+22*U:qy+26*U;return{U,ins,top,bw,bh,qy,qw,dw,dh,dx:W-ins-dw,cy,chips,stackBottom}}
 function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw,dw,dh,dx}=L;HUDL=L;g.save();g.shadowBlur=0;
  // status box: name and gold, HP, FOOD

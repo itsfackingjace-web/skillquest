@@ -108,8 +108,10 @@ function slamDmg(){return 12+Math.floor(lvOf(0)/3)+Math.floor(lvOf(2)/10)+(typeo
 {SQPP.before('096',(tm)=>{if(SLAM.t>0){const p=1-SLAM.t/.55,r=SLAM.R*Math.min(1,p*1.6);g.strokeStyle='rgba(232,208,160,'+(.75*(1-p))+')';g.lineWidth=3;g.beginPath();g.ellipse(SLAM.x,SLAM.y,r,r*.6,0,0,6.283);g.stroke();
    g.strokeStyle='rgba(90,70,50,'+(.5*(1-p))+')';g.lineWidth=1.5;g.beginPath();g.ellipse(SLAM.x,SLAM.y,r*.7,r*.42,0,0,6.283);g.stroke();for(let k=0;k<8;k++){const an=k/8*6.283+.3;Rg(SLAM.x+Math.cos(an)*r*.5,SLAM.y+Math.sin(an)*r*.3,2,1,'#3a2a1a')}}})}
 // the ULT chip / button show SLAM and its cooldown
-{const _hl=hudLayout;hudLayout=function(){const L=_hl();if(!SLEDGE)return L;const t=SLAM.cd>0?'SLAM '+Math.ceil(SLAM.cd)+'s':'SLAM',i=L.chips.findIndex(c=>c[0]==='ult');if(i>=0)L.chips[i]=['ult',t];else{L.chips.push(['ult',t]);if(L.chips.length===1)L.stackBottom=L.cy+22*L.U}return L}}
-{const _ub=ubUpdate;ubUpdate=function(){if(!SLEDGE)return _ub();const show=!isPC&&!GPON&&!menuOpen&&!dead,lab=!show?'':SLAM.cd>0?'SLAM<small>'+Math.ceil(SLAM.cd)+'s</small>':'SLAM';
+// the ULT button says SLAM only when Ground Slam is the ultimate it casts (159's pick; Nov 20 report: it said SLAM and cast Dragon Form)
+const slamUI=()=>{if(!SLEDGE)return false;try{const c=window.SQULT&&SQULT.chosen();return!c||c.k==='slam'}catch(e){return true}};
+{const _hl=hudLayout;hudLayout=function(){const L=_hl();if(!slamUI())return L;const t=SLAM.cd>0?'SLAM '+Math.ceil(SLAM.cd)+'s':'SLAM',i=L.chips.findIndex(c=>c[0]==='ult');if(i>=0)L.chips[i]=['ult',t];else{L.chips.push(['ult',t]);if(L.chips.length===1)L.stackBottom=L.cy+22*L.U}return L}}
+{const _ub=ubUpdate;ubUpdate=function(){if(!slamUI())return _ub();const show=!isPC&&!GPON&&!menuOpen&&!dead,lab=!show?'':SLAM.cd>0?'SLAM<small>'+Math.ceil(SLAM.cd)+'s</small>':'SLAM';
   const k='sl'+show+'|'+lab;if(k===lastUb)return;lastUb=k;ubt.style.display=show?'flex':'none';ubt.innerHTML=lab;ubt.style.opacity=SLAM.cd>0?'.55':'1';ubt.style.color=SLAM.cd>0?'':'#c8a060'}}
 
 // ======== boulders and ore boulders ========

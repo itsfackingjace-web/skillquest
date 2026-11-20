@@ -93,9 +93,10 @@
  // drawing you as the dragon
  SQPP.wrap('086',_pp=>function(tm){if(!DF.on)return _pp(tm);if(hurt>0&&Math.floor(tm*20)%2)return;const fr=Math.floor(tm/(qm?.12:.2))%4;dfDraw(Math.round(P.x),Math.round(P.y),dfDir(),fr)});
  // HUD: the ULT chip shows the form's timer / cooldown
- const _hl=hudLayout;hudLayout=function(){const L=_hl();if(!dsoul())return L;const i=L.chips.findIndex(c=>c[0]==='ult'),t=DF.on?'DRAGON '+Math.floor(DF.t/60)+':'+String(Math.floor(DF.t%60)).padStart(2,'0'):DF.cd>0?'ULT '+Math.ceil(DF.cd)+'s':'ULT';
+ const dsUI=()=>{if(!dsoul())return false;if(DF.on)return true;try{const c=window.SQULT&&SQULT.chosen();return!c||c.k==='dragon'}catch(e){return true}};// label only when it's the ult cast (159)
+ const _hl=hudLayout;hudLayout=function(){const L=_hl();if(!dsUI())return L;const i=L.chips.findIndex(c=>c[0]==='ult'),t=DF.on?'DRAGON '+Math.floor(DF.t/60)+':'+String(Math.floor(DF.t%60)).padStart(2,'0'):DF.cd>0?'ULT '+Math.ceil(DF.cd)+'s':'ULT';
   if(i>=0)L.chips[i]=['ult',t];else{L.chips.push(['ult',t]);if(L.chips.length===1)L.stackBottom=L.cy+22*L.U}return L};
- const _ub=ubUpdate;ubUpdate=function(){if(!dsoul())return _ub();const show=!isPC&&!GPON&&!menuOpen&&!dead,lab=!show?'':DF.on?'BACK<small>'+Math.ceil(DF.t)+'s</small>':DF.cd>0?'ULT<small>'+Math.ceil(DF.cd)+'s</small>':'ULT';
+ const _ub=ubUpdate;ubUpdate=function(){if(!dsUI())return _ub();const show=!isPC&&!GPON&&!menuOpen&&!dead,lab=!show?'':DF.on?'BACK<small>'+Math.ceil(DF.t)+'s</small>':DF.cd>0?'ULT<small>'+Math.ceil(DF.cd)+'s</small>':'ULT';
   const k='ds'+show+'|'+lab;if(k===lastUb)return;lastUb=k;ubt.style.display=show?'flex':'none';ubt.innerHTML=lab;ubt.style.opacity=DF.cd>0&&!DF.on?'.55':'1';ubt.style.color=DF.cd>0&&!DF.on?'':'#e05020'};
  // ---- icons ----
  SQICON.wrap('086',_ic=>function(k,col){const j=JK[k];if(!j)return _ic(k,col);const key='g71'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};

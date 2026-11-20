@@ -55,3 +55,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   skipped: harbor posts on islands (049's `regdock`), island NPCs (117), guild board/bank/hall (197), loot chests (111a). 013 is now the first
   step. 220's `fire` and 111a's library icons were reassigned the same way and are steps too (111a's `origIcon` runs the list with its step
   stepping aside, `RAWICO`). `tools/checks/lint.cjs` refuses `fn=` for any function with a step list; check 27 uses the post on Ashfall.
+
+## Nov 20 report fixes
+
+- 096/086: the ULT chip and touch button show SLAM / Dragon Form only when it's 159's chosen ultimate (`slamUI`, `dsUI`); check 34.
+- 010's arrow chip = the arrow kind shot next (marrow > adarrow > mitharrow > iarrow > arrow) and its count; check 35.
+- Error reports: 093's `PST` (pet draw positions) is put on `window` (098/116/180 read it; it was never global); 213's `FR` is declared before
+  the device cache's `setRec` calls (TDZ, the cache never loaded).
