@@ -84,3 +84,6 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `place`, the tabs Brewing/Playing together/Patrons/Achievements, and Home's extra cards (calls the built-in `start` cards with `WK2.start` removed).
   Drops come from `src/data/239a-wiki-drops.js` (`SQWKDROPS`, generated: **rerun `node tools/wiki/drops.cjs` after changing monster drops in code**)
   plus live Dev Suite monster rules and Content loot tables. New recipe kinds go in 239's `recipes()`, new gathering in `gathered()`.
+- **Town names** (`ui/245-s253-town-names.js`, `SQTOWNNAME`, Nov 20): `here()` from the towns' own box tests (VX/VY, inTownBox, inFHBox,
+  inDHBox, inTWBox, SQBW.town, SQAF.town, the dustwater landmark); drawn at the top of the minimap (wrapped `drawMini52`) and as a wooden sign
+  sliding in at y 96*U for 3 s when the town changes (SQHUD step). Check 33.

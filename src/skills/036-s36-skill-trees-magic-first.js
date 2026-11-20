@@ -15,7 +15,7 @@ TREES[ML]={
   30:[{id:'siphon',n:'Mana Siphon',d:'Defeating an enemy with a spell gives back 2 mana.'},{id:'overcharge',n:'Overcharge',d:'Spells cost 1 more mana but deal +2 damage.'}],
   40:[{id:'chain',n:'Chain Spells',d:'Every spell arcs to a nearby enemy for half damage. Storm spells arc one extra time.'},{id:'twin',n:'Twin Cast',d:'20% chance to fire a free second spell.'}],
   50:[{id:'ultfocus',n:'Ultimate Focus',d:'Ultimates recharge 8 seconds faster.'},{id:'ultpower',n:'Ultimate Power',d:'Ultimates deal 50% more damage.'}],
-  60:[{id:'shield',n:'Mana Shield',d:'When something hits you, 4 mana absorbs the blow instead of your health (if you have it).'},{id:'recovery',n:'Arcane Recovery',d:'Mana comes back 50% faster.'}],
+  60:[{id:'shield',n:'Mana Barrier',d:'Once every 30 seconds, 4 mana absorbs a blow instead of your health (if you have it).'},{id:'recovery',n:'Arcane Recovery',d:'Mana comes back 50% faster.'}],
   70:[{id:'pierce',n:'Piercing Spells',d:'Spells pass through the first enemy they hit and keep going.'},{id:'splash',n:'Splash',d:'Spells burst on impact, also hitting enemies around the target for half damage.'}],
   80:[{id:'mastery',n:'Elemental Mastery',d:'Burning, slowing and freezing last twice as long.'},{id:'crit',n:'Spell Crit',d:'15% chance for a spell to deal double damage.'}],
   90:[{id:'archmage',n:'Archmage',d:'+10 max mana and +1 spell damage.'},{id:'cheapult',n:'Effortless Ultimates',d:'Ultimates cost 5 mana instead of 10.'}],
@@ -48,7 +48,7 @@ const _ul36=castUlt;castUlt=function(){const cd0=ULTCD,cheap=perk(ML,'cheapult')
 // regen bonus, mana shield and the phoenix ward
 SQUPD.wrap('036',_u36=>function(dt){const hp0=P.hp,was=dead,t0=time,m0=MANA;_u36(dt);if(menuOpen||pnOpen)return;
  if(!dead&&MANA<maxMP()){const ex=.01*(lvOf(ML)-1)+(perk(ML,'recovery')?.5:0);MANA=Math.min(maxMP(),MANA+dt*.5*(1+.4*nCls('m'))*ex)}
- if(perk(ML,'shield')&&P.hp<hp0&&m0>=4){P.hp=hp0;MANA=Math.max(0,MANA-4);if(dead&&!was){dead=false;time=t0}drops.push({x:P.x,y:P.y-22,t:0,tx:'Mana Shield',c:'#b080ff'});for(let k=0;k<14;k++){const a=k/14*6.283;part(P.x+Math.cos(a)*10,P.y-6+Math.sin(a)*9,Math.cos(a)*30,Math.sin(a)*30,.35,'#c8a8ff',0)}}
+ if(perk(ML,'shield')&&P.hp<hp0&&m0>=4&&performance.now()-(window.SQMSH||0)>30000){window.SQMSH=performance.now();P.hp=hp0;MANA=Math.max(0,MANA-4);if(dead&&!was){dead=false;time=t0}drops.push({x:P.x,y:P.y-22,t:0,tx:'Mana Barrier',c:'#b080ff'});for(let k=0;k<14;k++){const a=k/14*6.283;part(P.x+Math.cos(a)*10,P.y-6+Math.sin(a)*9,Math.cos(a)*30,Math.sin(a)*30,.35,'#c8a8ff',0)}}
  if(dead&&!was&&perk(ML,'phoenix')&&PHX_DAY!==today()){PHX_DAY=today();dead=false;time=t0;P.hp=6;MANA=maxMP();hurt=1.6;FLASH=.6;say('PHOENIX WARD! You rise from the flames.');msgT=4;sfx('quest');
   for(let k=0;k<40;k++){const a=k/40*6.283;part(P.x,P.y-6,Math.cos(a)*110,Math.sin(a)*90-30,.7,k%2?'#f88830':'#f8e060',-40,2)}saveLocal(true)}});
 // tell the player when a choice opens up

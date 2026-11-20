@@ -13,11 +13,12 @@
  // Magic: every spell costs 1 mana less (fire/ice 1, storm/void 2, never below 1). `cost` becomes an accessor, so 111a2's setCosts
  // (which writes the base cost, or a Dev Suite rule's `mp`) and every description reading WSP[el].cost see the lower number.
  for(const el in WSP){let b=WSP[el].cost;Object.defineProperty(WSP[el],'cost',{get(){return Math.max(1,b-1)},set(v){b=v},enumerable:true,configurable:true})}
- // ...and mana comes back 3x as fast: the frame's own regen (small rises) is added twice more; potions and other big gains aren't
- const MREG=3;{SQUPD.wrap('202',_u=>function(dt){const m0=typeof MANA==='number'?MANA:null;const out=_u.apply(this,arguments);
-   try{if(m0!=null&&!dead){const g=MANA-m0;if(g>0&&g<1.5&&MANA<maxMP())MANA=Math.min(maxMP(),MANA+g*(MREG-1))}}catch(e){self.SQERR&&SQERR(e,'202-2')}return out})}
+ // ...and mana comes back faster: the frame's own regen (small rises) is multiplied; potions and other big gains aren't. Nov 20 (#ideas:
+ // early magic was far too strong): x1 at Magic 1, rising to x3 at Magic 25 and above (was x3 for everyone).
+ const MREG=()=>{try{return 1+2*Math.min(1,Math.max(0,(lvOf(ML)-1)/24))}catch(e){return 3}};window.SQMREG=MREG;{SQUPD.wrap('202',_u=>function(dt){const m0=typeof MANA==='number'?MANA:null;const out=_u.apply(this,arguments);
+   try{if(m0!=null&&!dead){const g=MANA-m0;if(g>0&&g<1.5&&MANA<maxMP())MANA=Math.min(maxMP(),MANA+g*(MREG()-1))}}catch(e){self.SQERR&&SQERR(e,'202-2')}return out})}
  // Archery and Magic: +1 damage on every arrow and spell (early bows and wands lagged well behind melee)
  {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+1}}
  {const _sd=spellDmg;spellDmg=function(){return _sd.apply(this,arguments)+1}}
- window.SQCOMBAT={MELEE_GAP,MREG,get lastHit(){return lastHit}};
+ window.SQCOMBAT={MELEE_GAP,get MREG(){return MREG()},get lastHit(){return lastHit}};
 })();

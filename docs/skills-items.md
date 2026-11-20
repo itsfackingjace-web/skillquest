@@ -137,3 +137,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Farming seeds** (`skills/152-s158-farming-seeds.js`, `SQSEEDS(L)`): 016's harvest asks it for the seed count: 45% + 0.5%/level
   (cap 95%), second seed 5% per 10 levels (max 45%); perks (third choices, like 087's) `fm_pouch` (20, +15%), `fm_twin` (40,
   each seed 25% ×2), `fm_heir` (70, at least one). `TREES[11].step` lists the seed numbers. 038's `fm_seed` still adds its own.
+- **Gluttony, bonus-item XP, background tab** (`skills/244-s252-gluttony-bonus-xp-background.js`, `SQIDEAS252`, Nov 20): Cooking 99 auto-eats
+  (SQEATPICK.eat, respects SQEATCD) at 3 hearts or less, Options toggle `sq_glut`. 038's `gBoost` and 039's `prodBoost` are wrapped: bonus units
+  get XP (gBoost: the last addXp of that skill within 1.5 s / base units; prodBoost: o.xp/o.n). A Worker ticks every 200 ms; while
+  `document.hidden` the game runs `upd` (no draw) in 50 ms steps. Magic (202/036): mana regen boost `SQMREG()` x1 at Magic 1 to x3 at 25;
+  Mana Shield is Mana Barrier (once every 30 s, `SQMSH`). Check 32.

@@ -3949,7 +3949,7 @@ TREES[ML]={
   30:[{id:'siphon',n:'Mana Siphon',d:'Defeating an enemy with a spell gives back 2 mana.'},{id:'overcharge',n:'Overcharge',d:'Spells cost 1 more mana but deal +2 damage.'}],
   40:[{id:'chain',n:'Chain Spells',d:'Every spell arcs to a nearby enemy for half damage. Storm spells arc one extra time.'},{id:'twin',n:'Twin Cast',d:'20% chance to fire a free second spell.'}],
   50:[{id:'ultfocus',n:'Ultimate Focus',d:'Ultimates recharge 8 seconds faster.'},{id:'ultpower',n:'Ultimate Power',d:'Ultimates deal 50% more damage.'}],
-  60:[{id:'shield',n:'Mana Shield',d:'When something hits you, 4 mana absorbs the blow instead of your health (if you have it).'},{id:'recovery',n:'Arcane Recovery',d:'Mana comes back 50% faster.'}],
+  60:[{id:'shield',n:'Mana Barrier',d:'Once every 30 seconds, 4 mana absorbs a blow instead of your health (if you have it).'},{id:'recovery',n:'Arcane Recovery',d:'Mana comes back 50% faster.'}],
   70:[{id:'pierce',n:'Piercing Spells',d:'Spells pass through the first enemy they hit and keep going.'},{id:'splash',n:'Splash',d:'Spells burst on impact, also hitting enemies around the target for half damage.'}],
   80:[{id:'mastery',n:'Elemental Mastery',d:'Burning, slowing and freezing last twice as long.'},{id:'crit',n:'Spell Crit',d:'15% chance for a spell to deal double damage.'}],
   90:[{id:'archmage',n:'Archmage',d:'+10 max mana and +1 spell damage.'},{id:'cheapult',n:'Effortless Ultimates',d:'Ultimates cost 5 mana instead of 10.'}],
@@ -3982,7 +3982,7 @@ const _ul36=castUlt;castUlt=function(){const cd0=ULTCD,cheap=perk(ML,'cheapult')
 // regen bonus, mana shield and the phoenix ward
 SQUPD.wrap('036',_u36=>function(dt){const hp0=P.hp,was=dead,t0=time,m0=MANA;_u36(dt);if(menuOpen||pnOpen)return;
  if(!dead&&MANA<maxMP()){const ex=.01*(lvOf(ML)-1)+(perk(ML,'recovery')?.5:0);MANA=Math.min(maxMP(),MANA+dt*.5*(1+.4*nCls('m'))*ex)}
- if(perk(ML,'shield')&&P.hp<hp0&&m0>=4){P.hp=hp0;MANA=Math.max(0,MANA-4);if(dead&&!was){dead=false;time=t0}drops.push({x:P.x,y:P.y-22,t:0,tx:'Mana Shield',c:'#b080ff'});for(let k=0;k<14;k++){const a=k/14*6.283;part(P.x+Math.cos(a)*10,P.y-6+Math.sin(a)*9,Math.cos(a)*30,Math.sin(a)*30,.35,'#c8a8ff',0)}}
+ if(perk(ML,'shield')&&P.hp<hp0&&m0>=4&&performance.now()-(window.SQMSH||0)>30000){window.SQMSH=performance.now();P.hp=hp0;MANA=Math.max(0,MANA-4);if(dead&&!was){dead=false;time=t0}drops.push({x:P.x,y:P.y-22,t:0,tx:'Mana Barrier',c:'#b080ff'});for(let k=0;k<14;k++){const a=k/14*6.283;part(P.x+Math.cos(a)*10,P.y-6+Math.sin(a)*9,Math.cos(a)*30,Math.sin(a)*30,.35,'#c8a8ff',0)}}
  if(dead&&!was&&perk(ML,'phoenix')&&PHX_DAY!==today()){PHX_DAY=today();dead=false;time=t0;P.hp=6;MANA=maxMP();hurt=1.6;FLASH=.6;say('PHOENIX WARD! You rise from the flames.');msgT=4;sfx('quest');
   for(let k=0;k<40;k++){const a=k/40*6.283;part(P.x,P.y-6,Math.cos(a)*110,Math.sin(a)*90-30,.7,k%2?'#f88830':'#f8e060',-40,2)}saveLocal(true)}});
 // tell the player when a choice opens up
@@ -9479,7 +9479,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.20-4',d:'Nov 20, 2026',t:"Guild raids, Outlaw Country quests, mine levels",n:["The Void Treant and the Giant Turtle are real guild raids now: three times the health, faster attacks, and a second rage at a quarter health. The Treant's shockwave throws you back and can't be rolled through, it burrows and bursts up somewhere else, void poison washes over the whole arena, it sometimes glows green and HEALS from every hit (stop attacking!), and void saplings hunt one fighter each (they can't be hurt and switch targets every 8 seconds). The Turtle's tidal waves throw you back, its whirlpools pull you in, and it spins around in its shell where it can't be hurt. START > Guild > Bosses shows this week's top 5 damage.","Outlaw Country: Mira at Dusthaven's Oasis Rest has a new quest line that takes you into No Man's Land, where PvP is always on: scout the badlands, collect bandit bounties, carry her satchel to Dustwater (fall and you lose it), mine the hills, beat two players there, and take down Black Jack, the Outlaw King. Big gold and XP rewards.","Mines need Mining levels: the Old Ironcrest Mine needs Mining 30 and Deepvein Mine Mining 45 to go in, and every two floors down need 10 more (mines on other islands start at 15). Mines now have about twice the monsters, a little tougher, to match all that ore.","Guild Quests grow: each quest your guild finishes in a skill doubles the next one in that skill (100,000 trees, then 200,000, then 400,000...). Quests already running keep their goal.","Item descriptions no longer claim to be the best in the game (that stopped being true as new gear came out). They say what they beat instead.","Fixed: harbor posts on islands (guild islands too) didn't respond, so you couldn't sail home. Island folk, guild boards, the guild bank and loot chests on islands answer again too."]},
+ {v:'2026.11.20-5',d:'Nov 20, 2026',t:"Guild raids, Outlaw Country quests, mine levels",n:["The Void Treant and the Giant Turtle are real guild raids now: three times the health, faster attacks, and a second rage at a quarter health. The Treant's shockwave throws you back and can't be rolled through, it burrows and bursts up somewhere else, void poison washes over the whole arena, it sometimes glows green and HEALS from every hit (stop attacking!), and void saplings hunt one fighter each (they can't be hurt and switch targets every 8 seconds). The Turtle's tidal waves throw you back, its whirlpools pull you in, and it spins around in its shell where it can't be hurt. START > Guild > Bosses shows this week's top 5 damage.","Outlaw Country: Mira at Dusthaven's Oasis Rest has a new quest line that takes you into No Man's Land, where PvP is always on: scout the badlands, collect bandit bounties, carry her satchel to Dustwater (fall and you lose it), mine the hills, beat two players there, and take down Black Jack, the Outlaw King. Big gold and XP rewards.","Mines need Mining levels: the Old Ironcrest Mine needs Mining 30 and Deepvein Mine Mining 45 to go in, and every two floors down need 10 more (mines on other islands start at 15). Mines now have about twice the monsters, a little tougher, to match all that ore.","Guild Quests grow: each quest your guild finishes in a skill doubles the next one in that skill (100,000 trees, then 200,000, then 400,000...). Quests already running keep their goal.","Gluttony: reach Cooking 99 and you eat on your own when you're down to half health (turn it off in Options).","Bonus items give XP: an extra or doubled log, ore, fish or crop from your perks, and a bonus item when smithing, crafting or cooking, now give the XP that item would have.","The game keeps going when you switch to another tab or minimise it on a computer, so a make-all, fishing or a fire carries on.","Town names: the town you're in is shown on the minimap, and a wooden sign with its name slides down when you walk in.","Magic balance: mana comes back more slowly at low Magic levels (normal speed at Magic 1, three times as fast from Magic 25, as before). Mana Shield is now Mana Barrier: it absorbs one blow every 30 seconds, not every blow.","Item descriptions no longer claim to be the best in the game (that stopped being true as new gear came out). They say what they beat instead.","Fixed: harbor posts on islands (guild islands too) didn't respond, so you couldn't sail home. Island folk, guild boards, the guild bank and loot chests on islands answer again too."]},
  {v:'2026.11.19-2',d:'Nov 19, 2026',t:"The Song Studio, new pets, song zones and a better wiki",n:["The wiki has a page for every item and monster: tap any name to see how to get it (recipes, shops, which monsters drop it and how often, where to gather it) and what it's used for. ◀ Back takes you where you were.","New wiki tabs: Brewing, Playing together (parties, trading, the market, duels, chess), Patrons and Achievements (with your progress). Home shows what you unlocked lately and skills you haven't tried yet, and search finds item and monster pages.","Patrons: the Song Studio is open (START > Patron > Song Studio). Pick a mood, tap notes on a grid and send your song in. No music experience needed: the grid only has notes that fit the song, the bright rows go with every chord, and \"Make me a tune\" and \"Pick chords for me\" give you a start. Approved songs can play in the game, with your name in the credits.","New pets can now come to the game, including pets Patrons draw in the Art Room.","Places on an island can now have music of their own, so a different song can play as you walk into them.","The HERE map now lists the players online under it, like the WORLD map, and marks the ones on your island."]},
  {v:'2026.11.18-5',d:'Nov 18, 2026',t:"Bug fixes, fishing behind menus and colourful campfires",n:["Campfires show what they're made of: oak burns golden, willow blue, maple crimson, yew green and void logs purple, and each one glows in its own colour at night. The kindling you're lighting shows the log's colour too.","You can eat while cooking at a fire: press EAT while your food cooks and you eat something without stopping the cooking.","Fixed: fishing stopped while a menu or screen was open. Bites now keep coming and the line reels in behind the menu.","Fixed: with a full bag, a chest's item card could be cut off at the bottom of the screen on iPhone, hiding its buttons. It now always fits on screen.","Fixed: on Ironcrest (and anywhere else a path meets a rocky plateau), you couldn't step from the path onto the plateau's side even though nothing was in the way. Paths now lead straight onto plateaus from the north, east and west. The cliff faces on the south side still need the stone stairs.","Fixed: since earlier today, HIT could do two things at once: reeling in a fish or placing something also swung your weapon, and other buttons that take over HIT did the same. HIT does one thing again.","Fixed: smelting, smithing or crafting at a station in your house (or next to chests outdoors) could save your game with the chests' contents counted in your bag as well. If you closed the game soon after, the next time it loaded those items were in both places. Saves now never count items borrowed from chests.","Fixed: getting up very quickly after falling could lose everything you carried without leaving a gravestone. Your things now always go into your grave, or stay in your bag if there's nowhere to put one.","Fixed: closing the game while lighting a campfire with oak or better logs could turn those logs into plain wood.","Fixed: on phones, the world boss bar covered the getting-started tips. It now sits below them."]},
  {v:'2026.11.17-3',d:'Nov 17, 2026',t:"Market prices set by players, better character screen",n:["Every item now has a market price worked out from what players actually paid for it on the World Market: the middle price of the last 30 days' sales. You'll see it when you buy or sell (with a little chart of recent sales), in your bag and on chest item cards. Items nobody has traded lately just show the shop price.","Sales on the World Market of 100 gold or more now pay a 1% market tax, taken from the seller's gold. It keeps gold from piling up, so prices stay fair for new players. The sell screen shows what you'll get after the tax.","Your character screen (the tab with your name): tap any slot with gear in it, or the name of the ring or amulet you're wearing, to see that item's card, with its stats, what a shop pays and its market price. The stats list now also shows health, armour, your block limit, critical hit chance, mana regen per second, every gear effect you're wearing (life steal, burn, bonus XP and so on), Turtle and Meteorite set pieces, and potion buffs with their time left.","Every item in your bag now shows what a shop pays for it next to its market price."]},
@@ -21192,13 +21192,14 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  // Magic: every spell costs 1 mana less (fire/ice 1, storm/void 2, never below 1). `cost` becomes an accessor, so 111a2's setCosts
  // (which writes the base cost, or a Dev Suite rule's `mp`) and every description reading WSP[el].cost see the lower number.
  for(const el in WSP){let b=WSP[el].cost;Object.defineProperty(WSP[el],'cost',{get(){return Math.max(1,b-1)},set(v){b=v},enumerable:true,configurable:true})}
- // ...and mana comes back 3x as fast: the frame's own regen (small rises) is added twice more; potions and other big gains aren't
- const MREG=3;{SQUPD.wrap('202',_u=>function(dt){const m0=typeof MANA==='number'?MANA:null;const out=_u.apply(this,arguments);
-   try{if(m0!=null&&!dead){const g=MANA-m0;if(g>0&&g<1.5&&MANA<maxMP())MANA=Math.min(maxMP(),MANA+g*(MREG-1))}}catch(e){self.SQERR&&SQERR(e,'202-2')}return out})}
+ // ...and mana comes back faster: the frame's own regen (small rises) is multiplied; potions and other big gains aren't. Nov 20 (#ideas:
+ // early magic was far too strong): x1 at Magic 1, rising to x3 at Magic 25 and above (was x3 for everyone).
+ const MREG=()=>{try{return 1+2*Math.min(1,Math.max(0,(lvOf(ML)-1)/24))}catch(e){return 3}};window.SQMREG=MREG;{SQUPD.wrap('202',_u=>function(dt){const m0=typeof MANA==='number'?MANA:null;const out=_u.apply(this,arguments);
+   try{if(m0!=null&&!dead){const g=MANA-m0;if(g>0&&g<1.5&&MANA<maxMP())MANA=Math.min(maxMP(),MANA+g*(MREG()-1))}}catch(e){self.SQERR&&SQERR(e,'202-2')}return out})}
  // Archery and Magic: +1 damage on every arrow and spell (early bows and wands lagged well behind melee)
  {const _ad=arrowDmg;arrowDmg=function(){return _ad.apply(this,arguments)+1}}
  {const _sd=spellDmg;spellDmg=function(){return _sd.apply(this,arguments)+1}}
- window.SQCOMBAT={MELEE_GAP,MREG,get lastHit(){return lastHit}};
+ window.SQCOMBAT={MELEE_GAP,get MREG(){return MREG()},get lastHit(){return lastHit}};
 })();
 // ---- 211. Other players see your arrows again ----
 // 064 sends arrows to other players (fx 'ar') from its `shoot` wrapper, but since bows became off-hand weapons every shot goes
@@ -24379,6 +24380,83 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  // the line's extra field (`seen`) is saved with sideQuests by 042; make sure it loads back as a list
  SQLOAD.after('243',S=>{const v=S&&S.sideQuests&&S.sideQuests[T];const s=SQ_SIDE[T];if(v&&Array.isArray(v.seen))s.seen=v.seen.filter(x=>typeof x==='string').slice(0,10);else delete s.seen});
  window.SQOUTLAW={T,GIVER,satchel}})();
+// ---- 252. Ideas from #ideas (approved Nov 20): Gluttony, XP for bonus items, keep playing in a background tab ----
+// - Gluttony: at Cooking 99 you eat automatically when you're down to half health (3 hearts) and have food (181's SQEATPICK.eat,
+//   so the eating cooldown and the food picker's choice apply). Options has an on/off button (localStorage sq_glut).
+// - Bonus items give XP: an extra or doubled harvest (038's gBoost: XP of the harvest it doubles, per item) and a bonus item when
+//   making things (039's prodBoost: its base XP per unit) now give the XP that item would have given.
+// - Background tab: browsers stop drawing a hidden tab, so the game used to freeze when you switched tabs (or minimised the app).
+//   A tiny worker keeps ticking (worker timers aren't slowed down like the page's), and while the tab is hidden the game keeps
+//   running its update (no drawing), so a make-all, fishing or a fire keeps going.
+(()=>{
+ // ---------- Gluttony ----------
+ const CK=4;// Cooking's index in SKN
+ let glut=true;try{glut=localStorage.getItem('sq_glut')!=='0'}catch(e){self.SQERR&&SQERR(e,'244-1')}
+ const has=()=>{try{return lvOf(CK)>=99}catch(e){return false}};
+ let gT=0,told=false;
+ SQUPD.after('244 gluttony',dt=>{if((gT-=dt)>0)return;gT=.4;if(!has())return;
+  if(!glut||dead||menuOpen||P.hp>3)return;const E=window.SQEATPICK;if(!E||!E.pick())return;
+  try{if(window.SQEATCD&&SQEATCD()>0)return}catch(e){self.SQERR&&SQERR(e,'244-2')}
+  try{if(E.eat())drops.push({x:P.x,y:P.y-34,t:0,tx:'Gluttony!',c:'#f8b048'})}catch(e){self.SQERR&&SQERR(e,'244-3')}});
+ SQADDXP.after('244 gluttony unlock',(i,x)=>{if(i===CK&&x>0&&has()&&!told){told=true;say('Cooking 99: you unlocked GLUTTONY! You eat on your own when you\'re down to half health (Options to turn it off).');msgT=6}});
+ // told = already 99 when the game starts (no message then)
+ SQLOAD.after('244',()=>{told=has()});
+ SQOPTS.wrap('244',_o=>function(){const h=_o();if(!has())return h;const add='<button class="sb sqglut">Gluttony (auto-eat): '+(glut?'ON':'OFF')+'</button>';
+  let k=h.indexOf('<div class="tl" style="margin-top:16px">CONTROLLER</div>');if(k<0)k=h.indexOf('<div class="tl" style="margin-top:22px');return k<0?h+add:h.slice(0,k)+add+h.slice(k)});
+ pbd.addEventListener('click',e=>{if(!e.target.closest('.sqglut'))return;e.stopPropagation();glut=!glut;try{localStorage.setItem('sq_glut',glut?'1':'0')}catch(err){self.SQERR&&SQERR(err,'244-4')}try{sfx('talk');rPn()}catch(err){self.SQERR&&SQERR(err,'244-5')}},true);
+ // ---------- XP for bonus items ----------
+ let BONUS=0;const LAST={};SQADDXP.after('244 last xp',(i,x)=>{if(x>0&&!BONUS)LAST[i]={x,t:performance.now()}});
+ const give=(sk,xp,x,y)=>{xp=Math.round(xp);if(xp<1)return;BONUS++;try{addXp(sk,xp)}finally{BONUS--}try{drops.push({x,y:y-48,t:0,tx:'+'+xp+' XP',c:SKC[sk]||'#fff'})}catch(e){self.SQERR&&SQERR(e,'244-6')}};
+ if(typeof gBoost==='function'){const _g=gBoost;gBoost=function(sk,gains,x,y){const keys=Object.keys(gains||{}).filter(k=>gains[k]>0),b0=keys.map(k=>inv[k]|0);const out=_g.apply(this,arguments);
+   try{const extra=keys.reduce((s,k,j)=>s+Math.max(0,(inv[k]|0)-b0[j]),0),base=keys.reduce((s,k)=>s+gains[k],0),L=LAST[sk];
+    if(extra>0&&base>0&&L&&performance.now()-L.t<1500)give(sk,L.x*extra/base,x,y)}catch(e){self.SQERR&&SQERR(e,'244-7')}return out}}
+ if(typeof prodBoost==='function'){const _p=prodBoost;prodBoost=function(sk,o){const k=o&&o.out,b0=k?inv[k]|0:0;const out=_p.apply(this,arguments);
+   try{if(k&&o.n>0&&o.xp>0){const extra=(inv[k]|0)-b0;if(extra>0)give(sk,o.xp/o.n*extra,P.x,P.y)}}catch(e){self.SQERR&&SQERR(e,'244-8')}return out}}
+ // ---------- keep playing in a background tab ----------
+ let lastTick=performance.now(),W=null,TICKS=0;
+ try{const src='let t=null;onmessage=e=>{if(e.data==="on"&&!t)t=setInterval(()=>postMessage(1),200);else if(e.data==="off"&&t){clearInterval(t);t=null}}';
+  W=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})))}catch(e){W=null}
+ if(W){W.onmessage=()=>{if(!document.hidden)return;TICKS++;const now=performance.now();let left=Math.min(1,(now-lastTick)/1000);lastTick=now;
+    try{while(left>0){const d=Math.min(.05,left);left-=d;upd(d)}}catch(e){self.SQERR&&SQERR(e,'244-9')}};
+  const sync=()=>{lastTick=performance.now();try{W.postMessage(document.hidden?'on':'off')}catch(e){self.SQERR&&SQERR(e,'244-10')}};
+  document.addEventListener('visibilitychange',sync);sync()}
+ window.SQIDEAS252={get glut(){return glut},has,LAST,worker:!!W,get ticks(){return TICKS}}})();
+// ---- 253. Town names: on the minimap and a sign when you walk in (window.SQTOWNNAME) ----
+// #ideas (approved Nov 20): players got lost and the centre-screen pop-ups were in the way. Now the town you're in is written in small
+// yellow letters across the top of the minimap, and walking into a town shows its name on a wooden sign that slides down at the top
+// of the screen for a few seconds (like a Gen 3 location sign), instead of a message in the middle.
+// here(): the town around you: Hollow Village, Saltmere, Frosthollow, Dusthaven and Tidewatch on Hollow (their own box tests), Thornbrook
+// (095's SQBW.town) and Emberwatch (096's SQAF.town) on their islands, Dustwater (No Man's Land's landmark), or null.
+(()=>{const T=n=>{try{return typeof n==='function'?n:null}catch(e){return null}};
+ const box=(o,tx,ty)=>o&&tx>=o.x0-1&&ty>=o.y0-1&&tx<o.x0+o.w+1&&ty<o.y0+o.h+1;
+ function here(){try{if(dead)return null;const tx=Math.floor(P.x/16),ty=Math.floor(P.y/16);
+   if(!SCENE){if(typeof SAILING!=='undefined'&&SAILING)return null;
+    if(typeof VX!=='undefined'&&tx>VX-11&&tx<VX+12&&ty>VY-8&&ty<VY+9)return'Hollow Village';
+    if(typeof inTownBox==='function'&&inTownBox(tx,ty))return'Saltmere';
+    if(typeof FHON!=='undefined'&&FHON&&typeof inFHBox==='function'&&inFHBox(tx,ty))return'Frosthollow';
+    if(typeof DHON!=='undefined'&&DHON&&typeof inDHBox==='function'&&inDHBox(tx,ty))return'Dusthaven';
+    if(typeof TWON!=='undefined'&&TWON&&typeof inTWBox==='function'&&inTWBox(tx,ty))return'Tidewatch';
+    return null}
+   const R=SCENE.room;if(!R||!R.region)return null;
+   if(R.region==='briarwood'&&window.SQBW&&box(SQBW.town,tx,ty))return'Thornbrook';
+   if(R.region==='ashfall'&&window.SQAF&&box(SQAF.town,tx,ty))return'Emberwatch';
+   if(R.region==='nomans'&&R.lms){const l=R.lms.find(q=>q.id==='dustwater');if(l&&Math.hypot(tx-l.x,ty-l.y)<11)return'Dustwater'}
+  }catch(e){self.SQERR&&SQERR(e,'245-1')}return null}
+ // ---- the minimap label ----
+ let NOW=null,tk=0,SIGN=null;// SIGN: {n, at}
+ {SQUPD.after('245 town names',dt=>{if((tk-=dt)>0)return;tk=.3;const n=here();if(n!==NOW){if(n&&!menuOpen)SIGN={n,at:performance.now()};NOW=n}})}
+ const lbl=(s,x,y,U)=>{g.font='700 '+Math.round(8*U)+'px '+PF;g.textAlign='center';g.textBaseline='top';g.lineWidth=3*U;g.lineJoin='round';g.strokeStyle='#181018';g.strokeText(s,x,y);g.fillStyle='#f8d848';g.fillText(s,x,y)};
+ if(typeof drawMini52==='function'){const _dm=drawMini52;drawMini52=function(){const out=_dm.apply(this,arguments);
+   try{if(NOW&&!menuOpen){const t=typeof miniTarget==='function'&&miniTarget();if(t){const L=hudLayout(),U=L.U,w=(L.mw||L.dw),hh=Math.round(w*t.h/t.w),bx=L.dx+L.dw-w,by=L.top+L.dh+46*U;
+     g.save();g.setTransform(1,0,0,1,0,0);lbl(NOW,bx+w/2,by+3*U,U);g.restore()}}}catch(e){self.SQERR&&SQERR(e,'245-2')}return out}}
+ // ---- the sign when you walk in ----
+ {SQHUD.after('245 town sign',()=>{if(!SIGN||menuOpen||(typeof pnOpen!=='undefined'&&pnOpen))return;const age=(performance.now()-SIGN.at)/1000;if(age>3.2){SIGN=null;return}
+   const L=typeof HUDL!=='undefined'&&HUDL;const U=L&&L.U||1,drop=age<.3?age/.3:age>2.8?Math.max(0,(3.2-age)/.4):1;g.save();g.setTransform(1,0,0,1,0,0);
+   g.font='700 '+Math.round(12*U)+'px '+PF;const tw=g.measureText(SIGN.n).width,w=tw+28*U,h=24*U,x=Math.round(W/2-w/2),y0=Math.round(96*U),y=Math.round(y0-(h+8*U)*(1-drop));g.globalAlpha=drop;
+   g.fillStyle='#181018';g.fillRect(x-2*U,y-2*U,w+4*U,h+4*U);g.fillStyle='#b8925a';g.fillRect(x,y,w,h);g.fillStyle='#e8c890';g.fillRect(x,y,w,2*U);g.fillStyle='#8a6a3a';g.fillRect(x,y+h-3*U,w,3*U);
+   for(const px of[x+5*U,x+w-7*U]){g.fillStyle='#5a3a1e';g.fillRect(px,y+h/2-1*U,2*U,2*U)}
+   g.textAlign='center';g.textBaseline='middle';g.fillStyle='#3a2414';g.fillText(SIGN.n,W/2,y+h/2+1*U);g.restore()})}
+ window.SQTOWNNAME={here,get now(){return NOW}}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without
