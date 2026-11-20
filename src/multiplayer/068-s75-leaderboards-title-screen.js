@@ -9,7 +9,9 @@ const LB={open:false,cat:'tot',data:{},unsub:null,pubKey:'',pubAt:-1e9,pk:0};
 {SQSAVE.after('068:pvpk',s=>{if(LB.pk)s.pvpk=LB.pk;})}
 {SQLOAD.after('068',(S)=>{LB.pk=Math.max(0,+(S&&S.pvpk)||0)})}
 function lbTick(){if(!MP.on||!MP.user||!FB)return;const now=performance.now();if(now-LB.pubAt<20000)return;LB.pubAt=now;
- const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};try{const c=window.SQCHR&&SQCHR.row();if(c){row.cr=c.r;row.cg=c.g}}catch(e){self.SQERR&&SQERR(e,'068-2')}const k=JSON.stringify(row);if(k===LB.pubKey)return;
+ const x=XPS.map(v=>Math.max(0,Math.floor(+v||0))),row={n:myName().slice(0,12),tot:lvTot(),x,qp:window.SQQPTOTAL?SQQPTOTAL():+(Q&&Q.qp)||0,pk:LB.pk,mk:+kills||0,bk:(window.SQWB&&SQWB.kills)||0};try{const c=window.SQCHR&&SQCHR.row();if(c){row.cr=c.r;row.cg=c.g}}catch(e){self.SQERR&&SQERR(e,'068-2')}
+ // later sections add fields (249: guild, patron, mod and dev flags for the Discord roles); the rules check each one
+ for(const f of(window.SQLBX||[])){try{f(row)}catch(e){self.SQERR&&SQERR(e,'068-3')}}const k=JSON.stringify(row);if(k===LB.pubKey)return;
  LB.pubKey=k;FB.db.set(FB.db.ref(FB.D,'lb/'+MP.user.uid),Object.assign(row,{t:FB.db.serverTimestamp()})).catch(e=>{LB.pubKey='';mpErr(e)})}
 setInterval(()=>{try{lbTick()}catch(e){self.SQERR&&SQERR(e,'068-3')}},5000);
 window.SQLB=LB;

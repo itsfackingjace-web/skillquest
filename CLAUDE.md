@@ -150,6 +150,8 @@ Each area has its own notes file in `docs/`. Read the one for the area you're ch
   Covers: Hold HIT on touch, Chat on touch screens, Custom controls, Check for updates, Touch button layout, Camera, Wiki, Descriptions, Discord button, Message box on phones, Controllers everywhere, Controller cards, Controller highlight ring, Title hero looks, Tidy phone screen, Party list placement, Leaderboards in the menu, Sound for controller players, Character tab cards and stats, Wiki pages.
 - **`docs/music.md`** — Music: The soundtrack engine, the Dev Suite song editor, the Patron Song Studio and song zones.
   Covers: Soundtrack, Song editor, Song Studio, Song zones.
+- **`docs/discord.md`** — Discord: the patch notes feed (webhook) and the SQ Bot's roles (Link Discord, public leaderboard fields, sync job).
+  Covers: Patch notes feed, Roles (SQ Bot).
 - **`docs/fixes.md`** — Dated fix collections: Batches of small fixes, by day. Each names the file it lives in.
   Covers: Quality fixes, Audit fixes, Player-report fixes, Bug sweep Nov 15, Bug fixes Nov 15 (afternoon), Nov 16 report fixes, Nov 18 evening fixes, Nov 20 harbor posts, Nov 20 report fixes.
 

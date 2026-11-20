@@ -1,0 +1,29 @@
+# SQ Bot: links Discord members who post their game code in #link and gives them roles for their Total Level, guild,
+# Patron, Moderator and Developer (tools/discord/sync-roles.mjs). Runs every 30 minutes; "Run workflow" runs it now
+# (tick "dry run" to only list what it would change). Needs the repo secret DISCORD_BOT_TOKEN; no database password.
+name: Discord roles
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: 'Dry run (list changes only)'
+        type: boolean
+        default: false
+concurrency:
+  group: discord-roles
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Sync roles
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+        run: node tools/discord/sync-roles.mjs ${{ inputs.dry && '--dry' || '' }}
