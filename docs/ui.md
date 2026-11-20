@@ -4,6 +4,9 @@ Controllers, custom controls, touch layout, camera, HUD layout on phones, the up
 
 Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follows). File numbers like 061 are the source files in `src/` (see `src/manifest.txt`).
 
+- **Last input wins** (`ui/250-s258-mouse-hides-controller-ring.js`): a trusted pointerdown (mouse/touch) calls `gpActivate(false)` while `GPON`,
+  hiding 172's ring and the pad button words; 081 turns controller mode back on at the next pad input, and the repeated
+  "Controller connected!" message is dropped once. 023's A-button clicks are synthetic (not trusted), so they don't count. Check 43.
 - **Hold HIT on touch** (`ui/248-s256-hold-hit-on-touch.js`, `window.SQHOLDHIT`): a touch on `#a` (004's HIT) that stays on the button
   repeats `attack()` after 0.35 s whenever `swing<=0` (not fishing/building/with a screen open), like 023's R2. Check 37.
 - **Chat on touch screens** (`ui/121-s126-chat-at-bottom.js`): `#mpchat.sqbot` sits at the bottom when `!isPC`, lifted

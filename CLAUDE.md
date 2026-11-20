@@ -147,7 +147,7 @@ Each area has its own notes file in `docs/`. Read the one for the area you're ch
 - **`docs/patrons.md`** — Patrons, art and paintings: Patreon link, patron perks, the Art Room (and editing submissions), paintings and the gallery, wearables and pets from art, capes.
   Covers: Patrons, Art Room, Patreon link, One cape picker, Art Room editor, Paintings and the Patron Art Gallery, Art Room wearables, Art Room pets, Editing patron art.
 - **`docs/ui.md`** — Screens, controls and HUD: Controllers, custom controls, touch layout, camera, HUD layout on phones, the update check, the wiki.
-  Covers: Hold HIT on touch, Chat on touch screens, Custom controls, Check for updates, Touch button layout, Camera, Wiki, Descriptions, Discord button, Message box on phones, Controllers everywhere, Controller cards, Controller highlight ring, Title hero looks, Tidy phone screen, Party list placement, Leaderboards in the menu, Sound for controller players, Character tab cards and stats, Wiki pages.
+  Covers: Last input wins, Hold HIT on touch, Chat on touch screens, Custom controls, Check for updates, Touch button layout, Camera, Wiki, Descriptions, Discord button, Message box on phones, Controllers everywhere, Controller cards, Controller highlight ring, Title hero looks, Tidy phone screen, Party list placement, Leaderboards in the menu, Sound for controller players, Character tab cards and stats, Wiki pages.
 - **`docs/music.md`** — Music: The soundtrack engine, the Dev Suite song editor, the Patron Song Studio and song zones.
   Covers: Soundtrack, Song editor, Song Studio, Song zones.
 - **`docs/discord.md`** — Discord: the patch notes feed (webhook) and the SQ Bot's roles (Link Discord, public leaderboard fields, sync job).
