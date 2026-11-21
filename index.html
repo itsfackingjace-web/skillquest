@@ -9497,7 +9497,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.21-2',d:'Nov 21, 2026',t:"New tree cards and Drop Card fixes",n:["New Drop Cards: Pine (1 Mana), Dead tree (1 Mana) and Void tree (6 Mana). Chop pines, the dead trees of Ashfall and the void trees of the Shattered Expanse for a chance at their card.","Fixed: every tree now gives its own card. Yews, pines and dead trees could give the plain Tree card, and void trees gave no card at all.","Fixed: cacti give the Cactus fruit card instead of a Tree card.","Shiny cards can be seen in your Card Binder: the new ★ Shiny filter shows every shiny card you own, and a card you have both ways shows its normal and shiny pictures side by side when you tap it.","Fixed: after looking at another player's cards, your own Card Binder showed their cards until you restarted the game."]},
+ {v:'2026.11.21-3',d:'Nov 21, 2026',t:"Drop Card against other players, new tree cards and fixes",n:["Play Drop Card against other players! Stand next to someone, tap their name and choose PLAY DROP CARD. Like chess, you can both stake items or gold, and the winner takes both stakes. You each play the deck that's active in your Card Binder, at the same card table as Ace's matches. You have 2 minutes a turn (your turn ends by itself after that). Giving up, leaving or going offline loses the match. Win one for the Card duelist achievement.","New Drop Cards: Pine (1 Mana), Dead tree (1 Mana) and Void tree (6 Mana). Chop pines, the dead trees of Ashfall and the void trees of the Shattered Expanse for a chance at their card.","Fixed: every tree now gives its own card. Yews, pines and dead trees could give the plain Tree card, and void trees gave no card at all.","Fixed: cacti give the Cactus fruit card instead of a Tree card.","Shiny cards can be seen in your Card Binder: the new ★ Shiny filter shows every shiny card you own, and a card you have both ways shows its normal and shiny pictures side by side when you tap it.","Fixed: after looking at another player's cards, your own Card Binder showed their cards until you restarted the game."]},
  {v:'2026.11.20-20',d:'Nov 20, 2026',t:"Guild raids, Outlaw Country, Merchant skill and a GE-style market",n:["Play Drop Card! Talk to Ace the Card Sharp in Hollow Village and play your deck against him on Easy, Normal or Hard. Plant a tree each turn, chop trees to pay for cards (stumps grow back next turn), play monsters and spells, and attack Ace's monsters or Ace himself. Boss cards have their own powers and your pet card is your Companion. Win for gold (50 / 150 / 400, a tenth after your first win of the day at that level) and the Card shark achievement. The match is played at a wooden card table with you and Ace at either end, your Groves of real trees, and your hand fanned out. Tap any card (in your hand, on the table, a tree or your pet) to see it up close with its stats, power and where it's found, and to play, plant, chop or attack from there; tap anywhere else to go back to the table. Works with touch, mouse and controller (○ or Esc goes back).","Drop Cards are here: every monster, tree and boss now has its own collectible card. Each monster has a 1% chance to drop its card when you beat it, each tree a 1% chance when you chop it (better trees give more Mana), and every world, dungeon, island and guild boss has a 1% chance to drop its own rare card. Your cards live in a Card Binder (one bag slot): tap it and OPEN to see your collection and build up to 3 decks. Potions you brew and berries, mushrooms, nuts and cactus fruit you forage can drop cards too, and releasing a pet now always gives you its Pet Card. Learn everything in Drop Card for Dummies, 1 gold at the General Store in Hollow Village: your first copy comes with a free 20-card Starter Deck. And if you go a long time without a card, the next one is guaranteed. The Drop Card game itself is coming soon.","Every card you find flips onto your screen, and about 1 in 50 is a SHINY card in inverted colours (it plays the same as the normal one). Boss cards and shiny cards are announced in chat for everyone online. New Drop Card achievements reward collecting.","Meet Ace the Card Sharp at his card table next to the chess table in Hollow Village: he sells Drop Card for Dummies, explains the game and opens your binder. Tap DROP CARDS in another player's menu to see their collection, and check the new Drop Cards leaderboard.","Card frames: craft one at the workbench (4 wood + 1 iron bar) or buy one at Marlo's Emporium, place it in your house and press HIT on it to put one of your cards on display.","Pick your mouse cursor in Options > Cursor: gold arrow, sword, wand, gauntlet, high contrast, a yellow crosshair, an inverted crosshair that takes the opposite colour of whatever's under it, or whatever's in your off-hand. Each comes in Normal or Large. With a controller, the right stick now moves a cursor around menus and screens, and \u2715 clicks with it (out in the world it still aims).","Keep a friend's campfire going: stand next to anyone's fire and press F (or the fire button) to feed it a log. Once you've fed it, it keeps burning even after the player who lit it logs out.","Discord roles: link your Discord account in Options > Link Discord, post the code in #link on the SkillQuest Discord, and the SQ Bot gives you roles for your Total Level, your guild, Patron, and game Moderator or Developer, plus a private channel for your guild that only its members can see. They update by themselves as you play.","Chat messages can be twice as long: up to 160 characters in public chat, private messages, party chat and guild chat. Speech bubbles show up to 5 lines.","Fixed: monsters drawn off the screen could still bite you (\"Ouch!\" with nothing around you). Only a monster you can actually see can touch you now, and if you fall to one you couldn't see, the game sends us a report by itself so we can track down where it came from.","Fixed: with a Stone Sledgehammer and the Dragonsoul amulet both worn, the ULT button said SLAM even when Dragon Form was the ultimate picked in your gear tab (and turned you into a dragon). The button now shows the ultimate it will use.","The arrow count by your HP bar shows the arrows your bow will shoot next (it always shoots your best ones first), with their picture.","Fixed: Patron paintings saved on your device didn't load before your save, and pets' item finds and powers used your position instead of the pet's.","The Void Treant and the Giant Turtle are real guild raids now: three times the health, faster attacks, and a second rage at a quarter health. The Treant's shockwave throws you back and can't be rolled through, it burrows and bursts up somewhere else, void poison washes over the whole arena, it sometimes glows green and HEALS from every hit (stop attacking!), and void saplings hunt one fighter each (they can't be hurt and switch targets every 8 seconds). The Turtle's tidal waves throw you back, its whirlpools pull you in, and it spins around in its shell where it can't be hurt. START > Guild > Bosses shows this week's top 5 damage.","Outlaw Country: Mira at Dusthaven's Oasis Rest has a new quest line that takes you into No Man's Land, where PvP is always on: scout the badlands, collect bandit bounties, carry her satchel to Dustwater (fall and you lose it), mine the hills, beat two players there, and take down Black Jack, the Outlaw King. Big gold and XP rewards.","Mines need Mining levels: the Old Ironcrest Mine needs Mining 30 and Deepvein Mine Mining 45 to go in, and every two floors down need 10 more (mines on other islands start at 15). Mines now have about twice the monsters, a little tougher, to match all that ore.","Guild Quests grow: each quest your guild finishes in a skill doubles the next one in that skill (100,000 trees, then 200,000, then 400,000...). Quests already running keep their goal.","New skill: Merchant. Every sale you make on the World Market gives Merchant XP, and every 20 Merchant levels gives you one more market offer slot (up to 12).","The World Market works more like the Grand Exchange: My offers shows your offer slots as boxes with progress bars (and Buy / Sell buttons in the empty ones), and Browse, Buy and Sell have a search box and categories (ores and bars, logs, fish and food, gear, potions, gems and jewelry, farming) with items in a grid.","Gluttony: reach Cooking 99 and you eat on your own when you're down to half health (turn it off in Options).","Bonus items give XP: an extra or doubled log, ore, fish or crop from your perks, and a bonus item when smithing, crafting or cooking, now give the XP that item would have.","The game keeps going when you switch to another tab or minimise it on a computer, so a make-all, fishing or a fire carries on.","Town names: the town you're in is shown on the minimap, and a wooden sign with its name slides down when you walk in.","Magic balance: mana comes back more slowly at low Magic levels (normal speed at Magic 1, three times as fast from Magic 25, as before). Mana Shield is now Mana Barrier: it absorbs one blow every 30 seconds, not every blow.","Item descriptions no longer claim to be the best in the game (that stopped being true as new gear came out). They say what they beat instead.","Fixed: harbor posts on islands (guild islands too) didn't respond, so you couldn't sail home. Island folk, guild boards, the guild bank and loot chests on islands answer again too.","Hold HIT on a phone or tablet to keep swinging, like holding Space or R2: keep your finger on the button to keep chopping, mining or fighting.","The wiki says where meteorite ore and stardust come from: meteor strikes (the banner tells you where one has fallen).","Fixed: monsters could hide under island houses and castles (on the door or behind the roof) and hurt anyone walking past without being seen. They're moved out from under buildings now, and one that's still hidden can't touch you.","Fixed: visitors to a castle on an island only saw the back half of its furniture, and could walk through the walls built inside it. They see the whole hall now.","Fixed: Guild Quests started before the new doubling goals stopped counting progress. They count again.","Fixed: in PvP, your hardest hits (ultimates and strong weapons, 3 hearts) were refused by the server with an \"online server refused that\" message and never landed. They land now.","Fixed: pressing Link Discord again made a new code and the one you'd already posted in #link stopped working. You keep the same code all day now.","Fixed: if you fell while in Dragon Form with a screen open, you could get up still in Dragon Form.","Fixed: with a controller plugged in, its gold highlight stayed on whatever the controller last pointed at while you clicked with the mouse, so clicks in the bag, gear tab and skills looked like they did nothing. Clicking or tapping now switches to mouse mode (the highlight goes away), and touching the controller switches back."]},
  {v:'2026.11.19-2',d:'Nov 19, 2026',t:"The Song Studio, new pets, song zones and a better wiki",n:["The wiki has a page for every item and monster: tap any name to see how to get it (recipes, shops, which monsters drop it and how often, where to gather it) and what it's used for. ◀ Back takes you where you were.","New wiki tabs: Brewing, Playing together (parties, trading, the market, duels, chess), Patrons and Achievements (with your progress). Home shows what you unlocked lately and skills you haven't tried yet, and search finds item and monster pages.","Patrons: the Song Studio is open (START > Patron > Song Studio). Pick a mood, tap notes on a grid and send your song in. No music experience needed: the grid only has notes that fit the song, the bright rows go with every chord, and \"Make me a tune\" and \"Pick chords for me\" give you a start. Approved songs can play in the game, with your name in the credits.","New pets can now come to the game, including pets Patrons draw in the Art Room.","Places on an island can now have music of their own, so a different song can play as you walk into them.","The HERE map now lists the players online under it, like the WORLD map, and marks the ones on your island."]},
  {v:'2026.11.18-5',d:'Nov 18, 2026',t:"Bug fixes, fishing behind menus and colourful campfires",n:["Campfires show what they're made of: oak burns golden, willow blue, maple crimson, yew green and void logs purple, and each one glows in its own colour at night. The kindling you're lighting shows the log's colour too.","You can eat while cooking at a fire: press EAT while your food cooks and you eat something without stopping the cooking.","Fixed: fishing stopped while a menu or screen was open. Bites now keep coming and the line reels in behind the menu.","Fixed: with a full bag, a chest's item card could be cut off at the bottom of the screen on iPhone, hiding its buttons. It now always fits on screen.","Fixed: on Ironcrest (and anywhere else a path meets a rocky plateau), you couldn't step from the path onto the plateau's side even though nothing was in the way. Paths now lead straight onto plateaus from the north, east and west. The cliff faces on the south side still need the stone stairs.","Fixed: since earlier today, HIT could do two things at once: reeling in a fish or placing something also swung your weapon, and other buttons that take over HIT did the same. HIT does one thing again.","Fixed: smelting, smithing or crafting at a station in your house (or next to chests outdoors) could save your game with the chests' contents counted in your bag as well. If you closed the game soon after, the next time it loaded those items were in both places. Saves now never count items borrowed from chests.","Fixed: getting up very quickly after falling could lose everything you carried without leaving a gravestone. Your things now always go into your grave, or stay in your bag if there's nowhere to put one.","Fixed: closing the game while lighting a campfire with oak or better logs could turn those logs into plain wood.","Fixed: on phones, the world boss bar covered the getting-started tips. It now sits below them."]},
@@ -15995,7 +15995,7 @@ window.SQA=SQA;
  const MTAB=36,DTAB=37;let MU=null;
  function menuOpenFor(u){MU=u;try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){self.SQERR&&SQERR(e,'130-2')}pnOpen=true;ptab=MTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk')}
  window.SQPLAYERMENU=menuOpenFor;
- function menuHTML(){const u=MU,n=esc(nameOf(u)),fr=!!(Mp()&&Mp().friends&&Mp().friends[u]),T=window.SQTRADE,tIn=!!(T&&T.inbox&&T.inbox[u]),kIn=D.inbox[u]&&D.inbox[u].k,kS=D.sent[u]&&D.sent[u].k,dIn=kIn==='duel',dSent=kS==='duel',cIn=kIn==='chess',cSent=kS==='chess';
+ function menuHTML(){const u=MU,n=esc(nameOf(u)),fr=!!(Mp()&&Mp().friends&&Mp().friends[u]),T=window.SQTRADE,tIn=!!(T&&T.inbox&&T.inbox[u]),kIn=D.inbox[u]&&D.inbox[u].k,kS=D.sent[u]&&D.sent[u].k,dIn=kIn==='duel',dSent=kS==='duel',cIn=kIn==='chess',cSent=kS==='chess',pIn=kIn==='card',pSent=kS==='card';
   let h='<div class="tl">'+n.toUpperCase()+'</div><div class="qc" style="font-size:13px;text-align:center">'+(near(u)?'Standing right next to you.':'Too far away now. Walk up to them again.')+'</div><div class="pmb">';
   h+='<button class="sb" data-pm="trade">'+(tIn?'ACCEPT TRADE':'TRADE')+'</button>';
   h+='<button class="sb" data-pm="friend"'+(fr?' disabled style="opacity:.55"':'')+'>'+(fr?'FRIENDS ✓':'ADD FRIEND')+'</button>';
@@ -16003,20 +16003,23 @@ window.SQA=SQA;
   if(window.SQGUILDPM)h+=SQGUILDPM(u);
   for(const f of window.SQPMX||[])try{h+=f(u)}catch(e){self.SQERR&&SQERR(e,'130-90')}// later sections' buttons (259: Drop Cards)
   if(window.SQPARTY){const inP=SQPARTY.has(u),inv=SQPARTY.invited(u);h+='<button class="sb" data-pm="party"'+(inP||inv?' disabled style="opacity:.55"':'')+'>'+(inP?'IN YOUR PARTY ✓':inv?'PARTY INVITE SENT…':'INVITE TO PARTY')+'</button>'}
-  h+='<button class="sb" data-pm="chess"'+(cSent&&!cIn?' disabled style="opacity:.55"':'')+'>'+(cIn?'ACCEPT CHESS':cSent?'CHESS ASKED…':'CHESS')+'</button>'+(window.SQIGNSET?'<button class="sb" data-pm="ignore">'+(SQIGNORED(u)?'UNIGNORE (see their chat again)':'IGNORE (hide their chat)')+'</button>':'')+(window.SQREPORT?'<button class="sb" data-pm="report" style="color:#a04040">REPORT</button>':'')+'<button class="sb" data-pm="close">CLOSE</button></div>';
+  h+='<button class="sb" data-pm="chess"'+(cSent&&!cIn?' disabled style="opacity:.55"':'')+'>'+(cIn?'ACCEPT CHESS':cSent?'CHESS ASKED…':'CHESS')+'</button>'+(window.SQPVD?'<button class="sb" data-pm="card"'+(pSent&&!pIn?' disabled style="opacity:.55"':'')+'>'+(pIn?'ACCEPT DROP CARD':pSent?'DROP CARD ASKED…':'PLAY DROP CARD')+'</button>':'')+(window.SQIGNSET?'<button class="sb" data-pm="ignore">'+(SQIGNORED(u)?'UNIGNORE (see their chat again)':'IGNORE (hide their chat)')+'</button>':'')+(window.SQREPORT?'<button class="sb" data-pm="report" style="color:#a04040">REPORT</button>':'')+'<button class="sb" data-pm="close">CLOSE</button></div>';
   return h}
  // ---- duel requests ----
- const WHAT=k=>k==='chess'?'game of chess':'duel';
- function ask(u,kind){kind=kind==='chess'?'chess':'duel';if(!on()){say(kind==='chess'?'Sign in to play chess with other players.':'Sign in to duel other players.');return}if(D.st!=='idle'){say('Finish your current '+WHAT(D.kind)+' first.');return}if(!near(u)){say(nameOf(u)+' is too far away. Stand next to them.');sfx('swish');return}
+ const WHAT=k=>k==='chess'?'game of chess':k==='card'?'game of Drop Card':'duel';
+ // Nov 21: kind 'card' = a Drop Card match (263's window.SQPVD), run like chess: stakes, accept twice, then the table
+ const KINDOK=k=>k==='chess'||k==='card'?k:'duel',TITLE=k=>k==='chess'?'CHESS':k==='card'?'DROP CARD':'DUEL';
+ const deckBad=()=>{try{return window.SQPVD?SQPVD.problem():''}catch(e){self.SQERR&&SQERR(e,'130-91');return''}};
+ function ask(u,kind){kind=KINDOK(kind);if(!on()){say(kind==='chess'?'Sign in to play chess with other players.':kind==='card'?'Sign in to play Drop Card with other players.':'Sign in to duel other players.');return}if(kind==='card'){const bad=deckBad();if(bad){say(bad);sfx('swish');return}}if(D.st!=='idle'){say('Finish your current '+WHAT(D.kind)+' first.');return}if(!near(u)){say(nameOf(u)+' is too far away. Stand next to them.');sfx('swish');return}
   if(D.inbox[u]&&D.inbox[u].k===kind){answer(u,true);return}if(D.sent[u])return;const db=Fm().db,sn=Math.random().toString(36).slice(2,10);D.sent[u]={at:performance.now(),s:sn,k:kind};
-  db.set(ref('dreq/'+u+'/'+me()),{n:String(pname()).slice(0,12),s:sn,k:kind,t:db.serverTimestamp()}).then(()=>{const m=kind==='chess'?'You asked '+nameOf(u)+' for a game of chess.':'You challenged '+nameOf(u)+' to a duel.';say(m);try{mpLog('game',m)}catch(e){self.SQERR&&SQERR(e,'130-3')}watchReq(u)})
+  db.set(ref('dreq/'+u+'/'+me()),{n:String(pname()).slice(0,12),s:sn,k:kind,t:db.serverTimestamp()}).then(()=>{const m=kind==='chess'?'You asked '+nameOf(u)+' for a game of chess.':kind==='card'?'You asked '+nameOf(u)+' for a game of Drop Card.':'You challenged '+nameOf(u)+' to a duel.';say(m);try{mpLog('game',m)}catch(e){self.SQERR&&SQERR(e,'130-3')}watchReq(u)})
    .catch(e=>{delete D.sent[u];say(/permission/i.test(String(e&&(e.code||e.message)))?'This needs the latest database rules.':'Could not send the request.')})}
  function watchReq(u){const db=Fm().db,S=D.sent[u];if(!S)return;const offs=[];S.done=()=>{offs.forEach(f=>f());delete D.sent[u];draw()};
   const t0=now()-3000;// an old side left from the last duel doesn't count as a yes
   offs.push(db.onValue(ref('duels/'+tid(u,me())+'/'+u),s=>{const v=s.val();if(v&&v.s===S.s&&D.st==='idle'&&D.sent[u]){const sn=S.s,kd=S.k;S.done();open(u,sn,kd)}}));
   setTimeout(()=>{if(D.sent[u]&&D.st==='idle'){S.done();db.remove(ref('dreq/'+u+'/'+me())).catch(()=>{});say(nameOf(u)+' did not answer.')}},60000)}
  function answer(u,yes){const sn=D.inbox[u]&&D.inbox[u].s,kd=D.inbox[u]&&D.inbox[u].k;delete D.inbox[u];popHide(u);Fm().db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{});if(!yes)return;
-  if(D.st!=='idle'){say('Finish your current '+WHAT(D.kind)+' first.');return}if(!near(u)){say(nameOf(u)+' is too far away now.');sfx('swish');return}if(sn)open(u,sn,kd)}
+  if(D.st!=='idle'){say('Finish your current '+WHAT(D.kind)+' first.');return}if(!near(u)){say(nameOf(u)+' is too far away now.');sfx('swish');return}if(kd==='card'){const bad=deckBad();if(bad){say(bad);sfx('swish');return}}if(sn)open(u,sn,kd)}
  // request pop-up
  const st=document.createElement('style');st.textContent=`#dlpop{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 58px);z-index:31;display:none;align-items:center;gap:8px;padding:8px 10px;max-width:calc(100vw - 24px);box-sizing:border-box;font:600 14px ${PF};background:#f8f0d8;color:#404040;border:3px solid #b03828}
 #dlpop span{flex:1;min-width:0}#dlpop button{font:700 13px ${PF};padding:7px 12px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer}#dlpop .ok{background:#b03828;border-color:#701810;color:#fff}
@@ -16026,7 +16029,7 @@ window.SQA=SQA;
  const pop=document.createElement('div');pop.id='dlpop';pop.innerHTML='<span></span><button class="ok">DUEL</button><button class="no">NO</button>';document.body.appendChild(pop);
  for(const ev of['touchstart','pointerdown','mousedown'])pop.addEventListener(ev,e=>e.stopPropagation());
  let popU=null,popT=0;pop.querySelector('.ok').onclick=()=>{if(popU)answer(popU,true)};pop.querySelector('.no').onclick=()=>{if(popU)answer(popU,false)};
- function popShow(u){popU=u;const ch=D.inbox[u]&&D.inbox[u].k==='chess';pop.querySelector('.ok').textContent=ch?'PLAY':'DUEL';pop.querySelector('span').textContent=ch?nameOf(u)+' wants to play chess!':nameOf(u)+' challenges you to a duel!';pop.style.display='flex';clearTimeout(popT);popT=setTimeout(()=>popHide(u),30000)}
+ function popShow(u){popU=u;const kk=D.inbox[u]&&D.inbox[u].k,ch=kk==='chess'||kk==='card';pop.querySelector('.ok').textContent=ch?'PLAY':'DUEL';pop.querySelector('span').textContent=kk==='card'?nameOf(u)+' wants to play Drop Card!':ch?nameOf(u)+' wants to play chess!':nameOf(u)+' challenges you to a duel!';pop.style.display='flex';clearTimeout(popT);popT=setTimeout(()=>popHide(u),30000)}
  function popHide(u){if(u&&popU!==u)return;popU=null;pop.style.display='none';clearTimeout(popT)}
  const bar=document.createElement('div');bar.id='dlbar';document.body.appendChild(bar);const big=document.createElement('div');big.id='dlbig';document.body.appendChild(big);
  let bigT=0;const bigSay=(t,ms)=>{big.textContent=t;big.style.display='block';clearTimeout(bigT);bigT=setTimeout(()=>{big.style.display='none'},ms||900)};
@@ -16034,17 +16037,18 @@ window.SQA=SQA;
  const can=k=>(inv[k]|0)-(D.me[k]|0);
  const clean=o=>{const r={};if(o&&typeof o==='object')for(const k in o){const n=Math.floor(+o[k]||0);if(n>0&&INAME[k]&&INVK.includes(k))r[k]=Math.min(n,1e6)}return r};
  function key(){const[a]=[D.tid.split('_')[0]],s=o=>Object.keys(o).sort().map(k=>k+':'+o[k]).join(','),M=[s(D.me),D.g],T=[s(D.th),D.tg];return JSON.stringify(a===me()?[D.s,M,T]:[D.s,T,M])}
- function push(){if(!D.tid||!on())return;const db=Fm().db;db.set(ref('duels/'+D.tid+'/'+me()),{i:D.me,g:D.g,s:D.s,k:D.kind,m:D.kind==='chess'?D.mv.join(' '):'',a:D.my.a,c:D.my.c,f:D.my.f,l:D.my.l,d:D.my.d,t:db.serverTimestamp()})
+ function push(){if(!D.tid||!on())return;const db=Fm().db;db.set(ref('duels/'+D.tid+'/'+me()),{i:D.me,g:D.g,s:D.s,k:D.kind,m:D.kind==='chess'?D.mv.join(' '):D.kind==='card'&&window.SQPVD?SQPVD.str():'',a:D.my.a,c:D.my.c,f:D.my.f,l:D.my.l,d:D.my.d,t:db.serverTimestamp()})
   .catch(e=>{end(/permission/i.test(String(e&&(e.code||e.message)))?'Duels need the latest database rules.':'Lost the connection, so the duel was cancelled.')})}
- function open(u,sn,kind){D.kind=kind==='chess'?'chess':'duel';D.mv=[];D.s=sn||'';D.st='stake';D.foe=u;D.tid=tid(u,me());D.me={};D.g=0;D.th={};D.tg=0;D.my={a:'',c:'',f:'',l:'',d:''};D.their=null;D.seen=false;D.esc=null;D.warnAt=0;D.lastTh='';
+ function open(u,sn,kind){D.kind=KINDOK(kind);D.mv=[];D.s=sn||'';D.st='stake';D.foe=u;D.tid=tid(u,me());D.me={};D.g=0;D.th={};D.tg=0;D.my={a:'',c:'',f:'',l:'',d:''};D.their=null;D.seen=false;D.esc=null;D.warnAt=0;D.lastTh='';
   delete D.inbox[u];popHide(u);if(D.sent[u]&&D.sent[u].done)D.sent[u].done();
   try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){self.SQERR&&SQERR(e,'130-4')}push();D.unsub=Fm().db.onValue(ref('duels/'+D.tid+'/'+u),s=>theirs(s.val()));
   pnOpen=true;ptab=DTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');try{mpLog('game','Setting up a '+WHAT(D.kind)+' with '+nameOf(u)+'.')}catch(e){self.SQERR&&SQERR(e,'130-5')}}
  function theirs(v){if(D.st==='idle')return;if(v&&v.s!==D.s)v=null;// a side left from another duel
   if(!v){if(D.seen&&D.st!=='fight'&&D.st!=='over')end(nameOf(D.foe)+' left the duel.');else if(D.seen&&D.st==='fight')win('left');return}
   if(D.kind==='chess'&&window.SQPVC)try{SQPVC.theirMoves(String(v.m||''))}catch(e){console.warn(e)}
-  D.seen=true;const th=clean(v.i),tg=Math.max(0,Math.min(1e9,Math.floor(+v.g||0)));D.their={a:String(v.a||''),c:String(v.c||''),f:String(v.f||''),l:String(v.l||''),d:String(v.d||'')};
+  D.seen=true;const th=clean(v.i),tg=Math.max(0,Math.min(1e9,Math.floor(+v.g||0)));D.their={a:String(v.a||''),c:String(v.c||''),f:String(v.f||''),l:String(v.l||''),d:String(v.d||''),m:String(v.m||'')};
   if(D.st==='stake'||D.st==='confirm'){const k=JSON.stringify([th,tg]);if(D.lastTh&&k!==D.lastTh){const less=tg<D.tg||Object.keys(D.th).some(q=>(th[q]|0)<D.th[q]),was=D.their;if(less||D.my.a||D.st==='confirm')D.warnAt=performance.now();D.st='stake';if(D.my.a||D.my.c){D.my.a='';D.my.c='';push()}sfx('swish')}D.lastTh=k;D.th=th;D.tg=tg}
+  if(D.kind==='card'&&window.SQPVD)try{SQPVD.theirs(D.their.m)}catch(e){self.SQERR&&SQERR(e,'130-92')}
   step()}
  function step(){if(D.st==='idle'||!D.their)return;const k=key(),t=D.their;
   if(D.st==='stake'||D.st==='confirm'){if(D.my.a&&D.my.a!==k){D.my.a='';D.my.c='';push()}
@@ -16058,36 +16062,36 @@ window.SQA=SQA;
  function takeStake(k){for(const q in D.me)if((inv[q]|0)<D.me[q]){end('You no longer have everything you staked, so the duel was cancelled.');return}if(GLD<D.g){end('You no longer have that much gold.');return}
   for(const q in D.me)inv[q]=(inv[q]|0)-D.me[q];GLD-=D.g;D.esc={i:Object.assign({},D.me),g:D.g,th:Object.assign({},D.th),tg:D.tg};
   try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'130-6')}try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'130-7')}D.my.f=k;D.st='ready';D.readyAt=performance.now();push();if(pnOpen&&ptab===DTAB)closePanel();say('Stakes are in. Get ready!');step()}
- function countdown(){if(D.kind==='chess'){D.st='fight';D.t0=performance.now();D.away=0;guard(true);try{window.SQPVC&&SQPVC.begin()}catch(e){console.warn(e)}return}D.st='count';D.t0=performance.now();let n=3;bigSay('3');sfx('talk');const tick=()=>{if(D.st!=='count')return;n--;if(n>0){bigSay(String(n));sfx('talk');setTimeout(tick,800);return}
+ function countdown(){if(D.kind==='chess'||D.kind==='card'){D.st='fight';D.t0=performance.now();D.away=0;guard(true);try{if(D.kind==='card')window.SQPVD&&SQPVD.begin();else window.SQPVC&&SQPVC.begin()}catch(e){console.warn(e)}return}D.st='count';D.t0=performance.now();let n=3;bigSay('3');sfx('talk');const tick=()=>{if(D.st!=='count')return;n--;if(n>0){bigSay(String(n));sfx('talk');setTimeout(tick,800);return}
    D.st='fight';D.t0=performance.now();D.away=0;guard(true);bigSay('FIGHT!',1100);sfx('quest');try{mpLog('game','Duel with '+nameOf(D.foe)+': fight!')}catch(e){self.SQERR&&SQERR(e,'130-8')}};setTimeout(tick,800)}
  // ---- falling: you get back up where you fell; the duel is lost ----
  let hpv=0,guarded=false;
- function guard(onn){if(onn&&!guarded){hpv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hpv},set(v){if(D.kind==='chess'){if(v>hpv)hpv=v;return}if(D.st==='fight'&&v<=0){hpv=maxHp();lose('fell')}else hpv=v}});guarded=true}
+ function guard(onn){if(onn&&!guarded){hpv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hpv},set(v){if(D.kind!=='duel'){if(v>hpv)hpv=v;return}if(D.st==='fight'&&v<=0){hpv=maxHp();lose('fell')}else hpv=v}});guarded=true}
   else if(!onn&&guarded){const v=hpv;delete P.hp;P.hp=v;guarded=false}}
  const maxHp=()=>6;// the game's health is out of 6
- function lose(why){if(D.st!=='fight')return;try{window.SQDUELEND&&SQDUELEND(D.kind,'l',D.foe,why)}catch(x){self.SQERR&&SQERR(x,'130-9')}try{window.SQPVC&&SQPVC.over(why==='resign'?'You resigned.':'You lost.')}catch(e){self.SQERR&&SQERR(e,'130-10')}D.my.l=D.my.f;push();const n=nameOf(D.foe),lost=list(D.esc.i,D.esc.g);D.st='over';
+ function lose(why){if(D.st!=='fight')return;try{window.SQDUELEND&&SQDUELEND(D.kind,'l',D.foe,why)}catch(x){self.SQERR&&SQERR(x,'130-9')}try{if(D.kind==='card')window.SQPVD&&SQPVD.over('l',why);else window.SQPVC&&SQPVC.over(why==='resign'?'You resigned.':'You lost.')}catch(e){self.SQERR&&SQERR(e,'130-10')}D.my.l=D.my.f;push();const n=nameOf(D.foe),lost=list(D.esc.i,D.esc.g);D.st='over';
   FLASH=.5;hurt=1.2;setTimeout(()=>guard(false),0);bigSay('DEFEAT',1500);try{sfx('hurt')}catch(e){self.SQERR&&SQERR(e,'130-11')}
-  const m=(D.kind==='chess'?(why==='resign'?'You resigned. '+n+' wins the game.':why==='left'?'You left the game, so '+n+' wins.':why==='time'?'You ran out of time. '+n+' wins.':'Checkmate. '+n+' won the game.'):why==='left'?'You left the duel, so '+n+' wins.':n+' won the duel.')+(lost?' You lost '+lost+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(e){self.SQERR&&SQERR(e,'130-12')}finishLater()}
- function win(why){if(D.st!=='fight')return;try{window.SQDUELEND&&SQDUELEND(D.kind,'w',D.foe,why)}catch(x){self.SQERR&&SQERR(x,'130-13')}try{window.SQPVC&&SQPVC.over('You won!')}catch(e){self.SQERR&&SQERR(e,'130-14')}const e=D.esc;D.st='over';guard(false);
+  const m=(D.kind==='card'?(why==='resign'?'You gave up. '+n+' wins the match.':why==='left'?'You left the match, so '+n+' wins.':why==='time'?'You ran out of time. '+n+' wins.':n+' won the Drop Card match.'):D.kind==='chess'?(why==='resign'?'You resigned. '+n+' wins the game.':why==='left'?'You left the game, so '+n+' wins.':why==='time'?'You ran out of time. '+n+' wins.':'Checkmate. '+n+' won the game.'):why==='left'?'You left the duel, so '+n+' wins.':n+' won the duel.')+(lost?' You lost '+lost+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(e){self.SQERR&&SQERR(e,'130-12')}finishLater()}
+ function win(why){if(D.st!=='fight')return;try{window.SQDUELEND&&SQDUELEND(D.kind,'w',D.foe,why)}catch(x){self.SQERR&&SQERR(x,'130-13')}try{if(D.kind==='card')window.SQPVD&&SQPVD.over('w',why);else window.SQPVC&&SQPVC.over('You won!')}catch(e){self.SQERR&&SQERR(e,'130-14')}const e=D.esc;D.st='over';guard(false);
   for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];for(const k in e.th)inv[k]=(inv[k]|0)+e.th[k];GLD+=e.g+e.tg;try{saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'130-15')}try{saveCloud(true)}catch(x){self.SQERR&&SQERR(x,'130-16')}
-  D.my.d=D.my.f;push();try{if(D.kind==='duel'){window.SQACH&&SQACH.add('duelw');window.SQDUELWIN&&SQDUELWIN(D.foe)}else window.SQACH&&SQACH.add('chessw')}catch(x){self.SQERR&&SQERR(x,'130-17')}const got=list(e.th,e.tg);bigSay('VICTORY!',1600);sfx('quest');try{setTimeout(()=>sfx('coin'),200)}catch(x){self.SQERR&&SQERR(x,'130-18')}
-  const n=nameOf(D.foe),m=(D.kind==='chess'?(why==='mate'?'Checkmate! You beat '+n+'.':why==='resign'?n+' resigned. You win!':why==='time'?n+' ran out of time. You win!':why==='fell'?n+' resigned. You win!':why==='gone'?n+' went offline. You win!':n+' left the game. You win!'):why==='left'?n+' left the duel. You win!':why==='gone'?n+' went offline. You win!':'You beat '+n+'!')+(got?' You won '+got+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(x){self.SQERR&&SQERR(x,'130-19')}finishLater()}
- function draw3(){if(D.st!=='fight')return;try{window.SQDUELEND&&SQDUELEND(D.kind,'d',D.foe,D.why||'')}catch(x){self.SQERR&&SQERR(x,'130-20')}try{window.SQPVC&&SQPVC.over('Draw.')}catch(e){self.SQERR&&SQERR(e,'130-21')}const e=D.esc;D.st='over';guard(false);for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];GLD+=e.g;try{saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'130-22')}
-  say(D.kind==='chess'?'The game is a draw'+(D.why?' ('+D.why+')':'')+'. Your stake is back in your bag.':'Time is up: the duel is a draw. Your stake is back in your bag.');msgT=5;bigSay('DRAW',1400);finishLater()}
+  D.my.d=D.my.f;push();try{if(D.kind==='duel'){window.SQACH&&SQACH.add('duelw');window.SQDUELWIN&&SQDUELWIN(D.foe)}else if(D.kind==='card')window.SQACH&&SQACH.add('dcpvpw');else window.SQACH&&SQACH.add('chessw')}catch(x){self.SQERR&&SQERR(x,'130-17')}const got=list(e.th,e.tg);bigSay('VICTORY!',1600);sfx('quest');try{setTimeout(()=>sfx('coin'),200)}catch(x){self.SQERR&&SQERR(x,'130-18')}
+  const n=nameOf(D.foe),m=(D.kind==='card'?(why==='resign'?n+' gave up. You win!':why==='time'?n+' ran out of time. You win!':why==='gone'?n+' went offline. You win!':why==='left'||why==='fell'?n+' left the match. You win!':'You beat '+n+' at Drop Card!'):D.kind==='chess'?(why==='mate'?'Checkmate! You beat '+n+'.':why==='resign'?n+' resigned. You win!':why==='time'?n+' ran out of time. You win!':why==='fell'?n+' resigned. You win!':why==='gone'?n+' went offline. You win!':n+' left the game. You win!'):why==='left'?n+' left the duel. You win!':why==='gone'?n+' went offline. You win!':'You beat '+n+'!')+(got?' You won '+got+'.':'');say(m);msgT=6;try{mpLog('game',m)}catch(x){self.SQERR&&SQERR(x,'130-19')}finishLater()}
+ function draw3(){if(D.st!=='fight')return;try{window.SQDUELEND&&SQDUELEND(D.kind,'d',D.foe,D.why||'')}catch(x){self.SQERR&&SQERR(x,'130-20')}try{if(D.kind==='card')window.SQPVD&&SQPVD.over('d',D.why);else window.SQPVC&&SQPVC.over('Draw.')}catch(e){self.SQERR&&SQERR(e,'130-21')}const e=D.esc;D.st='over';guard(false);for(const k in e.i)inv[k]=(inv[k]|0)+e.i[k];GLD+=e.g;try{saveLocal(true)}catch(x){self.SQERR&&SQERR(x,'130-22')}
+  say(D.kind==='card'?'The match is a draw. Your stake is back in your bag.':D.kind==='chess'?'The game is a draw'+(D.why?' ('+D.why+')':'')+'. Your stake is back in your bag.':'Time is up: the duel is a draw. Your stake is back in your bag.');msgT=5;bigSay('DRAW',1400);finishLater()}
  function finishLater(){const t=D.tid,u=me(),sn=D.s;setTimeout(()=>{if(on()&&!(D.tid===t&&D.s!==sn&&D.st!=='idle'))Fm().db.remove(ref('duels/'+t+'/'+u)).catch(()=>{})},8000);setTimeout(()=>end(null),300)}
  // anything ending before the fight gives your stake back
  function end(why){if(D.st==='idle')return;const was=D.st,t=D.tid;if(D.esc&&(was==='ready'||was==='count')){for(const k in D.esc.i)inv[k]=(inv[k]|0)+D.esc.i[k];GLD+=D.esc.g;try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'130-23')}}
   if(was==='fight'){lose('left');return}
   if(D.unsub){D.unsub();D.unsub=null}if(was!=='over'&&on()&&t)Fm().db.remove(ref('duels/'+t+'/'+me())).catch(()=>{});
-  guard(false);try{window.SQPVC&&SQPVC.cancel()}catch(e){self.SQERR&&SQERR(e,'130-24')}D.st='idle';D.foe=null;D.mv=[];D.tid='';D.esc=null;D.their=null;bar.style.display='none';
+  guard(false);try{window.SQPVC&&SQPVC.cancel();window.SQPVD&&SQPVD.cancel()}catch(e){self.SQERR&&SQERR(e,'130-24')}D.st='idle';D.foe=null;D.mv=[];D.tid='';D.esc=null;D.their=null;bar.style.display='none';
   if(why){say(why);sfx('swish');try{mpLog('game',why)}catch(e){self.SQERR&&SQERR(e,'130-25')}}if(pnOpen&&ptab===DTAB)closePanel();draw()}
  const list=(o,g)=>{const a=Object.keys(o||{}).map(k=>o[k]+' × '+(INAME[k]||k).toLowerCase());if(g)a.push(g.toLocaleString('en-US')+' gold');return a.join(', ')};
  function side(o,g,them){let h='';for(const k in o)h+='<div class="tri"'+(them?'':' data-dl="rm" data-k="'+k+'"')+'><span>'+esc(INAME[k]||k)+'</span><i>×'+o[k]+'</i></div>';
   if(g)h+='<div class="tri trg"'+(them?'':' data-dl="g0"')+'><span>Gold</span><i>'+g.toLocaleString('en-US')+'</i></div>';if(!Object.keys(o).length&&!g)h+='<div style="opacity:.55;font-size:12px">Nothing (just for glory)</div>';return h}
  function stakeHTML(){const n=esc(nameOf(D.foe)),k=key(),t=D.their||{a:'',c:''};const warn=performance.now()-D.warnAt<6000?'<div class="trw">'+n+' changed their stake! Check it again.</div>':'';
-  if(D.st==='confirm'){return'<div class="tl">'+(D.kind==='chess'?'CHESS':'DUEL')+': ARE YOU SURE?</div>'+warn+'<div class="qc"><b>If you lose, you give '+n+':</b><p>'+esc(list(D.me,D.g)||'nothing')+'</p><b>If you win, you get:</b><p>'+esc(list(D.th,D.tg)||'nothing')+'</p><p style="font-size:12px;opacity:.8">'+(D.kind==='chess'?'The game ends with checkmate, a resignation or a draw (a draw gives both stakes back). Going offline or taking more than 3 minutes for a move loses the game. Chess against players gives no Tactics XP.':'The duel ends when one of you falls. You get back up where you fell. Leaving the area or going offline loses the duel.')+'</p></div>'+
+  if(D.st==='confirm'){return'<div class="tl">'+TITLE(D.kind)+': ARE YOU SURE?</div>'+warn+'<div class="qc"><b>If you lose, you give '+n+':</b><p>'+esc(list(D.me,D.g)||'nothing')+'</p><b>If you win, you get:</b><p>'+esc(list(D.th,D.tg)||'nothing')+'</p><p style="font-size:12px;opacity:.8">'+(D.kind==='card'?'You play the deck that\'s active in your Card Binder. The match ends when a hero falls. Leaving, going offline or not playing for 2 minutes loses the match.':D.kind==='chess'?'The game ends with checkmate, a resignation or a draw (a draw gives both stakes back). Going offline or taking more than 3 minutes for a move loses the game. Chess against players gives no Tactics XP.':'The duel ends when one of you falls. You get back up where you fell. Leaving the area or going offline loses the duel.')+'</p></div>'+
    '<div class="trst">'+(D.my.c===k?'Waiting for '+n+'…':t.c===k?n+' is ready. Your turn.':'Check the stakes, then accept.')+'</div><div class="tra"><button class="y'+(D.my.c===k?' on':'')+'" data-dl="ok2">'+(D.my.c===k?'ACCEPTED':'ACCEPT')+'</button><button class="n" data-dl="no">DECLINE</button></div>'}
-  let h='<div class="tl">'+(D.kind==='chess'?'CHESS':'DUEL')+' WITH '+n.toUpperCase()+'</div>'+warn+'<div class="trc"><div class="trs"><b>YOUR STAKE</b>'+side(D.me,D.g,false)+'</div><div class="trs them"><b>'+n.toUpperCase()+'\'S STAKE</b>'+side(D.th,D.tg,true)+'</div></div>';
+  let h='<div class="tl">'+TITLE(D.kind)+' WITH '+n.toUpperCase()+'</div>'+warn+'<div class="trc"><div class="trs"><b>YOUR STAKE</b>'+side(D.me,D.g,false)+'</div><div class="trs them"><b>'+n.toUpperCase()+'\'S STAKE</b>'+side(D.th,D.tg,true)+'</div></div>';
   h+='<div class="trst">'+(D.my.a===k?'Waiting for '+n+'…':t.a===k?n+' has accepted. Your turn.':'The winner takes the loser\'s stake. Tap your stake to take things back.')+'</div>';
   h+='<div class="tra"><button class="y'+(D.my.a===k?' on':'')+'" data-dl="ok1">'+(D.my.a===k?'ACCEPTED':'ACCEPT')+'</button><button class="n" data-dl="no">DECLINE</button></div>';
   const left=GLD-D.g;h+='<div class="trh">GOLD (you have '+left.toLocaleString('en-US')+' left)</div><div class="trgb">';for(const v of[10,100,1000,10000])h+='<button data-dl="g" data-v="'+v+'"'+(left<v?' disabled style="opacity:.4"':'')+'>+'+v.toLocaleString('en-US')+'</button>';
@@ -16112,13 +16116,13 @@ window.SQA=SQA;
     if(a==='friend'){try{SQADDFRIEND(u);say(nameOf(u)+' is now on your friends list.')}catch(x){self.SQERR&&SQERR(x,'130-31')}setTimeout(draw,600);return}
     if(a==='guild'){try{SQGUILDINVITE(u)}catch(x){self.SQERR&&SQERR(x,'130-32')}setTimeout(draw,400);return}
     if(a==='party'){try{SQPARTY.invite(u)}catch(x){self.SQERR&&SQERR(x,'130-33')}setTimeout(draw,400);return}
-    if(a==='duel'||a==='chess'){if(D.inbox[u]&&D.inbox[u].k===a){closePanel();answer(u,true);return}ask(u,a);setTimeout(draw,300);return}return}
+    if(a==='duel'||a==='chess'||a==='card'){if(D.inbox[u]&&D.inbox[u].k===a){closePanel();answer(u,true);return}ask(u,a);setTimeout(draw,300);return}return}
    return _oc(e)}}
  {SQCLOSEPN.after('130',()=>{if((D.st==='stake'||D.st==='confirm')&&ptab===DTAB)end('You declined the '+WHAT(D.kind)+'.');})}
  // ---- watching: requests, the other player, the clock ----
  let started=false,reqOff=null;
  function start(){started=true;D.inbox={};const db=Fm().db;reqOff=db.onValue(ref('dreq/'+me()),s=>{const v=s.val()||{},old=D.inbox;D.inbox={};
-   for(const u in v){const q=v[u];if(!q||typeof q!=='object')continue;if(q.k==='party'){try{window.SQPARTYINV&&SQPARTYINV(u,q)}catch(e){self.SQERR&&SQERR(e,'130-34')}continue}if(typeof q.t==='number'&&now()-q.t>60000){db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{});continue}D.inbox[u]={t:q.t,s:typeof q.s==='string'?q.s.slice(0,12):'',k:q.k==='chess'?'chess':'duel'}}
+   for(const u in v){const q=v[u];if(!q||typeof q!=='object')continue;if(q.k==='party'){try{window.SQPARTYINV&&SQPARTYINV(u,q)}catch(e){self.SQERR&&SQERR(e,'130-34')}continue}if(typeof q.t==='number'&&now()-q.t>60000){db.remove(ref('dreq/'+me()+'/'+u)).catch(()=>{});continue}D.inbox[u]={t:q.t,s:typeof q.s==='string'?q.s.slice(0,12):'',k:KINDOK(q.k)}}
    for(const u in D.inbox)if(!old[u]){if(D.sent[u]&&D.st==='idle'){answer(u,true);continue}try{mpLog('game',D.inbox[u].k==='chess'?nameOf(u)+' wants to play chess! Tap PLAY, or tap their name.':nameOf(u)+' challenges you to a duel! Tap DUEL, or tap their name.')}catch(e){self.SQERR&&SQERR(e,'130-35')}if(D.st==='idle')popShow(u);try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'130-36')}}
    if(popU&&!D.inbox[popU])popHide();draw()})}
  function stop(){started=false;if(reqOff){reqOff();reqOff=null}D.inbox={};popHide();if(D.st!=='idle')end('You went offline, so the '+WHAT(D.kind)+' was cancelled.')}
@@ -16126,7 +16130,7 @@ window.SQA=SQA;
    if(on()&&!started)start();else if(!on()&&started)stop();
    if(D.st==='stake'||D.st==='confirm'){if(!(pnOpen&&ptab===DTAB))end('You declined the '+WHAT(D.kind)+'.');else if(D.foe&&!near(D.foe)){const r=Mp().players.get(D.foe);if(!r||!liveR(r))end(nameOf(D.foe)+' went offline.');else if(Math.hypot(r.tx-P.x,r.ty-P.y)>NEAR*2.5||r.loc!==mpLoc())end(nameOf(D.foe)+' walked away, so the '+WHAT(D.kind)+' was cancelled.')}}
    if(D.st==='ready'&&performance.now()-D.readyAt>20000){end(nameOf(D.foe)+' did not get ready in time.')}
-   if(D.st==='fight'&&D.kind==='chess'){const r=Mp().players.get(D.foe);bar.style.display='none';if(!r||!liveR(r)||performance.now()-r.seen>20000)win('gone');else try{window.SQPVC&&SQPVC.tick(dt)}catch(e){self.SQERR&&SQERR(e,'130-37')}}
+   if(D.st==='fight'&&D.kind!=='duel'){const r=Mp().players.get(D.foe);bar.style.display='none';if(!r||!liveR(r)||performance.now()-r.seen>20000)win('gone');else try{if(D.kind==='card')window.SQPVD&&SQPVD.tick(dt);else window.SQPVC&&SQPVC.tick(dt)}catch(e){self.SQERR&&SQERR(e,'130-37')}}
    else if(D.st==='fight'){const r=Mp().players.get(D.foe),left=Math.max(0,FIGHT-(performance.now()-D.t0)/1000);
     bar.style.display=pnOpen||menuOpen?'none':'block';bar.textContent='DUEL vs '+nameOf(D.foe)+' · '+Math.floor(left/60)+':'+String(Math.floor(left%60)).padStart(2,'0');
     if(left<=0)draw3();else if(dead)lose('fell');
@@ -25322,7 +25326,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  const atkOf=(s,i,m)=>{let a=m.atk;const P=s.p[i];if(isWolf(m)){a+=P.board.filter(o=>o!==m&&o.id2==='alpha'&&!o.mute).length;if(P.comp==='pwolf'||P.comp==='pvoid')a+=1}return Math.max(0,a)};
  function hurtMon(s,i,m,n,src){if(n<=0||m.hp<=0)return;if(m.id2==='ib:ashfall'&&!m.mute)n=Math.max(0,n-1);if(n<=0)return;m.hp-=n;s.fx.push({t:'dmg',to:m.uid,n});
   if(src&&src.id2==='matri'&&!src.mute)m.poison=1;if(src&&src.id2==='ib:ironcrest'&&!src.mute)m.frozen=2}
- function sweep(s){for(let i=0;i<2;i++){const P=s.p[i];const dead=P.board.filter(m=>m.hp<=0);if(!dead.length)continue;P.board=P.board.filter(m=>m.hp>0);
+ function sweep(s){for(const i of s.flip?[1,0]:[0,1]){/* both sides' falls in the same order on both players' screens (263 mirrors the state) */const P=s.p[i];const dead=P.board.filter(m=>m.hp<=0);if(!dead.length)continue;P.board=P.board.filter(m=>m.hp>0);
    for(const m of dead){L(s,m.n+' falls.');if(m.mute)continue;
     if(m.id2==='wb:demon')hurtHero(s,1-i,3,'Demon');
     if(m.id2==='boss'){summon(s,i,'slime');summon(s,i,'slime')}
@@ -25411,7 +25415,14 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   for(const m of P.board)for(const tg of targets(s,i,m.uid))out.push({t:'atk',a:m.uid,tg});
   out.push({t:'end'});return out}
  const clone=s=>JSON.parse(JSON.stringify(s));
- window.SQDCE={chopPlan,card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,MAXB,MAXH,MAXM,HERO,short,groveMana:P=>groveMana(P)}})();
+ // ---- player vs player (263): each player sees themself as side 0 ----
+ // mirror(s) swaps the two sides in place (the second player's view); flipMv turns a move from the other player's view into yours.
+ // Everything else that depends on a side is relative to the side acting, so both views stay the same match.
+ function mirror(s){s.p.reverse();s.cur=1-s.cur;if(s.win>=0)s.win=1-s.win;s.flip=!s.flip;for(const P of s.p)for(const m of P.board)m.side=1-m.side;
+  for(const f of s.fx||[]){if(typeof f.side==='number')f.side=1-f.side;if(f.to==='h0'||f.to==='h1')f.to=f.to==='h0'?'h1':'h0'}return s}
+ const flipH=v=>v==='h0'?'h1':v==='h1'?'h0':v;
+ function flipMv(mv){const o=Object.assign({},mv);if(o.tg!=null)o.tg=flipH(o.tg);return o}
+ window.SQDCE={mirror,flipMv,chopPlan,card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,MAXB,MAXH,MAXM,HERO,short,groveMana:P=>groveMana(P)}})();
 // ---- 270. Drop Card matches against Ace (window.SQDCM) ----
 // Nov 20: play your binder's active deck against Ace the Card Sharp (258) on Easy, Normal or Hard, on a full-screen table (#sqdcm)
 // that works with touch, mouse and controller (every control is a <button>; SQNAVROOT points the controller at the table).
@@ -25481,6 +25492,8 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  const KIND={reg:'MONSTER',tree:'TREE',world:'WORLD BOSS',dungeon:'DUNGEON BOSS',island:'ISLAND BOSS',guild:'GUILD BOSS',potion:'POTION SPELL',forage:'FORAGE SPELL'};
  const KCOL={reg:'#7e4210',tree:'#3a7a2a',world:'#b83020',dungeon:'#7840b0',island:'#2878c8',guild:'#309058',potion:'#a83088',forage:'#8a7430'};
  const an=n=>(/^[aeiou]/.test(n)?'an ':'a ')+n,FROM={reg:n=>'Found by defeating '+an(n),tree:n=>'Found by chopping '+an(n),world:n=>'Found by defeating the '+n+' (world boss)',dungeon:n=>'Found by defeating the '+n+' (dungeon boss)',island:n=>'Found by defeating the '+n+' (island boss)',guild:n=>'Found by defeating the '+n+' (guild boss)',potion:n=>'Found by brewing '+an(n),forage:n=>'Found by picking '+an(n)};
+ // against a player (263): M.pvp = {name, ch, send(mv), leave(), done(res), turnLeft()}; the foe is side 1 on this screen
+ const FOE=()=>M&&M.pvp?M.pvp.name:'Ace',FOES=()=>FOE()+'\'s';
  const ACE_LINES=['Hah! Didn\'t see that coming?','Not bad, not bad...','My trees are bigger than yours.','You\'ll need more than that!','Careful now...','Is that your best card?'];
  // ---- drawing ----
  function cardBtn(k,data,cls,label,extra){return'<button class="dcm-card '+(cls||'')+'" data-dcm="'+data+'" aria-label="'+esc(label)+'"><img src="'+pic(k)+'" alt="">'+(extra||'')+'</button>'}
@@ -25493,7 +25506,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   return P.grove.map((g,j)=>'<button class="dcm-tree'+(g.stump?' stump':'')+(plan&&plan.includes(j)?' plan':'')+'" data-dcm="'+(me?'g:'+j:'gx:'+j)+'" aria-label="'+esc(g.n+', '+g.mana+' Mana'+(g.stump?', chopped':me?', tap to chop':''))+'">'+
    '<img src="'+(g.stump?stumpPic():treePic(E.card(g.key).id))+'" alt=""><span class="dcm-tm'+(g.stump?' used':'')+'">'+g.mana+'</span></button>').join('')}
  function heroHTML(i){const s=M.s,P=s.p[i],aim=M.aim&&M.aim.includes('h'+i),me=i===0;
-  const img=me?bust('me',(()=>{try{return gearCH()}catch(e){return CH}})()):bust('ace',aceCh());
+  const img=me?bust('me',(()=>{try{return gearCH()}catch(e){return CH}})()):(M.pvp?bust('pv:'+M.pvp.name+JSON.stringify(M.pvp.ch||{}).length,M.pvp.ch||aceCh()):bust('ace',aceCh()));
   return'<button class="dcm-hero'+(aim?' aim':'')+'" data-dcm="h:h'+i+'" aria-label="'+esc((me?'You':P.n)+', '+P.hp+' health')+'"><span class="dcm-face"><img src="'+img+'" alt=""></span>'+
    '<span class="dcm-hn"><b>'+esc(me?'You':P.n)+'</b><span class="dcm-heart">♥ '+P.hp+'</span></span></button>'}
  function render(){if(!M)return;const s=M.s,P=s.p[0],A=s.p[1],my=s.cur===0&&!s.over;
@@ -25504,11 +25517,11 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   // Ace
   h+='<div class="dcm-r1">'+heroHTML(1)+(M.say?'<div class="dcm-say">'+esc(M.say)+'</div>':'')+
    '<div class="dcm-ahand">'+A.hand.map((k,i)=>'<span class="dcm-back" style="--i:'+(i-(A.hand.length-1)/2)+'"></span>').join('')+'</div>'+
-   '<div class="dcm-grove foe"><span class="dcm-gl">Ace\'s Grove · '+E.groveMana(A)+'</span><div class="dcm-gt">'+groveHTML(1)+'</div></div>'+
+   '<div class="dcm-grove foe"><span class="dcm-gl">'+esc(FOES())+' Grove · '+E.groveMana(A)+'</span><div class="dcm-gt">'+groveHTML(1)+'</div></div>'+
    '<div class="dcm-log"><b>Last moves</b>'+s.log.slice(-4).map(l=>'<div>'+esc(l)+'</div>').join('')+'</div></div>';
-  h+='<div class="dcm-board foe">'+(A.board.map(m=>monHTML(m,1)).join('')||'<span class="dcm-empty">Ace has no monsters out</span>')+'</div>';
-  h+='<div class="dcm-mid"><span class="dcm-ribbon'+(s.over?' over':my?'':' ace')+'">'+(s.over?(s.win===0?'YOU WIN!':'ACE WINS'):my?'YOUR TURN':'ACE\'S TURN')+'</span><span class="dcm-msg" role="status">'+esc(M.msg||'')+'</span>'+
-   '<span class="dcm-lvn">'+esc(LV[M.lv].n)+' · tap any card for a close-up</span></div>';
+  h+='<div class="dcm-board foe">'+(A.board.map(m=>monHTML(m,1)).join('')||'<span class="dcm-empty">'+esc(FOE())+' has no monsters out</span>')+'</div>';
+  h+='<div class="dcm-mid"><span class="dcm-ribbon'+(s.over?' over':my?'':' ace')+'">'+(s.over?(s.win===0?'YOU WIN!':esc(FOE()).toUpperCase()+' WINS'):my?'YOUR TURN':esc(FOES()).toUpperCase()+' TURN')+'</span><span class="dcm-msg" role="status">'+esc(M.msg||'')+'</span>'+
+   '<span class="dcm-lvn">'+esc(M.pvp?(M.pvp.turnLeft&&!s.over?M.pvp.turnLeft()+' left this turn':'vs '+FOE()):LV[M.lv].n)+' · tap any card for a close-up</span></div>';
   h+='<div class="dcm-board me">'+(P.board.map(m=>monHTML(m,0)).join('')||'<span class="dcm-empty">Your monsters go here</span>')+'</div>';
   // you
   h+='<div class="dcm-r5"><div class="dcm-me">'+heroHTML(0)+(P.pet?'<span class="dcm-pet" title="'+esc(E.short(INAME[P.pet]||''))+'"><img src="'+pic(P.pet.replace(/^pc_/,''))+'" alt=""><small>'+esc(E.short(INAME[P.pet]||''))+'</small></span>':'')+'</div>'+
@@ -25517,7 +25530,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
     if(k==='_sapling')return'<button class="dcm-card dcm-sap'+(my?' ok':'')+'" data-dcm="c:'+i+'" style="--r:'+rot+'" aria-label="Sapling: 1 Mana this turn">🌱<span class="dcm-cost">0</span></button>';
     const c=E.card(k),cost=E.costOf(s,0,c),ok=my&&(c.kind==='tree'?!P.planted:cost<=P.pool+upM);
     return'<button class="dcm-card'+(ok?' ok':' no')+(M.newCards&&M.newCards.includes(i)?' drawn':'')+'" data-dcm="c:'+i+'" style="--r:'+rot+'" aria-label="'+esc(c.n+(c.kind==='tree'?', '+c.mana+' Mana tree':', costs '+cost))+'"><img src="'+pic(k)+'" alt=""><span class="dcm-cost'+(c.kind==='tree'?' tree':'')+'">'+(c.kind==='tree'?'+'+c.mana:cost)+'</span></button>'}).join('')+'</div>'+
-   '<div class="dcm-btns">'+(s.over?'<button class="dcm-end" data-dcm="again">PLAY<br>AGAIN</button>':'<button class="dcm-end" data-dcm="end"'+(my&&!M.aim?'':' disabled')+'>END<br>TURN</button>')+
+   '<div class="dcm-btns">'+(s.over&&!M.pvp?'<button class="dcm-end" data-dcm="again">PLAY<br>AGAIN</button>':s.over?'':'<button class="dcm-end" data-dcm="end"'+(my&&!M.aim?'':' disabled')+'>END<br>TURN</button>')+
    (M.aim?'<button class="dcm-b" data-dcm="cancel">CANCEL</button>':'')+'<button class="dcm-b small" data-dcm="leave">'+(s.over?'LEAVE':M.leaveArm?'LEAVE = LOSS?':'LEAVE')+'</button></div></div>';
   h+='</div></div>';
   // the close-up
@@ -25528,10 +25541,10 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
    c=E.card(key);owner='In your hand';const my=s.cur===0&&!s.over,up=P.pool+P.grove.filter(g=>!g.stump).reduce((a,g)=>a+g.mana,0);
    if(my){if(c.kind==='tree')acts=P.planted?'<span class="dcm-zw">You\'ve planted a tree this turn.</span>':'<button class="dcm-b pri" data-dcm="play">PLANT</button>';
     else acts=E.costOf(s,0,c)<=up?'<button class="dcm-b pri" data-dcm="play">PLAY</button>':'<span class="dcm-zw">Not enough Mana yet.</span>'}}
-  else if(z.t==='mon'){[side,m]=E.findM(s,z.v);if(!m){M.zoom=null;return''}key=m.key;c=m.key?E.card(m.key):{n:m.n,kind:'mon',hp:m.max,atk:m.atk,id:m.id2,cost:0};owner=side===0?'Your monster':'Ace\'s monster';
+  else if(z.t==='mon'){[side,m]=E.findM(s,z.v);if(!m){M.zoom=null;return''}key=m.key;c=m.key?E.card(m.key):{n:m.n,kind:'mon',hp:m.max,atk:m.atk,id:m.id2,cost:0};owner=side===0?'Your monster':FOES()+' monster';
    if(E.guards(s,side).includes(m))tags.push('Guard: must be attacked first');if(m.sleep&&side===0)tags.push('Just played: attacks next turn');if(m.frozen>0)tags.push('Frozen: can\'t attack this turn');if(m.poison)tags.push('Poisoned: 1 damage each turn');if(m.mute)tags.push('Silenced: no power');
    if(side===0&&s.cur===0&&!s.over){acts=E.targets(s,0,m.uid).length?'<button class="dcm-b pri" data-dcm="attack">ATTACK</button>':''}}
-  else if(z.t==='tree'){const g=s.p[z.side].grove[z.v];key=g.key;c=E.card(key);owner=(z.side===0?'Your':'Ace\'s')+' Grove'+(g.stump?' · chopped (grows back next turn)':'');if(z.side===0&&!g.stump&&s.cur===0&&!s.over)acts='<button class="dcm-b pri" data-dcm="chop:'+z.v+'">CHOP IT</button>'}
+  else if(z.t==='tree'){const g=s.p[z.side].grove[z.v];key=g.key;c=E.card(key);owner=(z.side===0?'Your':FOES())+' Grove'+(g.stump?' · chopped (grows back next turn)':'');if(z.side===0&&!g.stump&&s.cur===0&&!s.over)acts='<button class="dcm-b pri" data-dcm="chop:'+z.v+'">CHOP IT</button>'}
   else if(z.t==='pet'){key=P.pet;owner='Your Companion';c={n:E.short(INAME[key]||''),kind:'pet'}}
   const C=key&&D.ITEM[key],g=C?C.g:c.kind==='pet'?'pet':'reg';
   const gem=n=>'<span class="dcm-zcost"><i>'+n+'</i></span><small>Cost</small>';
@@ -25555,18 +25568,19 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
    else if(f.t==='play'){const e=el.querySelector('[data-uid="'+f.uid+'"]');if(e){e.classList.add('arrive');setTimeout(()=>e.classList.remove('arrive'),500)}}}
   // monsters that fell: a puff where they stood
   for(const uid in before){if(uid[0]!=='m')continue;if(!now[uid]){const r=before[uid];pop(r.left+r.width/2,r.top+r.height/2,'','puff')}}}
- let lastTurn=-1;function banner(){if(!M)return;const s=M.s;if(s.cur===lastTurn||s.over)return;lastTurn=s.cur;const b=document.createElement('span');b.className='dcm-banner'+(s.cur?' ace':'');b.textContent=s.cur?'ACE\'S TURN':'YOUR TURN';fxl.appendChild(b);setTimeout(()=>b.remove(),1300)}
+ let lastTurn=-1;function banner(){if(!M)return;const s=M.s;if(s.cur===lastTurn||s.over)return;lastTurn=s.cur;const b=document.createElement('span');b.className='dcm-banner'+(s.cur?' ace':'');b.textContent=s.cur?FOES().toUpperCase()+' TURN':'YOUR TURN';fxl.appendChild(b);setTimeout(()=>b.remove(),1300)}
  function redraw(fx){const before=snapshot();render();playFx(fx,before);banner()}
  // ---- input ----
- function act(mv){const r=E.apply(M.s,0,mv);M.msg=r||'';if(!r){M.sel=null;M.aim=null;M.zoom=null;M.att=null}
+ function act(mv){if(M.pvp&&(M.s.cur!==0||M.s.over))return false;const r=E.apply(M.s,0,mv);if(!r&&M.pvp)try{M.pvp.send(mv)}catch(e){self.SQERR&&SQERR(e,'262-23')}M.msg=r||'';if(!r){M.sel=null;M.aim=null;M.zoom=null;M.att=null}
   try{sfx(r?'swish':mv.t==='atk'?'hit':mv.t==='chop'?'chop':'pickup')}catch(e){self.SQERR&&SQERR(e,'262-1')}after(r?[]:M.s.fx.slice());return!r}
- function after(fx){redraw(fx);const s=M.s;if(s.over){finish();return}if(s.cur===1&&!M.busy)aceRun()}
+ function after(fx){redraw(fx);const s=M.s;if(s.over){finish();return}if(s.cur===1&&!M.busy&&!M.pvp)aceRun()}
  function aceRun(){M.busy=true;const step=()=>{if(!M||M.s.over||M.s.cur!==1){if(M)M.busy=false;if(M)after([]);return}const n0=M.s.p[0].hand.length;const mv=aceMove(M.s,1,M.lv);const r=E.apply(M.s,1,mv);const fx=M.s.fx.slice();if(r){E.apply(M.s,1,{t:'end'})}
    M.msg='';
    if(mv.t==='end'||r){if(Math.random()<.3)M.say=ACE_LINES[Math.floor(Math.random()*ACE_LINES.length)];else M.say=''}
    if(M.s.cur===0){const n=M.s.p[0].hand.length;M.newCards=n>n0?[n-1]:null}
    try{sfx(mv.t==='atk'?'hit':mv.t==='chop'?'chop':'pickup')}catch(e){self.SQERR&&SQERR(e,'262-2')}redraw(fx);M.newCards=null;if(M.s.over){M.busy=false;finish();return}if(M.s.cur!==1){M.busy=false;redraw([]);return}setTimeout(step,window.SQDCMFAST?0:700)};setTimeout(step,window.SQDCMFAST?0:700)}
  function finish(){const s=M.s;if(M.done)return;M.done=true;M.zoom=null;M.aim=null;
+  if(M.pvp){M.say='';M.msg=s.win===0?'You beat '+FOE()+'!':FOE()+' wins this one.';try{M.pvp.done(s.win===0?'w':'l')}catch(e){self.SQERR&&SQERR(e,'262-24')}render();return}
   if(s.win===0){const L=LV[M.lv],first=WINS[M.lv]!==today(),g=first?L.g:Math.round(L.g/10);GLD+=g;WINS[M.lv]=today();M.msg='You beat Ace on '+L.n+'! +'+g+' gold'+(first?'':' (full reward once a day)')+'.';M.say='Well played! Come back any time.';
    try{SQACH&&SQACH.add&&SQACH.add('dcwin',1);SQACH.check&&SQACH.check()}catch(e){self.SQERR&&SQERR(e,'262-3')}try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'262-4')}}
   else{M.msg='Ace wins this one. Tweak your deck in the Card Binder and try again!';M.say='Better luck next time!';try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'262-5')}}
@@ -25578,7 +25592,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   if(M.zoom){if(a==='play'){playSel(M.zoom.v);return}if(a==='attack'){const uid=M.zoom.v;M.zoom=null;M.sel={t:'mon',v:uid};M.att=uid;M.aim=E.targets(s,0,uid);M.msg='Pick what to attack.';render();return}
    if(x==='chop'){M.zoom=null;act({t:'chop',g:+y});return}unzoom();return}
   if(a!=='leave')M.leaveArm=false;
-  if(a==='leave'){if(!s.over&&!M.leaveArm){M.leaveArm=true;M.msg='Tap LEAVE again to give up (it counts as a loss).';render();return}close();return}
+  if(a==='leave'){if(!s.over&&!M.leaveArm){M.leaveArm=true;M.msg='Tap LEAVE again to give up (it counts as a loss'+(M.pvp?' and '+FOE()+' takes the stakes':'')+').';render();return}if(M.pvp&&!s.over){try{M.pvp.leave()}catch(e){self.SQERR&&SQERR(e,'262-25')}return}close();return}
   if(a==='again'){start(M.lv);return}if(a==='cancel'){M.sel=null;M.aim=null;M.att=null;M.msg='';render();return}
   // picking a target
   if(M.aim&&(x==='m'||x==='h')){if(M.aim.includes(y)){if(M.sel.t==='hand')act({t:'play',h:M.sel.v,tg:y});else act({t:'atk',a:M.sel.v,tg:y});return}M.msg='That isn\'t a target. Pick a glowing one, or CANCEL.';render();return}
@@ -25685,7 +25699,15 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   // tall, narrow phones (portrait): stack the hand under the grove
   '@media (max-width:640px) and (min-height:501px){.dcm-r5{flex-wrap:wrap}.dcm-hand{order:5;flex-basis:100%}.dcm-log{display:none}.dcm-card{width:54px;height:76px}.dcm-hand .dcm-card{width:56px;height:78px}.dcm-zc{flex-direction:column;gap:10px}.dcm-zbig img{width:170px;height:238px}.dcm-zi{max-width:90vw}}';
  document.head.appendChild(st);
- window.SQDCM={start,close,aceMove,get m(){return M},LV,el,render,act}})();
+ // ---- against a player (263) ----
+ function foeMove(mv){if(!M||!M.pvp||M.s.over)return'over';if(M.s.cur!==1)return'not their turn';const n0=M.s.p[0].hand.length;const r=E.apply(M.s,1,mv);if(r)return r;
+  if(M.s.cur===0){const n=M.s.p[0].hand.length;M.newCards=n>n0?[n-1]:null;M.msg=''}try{sfx(mv.t==='atk'?'hit':mv.t==='chop'?'chop':'pickup')}catch(e){self.SQERR&&SQERR(e,'262-26')}
+  redraw(M.s.fx.slice());M.newCards=null;if(M.s.over)finish();return''}
+ function startPvp(o){lastTurn=-1;const s=E.create({seed:o.seed,decks:o.decks,pets:o.pets,names:o.names});if(!o.first)E.mirror(s);
+  M={s,lv:'normal',pvp:o.pvp,sel:null,aim:null,zoom:null,att:null,say:'',msg:s.cur===0?'You go first. Plant a tree, chop it for Mana, play your cards!':o.pvp.name+' goes first. You get the Sapling.',busy:false,done:false,leaveArm:false};
+  try{closePanel()}catch(e){self.SQERR&&SQERR(e,'262-27')}el.style.display='flex';render();banner();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'262-28')}return M}
+ function endPvp(t){if(!M||!M.pvp)return;if(!M.s.over){M.s.over=true;M.done=true;M.zoom=null;M.aim=null}if(t)M.msg=t;render()}
+ window.SQDCM={start,close,aceMove,get m(){return M},LV,el,render,act,startPvp,foeMove,endPvp,deckOf}})();
 // ---- 257. Discord roles: link your Discord account (window.SQDLINK) ----
 // The SQ Bot (tools/discord/sync-roles.mjs, run every 30 minutes by GitHub Actions) gives linked Discord members roles for their
 // Total Level, their guild, Patron, and game Moderator / Developer. It needs no database password: it reads only public data.
@@ -25722,6 +25744,66 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   const c=await p;try{sfx(c?'quest':'swish')}catch(e){self.SQERR&&SQERR(e,'249-8')}if(c){try{navigator.clipboard&&navigator.clipboard.writeText(c).catch(()=>{})}catch(e){/*quiet*/}say('Your Discord code is '+c+' (copied). Post it in #link on the SkillQuest Discord.');msgT=8}try{rPn()}catch(e){self.SQERR&&SQERR(e,'249-9')}},true);
  const st=document.createElement('style');st.textContent='.sqdl{margin-top:8px}.sqdl-code{font-size:14px;line-height:1.4;padding:8px 12px;margin:6px 0}.sqdl-code b{letter-spacing:2px;color:#3058c8}';document.head.appendChild(st);
  window.SQDLINK={make,get code(){return CODE&&CODE.c},AB}})();
+// ---- 271. Drop Card against other players (window.SQPVD) ----
+// Nov 21 (Jace: "do player vs player matches first"). Runs through 130's duel flow with kind 'card', exactly like player chess:
+// PLAY DROP CARD on the player menu (both stand next to each other), stakes, accept twice, then both get 262's table.
+// - Each side's duel record (duels/<a_b>/<uid>.m) carries "<deck>|<pet>#<moves>": the deck that's active in their binder and their
+//   moves, space separated (p<hand>[.<target>] play, l<hand> plant, c<grove> chop, a<uid>.<target> attack, e end turn).
+// - Both players build the same match from one seed (the request's code + the pair id); the player whose id comes first in the
+//   pair goes first. On the second player's screen the match is mirrored (261's mirror) so you're always side 0, at the bottom;
+//   the other side's moves are flipped (flipMv: their hero is h0 for them, h1 for you) and applied only on their turn.
+// - A deck that breaks the deck rules (20 cards, 2 of a card, 1 of a boss, 4+ trees) makes the match a draw: stakes go back.
+// - 2 minutes a turn: your turn ends by itself after that; if the other player doesn't move for 2.5 minutes, you win. Going
+//   offline for 20 s, leaving (LEAVE twice) or giving up loses, as in chess. The winner takes both stakes, nothing else.
+(()=>{const A=()=>window.SQDUELAPI,E=window.SQDCE,B=window.SQBINDER,MT=()=>window.SQDCM;if(!E||!B||!MT())return;
+ const TURN=120,WAIT=150;
+ const S={mv:[],th:0,on:false,first:true,their:null,bad:'',t0:0,cur:-1,ended:false};
+ const deckStr=d=>Object.keys(d.c).filter(k=>d.c[k]>0).map(k=>k+'*'+(d.c[k]|0)).join(',')+'|'+(d.pet||'');
+ function parseHead(h){const[a,p]=String(h||'').split('|'),c={};for(const x of(a||'').split(',')){const[k,n]=x.split('*');if(k&&/^[a-z0-9_:]+$/i.test(k))c[k]=Math.max(0,Math.min(20,n|0))}return{c,pet:p&&/^[a-z0-9_]+$/i.test(p)?p:null}}
+ function badDeck(d){if(!d)return'no deck';for(const k in d.c)if(!B.info(k)||!E.card((window.SQDROPCARD.ITEM[k]||{}).key||k))return'unknown card';
+  if(d.pet&&!B.isCard(d.pet))return'unknown pet';const p=B.problems({n:'x',c:d.c,pet:d.pet}).filter(t=>!/^Optional|^You only have/.test(t));return p[0]||''}
+ const enc=mv=>mv.t==='play'?'p'+(mv.h|0)+(mv.tg?'.'+mv.tg:''):mv.t==='plant'?'l'+(mv.h|0):mv.t==='chop'?'c'+(mv.g|0):mv.t==='atk'?'a'+mv.a+'.'+mv.tg:'e';
+ function dec(x){const c=x[0],r=x.slice(1),[a,b]=r.split('.');if(c==='p')return b?{t:'play',h:+a,tg:b}:{t:'play',h:+a};if(c==='l')return{t:'plant',h:+a};if(c==='c')return{t:'chop',g:+a};if(c==='a')return{t:'atk',a,tg:b};if(c==='e')return{t:'end'};return null}
+ const hash=t=>{let h=7;for(const ch of String(t))h=(h*31+ch.charCodeAt(0))|0;return h||1};
+ const myDeck=()=>{const d=MT().deckOf();return d?{c:Object.assign({},d.c),pet:d.pet||null}:null};
+ let mine=null;// the deck you bring, fixed when the match is set up
+ function foeCh(u){try{const r=window.SQMP&&SQMP.players&&SQMP.players.get(u);return r&&r.ch||null}catch(e){self.SQERR&&SQERR(e,'263-1');return null}}
+ function myName(){try{return A().nameOf(A().me())||'You'}catch(e){return'You'}}
+ function feed(){const M=MT().m;if(!S.on||!M||!M.pvp||!S.their)return;const L=S.their.mv;
+  while(S.th<L.length){const mv=dec(L[S.th]);if(!mv){S.th=L.length;return}const r=MT().foeMove(E.flipMv(mv));if(r==='not their turn'||r==='over')return;S.th++;if(r)console.warn('drop card: their move',L[S.th-1],r)}}
+ window.SQPVD={
+  problem(){const d=MT().deckOf();if(!d)return'You need a Drop Card deck first (Card Binder > Decks).';const p=B.problems(d).filter(t=>!/^Optional/.test(t));return p.length?'Your Drop Card deck isn\'t ready: '+p[0]+' (Card Binder > Decks)':''},
+  str(){if(!mine)mine=myDeck();return deckStr(mine)+'#'+S.mv.join(' ')},
+  theirs(m){m=String(m||'');const i=m.indexOf('#');if(i<0)return;const head=m.slice(0,i),mv=m.slice(i+1).split(' ').filter(Boolean);
+   if(!S.their||S.their.head!==head){const d=parseHead(head);S.their={head,d,mv};S.bad=badDeck(d)}else S.their.mv=mv;feed()},
+  begin(){const D=A().D;if(!D)return;S.mv=[];S.th=0;S.ended=false;if(!mine)mine=myDeck();
+   if(!S.their){S.on=false;D.why='the other deck never arrived';A().draw3();return}
+   if(S.bad){D.why=A().nameOf(D.foe)+'\'s deck isn\'t allowed ('+S.bad+')';A().draw3();return}
+   const first=D.tid.split('_')[0]===A().me(),fn=A().nameOf(D.foe),mn=myName();S.first=first;
+   const decks=[[],[]],pets=[null,null],mi=first?0:1;
+   const flat=d=>{const o=[];for(const k in d.c)for(let n=0;n<d.c[k];n++)o.push(k);return o};
+   decks[mi]=flat(mine);pets[mi]=mine.pet;decks[1-mi]=flat(S.their.d);pets[1-mi]=S.their.d.pet;
+   const names=first?[mn,fn]:[fn,mn];
+   S.on=true;S.cur=-1;S.t0=performance.now();
+   MT().startPvp({seed:hash(D.s+'|'+D.tid),decks,pets,names,first,pvp:{name:fn,ch:foeCh(D.foe),
+    send(mv){S.mv.push(enc(mv));if(S.mv.join(' ').length>3600){D.why='the match ran too long';A().draw3();return}A().push()},
+    leave(){A().lose('resign')},
+    done(res){if(S.ended)return;S.ended=true;if(res==='w')A().win('end');else A().lose('end')},
+    turnLeft(){const M=MT().m,left=Math.max(0,Math.ceil(TURN-(performance.now()-S.t0)/1000));return M&&M.s.cur===0?Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):''}}});
+   feed()},
+  tick(){const M=MT().m;if(!S.on||!M||!M.pvp)return;if(M.s.over)return;
+   if(M.s.cur!==S.cur){S.cur=M.s.cur;S.t0=performance.now()}
+   const t=(performance.now()-S.t0)/1000;
+   if(M.s.cur===0&&t>TURN&&!M.busy){MT().act({t:'end'});return}
+   if(M.s.cur===1&&t>WAIT){A().win('time');return}
+   const lv=MT().el.querySelector('.dcm-lvn');if(lv){const left=Math.max(0,Math.ceil((M.s.cur===0?TURN:WAIT)-t));lv.textContent=(M.s.cur===0?'Your turn: ':A().nameOf(A().D.foe)+': ')+Math.floor(left/60)+':'+String(left%60).padStart(2,'0')+' left'}},
+  over(res,why){S.on=false;mine=null;const M=MT().m;if(!M||!M.pvp)return;const n=M.pvp.name;
+   const t=res==='w'?(why==='end'?'You beat '+n+'!':why==='resign'?n+' gave up. You win!':why==='time'?n+' ran out of time. You win!':why==='gone'?n+' went offline. You win!':n+' left. You win!')+' You take the stakes.':
+    res==='l'?(why==='end'?n+' wins this one.':why==='resign'?'You gave up.':why==='time'?'You ran out of time.':'You left the match.')+' '+n+' takes the stakes.':'A draw'+(why?' ('+why+')':'')+'. The stakes go back.';
+   MT().endPvp(t)},
+  cancel(){S.on=false;mine=null;S.their=null;const M=MT().m;if(M&&M.pvp&&!M.s.over)MT().close()},
+  get state(){return S}};
+ try{if(!SQACH.A.some(a=>a.id==='dc_pvp'))SQACH.A.push({g:'Drop Card',id:'dc_pvp',n:'Card duelist',d:'Win a Drop Card match against another player.',val:()=>(SQACH.counters&&SQACH.counters.dcpvpw)|0,goal:1,gold:500})}catch(e){self.SQERR&&SQERR(e,'263-2')}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

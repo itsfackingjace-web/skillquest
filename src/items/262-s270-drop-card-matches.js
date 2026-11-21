@@ -67,6 +67,8 @@
  const KIND={reg:'MONSTER',tree:'TREE',world:'WORLD BOSS',dungeon:'DUNGEON BOSS',island:'ISLAND BOSS',guild:'GUILD BOSS',potion:'POTION SPELL',forage:'FORAGE SPELL'};
  const KCOL={reg:'#7e4210',tree:'#3a7a2a',world:'#b83020',dungeon:'#7840b0',island:'#2878c8',guild:'#309058',potion:'#a83088',forage:'#8a7430'};
  const an=n=>(/^[aeiou]/.test(n)?'an ':'a ')+n,FROM={reg:n=>'Found by defeating '+an(n),tree:n=>'Found by chopping '+an(n),world:n=>'Found by defeating the '+n+' (world boss)',dungeon:n=>'Found by defeating the '+n+' (dungeon boss)',island:n=>'Found by defeating the '+n+' (island boss)',guild:n=>'Found by defeating the '+n+' (guild boss)',potion:n=>'Found by brewing '+an(n),forage:n=>'Found by picking '+an(n)};
+ // against a player (263): M.pvp = {name, ch, send(mv), leave(), done(res), turnLeft()}; the foe is side 1 on this screen
+ const FOE=()=>M&&M.pvp?M.pvp.name:'Ace',FOES=()=>FOE()+'\'s';
  const ACE_LINES=['Hah! Didn\'t see that coming?','Not bad, not bad...','My trees are bigger than yours.','You\'ll need more than that!','Careful now...','Is that your best card?'];
  // ---- drawing ----
  function cardBtn(k,data,cls,label,extra){return'<button class="dcm-card '+(cls||'')+'" data-dcm="'+data+'" aria-label="'+esc(label)+'"><img src="'+pic(k)+'" alt="">'+(extra||'')+'</button>'}
@@ -79,7 +81,7 @@
   return P.grove.map((g,j)=>'<button class="dcm-tree'+(g.stump?' stump':'')+(plan&&plan.includes(j)?' plan':'')+'" data-dcm="'+(me?'g:'+j:'gx:'+j)+'" aria-label="'+esc(g.n+', '+g.mana+' Mana'+(g.stump?', chopped':me?', tap to chop':''))+'">'+
    '<img src="'+(g.stump?stumpPic():treePic(E.card(g.key).id))+'" alt=""><span class="dcm-tm'+(g.stump?' used':'')+'">'+g.mana+'</span></button>').join('')}
  function heroHTML(i){const s=M.s,P=s.p[i],aim=M.aim&&M.aim.includes('h'+i),me=i===0;
-  const img=me?bust('me',(()=>{try{return gearCH()}catch(e){return CH}})()):bust('ace',aceCh());
+  const img=me?bust('me',(()=>{try{return gearCH()}catch(e){return CH}})()):(M.pvp?bust('pv:'+M.pvp.name+JSON.stringify(M.pvp.ch||{}).length,M.pvp.ch||aceCh()):bust('ace',aceCh()));
   return'<button class="dcm-hero'+(aim?' aim':'')+'" data-dcm="h:h'+i+'" aria-label="'+esc((me?'You':P.n)+', '+P.hp+' health')+'"><span class="dcm-face"><img src="'+img+'" alt=""></span>'+
    '<span class="dcm-hn"><b>'+esc(me?'You':P.n)+'</b><span class="dcm-heart">♥ '+P.hp+'</span></span></button>'}
  function render(){if(!M)return;const s=M.s,P=s.p[0],A=s.p[1],my=s.cur===0&&!s.over;
@@ -90,11 +92,11 @@
   // Ace
   h+='<div class="dcm-r1">'+heroHTML(1)+(M.say?'<div class="dcm-say">'+esc(M.say)+'</div>':'')+
    '<div class="dcm-ahand">'+A.hand.map((k,i)=>'<span class="dcm-back" style="--i:'+(i-(A.hand.length-1)/2)+'"></span>').join('')+'</div>'+
-   '<div class="dcm-grove foe"><span class="dcm-gl">Ace\'s Grove · '+E.groveMana(A)+'</span><div class="dcm-gt">'+groveHTML(1)+'</div></div>'+
+   '<div class="dcm-grove foe"><span class="dcm-gl">'+esc(FOES())+' Grove · '+E.groveMana(A)+'</span><div class="dcm-gt">'+groveHTML(1)+'</div></div>'+
    '<div class="dcm-log"><b>Last moves</b>'+s.log.slice(-4).map(l=>'<div>'+esc(l)+'</div>').join('')+'</div></div>';
-  h+='<div class="dcm-board foe">'+(A.board.map(m=>monHTML(m,1)).join('')||'<span class="dcm-empty">Ace has no monsters out</span>')+'</div>';
-  h+='<div class="dcm-mid"><span class="dcm-ribbon'+(s.over?' over':my?'':' ace')+'">'+(s.over?(s.win===0?'YOU WIN!':'ACE WINS'):my?'YOUR TURN':'ACE\'S TURN')+'</span><span class="dcm-msg" role="status">'+esc(M.msg||'')+'</span>'+
-   '<span class="dcm-lvn">'+esc(LV[M.lv].n)+' · tap any card for a close-up</span></div>';
+  h+='<div class="dcm-board foe">'+(A.board.map(m=>monHTML(m,1)).join('')||'<span class="dcm-empty">'+esc(FOE())+' has no monsters out</span>')+'</div>';
+  h+='<div class="dcm-mid"><span class="dcm-ribbon'+(s.over?' over':my?'':' ace')+'">'+(s.over?(s.win===0?'YOU WIN!':esc(FOE()).toUpperCase()+' WINS'):my?'YOUR TURN':esc(FOES()).toUpperCase()+' TURN')+'</span><span class="dcm-msg" role="status">'+esc(M.msg||'')+'</span>'+
+   '<span class="dcm-lvn">'+esc(M.pvp?(M.pvp.turnLeft&&!s.over?M.pvp.turnLeft()+' left this turn':'vs '+FOE()):LV[M.lv].n)+' · tap any card for a close-up</span></div>';
   h+='<div class="dcm-board me">'+(P.board.map(m=>monHTML(m,0)).join('')||'<span class="dcm-empty">Your monsters go here</span>')+'</div>';
   // you
   h+='<div class="dcm-r5"><div class="dcm-me">'+heroHTML(0)+(P.pet?'<span class="dcm-pet" title="'+esc(E.short(INAME[P.pet]||''))+'"><img src="'+pic(P.pet.replace(/^pc_/,''))+'" alt=""><small>'+esc(E.short(INAME[P.pet]||''))+'</small></span>':'')+'</div>'+
@@ -103,7 +105,7 @@
     if(k==='_sapling')return'<button class="dcm-card dcm-sap'+(my?' ok':'')+'" data-dcm="c:'+i+'" style="--r:'+rot+'" aria-label="Sapling: 1 Mana this turn">🌱<span class="dcm-cost">0</span></button>';
     const c=E.card(k),cost=E.costOf(s,0,c),ok=my&&(c.kind==='tree'?!P.planted:cost<=P.pool+upM);
     return'<button class="dcm-card'+(ok?' ok':' no')+(M.newCards&&M.newCards.includes(i)?' drawn':'')+'" data-dcm="c:'+i+'" style="--r:'+rot+'" aria-label="'+esc(c.n+(c.kind==='tree'?', '+c.mana+' Mana tree':', costs '+cost))+'"><img src="'+pic(k)+'" alt=""><span class="dcm-cost'+(c.kind==='tree'?' tree':'')+'">'+(c.kind==='tree'?'+'+c.mana:cost)+'</span></button>'}).join('')+'</div>'+
-   '<div class="dcm-btns">'+(s.over?'<button class="dcm-end" data-dcm="again">PLAY<br>AGAIN</button>':'<button class="dcm-end" data-dcm="end"'+(my&&!M.aim?'':' disabled')+'>END<br>TURN</button>')+
+   '<div class="dcm-btns">'+(s.over&&!M.pvp?'<button class="dcm-end" data-dcm="again">PLAY<br>AGAIN</button>':s.over?'':'<button class="dcm-end" data-dcm="end"'+(my&&!M.aim?'':' disabled')+'>END<br>TURN</button>')+
    (M.aim?'<button class="dcm-b" data-dcm="cancel">CANCEL</button>':'')+'<button class="dcm-b small" data-dcm="leave">'+(s.over?'LEAVE':M.leaveArm?'LEAVE = LOSS?':'LEAVE')+'</button></div></div>';
   h+='</div></div>';
   // the close-up
@@ -114,10 +116,10 @@
    c=E.card(key);owner='In your hand';const my=s.cur===0&&!s.over,up=P.pool+P.grove.filter(g=>!g.stump).reduce((a,g)=>a+g.mana,0);
    if(my){if(c.kind==='tree')acts=P.planted?'<span class="dcm-zw">You\'ve planted a tree this turn.</span>':'<button class="dcm-b pri" data-dcm="play">PLANT</button>';
     else acts=E.costOf(s,0,c)<=up?'<button class="dcm-b pri" data-dcm="play">PLAY</button>':'<span class="dcm-zw">Not enough Mana yet.</span>'}}
-  else if(z.t==='mon'){[side,m]=E.findM(s,z.v);if(!m){M.zoom=null;return''}key=m.key;c=m.key?E.card(m.key):{n:m.n,kind:'mon',hp:m.max,atk:m.atk,id:m.id2,cost:0};owner=side===0?'Your monster':'Ace\'s monster';
+  else if(z.t==='mon'){[side,m]=E.findM(s,z.v);if(!m){M.zoom=null;return''}key=m.key;c=m.key?E.card(m.key):{n:m.n,kind:'mon',hp:m.max,atk:m.atk,id:m.id2,cost:0};owner=side===0?'Your monster':FOES()+' monster';
    if(E.guards(s,side).includes(m))tags.push('Guard: must be attacked first');if(m.sleep&&side===0)tags.push('Just played: attacks next turn');if(m.frozen>0)tags.push('Frozen: can\'t attack this turn');if(m.poison)tags.push('Poisoned: 1 damage each turn');if(m.mute)tags.push('Silenced: no power');
    if(side===0&&s.cur===0&&!s.over){acts=E.targets(s,0,m.uid).length?'<button class="dcm-b pri" data-dcm="attack">ATTACK</button>':''}}
-  else if(z.t==='tree'){const g=s.p[z.side].grove[z.v];key=g.key;c=E.card(key);owner=(z.side===0?'Your':'Ace\'s')+' Grove'+(g.stump?' · chopped (grows back next turn)':'');if(z.side===0&&!g.stump&&s.cur===0&&!s.over)acts='<button class="dcm-b pri" data-dcm="chop:'+z.v+'">CHOP IT</button>'}
+  else if(z.t==='tree'){const g=s.p[z.side].grove[z.v];key=g.key;c=E.card(key);owner=(z.side===0?'Your':FOES())+' Grove'+(g.stump?' · chopped (grows back next turn)':'');if(z.side===0&&!g.stump&&s.cur===0&&!s.over)acts='<button class="dcm-b pri" data-dcm="chop:'+z.v+'">CHOP IT</button>'}
   else if(z.t==='pet'){key=P.pet;owner='Your Companion';c={n:E.short(INAME[key]||''),kind:'pet'}}
   const C=key&&D.ITEM[key],g=C?C.g:c.kind==='pet'?'pet':'reg';
   const gem=n=>'<span class="dcm-zcost"><i>'+n+'</i></span><small>Cost</small>';
@@ -141,18 +143,19 @@
    else if(f.t==='play'){const e=el.querySelector('[data-uid="'+f.uid+'"]');if(e){e.classList.add('arrive');setTimeout(()=>e.classList.remove('arrive'),500)}}}
   // monsters that fell: a puff where they stood
   for(const uid in before){if(uid[0]!=='m')continue;if(!now[uid]){const r=before[uid];pop(r.left+r.width/2,r.top+r.height/2,'','puff')}}}
- let lastTurn=-1;function banner(){if(!M)return;const s=M.s;if(s.cur===lastTurn||s.over)return;lastTurn=s.cur;const b=document.createElement('span');b.className='dcm-banner'+(s.cur?' ace':'');b.textContent=s.cur?'ACE\'S TURN':'YOUR TURN';fxl.appendChild(b);setTimeout(()=>b.remove(),1300)}
+ let lastTurn=-1;function banner(){if(!M)return;const s=M.s;if(s.cur===lastTurn||s.over)return;lastTurn=s.cur;const b=document.createElement('span');b.className='dcm-banner'+(s.cur?' ace':'');b.textContent=s.cur?FOES().toUpperCase()+' TURN':'YOUR TURN';fxl.appendChild(b);setTimeout(()=>b.remove(),1300)}
  function redraw(fx){const before=snapshot();render();playFx(fx,before);banner()}
  // ---- input ----
- function act(mv){const r=E.apply(M.s,0,mv);M.msg=r||'';if(!r){M.sel=null;M.aim=null;M.zoom=null;M.att=null}
+ function act(mv){if(M.pvp&&(M.s.cur!==0||M.s.over))return false;const r=E.apply(M.s,0,mv);if(!r&&M.pvp)try{M.pvp.send(mv)}catch(e){self.SQERR&&SQERR(e,'262-23')}M.msg=r||'';if(!r){M.sel=null;M.aim=null;M.zoom=null;M.att=null}
   try{sfx(r?'swish':mv.t==='atk'?'hit':mv.t==='chop'?'chop':'pickup')}catch(e){self.SQERR&&SQERR(e,'262-1')}after(r?[]:M.s.fx.slice());return!r}
- function after(fx){redraw(fx);const s=M.s;if(s.over){finish();return}if(s.cur===1&&!M.busy)aceRun()}
+ function after(fx){redraw(fx);const s=M.s;if(s.over){finish();return}if(s.cur===1&&!M.busy&&!M.pvp)aceRun()}
  function aceRun(){M.busy=true;const step=()=>{if(!M||M.s.over||M.s.cur!==1){if(M)M.busy=false;if(M)after([]);return}const n0=M.s.p[0].hand.length;const mv=aceMove(M.s,1,M.lv);const r=E.apply(M.s,1,mv);const fx=M.s.fx.slice();if(r){E.apply(M.s,1,{t:'end'})}
    M.msg='';
    if(mv.t==='end'||r){if(Math.random()<.3)M.say=ACE_LINES[Math.floor(Math.random()*ACE_LINES.length)];else M.say=''}
    if(M.s.cur===0){const n=M.s.p[0].hand.length;M.newCards=n>n0?[n-1]:null}
    try{sfx(mv.t==='atk'?'hit':mv.t==='chop'?'chop':'pickup')}catch(e){self.SQERR&&SQERR(e,'262-2')}redraw(fx);M.newCards=null;if(M.s.over){M.busy=false;finish();return}if(M.s.cur!==1){M.busy=false;redraw([]);return}setTimeout(step,window.SQDCMFAST?0:700)};setTimeout(step,window.SQDCMFAST?0:700)}
  function finish(){const s=M.s;if(M.done)return;M.done=true;M.zoom=null;M.aim=null;
+  if(M.pvp){M.say='';M.msg=s.win===0?'You beat '+FOE()+'!':FOE()+' wins this one.';try{M.pvp.done(s.win===0?'w':'l')}catch(e){self.SQERR&&SQERR(e,'262-24')}render();return}
   if(s.win===0){const L=LV[M.lv],first=WINS[M.lv]!==today(),g=first?L.g:Math.round(L.g/10);GLD+=g;WINS[M.lv]=today();M.msg='You beat Ace on '+L.n+'! +'+g+' gold'+(first?'':' (full reward once a day)')+'.';M.say='Well played! Come back any time.';
    try{SQACH&&SQACH.add&&SQACH.add('dcwin',1);SQACH.check&&SQACH.check()}catch(e){self.SQERR&&SQERR(e,'262-3')}try{sfx('quest')}catch(e){self.SQERR&&SQERR(e,'262-4')}}
   else{M.msg='Ace wins this one. Tweak your deck in the Card Binder and try again!';M.say='Better luck next time!';try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'262-5')}}
@@ -164,7 +167,7 @@
   if(M.zoom){if(a==='play'){playSel(M.zoom.v);return}if(a==='attack'){const uid=M.zoom.v;M.zoom=null;M.sel={t:'mon',v:uid};M.att=uid;M.aim=E.targets(s,0,uid);M.msg='Pick what to attack.';render();return}
    if(x==='chop'){M.zoom=null;act({t:'chop',g:+y});return}unzoom();return}
   if(a!=='leave')M.leaveArm=false;
-  if(a==='leave'){if(!s.over&&!M.leaveArm){M.leaveArm=true;M.msg='Tap LEAVE again to give up (it counts as a loss).';render();return}close();return}
+  if(a==='leave'){if(!s.over&&!M.leaveArm){M.leaveArm=true;M.msg='Tap LEAVE again to give up (it counts as a loss'+(M.pvp?' and '+FOE()+' takes the stakes':'')+').';render();return}if(M.pvp&&!s.over){try{M.pvp.leave()}catch(e){self.SQERR&&SQERR(e,'262-25')}return}close();return}
   if(a==='again'){start(M.lv);return}if(a==='cancel'){M.sel=null;M.aim=null;M.att=null;M.msg='';render();return}
   // picking a target
   if(M.aim&&(x==='m'||x==='h')){if(M.aim.includes(y)){if(M.sel.t==='hand')act({t:'play',h:M.sel.v,tg:y});else act({t:'atk',a:M.sel.v,tg:y});return}M.msg='That isn\'t a target. Pick a glowing one, or CANCEL.';render();return}
@@ -271,4 +274,12 @@
   // tall, narrow phones (portrait): stack the hand under the grove
   '@media (max-width:640px) and (min-height:501px){.dcm-r5{flex-wrap:wrap}.dcm-hand{order:5;flex-basis:100%}.dcm-log{display:none}.dcm-card{width:54px;height:76px}.dcm-hand .dcm-card{width:56px;height:78px}.dcm-zc{flex-direction:column;gap:10px}.dcm-zbig img{width:170px;height:238px}.dcm-zi{max-width:90vw}}';
  document.head.appendChild(st);
- window.SQDCM={start,close,aceMove,get m(){return M},LV,el,render,act}})();
+ // ---- against a player (263) ----
+ function foeMove(mv){if(!M||!M.pvp||M.s.over)return'over';if(M.s.cur!==1)return'not their turn';const n0=M.s.p[0].hand.length;const r=E.apply(M.s,1,mv);if(r)return r;
+  if(M.s.cur===0){const n=M.s.p[0].hand.length;M.newCards=n>n0?[n-1]:null;M.msg=''}try{sfx(mv.t==='atk'?'hit':mv.t==='chop'?'chop':'pickup')}catch(e){self.SQERR&&SQERR(e,'262-26')}
+  redraw(M.s.fx.slice());M.newCards=null;if(M.s.over)finish();return''}
+ function startPvp(o){lastTurn=-1;const s=E.create({seed:o.seed,decks:o.decks,pets:o.pets,names:o.names});if(!o.first)E.mirror(s);
+  M={s,lv:'normal',pvp:o.pvp,sel:null,aim:null,zoom:null,att:null,say:'',msg:s.cur===0?'You go first. Plant a tree, chop it for Mana, play your cards!':o.pvp.name+' goes first. You get the Sapling.',busy:false,done:false,leaveArm:false};
+  try{closePanel()}catch(e){self.SQERR&&SQERR(e,'262-27')}el.style.display='flex';render();banner();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'262-28')}return M}
+ function endPvp(t){if(!M||!M.pvp)return;if(!M.s.over){M.s.over=true;M.done=true;M.zoom=null;M.aim=null}if(t)M.msg=t;render()}
+ window.SQDCM={start,close,aceMove,get m(){return M},LV,el,render,act,startPvp,foeMove,endPvp,deckOf}})();

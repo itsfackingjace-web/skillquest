@@ -57,7 +57,7 @@
  const atkOf=(s,i,m)=>{let a=m.atk;const P=s.p[i];if(isWolf(m)){a+=P.board.filter(o=>o!==m&&o.id2==='alpha'&&!o.mute).length;if(P.comp==='pwolf'||P.comp==='pvoid')a+=1}return Math.max(0,a)};
  function hurtMon(s,i,m,n,src){if(n<=0||m.hp<=0)return;if(m.id2==='ib:ashfall'&&!m.mute)n=Math.max(0,n-1);if(n<=0)return;m.hp-=n;s.fx.push({t:'dmg',to:m.uid,n});
   if(src&&src.id2==='matri'&&!src.mute)m.poison=1;if(src&&src.id2==='ib:ironcrest'&&!src.mute)m.frozen=2}
- function sweep(s){for(let i=0;i<2;i++){const P=s.p[i];const dead=P.board.filter(m=>m.hp<=0);if(!dead.length)continue;P.board=P.board.filter(m=>m.hp>0);
+ function sweep(s){for(const i of s.flip?[1,0]:[0,1]){/* both sides' falls in the same order on both players' screens (263 mirrors the state) */const P=s.p[i];const dead=P.board.filter(m=>m.hp<=0);if(!dead.length)continue;P.board=P.board.filter(m=>m.hp>0);
    for(const m of dead){L(s,m.n+' falls.');if(m.mute)continue;
     if(m.id2==='wb:demon')hurtHero(s,1-i,3,'Demon');
     if(m.id2==='boss'){summon(s,i,'slime');summon(s,i,'slime')}
@@ -146,4 +146,11 @@
   for(const m of P.board)for(const tg of targets(s,i,m.uid))out.push({t:'atk',a:m.uid,tg});
   out.push({t:'end'});return out}
  const clone=s=>JSON.parse(JSON.stringify(s));
- window.SQDCE={chopPlan,card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,MAXB,MAXH,MAXM,HERO,short,groveMana:P=>groveMana(P)}})();
+ // ---- player vs player (263): each player sees themself as side 0 ----
+ // mirror(s) swaps the two sides in place (the second player's view); flipMv turns a move from the other player's view into yours.
+ // Everything else that depends on a side is relative to the side acting, so both views stay the same match.
+ function mirror(s){s.p.reverse();s.cur=1-s.cur;if(s.win>=0)s.win=1-s.win;s.flip=!s.flip;for(const P of s.p)for(const m of P.board)m.side=1-m.side;
+  for(const f of s.fx||[]){if(typeof f.side==='number')f.side=1-f.side;if(f.to==='h0'||f.to==='h1')f.to=f.to==='h0'?'h1':'h0'}return s}
+ const flipH=v=>v==='h0'?'h1':v==='h1'?'h0':v;
+ function flipMv(mv){const o=Object.assign({},mv);if(o.tg!=null)o.tg=flipH(o.tg);return o}
+ window.SQDCE={mirror,flipMv,chopPlan,card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,MAXB,MAXH,MAXM,HERO,short,groveMana:P=>groveMana(P)}})();
