@@ -67,7 +67,7 @@
  function key(){const[a]=[D.tid.split('_')[0]],s=o=>Object.keys(o).sort().map(k=>k+':'+o[k]).join(','),M=[s(D.me),D.g],T=[s(D.th),D.tg];return JSON.stringify(a===me()?[D.s,M,T]:[D.s,T,M])}
  function push(){if(!D.tid||!on())return;const db=Fm().db;db.set(ref('duels/'+D.tid+'/'+me()),{i:D.me,g:D.g,s:D.s,k:D.kind,m:D.kind==='chess'?D.mv.join(' '):D.kind==='card'&&window.SQPVD?SQPVD.str():'',a:D.my.a,c:D.my.c,f:D.my.f,l:D.my.l,d:D.my.d,t:db.serverTimestamp()})
   .catch(e=>{end(/permission/i.test(String(e&&(e.code||e.message)))?'Duels need the latest database rules.':'Lost the connection, so the duel was cancelled.')})}
- function open(u,sn,kind){D.kind=KINDOK(kind);D.mv=[];D.s=sn||'';D.st='stake';D.foe=u;D.tid=tid(u,me());D.me={};D.g=0;D.th={};D.tg=0;D.my={a:'',c:'',f:'',l:'',d:''};D.their=null;D.seen=false;D.esc=null;D.warnAt=0;D.lastTh='';
+ function open(u,sn,kind){D.kind=KINDOK(kind);D.openAt=performance.now();D.mv=[];D.s=sn||'';D.st='stake';D.foe=u;D.tid=tid(u,me());D.me={};D.g=0;D.th={};D.tg=0;D.my={a:'',c:'',f:'',l:'',d:''};D.their=null;D.seen=false;D.esc=null;D.warnAt=0;D.lastTh='';
   delete D.inbox[u];popHide(u);if(D.sent[u]&&D.sent[u].done)D.sent[u].done();
   try{if(typeof releaseMenu==='function')releaseMenu()}catch(e){self.SQERR&&SQERR(e,'130-4')}push();D.unsub=Fm().db.onValue(ref('duels/'+D.tid+'/'+u),s=>theirs(s.val()));
   pnOpen=true;ptab=DTAB;jx=jy=0;fromMenu=false;pn.style.display='block';rPn();sfx('talk');try{mpLog('game','Setting up a '+WHAT(D.kind)+' with '+nameOf(u)+'.')}catch(e){self.SQERR&&SQERR(e,'130-5')}}
@@ -76,7 +76,9 @@
   if(D.kind==='chess'&&window.SQPVC)try{SQPVC.theirMoves(String(v.m||''))}catch(e){console.warn(e)}
   D.seen=true;const th=clean(v.i),tg=Math.max(0,Math.min(1e9,Math.floor(+v.g||0)));D.their={a:String(v.a||''),c:String(v.c||''),f:String(v.f||''),l:String(v.l||''),d:String(v.d||''),m:String(v.m||'')};
   if(D.st==='stake'||D.st==='confirm'){const k=JSON.stringify([th,tg]);if(D.lastTh&&k!==D.lastTh){const less=tg<D.tg||Object.keys(D.th).some(q=>(th[q]|0)<D.th[q]),was=D.their;if(less||D.my.a||D.st==='confirm')D.warnAt=performance.now();D.st='stake';if(D.my.a||D.my.c){D.my.a='';D.my.c='';push()}sfx('swish')}D.lastTh=k;D.th=th;D.tg=tg}
-  if(D.kind==='card'&&window.SQPVD)try{SQPVD.theirs(D.their.m)}catch(e){self.SQERR&&SQERR(e,'130-92')}
+  if(D.kind==='card'&&window.SQPVD)try{SQPVD.theirs(D.their.m);const bad=SQPVD.blocker();if(bad&&(D.st==='stake'||D.st==='confirm')){end(bad);return}}catch(e){self.SQERR&&SQERR(e,'130-92')}
+  // a game that takes the request as another kind (one from before that kind existed) can't play it
+  if(v.k&&KINDOK(v.k)!==D.kind&&(D.st==='stake'||D.st==='confirm')){end(nameOf(D.foe)+'\'s game is out of date. You both need to close and reopen the game to play '+(D.kind==='card'?'Drop Card':'that')+'.');return}
   step()}
  function step(){if(D.st==='idle'||!D.their)return;const k=key(),t=D.their;
   if(D.st==='stake'||D.st==='confirm'){if(D.my.a&&D.my.a!==k){D.my.a='';D.my.c='';push()}
