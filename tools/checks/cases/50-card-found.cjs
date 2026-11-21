@@ -17,10 +17,15 @@ module.exports={name:'found-card moment, shiny cards, announcements and collecti
   try{SQACH.check()}catch(e){}const dn=SQACH.done||{};out.ach=['dc_first','dc_boss1','dc_shiny'].filter(id=>dn[id]);out.notYet=!!dn.dc_10;out.gold=GLD-g0;
   // a key dismisses too
   D.give('skel','test');await W(400);document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'x',bubbles:true}));await W(100);out.keyGone=F.box.style.display;
+  // Nov 21 (Jace): a shiny copy of a card you also have plain stacked under it and couldn't be seen; the Shiny filter and the details show it
+  {const T=D.CARDS.tree;inv[T.key]=(inv[T.key]|0)+2;inv[T.sh]=1;try{closePanel()}catch(e){}B.open('col');await W(100);
+   pbd.querySelector('[data-dcb="f:shiny"]').click();await W(50);const tile=pbd.querySelector('[data-dcb="s:'+T.key+'"] img');
+   out.shinyTile=!!tile&&tile.getAttribute('src')===iconURL(T.sh);pbd.querySelector('[data-dcb="s:'+T.key+'"]').click();await W(50);
+   out.both=pbd.querySelectorAll('.dcb-pics img').length;try{closePanel()}catch(e){}}
   return out});
  t.eq(r.shown,'flex','the card didn\'t show');t(/NEW CARD!/.test(r.txt)&&/Moss slime/.test(r.txt),'card text: '+r.txt);t.eq(r.gone,'none','the card didn\'t go away by itself');
  t.eq(r.q,1,'second card queued');t(r.next,'the queued card didn\'t show after a click');
  t.eq(r.shiny,[0,1,1,'Shiny Drop Card: Dragon'],'shiny Dragon card');t(/big/.test(r.big)&&/shiny/.test(r.big),'shiny boss card style: '+r.big);t.eq(r.icon,'data:image/png;base64,','shiny card picture');
  t(r.chat.includes('★ found a SHINY Drop Card: Dragon!'),'chat announcement: '+JSON.stringify(r.chat));// (a random 1-in-50 shiny can add another line)t.eq(r.shinyRate,50,'shiny rate');
  t.eq(r.ach,['dc_first','dc_boss1','dc_shiny'],'achievements');t(!r.notYet,'"10 different" done too early');t(r.gold>=3100,'achievement gold '+r.gold);
- t.eq(r.keyGone,'none','a key didn\'t dismiss the card')}};
+ t.eq(r.keyGone,'none','a key didn\'t dismiss the card');t(r.shinyTile,'the Shiny filter shows the shiny picture');t.eq(r.both,2,'a card\'s details show its normal and shiny pictures');}};
