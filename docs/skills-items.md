@@ -180,3 +180,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Card frames** (`items/260-s268-card-frames.js`, `window.SQCARDFRAME`): furniture `cardframe` (BREC wood 4 + ibar 1, req 8; Marlo's via
   LUX.EMP.FURN2), drawn by the outermost `drawPiece`; HIT at home opens panel `FTAB=53`; save `dcf` {"<house id>:<tile>": item key}; the outermost
   `pickFurn` gives the card back. Visitors see an empty stand. Check 53.
+- **Drop Card matches** (`items/261-s269-drop-card-engine.js` `window.SQDCE` = the rules; `items/262-s270-drop-card-matches.js` `window.SQDCM` =
+  Ace and the table): `create({seed,decks,pets,names})`, `apply(s,side,move)` returns '' or why not (moves plant/chop/play/atk/end; targets
+  'h0'/'h1' or minion uids), `options(s,side)`; seeded `rnd` so the same moves replay the same match (for player vs player later). Boss powers
+  `POW`, spells `SPELL`, Companions `COMP` as in the rules doc; the Demon = "Last word: 3 damage to the enemy hero". 262: Ace's levels `LV`
+  (decks, gold 50/150/400, a tenth after the first win of the day: save `dcw`), `aceMove` (Easy: one card a turn, random attacks, sometimes
+  stops early), the #sqdcm table (buttons only; SQNAVROOT returns it; `.dcm-low` row on short screens), `SQDCMFAST` skips Ace's 0.7 s pauses
+  (checks). Simulated with the starter deck: a good player beats Easy ~65%, Normal ~45%, Hard ~10%. Achievement `dc_win`. Check 54.
