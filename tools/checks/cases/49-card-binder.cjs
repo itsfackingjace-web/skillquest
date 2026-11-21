@@ -39,6 +39,9 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
   window.SQDROPCARDALWAYS=true;const pkey=D.CARDS.pot_heal.key,p0=inv[pkey]|0;for(const f of SQBREWED)f('pot_heal');out.potion=(inv[pkey]|0)-p0;// foraging berries (forced roll)
   closePanel();await W(100);const bk=D.CARDS.berry.key,b0=inv[bk]|0;face=[1,0];const[fx,fy]=front(16),tx=Math.floor(fx/16),ty=Math.floor(fy/16),ti=ty*N+tx;obj[ti]={t:'bush',hp:1};STR.delete(ti);BS.delete(ti);
   const be0=inv.berry|0;for(let k=0;k<25&&(inv.berry|0)===be0;k++){swing=0;attack();await W(400)}out.berries=(inv.berry|0)-be0;out.forage=(inv[bk]|0)-b0;window.SQDROPCARDALWAYS=false;
+  // Wiki > Drop Card
+  SQWK.open('dropcard');await W(80);const wt=(document.getElementById('wkb')||{}).textContent||'';out.wiki=['Drop Card for Dummies','Moss slime','Healing potion','Pet cards','Nine lives'].filter(x=>!wt.includes(x));
+  const ln=document.querySelector('#wkb [data-wkp="item:dc_slime_moss"]');if(ln)ln.click();await W(50);out.wikiPage=((document.getElementById('wkb')||{}).textContent||'').includes('2HP 1ATK');try{SQWK.close&&SQWK.close()}catch(e){}
   return out});
  t.eq(r.price,1,'guide price');t.eq([r.guide,r.binder],[1,1],'guide and binder from the shop');
  t(r.bagHidesCards,'the bag still lists cards (or no binder)');t(r.openBtn,'no OPEN button on the binder');t.eq(r.counts,[2,1],'card counts after showing the bag');
@@ -49,4 +52,4 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
  t.eq(r.savedDeck,r.deck,'deck in the save');t.eq(r.loadedDeck,r.deck,'deck after loading');
  t.eq(r.guideTab,'guide','READ opens the guide');t.eq(r.title,'Drop Card for Dummies','guide title');t.eq(r.page,2,'guide page after NEXT twice');t(r.pages>=8,'guide pages');
  t(r.overflow<=1,'the binder is wider than the panel by '+r.overflow+'px');
- t.eq(r.petCard,1,'pet card from releasing a pet');t(/^Pet Card: /.test(r.petName||''),'pet card name '+r.petName);t.eq(r.potion,1,'potion card from brewing');t(r.berries>0,'no berries from the bush');t.eq(r.forage,1,'forage card from picking berries')}};
+ t.eq(r.petCard,1,'pet card from releasing a pet');t(/^Pet Card: /.test(r.petName||''),'pet card name '+r.petName);t.eq(r.potion,1,'potion card from brewing');t(r.berries>0,'no berries from the bush');t.eq(r.forage,1,'forage card from picking berries');t.eq(r.wiki,[],'missing from Wiki > Drop Card');t(r.wikiPage,'a card\'s wiki page')}};

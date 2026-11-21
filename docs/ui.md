@@ -100,3 +100,6 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Town names** (`ui/245-s253-town-names.js`, `SQTOWNNAME`, Nov 20): `here()` from the towns' own box tests (VX/VY, inTownBox, inFHBox,
   inDHBox, inTWBox, SQBW.town, SQAF.town, the dustwater landmark); drawn at the top of the minimap (wrapped `drawMini52`) and as a wooden sign
   sliding in at y 96*U for 3 s when the town changes (SQHUD step). Check 33.
+- **Wiki > Drop Card** (`ui/255-s263-wiki-drop-card.js`, Nov 20): tab `dropcard` after Brewing: an intro, the guide's pages (254's `SQBINDER.GP`,
+  one source for both), your collection count, every card by group (picture, stats, where it drops, link to its item page) and every pet card's
+  Companion power. Check 49 opens it.
