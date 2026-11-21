@@ -3,6 +3,8 @@
 // logs (75). Building one takes 3 logs + 1 stone like wood, burns longer (`m`) and gives more XP (3 x `pl`). Standing by one of
 // your own lit fires, F also lets you feed it one log at a time (+`fs` seconds, `pl` XP, up to 30 minutes of burn) instead
 // of building a new one. A fire fed with a better log takes that log's flame colour.
+// Since Nov 20 you can feed another player's fire too: it quietly becomes yours (061's window.SQFIRETAKE: the shared copy
+// carries `tk` = the old owner for 20 s and their game drops its own copy), so it keeps burning after they log out.
 //   F (the outermost `fire`) opens the picker (ptab 50) only when there's a choice: a tier log you can burn, or one of your own
 //   fires next to you. Plain wood with nothing nearby builds straight away, as before.
 //   Building with a tier log lends 3 wood for the game's own fire() (timed by 109): `PEND` remembers the kind and the fires
@@ -22,7 +24,8 @@
  const xtra=(x)=>{if(!(x>0))return;window.SQFIREXTRA=1;try{addXp(FM,Math.round(x))}finally{window.SQFIREXTRA=0}};
  const mmss=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
  const baseLife=()=>{let L=150+lv()*3;try{if(typeof fDur==='function')L*=1+fDur()}catch(e){self.SQERR&&SQERR(e,'220-1')}return L};
- function myFire(){let best=null,bd=30;const[fx,fy]=front(14);for(const f of fires){if(!f||f._rp||f._glow||!(f.life>0))continue;const d=Math.min(Math.hypot(f.x-fx,f.y-fy),Math.hypot(f.x-P.x,f.y-P.y)+4);if(d<bd){bd=d;best=f}}return best}
+ // the fire next to you: yours, or (since Nov 20) another player's, which feeding takes over (061's SQFIRETAKE)
+ function myFire(){let best=null,bd=30;const[fx,fy]=front(14);for(const f of fires){if(!f||f._glow||!(f.life>0)||(f._rp&&!window.SQFIRETAKE))continue;const d=Math.min(Math.hypot(f.x-fx,f.y-fy),Math.hypot(f.x-P.x,f.y-P.y)+4);if(d<bd){bd=d;best=f}}return best}
  const canBuild=t=>lv()>=t.lv&&n(t.k)>=3&&n('stone')>=1;
  // night glow (r,g,b) and kindling sticks [light, dark] per log, used by 001's night glow and 114's lighting look
  const GLOW=['255,150,40','255,196,70','110,175,255','255,70,70','80,230,120','170,90,255'];
@@ -45,9 +48,10 @@
   const job=typeof SQDO!=='undefined'?SQDO:null;if(!job&&performance.now()-PEND.at>250)settle(false)}
  function settle(force){if(!PEND)return;const p=PEND;PEND=null;if((inv.wood|0)>=3){inv.wood-=3;inv[p.k]=n(p.k)+3}}
  // ---- feeding ----
- function feed(i){const t=T[i],f=myFire();if(!t||!f){say('Stand next to your fire to feed it.');return}
+ function feed(i){const t=T[i];let f=myFire();if(!t||!f){say('Stand next to a fire to feed it.');return}
   if(lv()<t.lv){say('Burning '+nm(t.k).toLowerCase()+' needs Firemaking '+t.lv+'.');return}if(n(t.k)<1){say('No '+nm(t.k).toLowerCase()+' left.');return}
   if(f.life>=CAP-5){say('That fire is roaring already.');return}
+  if(f._rp){f=window.SQFIRETAKE(f);if(!f){say('That fire just went out.');return}}
   inv[t.k]-=1;f.life=Math.min(CAP,f.life+t.fs*(1+((typeof fDur==='function'&&fDur())||0)*.5));f.mx=Math.max(f.mx||0,f.life);if(i>(f.lg|0))f.lg=i;
   xtra(t.pl);try{sfx('fire')}catch(e){self.SQERR&&SQERR(e,'220-3')}try{gTxt(f.x,f.y-18,'+'+mmss(t.fs),i?PAL[i].c[2]:'#f88820')}catch(e){self.SQERR&&SQERR(e,'220-4')}try{saveLocal()}catch(e){self.SQERR&&SQERR(e,'220-5')}if(ptab===TAB&&pnOpen)rPn()}
  // ---- F ----
@@ -62,7 +66,7 @@
   else{info=ok?'+'+mmss(t.fs)+' · '+t.pl+' XP':'needs Firemaking '+t.lv;if(ok)btn='<button class="sb" data-fmf="'+i+'" style="min-width:0;padding:8px 10px"'+(have>0?'':' disabled')+'>FEED 1</button>'}
   return '<div class="qc fmrow" style="display:flex;align-items:center;gap:8px;'+(ok&&(mode==='b'?have>=3:have>0)?'':'opacity:.55')+'">'+img+'<div style="flex:1;text-align:left"><b>'+nm(t.k)+'</b> ×'+have+'<br><small>'+info+'</small></div>'+btn+'</div>'}
  function html(){const f=myFire();let h='<div class="tl">CAMPFIRE</div>';
-  if(f){h+='<div class="qc" style="font-size:13px">Your fire has <b>'+mmss(f.life)+'</b> left. Feed it a log (Firemaking '+lv()+').</div>';for(let i=0;i<T.length;i++)if(n(T[i].k)>0||i===0)h+=row(i,'f')}
+  if(f){h+='<div class="qc" style="font-size:13px">'+(f._rp?'This fire':'Your fire')+' has <b>'+mmss(f.life)+'</b> left. Feed it a log (Firemaking '+lv()+').</div>';for(let i=0;i<T.length;i++)if(n(T[i].k)>0||i===0)h+=row(i,'f')}
   h+='<div class="tl" style="font-size:14px;margin-top:8px">BUILD A NEW CAMPFIRE</div>';for(let i=0;i<T.length;i++)if(i===0||n(T[i].k)>0||lv()>=T[i].lv)h+=row(i,'b');
   return h+'<div class="pmb"><button class="sb no" data-fmx="1">CLOSE</button></div>'}
  {SQRPN.wrap('220',_r=>function(){if(ptab!==TAB)return _r.apply(this,arguments);try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'220-7')}pbd.innerHTML=html()})}

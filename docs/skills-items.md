@@ -104,6 +104,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   Extra/feed XP is added with `window.SQFIREXTRA` set, which 120/143/129 check so it doesn't count as another fire lit. `lg` is kept in
   saved fires (061 snap, 006 load) and shared fires (061 FIRE sync, clamped 0-5); the outermost `pF` draws it in `PAL` colours unless a
   `p:campfire` look exists. Skill tree lines via the outermost `treeGains`.
+- **Feeding other players' fires** (Nov 20): 220's `myFire()` also finds shared fires (`_rp`, owner in `_o`); feeding one calls 061's
+  `window.SQFIRETAKE(p)`: the proxy is dropped (and that owner's copy near there ignored for 30 s via `FIRE.taken`), a fire of your own
+  takes its place (life, `lg`) with `tk` = the old owner, shared with `tk` for 20 s; the old owner's 061 removes its own fire near a
+  shared fire whose `tk` is them. So the fire survives its lighter logging out. Check 44.
 - **Fishing 70/80/90** (`skills/221-s229-deep-fishing.js`, `window.SQDEEPFISH`): moonfin (70, night: `dark()>.25`), abyssal eel (80, shattered/
   ironcrest), ancient koi (90, anywhere, 6%) through `window.SQFISHX`, which 093b's catch hook checks before the Dev Suite's `SQGFISH`
   (entries may have `ok()`). Raw `k` + cooked `c<k>`, COOKS/FOODS/icons/tree lines. Not in 200's turtle `RAW` (fixed by the rules).

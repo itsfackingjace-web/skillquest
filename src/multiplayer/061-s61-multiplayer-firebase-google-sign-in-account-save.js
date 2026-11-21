@@ -540,24 +540,37 @@ function mobInbox(){if(MOB.inbox||!MP.user)return;const d=FB.db,ref=d.ref(FB.D,'
  MOB.inbox=d.onChildAdded(ref,s=>{const v=s.val()||{};d.remove(d.ref(FB.D,'hits/'+MP.user.uid+'/'+s.key)).catch(()=>{});const n=en.find(e=>e._mid===v.id&&!e.dead);if(!n||typeof v.d!=='number')return;
   n.hp-=Math.max(0,Math.min(50,v.d));n.kx=(n.kx||0)*.5;if(n.hp<=0){n.dead=1;n.dropped=1}});MP.unsub.push(()=>{if(MOB.inbox)MOB.inbox();MOB.inbox=null})}
 // ---- shared campfires: anyone in the same place sees your fire and can cook or warm up at it ----
-const FIRE={prox:new Map(),loc:null,unsub:null,pubAt:0,pubbed:false};
+const FIRE={prox:new Map(),loc:null,unsub:null,pubAt:0,pubbed:false,taken:[]};
+// Feeding another player's fire takes it over (220 calls window.SQFIRETAKE): the feeder now owns and shares it with `tk` = the old
+// owner's uid for 20 s, the old owner's game drops its own copy when it sees that, and the feeder ignores the old owner's copy
+// meanwhile (FIRE.taken). So the fire no longer goes out when the player who lit it leaves.
+const near=(a,b)=>Math.abs(a.x-b.x)<10&&Math.abs(a.y-b.y)<10;
 function fireTick(){if(!MP.on||!FB||!MP.user)return;const l=mpLoc(),key=l?locKey(l):null,d=FB.db;
  for(const f of fires)if(!f._rp&&f._loc===undefined)f._loc=l;
  if(key!==FIRE.loc){if(FIRE.unsub){FIRE.unsub();FIRE.unsub=null}if(FIRE.pubbed&&FIRE.loc)d.remove(d.ref(FB.D,'fires/'+FIRE.loc+'/'+MP.user.uid)).catch(()=>{});FIRE.pubbed=false;
   for(const p of FIRE.prox.values()){const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}FIRE.prox.clear();FIRE.loc=key;
   if(key)FIRE.unsub=d.onValue(d.ref(FB.D,'fires/'+key),s=>{if(FIRE.loc!==key)return;const all=s.val()||{},seen=new Set(),cut=mpNow()-8000;
+   const tnow=performance.now();FIRE.taken=FIRE.taken.filter(q=>tnow-q.at<30000);
    for(const o in all){if(o===MP.user.uid)continue;const rec=all[o];if(!rec||!(rec.t>cut)||!rec.f||typeof rec.f!=='object')continue;
-    (Array.isArray(rec.f)?rec.f:Object.values(rec.f)).forEach((v,i)=>{if(!v||typeof v.x!=='number')return;const id=o+'_'+i;seen.add(id);let p=FIRE.prox.get(id);if(!p){p={x:v.x,y:v.y,life:v.life,_rp:1};FIRE.prox.set(id,p);fires.push(p)}else{p.x=v.x;p.y=v.y;p.life=v.life}p.lg=Math.max(0,Math.min(5,v.lg|0))})}
+    (Array.isArray(rec.f)?rec.f:Object.values(rec.f)).forEach((v,i)=>{if(!v||typeof v.x!=='number')return;
+     // someone fed my fire and took it over: my copy goes quietly
+     if(v.tk===MP.user.uid)for(let j=fires.length-1;j>=0;j--){const f=fires[j];if(f&&!f._rp&&!f._glow&&near(f,v)){fires.splice(j,1);break}}
+     if(FIRE.taken.some(q=>q.o===o&&near(q,v)))return;// the copy of a fire I just took over
+     const id=o+'_'+i;seen.add(id);let p=FIRE.prox.get(id);if(!p){p={x:v.x,y:v.y,life:v.life,_rp:1};FIRE.prox.set(id,p);fires.push(p)}else{p.x=v.x;p.y=v.y;p.life=v.life}p._o=o;p.lg=Math.max(0,Math.min(5,v.lg|0))})}
    for(const[id,p]of FIRE.prox)if(!seen.has(id)){FIRE.prox.delete(id);const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}})}
  if(!key)return;for(const p of FIRE.prox.values())if(p.life>0&&fires.indexOf(p)<0)fires.push(p);
  const now=performance.now();if(now-FIRE.pubAt<2000)return;FIRE.pubAt=now;const ref=d.ref(FB.D,'fires/'+key+'/'+MP.user.uid);
- const mine=fires.filter(f=>!f._rp&&f._loc===l&&f.life>0).slice(0,8).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});
+ const mine=fires.filter(f=>!f._rp&&f._loc===l&&f.life>0).slice(0,8).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;if(f.tk&&now-(f.tkAt||0)<20000)o.tk=String(f.tk).slice(0,40);return o});
  if(!othersHere()||!mine.length){if(FIRE.pubbed){d.remove(ref).catch(()=>{});FIRE.pubbed=false}return}
  d.set(ref,{t:d.serverTimestamp(),f:mine}).catch(()=>{});if(!FIRE.pubbed)d.onDisconnect(ref).remove().catch(()=>{});FIRE.pubbed=true}
 {SQSAVE.after('061:fires',s=>{s.fires=fires.filter(f=>!f._rp).map(f=>{const o={x:Math.round(f.x),y:Math.round(f.y),life:Math.round(f.life)};if(f.lg>0)o.lg=f.lg|0;return o});})}
 // the frame: shared clock first, then the game, then sharing
 {SQUPD.wrap('061',_u64=>function(dt){if(MP.on)time=globalTime();mobPre();_u64(dt);if(MP.on){time=globalTime();try{mobInbox();mobPost(dt);resTick();fireTick();housesTick();buildTick()}catch(e){console.warn(e)}}})}
 // signing out: drop other players' monsters and stop sharing
+window.SQFIRETAKE=p=>{if(!p||!p._rp||!(p.life>0)||!MP.user)return null;
+ FIRE.taken.push({o:p._o,x:p.x,y:p.y,at:performance.now()});for(const[id,q]of FIRE.prox)if(q===p)FIRE.prox.delete(id);
+ const j=fires.indexOf(p);if(j>=0)fires.splice(j,1);
+ const f={x:p.x,y:p.y,life:p.life,mx:p.life,_loc:mpLoc(),tk:p._o,tkAt:performance.now()};if(p.lg>0)f.lg=p.lg|0;fires.push(f);FIRE.pubAt=0;return f};
 function mobStop(){for(const p of FIRE.prox.values()){const j=fires.indexOf(p);if(j>=0)fires.splice(j,1)}FIRE.prox.clear();if(FIRE.unsub){FIRE.unsub();FIRE.unsub=null}FIRE.loc=null;FIRE.pubbed=false;for(const p of[...MOB.prox.values(),...MOB.limbo]){const j=en.indexOf(p);if(j>=0)en.splice(j,1)}MOB.prox.clear();MOB.limbo.length=0;if(MOB.unsub){MOB.unsub();MOB.unsub=null}MOB.loc=null;MOB.pubbed=false;
  if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.rloc=null;RES.h={};RES.r={}}
 // ---- Friends list and private messages ----
