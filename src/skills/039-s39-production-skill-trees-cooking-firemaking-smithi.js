@@ -148,7 +148,7 @@ SQFIRE.wrap('039',_fire39=>function(){const n0=fires.length,kin=P39(5,'fi_kindle
  let wb=0,sb=0;
  if(P39(5,'fi_sov')&&++FSOV39>=5){FSOV39=0;wb=wUsed;gTxt(P.x,P.y-46,'Flame sovereign: no wood used!',SKC[5])}
  else{if(Math.random()<fFuel())wb++;if(P39(5,'fi_eff')){for(let u=wb;u<wUsed;u++)if(Math.random()<.15)wb++;for(let u=0;u<sUsed;u++)if(Math.random()<.15)sb++}}
- wb=Math.min(wb,wUsed);sb=Math.min(sb,sUsed);if(wb){inv.wood=(inv.wood|0)+wb;gTxt(P.x,P.y-30,'+'+wb+' wood saved',SKC[5])}if(sb){inv.stone=(inv.stone|0)+sb;gTxt(P.x,P.y-36,'+'+sb+' stone saved',SKC[5])}
+ wb=Math.min(wb,wUsed);sb=Math.min(sb,sUsed);if(wb){inv.wood=(inv.wood|0)+wb;gTxt(P.x,P.y-30,'+'+wb+' '+(window.SQFIRELOGN||'wood')+' saved',SKC[5])}if(sb){inv.stone=(inv.stone|0)+sb;gTxt(P.x,P.y-36,'+'+sb+' stone saved',SKC[5])}
  saveLocal(true)});
 // warmth ring (50), the "monsters keep away" ring (70) and the glow scale with the light perks; cached once per frame
 let NF50=50,NF70=70;

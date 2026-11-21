@@ -42,9 +42,11 @@ const _sh36=spellHit;spellHit=function(s,n,dmg){if(s.crit){dmg*=2;DMGS.push({x:n
  if(perk(ML,'chain')){s.arcs=(s.arcs||0)+1;const cap=s.el==='storm'?3:1;if(s.arcs<=cap){const hit=s.hitL||(s.hitL=[n]);const o=near(60,hit).sort((a,b)=>Math.hypot(a.x-n.x,a.y-n.y)-Math.hypot(b.x-n.x,b.y-n.y))[0];
    if(o){hit.push(o);const l=Math.hypot(o.x-n.x,o.y-n.y)||1;for(let k=0;k<l;k+=3)part(n.x+(o.x-n.x)*k/l,n.y-6+(o.y-n.y)*k/l,0,0,.18,k%2?'#fff':WSP[s.el].col,0);spellHit({...s,arcs:s.arcs,hitL:hit},o,Math.max(1,Math.ceil(dmg/2)))}}}
  if(s.pierce&&!s.pierced){const l=Math.hypot(s.vx,s.vy)||1;SPELLS.push({...s,x:n.x+s.vx/l*16,y:n.y-4+s.vy/l*16,pierced:1,dead:0,t:s.t})}};
+// the Magic level and Ult Focus cut to an ultimate's cooldown; 216's Meteor Fall uses it too (Nov 21, Kevin: it stayed at 20 s)
+window.SQULTCUT=()=>{const l=lvOf(ML);return(l>=25?2:0)+(l>=55?2:0)+(perk(ML,'ultfocus')?8:0)};
 const _ul36=castUlt;castUlt=function(){const cd0=ULTCD,cheap=perk(ML,'cheapult');let lent=0;if(cheap&&MANA>=5&&MANA<ULT_COST){lent=ULT_COST-MANA;MANA+=lent}
  ULTBOOST=true;try{_ul36()}finally{ULTBOOST=false}const fired=ULTCD>cd0&&ULTCD>=19;
- if(fired){const l=lvOf(ML);ULTCD-=(l>=25?2:0)+(l>=55?2:0)+(perk(ML,'ultfocus')?8:0);if(cheap)MANA=Math.min(maxMP(),MANA+5-lent)}else if(lent)MANA-=lent};
+ if(fired){ULTCD-=window.SQULTCUT();if(cheap)MANA=Math.min(maxMP(),MANA+5-lent)}else if(lent)MANA-=lent};
 // regen bonus, mana shield and the phoenix ward
 SQUPD.wrap('036',_u36=>function(dt){const hp0=P.hp,was=dead,t0=time,m0=MANA;_u36(dt);if(menuOpen||pnOpen)return;
  if(!dead&&MANA<maxMP()){const ex=.01*(lvOf(ML)-1)+(perk(ML,'recovery')?.5:0);MANA=Math.min(maxMP(),MANA+dt*.5*(1+.4*nCls('m'))*ex)}

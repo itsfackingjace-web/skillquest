@@ -21,7 +21,10 @@
   {c:['#6a0a18','#a81428','#e03038','#ff8070','#ffe8e0'],s:1.2},{c:['#1f7a3a','#2fa850','#58d070','#c8f8a0','#f0fff0'],s:1.25},
   {c:['#4a1880','#7a38c8','#a868f0','#e8c8ff','#ffffff'],s:1.3}];
  const nm=k=>k==='wood'?'Wood':(INAME[k]||k),lv=()=>lvOf(FM),n=k=>inv[k]|0;
- const xtra=(x)=>{if(!(x>0))return;window.SQFIREXTRA=1;try{addXp(FM,Math.round(x))}finally{window.SQFIREXTRA=0}};
+ // Nov 21 (Kevin: "oak fire giving two amounts"): the extra XP joins the fire's own "+N" number instead of showing a second one
+ const xtra=(x)=>{if(!(x>0))return;x=Math.round(x);const tag=' '+AB[FM],base=[...drops].reverse().find(d=>d&&typeof d.tx==='string'&&d.tx.endsWith(tag)&&d.t<1.5&&/^\+\d+ /.test(d.tx));const n0=drops.length;
+  window.SQFIREXTRA=1;try{addXp(FM,x)}finally{window.SQFIREXTRA=0}
+  try{if(base&&drops.length===n0+1){drops.pop();base.tx='+'+((parseInt(base.tx.slice(1),10)||0)+x)+tag}}catch(e){self.SQERR&&SQERR(e,'220-20')}};
  const mmss=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
  const baseLife=()=>{let L=150+lv()*3;try{if(typeof fDur==='function')L*=1+fDur()}catch(e){self.SQERR&&SQERR(e,'220-1')}return L};
  // the fire next to you: yours, or (since Nov 20) another player's, which feeding takes over (061's SQFIRETAKE)
@@ -40,10 +43,12 @@
  function build(i){const t=T[i];if(!t)return;if(i===0){window.SQFIREDIRECT=1;try{fire()}finally{window.SQFIREDIRECT=0}return}
   if(!canBuild(t)){say(lv()<t.lv?'Burning '+nm(t.k).toLowerCase()+' needs Firemaking '+t.lv+'.':'Need 3 '+nm(t.k).toLowerCase()+' + 1 stone.');return}
   if(PEND)settle(true);
-  inv[t.k]-=3;inv.wood=n('wood')+3;PEND={i,k:t.k,before:new Set(fires),at:performance.now()};
+  const w0=n('wood');inv[t.k]-=3;inv.wood=w0+3;PEND={i,k:t.k,w0,before:new Set(fires),at:performance.now()};window.SQFIRELOGN=nm(t.k).toLowerCase();
   window.SQFIREDIRECT=1;try{fire()}finally{window.SQFIREDIRECT=0}check()}
- function check(){if(!PEND)return;const f=fires.find(q=>q&&!q._rp&&!q._glow&&!PEND.before.has(q)&&q.life>0);
+ function check(){if(!PEND){window.SQFIRELOGN=null;return}const f=fires.find(q=>q&&!q._rp&&!q._glow&&!PEND.before.has(q)&&q.life>0);
   if(f){const t=T[PEND.i];f.lg=PEND.i;f.life=Math.min(CAP,f.life*t.m);f.mx=Math.max(f.mx||0,f.life);xtra(t.pl*3-40);
+   // Nov 21 (Kevin): fuel the perks saved came back as plain wood (the lent wood); it's the log you burned that you keep
+   {const back=Math.min(3,Math.max(0,n('wood')-PEND.w0));if(back){inv.wood-=back;inv[t.k]=n(t.k)+back;}}
    try{gTxt(f.x,f.y-20,nm(t.k)+' fire',PAL[PEND.i].c[2])}catch(e){self.SQERR&&SQERR(e,'220-2')}PEND=null;return}
   const job=typeof SQDO!=='undefined'?SQDO:null;if(!job&&performance.now()-PEND.at>250)settle(false)}
  function settle(force){if(!PEND)return;const p=PEND;PEND=null;if((inv.wood|0)>=3){inv.wood-=3;inv[p.k]=n(p.k)+3}}
@@ -55,7 +60,17 @@
   inv[t.k]-=1;f.life=Math.min(CAP,f.life+t.fs*(1+((typeof fDur==='function'&&fDur())||0)*.5));f.mx=Math.max(f.mx||0,f.life);if(i>(f.lg|0))f.lg=i;
   xtra(t.pl);try{sfx('fire')}catch(e){self.SQERR&&SQERR(e,'220-3')}try{gTxt(f.x,f.y-18,'+'+mmss(t.fs),i?PAL[i].c[2]:'#f88820')}catch(e){self.SQERR&&SQERR(e,'220-4')}try{saveLocal()}catch(e){self.SQERR&&SQERR(e,'220-5')}if(ptab===TAB&&pnOpen)rPn()}
  // ---- F ----
+ // ---- ☆ BURN FIRST (Nov 21, Kevin's #ideas post, approved): a log pinned in the bag is what FIRE uses, like 181's EAT FIRST ----
+ // away from a fire it builds one with 3 of that log (if you can), next to your fire it feeds it one; saved as `firep`
+ let PIN='';const pinI=()=>T.findIndex(t=>t.k===PIN);
+ {const _b=bagGridHTML;bagGridHTML=function(){let h=_b.apply(this,arguments);try{const k=invSel;if(k&&(inv[k]|0)>0&&T.some(t=>t.k===k)){const on=PIN===k;
+    h=h.replace('<div class="bd">','<div class="bd"><button class="use" data-firepin="'+k+'" title="FIRE uses this log first"'+(on?' style="background:#f8d048;color:#181018"':'')+'>'+(on?'★ BURNS FIRST':'☆ BURN FIRST')+'</button>')}}catch(e){self.SQERR&&SQERR(e,'220-22')}return h}}
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-firepin]');if(!b)return;e.stopPropagation();e.preventDefault();const k=b.dataset.firepin;PIN=PIN===k?'':k;
+  say(PIN?'FIRE will use '+nm(k).toLowerCase()+' first.':'FIRE lets you pick the log again.');try{sfx('talk');saveLocal()}catch(x){self.SQERR&&SQERR(x,'220-23')}try{rPn()}catch(x){self.SQERR&&SQERR(x,'220-24')}},true);
+ SQSAVE.after('220:firep',s=>{s.firep=PIN});
+ SQLOAD.after('220 burn first',(S)=>{PIN=S&&typeof S.firep==='string'&&T.some(t=>t.k===S.firep)?S.firep:''});
  SQFIRE.wrap('220',_f=>function(){if(window.SQFIREDIRECT||dead||menuOpen||pnOpen)return _f.apply(this,arguments);
+  {const i=pinI();if(i>=0&&lv()>=T[i].lv){const near=myFire();if(near&&n(T[i].k)>0&&near.life<CAP-5){feed(i);return}if(!near&&canBuild(T[i])){build(i);return}}}
   const near=myFire(),tier=T.slice(1).some(t=>n(t.k)>=3&&lv()>=t.lv);
   if(!near&&!tier)return _f.apply(this,arguments);
   if(near&&!tier&&!T.some(t=>n(t.k)>0&&lv()>=t.lv))return _f.apply(this,arguments);

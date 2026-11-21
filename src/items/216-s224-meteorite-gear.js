@@ -72,7 +72,7 @@
    if(dead||menuOpen||pnOpen||BUILD)return;if(SCENE&&!SCENE.room.cave){say('Not indoors!');return}
    if(ULTCD>0){say('Your ultimate is recharging ('+Math.ceil(ULTCD)+'s).');try{sfx('nomana')}catch(e){self.SQERR&&SQERR(e,'216-10')}return}
    if(MANA<ULT_COST){say('You need '+ULT_COST+' mana for an ultimate.');try{sfx('nomana')}catch(e){self.SQERR&&SQERR(e,'216-11')}return}
-   MANA-=ULT_COST;ULTCD=20;let d=[face[0],face[1]];try{d=castDir()}catch(e){self.SQERR&&SQERR(e,'216-12')}
+   MANA-=ULT_COST;ULTCD=20;try{if(window.SQULTCUT)ULTCD-=SQULTCUT()}catch(e){self.SQERR&&SQERR(e,'216-30')}let d=[face[0],face[1]];try{d=castDir()}catch(e){self.SQERR&&SQERR(e,'216-12')}
    let tx=P.x+d[0]*70,ty=P.y-4+d[1]*70,best=null,bd=1e9;for(const n of en){if(n.dead||n.hp<=0||n._rp)continue;const r=Math.hypot(n.x-P.x,n.y-P.y);if(r>150)continue;const k=Math.hypot(n.x-tx,n.y-ty);if(k<bd){bd=k;best=n}}
    if(best){tx=best.x;ty=best.y}dropAt(tx,ty,true);say('METEOR FALL!');try{sfx('cfire')}catch(e){self.SQERR&&SQERR(e,'216-13')}
    try{if(window.SQPVSEND)SQPVSEND({k:'mf',x:Math.round(tx),y:Math.round(ty)})}catch(e){self.SQERR&&SQERR(e,'216-14')}try{saveLocal()}catch(e){self.SQERR&&SQERR(e,'216-15')}}}
