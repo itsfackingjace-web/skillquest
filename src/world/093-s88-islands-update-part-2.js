@@ -126,8 +126,10 @@ function crystalFor(t,v){const base=rgSprite('crystal',v);if(!CTINT[t]||!base)re
 const NPET={pwolf:{n:'Wolf',src:'wolves on Hollow Island',v:{}},pbriar:{n:'Briar wolf',src:'briar wolves on Briarwood Isle',v:{rv:'briar'}},psnow:{n:'Snow wolf',src:'snow wolves',v:{vr:'snow'}},
  pvoid:{n:'Void wolf',src:'void wolves on the Shattered Expanse',v:{rv:'void'}},ptree:{n:'Treeling',src:'chopping trees (1 in 5,000)'}};
 if(window.LUX&&LUX.PETS)for(const k in NPET)if(!LUX.PETS.some(p=>p.k===k))LUX.PETS.push({k,n:NPET[k].n,v:0,rare:1,c:['#888','#666','#aaa']});
-function givePet(k){const C=LUX.COS;const had=C.pets.includes(k);if(!had)C.pets.push(k);C.pet=k;try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'093-4')}
- setTimeout(()=>{say(had?'Another '+NPET[k].n.toLowerCase()+' wants to follow you... you already have one.':'A PET '+NPET[k].n.toUpperCase()+'! It follows you now. (START → Style to change pets)');msgT=6;try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'093-5')}},300)}
+// Nov 21 (Jace): a pet you already have used to be turned away ("you already have one"); now the extra one goes into your bag, to keep,
+// sell, trade or release (104 made every pet an item)
+function givePet(k){const C=LUX.COS;const had=(inv['pet_'+k]|0)>0||C.pet===k;if(had&&EQ['pet_'+k])inv['pet_'+k]=(inv['pet_'+k]|0)+1;else{if(!C.pets.includes(k))C.pets.push(k);C.pet=k}try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'093-4')}
+ setTimeout(()=>{say(had?'Another '+NPET[k].n.toLowerCase()+' wants to follow you! It waits in your bag.':'A PET '+NPET[k].n.toUpperCase()+'! It follows you now. (START → Style to change pets)');msgT=6;try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'093-5')}},300)}
 window.SQGIVEPET=givePet;
 const wolfPetOf=n=>{if(!n||n.type!=='wolf'||n._pet)return null;if(n.vr==='snow'||n.rv==='snow')return'psnow';if(n.rv==='briar')return'pbriar';if(n.rv==='void')return'pvoid';if(n.rv||n.vr)return null;return'pwolf'};
 function rollWolf(n){if(!n||n._petRoll)return;n._petRoll=1;const k=wolfPetOf(n);if(k&&(Math.random()<1/1000||window.SQPETDROP))givePet(k)}

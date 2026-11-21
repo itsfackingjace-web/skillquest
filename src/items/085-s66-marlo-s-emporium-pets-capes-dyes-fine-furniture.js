@@ -105,7 +105,7 @@ var LUX={};
  const IMPR=new Map();
  function impDrawPeer(r,tm){const m=r.im;if(!Array.isArray(m)||m.length<3)return;let s=IMPR.get(r.uid);if(!s){s={x:+m[0],y:+m[1]};IMPR.set(r.uid,s)}s.x+=((+m[0])-s.x)*.25;s.y+=((+m[1])-s.y)*.25;
   impDraw(s.x,s.y,'nswe'[m[2]|0]||'s',Math.floor(tm/.2)%4,!!m[3])}
- LUX.giveImp=()=>{if(!COS.pets.includes('imp'))COS.pets.push('imp');COS.pet='imp';IMP.seen=false;IMP.dead=0;IMP.hp=IMP.max;saveLocal(true)};
+ LUX.giveImp=()=>{if((inv.pet_imp|0)>0||COS.pet==='imp'){if(typeof EQ!=='undefined'&&EQ.pet_imp){inv.pet_imp=(inv.pet_imp|0)+1;saveLocal(true);return}}/* Nov 21: an imp you already have goes into your bag */if(!COS.pets.includes('imp'))COS.pets.push('imp');COS.pet='imp';IMP.seen=false;IMP.dead=0;IMP.hp=IMP.max;saveLocal(true)};
 
  // ---- fine furniture art ----
  const _dpc=drawPiece;drawPiece=function(t,x,y,f,ghost,tm){const x0=x*16,y0=y*16,R2=(a,b,w,h,c)=>Rg(x0+a,y0+b,w,h,c);if(!FURN2.some(q=>q.k===t))return _dpc(t,x,y,f,ghost,tm);

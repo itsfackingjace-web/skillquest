@@ -59,7 +59,7 @@ function wbLoot(b){const me=MP.user&&MP.user.uid,mine=WB.dmg;mpLog('game','The '
   if(r()<(top?.08:.05)||window.SQCASTLEDROP){add('castle',1);setTimeout(()=>{say('A CASTLE! Place it from your Bag like a house: monsters keep away from its torches.');try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'071-3')}},400)}}
  else if(b.type==='demon'){add('abar',2+Math.floor(r()*2));add(['ruby','sapphire','emerald'][Math.floor(r()*3)],1+Math.floor(r()*2));if(r()<.12)add('elixir',1);
   // the rare one: an Imp pet (5% for everyone who fought, 8% for the top three)
-  if((r()<(top?.08:.05)||window.SQIMPDROP)&&window.LUX&&LUX.giveImp){const had=LUX.COS&&LUX.COS.pets.includes('imp');LUX.giveImp();setTimeout(()=>{say(had?'Another imp bows to you... you already have one.':'AN IMP PET! It follows you and stabs whatever hurts you.');try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'071-4')}},400)}}
+  if((r()<(top?.08:.05)||window.SQIMPDROP)&&window.LUX&&LUX.giveImp){const had=(inv.pet_imp|0)>0||(LUX.COS&&LUX.COS.pet==='imp');LUX.giveImp();setTimeout(()=>{say(had?'Another imp bows to you! It waits in your bag.':'AN IMP PET! It follows you and stabs whatever hurts you.');try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'071-4')}},400)}}
  else{add('abar',3+Math.floor(r()*3));add('diamond',1+(r()<.4?1:0));add('yewlog',4);if(r()<.2)add('elixir',1);
   // the rare one: 5% for everyone who fought, 8% for the top three
   if(r()<(top?.08:.05)||window.SQDSOULDROP){add('ja_dsoul',1);setTimeout(()=>{say('A DRAGONSOUL AMULET! The dragon\'s spirit is yours.');try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'071-5')}},400)}}
