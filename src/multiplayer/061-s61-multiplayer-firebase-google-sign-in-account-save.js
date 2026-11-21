@@ -216,6 +216,10 @@ function sqLost(){SQSTRICT.lost=true;cloud=null;try{if(BUILD)endBuild()}catch(e)
  lostBox.style.display='flex';try{mpLog('game','Your account was opened somewhere else, so this game stopped.')}catch(e){self.SQERR&&SQERR(e,'061-20')}}
 async function sqTakeBack(){const b=lostBox.querySelector('button'),u=MP.user;if(!u||!MP.adapter){b.textContent='SIGN IN AGAIN';tsReopen();lostBox.style.display='none';return}
  b.disabled=true;b.textContent='LOADING...';
+ // Nov 21 (Jace's and Kevin's Drop Cards): a tab left open for a day ran old code; taking over loaded the account save into it, and
+ // that code dropped every item it didn't know and saved over the account. Taking over now reloads the page, so the newest game
+ // loads your save (database.rules.json also refuses saves from games older than the Void tree card).
+ if(location.protocol!=='file:'&&!window.__SQNORELOAD){try{const q=new URL(location.href);q.searchParams.set('r',Date.now().toString(36));location.replace(q.href);return}catch(e){self.SQERR&&SQERR(e,'061-46')}}
  try{await sqClaim(u.uid);const r=await MP.adapter.get();const S=r.exists?r.data():null;if(S&&S.v==1){applySave(S);hideCreator()}cloud=MP.adapter;SQSTRICT.lost=false;lostBox.style.display='none';
   saveLocal(true);say('Playing here. Your latest progress is loaded.');msgT=4}catch(e){mpErr(e);SQSTRICT.lost=true;say('Couldn\'t take over. Check your connection.')}
  b.disabled=false;b.textContent='PLAY HERE INSTEAD'}
