@@ -80,3 +80,4 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - 021's dodge roll moves in steps of 3 px and goes back to where it started if it ends inside something solid. Check 62 (passes before too: Kevin's exact spot wasn't found).
 - 177: Cook all for stove meals (`sva_<i>`, 109's sqDo). Check 63. 145: with the hoe out, HIT twice on yard soil fills it in (like 019 on Hollow).
 - 227's hit log lists monsters that hit you and died in the same moment (`dead:1`).
+- 262: while the Drop Card table is open (Ace or a player) HP can't go down (a P.hp getter like 134's chess boards; 130's card-match guard comes first when it's on) and hunger is held at its value when the table opened. The death log showed 6 of 25 deaths "Starving!" (Jace's mid-match) and Stormie's "Ouch!" falls to a drawn slime at night: the table hides the world. Check 64. (Night eyes preview dropped.)

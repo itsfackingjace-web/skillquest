@@ -282,4 +282,13 @@
   M={s,lv:'normal',pvp:o.pvp,sel:null,aim:null,zoom:null,att:null,say:'',msg:s.cur===0?'You go first. Plant a tree, chop it for Mana, play your cards!':o.pvp.name+' goes first. You get the Sapling.',busy:false,done:false,leaveArm:false};
   try{closePanel()}catch(e){self.SQERR&&SQERR(e,'262-27')}el.style.display='flex';render();banner();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'262-28')}return M}
  function endPvp(t){if(!M||!M.pvp)return;if(!M.s.over){M.s.over=true;M.done=true;M.zoom=null;M.aim=null}if(t)M.msg=t;render()}
+ // Nov 21: the table covers the whole screen but the game kept running behind it, so players starved (6 of the first 25 deaths in the
+ // death log were "Starving!", one of them mid-match) or were hit by monsters they couldn't see. While the table is open your HP can't
+ // go down and hunger stays where it was, like 134's chess boards.
+ {let held=false,hv=0,h0=null;const open=()=>el.style.display!=='none'&&!!M;
+  SQUPD.before('262 safe at the table',()=>{const w=open();
+   if(w&&!held){const d=Object.getOwnPropertyDescriptor(P,'hp');if(!d||!d.get){hv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hv},set(v){if(v>hv)hv=v}});held=true}}
+   else if(!w&&held){const d=Object.getOwnPropertyDescriptor(P,'hp');if(d&&d.get){const v=hv;delete P.hp;P.hp=v}held=false}
+   if(w){if(h0===null&&typeof hunger==='number')h0=hunger}else h0=null});
+  SQUPD.after('262 fed at the table',()=>{if(h0!==null&&open()&&typeof hunger==='number'&&hunger<h0)hunger=h0})}
  window.SQDCM={start,close,aceMove,get m(){return M},LV,el,render,act,startPvp,foeMove,endPvp,deckOf}})();
