@@ -4,6 +4,14 @@ Controllers, custom controls, touch layout, camera, HUD layout on phones, the up
 
 Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follows). File numbers like 061 are the source files in `src/` (see `src/manifest.txt`).
 
+- **Cursors** (`ui/251-s259-cursors.js`, `window.SQCURSOR`): Options > CURSOR (free choices, localStorage `sq_cur`/`sq_curL`): 16x16 pixel
+  grids `G` drawn at 2x (Normal) or 3x (Large) as CSS `cursor:url()` on everything (text inputs keep the text cursor). `inv`: the pointer is
+  hidden and a white crosshair `<img>` with `mix-blend-mode:difference` follows pointermove. `off`: the off-hand item's `iconURL` turned 90°
+  counter-clockwise, hot spot = the opaque pixel nearest the top-left (`OFF`, rebuilt when `occ('off')` changes, checked every 0.5 s).
+  Controller: `navigator.getGamepads` is wrapped (like 023's PS4 fix): in screens (`pnOpen`/`menuOpen`/`smOpen`/chat) the right stick is
+  taken out for the game and moves `VC` (`#sqvcur`, the same picture); while it shows, ✕ is taken out too and clicks under it
+  (synthetic pointer/mouse/click events); D-pad or left stick hides it; at a scrolling screen's top/bottom edge it scrolls. Out in the world
+  the right stick still aims. `window.__SQPADTEST` feeds fake pads in checks. Check 45.
 - **Last input wins** (`ui/250-s258-mouse-hides-controller-ring.js`): a trusted pointerdown (mouse/touch) calls `gpActivate(false)` while `GPON`,
   hiding 172's ring and the pad button words; 081 turns controller mode back on at the next pad input, and the repeated
   "Controller connected!" message is dropped once. 023's A-button clicks are synthetic (not trusted), so they don't count. Check 43.
