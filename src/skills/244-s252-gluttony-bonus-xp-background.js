@@ -34,8 +34,15 @@
  let lastTick=performance.now(),W=null,TICKS=0;
  try{const src='let t=null;onmessage=e=>{if(e.data==="on"&&!t)t=setInterval(()=>postMessage(1),200);else if(e.data==="off"&&t){clearInterval(t);t=null}}';
   W=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})))}catch(e){W=null}
+ // Nov 21 (Jace: players "see a full hunger bar but the game sees them as starving"): while the tab was hidden the game kept running,
+ // so hunger drained and monsters attacked with nothing on screen, and players came back starved or fallen. While hidden you're
+ // safe now: your HP can't go down (a P.hp getter, like 134's chess boards) and hunger stays where it was; skilling still goes on.
+ let held=false,hv=0,HUN=null;
+ SQUPD.after('244 fed while hidden',()=>{if(HUN!==null&&document.hidden&&typeof hunger==='number'&&hunger<HUN)hunger=HUN});
+ const hold=on=>{try{if(on&&!held){const d=Object.getOwnPropertyDescriptor(P,'hp');if(d&&d.get)return;hv=P.hp;Object.defineProperty(P,'hp',{configurable:true,enumerable:true,get(){return hv},set(v){if(v>hv)hv=v}});held=true}
+   else if(!on&&held){const d=Object.getOwnPropertyDescriptor(P,'hp');if(d&&d.get){const v=hv;delete P.hp;P.hp=v}held=false}}catch(e){self.SQERR&&SQERR(e,'244-11')}};
  if(W){W.onmessage=()=>{if(!document.hidden)return;TICKS++;const now=performance.now();let left=Math.min(1,(now-lastTick)/1000);lastTick=now;
-    try{while(left>0){const d=Math.min(.05,left);left-=d;upd(d)}}catch(e){self.SQERR&&SQERR(e,'244-9')}};
-  const sync=()=>{lastTick=performance.now();try{W.postMessage(document.hidden?'on':'off')}catch(e){self.SQERR&&SQERR(e,'244-10')}};
+    hold(true);try{while(left>0){const d=Math.min(.05,left);left-=d;upd(d)}}catch(e){self.SQERR&&SQERR(e,'244-9')}};
+  const sync=()=>{lastTick=performance.now();if(document.hidden){hold(true);if(HUN===null&&typeof hunger==='number')HUN=hunger}else{hold(false);HUN=null}try{W.postMessage(document.hidden?'on':'off')}catch(e){self.SQERR&&SQERR(e,'244-10')}};
   document.addEventListener('visibilitychange',sync);sync()}
- window.SQIDEAS252={get glut(){return glut},has,LAST,worker:!!W,get ticks(){return TICKS}}})();
+ window.SQIDEAS252={get held(){return held},hold,get glut(){return glut},has,LAST,worker:!!W,get ticks(){return TICKS}}})();
