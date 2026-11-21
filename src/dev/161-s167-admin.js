@@ -62,7 +62,7 @@
  window.SQADMIN={claim,applyFix,LOG,get news(){return NEWS},get event(){return EV},evOn,lvFromXp};
  // ======================= the Dev Suite tab =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,toast,fail}=API;
- const T={view:'bugs',bugs:null,bf:'open',shot:null,lb:null,q:'',pl:null,plS:null,eco:null,busy:false};
+ const T={view:'bugs',deaths:null,df:'',bugs:null,bf:'open',shot:null,lb:null,q:'',pl:null,plS:null,eco:null,busy:false};
  const D=()=>FBx().db,ref=p=>D().ref(FBx().D,p),get=async p=>(await D().get(ref(p))).val();
  const ago=t=>{if(!t)return'';const s=(Date.now()-t)/1000;return s<3600?Math.round(s/60)+' min ago':s<86400*2?Math.round(s/3600)+' h ago':Math.round(s/86400)+' days ago'};
  async function loadBugs(){T.busy=true;API.draw();try{T.bugs=await get('bugs')||{}}catch(e){fail(e);T.bugs={}}T.busy=false;API.draw()}
@@ -80,6 +80,19 @@
    '<button class="dv-b" data-adm="rep:'+id+'">'+(T.repOpen===id?'Cancel reply':'Reply…')+'</button>'+(i.where&&isFinite(i.x)?'<button class="dv-b" data-adm="go:'+id+'">Go there</button>':'')+(b.u?'<button class="dv-b" data-adm="pl:'+esc2(b.u)+'">Player</button>':'')+'</div>'+
    (T.repOpen===id?'<div style="margin-top:8px"><textarea data-rpt="1" maxlength="500" rows="2" style="width:100%">'+esc2(b.re||'Thanks! This is fixed in the latest update.')+'</textarea><button class="dv-b dv-pri" data-adm="repsend:'+id+'">Send reply</button> <small class="dv-mut">They get it in the game.</small></div>':'')+(T.shot===id&&b.shot?'<img alt="Screenshot" src="'+esc2(b.shot)+'" style="max-width:100%;margin-top:8px;border:1px solid #333">':'')+'</div>'}
   if(!shown.length)h+='<p class="dv-mut">Nothing here.</p>';return h}
+ // ---- deaths (252): who fell, where, and to what ----
+ {const st=document.createElement('style');st.textContent='.dv-dtab{width:100%;font-size:12px;border-collapse:collapse}.dv-dtab th{text-align:left;opacity:.7}.dv-dtab td,.dv-dtab th{padding:3px 6px;border-bottom:1px solid rgba(128,128,128,.25);vertical-align:top}';document.head.appendChild(st)}
+ async function loadDeaths(){T.busy=true;API.draw();try{const d=D();T.deaths=(await d.get(d.query(ref('deaths'),d.orderByKey(),d.limitToLast(400)))).val()||{}}catch(e){fail(e);T.deaths={}}T.busy=false;API.draw()}
+ function deathsView(){if(!T.deaths){if(!T.busy)loadDeaths();return'<p class="dv-mut">Loading deaths…</p>'}
+  const L=Object.entries(T.deaths).filter(([,x])=>x&&x.t).sort((a,b)=>b[1].t-a[1].t),key=x=>(x.m?x.m+' · ':'')+x.by;
+  const day=L.filter(([,x])=>Date.now()-x.t<864e5);const top=(arr,f)=>{const c={};for(const[,x]of arr){const k=f(x);c[k]=(c[k]||0)+1}return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,10)};
+  const unseen=x=>x.by==='Ouch!'&&(x.ms<0||x.ms>400);
+  let h='<div class="dv-row" style="flex-wrap:wrap"><input class="dv-in" data-adq-d placeholder="Filter: name, place or cause" value="'+esc2(T.df)+'" style="flex:1;min-width:180px"><button class="dv-b" data-adm="rdeaths">↻ Refresh</button></div>'+
+   '<div class="dv-card" style="margin:8px 0"><b>Last 24 h: '+day.length+' falls</b> ('+day.filter(([,x])=>unseen(x)).length+' to a monster nobody could see)<p style="font-size:12px;margin:4px 0">Causes: '+top(day,key).map(([k,n])=>esc2(k)+' ×'+n).join(' · ')+'</p><p style="font-size:12px;margin:4px 0">Places: '+top(day,x=>x.w).map(([k,n])=>esc2(k)+' ×'+n).join(' · ')+'</p></div>';
+  const q=T.df.trim().toLowerCase(),shown=L.filter(([,x])=>!q||[x.n,x.w,x.by,x.m].some(v=>String(v||'').toLowerCase().includes(q)));
+  h+='<table class="dv-dtab"><tr><th>When</th><th>Who</th><th>Where</th><th>What got them</th><th>Monster</th><th>Lv</th><th></th></tr>';
+  for(const[id,x]of shown.slice(0,150))h+='<tr'+(unseen(x)?' style="color:#f88"':'')+'><td>'+esc2(ago(x.t))+'</td><td>'+esc2(x.n||'?')+'</td><td>'+esc2(x.w)+(x.dk?' 🌙':'')+'</td><td>'+esc2(x.by)+(x.h>1?' <span class="dv-mut">('+x.h+' hits)</span>':'')+'</td><td>'+esc2(x.m||'')+(x.m?' <span class="dv-mut">'+(x.md|0)+'px, '+(x.ms<0?'never seen':(x.ms|0)+'ms')+'</span>':'')+'</td><td>'+(x.lv|0)+'</td><td>'+(x.u?'<button class="dv-b" data-adm="pl:'+esc2(x.u)+'">Player</button>':'')+'</td></tr>';
+  return h+'</table>'+(shown.length>150?'<p class="dv-mut">Showing the newest 150 of '+shown.length+'.</p>':'')+'<p class="dv-mut" style="font-size:12px">Red rows: "Ouch!" from a monster that wasn\'t on screen.</p>'}
  function playersView(){if(!T.lb){if(!T.busy)loadLb();return'<p class="dv-mut">Loading players…</p>'}
   const q=T.q.toLowerCase(),L=Object.entries(T.lb).filter(([,r])=>r&&r.n&&(!q||String(r.n).toLowerCase().includes(q))).sort((a,b)=>(b[1].t||0)-(a[1].t||0));
   let h='<div class="dv-spr'+(T.pl?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+Object.keys(T.lb).length+' players" value="'+esc2(T.q)+'" data-adq="1"><div class="dv-grid" style="grid-template-columns:1fr">';
@@ -137,15 +150,15 @@
    '<p class="dv-mut">Richest: '+e.rich.slice(0,10).map(r=>'<a href="#" data-adm="pl:'+esc2(r[2])+'">'+esc2(r[0])+'</a> '+r[1].toLocaleString()).join(' · ')+'</p></div>'+
    '<div class="dv-card" style="margin-top:10px"><b>Items in bags (by total shop value)</b><p style="font-size:12px">'+top.map(([k,n])=>esc2(INAME[k]||k)+' ×'+n.toLocaleString()).join(', ')+'</p></div>'+
    '<div class="dv-card" style="margin-top:10px"><b>World Market</b><p class="dv-mut">'+e.offers+' open offers. Last trades: '+Object.entries(e.last).sort((a,b)=>(b[1].t||0)-(a[1].t||0)).slice(0,20).map(([k,v])=>esc2(INAME[k]||k)+' '+v.p+'g ('+ago(v.t)+')').join(' · ')+'</p></div>'}
- function render(){const tabs=[['bugs','🐞 Bug reports'],['players','👤 Players'],['news','📢 News & events'],['eco','💰 Economy']];
+ function render(){const tabs=[['bugs','🐞 Bug reports'],['deaths','💀 Deaths'],['players','👤 Players'],['news','📢 News & events'],['eco','💰 Economy']];
   let h='<div class="dv-row" style="flex-wrap:wrap;margin-bottom:8px">'+tabs.map(([k,n])=>'<button class="dv-b'+(T.view===k?' dv-tl dv-on':'')+'" data-adm="v:'+k+'">'+n+'</button>').join('')+'</div>';
-  return h+(T.view==='bugs'?bugsView():T.view==='players'?playersView():T.view==='news'?newsView():ecoView())}
+  return h+(T.view==='bugs'?bugsView():T.view==='deaths'?deathsView():T.view==='players'?playersView():T.view==='news'?newsView():ecoView())}
  const gv=sel=>{const e=document.querySelector('#dvs '+sel);return e?e.value:''};
- document.addEventListener('input',e=>{if(S.tab!=='admin')return;const t=e.target;if(t.dataset&&t.dataset.adq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-adq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'161-19')}}}},true);
+ document.addEventListener('input',e=>{if(S.tab!=='admin')return;{const t=e.target;if(t.dataset&&t.dataset.adqD!=null){T.df=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-adq-d]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){/*quiet*/}}return}}const t=e.target;if(t.dataset&&t.dataset.adq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-adq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'161-19')}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='admin')return;const t=e.target.closest('[data-adm]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();e.stopPropagation();
   const [a,b,c]=t.dataset.adm.split(':');
   try{if(a==='v'){T.view=b;API.draw()}
-   else if(a==='bf'){T.bf=b;API.draw()}else if(a==='rbugs'){T.bugs=null;API.draw()}
+   else if(a==='bf'){T.bf=b;API.draw()}else if(a==='rbugs'){T.bugs=null;API.draw()}else if(a==='rdeaths'){T.deaths=null;API.draw()}
    else if(a==='shot'){T.shot=T.shot===b?null:b;API.draw()}
    else if(a==='st'){await D().set(ref('bugs/'+b+'/st'),c||null);T.bugs[b].st=c||undefined;toast(c?'Marked '+c+'.':'Reopened.');API.draw()}
    else if(a==='rep'){T.repOpen=T.repOpen===b?null:b;API.draw();setTimeout(()=>{const x=document.querySelector('#dvs [data-rpt]');if(x)x.focus()},50)}

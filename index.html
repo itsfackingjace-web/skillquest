@@ -17794,7 +17794,7 @@ window.SQA=SQA;
  window.SQADMIN={claim,applyFix,LOG,get news(){return NEWS},get event(){return EV},evOn,lvFromXp};
  // ======================= the Dev Suite tab =======================
  if(!window.SQSUITE||!SQSUITE.addTab)return;const API=SQSUITE.api,{S,E,toast,fail}=API;
- const T={view:'bugs',bugs:null,bf:'open',shot:null,lb:null,q:'',pl:null,plS:null,eco:null,busy:false};
+ const T={view:'bugs',deaths:null,df:'',bugs:null,bf:'open',shot:null,lb:null,q:'',pl:null,plS:null,eco:null,busy:false};
  const D=()=>FBx().db,ref=p=>D().ref(FBx().D,p),get=async p=>(await D().get(ref(p))).val();
  const ago=t=>{if(!t)return'';const s=(Date.now()-t)/1000;return s<3600?Math.round(s/60)+' min ago':s<86400*2?Math.round(s/3600)+' h ago':Math.round(s/86400)+' days ago'};
  async function loadBugs(){T.busy=true;API.draw();try{T.bugs=await get('bugs')||{}}catch(e){fail(e);T.bugs={}}T.busy=false;API.draw()}
@@ -17812,6 +17812,19 @@ window.SQA=SQA;
    '<button class="dv-b" data-adm="rep:'+id+'">'+(T.repOpen===id?'Cancel reply':'Reply…')+'</button>'+(i.where&&isFinite(i.x)?'<button class="dv-b" data-adm="go:'+id+'">Go there</button>':'')+(b.u?'<button class="dv-b" data-adm="pl:'+esc2(b.u)+'">Player</button>':'')+'</div>'+
    (T.repOpen===id?'<div style="margin-top:8px"><textarea data-rpt="1" maxlength="500" rows="2" style="width:100%">'+esc2(b.re||'Thanks! This is fixed in the latest update.')+'</textarea><button class="dv-b dv-pri" data-adm="repsend:'+id+'">Send reply</button> <small class="dv-mut">They get it in the game.</small></div>':'')+(T.shot===id&&b.shot?'<img alt="Screenshot" src="'+esc2(b.shot)+'" style="max-width:100%;margin-top:8px;border:1px solid #333">':'')+'</div>'}
   if(!shown.length)h+='<p class="dv-mut">Nothing here.</p>';return h}
+ // ---- deaths (252): who fell, where, and to what ----
+ {const st=document.createElement('style');st.textContent='.dv-dtab{width:100%;font-size:12px;border-collapse:collapse}.dv-dtab th{text-align:left;opacity:.7}.dv-dtab td,.dv-dtab th{padding:3px 6px;border-bottom:1px solid rgba(128,128,128,.25);vertical-align:top}';document.head.appendChild(st)}
+ async function loadDeaths(){T.busy=true;API.draw();try{const d=D();T.deaths=(await d.get(d.query(ref('deaths'),d.orderByKey(),d.limitToLast(400)))).val()||{}}catch(e){fail(e);T.deaths={}}T.busy=false;API.draw()}
+ function deathsView(){if(!T.deaths){if(!T.busy)loadDeaths();return'<p class="dv-mut">Loading deaths…</p>'}
+  const L=Object.entries(T.deaths).filter(([,x])=>x&&x.t).sort((a,b)=>b[1].t-a[1].t),key=x=>(x.m?x.m+' · ':'')+x.by;
+  const day=L.filter(([,x])=>Date.now()-x.t<864e5);const top=(arr,f)=>{const c={};for(const[,x]of arr){const k=f(x);c[k]=(c[k]||0)+1}return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,10)};
+  const unseen=x=>x.by==='Ouch!'&&(x.ms<0||x.ms>400);
+  let h='<div class="dv-row" style="flex-wrap:wrap"><input class="dv-in" data-adq-d placeholder="Filter: name, place or cause" value="'+esc2(T.df)+'" style="flex:1;min-width:180px"><button class="dv-b" data-adm="rdeaths">↻ Refresh</button></div>'+
+   '<div class="dv-card" style="margin:8px 0"><b>Last 24 h: '+day.length+' falls</b> ('+day.filter(([,x])=>unseen(x)).length+' to a monster nobody could see)<p style="font-size:12px;margin:4px 0">Causes: '+top(day,key).map(([k,n])=>esc2(k)+' ×'+n).join(' · ')+'</p><p style="font-size:12px;margin:4px 0">Places: '+top(day,x=>x.w).map(([k,n])=>esc2(k)+' ×'+n).join(' · ')+'</p></div>';
+  const q=T.df.trim().toLowerCase(),shown=L.filter(([,x])=>!q||[x.n,x.w,x.by,x.m].some(v=>String(v||'').toLowerCase().includes(q)));
+  h+='<table class="dv-dtab"><tr><th>When</th><th>Who</th><th>Where</th><th>What got them</th><th>Monster</th><th>Lv</th><th></th></tr>';
+  for(const[id,x]of shown.slice(0,150))h+='<tr'+(unseen(x)?' style="color:#f88"':'')+'><td>'+esc2(ago(x.t))+'</td><td>'+esc2(x.n||'?')+'</td><td>'+esc2(x.w)+(x.dk?' 🌙':'')+'</td><td>'+esc2(x.by)+(x.h>1?' <span class="dv-mut">('+x.h+' hits)</span>':'')+'</td><td>'+esc2(x.m||'')+(x.m?' <span class="dv-mut">'+(x.md|0)+'px, '+(x.ms<0?'never seen':(x.ms|0)+'ms')+'</span>':'')+'</td><td>'+(x.lv|0)+'</td><td>'+(x.u?'<button class="dv-b" data-adm="pl:'+esc2(x.u)+'">Player</button>':'')+'</td></tr>';
+  return h+'</table>'+(shown.length>150?'<p class="dv-mut">Showing the newest 150 of '+shown.length+'.</p>':'')+'<p class="dv-mut" style="font-size:12px">Red rows: "Ouch!" from a monster that wasn\'t on screen.</p>'}
  function playersView(){if(!T.lb){if(!T.busy)loadLb();return'<p class="dv-mut">Loading players…</p>'}
   const q=T.q.toLowerCase(),L=Object.entries(T.lb).filter(([,r])=>r&&r.n&&(!q||String(r.n).toLowerCase().includes(q))).sort((a,b)=>(b[1].t||0)-(a[1].t||0));
   let h='<div class="dv-spr'+(T.pl?' dv-has':'')+'"><div class="dv-ls"><input type="search" placeholder="Search '+Object.keys(T.lb).length+' players" value="'+esc2(T.q)+'" data-adq="1"><div class="dv-grid" style="grid-template-columns:1fr">';
@@ -17869,15 +17882,15 @@ window.SQA=SQA;
    '<p class="dv-mut">Richest: '+e.rich.slice(0,10).map(r=>'<a href="#" data-adm="pl:'+esc2(r[2])+'">'+esc2(r[0])+'</a> '+r[1].toLocaleString()).join(' · ')+'</p></div>'+
    '<div class="dv-card" style="margin-top:10px"><b>Items in bags (by total shop value)</b><p style="font-size:12px">'+top.map(([k,n])=>esc2(INAME[k]||k)+' ×'+n.toLocaleString()).join(', ')+'</p></div>'+
    '<div class="dv-card" style="margin-top:10px"><b>World Market</b><p class="dv-mut">'+e.offers+' open offers. Last trades: '+Object.entries(e.last).sort((a,b)=>(b[1].t||0)-(a[1].t||0)).slice(0,20).map(([k,v])=>esc2(INAME[k]||k)+' '+v.p+'g ('+ago(v.t)+')').join(' · ')+'</p></div>'}
- function render(){const tabs=[['bugs','🐞 Bug reports'],['players','👤 Players'],['news','📢 News & events'],['eco','💰 Economy']];
+ function render(){const tabs=[['bugs','🐞 Bug reports'],['deaths','💀 Deaths'],['players','👤 Players'],['news','📢 News & events'],['eco','💰 Economy']];
   let h='<div class="dv-row" style="flex-wrap:wrap;margin-bottom:8px">'+tabs.map(([k,n])=>'<button class="dv-b'+(T.view===k?' dv-tl dv-on':'')+'" data-adm="v:'+k+'">'+n+'</button>').join('')+'</div>';
-  return h+(T.view==='bugs'?bugsView():T.view==='players'?playersView():T.view==='news'?newsView():ecoView())}
+  return h+(T.view==='bugs'?bugsView():T.view==='deaths'?deathsView():T.view==='players'?playersView():T.view==='news'?newsView():ecoView())}
  const gv=sel=>{const e=document.querySelector('#dvs '+sel);return e?e.value:''};
- document.addEventListener('input',e=>{if(S.tab!=='admin')return;const t=e.target;if(t.dataset&&t.dataset.adq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-adq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'161-19')}}}},true);
+ document.addEventListener('input',e=>{if(S.tab!=='admin')return;{const t=e.target;if(t.dataset&&t.dataset.adqD!=null){T.df=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-adq-d]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){/*quiet*/}}return}}const t=e.target;if(t.dataset&&t.dataset.adq){T.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-adq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'161-19')}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='admin')return;const t=e.target.closest('[data-adm]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();e.stopPropagation();
   const [a,b,c]=t.dataset.adm.split(':');
   try{if(a==='v'){T.view=b;API.draw()}
-   else if(a==='bf'){T.bf=b;API.draw()}else if(a==='rbugs'){T.bugs=null;API.draw()}
+   else if(a==='bf'){T.bf=b;API.draw()}else if(a==='rbugs'){T.bugs=null;API.draw()}else if(a==='rdeaths'){T.deaths=null;API.draw()}
    else if(a==='shot'){T.shot=T.shot===b?null:b;API.draw()}
    else if(a==='st'){await D().set(ref('bugs/'+b+'/st'),c||null);T.bugs[b].st=c||undefined;toast(c?'Marked '+c+'.':'Reopened.');API.draw()}
    else if(a==='rep'){T.repOpen=T.repOpen===b?null:b;API.draw();setTimeout(()=>{const x=document.querySelector('#dvs [data-rpt]');if(x)x.focus()},50)}
@@ -21647,7 +21660,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
   let isDev=false;try{isDev=(await db.get(R('devs/'+u))).val()===true}catch(e){self.SQERR&&SQERR(e,'209-9')}if(!isDev)return;
   const today=new Date(now).toISOString().slice(0,10);try{if(localStorage.getItem('sq_prune_day')===today)return;localStorage.setItem('sq_prune_day',today)}catch(e){self.SQERR&&SQERR(e,'209-10')}
   const old=async(path,days)=>{try{const s=await db.get(db.query(R(path),db.orderByKey(),db.limitToFirst(300)));const v=s.val()||{};let n=0;for(const[id,x]of Object.entries(v))if(x&&typeof x.t==='number'&&x.t<now-days*DAY){n++;db.remove(R(path+'/'+id)).catch(()=>{})}return n}catch(e){return 0}};
-  await old('chat',90);await old('bugs',365);await old('reports',365);await old('errs',365);
+  await old('chat',90);await old('bugs',365);await old('reports',365);await old('errs',365);await old('deaths',90);
   try{const cut=new Date(now-365*DAY).toISOString().slice(0,10);const s=await db.get(db.query(R('stats/d'),db.orderByKey(),db.endAt(cut),db.limitToFirst(40)));for(const day of Object.keys(s.val()||{}))if(day<cut)db.remove(R('stats/d/'+day)).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'209-11')}}
  setInterval(()=>{prune().catch(()=>{})},60000);setTimeout(()=>{prune().catch(()=>{})},15000);
  window.SQACCOUNT={wipe,prune,get stopped(){return STOP}}})();
@@ -23561,12 +23574,12 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
    // right next to you and not drawn for 0.4 s: keep it out of reach for this update
    bad=bad||[];bad.push(describe(n,'undrawn'));moved.push([n,n.x,n.y]);n.x=P.x+4000;n.y=P.y+4000}
   if(bad){LOG.push(...bad);if(LOG.length>20)LOG.splice(0,LOG.length-20);report(bad)}
-  const hp0=P.hp;try{return _u.apply(this,arguments)}finally{for(const[n,x,y]of moved)if(Math.abs(n.x-(P.x+4000))<200){n.x=x;n.y=y}
-   try{if(P.hp<hp0)logHit(hp0-P.hp);if(dead)fell()}catch(e){self.SQERR&&SQERR(e,'227-4')}}});
+  const hp0=P.hp,pre=en.slice();try{return _u.apply(this,arguments)}finally{for(const[n,x,y]of moved)if(Math.abs(n.x-(P.x+4000))<200){n.x=x;n.y=y}
+   try{if(P.hp<hp0)logHit(hp0-P.hp,pre);if(dead)fell()}catch(e){self.SQERR&&SQERR(e,'227-4')}}});
  // ---- what hurt you: the last hits, and one report a session when you fall to something nobody could see ----
  const HITS=[];let lastSay='',sayAt=0,fellReported=false;
  {const _s=say;say=function(t){lastSay=String(t==null?'':t).slice(0,60);sayAt=performance.now();return _s.apply(this,arguments)}}
- function logHit(d){const now=performance.now(),near=[];for(const n of en){if(!n||n.dead||!fin(n))continue;const dd=Math.hypot(n.x-P.x,n.y-P.y);if(dd<40)near.push([dd,n])}
+ function logHit(d,pre){const now=performance.now(),near=[];for(const n of new Set(en.concat(pre||[]))){if(!n||n.dead||!fin(n))continue;const dd=Math.hypot(n.x-P.x,n.y-P.y);if(dd<40)near.push([dd,n])}
   near.sort((a,b)=>a[0]-b[0]);const R=SCENE&&SCENE.room;
   HITS.push({at:now,d,msg:now-sayAt<200?lastSay:'',where:R&&R.region||(SCENE&&SCENE.id)||'hollow',px:Math.round(P.x),py:Math.round(P.y),pn:!!pnOpen,
    m:near.slice(0,3).map(([dd,n])=>{const o=Object.assign(describe(n,'near'),{d:Math.round(dd),seen:SEEN.has(n)?Math.round(now-SEEN.get(n)):-1});delete o.why;o.keys=o.keys.slice(0,80);o.x=Math.round(o.x);o.y=Math.round(o.y);return o})});
@@ -24695,6 +24708,29 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   requestAnimationFrame(tick)}
  requestAnimationFrame(tick);
  window.SQCURSOR={get cur(){return CUR},get big(){return BIG},VC,url,KINDS,OFF,current:cur}})();
+// ---- 260. Death log: every fall is written down with what did it (window.SQDEATHS) ----
+// Nov 20: "the game should log when a player dies, along with what exactly killed them". The moment you fall (dead turns on, the
+// same 100 ms watch 063's graves use, and before 001's reset when you get up quickly), one record goes to `deaths/<push id>`:
+//   u, n    your uid and first name (as bug reports)       t   server time
+//   w, x, y where (island / room id) and your position     lv  total level      dk  1 at night      v  the game version
+//   by      what got you: the message of the last hit in the 10 s before (227's SQGHOSTHIT.hits), else the last message
+//   m, md, ms  the monster nearest you at that hit: its kind (rk or type), how far (px) and how long since it was last drawn on
+//           screen (ms, -1 = never: one you couldn't see)       h   how many hits in those 10 s
+// Only developers read them (Dev Suite > Admin > Deaths); 209's cleanup drops records older than 90 days. Rules: `deaths`.
+(()=>{let logged=false;const LAST={by:'',m:''};
+ function where(){const R=SCENE&&SCENE.room;return String(R&&R.region||(SCENE&&(SCENE.house?'house':SCENE.id))||'hollow').slice(0,24)}
+ function totalLv(){try{let s=0;for(let i=0;i<SKN.length;i++)s+=lvOf(i);return s}catch(e){return 0}}
+ function cause(){const now=performance.now(),G=window.SQGHOSTHIT,hits=G&&G.hits?G.hits.filter(h=>now-h.at<10000):[];
+  const last=hits[hits.length-1],o={by:'',h:hits.length};
+  if(last){o.by=last.msg||'';const m=last.m&&last.m[0];if(m){o.m=String(m.rk||m.type||'?').slice(0,24);o.md=m.d|0;o.ms=m.seen|0}}
+  if(!o.by&&typeof msg==='string'&&msgT>0)o.by=msg;o.by=String(o.by||'unknown').replace(/\s+/g,' ').slice(0,60);return o}
+ function record(){if(logged)return;logged=true;try{if(typeof NEWG!=='undefined'&&NEWG)return;const c=cause();LAST.by=c.by;LAST.m=c.m||'';
+   const MP=window.SQMP,F=window.SQFB;if(!MP||!MP.user||!F)return;const d=F.db;let dk=0;try{dk=dark()>.3?1:0}catch(e){/*quiet*/}
+   const r=Object.assign({u:MP.user.uid,n:String(MP.user.displayName||'').split(' ')[0].slice(0,12),t:d.serverTimestamp(),w:where(),x:Math.round(P.x)||0,y:Math.round(P.y)||0,lv:totalLv(),dk,v:String(window.SQVER||'').slice(0,20)},c);
+   d.push(d.ref(F.D,'deaths'),r).catch(e=>{self.SQERR&&SQERR(e,'252-1')})}catch(e){self.SQERR&&SQERR(e,'252-2')}}
+ setInterval(()=>{if(!dead){logged=false;return}record()},100);
+ {const _rs=reset;reset=function(){if(dead)try{record()}catch(e){self.SQERR&&SQERR(e,'252-3')}return _rs.apply(this,arguments)}}
+ window.SQDEATHS={record,cause,get last(){return LAST}}})();
 // ---- 257. Discord roles: link your Discord account (window.SQDLINK) ----
 // The SQ Bot (tools/discord/sync-roles.mjs, run every 30 minutes by GitHub Actions) gives linked Discord members roles for their
 // Total Level, their guild, Patron, and game Moderator / Developer. It needs no database password: it reads only public data.

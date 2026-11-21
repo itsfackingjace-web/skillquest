@@ -31,12 +31,12 @@
    // right next to you and not drawn for 0.4 s: keep it out of reach for this update
    bad=bad||[];bad.push(describe(n,'undrawn'));moved.push([n,n.x,n.y]);n.x=P.x+4000;n.y=P.y+4000}
   if(bad){LOG.push(...bad);if(LOG.length>20)LOG.splice(0,LOG.length-20);report(bad)}
-  const hp0=P.hp;try{return _u.apply(this,arguments)}finally{for(const[n,x,y]of moved)if(Math.abs(n.x-(P.x+4000))<200){n.x=x;n.y=y}
-   try{if(P.hp<hp0)logHit(hp0-P.hp);if(dead)fell()}catch(e){self.SQERR&&SQERR(e,'227-4')}}});
+  const hp0=P.hp,pre=en.slice();try{return _u.apply(this,arguments)}finally{for(const[n,x,y]of moved)if(Math.abs(n.x-(P.x+4000))<200){n.x=x;n.y=y}
+   try{if(P.hp<hp0)logHit(hp0-P.hp,pre);if(dead)fell()}catch(e){self.SQERR&&SQERR(e,'227-4')}}});
  // ---- what hurt you: the last hits, and one report a session when you fall to something nobody could see ----
  const HITS=[];let lastSay='',sayAt=0,fellReported=false;
  {const _s=say;say=function(t){lastSay=String(t==null?'':t).slice(0,60);sayAt=performance.now();return _s.apply(this,arguments)}}
- function logHit(d){const now=performance.now(),near=[];for(const n of en){if(!n||n.dead||!fin(n))continue;const dd=Math.hypot(n.x-P.x,n.y-P.y);if(dd<40)near.push([dd,n])}
+ function logHit(d,pre){const now=performance.now(),near=[];for(const n of new Set(en.concat(pre||[]))){if(!n||n.dead||!fin(n))continue;const dd=Math.hypot(n.x-P.x,n.y-P.y);if(dd<40)near.push([dd,n])}
   near.sort((a,b)=>a[0]-b[0]);const R=SCENE&&SCENE.room;
   HITS.push({at:now,d,msg:now-sayAt<200?lastSay:'',where:R&&R.region||(SCENE&&SCENE.id)||'hollow',px:Math.round(P.x),py:Math.round(P.y),pn:!!pnOpen,
    m:near.slice(0,3).map(([dd,n])=>{const o=Object.assign(describe(n,'near'),{d:Math.round(dd),seen:SEEN.has(n)?Math.round(now-SEEN.get(n)):-1});delete o.why;o.keys=o.keys.slice(0,80);o.x=Math.round(o.x);o.y=Math.round(o.y);return o})});

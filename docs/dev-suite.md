@@ -91,7 +91,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   Bandits/cacti (099's `SQNMP`) and Dev Suite bosses' fire rings (146's `SQCBSH`) push shots tagged `_n` (the monster); 160 tags them,
   099/146 call `SQSHOTHIT(shot)` when one hurts you and skip drawing when `SQSHOTDRAW(shot)` drew a look. `SQMOBATK.capDraw(type)`
   draws a type's own shot for 111d's j: capture.
-- **Admin tab** (`dev/161-s167-admin.js`, `window.SQADMIN`, Dev Suite > Admin): Bug reports (`bugs`, devs read; `st` status and
+- **Admin tab** (`dev/161-s167-admin.js`, `window.SQADMIN`, Dev Suite > Admin): Deaths (`deaths`, 252's records; newest 400 by key) and Bug reports (`bugs`, devs read; `st` status and
   `re` reply are dev-only children, a reply also goes to the player as a gift message), Players (`lb` list + dev read of
   `saves/<uid>`, gifts), News & events, Economy (gold/items summed over every account save, market offers/last trades).
   Game side: `gifts/<uid>/<id>` {k,n,g,m,t,f} written by devs, claimed once by the player's game (transaction to null, then

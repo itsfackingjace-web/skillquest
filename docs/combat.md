@@ -32,3 +32,9 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   (Options "Screen shake", localStorage `sq_shake`, also gates 015's `shakeScreen`). Monsters inside a solid tile for 0.75 s are moved
   to the nearest free spot (skips big/boss/cb/under/_rp/ghost/wisp). 192 now counts make-all materials when `sqDo` is called (after
   039's station merge).
+- **Death log** (`combat/252-s260-death-log.js`, `window.SQDEATHS`, Nov 20): the moment you fall (100 ms watch on `dead`, as 063's graves, plus a
+  `reset` wrapper) one `deaths/<push id>` record is written: u, n, t, w (region/room), x, y, lv, dk (night), v, and from 227's `SQGHOSTHIT.hits`
+  in the 10 s before: `by` (the last hit's message, else the last message), `m`/`md`/`ms` (nearest monster's rk, distance, ms since drawn on
+  screen, -1 never) and `h` (hits). 227 now also looks at the monsters from before the update, since 001 empties `en` when you fall. Devs read
+  them in Dev Suite > Admin > Deaths (24 h summary of causes and places, filter, red rows = "Ouch!" from an unseen monster). Rules: `deaths`
+  (own uid, write once, `t === now`, fixed fields); 209's cleanup drops records after 90 days. Check 47.

@@ -48,7 +48,7 @@
   let isDev=false;try{isDev=(await db.get(R('devs/'+u))).val()===true}catch(e){self.SQERR&&SQERR(e,'209-9')}if(!isDev)return;
   const today=new Date(now).toISOString().slice(0,10);try{if(localStorage.getItem('sq_prune_day')===today)return;localStorage.setItem('sq_prune_day',today)}catch(e){self.SQERR&&SQERR(e,'209-10')}
   const old=async(path,days)=>{try{const s=await db.get(db.query(R(path),db.orderByKey(),db.limitToFirst(300)));const v=s.val()||{};let n=0;for(const[id,x]of Object.entries(v))if(x&&typeof x.t==='number'&&x.t<now-days*DAY){n++;db.remove(R(path+'/'+id)).catch(()=>{})}return n}catch(e){return 0}};
-  await old('chat',90);await old('bugs',365);await old('reports',365);await old('errs',365);
+  await old('chat',90);await old('bugs',365);await old('reports',365);await old('errs',365);await old('deaths',90);
   try{const cut=new Date(now-365*DAY).toISOString().slice(0,10);const s=await db.get(db.query(R('stats/d'),db.orderByKey(),db.endAt(cut),db.limitToFirst(40)));for(const day of Object.keys(s.val()||{}))if(day<cut)db.remove(R('stats/d/'+day)).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'209-11')}}
  setInterval(()=>{prune().catch(()=>{})},60000);setTimeout(()=>{prune().catch(()=>{})},15000);
  window.SQACCOUNT={wipe,prune,get stopped(){return STOP}}})();
