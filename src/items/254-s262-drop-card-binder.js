@@ -20,7 +20,16 @@
  const item=(k,n,d,v)=>{if(!INVK.includes(k))INVK.push(k);INAME[k]=n;SN[k]=n;SHORT[k]=n.toLowerCase();SELLP[k]=v;IDESC[k]=d;inv[k]=inv[k]|0;if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k)};
  item(GUIDE,'Drop Card for Dummies','A guide to all things Drop Card: the cards, your binder, building a deck and how a match is played. Tap READ.',1);
  item(BIND,'Card Binder','Holds all your Drop Cards and your decks. Tap OPEN.',0);
- GEN.push({n:'Drop Card for Dummies',c:1,f:()=>{inv[GUIDE]=(inv[GUIDE]|0)+1;giveBinder();say('Drop Card for Dummies! Find it in your bag and tap READ.');msgT=5}});
+ GEN.push({n:'Drop Card for Dummies',c:1,f:()=>{inv[GUIDE]=(inv[GUIDE]|0)+1;giveBinder();const st=giveStarter();say('Drop Card for Dummies!'+(st?' It came with a free Starter Deck, already in your Card Binder.':'')+' Find it in your bag and tap READ.');msgT=6}});
+ // ---- the Starter Deck (Nov 20): 20 bound cards, given once with the first guide; they live only in the binder (never in inv, so
+ // they can't be traded, sold or stored) and fill Deck 1 if it's empty. Saved as `dcs` {g: given, c: {key: count}}.
+ let STARTER={},SG=0;
+ const SDECK=[['tree',6],['oak',2],['slime',2],['slime:moss',2],['wolf',2],['skel',2],['bat',2],['pot_heal',2]];
+ const owned=k=>(inv[k]|0)+(STARTER[k]|0);
+ function giveStarter(){if(SG)return false;SG=1;STARTER={};for(const[ck,n]of SDECK){const C=D.CARDS[ck];if(C)STARTER[C.key]=(STARTER[C.key]|0)+n}
+  if(!Object.keys(DECKS[0].c).length){DECKS[0].c=Object.assign({},STARTER);DECKS[0].n='Starter Deck'}try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'254-12')}return true}
+ SQSAVE.after('254:dcs',s=>{s.dcs={g:SG,c:STARTER}});
+ SQLOAD.after('254 starter',(S)=>{const v=S&&S.dcs;SG=v&&v.g?1:0;STARTER={};if(v&&v.c)for(const k in v.c){const n=Math.max(0,Math.min(20,v.c[k]|0));if(n)STARTER[k]=n}});
  const ICC={};
  SQICON.wrap('254 binder',_ic=>function(k,col){
   if((k===GUIDE||k===BIND)&&!(window.SQA&&SQA.hasIcon&&SQA.hasIcon(k))){if(!ICC[k])try{ICC[k]=SQA.render(k===GUIDE?IC.guide:IC.binder).toDataURL()}catch(e){self.SQERR&&SQERR(e,'254-1')}if(ICC[k])return ICC[k]}
@@ -66,7 +75,7 @@
  const deckN=d=>Object.values(d.c).reduce((a,b)=>a+b,0);
  const maxOf=k=>{const i=info(k);return!i?2:BOSSG.has(i.g)?1:i.g==='tree'?20:2};// trees: as many as you like (they're your Mana)
  function problems(d){const out=[],n=deckN(d);if(n!==20)out.push(n<20?'Add '+(20-n)+' more card'+(20-n>1?'s':'')+' (a deck is 20).':'Take out '+(n-20)+' card'+(n-20>1?'s':'')+' (a deck is 20).');
-  let trees=0;for(const k in d.c){const i=info(k);if(!i)continue;if(i.g==='tree')trees+=d.c[k];if(d.c[k]>maxOf(k))out.push('Only '+maxOf(k)+' '+i.n.replace(/^Drop Card: /,'')+' allowed.');if(d.c[k]>(inv[k]|0))out.push('You only have '+(inv[k]|0)+' '+i.n.replace(/^Drop Card: /,'')+'.')}
+  let trees=0;for(const k in d.c){const i=info(k);if(!i)continue;if(i.g==='tree')trees+=d.c[k];if(d.c[k]>maxOf(k))out.push('Only '+maxOf(k)+' '+i.n.replace(/^Drop Card: /,'')+' allowed.');if(d.c[k]>owned(k))out.push('You only have '+owned(k)+' '+i.n.replace(/^Drop Card: /,'')+'.')}
   if(trees<4)out.push('Add at least '+(4-trees)+' more tree card'+(4-trees>1?'s':'')+' (at least 4).');if(!d.pet)out.push('Optional: pick a pet card as your Companion.');return out}
  SQSAVE.after('254:dcd',s=>{s.dcd={a:ACTIVE,d:DECKS}});
  SQLOAD.after('254',(S)=>{DECKS=[0,1,2].map(i=>({n:'Deck '+(i+1),c:{},pet:null}));ACTIVE=0;const v=S&&S.dcd;if(!v||!Array.isArray(v.d))return;
@@ -74,7 +83,7 @@
  // ---- the guide ----
  const GP=[
   ['What is Drop Card?','<p>Drop Card is a card game played with cards you find in SkillQuest. Two players each bring a deck of 20 cards and try to bring the other hero from 20 HP down to 0.</p><p>Every monster, tree, boss, potion, forage plant and pet has its own card. Collect them, build a deck in your <b>Card Binder</b>, and play.</p><p><i>Matches are coming soon. Start collecting now!</i></p>'],
-  ['Getting cards','<p><b>Monsters:</b> 1% chance to drop their own card when you beat them. Every kind has its own card (a Moss slime drops a Moss slime card).</p><p><b>Trees:</b> 1% chance per chop. Better trees give more Mana.</p><p><b>Bosses:</b> world, dungeon, island and guild bosses each have a rare card (1% for everyone who fought).</p><p><b>Potions:</b> 1% when you brew one. <b>Forage:</b> 1% when you pick berries, mushrooms, nuts or cactus fruit.</p><p><b>Pets:</b> release a pet from your bag and you always get its card.</p>'],
+  ['Getting cards','<p><b>Monsters:</b> 1% chance to drop their own card when you beat them. Every kind has its own card (a Moss slime drops a Moss slime card).</p><p><b>Trees:</b> 1% chance per chop. Better trees give more Mana.</p><p><b>Bosses:</b> world, dungeon, island and guild bosses each have a rare card (1% for everyone who fought).</p><p><b>Potions:</b> 1% when you brew one. <b>Forage:</b> 1% when you pick berries, mushrooms, nuts or cactus fruit.</p><p><b>Pets:</b> release a pet from your bag and you always get its card.</p><p><b>Starter Deck:</b> your first copy of this book comes with a free 20-card deck, so you can build and play right away. Starter cards stay in your binder (they can\'t be traded or sold). Swap in the cards you find to make it yours.</p><p><b>Unlucky?</b> If you go a long time without finding a card, the next one is guaranteed.</p>'],
   ['Your Card Binder','<p>All your cards live in the Card Binder, so they only take one bag slot. Tap the binder in your bag, then OPEN.</p><p><b>Collection</b> shows every card in the game. Dark ones are cards you haven\'t found yet.</p><p><b>Decks</b> holds 3 decks. Pick one to play with. Cards are still items, so you can trade them, sell them on the World Market or keep spares in a chest.</p>'],
   ['Building a deck','<p>A deck has exactly <b>20 cards</b>:</p><p>- At most <b>2</b> of any monster, potion or forage card.<br>- Only <b>1</b> of each boss card.<br>- At least <b>4 tree cards</b>, or you won\'t have Mana to play anything. Trees have no limit.</p><p>You can also pick one <b>pet card</b> as your Companion. It doesn\'t count toward the 20.</p>'],
   ['The cards','<p><b>Trees</b> (gold): give Mana. Tree 1, Oak 2, Willow 3, Maple 4, Yew 5.</p><p><b>Monsters</b> (gold): fight on the board. ATK is the damage they deal, HP is how much they can take.</p><p><b>Bosses</b>: strong monsters with a power. Red = world, purple = dungeon, blue = island, green = guild.</p><p><b>Potions</b> (pink) and <b>forage</b> (parchment): one-use spells. Each says its cost and what it does.</p><p><b>Pets</b> (teal): your Companion.</p>'],
@@ -89,12 +98,12 @@
  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const short=n=>String(n).replace(/^(Drop|Pet) Card: /,'');
  function openBinder(tab){V.tab=tab||'col';if(tab==='guide')V.page=0;pnOpen=true;ptab=BTAB;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'254-8')}}
- function colHTML(){const all=ORDER().map(info).filter(Boolean),L=all.filter(i=>inF(i,V.f)),own=all.filter(i=>(inv[i.k]|0)>0).length;const d=DECKS[V.deck];
+ function colHTML(){const all=ORDER().map(info).filter(Boolean),L=all.filter(i=>inF(i,V.f)),own=all.filter(i=>owned(i.k)>0).length;const d=DECKS[V.deck];
   let h='<div class="dcb-f">'+FILT.map(([k,n])=>'<button class="dcb-fb'+(V.f===k?' on':'')+'" data-dcb="f:'+k+'">'+n+'</button>').join('')+'</div>';
   h+='<div class="dcb-sub">'+(V.edit?'Editing <b>'+esc(d.n)+'</b> ('+deckN(d)+'/20): tap a card, then ADD. <button class="dcb-mini" data-dcb="done">DONE</button>':'You\'ve found <b>'+own+'</b> of '+all.length+' cards.')+'</div><div class="dcb-g">';
-  for(const i of L){const n=inv[i.k]|0,inD=(d.c[i.k]|0)+(d.pet===i.k?1:0);h+='<button class="dcb-c'+(n?'':' no')+(V.sel===i.k?' sel':'')+'" data-dcb="s:'+i.k+'" aria-label="'+esc(n?short(i.n):'Not found yet')+'"><img src="'+iconURL(i.k)+'" alt="">'+(n?'<span class="dcb-n">'+n+'</span>':'')+(V.edit&&inD?'<span class="dcb-d">'+inD+'</span>':'')+'</button>'}
+  for(const i of L){const n=owned(i.k),inD=(d.c[i.k]|0)+(d.pet===i.k?1:0);h+='<button class="dcb-c'+(n?'':' no')+(V.sel===i.k?' sel':'')+'" data-dcb="s:'+i.k+'" aria-label="'+esc(n?short(i.n):'Not found yet')+'"><img src="'+iconURL(i.k)+'" alt="">'+(n?'<span class="dcb-n">'+n+'</span>':'')+(V.edit&&inD?'<span class="dcb-d">'+inD+'</span>':'')+'</button>'}
   h+='</div>';const s=V.sel&&info(V.sel);
-  if(s){const n=inv[s.k]|0;h+='<div class="dcb-det"><img src="'+iconURL(s.k)+'" alt=""><div><b>'+esc(n?short(s.n):'???')+'</b><br>'+esc(n?s.d:'Not found yet.')+'<br><small>You have '+n+'.</small>';
+  if(s){const n=owned(s.k),sn=STARTER[s.k]|0;h+='<div class="dcb-det"><img src="'+iconURL(s.k)+'" alt=""><div><b>'+esc(n?short(s.n):'???')+'</b><br>'+esc(n?s.d:'Not found yet.')+'<br><small>You have '+n+(sn?' ('+sn+' from the Starter Deck: these stay in your binder)':'')+'.</small>';
    if(V.edit&&n){const inD=s.g==='pet'?(d.pet===s.k?1:0):(d.c[s.k]|0),max=s.g==='pet'?1:Math.min(maxOf(s.k),n);
     h+='<div class="dcb-row"><button class="sb dcb-act" data-dcb="add" '+(inD>=max?'disabled':'')+'>ADD ('+inD+'/'+max+')</button><button class="sb dcb-act" data-dcb="rem" '+(inD?'':'disabled')+'>REMOVE</button></div>'}
    h+='</div></div>'}
@@ -118,7 +127,7 @@
   else if(x==='d')V.deck=+y|0;else if(a==='edit'){V.edit=true;V.tab='col';V.sel=null}else if(a==='done'){V.edit=false;V.tab='deck'}
   else if(a==='use')ACTIVE=V.deck;else if(a==='pp')V.page=Math.max(0,V.page-1);else if(a==='np')V.page=Math.min(GP.length-1,V.page+1);
   else if(a==='nopet')d.pet=null;else if(x==='r'){if(d.c[y]>1)d.c[y]--;else delete d.c[y]}
-  else if(a==='add'&&V.sel){const i=info(V.sel);if(i){if(i.g==='pet')d.pet=V.sel;else if((d.c[V.sel]|0)<Math.min(maxOf(V.sel),inv[V.sel]|0))d.c[V.sel]=(d.c[V.sel]|0)+1}}
+  else if(a==='add'&&V.sel){const i=info(V.sel);if(i){if(i.g==='pet')d.pet=V.sel;else if((d.c[V.sel]|0)<Math.min(maxOf(V.sel),owned(V.sel)))d.c[V.sel]=(d.c[V.sel]|0)+1}}
   else if(a==='rem'&&V.sel){const i=info(V.sel);if(i&&i.g==='pet'){if(d.pet===V.sel)d.pet=null}else if(d.c[V.sel]>1)d.c[V.sel]--;else delete d.c[V.sel]}
   try{sfx('swish')}catch(err){self.SQERR&&SQERR(err,'254-10')}if(x==='r'||['add','rem','use','nopet'].includes(a))try{saveLocal(true)}catch(err){self.SQERR&&SQERR(err,'254-11')}rPn()},true);
  const st=document.createElement('style');st.textContent=
@@ -135,4 +144,4 @@
   '.dcb-list{display:flex;flex-direction:column;gap:4px}.dcb-li{display:flex;align-items:center;gap:8px;padding:2px 6px;background:#fff;border:1px solid #d8e0ec;border-radius:6px;font-size:14px}.dcb-li img{width:28px;height:28px;image-rendering:pixelated}.dcb-li span{flex:1}'+
   '.dcb-warn{font-size:13px;line-height:1.45;margin:8px 0}.dcb-book{background:#fffbea;border:2px solid #d8c890;border-radius:8px;padding:12px 14px;font-size:15px;line-height:1.5}.dcb-book p{margin:0 0 8px}.dcb-pt{font-weight:700;font-size:18px;margin-bottom:8px;color:#5a3a10}';
  document.head.appendChild(st);
- window.SQBINDER={open:openBinder,BTAB,GUIDE,BIND,PET,regPet,isCard,problems,get decks(){return DECKS},get active(){return ACTIVE},V,GP}})();
+ window.SQBINDER={giveStarter,owned,get starter(){return STARTER},open:openBinder,BTAB,GUIDE,BIND,PET,regPet,isCard,problems,get decks(){return DECKS},get active(){return ACTIVE},V,GP}})();

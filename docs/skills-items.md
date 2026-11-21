@@ -163,3 +163,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   Pet cards `pc_<pet item>`: 104's release calls `window.SQPETREL` (always gives the card); registered for every `EQ` pet now, on
   `SQA.onApply`, and for `pc_` keys in a save (`SQLOAD.before`); picture = the pet's icon on a teal card (async, cached). Potion cards: 218's
   `brewOne` calls `window.SQBREWED`; forage cards: an `SQHIT` wrap on berry/shroom/nuts/cfruit gains. Check 49 (controller + phone width).
+- **Starter Deck and bad-luck protection** (Nov 20): 254's `giveStarter()` (first Drop Card for Dummies) gives 20 bound cards (`SDECK`: 6 Tree,
+  2 Oak, 2 each Slime/Moss slime/Wolf/Skeleton/Bat/Healing potion) kept in `STARTER` (save `dcs` {g,c}), never in `inv`, so they can't be traded,
+  sold or stored; `owned(k)` = inv + starter is what the binder and deck rules use; Deck 1 is filled (named "Starter Deck") if empty.
+  253's `roll()` counts misses (`PITY`, save `dcp`): the 200th miss in a row (`PITYN`) gives the card; `rawRoll()` is the plain 1%.

@@ -81,7 +81,12 @@
  function give(ck,why){const C=BY[ck];if(!C)return false;const K=C.key;if(!INAME[K])return false;// an unpublished Content card
   inv[K]=(inv[K]|0)+1;try{say('A Drop Card! '+INAME[K]+(C.d?' ('+C.d+')':''));msgT=5;sfx('level')}catch(e){self.SQERR&&SQERR(e,'253-2')}
   try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'253-3')}LAST.push({k:ck,why,t:Date.now()});if(LAST.length>10)LAST.shift();return true}
- const LAST=[];const roll=()=>Math.random()<RATE||!!window.SQDROPCARDALWAYS;
+ const LAST=[];
+ // bad-luck protection (Nov 20): every roll that misses counts; the PITYN-th miss in a row gives the card anyway (saved as `dcp`)
+ const PITYN=200;let PITY=0;
+ const rawRoll=()=>Math.random()<RATE;
+ const roll=()=>{if(window.SQDROPCARDALWAYS||rawRoll()){PITY=0;return true}if(++PITY>=PITYN){PITY=0;return true}return false};
+ SQSAVE.after('253:dcp',s=>{s.dcp=PITY});SQLOAD.after('253',(S)=>{PITY=Math.max(0,Math.min(PITYN-1,(S&&S.dcp)|0))});
  const mobKey=n=>{try{return String(SQPROPS.mkey(n)).replace(/^m:/,'')}catch(e){return String(n.rk||n.type||'slime')}};
  // monsters and dungeon bosses
  SQDROP.after('253 drop cards',(n)=>{try{if(!n||n._dc||n.summon||n._wb||n.type==='ib'||n._pet)return;n._dc=1;const k=mobKey(n);if(BY[k]&&BY[k].g!=='tree'&&roll())give(k,'kill')}catch(e){self.SQERR&&SQERR(e,'253-4')}});
@@ -93,4 +98,4 @@
  const LOGC={wood:'tree',oaklog:'oak',willowlog:'willow',maplelog:'maple',yewlog:'yew'};
  SQHIT.wrap('253 drop cards',_a=>function(){const b={};for(const l in LOGC)b[l]=inv[l]|0;const out=_a.apply(this,arguments);
   try{for(const l in LOGC)if((inv[l]|0)>b[l]){if(roll())give(LOGC[l],'chop');break}}catch(e){self.SQERR&&SQERR(e,'253-5')}return out});
- window.SQDROPCARD={CARDS:BY,ITEM,give,roll,LAST,mobKey,ibCard,RATE}})();
+ window.SQDROPCARD={CARDS:BY,ITEM,give,roll,rawRoll,LAST,mobKey,ibCard,RATE,PITYN,get pity(){return PITY},set pity(v){PITY=v|0}}})();

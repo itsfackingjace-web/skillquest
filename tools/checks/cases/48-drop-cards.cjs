@@ -4,7 +4,10 @@ module.exports={name:'Drop Cards drop from monsters, trees and bosses',async run
  const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);const D=SQDROPCARD,out={};
   const has=k=>inv[D.CARDS[k].key]|0;
   // the roll is 1%
-  window.SQDROPCARDALWAYS=false;let n=0;for(let i=0;i<20000;i++)if(D.roll())n++;out.rate=n/20000;window.SQDROPCARDALWAYS=true;
+  window.SQDROPCARDALWAYS=false;let n=0;for(let i=0;i<20000;i++)if(D.rawRoll())n++;out.rate=n/20000;window.SQDROPCARDALWAYS=true;
+  // bad-luck protection: the 200th miss in a row gives a card; a save keeps the count
+  window.SQDROPCARDALWAYS=false;D.pity=0;const _r=Math.random;Math.random=()=>.99;let first=0;for(let i=1;i<=200;i++)if(D.roll()){first=i;break}D.pity=57;const SP=JSON.parse(JSON.stringify(SQSAVE.snap?SQSAVE.snap():snap()));Math.random=_r;out.pity=[first,SP.dcp];
+  window.SQDROPCARDALWAYS=true;
   // a monster: its own card, once per monster
   const m={x:P.x+40,y:P.y,hp:0,kx:0,ky:0,type:'slime',rv:'moss',rk:'slime:moss'};enemyDrop(m);enemyDrop(m);out.moss=has('slime:moss');
   // summons and world-boss copies don't drop through enemyDrop
@@ -24,7 +27,7 @@ module.exports={name:'Drop Cards drop from monsters, trees and bosses',async run
   const S=JSON.parse(JSON.stringify(SQSAVE.snap?SQSAVE.snap():snap()));out.saved=JSON.stringify(S).includes('"'+k+'":1');
   window.SQDROPCARDALWAYS=false;return out});
  t(r.rate>.006&&r.rate<.014,'the drop rate is '+r.rate+', not about 1%');
- t.eq(r.moss,1,'Moss slime cards from one moss slime (killed twice)');t.eq(r.wolf,0,'cards from a summon');t.eq(r.alpha,1,'Frostfang Alpha card');
+ t.eq(r.pity,[200,57],'bad-luck protection (card on the 200th miss; count saved)');t.eq(r.moss,1,'Moss slime cards from one moss slime (killed twice)');t.eq(r.wolf,0,'cards from a summon');t.eq(r.alpha,1,'Frostfang Alpha card');
  t.eq(r.dragon,1,'Dragon card');t.eq(r.queen,1,'Briar Queen card');t.eq(r.turtle,1,'Giant Turtle card');
 t.eq(r.tree,1,'Tree card from chopping a tree '+JSON.stringify(r.w));t.eq(r.demon,['Drop Card: Demon','7HP 7ATK'],'the redrawn Demon card');
  t(r.inBag,'the card isn\'t listed in the bag');t.eq(r.icon,'data:image/png;base64,','card picture');t.eq(r.name,'Drop Card: Moss slime','name');t.eq(r.desc,'2HP 1ATK','description');

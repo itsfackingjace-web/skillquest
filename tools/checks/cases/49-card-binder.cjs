@@ -21,12 +21,15 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
   pad.connected=false;window.__SQPADTEST=()=>[null,null,null,null];
   // build a deck: ADD CARDS, pick cards, ADD
   const click=sel=>{const e=pbd.querySelector(sel);if(e)e.click();return!!e};
-  click('[data-dcb="edit"]');await W(100);
+  // the Starter Deck came with the guide: Deck 1, 20 bound cards (not in the bag's items)
+  const d0=B.decks[0];out.starter={n:d0.n,cards:Object.values(d0.c).reduce((a,b)=>a+b,0),ok:B.problems(d0).filter(p=>!/^Optional/.test(p)),batInv:inv[D.CARDS.bat.key]|0,batOwned:B.owned(D.CARDS.bat.key)};
+  const again=GEN.find(x=>x.n==='Drop Card for Dummies');again.f();out.starterOnce=B.owned(D.CARDS.bat.key);
+  click('[data-dcb="d:1"]');await W(50);click('[data-dcb="edit"]');await W(100);
   const add=async(k,n)=>{click('[data-dcb="s:'+k+'"]');await W(50);for(let i=0;i<n;i++){click('[data-dcb="add"]');await W(30)}click('[data-dcb="s:'+k+'"]');await W(30)};
   await add(D.CARDS.slime.key,3);await add(D.CARDS['wb:dragon'].key,2);await add(D.CARDS.tree.key,2);await add(D.CARDS.oak.key,2);
   click('[data-dcb="done"]');await W(100);const d=B.decks[B.V.deck];out.deck=JSON.parse(JSON.stringify(d.c));out.problems=B.problems(d);
   // saved and loaded
-  const S=JSON.parse(JSON.stringify(SQSAVE.snap?SQSAVE.snap():snap()));out.savedDeck=S.dcd&&S.dcd.d[0].c;B.decks[0].c={};applySave(S);await W(100);out.loadedDeck=SQBINDER.decks[0].c;
+  const S=JSON.parse(JSON.stringify(SQSAVE.snap?SQSAVE.snap():snap()));out.savedDeck=S.dcd&&S.dcd.d[1].c;out.savedStarter=S.dcs&&S.dcs.g;B.decks[1].c={};applySave(S);await W(100);out.loadedDeck=SQBINDER.decks[1].c;out.loadedStarter=SQBINDER.owned(D.CARDS.bat.key);
   // READ the guide, turn pages
   showScreen('bag');await W(200);invSel='dc_guide';rPn();await W(50);click('[data-dcb="read"]');await W(150);out.guideTab=B.V.tab;out.title=ptt.textContent;
   click('[data-dcb="np"]');click('[data-dcb="np"]');await W(80);out.page=B.V.page;out.pages=B.GP.length;
@@ -47,6 +50,7 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
  t(r.bagHidesCards,'the bag still lists cards (or no binder)');t(r.openBtn,'no OPEN button on the binder');t.eq(r.counts,[2,1],'card counts after showing the bag');
  t.eq(r.ptab,52,'binder panel');t(r.cards>=54,'collection shows '+r.cards+' cards');t(/found <?b?>?/.test('found ')&&/4 of/.test(r.found||'')||/found/.test(r.found||''),'collection header '+r.found);
  t.eq(r.padReach,'t:deck','the controller couldn\'t reach the Decks tab '+r.seq);t.eq(r.padTab,'deck','✕ on Decks');
+ t.eq(r.starter,{n:'Starter Deck',cards:20,ok:[],batInv:0,batOwned:2},'the Starter Deck');t.eq(r.starterOnce,2,'a second guide gave another Starter Deck');t.eq([r.savedStarter,r.loadedStarter],[1,2],'Starter Deck saved and loaded');
  t.eq(r.deck,{[ 'dc_slime']:2,['dc_wb_dragon']:1,['dc_tree']:2,['dc_oak']:2},'deck (2 slimes max, 1 boss max)');
  t(r.problems.some(p=>/Add 13 more/.test(p)),'deck rules: '+JSON.stringify(r.problems));
  t.eq(r.savedDeck,r.deck,'deck in the save');t.eq(r.loadedDeck,r.deck,'deck after loading');
