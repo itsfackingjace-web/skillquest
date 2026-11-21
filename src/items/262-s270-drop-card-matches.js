@@ -59,8 +59,8 @@
  const PICS={};
  function bust(key,ch){if(PICS[key])return PICS[key];try{const c=document.createElement('canvas');c.width=80;c.height=80;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.setTransform(4,0,0,4,-24,-50);
    const sv=GC;GC=x;try{cP(ch,0,0,16,36,false)}finally{GC=sv}return PICS[key]=c.toDataURL()}catch(e){self.SQERR&&SQERR(e,'262-20');return''}}
- const TREEK={tree:'tree',oak:'oak',willow:'willow',maple:'maple',yew:'yew'};
- function treePic(id){const k='t:'+id;if(PICS[k])return PICS[k];try{const H=hdSprites(),a=H[TREEK[id]||'tree']||H.tree,c=Array.isArray(a)?a[Math.min(2,a.length-1)]:a;return PICS[k]=c.toDataURL()}catch(e){self.SQERR&&SQERR(e,'262-21');return''}}
+ const TREEK={tree:'tree',oak:'oak',willow:'willow',maple:'maple',yew:'yew',pine:'pine'},RGV={deadtree:'dead',voidtree:'dark'};
+ function treePic(id){const k='t:'+id;if(PICS[k])return PICS[k];try{if(RGV[id]&&typeof rgSprite==='function'){const o=rgSprite(RGV[id],0),c=o&&(o.c||o);if(c&&c.toDataURL)return PICS[k]=c.toDataURL()}}catch(e){self.SQERR&&SQERR(e,'262-22')}try{const H=hdSprites(),a=H[TREEK[id]||'tree']||H.tree,c=Array.isArray(a)?a[Math.min(2,a.length-1)]:a;return PICS[k]=c.toDataURL()}catch(e){self.SQERR&&SQERR(e,'262-21');return''}}
  function stumpPic(){if(PICS.stump)return PICS.stump;const c=document.createElement('canvas');c.width=16;c.height=12;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
   r(3,3,10,9,'#3a2410');r(4,4,8,7,'#8a5a30');r(3,1,10,4,'#3a2410');r(4,2,8,2,'#d8b078');r(7,2,1,1,'#a07040');r(9,3,1,1,'#a07040');r(1,10,14,2,'#3a2410');r(12,0,1,1,'#78c850');r(13,1,1,1,'#58a838');return PICS.stump=c.toDataURL()}
  const aceCh=()=>{const n=(window.NPCS||[]).find(n=>n.kind==='cardsharp');return n&&n.ch||{sk:1,hs:3,hc:2,sh:4,pn:2,ht:1,hcol:1,so:1}};

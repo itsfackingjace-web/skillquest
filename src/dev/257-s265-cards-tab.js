@@ -11,7 +11,7 @@
  const sec=()=>S.draft.cards||(S.draft.cards={});
  const liveRate=k=>{const l=S.live&&S.live.cards&&S.live.cards[k];if(l&&typeof l.r==='number')return l.r;const o=D.ORIG[k];return o?(o.r==null?D.RATE:o.r):null};
  const cur=k=>{const C=D.CARDS[k],o=D.ORIG[k]||{},d=sec()[k]||{};return{n:d.n!=null?d.n:String((C||o).n||'').replace(/^Drop Card: /,''),d:d.d!=null?d.d:(C||o).d||'',g:d.g||(C||o).g||'reg',r:typeof d.r==='number'?d.r:((C||o).r==null?D.RATE:(C||o).r),src:d.src||''}};
- const srcList=()=>{const out=new Set(['tree','oak','willow','maple','yew','pot_heal','pot_str','pot_iron','pot_swift','pot_poison','pot_napalm','pot_zap','berry','shroom','nuts','cfruit']);
+ const srcList=()=>{const out=new Set(['tree','oak','willow','maple','yew','pine','deadtree','voidtree','pot_heal','pot_str','pot_iron','pot_swift','pot_poison','pot_napalm','pot_zap','berry','shroom','nuts','cfruit']);
   try{for(const k in (window.SQISLIFE&&SQISLIFE.MOBS)||{})out.add(k)}catch(e){self.SQERR&&SQERR(e,'257-1')}for(const k in D.CARDS)out.add(k);return[...out].sort()};
  function render(){const q=T.q.toLowerCase(),L=Object.values(D.CARDS);
   let h='<div class="dv-card"><b>Drop Cards</b><p class="dv-mut">Change a card\'s name, stats, kind or drop rate, or add a new card. Save to draft, then Publish. Paint a card in the <b>Sprites</b> tab by its item key (shown below); the shiny one is the same key + <code>_sh</code>. Remember: a published drop should never get more common.</p>'+

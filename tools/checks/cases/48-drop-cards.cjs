@@ -21,6 +21,11 @@ module.exports={name:'Drop Cards drop from monsters, trees and bosses',async run
   const tk=D.CARDS.tree.key;const before=inv[tk]|0;
   face=[1,0];const[fx,fy]=front(16),tx=Math.floor(fx/16),ty=Math.floor(fy/16),i=ty*N+tx;obj[i]={t:'tree',hp:3};STR.delete(i);BS.delete(i);
   const w0=inv.wood|0;for(let k=0;k<25&&(inv.wood|0)===w0;k++){swing=0;attack();await W(450)}out.tree=(inv[tk]|0)-before;out.w=[w0,inv.wood|0];
+  // Nov 21 (Jace): a pine gives the Pine card, a cactus the Cactus fruit card (never the Tree card); yews, dead and void trees their own
+  const chop=async(o,ck)=>{const c=D.CARDS[ck].key,tc=D.CARDS.tree.key,b0=inv[c]|0,t0=inv[tc]|0;obj[i]=o;STR.delete(i);BS.delete(i);const s0=JSON.stringify(inv);
+   for(let k=0;k<40&&JSON.stringify(inv)===s0;k++){swing=0;attack();await W(450)}return[(inv[c]|0)-b0,ck==='tree'?0:(inv[tc]|0)-t0]};
+  out.pine=await chop({t:'pine',hp:3},'pine');out.cactus=await chop({t:'cactus',hp:3},'cfruit');
+  out.kinds=[{t:'yew'},{t:'tree',v:'dead'},{t:'tree',v:'dark'},{t:'cactus'},{t:'oak'},{t:'tree'}].map(SQTREECARD);
   out.demon=[INAME[D.CARDS['wb:demon'].key],IDESC[D.CARDS['wb:demon'].key]];
   // shown in the bag with their own picture, and kept by a save
   const k=D.CARDS['slime:moss'].key;out.inBag=BAG_ORDER().includes(k);out.icon=String(iconURL(k)).slice(0,22);out.name=INAME[k];out.desc=IDESC[k];
@@ -29,6 +34,6 @@ module.exports={name:'Drop Cards drop from monsters, trees and bosses',async run
  t(r.rate>.006&&r.rate<.014,'the drop rate is '+r.rate+', not about 1%');
  t.eq(r.pity,[200,57],'bad-luck protection (card on the 200th miss; count saved)');t.eq(r.moss,1,'Moss slime cards from one moss slime (killed twice)');t.eq(r.wolf,0,'cards from a summon');t.eq(r.alpha,1,'Frostfang Alpha card');
  t.eq(r.dragon,1,'Dragon card');t.eq(r.queen,1,'Briar Queen card');t.eq(r.turtle,1,'Giant Turtle card');
-t.eq(r.tree,1,'Tree card from chopping a tree '+JSON.stringify(r.w));t.eq(r.demon,['Drop Card: Demon','7HP 7ATK'],'the redrawn Demon card');
+t.eq(r.tree,1,'Tree card from chopping a tree '+JSON.stringify(r.w));t.eq(r.pine,[1,0],'Pine card (and no Tree card) from a pine');t.eq(r.cactus,[1,0],'Cactus fruit card (and no Tree card) from a cactus');t.eq(r.kinds,['yew','deadtree','voidtree','cfruit','oak','tree'],'which card each tree gives');t.eq(r.demon,['Drop Card: Demon','7HP 7ATK'],'the redrawn Demon card');
  t(r.inBag,'the card isn\'t listed in the bag');t.eq(r.icon,'data:image/png;base64,','card picture');t.eq(r.name,'Drop Card: Moss slime','name');t.eq(r.desc,'2HP 1ATK','description');
  t(r.saved,'the card isn\'t in the save')}};

@@ -10,7 +10,8 @@
 //   (071's wbLoot, window.SQWBWON); island bosses `ib:<island>` and guild bosses void_treant/turtle (100's ibReward, window.SQIBWON:
 //   arena ids gt_/gu_ + guild id). Summons and other players' copies of world/island bosses never drop through enemyDrop.
 // - Potion and forage cards (spells: pink and parchment frames) are in CARDS too; 254 gives them (brewing, foraging).
-// - Trees: a HIT that gives logs (wood/oak/willow/maple/yew) rolls once for that tree's card.
+// - Trees: a HIT that gathers logs rolls once for the card of the tree it hit (tree, oak, willow, maple, yew, pine, dead tree, void
+//   tree; a cactus rolls Cactus fruit).
 // - A Content card that isn't published yet (no INAME) can't drop; nothing else is given in its place.
 (()=>{const RATE=.01;
  const CARDS=[
@@ -39,6 +40,9 @@
  ["willow","Willow","tree","3 Mana",["#7e4210,#d0c658,#916b03,#33602a,#6fae4a,#9cd070,#6a4428","...02020202.....2111111110....0111111112....2113443110....0134554312....2344554430....0341441432....2341661430....0311661132....2111661110....0116666112....2111111110....0111111112.....20202020..."]],
  ["maple","Maple","tree","4 Mana",["#7e4210,#d0c658,#916b03,#78281a,#d0582a,#f08a40,#5a3820","...02020202.....2111111110....0111111112....2111441110....0114554112....2144554410....0344444432....2133443310....0111661112....2111661110....0116666112....2111111110....0111111112.....20202020..."]],
  ["yew","Yew","tree","5 Mana",["#7e4210,#d0c658,#916b03,#12302a,#2c6a50,#3e8a68,#4a3020","...02020202.....2111111110....0111111112....2111341110....0113443112....2113453110....0134454312....2134444310....0344444432....2111661110....0116666112....2111111110....0111111112.....20202020..."]],
+ ["pine","Pine","tree","1 Mana",["#7e4210,#d0c658,#916b03,#1e4a30,#2e7048,#58a060,#6a4428","...02020202.....2111111110....0111551112....2114554110....0113443112....2134544310....0113443112....2134444310....0344444432....2133333310....0111661112....2111111110....0111111112.....20202020..."]],
+ ["deadtree","Dead tree","tree","1 Mana",["#7e4210,#d0c658,#916b03,#3a2c24,#5a4434,#7a6450,#2a2220","...02020202.....2111111110....0311111132....2131111310....0113113112....2311441130....0131441312....2113443110....0111441112....2111441110....0114444112....2111111110....0111111112.....20202020..."]],
+ ["voidtree","Void tree","tree","6 Mana",["#7e4210,#d0c658,#916b03,#2a1a40,#5a3090,#b080f0,#3c2a3c","...02020202.....2111111110....0115111512....2151111110....0113443112....2134554310....0134444312....2113333110....0111661112....2111661110....0116666112....2111111110....0111111112.....20202020..."]],
  ["wb:wisp","Flame Wisp","world","4HP 6ATK",["#6a1010,#e8b0a0,#b83020,#d83810,#f8a020,#fff0a0,#282028","...02020202.....2111111110....0111111112....2111311110....0113431312....2134443110....0145554112....2345656430....0345555432....2134444310....0113333112....2111111110....0111111112.....20202020..."]],
  ["wb:giant","Stone Giant","world","8HP 4ATK",["#6a1010,#e8b0a0,#b83020,#585860,#9898a0,#f8d048,#282028","...02020202.....2111111110....0111111112....2113333110....0134444312....2145445410....0144664412....2344444430....0341441432....2314444130....0113113112....2111111110....0111111112.....20202020..."]],
  ["wb:demon","Demon","world","7HP 7ATK",["#6a1010,#e8b0a0,#b83020,#401020,#8a2040,#ffb030,#f8e8a0","...02020202.....2111111110....0111111112....2611111160....0631111362....2133333310....0134444312....2145445410....0344664432....2341441430....0313113132....2111111110....0111111112.....20202020..."]],
@@ -114,10 +118,22 @@
  (window.SQWBWON=window.SQWBWON||[]).push(b=>{const k=srcOf('wb:'+(b&&b.type));if(BY[k]&&roll(k))give(k,'worldboss')});
  const ibCard=id=>{id=String(id||'');if(id.indexOf('gt_')===0)return'void_treant';if(id.indexOf('gu_')===0)return'turtle';return'ib:'+id};
  (window.SQIBWON=window.SQIBWON||[]).push(b=>{const k=srcOf(ibCard(b&&b.ib));if(BY[k]&&roll(k))give(k,'islandboss')});
- // trees: a swing that gave logs
- const LOGC={wood:'tree',oaklog:'oak',willowlog:'willow',maplelog:'maple',yewlog:'yew'};
- SQHIT.wrap('253 drop cards',_a=>function(){const b={};for(const l in LOGC)b[l]=inv[l]|0;const out=_a.apply(this,arguments);
-  try{for(const l in LOGC)if((inv[l]|0)>b[l]){const k=srcOf(LOGC[l]);if(roll(k))give(k,'chop');break}}catch(e){self.SQERR&&SQERR(e,'253-5')}return out});
+ // trees: a swing that gathered from a tree rolls that tree's card. Nov 21: the card comes from the object HIT reaches (its type and
+ // variant), not from which log went up: yews, pines, dead trees and cacti also give plain wood, so a yew or a cactus gave the Tree
+ // card, and void trees (199 swaps their logs for void logs) gave none. A cactus rolls the Cactus fruit card instead (254 rolls it
+ // when fruit comes out; here when only wood does). Objects this can't name fall back to the log that went up (newest tier first).
+ const LOGC={yewlog:'yew',maplelog:'maple',willowlog:'willow',oaklog:'oak',voidlog:'voidtree',wood:'tree'};
+ const TKIN=['oak','willow','maple','yew','pine'];
+ function frontO(){try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;
+   if(!SCENE)return tx>=0&&ty>=0&&tx<N&&ty<N?obj[ty*N+tx]:null;
+   if(R&&R.region){const it=rgObjAt(R,tx,ty);return it&&!it.gone?it.o:null}
+   if(R){const it=(R.items||[]).find(q=>q.x===tx&&q.y===ty&&!q.gone&&q.t==='_obj');return it?it.o:null}}catch(e){self.SQERR&&SQERR(e,'253-9')}return null}
+ const treeCard=o=>{if(!o)return null;const t=String(o.t||'');if(t==='cactus')return'cfruit';if(o.v==='dark')return'voidtree';if(o.v==='dead')return'deadtree';
+  for(const k of TKIN)if(t===k||t.indexOf(k)===0)return k;if(t==='tree')return'tree';return null};
+ SQHIT.wrap('253 drop cards',_a=>function(){const o=frontO(),tk=treeCard(o),b={};for(const l in LOGC)b[l]=inv[l]|0;const fr=inv.cfruit|0;const out=_a.apply(this,arguments);
+  try{let got=null;for(const l in LOGC)if((inv[l]|0)>b[l]){got=l;break}
+   if(got){let k=tk;if(k==='cfruit'&&(inv.cfruit|0)>fr)k=null;else if(!k)k=LOGC[got];if(k){k=srcOf(k);if(BY[k]&&roll(k))give(k,'chop')}}}catch(e){self.SQERR&&SQERR(e,'253-5')}return out});
+ window.SQTREECARD=treeCard;
  // ---- the Dev Suite's Cards tab (library `cards`): {<card key>: {n, d, r (0-1), g, src, spr?}} changes a card or adds one (keys cu_*) ----
  function applyLib(L){const lib=(L&&L.cards)||{};for(const k in SRC)delete SRC[k];
   for(const k in BY){if(!ORIG[k]&&!lib[k]){const C=BY[k];delete ITEM[C.key];delete ITEM[C.sh];delete BY[k];continue}if(ORIG[k]&&!lib[k]){const o=ORIG[k];define(k,o.n.replace(/^Drop Card: /,''),o.g,o.d,o.spr,o.r,null)}}
