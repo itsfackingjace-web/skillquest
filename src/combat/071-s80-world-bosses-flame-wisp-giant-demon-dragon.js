@@ -48,7 +48,7 @@ function wbTick(){if(!MP.on||!FB||!MP.user)return;const now=wbNow(),F=window.SQW
  // it fell: share out the loot
  if(B&&wbHp(B)<=0&&WB.fell!==slot){WB.fell=slot;wbLoot(B)}}
 function wbHp(b){let s=0;for(const u in WB.all)s+=Math.max(0,+WB.all[u]||0);if(MP.user)s+=Math.max(0,WB.dmg-(+WB.all[MP.user.uid]||0));return Math.max(0,b.mhp-s)}
-function wbLoot(b){const me=MP.user&&MP.user.uid,mine=WB.dmg;mpLog('game','The '+b.T.n+' has been defeated!');if(!(mine>=1)||WB.claimed[b.slot])return;WB.claimed[b.slot]=1;
+function wbLoot(b){const me=MP.user&&MP.user.uid,mine=WB.dmg;mpLog('game','The '+b.T.n+' has been defeated!');if(!(mine>=1)||WB.claimed[b.slot])return;WB.claimed[b.slot]=1;try{for(const f of window.SQWBWON||[])f(b)}catch(e){self.SQERR&&SQERR(e,'071-11')}
  const rank=Object.entries(Object.assign({},WB.all,{[me]:mine})).sort((a,c)=>c[1]-a[1]).findIndex(e=>e[0]===me)+1,top=rank>0&&rank<=3,r=Math.random;
  const T=b.T,g=Math.round((T.gold[0]+r()*(T.gold[1]-T.gold[0]))*(top?1.6:1)),got={};const add=(k,n)=>{if(n>0&&INAME[k]){inv[k]=(inv[k]|0)+n;got[k]=(got[k]|0)+n}};
  if(b.type==='wisp'){add('oaklog',3+Math.floor(r()*4));add('pot_heal',1+(r()<.5?1:0));if(r()<.35)add(r()<.5?'ruby':'sapphire',1);

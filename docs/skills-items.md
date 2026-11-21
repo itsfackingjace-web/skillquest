@@ -146,3 +146,12 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   get XP (gBoost: the last addXp of that skill within 1.5 s / base units; prodBoost: o.xp/o.n). A Worker ticks every 200 ms; while
   `document.hidden` the game runs `upd` (no draw) in 50 ms steps. Magic (202/036): mana regen boost `SQMREG()` x1 at Magic 1 to x3 at 25;
   Mana Shield is Mana Barrier (once every 30 s, `SQMSH`). Check 32.
+- **Drop Cards** (`items/253-s261-drop-cards.js`, `window.SQDROPCARD`, Nov 20): 43 collectible cards for the coming Drop Card game (rules draft: the
+  "Drop Card: Rules Draft" doc). `CARDS` rows = [key, name, group, stats, Jace's Content item key | [palette, 14x14 grid on his template]];
+  Slime/Skeleton/Tree/Demon are his Content items `it_new_item_5..8` (they drop only once published: no `INAME`, no drop), the rest are
+  `dc_<key>` items made here (INVK/INAME/SN/SHORT/SELLP/IDESC/EXTRA_BAG, `iconURL` from `SQA.render`, a Dev Suite sprite for the key wins).
+  1% (`RATE`) each: monsters through an `SQDROP` after-step (key = `SQPROPS.mkey` without `m:`, so per variant; dungeon bosses by type;
+  skips `summon`, `_wb`, `ib`, `_pet`, once per monster `_dc`), world bosses through 071's `wbLoot` hook `window.SQWBWON` (fighters who
+  claimed loot), island and guild bosses through 100's `ibReward` hook `window.SQIBWON` (`gt_`/`gu_` arena ids = Void Treant / Giant Turtle),
+  trees through an `SQHIT` wrap (a swing that raised wood/oaklog/willowlog/maplelog/yewlog). Frame colours: gold monsters/trees, red world,
+  purple dungeon, blue island, green guild. `SQDROPCARDALWAYS` forces the roll (check 48).

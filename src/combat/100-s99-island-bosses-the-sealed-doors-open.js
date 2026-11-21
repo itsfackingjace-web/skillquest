@@ -155,7 +155,7 @@
    if(b.hp<=0&&!b._rew)ibReward(b)})}
  // spiderlings: small, fast, weak
  {SQUPD.wrap('100',_u=>function(dt){const pre=new Map();for(const n of en)if(n.type==='spiderling'&&!n.dead)pre.set(n,[n.x,n.y]);_u(dt);if(menuOpen||pnOpen)return;for(const[n,[x,y]]of pre){if(n.dead)continue;const dx=P.x-x,dy=P.y-y,d=Math.hypot(dx,dy)||1;n.x=x+n.kx*.4;n.y=y+n.ky*.4;n.t=(n.t||0)+dt;stepTo(n,dx/d*46*dt,dy/d*46*dt)}})}
- function ibReward(b){b._rew=1;b.dead=1;b.dropped=1;b.pr=[];b.hz=[];for(const m of en)if(m.summon&&!m.dead){m.dead=1;m.dropped=1}const B=IB[b.ib],g0=B.gold[0]+Math.floor(Math.random()*(B.gold[1]-B.gold[0]));GLD+=g0;const got=[g0+' gold'];
+ function ibReward(b){b._rew=1;b.dead=1;b.dropped=1;try{for(const f of window.SQIBWON||[])f(b)}catch(e){self.SQERR&&SQERR(e,'100-22')}b.pr=[];b.hz=[];for(const m of en)if(m.summon&&!m.dead){m.dead=1;m.dropped=1}const B=IB[b.ib],g0=B.gold[0]+Math.floor(Math.random()*(B.gold[1]-B.gold[0]));GLD+=g0;const got=[g0+' gold'];
   for(const[k,n]of B.loot){inv[k]=(inv[k]|0)+n;const nm=INAME[k]||k;got.push(n+' '+(n>1?(SN[k]||(/s$/.test(nm)?nm:nm+'s')):nm).toLowerCase())}addXp(0,B.xp);addXp(7,Math.round(B.xp*.4));
   let rare=null;if(Math.random()<.05||window.SQIBRARE){const[rk,rn]=B.rare;rare=rn;if(window.SQNPET&&SQNPET[rk])SQGIVEPET(rk);else inv[rk]=(inv[rk]|0)+1}
   if(!b._rp){b._deadAt2=performance.now();ST.done=b}ST.boss=null;try{sqEvent('islandboss',b.ib)}catch(e){self.SQERR&&SQERR(e,'100-14')}saveNow();try{svg()}catch(e){self.SQERR&&SQERR(e,'100-15')}
