@@ -86,3 +86,4 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   fire FIRE builds with it, next to yours it feeds one), saved fuel from a tier build comes back as that log (`PEND.w0`; 039's message names it via
   `SQFIRELOGN`), and the extra fire XP joins the fire's own XP number (check 67). 036's cooldown cut is `window.SQULTCUT()`, used by 216's Meteor
   Fall too (check 68). Arrow damage per kind checked (9/10/11/12 at the same bow): a bow always shoots the best arrows carried.
+- 149's DEPOSIT BAG skips `SQKEEPFALL` keys (cards and pet cards are bag items hidden by the binder; Jace's "randomly losing cards" were in his chests). 254 looked for pets on `window.EQ`, but 028's `EQ` is a script-level const: no pet card existed until a save had one, named with the raw key ("pweb"). It reads `EQ` directly now (`EQS()`), names from `EQ[pk].n` / `INAME`, and renames after every load. Check 69.

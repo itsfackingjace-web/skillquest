@@ -3,7 +3,9 @@
 // chests take it all at once and save once; a friend's shared chest (072, CHEST_H._sh) goes item by item through its
 // database transaction (chestMove), like moving them one at a time.
 (()=>{const chest=()=>{const s=CHEST_H||STR.get(CHEST_AT);return s&&s.t==='chest'&&s.items?s:null};
- const bagKeys=()=>BAG_ORDER().filter(k=>(inv[k]|0)>0&&k!=='chest');
+ // Nov 21 (Jace: "I keep randomly losing certain cards"): Drop Cards are bag items hidden by the binder, so DEPOSIT BAG put them all
+ // into the chest without a word. It leaves your cards (254's SQKEEPFALL) in your binder now; a card can still go in a chest by hand.
+ const bagKeys=()=>BAG_ORDER().filter(k=>(inv[k]|0)>0&&k!=='chest'&&!(window.SQKEEPFALL&&SQKEEPFALL(k)));
  function depositBag(){const s=chest();if(!s)return;if(s._sh&&!s.ok){say('The chest is still opening...');return}const ks=bagKeys();if(!ks.length){say('Your bag is empty.');return}
   let n=0;for(const k of ks)n+=inv[k]|0;
   if(s._sh){for(const k of ks)chestMove(k,'d')}
