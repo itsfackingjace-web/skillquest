@@ -26,6 +26,6 @@
  pbd.addEventListener('click',e=>{if(shop!==KIND||ptab!=2||!pnOpen)return;const b=e.target.closest('[data-dcs2]');if(!b)return;e.stopPropagation();e.preventDefault();if(b.disabled)return;const a=b.dataset.dcs2;
   if(a==='buy'){if(GLD<1){say('You need 1 gold.');sfx('swish');return}const g=GEN.find(x=>x.n==='Drop Card for Dummies');if(!g)return;GLD-=1;g.f();sfx('coin');try{saveLocal(true)}catch(err){self.SQERR&&SQERR(err,'258-2')}rPn();return}
   if(a==='how'){shop=null;B.open('guide');return}
-  if(a==='bind'){if((inv[B.BIND]|0)<1){say('You don\'t have a Card Binder yet. Buy the guide, or find your first card!');sfx('swish');return}shop=null;B.open('col')}},true);
+  if(a==='bind'){shop=null;B.open('col')}},true);
  try{if(window.WK_ROLE)WK_ROLE[KIND]='Card Sharp: Drop Card for Dummies, help with Drop Card'}catch(e){self.SQERR&&SQERR(e,'258-3')}
  window.SQCARDSHARP={TX,TY,KIND,html}})();

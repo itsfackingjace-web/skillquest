@@ -34,7 +34,7 @@ GRV.fell=false;GRV.fellN=0;
 // (also run by the reset wrapper below, so respawning before this timer fires (or with timers throttled) can't skip the grave;
 // with no known spot for a grave, reset keeps your things in the bag instead of wiping them)
 function grvFall(){if(GRV.fell||NEWG)return;GRV.fell=true;GRV.nospot=false;const spot=GRV.lastSpot;if(!spot||typeof inv!=='object'){GRV.fellN=0;GRV.nospot=true;return}
- const lost={};for(const k in inv){const n=inv[k]|0;if(n>0&&!EQK.includes(k)&&INAME[k]){lost[k]=n;inv[k]=0}}GRV.fellN=Object.keys(lost).length;if(!GRV.fellN)return;
+ const lost={},kf=typeof window.SQKEEPFALL==='function'?window.SQKEEPFALL:()=>false;for(const k in inv){const n=inv[k]|0;if(n>0&&!EQK.includes(k)&&INAME[k]&&!kf(k)){lost[k]=n;inv[k]=0}}/* Nov 21: Drop Cards stay with you (254's SQKEEPFALL) */GRV.fellN=Object.keys(lost).length;if(!GRV.fellN)return;
  grvMake(lost,spot);const hp0=P.hp;dead=false;P.hp=Math.max(1,hp0);try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'063-4')}finally{dead=true;P.hp=hp0}}
 setInterval(()=>{if(!dead){GRV.fell=false;return}grvFall()},100);
 {const _rs=reset;reset=function(){let keep=null;if(dead&&!NEWG){try{grvFall()}catch(e){self.SQERR&&SQERR(e,'063-5')}if(GRV.nospot&&typeof inv==='object'){keep={};for(const k in inv)if((inv[k]|0)>0&&!EQK.includes(k))keep[k]=inv[k]|0}}

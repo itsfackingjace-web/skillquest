@@ -19,7 +19,7 @@
  // ---- the two items ----
  const item=(k,n,d,v)=>{if(!INVK.includes(k))INVK.push(k);INAME[k]=n;SN[k]=n;SHORT[k]=n.toLowerCase();SELLP[k]=v;IDESC[k]=d;inv[k]=inv[k]|0;if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k)};
  item(GUIDE,'Drop Card for Dummies','A guide to all things Drop Card: the cards, your binder, building a deck and how a match is played. Tap READ.',1);
- item(BIND,'Card Binder','Holds all your Drop Cards and your decks. Tap OPEN.',0);
+ item(BIND,'Card Binder','Your Drop Cards are in the CARDS tab of your bag now.',0);
  GEN.push({n:'Drop Card for Dummies',c:1,f:()=>{inv[GUIDE]=(inv[GUIDE]|0)+1;giveBinder();const st=giveStarter();say('Drop Card for Dummies!'+(st?' It came with a free Starter Deck, already in your Card Binder.':'')+' Find it in your bag and tap READ.');msgT=6}});
  // ---- the Starter Deck (Nov 20): 20 bound cards, given once with the first guide; they live only in the binder (never in inv, so
  // they can't be traded, sold or stored) and fill Deck 1 if it's empty. Saved as `dcs` {g: given, c: {key: count}}.
@@ -36,7 +36,15 @@
   if((k===GUIDE||k===BIND)&&!(window.SQA&&SQA.hasIcon&&SQA.hasIcon(k))){if(!ICC[k])try{ICC[k]=SQA.render(k===GUIDE?IC.guide:IC.binder).toDataURL()}catch(e){self.SQERR&&SQERR(e,'254-1')}if(ICC[k])return ICC[k]}
   if(PET[k]&&!(window.SQA&&SQA.hasIcon&&SQA.hasIcon(k)))return petIcon(k)||_ic(k,col);
   return _ic(k,col)});
- function giveBinder(){if((inv[BIND]|0)<1){inv[BIND]=1;return true}return false}
+ // Nov 21 (Jace, after his binder went into a grave: "It shouldn't even be a tangible item like that. It should be a secondary tab in
+ // the bag."): the Card Binder is the bag's CARDS tab now, never an item; the old item is taken out of bags on load (its key stays
+ // defined for old graves and saves). Cards stay ordinary items (trades, the World Market, chests), but they and the old binder
+ // never go into a grave when you fall: 063's grvFall skips SQKEEPFALL keys and the reset step below keeps them through the wipe.
+ function giveBinder(){return false}
+ const keepFall=k=>k===BIND||isCard(k)||!!(D.ITEM[k]);window.SQKEEPFALL=keepFall;
+ {const _rs=reset;reset=function(){let keep=null;if(dead&&!(typeof NEWG!=='undefined'&&NEWG)){keep={};for(const k in inv)if((inv[k]|0)>0&&keepFall(k)&&k!==BIND)keep[k]=inv[k]|0}
+   const out=_rs.apply(this,arguments);if(keep)for(const k in keep)inv[k]=keep[k];return out}}
+ SQLOAD.after('254 binder tab',()=>{if(inv&&inv[BIND])inv[BIND]=0});
  // ---- pet cards ----
  const PET={};// card key -> {pet item key, n}
  // Companion powers (rules draft); pets made later get Friendly until the Dev Suite picks one
@@ -66,11 +74,13 @@
  const info=k=>{const C=D.ITEM[k];if(C)return{k,n:C.n,d:C.d,g:C.g};const P=PET[k];if(P)return{k,n:P.n,d:IDESC[k],g:'pet'};return null};
  const isCard=k=>!!(D.ITEM[k]||PET[k]);
  const BOSSG=new Set(['world','dungeon','island','guild']);
+ // ---- the bag's two tabs: ITEMS (the bag) and CARDS (the binder) ----
+ const bagTabs=(cards,n)=>'<div class="dcb-bt" role="tablist"><button role="tab" class="dcb-btb'+(cards?'':' on')+'" data-dcb="bag" aria-selected="'+!cards+'">ITEMS</button><button role="tab" class="dcb-btb'+(cards?' on':'')+'" data-dcb="open" aria-selected="'+cards+'">CARDS'+(n?' ('+n+')':'')+'</button></div>';
  // ---- bag: one binder instead of every card ----
  {const _bg=bagGridHTML;bagGridHTML=function(){const hid=[];for(const k of ORDER().concat(Object.values(D.CARDS).map(c=>c.sh)))if((inv[k]|0)>0){hid.push([k,inv[k]]);inv[k]=0}
-  if(hid.length)giveBinder();let h;try{h=_bg.apply(this,arguments)}finally{for(const[k,n]of hid)inv[k]=n}
-  const k=invSel;if(k===BIND)h=h.replace('<div class="bd">','<div class="bd"><button class="use dcb-open" data-dcb="open">OPEN</button>');
-  else if(k===GUIDE)h=h.replace('<div class="bd">','<div class="bd"><button class="use dcb-open" data-dcb="read">READ</button>');return h}}
+  if((inv[BIND]|0)>0){hid.push([BIND,inv[BIND]]);inv[BIND]=0}let h;try{h=_bg.apply(this,arguments)}finally{for(const[k,n]of hid)inv[k]=n}
+  const nk=ORDER().filter(k=>owned(k)>0).length;h=bagTabs(false,nk)+h;
+  const k=invSel;if(k===GUIDE)h=h.replace('<div class="bd">','<div class="bd"><button class="use dcb-open" data-dcb="read">READ</button>');return h}}
  // ---- decks ----
  let DECKS=[0,1,2].map(i=>({n:'Deck '+(i+1),c:{},pet:null})),ACTIVE=0;
  const deckN=d=>Object.values(d.c).reduce((a,b)=>a+b,0);
@@ -86,7 +96,7 @@
  const GP=[
   ['What is Drop Card?','<p>Drop Card is a card game played with cards you find in SkillQuest. Two players each bring a deck of 20 to 60 cards and try to bring the other hero from 30 HP down to 0.</p><p>Every monster, tree, boss, potion, forage plant and pet has its own card. Collect them, build a deck in your <b>Card Binder</b>, and play.</p><p><b>Play now:</b> talk to Ace the Card Sharp at his card table next to the chess table in Hollow Village and play your deck against him on Easy, Normal or Hard. <b>Against players:</b> stand next to someone, tap their name and choose PLAY DROP CARD.</p>'],
   ['Getting cards','<p><b>Monsters:</b> 1% chance to drop their own card when you beat them. Every kind has its own card (a Moss slime drops a Moss slime card).</p><p><b>Trees:</b> 1% chance per chop. Better trees give more Mana.</p><p><b>Bosses:</b> world, dungeon, island and guild bosses each have a rare card (1% for everyone who fought).</p><p><b>Potions:</b> 1% when you brew one. <b>Forage:</b> 1% when you pick berries, mushrooms, nuts or cactus fruit.</p><p><b>Pets:</b> release a pet from your bag and you always get its card.</p><p><b>Starter Deck:</b> your first copy of this book comes with a free 20-card deck, so you can build and play right away. Starter cards stay in your binder (they can\'t be traded or sold). Swap in the cards you find to make it yours.</p><p><b>Unlucky?</b> If you go a long time without finding a card, the next one is guaranteed.</p>'],
-  ['Your Card Binder','<p>All your cards live in the Card Binder, so they only take one bag slot. Tap the binder in your bag, then OPEN.</p><p><b>Collection</b> shows every card in the game. Dark ones are cards you haven\'t found yet.</p><p><b>Decks</b> holds 3 decks. Pick one to play with. Cards are still items, so you can trade them, sell them on the World Market or keep spares in a chest.</p>'],
+  ['Your Card Binder','<p>All your cards live in your Card Binder: open your bag and tap the <b>CARDS</b> tab. Your cards stay with you when you fall, so they never end up in a grave.</p><p><b>Collection</b> shows every card in the game. Dark ones are cards you haven\'t found yet.</p><p><b>Decks</b> holds 3 decks. Pick one to play with. Cards are still items, so you can trade them, sell them on the World Market or keep spares in a chest.</p>'],
   ['Building a deck','<p>A deck has <b>20 to 60 cards</b>:</p><p>- At most <b>2</b> of any monster, potion or forage card.<br>- Only <b>1</b> of each boss card.<br>- At least <b>4 tree cards</b>, or you won\'t have Mana to play anything. Trees have no limit.</p><p>You can also pick one <b>pet card</b> as your Companion. It doesn\'t count toward your deck size.</p>'],
   ['The cards','<p><b>Trees</b> (gold): give Mana. Tree, Pine and Dead tree 1, Oak 2, Willow 3, Maple 4, Yew 5, Void tree 6. A cactus gives the Cactus fruit card, not a tree card.</p><p><b>Monsters</b> (gold): fight on the board. ATK is the damage they deal, HP is how much they can take.</p><p><b>Bosses</b>: strong monsters with a power. Red = world, purple = dungeon, blue = island, green = guild.</p><p><b>Potions</b> (pink) and <b>forage</b> (parchment): one-use spells. Each says its cost and what it does.</p><p><b>Pets</b> (teal): your Companion.</p>'],
   ['How to play a turn','<p>1. <b>Draw</b> a card.</p><p>2. <b>Plant</b> one tree from your hand into your Grove. Trees stay all game, and a Grove holds up to <b>6 trees</b>, so bigger trees give you more Mana.</p><p>3. <b>Chop</b> trees to pay for cards: a chopped tree gives its Mana and turns into a stump. Stumps grow back at the start of your next turn.</p><p>4. <b>Play</b> monsters, bosses and spells. A monster costs half its HP + ATK (rounded up). Bosses cost 1 more.</p><p>5. <b>Attack</b> with each monster once: an enemy monster or the enemy hero. New monsters wait a turn.</p><p>6. <b>End turn.</b></p>'],
@@ -122,12 +132,14 @@
   if(P.length)h+='<div class="qc dcb-warn">'+P.map(esc).join('<br>')+'</div>';
   h+='<div class="dcb-row"><button class="sb dcb-act" data-dcb="edit">ADD CARDS</button><button class="sb dcb-act" data-dcb="use" '+(ACTIVE===V.deck?'disabled':'')+'>'+(ACTIVE===V.deck?'PLAYING THIS DECK':'PLAY THIS DECK')+'</button></div>';return h}
  function guideHTML(){const[t,b]=GP[V.page];return'<div class="dcb-book"><div class="dcb-pt">'+esc(t)+'</div>'+b+'</div><div class="dcb-row"><button class="sb dcb-act" data-dcb="pp" '+(V.page?'':'disabled')+'>◀ BACK</button><span class="dcb-pg">'+(V.page+1)+' / '+GP.length+'</span><button class="sb dcb-act" data-dcb="np" '+(V.page<GP.length-1?'':'disabled')+'>NEXT ▶</button></div>'}
+
  function html(){if(V.peek)return'<div class="dcb"><div class="dcb-t"><button class="dcb-tb" data-dcb="unpeek">◀ My binder</button></div>'+colHTML()+'</div>';const tabs=[['col','Collection'],['deck','Decks'],['guide','Guide']];
-  return'<div class="dcb"><div class="dcb-t">'+tabs.map(([k,n])=>'<button class="dcb-tb'+(V.tab===k?' on':'')+'" data-dcb="t:'+k+'">'+n+'</button>').join('')+'</div>'+(V.tab==='col'?colHTML():V.tab==='deck'?deckHTML():guideHTML())+'</div>'}
+  return bagTabs(true,ORDER().filter(k=>owned(k)>0).length)+'<div class="dcb"><div class="dcb-t">'+tabs.map(([k,n])=>'<button class="dcb-tb'+(V.tab===k?' on':'')+'" data-dcb="t:'+k+'">'+n+'</button>').join('')+'</div>'+(V.tab==='col'?colHTML():V.tab==='deck'?deckHTML():guideHTML())+'</div>'}
  SQCLOSEPN.before('254',()=>{if(ptab===BTAB)V.peek=null});
- SQRPN.wrap('254',_r=>function(){if(ptab!==BTAB){V.peek=null;return _r.apply(this,arguments)}try{panelChrome(V.peek?V.peek.n+'\'s cards':V.tab==='guide'?'Drop Card for Dummies':'Card Binder')}catch(e){self.SQERR&&SQERR(e,'254-9')}pbd.innerHTML=html()});
+ SQRPN.wrap('254',_r=>function(){if(ptab!==BTAB){V.peek=null;return _r.apply(this,arguments)}try{panelChrome(V.peek?V.peek.n+'\'s cards':V.tab==='guide'?'Drop Card for Dummies':'BAG')}catch(e){self.SQERR&&SQERR(e,'254-9')}pbd.innerHTML=html()});
  pbd.addEventListener('click',e=>{const b=e.target.closest('[data-dcb]');if(!b)return;const a=b.dataset.dcb;
   if(a==='open'||a==='read'){e.stopPropagation();e.preventDefault();openBinder(a==='read'?'guide':'col');return}
+  if(a==='bag'){e.stopPropagation();e.preventDefault();V.peek=null;ptab=4;pnOpen=true;pn.style.display='block';rPn();try{sfx('talk')}catch(x){self.SQERR&&SQERR(x,'254-12')}return}
   if(ptab!==BTAB||!pnOpen)return;e.stopPropagation();e.preventDefault();if(b.disabled)return;const[x,y]=[a.split(':')[0],a.slice(a.indexOf(':')+1)];const d=DECKS[V.deck];
   if(a==='unpeek'){V.peek=null;V.sel=null;V.tab='col'}else if(x==='t'){V.tab=y;V.edit=false;if(y==='guide')V.page=V.page||0}else if(x==='f')V.f=y;else if(x==='s')V.sel=V.sel===y?null:y;
   else if(x==='d')V.deck=+y|0;else if(a==='edit'){V.edit=true;V.tab='col';V.sel=null}else if(a==='done'){V.edit=false;V.tab='deck'}
@@ -139,7 +151,7 @@
  const st=document.createElement('style');st.textContent=
   '.dcb{font-family:var(--pf);color:#303030}.dcb-t,.dcb-f{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}'+
   '.dcb-tb,.dcb-fb{min-height:40px;padding:6px 12px;border:2px solid #485870;background:#f8f8f8;color:#303040;font:700 14px var(--pf);border-radius:6px}.dcb-fb{min-height:36px;font-size:13px;padding:4px 10px}'+
-  '.dcb-tb.on,.dcb-fb.on{background:#485870;color:#fff}.dcb-sub{margin:6px 0;font-size:14px}'+
+  '.dcb-tb.on,.dcb-fb.on{background:#485870;color:#fff}.dcb-bt{display:flex;gap:0;margin:0 0 10px;border-bottom:3px solid #485870}.dcb-btb{flex:1;min-height:42px;border:3px solid #485870;border-bottom:0;background:#e8e4d8;color:#505060;font:700 15px var(--pf);border-radius:8px 8px 0 0;margin-right:4px}.dcb-btb:last-child{margin-right:0}.dcb-btb.on{background:#485870;color:#fff}.dcb-sub{margin:6px 0;font-size:14px}'+
   '.dcb-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:6px}'+
   '.dcb-c{position:relative;min-height:60px;padding:4px;border:2px solid #c8d0e0;background:#fff;border-radius:6px}.dcb-c img{width:42px;height:42px;image-rendering:pixelated}'+
   '.dcb-sh{position:absolute;left:3px;top:1px;color:#e0a010;font-size:15px;text-shadow:0 0 3px #fff6c8}.dcb-c.no img{filter:brightness(0);opacity:.25}.dcb-c.sel{border-color:#3058c8;box-shadow:0 0 0 2px #a8c0f0}'+

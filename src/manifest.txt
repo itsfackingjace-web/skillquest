@@ -274,6 +274,7 @@ items/261-s269-drop-card-engine.js
 items/262-s270-drop-card-matches.js
 multiplayer/249-s257-discord-link.js
 multiplayer/263-s271-drop-card-pvp.js
+core/264-s272-keep-unknown-items.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

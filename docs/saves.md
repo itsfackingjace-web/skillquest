@@ -34,3 +34,4 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Late pet items** (`items/151-s157-late-pet-items.js`): 104 makes `pet_<kind>` items only for pets already in `LUX.PETS`;
   pets added later (116's `pmush`/`pglow`) get theirs here (else the PET slot shows empty and bag copies aren't in `INVK`).
   A pet added by a section after 151 needs the same.
+- **Unknown items are kept** (`core/264-s272-keep-unknown-items.js`, `window.SQUNKNOWN`, Nov 21): 006 loads only `INVK` keys, so a game that didn't know an item (an older copy on another device, or an item registered late) dropped it and its next save erased it. 264 keeps every unknown `S.inv` key aside, writes it into every save (`s.inv[k]=max(...)`), and moves it into the bag (max, never add) once it's in `INVK` (every 3 s). Check 56.

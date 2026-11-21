@@ -8,7 +8,7 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
   // cards are hidden in the bag behind the binder
   inv[D.CARDS.slime.key]=2;inv[D.CARDS['wb:dragon'].key]=1;inv[D.CARDS.tree.key]=4;inv[D.CARDS.oak.key]=2;
   showScreen('bag');await W(300);invSel='dc_binder';rPn();await W(100);const bh=pbd.innerHTML;
-  out.bagHidesCards=!/data-k="dc_slime"/.test(bh)&&/data-k="dc_binder"/.test(bh);out.openBtn=!!pbd.querySelector('[data-dcb="open"]');
+  out.bagHidesCards=!/data-k="dc_slime"/.test(bh)&&!/data-k="dc_binder"/.test(bh)&&/CARDS \(\d+\)/.test(bh);out.openBtn=!!pbd.querySelector('[data-dcb="open"]');
   out.counts=[inv[D.CARDS.slime.key],inv[D.CARDS['wb:dragon'].key]];
   // OPEN shows the collection
   pbd.querySelector('[data-dcb="open"]').click();await W(200);out.ptab=ptab;out.cards=pbd.querySelectorAll('.dcb-c').length;out.found=(pbd.querySelector('.dcb-sub')||{}).textContent;
@@ -17,7 +17,7 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
   window.__SQPADTEST=()=>[pad,null,null,null];window.dispatchEvent(Object.assign(new Event('gamepadconnected'),{gamepad:pad}));await W(200);
   const tap=async i=>{pad.buttons[i]={pressed:true,touched:true,value:1};pad.timestamp++;await W(90);pad.buttons[i]={pressed:false,touched:false,value:0};pad.timestamp++;await W(90)};
   const cur=()=>{const e=document.querySelector('#pn .gpf');return e&&(e.dataset.dcb||e.id||'?')};const seq=[];
-  for(let i=0;i<12&&cur()!=='t:deck';i++){await tap(15);seq.push(cur())}out.padReach=cur();out.seq=seq.join('|');await tap(0);await W(150);out.padTab=B.V.tab;
+  for(let i=0;i<12&&cur()!=='t:deck';i++){{const c=cur()||'';await tap(/^(bag|open)$/.test(c)?13:c==='t:guide'?14:/^[fs]:/.test(c)?12:15)};seq.push(cur())}/* Nov 21: the bag's ITEMS / CARDS tabs are the top row: D-pad down to the binder's tabs, then right */out.padReach=cur();out.seq=seq.join('|');await tap(0);await W(150);out.padTab=B.V.tab;
   pad.connected=false;window.__SQPADTEST=()=>[null,null,null,null];
   // build a deck: ADD CARDS, pick cards, ADD
   const click=sel=>{const e=pbd.querySelector(sel);if(e)e.click();return!!e};
@@ -46,8 +46,8 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
   SQWK.open('dropcard');await W(80);const wt=(document.getElementById('wkb')||{}).textContent||'';out.wiki=['Drop Card for Dummies','Moss slime','Healing potion','Pet cards','Nine lives'].filter(x=>!wt.includes(x));
   const ln=document.querySelector('#wkb [data-wkp="item:dc_slime_moss"]');if(ln)ln.click();await W(50);out.wikiPage=((document.getElementById('wkb')||{}).textContent||'').includes('2HP 1ATK');try{SQWK.close&&SQWK.close()}catch(e){}
   return out});
- t.eq(r.price,1,'guide price');t.eq([r.guide,r.binder],[1,1],'guide and binder from the shop');
- t(r.bagHidesCards,'the bag still lists cards (or no binder)');t(r.openBtn,'no OPEN button on the binder');t.eq(r.counts,[2,1],'card counts after showing the bag');
+ t.eq(r.price,1,'guide price');t.eq([r.guide,r.binder],[1,0],'the guide from the shop, and no binder item (Nov 21: the binder is the bag\'s CARDS tab)');
+ t(r.bagHidesCards,'the bag still lists cards (or no CARDS tab)');t(r.openBtn,'no CARDS tab in the bag');t.eq(r.counts,[2,1],'card counts after showing the bag');
  t.eq(r.ptab,52,'binder panel');t(r.cards>=54,'collection shows '+r.cards+' cards');t(/found <?b?>?/.test('found ')&&/4 of/.test(r.found||'')||/found/.test(r.found||''),'collection header '+r.found);
  t.eq(r.padReach,'t:deck','the controller couldn\'t reach the Decks tab '+r.seq);t.eq(r.padTab,'deck','✕ on Decks');
  t.eq(r.starter,{n:'Starter Deck',cards:20,ok:[],batInv:0,batOwned:2},'the Starter Deck');t.eq(r.starterOnce,2,'a second guide gave another Starter Deck');t.eq([r.savedStarter,r.loadedStarter],[1,2],'Starter Deck saved and loaded');
