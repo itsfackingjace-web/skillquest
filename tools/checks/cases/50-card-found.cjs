@@ -21,6 +21,6 @@ module.exports={name:'found-card moment, shiny cards, announcements and collecti
  t.eq(r.shown,'flex','the card didn\'t show');t(/NEW CARD!/.test(r.txt)&&/Moss slime/.test(r.txt),'card text: '+r.txt);t.eq(r.gone,'none','the card didn\'t go away by itself');
  t.eq(r.q,1,'second card queued');t(r.next,'the queued card didn\'t show after a click');
  t.eq(r.shiny,[0,1,1,'Shiny Drop Card: Dragon'],'shiny Dragon card');t(/big/.test(r.big)&&/shiny/.test(r.big),'shiny boss card style: '+r.big);t.eq(r.icon,'data:image/png;base64,','shiny card picture');
- t.eq(r.chat,['★ found a SHINY Drop Card: Dragon!'],'chat announcement');t.eq(r.shinyRate,50,'shiny rate');
+ t(r.chat.includes('★ found a SHINY Drop Card: Dragon!'),'chat announcement: '+JSON.stringify(r.chat));// (a random 1-in-50 shiny can add another line)t.eq(r.shinyRate,50,'shiny rate');
  t.eq(r.ach,['dc_first','dc_boss1','dc_shiny'],'achievements');t(!r.notYet,'"10 different" done too early');t(r.gold>=3100,'achievement gold '+r.gold);
  t.eq(r.keyGone,'none','a key didn\'t dismiss the card')}};

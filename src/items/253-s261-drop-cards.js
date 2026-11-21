@@ -71,22 +71,26 @@
  const BOSS=new Set(['world','dungeon','island','guild']),BY={},ITEM={};
  const SHINY=50;// 1 in 50 cards that drop is shiny (Nov 20): its own item `<key>_sh`, plays the same as the card
  const keyOf=k=>'dc_'+k.replace(/[^a-z0-9]/g,'_');
- const SHFR=['#a07010','#fff6c8','#f0c030'];// shiny frame (dark, face, light)
  function regItem(K,n,d,g,shiny){if(!INVK.includes(K))INVK.push(K);INAME[K]=n;SN[K]=n+' cards';SHORT[K]=n.toLowerCase();SELLP[K]=(BOSS.has(g)?5000:5)*(shiny?10:1);inv[K]=inv[K]|0;
   IDESC[K]=d+(shiny?' A shiny card: plays the same as the normal one.':'');if(!EXTRA_BAG.includes(K))EXTRA_BAG.push(K)}
  // define (or redefine, from the Dev Suite's Cards tab) one card and its shiny twin
  function define(k,n,g,d,spr,r,src){const key=keyOf(k),C=BY[k]||(BY[k]={k});Object.assign(C,{k,n:'Drop Card: '+n,g,d,key,sh:key+'_sh',spr:spr||C.spr||null,r:r==null?RATE:r,src:src||C.src||null});
-  ITEM[key]=C;ITEM[C.sh]=C;regItem(key,C.n,d,g,false);regItem(C.sh,'Shiny '+C.n,d,g,true);delete ICC[key];delete ICC[C.sh];return C}
+  ITEM[key]=C;ITEM[C.sh]=C;regItem(key,C.n,d,g,false);regItem(C.sh,'Shiny '+C.n,d,g,true);delete ICC[key];delete ICC[C.sh];delete ICC['_l'+C.sh];return C}
  const ICC={};
  for(const[k,n,g,d,x]of CARDS)define(k,n,g,d,Array.isArray(x)?{w:14,h:14,s:2,p:x[0],d:x[1]}:null);
  const ORIG={};for(const k in BY)ORIG[k]=Object.assign({},BY[k]);
- // a shiny card: the same picture with a gold frame and three sparkles
- const shinySpr=sp=>{const p=sp.p.split(',');p[0]=SHFR[0];p[1]=SHFR[1];p[2]=SHFR[2];p.push('#ffffff');const w=p.length-1;const d=sp.d.split('');for(const i of[2*14+3,4*14+10,11*14+4])if(d[i]!=='.')d[i]=String(w);return Object.assign({},sp,{p:p.join(','),d:d.join('')})};
+ // a shiny card (Jace, Nov 20): the whole card in inverted colours
+ const inv255=c=>{const m=/^#?([0-9a-f]{6})$/i.exec(String(c).trim());if(!m)return c;return'#'+(0xffffff^parseInt(m[1],16)).toString(16).padStart(6,'0')};
+ const shinySpr=sp=>Object.assign({},sp,{p:sp.p.split(',').map(inv255).join(',')});
+ const invertURL=(src,k)=>{const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.drawImage(im,0,0);
+   const d=x.getImageData(0,0,c.width,c.height);for(let i=0;i<d.data.length;i+=4){d.data[i]=255-d.data[i];d.data[i+1]=255-d.data[i+1];d.data[i+2]=255-d.data[i+2]}x.putImageData(d,0,0);ICC[k]=c.toDataURL();if(pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'253-8')}};im.src=src};
  SQICON.wrap('253 drop cards',_ic=>function(k,col){const C=ITEM[k];if(!C)return _ic(k,col);const sh=k===C.sh;
   if(window.SQA&&SQA.hasIcon&&SQA.hasIcon(k))return _ic(k,col);
-  if(sh&&window.SQA&&SQA.hasIcon&&SQA.hasIcon(C.key))return _ic(C.key,col);
+  if(ICC[k])return ICC[k];
+  // a card painted in the Sprites tab: its shiny is that picture inverted (made once the picture has loaded)
+  if(sh&&window.SQA&&SQA.hasIcon&&SQA.hasIcon(C.key)){const base=_ic(C.key,col);if(!ICC['_l'+k]){ICC['_l'+k]=1;invertURL(base,k)}return base}
   if(!C.spr)return _ic(k,col);
-  if(ICC[k])return ICC[k];try{return ICC[k]=SQA.render(sh?shinySpr(C.spr):C.spr).toDataURL()}catch(e){self.SQERR&&SQERR(e,'253-1');return _ic(k,col)}});
+  try{return ICC[k]=SQA.render(sh?shinySpr(C.spr):C.spr).toDataURL()}catch(e){self.SQERR&&SQERR(e,'253-1');return _ic(k,col)}});
  // ---- giving one ----
  const GOT=window.SQCARDGOT=window.SQCARDGOT||[];// hooks: f({ck, key, shiny, card, first, why})
  function give(ck,why){const C=BY[ck];if(!C)return false;const shiny=!!window.SQSHINYALWAYS||Math.random()<1/SHINY,K=shiny?C.sh:C.key;if(!INAME[K])return false;
