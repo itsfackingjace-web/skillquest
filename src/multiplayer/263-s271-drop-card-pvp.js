@@ -14,21 +14,27 @@
  // Nov 21: the rules version travels with the deck. A match ended at once when the other game was older (a game from before 263
  // takes the request as a duel and never sends a deck) or played other rules (30 HP, 6 trees): now it stops before the stakes are
  // taken and says why. Bump RV when a rule changes.
- const RV='r2';
+ const RV='r3';// r3: pet cards only their owner's game knows, 60 of a tree, END TURN fingerprints
  const S={mv:[],th:0,on:false,first:true,their:null,bad:'',t0:0,cur:-1,ended:false};
  const deckStr=d=>Object.keys(d.c).filter(k=>d.c[k]>0).map(k=>k+'*'+(d.c[k]|0)).join(',')+'|'+(d.pet||'')+'|'+RV;
- function parseHead(h){const[a,p,v]=String(h||'').split('|'),c={};for(const x of(a||'').split(',')){const[k,n]=x.split('*');if(k&&/^[a-z0-9_:]+$/i.test(k))c[k]=Math.max(0,Math.min(20,n|0))}return{c,pet:p&&/^[a-z0-9_]+$/i.test(p)?p:null,v:v||''}}
+ function parseHead(h){const[a,p,v]=String(h||'').split('|'),c={};for(const x of(a||'').split(',')){const[k,n]=x.split('*');if(k&&/^[\w:-]+$/.test(k))c[k]=Math.max(0,Math.min(60,n|0))}return{c,pet:p&&/^pc_[\w:-]+$/.test(p)?p:null,v:v||''}}
  function badDeck(d){if(!d)return'no deck';for(const k in d.c)if(!B.info(k)||!E.card((window.SQDROPCARD.ITEM[k]||{}).key||k))return'unknown card';
-  if(d.pet&&!B.isCard(d.pet))return'unknown pet';const p=B.problems({n:'x',c:d.c,pet:d.pet}).filter(t=>!/^Optional|^You only have/.test(t));return p[0]||''}
- const enc=mv=>mv.t==='play'?'p'+(mv.h|0)+(mv.tg?'.'+mv.tg:''):mv.t==='plant'?'l'+(mv.h|0):mv.t==='chop'?'c'+(mv.g|0):mv.t==='atk'?'a'+mv.a+'.'+mv.tg:'e';
- function dec(x){const c=x[0],r=x.slice(1),[a,b]=r.split('.');if(c==='p')return b?{t:'play',h:+a,tg:b}:{t:'play',h:+a};if(c==='l')return{t:'plant',h:+a};if(c==='c')return{t:'chop',g:+a};if(c==='a')return{t:'atk',a,tg:b};if(c==='e')return{t:'end'};return null}
+  // Nov 21: no pet check. Some pet cards exist only in their owner's game (254 adds them from your own save), so "unknown pet" turned
+  // every such deck away as "not allowed"; a Companion's power comes from its key alone (261's COMP), so both games agree anyway.
+  const p=B.problems({n:'x',c:d.c,pet:d.pet}).filter(t=>!/^Optional|^You only have/.test(t));return p[0]||''}
  const hash=t=>{let h=7;for(const ch of String(t))h=(h*31+ch.charCodeAt(0))|0;return h||1};
+ // a fingerprint of the match, sides in the same (unmirrored) order on both screens: sent with every END TURN and checked by the other game
+ const sig=s=>{const o=s.flip?[1,0]:[0,1];return(hash(o.map(i=>{const P=s.p[i];return[P.hp,P.hand.length,P.deck.length,P.grove.length,P.board.map(m=>m.uid+':'+m.hp+':'+m.atk).join(',')].join('/')}).join('|')+'|'+s.turn)>>>0).toString(36)};
+ const enc=mv=>mv.t==='play'?'p'+(mv.h|0)+(mv.tg?'.'+mv.tg:''):mv.t==='plant'?'l'+(mv.h|0):mv.t==='chop'?'c'+(mv.g|0):mv.t==='atk'?'a'+mv.a+'.'+mv.tg:'e'+(mv.sig||'');
+ function dec(x){const c=x[0],r=x.slice(1),[a,b]=r.split('.');if(c==='p')return b?{t:'play',h:+a,tg:b}:{t:'play',h:+a};if(c==='l')return{t:'plant',h:+a};if(c==='c')return{t:'chop',g:+a};if(c==='a')return{t:'atk',a,tg:b};if(c==='e')return r?{t:'end',sig:r}:{t:'end'};return null}
  const myDeck=()=>{const d=MT().deckOf();return d?{c:Object.assign({},d.c),pet:d.pet||null}:null};
  let mine=null;// the deck you bring, fixed when the match is set up
  function foeCh(u){try{const r=window.SQMP&&SQMP.players&&SQMP.players.get(u);return r&&r.ch||null}catch(e){self.SQERR&&SQERR(e,'263-1');return null}}
  function myName(){try{return A().nameOf(A().me())||'You'}catch(e){return'You'}}
  function feed(){const M=MT().m;if(!S.on||!M||!M.pvp||!S.their)return;const L=S.their.mv;
-  while(S.th<L.length){const mv=dec(L[S.th]);if(!mv){S.th=L.length;return}const r=MT().foeMove(E.flipMv(mv));if(r==='not their turn'||r==='over')return;S.th++;if(r)console.warn('drop card: their move',L[S.th-1],r)}}
+  while(S.th<L.length){const mv=dec(L[S.th]);if(!mv){S.th=L.length;return}const r=MT().foeMove(E.flipMv(mv));if(r==='not their turn'||r==='over')return;S.th++;
+   // a move the rules refuse, or a different fingerprint after END TURN: the two games aren't playing the same match any more
+   if(r||(mv.sig&&mv.sig!==sig(M.s))){console.warn('drop card: out of step',L[S.th-1],r);const D=A().D;D.why='the two games got out of step';A().draw3();return}}}
  window.SQPVD={
   problem(){const d=MT().deckOf();if(!d)return'You need a Drop Card deck first (Card Binder > Decks).';const p=B.problems(d).filter(t=>!/^Optional/.test(t));return p.length?'Your Drop Card deck isn\'t ready: '+p[0]+' (Card Binder > Decks)':''},
   str(){if(!mine)mine=myDeck();return deckStr(mine)+'#'+S.mv.join(' ')},
@@ -47,7 +53,7 @@
    const names=first?[mn,fn]:[fn,mn];
    S.on=true;S.cur=-1;S.t0=performance.now();
    MT().startPvp({seed:hash(D.s+'|'+D.tid),decks,pets,names,first,pvp:{name:fn,ch:foeCh(D.foe),
-    send(mv){S.mv.push(enc(mv));if(S.mv.join(' ').length>3600){D.why='the match ran too long';A().draw3();return}A().push()},
+    send(mv){if(mv.t==='end')mv=Object.assign({},mv,{sig:sig(MT().m.s)});S.mv.push(enc(mv));if(S.mv.join(' ').length>3600){D.why='the match ran too long';A().draw3();return}A().push()},
     leave(){A().lose('resign')},
     done(res){if(S.ended)return;S.ended=true;if(res==='w')A().win('end');else A().lose('end')},
     turnLeft(){const M=MT().m,left=Math.max(0,Math.ceil(TURN-(performance.now()-S.t0)/1000));return M&&M.s.cur===0?Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):''}}});

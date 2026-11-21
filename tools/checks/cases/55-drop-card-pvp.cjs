@@ -6,7 +6,10 @@ module.exports={name:'Drop Card matches between two players',players:2,async run
  const pos=await A.evaluate(()=>({x:P.x,y:P.y}));await B.evaluate(p=>{P.x=p.x+20;P.y=p.y},pos);
  for(const p of[A,B])await p.evaluate(()=>{SQBINDER.giveStarter();GLD=1000;window.SQDCMFAST=true;
   // a Companion and a shiny card in each deck, as real decks have
-  const pk=Object.keys(SQBINDER.PET||{})[0],d=SQBINDER.decks[SQBINDER.active],T=SQDROPCARD.CARDS.tree;if(pk){inv[pk]=1;d.pet=pk}inv[T.sh]=1;d.c[T.key]=(d.c[T.key]|0)-1;d.c[T.sh]=1;try{SQACH.check()}catch(e){}const _s=say;say=function(t){(window.__says=window.__says||[]).push(String(t));return _s.apply(this,arguments)}});
+  const pk=Object.keys(SQBINDER.PET||{})[0],d=SQBINDER.decks[SQBINDER.active],T=SQDROPCARD.CARDS.tree;if(pk){inv[pk]=1;d.pet=pk}inv[T.sh]=1;d.c[T.key]=(d.c[T.key]|0)-1;d.c[T.sh]=1;
+  // Nov 21 (Jace: "it keeps saying my deck isn't allowed"): a pet card the other game doesn't know (254 adds some only from your own
+  // save) and more than 20 of one tree (decks can be 60 now) made the deck "not allowed" on the other side
+  if(SQDUELAPI.me()>'m'||true){const own='pc_zz_only_mine-1';SQBINDER.regPet('zz_only_mine-1','Mine only');inv[own]=1;d.pet=own;inv[T.key]=(inv[T.key]|0)+30;d.c[T.key]=(d.c[T.key]|0)+20}try{SQACH.check()}catch(e){}const _s=say;say=function(t){(window.__says=window.__says||[]).push(String(t));return _s.apply(this,arguments)}});
  await W(500);const g0=[await A.evaluate(()=>GLD),await B.evaluate(()=>GLD)];
  const ids=[await A.evaluate(()=>SQDUELAPI.me()),await B.evaluate(()=>SQDUELAPI.me())];
  for(let i=0;i<30;i++){const ok=await A.evaluate(u=>!!SQMP.players.get(u),ids[1])&&await B.evaluate(u=>!!SQMP.players.get(u),ids[0]);if(ok)break;await W(300)}
