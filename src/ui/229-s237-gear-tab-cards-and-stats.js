@@ -25,6 +25,8 @@
     const J=window.SQJW;if(J&&(J.ring==='jr_sapphire'||J.neck==='jr_sapphire'))r+=.25;
     try{const G=window.SQGEAR,mr=G&&G.fxSum?+G.fxSum('mreg')||0:0;r*=1+mr/100}catch(e){self.SQERR&&SQERR(e,'229-8')}
     r*=(window.SQCOMBAT&&SQCOMBAT.MREG)||1;row('Mana regen',(Math.round(r*10)/10)+' a second')}}catch(e){self.SQERR&&SQERR(e,'229-9')}
+  // Nov 21 (Kevin): jewelry XP bonuses (086) are listed too
+  try{const J=window.SQJW;if(J){if(J.neck==='ja_gold')row('XP (gold amulet)','+5% in every skill');if(J.ring==='jr_emerald')row('Gathering XP (emerald ring)','+10%')}}catch(e){self.SQERR&&SQERR(e,'229-18')}
   try{const T=window.SQTURT;if(T&&T.worn){const w=T.worn();if(w)row('Turtle armor',w+'/3 pieces')}}catch(e){self.SQERR&&SQERR(e,'229-10')}
   try{const M=window.SQMETGEAR;if(M&&M.worn){const w=M.worn();if(w)row('Meteorite armor',w+'/3 pieces')}}catch(e){self.SQERR&&SQERR(e,'229-11')}
   try{const B=window.LUX&&LUX.BUFF,now=performance.now(),N={str:'Strength',iron:'Iron skin',swift:'Swiftness',wis:'Wisdom (+20% XP)',regen:'Regeneration'};

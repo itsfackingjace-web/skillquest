@@ -53,12 +53,19 @@
  const yi=(R,x,y)=>y*R.w+x;
  const onDoorTile=(R,x,y)=>y<=DOORY&&YDOOR(R).some(dx=>Math.abs(x*16+8-dx)<16);
  function tillable(R,Y,x,y){if(x<0||y<2||x>=R.w||y>=R.h||onDoorTile(R,x,y))return false;const i=yi(R,x,y);return R.lay(x,y)===2&&!R.solid.has(i)&&!regrowing(R,i)&&!Y.furn.has(i)&&!Y.plots.has(i)}
- {SQHIT.wrap('145 backyards',_a=>function(){if(!isYard()||dead||menuOpen||pnOpen||BUILD||swing>0||FISH)return _a.apply(this,arguments);const R=SCENE.room,Y=SCENE.house;
+ {let yFill=null;SQHIT.wrap('145 backyards',_a=>function(){if(!isYard()||dead||menuOpen||pnOpen||BUILD||swing>0||FISH)return _a.apply(this,arguments);const R=SCENE.room,Y=SCENE.house;
    const[x,y]=frontTile(),i=yi(R,x,y),p=Y.plots.get(i);
    if(Y.ro){if(p||Y.furn.has(i)){say('This is your friend\'s yard: you can look, but not touch.');msgT=3;swing=.2;return}return _a.apply(this,arguments)}
    // keyboard and mouse: Space / left-click is melee only, the hoe and can work from X (140); a tool in the bag is swapped in
    const melee=!(window.SQOFFVIA&&SQOFFVIA()),off=()=>!TL.bow&&!WAND;
    const want=k=>{if(melee)return false;const has=k==='eq_can'?TL.can:TL.hoe;if(has)return true;if((inv[k]|0)<1||!off()&&!(TL.hoe||TL.can))return false;try{equipItem(k)}catch(e){self.SQERR&&SQERR(e,'145-7')}return k==='eq_can'?!!TL.can:!!TL.hoe};
+   // Nov 20 (Kass: "Need a way to un-till dirt in castle yards"): with the hoe out, HIT a plot twice to fill it back in (like 019 on
+   // Hollow); a crop growing there comes back as its seed
+   if(p&&TL.hoe&&!melee&&!ripe(p)&&!(p.c&&!wet(p)&&TL.can)){swing=.25;
+    if(yFill&&yFill.i===i&&yFill.c===p.c&&CLK-yFill.t<2.5){yFill=null;if(p.c){const sd=CROPS[p.c].seed;inv[sd]=(inv[sd]|0)+1;say('Dug up the '+CROPS[p.c].n.toLowerCase()+' (got the seed back) and filled in the soil.')}else say('Filled in the soil.');
+     Y.plots.delete(i);try{sfx('chop')}catch(e){self.SQERR&&SQERR(e,'145-30')}saveLocal(true);pub();return}
+    yFill={i,t:CLK,c:p.c};try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-31')}
+    if(p.c){const C=CROPS[p.c],left=Math.max(0,C.max*C.st-p.g);say(C.n+' is growing'+(wet(p)?', about '+Math.ceil(left/60)+' min left':'')+'. Press HIT again to dig it up.')}else say('This soil is ready: choose seeds in your Bag and tap PLANT. Press HIT again to fill it in.');return}
    if(p){swing=.25;if(ripe(p)){harvest(-1,p);saveLocal(true);pub();return}
     if(p.c&&!wet(p)){if(!want('eq_can')){say(melee?(window.SQOFFHINT?SQOFFHINT('water it with your watering can')+'.':'Use your off-hand to water it.'):'Put your watering can in your off-hand to water it.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'145-8')}return}
      p.w=CLK+WATER_FOR;addXp(11,3);say('Watered the '+CROPS[p.c].n.toLowerCase()+'.');try{sfx('splash')}catch(e){self.SQERR&&SQERR(e,'145-9')}saveLocal();return}

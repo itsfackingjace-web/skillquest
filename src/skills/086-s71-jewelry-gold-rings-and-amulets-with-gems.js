@@ -23,7 +23,9 @@
  const _mf=meleeFlat;meleeFlat=function(){return _mf()+(has('jr_ruby')?1:0)+(has('jr_diamond')?1:0)+(has('ja_diamond')?1:0)};
  const _ad=arrowDmg;arrowDmg=function(){return _ad()+(has('ja_emerald')?1:0)+(has('ja_diamond')?1:0)};
  const _sd=spellDmg;spellDmg=function(el){return _sd(el)+(has('ja_sapphire')?1:0)+(has('ja_diamond')?1:0)};
- SQADDXP.before('086',(i,x)=>{if(x>0){const m=1+(has('ja_gold')?.05:0)+(has('jr_emerald')&&GATHER.has(i)?.1:0);if(m>1)x=Math.max(x+1,Math.round(x*m))}});
+ // Nov 21 (Kevin: the gold amulet's XP boost did nothing): this was a `before` step, which can't change the XP passed on, so the
+ // gold amulet and emerald ring bonuses were thrown away since Nov 19's step lists. A wrap passes the raised amount on.
+ SQADDXP.wrap('086 jewelry xp',next=>function(i,x){if(x>0){const m=1+(has('ja_gold')?.05:0)+(has('jr_emerald')&&GATHER.has(i)?.1:0);if(m>1){const a=[...arguments];a[1]=Math.max(x+1,Math.round(x*m));return next.apply(this,a)}}return next.apply(this,arguments)});
  SQUPD.after('086',(dt)=>{if(!menuOpen&&!pnOpen&&!dead&&has('jr_sapphire')&&typeof MANA!=='undefined')MANA=Math.min(maxMP(),MANA+dt*.25)});
  // ---- wearing ----
  function jwWear(k){const j=JK[k];if(!j||(inv[k]|0)<1)return;const old=JW[j.s];if(old)inv[old]=(inv[old]|0)+1;inv[k]--;JW[j.s]=k;say('You put on the '+j.n.toLowerCase()+'. '+j.d);sfx('pickup');saveLocal(true);try{saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'086-1')}rPn()}

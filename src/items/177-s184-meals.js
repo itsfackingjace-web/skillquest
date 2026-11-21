@@ -17,9 +17,13 @@
  const SV=window.SQSTOVE=window.SQSTOVE||[];// {k out, n, c {item:count}, lv, xp}
  {const _sh=stationHTML;stationHTML=function(o){let h=_sh.apply(this,arguments);if(!o||o.t!=='stove'||!SV.length)return h;
    let m='<div class="tl" style="margin-top:12px">Meals</div>';SV.forEach((r,i)=>{if(!INAME[r.k])return;const need=Object.entries(r.c),ok=lvOf(4)>=r.lv&&need.every(([a,b])=>(inv[a]|0)>=b);
-    m+=row22('sv_'+i,'Cook '+esc(INAME[r.k])+' <small>(have '+(inv[r.k]|0)+')</small>',need.map(([a,b])=>b+' '+esc(iname(a))+' ('+(inv[a]|0)+')').join(', ')+' · '+(lvOf(4)>=r.lv?r.xp+' xp':'Needs Cooking '+r.lv),ok)});
+    m+=row22('sv_'+i,'Cook '+esc(INAME[r.k])+' <small>(have '+(inv[r.k]|0)+')</small>',need.map(([a,b])=>b+' '+esc(iname(a))+' ('+(inv[a]|0)+')').join(', ')+' · '+(lvOf(4)>=r.lv?r.xp+' xp':'Needs Cooking '+r.lv),ok)+(ok&&canN(r)>1?row22('sva_'+i,'Cook all '+esc(INAME[r.k])+' ('+canN(r)+')',r.xp+' xp each',true):'')});
    const at=h.indexOf('<button class="ng stb" data-a="pickup"');return at>=0?h.slice(0,at)+m+h.slice(at):h+m}}
- {const _sa=stationAct;stationAct=function(a){if(typeof a!=='string'||!a.startsWith('sv_'))return _sa.apply(this,arguments);const r=SV[+a.slice(3)];if(!r||!INAME[r.k])return;
+ // Nov 20 (Kass): "Cook all" for meals too (pizza, stew...): as many as the ingredients allow, one at a time through 109's sqDo
+ const canN=r=>{let m=Infinity;for(const[k,n]of Object.entries(r.c))if(n>0)m=Math.min(m,Math.floor((inv[k]|0)/n));return m===Infinity?0:m};
+ {const _sa=stationAct;stationAct=function(a){if(typeof a==='string'&&a.startsWith('sva_')){const i=+a.slice(4),r=SV[i];if(!r||!INAME[r.k])return;if(lvOf(4)<r.lv){say('You need Cooking '+r.lv+' to cook '+INAME[r.k].toLowerCase()+'.');return}
+   const n=canN(r);if(n<1){say('Missing ingredients for '+INAME[r.k].toLowerCase()+'.');sfx('swish');return}if(typeof sqDo==='function'&&sqDo('cook',n,()=>stationAct('sv_'+i))){try{SQDO.tot=n}catch(e){self.SQERR&&SQERR(e,'177-9')}return}return stationAct('sv_'+i)}
+  if(typeof a!=='string'||!a.startsWith('sv_'))return _sa.apply(this,arguments);const r=SV[+a.slice(3)];if(!r||!INAME[r.k])return;
    if(lvOf(4)<r.lv){say('You need Cooking '+r.lv+' to cook '+INAME[r.k].toLowerCase()+'.');return}
    const need=Object.entries(r.c);if(!need.every(([k,n])=>(inv[k]|0)>=n)){say('Missing ingredients for '+INAME[r.k].toLowerCase()+'.');sfx('swish');return}
    if(typeof sqDo==='function'&&sqDo('cook',1,()=>stationAct(a)))return;

@@ -36,10 +36,10 @@
  // ---- what hurt you: the last hits, and one report a session when you fall to something nobody could see ----
  const HITS=[];let lastSay='',sayAt=0,fellReported=false;
  {const _s=say;say=function(t){lastSay=String(t==null?'':t).slice(0,60);sayAt=performance.now();return _s.apply(this,arguments)}}
- function logHit(d,pre){const now=performance.now(),near=[];for(const n of new Set(en.concat(pre||[]))){if(!n||n.dead||!fin(n))continue;const dd=Math.hypot(n.x-P.x,n.y-P.y);if(dd<40)near.push([dd,n])}
+ function logHit(d,pre){const now=performance.now(),near=[];for(const n of new Set(en.concat(pre||[]))){if(!n||!fin(n))continue;/* Nov 21: a monster that hit you and died in the same moment (dawn, a fire) is listed too (Stormie's report listed nothing) */const dd=Math.hypot(n.x-P.x,n.y-P.y);if(dd<40)near.push([dd,n])}
   near.sort((a,b)=>a[0]-b[0]);const R=SCENE&&SCENE.room;
   HITS.push({at:now,d,msg:now-sayAt<200?lastSay:'',where:R&&R.region||(SCENE&&SCENE.id)||'hollow',px:Math.round(P.x),py:Math.round(P.y),pn:!!pnOpen,
-   m:near.slice(0,3).map(([dd,n])=>{const o=Object.assign(describe(n,'near'),{d:Math.round(dd),seen:SEEN.has(n)?Math.round(now-SEEN.get(n)):-1});delete o.why;o.keys=o.keys.slice(0,80);o.x=Math.round(o.x);o.y=Math.round(o.y);return o})});
+   m:near.slice(0,3).map(([dd,n])=>{const o=Object.assign(describe(n,'near'),{d:Math.round(dd),seen:SEEN.has(n)?Math.round(now-SEEN.get(n)):-1});delete o.why;if(n.dead)o.dead=1;o.keys=o.keys.slice(0,80);o.x=Math.round(o.x);o.y=Math.round(o.y);return o})});
   if(HITS.length>8)HITS.shift()}
  // a touch hit ("Ouch!") with no monster you could see right next to you
  const unseen=h=>h.msg==='Ouch!'&&!h.m.some(o=>o.d<16&&o.seen>=0&&o.seen<400);

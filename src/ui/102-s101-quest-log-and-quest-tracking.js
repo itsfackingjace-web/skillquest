@@ -76,7 +76,9 @@
   if(e.kind==='main'||(!e.kind&&e.cat==='Elder Rowan')){const q=e.q;if(e.st==='avail'||e.ready)return npcAt('elder');if(e.via)return target(e.via);if(e.vill)return target(e.vill.e);
    if(q.type==='give'){const s=SRC[q.item];return Array.isArray(s)?nearObj(s):null}if(q.type==='kill')return nearMob(q.item||'slime');
    if(q.type==='hermit')return npcAt('hermit');if(q.type==='talk')return npcAt('harbor');return null}
-  if(e.kind==='side'){const rg=e.area,gv=e.giver;const giverT=()=>rg==='hollow'?npcAt(gv):regionGiver(rg,gv);if(e.st==='avail'||e.ready)return giverT();
+  // Nov 21 (Bear): a quest line can happen on one island and be handed in on another (243: No Man's Land, Mira in Dusthaven):
+  // window.SQGIVERAREA[line] is where its giver lives
+  if(e.kind==='side'){const rg=e.area,gv=e.giver,ga=(window.SQGIVERAREA||{})[e.t]||rg;const giverT=()=>ga==='hollow'?npcAt(gv):regionGiver(ga,gv);if(e.st==='avail'||e.ready)return giverT();
    const q=e.q;if(q.type==='give'){const s=SRC[q.item];return Array.isArray(s)?(nearObj(s)||null):null}if(q.type==='kill')return nearMob(q.item);return null}
   if(e.kind==='voyAvail'){const p=e.q&&e.q.id&&typeof navSpot==='function'?navSpot():HARBOR_POSTS.find(p=>p.id===e.q.post);return p?{area:'hollow',x:p.x*16+8,y:p.y*16+8}:null}
   if(e.kind==='voy'){const q=e.q,s=e.step||'';if(/buoy/i.test(s)&&q.buoy&&BUOYS[q.buoy]){const b=BUOYS[q.buoy];return{area:'hollow',x:b.x*16+8,y:b.y*16+8}}
@@ -95,7 +97,8 @@
  // the hint shown when the place is somewhere else
  function where(e,t){const a=curArea(),par=a.startsWith('scene:')?((SCENE.prev&&SCENE.prev.room&&SCENE.prev.room.region)||'hollow'):a;
   if(t&&t.area){if(t.area===a)return'';if(t.area.startsWith('scene:'))return'go inside';if(t.area===par)return'head outside';return'on '+isl(t.area)}
-  return e&&e.area&&e.area!==par?'on '+isl(e.area):''}
+  const ea=e&&e.kind==='side'&&(e.ready||e.st==='avail')&&(window.SQGIVERAREA||{})[e.t]||e&&e.area;
+  return ea&&ea!==par?'on '+isl(ea):''}
  // ---------- the HUD line and the arrow ----------
  {const _hl=hudLayout;hudLayout=function(){const L=_hl();L.cy+=16*L.U;L.stackBottom+=16*L.U;return L}}
  SQHUD.after('102',()=>{if(menuOpen||typeof HUDL==='undefined'||!HUDL)return;refresh();const e=TGE,L=HUDL,{U,ins,qy,qw}=L;if(!e&&TRK==='none')return;g.save();g.setTransform(1,0,0,1,0,0);g.shadowBlur=0;const t1=e?(e.st==='avail'?'! New: ':'')+e.name:'All quests complete!',wh=e?where(e,TGT):'',t2=e?(e.step||'')+(e.prog&&!e.ready?' ('+e.prog+')':'')+(wh?' · '+wh:''):'';g3box(ins,qy,qw,42*U,U,'#f8f0d8');g.font='700 '+11*U+'px '+PF;g3text(fitText(t1,qw-22*U),ins+11*U,qy+12*U,11,U,e&&e.st==='avail'?'#b06010':'#3058c8','left',700);g.font='600 '+11*U+'px '+PF;g3text(fitText(t2,qw-22*U),ins+11*U,qy+28*U,11,U,e&&e.ready?'#2f8a3a':'#404040','left',600);const t=TGT;if(t&&t.x!=null&&t.area===curArea()&&!dead&&!(typeof pnOpen!=='undefined'&&pnOpen)){const sx=W/2+(t.x-P.x)*Z,sy=H/2+(t.y-P.y)*Z,m=44*U,tm=performance.now()/1000,dist=Math.round(Math.hypot(t.x-P.x,t.y-P.y)/16);

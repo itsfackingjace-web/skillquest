@@ -69,3 +69,14 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   refused and 061's `mpErr` said "The online server refused that"). Check 38 tests the rules file directly with `RulesDB`.
 - 086 Dragon Form ends on a fall before the menu/panel check (a screen opened by the fall skipped it; Derek, Nov 20). Check 42.
 - 239 wiki "How to get it" reads `window.SQWIKIGET[item]` (HTML lines); 215 adds meteor strikes for `meteorore` and `stardust`. Check 25.
+
+## Nov 21 report fixes
+
+- 086's jewelry XP was a `SQADDXP.before` step since Nov 19: a before step can't change the arguments passed on, so the gold amulet / emerald
+  ring bonus did nothing. Now a `wrap`. 229 lists both bonuses. Check 60. (A scan of every `.before(` step for reassigned arguments found no other.)
+- 007's anvil armour (`r.arm`) goes into the bag as `eq_<slot><tier>` instead of being worn; 022 lists the recipe even when you wear that tier.
+- 192 re-counts make-all after each item (`SQDO.allR`: done + what the materials allow now), so refunded ores raise "N left". Check 59.
+- 102's tracker: `window.SQGIVERAREA[line]` = where a quest line's giver lives (243: No Man's Land quests, Mira on Hollow). Check 61.
+- 021's dodge roll moves in steps of 3 px and goes back to where it started if it ends inside something solid. Check 62 (passes before too: Kevin's exact spot wasn't found).
+- 177: Cook all for stove meals (`sva_<i>`, 109's sqDo). Check 63. 145: with the hoe out, HIT twice on yard soil fills it in (like 019 on Hollow).
+- 227's hit log lists monsters that hit you and died in the same moment (`dead:1`).

@@ -50,7 +50,7 @@ SQHIT.wrap('022 usable stations wardrobe furnace anvil cooking',next=>function()
 let dummyTip=false;
 // --- station screens ---
 const row22=(a,label,sub,ok)=>'<button class="sb stb" data-a="'+a+'" style="opacity:'+(ok?1:.45)+'">'+label+'<br><small>'+sub+'</small></button>';
-function smithRows(filter){let h='';SM.forEach((r,i)=>{if(!filter(r))return;if(r.arm&&ARM[r.arm[0]]>=r.arm[1])return;const need=Object.entries(r.c),can=lvOf(10)>=r.lv&&!(r.def>lvOf(8))&&need.every(([a,b])=>(inv[a]|0)>=b);
+function smithRows(filter){let h='';SM.forEach((r,i)=>{if(!filter(r))return;if(r.arm&&ARM[r.arm[0]]>=r.arm[1]&&!(typeof EQ!=='undefined'&&EQ['eq_'+r.arm[0]+r.arm[1]]))return;const need=Object.entries(r.c),can=lvOf(10)>=r.lv&&!(r.def>lvOf(8))&&need.every(([a,b])=>(inv[a]|0)>=b);
   h+='<div class="gr" style="opacity:'+(can?1:.5)+'"><div class="gi"><b>'+r.n+'</b>'+(r.k?' <small>(have '+(inv[r.k]|0)+')</small>':'')+'<br><small>'+need.map(([a,b])=>b+' '+(IN[a]||a)).join(', ')+' · Smithing '+r.lv+(r.def?' · wear: Defence '+r.def:'')+' · '+r.xp+' xp</small></div><button class="fg" data-i="'+i+'" data-a="1">'+(r.arm?'Forge':'Make')+'</button>'+(r.arm?'':'<button class="fg" data-i="'+i+'" data-a="all">All</button>')+'</div>'});return h}
 function stationHTML(o){const S=STNS.find(s=>s.k===o.t);let h='<div class="tl">'+S.n+'</div>';
  if(o.t==='furnace')h+='<div class="tl" style="font-size:12px;font-weight:400;opacity:.75">Smithing level '+lvOf(10)+' · Iron ore: '+(inv.iron|0)+' · Stone: '+(inv.stone|0)+'</div>'+smithRows(r=>!!r.smelt);

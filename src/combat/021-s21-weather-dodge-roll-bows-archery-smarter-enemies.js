@@ -70,7 +70,7 @@ SQDROP.wrap('021',_ed21=>function(n){if(n.type!=='bonelord')return _ed21(n);TOMB
 let wTick=0;
 SQUPD.wrap('021',_u21=>function(dt){const paused=menuOpen||pnOpen;const pos=paused?null:en.map(n=>[n,n.x,n.y]);_u21(dt);if(paused)return;
  ROLLCD=Math.max(0,ROLLCD-dt);
- if(ROLLT>0&&!dead){ROLLT-=dt;const s=165*dt,ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));const nx=P.x+ROLLV[0]*s,ny=P.y+ROLLV[1]*s;if(ok(nx,P.y))P.x=nx;if(ok(P.x,ny))P.y=ny;
+ if(ROLLT>0&&!dead){ROLLT-=dt;const s=165*dt,ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));/* Nov 21 (Kevin rolled into a wall and got stuck): a slow frame moved a roll 15+ px at once, past a wall's corner checks; the roll now moves in steps of 3 px at most */const sx0=P.x,sy0=P.y,stp=Math.max(1,Math.ceil(s/3));for(let k=0;k<stp;k++){const nx=P.x+ROLLV[0]*s/stp,ny=P.y+ROLLV[1]*s/stp;if(ok(nx,P.y))P.x=nx;if(ok(P.x,ny))P.y=ny}if(!ok(P.x,P.y)&&ok(sx0,sy0)){P.x=sx0;P.y=sy0}
   if(Math.abs(ROLLV[0])>Math.abs(ROLLV[1]))face=[Math.sign(ROLLV[0]),0];else if(ROLLV[1])face=[0,Math.sign(ROLLV[1])];
   GHOST.push({x:P.x,y:P.y,t:0,sc:curScene()});if(Math.random()<.6)DUST.push({x:P.x+(Math.random()*8-4),y:P.y+6,t:0,c:dustColor(),sc:curScene()})}
  for(const gh of GHOST)gh.t+=dt;while(GHOST.length&&GHOST[0].t>.18)GHOST.shift();

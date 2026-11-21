@@ -15,6 +15,7 @@
  SQ_SIDE[T]={index:0,on:false,k:0,completed:false};SQTOWN[T]='Dusthaven\'s Oasis Rest';
  // 049 only counts a line's progress in its own region
  try{SQ_REGION[T]='nomans'}catch(e){self.SQERR&&SQERR(e,'243-0')}
+ (window.SQGIVERAREA=window.SQGIVERAREA||{})[T]='hollow';// Mira is in Dusthaven, on Hollow Island (102's tracker)
  SIDE_QS[T]=[
   {n:'Scout the Badlands',d:'Reach three places in No Man\'s Land: Deadman\'s Gulch, Boot Hill, Dustwater, Rattlesnake Mesa or the Old Silver Mine.',type:'nmlm',item:'any',amt:3,r:{g:400,xp:[0,900]},giver:GIVER,
    start:'There\'s a desert across the sea with no law at all. Everyone fights everyone out there. Go have a look around, if you\'ve got the nerve.',finish:'You came back! Most don\'t, the first time.',note:'PvP is always on in No Man\'s Land: other players can attack you there.'},
