@@ -94,6 +94,10 @@
  function autoChop(s,i,need){const P=s.p[i];if(P.pool>=need)return true;const up=P.grove.map((g,j)=>[g,j]).filter(([g])=>!g.stump);
   let best=null;const n=up.length;for(let mask=1;mask<(1<<n);mask++){let sum=0,cnt=0;for(let b=0;b<n;b++)if(mask&(1<<b)){sum+=up[b][0].mana;cnt++}if(P.pool+sum>=need&&(!best||sum<best.sum||(sum===best.sum&&cnt<best.cnt)))best={mask,sum,cnt}}
   if(!best)return false;for(let b=0;b<n;b++)if(best.mask&(1<<b))chop(s,i,up[b][1]);return P.pool>=need}
+ // which trees autoChop would chop for `need` (indices), or null: lets the screen light them up before you commit
+ function chopPlan(s,i,need){const P=s.p[i];if(P.pool>=need)return[];const up=P.grove.map((g,j)=>[g,j]).filter(([g])=>!g.stump);let best=null;const n=up.length;
+  for(let mask=1;mask<(1<<n);mask++){let sum=0,cnt=0;for(let b=0;b<n;b++)if(mask&(1<<b)){sum+=up[b][0].mana;cnt++}if(P.pool+sum>=need&&(!best||sum<best.sum||(sum===best.sum&&cnt<best.cnt)))best={mask,sum,cnt}}
+  if(!best)return null;const out=[];for(let b=0;b<n;b++)if(best.mask&(1<<b))out.push(up[b][1]);return out}
  function chop(s,i,j){const P=s.p[i],g=P.grove[j];if(!g||g.stump)return'That tree is already a stump.';g.stump=true;P.pool+=g.mana;s.fx.push({t:'chop',side:i,g:j});
   const lim={tl1:1,tl2:2,tl3:3,tl4:4,tl5:99}[P.comp];if(lim&&!P.cf.tl&&g.mana<=lim){P.cf.tl=1;g.stump=false;L(s,'The treeling regrows the '+g.n+'.')}
   if(P.comp==='tvoid'){const f=s.p[1-i].board;if(f.length){const m=pick(s,f);hurtMon(s,1-i,m,1);sweep(s)}}return''}
@@ -142,4 +146,4 @@
   for(const m of P.board)for(const tg of targets(s,i,m.uid))out.push({t:'atk',a:m.uid,tg});
   out.push({t:'end'});return out}
  const clone=s=>JSON.parse(JSON.stringify(s));
- window.SQDCE={card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,MAXB,MAXH,MAXM,HERO,short,groveMana:P=>groveMana(P)}})();
+ window.SQDCE={chopPlan,card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,MAXB,MAXH,MAXM,HERO,short,groveMana:P=>groveMana(P)}})();

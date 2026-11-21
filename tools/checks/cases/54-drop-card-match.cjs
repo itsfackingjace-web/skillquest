@@ -10,6 +10,8 @@ module.exports={name:'Drop Card matches against Ace',async run(p,t){
   out.levels=[...pbd.querySelectorAll('[data-dcmlv]')].map(b=>b.dataset.dcmlv);pbd.querySelector('[data-dcmlv="easy"]').click();await W(300);
   const el=M.el,q=s=>el.querySelector(s);out.open=el.style.display;
   const s=M.m.s;out.start=[s.p[0].hand.length,s.p[1].hand.length,s.p[1].hand.includes('_sapling'),s.cur];
+  // the deal is random: make sure both hands hold a tree and yours a 1-cost monster (Nov 20: a deal without one failed the check)
+  {const D2=SQDROPCARD.CARDS;s.p[0].hand[0]=D2.tree.key;s.p[0].hand[1]=D2.slime.key;s.p[1].hand[0]=D2.tree.key;M.render()}
   // tap a tree in hand, PLANT
   const ti=s.p[0].hand.findIndex(k=>k!=='_sapling'&&E.card(k).kind==='tree');q('[data-dcm="c:'+ti+'"]').click();await W(50);q('[data-dcm="play"]').click();await W(80);out.planted=s.p[0].grove.length;
   // tap a 1-cost monster if there is one, PLAY (pays by chopping)
@@ -21,7 +23,7 @@ module.exports={name:'Drop Card matches against Ace',async run(p,t){
   const cur=()=>{const e=el.querySelector('.gpf');return e&&e.dataset.dcm};
   for(let i=0;i<30&&cur()!=='end';i++)await tap(15);out.padReach=cur();await tap(0);await W(200);out.afterEnd=s.cur;pad.connected=false;window.__SQPADTEST=()=>[null,null,null,null];
   // Ace plays its turn
-  for(let i=0;i<60&&s.cur===1;i++)await W(200);out.aceDone=s.cur===0||s.over;out.aceGrove=s.p[1].grove.length;
+  for(let i=0;i<60&&s.cur===1;i++)await W(200);out.aceDone=s.cur===0||s.over;out.aceGrove=s.p[1].grove.length;out.alog=s.log.slice(-8);
   // the rest of the match, played for you by Ace's own brain (normal)
   window.SQDCMFAST=true;const g0=GLD;for(let i=0;i<2000&&!s.over;i++){if(s.cur===0&&!M.m.busy){const mv=M.aceMove(s,0,'normal');if(!M.act(mv))M.act({t:'end'})}await W(30)}
   window.SQDCMFAST=false;out.over=s.over;out.win=s.win;out.gold=GLD-g0;out.msg=M.m.msg;try{SQACH.check()}catch(e){}out.ach=!!(SQACH.done||{}).dc_win;
@@ -39,7 +41,7 @@ module.exports={name:'Drop Card matches against Ace',async run(p,t){
  t.eq(r.levels,['easy','normal','hard'],'levels on Ace\'s panel');t.eq(r.open,'flex','the table didn\'t open');
  t.eq(r.start,[4,5,true,0],'opening hands (3 + your first draw; Ace 4 + the Sapling)');
  t.eq(r.planted,1,'planting a tree');t(r.stump,'playing a card didn\'t chop a tree');
- t.eq(r.padReach,'end','the controller couldn\'t reach END TURN');t.eq(r.afterEnd,1,'✕ on END TURN');t(r.aceDone,'Ace never finished its turn');t(r.aceGrove>=1,'Ace didn\'t plant');
+ t.eq(r.padReach,'end','the controller couldn\'t reach END TURN');t.eq(r.afterEnd,1,'✕ on END TURN');t(r.aceDone,'Ace never finished its turn');t(r.aceGrove>=1,'Ace didn\'t plant '+JSON.stringify(r.alog));
  t(r.over,'the match never ended');t(r.win===0?r.gold===550&&r.ach:r.gold===0,'reward for result '+r.win+': '+r.gold+' gold, '+r.msg);
  t.eq(r.cost,7,'Stone Giant costs 7 (8 HP + 4 ATK, halved, +1 boss)');t.eq(r.play,'','playing it with 7 Mana of trees');t.eq(r.chopped,[true,true],'both trees chopped');t.eq(r.pool,0,'no Mana left');
  t.eq(r.plant2,['','You\'ve already planted a tree this turn.'],'one tree a turn');
