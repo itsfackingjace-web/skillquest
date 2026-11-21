@@ -14,11 +14,11 @@ module.exports={name:'Drop Cards drop from monsters, trees and bosses',async run
   // world, island and guild bosses
   for(const f of SQWBWON)f({type:'dragon',slot:'x'});out.dragon=has('wb:dragon');
   for(const f of SQIBWON){f({ib:'briarwood'});f({ib:'gu_someguild'})}out.queen=has('ib:briarwood');out.turtle=has('turtle');
-  // Jace's own Dev Suite cards drop only once they're published (here: pretend the Tree card is)
+  // a tree: its kind's card
   const tk=D.CARDS.tree.key;const before=inv[tk]|0;
   face=[1,0];const[fx,fy]=front(16),tx=Math.floor(fx/16),ty=Math.floor(fy/16),i=ty*N+tx;obj[i]={t:'tree',hp:3};STR.delete(i);BS.delete(i);
-  const w0=inv.wood|0;for(let k=0;k<25&&(inv.wood|0)===w0;k++){swing=0;attack();await W(450)}out.unpublished=(inv[tk]|0)-before;
-  INAME[tk]='Drop Card: Tree';obj[i]={t:'tree',hp:3};const w1=inv.wood|0;for(let k=0;k<25&&(inv.wood|0)===w1;k++){swing=0;attack();await W(450)}out.tree=(inv[tk]|0)-before;out.w=[w0,w1,inv.wood|0,JSON.stringify(SQDROPCARD.LAST)];
+  const w0=inv.wood|0;for(let k=0;k<25&&(inv.wood|0)===w0;k++){swing=0;attack();await W(450)}out.tree=(inv[tk]|0)-before;out.w=[w0,inv.wood|0];
+  out.demon=[INAME[D.CARDS['wb:demon'].key],IDESC[D.CARDS['wb:demon'].key]];
   // shown in the bag with their own picture, and kept by a save
   const k=D.CARDS['slime:moss'].key;out.inBag=BAG_ORDER().includes(k);out.icon=String(iconURL(k)).slice(0,22);out.name=INAME[k];out.desc=IDESC[k];
   const S=JSON.parse(JSON.stringify(SQSAVE.snap?SQSAVE.snap():snap()));out.saved=JSON.stringify(S).includes('"'+k+'":1');
@@ -26,6 +26,6 @@ module.exports={name:'Drop Cards drop from monsters, trees and bosses',async run
  t(r.rate>.006&&r.rate<.014,'the drop rate is '+r.rate+', not about 1%');
  t.eq(r.moss,1,'Moss slime cards from one moss slime (killed twice)');t.eq(r.wolf,0,'cards from a summon');t.eq(r.alpha,1,'Frostfang Alpha card');
  t.eq(r.dragon,1,'Dragon card');t.eq(r.queen,1,'Briar Queen card');t.eq(r.turtle,1,'Giant Turtle card');
- t.eq(r.unpublished,0,'an unpublished Dev Suite card dropped');t.eq(r.tree,1,'Tree card from chopping a tree '+JSON.stringify(r.w));
+t.eq(r.tree,1,'Tree card from chopping a tree '+JSON.stringify(r.w));t.eq(r.demon,['Drop Card: Demon','7HP 7ATK'],'the redrawn Demon card');
  t(r.inBag,'the card isn\'t listed in the bag');t.eq(r.icon,'data:image/png;base64,','card picture');t.eq(r.name,'Drop Card: Moss slime','name');t.eq(r.desc,'2HP 1ATK','description');
  t(r.saved,'the card isn\'t in the save')}};
