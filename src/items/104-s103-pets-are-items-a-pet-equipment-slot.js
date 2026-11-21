@@ -35,5 +35,5 @@
   return h.replace('<div class="bd">','<div class="bd"><button class="use petrel" data-k="'+k+'" style="background:#c85050">'+(relArm===k?'TAP AGAIN':'RELEASE')+'</button>')};
  pbd.addEventListener('click',ev=>{const b=ev.target.closest('.petrel');if(!b)return;ev.stopPropagation();const k=b.dataset.k;
   if(relArm!==k){relArm=k;setTimeout(()=>{if(relArm===k){relArm=null;try{rPn()}catch(e){self.SQERR&&SQERR(e,'104-6')}}},3500);rPn();return}
-  relArm=null;if((inv[k]|0)>0){inv[k]--;sync();say('You let the '+EQ[k].n.toLowerCase()+' go. It wanders off happily.');sfx('talk');saveLocal(true)}rPn()},true);
+  relArm=null;if((inv[k]|0)>0){inv[k]--;sync();say('You let the '+EQ[k].n.toLowerCase()+' go. It wanders off happily.');sfx('talk');try{for(const f of window.SQPETREL||[])f(k)}catch(e){self.SQERR&&SQERR(e,'104-90')}saveLocal(true)}rPn()},true);
 })();

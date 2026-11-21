@@ -155,3 +155,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   claimed loot), island and guild bosses through 100's `ibReward` hook `window.SQIBWON` (`gt_`/`gu_` arena ids = Void Treant / Giant Turtle),
   trees through an `SQHIT` wrap (a swing that raised wood/oaklog/willowlog/maplelog/yewlog). Frame colours: gold monsters/trees, red world,
   purple dungeon, blue island, green guild. `SQDROPCARDALWAYS` forces the roll (check 48).
+- **Card Binder, Drop Card for Dummies, pet/potion/forage cards** (`items/254-s262-drop-card-binder.js`, `window.SQBINDER`, Nov 20): `dc_binder`
+  (given with the first card, the guide, or any `D.give`) replaces every card in the bag grid (the outermost `bagGridHTML` builds the bag with card
+  counts set to 0 for that call, so trade/market/chest lists still show cards) and has OPEN; `dc_guide` (GEN, 1 gold) has READ. Panel
+  `BTAB=52`: Collection (all cards, silhouettes for unfound, filters), Decks (3; 20 cards, max 2 copies, 1 per boss, trees unlimited, 4+ trees,
+  1 pet card as Companion; `problems(d)`), Guide (`GP` pages). All controls are `<button>`s (023's navItems). Save `dcd` {a, d:[{n,c,pet}]}.
+  Pet cards `pc_<pet item>`: 104's release calls `window.SQPETREL` (always gives the card); registered for every `EQ` pet now, on
+  `SQA.onApply`, and for `pc_` keys in a save (`SQLOAD.before`); picture = the pet's icon on a teal card (async, cached). Potion cards: 218's
+  `brewOne` calls `window.SQBREWED`; forage cards: an `SQHIT` wrap on berry/shroom/nuts/cfruit gains. Check 49 (controller + phone width).

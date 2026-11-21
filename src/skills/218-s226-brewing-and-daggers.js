@@ -57,7 +57,7 @@
   const save=sumTo(exAt,L)+(PK('br_thrift')?.15:0),extra=sumTo(raAt,L)+(PK('br_twice')?.15:0);
   for(const[a,b]of Object.entries(r.c))for(let i=0;i<b;i++)if(!(Math.random()<save))inv[a]--;
   const n=1+(Math.random()<extra?1:0);inv[r.k]=(inv[r.k]|0)+n;addXp(BR,r.xp);try{sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'218-2')}
-  say('You brew '+(n>1?n+' ':'a ')+INAME[r.k].toLowerCase()+(n>1?'s':'')+'.');return true}
+  say('You brew '+(n>1?n+' ':'a ')+INAME[r.k].toLowerCase()+(n>1?'s':'')+'.');try{for(const f of window.SQBREWED||[])f(r.k)}catch(e){self.SQERR&&SQERR(e,'218-90')}return true}
  {const _sa=stationAct;stationAct=function(a){const o=STATION;if(!(o&&o.t==='cauldron'&&/^cwa?_/.test(a||'')))return _sa.apply(this,arguments);
    const all=a.startsWith('cwa_'),r=RECIPES.find(q=>q.k===a.replace(/^cwa?_/,''));if(!r)return;
    if(lvOf(BR)<r.lv){say('You need Brewing '+r.lv+' to brew that.');return}const m=canMake(r);if(m<1){say('You need '+Object.entries(r.c).map(([k,b])=>b+' '+matN(k)).join(', ')+'.');return}

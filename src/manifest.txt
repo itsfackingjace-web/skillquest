@@ -263,6 +263,7 @@ ui/250-s258-mouse-hides-controller-ring.js
 ui/251-s259-cursors.js
 combat/252-s260-death-log.js
 items/253-s261-drop-cards.js
+items/254-s262-drop-card-binder.js
 multiplayer/249-s257-discord-link.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
