@@ -93,7 +93,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   within 10 px, and a monster with a NaN position counts as 1 px away (`Math.hypot(NaN)||1`) while being drawn nowhere (Nov 16: two players
   on the Shattered Expanse were hit every second by nothing visible). The outermost `upd` drops monsters without a finite position from `en`
   (a shared copy `_rp` goes back to its owner's `tx/ty`), and moves one that is within 16 px and hasn't been drawn (outermost `pS`, `SEEN`)
-  for 0.4 s out of reach for that update (600 ms grace after it first appears; big/boss/ib/_wb/cb/under/_pet exempt). The first one a session
+  for 0.4 s out of reach for that update (600 ms grace after it first appears; big/boss/ib/_wb/cb/under/_pet exempt).
+  Since Nov 20 "drawn" means drawn on the screen: 227's `pS` step checks the main canvas's transform and alpha (`onScreen`; drawing into
+  another canvas still counts). It also keeps the last 8 hits (`SQGHOSTHIT.hits`: message, what was within 40 px, how long ago each was
+  seen) and, the first time a session you fall within 15 s of an "Ouch!" with no seen monster within 16 px, sends `[auto] Fell to an unseen
+  monster` with those hits (Heather, Briarwood). Check 46. The first one a session
   sends an `[auto]` bug report with its fields (Admin > Bug reports) so the source can be found. Anything that draws a monster without
   going through `pS` must mark it in `SEEN` or be exempted here.
 - **No hits from under houses** (`combat/247-s255-no-hits-from-under-houses.js`, `window.SQUNDER`): monsters drawn but covered by an island
