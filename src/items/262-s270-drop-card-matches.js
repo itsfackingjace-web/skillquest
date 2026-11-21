@@ -36,7 +36,7 @@
   const plays=has('play').filter(o=>P.hand[o.h]!=='_sapling').map(o=>({o,c:E.card(P.hand[o.h])}));
   let pickP=null,ps=-1;for(const{o,c}of plays){let v=E.costOf(s,i,c)*10+(c.kind==='mon'?c.atk+c.hp:0);
    if(c.kind==='spell'){const tm=o.tg&&E.findM(s,o.tg)[1];
-    if(c.id==='pot_heal')v=P.hp<=14?60:-1;else if(c.id==='nuts')v=P.hp<=18?15:-1;else if(c.id==='pot_napalm')v=O.board.length>=2?70:-1;
+    if(c.id==='pot_heal')v=P.hp<=E.HERO-6?60:-1;else if(c.id==='nuts')v=P.hp<=E.HERO-2?15:-1;else if(c.id==='pot_napalm')v=O.board.length>=2?70:-1;
     else if(c.id==='pot_zap')v=tm&&tm.side!==i?(tm.hp<=4?50+E.atkOf(s,1-i,tm)*5:20):-1;else if(c.id==='pot_poison')v=tm&&tm.side!==i?20+tm.hp:-1;
     else if(c.id==='cfruit')v=tm&&tm.side===i&&tm.hp<tm.max?20:-1;else if(c.id==='pot_swift')v=tm&&tm.side===i&&tm.done&&!tm.sleep?25:-1;
     else if(tm)v=tm.side===i?15+E.atkOf(s,i,tm):-1;else v=20}
@@ -46,7 +46,7 @@
   // attacks
   for(const m of ready){const ts=E.targets(s,i,m.uid);if(lv==='easy'){if(rnd01(s)<.4)return{t:'end'};return{t:'atk',a:m.uid,tg:ts[Math.floor(rnd01(s)*ts.length)]}}
    const av=E.atkOf(s,i,m);let best=null,bs=-1e9;
-   for(const tg of ts){if(tg[0]==='h'){const v=av*4+(O.hp<=10?10:0);if(v>bs){bs=v;best=tg}continue}const d=E.findM(s,tg)[1],dv=E.atkOf(s,1-i,d),kill=av>=d.hp,die=dv>=m.hp;
+   for(const tg of ts){if(tg[0]==='h'){const v=av*4+(O.hp<=E.HERO/2?10:0);if(v>bs){bs=v;best=tg}continue}const d=E.findM(s,tg)[1],dv=E.atkOf(s,1-i,d),kill=av>=d.hp,die=dv>=m.hp;
     let v=(kill?10+dv*3+d.hp:0)-(die?8+av*2:0);if(kill&&!die)v+=20;if(v>bs){bs=v;best=tg}}
    if(best)return{t:'atk',a:m.uid,tg:best}}
   return{t:'end'}}

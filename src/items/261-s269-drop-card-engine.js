@@ -1,16 +1,16 @@
 // ---- 269. Drop Card: the match engine (window.SQDCE) ----
 // Nov 20 (Jace: "i'm happy with the current draft"): the rules from the "Drop Card: Rules Draft" doc, as plain functions on a match
 // state, so the same moves give the same game everywhere (seeded random; matches against Ace now, player against player later).
-// - Heroes 20 HP (Gold golem Companion: 23). Decks 20 cards; first player draws 3, second 4 + a Sapling (1 Mana this turn).
+// - Heroes 30 HP (Gold golem Companion: 33). Decks 20-60 cards (Nov 21, Jace; was 20 HP and 20 cards); first player draws 3, second 4 + a Sapling (1 Mana this turn).
 // - A turn: draw (empty deck: 1, 2, 3... damage), stumps regrow, plant one tree, chop trees for Mana (`pool`, lost at end of turn),
 //   play cards (monster cost = ceil((HP+ATK)/2), bosses +1, spells "Cost N"), attack once with each monster (new ones wait a turn;
-//   Guard first), end turn. Board 6, hand 10, Grove 10 Mana.
+//   Guard first), end turn. Board 6, hand 10, Grove 6 trees (Nov 21, Jace: was 10 Mana, which made big trees pointless).
 // - Boss powers, potion/forage spells and Companion powers as in the doc (POW / SPELL / COMP below). The Demon (Jace's open
 //   choice): "Last word: 3 damage to the enemy hero".
 // - Moves: {t:'plant',h} {t:'chop',g} {t:'play',h,tg} {t:'atk',a,tg} {t:'end'}; targets are 'h0'/'h1' (heroes) or minion ids.
 //   apply(s, side, move) checks and does one move; it returns '' or why it can't. Events go to s.log (and s.fx for the screen).
 (()=>{const D=window.SQDROPCARD;if(!D)return;
- const MAXB=6,MAXH=10,MAXM=10,HERO=20;
+ const MAXB=6,MAXH=10,MAXT=6,HERO=30;
  // ---- cards ----
  function card(key){const C=D.ITEM[key];if(C){const d=String(C.d||''),m=/(\d+)\s*HP\s*(\d+)\s*ATK/i.exec(d),mn=/(\d+)\s*Mana/i.exec(d),co=/Cost\s*(\d+)/i.exec(d);
    const boss=['world','dungeon','island','guild'].includes(C.g);
@@ -40,7 +40,7 @@
  function create(o){const s={seed:(o.seed|0)||1,turn:0,cur:0,over:false,win:-1,nid:1,log:[],fx:[],p:[]};
   for(let i=0;i<2;i++){const pet=o.pets&&o.pets[i]||null,comp=pet?(COMP[pet.replace(/^pc_(pet_)?/,'')]||'friendly'):null;
    const deck=(o.decks[i]||[]).map(k=>{const C=D.ITEM[k];return C?C.key:k}).filter(k=>card(k)&&card(k).kind!=='pet');
-   s.p.push({n:String(o.names&&o.names[i]||('Player '+(i+1))),hp:comp==='ggold'?23:HERO,deck,hand:[],grove:[],board:[],pool:0,planted:false,fat:0,comp,pet,cf:{},played:0,hurtT:false})}
+   s.p.push({n:String(o.names&&o.names[i]||('Player '+(i+1))),hp:comp==='ggold'?HERO+3:HERO,deck,hand:[],grove:[],board:[],pool:0,planted:false,fat:0,comp,pet,cf:{},played:0,hurtT:false})}
   for(const P of s.p){for(let i=P.deck.length-1;i>0;i--){const j=Math.floor(rnd(s)*(i+1));[P.deck[i],P.deck[j]]=[P.deck[j],P.deck[i]]}}
   for(let i=0;i<3;i++){draw(s,0);draw(s,1)}draw(s,1);s.p[1].hand.push('_sapling');
   for(let i=0;i<2;i++)if(s.p[i].comp==='fox')draw(s,i);
@@ -77,7 +77,7 @@
   if(P.comp==='mush'&&myTurns%3===0){draw(s,i);L(s,'Spores: '+P.n+' draws a card.')}
   if(P.comp==='slime'&&P.board.length){const m=pick(s,P.board);m.hp++;m.max++;L(s,'Squish: '+m.n+' gets +1 HP.')}
   if(P.comp==='web'&&myTurns%2===0){const f=s.p[1-i].board;if(f.length){const m=pick(s,f);m.frozen=2;L(s,'Web: '+m.n+' can\'t attack next turn.')}}
-  if(P.comp==='friendly'&&!P.cf.fr&&P.hp<=10){P.cf.fr=1;P.hp+=3;L(s,P.n+'\'s pet is Friendly: +3 HP.')}}
+  if(P.comp==='friendly'&&!P.cf.fr&&P.hp<=HERO/2){P.cf.fr=1;P.hp+=3;L(s,P.n+'\'s pet is Friendly: +3 HP.')}}
  function endTurn(s){const i=s.cur,P=s.p[i];
   for(const m of P.board){if(m.mute)continue;if(m.id2==='tidek'){P.hp+=2;L(s,'Tidekeeper heals '+P.n+' 2.')}if(m.id2==='void_treant'){m.atk++;m.hp++;m.max++}}
   if(P.comp==='imp'){const f=s.p[1-i].board;if(f.length){const m=pick(s,f);hurtMon(s,1-i,m,1);L(s,'The imp jabs '+m.n+'.');sweep(s)}}
@@ -104,7 +104,7 @@
  function apply(s,i,mv){if(s.over)return'The match is over.';if(s.cur!==i)return'It isn\'t your turn.';const P=s.p[i],O=s.p[1-i];s.fx=[];
   if(mv.t==='end'){L(s,P.n+' ends the turn.');endTurn(s);return''}
   if(mv.t==='chop')return chop(s,i,mv.g|0);
-  if(mv.t==='plant'){const k=P.hand[mv.h|0],c=card(k);if(!c||c.kind!=='tree')return'That isn\'t a tree.';if(P.planted)return'You\'ve already planted a tree this turn.';if(groveMana(P)+c.mana>MAXM)return'Your Grove is full (10 Mana).';
+  if(mv.t==='plant'){const k=P.hand[mv.h|0],c=card(k);if(!c||c.kind!=='tree')return'That isn\'t a tree.';if(P.planted)return'You\'ve already planted a tree this turn.';if(P.grove.length>=MAXT)return'Your Grove is full ('+MAXT+' trees).';
    P.hand.splice(mv.h|0,1);P.grove.push({key:k,n:c.n,mana:c.mana,stump:false});P.planted=true;L(s,P.n+' plants '+c.n+'.');if(P.comp==='pine'){draw(s,i);L(s,'Evergreen: '+P.n+' draws a card.')}return''}
   if(mv.t==='play'){const h=mv.h|0,k=P.hand[h];if(k==='_sapling'){P.hand.splice(h,1);P.pool+=1;L(s,P.n+' uses the Sapling: +1 Mana.');return''}const c=card(k);if(!c)return'No card.';if(c.kind==='tree')return apply(s,i,{t:'plant',h});
    const cost=costOf(s,i,c);if(c.kind==='mon'&&P.board.length>=MAXB)return'Your side of the board is full.';
@@ -140,7 +140,7 @@
  // ---- what a side may do now (for the screen and Ace) ----
  function options(s,i){const P=s.p[i],out=[];if(s.over||s.cur!==i)return out;const avail=P.pool+P.grove.filter(g=>!g.stump).reduce((a,g)=>a+g.mana,0);
   P.hand.forEach((k,h)=>{if(k==='_sapling'){out.push({t:'play',h});return}const c=card(k);if(!c)return;
-   if(c.kind==='tree'){if(!P.planted&&groveMana(P)+c.mana<=MAXM)out.push({t:'plant',h});return}
+   if(c.kind==='tree'){if(!P.planted&&P.grove.length<MAXT)out.push({t:'plant',h});return}
    if(costOf(s,i,c)>avail)return;if(c.kind==='mon'){if(P.board.length<MAXB)out.push({t:'play',h});return}
    const ts=spellTargets(s,i,c);if(ts===null)out.push({t:'play',h});else for(const tg of ts)out.push({t:'play',h,tg})});
   for(const m of P.board)for(const tg of targets(s,i,m.uid))out.push({t:'atk',a:m.uid,tg});
@@ -153,4 +153,4 @@
   for(const f of s.fx||[]){if(typeof f.side==='number')f.side=1-f.side;if(f.to==='h0'||f.to==='h1')f.to=f.to==='h0'?'h1':'h0'}return s}
  const flipH=v=>v==='h0'?'h1':v==='h1'?'h0':v;
  function flipMv(mv){const o=Object.assign({},mv);if(o.tg!=null)o.tg=flipH(o.tg);return o}
- window.SQDCE={mirror,flipMv,chopPlan,card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,MAXB,MAXH,MAXM,HERO,short,groveMana:P=>groveMana(P)}})();
+ window.SQDCE={mirror,flipMv,chopPlan,card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,MAXB,MAXH,MAXT,HERO,short,groveMana:P=>groveMana(P)}})();

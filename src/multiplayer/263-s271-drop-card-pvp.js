@@ -6,7 +6,7 @@
 // - Both players build the same match from one seed (the request's code + the pair id); the player whose id comes first in the
 //   pair goes first. On the second player's screen the match is mirrored (261's mirror) so you're always side 0, at the bottom;
 //   the other side's moves are flipped (flipMv: their hero is h0 for them, h1 for you) and applied only on their turn.
-// - A deck that breaks the deck rules (20 cards, 2 of a card, 1 of a boss, 4+ trees) makes the match a draw: stakes go back.
+// - A deck that breaks the deck rules (20-60 cards, 2 of a card, 1 of a boss, 4+ trees) makes the match a draw: stakes go back.
 // - 2 minutes a turn: your turn ends by itself after that; if the other player doesn't move for 2.5 minutes, you win. Going
 //   offline for 20 s, leaving (LEAVE twice) or giving up loses, as in chess. The winner takes both stakes, nothing else.
 (()=>{const A=()=>window.SQDUELAPI,E=window.SQDCE,B=window.SQBINDER,MT=()=>window.SQDCM;if(!E||!B||!MT())return;

@@ -35,6 +35,11 @@ module.exports={name:'Drop Card matches against Ace',async run(p,t){
   out.plant2=[E.apply(st,0,{t:'plant',h:0}),E.apply(st,0,{t:'plant',h:0})];
   E.apply(st,0,{t:'end'});st.p[1].board.push({uid:'zz',id2:'bat',n:'Bat',hp:1,max:1,atk:2,sleep:false,done:false,side:1});
   out.guard=E.apply(st,1,{t:'atk',a:'zz',tg:'h0'});out.guardOK=E.apply(st,1,{t:'atk',a:'zz',tg:st.p[0].board[0].uid});
+  // Nov 21 (Jace): heroes have 30 HP, a Grove holds 6 trees (any Mana), decks are 20 to 60 cards
+  {const s2=E.create({seed:9,decks:[Array(20).fill(k('tree')),Array(20).fill(k('tree'))],pets:[null,null],names:['A','B']});out.hp=[s2.p[0].hp,s2.p[1].hp];
+   s2.p[0].grove=Array.from({length:5},()=>({key:k('yew'),n:'Yew',mana:5,stump:false}));s2.p[0].hand=[k('yew'),k('yew')];
+   out.sixth=E.apply(s2,0,{t:'plant',h:0});s2.p[0].planted=false;out.seventh=E.apply(s2,0,{t:'plant',h:0});
+   const own=n=>{const c={};c[k('tree')]=n;return SQBINDER.problems({n:'x',c,pet:null}).filter(p=>!/^Optional|^You only have/.test(p))};out.sizes=[own(19).length,own(20).length,own(45).length,own(60).length,own(61).length>0?1:0]}
   // leaving counts as a loss
   B.giveStarter();M.start('easy');await W(100);M.el.querySelector('[data-dcm="leave"]').click();await W(50);const armed=/again/.test(M.m.msg);M.el.querySelector('[data-dcm="leave"]').click();await W(50);out.left=[armed,M.m,M.el.style.display];
   return out});
@@ -46,4 +51,5 @@ module.exports={name:'Drop Card matches against Ace',async run(p,t){
  t.eq(r.cost,7,'Stone Giant costs 7 (8 HP + 4 ATK, halved, +1 boss)');t.eq(r.play,'','playing it with 7 Mana of trees');t.eq(r.chopped,[true,true],'both trees chopped');t.eq(r.pool,0,'no Mana left');
  t.eq(r.plant2,['','You\'ve already planted a tree this turn.'],'one tree a turn');
  t.eq(r.guard,'A monster with Guard is in the way: attack it first.','Guard blocks hitting the hero');t.eq(r.guardOK,'','attacking the Guard monster');
+ t.eq(r.hp,[30,30],'heroes start with 30 HP');t.eq([r.sixth,r.seventh],['','Your Grove is full (6 trees).'],'6 trees in a Grove, whatever their Mana');t.eq(r.sizes,[1,0,0,0,1],'decks of 20 to 60 cards');
  t.eq(r.left,[true,null,'none'],'leaving asks twice, then closes')}};
