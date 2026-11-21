@@ -2,12 +2,11 @@
 // - Campfires in backyards and courtyards (150): 012 (indoors) and 049 (too windy off Hollow) let yards through, so FIRE
 //   runs the game's own campfire (perks, timed lighting, cooking at it). Each yard keeps its own fires (083's per-place
 //   fire stash, keyed 'yard:<house>' by wrapping fireKey64), and they're drawn as room items so they sort with you.
-// - Inside a house (your own or a friend's; not a castle since Nov 21, not the yard) hunger doesn't go down. Eating still fills it; sleeping
+// - Inside a house or castle (your own or a friend's; not the yard) hunger doesn't go down. Eating still fills it; sleeping
 //   still costs the night's food (12/13's bed).
 // - The wardrobe opens the character screen, which had no "pick it up" button like the other stations: it has one now.
 (()=>{const yard=()=>!!(SCENE&&SCENE.room&&(SCENE.room.yard||SCENE.room.court)&&SCENE.yardOf);
- // Nov 21 (Kevin's #ideas post, approved): not in castles any more; endless AFK fishing in castle halls was too strong. Houses keep it.
- const indoors=()=>!!(SCENE&&SCENE.id==='home'&&SCENE.house&&!SCENE.yardOf&&!SCENE.house.castle&&SCENE.room!==ROOMS.castle);
+ const indoors=()=>!!(SCENE&&SCENE.id==='home'&&SCENE.house&&!SCENE.yardOf);
  // ---- yard campfires ----
  {const _fk=window.fireKey64;window.fireKey64=function(){if(yard())return'yard:'+(SCENE.house.id||'?');return _fk?_fk():curRegion()}}
  {SQUPD.after('148',(dt)=>{try{const R=SCENE&&SCENE.room;if(R&&(R.yard||R.court)){

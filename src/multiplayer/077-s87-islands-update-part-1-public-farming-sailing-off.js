@@ -149,6 +149,8 @@ rhForeign=(_rf=>function(id){const out=_rf(id);try{for(const o in BLDS.data){con
 // the aura: monsters keep away and you heal, like a campfire but in a much wider circle
 const CASTLE_R=2.6;
 function castlesHere(){try{return castleIn().filter(h=>h.castle)}catch(e){return[]}}
-{const _nf=nearFire;nearFire=function(x,y,r){if(_nf(x,y,r))return true;if(SCENE&&!rbR())return false;for(const h of castlesHere()){const cx=h.x*16+8,cy=h.y*16;if(Math.hypot(cx-x,cy-y)<r*CASTLE_R)return true}return false}}
+// window.SQFIREONLY: real campfires only, no castle aura (087's Hearthkeeper since Nov 21: Kevin's #ideas post, standing outside a castle
+// by water kept you fed forever while AFK fishing)
+{const _nf=nearFire;nearFire=function(x,y,r){if(_nf(x,y,r))return true;if(window.SQFIREONLY||SCENE&&!rbR())return false;for(const h of castlesHere()){const cx=h.x*16+8,cy=h.y*16;if(Math.hypot(cx-x,cy-y)<r*CASTLE_R)return true}return false}}
 window.SQCASTLE={castlesHere,ROOM:ROOMS.castle};
 
