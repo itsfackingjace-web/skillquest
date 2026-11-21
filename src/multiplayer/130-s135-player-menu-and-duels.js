@@ -29,6 +29,7 @@
   h+='<button class="sb" data-pm="friend"'+(fr?' disabled style="opacity:.55"':'')+'>'+(fr?'FRIENDS ✓':'ADD FRIEND')+'</button>';
   h+='<button class="sb" data-pm="duel"'+(dSent&&!dIn?' disabled style="opacity:.55"':'')+'>'+(dIn?'ACCEPT DUEL':dSent?'DUEL ASKED…':'DUEL')+'</button>';
   if(window.SQGUILDPM)h+=SQGUILDPM(u);
+  for(const f of window.SQPMX||[])try{h+=f(u)}catch(e){self.SQERR&&SQERR(e,'130-90')}// later sections' buttons (259: Drop Cards)
   if(window.SQPARTY){const inP=SQPARTY.has(u),inv=SQPARTY.invited(u);h+='<button class="sb" data-pm="party"'+(inP||inv?' disabled style="opacity:.55"':'')+'>'+(inP?'IN YOUR PARTY ✓':inv?'PARTY INVITE SENT…':'INVITE TO PARTY')+'</button>'}
   h+='<button class="sb" data-pm="chess"'+(cSent&&!cIn?' disabled style="opacity:.55"':'')+'>'+(cIn?'ACCEPT CHESS':cSent?'CHESS ASKED…':'CHESS')+'</button>'+(window.SQIGNSET?'<button class="sb" data-pm="ignore">'+(SQIGNORED(u)?'UNIGNORE (see their chat again)':'IGNORE (hide their chat)')+'</button>':'')+(window.SQREPORT?'<button class="sb" data-pm="report" style="color:#a04040">REPORT</button>':'')+'<button class="sb" data-pm="close">CLOSE</button></div>';
   return h}

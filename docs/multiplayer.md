@@ -130,3 +130,6 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Chat length** (Nov 20): public chat, PMs, guild chat: up to 160 characters (061 `#mpi` maxlength, mpSend / send / mpChat / PM slices, 197
   SQGUILDSAY and its log); party chat 152 + the "[Party] " prefix (136); rules `chat` m <= 160, `pm` m <= 168, `gchat` m <= 160. 187's
   bubbles wrap to 5 lines, shown up to 12 s. Check 41.
+- **Drop Cards shared** (`multiplayer/259-s267-card-share.js`, `window.SQCARDSHARE`): `cards/<uid>` {v:"key:n:s,...", n, t} written when your
+  earned collection changes (checked every 20 s online; no listeners); 130's new `window.SQPMX` hook adds DROP CARDS to the player menu, which reads
+  theirs and opens 254's binder read-only (`SQBINDER.peek`). Leaderboard field `dc` (SQLBX) and 068's "Drop Cards" category. Rules: `cards`, `lb.dc`.

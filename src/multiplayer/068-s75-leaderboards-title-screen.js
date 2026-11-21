@@ -16,13 +16,13 @@ function lbTick(){if(!MP.on||!MP.user||!FB)return;const now=performance.now();if
 setInterval(()=>{try{lbTick()}catch(e){self.SQERR&&SQERR(e,'068-3')}},5000);
 window.SQLB=LB;
 // ---- the categories ----
-const lbCats=()=>{const c=[{k:'tot',n:'Overall',sub:'Total level',ic:'★',col:'#f8d048'},{k:'qp',n:'Quests',sub:'Quest points',ic:'!',col:'#68b8f8'},{k:'pk',n:'PvP kills',sub:'Players defeated',ic:'☠',col:'#e85848'},{k:'mk',n:'Monsters',sub:'Monsters slain',ic:'⚔',col:'#a8a8b8'},{k:'bk',n:'World bosses',sub:'World bosses defeated',ic:'♛',col:'#c83020'},{k:'cr',n:'Chess',sub:'Chess rating (games against players)',ic:'♞',col:'#8058c0'}];
+const lbCats=()=>{const c=[{k:'tot',n:'Overall',sub:'Total level',ic:'★',col:'#f8d048'},{k:'qp',n:'Quests',sub:'Quest points',ic:'!',col:'#68b8f8'},{k:'pk',n:'PvP kills',sub:'Players defeated',ic:'☠',col:'#e85848'},{k:'mk',n:'Monsters',sub:'Monsters slain',ic:'⚔',col:'#a8a8b8'},{k:'bk',n:'World bosses',sub:'World bosses defeated',ic:'♛',col:'#c83020'},{k:'cr',n:'Chess',sub:'Chess rating (games against players)',ic:'♞',col:'#8058c0'},{k:'dc',n:'Drop Cards',sub:'Different Drop Cards found',ic:'♠',col:'#d0a030'}];
  SKN.forEach((n,i)=>c.push({k:'s'+i,n,sub:n+' level',ic:n[0],col:SKC[i]||'#88a'}));return c};
 const xpOf=(r,i)=>{const a=r&&r.x;if(!a)return 0;const v=Array.isArray(a)?a[i]:a[i];return Math.max(0,+v||0)};
 function lbRows(cat){const out=[];for(const u in LB.data){const r=LB.data[u];if(!r||typeof r!=='object'||typeof r.n!=='string')continue;let v,s='',sort;
   if(cat==='tot'){let tx=0;const a=r.x?(Array.isArray(r.x)?r.x:Object.values(r.x)):[];for(const q of a)tx+=+q||0;v=+r.tot||0;sort=v*1e10+tx;s=tx.toLocaleString('en-US')+' xp'}
   else if(cat==='cr'){if(!((+r.cg|0)>0))continue;v=Math.round(+r.cr||0);sort=v;s=(+r.cg|0)+' game'+((+r.cg|0)>1?'s':'')}
-  else if(cat==='qp'||cat==='pk'||cat==='mk'||cat==='bk'){v=+r[cat]||0;sort=v}
+  else if(cat==='qp'||cat==='pk'||cat==='mk'||cat==='bk'||cat==='dc'){v=+r[cat]||0;sort=v}
   else{const i=+cat.slice(1),xp=xpOf(r,i);v=lvFromXp(xp);sort=xp;s=Math.floor(xp).toLocaleString('en-US')+' xp'}
   if(cat!=='tot'&&!(sort>0))continue;out.push({u,n:r.n.replace(/[<>]/g,'').slice(0,12),v,s,sort,t:+r.t||0})}
  return out.sort((a,b)=>b.sort-a.sort||a.t-b.t)}

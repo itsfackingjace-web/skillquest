@@ -76,7 +76,7 @@
 - **Panel numbers (`ptab`) must be unique**: 124's Custom Controls used 34, which is 064's PvP screen, so START > PvP opened Custom
   Controls (Nov 15; now 45). In use: 0-8 (built-in screens), 31 style, 32 trade, 33 graves, 34 PvP, 35 achievements, 36/37 player menu/duel,
   38 party, 39 emotes, 40 report, 41 eating, 42 quest choice, 43 events, 44 guild, 45 controls, 46 credits, 47 Art Room,
-  48 patron, 49 moderation, 50 campfire, 51 Song Studio. Grep `TAB=` and `ptab=` before picking one; give it a const (`const XTAB=52`) so the source rules can check it.
+  48 patron, 49 moderation, 50 campfire, 51 Song Studio, 52 Card Binder, 53 card frame. Grep `TAB=` and `ptab=` before picking one; give it a const (`const XTAB=54`) so the source rules can check it.
 - **No `prompt()`**: the Windows app (Electron) doesn't support it ("Prompt () is and will not be supported"). Ask for text with an
   input on the page instead (Moderation's reason box, Admin's reply box).
 - **Save keys** (`core/166-s172-save-keys.js`, `SQSAVEKEYS`): 049 keeps unknown save fields (`SAVE_EXTRA`) and writes them back; it

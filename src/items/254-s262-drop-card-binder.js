@@ -25,7 +25,8 @@
  // they can't be traded, sold or stored) and fill Deck 1 if it's empty. Saved as `dcs` {g: given, c: {key: count}}.
  let STARTER={},SG=0;
  const SDECK=[['tree',6],['oak',2],['slime',2],['slime:moss',2],['wolf',2],['skel',2],['bat',2],['pot_heal',2]];
- const owned=k=>(inv[k]|0)+(STARTER[k]|0);
+ const shOf=k=>{const C=D.ITEM[k];return C&&C.key===k?C.sh:null},shiny=k=>{const h=shOf(k);return h?inv[h]|0:0};
+ const owned=k=>(inv[k]|0)+shiny(k)+(STARTER[k]|0);
  function giveStarter(){if(SG)return false;SG=1;STARTER={};for(const[ck,n]of SDECK){const C=D.CARDS[ck];if(C)STARTER[C.key]=(STARTER[C.key]|0)+n}
   if(!Object.keys(DECKS[0].c).length){DECKS[0].c=Object.assign({},STARTER);DECKS[0].n='Starter Deck'}try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'254-12')}return true}
  SQSAVE.after('254:dcs',s=>{s.dcs={g:SG,c:STARTER}});
@@ -54,10 +55,10 @@
   const im=new Image();im.onload=()=>{try{const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(im,7,6,14,14);PIC[k].url=c.toDataURL();if(pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'254-5')}};im.src=src;return base}
  (window.SQPETREL=window.SQPETREL||[]).push(pk=>{const k=regPet(pk);inv[k]=(inv[k]|0)+1;giveBinder();setTimeout(()=>{try{say('A Drop Card! '+INAME[k]+'. It\'s in your Card Binder.');msgT=5;sfx('level')}catch(e){self.SQERR&&SQERR(e,'254-6')}},50)});
  // ---- potion and forage cards ----
- (window.SQBREWED=window.SQBREWED||[]).push(pk=>{if(D.CARDS[pk]&&D.roll())D.give(pk,'brew')});
+ (window.SQBREWED=window.SQBREWED||[]).push(pk=>{if(D.CARDS[pk]&&D.roll(pk))D.give(pk,'brew')});
  const FOR=['berry','shroom','nuts','cfruit'];
  SQHIT.wrap('254 forage cards',_a=>function(){const b=FOR.map(k=>inv[k]|0);const out=_a.apply(this,arguments);
-  try{for(let i=0;i<FOR.length;i++)if((inv[FOR[i]]|0)>b[i]){if(D.CARDS[FOR[i]]&&D.roll())D.give(FOR[i],'forage');break}}catch(e){self.SQERR&&SQERR(e,'254-7')}return out});
+  try{for(let i=0;i<FOR.length;i++)if((inv[FOR[i]]|0)>b[i]){if(D.CARDS[FOR[i]]&&D.roll(FOR[i]))D.give(FOR[i],'forage');break}}catch(e){self.SQERR&&SQERR(e,'254-7')}return out});
  // every card you get comes with a binder
  {const _g=D.give;D.give=function(){const r=_g.apply(this,arguments);if(r)giveBinder();return r}}
  // ---- which keys are cards ----
@@ -66,7 +67,7 @@
  const isCard=k=>!!(D.ITEM[k]||PET[k]);
  const BOSSG=new Set(['world','dungeon','island','guild']);
  // ---- bag: one binder instead of every card ----
- {const _bg=bagGridHTML;bagGridHTML=function(){const hid=[];for(const k of ORDER())if((inv[k]|0)>0){hid.push([k,inv[k]]);inv[k]=0}
+ {const _bg=bagGridHTML;bagGridHTML=function(){const hid=[];for(const k of ORDER().concat(Object.values(D.CARDS).map(c=>c.sh)))if((inv[k]|0)>0){hid.push([k,inv[k]]);inv[k]=0}
   if(hid.length)giveBinder();let h;try{h=_bg.apply(this,arguments)}finally{for(const[k,n]of hid)inv[k]=n}
   const k=invSel;if(k===BIND)h=h.replace('<div class="bd">','<div class="bd"><button class="use dcb-open" data-dcb="open">OPEN</button>');
   else if(k===GUIDE)h=h.replace('<div class="bd">','<div class="bd"><button class="use dcb-open" data-dcb="read">READ</button>');return h}}
@@ -92,19 +93,19 @@
   ['Companions','<p>Your Companion is the pet card you picked for your deck. It sits beside your hero all match and gives a small bonus based on what that pet does in the world: a Dog gives your first monster each turn +1 ATK, an Imp pings an enemy, a treeling regrows a stump. Tap a pet card in your binder to see its power.</p><p>Release a pet from your bag (tap RELEASE twice) to get its card. Releasing is permanent, so choose carefully!</p>'],
   ['Playing with a controller or touch','<p><b>Touch:</b> tap a card to see it, tap again to play it, then tap a target.</p><p><b>Controller:</b> the D-pad or left stick moves between cards, ✕ picks, ○ goes back. The right stick moves a cursor if you prefer pointing.</p><p><b>Mouse:</b> click, or drag a card onto the board.</p>']];
  // ---- the panel ----
- const V={tab:'col',f:'all',sel:null,page:0,deck:0,edit:false};
+ const V={tab:'col',f:'all',sel:null,page:0,deck:0,edit:false,peek:null};// peek: {n, c:{key:n}, s:{key:n}} another player's collection (259)
  const FILT=[['all','All'],['mon','Monsters'],['tree','Trees'],['boss','Bosses'],['spell','Spells'],['pet','Pets']];
  const inF=(i,f)=>f==='all'||(f==='mon'&&i.g==='reg')||(f==='tree'&&i.g==='tree')||(f==='boss'&&BOSSG.has(i.g))||(f==='spell'&&(i.g==='potion'||i.g==='forage'))||(f==='pet'&&i.g==='pet');
  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const short=n=>String(n).replace(/^(Drop|Pet) Card: /,'');
  function openBinder(tab){V.tab=tab||'col';if(tab==='guide')V.page=0;pnOpen=true;ptab=BTAB;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'254-8')}}
- function colHTML(){const all=ORDER().map(info).filter(Boolean),L=all.filter(i=>inF(i,V.f)),own=all.filter(i=>owned(i.k)>0).length;const d=DECKS[V.deck];
+ function colHTML(){const pk=V.peek,cnt=k=>pk?(pk.c[k]|0)+(pk.s[k]|0):owned(k),shn=k=>pk?pk.s[k]|0:shiny(k);const all=ORDER().map(info).filter(Boolean),L=all.filter(i=>inF(i,V.f)),own=all.filter(i=>cnt(i.k)>0).length;const d=DECKS[V.deck];
   let h='<div class="dcb-f">'+FILT.map(([k,n])=>'<button class="dcb-fb'+(V.f===k?' on':'')+'" data-dcb="f:'+k+'">'+n+'</button>').join('')+'</div>';
-  h+='<div class="dcb-sub">'+(V.edit?'Editing <b>'+esc(d.n)+'</b> ('+deckN(d)+'/20): tap a card, then ADD. <button class="dcb-mini" data-dcb="done">DONE</button>':'You\'ve found <b>'+own+'</b> of '+all.length+' cards.')+'</div><div class="dcb-g">';
-  for(const i of L){const n=owned(i.k),inD=(d.c[i.k]|0)+(d.pet===i.k?1:0);h+='<button class="dcb-c'+(n?'':' no')+(V.sel===i.k?' sel':'')+'" data-dcb="s:'+i.k+'" aria-label="'+esc(n?short(i.n):'Not found yet')+'"><img src="'+iconURL(i.k)+'" alt="">'+(n?'<span class="dcb-n">'+n+'</span>':'')+(V.edit&&inD?'<span class="dcb-d">'+inD+'</span>':'')+'</button>'}
+  h+='<div class="dcb-sub">'+(pk?'<b>'+esc(pk.n)+'</b> has found <b>'+own+'</b> of '+all.length+' cards.':V.edit?'Editing <b>'+esc(d.n)+'</b> ('+deckN(d)+'/20): tap a card, then ADD. <button class="dcb-mini" data-dcb="done">DONE</button>':'You\'ve found <b>'+own+'</b> of '+all.length+' cards.')+'</div><div class="dcb-g">';
+  for(const i of L){const n=cnt(i.k),inD=(d.c[i.k]|0)+(d.pet===i.k?1:0);h+='<button class="dcb-c'+(n?'':' no')+(V.sel===i.k?' sel':'')+'" data-dcb="s:'+i.k+'" aria-label="'+esc(n?short(i.n):'Not found yet')+'"><img src="'+iconURL(i.k)+'" alt="">'+(n?'<span class="dcb-n">'+n+'</span>':'')+(shn(i.k)?'<span class="dcb-sh" aria-label="Shiny">★</span>':'')+(V.edit&&inD?'<span class="dcb-d">'+inD+'</span>':'')+'</button>'}
   h+='</div>';const s=V.sel&&info(V.sel);
-  if(s){const n=owned(s.k),sn=STARTER[s.k]|0;h+='<div class="dcb-det"><img src="'+iconURL(s.k)+'" alt=""><div><b>'+esc(n?short(s.n):'???')+'</b><br>'+esc(n?s.d:'Not found yet.')+'<br><small>You have '+n+(sn?' ('+sn+' from the Starter Deck: these stay in your binder)':'')+'.</small>';
-   if(V.edit&&n){const inD=s.g==='pet'?(d.pet===s.k?1:0):(d.c[s.k]|0),max=s.g==='pet'?1:Math.min(maxOf(s.k),n);
+  if(s){const n=cnt(s.k),sn=pk?0:STARTER[s.k]|0;h+='<div class="dcb-det"><img src="'+iconURL(s.k)+'" alt=""><div><b>'+esc(n?short(s.n):'???')+'</b><br>'+esc(n?s.d:'Not found yet.')+'<br><small>'+(pk?esc(pk.n)+' has ':'You have ')+n+(shn(s.k)?', '+shn(s.k)+' shiny':'')+(sn?' ('+sn+' from the Starter Deck: these stay in your binder)':'')+'.</small>';
+   if(V.edit&&!pk&&n){const inD=s.g==='pet'?(d.pet===s.k?1:0):(d.c[s.k]|0),max=s.g==='pet'?1:Math.min(maxOf(s.k),n);
     h+='<div class="dcb-row"><button class="sb dcb-act" data-dcb="add" '+(inD>=max?'disabled':'')+'>ADD ('+inD+'/'+max+')</button><button class="sb dcb-act" data-dcb="rem" '+(inD?'':'disabled')+'>REMOVE</button></div>'}
    h+='</div></div>'}
   return h}
@@ -117,13 +118,14 @@
   if(P.length)h+='<div class="qc dcb-warn">'+P.map(esc).join('<br>')+'</div>';
   h+='<div class="dcb-row"><button class="sb dcb-act" data-dcb="edit">ADD CARDS</button><button class="sb dcb-act" data-dcb="use" '+(ACTIVE===V.deck?'disabled':'')+'>'+(ACTIVE===V.deck?'PLAYING THIS DECK':'PLAY THIS DECK')+'</button></div>';return h}
  function guideHTML(){const[t,b]=GP[V.page];return'<div class="dcb-book"><div class="dcb-pt">'+esc(t)+'</div>'+b+'</div><div class="dcb-row"><button class="sb dcb-act" data-dcb="pp" '+(V.page?'':'disabled')+'>◀ BACK</button><span class="dcb-pg">'+(V.page+1)+' / '+GP.length+'</span><button class="sb dcb-act" data-dcb="np" '+(V.page<GP.length-1?'':'disabled')+'>NEXT ▶</button></div>'}
- function html(){const tabs=[['col','Collection'],['deck','Decks'],['guide','Guide']];
+ function html(){if(V.peek)return'<div class="dcb"><div class="dcb-t"><button class="dcb-tb" data-dcb="unpeek">◀ My binder</button></div>'+colHTML()+'</div>';const tabs=[['col','Collection'],['deck','Decks'],['guide','Guide']];
   return'<div class="dcb"><div class="dcb-t">'+tabs.map(([k,n])=>'<button class="dcb-tb'+(V.tab===k?' on':'')+'" data-dcb="t:'+k+'">'+n+'</button>').join('')+'</div>'+(V.tab==='col'?colHTML():V.tab==='deck'?deckHTML():guideHTML())+'</div>'}
- SQRPN.wrap('254',_r=>function(){if(ptab!==BTAB)return _r.apply(this,arguments);try{panelChrome(V.tab==='guide'?'Drop Card for Dummies':'Card Binder')}catch(e){self.SQERR&&SQERR(e,'254-9')}pbd.innerHTML=html()});
+ SQCLOSEPN.before('254',()=>{if(ptab===BTAB)V.peek=null});
+ SQRPN.wrap('254',_r=>function(){if(ptab!==BTAB)return _r.apply(this,arguments);try{panelChrome(V.peek?V.peek.n+'\'s cards':V.tab==='guide'?'Drop Card for Dummies':'Card Binder')}catch(e){self.SQERR&&SQERR(e,'254-9')}pbd.innerHTML=html()});
  pbd.addEventListener('click',e=>{const b=e.target.closest('[data-dcb]');if(!b)return;const a=b.dataset.dcb;
   if(a==='open'||a==='read'){e.stopPropagation();e.preventDefault();openBinder(a==='read'?'guide':'col');return}
   if(ptab!==BTAB||!pnOpen)return;e.stopPropagation();e.preventDefault();if(b.disabled)return;const[x,y]=[a.split(':')[0],a.slice(a.indexOf(':')+1)];const d=DECKS[V.deck];
-  if(x==='t'){V.tab=y;V.edit=false;if(y==='guide')V.page=V.page||0}else if(x==='f')V.f=y;else if(x==='s')V.sel=V.sel===y?null:y;
+  if(a==='unpeek'){V.peek=null;V.sel=null;V.tab='col'}else if(x==='t'){V.tab=y;V.edit=false;if(y==='guide')V.page=V.page||0}else if(x==='f')V.f=y;else if(x==='s')V.sel=V.sel===y?null:y;
   else if(x==='d')V.deck=+y|0;else if(a==='edit'){V.edit=true;V.tab='col';V.sel=null}else if(a==='done'){V.edit=false;V.tab='deck'}
   else if(a==='use')ACTIVE=V.deck;else if(a==='pp')V.page=Math.max(0,V.page-1);else if(a==='np')V.page=Math.min(GP.length-1,V.page+1);
   else if(a==='nopet')d.pet=null;else if(x==='r'){if(d.c[y]>1)d.c[y]--;else delete d.c[y]}
@@ -136,7 +138,7 @@
   '.dcb-tb.on,.dcb-fb.on{background:#485870;color:#fff}.dcb-sub{margin:6px 0;font-size:14px}'+
   '.dcb-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:6px}'+
   '.dcb-c{position:relative;min-height:60px;padding:4px;border:2px solid #c8d0e0;background:#fff;border-radius:6px}.dcb-c img{width:42px;height:42px;image-rendering:pixelated}'+
-  '.dcb-c.no img{filter:brightness(0);opacity:.25}.dcb-c.sel{border-color:#3058c8;box-shadow:0 0 0 2px #a8c0f0}'+
+  '.dcb-sh{position:absolute;left:3px;top:1px;color:#e0a010;font-size:15px;text-shadow:0 0 3px #fff6c8}.dcb-c.no img{filter:brightness(0);opacity:.25}.dcb-c.sel{border-color:#3058c8;box-shadow:0 0 0 2px #a8c0f0}'+
   '.dcb-n,.dcb-d{position:absolute;right:2px;bottom:2px;min-width:16px;padding:0 3px;background:#485870;color:#fff;font:700 11px var(--pf);border-radius:4px}.dcb-d{left:2px;right:auto;background:#2a8a3a}'+
   '.dcb-det{display:flex;gap:10px;align-items:flex-start;margin:10px 0;padding:10px;background:#fff;border:2px solid #c8d0e0;border-radius:8px;font-size:14px;line-height:1.4}.dcb-det img{width:70px;height:70px;image-rendering:pixelated;flex-shrink:0}'+
   '.dcb-row{display:flex;gap:8px;align-items:center;margin-top:8px}.dcb-row .sb{margin:0;flex:1;min-height:44px;text-align:center}.dcb-pg{font-weight:700;white-space:nowrap}'+
@@ -144,4 +146,4 @@
   '.dcb-list{display:flex;flex-direction:column;gap:4px}.dcb-li{display:flex;align-items:center;gap:8px;padding:2px 6px;background:#fff;border:1px solid #d8e0ec;border-radius:6px;font-size:14px}.dcb-li img{width:28px;height:28px;image-rendering:pixelated}.dcb-li span{flex:1}'+
   '.dcb-warn{font-size:13px;line-height:1.45;margin:8px 0}.dcb-book{background:#fffbea;border:2px solid #d8c890;border-radius:8px;padding:12px 14px;font-size:15px;line-height:1.5}.dcb-book p{margin:0 0 8px}.dcb-pt{font-weight:700;font-size:18px;margin-bottom:8px;color:#5a3a10}';
  document.head.appendChild(st);
- window.SQBINDER={giveStarter,owned,get starter(){return STARTER},open:openBinder,BTAB,GUIDE,BIND,PET,regPet,isCard,problems,get decks(){return DECKS},get active(){return ACTIVE},V,GP}})();
+ window.SQBINDER={peek(n,c,s){V.peek={n:String(n||'?').slice(0,16),c:c||{},s:s||{}};V.sel=null;V.f='all';openBinder('col')},ORDER,info,giveStarter,owned,get starter(){return STARTER},open:openBinder,BTAB,GUIDE,BIND,PET,regPet,isCard,problems,get decks(){return DECKS},get active(){return ACTIVE},V,GP}})();

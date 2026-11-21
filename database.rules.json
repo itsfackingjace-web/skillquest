@@ -256,6 +256,9 @@
         },
         "dv": {
           ".validate": "newData.val() === 1 && root.child('devs').child($uid).val() === true"
+        },
+        "dc": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000"
         }
       }
     },
@@ -1167,6 +1170,16 @@
         ".validate": "newData.hasChildren(['u','t','by','w']) && newData.child('t').val() === now && newData.child('by').isString() && newData.child('by').val().length <= 60 && newData.child('w').isString() && newData.child('w').val().length <= 24 && (!newData.child('n').exists() || (newData.child('n').isString() && newData.child('n').val().length <= 12)) && (!newData.child('m').exists() || (newData.child('m').isString() && newData.child('m').val().length <= 24)) && (!newData.child('v').exists() || (newData.child('v').isString() && newData.child('v').val().length <= 20)) && (!newData.child('x').exists() || newData.child('x').isNumber()) && (!newData.child('y').exists() || newData.child('y').isNumber()) && (!newData.child('lv').exists() || newData.child('lv').isNumber()) && (!newData.child('dk').exists() || newData.child('dk').isNumber()) && (!newData.child('md').exists() || newData.child('md').isNumber()) && (!newData.child('ms').exists() || newData.child('ms').isNumber()) && (!newData.child('h').exists() || newData.child('h').isNumber())",
         "$other": {
           ".validate": "$other.matches(/^(u|t|by|w|n|m|v|x|y|lv|dk|md|ms|h)$/)"
+        }
+      }
+    },
+    "cards": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['v','n','t']) && newData.child('v').isString() && newData.child('v').val().length <= 6000 && newData.child('n').isNumber() && newData.child('n').val() >= 0 && newData.child('n').val() <= 5000 && newData.child('t').val() === now",
+        "$other": {
+          ".validate": "$other.matches(/^(v|n|t)$/)"
         }
       }
     }

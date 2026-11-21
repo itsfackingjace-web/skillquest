@@ -69,33 +69,59 @@
  ["nuts","Nuts","forage","Cost 0 · Heal your hero 2 HP",["#3a2c10,#ece2b8,#8a7430,#7a4a20,#b07840,#4a8a3a","...02020202.....2111111110....0111111112....2111111110....0111511112....2113315110....0134431112....2134433310....0113344312....2111133110....0111111112....2111111110....0111111112.....20202020..."]],
  ["cfruit","Cactus fruit","forage","Cost 1 · Heal a monster fully",["#3a2c10,#ece2b8,#8a7430,#c02870,#f070a0,#3a8a3a","...02020202.....2111111110....0111111112....2111511110....0113331112....2134443110....0134443152....2134443510....0113331112....2111111110....0111111112....2111111110....0111111112.....20202020..."]]];
  const BOSS=new Set(['world','dungeon','island','guild']),BY={},ITEM={};
- for(const[k,n,g,d,x]of CARDS){const key=typeof x==='string'?x:'dc_'+k.replace(/[^a-z0-9]/g,'_');BY[k]={k,n:'Drop Card: '+n,g,d,key,spr:Array.isArray(x)?{w:14,h:14,s:2,p:x[0],d:x[1]}:null};ITEM[key]=BY[k]}
- // ---- the items made here ----
- for(const k in BY){const C=BY[k];if(!C.spr)continue;const K=C.key;
-  if(!INVK.includes(K))INVK.push(K);INAME[K]=C.n;SN[K]=C.n+' cards';SHORT[K]=C.n.toLowerCase();SELLP[K]=BOSS.has(C.g)?5000:5;inv[K]=inv[K]|0;
-  IDESC[K]=C.d;if(!EXTRA_BAG.includes(K))EXTRA_BAG.push(K)}
+ const SHINY=50;// 1 in 50 cards that drop is shiny (Nov 20): its own item `<key>_sh`, plays the same as the card
+ const keyOf=k=>'dc_'+k.replace(/[^a-z0-9]/g,'_');
+ const SHFR=['#a07010','#fff6c8','#f0c030'];// shiny frame (dark, face, light)
+ function regItem(K,n,d,g,shiny){if(!INVK.includes(K))INVK.push(K);INAME[K]=n;SN[K]=n+' cards';SHORT[K]=n.toLowerCase();SELLP[K]=(BOSS.has(g)?5000:5)*(shiny?10:1);inv[K]=inv[K]|0;
+  IDESC[K]=d+(shiny?' A shiny card: plays the same as the normal one.':'');if(!EXTRA_BAG.includes(K))EXTRA_BAG.push(K)}
+ // define (or redefine, from the Dev Suite's Cards tab) one card and its shiny twin
+ function define(k,n,g,d,spr,r,src){const key=keyOf(k),C=BY[k]||(BY[k]={k});Object.assign(C,{k,n:'Drop Card: '+n,g,d,key,sh:key+'_sh',spr:spr||C.spr||null,r:r==null?RATE:r,src:src||C.src||null});
+  ITEM[key]=C;ITEM[C.sh]=C;regItem(key,C.n,d,g,false);regItem(C.sh,'Shiny '+C.n,d,g,true);delete ICC[key];delete ICC[C.sh];return C}
  const ICC={};
- SQICON.wrap('253 drop cards',_ic=>function(k,col){const C=ITEM[k];if(!C||!C.spr||(window.SQA&&SQA.hasIcon&&SQA.hasIcon(k)))return _ic(k,col);
-  if(ICC[k])return ICC[k];try{return ICC[k]=SQA.render(C.spr).toDataURL()}catch(e){self.SQERR&&SQERR(e,'253-1');return _ic(k,col)}});
+ for(const[k,n,g,d,x]of CARDS)define(k,n,g,d,Array.isArray(x)?{w:14,h:14,s:2,p:x[0],d:x[1]}:null);
+ const ORIG={};for(const k in BY)ORIG[k]=Object.assign({},BY[k]);
+ // a shiny card: the same picture with a gold frame and three sparkles
+ const shinySpr=sp=>{const p=sp.p.split(',');p[0]=SHFR[0];p[1]=SHFR[1];p[2]=SHFR[2];p.push('#ffffff');const w=p.length-1;const d=sp.d.split('');for(const i of[2*14+3,4*14+10,11*14+4])if(d[i]!=='.')d[i]=String(w);return Object.assign({},sp,{p:p.join(','),d:d.join('')})};
+ SQICON.wrap('253 drop cards',_ic=>function(k,col){const C=ITEM[k];if(!C)return _ic(k,col);const sh=k===C.sh;
+  if(window.SQA&&SQA.hasIcon&&SQA.hasIcon(k))return _ic(k,col);
+  if(sh&&window.SQA&&SQA.hasIcon&&SQA.hasIcon(C.key))return _ic(C.key,col);
+  if(!C.spr)return _ic(k,col);
+  if(ICC[k])return ICC[k];try{return ICC[k]=SQA.render(sh?shinySpr(C.spr):C.spr).toDataURL()}catch(e){self.SQERR&&SQERR(e,'253-1');return _ic(k,col)}});
  // ---- giving one ----
- function give(ck,why){const C=BY[ck];if(!C)return false;const K=C.key;if(!INAME[K])return false;// an unpublished Content card
-  inv[K]=(inv[K]|0)+1;try{say('A Drop Card! '+INAME[K]+(C.d?' ('+C.d+')':''));msgT=5;sfx('level')}catch(e){self.SQERR&&SQERR(e,'253-2')}
-  try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'253-3')}LAST.push({k:ck,why,t:Date.now()});if(LAST.length>10)LAST.shift();return true}
+ const GOT=window.SQCARDGOT=window.SQCARDGOT||[];// hooks: f({ck, key, shiny, card, first, why})
+ function give(ck,why){const C=BY[ck];if(!C)return false;const shiny=!!window.SQSHINYALWAYS||Math.random()<1/SHINY,K=shiny?C.sh:C.key;if(!INAME[K])return false;
+  const first=!((inv[C.key]|0)+(inv[C.sh]|0));inv[K]=(inv[K]|0)+1;
+  try{if(!window.SQCARDFOUND){say('A '+(shiny?'SHINY ':'')+'Drop Card! '+INAME[C.key]+(C.d?' ('+C.d+')':''));msgT=5}sfx('level')}catch(e){self.SQERR&&SQERR(e,'253-2')}// 256 shows the card itself
+  for(const f of GOT)try{f({ck,key:K,shiny,card:C,first,why})}catch(e){self.SQERR&&SQERR(e,'253-6')}
+  try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'253-3')}LAST.push({k:ck,why,shiny,t:Date.now()});if(LAST.length>10)LAST.shift();return true}
  const LAST=[];
  // bad-luck protection (Nov 20): every roll that misses counts; the PITYN-th miss in a row gives the card anyway (saved as `dcp`)
  const PITYN=200;let PITY=0;
- const rawRoll=()=>Math.random()<RATE;
- const roll=()=>{if(window.SQDROPCARDALWAYS||rawRoll()){PITY=0;return true}if(++PITY>=PITYN){PITY=0;return true}return false};
+ const rateOf=ck=>{const C=ck&&BY[ck];return C&&C.r!=null?C.r:RATE};
+ const rawRoll=ck=>Math.random()<rateOf(ck);
+ const roll=ck=>{if(ck&&BY[ck]&&!(rateOf(ck)>0))return false;if(window.SQDROPCARDALWAYS||rawRoll(ck)){PITY=0;return true}if(++PITY>=PITYN){PITY=0;return true}return false};
  SQSAVE.after('253:dcp',s=>{s.dcp=PITY});SQLOAD.after('253',(S)=>{PITY=Math.max(0,Math.min(PITYN-1,(S&&S.dcp)|0))});
  const mobKey=n=>{try{return String(SQPROPS.mkey(n)).replace(/^m:/,'')}catch(e){return String(n.rk||n.type||'slime')}};
+ // cards a Dev Suite card points at (src): extra keys that drop it
+ const SRC={};const srcOf=k=>SRC[k]||k;
  // monsters and dungeon bosses
- SQDROP.after('253 drop cards',(n)=>{try{if(!n||n._dc||n.summon||n._wb||n.type==='ib'||n._pet)return;n._dc=1;const k=mobKey(n);if(BY[k]&&BY[k].g!=='tree'&&roll())give(k,'kill')}catch(e){self.SQERR&&SQERR(e,'253-4')}});
+ SQDROP.after('253 drop cards',(n)=>{try{if(!n||n._dc||n.summon||n._wb||n.type==='ib'||n._pet)return;n._dc=1;const k=srcOf(mobKey(n));if(BY[k]&&BY[k].g!=='tree'&&roll(k))give(k,'kill')}catch(e){self.SQERR&&SQERR(e,'253-4')}});
  // world bosses (071) and island/guild bosses (100): each fighter rolls once when it falls
- (window.SQWBWON=window.SQWBWON||[]).push(b=>{const k='wb:'+(b&&b.type);if(BY[k]&&roll())give(k,'worldboss')});
+ (window.SQWBWON=window.SQWBWON||[]).push(b=>{const k=srcOf('wb:'+(b&&b.type));if(BY[k]&&roll(k))give(k,'worldboss')});
  const ibCard=id=>{id=String(id||'');if(id.indexOf('gt_')===0)return'void_treant';if(id.indexOf('gu_')===0)return'turtle';return'ib:'+id};
- (window.SQIBWON=window.SQIBWON||[]).push(b=>{const k=ibCard(b&&b.ib);if(BY[k]&&roll())give(k,'islandboss')});
+ (window.SQIBWON=window.SQIBWON||[]).push(b=>{const k=srcOf(ibCard(b&&b.ib));if(BY[k]&&roll(k))give(k,'islandboss')});
  // trees: a swing that gave logs
  const LOGC={wood:'tree',oaklog:'oak',willowlog:'willow',maplelog:'maple',yewlog:'yew'};
  SQHIT.wrap('253 drop cards',_a=>function(){const b={};for(const l in LOGC)b[l]=inv[l]|0;const out=_a.apply(this,arguments);
-  try{for(const l in LOGC)if((inv[l]|0)>b[l]){if(roll())give(LOGC[l],'chop');break}}catch(e){self.SQERR&&SQERR(e,'253-5')}return out});
- window.SQDROPCARD={CARDS:BY,ITEM,give,roll,rawRoll,LAST,mobKey,ibCard,RATE,PITYN,get pity(){return PITY},set pity(v){PITY=v|0}}})();
+  try{for(const l in LOGC)if((inv[l]|0)>b[l]){const k=srcOf(LOGC[l]);if(roll(k))give(k,'chop');break}}catch(e){self.SQERR&&SQERR(e,'253-5')}return out});
+ // ---- the Dev Suite's Cards tab (library `cards`): {<card key>: {n, d, r (0-1), g, src, spr?}} changes a card or adds one (keys cu_*) ----
+ function applyLib(L){const lib=(L&&L.cards)||{};for(const k in SRC)delete SRC[k];
+  for(const k in BY){if(!ORIG[k]&&!lib[k]){const C=BY[k];delete ITEM[C.key];delete ITEM[C.sh];delete BY[k];continue}if(ORIG[k]&&!lib[k]){const o=ORIG[k];define(k,o.n.replace(/^Drop Card: /,''),o.g,o.d,o.spr,o.r,null)}}
+  for(const k in lib){const v=lib[k];if(!v||typeof v!=='object'||!/^[a-z0-9_:-]{1,40}$/.test(k))continue;const o=ORIG[k]||{};
+   const g=['reg','tree','world','dungeon','island','guild','potion','forage'].includes(v.g)?v.g:(o.g||'reg');
+   const sp=v.spr&&typeof v.spr.d==='string'&&v.spr.d.length===196?{w:14,h:14,s:2,p:String(v.spr.p||''),d:v.spr.d}:o.spr||null;
+   const r=typeof v.r==='number'&&v.r>=0&&v.r<=1?v.r:(o.r==null?RATE:o.r);
+   const C=define(k,String(v.n||(o.n||'').replace(/^Drop Card: /,'')||k).slice(0,40),g,String(v.d==null?o.d||'':v.d).slice(0,120),sp,r,null);
+   if(typeof v.src==='string'&&v.src&&v.src!==k){C.src=v.src.slice(0,40);SRC[C.src]=k}}}
+ try{SQA.onApply(applyLib)}catch(e){self.SQERR&&SQERR(e,'253-7')}
+ window.SQDROPCARD={CARDS:BY,ITEM,ORIG,give,roll,rawRoll,rateOf,define,applyLib,keyOf,LAST,mobKey,ibCard,RATE,SHINY,PITYN,get pity(){return PITY},set pity(v){PITY=v|0}}})();

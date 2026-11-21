@@ -167,3 +167,16 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   2 Oak, 2 each Slime/Moss slime/Wolf/Skeleton/Bat/Healing potion) kept in `STARTER` (save `dcs` {g,c}), never in `inv`, so they can't be traded,
   sold or stored; `owned(k)` = inv + starter is what the binder and deck rules use; Deck 1 is filled (named "Starter Deck") if empty.
   253's `roll()` counts misses (`PITY`, save `dcp`): the 200th miss in a row (`PITYN`) gives the card; `rawRoll()` is the plain 1%.
+- **Found-card moment, shiny cards, achievements** (`items/256-s264-card-found.js`, `window.SQCARDFOUND`; shiny in 253): 253's `give` picks shiny
+  1 in `SHINY` (50; `SQSHINYALWAYS` forces it) = item `<key>_sh` (gold frame + sparkles via `shinySpr`, 10x sell value, counts as the card in
+  decks: 254's `owned`) and calls `window.SQCARDGOT` hooks {ck,key,shiny,card,first,why}. 256 flips the card up (#sqdcf, 2.2 s, 3.5 s for boss/shiny,
+  queued; click, any key or controller button dismisses), announces boss/shiny cards with your own chat line ("★ found a Drop Card: X!", not for
+  young players) and adds 8 achievements (group "Drop Card", earned cards only). Check 50.
+- **Dev Suite > Cards** (`dev/257-s265-cards-tab.js`): library `cards.<card key>` {n,d,g,r,src}; 253's `applyLib` (SQA.onApply) changes cards or adds
+  `cu_*` cards that take over `src`'s drop (`SRC`), per-card rate `r` (`rateOf`, used by `roll(ck)`); raising a rate above the published one needs
+  a second click. Art: Sprites tab by item key. Check 51.
+- **Ace the Card Sharp** (`world/258-s266-card-sharp.js`, `window.SQCARDSHARP`): NPC kind `cardsharp` behind a card table at VX+8,VY+1 (BS),
+  shop panel on ptab 2: buy the guide (GEN's entry, so the Starter Deck too), guide, binder, match (coming soon). Check 52.
+- **Card frames** (`items/260-s268-card-frames.js`, `window.SQCARDFRAME`): furniture `cardframe` (BREC wood 4 + ibar 1, req 8; Marlo's via
+  LUX.EMP.FURN2), drawn by the outermost `drawPiece`; HIT at home opens panel `FTAB=53`; save `dcf` {"<house id>:<tile>": item key}; the outermost
+  `pickFurn` gives the card back. Visitors see an empty stand. Check 53.
