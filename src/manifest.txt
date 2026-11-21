@@ -260,6 +260,7 @@ skills/246-s254-merchant.js
 combat/247-s255-no-hits-from-under-houses.js
 ui/248-s256-hold-hit-on-touch.js
 ui/250-s258-mouse-hides-controller-ring.js
+ui/251-s259-cursors.js
 multiplayer/249-s257-discord-link.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
