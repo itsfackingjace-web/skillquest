@@ -179,7 +179,9 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   shop panel on ptab 2: buy the guide (GEN's entry, so the Starter Deck too), guide, binder, match (coming soon). Check 52.
 - **Card frames** (`items/260-s268-card-frames.js`, `window.SQCARDFRAME`): furniture `cardframe` (BREC wood 4 + ibar 1, req 8; Marlo's via
   LUX.EMP.FURN2), drawn by the outermost `drawPiece`; HIT at home opens panel `FTAB=53`; save `dcf` {"<house id>:<tile>": item key}; the outermost
-  `pickFurn` gives the card back. Visitors see an empty stand. Check 53.
+  `pickFurn` gives the card back. Visitors see the card (061/067 rows carry it, check 81). Since Nov 22 a 3 s sweep gives back any card
+  whose home is gone (packed house, guild island left...): keys are `<house id>:<tile>`, yards `<house id>~y:<tile>`; homes the bank holds
+  (267's `SQHTAX.heldIds()`) still count; `READY` is off between newGame's steps. Check 82.
 - **Drop Card matches** (`items/261-s269-drop-card-engine.js` `window.SQDCE` = the rules; `items/262-s270-drop-card-matches.js` `window.SQDCM` =
   Ace and the table): `create({seed,decks,pets,names})`, `apply(s,side,move)` returns '' or why not (moves plant/chop/play/atk/end; targets
   'h0'/'h1' or minion uids), `options(s,side)`; seeded `rnd` so the same moves replay the same match (for player vs player later). Boss powers

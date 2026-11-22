@@ -731,14 +731,14 @@ const HS={pubKey:'',pubAt:0,data:{},fr:{},frUnsub:{},unsub:null,msgAt:0};
 const isForeign=h=>!!(h&&h._foreign);
 function houseLocOf(h){if(!h||!MP.user)return'';return'h:'+(h._owner||MP.user.uid)+':'+(h._oid||h.id)}
 // Nov 21: a card frame's row carries the Drop Card on it (260's SQCARDFRAME.on, "<house id>:<tile>"), so visitors see the card too
-function myHousesData(){const CF=window.SQCARDFRAME&&SQCARDFRAME.on||{};return HOUSES.filter(h=>!h._foreign).map(h=>({s2:1,id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>{const cd=f.t==='cardframe'&&CF[String(h.id||'home')+':'+i];return cd?[i,f.t,0,'',String(cd).slice(0,40)]:f.nm?[i,f.t,0,f.nm]:[i,f.t]})}))}
+function myHousesData(){const CF=window.SQCARDFRAME&&SQCARDFRAME.on||{};/* Nov 22: u = paid-until of the home tax (267), so other players stop seeing a home whose tax ran out */const u=window.SQHTAX&&SQHTAX.pubU();return HOUSES.filter(h=>!h._foreign).map(h=>Object.assign({s2:1,id:h.id,x:h.x,y:h.y,w:h.w||5,f:[...h.furn].map(([i,f])=>{const cd=f.t==='cardframe'&&CF[String(h.id||'home')+':'+i];return cd?[i,f.t,0,'',String(cd).slice(0,40)]:f.nm?[i,f.t,0,f.nm]:[i,f.t]})},u>0?{u}:{}))}
 function canEnter(h){return!!(HS.fr[h._owner]&&MP.user&&HS.fr[h._owner][MP.user.uid])}
 function buildForeign(owner,e){const RW=14,RH=10,h={id:owner.slice(0,6)+'_'+String(e.id).slice(0,12),_oid:String(e.id).slice(0,12),_owner:owner,_foreign:true,x:e.x|0,y:e.y|0,w:e.w===7?7:5,furn:new Map(),hp:12};
  const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):null);const fl=arr(e.f);if(fl)for(const q0 of fl){const q=arr(q0);if(!q)continue;const i=q[0]|0,t=q[1];if(i<2*RW||i>=RW*RH||!BK.includes(t)||t==='house')continue;h.furn.set(i,t==='chest'?Object.assign({t,items:{}},(typeof q[3]==='string'&&window.SQCHNAME?{nm:SQCHNAME(q[3])||undefined}:{})):t==='cardframe'&&typeof q[4]==='string'&&/^dc_[\w:]{1,36}$/.test(q[4])?{t,card:q[4]}:{t})}return h}
 function overlapsMine(h){const hw=((h.w||5)-1)/2;for(const o of HOUSES){if(o===h||o._foreign&&o._owner===h._owner&&o._oid===h._oid)continue;const ow=((o.w||5)-1)/2;if(Math.abs(o.x-h.x)<=hw+ow+1&&Math.abs(o.y-h.y)<=2)return true}
  for(let dy=-1;dy<=0;dy++)for(let dx=-hw;dx<=hw;dx++){const i=(h.y+dy)*N+h.x+dx;if(STR.has(i))return true}return false}
 function housesSync(){if(!MP.on)return;const want=new Map();
- for(const owner in HS.data){if(MP.user&&owner===MP.user.uid)continue;const list=HS.data[owner];if(!Array.isArray(list))continue;for(const e of list){if(!e||!isFinite(e.x)||!isFinite(e.y))continue;want.set(owner+'|'+e.id,{owner,e})}}
+ for(const owner in HS.data){if(MP.user&&owner===MP.user.uid)continue;const list=HS.data[owner];if(!Array.isArray(list))continue;for(const e of list){if(!e||!isFinite(e.x)||!isFinite(e.y))continue;try{if(window.SQHTAX&&SQHTAX.gone(e.u))continue}catch(err){self.SQERR&&SQERR(err,'061-48')}want.set(owner+'|'+e.id,{owner,e})}}
  for(let j=HOUSES.length-1;j>=0;j--){const h=HOUSES[j];if(!h._foreign)continue;const k=h._owner+'|'+h._oid,w=want.get(k);
   if(!w){if(SCENE&&SCENE.house===h){leaveScene();say('That house is gone.')}for(const i of houseTiles(h))BS.delete(i);HOUSES.splice(j,1);continue}
   const fresh=buildForeign(w.owner,w.e);if(fresh.x!==h.x||fresh.y!==h.y){for(const i of houseTiles(h))BS.delete(i);HOUSES.splice(j,1);continue}h.furn=fresh.furn;want.delete(k)}
@@ -747,7 +747,7 @@ function housesSync(){if(!MP.on)return;const want=new Map();
 function housesStart(){const d=FB.db;HS.unsub=d.onValue(d.ref(FB.D,'houses'),s=>{HS.data=s.val()||{};for(const k in HS.data){const v=HS.data[k];if(v&&!Array.isArray(v)&&typeof v==='object')HS.data[k]=Object.values(v)}housesSync()});
  MP.unsub.push(()=>{if(HS.unsub)HS.unsub();HS.unsub=null;for(const k in HS.frUnsub)try{HS.frUnsub[k]()}catch(e){self.SQERR&&SQERR(e,'061-41')}HS.frUnsub={};HS.fr={};HS.data={};HS.pubKey='';
   if(SCENE&&SCENE.house&&SCENE.house._foreign)leaveScene();for(let j=HOUSES.length-1;j>=0;j--)if(HOUSES[j]._foreign){for(const i of houseTiles(HOUSES[j]))BS.delete(i);HOUSES.splice(j,1)}})}
-function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now();if(now-HS.pubAt<3000)return;HS.pubAt=now;
+function housesTick(){if(!MP.on||!FB||!MP.user)return;const now=performance.now();if(now-HS.pubAt<3000)return;HS.pubAt=now;if(now-(HS.taxAt||0)>60000){HS.taxAt=now;if(HOUSES.some(h=>h._foreign))housesSync()}/* a home whose tax runs out while you play goes away within a minute (267) */
  const mine=myHousesData(),k=JSON.stringify(mine);if(k!==HS.pubKey){HS.pubKey=k;FB.db.set(FB.db.ref(FB.D,'houses/'+MP.user.uid),mine.length?mine:null).catch(()=>{HS.pubKey=''})}
  if(!HOUSES.some(h=>h._foreign)&&Object.keys(HS.data).some(o=>o!==MP.user.uid))housesSync()} // e.g. after a save was loaded
 {const _ms=mpStart;mpStart=async function(u){await _ms(u);if(MP.on&&!HS.unsub)try{housesStart()}catch(e){mpErr(e)}}}

@@ -7,7 +7,7 @@ const rhTiles=h=>{const a=[];for(let dy=-1;dy<=0;dy++)for(let dx=-3;dx<=3;dx++)i
 const rhHere=()=>{const R=rbR();return R?RH.filter(h=>h.rg===R.region):[]};
 const RHF={};   // other players' island houses, kept as the same objects so a visit isn't interrupted
 function rhForeign(id){const out=[];for(const o in BLDS.data){if(MP.user&&o===MP.user.uid)continue;const rec=BLDS.data[o],L=rec&&rec.r&&rec.r._h;if(!L)continue;
-  for(const e0 of (Array.isArray(L)?L:Object.values(L))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(e[0]!==id||!isFinite(e[1])||!isFinite(e[2]))continue;
+  for(const e0 of (Array.isArray(L)?L:Object.values(L))){const e=Array.isArray(e0)?e0:Object.values(e0||{});if(e[0]!==id||!isFinite(e[1])||!isFinite(e[2]))continue;try{if(window.SQHTAX&&SQHTAX.gone(e[6]))continue}catch(err){self.SQERR&&SQERR(err,'067-5')}
    const oid=String(e[3]||(e[1]+'_'+e[2])).slice(0,12),key=o+'|'+oid,fresh=buildForeign(o,{id:oid,x:e[1],y:e[2],w:7,f:e[4],c:e[5]});let h=RHF[key];
    // e[5]: a castle (077), so its 22-wide hall's furniture is read as such (Nov 19: visitors saw only the back half of a castle)
    if(!h||h.x!==fresh.x||h.y!==fresh.y||!!h.castle!==!!fresh.castle){h=RHF[key]=fresh;h.rg=id}else h.furn=fresh.furn;out.push(h);
@@ -64,5 +64,5 @@ function rhSign(h){const nm=h._foreign?fname(h._owner):(MP.on?myName():pname());
   if(keepHome&&RH.some(h=>h.id===keepHome))HOMESP=keepHome;try{rhSolidSync()}catch(e){self.SQERR&&SQERR(e,'067-4')}})}
 {SQNEWGAME.before('067',()=>{RH.length=0;})}
 // shared: other players see where your island houses are
-{const _rp=rbPub;rbPub=function(){const o=_rp()||{};if(RH.length)o._h=RH.map(h=>[h.rg,h.x,h.y,h.id,[...h.furn].map(([i,f])=>{/* Nov 21: a card frame carries its card (260), as 061 does for Hollow homes */const cd=f.t==='cardframe'&&window.SQCARDFRAME&&SQCARDFRAME.on[String(h.id||'home')+':'+i];return cd?[i,f.t,0,'',String(cd).slice(0,40)]:f.nm?[i,f.t,0,f.nm]:[i,f.t]})]);return Object.keys(o).length?o:null}}
+{const _rp=rbPub;rbPub=function(){const o=_rp()||{};/* Nov 22: [6] = paid-until of the home tax (267); [5] is 077's castle flag */const u=window.SQHTAX&&SQHTAX.pubU();if(RH.length)o._h=RH.map(h=>{const e=[h.rg,h.x,h.y,h.id,[...h.furn].map(([i,f])=>{/* Nov 21: a card frame carries its card (260), as 061 does for Hollow homes */const cd=f.t==='cardframe'&&window.SQCARDFRAME&&SQCARDFRAME.on[String(h.id||'home')+':'+i];return cd?[i,f.t,0,'',String(cd).slice(0,40)]:f.nm?[i,f.t,0,f.nm]:[i,f.t]})];if(u>0){e[5]=0;e[6]=u}return e});return Object.keys(o).length?o:null}}
 window.SQRH=RH;

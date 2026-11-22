@@ -16,7 +16,13 @@
  if(!EXTRA_BAG.includes(K))EXTRA_BAG.push(K);
  // ---- which card is where ----
  let ON={};const hk=(h,i)=>String(h&&h.id||'home')+':'+i;
- SQSAVE.after('260:dcf',s=>{s.dcf=ON});SQLOAD.after('260',(S)=>{ON={};const v=S&&S.dcf;if(v&&typeof v==='object')for(const k in v)if(typeof v[k]==='string'&&D.ITEM[v[k]])ON[k]=v[k]});
+ SQSAVE.after('260:dcf',s=>{s.dcf=ON});SQLOAD.after('260',(S)=>{ON={};const v=S&&S.dcf;if(v&&typeof v==='object')for(const k in v)if(typeof v[k]==='string'&&D.ITEM[v[k]])ON[k]=v[k];READY=true});
+ // Nov 22: packing a whole house or castle (HIT its walls, 144's one-home packing, a guild island you left...) left the framed cards
+ // in `dcf` with no frame to show them: a card whose home is gone goes back to your binder. Homes the bank holds (267) still count.
+ let READY=true;/* 114's boot load runs before the first sweep */SQNEWGAME.before('260',()=>{READY=false});SQNEWGAME.after('260',()=>{READY=true});
+ setInterval(()=>{try{if(!READY)return;const ids=new Set(),add=id=>{ids.add(String(id));ids.add(String(id)+'~y')};/* a yard's frames: '<house id>~y:<tile>' (145's yard object) */
+   for(const h of HOUSES)if(!h._foreign)add(h.id);for(const h of(window.SQRH||[]))if(!h._foreign)add(h.id);for(const id of(window.SQHTAX?SQHTAX.heldIds():[]))add(id);let n=0;for(const k of Object.keys(ON)){const id=k.slice(0,k.lastIndexOf(':'));if(ids.has(id))continue;const c=ON[k];delete ON[k];inv[c]=(inv[c]|0)+1;n++}
+   if(n){say(n>1?n+' framed cards are back in your Card Binder.':'Your framed card is back in your Card Binder.');try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'260-9')}}}catch(e){self.SQERR&&SQERR(e,'260-10')}},3000);
  const mine=()=>{const h=inHome();return h&&!h._foreign?h:null};
  function takeDown(h,i,quiet){const k=hk(h,i),c=ON[k];if(!c)return false;delete ON[k];inv[c]=(inv[c]|0)+1;if(!quiet){say(INAME[c]+' is back in your Card Binder.');sfx('pickup')}try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'260-3')}return true}
  function putUp(h,i,c){if((inv[c]|0)<1)return false;takeDown(h,i,true);inv[c]--;ON[hk(h,i)]=c;say(INAME[c]+' is on display.');sfx('quest');try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'260-4')}return true}
