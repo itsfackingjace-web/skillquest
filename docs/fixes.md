@@ -115,3 +115,18 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   saw an empty stand before. Check 81.
 - Checked and not reproduced: Kass's brewing stopping when the skills screen opens (a Brew ALL goes on behind it: 1 → 5 → 7 potions);
   Bear's chat emptying after an update (chat loads the last 50 messages of the past day whenever the game starts).
+
+## Nov 22: bug reports (Firebase + #bugs)
+
+Firebase had no new bug reports (`bugs` newest Nov 10) and no new code errors (`errs`: the three old Nov 20 sites).
+- Guild sails on privacy browsers (Aztu, Android/Brave: a speckled sail): Brave (and Firefox's resistFingerprinting, Safari's private
+  mode) nudge some pixels a page reads back with `getImageData` by a step or two. 226's `recolor` matched the plain sail colours exactly,
+  so about half the cloth stayed cream and the trim test saw holes everywhere. Colours now match within `TOL` (6) of `SA`/`RD`. Check 84
+  copies the noise into `getImageData` (fails without the fix: ~70% of sail pixels unchanged). Other read-backs in `src/` test alpha or
+  use thresholds; 032's HD scaler compares neighbours exactly (a noisy read only makes its smoothing a little less even).
+- World Market refusals on phones (Kass and Jynx: Kass "bought" spider hoods, a robe and a pet, got nothing, kept her gold): 079's
+  `place` refusals (here all 8 offer slots in use: Kass had 7 sells + a pet buy) only went to `say`, which the market screen covers on a
+  phone, and the form stayed as it was. `nope(m)` = `say` + `WMK.form.err`, shown first by `warnTxt` under the price; any other tap on the
+  form clears it; a post that fails keeps the form open with the reason. Check 85.
+- Already fixed: Kevin's castle hunger outside (Nov 21 17:42 release, check 66), sniffynose's food behind screens and Jynx's spider
+  weaver robes (Nov 21 23:08 release, checks 74 and 76).

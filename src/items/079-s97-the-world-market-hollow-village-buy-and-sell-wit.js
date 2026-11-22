@@ -67,21 +67,24 @@
  const left=o=>{const ms=expAt(o)-Date.now();return ms<=0?'expired':ms>=DAY?Math.floor(ms/DAY)+'d left':Math.max(1,Math.ceil(ms/36e5))+'h left'};
  const fmt=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e4?(n/1e3).toFixed(n%1e3?1:0)+'k':String(n);
  // ---- placing an offer, then matching it ----
- async function place(side,k,q,p){if(!online()){say('The World Market needs you to be signed in.');return}if(WMK.busy)return;q=Math.floor(q);p=Math.floor(p);
-  if(!tradeable(k)||!(q>=1)||!(p>=1)||p>1e7||q>1e5){say('That offer doesn\'t work.');return}
-  if(mine().filter(([,o])=>o.f<o.q).length>=maxO()){say('You already have '+maxO()+' offers. Cancel one first.');sfx('swish');return}
-  if(mine().filter(([,o])=>o.k===k&&o.f<o.q).length>=PERK){say('You can have up to '+PERK+' offers for the same item. Cancel one first.');sfx('swish');return}
-  if(!inBand(k,p)){say('The market only takes '+(INAME[k]||k).toLowerCase()+' offers of '+fmt(lo(k))+' gold or more each.');sfx('swish');return}
-  if(side==='s'){if((inv[k]|0)<q){say('You don\'t have '+q+' '+nm(k,q).toLowerCase()+'.');sfx('swish');return}inv[k]-=q}
-  else{if(GLD<q*p){say('You need '+(q*p)+' gold for that offer.');sfx('swish');return}GLD-=q*p}
+ // Nov 22 (Kass and Jynx in #bugs: Kass "bought" spider hoods, a robe and a pet and got nothing): a refused offer (here: all 8 offer
+ // slots in use) only said so in the message box, which the market screen covers on a phone. It shows under the price now (F.err).
+ const nope=m=>{say(m);try{const F=WMK.form;if(F&&pnOpen&&shop==='wmkt'){F.err=m;rPn()}}catch(e){self.SQERR&&SQERR(e,'079-13')}};
+ async function place(side,k,q,p){if(!online()){nope('The World Market needs you to be signed in.');return}if(WMK.busy)return;q=Math.floor(q);p=Math.floor(p);
+  if(!tradeable(k)||!(q>=1)||!(p>=1)||p>1e7||q>1e5){nope('That offer doesn\'t work.');return}
+  if(mine().filter(([,o])=>o.f<o.q).length>=maxO()){nope('You already have '+maxO()+' offers. Cancel one first.');sfx('swish');return}
+  if(mine().filter(([,o])=>o.k===k&&o.f<o.q).length>=PERK){nope('You can have up to '+PERK+' offers for the same item. Cancel one first.');sfx('swish');return}
+  if(!inBand(k,p)){nope('The market only takes '+(INAME[k]||k).toLowerCase()+' offers of '+fmt(lo(k))+' gold or more each.');sfx('swish');return}
+  if(side==='s'){if((inv[k]|0)<q){nope('You don\'t have '+q+' '+nm(k,q).toLowerCase()+'.');sfx('swish');return}inv[k]-=q}
+  else{if(GLD<q*p){nope('You need '+(q*p)+' gold for that offer.');sfx('swish');return}GLD-=q*p}
   saveNow();WMK.busy=true;const d=FB.db,id=me()+'_'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
   /* Nov 21 (Jynx: "The market couldn't take that offer"): `t` came from this device's clock, and the rules refuse a time more than 60 s
    ahead of the server's, so a phone with its clock a minute fast could never post an offer. It's the server's time now (mpNow), and
    expiry (live, expire) counts on it too. */
   const t0=mpNow();let up=false;try{await d.set(d.ref(FB.D,'market/offers/'+id),{u:me(),n:myName().slice(0,12),k,s:side,p,q,f:0,t:t0});up=true;WMK.offers[id]={u:me(),k,s:side,p,q,f:0,t:t0};
    say((side==='s'?'Selling ':'Buying ')+q+' '+nm(k,q).toLowerCase()+' at '+p+' gold each.');sfx('coin');await match(id)}
-  catch(e){mpErr(e);if(!up){if(side==='s')inv[k]=(inv[k]|0)+q;else GLD+=q*p;say('The market couldn\'t take that offer. Try again.')}else say('Your offer is up, but it couldn\'t trade just now. It will keep trying, or you can cancel it.');saveNow()}
-  finally{WMK.busy=false;try{svg()}catch(e){self.SQERR&&SQERR(e,'079-4')}if(pnOpen&&shop==='wmkt'){WMK.tab='mine';WMK.form=null;rPn()}}}
+  catch(e){mpErr(e);if(!up){if(side==='s')inv[k]=(inv[k]|0)+q;else GLD+=q*p;nope('The market couldn\'t take that offer. Try again.')}else say('Your offer is up, but it couldn\'t trade just now. It will keep trying, or you can cancel it.');saveNow()}
+  finally{WMK.busy=false;try{svg()}catch(e){self.SQERR&&SQERR(e,'079-4')}if(pnOpen&&shop==='wmkt'){if(up||!WMK.form){WMK.tab='mine';WMK.form=null}rPn()}}}
  async function match(id){if(WMK.matching.has(id))return;WMK.matching.add(id);try{return await match1(id)}finally{WMK.matching.delete(id);const o=WMK.offers[id];
    if(o&&o.u===me()&&o.f>=o.q)sweep()}}
  // A filled (or cancelled) offer stays up for HOLD ms before its owner removes it: the box delivery for the last trade is
@@ -133,7 +136,7 @@
  const lastP=k=>{const M=mkt(k);return M?M.p:null};
  // a price far from the last trade asks for a second tap (a typo of one zero is easy to make)
  const odd=F=>{const g=guide(F.k);return F.p>=g*3||F.p*3<=g};
- const warnTxt=F=>!inBand(F.k,F.p)?'Prices for this item must be at least '+fmt(lo(F.k))+'.':odd(F)?'That\'s far from the usual '+fmt(guide(F.k))+' each'+(F.ok===F.p+':'+F.q?'. Tap again to place it.':'. Check the price.'):(F.s==='s'&&F.p<(SELLP[F.k]||0)?'The shop pays '+SELLP[F.k]+' each.':'');
+ const warnTxt=F=>F.err?F.err:!inBand(F.k,F.p)?'Prices for this item must be at least '+fmt(lo(F.k))+'.':odd(F)?'That\'s far from the usual '+fmt(guide(F.k))+' each'+(F.ok===F.p+':'+F.q?'. Tap again to place it.':'. Check the price.'):(F.s==='s'&&F.p<(SELLP[F.k]||0)?'The shop pays '+SELLP[F.k]+' each.':'');
  function formHTML(){const F=WMK.form,k=F.k,B=book(k),side=F.s;
   let h='<div class="qc"><b>'+ic(k)+esc(INAME[k]||k)+'</b><small><br>'+(()=>{const M=mkt(k);return M?'Market price <b>'+fmt(M.p)+'</b> ('+M.n+' recent trade'+(M.n>1?'s':'')+')':'Market price: no recent trades'})()+' · shop pays '+(SELLP[k]||0)+(B.bs!=null?'<br>Cheapest for sale: '+B.bs+' ('+B.qs+' left)':'')+(B.bb!=null?'<br>Best buy offer: '+B.bb+' ('+B.qb+' wanted)':'')+(side==='s'?'<br>In your bag: '+(inv[k]|0):'<br>Your gold: '+GLD)+'<br>Allowed price: '+fmt(lo(k))+' to '+fmt(hi(k))+' each</small>'+spark(k)+'</div>';
   h+='<div class="tl" style="margin-top:8px">How many</div><div style="display:flex;gap:4px;align-items:center;justify-content:center"><button class="sb" data-w="q:-10">-10</button><button class="sb" data-w="q:-1">-1</button><input id="wmq" type="number" min="1" value="'+F.q+'" style="width:70px;font:600 15px '+PF+';text-align:center"><button class="sb" data-w="q:1">+1</button><button class="sb" data-w="q:10">+10</button>'+(side==='s'?'<button class="sb" data-w="q:all">All</button>':'')+'</div>';
@@ -185,6 +188,7 @@
  // other players' offers changing shouldn't redraw the panel under your fingers while you type
  const typing=()=>{const a=document.activeElement;return!!(a&&(a.id==='wmq'||a.id==='wmp'||a.id==='wmf'))};
  {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='wmkt'){const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w,F=WMK.form;
+   if(F)delete F.err;
    if(a.startsWith('tab:')){WMK.tab=a.slice(4)}
    else if(a.startsWith('cat:')){WMK.cat=a.slice(4)}
    else if(a==='collect'){collect().then(()=>rPn());return}

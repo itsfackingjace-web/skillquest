@@ -11,6 +11,11 @@
  const SA=['#a89c88','#cfc3aa','#ece2ca','#fffaee'],RD=['#8c2018','#c03828','#e85a40'],SHF=[.66,.82,.93,1],RDF=[.72,.88,1];
  const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),key=c=>c.join(',');
  const SAK=new Map(SA.map((h,i)=>[key(hex(h)),i])),RDK=new Map(RD.map((h,i)=>[key(hex(h)),i]));
+ // Nov 22 (Aztu in #bugs, a speckled sail on Android/Brave): browsers that guard against fingerprinting (Brave, Firefox with
+ // resistFingerprinting, Safari's private mode) change some read-back pixels by a step or two, so an exact colour match missed half the
+ // sail and the trim test saw holes everywhere. Sail colours now match within TOL of the palette.
+ const TOL=6,SAL=SA.map(hex),RDL=RD.map(hex);
+ const near=(L,r,g,b)=>{for(let i=0;i<L.length;i++){const c=L[i];if(Math.abs(c[0]-r)<=TOL&&Math.abs(c[1]-g)<=TOL&&Math.abs(c[2]-b)<=TOL)return i}return-1};
  const GC=()=>window.SQGCAPE,inGuild=()=>{const s=window.SQGUILD&&SQGUILD.state;return!!(s&&s.id&&s.info)};
  let ON=false;
  // ---- the design ----
@@ -26,7 +31,7 @@
  function recolor(b,D){let M=CACHE.get(b.c);if(!M)CACHE.set(b.c,M=new Map());const dk=[D.c,D.s,D.p,D.t?1:0,D.e,D.x].join('|');let r=M.get(dk);if(r)return r;
   const w=b.ww,h=b.hh,c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(b.c,0,0);const im=x.getImageData(0,0,w,h),d=im.data;
   const kind=new Int8Array(w*h).fill(-1),lev=new Int8Array(w*h);let x0=w,y0=h,x1=-1,y1=-1,cx=0,cy=0,n=0;
-  for(let i=0;i<w*h;i++){if(d[i*4+3]<250)continue;const k=d[i*4]+','+d[i*4+1]+','+d[i*4+2];let v=SAK.get(k);if(v!=null){kind[i]=0;lev[i]=v}else{v=RDK.get(k);if(v!=null){kind[i]=1;lev[i]=v}else continue}
+  for(let i=0;i<w*h;i++){if(d[i*4+3]<250)continue;const r0=d[i*4],g0=d[i*4+1],b0=d[i*4+2];let v=SAK.get(r0+','+g0+','+b0);if(v==null)v=near(SAL,r0,g0,b0);if(v>=0&&v!=null){kind[i]=0;lev[i]=v}else{v=RDK.get(r0+','+g0+','+b0);if(v==null)v=near(RDL,r0,g0,b0);if(v>=0&&v!=null){kind[i]=1;lev[i]=v}else continue}
    const X=i%w,Y=(i/w)|0;if(X<x0)x0=X;if(X>x1)x1=X;if(Y<y0)y0=Y;if(Y>y1)y1=Y;if(kind[i]===0){cx+=X;cy+=Y;n++}}
   if(x1<0){M.set(dk,b);return b}
   const C1=hex(D.c),C2=hex(D.s),CX=hex(D.x),bw=Math.max(1,x1-x0+1),bh=Math.max(1,y1-y0+1);
