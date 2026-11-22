@@ -7,7 +7,9 @@
  NPCS.push({kind:KIND,x:TX*16+8,y:(TY-1)*16+8,ch:{sk:1,hs:3,hc:2,sh:4,pn:2,ht:1,hcol:1,so:1}});
  BS.add(TY*N+TX);
  // the table: green felt, a deck and two cards face up
- SQNEWDRAW.wrap('258',_nd=>function(...a){_nd(...a);const tm=a[8],cx=TX*16+8,b=(TY+1)*16-2;
+ // Nov 21 (Jace in Briarwood: "what is this card table doing here? and why is it on top of a tree"): drawn at Hollow's spot on every
+ // island too; Hollow only now (no SCENE), like the other Hollow drawings
+ SQNEWDRAW.wrap('258',_nd=>function(...a){_nd(...a);if(SCENE)return;const tm=a[8],cx=TX*16+8,b=(TY+1)*16-2;
   shd(cx,b-1,16);Rg(cx-8,b-11,16,7,O);Rg(cx-7,b-10,14,5,'#2e6a40');Rg(cx-7,b-10,14,1,'#3e8a54');
   Rg(cx-5,b-10,3,4,'#f0e8d0');Rg(cx-5,b-10,3,1,'#c02828');Rg(cx-1,b-9,3,4,'#f0e8d0');Rg(cx,b-8,1,1,'#3175b4');Rg(cx+3,b-10,3,4,'#3a64b8');Rg(cx+4,b-9,1,2,'#f8d048');
   Rg(cx-6,b-4,2,4,O);Rg(cx+4,b-4,2,4,O);Rg(cx-5,b-4,1,3,'#7a4a20');Rg(cx+5,b-4,1,3,'#7a4a20');

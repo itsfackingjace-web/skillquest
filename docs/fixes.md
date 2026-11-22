@@ -87,3 +87,23 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `SQFIRELOGN`), and the extra fire XP joins the fire's own XP number (check 67). 036's cooldown cut is `window.SQULTCUT()`, used by 216's Meteor
   Fall too (check 68). Arrow damage per kind checked (9/10/11/12 at the same bow): a bow always shoots the best arrows carried.
 - 149's DEPOSIT BAG skips `SQKEEPFALL` keys (cards and pet cards are bag items hidden by the binder; Jace's "randomly losing cards" were in his chests). 254 looked for pets on `window.EQ`, but 028's `EQ` is a script-level const: no pet card existed until a save had one, named with the raw key ("pweb"). It reads `EQ` directly now (`EQS()`), names from `EQ[pk].n` / `INAME`, and renames after every load. Check 69.
+
+## Nov 21 night: bug reports (Firebase + #bugs)
+- World Market: `market/offers` and `market/box` took item keys of fewer than 24 letters; Dev Suite gear is `eq_cu_<name>` and
+  `eq_cu_spider_weaver_robe` is 24 (Jynx: "Unable to sell Spider Weaver Robes"). Rules now take fewer than 64 (published). 079's offer
+  time `t` was the device clock while the rules refuse one more than 60 s ahead of the server's: it's `mpNow()` now, and `live`/`expire`
+  count on it too. The checks' fake database now runs `market/...` through the rules (check 10 read the whole box; it reads its own).
+  Check 74.
+- 004's `upd` step skips the frame while `pnOpen`, but fishing and make-alls run behind screens, so a screen left open meant skilling
+  with no food used (sniffynose, snitzler). 266 (`SQSCREENFOOD`): while `pnOpen` and skilling (`SQDO`/`FISH`), food drains at the base
+  rate (gear "hun" counts) except indoors or by a real fire with Hearthkeeper; at 0 the action stops ("too hungry"), no damage. Check 76.
+- 192's recount between make-all steps read only the bag; from chests (lent only during a step) it counted 0 left and the "N left"
+  vanished (Jace). It counts 109's `SQDO.chests` when they aren't lent (`BMERGE`). Check 75.
+- 220's campfire picker showed `baseLife()*t.m` while a fire is capped at `CAP` (30 min): it promised 54:03 for a yew fire that burned
+  29:57 (Kevin). It shows `min(CAP, ...)` and "(the most a fire burns)". Check 77.
+- 258's card table (and 009's chess table) were `SQNEWDRAW` steps with no `SCENE` test, so Ace's table showed on every island at
+  Hollow's spot (Jace, Briarwood). `if(SCENE)return` like the other Hollow drawings. Check 78.
+- 218's `brewOne` gave one potion's XP for a double batch and kept ingredients silently (Kevin): XP x potions, message names what you
+  kept. Check 79.
+- Not reproduced: Jynx's roll into a wall in No Man's Land (21:28). 855 rolls into the walls around his spot never ended inside one,
+  and 40 tried in real time all walked out; his screenshot shows the game asking him to update (021's roll fix went out at midday).

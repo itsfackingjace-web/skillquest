@@ -10,7 +10,7 @@
  // ---- market rules: at most 2 offers per item, prices within a sane range of the item's value, offers expire after 7 days ----
  // (offers from before these rules count their 7 days from when the rules came in)
  const PERK=2,DAY=864e5,LIFE=7*DAY,RULES_AT=Date.UTC(2026,10,12);
- const expAt=o=>Math.max(o.t||0,RULES_AT)+LIFE,live=o=>!!o&&o.f<o.q&&Date.now()<expAt(o);
+ const expAt=o=>Math.max(o.t||0,RULES_AT)+LIFE,live=o=>!!o&&o.f<o.q&&mpNow()<expAt(o);
  const lo=k=>Math.max(1,Math.floor((SELLP[k]||1)*.5)),hi=k=>1e7/* no top price any more (Nov 13): a price nobody pays just doesn't sell */,inBand=(k,p)=>p>=lo(k)&&p<=hi(k);
  const clampP=(k,p)=>Math.min(hi(k),Math.max(lo(k),Math.round(p)));window.SQWMRULES={PERK,LIFE,lo,hi,expAt};
  // ---- market prices come from trades (Nov 17): market/last/<k>.h = the last HMAX trades "price:count:seconds36", comma separated;
@@ -75,7 +75,10 @@
   if(side==='s'){if((inv[k]|0)<q){say('You don\'t have '+q+' '+nm(k,q).toLowerCase()+'.');sfx('swish');return}inv[k]-=q}
   else{if(GLD<q*p){say('You need '+(q*p)+' gold for that offer.');sfx('swish');return}GLD-=q*p}
   saveNow();WMK.busy=true;const d=FB.db,id=me()+'_'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
-  let up=false;try{await d.set(d.ref(FB.D,'market/offers/'+id),{u:me(),n:myName().slice(0,12),k,s:side,p,q,f:0,t:Date.now()});up=true;WMK.offers[id]={u:me(),k,s:side,p,q,f:0,t:Date.now()};
+  /* Nov 21 (Jynx: "The market couldn't take that offer"): `t` came from this device's clock, and the rules refuse a time more than 60 s
+   ahead of the server's, so a phone with its clock a minute fast could never post an offer. It's the server's time now (mpNow), and
+   expiry (live, expire) counts on it too. */
+  const t0=mpNow();let up=false;try{await d.set(d.ref(FB.D,'market/offers/'+id),{u:me(),n:myName().slice(0,12),k,s:side,p,q,f:0,t:t0});up=true;WMK.offers[id]={u:me(),k,s:side,p,q,f:0,t:t0};
    say((side==='s'?'Selling ':'Buying ')+q+' '+nm(k,q).toLowerCase()+' at '+p+' gold each.');sfx('coin');await match(id)}
   catch(e){mpErr(e);if(!up){if(side==='s')inv[k]=(inv[k]|0)+q;else GLD+=q*p;say('The market couldn\'t take that offer. Try again.')}else say('Your offer is up, but it couldn\'t trade just now. It will keep trying, or you can cancel it.');saveNow()}
   finally{WMK.busy=false;try{svg()}catch(e){self.SQERR&&SQERR(e,'079-4')}if(pnOpen&&shop==='wmkt'){WMK.tab='mine';WMK.form=null;rPn()}}}
@@ -112,8 +115,8 @@
    const cross=all.some(([cid,c])=>cid!==id&&live(c)&&inBand(c.k,c.p)&&c.k===o.k&&c.s!==o.s&&c.u!==o.u&&(o.s==='s'?c.p>=o.p:c.p<=o.p)&&(c.t||0)<=(o.t||0));
    if(!cross)continue;WMK.busy=true;try{await match(id)}catch(e){mpErr(e)}finally{WMK.busy=false}try{svg()}catch(e){self.SQERR&&SQERR(e,'079-7')}if(pnOpen&&shop==='wmkt'&&!typing())rPn()}}
  let exT=0;function expireSoon(){clearTimeout(exT);exT=setTimeout(expire,2500)}
- async function expire(){if(!online()||WMK.busy)return;for(const[id,o]of mine()){if(o.f>=o.q||Date.now()<expAt(o)||WMK.matching.has(id))continue;try{await cancel(id,'exp')}catch(e){mpErr(e)}}if(pnOpen&&shop==='wmkt'&&!typing())rPn()}
- setInterval(()=>{try{if(online()&&mine().some(([,o])=>o.f<o.q&&Date.now()>=expAt(o)))expire()}catch(e){self.SQERR&&SQERR(e,'079-8')}},60000);
+ async function expire(){if(!online()||WMK.busy)return;for(const[id,o]of mine()){if(o.f>=o.q||mpNow()<expAt(o)||WMK.matching.has(id))continue;try{await cancel(id,'exp')}catch(e){mpErr(e)}}if(pnOpen&&shop==='wmkt'&&!typing())rPn()}
+ setInterval(()=>{try{if(online()&&mine().some(([,o])=>o.f<o.q&&mpNow()>=expAt(o)))expire()}catch(e){self.SQERR&&SQERR(e,'079-8')}},60000);
  async function cancel(id,why){const d=FB.db;let last=null;const r=await d.runTransaction(d.ref(FB.D,'market/offers/'+id),cur=>{last=cur?{...cur}:cur;if(!cur||cur.u!==me()||cur.x||cur.f>=cur.q)return;if(!cur.f)return null;cur.q=cur.f;cur.x=1;return cur}).catch(e=>{mpErr(e);return null});
   if(!r||!r.committed||!last)return;const left=Math.max(0,last.q-last.f);if(last.s==='s')inv[last.k]=(inv[last.k]|0)+left;else GLD+=left*last.p;delete WMK.offers[id];
   say((why==='exp'?'World Market: your offer for '+nm(last.k,2).toLowerCase()+' expired after 7 days.':'Offer cancelled.')+(left?' Back to you: '+(last.s==='s'?left+' '+nm(last.k,left).toLowerCase():left*last.p+' gold')+'.':''));sfx('coin');saveNow();try{svg()}catch(e){self.SQERR&&SQERR(e,'079-9')}}

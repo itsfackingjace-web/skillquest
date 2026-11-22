@@ -55,9 +55,12 @@
  const canMake=r=>Object.entries(r.c).reduce((m,[a,b])=>Math.min(m,Math.floor((inv[a]|0)/b)),1e9);
  function brewOne(r){const L=lvOf(BR);if(L<r.lv){say('You need Brewing '+r.lv+'.');return false}if(canMake(r)<1){say('You don\'t have the ingredients.');return false}
   const save=sumTo(exAt,L)+(PK('br_thrift')?.15:0),extra=sumTo(raAt,L)+(PK('br_twice')?.15:0);
-  for(const[a,b]of Object.entries(r.c))for(let i=0;i<b;i++)if(!(Math.random()<save))inv[a]--;
-  const n=1+(Math.random()<extra?1:0);inv[r.k]=(inv[r.k]|0)+n;addXp(BR,r.xp);try{sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'218-2')}
-  say('You brew '+(n>1?n+' ':'a ')+INAME[r.k].toLowerCase()+(n>1?'s':'')+'.');try{for(const f of window.SQBREWED||[])f(r.k)}catch(e){self.SQERR&&SQERR(e,'218-90')}return true}
+  // Nov 21 (Kevin: "Double brewing does NOT give double xp" / "Brewing DOES refund ... but there is no notification"): a double
+  // batch gives the XP of both potions (as bonus items do in other skills, 244), and the message says which ingredients you kept
+  const kept={};for(const[a,b]of Object.entries(r.c))for(let i=0;i<b;i++){if(!(Math.random()<save))inv[a]--;else kept[a]=(kept[a]|0)+1}
+  const n=1+(Math.random()<extra?1:0);inv[r.k]=(inv[r.k]|0)+n;addXp(BR,r.xp*n);try{sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'218-2')}
+  const kt=Object.entries(kept).map(([a,c])=>c+' '+matN(a)).join(' and ');
+  say('You brew '+(n>1?n+' ':'a ')+INAME[r.k].toLowerCase()+(n>1?'s':'')+(n>1?' (double batch!)':'')+(kt?'. You kept '+kt:'')+'.');try{for(const f of window.SQBREWED||[])f(r.k)}catch(e){self.SQERR&&SQERR(e,'218-90')}return true}
  {const _sa=stationAct;stationAct=function(a){const o=STATION;if(!(o&&o.t==='cauldron'&&/^cwa?_/.test(a||'')))return _sa.apply(this,arguments);
    const all=a.startsWith('cwa_'),r=RECIPES.find(q=>q.k===a.replace(/^cwa?_/,''));if(!r)return;
    if(lvOf(BR)<r.lv){say('You need Brewing '+r.lv+' to brew that.');return}const m=canMake(r);if(m<1){say('You need '+Object.entries(r.c).map(([k,b])=>b+' '+matN(k)).join(', ')+'.');return}

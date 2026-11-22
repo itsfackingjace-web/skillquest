@@ -13,7 +13,8 @@
 //   the daily/weekly/achievement fire counters (120/143/129) don't count it as another fire.
 //   `lg` (1-5) travels with shared fires (061) and saved fires (061's snap). The outermost `pF` draws `lg` fires in the
 //   log's colours (unless a Dev Suite `p:campfire` look exists).
-(()=>{const TAB=50,FM=5,CAP=1800;
+(()=>{const TAB=50,FM=5,CAP=1800;// a fire burns 30 minutes at most. Nov 21 (Kevin: "Mine should be at least 34 minutes and it just says 29:57"): the build list
+ // showed the time before that cap; it shows what you'll get now
  const T=[{k:'wood',lv:1,pl:13,m:1,fs:30},{k:'oaklog',lv:15,pl:45,m:1.4,fs:45},{k:'willowlog',lv:30,pl:75,m:1.8,fs:55},
   {k:'maplelog',lv:45,pl:110,m:2.2,fs:65},{k:'yewlog',lv:60,pl:165,m:2.6,fs:80},{k:'voidlog',lv:75,pl:250,m:3,fs:95}];
  // flame colours per log (outer to core). Oak burns golden, willow blue, maple crimson, yew green, void purple: plain wood stays orange.
@@ -76,7 +77,7 @@
   if(near&&!tier&&!T.some(t=>n(t.k)>0&&lv()>=t.lv))return _f.apply(this,arguments);
   pnOpen=true;ptab=TAB;pn.style.display='block';rPn();try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'220-6')}});
  function row(i,mode){const t=T[i],have=n(t.k),ok=lv()>=t.lv,img='<img src="'+iconURL(t.k)+'" style="width:28px;height:28px;image-rendering:pixelated">';
-  let info,btn='';if(mode==='b'){info=ok?(3*t.pl)+' XP · burns '+mmss(baseLife()*t.m)+' · needs 3 + 1 stone':'needs Firemaking '+t.lv;
+  let info,btn='';if(mode==='b'){info=ok?(3*t.pl)+' XP · burns '+mmss(Math.min(CAP,baseLife()*t.m))+(baseLife()*t.m>CAP?' (the most a fire burns)':'')+' · needs 3 + 1 stone':'needs Firemaking '+t.lv;
    if(ok)btn='<button class="sb" data-fmb="'+i+'" style="min-width:0;padding:8px 10px"'+(canBuild(t)?'':' disabled')+'>BUILD</button>'}
   else{info=ok?'+'+mmss(t.fs)+' · '+t.pl+' XP':'needs Firemaking '+t.lv;if(ok)btn='<button class="sb" data-fmf="'+i+'" style="min-width:0;padding:8px 10px"'+(have>0?'':' disabled')+'>FEED 1</button>'}
   return '<div class="qc fmrow" style="display:flex;align-items:center;gap:8px;'+(ok&&(mode==='b'?have>=3:have>0)?'':'opacity:.55')+'">'+img+'<div style="flex:1;text-align:left"><b>'+nm(t.k)+'</b> ×'+have+'<br><small>'+info+'</small></div>'+btn+'</div>'}

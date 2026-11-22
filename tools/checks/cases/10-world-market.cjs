@@ -15,4 +15,5 @@ module.exports={name:'World Market sale and purchase settle exactly once',player
  // collecting again gives nothing more (and no more Merchant XP)
  const mx1=await A.evaluate(()=>XPS[SQMERCH.MI]);
  await A.evaluate(()=>SQWMAPI.collect());await W(1500);t.eq(await A.evaluate(()=>GLD),10*p-tax,'seller gold after a second collect');t.eq(await A.evaluate(()=>XPS[SQMERCH.MI]),mx1,'Merchant XP after a second collect');
- const box=await A.evaluate(async()=>{const F=SQFB;return(await F.db.get(F.db.ref(F.D,'market/box'))).val()});t(!box||!Object.keys(box.ann||{}).length,'deliveries left in the box: '+JSON.stringify(box))}};
+ // (Nov 21: the fake checks market paths against the rules now, which only let you read your own box)
+ const box=await A.evaluate(async()=>{const F=SQFB;return(await F.db.get(F.db.ref(F.D,'market/box/'+SQMP.user.uid))).val()});t(!box||!Object.keys(box).length,'deliveries left in the box: '+JSON.stringify(box))}};

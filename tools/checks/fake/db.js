@@ -31,7 +31,8 @@ async function _runTransaction(r,f){const cur=getAt(r.path);const nv=f(cur==null
  const tok={aborted:false};PEND.set(r.path,tok);const fv=fill(nv);setAt(r.path,fv);emit(r.path);await new Promise(res=>setTimeout(res,5));PEND.delete(r.path);
  if(tok.aborted)throw new Error('set');window.__relay&&window.__relay('set',r.path,fv==null?null:JSON.parse(JSON.stringify(fv)));return{committed:true,snapshot:snap(r.path,nv)}}
 
-const GP=/^(guilds|glog|gname|gmem|ginv|gchat|glb)(\/|$)/;const uid=()=>window.__fakeUser&&window.__fakeUser.uid||null;
+const GP=/^(guilds|glog|gname|gmem|ginv|gchat|glb|market)(\/|$)/;// Nov 21: market too (an offer the rules refused passed here)
+const uid=()=>window.__fakeUser&&window.__fakeUser.uid||null;
 const sn=(p,v)=>({key:String(p).split('/').pop(),val:()=>v==null?null:JSON.parse(JSON.stringify(v)),exists:()=>v!=null});
 const deny=x=>{const e=new Error('PERMISSION_DENIED: '+x.why);e.code='PERMISSION_DENIED';throw e};
 const fix=x=>{if(x&&typeof x==='object'){if(x.__ts)return{'.sv':'timestamp'};const o2={};for(const k in x)o2[k]=fix(x[k]);return o2}return x};const LS=new Map();let ln=0;window.__dbFire=(id,v)=>{const f=LS.get(id);if(f)f.f(sn(f.p,v==null?null:JSON.parse(v)))};window.__dbErr=id=>{const f=LS.get(id);if(f){LS.delete(id);f.e&&f.e(new Error('permission_denied'))}};
