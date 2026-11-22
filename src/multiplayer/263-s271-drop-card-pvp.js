@@ -14,10 +14,16 @@
  // Nov 21: the rules version travels with the deck. A match ended at once when the other game was older (a game from before 263
  // takes the request as a duel and never sends a deck) or played other rules (30 HP, 6 trees): now it stops before the stakes are
  // taken and says why. Bump RV when a rule changes.
- const RV='r3';// r3: pet cards only their owner's game knows, 60 of a tree, END TURN fingerprints
+ const RV='r4';// r3: pet cards only their owner's game knows, 60 of a tree, END TURN fingerprints; r4: the match's code in the head
+ // Nov 21 (Jace vs Bear: "the games kept ending after the first turn", after one full match): the record lives at duels/<pair>/<uid>
+ // for every match between the same two players, and S.mv (your moves) was only cleared when the next match began, so while setting
+ // up the next match each game sent its deck plus the last match's moves. The other game replayed those on your first turn, saw the
+ // games disagree and stopped the match as a draw. Now a match's end clears the moves, and the head carries the match's code (the
+ // request's D.s, the same on both screens): a record from another match is ignored.
  const S={mv:[],th:0,on:false,first:true,their:null,bad:'',t0:0,cur:-1,ended:false};
- const deckStr=d=>Object.keys(d.c).filter(k=>d.c[k]>0).map(k=>k+'*'+(d.c[k]|0)).join(',')+'|'+(d.pet||'')+'|'+RV;
- function parseHead(h){const[a,p,v]=String(h||'').split('|'),c={};for(const x of(a||'').split(',')){const[k,n]=x.split('*');if(k&&/^[\w:-]+$/.test(k))c[k]=Math.max(0,Math.min(60,n|0))}return{c,pet:p&&/^pc_[\w:-]+$/.test(p)?p:null,v:v||''}}
+ const code=()=>{try{const D=A().D;return String(D&&D.s||'').replace(/[^\w-]/g,'').slice(0,24)}catch(e){return''}};
+ const deckStr=d=>Object.keys(d.c).filter(k=>d.c[k]>0).map(k=>k+'*'+(d.c[k]|0)).join(',')+'|'+(d.pet||'')+'|'+RV+'|'+code();
+ function parseHead(h){const[a,p,v,cd]=String(h||'').split('|'),c={};for(const x of(a||'').split(',')){const[k,n]=x.split('*');if(k&&/^[\w:-]+$/.test(k))c[k]=Math.max(0,Math.min(60,n|0))}return{c,pet:p&&/^pc_[\w:-]+$/.test(p)?p:null,v:v||'',code:cd||''}}
  function badDeck(d){if(!d)return'no deck';for(const k in d.c)if(!B.info(k)||!E.card((window.SQDROPCARD.ITEM[k]||{}).key||k))return'unknown card';
   // Nov 21: no pet check. Some pet cards exist only in their owner's game (254 adds them from your own save), so "unknown pet" turned
   // every such deck away as "not allowed"; a Companion's power comes from its key alone (261's COMP), so both games agree anyway.
@@ -39,7 +45,8 @@
   problem(){const d=MT().deckOf();if(!d)return'You need a Drop Card deck first (Card Binder > Decks).';const p=B.problems(d).filter(t=>!/^Optional/.test(t));return p.length?'Your Drop Card deck isn\'t ready: '+p[0]+' (Card Binder > Decks)':''},
   str(){if(!mine)mine=myDeck();return deckStr(mine)+'#'+S.mv.join(' ')},
   theirs(m){m=String(m||'');const i=m.indexOf('#');if(i<0)return;const head=m.slice(0,i),mv=m.slice(i+1).split(' ').filter(Boolean);
-   if(!S.their||S.their.head!==head){const d=parseHead(head);S.their={head,d,mv};S.bad=d.v!==RV?'old':badDeck(d)}else S.their.mv=mv;if(S.pend&&!S.on){S.pend=0;window.SQPVD.begin();return}feed()},
+   if(!S.their||S.their.head!==head){const d=parseHead(head);if(d.v===RV&&d.code!==code())return;// a record left over from another match
+    S.their={head,d,mv};S.bad=d.v!==RV?'old':badDeck(d)}else S.their.mv=mv;if(S.pend&&!S.on){S.pend=0;window.SQPVD.begin();return}feed()},
   blocker(){const D=A().D,n=D?A().nameOf(D.foe):'They';if(D&&D.their&&D.st!=='idle'&&D.their.m===''&&performance.now()-(D.openAt||0)>4000)return n+'\'s game is out of date. You both need to close and reopen the game to play Drop Card.';
    if(!S.bad)return'';return S.bad==='old'?n+' is on a different version of the game. You both need to close and reopen the game to play Drop Card.':n+'\'s deck isn\'t allowed ('+S.bad+').'},
   begin(){const D=A().D;if(!D)return;S.mv=[];S.th=0;S.ended=false;if(!mine)mine=myDeck();
@@ -68,6 +75,6 @@
    const t=res==='w'?(why==='end'?'You beat '+n+'!':why==='resign'?n+' gave up. You win!':why==='time'?n+' ran out of time. You win!':why==='gone'?n+' went offline. You win!':n+' left. You win!')+' You take the stakes.':
     res==='l'?(why==='end'?n+' wins this one.':why==='resign'?'You gave up.':why==='time'?'You ran out of time.':'You left the match.')+' '+n+' takes the stakes.':'A draw'+(why?' ('+why+')':'')+'. The stakes go back.';
    MT().endPvp(t)},
-  cancel(){S.on=false;S.pend=0;mine=null;S.their=null;S.bad='';const M=MT().m;if(M&&M.pvp&&!M.s.over)MT().close()},
+  cancel(){S.on=false;S.pend=0;mine=null;S.their=null;S.bad='';S.mv=[];S.th=0;const M=MT().m;if(M&&M.pvp&&!M.s.over)MT().close()},
   get state(){return S}};
  try{if(!SQACH.A.some(a=>a.id==='dc_pvp'))SQACH.A.push({g:'Drop Card',id:'dc_pvp',n:'Card duelist',d:'Win a Drop Card match against another player.',val:()=>(SQACH.counters&&SQACH.counters.dcpvpw)|0,goal:1,gold:500})}catch(e){self.SQERR&&SQERR(e,'263-2')}})();
