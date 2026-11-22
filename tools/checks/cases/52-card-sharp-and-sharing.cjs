@@ -6,7 +6,9 @@ module.exports={name:'Card Sharp, viewing another player\'s cards, Drop Cards on
   // Ace
   const n=NPCS.find(n=>n.kind==='cardsharp');P.x=n.x-18;P.y=n.y;face=[1,0];GLD=5;inv.dc_guide=0;inv.dc_binder=0;await W(100);talk();await W(200);
   // Nov 21: wait for Ace's screen instead of a fixed 200 ms (it failed now and then in the full run)
-  for(let i=0;i<20&&!pbd.querySelector('[data-dcs2="buy"]');i++){if(!pnOpen)talk();await W(150)}
+  // Nov 22: it still failed once in a full run: a villager (or Ace's own wander) can put someone else in reach, whose screen opened instead.
+  // Stand next to Ace again and close any other screen before each try.
+  for(let i=0;i<20&&!pbd.querySelector('[data-dcs2="buy"]');i++){if(pnOpen)closePanel();P.x=n.x-18;P.y=n.y;face=[1,0];talk();await W(150)}
   out.talk=[shop,ptab,(pbd.textContent||'').includes('Ace the Card Sharp')];
   pbd.querySelector('[data-dcs2="buy"]').click();await W(150);out.buy=[GLD,inv.dc_guide|0,inv.dc_binder|0,B.decks[0].n];
   pbd.querySelector('[data-dcs2="how"]').click();await W(150);out.how=[ptab,B.V.tab];closePanel();await W(100);
