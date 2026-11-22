@@ -2,7 +2,8 @@
 // The check forces the roll (SQDROPCARDALWAYS) and goes through the real paths: enemyDrop, a chop, 071's and 100's reward hooks.
 module.exports={name:'Drop Cards drop from monsters, trees and bosses',async run(p,t){
  const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);const D=SQDROPCARD,out={};
-  const has=k=>inv[D.CARDS[k].key]|0;
+  // Nov 21: 1 card in 50 drops shiny (its own item <key>_sh): count both, or a shiny roll reads as "no card" (a third of runs failed somewhere)
+  const cnt=key=>(inv[key]|0)+(inv[key+'_sh']|0),has=k=>cnt(D.CARDS[k].key);
   // the roll is 1%
   window.SQDROPCARDALWAYS=false;let n=0;for(let i=0;i<20000;i++)if(D.rawRoll())n++;out.rate=n/20000;window.SQDROPCARDALWAYS=true;
   // bad-luck protection: the 200th miss in a row gives a card; a save keeps the count
@@ -18,18 +19,20 @@ module.exports={name:'Drop Cards drop from monsters, trees and bosses',async run
   for(const f of SQWBWON)f({type:'dragon',slot:'x'});out.dragon=has('wb:dragon');
   for(const f of SQIBWON){f({ib:'briarwood'});f({ib:'gu_someguild'})}out.queen=has('ib:briarwood');out.turtle=has('turtle');
   // a tree: its kind's card
-  const tk=D.CARDS.tree.key;const before=inv[tk]|0;
+  const tk=D.CARDS.tree.key;const before=cnt(tk);
   face=[1,0];const[fx,fy]=front(16),tx=Math.floor(fx/16),ty=Math.floor(fy/16),i=ty*N+tx;obj[i]={t:'tree',hp:3};STR.delete(i);BS.delete(i);
-  const w0=inv.wood|0;for(let k=0;k<25&&(inv.wood|0)===w0;k++){swing=0;attack();await W(450)}out.tree=(inv[tk]|0)-before;out.w=[w0,inv.wood|0];
+  // Nov 21: a villager wandering into reach made HIT talk instead of chop (a shop screen opened and blocked every later swing)
+  const clear=()=>{try{if(pnOpen)closePanel()}catch(e){}for(const n of NPCS)if(!n.scene&&Math.hypot(n.x-P.x,n.y-P.y)<90)n.x+=300};
+  const w0=inv.wood|0;for(let k=0;k<25&&(inv.wood|0)===w0;k++){clear();swing=0;attack();await W(450)}out.tree=cnt(tk)-before;out.w=[w0,inv.wood|0];
   // Nov 21 (Jace): a pine gives the Pine card, a cactus the Cactus fruit card (never the Tree card); yews, dead and void trees their own
-  const chop=async(o,ck)=>{const c=D.CARDS[ck].key,tc=D.CARDS.tree.key,b0=inv[c]|0,t0=inv[tc]|0;obj[i]=o;STR.delete(i);BS.delete(i);const s0=JSON.stringify(inv);
-   for(let k=0;k<40&&JSON.stringify(inv)===s0;k++){swing=0;attack();await W(450)}return[(inv[c]|0)-b0,ck==='tree'?0:(inv[tc]|0)-t0]};
+  const chop=async(o,ck)=>{const c=D.CARDS[ck].key,tc=D.CARDS.tree.key,b0=cnt(c),t0=cnt(tc);obj[i]=o;STR.delete(i);BS.delete(i);const s0=JSON.stringify(inv);
+   for(let k=0;k<40&&JSON.stringify(inv)===s0;k++){clear();swing=0;attack();await W(450)}return[cnt(c)-b0,ck==='tree'?0:cnt(tc)-t0]};
   out.pine=await chop({t:'pine',hp:3},'pine');out.cactus=await chop({t:'cactus',hp:3},'cfruit');
   out.kinds=[{t:'yew'},{t:'tree',v:'dead'},{t:'tree',v:'dark'},{t:'cactus'},{t:'oak'},{t:'tree'}].map(SQTREECARD);
   out.demon=[INAME[D.CARDS['wb:demon'].key],IDESC[D.CARDS['wb:demon'].key]];
   // shown in the bag with their own picture, and kept by a save
   const k=D.CARDS['slime:moss'].key;out.inBag=BAG_ORDER().includes(k);out.icon=String(iconURL(k)).slice(0,22);out.name=INAME[k];out.desc=IDESC[k];
-  const S=JSON.parse(JSON.stringify(SQSAVE.snap?SQSAVE.snap():snap()));out.saved=JSON.stringify(S).includes('"'+k+'":1');
+  const S=JSON.parse(JSON.stringify(SQSAVE.snap?SQSAVE.snap():snap()));out.saved=JSON.stringify(S).includes('"'+k+'":1')||JSON.stringify(S).includes('"'+k+'_sh":1');
   window.SQDROPCARDALWAYS=false;return out});
  t(r.rate>.006&&r.rate<.014,'the drop rate is '+r.rate+', not about 1%');
  t.eq(r.pity,[200,57],'bad-luck protection (card on the 200th miss; count saved)');t.eq(r.moss,1,'Moss slime cards from one moss slime (killed twice)');t.eq(r.wolf,0,'cards from a summon');t.eq(r.alpha,1,'Frostfang Alpha card');
