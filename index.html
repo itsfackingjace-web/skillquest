@@ -9517,7 +9517,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
- {v:'2026.11.22-5',d:'Nov 22, 2026',t:"Home tax, the bank, Art Room tools and fixes",n:["Homes now pay a little tax at the bank. Penny the Banker has a stall in Hollow Village, next to the World Market. A house costs 50,000 gold a month (30 days) and a castle 150,000. Every home gets its first 30 days free, starting today for the homes already built. Homes on your guild's island pay half: 25,000 gold a month for a house and 75,000 for a castle. Talk to Penny to pay a month at a time, up to three months ahead. Your bag and your map show how long your tax is paid for, and you get a reminder a week before it runs out.","If a home's tax runs out, the bank takes it off the map and looks after it, with everything inside. Nothing is lost. Pay Penny one month of tax plus 10% to get it back where it stood, with no tax added for the time the bank had it. If someone has built on that spot by then, your home goes into your bag with everything that was in it. You can't place a new home while the bank has yours.","Packing up your home (HIT its walls) pauses its tax. The time you've paid for carries over to the next home you place. If the new home costs a different amount (a castle instead of a house, or a home on or off your guild's island), your paid days change to match, so the gold you paid is worth the same.","Other players stop seeing a home once its tax has run out, so homes nobody looks after don't stay on the map forever.","Guild bosses can now also be summoned without spending a guild skill rank: pay twice the materials instead (100,000 void logs for the Void Treant, 10,000 raw fish for the Giant Turtle). The leader or an officer finds the new button under START > Guild > Bosses.","Art Room (patrons): a new Select tool. Drag a box around part of your drawing (or pick Free and draw any shape around it), then drag inside it to move those pixels somewhere else. The arrow keys nudge it one pixel at a time. Crop cuts the canvas down to what you selected, Delete clears it, and Undo brings anything back.","Art Room: the mouse wheel zooms in and out around the pointer, so the spot you're looking at stays under it.","Art Room: bigger canvases, up to 96 x 96 pixels. A 96 x 96 drawing can have up to 6 frames, smaller ones up to 8.","Art Room: Drafts. Keep several drawings going at once and switch between them: press Drafts to save the one you're on, save a copy, start a new drawing or open an old one. The drawing you're working on saves to its draft as you go. Drafts are kept on the device you drew them on.","Fixed: in the Art Room, pressing any button while zoomed in jumped the view back to the top left corner. It stays where you were now.","Fixed: on some phone browsers (like Brave), guild sails looked speckled. They show your guild's colours properly now.","Fixed: when the World Market couldn't take an offer (for example, when all your offer slots were in use), phones didn't show why, so a purchase could look like it went through. The reason now shows on the market screen, under the price.","Fixed: packing up a house with a framed card in it lost the card. Cards in frames now go back to your Card Binder when their home is packed up, and cards lost this way earlier have come back too.","Fixed: seen from behind, a cape covered long hair. Long hair now hangs down over your cape.","Fixed: visitors to your house (or island home) saw an empty stand on your card frames. They see the card you put up now."]},
+ {v:'2026.11.22-6',d:'Nov 22, 2026',t:"Home tax, Art Room tools, pet cards in Drop Card and fixes",n:["Homes now pay a little tax at the bank. Penny the Banker has a stall in Hollow Village, next to the World Market. A house costs 50,000 gold a month (30 days) and a castle 150,000. Every home gets its first 30 days free, starting today for the homes already built. Homes on your guild's island pay half: 25,000 gold a month for a house and 75,000 for a castle. Talk to Penny to pay a month at a time, up to three months ahead. Your bag and your map show how long your tax is paid for, and you get a reminder a week before it runs out.","If a home's tax runs out, the bank takes it off the map and looks after it, with everything inside. Nothing is lost. Pay Penny one month of tax plus 10% to get it back where it stood, with no tax added for the time the bank had it. If someone has built on that spot by then, your home goes into your bag with everything that was in it. You can't place a new home while the bank has yours.","Packing up your home (HIT its walls) pauses its tax. The time you've paid for carries over to the next home you place. If the new home costs a different amount (a castle instead of a house, or a home on or off your guild's island), your paid days change to match, so the gold you paid is worth the same.","Other players stop seeing a home once its tax has run out, so homes nobody looks after don't stay on the map forever.","Guild bosses can now also be summoned without spending a guild skill rank: pay twice the materials instead (100,000 void logs for the Void Treant, 10,000 raw fish for the Giant Turtle). The leader or an officer finds the new button under START > Guild > Bosses.","Art Room (patrons): a new Select tool. Drag a box around part of your drawing (or pick Free and draw any shape around it), then drag inside it to move those pixels somewhere else. The arrow keys nudge it one pixel at a time. Crop cuts the canvas down to what you selected, Delete clears it, and Undo brings anything back.","Art Room: the mouse wheel zooms in and out around the pointer, so the spot you're looking at stays under it.","Art Room: bigger canvases, up to 96 x 96 pixels. A 96 x 96 drawing can have up to 6 frames, smaller ones up to 8.","Art Room: Drafts. Keep several drawings going at once and switch between them: press Drafts to save the one you're on, save a copy, start a new drawing or open an old one. The drawing you're working on saves to its draft as you go. Drafts are kept on the device you drew them on.","Drop Card: pet cards now go in your deck like any other card, and you can bring several (up to 2 of each). When you draw one, pay its cost (1 to 4 Mana) to summon it beside your hero. Up to 3 pets can be out at once, and they don't take any of your 6 monster spots. Pets have ATK and HP: they can attack from your next turn, and they can be attacked and hit by spells. A pet's power works while it's out, and two pets with the same power add up. If a deck had a Companion, that pet card is now in the deck.","Drop Card: you can see the other player's pets beside their hero. Tap any pet (yours or theirs) to see its cost, ATK, HP and power.","Drop Card: drag your cards. Drag a card from your hand onto the table to play it, or drag a spell onto its target. Drag one of your monsters or pets onto an enemy, or onto the enemy hero, to attack. Tapping works too.","Ace now brings a pet to Drop Card matches: a Dog on Normal, and a Wolf and an Imp on Hard.","Fixed: in Drop Card, wolf powers never worked. The Frostfang Alpha gives your other wolves +1 ATK, and the Wolf pet cards boost your wolves.","Fixed: restarting the game cut every Drop Card deck down to 2 tree cards, so the Starter Deck came back with 16 cards and couldn't be played. Decks keep all their cards now, and a Starter Deck that lost its Trees gets them back.","Fixed: in the Art Room, pressing any button while zoomed in jumped the view back to the top left corner. It stays where you were now.","Fixed: on some phone browsers (like Brave), guild sails looked speckled. They show your guild's colours properly now.","Fixed: when the World Market couldn't take an offer (for example, when all your offer slots were in use), phones didn't show why, so a purchase could look like it went through. The reason now shows on the market screen, under the price.","Fixed: packing up a house with a framed card in it lost the card. Cards in frames now go back to your Card Binder when their home is packed up, and cards lost this way earlier have come back too.","Fixed: seen from behind, a cape covered long hair. Long hair now hangs down over your cape.","Fixed: visitors to your house (or island home) saw an empty stand on your card frames. They see the card you put up now."]},
  {v:'2026.11.21-21',d:'Nov 21, 2026',t:"Drop Card against other players, new tree cards and fixes",n:["Mana now stops refilling for 1.5 seconds after you cast a spell or use an ultimate. Keep casting and your mana runs down; stop for a moment and it refills as fast as before. (Before this, mages in mage armour got mana back faster than they could spend it.)","On phones and tablets, hold the CAST or BOW button to keep firing at the nearest enemy, the same way holding HIT keeps swinging. A quick tap still fires once, and you can still drag the button to aim.","Fixed: the World Market refused some items with long names, like Spider Weaver Robes (\"The market couldn't take that offer\"). They can be bought and sold now, and offers also go up on phones whose clock is running fast.","Fixed: with a screen open (your bag, skills or a shop), fishing and Make all kept going without using any food, so you could skill forever. Skilling behind a screen now uses food like normal and stops when you run out. You still don't get hungry inside your house or castle, or next to your own campfire with Hearthkeeper.","Fixed: the \"N left\" count over your head disappeared when smithing with materials from nearby chests.","Fixed: the campfire list promised burn times over 30 minutes. A campfire burns for 30 minutes at most, and the list now shows the time you'll actually get.","Fixed: Ace's card table from Hollow Village also showed up on the islands (on top of a tree in Briarwood).","Fixed: brewing a double batch now gives XP for both potions, and the message tells you when you kept some of your ingredients.","Fixed: a second Drop Card match against the same player ended after the first turn (one of you saw a draw, the other that the player left). Rematches now play out. You both need this update to play each other.","Fixed: on islands with other players (most often the Shattered Expanse), you could keep losing health every second or so with nothing around you, and the only way to stop it was to leave the island. It happened when another player's connection dropped for a moment. It can't happen any more.","Fixed: DEPOSIT BAG on a chest also put all your Drop Cards into the chest, so they disappeared from your Card Binder. It leaves your cards alone now. If cards went missing, look in the chests you deposited into and take them back.","Fixed: pet cards had names like \"pweb\" and \"psquir\". They now have proper names (Pet Card: Webling, Pet Card: Squirrel...), and every pet's card shows in your Card Binder and in the wiki, not just the ones you have.","BURN FIRST for logs: select a log in your bag and tap ☆ BURN FIRST. FIRE then builds your campfire with that log (or feeds it to the fire you're standing at) without asking.","Hearthkeeper now needs a real campfire: standing near a castle outside no longer keeps you from getting hungry. Inside houses and castles you still don't get hungry.","Fixed: building a campfire from oak or better logs gave back plain wood when a Firemaking perk saved fuel. You now get back the log you burned.","Fixed: an oak (or better) campfire showed two separate XP numbers. It now shows one total.","Fixed: Meteor Fall (the meteorite wand's ultimate) didn't get the cooldown cuts from Magic levels and Ultimate Focus.","Fixed: when you switched to another tab or minimised the game, it kept running without showing anything, so you could come back starved or fallen. Your skilling still carries on in the background and you still get hungry, but you can't get hurt, and if your food runs out whatever you were doing stops.","Fixed: while you played Drop Card, the game kept going behind the table, so you could starve or be attacked by monsters you couldn't see. You're now safe at the card table: you can't lose health and you don't get hungry.","Cook all for meals: stoves now have a Cook all button for meals like pizza and stew.","Castle and house yards: with your hoe out, press HIT twice on tilled soil to fill it back in (a crop growing there comes back as its seed).","Fixed: the gold amulet's +5% XP and the emerald ring's +10% gathering XP weren't being added. They work again and are listed under your stats.","Fixed: forging armour at the anvil put it straight on you. It now goes into your bag so you can equip it when you want.","Fixed: Smith all and Smelt all counted down to \"0 left\" and kept going when you got materials back. The count now includes them.","Fixed: the Outlaw Country quests told you to return to Mira in No Man's Land. The tracker now points you to her in Dusthaven.","Fixed: a dodge roll could carry you into a wall and get you stuck.","Your Card Binder is now the CARDS tab in your bag instead of an item, so it can't be lost, and your Drop Cards stay with you when you fall instead of going into your grave.","Drop Card rule changes: heroes now start with 30 HP (was 20), decks can be anywhere from 20 to 60 cards (was exactly 20), and your Grove holds up to 6 trees instead of 10 Mana, so bigger trees like Yews and Void trees give you more Mana to work with.","Play Drop Card against other players! Stand next to someone, tap their name and choose PLAY DROP CARD. Like chess, you can both stake items or gold, and the winner takes both stakes. You each play the deck that's active in your Card Binder, at the same card table as Ace's matches. You have 2 minutes a turn (your turn ends by itself after that). Giving up, leaving or going offline loses the match. Win one for the Card duelist achievement.","New Drop Cards: Pine (1 Mana), Dead tree (1 Mana) and Void tree (6 Mana). Chop pines, the dead trees of Ashfall and the void trees of the Shattered Expanse for a chance at their card.","Fixed: a copy of the game left open from before Drop Cards could wipe your cards when you tapped PLAY HERE INSTEAD after playing on another device. PLAY HERE INSTEAD now reloads the game first, and old copies of the game can no longer save over your account.","Fixed: finding a pet you already have (an imp from a world boss, or a pet on an island) turned it away. The extra one now goes into your bag, so you can keep it, sell it, trade it or release it for its Drop Card.","Fixed: playing on a device with an older copy of the game could wipe your Drop Cards and Card Binder from your account. The game now keeps every item in your save, even ones it doesn't know yet.","Fixed: Drop Card matches against players said your deck wasn't allowed when your Companion was a pet card the other player's game didn't know about, or when your deck had more than 20 of one tree. If the two games ever disagree about a match, it now stops as a draw and gives the stakes back.","Fixed: a Drop Card match against a player whose game was out of date ended as soon as it started. Now the game tells you before any stakes are taken, and you both need to close and reopen the game.","Fixed: every tree now gives its own card. Yews, pines and dead trees could give the plain Tree card, and void trees gave no card at all.","Fixed: cacti give the Cactus fruit card instead of a Tree card.","Shiny cards can be seen in your Card Binder: the new ★ Shiny filter shows every shiny card you own, and a card you have both ways shows its normal and shiny pictures side by side when you tap it.","Fixed: after looking at another player's cards, your own Card Binder showed their cards until you restarted the game."]},
  {v:'2026.11.20-20',d:'Nov 20, 2026',t:"Guild raids, Outlaw Country, Merchant skill and a GE-style market",n:["Play Drop Card! Talk to Ace the Card Sharp in Hollow Village and play your deck against him on Easy, Normal or Hard. Plant a tree each turn, chop trees to pay for cards (stumps grow back next turn), play monsters and spells, and attack Ace's monsters or Ace himself. Boss cards have their own powers and your pet card is your Companion. Win for gold (50 / 150 / 400, a tenth after your first win of the day at that level) and the Card shark achievement. The match is played at a wooden card table with you and Ace at either end, your Groves of real trees, and your hand fanned out. Tap any card (in your hand, on the table, a tree or your pet) to see it up close with its stats, power and where it's found, and to play, plant, chop or attack from there; tap anywhere else to go back to the table. Works with touch, mouse and controller (○ or Esc goes back).","Drop Cards are here: every monster, tree and boss now has its own collectible card. Each monster has a 1% chance to drop its card when you beat it, each tree a 1% chance when you chop it (better trees give more Mana), and every world, dungeon, island and guild boss has a 1% chance to drop its own rare card. Your cards live in a Card Binder (one bag slot): tap it and OPEN to see your collection and build up to 3 decks. Potions you brew and berries, mushrooms, nuts and cactus fruit you forage can drop cards too, and releasing a pet now always gives you its Pet Card. Learn everything in Drop Card for Dummies, 1 gold at the General Store in Hollow Village: your first copy comes with a free 20-card Starter Deck. And if you go a long time without a card, the next one is guaranteed. The Drop Card game itself is coming soon.","Every card you find flips onto your screen, and about 1 in 50 is a SHINY card in inverted colours (it plays the same as the normal one). Boss cards and shiny cards are announced in chat for everyone online. New Drop Card achievements reward collecting.","Meet Ace the Card Sharp at his card table next to the chess table in Hollow Village: he sells Drop Card for Dummies, explains the game and opens your binder. Tap DROP CARDS in another player's menu to see their collection, and check the new Drop Cards leaderboard.","Card frames: craft one at the workbench (4 wood + 1 iron bar) or buy one at Marlo's Emporium, place it in your house and press HIT on it to put one of your cards on display.","Pick your mouse cursor in Options > Cursor: gold arrow, sword, wand, gauntlet, high contrast, a yellow crosshair, an inverted crosshair that takes the opposite colour of whatever's under it, or whatever's in your off-hand. Each comes in Normal or Large. With a controller, the right stick now moves a cursor around menus and screens, and \u2715 clicks with it (out in the world it still aims).","Keep a friend's campfire going: stand next to anyone's fire and press F (or the fire button) to feed it a log. Once you've fed it, it keeps burning even after the player who lit it logs out.","Discord roles: link your Discord account in Options > Link Discord, post the code in #link on the SkillQuest Discord, and the SQ Bot gives you roles for your Total Level, your guild, Patron, and game Moderator or Developer, plus a private channel for your guild that only its members can see. They update by themselves as you play.","Chat messages can be twice as long: up to 160 characters in public chat, private messages, party chat and guild chat. Speech bubbles show up to 5 lines.","Fixed: monsters drawn off the screen could still bite you (\"Ouch!\" with nothing around you). Only a monster you can actually see can touch you now, and if you fall to one you couldn't see, the game sends us a report by itself so we can track down where it came from.","Fixed: with a Stone Sledgehammer and the Dragonsoul amulet both worn, the ULT button said SLAM even when Dragon Form was the ultimate picked in your gear tab (and turned you into a dragon). The button now shows the ultimate it will use.","The arrow count by your HP bar shows the arrows your bow will shoot next (it always shoots your best ones first), with their picture.","Fixed: Patron paintings saved on your device didn't load before your save, and pets' item finds and powers used your position instead of the pet's.","The Void Treant and the Giant Turtle are real guild raids now: three times the health, faster attacks, and a second rage at a quarter health. The Treant's shockwave throws you back and can't be rolled through, it burrows and bursts up somewhere else, void poison washes over the whole arena, it sometimes glows green and HEALS from every hit (stop attacking!), and void saplings hunt one fighter each (they can't be hurt and switch targets every 8 seconds). The Turtle's tidal waves throw you back, its whirlpools pull you in, and it spins around in its shell where it can't be hurt. START > Guild > Bosses shows this week's top 5 damage.","Outlaw Country: Mira at Dusthaven's Oasis Rest has a new quest line that takes you into No Man's Land, where PvP is always on: scout the badlands, collect bandit bounties, carry her satchel to Dustwater (fall and you lose it), mine the hills, beat two players there, and take down Black Jack, the Outlaw King. Big gold and XP rewards.","Mines need Mining levels: the Old Ironcrest Mine needs Mining 30 and Deepvein Mine Mining 45 to go in, and every two floors down need 10 more (mines on other islands start at 15). Mines now have about twice the monsters, a little tougher, to match all that ore.","Guild Quests grow: each quest your guild finishes in a skill doubles the next one in that skill (100,000 trees, then 200,000, then 400,000...). Quests already running keep their goal.","New skill: Merchant. Every sale you make on the World Market gives Merchant XP, and every 20 Merchant levels gives you one more market offer slot (up to 12).","The World Market works more like the Grand Exchange: My offers shows your offer slots as boxes with progress bars (and Buy / Sell buttons in the empty ones), and Browse, Buy and Sell have a search box and categories (ores and bars, logs, fish and food, gear, potions, gems and jewelry, farming) with items in a grid.","Gluttony: reach Cooking 99 and you eat on your own when you're down to half health (turn it off in Options).","Bonus items give XP: an extra or doubled log, ore, fish or crop from your perks, and a bonus item when smithing, crafting or cooking, now give the XP that item would have.","The game keeps going when you switch to another tab or minimise it on a computer, so a make-all, fishing or a fire carries on.","Town names: the town you're in is shown on the minimap, and a wooden sign with its name slides down when you walk in.","Magic balance: mana comes back more slowly at low Magic levels (normal speed at Magic 1, three times as fast from Magic 25, as before). Mana Shield is now Mana Barrier: it absorbs one blow every 30 seconds, not every blow.","Item descriptions no longer claim to be the best in the game (that stopped being true as new gear came out). They say what they beat instead.","Fixed: harbor posts on islands (guild islands too) didn't respond, so you couldn't sail home. Island folk, guild boards, the guild bank and loot chests on islands answer again too.","Hold HIT on a phone or tablet to keep swinging, like holding Space or R2: keep your finger on the button to keep chopping, mining or fighting.","The wiki says where meteorite ore and stardust come from: meteor strikes (the banner tells you where one has fallen).","Fixed: monsters could hide under island houses and castles (on the door or behind the roof) and hurt anyone walking past without being seen. They're moved out from under buildings now, and one that's still hidden can't touch you.","Fixed: visitors to a castle on an island only saw the back half of its furniture, and could walk through the walls built inside it. They see the whole hall now.","Fixed: Guild Quests started before the new doubling goals stopped counting progress. They count again.","Fixed: in PvP, your hardest hits (ultimates and strong weapons, 3 hearts) were refused by the server with an \"online server refused that\" message and never landed. They land now.","Fixed: pressing Link Discord again made a new code and the one you'd already posted in #link stopped working. You keep the same code all day now.","Fixed: if you fell while in Dragon Form with a screen open, you could get up still in Dragon Form.","Fixed: with a controller plugged in, its gold highlight stayed on whatever the controller last pointed at while you clicked with the mouse, so clicks in the bag, gear tab and skills looked like they did nothing. Clicking or tapping now switches to mouse mode (the highlight goes away), and touching the controller switches back."]},
  {v:'2026.11.19-2',d:'Nov 19, 2026',t:"The Song Studio, new pets, song zones and a better wiki",n:["The wiki has a page for every item and monster: tap any name to see how to get it (recipes, shops, which monsters drop it and how often, where to gather it) and what it's used for. ◀ Back takes you where you were.","New wiki tabs: Brewing, Playing together (parties, trading, the market, duels, chess), Patrons and Achievements (with your progress). Home shows what you unlocked lately and skills you haven't tried yet, and search finds item and monster pages.","Patrons: the Song Studio is open (START > Patron > Song Studio). Pick a mood, tap notes on a grid and send your song in. No music experience needed: the grid only has notes that fit the song, the bright rows go with every chord, and \"Make me a tune\" and \"Pick chords for me\" give you a start. Approved songs can play in the game, with your name in the credits.","New pets can now come to the game, including pets Patrons draw in the Art Room.","Places on an island can now have music of their own, so a different song can play as you walk into them.","The HERE map now lists the players online under it, like the WORLD map, and marks the ones on your island."]},
@@ -24029,6 +24029,7 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
     '<div class="dv-row" style="gap:6px;flex-wrap:wrap;margin-top:6px"><label class="dv-mut">Name <input data-npf="n" data-k="'+E(k)+'" value="'+E(r.n)+'" maxlength="24"></label>'+
     '<label class="dv-mut">Marlo\'s price <input data-npf="v" data-k="'+E(k)+'" type="number" min="0" step="100" value="'+(r.v|0)+'" style="width:110px"></label><span class="dv-mut">'+(r.v?'sold for '+(+r.v).toLocaleString('en-US')+' gold':'0 = rare, not sold')+'</span></div>'+
     '<label class="dv-mut" style="display:block;margin-top:6px">What the bag says about it<input data-npf="d" data-k="'+E(k)+'" value="'+E(r.d)+'" maxlength="300" style="width:100%"></label>'+
+    (window.SQDCE&&EQ['pet_'+k]?(()=>{const c=SQDCE.card('pc_pet_'+k);return c?'<p class="dv-mut" style="margin:6px 0 0">Its Drop Card: '+E(SQDCE.PTXT[c.comp]||'')+' Cost '+c.cost+', '+c.hp+' HP, '+c.atk+' ATK. <button class="dv-b" data-np="card:'+E(k)+'">Change its card</button></p>':''})():'')+
     '<div class="dv-row" style="gap:6px;margin-top:6px"><button class="dv-b dv-pri" data-np="look:'+E(k)+'">'+(look?'Edit its look':'Draw its look')+'</button><button class="dv-b" data-np="give:'+E(k)+'">Give me one (testing)</button>'+
     (live(k)?'':'<button class="dv-b dv-bad" data-np="del:'+E(k)+'">Delete</button>')+'</div></div>'}
   if(!all.length)h+='<p class="dv-mut">No new pets yet.</p>';return h}
@@ -24039,6 +24040,7 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
   const[a,k]=t.dataset.np.split(':');try{
    if(a==='new'){const inp=document.querySelector('#dvs [data-npn]'),n=inp&&inp.value.trim()||'New pet';const it=await create(n);toast(n+' made. Draw it now.');if(S.tab==='pets')openLook(it);else API.draw()}
    else if(a==='look')openLook('pet_'+k);
+   else if(a==='card'){if(window.SQCARDSTAB)SQCARDSTAB.pickPet('pet_'+k);const b=document.querySelector('#dvs [data-tab="cards"]');if(b)b.click()}
    else if(a==='give'){const it='pet_'+k;if(!EQ[it])return;inv[it]=(inv[it]|0)+1;try{saveLocal(true)}catch(_){self.SQERR&&SQERR(_,'234-6')}toast('One '+EQ[it].n+' is in your bag.')}
    else if(a==='del'){if(live(k))return;if(t.dataset.sure!=='1'){t.dataset.sure='1';t.textContent='Sure? Tap again';return}
     delete D()[k];await API.dset('draft/newpets/'+k,null);if(S.draft.pets&&S.draft.pets[k]){delete S.draft.pets[k];await API.dset('draft/pets/'+k,null)}sync();toast('Deleted.');API.draw()}}catch(err){fail(err)}},true);
@@ -25136,7 +25138,10 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
 // - Card Binder (`dc_binder`, given with your first card or the guide): the bag shows it instead of the cards (bagGridHTML shows
 //   the bag with card counts hidden for that one call), so 43+ card kinds take one bag slot. The cards stay ordinary items, so
 //   trades, the World Market and chests still list them. OPEN shows panel BTAB: Collection (every card, owned or not, filters),
-//   Decks (3 decks: 20-60 cards (Nov 21; was exactly 20), at most 2 of a card (trees: no limit), 1 of each boss, at least 4 trees, plus 1 pet card as the Companion) and the guide.
+//   Decks (3 decks: 20-60 cards (Nov 21; was exactly 20), at most 2 of a card (trees: no limit), 1 of each boss, at least 4 trees) and the guide.
+//   Nov 22 (Jace): pet cards go in the deck like any card (at most 2 of each); a deck's old Companion (`pet`) moves into its cards on load.
+//   Nov 22: loading a save cut every card in a deck to 2, trees too, so a deck with 6 trees came back with 2 (the Starter Deck had 16 cards
+//   after every restart). Loading keeps up to DMAX now; the deck rules still say what's allowed.
 // - Drop Card for Dummies (`dc_guide`, General Store, 1 gold): READ opens the binder's guide pages.
 // - Pet cards `pc_<pet item>`: releasing a pet (104, window.SQPETREL) always gives its card. Registered for every pet item now and
 //   after library changes (SQA.onApply), and for any `pc_` key in a save before it loads (a pet added later still keeps its card).
@@ -25177,7 +25182,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  SQLOAD.after('254 binder tab',()=>{if(inv&&inv[BIND])inv[BIND]=0});
  // ---- pet cards ----
  const PET={};// card key -> {pet item key, n}
- // Companion powers (rules draft); pets made later get Friendly until the Dev Suite picks one
+ // pet powers before 261 loads (261's PTXT and SQPETDESC give the full text with cost and stats); pets made later get Friendly until Dev Suite > Cards picks one
  const POW={"pet_cat": "Nine lives: once per match, when your hero would fall to 0 HP, it stays at 1.", "pet_dog": "Loyal: the first monster you play each turn gets +1 ATK.", "pet_slime": "Squish: once per turn, give one of your monsters +1 HP.", "pet_fox": "Clever: start the match with 1 extra card in your hand.", "pet_imp": "Pest: at the end of your turn, 1 damage to a random enemy monster.", "pet_pwolf": "Pack leader: your wolf cards get +1 ATK.", "pet_pbriar": "Thorny pack: monsters that attack your wolves take 1 damage.", "pet_psnow": "Thick coat: your wolf cards get +2 HP.", "pet_pvoid": "Void pack: your wolf cards get +1 ATK and Charge.", "pet_ptree": "Once per turn, regrow one Tree stump.", "pet_ptoak": "Once per turn, regrow one stump worth 2 Mana or less.", "pet_ptwil": "Once per turn, regrow one stump worth 3 Mana or less.", "pet_ptmap": "Once per turn, regrow one stump worth 4 Mana or less.", "pet_ptyew": "Once per turn, regrow any one stump.", "pet_ptpine": "Evergreen: when you plant a tree, draw a card.", "pet_ptdead": "Rot: when one of your monsters dies, gain 1 Mana this turn.", "pet_ptvoid": "Void sap: when you chop a tree, 1 damage to a random enemy monster.", "pet_psquir": "Stash: your forage cards cost 1 less, and once per match draw a forage card from your deck.", "pet_pgiron": "Iron skin: your hero takes 1 less damage from the first hit each turn.", "pet_pggold": "Golden: your hero starts the match with 33 HP.", "pet_pgmith": "Mithril wall: your Guard monsters get +2 HP.", "pet_pgadam": "Adamant skin: your hero takes 1 less damage from every monster hit.", "pet_pweb": "Web: every other turn, a random enemy monster can't attack on its next turn.", "pet_pvoidl": "Silence: once per match, remove the power of one enemy boss.", "pet_pmush": "Spores: every third turn, draw a card.", "pet_pglow": "Glow: the first time each turn your hero takes damage, heal 1 HP."};
  const PFR={w:14,h:14,s:2,p:'#104848,#b0e8e0,#289890',d:'...02020202.....2111111110....0111111112....2111111110....0111111112....2111111110....0111111112....2111111110....0111111112....2111111110....0111111112....2111111110....0111111112.....20202020...'};
  // Nov 21 (Jace: pet cards called "pweb" and "psquir", and the wiki only listing pet cards he had): 028's EQ is a script-level const,
@@ -25185,7 +25190,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  const EQS=()=>typeof EQ!=='undefined'?EQ:{};
  function regPet(pk,name){const k='pc_'+pk,E2=EQS();const raw=String(name||(E2[pk]&&E2[pk].n)||String(INAME[pk]||'').replace(/ \(pet\)$/,'')||pk.replace(/^pet_/,'')),n='Pet Card: '+raw.charAt(0).toUpperCase()+raw.slice(1);
   PET[k]={pk,n};if(!INVK.includes(k))INVK.push(k);INAME[k]=n;SN[k]=n+' cards';SHORT[k]=n.toLowerCase();SELLP[k]=5;inv[k]=inv[k]|0;
-  IDESC[k]='Companion. '+(POW[pk]||'Friendly: once per match, heal your hero 3 HP.');if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k);return k}
+  IDESC[k]=(window.SQPETDESC&&SQPETDESC(pk))||('Pet card. '+(POW[pk]||'Friendly: once, when your hero is at half HP or less, heal it 3 HP.'));if(!EXTRA_BAG.includes(k))EXTRA_BAG.push(k);return k}
  const petKeys=()=>{const E2=EQS();return Object.keys(E2).filter(k=>E2[k]&&E2[k].slot==='pet')};
  const regAll=()=>{for(const k of petKeys())regPet(k)};regAll();
  try{SQA.onApply(()=>{try{regAll()}catch(e){self.SQERR&&SQERR(e,'254-2')}})}catch(e){self.SQERR&&SQERR(e,'254-3')}
@@ -25194,7 +25199,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  const PIC={};
  function petIcon(k){if(PIC[k]&&PIC[k].url)return PIC[k].url;if(PIC[k])return PIC[k].base;
   const c=SQA.render(PFR),base=c.toDataURL();PIC[k]={base};const P=PET[k],src=iconURL(P.pk);
-  const im=new Image();im.onload=()=>{try{const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(im,7,6,14,14);PIC[k].url=c.toDataURL();if(pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'254-5')}};im.src=src;return base}
+  const im=new Image();im.onload=()=>{try{const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(im,7,6,14,14);PIC[k].url=c.toDataURL();if(pnOpen)rPn();/* Nov 22: a Drop Card match showed blank pet cards until something else redrew it */const T2=window.SQDCM;if(T2&&T2.m&&T2.el.style.display!=='none'&&!(window.SQDCDRAG&&SQDCDRAG.g))T2.render()}catch(e){self.SQERR&&SQERR(e,'254-5')}};im.src=src;return base}
  (window.SQPETREL=window.SQPETREL||[]).push(pk=>{const k=regPet(pk);inv[k]=(inv[k]|0)+1;giveBinder();setTimeout(()=>{try{say('A Drop Card! '+INAME[k]+'. It\'s in your Card Binder.');msgT=5;sfx('level')}catch(e){self.SQERR&&SQERR(e,'254-6')}},50)});
  // ---- potion and forage cards ----
  (window.SQBREWED=window.SQBREWED||[]).push(pk=>{if(D.CARDS[pk]&&D.roll(pk))D.give(pk,'brew')});
@@ -25222,21 +25227,24 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  const maxOf=k=>{const i=info(k);return!i?2:BOSSG.has(i.g)?1:i.g==='tree'?DMAX:2};// trees: as many as you like (they're your Mana)
  function problems(d){const out=[],n=deckN(d);if(n<DMIN||n>DMAX)out.push(n<DMIN?'Add '+(DMIN-n)+' more card'+(DMIN-n>1?'s':'')+' (a deck is '+DMIN+' to '+DMAX+').':'Take out '+(n-DMAX)+' card'+(n-DMAX>1?'s':'')+' (a deck is '+DMIN+' to '+DMAX+').');
   let trees=0;for(const k in d.c){const i=info(k);if(!i)continue;if(i.g==='tree')trees+=d.c[k];if(d.c[k]>maxOf(k))out.push('Only '+maxOf(k)+' '+i.n.replace(/^Drop Card: /,'')+' allowed.');if(d.c[k]>owned(k))out.push('You only have '+owned(k)+' '+i.n.replace(/^Drop Card: /,'')+'.')}
-  if(trees<4)out.push('Add at least '+(4-trees)+' more tree card'+(4-trees>1?'s':'')+' (at least 4).');if(!d.pet)out.push('Optional: pick a pet card as your Companion.');return out}
+  if(trees<4)out.push('Add at least '+(4-trees)+' more tree card'+(4-trees>1?'s':'')+' (at least 4).');return out}
  SQSAVE.after('254:dcd',s=>{s.dcd={a:ACTIVE,d:DECKS}});
  SQLOAD.after('254',(S)=>{DECKS=[0,1,2].map(i=>({n:'Deck '+(i+1),c:{},pet:null}));ACTIVE=0;const v=S&&S.dcd;if(!v||!Array.isArray(v.d))return;
-  v.d.slice(0,3).forEach((d,i)=>{if(!d)return;DECKS[i]={n:String(d.n||'Deck '+(i+1)).slice(0,20),c:{},pet:typeof d.pet==='string'?d.pet:null};if(d.c)for(const k in d.c){const n=Math.max(0,Math.min(2,d.c[k]|0));if(n)DECKS[i].c[k]=n}});ACTIVE=Math.max(0,Math.min(2,v.a|0))});
+  v.d.slice(0,3).forEach((d,i)=>{if(!d)return;DECKS[i]={n:String(d.n||'Deck '+(i+1)).slice(0,20),c:{},pet:null};if(d.c)for(const k in d.c){const n=Math.max(0,Math.min(DMAX,d.c[k]|0));if(n)DECKS[i].c[k]=n}
+   if(typeof d.pet==='string'&&/^pc_[\w:-]+$/.test(d.pet)&&!DECKS[i].c[d.pet])DECKS[i].c[d.pet]=1;
+   // a Starter Deck saved while loading cut it (its 6 Trees came back as 2): give it back the Starter Deck's own count
+   const D2=DECKS[i];if(D2.n==='Starter Deck'&&deckN(D2)<DMIN)for(const k in STARTER)if((D2.c[k]|0)===2&&STARTER[k]>2)D2.c[k]=STARTER[k]});ACTIVE=Math.max(0,Math.min(2,v.a|0))});
  // ---- the guide ----
  const GP=[
   ['What is Drop Card?','<p>Drop Card is a card game played with cards you find in SkillQuest. Two players each bring a deck of 20 to 60 cards and try to bring the other hero from 30 HP down to 0.</p><p>Every monster, tree, boss, potion, forage plant and pet has its own card. Collect them, build a deck in your <b>Card Binder</b>, and play.</p><p><b>Play now:</b> talk to Ace the Card Sharp at his card table next to the chess table in Hollow Village and play your deck against him on Easy, Normal or Hard. <b>Against players:</b> stand next to someone, tap their name and choose PLAY DROP CARD.</p>'],
   ['Getting cards','<p><b>Monsters:</b> 1% chance to drop their own card when you beat them. Every kind has its own card (a Moss slime drops a Moss slime card).</p><p><b>Trees:</b> 1% chance per chop. Better trees give more Mana.</p><p><b>Bosses:</b> world, dungeon, island and guild bosses each have a rare card (1% for everyone who fought).</p><p><b>Potions:</b> 1% when you brew one. <b>Forage:</b> 1% when you pick berries, mushrooms, nuts or cactus fruit.</p><p><b>Pets:</b> release a pet from your bag and you always get its card.</p><p><b>Starter Deck:</b> your first copy of this book comes with a free 20-card deck, so you can build and play right away. Starter cards stay in your binder (they can\'t be traded or sold). Swap in the cards you find to make it yours.</p><p><b>Unlucky?</b> If you go a long time without finding a card, the next one is guaranteed.</p>'],
   ['Your Card Binder','<p>All your cards live in your Card Binder: open your bag and tap the <b>CARDS</b> tab. Your cards stay with you when you fall, so they never end up in a grave.</p><p><b>Collection</b> shows every card in the game. Dark ones are cards you haven\'t found yet.</p><p><b>Decks</b> holds 3 decks. Pick one to play with. Cards are still items, so you can trade them, sell them on the World Market or keep spares in a chest.</p>'],
-  ['Building a deck','<p>A deck has <b>20 to 60 cards</b>:</p><p>- At most <b>2</b> of any monster, potion or forage card.<br>- Only <b>1</b> of each boss card.<br>- At least <b>4 tree cards</b>, or you won\'t have Mana to play anything. Trees have no limit.</p><p>You can also pick one <b>pet card</b> as your Companion. It doesn\'t count toward your deck size.</p>'],
-  ['The cards','<p><b>Trees</b> (gold): give Mana. Tree, Pine and Dead tree 1, Oak 2, Willow 3, Maple 4, Yew 5, Void tree 6. A cactus gives the Cactus fruit card, not a tree card.</p><p><b>Monsters</b> (gold): fight on the board. ATK is the damage they deal, HP is how much they can take.</p><p><b>Bosses</b>: strong monsters with a power. Red = world, purple = dungeon, blue = island, green = guild.</p><p><b>Potions</b> (pink) and <b>forage</b> (parchment): one-use spells. Each says its cost and what it does.</p><p><b>Pets</b> (teal): your Companion.</p>'],
+  ['Building a deck','<p>A deck has <b>20 to 60 cards</b>:</p><p>- At most <b>2</b> of any monster, pet, potion or forage card.<br>- Only <b>1</b> of each boss card.<br>- At least <b>4 tree cards</b>, or you won\'t have Mana to play anything. Trees have no limit.</p><p>Pet cards go in your deck like any other card, and you can bring several.</p>'],
+  ['The cards','<p><b>Trees</b> (gold): give Mana. Tree, Pine and Dead tree 1, Oak 2, Willow 3, Maple 4, Yew 5, Void tree 6. A cactus gives the Cactus fruit card, not a tree card.</p><p><b>Monsters</b> (gold): fight on the board. ATK is the damage they deal, HP is how much they can take.</p><p><b>Bosses</b>: strong monsters with a power. Red = world, purple = dungeon, blue = island, green = guild.</p><p><b>Potions</b> (pink) and <b>forage</b> (parchment): one-use spells. Each says its cost and what it does.</p><p><b>Pets</b> (teal): summoned beside your hero for 1 to 4 Mana. They fight like monsters and each has a power.</p>'],
   ['How to play a turn','<p>1. <b>Draw</b> a card.</p><p>2. <b>Plant</b> one tree from your hand into your Grove. Trees stay all game, and a Grove holds up to <b>6 trees</b>, so bigger trees give you more Mana.</p><p>3. <b>Chop</b> trees to pay for cards: a chopped tree gives its Mana and turns into a stump. Stumps grow back at the start of your next turn.</p><p>4. <b>Play</b> monsters, bosses and spells. A monster costs half its HP + ATK (rounded up). Bosses cost 1 more.</p><p>5. <b>Attack</b> with each monster once: an enemy monster or the enemy hero. New monsters wait a turn.</p><p>6. <b>End turn.</b></p>'],
   ['Fighting','<p>When two monsters fight, each deals its ATK to the other at the same time. A monster at 0 HP is gone.</p><p><b>Guard:</b> a monster with Guard must be attacked first.</p><p><b>Charge:</b> can attack the turn it\'s played.</p><p><b>Arrival:</b> does something when played. <b>Last word:</b> does something when it falls.</p><p>Each boss card has one of these powers.</p>'],
-  ['Companions','<p>Your Companion is the pet card you picked for your deck. It sits beside your hero all match and gives a small bonus based on what that pet does in the world: a Dog gives your first monster each turn +1 ATK, an Imp pings an enemy, a treeling regrows a stump. Tap a pet card in your binder to see its power.</p><p>Release a pet from your bag (tap RELEASE twice) to get its card. Releasing is permanent, so choose carefully!</p>'],
-  ['Playing with a controller or touch','<p><b>Touch:</b> tap a card to see it, tap again to play it, then tap a target.</p><p><b>Controller:</b> the D-pad or left stick moves between cards, ✕ picks, ○ goes back. The right stick moves a cursor if you prefer pointing.</p><p><b>Mouse:</b> click, or drag a card onto the board.</p>']];
+  ['Pet cards','<p>Every pet has a pet card. Release a pet from your bag (tap RELEASE twice) to get its card. Releasing is permanent: the pet is gone, the card stays.</p><p>Put pet cards in your deck. When you draw one, pay its cost (1 to 4 Mana) to <b>summon</b> it: it sits beside your hero, up to 3 at a time, and doesn\'t take one of your 6 monster spots.</p><p>A pet has ATK and HP like a monster. It can attack (from your next turn), and it can be attacked and hit by spells. Its power works while it\'s out: a Dog gives your first monster each turn +1 ATK, an Imp pings an enemy, a treeling regrows a stump. Two pets with the same power add up. Tap any pet card to see what it does.</p>'],
+  ['Playing with a controller or touch','<p><b>Drag:</b> drag a card from your hand onto the table to play it, or onto its target for a spell. Drag one of your monsters or pets onto an enemy to attack it. With a mouse, drag the same way.</p><p><b>Tap:</b> tap a card to see it close up, then PLAY or ATTACK, then tap a glowing target.</p><p><b>Controller:</b> the D-pad or left stick moves between cards, ✕ picks, ○ goes back. The right stick moves a cursor if you prefer pointing.</p>']];
  // ---- the panel ----
  const V={tab:'col',f:'all',sel:null,page:0,deck:0,edit:false,peek:null};// peek: {n, c:{key:n}, s:{key:n}} another player's collection (259)
  const FILT=[['all','All'],['mon','Monsters'],['tree','Trees'],['boss','Bosses'],['spell','Spells'],['pet','Pets'],['shiny','★ Shiny']];// Nov 21: shiny copies stacked under the plain card, with no way to see them: the Shiny filter shows them, the card's details show both
@@ -25249,11 +25257,11 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  function colHTML(){const pk=V.peek,cnt=k=>pk?(pk.c[k]|0)+(pk.s[k]|0):owned(k),shn=k=>pk?pk.s[k]|0:shiny(k);const face=k=>{const plain=pk?pk.c[k]|0:(inv[k]|0)+(STARTER[k]|0);return(!plain||V.f==='shiny')&&shn(k)&&shOf(k)?shOf(k):k};/* only shiny copies: show the shiny picture */const all=ORDER().map(info).filter(Boolean),L=all.filter(i=>V.f==='shiny'?shn(i.k)>0:inF(i,V.f)),own=all.filter(i=>cnt(i.k)>0).length;const d=DECKS[V.deck];
   let h='<div class="dcb-f">'+FILT.map(([k,n])=>'<button class="dcb-fb'+(V.f===k?' on':'')+'" data-dcb="f:'+k+'">'+n+'</button>').join('')+'</div>';
   h+='<div class="dcb-sub">'+(pk?'<b>'+esc(pk.n)+'</b> has found <b>'+own+'</b> of '+all.length+' cards.':V.edit?'Editing <b>'+esc(d.n)+'</b> ('+deckN(d)+' cards, '+DMIN+'-'+DMAX+'): tap a card, then ADD. <button class="dcb-mini" data-dcb="done">DONE</button>':'You\'ve found <b>'+own+'</b> of '+all.length+' cards.')+'</div><div class="dcb-g">';
-  for(const i of L){const n=cnt(i.k),inD=(d.c[i.k]|0)+(d.pet===i.k?1:0);h+='<button class="dcb-c'+(n?'':' no')+(V.sel===i.k?' sel':'')+'" data-dcb="s:'+i.k+'" aria-label="'+esc(n?short(i.n):'Not found yet')+'"><img src="'+iconURL(face(i.k))+'" alt="">'+(n?'<span class="dcb-n">'+n+'</span>':'')+(shn(i.k)?'<span class="dcb-sh" aria-label="Shiny">★</span>':'')+(V.edit&&inD?'<span class="dcb-d">'+inD+'</span>':'')+'</button>'}
+  for(const i of L){const n=cnt(i.k),inD=d.c[i.k]|0;h+='<button class="dcb-c'+(n?'':' no')+(V.sel===i.k?' sel':'')+'" data-dcb="s:'+i.k+'" aria-label="'+esc(n?short(i.n):'Not found yet')+'"><img src="'+iconURL(face(i.k))+'" alt="">'+(n?'<span class="dcb-n">'+n+'</span>':'')+(shn(i.k)?'<span class="dcb-sh" aria-label="Shiny">★</span>':'')+(V.edit&&inD?'<span class="dcb-d">'+inD+'</span>':'')+'</button>'}
   h+='</div>';const s=V.sel&&info(V.sel);
   if(s){const n=cnt(s.k),sn=pk?0:STARTER[s.k]|0;const both=(pk?pk.c[s.k]|0:(inv[s.k]|0)+(STARTER[s.k]|0))&&shn(s.k)&&shOf(s.k);
    h+='<div class="dcb-det">'+(both?'<span class="dcb-pics"><img src="'+iconURL(s.k)+'" alt=""><img src="'+iconURL(shOf(s.k))+'" alt="Shiny"><small>Normal · ★ Shiny</small></span>':'<img src="'+iconURL(face(s.k))+'" alt="">')+'<div><b>'+esc(n?short(s.n):'???')+'</b><br>'+esc(n?s.d:'Not found yet.')+'<br><small>'+(pk?esc(pk.n)+' has ':'You have ')+n+(shn(s.k)?', '+shn(s.k)+' shiny':'')+(sn?' ('+sn+' from the Starter Deck: these stay in your binder)':'')+'.</small>';
-   if(V.edit&&!pk&&n){const inD=s.g==='pet'?(d.pet===s.k?1:0):(d.c[s.k]|0),max=s.g==='pet'?1:Math.min(maxOf(s.k),n);
+   if(V.edit&&!pk&&n){const inD=d.c[s.k]|0,max=Math.min(maxOf(s.k),n);
     h+='<div class="dcb-row"><button class="sb dcb-act" data-dcb="add" '+(inD>=max?'disabled':'')+'>ADD ('+inD+'/'+max+')</button><button class="sb dcb-act" data-dcb="rem" '+(inD?'':'disabled')+'>REMOVE</button></div>'}
    h+='</div></div>'}
   return h}
@@ -25262,7 +25270,6 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   h+='<div class="dcb-sub"><b>'+deckN(d)+' cards</b> ('+DMIN+' to '+DMAX+')'+(ok?' · ready to play':'')+'</div>';
   const rows=Object.keys(d.c).map(info).filter(Boolean).sort((a,b)=>ORDER().indexOf(a.k)-ORDER().indexOf(b.k));
   h+='<div class="dcb-list">'+(rows.length?rows.map(i=>'<div class="dcb-li"><img src="'+iconURL(i.k)+'" alt=""><span>'+esc(short(i.n))+' ×'+d.c[i.k]+'</span><button class="dcb-mini" data-dcb="r:'+i.k+'" aria-label="Take one out">-1</button></div>').join(''):'<p>No cards yet. Tap ADD CARDS.</p>')+'</div>';
-  h+='<div class="dcb-sub">Companion: '+(d.pet?'<b>'+esc(short(INAME[d.pet]||d.pet))+'</b> <button class="dcb-mini" data-dcb="nopet" aria-label="No companion">X</button>':'none')+'</div>';
   if(P.length)h+='<div class="qc dcb-warn">'+P.map(esc).join('<br>')+'</div>';
   h+='<div class="dcb-row"><button class="sb dcb-act" data-dcb="edit">ADD CARDS</button><button class="sb dcb-act" data-dcb="use" '+(ACTIVE===V.deck?'disabled':'')+'>'+(ACTIVE===V.deck?'PLAYING THIS DECK':'PLAY THIS DECK')+'</button></div>';return h}
  function guideHTML(){const[t,b]=GP[V.page];return'<div class="dcb-book"><div class="dcb-pt">'+esc(t)+'</div>'+b+'</div><div class="dcb-row"><button class="sb dcb-act" data-dcb="pp" '+(V.page?'':'disabled')+'>◀ BACK</button><span class="dcb-pg">'+(V.page+1)+' / '+GP.length+'</span><button class="sb dcb-act" data-dcb="np" '+(V.page<GP.length-1?'':'disabled')+'>NEXT ▶</button></div>'}
@@ -25279,8 +25286,8 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   else if(x==='d')V.deck=+y|0;else if(a==='edit'){V.edit=true;V.tab='col';V.sel=null}else if(a==='done'){V.edit=false;V.tab='deck'}
   else if(a==='use')ACTIVE=V.deck;else if(a==='pp')V.page=Math.max(0,V.page-1);else if(a==='np')V.page=Math.min(GP.length-1,V.page+1);
   else if(a==='nopet')d.pet=null;else if(x==='r'){if(d.c[y]>1)d.c[y]--;else delete d.c[y]}
-  else if(a==='add'&&V.sel){const i=info(V.sel);if(i){if(i.g==='pet')d.pet=V.sel;else if((d.c[V.sel]|0)<Math.min(maxOf(V.sel),owned(V.sel)))d.c[V.sel]=(d.c[V.sel]|0)+1}}
-  else if(a==='rem'&&V.sel){const i=info(V.sel);if(i&&i.g==='pet'){if(d.pet===V.sel)d.pet=null}else if(d.c[V.sel]>1)d.c[V.sel]--;else delete d.c[V.sel]}
+  else if(a==='add'&&V.sel){const i=info(V.sel);if(i&&(d.c[V.sel]|0)<Math.min(maxOf(V.sel),owned(V.sel)))d.c[V.sel]=(d.c[V.sel]|0)+1}
+  else if(a==='rem'&&V.sel){if(d.c[V.sel]>1)d.c[V.sel]--;else delete d.c[V.sel]}
   try{sfx('swish')}catch(err){self.SQERR&&SQERR(err,'254-10')}if(x==='r'||['add','rem','use','nopet'].includes(a))try{saveLocal(true)}catch(err){self.SQERR&&SQERR(err,'254-11')}rPn()},true);
  const st=document.createElement('style');st.textContent=
   '.dcb{font-family:var(--pf);color:#303030}.dcb-t,.dcb-f{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}'+
@@ -25299,7 +25306,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  window.SQBINDER={peek(n,c,s){V.peek={n:String(n||'?').slice(0,16),c:c||{},s:s||{}};V.sel=null;V.f='all';openBinder('col',true)},ORDER,info,giveStarter,owned,get starter(){return STARTER},open:openBinder,BTAB,GUIDE,BIND,PET,regPet,isCard,problems,get decks(){return DECKS},get active(){return ACTIVE},V,GP}})();
 // ---- 263. Wiki > Drop Card (Nov 20, Jace: "Make sure there's a Drop Card tab in the wiki as well") ----
 // The guide's pages (254's SQBINDER.GP), then every card by group with its picture, stats and where it drops (each links to its
-// item page), then the Companion power of every pet card. Search finds the cards by name like any item (they're in INAME).
+// item page), then every pet card's cost, stats and power. Search finds the cards by name like any item (they're in INAME).
 (()=>{const W=window.SQWK,B=window.SQBINDER,D=window.SQDROPCARD;if(!W||!W.h||!B||!D)return;const H=W.h,E=H.E,WK2=H.WK2,TABS=H.tabs;
  const card=(t,h)=>'<div class="c"><div class="tx">'+(t?'<b>'+t+'</b><br>':'')+h+'</div></div>';
  const C=(t,h)=>({t:t+' '+h.replace(/<[^>]+>/g,' '),h:card(E(t),h)}),HD=t=>({t:'',h:'<h3>'+E(t)+'</h3>',head:1});
@@ -25316,7 +25323,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   out.push(HD('Every card'));out.push(C('Your collection','You have found <b>'+own+'</b> of '+all.length+' cards (plus a Pet Card for every pet).'));
   for(const[g,t]of GROUPS){const L=all.filter(c=>c.g===g);if(L.length)out.push(C(t,L.map(c=>row(c.key,c.n,c.d,FROM[g])).join('')))}
   const pets=Object.keys(B.PET).sort((a,b)=>String(INAME[a]).localeCompare(String(INAME[b])));
-  out.push(C('Pet cards (Companions)','Release a pet from your bag (tap RELEASE twice) and you always get its card. One per deck: it sits beside your hero all match.'+pets.map(k=>row(k,INAME[k],String(IDESC[k]||'').replace(/^Companion\. /,''),'')).join('')));
+  out.push(C('Pet cards','Release a pet from your bag (tap RELEASE twice) and you always get its card. Put pet cards in your deck; when you draw one, pay its cost to summon it beside your hero (up to 3). It fights like a monster and its power works while it\'s out.'+pets.map(k=>row(k,INAME[k],String(IDESC[k]||'').replace(/^Pet card · /,''),'')).join('')));
   return out};
  window.SQWKDROPCARD=true})();
 // ---- 264. Drop Cards: the "you found a card!" moment, boss/shiny announcements, collecting achievements (window.SQCARDFOUND) ----
@@ -25386,9 +25393,17 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
 //   "slime:moss" or "wb:giant", a tree kind, a potion key, a forage item) instead of that source's own card.
 // - Art: cards are items, so the Sprites tab paints them by item key (dc_<key>, shiny dc_<key>_sh); a painted card shows everywhere.
 // - Drop rates: Jace's rule is that a live drop never gets more common, so raising a rate above the published one asks twice.
+// - Nov 22 (Jace: "Pick power + cost in Suite" for Dev Suite and patron pets): the list's "Pet cards" part sets any pet card's power
+//   (one of 261's PTXT), summon cost, HP and ATK: `draft/petcards/<pet item>` {p,c,h,a}, read by 261's card(). A pet nobody has set
+//   up yet has Friendly and its power's default stats (261's PSTAT).
 (()=>{if(!window.SQSUITE||!SQSUITE.addTab||!window.SQDROPCARD)return;const D=SQDROPCARD,API=SQSUITE.api,{S,E,dset,toast,fail,arm}=API;
  const GROUPS=[['reg','Monster'],['tree','Tree (Mana)'],['world','World boss'],['dungeon','Dungeon boss'],['island','Island boss'],['guild','Guild boss'],['potion','Potion (spell)'],['forage','Forage (spell)']];
- const T={sel:null,w:null,dirty:false,q:'',newName:''};
+ const T={sel:null,w:null,dirty:false,q:'',newName:'',psel:null,pw:null};
+ const psec=()=>S.draft.petcards||(S.draft.petcards={});const DCE=()=>window.SQDCE,BND=()=>window.SQBINDER;
+ // a pet card as it is now (draft first), and as the game would have it on its own
+ const pcur=pk=>{const E2=DCE(),d=psec()[pk];const base=E2.card('pc_'+pk),o=E2.OV[pk];let own;try{delete E2.OV[pk];own=E2.card('pc_'+pk)}finally{if(o)E2.OV[pk]=o}
+  const src=d||{};return{p:src.p||own.comp,c:src.c!=null?src.c:own.cost,h:src.h!=null?src.h:own.hp,a:src.a!=null?src.a:own.atk,own,now:base}};
+ const petList=()=>{const B2=BND();return B2&&B2.PET?Object.keys(B2.PET).map(k=>({k,pk:B2.PET[k].pk,n:String(INAME[k]||k).replace(/^Pet Card: /,'')})).sort((a,b)=>a.n<b.n?-1:1):[]};
  const sec=()=>S.draft.cards||(S.draft.cards={});
  const liveRate=k=>{const l=S.live&&S.live.cards&&S.live.cards[k];if(l&&typeof l.r==='number')return l.r;const o=D.ORIG[k];return o?(o.r==null?D.RATE:o.r):null};
  const cur=k=>{const C=D.CARDS[k],o=D.ORIG[k]||{},d=sec()[k]||{};return{n:d.n!=null?d.n:String((C||o).n||'').replace(/^Drop Card: /,''),d:d.d!=null?d.d:(C||o).d||'',g:d.g||(C||o).g||'reg',r:typeof d.r==='number'?d.r:((C||o).r==null?D.RATE:(C||o).r),src:d.src||''}};
@@ -25401,7 +25416,11 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   for(const C of L){if(q&&!C.n.toLowerCase().includes(q)&&!C.k.includes(q))continue;const dr=sec()[C.k],lv=S.live&&S.live.cards&&S.live.cards[C.k],live=JSON.stringify(lv||null)===JSON.stringify(dr||null);
    h+='<button class="dv-it'+(T.sel===C.k?' dv-on':'')+'" data-dcs="'+E(C.k)+'" style="flex-direction:row;justify-content:flex-start;gap:8px;padding:6px 8px">'+(dr?'<i class="dv-bd dv-'+(live?'live':'draft')+'">'+(live?'LIVE':'DRAFT')+'</i>':'')+
     '<img src="'+iconURL(C.key)+'" style="width:28px;height:28px;image-rendering:pixelated"><span style="font-size:13px;text-align:left;flex:1">'+E(C.n.replace(/^Drop Card: /,''))+'</span><span class="dv-mut" style="font-size:12px">'+(Math.round((C.r==null?D.RATE:C.r)*1000)/10)+'%</span></button>'}
-  h+='</div></div><div class="dv-ed">';if(!T.sel)return h+'<p class="dv-mut">Pick a card, or add a new one.</p></div></div>';
+  if(DCE()&&DCE().PSTAT){h+='<div class="dv-mut" style="margin:10px 4px 4px;font-weight:700">Pet cards</div>';
+   for(const P2 of petList()){if(q&&!P2.n.toLowerCase().includes(q)&&!P2.pk.includes(q))continue;const dr=psec()[P2.pk],lv=S.live&&S.live.petcards&&S.live.petcards[P2.pk],live=JSON.stringify(lv||null)===JSON.stringify(dr||null),c=DCE().card(P2.k);
+    h+='<button class="dv-it'+(T.psel===P2.pk?' dv-on':'')+'" data-dcp="'+E(P2.pk)+'" style="flex-direction:row;justify-content:flex-start;gap:8px;padding:6px 8px">'+(dr?'<i class="dv-bd dv-'+(live?'live':'draft')+'">'+(live?'LIVE':'DRAFT')+'</i>':'')+
+     '<img src="'+iconURL(P2.k)+'" style="width:28px;height:28px;image-rendering:pixelated"><span style="font-size:13px;text-align:left;flex:1">'+E(P2.n)+'</span><span class="dv-mut" style="font-size:12px">'+(c?'Cost '+c.cost+' · '+c.hp+' HP '+c.atk+' ATK':'')+'</span></button>'}}
+  h+='</div></div><div class="dv-ed">';if(T.psel)return h+petEd()+'</div></div>';if(!T.sel)return h+'<p class="dv-mut">Pick a card, or add a new one.</p></div></div>';
   const k=T.sel,w=T.w||cur(k),C=D.CARDS[k],key=D.keyOf(k),lr=liveRate(k),isNew=!D.ORIG[k];
   const fld=(l,x)=>'<label class="dv-gf"><span>'+l+'</span><span>'+x+'</span></label>';
   h+='<div class="dv-card"><div class="dv-row" style="gap:10px;align-items:center"><img src="'+iconURL(key)+'" style="width:56px;height:56px;image-rendering:pixelated"><img src="'+iconURL(key+'_sh')+'" style="width:56px;height:56px;image-rendering:pixelated" title="Shiny"><div><b>'+E(w.n)+'</b><br><small class="dv-mut">card '+E(k)+' · item '+E(key)+' · shiny '+E(key)+'_sh</small></div></div>'+
@@ -25413,20 +25432,38 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
    '<div class="dv-row" style="gap:6px;flex-wrap:wrap;margin-top:10px"><button class="dv-b dv-pri" data-dcx="save">'+(S.arm==='dcrate'?'Raise the drop rate? Click again':'Save to draft')+'</button><button class="dv-b" data-dcx="try">Try it (preview + give me one)</button>'+
    (sec()[k]?'<button class="dv-b dv-bad" data-dcx="reset">'+(S.arm==='dcreset'?'Click again to '+(isNew?'delete it':'undo my changes'):(isNew?'Delete this card':'Back to the game\'s own'))+'</button>':'')+'</div></div>';
   return h+'</div></div>'}
+ function petEd(){const pk=T.psel,k='pc_'+pk,w=T.pw||pcur(pk),E2=DCE(),own=pcur(pk).own;const fld=(l,x)=>'<label class="dv-gf"><span>'+l+'</span><span>'+x+'</span></label>';
+  const nm=(id,v,a,b)=>'<input type="number" data-dcpf="'+id+'" value="'+v+'" min="'+a+'" max="'+b+'" step="1" style="width:70px">';
+  return'<div class="dv-card"><div class="dv-row" style="gap:10px;align-items:center"><img src="'+iconURL(k)+'" style="width:56px;height:56px;image-rendering:pixelated"><div><b>'+E(String(INAME[k]||k).replace(/^Pet Card: /,''))+'</b><br><small class="dv-mut">pet '+E(pk)+' · card '+E(k)+'</small></div></div>'+
+   '<p class="dv-mut">What this pet card does in a Drop Card match. Players summon it from their hand for its cost; it sits beside their hero, fights like a monster and its power works while it\'s out.</p>'+
+   fld('Power','<select data-dcpf="p" style="max-width:100%">'+Object.keys(E2.PTXT).map(c=>'<option value="'+c+'"'+(w.p===c?' selected':'')+'>'+E(E2.PTXT[c])+'</option>').join('')+'</select>')+
+   fld('Summon cost',nm('c',w.c,0,9)+' <span class="dv-mut">Mana</span>')+fld('HP',nm('h',w.h,1,20))+fld('ATK',nm('a',w.a,0,20)+' <span class="dv-mut">0 = never attacks</span>')+
+   '<p class="dv-mut">The game\'s own for this pet: '+E(E2.PTXT[own.comp])+' Cost '+own.cost+', '+own.hp+' HP, '+own.atk+' ATK.</p>'+
+   '<div class="dv-row" style="gap:6px;flex-wrap:wrap;margin-top:10px"><button class="dv-b dv-pri" data-dcx="psave">Save to draft</button><button class="dv-b" data-dcx="ptry">Try it (preview + give me one)</button>'+
+   (psec()[pk]?'<button class="dv-b dv-bad" data-dcx="preset">'+(S.arm==='dcpreset'?'Click again to undo my changes':'Back to the game\'s own')+'</button>':'')+'</div></div>'}
+ async function psave(){const pk=T.psel,w=T.pw||pcur(pk),v={p:String(w.p),c:Math.max(0,Math.min(9,Math.round(+w.c)||0)),h:Math.max(1,Math.min(20,Math.round(+w.h)||1)),a:Math.max(0,Math.min(20,Math.round(+w.a)||0))};
+  psec()[pk]=v;try{await dset('draft/petcards/'+pk,v);T.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}try{if(window.SQA&&SQA.previewing)SQA.preview(S.draft)}catch(e){self.SQERR&&SQERR(e,'257-5')}API.draw()}
  async function save(){const k=T.sel,w=T.w||cur(k),o=D.ORIG[k];const v={n:String(w.n||'').slice(0,40),d:String(w.d||'').slice(0,120),g:w.g,r:Math.max(0,Math.min(1,+w.r||0))};if(!o&&w.src)v.src=String(w.src).slice(0,40);
   sec()[k]=v;try{await dset('draft/cards/'+k,v);T.dirty=false;toast('Saved to draft. Publish it from the Publish tab.')}catch(e){fail(e)}try{if(window.SQA&&SQA.previewing)SQA.preview(S.draft)}catch(e){self.SQERR&&SQERR(e,'257-2')}API.draw()}
- document.addEventListener('click',async e=>{if(S.tab!=='cards')return;const t=e.target.closest('[data-dcs],[data-dcx]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();
-  if(t.dataset.dcs!=null){T.sel=t.dataset.dcs;T.w=cur(T.sel);T.dirty=false;API.draw();return}
+ document.addEventListener('click',async e=>{if(S.tab!=='cards')return;const t=e.target.closest('[data-dcs],[data-dcx],[data-dcp]');if(!t||!document.getElementById('dvs').contains(t))return;e.preventDefault();
+  if(t.dataset.dcs!=null){T.sel=t.dataset.dcs;T.w=cur(T.sel);T.psel=null;T.pw=null;T.dirty=false;API.draw();return}
+  if(t.dataset.dcp!=null){T.psel=t.dataset.dcp;T.pw=pcur(T.psel);T.sel=null;T.w=null;T.dirty=false;API.draw();return}
   const a=t.dataset.dcx;
+  if(a==='psave')return psave();
+  if(a==='ptry'){await psave();try{SQA.preview(S.draft)}catch(x){self.SQERR&&SQERR(x,'257-6')}const k='pc_'+T.psel;inv[k]=(inv[k]|0)+1;toast('Your draft is on (preview) and you have one in your Card Binder.');API.draw();return}
+  if(a==='preset')return arm('dcpreset',async()=>{const pk=T.psel;delete psec()[pk];try{await dset('draft/petcards/'+pk,null)}catch(x){fail(x)}T.pw=pcur(pk);T.dirty=false;try{if(window.SQA&&SQA.previewing)SQA.preview(S.draft)}catch(x){self.SQERR&&SQERR(x,'257-7')}API.draw()});
   if(a==='new'){const n=T.newName.trim();if(!n){toast('Type the new card\'s name first.');return}const k='cu_'+n.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,30);if(D.CARDS[k]||sec()[k]){toast('There\'s already a card called that.');return}
    sec()[k]={n,d:'1HP 1ATK',g:'reg',r:D.RATE};D.define(k,n,'reg','1HP 1ATK',null,D.RATE,null);T.sel=k;T.w=cur(k);T.newName='';T.dirty=true;toast('New card. Set it up, then Save to draft.');API.draw();return}
   if(a==='save'){const w=T.w||cur(T.sel),lr=liveRate(T.sel);if(lr!=null&&(+w.r||0)>lr+1e-9&&S.arm!=='dcrate'){toast('That makes a published drop more common. Click Save again if you really mean it.');return arm('dcrate',save)}if(S.arm==='dcrate')return arm('dcrate',save);return save()}
   if(a==='reset')return arm('dcreset',async()=>{const k=T.sel;delete sec()[k];try{await dset('draft/cards/'+k,null)}catch(x){fail(x)}if(!D.ORIG[k]){T.sel=null;T.w=null}else T.w=cur(k);try{D.applyLib(S.draft)}catch(x){self.SQERR&&SQERR(x,'257-3')}API.draw()});
   if(a==='try'){await save();try{SQA.preview(S.draft)}catch(x){self.SQERR&&SQERR(x,'257-4')}const C=D.CARDS[T.sel];if(C){inv[C.key]=(inv[C.key]|0)+1}toast('Your draft is on (preview) and you have one in your Card Binder.');API.draw()}},true);
- document.addEventListener('change',e=>{if(S.tab!=='cards'||!T.sel)return;const t=e.target;if(!t.dataset||!t.dataset.dcf)return;T.w=T.w||cur(T.sel);const f=t.dataset.dcf;T.w[f]=f==='r'?Math.max(0,Math.min(100,+t.value||0))/100:t.value;T.dirty=true;API.draw()},true);
+ document.addEventListener('change',e=>{if(S.tab!=='cards')return;const t=e.target;
+  if(T.psel&&t.dataset&&t.dataset.dcpf){T.pw=T.pw||pcur(T.psel);T.pw[t.dataset.dcpf]=t.dataset.dcpf==='p'?t.value:+t.value;T.dirty=true;API.draw();return}if(!T.sel)return;if(!t.dataset||!t.dataset.dcf)return;T.w=T.w||cur(T.sel);const f=t.dataset.dcf;T.w[f]=f==='r'?Math.max(0,Math.min(100,+t.value||0))/100:t.value;T.dirty=true;API.draw()},true);
  document.addEventListener('input',e=>{if(S.tab!=='cards')return;const t=e.target;if(t.hasAttribute&&t.hasAttribute('data-dcnew')){T.newName=t.value;return}if(t.hasAttribute&&t.hasAttribute('data-dcq')){T.q=t.value;const pos=t.selectionStart;API.draw();const i=document.querySelector('#dvs [data-dcq]');if(i){i.focus();try{i.setSelectionRange(pos,pos)}catch(x){/*quiet*/}}}},true);
- const changes=(L,Dr)=>{const l=(L||{}).cards||{},d=(Dr||{}).cards||{},out=[];for(const k of new Set([...Object.keys(l),...Object.keys(d)]))if(JSON.stringify(l[k])!==JSON.stringify(d[k]))out.push({kind:'ext',html:'🃏 '+E((d[k]||l[k]||{}).n||k)+' card'+(d[k]?(l[k]?' (changed)':' (new)'):' (back to the game\'s own)')});return out};
- SQSUITE.addTab('cards','Cards',{render,changes,dirty:()=>!!(T.sel&&T.dirty),leave(){T.sel=null;T.w=null;T.dirty=false}})})();
+ const changes=(L,Dr)=>{const l=(L||{}).cards||{},d=(Dr||{}).cards||{},out=[];for(const k of new Set([...Object.keys(l),...Object.keys(d)]))if(JSON.stringify(l[k])!==JSON.stringify(d[k]))out.push({kind:'ext',html:'🃏 '+E((d[k]||l[k]||{}).n||k)+' card'+(d[k]?(l[k]?' (changed)':' (new)'):' (back to the game\'s own)')});
+  const pl=(L||{}).petcards||{},pd=(Dr||{}).petcards||{};for(const k of new Set([...Object.keys(pl),...Object.keys(pd)]))if(JSON.stringify(pl[k])!==JSON.stringify(pd[k]))out.push({kind:'ext',html:'🐾 '+E(String(INAME['pc_'+k]||k).replace(/^Pet Card: /,''))+' pet card'+(pd[k]?(pl[k]?' (changed)':' (set up)'):' (back to the game\'s own)')});return out};
+ window.SQCARDSTAB={pickPet(pk){T.psel=pk;T.pw=pcur(pk);T.sel=null;T.w=null;T.dirty=false}};// New pets' "Change its card" (234)
+ SQSUITE.addTab('cards','Cards',{render,changes,dirty:()=>!!((T.sel||T.psel)&&T.dirty),leave(){T.sel=null;T.w=null;T.psel=null;T.pw=null;T.dirty=false}})})();
 // ---- 266. The Card Sharp: Ace, at a card table next to Orla's chess table in Hollow Village (window.SQCARDSHARP) ----
 // Nov 20 (Jace's pick): "The Card Sharp NPC in Hollow Village": sells Drop Card for Dummies (the General Store keeps it too; the first
 // copy brings the Starter Deck), explains the game, opens your Card Binder, and will host matches against the game later.
@@ -25547,17 +25584,32 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
 //   choice): "Last word: 3 damage to the enemy hero".
 // - Moves: {t:'plant',h} {t:'chop',g} {t:'play',h,tg} {t:'atk',a,tg} {t:'end'}; targets are 'h0'/'h1' (heroes) or minion ids.
 //   apply(s, side, move) checks and does one move; it returns '' or why it can't. Events go to s.log (and s.fx for the screen).
+// - Nov 22 (Jace): pet cards are deck cards. "once you've drawn it, you can pay the mana cost and summon it to sit next to you. you
+//   should be able to have multiple pets in your deck, and they should have stats as well and be targetable". A pet card costs 1-4
+//   Mana (PSTAT, by how strong its power is; Dev Suite > Cards can change any pet's power, cost, HP and ATK: library
+//   `petcards.<pet item>` {p,c,h,a}), sits in a row beside its hero (up to MAXP, not on the board's 6 slots), attacks and can be
+//   attacked like a monster (it's in P.board with `pet:true`, so spells, Guard, poison... all work), and its power (`comp`) works
+//   while it's out. Several pets' powers add up (`has(P,comp)` counts them). Powers that used to happen at the start of a match
+//   happen when the pet arrives (Clever draws, Golden +3 HP, Stash draws a forage card).
+// - Nov 22: wolf powers never worked: isWolf read `m.id`, which a monster on the table doesn't have (it's `id2`). Fixed; the Frostfang
+//   Alpha is a wolf too.
 (()=>{const D=window.SQDROPCARD;if(!D)return;
- const MAXB=6,MAXH=10,MAXT=6,HERO=30;
+ const MAXB=6,MAXP=3,MAXH=10,MAXT=6,HERO=30;
  // ---- cards ----
  function card(key){const C=D.ITEM[key];if(C){const d=String(C.d||''),m=/(\d+)\s*HP\s*(\d+)\s*ATK/i.exec(d),mn=/(\d+)\s*Mana/i.exec(d),co=/Cost\s*(\d+)/i.exec(d);
    const boss=['world','dungeon','island','guild'].includes(C.g);
    if(C.g==='tree')return{key:C.key,id:C.k,n:short(C.n),kind:'tree',mana:mn?+mn[1]:1};
    if(C.g==='potion'||C.g==='forage')return{key:C.key,id:C.k,n:short(C.n),kind:'spell',cost:co?+co[1]:1,d};
    const hp=m?+m[1]:1,atk=m?+m[2]:1;return{key:C.key,id:C.k,n:short(C.n),kind:'mon',hp,atk,boss,cost:Math.ceil((hp+atk)/2)+(boss?1:0),g:C.g}}
-  if(/^pc_/.test(key))return{key,id:key.slice(3).replace(/^pet_/,''),n:short(INAME[key]||key),kind:'pet'};return null}
+  if(/^pc_[\w:-]+$/.test(key)){const pk=key.slice(3),id=pk.replace(/^pet_/,''),o=OV[pk]||{},comp=o.p&&PSTAT[o.p]?o.p:(COMP[id]||'friendly'),d=PSTAT[comp];
+   return{key,id,pk,n:short(INAME[key]||id),kind:'pet',comp,cost:num(o.c,0,9,d[0]),hp:num(o.h,1,20,d[1]),atk:num(o.a,0,20,d[2])}}return null}
+ const num=(v,a,b,d)=>typeof v==='number'&&isFinite(v)?Math.max(a,Math.min(b,Math.round(v))):d;
  const short=n=>String(n||'').replace(/^(Shiny )?(Drop|Pet) Card: /,'');
- const isWolf=m=>/wolf/.test(m.id)||/^pwolf|^p(briar|snow|void)$/.test(m.id);
+ const WOLFP=new Set(['pwolf','pbriar','psnow','pvoid']);
+ const isWolf=m=>m.pet?WOLFP.has(m.comp):(/wolf/.test(m.id2||'')||m.id2==='alpha');
+ // pets out on a side (alive, not silenced) with a power: has(P,'dog') = how many; mons(P) = the monsters (the board's 6 slots)
+ const has=(P,c,ex)=>P.board.filter(m=>m.pet&&m.comp===c&&m.hp>0&&!m.mute&&m!==ex).length;
+ const mons=P=>P.board.filter(m=>!m.pet),petsOut=P=>P.board.filter(m=>m.pet);
  // ---- random (mulberry32) ----
  const rnd=s=>{let t=(s.seed=(s.seed+0x6D2B79F5)|0);t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296};
  const pick=(s,a)=>a.length?a[Math.floor(rnd(s)*a.length)]:null;
@@ -25573,26 +25625,46 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  // Companion power keys by pet (rules doc); anything else is Friendly
  const COMP={cat:'cat',dog:'dog',slime:'slime',fox:'fox',imp:'imp',pwolf:'pwolf',pbriar:'pbriar',psnow:'psnow',pvoid:'pvoid',ptree:'tl1',ptoak:'tl2',ptwil:'tl3',ptmap:'tl4',ptyew:'tl5',
   ptpine:'pine',ptdead:'dead',ptvoid:'tvoid',psquir:'squir',pgiron:'giron',pggold:'ggold',pgmith:'gmith',pgadam:'gadam',pweb:'web',pvoidl:'voidl',pmush:'mush',pglow:'glow'};
+ // Nov 22 (Jace: "1 to 4 by strength"): each power's summon cost, HP and ATK
+ const PSTAT={glow:[1,1,1],tl1:[1,1,1],dead:[1,1,1],dog:[2,2,2],slime:[2,3,1],fox:[2,2,1],pwolf:[2,2,2],pbriar:[2,3,1],psnow:[2,3,1],tl2:[2,2,1],tl3:[2,2,2],
+  squir:[2,2,1],giron:[2,3,1],ggold:[2,3,1],gmith:[2,3,1],voidl:[2,2,1],mush:[2,2,1],friendly:[2,2,2],imp:[3,2,2],pvoid:[3,2,2],tl4:[3,3,2],pine:[3,2,1],
+  tvoid:[3,2,2],web:[3,2,2],cat:[4,3,2],tl5:[4,3,3],gadam:[4,4,2]};
+ const PTXT={cat:'Nine lives: once, when your hero would fall to 0 HP, it stays at 1.',dog:'Loyal: the first monster you play each turn gets +1 ATK.',
+  slime:'Squish: at the start of your turn, one of your monsters gets +1 HP.',fox:'Clever: when it arrives, draw a card.',imp:'Pest: at the end of your turn, 1 damage to a random enemy monster.',
+  pwolf:'Pack leader: your other wolves get +1 ATK.',pbriar:'Thorny pack: monsters that attack your wolves take 1 damage.',psnow:'Thick coat: your other wolves get +2 HP.',
+  pvoid:'Void pack: your other wolves get +1 ATK and Charge.',tl1:'Once per turn, regrow a stump worth 1 Mana.',tl2:'Once per turn, regrow a stump worth 2 Mana or less.',
+  tl3:'Once per turn, regrow a stump worth 3 Mana or less.',tl4:'Once per turn, regrow a stump worth 4 Mana or less.',tl5:'Once per turn, regrow any one stump.',
+  pine:'Evergreen: when you plant a tree, draw a card.',dead:'Rot: when one of your monsters falls on your turn, gain 1 Mana.',tvoid:'Void sap: when you chop a tree, 1 damage to a random enemy monster.',
+  squir:'Stash: when it arrives, draw a forage card from your deck. Your forage cards cost 1 less.',giron:'Iron skin: the first hit on your hero each turn does 1 less damage.',
+  ggold:'Golden: when it arrives, your hero gets +3 HP.',gmith:'Mithril wall: your Guard monsters get +2 HP.',gadam:'Adamant skin: your hero takes 1 less damage from every monster hit.',
+  web:'Web: every other turn, a random enemy monster can\'t attack on its next turn.',voidl:'Silence: when it arrives, it takes away an enemy boss\'s power (or the next boss they play).',
+  mush:'Spores: every third turn, draw a card.',glow:'Glow: the first time each turn your hero takes damage, heal 1 HP.',friendly:'Friendly: once, when your hero is at half HP or less, heal it 3 HP.'};
+ // the Dev Suite's changes (library `petcards`), read by card(); 254's pet card text follows them
+ const OV={};
+ function applyPets(L){const lib=(L&&L.petcards)||{};for(const k in OV)delete OV[k];for(const k in lib){const o=lib[k];if(o&&typeof o==='object'&&/^[\w:-]+$/.test(k))OV[k]=o}try{refreshText()}catch(e){self.SQERR&&SQERR(e,'261-1')}}
+ const petText=pk=>{const c=card('pc_'+pk);return c?'Pet card · Cost '+c.cost+' · '+c.hp+' HP '+c.atk+' ATK. '+PTXT[c.comp]:''};
+ function refreshText(){const B=window.SQBINDER;if(!B||!B.PET)return;for(const k in B.PET){const pk=B.PET[k].pk;IDESC[k]=petText(pk)}}
+ window.SQPETDESC=petText;
  // ---- a new match ----
  // decks: arrays of item keys (20, base or shiny); pets: pet card keys or null; names: [string,string]
  function create(o){const s={seed:(o.seed|0)||1,turn:0,cur:0,over:false,win:-1,nid:1,log:[],fx:[],p:[]};
-  for(let i=0;i<2;i++){const pet=o.pets&&o.pets[i]||null,comp=pet?(COMP[pet.replace(/^pc_(pet_)?/,'')]||'friendly'):null;
-   const deck=(o.decks[i]||[]).map(k=>{const C=D.ITEM[k];return C?C.key:k}).filter(k=>card(k)&&card(k).kind!=='pet');
-   s.p.push({n:String(o.names&&o.names[i]||('Player '+(i+1))),hp:comp==='ggold'?HERO+3:HERO,deck,hand:[],grove:[],board:[],pool:0,planted:false,fat:0,comp,pet,cf:{},played:0,hurtT:false})}
+  for(let i=0;i<2;i++){const deck=(o.decks[i]||[]).map(k=>{const C=D.ITEM[k];return C?C.key:k}).filter(k=>card(k));
+   // a Companion picked before Nov 22 (o.pets) is shuffled into the deck like any pet card
+   const pet=o.pets&&o.pets[i]||null;if(pet&&card(pet)&&card(pet).kind==='pet')deck.push(pet);
+   s.p.push({n:String(o.names&&o.names[i]||('Player '+(i+1))),hp:HERO,deck,hand:[],grove:[],board:[],pool:0,planted:false,fat:0,cf:{},played:0,mplayed:0,hurtT:false})}
   for(const P of s.p){for(let i=P.deck.length-1;i>0;i--){const j=Math.floor(rnd(s)*(i+1));[P.deck[i],P.deck[j]]=[P.deck[j],P.deck[i]]}}
   for(let i=0;i<3;i++){draw(s,0);draw(s,1)}draw(s,1);s.p[1].hand.push('_sapling');
-  for(let i=0;i<2;i++)if(s.p[i].comp==='fox')draw(s,i);
   startTurn(s,0);return s}
  const L=(s,t)=>{s.log.push(t);if(s.log.length>60)s.log.shift()};
  function draw(s,i){const P=s.p[i];if(!P.deck.length){P.fat++;hurtHero(s,i,P.fat,'Out of cards');return}const k=P.deck.shift();if(P.hand.length>=MAXH){L(s,P.n+'\'s hand is full: '+(card(k)||{}).n+' is lost.');return}P.hand.push(k)}
  // ---- damage ----
- function hurtHero(s,i,n,why,fromMon){const P=s.p[i];if(n<=0||s.over)return;if(P.board.some(m=>m.id2==='turtle'&&!m.mute)){L(s,'The Giant Turtle protects '+P.n+'.');return}
-  if(fromMon&&P.comp==='gadam')n=Math.max(0,n-1);if(P.comp==='giron'&&!P.cf.ironHit){P.cf.ironHit=1;n=Math.max(0,n-1)}if(n<=0)return;
+ function hurtHero(s,i,n,why,fromMon){const P=s.p[i];if(n<=0||s.over)return;if(P.board.some(m=>m.id2==='turtle'&&!m.mute&&m.hp>0)){L(s,'The Giant Turtle protects '+P.n+'.');return}
+  if(fromMon)n=Math.max(0,n-has(P,'gadam'));const ir=has(P,'giron');if(ir&&!P.cf.ironHit){P.cf.ironHit=1;n=Math.max(0,n-ir)}if(n<=0)return;
   P.hp-=n;s.fx.push({t:'dmg',to:'h'+i,n});
-  if(P.comp==='glow'&&!P.cf.glow&&P.hp>0){P.cf.glow=1;P.hp+=1}
-  if(P.hp<=0&&P.comp==='cat'&&!P.cf.cat){P.cf.cat=1;P.hp=1;L(s,P.n+'\'s cat has nine lives: '+P.n+' stays at 1 HP!')}
+  const gl=has(P,'glow');if(gl&&!P.cf.glow&&P.hp>0){P.cf.glow=1;P.hp+=gl}
+  if(P.hp<=0){const cat=P.board.find(m=>m.pet&&m.comp==='cat'&&m.hp>0&&!m.mute&&!(m.cf&&m.cf.used));if(cat){cat.cf.used=1;P.hp=1;L(s,P.n+'\'s '+cat.n+' has nine lives: '+P.n+' stays at 1 HP!')}}
   if(P.hp<=0&&!s.over){s.over=true;s.win=1-i;L(s,s.p[1-i].n+' wins!')}}
- const atkOf=(s,i,m)=>{let a=m.atk;const P=s.p[i];if(isWolf(m)){a+=P.board.filter(o=>o!==m&&o.id2==='alpha'&&!o.mute).length;if(P.comp==='pwolf'||P.comp==='pvoid')a+=1}return Math.max(0,a)};
+ const atkOf=(s,i,m)=>{let a=m.atk;const P=s.p[i];if(isWolf(m))a+=P.board.filter(o=>o!==m&&o.id2==='alpha'&&!o.mute&&o.hp>0).length+has(P,'pwolf',m)+has(P,'pvoid',m);return Math.max(0,a)};
  function hurtMon(s,i,m,n,src){if(n<=0||m.hp<=0)return;if(m.id2==='ib:ashfall'&&!m.mute)n=Math.max(0,n-1);if(n<=0)return;m.hp-=n;s.fx.push({t:'dmg',to:m.uid,n});
   if(src&&src.id2==='matri'&&!src.mute)m.poison=1;if(src&&src.id2==='ib:ironcrest'&&!src.mute)m.frozen=2}
  function sweep(s){for(const i of s.flip?[1,0]:[0,1]){/* both sides' falls in the same order on both players' screens (263 mirrors the state) */const P=s.p[i];const dead=P.board.filter(m=>m.hp<=0);if(!dead.length)continue;P.board=P.board.filter(m=>m.hp>0);
@@ -25600,28 +25672,40 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
     if(m.id2==='wb:demon')hurtHero(s,1-i,3,'Demon');
     if(m.id2==='boss'){summon(s,i,'slime');summon(s,i,'slime')}
     if(m.id2==='bonelord')summon(s,i,'skel');
-    if(P.comp==='dead'&&s.cur===i){P.pool+=1;L(s,'Rot: +1 Mana.')}}}}
- function summon(s,i,id,stats){const P=s.p[i];if(P.board.length>=MAXB)return null;let c;if(stats)c={n:stats.n,hp:stats.hp,atk:stats.atk,key:null};else{const C=D.CARDS[id];c=C&&card(C.key);if(!c)return null}
+    const rot=has(P,'dead');if(rot&&s.cur===i){P.pool+=rot;L(s,'Rot: +'+rot+' Mana.')}}}}
+ function summon(s,i,id,stats){const P=s.p[i];if(mons(P).length>=MAXB)return null;let c;if(stats)c={n:stats.n,hp:stats.hp,atk:stats.atk,key:null};else{const C=D.CARDS[id];c=C&&card(C.key);if(!c)return null}
   const m={uid:'m'+(s.nid++),id2:id,key:c.key,n:c.n,hp:c.hp,max:c.hp,atk:c.atk,boss:!!c.boss,guard:false,sleep:true,done:false,poison:0,frozen:0,mute:false,side:i};
-  if(isWolf(m)){if(P.comp==='psnow'){m.hp+=2;m.max+=2}if(P.comp==='pvoid')m.sleep=false}
+  if(isWolf(m)){const sn=has(P,'psnow');if(sn){m.hp+=2*sn;m.max+=2*sn}if(has(P,'pvoid'))m.sleep=false}
   P.board.push(m);return m}
+ // a pet card coming out: its row beside the hero, then what it does when it arrives
+ function summonPet(s,i,c){const P=s.p[i],O=s.p[1-i];if(petsOut(P).length>=MAXP)return null;
+  const m={uid:'m'+(s.nid++),id2:'pet:'+c.comp,key:c.key,n:c.n,hp:c.hp,max:c.hp,atk:c.atk,boss:false,guard:false,sleep:true,done:false,poison:0,frozen:0,mute:false,side:i,pet:true,comp:c.comp,cf:{}};
+  P.board.push(m);const others=P.board.filter(o=>o!==m&&o.hp>0);
+  if(c.comp==='fox'){draw(s,i);L(s,'Clever: '+P.n+' draws a card.')}
+  if(c.comp==='ggold'){P.hp+=3;L(s,c.n+' gives '+P.n+' +3 HP.')}
+  if(c.comp==='squir'){const j=P.deck.findIndex(k=>{const C=D.ITEM[k];return C&&C.g==='forage'});if(j>=0){const k=P.deck.splice(j,1)[0];if(P.hand.length<MAXH)P.hand.push(k);L(s,'Stash: '+P.n+' draws a forage card.')}}
+  if(c.comp==='psnow')for(const o of others)if(isWolf(o)){o.hp+=2;o.max+=2}
+  if(c.comp==='pvoid')for(const o of others)if(isWolf(o))o.sleep=false;
+  if(c.comp==='gmith')for(const o of others)if(!o.pet&&(o.id2==='wb:giant'||o.id2==='thorn'||o.id2==='turtle')){o.hp+=2;o.max+=2}
+  if(c.comp==='voidl'){const b=O.board.filter(o=>o.boss&&!o.mute&&o.hp>0);if(b.length){const t=pick(s,b);t.mute=true;m.cf.used=1;L(s,c.n+' silences '+t.n+'.')}}
+  return m}
  // ---- turns ----
- function startTurn(s,i){s.cur=i;s.turn++;const P=s.p[i];P.planted=false;P.pool=0;P.played=0;P.cf.ironHit=0;P.cf.glow=0;P.cf.tl=0;P.cf.squir=P.cf.squir||0;
+ function startTurn(s,i){s.cur=i;s.turn++;const P=s.p[i];P.planted=false;P.pool=0;P.played=0;P.mplayed=0;P.cf.ironHit=0;P.cf.glow=0;for(const m of P.board)if(m.pet&&m.cf)m.cf.tl=0;
   for(const g of P.grove)g.stump=false;
   for(const m of P.board){m.done=false;m.sleep=false;if(m.frozen>0)m.frozen--;if(m.poison){hurtMon(s,i,m,1);L(s,m.n+' takes 1 poison damage.')}}
   sweep(s);if(s.over)return;
   draw(s,i);if(s.over)return;
   const myTurns=Math.ceil(s.turn/2);
-  if(P.comp==='mush'&&myTurns%3===0){draw(s,i);L(s,'Spores: '+P.n+' draws a card.')}
-  if(P.comp==='slime'&&P.board.length){const m=pick(s,P.board);m.hp++;m.max++;L(s,'Squish: '+m.n+' gets +1 HP.')}
-  if(P.comp==='web'&&myTurns%2===0){const f=s.p[1-i].board;if(f.length){const m=pick(s,f);m.frozen=2;L(s,'Web: '+m.n+' can\'t attack next turn.')}}
-  if(P.comp==='friendly'&&!P.cf.fr&&P.hp<=HERO/2){P.cf.fr=1;P.hp+=3;L(s,P.n+'\'s pet is Friendly: +3 HP.')}}
+  if(myTurns%3===0)for(let k=has(P,'mush');k>0&&!s.over;k--){draw(s,i);L(s,'Spores: '+P.n+' draws a card.')}
+  for(let k=has(P,'slime');k>0;k--){const L2=P.board.filter(m=>m.hp>0);if(!L2.length)break;const m=pick(s,L2);m.hp++;m.max++;L(s,'Squish: '+m.n+' gets +1 HP.')}
+  if(myTurns%2===0)for(let k=has(P,'web');k>0;k--){const f=s.p[1-i].board.filter(m=>m.hp>0);if(!f.length)break;const m=pick(s,f);m.frozen=2;L(s,'Web: '+m.n+' can\'t attack next turn.')}
+  for(const m of P.board)if(m.pet&&m.comp==='friendly'&&m.hp>0&&!m.mute&&!m.cf.used&&P.hp<=HERO/2){m.cf.used=1;P.hp+=3;L(s,P.n+'\'s '+m.n+' is Friendly: +3 HP.')}}
  function endTurn(s){const i=s.cur,P=s.p[i];
   for(const m of P.board){if(m.mute)continue;if(m.id2==='tidek'){P.hp+=2;L(s,'Tidekeeper heals '+P.n+' 2.')}if(m.id2==='void_treant'){m.atk++;m.hp++;m.max++}}
-  if(P.comp==='imp'){const f=s.p[1-i].board;if(f.length){const m=pick(s,f);hurtMon(s,1-i,m,1);L(s,'The imp jabs '+m.n+'.');sweep(s)}}
+  for(let k=has(P,'imp');k>0&&!s.over;k--){const f=s.p[1-i].board.filter(m=>m.hp>0);if(!f.length)break;const m=pick(s,f);hurtMon(s,1-i,m,1);L(s,'The imp jabs '+m.n+'.');sweep(s)}
   if(!s.over)startTurn(s,1-i)}
  // ---- moves ----
- const costOf=(s,i,c)=>{if(!c)return 99;if(c.kind==='spell'){let k=c.cost;if(s.p[i].comp==='squir'&&['berry','shroom','nuts','cfruit'].includes(c.id))k=Math.max(0,k-1);return k}return c.kind==='mon'?c.cost:0};
+ const costOf=(s,i,c)=>{if(!c)return 99;if(c.kind==='spell'){let k=c.cost;if(['berry','shroom','nuts','cfruit'].includes(c.id))k=Math.max(0,k-has(s.p[i],'squir'));return k}return c.kind==='mon'||c.kind==='pet'?c.cost:0};
  const groveMana=P=>P.grove.reduce((a,g)=>a+g.mana,0);
  const findM=(s,uid)=>{for(let i=0;i<2;i++){const m=s.p[i].board.find(m=>m.uid===uid);if(m)return[i,m]}return[-1,null]};
  const guards=(s,i)=>s.p[i].board.filter(m=>(m.guard||((m.id2==='wb:giant'||m.id2==='thorn'||m.id2==='turtle')&&!m.mute))&&m.hp>0);
@@ -25637,28 +25721,30 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   for(let mask=1;mask<(1<<n);mask++){let sum=0,cnt=0;for(let b=0;b<n;b++)if(mask&(1<<b)){sum+=up[b][0].mana;cnt++}if(P.pool+sum>=need&&(!best||sum<best.sum||(sum===best.sum&&cnt<best.cnt)))best={mask,sum,cnt}}
   if(!best)return null;const out=[];for(let b=0;b<n;b++)if(best.mask&(1<<b))out.push(up[b][1]);return out}
  function chop(s,i,j){const P=s.p[i],g=P.grove[j];if(!g||g.stump)return'That tree is already a stump.';g.stump=true;P.pool+=g.mana;s.fx.push({t:'chop',side:i,g:j});
-  const lim={tl1:1,tl2:2,tl3:3,tl4:4,tl5:99}[P.comp];if(lim&&!P.cf.tl&&g.mana<=lim){P.cf.tl=1;g.stump=false;L(s,'The treeling regrows the '+g.n+'.')}
-  if(P.comp==='tvoid'){const f=s.p[1-i].board;if(f.length){const m=pick(s,f);hurtMon(s,1-i,m,1);sweep(s)}}return''}
+  const LIM={tl1:1,tl2:2,tl3:3,tl4:4,tl5:99},tr=P.board.filter(m=>m.pet&&LIM[m.comp]&&m.hp>0&&!m.mute&&!m.cf.tl&&g.mana<=LIM[m.comp]).sort((a,b)=>LIM[a.comp]-LIM[b.comp])[0];
+  if(tr){tr.cf.tl=1;g.stump=false;L(s,'The '+tr.n+' regrows the '+g.n+'.')}
+  for(let k=has(P,'tvoid');k>0;k--){const f=s.p[1-i].board.filter(m=>m.hp>0);if(!f.length)break;const m=pick(s,f);hurtMon(s,1-i,m,1);sweep(s)}return''}
  function apply(s,i,mv){if(s.over)return'The match is over.';if(s.cur!==i)return'It isn\'t your turn.';const P=s.p[i],O=s.p[1-i];s.fx=[];
   if(mv.t==='end'){L(s,P.n+' ends the turn.');endTurn(s);return''}
   if(mv.t==='chop')return chop(s,i,mv.g|0);
   if(mv.t==='plant'){const k=P.hand[mv.h|0],c=card(k);if(!c||c.kind!=='tree')return'That isn\'t a tree.';if(P.planted)return'You\'ve already planted a tree this turn.';if(P.grove.length>=MAXT)return'Your Grove is full ('+MAXT+' trees).';
-   P.hand.splice(mv.h|0,1);P.grove.push({key:k,n:c.n,mana:c.mana,stump:false});P.planted=true;L(s,P.n+' plants '+c.n+'.');if(P.comp==='pine'){draw(s,i);L(s,'Evergreen: '+P.n+' draws a card.')}return''}
+   P.hand.splice(mv.h|0,1);P.grove.push({key:k,n:c.n,mana:c.mana,stump:false});P.planted=true;L(s,P.n+' plants '+c.n+'.');for(let k=has(P,'pine');k>0;k--){draw(s,i);L(s,'Evergreen: '+P.n+' draws a card.')}return''}
   if(mv.t==='play'){const h=mv.h|0,k=P.hand[h];if(k==='_sapling'){P.hand.splice(h,1);P.pool+=1;L(s,P.n+' uses the Sapling: +1 Mana.');return''}const c=card(k);if(!c)return'No card.';if(c.kind==='tree')return apply(s,i,{t:'plant',h});
-   const cost=costOf(s,i,c);if(c.kind==='mon'&&P.board.length>=MAXB)return'Your side of the board is full.';
+   const cost=costOf(s,i,c);if(c.kind==='mon'&&mons(P).length>=MAXB)return'Your side of the board is full.';if(c.kind==='pet'&&petsOut(P).length>=MAXP)return'You already have '+MAXP+' pets out.';
    let tg=null;if(c.kind==='spell'){const ts=spellTargets(s,i,c);if(ts){if(!ts.length)return'There\'s nothing to use it on.';if(!ts.includes(mv.tg))return'Pick a target.';tg=findM(s,mv.tg)}}
    if(P.pool+P.grove.filter(g=>!g.stump).reduce((a,g)=>a+g.mana,0)<cost)return'Not enough Mana: chop more trees, or plant one.';
    if(!autoChop(s,i,cost))return'Not enough Mana.';P.pool-=cost;P.hand.splice(h,1);P.played++;
-   if(c.kind==='mon'){const m=summon(s,i,c.id);if(!m)return'';L(s,P.n+' plays '+c.n+'.');s.fx.push({t:'play',side:i,uid:m.uid});
-    if(P.comp==='dog'&&P.played===1){m.atk++;L(s,'Loyal: '+m.n+' gets +1 ATK.')}
-    if(P.comp==='gmith'&&(m.id2==='wb:giant'||m.id2==='thorn'||m.id2==='turtle')){m.hp+=2;m.max+=2}
+   if(c.kind==='pet'){const m=summonPet(s,i,c);if(!m)return'';L(s,P.n+' summons '+c.n+'.');s.fx.push({t:'play',side:i,uid:m.uid});sweep(s);return''}
+   if(c.kind==='mon'){const m=summon(s,i,c.id);if(!m)return'';L(s,P.n+' plays '+c.n+'.');s.fx.push({t:'play',side:i,uid:m.uid});P.mplayed++;
+    const dg=has(P,'dog');if(dg&&P.mplayed===1){m.atk+=dg;L(s,'Loyal: '+m.n+' gets +'+dg+' ATK.')}
+    const mi=has(P,'gmith');if(mi&&(m.id2==='wb:giant'||m.id2==='thorn'||m.id2==='turtle')){m.hp+=2*mi;m.max+=2*mi}
     if(m.id2==='wb:wisp')m.sleep=false;
     if(m.id2==='wb:dragon'){for(const o of O.board.slice())hurtMon(s,1-i,o,2,m);L(s,'The Dragon breathes fire on every enemy monster!')}
     if(m.id2==='emberl')hurtHero(s,1-i,3,'Emberlord');
     if(m.id2==='ib:briarwood'){summon(s,i,'_sp',{n:'Spiderling',hp:1,atk:1});summon(s,i,'_sp',{n:'Spiderling',hp:1,atk:1})}
     if(m.id2==='ib:shattered'){const b=O.board.filter(o=>o.boss&&!o.mute);if(b.length){const t=pick(s,b);t.mute=true;L(s,'The Void Herald silences '+t.n+'.')}}
     if(m.id2==='ib:nomans'&&O.hand.length){const j=Math.floor(rnd(s)*O.hand.length),st=O.hand.splice(j,1)[0];if(P.hand.length<MAXH)P.hand.push(st);L(s,'Black Jack steals a card!')}
-    if(m.boss&&O.comp==='voidl'&&!O.cf.voidl){O.cf.voidl=1;m.mute=true;L(s,O.n+'\'s Voidling silences '+m.n+'.')}
+    const vl=m.boss&&O.board.find(o=>o.pet&&o.comp==='voidl'&&o.hp>0&&!o.mute&&!o.cf.used);if(vl){vl.cf.used=1;m.mute=true;L(s,O.n+'\'s '+vl.n+' silences '+m.n+'.')}
     sweep(s);return''}
    // spells
    const sp=c.id,[ti,tm]=tg||[-1,null];L(s,P.n+' uses '+c.n+'.');
@@ -25672,14 +25758,14 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
    a.done=true;const av=atkOf(s,i,a);s.fx.push({t:'atk',a:a.uid,tg:mv.tg});
    if(mv.tg==='h'+(1-i)){L(s,a.n+' hits '+O.n+' for '+av+'.');hurtHero(s,1-i,av,a.n,true)}
    else{const[,d]=findM(s,mv.tg);const dv=atkOf(s,1-i,d);L(s,a.n+' fights '+d.n+'.');hurtMon(s,1-i,d,av,a);hurtMon(s,i,a,dv,d);
-    if(d.id2==='thorn'&&!d.mute)hurtMon(s,i,a,1);if(isWolf(d)&&O.comp==='pbriar')hurtMon(s,i,a,1)}
+    if(d.id2==='thorn'&&!d.mute)hurtMon(s,i,a,1);if(isWolf(d)){const br=has(O,'pbriar');if(br)hurtMon(s,i,a,br)}}
    sweep(s);return''}
   return'Unknown move.'}
  // ---- what a side may do now (for the screen and Ace) ----
  function options(s,i){const P=s.p[i],out=[];if(s.over||s.cur!==i)return out;const avail=P.pool+P.grove.filter(g=>!g.stump).reduce((a,g)=>a+g.mana,0);
   P.hand.forEach((k,h)=>{if(k==='_sapling'){out.push({t:'play',h});return}const c=card(k);if(!c)return;
    if(c.kind==='tree'){if(!P.planted&&P.grove.length<MAXT)out.push({t:'plant',h});return}
-   if(costOf(s,i,c)>avail)return;if(c.kind==='mon'){if(P.board.length<MAXB)out.push({t:'play',h});return}
+   if(costOf(s,i,c)>avail)return;if(c.kind==='mon'){if(mons(P).length<MAXB)out.push({t:'play',h});return}if(c.kind==='pet'){if(petsOut(P).length<MAXP)out.push({t:'play',h});return}
    const ts=spellTargets(s,i,c);if(ts===null)out.push({t:'play',h});else for(const tg of ts)out.push({t:'play',h,tg})});
   for(const m of P.board)for(const tg of targets(s,i,m.uid))out.push({t:'atk',a:m.uid,tg});
   out.push({t:'end'});return out}
@@ -25691,7 +25777,8 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   for(const f of s.fx||[]){if(typeof f.side==='number')f.side=1-f.side;if(f.to==='h0'||f.to==='h1')f.to=f.to==='h0'?'h1':'h0'}return s}
  const flipH=v=>v==='h0'?'h1':v==='h1'?'h0':v;
  function flipMv(mv){const o=Object.assign({},mv);if(o.tg!=null)o.tg=flipH(o.tg);return o}
- window.SQDCE={mirror,flipMv,chopPlan,card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,MAXB,MAXH,MAXT,HERO,short,groveMana:P=>groveMana(P)}})();
+ window.SQDCE={mirror,flipMv,chopPlan,card,create,apply,options,targets,spellTargets,costOf,atkOf,guards,findM,clone,POW,SPELL,COMP,PSTAT,PTXT,OV,petText,isWolf,has,mons,petsOut,MAXB,MAXP,MAXH,MAXT,HERO,short,groveMana:P=>groveMana(P)};
+ try{SQA.onApply(applyPets)}catch(e){self.SQERR&&SQERR(e,'261-2')}try{refreshText()}catch(e){self.SQERR&&SQERR(e,'261-3')}})();
 // ---- 270. Drop Card matches against Ace (window.SQDCM) ----
 // Nov 20: play your binder's active deck against Ace the Card Sharp (258) on Easy, Normal or Hard, on a full-screen table (#sqdcm)
 // that works with touch, mouse and controller (every control is a <button>; SQNAVROOT points the controller at the table).
@@ -25701,6 +25788,9 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
 //   ATK/HP, power, status, owner and where it drops, plus PLAY / PLANT / ATTACK / CHOP IT when you can; tapping anywhere else (or
 //   BACK, Esc, the controller's ○) goes back to the table. ATTACK lights up the targets on the table; a spell that needs a target
 //   does the same. While a card is open, the trees it would chop glow with an axe. Leaving a match counts as a loss.
+// - Nov 22 (Jace): pets are deck cards (261). Each side's pets sit in a row beside its hero (`.dcm-pets`), drawn like monsters (ATK, HP,
+//   tags) and tappable for the same close-up (cost, stats, power, SUMMON from the hand). Ace brings a pet on Normal and Hard. Dragging
+//   cards onto the table and onto targets is 268's.
 // - Movement: attack lunges, damage numbers, a puff where a monster falls, new cards sliding in, chopped trees shaking, a turn
 //   banner (all off with "reduce motion").
 // - Ace (aceMove) plays a move every 0.7 s: plant the biggest tree, go for the win when it can, play its biggest card (spells on
@@ -25709,9 +25799,9 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
 //   achievement "First win". The rules engine is 261's SQDCE.
 (()=>{const E=window.SQDCE,B=window.SQBINDER,D=window.SQDROPCARD;if(!E||!B||!D)return;
  const LV={easy:{n:'Easy',g:50,deck:[['tree',6],['oak',2],['slime',2],['slime:moss',2],['wolf',2],['skel',2],['bat',2],['pot_heal',2]]},
-  normal:{n:'Normal',g:150,deck:[['tree',6],['oak',2],['slime',2],['slime:moss',2],['wolf:briar',2],['skel',2],['bat',2],['pot_heal',1],['shroom',1]]},
-  hard:{n:'Hard',g:400,deck:[['tree',3],['oak',2],['willow',2],['maple',1],['wolf:snow',2],['skel:ember',2],['guard',2],['alpha',1],['wb:giant',1],['thorn',1],['pot_zap',1],['pot_napalm',1],['pot_heal',1]]}};
- const aceDeck=lv=>{const out=[];for(const[k,n]of LV[lv].deck){const C=D.CARDS[k];if(C)for(let i=0;i<n;i++)out.push(C.key)}return out};
+  normal:{n:'Normal',g:150,deck:[['tree',6],['oak',2],['slime',2],['slime:moss',2],['wolf:briar',2],['skel',2],['bat',2],['pot_heal',1],['shroom',1],['pc_pet_dog',1]]},
+  hard:{n:'Hard',g:400,deck:[['tree',3],['oak',2],['willow',2],['maple',1],['wolf:snow',2],['skel:ember',2],['guard',2],['alpha',1],['wb:giant',1],['thorn',1],['pot_zap',1],['pot_napalm',1],['pot_heal',1],['pc_pet_pwolf',1],['pc_pet_imp',1]]}};
+ const aceDeck=lv=>{const out=[];for(const[k,n]of LV[lv].deck){const C=D.CARDS[k],key=C?C.key:/^pc_/.test(k)&&E.card(k)?k:null;if(key)for(let i=0;i<n;i++)out.push(key)}return out};
  let M=null;// {s, lv, sel:{t:'hand'|'mon',v}, aim:[uids] , msg, busy, leaveArm}
  let WINS={};// {lv: day}
  SQSAVE.after('262:dcw',s=>{s.dcw=WINS});SQLOAD.after('262',(S)=>{WINS=S&&S.dcw&&typeof S.dcw==='object'?Object.assign({},S.dcw):{}});
@@ -25728,7 +25818,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   if(!g.length){const dmg=ready.reduce((a,m)=>a+E.atkOf(s,i,m),0);if(dmg>=O.hp&&ready.length)return{t:'atk',a:ready[0].uid,tg:'h'+(1-i)}}
   // cards
   const plays=has('play').filter(o=>P.hand[o.h]!=='_sapling').map(o=>({o,c:E.card(P.hand[o.h])}));
-  let pickP=null,ps=-1;for(const{o,c}of plays){let v=E.costOf(s,i,c)*10+(c.kind==='mon'?c.atk+c.hp:0);
+  let pickP=null,ps=-1;for(const{o,c}of plays){let v=E.costOf(s,i,c)*10+(c.kind==='mon'?c.atk+c.hp:c.kind==='pet'?c.atk+c.hp+3:0);
    if(c.kind==='spell'){const tm=o.tg&&E.findM(s,o.tg)[1];
     if(c.id==='pot_heal')v=P.hp<=E.HERO-6?60:-1;else if(c.id==='nuts')v=P.hp<=E.HERO-2?15:-1;else if(c.id==='pot_napalm')v=O.board.length>=2?70:-1;
     else if(c.id==='pot_zap')v=tm&&tm.side!==i?(tm.hp<=4?50+E.atkOf(s,1-i,tm)*5:20):-1;else if(c.id==='pot_poison')v=tm&&tm.side!==i?20+tm.hp:-1;
@@ -25758,14 +25848,15 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  function stumpPic(){if(PICS.stump)return PICS.stump;const c=document.createElement('canvas');c.width=16;c.height=12;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
   r(3,3,10,9,'#3a2410');r(4,4,8,7,'#8a5a30');r(3,1,10,4,'#3a2410');r(4,2,8,2,'#d8b078');r(7,2,1,1,'#a07040');r(9,3,1,1,'#a07040');r(1,10,14,2,'#3a2410');r(12,0,1,1,'#78c850');r(13,1,1,1,'#58a838');return PICS.stump=c.toDataURL()}
  const aceCh=()=>{const n=(window.NPCS||[]).find(n=>n.kind==='cardsharp');return n&&n.ch||{sk:1,hs:3,hc:2,sh:4,pn:2,ht:1,hcol:1,so:1}};
- const KIND={reg:'MONSTER',tree:'TREE',world:'WORLD BOSS',dungeon:'DUNGEON BOSS',island:'ISLAND BOSS',guild:'GUILD BOSS',potion:'POTION SPELL',forage:'FORAGE SPELL'};
- const KCOL={reg:'#7e4210',tree:'#3a7a2a',world:'#b83020',dungeon:'#7840b0',island:'#2878c8',guild:'#309058',potion:'#a83088',forage:'#8a7430'};
- const an=n=>(/^[aeiou]/.test(n)?'an ':'a ')+n,FROM={reg:n=>'Found by defeating '+an(n),tree:n=>'Found by chopping '+an(n),world:n=>'Found by defeating the '+n+' (world boss)',dungeon:n=>'Found by defeating the '+n+' (dungeon boss)',island:n=>'Found by defeating the '+n+' (island boss)',guild:n=>'Found by defeating the '+n+' (guild boss)',potion:n=>'Found by brewing '+an(n),forage:n=>'Found by picking '+an(n)};
+ const KIND={pet:'PET',reg:'MONSTER',tree:'TREE',world:'WORLD BOSS',dungeon:'DUNGEON BOSS',island:'ISLAND BOSS',guild:'GUILD BOSS',potion:'POTION SPELL',forage:'FORAGE SPELL'};
+ const KCOL={pet:'#289890',reg:'#7e4210',tree:'#3a7a2a',world:'#b83020',dungeon:'#7840b0',island:'#2878c8',guild:'#309058',potion:'#a83088',forage:'#8a7430'};
+ const an=n=>(/^[aeiou]/.test(n)?'an ':'a ')+n,FROM={pet:n=>'Found by releasing '+an(n)+' (pet)',reg:n=>'Found by defeating '+an(n),tree:n=>'Found by chopping '+an(n),world:n=>'Found by defeating the '+n+' (world boss)',dungeon:n=>'Found by defeating the '+n+' (dungeon boss)',island:n=>'Found by defeating the '+n+' (island boss)',guild:n=>'Found by defeating the '+n+' (guild boss)',potion:n=>'Found by brewing '+an(n),forage:n=>'Found by picking '+an(n)};
  // against a player (263): M.pvp = {name, ch, send(mv), leave(), done(res), turnLeft()}; the foe is side 1 on this screen
  const FOE=()=>M&&M.pvp?M.pvp.name:'Ace',FOES=()=>FOE()+'\'s';
  const ACE_LINES=['Hah! Didn\'t see that coming?','Not bad, not bad...','My trees are bigger than yours.','You\'ll need more than that!','Careful now...','Is that your best card?'];
  // ---- drawing ----
  function cardBtn(k,data,cls,label,extra){return'<button class="dcm-card '+(cls||'')+'" data-dcm="'+data+'" aria-label="'+esc(label)+'"><img src="'+pic(k)+'" alt="">'+(extra||'')+'</button>'}
+ function petsHTML(side){const L=M.s.p[side].board.filter(m=>m.pet);return'<div class="dcm-pets '+(side?'foe':'me')+'" aria-label="'+(side?esc(FOES())+' pets':'Your pets')+'">'+L.map(m=>monHTML(m,side)).join('')+'</div>'}
  function monHTML(m,side){const s=M.s,me=side===0,ready=me&&s.cur===0&&!s.over&&E.targets(s,0,m.uid).length>0,aim=M.aim&&M.aim.includes(m.uid),grd=E.guards(s,side).includes(m);
   const tags=[];if(grd)tags.push('GUARD');if(m.sleep&&me)tags.push('ZZZ');if(m.frozen>0)tags.push('FROZEN');if(m.poison)tags.push('POISON');if(m.mute)tags.push('SILENCED');
   const a=E.atkOf(s,side,m),pw=!m.mute&&E.POW[m.id2];
@@ -25784,20 +25875,20 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   const upM=P.grove.filter(g=>!g.stump).reduce((a,g)=>a+g.mana,0);
   let h='<div class="dcm-wood"><div class="dcm-felt">';
   // Ace
-  h+='<div class="dcm-r1">'+heroHTML(1)+(M.say?'<div class="dcm-say">'+esc(M.say)+'</div>':'')+
+  h+='<div class="dcm-r1">'+heroHTML(1)+petsHTML(1)+(M.say?'<div class="dcm-say">'+esc(M.say)+'</div>':'')+
    '<div class="dcm-ahand">'+A.hand.map((k,i)=>'<span class="dcm-back" style="--i:'+(i-(A.hand.length-1)/2)+'"></span>').join('')+'</div>'+
    '<div class="dcm-grove foe"><span class="dcm-gl">'+esc(FOES())+' Grove · '+E.groveMana(A)+'</span><div class="dcm-gt">'+groveHTML(1)+'</div></div>'+
    '<div class="dcm-log"><b>Last moves</b>'+s.log.slice(-4).map(l=>'<div>'+esc(l)+'</div>').join('')+'</div></div>';
-  h+='<div class="dcm-board foe">'+(A.board.map(m=>monHTML(m,1)).join('')||'<span class="dcm-empty">'+esc(FOE())+' has no monsters out</span>')+'</div>';
+  h+='<div class="dcm-board foe">'+(A.board.filter(m=>!m.pet).map(m=>monHTML(m,1)).join('')||'<span class="dcm-empty">'+esc(FOE())+' has no monsters out</span>')+'</div>';
   h+='<div class="dcm-mid"><span class="dcm-ribbon'+(s.over?' over':my?'':' ace')+'">'+(s.over?(s.win===0?'YOU WIN!':esc(FOE()).toUpperCase()+' WINS'):my?'YOUR TURN':esc(FOES()).toUpperCase()+' TURN')+'</span><span class="dcm-msg" role="status">'+esc(M.msg||'')+'</span>'+
    '<span class="dcm-lvn">'+esc(M.pvp?(M.pvp.turnLeft&&!s.over?M.pvp.turnLeft()+' left this turn':'vs '+FOE()):LV[M.lv].n)+' · tap any card for a close-up</span></div>';
-  h+='<div class="dcm-board me">'+(P.board.map(m=>monHTML(m,0)).join('')||'<span class="dcm-empty">Your monsters go here</span>')+'</div>';
+  h+='<div class="dcm-board me">'+(P.board.filter(m=>!m.pet).map(m=>monHTML(m,0)).join('')||'<span class="dcm-empty">Your monsters go here</span>')+'</div>';
   // you
-  h+='<div class="dcm-r5"><div class="dcm-me">'+heroHTML(0)+(P.pet?'<span class="dcm-pet" title="'+esc(E.short(INAME[P.pet]||''))+'"><img src="'+pic(P.pet.replace(/^pc_/,''))+'" alt=""><small>'+esc(E.short(INAME[P.pet]||''))+'</small></span>':'')+'</div>'+
+  h+='<div class="dcm-r5"><div class="dcm-me">'+heroHTML(0)+petsHTML(0)+'</div>'+
    '<div class="dcm-grove me"><div class="dcm-gems">'+Array.from({length:Math.min(10,P.pool+upM)},(_,i)=>'<i class="'+(i<P.pool?'on':'')+'"></i>').join('')+'<span>'+P.pool+' Mana'+(upM?' · '+upM+' in trees':'')+'</span></div><div class="dcm-gt">'+groveHTML(0,plan)+'</div></div>'+
    '<div class="dcm-hand">'+P.hand.map((k,i)=>{const n=P.hand.length,rot=(i-(n-1)/2);
     if(k==='_sapling')return'<button class="dcm-card dcm-sap'+(my?' ok':'')+'" data-dcm="c:'+i+'" style="--r:'+rot+'" aria-label="Sapling: 1 Mana this turn">🌱<span class="dcm-cost">0</span></button>';
-    const c=E.card(k),cost=E.costOf(s,0,c),ok=my&&(c.kind==='tree'?!P.planted:cost<=P.pool+upM);
+    const c=E.card(k),cost=E.costOf(s,0,c),ok=my&&(c.kind==='tree'?!P.planted:cost<=P.pool+upM&&(c.kind!=='pet'||E.petsOut(P).length<E.MAXP));
     return'<button class="dcm-card'+(ok?' ok':' no')+(M.newCards&&M.newCards.includes(i)?' drawn':'')+'" data-dcm="c:'+i+'" style="--r:'+rot+'" aria-label="'+esc(c.n+(c.kind==='tree'?', '+c.mana+' Mana tree':', costs '+cost))+'"><img src="'+pic(k)+'" alt=""><span class="dcm-cost'+(c.kind==='tree'?' tree':'')+'">'+(c.kind==='tree'?'+'+c.mana:cost)+'</span></button>'}).join('')+'</div>'+
    '<div class="dcm-btns">'+(s.over&&!M.pvp?'<button class="dcm-end" data-dcm="again">PLAY<br>AGAIN</button>':s.over?'':'<button class="dcm-end" data-dcm="end"'+(my&&!M.aim?'':' disabled')+'>END<br>TURN</button>')+
    (M.aim?'<button class="dcm-b" data-dcm="cancel">CANCEL</button>':'')+'<button class="dcm-b small" data-dcm="leave">'+(s.over?'LEAVE':M.leaveArm?'LEAVE = LOSS?':'LEAVE')+'</button></div></div>';
@@ -25809,19 +25900,19 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   if(z.t==='hand'){key=P.hand[z.v];if(key==='_sapling'){return'<div class="dcm-zoom" data-dcm="unzoom"><div class="dcm-zc"><div class="dcm-zbig dcm-sapbig">🌱</div><div class="dcm-zi"><div class="dcm-zn">Sapling</div><div class="dcm-zt">Gives 1 Mana this turn. Ace gives it to whoever goes second.</div><div class="dcm-zacts"><button class="dcm-b pri" data-dcm="play">USE IT</button><button class="dcm-b" data-dcm="unzoom">BACK</button></div></div></div><div class="dcm-zhint">Tap anywhere to go back to the table</div></div>'}
    c=E.card(key);owner='In your hand';const my=s.cur===0&&!s.over,up=P.pool+P.grove.filter(g=>!g.stump).reduce((a,g)=>a+g.mana,0);
    if(my){if(c.kind==='tree')acts=P.planted?'<span class="dcm-zw">You\'ve planted a tree this turn.</span>':'<button class="dcm-b pri" data-dcm="play">PLANT</button>';
-    else acts=E.costOf(s,0,c)<=up?'<button class="dcm-b pri" data-dcm="play">PLAY</button>':'<span class="dcm-zw">Not enough Mana yet.</span>'}}
-  else if(z.t==='mon'){[side,m]=E.findM(s,z.v);if(!m){M.zoom=null;return''}key=m.key;c=m.key?E.card(m.key):{n:m.n,kind:'mon',hp:m.max,atk:m.atk,id:m.id2,cost:0};owner=side===0?'Your monster':FOES()+' monster';
+    else if(c.kind==='pet'&&E.petsOut(P).length>=E.MAXP)acts='<span class="dcm-zw">You already have '+E.MAXP+' pets out.</span>';
+    else acts=E.costOf(s,0,c)<=up?'<button class="dcm-b pri" data-dcm="play">'+(c.kind==='pet'?'SUMMON':'PLAY')+'</button>':'<span class="dcm-zw">Not enough Mana yet.</span>'}}
+  else if(z.t==='mon'){[side,m]=E.findM(s,z.v);if(!m){M.zoom=null;return''}key=m.key;c=m.key?E.card(m.key):{n:m.n,kind:'mon',hp:m.max,atk:m.atk,id:m.id2,cost:0};owner=side===0?(m.pet?'Your pet':'Your monster'):FOES()+(m.pet?' pet':' monster');
    if(E.guards(s,side).includes(m))tags.push('Guard: must be attacked first');if(m.sleep&&side===0)tags.push('Just played: attacks next turn');if(m.frozen>0)tags.push('Frozen: can\'t attack this turn');if(m.poison)tags.push('Poisoned: 1 damage each turn');if(m.mute)tags.push('Silenced: no power');
    if(side===0&&s.cur===0&&!s.over){acts=E.targets(s,0,m.uid).length?'<button class="dcm-b pri" data-dcm="attack">ATTACK</button>':''}}
   else if(z.t==='tree'){const g=s.p[z.side].grove[z.v];key=g.key;c=E.card(key);owner=(z.side===0?'Your':FOES())+' Grove'+(g.stump?' · chopped (grows back next turn)':'');if(z.side===0&&!g.stump&&s.cur===0&&!s.over)acts='<button class="dcm-b pri" data-dcm="chop:'+z.v+'">CHOP IT</button>'}
-  else if(z.t==='pet'){key=P.pet;owner='Your Companion';c={n:E.short(INAME[key]||''),kind:'pet'}}
   const C=key&&D.ITEM[key],g=C?C.g:c.kind==='pet'?'pet':'reg';
   const gem=n=>'<span class="dcm-zcost"><i>'+n+'</i></span><small>Cost</small>';
-  const stats=c.kind==='mon'?'<div class="dcm-zs">'+(m?'':gem(c.cost))+'<span class="dcm-atk big">'+(m?E.atkOf(s,side,m):c.atk)+'</span><small>ATK</small><span class="dcm-zhp">♥ '+(m?m.hp+'<small> / '+m.max+'</small>':c.hp)+'</span><small>HP</small></div>':
+  const stats=c.kind==='mon'||c.kind==='pet'?'<div class="dcm-zs">'+(m?'':gem(E.costOf(s,0,c)))+'<span class="dcm-atk big">'+(m?E.atkOf(s,side,m):c.atk)+'</span><small>ATK</small><span class="dcm-zhp">♥ '+(m?m.hp+'<small> / '+m.max+'</small>':c.hp)+'</span><small>HP</small></div>':
    c.kind==='tree'?'<div class="dcm-zs"><span class="dcm-zcost"><i>'+c.mana+'</i></span><small>Mana every time you chop it</small></div>':
    c.kind==='spell'?'<div class="dcm-zs">'+gem(E.costOf(s,0,c))+'</div>':'';
-  const pw=c.kind==='mon'&&E.POW[c.id]&&!(m&&m.mute)?'<div class="dcm-zp"><b>Power</b><br>'+esc(E.POW[c.id])+'</div>':c.kind==='spell'&&E.SPELL[c.id]?'<div class="dcm-zp"><b>Spell</b><br>'+esc(E.SPELL[c.id].txt)+'</div>':c.kind==='pet'?'<div class="dcm-zp"><b>Companion power</b><br>'+esc(String(IDESC[key]||'').replace(/^Companion\. /,''))+'</div>':'';
-  return'<div class="dcm-zoom" data-dcm="unzoom"><div class="dcm-zc"><div class="dcm-zbig"><img src="'+pic(c.kind==='pet'?key.replace(/^pc_/,''):key)+'" alt="'+esc(c.n)+'"></div>'+
+  const pw=c.kind==='mon'&&E.POW[c.id]&&!(m&&m.mute)?'<div class="dcm-zp"><b>Power</b><br>'+esc(E.POW[c.id])+'</div>':c.kind==='spell'&&E.SPELL[c.id]?'<div class="dcm-zp"><b>Spell</b><br>'+esc(E.SPELL[c.id].txt)+'</div>':c.kind==='pet'?'<div class="dcm-zp"><b>Pet power</b><br>'+esc(E.PTXT[c.comp]||'')+(m&&m.mute?' (silenced)':m&&m.cf&&m.cf.used&&/once|arrives/i.test(E.PTXT[c.comp]||'')?' (used)':'')+'</div>':'';
+  return'<div class="dcm-zoom" data-dcm="unzoom"><div class="dcm-zc"><div class="dcm-zbig"><img src="'+pic(key)+'" alt="'+esc(c.n)+'"></div>'+
    '<div class="dcm-zi"><div class="dcm-zn">'+esc(c.n)+'</div><span class="dcm-zk" style="background:'+(KCOL[g]||'#289890')+'">'+(KIND[g]||'COMPANION')+'</span>'+stats+pw+
    (tags.length?'<div class="dcm-zt">'+tags.map(esc).join('<br>')+'</div>':'')+'<div class="dcm-zt dim">'+esc(owner)+(FROM[g]?'<br>'+esc(FROM[g](String(c.n).toLowerCase())):'')+'</div>'+'<div class="dcm-zacts">'+acts+'<button class="dcm-b" data-dcm="unzoom">BACK</button></div>'+'</div></div>'+
    '<div class="dcm-zhint">Tap anywhere to go back to the table</div></div>'}
@@ -25869,7 +25960,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   if(x==='c'){zoomTo({t:'hand',v:+y});return}
   if(x==='m'){zoomTo({t:'mon',v:y});return}
   if(x==='g'||x==='gx'){zoomTo({t:'tree',v:+y,side:x==='g'?0:1});return}
-  if(x==='h'&&y==='h0'&&P.pet){zoomTo({t:'pet'});return}});
+});
  function playSel(i){const s=M.s,P=s.p[0];if(s.over||s.cur!==0||M.busy)return;const k=P.hand[i];M.zoom=null;if(k==='_sapling'){act({t:'play',h:i});return}const c=E.card(k);
   if(c.kind==='tree'){act({t:'plant',h:i});return}if(c.kind==='spell'){const ts=E.spellTargets(s,0,c);if(ts){if(!ts.length){M.msg='There\'s nothing to use it on.';render();return}M.sel={t:'hand',v:i};M.aim=ts;M.msg='Pick a target for '+c.n+'.';render();return}}act({t:'play',h:i})}
  // Esc, or the controller's ○, goes back: close-up first, then a target pick
@@ -25904,8 +25995,8 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   '.dcm-face img{width:100%;height:100%;display:block}'+
   '.dcm-hn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-size:14px;text-shadow:0 2px 0 rgba(0,0,0,.5)}.dcm-heart{background:#c02838;color:#fff;font-weight:700;font-size:15px;padding:1px 8px;border:2px solid #601018;border-radius:10px}'+
   '.dcm-hero.aim .dcm-face{box-shadow:0 0 0 3px #f04040,0 0 18px 6px rgba(240,64,64,.75);animation:dcmPulse .8s infinite alternate}'+
-  '.dcm-say{position:absolute;left:150px;top:4px;max-width:220px;background:#f8f0d8;color:#282028;font-size:13px;padding:5px 9px;border:3px solid #485870;border-radius:10px;z-index:3;animation:dcmIn .25s}'+
-  '.dcm-pet{display:flex;flex-direction:column;align-items:center;font-size:10px;margin-left:-4px}.dcm-pet img{width:34px;height:34px;background:#f8f0d8;border:3px solid #289890;border-radius:50%}'+
+  '.dcm-say{pointer-events:none;position:absolute;left:150px;top:4px;max-width:220px;background:#f8f0d8;color:#282028;font-size:13px;padding:5px 9px;border:3px solid #485870;border-radius:10px;z-index:3;animation:dcmIn .25s}'+
+  '.dcm-pets{display:flex;gap:14px;align-items:flex-end;flex:0 0 auto;padding:0 4px 8px}.dcm-pets:empty{display:none}.dcm-pets .dcm-card{width:52px;height:72px}.dcm-pets .dcm-atk,.dcm-pets .dcm-hp{width:20px;height:20px;font-size:11px;bottom:-6px}'+
   '.dcm-me{display:flex;align-items:flex-end;gap:6px;flex:0 0 auto}'+
   // groves
   '.dcm-grove{display:flex;flex-direction:column;gap:2px;min-width:0}.dcm-grove.foe{margin-left:auto}.dcm-gl{font-size:12px;opacity:.85;text-align:right}'+
@@ -25938,6 +26029,11 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   // buttons
   '.dcm-btns{display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto}.dcm-end{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe680,#f0b020);color:#3a2008!important;border:4px solid #6a4410;box-shadow:0 5px 0 #4a2a08,0 8px 14px rgba(0,0,0,.4);font-weight:700;font-size:15px;line-height:1.1}.dcm-end:disabled{filter:grayscale(.8) brightness(.8);box-shadow:0 3px 0 #4a2a08}'+
   '.dcm-b{min-height:44px;min-width:44px;padding:6px 14px;background:#f8f8f8;color:#282028!important;border:3px solid #485870;border-radius:8px;font-weight:700}.dcm-b.pri{background:#78e070;border-color:#2a6a22}.dcm-b.small{min-height:36px;font-size:12px;padding:4px 10px}.dcm-b:disabled{opacity:.45}'+
+  // dragging (268): the card copy under the pointer, the attack arrow, your side lit up as the drop zone, the target under the pointer
+  '#sqdcm .dcm-hand .dcm-card,#sqdcm .dcm-slot .dcm-card{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#sqdcm img{-webkit-user-drag:none}'+
+  '.dcm-dragsrc{opacity:.3}.dcm-ghost{position:fixed;left:0;top:0;width:76px;height:106px;margin:-53px 0 0 -38px;pointer-events:none;filter:drop-shadow(0 12px 14px rgba(0,0,0,.55));will-change:transform;font-size:44px;display:flex;align-items:center;justify-content:center}.dcm-ghost img{width:100%;height:100%;display:block}'+
+  '.dcm-arrow{position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;overflow:visible}.dcm-arrow line{stroke:#f8d048;stroke-width:7;stroke-linecap:round;stroke-dasharray:1 13;filter:drop-shadow(0 0 3px rgba(0,0,0,.6))}.dcm-arrow circle{fill:rgba(240,64,64,.18);stroke:#f04040;stroke-width:4}'+
+  '.dcm-dropme{outline:3px dashed rgba(248,208,72,.9);outline-offset:-2px;border-radius:14px;background:rgba(248,208,72,.10)}.dcm-slot.dcm-hov{transform:scale(1.14);z-index:3}.dcm-hero.dcm-hov .dcm-face{transform:scale(1.12)}'+
   // the close-up
   '.dcm-zoom{position:absolute;inset:0;z-index:5;background:rgba(10,8,16,.74);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;animation:dcmFade .15s;cursor:pointer}'+
   '.dcm-zc{display:flex;align-items:center;gap:30px;max-width:94%;animation:dcmZoom .2s ease-out}.dcm-zbig{flex:0 0 auto;filter:drop-shadow(0 14px 22px rgba(0,0,0,.6))}.dcm-zbig img{width:240px;height:336px;display:block;border-radius:10px}.dcm-sapbig{font-size:120px;width:240px;text-align:center}'+
@@ -25962,6 +26058,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
   '@media (max-height:500px){#sqdcm{padding:calc(env(safe-area-inset-top,0px) + 3px) calc(env(safe-area-inset-right,0px) + 4px) calc(env(safe-area-inset-bottom,0px) + 3px) calc(env(safe-area-inset-left,0px) + 4px)}.dcm-felt{gap:2px;padding:4px 8px;border-width:3px}'+
   '.dcm-face{width:42px;height:42px;border-width:3px}.dcm-hn{font-size:11px}.dcm-heart{font-size:12px;padding:0 6px}.dcm-say{left:110px;top:0;font-size:11px;max-width:170px}'+
   '.dcm-log{display:none}.dcm-ahand{height:34px}.dcm-back{width:22px;height:31px;border-width:2px;margin:0 -6px}.dcm-gt{min-height:36px;padding:2px 4px}.dcm-tree,.dcm-tree img{width:28px;height:34px}.dcm-tree.stump img{width:22px;height:16px}.dcm-gl{font-size:10px}'+
+  '.dcm-pets{gap:10px;padding:0 2px 6px}.dcm-pets .dcm-card{width:36px;height:50px}.dcm-pets .dcm-atk,.dcm-pets .dcm-hp{width:16px;height:16px;font-size:9px;bottom:-5px}'+
   '.dcm-board{min-height:64px;padding:4px 2px;gap:20px}.dcm-card{width:46px;height:64px}.dcm-hand .dcm-card{width:50px;height:70px;margin:0 -4px}.dcm-hand{padding:4px 0 9px}.dcm-atk,.dcm-hp{width:19px;height:19px;font-size:11px;bottom:-6px}.dcm-cost{width:19px;height:19px;font-size:11px}'+
   '.dcm-mid{min-height:18px;gap:6px}.dcm-ribbon{font-size:11px;padding:1px 8px}.dcm-msg{font-size:11px}.dcm-lvn{display:none}.dcm-end{width:60px;height:60px;font-size:12px;border-width:3px}.dcm-b{min-height:38px;padding:3px 10px}.dcm-b.small{min-height:30px;font-size:11px}.dcm-pet img{width:24px;height:24px}.dcm-pet small{display:none}'+
   '.dcm-zc{gap:16px}.dcm-zbig img{width:170px;height:238px}.dcm-sapbig{width:150px;font-size:80px}.dcm-zi{padding:10px 12px;gap:6px;max-height:78vh;overflow:auto}.dcm-zn{font-size:18px}.dcm-zp{font-size:12px;padding:6px 8px}.dcm-zt{font-size:11px}.dcm-zhint{font-size:11px}.dcm-zoom{gap:6px}.dcm-banner{font-size:26px}}'+
@@ -26038,7 +26135,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  // Nov 21: the rules version travels with the deck. A match ended at once when the other game was older (a game from before 263
  // takes the request as a duel and never sends a deck) or played other rules (30 HP, 6 trees): now it stops before the stakes are
  // taken and says why. Bump RV when a rule changes.
- const RV='r4';// r3: pet cards only their owner's game knows, 60 of a tree, END TURN fingerprints; r4: the match's code in the head
+ const RV='r5';// r3: pet cards only their owner's game knows, 60 of a tree, END TURN fingerprints; r4: the match's code in the head; r5 (Nov 22): pet cards in the deck, wolf powers
  // Nov 21 (Jace vs Bear: "the games kept ending after the first turn", after one full match): the record lives at duels/<pair>/<uid>
  // for every match between the same two players, and S.mv (your moves) was only cleared when the next match began, so while setting
  // up the next match each game sent its deck plus the last match's moves. The other game replayed those on your first turn, saw the
@@ -26048,7 +26145,7 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  const code=()=>{try{const D=A().D;return String(D&&D.s||'').replace(/[^\w-]/g,'').slice(0,24)}catch(e){return''}};
  const deckStr=d=>Object.keys(d.c).filter(k=>d.c[k]>0).map(k=>k+'*'+(d.c[k]|0)).join(',')+'|'+(d.pet||'')+'|'+RV+'|'+code();
  function parseHead(h){const[a,p,v,cd]=String(h||'').split('|'),c={};for(const x of(a||'').split(',')){const[k,n]=x.split('*');if(k&&/^[\w:-]+$/.test(k))c[k]=Math.max(0,Math.min(60,n|0))}return{c,pet:p&&/^pc_[\w:-]+$/.test(p)?p:null,v:v||'',code:cd||''}}
- function badDeck(d){if(!d)return'no deck';for(const k in d.c)if(!B.info(k)||!E.card((window.SQDROPCARD.ITEM[k]||{}).key||k))return'unknown card';
+ function badDeck(d){if(!d)return'no deck';for(const k in d.c)if(/^pc_/.test(k)?!E.card(k):(!B.info(k)||!E.card((window.SQDROPCARD.ITEM[k]||{}).key||k)))return'unknown card';// a pet card's cost, stats and power come from its key and the library, the same in both games
   // Nov 21: no pet check. Some pet cards exist only in their owner's game (254 adds them from your own save), so "unknown pet" turned
   // every such deck away as "not allowed"; a Companion's power comes from its key alone (261's COMP), so both games agree anyway.
   const p=B.problems({n:'x',c:d.c,pet:d.pet}).filter(t=>!/^Optional|^You only have/.test(t));return p[0]||''}
@@ -26324,6 +26421,79 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  window.SQHTAX={CF,get state(){return HT},get held(){return HELD},heldIds:()=>HELD?[String(HELD.h.id)]:[],pubU:()=>HT.u||0,
   gone(u){const t=now();if(u==null||u==='')return t>LEGACY;u=+u;return isFinite(u)&&u>0&&t>u},
   take:()=>{const o=homes()[0];if(o&&!HELD)take(o)},giveBack,html,act,get stall(){return SX?{x:SX,y:SY,npc:BNPC}:null},get clockOK(){return clockOK},tick}})();
+// ---- 276. Drop Card: drag a card to play it, drag a monster onto what it attacks, drag a spell onto its target ----
+// Nov 22 (Jace): "attacking is tedious, as is using spell cards etc. what if we made it where we could click-and-drag a card to
+// whatever it is we want to attack? or click-and-drag a spell onto its target in the same way?"
+// - Pointer events on 262's table (#sqdcm), so mouse, touch and pen all work: press a card and move it 10+ px to drag it. A tap
+//   still opens 262's close-up, and the controller and the buttons work as before.
+// - From your hand: a copy of the card follows the pointer. A spell with a target goes on the glowing card (or hero) you let go on;
+//   a tree, monster, pet or spell without a target is played by letting go anywhere above your hand (your side lights up). Letting go
+//   on your hand puts it back. While you drag, the trees the card would chop glow, as in the close-up.
+// - From the table: one of your monsters or pets that can attack draws an arrow to the pointer; let go on a glowing enemy, enemy pet
+//   or the enemy hero to attack it.
+// - The pointer is captured by the table element itself (262 only redraws its inside), so a redraw can't break a drag. The targets
+//   light up through 262's own aim/sel state; the rules (261) still decide, so an illegal drop says why, as the buttons do.
+// - Styles for the ghost card, the arrow and the drop zone are in 262's stylesheet (dcm-ghost, dcm-arrow, dcm-dropme, dcm-hov, dcm-dragsrc).
+(()=>{const T=window.SQDCM,E=window.SQDCE;if(!T||!T.el||!E)return;const el=T.el;
+ let G=null,swallow=0;
+ const SVGNS='http://www.w3.org/2000/svg';
+ const layer=()=>el.querySelector('.dcm-fxl');
+ const mid=r=>[r.left+r.width/2,r.top+r.height/2];
+ // what's under the pointer: a monster or pet (its uid), a hero ('h0'/'h1'), or where on the table
+ function under(x,y){const t=document.elementFromPoint(x,y);if(!t||!el.contains(t))return{out:true};
+  const slot=t.closest('[data-uid]');if(slot)return{tg:slot.dataset.uid};const h=t.closest('[data-dcm^="h:"]');if(h)return{tg:h.dataset.dcm.slice(2)};
+  return{hand:!!t.closest('.dcm-hand,.dcm-btns'),zoom:!!t.closest('.dcm-zoom')}}
+ function srcEl(){if(!G)return null;return G.t==='hand'?el.querySelector('[data-dcm="c:'+G.h+'"]'):el.querySelector('[data-uid="'+G.uid+'"] .dcm-card')}
+ // after every redraw while dragging: dim the card being dragged, light up your side for a card played onto the table
+ function marks(){const s=srcEl();if(s)s.classList.add('dcm-dragsrc');if(G&&G.table){const b=el.querySelector('.dcm-board.me');if(b)b.classList.add('dcm-dropme')}}
+ function begin(e){const M=T.m,s=M.s,P=s.p[0];G.on=true;
+  try{el.setPointerCapture(G.id)}catch(x){/*quiet*/}
+  M.zoom=null;M.msg='';M.sel=null;M.aim=null;M.att=null;
+  const L=layer();
+  if(G.t==='hand'){const k=P.hand[G.h],c=k==='_sapling'?null:E.card(k);G.k=k;G.c=c;
+   const ts=c&&c.kind==='spell'?E.spellTargets(s,0,c):null;G.ts=ts;G.table=!ts;
+   if(c&&c.kind!=='tree'){M.sel={t:'hand',v:G.h};if(ts)M.aim=ts}
+   const g=document.createElement('div');g.className='dcm-ghost';const im=G.src&&G.src.querySelector('img');
+   if(im){const i2=document.createElement('img');i2.src=im.src;i2.alt='';g.appendChild(i2)}else g.textContent='🌱';G.ghost=g}
+  else{M.sel={t:'mon',v:G.uid};M.att=G.uid;M.aim=E.targets(s,0,G.uid);G.ts=M.aim;
+   const r=G.src.getBoundingClientRect();G.from=mid(r);
+   const sv=document.createElementNS(SVGNS,'svg');sv.setAttribute('class','dcm-arrow');sv.setAttribute('aria-hidden','true');
+   const ln=document.createElementNS(SVGNS,'line'),ci=document.createElementNS(SVGNS,'circle');ln.setAttribute('x1',G.from[0]);ln.setAttribute('y1',G.from[1]);ci.setAttribute('r',16);
+   sv.appendChild(ln);sv.appendChild(ci);G.arrow=sv;G.ln=ln;G.ci=ci}
+  T.render();marks();const L2=layer()||L;if(L2){if(G.ghost)L2.appendChild(G.ghost);if(G.arrow)L2.appendChild(G.arrow)}
+  try{sfx('swish')}catch(x){self.SQERR&&SQERR(x,'268-1')}}
+ function move(x,y){if(G.ghost)G.ghost.style.transform='translate('+x+'px,'+y+'px) rotate(-4deg)';if(G.ln){G.ln.setAttribute('x2',x);G.ln.setAttribute('y2',y);G.ci.setAttribute('cx',x);G.ci.setAttribute('cy',y)}
+  // the target under the pointer grows
+  const u=under(x,y),hov=u.tg&&G.ts&&G.ts.includes(u.tg)?u.tg:null;if(hov!==G.hov){G.hov=hov;el.querySelectorAll('.dcm-hov').forEach(n=>n.classList.remove('dcm-hov'));
+   if(hov){const n=hov[0]==='h'?el.querySelector('[data-dcm="h:'+hov+'"]'):el.querySelector('[data-uid="'+hov+'"]');if(n)n.classList.add('dcm-hov')}}
+  if(!el.querySelector('.dcm-dragsrc'))marks()}
+ function clear(){const g=G;G=null;if(!g)return g;if(g.ghost)g.ghost.remove();if(g.arrow)g.arrow.remove();try{if(el.hasPointerCapture&&el.hasPointerCapture(g.id))el.releasePointerCapture(g.id)}catch(x){/*quiet*/}return g}
+ function cancel(msg){const g=clear(),M=T.m;if(!g||!M)return;M.sel=null;M.aim=null;M.att=null;if(msg)M.msg=msg;T.render()}
+ function drop(x,y){const g=G,M=T.m;if(!g||!M){clear();return}const u=under(x,y);
+  if(g.t==='mon'){if(!u.tg){cancel();return}clear();M.sel=null;M.aim=null;M.att=null;T.act({t:'atk',a:g.uid,tg:u.tg});return}
+  if(g.ts){// a spell with a target
+   if(u.tg&&g.ts.includes(u.tg)){clear();T.act({t:'play',h:g.h,tg:u.tg});return}
+   cancel(u.out||u.hand?'':'Drop '+g.c.n+' on a glowing target.');return}
+  if(u.out||u.hand||u.zoom){cancel();return}
+  clear();M.sel=null;M.aim=null;M.att=null;T.act(g.c&&g.c.kind==='tree'?{t:'plant',h:g.h}:{t:'play',h:g.h})}
+ el.addEventListener('pointerdown',e=>{swallow=0;const M=T.m;if(!M||G||e.button>0||M.zoom)return;const s=M.s;if(s.over||s.cur!==0||M.busy)return;
+  const b=e.target.closest('[data-dcm]');if(!b||!el.contains(b))return;const a=b.dataset.dcm;
+  if(/^c:\d+$/.test(a)&&b.closest('.dcm-hand'))G={t:'hand',h:+a.slice(2),src:b};
+  else if(/^m:/.test(a)){const uid=a.slice(2);if(!E.targets(s,0,uid).length)return;G={t:'mon',uid,src:b}}
+  else return;
+  G.id=e.pointerId;G.x0=e.clientX;G.y0=e.clientY;G.on=false},true);
+ el.addEventListener('pointermove',e=>{if(!G||e.pointerId!==G.id)return;
+  if(!G.on){const dx=e.clientX-G.x0,dy=e.clientY-G.y0;if(dx*dx+dy*dy<100)return;const M=T.m;if(!M||M.s.cur!==0||M.s.over){G=null;return}begin(e)}
+  e.preventDefault();move(e.clientX,e.clientY)});
+ el.addEventListener('pointerup',e=>{if(!G||e.pointerId!==G.id)return;if(!G.on){G=null;return}// a tap: 262's click handler opens the close-up
+  e.preventDefault();swallow=performance.now()+400;drop(e.clientX,e.clientY)});
+ el.addEventListener('pointercancel',e=>{if(G&&e.pointerId===G.id){if(G.on)cancel();else G=null}});
+ // the click that follows a drag must not also open a close-up or pick a target (the next press starts fresh)
+ el.addEventListener('click',e=>{if(performance.now()<swallow){e.stopImmediatePropagation();e.preventDefault()}},true);
+ // the browser's own image dragging would steal a mouse drag
+ el.addEventListener('dragstart',e=>e.preventDefault());
+ addEventListener('keydown',e=>{if(G&&G.on&&e.key==='Escape'){e.preventDefault();e.stopPropagation();cancel()}},true);
+ window.SQDCDRAG={get g(){return G},under,cancel}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

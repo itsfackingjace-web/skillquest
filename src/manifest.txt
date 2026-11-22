@@ -278,6 +278,7 @@ core/264-s272-keep-unknown-items.js
 combat/265-s273-mana-pause.js
 skills/266-s274-hungry-behind-screens.js
 items/267-s275-home-tax.js
+ui/268-s276-drop-card-drag.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

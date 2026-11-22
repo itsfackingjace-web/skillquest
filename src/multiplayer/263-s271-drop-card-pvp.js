@@ -14,7 +14,7 @@
  // Nov 21: the rules version travels with the deck. A match ended at once when the other game was older (a game from before 263
  // takes the request as a duel and never sends a deck) or played other rules (30 HP, 6 trees): now it stops before the stakes are
  // taken and says why. Bump RV when a rule changes.
- const RV='r4';// r3: pet cards only their owner's game knows, 60 of a tree, END TURN fingerprints; r4: the match's code in the head
+ const RV='r5';// r3: pet cards only their owner's game knows, 60 of a tree, END TURN fingerprints; r4: the match's code in the head; r5 (Nov 22): pet cards in the deck, wolf powers
  // Nov 21 (Jace vs Bear: "the games kept ending after the first turn", after one full match): the record lives at duels/<pair>/<uid>
  // for every match between the same two players, and S.mv (your moves) was only cleared when the next match began, so while setting
  // up the next match each game sent its deck plus the last match's moves. The other game replayed those on your first turn, saw the
@@ -24,7 +24,7 @@
  const code=()=>{try{const D=A().D;return String(D&&D.s||'').replace(/[^\w-]/g,'').slice(0,24)}catch(e){return''}};
  const deckStr=d=>Object.keys(d.c).filter(k=>d.c[k]>0).map(k=>k+'*'+(d.c[k]|0)).join(',')+'|'+(d.pet||'')+'|'+RV+'|'+code();
  function parseHead(h){const[a,p,v,cd]=String(h||'').split('|'),c={};for(const x of(a||'').split(',')){const[k,n]=x.split('*');if(k&&/^[\w:-]+$/.test(k))c[k]=Math.max(0,Math.min(60,n|0))}return{c,pet:p&&/^pc_[\w:-]+$/.test(p)?p:null,v:v||'',code:cd||''}}
- function badDeck(d){if(!d)return'no deck';for(const k in d.c)if(!B.info(k)||!E.card((window.SQDROPCARD.ITEM[k]||{}).key||k))return'unknown card';
+ function badDeck(d){if(!d)return'no deck';for(const k in d.c)if(/^pc_/.test(k)?!E.card(k):(!B.info(k)||!E.card((window.SQDROPCARD.ITEM[k]||{}).key||k)))return'unknown card';// a pet card's cost, stats and power come from its key and the library, the same in both games
   // Nov 21: no pet check. Some pet cards exist only in their owner's game (254 adds them from your own save), so "unknown pet" turned
   // every such deck away as "not allowed"; a Companion's power comes from its key alone (261's COMP), so both games agree anyway.
   const p=B.problems({n:'x',c:d.c,pet:d.pet}).filter(t=>!/^Optional|^You only have/.test(t));return p[0]||''}

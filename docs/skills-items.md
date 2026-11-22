@@ -174,7 +174,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   young players) and adds 8 achievements (group "Drop Card", earned cards only). Check 50.
 - **Dev Suite > Cards** (`dev/257-s265-cards-tab.js`): library `cards.<card key>` {n,d,g,r,src}; 253's `applyLib` (SQA.onApply) changes cards or adds
   `cu_*` cards that take over `src`'s drop (`SRC`), per-card rate `r` (`rateOf`, used by `roll(ck)`); raising a rate above the published one needs
-  a second click. Art: Sprites tab by item key. Check 51.
+  a second click. Art: Sprites tab by item key. Check 51. Nov 22: its list ends with "Pet cards": power (PTXT), summon cost, HP, ATK per
+  pet → `draft/petcards/<pet item>` {p,c,h,a}; Dev Suite > New pets shows each new pet's card with "Change its card" (`SQCARDSTAB.pickPet`). Check 88.
 - **Ace the Card Sharp** (`world/258-s266-card-sharp.js`, `window.SQCARDSHARP`): NPC kind `cardsharp` behind a card table at VX+8,VY+1 (BS),
   shop panel on ptab 2: buy the guide (GEN's entry, so the Starter Deck too), guide, binder, match (coming soon). Check 52.
 - **Card frames** (`items/260-s268-card-frames.js`, `window.SQCARDFRAME`): furniture `cardframe` (BREC wood 4 + ibar 1, req 8; Marlo's via
@@ -192,4 +193,19 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Tree cards by the tree hit** (`items/253`, Nov 21): 253's SQHIT step reads the object in front before the swing (`frontO`, like 122's) and `window.SQTREECARD(o)` names its card: oak/willow/maple/yew/pine by `o.t`, `o.v` 'dead' = Dead tree, 'dark' = Void tree (199 swaps its logs for `voidlog`), `cactus` = Cactus fruit (only when no fruit came out; 254 rolls it when fruit does), else the log that went up. Cards Pine, Dead tree (1 Mana) and Void tree (6 Mana). 254's `openBinder` clears a peek unless 259's `peek` opened it.
 - **Drop Card rules, Nov 21 (Jace)**: heroes 30 HP (`SQDCE.HERO`; Gold golem +3), Grove = 6 trees (`MAXT`, any Mana; was 10 Mana), decks 20-60 (254's `DMIN`/`DMAX`; trees up to 60). Ace's heal thresholds follow `E.HERO`.
 - **Binder = the bag's CARDS tab** (254, Nov 21, Jace): `bagTabs()` puts ITEMS / CARDS (data-dcb `bag` / `open`) above the bag (ptab 4) and the binder panel (titled BAG); the `dc_binder` item is no longer given and is set to 0 on load (key kept). `window.SQKEEPFALL(k)` (cards, pet cards, old binder): 063's `grvFall` leaves them out of graves and 254's `reset` step keeps them through the wipe.
+- **Pet cards in decks** (Nov 22, Jace; 261/254/262/263, check 88): pet cards are ordinary deck cards (max 2 each; a deck's old `pet`
+  Companion is moved into `c` on load, `pet` is always null now). 261's `card('pc_<pet>')` = {kind:'pet', comp, cost, hp, atk}: `comp` from
+  `COMP` (pet id) or `friendly`, stats from `PSTAT[comp]` (cost 1-4 by strength), both overridable per pet by library `petcards.<pet item>`
+  {p,c,h,a} (`OV`, Dev Suite > Cards). Summoned pets live in `P.board` with `pet:true` (beside the hero on screen, `MAXP`=3, not counted in
+  `MAXB` = `mons(P)`), so attacks, Guard, spells and random effects treat them like monsters. Powers count live, unsilenced pets
+  (`has(P,comp)`, stacking); start-of-match powers became arrival effects (`summonPet`); once-only powers use the pet's `cf.used`. Texts:
+  `PTXT`, card text `SQPETDESC(pk)` ("Pet card · Cost N · H HP A ATK. power") → IDESC (254's regPet; 261 refreshes on apply). Also fixed:
+  `isWolf` read `m.id` (never set on the table) so wolf powers never fired; 254's deck loader clamped every count to 2 (trees too), and
+  repairs a Starter Deck that came back under 20. PvP rules version `r5` (263); `badDeck` accepts any `pc_` key. Ace: Normal +Dog, Hard
+  +Wolf +Imp. Wiki and guide pages say "Pet cards".
+- **Dragging cards** (`ui/268-s276-drop-card-drag.js`, `window.SQDCDRAG`, Nov 22, check 88): pointer events on 262's `#sqdcm`; a press
+  that moves 10+ px drags (else 262's click opens the close-up). Hand: ghost card (`.dcm-ghost`), your board lit (`.dcm-dropme`),
+  targeted spells use 262's `M.aim`; drop above the hand plays, on a glowing target casts. Board: arrow (`.dcm-arrow`) from your
+  monster/pet, drop on a target attacks. The pointer is captured by `#sqdcm` itself (262 only redraws its inside); the click after a
+  drag is swallowed until the next press. Styles live in 262's stylesheet. Ace's speech bubble no longer blocks taps (`pointer-events:none`).
 - **Duplicate pets** (Nov 21): 093's `givePet` (`SQGIVEPET`) and 085's `LUX.giveImp` put another `pet_<k>` in the bag when you already have that pet (in the bag or out); only a pet you don't have is equipped. Check 57.

@@ -7,6 +7,9 @@
 //   ATK/HP, power, status, owner and where it drops, plus PLAY / PLANT / ATTACK / CHOP IT when you can; tapping anywhere else (or
 //   BACK, Esc, the controller's ○) goes back to the table. ATTACK lights up the targets on the table; a spell that needs a target
 //   does the same. While a card is open, the trees it would chop glow with an axe. Leaving a match counts as a loss.
+// - Nov 22 (Jace): pets are deck cards (261). Each side's pets sit in a row beside its hero (`.dcm-pets`), drawn like monsters (ATK, HP,
+//   tags) and tappable for the same close-up (cost, stats, power, SUMMON from the hand). Ace brings a pet on Normal and Hard. Dragging
+//   cards onto the table and onto targets is 268's.
 // - Movement: attack lunges, damage numbers, a puff where a monster falls, new cards sliding in, chopped trees shaking, a turn
 //   banner (all off with "reduce motion").
 // - Ace (aceMove) plays a move every 0.7 s: plant the biggest tree, go for the win when it can, play its biggest card (spells on
@@ -15,9 +18,9 @@
 //   achievement "First win". The rules engine is 261's SQDCE.
 (()=>{const E=window.SQDCE,B=window.SQBINDER,D=window.SQDROPCARD;if(!E||!B||!D)return;
  const LV={easy:{n:'Easy',g:50,deck:[['tree',6],['oak',2],['slime',2],['slime:moss',2],['wolf',2],['skel',2],['bat',2],['pot_heal',2]]},
-  normal:{n:'Normal',g:150,deck:[['tree',6],['oak',2],['slime',2],['slime:moss',2],['wolf:briar',2],['skel',2],['bat',2],['pot_heal',1],['shroom',1]]},
-  hard:{n:'Hard',g:400,deck:[['tree',3],['oak',2],['willow',2],['maple',1],['wolf:snow',2],['skel:ember',2],['guard',2],['alpha',1],['wb:giant',1],['thorn',1],['pot_zap',1],['pot_napalm',1],['pot_heal',1]]}};
- const aceDeck=lv=>{const out=[];for(const[k,n]of LV[lv].deck){const C=D.CARDS[k];if(C)for(let i=0;i<n;i++)out.push(C.key)}return out};
+  normal:{n:'Normal',g:150,deck:[['tree',6],['oak',2],['slime',2],['slime:moss',2],['wolf:briar',2],['skel',2],['bat',2],['pot_heal',1],['shroom',1],['pc_pet_dog',1]]},
+  hard:{n:'Hard',g:400,deck:[['tree',3],['oak',2],['willow',2],['maple',1],['wolf:snow',2],['skel:ember',2],['guard',2],['alpha',1],['wb:giant',1],['thorn',1],['pot_zap',1],['pot_napalm',1],['pot_heal',1],['pc_pet_pwolf',1],['pc_pet_imp',1]]}};
+ const aceDeck=lv=>{const out=[];for(const[k,n]of LV[lv].deck){const C=D.CARDS[k],key=C?C.key:/^pc_/.test(k)&&E.card(k)?k:null;if(key)for(let i=0;i<n;i++)out.push(key)}return out};
  let M=null;// {s, lv, sel:{t:'hand'|'mon',v}, aim:[uids] , msg, busy, leaveArm}
  let WINS={};// {lv: day}
  SQSAVE.after('262:dcw',s=>{s.dcw=WINS});SQLOAD.after('262',(S)=>{WINS=S&&S.dcw&&typeof S.dcw==='object'?Object.assign({},S.dcw):{}});
@@ -34,7 +37,7 @@
   if(!g.length){const dmg=ready.reduce((a,m)=>a+E.atkOf(s,i,m),0);if(dmg>=O.hp&&ready.length)return{t:'atk',a:ready[0].uid,tg:'h'+(1-i)}}
   // cards
   const plays=has('play').filter(o=>P.hand[o.h]!=='_sapling').map(o=>({o,c:E.card(P.hand[o.h])}));
-  let pickP=null,ps=-1;for(const{o,c}of plays){let v=E.costOf(s,i,c)*10+(c.kind==='mon'?c.atk+c.hp:0);
+  let pickP=null,ps=-1;for(const{o,c}of plays){let v=E.costOf(s,i,c)*10+(c.kind==='mon'?c.atk+c.hp:c.kind==='pet'?c.atk+c.hp+3:0);
    if(c.kind==='spell'){const tm=o.tg&&E.findM(s,o.tg)[1];
     if(c.id==='pot_heal')v=P.hp<=E.HERO-6?60:-1;else if(c.id==='nuts')v=P.hp<=E.HERO-2?15:-1;else if(c.id==='pot_napalm')v=O.board.length>=2?70:-1;
     else if(c.id==='pot_zap')v=tm&&tm.side!==i?(tm.hp<=4?50+E.atkOf(s,1-i,tm)*5:20):-1;else if(c.id==='pot_poison')v=tm&&tm.side!==i?20+tm.hp:-1;
@@ -64,14 +67,15 @@
  function stumpPic(){if(PICS.stump)return PICS.stump;const c=document.createElement('canvas');c.width=16;c.height=12;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a,b,w,h)};
   r(3,3,10,9,'#3a2410');r(4,4,8,7,'#8a5a30');r(3,1,10,4,'#3a2410');r(4,2,8,2,'#d8b078');r(7,2,1,1,'#a07040');r(9,3,1,1,'#a07040');r(1,10,14,2,'#3a2410');r(12,0,1,1,'#78c850');r(13,1,1,1,'#58a838');return PICS.stump=c.toDataURL()}
  const aceCh=()=>{const n=(window.NPCS||[]).find(n=>n.kind==='cardsharp');return n&&n.ch||{sk:1,hs:3,hc:2,sh:4,pn:2,ht:1,hcol:1,so:1}};
- const KIND={reg:'MONSTER',tree:'TREE',world:'WORLD BOSS',dungeon:'DUNGEON BOSS',island:'ISLAND BOSS',guild:'GUILD BOSS',potion:'POTION SPELL',forage:'FORAGE SPELL'};
- const KCOL={reg:'#7e4210',tree:'#3a7a2a',world:'#b83020',dungeon:'#7840b0',island:'#2878c8',guild:'#309058',potion:'#a83088',forage:'#8a7430'};
- const an=n=>(/^[aeiou]/.test(n)?'an ':'a ')+n,FROM={reg:n=>'Found by defeating '+an(n),tree:n=>'Found by chopping '+an(n),world:n=>'Found by defeating the '+n+' (world boss)',dungeon:n=>'Found by defeating the '+n+' (dungeon boss)',island:n=>'Found by defeating the '+n+' (island boss)',guild:n=>'Found by defeating the '+n+' (guild boss)',potion:n=>'Found by brewing '+an(n),forage:n=>'Found by picking '+an(n)};
+ const KIND={pet:'PET',reg:'MONSTER',tree:'TREE',world:'WORLD BOSS',dungeon:'DUNGEON BOSS',island:'ISLAND BOSS',guild:'GUILD BOSS',potion:'POTION SPELL',forage:'FORAGE SPELL'};
+ const KCOL={pet:'#289890',reg:'#7e4210',tree:'#3a7a2a',world:'#b83020',dungeon:'#7840b0',island:'#2878c8',guild:'#309058',potion:'#a83088',forage:'#8a7430'};
+ const an=n=>(/^[aeiou]/.test(n)?'an ':'a ')+n,FROM={pet:n=>'Found by releasing '+an(n)+' (pet)',reg:n=>'Found by defeating '+an(n),tree:n=>'Found by chopping '+an(n),world:n=>'Found by defeating the '+n+' (world boss)',dungeon:n=>'Found by defeating the '+n+' (dungeon boss)',island:n=>'Found by defeating the '+n+' (island boss)',guild:n=>'Found by defeating the '+n+' (guild boss)',potion:n=>'Found by brewing '+an(n),forage:n=>'Found by picking '+an(n)};
  // against a player (263): M.pvp = {name, ch, send(mv), leave(), done(res), turnLeft()}; the foe is side 1 on this screen
  const FOE=()=>M&&M.pvp?M.pvp.name:'Ace',FOES=()=>FOE()+'\'s';
  const ACE_LINES=['Hah! Didn\'t see that coming?','Not bad, not bad...','My trees are bigger than yours.','You\'ll need more than that!','Careful now...','Is that your best card?'];
  // ---- drawing ----
  function cardBtn(k,data,cls,label,extra){return'<button class="dcm-card '+(cls||'')+'" data-dcm="'+data+'" aria-label="'+esc(label)+'"><img src="'+pic(k)+'" alt="">'+(extra||'')+'</button>'}
+ function petsHTML(side){const L=M.s.p[side].board.filter(m=>m.pet);return'<div class="dcm-pets '+(side?'foe':'me')+'" aria-label="'+(side?esc(FOES())+' pets':'Your pets')+'">'+L.map(m=>monHTML(m,side)).join('')+'</div>'}
  function monHTML(m,side){const s=M.s,me=side===0,ready=me&&s.cur===0&&!s.over&&E.targets(s,0,m.uid).length>0,aim=M.aim&&M.aim.includes(m.uid),grd=E.guards(s,side).includes(m);
   const tags=[];if(grd)tags.push('GUARD');if(m.sleep&&me)tags.push('ZZZ');if(m.frozen>0)tags.push('FROZEN');if(m.poison)tags.push('POISON');if(m.mute)tags.push('SILENCED');
   const a=E.atkOf(s,side,m),pw=!m.mute&&E.POW[m.id2];
@@ -90,20 +94,20 @@
   const upM=P.grove.filter(g=>!g.stump).reduce((a,g)=>a+g.mana,0);
   let h='<div class="dcm-wood"><div class="dcm-felt">';
   // Ace
-  h+='<div class="dcm-r1">'+heroHTML(1)+(M.say?'<div class="dcm-say">'+esc(M.say)+'</div>':'')+
+  h+='<div class="dcm-r1">'+heroHTML(1)+petsHTML(1)+(M.say?'<div class="dcm-say">'+esc(M.say)+'</div>':'')+
    '<div class="dcm-ahand">'+A.hand.map((k,i)=>'<span class="dcm-back" style="--i:'+(i-(A.hand.length-1)/2)+'"></span>').join('')+'</div>'+
    '<div class="dcm-grove foe"><span class="dcm-gl">'+esc(FOES())+' Grove · '+E.groveMana(A)+'</span><div class="dcm-gt">'+groveHTML(1)+'</div></div>'+
    '<div class="dcm-log"><b>Last moves</b>'+s.log.slice(-4).map(l=>'<div>'+esc(l)+'</div>').join('')+'</div></div>';
-  h+='<div class="dcm-board foe">'+(A.board.map(m=>monHTML(m,1)).join('')||'<span class="dcm-empty">'+esc(FOE())+' has no monsters out</span>')+'</div>';
+  h+='<div class="dcm-board foe">'+(A.board.filter(m=>!m.pet).map(m=>monHTML(m,1)).join('')||'<span class="dcm-empty">'+esc(FOE())+' has no monsters out</span>')+'</div>';
   h+='<div class="dcm-mid"><span class="dcm-ribbon'+(s.over?' over':my?'':' ace')+'">'+(s.over?(s.win===0?'YOU WIN!':esc(FOE()).toUpperCase()+' WINS'):my?'YOUR TURN':esc(FOES()).toUpperCase()+' TURN')+'</span><span class="dcm-msg" role="status">'+esc(M.msg||'')+'</span>'+
    '<span class="dcm-lvn">'+esc(M.pvp?(M.pvp.turnLeft&&!s.over?M.pvp.turnLeft()+' left this turn':'vs '+FOE()):LV[M.lv].n)+' · tap any card for a close-up</span></div>';
-  h+='<div class="dcm-board me">'+(P.board.map(m=>monHTML(m,0)).join('')||'<span class="dcm-empty">Your monsters go here</span>')+'</div>';
+  h+='<div class="dcm-board me">'+(P.board.filter(m=>!m.pet).map(m=>monHTML(m,0)).join('')||'<span class="dcm-empty">Your monsters go here</span>')+'</div>';
   // you
-  h+='<div class="dcm-r5"><div class="dcm-me">'+heroHTML(0)+(P.pet?'<span class="dcm-pet" title="'+esc(E.short(INAME[P.pet]||''))+'"><img src="'+pic(P.pet.replace(/^pc_/,''))+'" alt=""><small>'+esc(E.short(INAME[P.pet]||''))+'</small></span>':'')+'</div>'+
+  h+='<div class="dcm-r5"><div class="dcm-me">'+heroHTML(0)+petsHTML(0)+'</div>'+
    '<div class="dcm-grove me"><div class="dcm-gems">'+Array.from({length:Math.min(10,P.pool+upM)},(_,i)=>'<i class="'+(i<P.pool?'on':'')+'"></i>').join('')+'<span>'+P.pool+' Mana'+(upM?' · '+upM+' in trees':'')+'</span></div><div class="dcm-gt">'+groveHTML(0,plan)+'</div></div>'+
    '<div class="dcm-hand">'+P.hand.map((k,i)=>{const n=P.hand.length,rot=(i-(n-1)/2);
     if(k==='_sapling')return'<button class="dcm-card dcm-sap'+(my?' ok':'')+'" data-dcm="c:'+i+'" style="--r:'+rot+'" aria-label="Sapling: 1 Mana this turn">🌱<span class="dcm-cost">0</span></button>';
-    const c=E.card(k),cost=E.costOf(s,0,c),ok=my&&(c.kind==='tree'?!P.planted:cost<=P.pool+upM);
+    const c=E.card(k),cost=E.costOf(s,0,c),ok=my&&(c.kind==='tree'?!P.planted:cost<=P.pool+upM&&(c.kind!=='pet'||E.petsOut(P).length<E.MAXP));
     return'<button class="dcm-card'+(ok?' ok':' no')+(M.newCards&&M.newCards.includes(i)?' drawn':'')+'" data-dcm="c:'+i+'" style="--r:'+rot+'" aria-label="'+esc(c.n+(c.kind==='tree'?', '+c.mana+' Mana tree':', costs '+cost))+'"><img src="'+pic(k)+'" alt=""><span class="dcm-cost'+(c.kind==='tree'?' tree':'')+'">'+(c.kind==='tree'?'+'+c.mana:cost)+'</span></button>'}).join('')+'</div>'+
    '<div class="dcm-btns">'+(s.over&&!M.pvp?'<button class="dcm-end" data-dcm="again">PLAY<br>AGAIN</button>':s.over?'':'<button class="dcm-end" data-dcm="end"'+(my&&!M.aim?'':' disabled')+'>END<br>TURN</button>')+
    (M.aim?'<button class="dcm-b" data-dcm="cancel">CANCEL</button>':'')+'<button class="dcm-b small" data-dcm="leave">'+(s.over?'LEAVE':M.leaveArm?'LEAVE = LOSS?':'LEAVE')+'</button></div></div>';
@@ -115,19 +119,19 @@
   if(z.t==='hand'){key=P.hand[z.v];if(key==='_sapling'){return'<div class="dcm-zoom" data-dcm="unzoom"><div class="dcm-zc"><div class="dcm-zbig dcm-sapbig">🌱</div><div class="dcm-zi"><div class="dcm-zn">Sapling</div><div class="dcm-zt">Gives 1 Mana this turn. Ace gives it to whoever goes second.</div><div class="dcm-zacts"><button class="dcm-b pri" data-dcm="play">USE IT</button><button class="dcm-b" data-dcm="unzoom">BACK</button></div></div></div><div class="dcm-zhint">Tap anywhere to go back to the table</div></div>'}
    c=E.card(key);owner='In your hand';const my=s.cur===0&&!s.over,up=P.pool+P.grove.filter(g=>!g.stump).reduce((a,g)=>a+g.mana,0);
    if(my){if(c.kind==='tree')acts=P.planted?'<span class="dcm-zw">You\'ve planted a tree this turn.</span>':'<button class="dcm-b pri" data-dcm="play">PLANT</button>';
-    else acts=E.costOf(s,0,c)<=up?'<button class="dcm-b pri" data-dcm="play">PLAY</button>':'<span class="dcm-zw">Not enough Mana yet.</span>'}}
-  else if(z.t==='mon'){[side,m]=E.findM(s,z.v);if(!m){M.zoom=null;return''}key=m.key;c=m.key?E.card(m.key):{n:m.n,kind:'mon',hp:m.max,atk:m.atk,id:m.id2,cost:0};owner=side===0?'Your monster':FOES()+' monster';
+    else if(c.kind==='pet'&&E.petsOut(P).length>=E.MAXP)acts='<span class="dcm-zw">You already have '+E.MAXP+' pets out.</span>';
+    else acts=E.costOf(s,0,c)<=up?'<button class="dcm-b pri" data-dcm="play">'+(c.kind==='pet'?'SUMMON':'PLAY')+'</button>':'<span class="dcm-zw">Not enough Mana yet.</span>'}}
+  else if(z.t==='mon'){[side,m]=E.findM(s,z.v);if(!m){M.zoom=null;return''}key=m.key;c=m.key?E.card(m.key):{n:m.n,kind:'mon',hp:m.max,atk:m.atk,id:m.id2,cost:0};owner=side===0?(m.pet?'Your pet':'Your monster'):FOES()+(m.pet?' pet':' monster');
    if(E.guards(s,side).includes(m))tags.push('Guard: must be attacked first');if(m.sleep&&side===0)tags.push('Just played: attacks next turn');if(m.frozen>0)tags.push('Frozen: can\'t attack this turn');if(m.poison)tags.push('Poisoned: 1 damage each turn');if(m.mute)tags.push('Silenced: no power');
    if(side===0&&s.cur===0&&!s.over){acts=E.targets(s,0,m.uid).length?'<button class="dcm-b pri" data-dcm="attack">ATTACK</button>':''}}
   else if(z.t==='tree'){const g=s.p[z.side].grove[z.v];key=g.key;c=E.card(key);owner=(z.side===0?'Your':FOES())+' Grove'+(g.stump?' · chopped (grows back next turn)':'');if(z.side===0&&!g.stump&&s.cur===0&&!s.over)acts='<button class="dcm-b pri" data-dcm="chop:'+z.v+'">CHOP IT</button>'}
-  else if(z.t==='pet'){key=P.pet;owner='Your Companion';c={n:E.short(INAME[key]||''),kind:'pet'}}
   const C=key&&D.ITEM[key],g=C?C.g:c.kind==='pet'?'pet':'reg';
   const gem=n=>'<span class="dcm-zcost"><i>'+n+'</i></span><small>Cost</small>';
-  const stats=c.kind==='mon'?'<div class="dcm-zs">'+(m?'':gem(c.cost))+'<span class="dcm-atk big">'+(m?E.atkOf(s,side,m):c.atk)+'</span><small>ATK</small><span class="dcm-zhp">♥ '+(m?m.hp+'<small> / '+m.max+'</small>':c.hp)+'</span><small>HP</small></div>':
+  const stats=c.kind==='mon'||c.kind==='pet'?'<div class="dcm-zs">'+(m?'':gem(E.costOf(s,0,c)))+'<span class="dcm-atk big">'+(m?E.atkOf(s,side,m):c.atk)+'</span><small>ATK</small><span class="dcm-zhp">♥ '+(m?m.hp+'<small> / '+m.max+'</small>':c.hp)+'</span><small>HP</small></div>':
    c.kind==='tree'?'<div class="dcm-zs"><span class="dcm-zcost"><i>'+c.mana+'</i></span><small>Mana every time you chop it</small></div>':
    c.kind==='spell'?'<div class="dcm-zs">'+gem(E.costOf(s,0,c))+'</div>':'';
-  const pw=c.kind==='mon'&&E.POW[c.id]&&!(m&&m.mute)?'<div class="dcm-zp"><b>Power</b><br>'+esc(E.POW[c.id])+'</div>':c.kind==='spell'&&E.SPELL[c.id]?'<div class="dcm-zp"><b>Spell</b><br>'+esc(E.SPELL[c.id].txt)+'</div>':c.kind==='pet'?'<div class="dcm-zp"><b>Companion power</b><br>'+esc(String(IDESC[key]||'').replace(/^Companion\. /,''))+'</div>':'';
-  return'<div class="dcm-zoom" data-dcm="unzoom"><div class="dcm-zc"><div class="dcm-zbig"><img src="'+pic(c.kind==='pet'?key.replace(/^pc_/,''):key)+'" alt="'+esc(c.n)+'"></div>'+
+  const pw=c.kind==='mon'&&E.POW[c.id]&&!(m&&m.mute)?'<div class="dcm-zp"><b>Power</b><br>'+esc(E.POW[c.id])+'</div>':c.kind==='spell'&&E.SPELL[c.id]?'<div class="dcm-zp"><b>Spell</b><br>'+esc(E.SPELL[c.id].txt)+'</div>':c.kind==='pet'?'<div class="dcm-zp"><b>Pet power</b><br>'+esc(E.PTXT[c.comp]||'')+(m&&m.mute?' (silenced)':m&&m.cf&&m.cf.used&&/once|arrives/i.test(E.PTXT[c.comp]||'')?' (used)':'')+'</div>':'';
+  return'<div class="dcm-zoom" data-dcm="unzoom"><div class="dcm-zc"><div class="dcm-zbig"><img src="'+pic(key)+'" alt="'+esc(c.n)+'"></div>'+
    '<div class="dcm-zi"><div class="dcm-zn">'+esc(c.n)+'</div><span class="dcm-zk" style="background:'+(KCOL[g]||'#289890')+'">'+(KIND[g]||'COMPANION')+'</span>'+stats+pw+
    (tags.length?'<div class="dcm-zt">'+tags.map(esc).join('<br>')+'</div>':'')+'<div class="dcm-zt dim">'+esc(owner)+(FROM[g]?'<br>'+esc(FROM[g](String(c.n).toLowerCase())):'')+'</div>'+'<div class="dcm-zacts">'+acts+'<button class="dcm-b" data-dcm="unzoom">BACK</button></div>'+'</div></div>'+
    '<div class="dcm-zhint">Tap anywhere to go back to the table</div></div>'}
@@ -175,7 +179,7 @@
   if(x==='c'){zoomTo({t:'hand',v:+y});return}
   if(x==='m'){zoomTo({t:'mon',v:y});return}
   if(x==='g'||x==='gx'){zoomTo({t:'tree',v:+y,side:x==='g'?0:1});return}
-  if(x==='h'&&y==='h0'&&P.pet){zoomTo({t:'pet'});return}});
+});
  function playSel(i){const s=M.s,P=s.p[0];if(s.over||s.cur!==0||M.busy)return;const k=P.hand[i];M.zoom=null;if(k==='_sapling'){act({t:'play',h:i});return}const c=E.card(k);
   if(c.kind==='tree'){act({t:'plant',h:i});return}if(c.kind==='spell'){const ts=E.spellTargets(s,0,c);if(ts){if(!ts.length){M.msg='There\'s nothing to use it on.';render();return}M.sel={t:'hand',v:i};M.aim=ts;M.msg='Pick a target for '+c.n+'.';render();return}}act({t:'play',h:i})}
  // Esc, or the controller's ○, goes back: close-up first, then a target pick
@@ -210,8 +214,8 @@
   '.dcm-face img{width:100%;height:100%;display:block}'+
   '.dcm-hn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-size:14px;text-shadow:0 2px 0 rgba(0,0,0,.5)}.dcm-heart{background:#c02838;color:#fff;font-weight:700;font-size:15px;padding:1px 8px;border:2px solid #601018;border-radius:10px}'+
   '.dcm-hero.aim .dcm-face{box-shadow:0 0 0 3px #f04040,0 0 18px 6px rgba(240,64,64,.75);animation:dcmPulse .8s infinite alternate}'+
-  '.dcm-say{position:absolute;left:150px;top:4px;max-width:220px;background:#f8f0d8;color:#282028;font-size:13px;padding:5px 9px;border:3px solid #485870;border-radius:10px;z-index:3;animation:dcmIn .25s}'+
-  '.dcm-pet{display:flex;flex-direction:column;align-items:center;font-size:10px;margin-left:-4px}.dcm-pet img{width:34px;height:34px;background:#f8f0d8;border:3px solid #289890;border-radius:50%}'+
+  '.dcm-say{pointer-events:none;position:absolute;left:150px;top:4px;max-width:220px;background:#f8f0d8;color:#282028;font-size:13px;padding:5px 9px;border:3px solid #485870;border-radius:10px;z-index:3;animation:dcmIn .25s}'+
+  '.dcm-pets{display:flex;gap:14px;align-items:flex-end;flex:0 0 auto;padding:0 4px 8px}.dcm-pets:empty{display:none}.dcm-pets .dcm-card{width:52px;height:72px}.dcm-pets .dcm-atk,.dcm-pets .dcm-hp{width:20px;height:20px;font-size:11px;bottom:-6px}'+
   '.dcm-me{display:flex;align-items:flex-end;gap:6px;flex:0 0 auto}'+
   // groves
   '.dcm-grove{display:flex;flex-direction:column;gap:2px;min-width:0}.dcm-grove.foe{margin-left:auto}.dcm-gl{font-size:12px;opacity:.85;text-align:right}'+
@@ -244,6 +248,11 @@
   // buttons
   '.dcm-btns{display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto}.dcm-end{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe680,#f0b020);color:#3a2008!important;border:4px solid #6a4410;box-shadow:0 5px 0 #4a2a08,0 8px 14px rgba(0,0,0,.4);font-weight:700;font-size:15px;line-height:1.1}.dcm-end:disabled{filter:grayscale(.8) brightness(.8);box-shadow:0 3px 0 #4a2a08}'+
   '.dcm-b{min-height:44px;min-width:44px;padding:6px 14px;background:#f8f8f8;color:#282028!important;border:3px solid #485870;border-radius:8px;font-weight:700}.dcm-b.pri{background:#78e070;border-color:#2a6a22}.dcm-b.small{min-height:36px;font-size:12px;padding:4px 10px}.dcm-b:disabled{opacity:.45}'+
+  // dragging (268): the card copy under the pointer, the attack arrow, your side lit up as the drop zone, the target under the pointer
+  '#sqdcm .dcm-hand .dcm-card,#sqdcm .dcm-slot .dcm-card{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#sqdcm img{-webkit-user-drag:none}'+
+  '.dcm-dragsrc{opacity:.3}.dcm-ghost{position:fixed;left:0;top:0;width:76px;height:106px;margin:-53px 0 0 -38px;pointer-events:none;filter:drop-shadow(0 12px 14px rgba(0,0,0,.55));will-change:transform;font-size:44px;display:flex;align-items:center;justify-content:center}.dcm-ghost img{width:100%;height:100%;display:block}'+
+  '.dcm-arrow{position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;overflow:visible}.dcm-arrow line{stroke:#f8d048;stroke-width:7;stroke-linecap:round;stroke-dasharray:1 13;filter:drop-shadow(0 0 3px rgba(0,0,0,.6))}.dcm-arrow circle{fill:rgba(240,64,64,.18);stroke:#f04040;stroke-width:4}'+
+  '.dcm-dropme{outline:3px dashed rgba(248,208,72,.9);outline-offset:-2px;border-radius:14px;background:rgba(248,208,72,.10)}.dcm-slot.dcm-hov{transform:scale(1.14);z-index:3}.dcm-hero.dcm-hov .dcm-face{transform:scale(1.12)}'+
   // the close-up
   '.dcm-zoom{position:absolute;inset:0;z-index:5;background:rgba(10,8,16,.74);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;animation:dcmFade .15s;cursor:pointer}'+
   '.dcm-zc{display:flex;align-items:center;gap:30px;max-width:94%;animation:dcmZoom .2s ease-out}.dcm-zbig{flex:0 0 auto;filter:drop-shadow(0 14px 22px rgba(0,0,0,.6))}.dcm-zbig img{width:240px;height:336px;display:block;border-radius:10px}.dcm-sapbig{font-size:120px;width:240px;text-align:center}'+
@@ -268,6 +277,7 @@
   '@media (max-height:500px){#sqdcm{padding:calc(env(safe-area-inset-top,0px) + 3px) calc(env(safe-area-inset-right,0px) + 4px) calc(env(safe-area-inset-bottom,0px) + 3px) calc(env(safe-area-inset-left,0px) + 4px)}.dcm-felt{gap:2px;padding:4px 8px;border-width:3px}'+
   '.dcm-face{width:42px;height:42px;border-width:3px}.dcm-hn{font-size:11px}.dcm-heart{font-size:12px;padding:0 6px}.dcm-say{left:110px;top:0;font-size:11px;max-width:170px}'+
   '.dcm-log{display:none}.dcm-ahand{height:34px}.dcm-back{width:22px;height:31px;border-width:2px;margin:0 -6px}.dcm-gt{min-height:36px;padding:2px 4px}.dcm-tree,.dcm-tree img{width:28px;height:34px}.dcm-tree.stump img{width:22px;height:16px}.dcm-gl{font-size:10px}'+
+  '.dcm-pets{gap:10px;padding:0 2px 6px}.dcm-pets .dcm-card{width:36px;height:50px}.dcm-pets .dcm-atk,.dcm-pets .dcm-hp{width:16px;height:16px;font-size:9px;bottom:-5px}'+
   '.dcm-board{min-height:64px;padding:4px 2px;gap:20px}.dcm-card{width:46px;height:64px}.dcm-hand .dcm-card{width:50px;height:70px;margin:0 -4px}.dcm-hand{padding:4px 0 9px}.dcm-atk,.dcm-hp{width:19px;height:19px;font-size:11px;bottom:-6px}.dcm-cost{width:19px;height:19px;font-size:11px}'+
   '.dcm-mid{min-height:18px;gap:6px}.dcm-ribbon{font-size:11px;padding:1px 8px}.dcm-msg{font-size:11px}.dcm-lvn{display:none}.dcm-end{width:60px;height:60px;font-size:12px;border-width:3px}.dcm-b{min-height:38px;padding:3px 10px}.dcm-b.small{min-height:30px;font-size:11px}.dcm-pet img{width:24px;height:24px}.dcm-pet small{display:none}'+
   '.dcm-zc{gap:16px}.dcm-zbig img{width:170px;height:238px}.dcm-sapbig{width:150px;font-size:80px}.dcm-zi{padding:10px 12px;gap:6px;max-height:78vh;overflow:auto}.dcm-zn{font-size:18px}.dcm-zp{font-size:12px;padding:6px 8px}.dcm-zt{font-size:11px}.dcm-zhint{font-size:11px}.dcm-zoom{gap:6px}.dcm-banner{font-size:26px}}'+

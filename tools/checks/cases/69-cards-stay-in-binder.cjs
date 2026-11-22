@@ -8,7 +8,7 @@ module.exports={name:'DEPOSIT BAG leaves cards in the binder; every pet has a na
   const dep={bagCard:inv[ck]|0,bagPet:inv.pc_pet_psquir|0,bagWood:inv.wood|0,chest:Object.keys(CHEST_H.items).sort()};try{closePanel()}catch(e){}
   const pets=Object.keys(EQ).filter(k=>EQ[k]&&EQ[k].slot==='pet'),cards=pets.filter(k=>SQBINDER.PET['pc_'+k]);
   const raw=cards.filter(k=>/^Pet Card: [a-z0-9_]+$/.test(INAME['pc_'+k]||''));
-  const wikiPets=(SQWK.h.WK2.dropcard().map(e=>e.h).find(h=>/Pet cards/.test(h))||'').split('data-wkp="item:pc_').length-1;
+  const wikiPets=(SQWK.h.WK2.dropcard().map(e=>e.h).find(h=>/Pet cards/.test(h)&&/item:pc_/.test(h))||'')/* Nov 22: the guide's "Pet cards" page comes first now */.split('data-wkp="item:pc_').length-1;
   return{dep,pets:pets.length,cards:cards.length,raw,names:[INAME.pc_pet_psquir,INAME.pc_pet_pweb],wikiPets}});
  t.eq(r.dep,{bagCard:3,bagPet:1,bagWood:0,chest:['wood']},'DEPOSIT BAG');t.eq(r.cards,r.pets,'pets with a card ('+r.pets+' pets)');
  t.eq(r.raw,[],'pet cards named with a raw key');t.eq(r.names,['Pet Card: Squirrel','Pet Card: Webling'],'pet card names');t.eq(r.wikiPets,r.pets,'pet cards in the wiki')}};

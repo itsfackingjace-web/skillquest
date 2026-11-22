@@ -51,6 +51,7 @@
     '<div class="dv-row" style="gap:6px;flex-wrap:wrap;margin-top:6px"><label class="dv-mut">Name <input data-npf="n" data-k="'+E(k)+'" value="'+E(r.n)+'" maxlength="24"></label>'+
     '<label class="dv-mut">Marlo\'s price <input data-npf="v" data-k="'+E(k)+'" type="number" min="0" step="100" value="'+(r.v|0)+'" style="width:110px"></label><span class="dv-mut">'+(r.v?'sold for '+(+r.v).toLocaleString('en-US')+' gold':'0 = rare, not sold')+'</span></div>'+
     '<label class="dv-mut" style="display:block;margin-top:6px">What the bag says about it<input data-npf="d" data-k="'+E(k)+'" value="'+E(r.d)+'" maxlength="300" style="width:100%"></label>'+
+    (window.SQDCE&&EQ['pet_'+k]?(()=>{const c=SQDCE.card('pc_pet_'+k);return c?'<p class="dv-mut" style="margin:6px 0 0">Its Drop Card: '+E(SQDCE.PTXT[c.comp]||'')+' Cost '+c.cost+', '+c.hp+' HP, '+c.atk+' ATK. <button class="dv-b" data-np="card:'+E(k)+'">Change its card</button></p>':''})():'')+
     '<div class="dv-row" style="gap:6px;margin-top:6px"><button class="dv-b dv-pri" data-np="look:'+E(k)+'">'+(look?'Edit its look':'Draw its look')+'</button><button class="dv-b" data-np="give:'+E(k)+'">Give me one (testing)</button>'+
     (live(k)?'':'<button class="dv-b dv-bad" data-np="del:'+E(k)+'">Delete</button>')+'</div></div>'}
   if(!all.length)h+='<p class="dv-mut">No new pets yet.</p>';return h}
@@ -61,6 +62,7 @@
   const[a,k]=t.dataset.np.split(':');try{
    if(a==='new'){const inp=document.querySelector('#dvs [data-npn]'),n=inp&&inp.value.trim()||'New pet';const it=await create(n);toast(n+' made. Draw it now.');if(S.tab==='pets')openLook(it);else API.draw()}
    else if(a==='look')openLook('pet_'+k);
+   else if(a==='card'){if(window.SQCARDSTAB)SQCARDSTAB.pickPet('pet_'+k);const b=document.querySelector('#dvs [data-tab="cards"]');if(b)b.click()}
    else if(a==='give'){const it='pet_'+k;if(!EQ[it])return;inv[it]=(inv[it]|0)+1;try{saveLocal(true)}catch(_){self.SQERR&&SQERR(_,'234-6')}toast('One '+EQ[it].n+' is in your bag.')}
    else if(a==='del'){if(live(k))return;if(t.dataset.sure!=='1'){t.dataset.sure='1';t.textContent='Sure? Tap again';return}
     delete D()[k];await API.dset('draft/newpets/'+k,null);if(S.draft.pets&&S.draft.pets[k]){delete S.draft.pets[k];await API.dset('draft/pets/'+k,null)}sync();toast('Deleted.');API.draw()}}catch(err){fail(err)}},true);

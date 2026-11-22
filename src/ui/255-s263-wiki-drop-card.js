@@ -1,6 +1,6 @@
 // ---- 263. Wiki > Drop Card (Nov 20, Jace: "Make sure there's a Drop Card tab in the wiki as well") ----
 // The guide's pages (254's SQBINDER.GP), then every card by group with its picture, stats and where it drops (each links to its
-// item page), then the Companion power of every pet card. Search finds the cards by name like any item (they're in INAME).
+// item page), then every pet card's cost, stats and power. Search finds the cards by name like any item (they're in INAME).
 (()=>{const W=window.SQWK,B=window.SQBINDER,D=window.SQDROPCARD;if(!W||!W.h||!B||!D)return;const H=W.h,E=H.E,WK2=H.WK2,TABS=H.tabs;
  const card=(t,h)=>'<div class="c"><div class="tx">'+(t?'<b>'+t+'</b><br>':'')+h+'</div></div>';
  const C=(t,h)=>({t:t+' '+h.replace(/<[^>]+>/g,' '),h:card(E(t),h)}),HD=t=>({t:'',h:'<h3>'+E(t)+'</h3>',head:1});
@@ -17,6 +17,6 @@
   out.push(HD('Every card'));out.push(C('Your collection','You have found <b>'+own+'</b> of '+all.length+' cards (plus a Pet Card for every pet).'));
   for(const[g,t]of GROUPS){const L=all.filter(c=>c.g===g);if(L.length)out.push(C(t,L.map(c=>row(c.key,c.n,c.d,FROM[g])).join('')))}
   const pets=Object.keys(B.PET).sort((a,b)=>String(INAME[a]).localeCompare(String(INAME[b])));
-  out.push(C('Pet cards (Companions)','Release a pet from your bag (tap RELEASE twice) and you always get its card. One per deck: it sits beside your hero all match.'+pets.map(k=>row(k,INAME[k],String(IDESC[k]||'').replace(/^Companion\. /,''),'')).join('')));
+  out.push(C('Pet cards','Release a pet from your bag (tap RELEASE twice) and you always get its card. Put pet cards in your deck; when you draw one, pay its cost to summon it beside your hero (up to 3). It fights like a monster and its power works while it\'s out.'+pets.map(k=>row(k,INAME[k],String(IDESC[k]||'').replace(/^Pet card · /,''),'')).join('')));
   return out};
  window.SQWKDROPCARD=true})();
