@@ -16,6 +16,8 @@
 //   attacked like a monster (it's in P.board with `pet:true`, so spells, Guard, poison... all work), and its power (`comp`) works
 //   while it's out. Several pets' powers add up (`has(P,comp)` counts them). Powers that used to happen at the start of a match
 //   happen when the pet arrives (Clever draws, Golden +3 HP, Stash draws a forage card).
+// - Nov 22 (Jace): the Mithril golem's +2 HP also goes to a monster that gets Guard from Iron skin (cast while the golem is out, or
+//   already guarding when the golem arrives); a monster that had Guard already doesn't get it twice.
 // - Nov 22: wolf powers never worked: isWolf read `m.id`, which a monster on the table doesn't have (it's `id2`). Fixed; the Frostfang
 //   Alpha is a wolf too.
 (()=>{const D=window.SQDROPCARD;if(!D)return;
@@ -111,7 +113,7 @@
   if(c.comp==='squir'){const j=P.deck.findIndex(k=>{const C=D.ITEM[k];return C&&C.g==='forage'});if(j>=0){const k=P.deck.splice(j,1)[0];if(P.hand.length<MAXH)P.hand.push(k);L(s,'Stash: '+P.n+' draws a forage card.')}}
   if(c.comp==='psnow')for(const o of others)if(isWolf(o)){o.hp+=2;o.max+=2}
   if(c.comp==='pvoid')for(const o of others)if(isWolf(o))o.sleep=false;
-  if(c.comp==='gmith')for(const o of others)if(!o.pet&&(o.id2==='wb:giant'||o.id2==='thorn'||o.id2==='turtle')){o.hp+=2;o.max+=2}
+  if(c.comp==='gmith')for(const o of others)if(isGuard(o)){o.hp+=2;o.max+=2}
   if(c.comp==='voidl'){const b=O.board.filter(o=>o.boss&&!o.mute&&o.hp>0);if(b.length){const t=pick(s,b);t.mute=true;m.cf.used=1;L(s,c.n+' silences '+t.n+'.')}}
   return m}
  // ---- turns ----
@@ -133,7 +135,9 @@
  const costOf=(s,i,c)=>{if(!c)return 99;if(c.kind==='spell'){let k=c.cost;if(['berry','shroom','nuts','cfruit'].includes(c.id))k=Math.max(0,k-has(s.p[i],'squir'));return k}return c.kind==='mon'||c.kind==='pet'?c.cost:0};
  const groveMana=P=>P.grove.reduce((a,g)=>a+g.mana,0);
  const findM=(s,uid)=>{for(let i=0;i<2;i++){const m=s.p[i].board.find(m=>m.uid===uid);if(m)return[i,m]}return[-1,null]};
- const guards=(s,i)=>s.p[i].board.filter(m=>(m.guard||((m.id2==='wb:giant'||m.id2==='thorn'||m.id2==='turtle')&&!m.mute))&&m.hp>0);
+ // Guard: given by Iron skin (m.guard) or a boss's own power (Stone Giant, Thornheart, Giant Turtle) unless silenced
+ const isGuard=m=>m.guard||((m.id2==='wb:giant'||m.id2==='thorn'||m.id2==='turtle')&&!m.mute);
+ const guards=(s,i)=>s.p[i].board.filter(m=>isGuard(m)&&m.hp>0);
  function canAttack(s,i,m){return m&&!m.done&&!m.sleep&&!(m.frozen>0)&&atkOf(s,i,m)>0}
  function targets(s,i,uid){const[,m]=findM(s,uid);if(!m||!canAttack(s,i,m))return[];const g=guards(s,1-i);if(g.length)return g.map(x=>x.uid);return['h'+(1-i)].concat(s.p[1-i].board.map(x=>x.uid))}
  function spellTargets(s,i,c){const sp=SPELL[c.id];if(!sp||!sp.tg)return null;const own=s.p[i].board.map(m=>m.uid),foe=s.p[1-i].board.map(m=>m.uid);return sp.tg==='own'?own:sp.tg==='foe'?foe:own.concat(foe)}
@@ -162,7 +166,7 @@
    if(c.kind==='pet'){const m=summonPet(s,i,c);if(!m)return'';L(s,P.n+' summons '+c.n+'.');s.fx.push({t:'play',side:i,uid:m.uid});sweep(s);return''}
    if(c.kind==='mon'){const m=summon(s,i,c.id);if(!m)return'';L(s,P.n+' plays '+c.n+'.');s.fx.push({t:'play',side:i,uid:m.uid});P.mplayed++;
     const dg=has(P,'dog');if(dg&&P.mplayed===1){m.atk+=dg;L(s,'Loyal: '+m.n+' gets +'+dg+' ATK.')}
-    const mi=has(P,'gmith');if(mi&&(m.id2==='wb:giant'||m.id2==='thorn'||m.id2==='turtle')){m.hp+=2*mi;m.max+=2*mi}
+    const mi=has(P,'gmith');if(mi&&isGuard(m)){m.hp+=2*mi;m.max+=2*mi}
     if(m.id2==='wb:wisp')m.sleep=false;
     if(m.id2==='wb:dragon'){for(const o of O.board.slice())hurtMon(s,1-i,o,2,m);L(s,'The Dragon breathes fire on every enemy monster!')}
     if(m.id2==='emberl')hurtHero(s,1-i,3,'Emberlord');
@@ -174,7 +178,7 @@
    // spells
    const sp=c.id,[ti,tm]=tg||[-1,null];L(s,P.n+' uses '+c.n+'.');
    if(sp==='pot_heal')P.hp+=6;else if(sp==='nuts')P.hp+=2;else if(sp==='shroom')draw(s,i);
-   else if(sp==='pot_str')tm.atk+=2;else if(sp==='pot_iron'){tm.hp+=3;tm.max+=3;tm.guard=true}else if(sp==='pot_swift')tm.done=false;
+   else if(sp==='pot_str')tm.atk+=2;else if(sp==='pot_iron'){const had=isGuard(tm),mi=had?0:has(s.p[ti],'gmith');tm.hp+=3+2*mi;tm.max+=3+2*mi;tm.guard=true;if(mi)L(s,'Mithril wall: '+tm.n+' gets +'+2*mi+' HP.')}else if(sp==='pot_swift')tm.done=false;
    else if(sp==='pot_poison')tm.poison=1;else if(sp==='pot_napalm'){for(const o of O.board.slice())hurtMon(s,1-i,o,2)}else if(sp==='pot_zap')hurtMon(s,ti,tm,4);
    else if(sp==='berry'){tm.hp++;tm.max++}else if(sp==='cfruit')tm.hp=tm.max;
    sweep(s);return''}

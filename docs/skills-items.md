@@ -201,7 +201,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   (`has(P,comp)`, stacking); start-of-match powers became arrival effects (`summonPet`); once-only powers use the pet's `cf.used`. Texts:
   `PTXT`, card text `SQPETDESC(pk)` ("Pet card · Cost N · H HP A ATK. power") → IDESC (254's regPet; 261 refreshes on apply). Also fixed:
   `isWolf` read `m.id` (never set on the table) so wolf powers never fired; 254's deck loader clamped every count to 2 (trees too), and
-  repairs a Starter Deck that came back under 20. PvP rules version `r5` (263); `badDeck` accepts any `pc_` key. Ace: Normal +Dog, Hard
+  repairs a Starter Deck that came back under 20. Mithril wall (`gmith`) counts any Guard (`isGuard`: Iron skin's `m.guard` or a Guard boss), on arrival, on play and when Iron skin is cast (not twice). PvP rules version `r6` (263); `badDeck` accepts any `pc_` key. Ace: Normal +Dog, Hard
   +Wolf +Imp. Wiki and guide pages say "Pet cards".
 - **Dragging cards** (`ui/268-s276-drop-card-drag.js`, `window.SQDCDRAG`, Nov 22, check 88): pointer events on 262's `#sqdcm`; a press
   that moves 10+ px drags (else 262's click opens the close-up). Hand: ghost card (`.dcm-ghost`), your board lit (`.dcm-dropme`),

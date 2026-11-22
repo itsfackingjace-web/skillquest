@@ -14,7 +14,7 @@
  // Nov 21: the rules version travels with the deck. A match ended at once when the other game was older (a game from before 263
  // takes the request as a duel and never sends a deck) or played other rules (30 HP, 6 trees): now it stops before the stakes are
  // taken and says why. Bump RV when a rule changes.
- const RV='r5';// r3: pet cards only their owner's game knows, 60 of a tree, END TURN fingerprints; r4: the match's code in the head; r5 (Nov 22): pet cards in the deck, wolf powers
+ const RV='r6';// r3: pet cards only their owner's game knows, 60 of a tree, END TURN fingerprints; r4: the match's code in the head; r5 (Nov 22): pet cards in the deck, wolf powers; r6: Mithril wall counts Iron skin's Guard
  // Nov 21 (Jace vs Bear: "the games kept ending after the first turn", after one full match): the record lives at duels/<pair>/<uid>
  // for every match between the same two players, and S.mv (your moves) was only cleared when the next match began, so while setting
  // up the next match each game sent its deck plus the last match's moves. The other game replayed those on your first turn, saw the

@@ -24,6 +24,16 @@ module.exports={name:'pet cards in decks, drag to play and attack, Dev Suite pet
   // wolves: the Frostfang Alpha gives the other wolves +1 ATK
   {const s2=E.create({seed:4,decks:[[k('tree')],[k('tree')]],pets:[null,null],names:['A','B']});s2.p[0].grove=[tree('yew',5),tree('yew',5),tree('yew',5)];s2.p[0].hand=[k('wolf'),k('alpha')];
    E.apply(s2,0,{t:'play',h:0});E.apply(s2,0,{t:'play',h:0});const w=s2.p[0].board.find(m=>m.id2==='wolf');out.alpha=E.atkOf(s2,0,w)}
+  // Nov 22 (Jace): the Mithril golem's +2 HP reaches a monster given Guard by Iron skin (cast with the golem out, or before it arrives),
+  // and a monster that already had Guard doesn't get it twice
+  {const s4=E.create({seed:6,decks:[[k('tree')],[k('tree')]],pets:[null,null],names:['A','B']});const P4=s4.p[0];P4.grove=[tree('yew',5),tree('yew',5),tree('yew',5),tree('yew',5)];
+   P4.hand=[k('wolf'),k('skel'),k('wb:giant'),'pc_pet_pgmith',k('pot_iron'),k('pot_iron'),k('pot_iron')];
+   E.apply(s4,0,{t:'play',h:0});E.apply(s4,0,{t:'play',h:0});const w=P4.board.find(m=>m.id2==='wolf'),sk=P4.board.find(m=>m.id2==='skel');
+   E.apply(s4,0,{t:'play',h:P4.hand.indexOf(k('pot_iron')),tg:w.uid});const before=w.hp;// Iron skin first (2+3), then the golem arrives: +2
+   P4.pool+=20;E.apply(s4,0,{t:'play',h:P4.hand.indexOf('pc_pet_pgmith')});const afterGolem=w.hp;
+   E.apply(s4,0,{t:'play',h:P4.hand.indexOf(k('pot_iron')),tg:sk.uid});const skHp=sk.hp;// golem out, then Iron skin: 3+3+2
+   E.apply(s4,0,{t:'play',h:P4.hand.indexOf(k('wb:giant'))});const g=P4.board.find(m=>m.id2==='wb:giant');const g0=g.hp;// a Stone Giant: 8+2
+   E.apply(s4,0,{t:'play',h:P4.hand.indexOf(k('pot_iron')),tg:g.uid});out.mithril=[before,afterGolem,skHp,g0,g.hp]}
   // the cat keeps its hero at 1 HP once
   {const s3=E.create({seed:5,decks:[[k('tree')],[k('tree')]],pets:[null,null],names:['A','B']});s3.p[0].grove=[tree('yew',5)];s3.p[0].hand=['pc_pet_cat'];E.apply(s3,0,{t:'play',h:0});
    s3.p[0].hp=2;E.apply(s3,0,{t:'end'});s3.p[1].board.push({uid:'yy',id2:'demo',n:'Ogre',hp:9,max:9,atk:5,sleep:false,done:false,side:1,poison:0,frozen:0});E.apply(s3,1,{t:'atk',a:'yy',tg:'h0'});out.cat=[s3.p[0].hp,s3.over]}
@@ -69,6 +79,7 @@ module.exports={name:'pet cards in decks, drag to play and attack, Dev Suite pet
  t.eq([r.third,r.fourth],['','You already have 3 pets out.'],'up to 3 pets');t.eq(r.mons,[1,3],'pets don\'t take monster slots [monsters, pets]');
  t.eq(r.jab,2,'the imp jabbed the enemy bat at the end of the turn');t.eq([r.canHitPet,r.hitPet,r.dogHp],[true,'',0],'a pet can be attacked');t(r.zapTargets,'a spell can target a pet');
  t.eq(r.alpha,3,'the Frostfang Alpha gives a 2 ATK wolf +1');t.eq(r.cat,[1,false],'the cat keeps its hero at 1 HP');
+ t.eq(r.mithril,[5,7,8,10,13],'Mithril wall and Iron skin [wolf after Iron skin, after the golem arrives, skeleton given Iron skin with the golem out, Stone Giant, Giant after Iron skin (no second +2)]');
  t.eq(r.reload,[6,2,1,23,false,0],'a deck after reloading [trees, dogs, the old Companion moved in, cards, Companion slot used, problems]');
  t(/^Pet card · Cost 2 · 2 HP 2 ATK\. Loyal/.test(r.desc),'pet card text: '+r.desc);t.eq(r.starterFix,6,'a Starter Deck cut to 2 Trees gets its 6 back');
  t.eq(r.foePets,1,'Ace\'s pet shows beside Ace');t.eq(r.foeZoom,[true,true,true],'tapping Ace\'s pet [close-up, pet power, its text]');
