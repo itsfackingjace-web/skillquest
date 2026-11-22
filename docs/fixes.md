@@ -130,3 +130,7 @@ Firebase had no new bug reports (`bugs` newest Nov 10) and no new code errors (`
   form clears it; a post that fails keeps the form open with the reason. Check 85.
 - Already fixed: Kevin's castle hunger outside (Nov 21 17:42 release, check 66), sniffynose's food behind screens and Jynx's spider
   weaver robes (Nov 21 23:08 release, checks 74 and 76).
+- Error reports (000b): `errs` is readable by devs only, and a Realtime Database transaction needs to read the record, so once a site had
+  a record (e.g. 213-4, still showing v 2026.11.20-6) players' later reports of it never arrived. `send` now writes with
+  `update({m, n: increment(1), v, t})` (no read needed) and keeps the transaction as the fallback. The fake database got `increment` and
+  `window.__noRead` (a transaction over an unreadable, existing record fails); check 26 seeds a record and expects it to count up.
