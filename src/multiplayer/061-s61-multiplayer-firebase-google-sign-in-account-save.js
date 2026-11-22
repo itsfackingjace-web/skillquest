@@ -244,7 +244,7 @@ async function mpStart(u){if(MP.user&&MP.user.uid===u.uid&&MP.on)return;MP.user=
  // presence
  MP.pref=d.ref(D,'presence/'+uid);MP.last='';MP.lastCh='';MP.lastN='';
  MP.unsub.push(d.onValue(d.ref(D,'.info/serverTimeOffset'),s=>{MP.off=+s.val()||0}));
- MP.unsub.push(d.onValue(d.ref(D,'.info/connected'),s=>{if(s.val()===true&&MP.on){d.onDisconnect(MP.pref).remove().catch(()=>{});MP.last='';MP.lastCh=''}}));
+ MP.unsub.push(d.onValue(d.ref(D,'.info/connected'),s=>{if(s.val()===true&&MP.on){d.onDisconnect(MP.pref).remove().catch(()=>{});MP.last='';MP.lastCh='';try{window.SQMOB&&SQMOB.resync&&SQMOB.resync()}catch(e){self.SQERR&&SQERR(e,'061-47')}}}));
  const pr=d.ref(D,'presence');
  MP.unsub.push(d.onChildAdded(pr,s=>mpPeer(s.key,s.val())),d.onChildChanged(pr,s=>mpPeer(s.key,s.val())),d.onChildRemoved(pr,s=>{MP.players.delete(s.key);mpRBtn()}));
  // chat (the last 25 messages, then live)
@@ -490,6 +490,12 @@ function resTick(){if(!MP.on||!FB)return;const d=FB.db;resSubHollow();resSubRegi
  if(RES.rloc)for(const i in RES.r){const v=RES.r[i];if(typeof v.at==='number'&&v.at<cut)d.remove(d.ref(FB.D,'world/res/'+RES.rloc+'/'+i)).catch(()=>{})}}
 // ---- shared monsters ----
 const MOB={n:0,prox:new Map(),limbo:[],loc:null,unsub:null,pubAt:0,pubbed:false,arrAt:0,inbox:null};window.SQMOB=MOB;
+// Nov 21 ("taking 1 damage quickly on repeat" on the Shattered Expanse, Derek and Korey fell to it): when a connection drops, the server
+// runs the onDisconnect below and deletes this player's monsters, but the game reconnected still thinking they were there and went on
+// sending only what changed (m/<id>/x...). That rebuilt monsters with an x and no y, type or health; every other game on the island
+// counted one as 1 px away (001: Math.hypot(NaN)||1) and took a hit every second or so until they left. After a reconnect the whole
+// set goes out again and the clean-up is armed again; and a copy without a real x, y and health is never made (below).
+MOB.resync=()=>{MOB.sentM=null;MOB.odc=null};const mobOK=pk=>!!pk&&Number.isFinite(pk.x)&&Number.isFinite(pk.y)&&Number.isFinite(pk.hp);
 const mid=n=>n._mid||(n._mid=MP.user.uid.slice(0,8)+'_'+(++MOB.n));
 const CDK=/^(?:[a-z]?cd|cbt|cast)$/;
 function mobPack(n){const o={};for(const k in n){if(k[0]==='_')continue;const v=n[k],t=typeof v;if(t==='number'){if(isFinite(v))o[k]=Math.round(v*10)/10}else if(t==='string'&&v.length<24)o[k]=v;else if(t==='boolean')o[k]=v}return o}
@@ -499,16 +505,17 @@ function mobSubscribe(){const l=mpLoc(),key=l?locKey(l):null;if(key===MOB.loc)re
  const d=FB.db;MOB.unsub=d.onValue(d.ref(FB.D,'mobs/'+key),s=>{if(MOB.loc!==key)return;const all=s.val()||{},seen=new Set(),cut=mpNow()-6000;
   for(const owner in all){if(!MP.user||owner===MP.user.uid)continue;const rec=all[owner];if(!rec||!(rec.t>cut)||!rec.m)continue;
    for(const id in rec.m){const pk=rec.m[id];if(!pk||typeof pk.x!=='number')continue;seen.add(id);let p=MOB.prox.get(id);
+    if(!p&&!mobOK(pk))continue;
     if(!p){const li=MOB.limbo.findIndex(q=>q._id===id);if(li>=0){p=MOB.limbo.splice(li,1)[0];delete p._gone;MOB.prox.set(id,p);if(en.indexOf(p)<0)en.push(p)}}
     if(!p){p=Object.assign({kx:0,ky:0},pk);p._rp=1;p._owner=owner;p._id=id;p._ref=pk.hp;p.tx=pk.x;p.ty=pk.y;MOB.prox.set(id,p);en.push(p)}
     else{if(p.dead&&p._deadAt&&performance.now()-p._deadAt>3000){p.dead=0;p._deadAt=0;p.hp=pk.hp;p._ref=pk.hp} // our kill didn't land: it's still alive for its owner
      for(const k in pk)if(k!=='x'&&k!=='y'&&k!=='hp'&&k!=='dead'&&!(CDK.test(k)&&typeof p[k]==='number'))p[k]=pk[k]; // reload timers (tcd, scd, gcd...) stay local: copying the owner's (often long run out) made copies of skeletons throw on every update
-    p.tx=pk.x;p.ty=pk.y;if(!p.dead&&typeof pk.hp==='number'){p.hp=pk.hp;p._ref=pk.hp}}}}
+    if(Number.isFinite(pk.x)&&Number.isFinite(pk.y)){p.tx=pk.x;p.ty=pk.y}if(!p.dead&&typeof pk.hp==='number'){p.hp=pk.hp;p._ref=pk.hp}}}}
   for(const owner in all){const rec=all[owner];if(MP.user&&owner!==MP.user.uid&&rec&&rec.x&&rec.t>cut&&window.SQMOBRX)try{SQMOBRX(owner,rec.x)}catch(e){console.warn(e)}}
   for(const[id,p]of MOB.prox)if(!seen.has(id)){MOB.prox.delete(id);if(p.dead){const j=en.indexOf(p);if(j>=0)en.splice(j,1);continue}p._gone=performance.now();MOB.limbo.push(p)}})}
 function mobHitsCheck(){if(!MP.user)return;for(const p of MOB.prox.values()){if(typeof p.hp!=='number'||typeof p._ref!=='number')continue;if(p.hp<p._ref){const dmg=Math.min(50,Math.round((p._ref-p.hp)*10)/10);p._ref=p.hp;if(dmg<.5)continue; // slow drains (sunlight, burning) are simulated by the owner
   FB.db.push(FB.db.ref(FB.D,'hits/'+p._owner),{id:p._id,d:dmg}).catch(()=>{})}}}
-function mobPre(){if(!MP.on||!MOB.loc)return;mobHitsCheck();for(const p of MOB.prox.values()){if(p.dead&&!p._deadAt)p._deadAt=performance.now();if(!p.dead&&en.indexOf(p)<0)en.push(p);p._px=p.x;p._py=p.y}}
+function mobPre(){if(!MP.on||!MOB.loc)return;mobHitsCheck();for(const p of MOB.prox.values()){if(p.dead&&!p._deadAt)p._deadAt=performance.now();if(!p.dead&&en.indexOf(p)<0&&Number.isFinite(p.x)&&Number.isFinite(p.y))en.push(p);p._px=p.x;p._py=p.y}}
 function mobPost(dt){if(!MP.on||!FB)return;mobSubscribe();if(!MOB.loc)return;mobHitsCheck();const k=Math.min(1,dt*10);
  for(const p of MOB.prox.values()){if(p.dead)continue;const bx=p._px==null?p.x:p._px,by=p._py==null?p.y:p._py;p.x=bx+(p.tx-bx)*k;p.y=by+(p.ty-by)*k;p.kx=0;p.ky=0}
  // a monster whose owner left: you take it over (it keeps fighting); one that simply vanished (killed) goes away

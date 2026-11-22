@@ -87,6 +87,13 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `SCENE.ret`), and the outermost `leaveRegion` `rescue()`s a bad landing: in the sea → the Tidewatch harbor post (`RG_POST`), inside
   something/boxed in (`good()`: walkable + 25 reachable tiles) → nearest good land within 30 tiles. `/stuck` (`/unstuck`) in chat: out
   of rooms, island → `rgSpot(R)`, Hollow → harbor post; 2 min cooldown (`sq_stuck`), not while dead/travelling/duelling/near a boss.
+- **Partial shared monsters** (061 `SQMOB.resync`, `mobOK`, Nov 21): a dropped connection ran the `onDisconnect` that deletes
+  `mobs/<loc>/<uid>`, but the sender reconnected with `MOB.sentM` intact and kept sending only changed fields, rebuilding monsters as
+  `{x,gcd}`. Peers made `_rp` copies with no y/type/hp; 001 counts a NaN position as 1 px away, and 061's `mobPre` put the copy back into
+  `en` inside 227's wrap, so everyone in the area took an "Ouch!" every second or so until they left (Shattered Expanse, Nov 21: Derek's
+  and Korey's falls, 227 reports with `why:nan`, keys `kx,ky,gcd,x,...`). Now `.info/connected` calls `SQMOB.resync()` (whole set again,
+  onDisconnect armed again), a new copy needs finite x, y and hp, an existing one only takes a position with both x and y, and `mobPre`
+  never re-adds one without a finite position. Check 72.
 - **Shattered Expanse sharks** (093, `SQSHK`): they hunt wounded players near the water but only bite when you're on the water
   (`SQRSAIL.on` or standing on a water tile, `onW`); a lunging shark (`s.a>0`) is drawn after the player so it isn't hidden behind you.
 - **No hits from unseen monsters** (`combat/227-s235-no-invisible-hits.js`, `window.SQGHOSTHIT`): 001's touch damage counts anything in `en`
