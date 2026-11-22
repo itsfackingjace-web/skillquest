@@ -4,7 +4,7 @@ module.exports={name:'found-card moment, shiny cards, announcements and collecti
  const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(500);const D=SQDROPCARD,F=SQCARDFOUND,B=SQBINDER,out={};
   const g0=GLD;
   // a plain card: shows, then goes by itself
-  D.give('slime:moss','test');await W(100);out.shown=F.box.style.display;out.txt=F.box.textContent;await W(2600);out.gone=F.box.style.display;
+  D.give('slime:moss','test');await W(100);out.shown=F.box.style.display;out.txt=F.box.textContent;/* Nov 21: wait up to 6 s for it to close by itself (2.6 s flat failed now and then in full runs) */for(let i=0;i<60&&F.box.style.display!=='none';i++)await W(100);out.gone=F.box.style.display;
   // two in a row queue; a click dismisses
   D.give('bat','test');D.give('wolf','test');await W(400);out.q=F.Q.length;F.box.querySelector('button').click();await W(300);out.next=F.box.textContent.includes('Wolf');await W(200);F.box.querySelector('button').click();await W(300);
   // a shiny boss card: its own item, announced in chat, counts as the card for decks
