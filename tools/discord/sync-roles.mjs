@@ -9,6 +9,9 @@
 //     "Total Level 100+" ... "Total Level 1750+", "Total Level Maxed" (one at a time), "Guild: <name> [TAG]", "Game Patron",
 //     "Game Moderator", "Game Developer". Guild roles nobody has any more are deleted.
 //  3. Each guild with linked members gets a private text channel under a "Guilds" category that only its role can see.
+//  4. Nicknames (Nov 21, Jace: "why the discord bot isn't actually setting the nicknames of players to their igns": it never did):
+//     a linked member's server nickname is their in-game name (lb/<uid>.n), set again whenever it differs. Needs Manage Nicknames;
+//     Discord never lets a bot rename the server owner or anyone whose top role is above the bot's, so those are skipped.
 //  The bot's own role must be above these roles (Server Settings > Roles) or Discord refuses to hand them out.
 const API='https://discord.com/api/v10',DB='https://skillquest-913e2-default-rtdb.firebaseio.com';
 export const TIERS=[1750,1500,1250,1000,750,500,250,100];
@@ -56,12 +59,22 @@ export async function sync({token,fetch:F=globalThis.fetch,dry=false,log=console
  const ensure=async w=>{let r=byName.get(w.n);if(r)return r;await act('create role '+w.n,async()=>{r=await api('POST','/guilds/'+G.id+'/roles',{name:w.n,color:w.c||0,hoist:false,mentionable:false,permissions:'0'})});if(!r)r={id:'dry-'+w.n,name:w.n};byName.set(w.n,r);return r};
  const nameOf=id=>{for(const r of byName.values())if(r.id===id)return r.name;return id};
  const members=[];{let after='0';for(let k=0;k<100;k++){const b=await api('GET','/guilds/'+G.id+'/members?limit=1000&after='+after);members.push(...b);if(b.length<1000)break;after=b[b.length-1].user.id}}
- const used=new Map();let changes=0;
+ const used=new Map();let changes=0,nicks=0;
+ // nicknames: can the bot change them (Manage Nicknames, or Administrator)? and who owns the server (never renamable by a bot)
+ let canNick=true;try{if(G.permissions!=null){const pm=BigInt(G.permissions);canNick=(pm&(1n<<27n))!==0n||(pm&(1n<<3n))!==0n}}catch(e){/* unknown: try */}
+ let ownerId=null;try{const info=await api('GET','/guilds/'+G.id);ownerId=info&&info.owner_id||null}catch(e){/* not needed to go on */}
+ let toldNick=false,toldOwner=false;
  for(const mem of members){if(!mem.user||mem.user.bot)continue;const uid=links.get(mem.user.id),want=uid?wanted(lb[uid],now):[];
   const wantIds=new Set();for(const w of want){const r=await ensure(w);wantIds.add(r.id);used.set(r.id,(used.get(r.id)||0)+1)}
   const have=new Set(mem.roles||[]);
   for(const id of wantIds)if(!have.has(id)){changes++;await act('give '+nameOf(id)+' to '+mem.user.username,()=>api('PUT','/guilds/'+G.id+'/members/'+mem.user.id+'/roles/'+id))}
-  for(const id of have){const r=roles.find(x=>x.id===id);if(r&&isManaged(r.name)&&!wantIds.has(id)){changes++;await act('take '+r.name+' from '+mem.user.username,()=>api('DELETE','/guilds/'+G.id+'/members/'+mem.user.id+'/roles/'+id))}}}
+  for(const id of have){const r=roles.find(x=>x.id===id);if(r&&isManaged(r.name)&&!wantIds.has(id)){changes++;await act('take '+r.name+' from '+mem.user.username,()=>api('DELETE','/guilds/'+G.id+'/members/'+mem.user.id+'/roles/'+id))}}
+  // 4. nickname = in-game name
+  const row=uid&&lb[uid],nick=row&&typeof row.n==='string'?row.n.trim().slice(0,32):'';
+  if(nick&&(mem.nick||'')!==nick){
+   if(mem.user.id===ownerId){if(!toldOwner){toldOwner=true;log('can\'t set the nickname of '+mem.user.username+': Discord never lets a bot rename the server owner')}}
+   else if(!canNick){if(!toldNick){toldNick=true;log('SQ Bot can\'t set nicknames: give its role Manage Nicknames (Server Settings > Roles > SQ Bot)')}}
+   else{nicks++;await act('nickname '+mem.user.username+' -> '+nick,()=>api('PATCH','/guilds/'+G.id+'/members/'+mem.user.id,{nick}).catch(e=>log('couldn\'t rename '+mem.user.username+' (a role above SQ Bot?): '+String(e&&e.message||e).slice(0,120))))}}}
  // 3. a private channel for each guild with linked members, under a "Guilds" category (needs Manage Channels). Found again by the
  //    [sq:<guild id>] mark in its topic, so renaming the guild renames the channel. Channels are never deleted (their history stays;
  //    when a guild's role goes, only admins can still see it).
@@ -77,6 +90,6 @@ export async function sync({token,fetch:F=globalThis.fetch,dry=false,log=console
    if(c.name!==name||c.topic!==topic)await act('rename #'+c.name+' to #'+name,()=>api('PATCH','/channels/'+c.id,{name,topic}));
    const ow=(c.permission_overwrites||[]).find(o=>o.id===role.id);if(!ow||ow.allow!==MEMBER)await act('let '+role.name+' into #'+name,()=>api('PUT','/channels/'+c.id+'/permissions/'+role.id,{type:0,allow:MEMBER,deny:'0'}))}}
  for(const r of byName.values())if(/^Guild: /.test(r.name)&&!used.get(r.id)&&!String(r.id).startsWith('dry-'))await act('delete empty role '+r.name,()=>api('DELETE','/guilds/'+G.id+'/roles/'+r.id));
- log('server '+G.name+': '+links.size+' linked, '+changes+' role changes');return{links,changes}}
+ log('server '+G.name+': '+links.size+' linked, '+changes+' role changes, '+nicks+' nicknames');return{links,changes,nicks}}
 if(import.meta.url===`file://${process.argv[1]}`){const token=process.env.DISCORD_BOT_TOKEN;if(!token){console.error('DISCORD_BOT_TOKEN is not set');process.exit(1)}
  sync({token,dry:process.argv.includes('--dry'),guildId:process.env.DISCORD_GUILD_ID||null}).catch(e=>{console.error(String(e&&e.message||e));process.exit(1)})}
