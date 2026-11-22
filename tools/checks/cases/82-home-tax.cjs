@@ -36,8 +36,12 @@ module.exports={name:'home tax: free month, the bank keeps an unpaid home, payin
   const ih={id:'isl1',rg:'briarwood',x:50,y:50,w:7,furn:new Map([[3*14+5,{t:'chest',items:{stone:4}}]]),hp:12};L.push(ih);await W(1300);const d0=Math.round((X.state.u-now())/DAY);
   X.take();await W(200);const s2=snap(),e2=(s2.rh||[]).find(q=>q.id==='isl1');const mid={inList:L.includes(ih),saved:!!e2,debt:X.state.h&&X.state.h.debt};
   GLD=60000;X.act('back');await W(200);out.isl={d0,mid,back:L.includes(ih),chest:(ih.furn.get(3*14+5)||{}).items,days:Math.round((X.state.u-now())/DAY)};
+  // on a guild island it pays half: the 30 days paid at the full price become 60, a month costs 25,000, the debt is 27,500
+  ih.rg='gi_zz';await W(1300);const g0=Math.round((X.state.u-now())/DAY),half=/pays half/.test(X.html())&&/25,000 gold/.test(X.html());GLD=100000;X.act('pay');const paid=100000-GLD;X.state.u=now()-1000;await W(1500);
+  out.guild={days:g0,paid,debt:X.state.h&&X.state.h.debt,half};
   return out});
  if(r.err){t(false,r.err);return}
+ t.eq([r.guild.days,r.guild.paid,r.guild.debt,r.guild.half],[60,25000,27500,true],'a home on a guild island [days after moving there, a month, debt, Penny says half]');
  t.eq(r.isl,{d0:30,mid:{inList:false,saved:true,debt:55000},back:true,chest:{stone:4},days:30},'an island home [days when it appeared, while the bank has it, after paying]');
  t(r.stall,'Penny\'s stall wasn\'t placed beside the World Market');
  t.eq([r.free,r.f],[30,1],'days of tax when the first home goes up (free month)');

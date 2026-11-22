@@ -60,13 +60,15 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
   if(typeof DKIND!=='undefined'&&!DKIND['ib_'+id])DKIND['ib_'+id]={name:B.DEF.n,floor:B.DEF.floor,wall:B.DEF.wall,trim:B.DEF.trim,W:30,H:24,floors:1,cavey:1};return id}
  function enter(it){const k=it&&it.bk||'treant',B=K[k];if(!B)return;if(!open(k)){A()&&A().tell('The portal has closed.');return}const id=regBoss(k);if(!id)return;
   say(B.enterMsg||'You step through the portal...');try{sfx('roar')}catch(e){self.SQERR&&SQERR(e,'199-9')}SQIBENTER(id,it)}
- function summon(k){const a=A(),B=K[k];if(!a||!B||!a.on()||!a.ready)return;if(!a.boss()){a.tell('Only the leader and officers can summon '+B.DEF.n+'.');return}
+ function summon(k,dbl){const a=A(),B=K[k];if(!a||!B||!a.on()||!a.ready)return;if(!a.boss()){a.tell('Only the leader and officers can summon '+B.DEF.n+'.');return}
   if(open(k)){a.tell(B.DEF.n+' is already awake. Its portal is on the guild island.');return}if(beaten(k)){a.tell('Your guild already beat '+B.DEF.n+' this week. It can be summoned again from Monday.');return}
-  // it also costs one rank in its skill (guilds/<g>/prog/<pk>; the rules check both in the same write)
-  const rk=prk(k);if(rk<1){a.tell('Summoning '+B.DEF.n+' costs 1 '+B.pkName+' rank, and your guild has none. Finish a '+B.pkName.toLowerCase()+' Guild Quest to earn one.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'199-10')}return}
-  const bank=SQGUILD.state.bank.i||{},ch=B.pay(bank);if(!ch){a.tell('The guild bank needs '+B.costTxt+' (it has '+B.have(bank).toLocaleString()+').');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'199-11')}return}
-  const ex={};ex['guilds/'+GID()+'/'+B.path]={w:WEEK(),t:a.TS(),by:a.me()};ex['guilds/'+GID()+'/prog/'+B.pk]=rk-1;
-  a.bankUpdate(ch,{w:'boss',k:B.logK,d:B.costTxt+' + 1 '+B.pkName+' rank'},ex).then(()=>{a.tell(B.wakeMsg+' (The guild spent 1 '+B.pkName+' rank.)');msgT=7;try{sfx('roar')}catch(e){self.SQERR&&SQERR(e,'199-12')}}).catch(a.fail)}
+  // it also costs one rank in its skill (guilds/<g>/prog/<pk>; the rules check both in the same write), or (Nov 22, Jace: `dbl`) twice the
+  // materials and no rank: the rules take either (materials x1 and the rank one lower, or materials x2 and the rank unchanged)
+  const rk=prk(k);if(!dbl&&rk<1){a.tell('Summoning '+B.DEF.n+' costs 1 '+B.pkName+' rank, and your guild has none. Finish a '+B.pkName.toLowerCase()+' Guild Quest to earn one.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'199-10')}return}
+  const m=dbl?2:1,cost=dbl?(B.need*2).toLocaleString()+' '+B.unit:B.costTxt;
+  const bank=SQGUILD.state.bank.i||{},ch=B.pay(bank,m);if(!ch){a.tell('The guild bank needs '+cost+' (it has '+B.have(bank).toLocaleString()+').');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'199-11')}return}
+  const ex={};ex['guilds/'+GID()+'/'+B.path]={w:WEEK(),t:a.TS(),by:a.me()};if(!dbl)ex['guilds/'+GID()+'/prog/'+B.pk]=rk-1;
+  a.bankUpdate(ch,{w:'boss',k:B.logK,d:dbl?cost+' (double, no rank)':B.costTxt+' + 1 '+B.pkName+' rank'},ex).then(()=>{a.tell(B.wakeMsg+(dbl?' (The guild spent '+cost+' and kept its '+B.pkName+' rank.)':' (The guild spent 1 '+B.pkName+' rank.)'));msgT=7;try{sfx('roar')}catch(e){self.SQERR&&SQERR(e,'199-12')}}).catch(a.fail)}
  // when it falls: close its portal for the week (any fighter writes k; the first one wins)
  function kill(k){const a=A(),r=rec(k);if(!a||!a.on()||!r||r.k)return;try{a.DB().set(a.ref('guilds/'+GID()+'/'+K[k].path+'/k'),a.TS()).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'199-13')}}
  {const _se=sqEvent;sqEvent=function(type,item){const B=type==='islandboss'&&kindOf(item);if(B){try{kill(B.k);if(window.SQACH&&SQACH.add)SQACH.add('ibw')}catch(e){self.SQERR&&SQERR(e,'199-14')}return}return _se.apply(this,arguments)}}
@@ -95,14 +97,15 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
   else if(beaten(k))h+='<p><b>Beaten this week ✓</b> It can be summoned again from Monday.</p>';
   else{h+='<div class="gdgbar"><i style="width:'+Math.min(100,100*have/B.need)+'%;background:'+B.DEF.col+'"></i></div><small>'+have.toLocaleString()+' / '+B.need.toLocaleString()+' '+B.unit+' in the guild bank</small><br>';
    const rk=prk(k),shown=Math.min(5,rk);h+='<small>Also costs <b>1 '+B.pkName+' rank</b> (your guild: rank '+shown+(rk>shown?', '+(rk-shown)+' more earned past the top':'')+')</small><br>';
-   h+=a.boss()?'<button class="qb" data-g="gtb:sum:'+k+'"'+(have<B.need||rk<1?' disabled style="opacity:.5"':'')+'>Summon it ('+B.costTxt+' + 1 '+B.pkName+' rank)</button>':'<p style="font-size:13px">The leader or an officer summons it once the bank has enough and the guild has a '+B.pkName+' rank to spend.</p>'}
+   h+=a.boss()?'<button class="qb" data-g="gtb:sum:'+k+'"'+(have<B.need||rk<1?' disabled style="opacity:.5"':'')+'>Summon it ('+B.costTxt+' + 1 '+B.pkName+' rank)</button>'+
+    '<button class="qb" data-g="gtb:sum2:'+k+'"'+(have<B.need*2?' disabled style="opacity:.5"':'')+'>Or keep your rank: '+(B.need*2).toLocaleString()+' '+B.unit+'</button>':'<p style="font-size:13px">The leader or an officer summons it once the bank has enough and the guild has a '+B.pkName+' rank to spend, or with twice as many '+B.unit+' and no rank.</p>'}
   h+='<p style="font-size:13px"><b>Every fighter, every fight:</b> '+B.rewardTxt+'</p><p style="font-size:12px;opacity:.85">'+B.tip+'</p></div>';return h}
  function html(){return ORDER.map(card).join('')}
- function act(x,y){if(x==='sum')summon(y||'treant')}
+ function act(x,y){if(x==='sum')summon(y||'treant');else if(x==='sum2')summon(y||'treant',true)}
  function add(k,B){B.k=k;K[k]=B;if(!ORDER.includes(k))ORDER.push(k)}
  // ---- the Void Treant ----
  const SUM=50000;
- add('treant',{path:'boss',pre:'gt_',logK:VL,need:SUM,unit:'void logs',costTxt:SUM.toLocaleString()+' void logs',have:b=>b[VL]|0,pay:b=>(b[VL]|0)>=SUM?{[VL]:-SUM}:null,
+ add('treant',{path:'boss',pre:'gt_',logK:VL,need:SUM,unit:'void logs',costTxt:SUM.toLocaleString()+' void logs',have:b=>b[VL]|0,pay:(b,m=1)=>(b[VL]|0)>=SUM*m?{[VL]:-SUM*m}:null,
   DEF:{n:'The Void Treant',door:'',lm:'the void portal',hp:6000,col:'#9a5af0',shard:'',sc:['#c8a0ff','#5a3a8a'],
    floor:['#2a2236','#30283e'],wall:'#1c1626',trim:'#0a0810',gold:[1500,2500],loot:[[WV,1],[VL,150],['yewlog',25]],xp:6000,rare:['ptvoid','Void treeling (pet)'],
    atk:[['circles',3.4,{n:6,r:20,delay:1.1,k:'void'}],['fan',2.6,{n:5,spread:.3,sp:95,k:'void'}],['spiral',4.8,{n:14,sp:70,k:'void'}],['ring',6.5,{max:110}],['summon',13,{key:'wolf:void',n:2,cap:3,half:1}]]},

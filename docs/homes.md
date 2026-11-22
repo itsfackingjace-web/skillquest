@@ -70,8 +70,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `banker`, ptab 2 panel by an SQRPN step) at a stall placed beside 079's World Market hall (`SQWMK.spot`, first free 5x3 box from a list of
   spots; BS on the two counter tiles, PROT around it; drawn through `LHOOK`). She never wanders: `wt:1e12` for 006's roaming and `H` far away
   so 061's shared wandering treats her as "on a routine". Per account (one home, 144): save `htax` {u paid-until (server ms = Date.now()+SQMP.off;
-  061's `mpNow` isn't global), l paid time kept while you have no home, k house/castle, f free month given, h {id,at,debt,k,w} while held}.
-  A 1 s tick starts the 30 free days when the first home appears, converts time left by price when house <-> castle, warns at 7/3/1 days
+  061's `mpNow` isn't global), l paid time kept while you have no home, k house/castle, g 1 = paid at the guild-island price, f free month
+  given, h {id,at,debt,k,w} while held}. A home on a guild island (`rg` `gi_...`) pays `CF.guild` (half; Jace, Nov 22: moving homes there frees the
+  main islands).
+  A 1 s tick starts the 30 free days when the first home appears, converts the time left by price when the price changes (house <-> castle, onto or off a guild island), warns at 7/3/1 days
   and 1 hour, and when `u` passes (only once `.info/serverTimeOffset` has answered) takes the home: walks you out, removes it from `HOUSES`
   (BS tiles) or `SQRH`, sets `h._ypk` so 145 doesn't pack the yard, debt = price x 1.1. While held the outermost snap (`SQSAVE.wrap`) puts it
   back into its list for the call, so every save step writes it; the load step takes it out again. `startBuild` of a house/castle is refused
@@ -80,4 +82,4 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `toBag` (house item, furniture, chest/yard contents, framed cards). Others: 061's `myHousesData` adds `u`, 067's `_h` rows `[6]=u`
   (`[5]=0` then, 077 sets 1 for castles); `housesSync`/`rhForeign` skip rows `SQHTAX.gone(u)` (no `u` = an older game: paid until Dec 23),
   and 061 re-syncs foreign houses once a minute. The bag (`bagGridHTML`) and map (`SQMAPHTML`) show the status. Library `hometax`
-  {house, castle, days, free, interest, ahead} overrides the numbers. Check 82.
+  {house, castle, guild, days, free, interest, ahead} overrides the numbers. Check 82.

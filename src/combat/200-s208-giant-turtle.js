@@ -43,7 +43,7 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
  const have=b=>RAW.reduce((n,k)=>n+(b[k]|0),0);
  let SPR=null;const spr=()=>SPR||(SPR=SQGBOSS.mkSprite(TTP,TTR));
  SQGBOSS.add('turtle',{path:'turt',pre:'gu_',logK:'fish',need:NEED,unit:'raw fish',costTxt:NEED.toLocaleString()+' raw fish',have,
-  pay:b=>{if(have(b)<NEED)return null;let left=NEED;const ch={};for(const k of cheap()){const t=Math.min(left,b[k]|0);if(t>0){ch[k]=-t;left-=t}if(!left)break}return left?null:ch},
+  pay:(b,m=1)=>{if(have(b)<NEED*m)return null;let left=NEED*m;const ch={};for(const k of cheap()){const t=Math.min(left,b[k]|0);if(t>0){ch[k]=-t;left-=t}if(!left)break}return left?null:ch},
   DEF:{n:'The Giant Turtle',door:'',lm:'the whirlpool',hp:7000,col:'#3c9a78',shard:'',sc:['#a8f0d0','#2c6a58'],
    floor:['#2a4a52','#30525a'],wall:'#1a3038',trim:'#0a1418',gold:[1500,2500],loot:[[FR,1],['swordfish',25]],xp:6000,rare:[FR,'an extra Turt fragment'],
    atk:[['fan',2.4,{n:5,spread:.3,sp:90,k:'bubble'}],['circles',3.8,{n:6,r:20,delay:1.1,k:'water'}],['charge',5.2,{}],['ring',6.6,{max:120}],['summon',12,{key:'crab',n:3,cap:4,half:1}]]},

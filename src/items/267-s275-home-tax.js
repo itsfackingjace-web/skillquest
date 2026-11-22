@@ -18,20 +18,24 @@
 // - Other players: 061's myHousesData sends `u` with each home, 067's island rows carry it as [6]; their games skip a home whose `u`
 //   has passed (`gone`). Rows from games before this update have no `u` and count as paid until LEGACY (Dec 23), so homes of players
 //   who never come back leave the map.
-// - Library `hometax` {house, castle, days, free, interest, ahead} overrides the numbers.
-(()=>{const DAY=864e5,CF={house:50000,castle:150000,days:30,free:30,interest:.1,ahead:90};const CF0=Object.assign({},CF);
+// - Homes on a guild island (`gi_` regions) pay CF.guild (half). `g` in the save: the paid time was at the guild price; the time left
+//   is converted by price whenever the home's price changes (house <-> castle, onto or off a guild island).
+// - Library `hometax` {house, castle, guild, days, free, interest, ahead} overrides the numbers.
+(()=>{const DAY=864e5,CF={house:50000,castle:150000,guild:.5,days:30,free:30,interest:.1,ahead:90};const CF0=Object.assign({},CF);
  const LEGACY=Date.UTC(2026,11,23,6);// Dec 23, midnight in Chicago: 30 days after this came out
  try{if(window.SQA&&SQA.onApply)SQA.onApply(lib=>{Object.assign(CF,CF0);const c=lib&&lib.hometax;if(!c||typeof c!=='object')return;
-  for(const k in CF0){const v=+c[k];if(isFinite(v)&&v>=0)CF[k]=k==='interest'?Math.min(v,1):Math.round(v)}})}catch(e){self.SQERR&&SQERR(e,'267-1')}
+  for(const k in CF0){const v=+c[k];if(isFinite(v)&&v>=0)CF[k]=k==='interest'||k==='guild'?Math.min(v,1):Math.round(v)}})}catch(e){self.SQERR&&SQERR(e,'267-1')}
  const fmt=n=>Math.round(n).toLocaleString('en-US');
  const now=()=>{try{if(window.SQMP&&SQMP.on)return Date.now()+(+SQMP.off||0)}catch(e){self.SQERR&&SQERR(e,'267-2')}return Date.now()};// the server's clock (061's mpNow isn't global)
  const rate=k=>k==='castle'?CF.castle:CF.house,kind=h=>h&&h.castle?'castle':'house';
+ // Nov 22 (Jace: homes moving to guild islands frees up the main islands): a home on your guild's island pays CF.guild (half)
+ const onGuild=o=>!!(o&&o.isl&&/^gi_/.test(String(o.h&&o.h.rg||''))),price=(k,g)=>Math.round(rate(k)*(g?CF.guild:1)),priceOf=o=>price(kind(o.h),onGuild(o));
  const homes=()=>{try{return window.SQONEHOME?SQONEHOME.homes():[]}catch(e){self.SQERR&&SQERR(e,'267-3');return[]}};
  const where=o=>o.isl?(WORLD_REGIONS[o.h.rg]?WORLD_REGIONS[o.h.rg].name:'an island'):'Hollow Island';
  const left=ms=>{ms=Math.max(0,ms);if(ms>DAY){const d=Math.ceil(ms/DAY-1e-9);return d+' days'}if(ms>36e5){const h=Math.ceil(ms/36e5-1e-9);return h+(h===1?' hour':' hours')}const m=Math.max(1,Math.ceil(ms/6e4));return m+(m===1?' minute':' minutes')};// rounded up: 29.9 days is "30 days"
  const day=t=>{try{return new Date(t).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}catch(e){return new Date(t).toDateString()}};
  let HT={u:0,l:0,k:'',f:0,h:null},HELD=null,ready=true,/* 114's boot load runs before the first tick */warned=-1,loginTold=false,freeTold=false;
- const fresh=()=>({u:0,l:0,k:'',f:0,h:null});
+ const fresh=()=>({u:0,l:0,k:'',g:0,f:0,h:null});
  // ---- the server's clock ----
  let clockOK=false,offSub=null;
  function watchClock(){try{const on=!!(window.SQMP&&SQMP.on&&window.SQFB);if(on&&!offSub){const F=SQFB;offSub=F.db.onValue(F.db.ref(F.D,'.info/serverTimeOffset'),()=>{clockOK=true})}
@@ -49,7 +53,7 @@
   for(let n=0;n<3&&inHome(h);n++){try{leaveScene()}catch(e){self.SQERR&&SQERR(e,'267-10');break}}
   try{if(typeof BUILD!=='undefined'&&BUILD)endBuild()}catch(e){self.SQERR&&SQERR(e,'267-11')}
   try{if(pnOpen&&CHEST_H&&([...h.furn.values()].includes(CHEST_H)||(h.yf&&[...h.yf.values()].includes(CHEST_H))))closePanel()}catch(e){self.SQERR&&SQERR(e,'267-12')}
-  unmap(o);HELD=o;HT.h={id:h.id,at:now(),debt:Math.round(rate(k)*(1+CF.interest)),k,w:where(o)};HT.u=0;HT.l=0;warned=-1;
+  unmap(o);HELD=o;HT.h={id:h.id,at:now(),debt:Math.round(priceOf(o)*(1+CF.interest)),k,w:where(o)};HT.u=0;HT.l=0;warned=-1;
   tell('Your '+k+' tax ran out, so the bank is looking after your '+k+' and everything in it. Pay '+fmt(HT.h.debt)+' gold at the bank in Hollow Village (next to the World Market) to get it back.',12);
   try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'267-13')}save()}
  // everything in a home into the bag (house/castle, furniture, chest contents, yard, framed cards)
@@ -61,6 +65,7 @@
  function fitsHollow(h){const px=P.x,py=P.y;try{P.x=h.x*16+8;P.y=(h.y+1)*16+8;return!!houseFits()}catch(e){self.SQERR&&SQERR(e,'267-16');return false}finally{P.x=px;P.y=py}}
  function giveBack(){if(!HELD||!HT.h)return;const o=HELD,h=o.h,k=kind(h);HELD=null;HT.h=null;
   const ok=o.isl?!!WORLD_REGIONS[h.rg]:fitsHollow(h);
+  HT.g=onGuild(o)?1:0;// the month just paid was at this home's price
   if(ok){remap(o);HT.u=now()+CF.days*DAY;HT.l=0;HT.k=k;tell('Your '+k+' is back where it stood on '+where(o)+', with everything inside. Its tax is paid for '+CF.days+' days.',9)}
   else{delete h._ypk;toBag(h);HT.u=0;HT.l=CF.days*DAY;HT.k=k;tell('Someone built where your '+k+' stood, so the bank put your '+k+' in your bag with everything that was in it. Place it somewhere new: its tax is paid for '+CF.days+' days.',12)}
   warned=-1;save()}
@@ -73,9 +78,10 @@
  // ---- every second: start the free month, keep the time, warn, take ----
  const WARN=[7*DAY,3*DAY,DAY,36e5];
  function tick(){watchClock();if(!ready)return;try{checkIsland()}catch(e){self.SQERR&&SQERR(e,'267-20')}if(HELD)return;const t=now(),o=homes()[0]||null;
-  if(o){const k=kind(o.h);
-   if(!HT.u){if(HT.f)HT.u=t+HT.l;else{HT.u=t+CF.free*DAY;HT.f=1;HT.k=k;if(!freeTold)setTimeout(()=>tell('Homes pay a little tax now, at the bank in Hollow Village next to the World Market. Your first '+CF.free+' days are free!',10),loginTold?0:4000);freeTold=true}HT.l=0;if(!HT.k)HT.k=k;warned=-1}
-   if(HT.k!==k){if(HT.u>t)HT.u=t+(HT.u-t)*rate(HT.k)/rate(k);HT.k=k;warned=-1}
+  if(o){const k=kind(o.h),gi=onGuild(o)?1:0;
+   if(!HT.u){if(HT.f)HT.u=t+HT.l;else{HT.u=t+CF.free*DAY;HT.f=1;HT.k=k;HT.g=gi;if(!freeTold)setTimeout(()=>tell('Homes pay a little tax now, at the bank in Hollow Village next to the World Market. Your first '+CF.free+' days are free!',10),loginTold?0:4000);freeTold=true}HT.l=0;if(!HT.k){HT.k=k;HT.g=gi}warned=-1}
+   // the time left keeps its worth in gold when the price changes (house <-> castle, onto or off a guild island)
+   if(HT.k!==k||(HT.g|0)!==gi){if(HT.u>t)HT.u=t+(HT.u-t)*price(HT.k,HT.g)/price(k,gi);HT.k=k;HT.g=gi;warned=-1}
    if(t>=HT.u){if(clockOK&&!dead)take(o);return}
    const ms=HT.u-t;let w=-1;for(let i=0;i<WARN.length;i++)if(ms<=WARN[i])w=i;
    if(w>warned||(!loginTold&&w>=0)){warned=Math.max(w,warned);loginTold=true;tell('Your '+k+' tax runs out in '+left(ms)+'. Pay at the bank in Hollow Village, next to the World Market.',8)}
@@ -86,11 +92,11 @@
  SQSAVE.wrap('267 held home',next=>function(){if(!HELD)return next.apply(this,arguments);const o=HELD,h=o.h;
   if(o.isl)window.SQRH.push(h);else HOUSES.push(h);
   try{return next.apply(this,arguments)}finally{if(o.isl){const L=window.SQRH,j=L.indexOf(h);if(j>=0)L.splice(j,1)}else HOUSES=HOUSES.filter(q=>q!==h)}});
- SQSAVE.after('267:htax',s=>{s.htax={u:HT.u,l:HT.l,k:HT.k,f:HT.f,h:HT.h}});
+ SQSAVE.after('267:htax',s=>{s.htax={u:HT.u,l:HT.l,k:HT.k,g:HT.g|0,f:HT.f,h:HT.h}});
  SQLOAD.after('267',(S)=>{const v=S&&S.htax,num=x=>Math.max(0,+x||0);HT=fresh();HELD=null;warned=-1;loginTold=false;
-  if(v&&typeof v==='object'){HT.u=num(v.u);HT.l=num(v.l);HT.k=v.k==='castle'?'castle':v.k==='house'?'house':'';HT.f=v.f?1:0;
+  if(v&&typeof v==='object'){HT.u=num(v.u);HT.l=num(v.l);HT.k=v.k==='castle'?'castle':v.k==='house'?'house':'';HT.g=v.g?1:0;HT.f=v.f?1:0;
    const q=v.h;if(q&&typeof q==='object'&&q.id!=null){const o=homes().find(o=>String(o.h.id)===String(q.id));
-    if(o){unmap(o);HELD=o;HT.h={id:o.h.id,at:num(q.at),debt:num(q.debt)>0?Math.round(num(q.debt)):Math.round(rate(kind(o.h))*(1+CF.interest)),k:kind(o.h),w:where(o)};HT.u=0}}}
+    if(o){unmap(o);HELD=o;HT.h={id:o.h.id,at:num(q.at),debt:num(q.debt)>0?Math.round(num(q.debt)):Math.round(priceOf(o)*(1+CF.interest)),k:kind(o.h),w:where(o)};HT.u=0}}}
   ready=true;if(HELD)setTimeout(()=>{if(HELD&&HT.h)tell('The bank is looking after your '+HT.h.k+'. Pay '+fmt(HT.h.debt)+' gold at the bank in Hollow Village (next to the World Market) to get it back.',10)},4000)});
  SQNEWGAME.before('267',()=>{ready=false;HT=fresh();HELD=null;warned=-1;loginTold=false});
  SQNEWGAME.after('267',()=>{ready=true});
@@ -134,20 +140,20 @@
  function html(){const t=now(),o=homes()[0]||null,M=CF.days*DAY;let h='<div class="tl">Penny the Banker</div><div class="qc"><p>'+LINES[line%LINES.length]+'</p></div><div class="qc bk-st">';
   if(HELD&&HT.h){const d=HT.h.debt;h+='<p>I\'m looking after your '+HT.h.k+' from '+esc(HT.h.w)+', and everything in it. You owe <b>'+fmt(d)+' gold</b>: one month of tax and '+Math.round(CF.interest*100)+'% interest.</p></div>'+
     btn('back','Pay '+fmt(d)+' gold and get my '+HT.h.k+' back',GLD>=d,GLD>=d?'':'You need '+fmt(d-GLD)+' more gold.')}
-  else if(o){const k=kind(o.h),c=rate(k),ms=Math.max(0,HT.u-t),room=HT.u+M-t<=CF.ahead*DAY+6e4;
-   h+='<p>Your '+k+' on '+esc(where(o))+': tax paid until <b>'+esc(day(HT.u))+'</b> ('+left(ms)+' left).</p></div>'+
+  else if(o){const k=kind(o.h),c=priceOf(o),ms=Math.max(0,HT.u-t),room=HT.u+M-t<=CF.ahead*DAY+6e4;
+   h+='<p>Your '+k+' on '+esc(where(o))+': tax paid until <b>'+esc(day(HT.u))+'</b> ('+left(ms)+' left).'+(onGuild(o)?' It\'s on your guild\'s island, so it pays half.':'')+'</p></div>'+
     btn('pay','Pay 1 month ('+CF.days+' days) · '+fmt(c)+' gold',room&&GLD>=c,!room?'You\'ve paid as far ahead as you can ('+Math.round(CF.ahead/CF.days)+' months).':GLD<c?'You need '+fmt(c-GLD)+' more gold.':'')}
   else if(!HT.f)h+='<p>You don\'t have a home yet. When you place your first house or castle, its first '+CF.free+' days of tax are free.</p></div>';
   else if(HT.l>0)h+='<p>You don\'t have a home right now. You have '+left(HT.l)+' of tax paid: it\'s kept for when you place your home again.</p></div>';
   else h+='<p>You don\'t have a home right now, and your home tax has run out. Pay a month here before you place one.</p></div>'+
     btn('ph','Pay 1 month for a house · '+fmt(CF.house)+' gold',GLD>=CF.house,GLD<CF.house?'You need '+fmt(CF.house-GLD)+' more gold.':'')+btn('pc','Pay 1 month for a castle · '+fmt(CF.castle)+' gold',GLD>=CF.castle,GLD<CF.castle?'You need '+fmt(CF.castle-GLD)+' more gold.':'');
-  return h+'<div class="tl" style="font-size:11px;font-weight:400;opacity:.75;margin-top:10px">A house costs '+fmt(CF.house)+' gold a month, a castle '+fmt(CF.castle)+'. If the tax runs out, the bank takes the home off the map and keeps it safe with everything inside, until you pay one month and '+Math.round(CF.interest*100)+'% more.</div><div class="tl" style="margin-top:8px">Gold: '+fmt(GLD)+'</div>'}
+  return h+'<div class="tl" style="font-size:11px;font-weight:400;opacity:.75;margin-top:10px">A house costs '+fmt(CF.house)+' gold a month, a castle '+fmt(CF.castle)+'. Homes on your guild\'s island pay half. If the tax runs out, the bank takes the home off the map and keeps it safe with everything inside, until you pay one month and '+Math.round(CF.interest*100)+'% more.</div><div class="tl" style="margin-top:8px">Gold: '+fmt(GLD)+'</div>'}
  SQRPN.wrap('267',_r=>function(){if(ptab==2&&shop===KIND){try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'267-25')}pbd.innerHTML=html();return}return _r.apply(this,arguments)});
  SQCLOSEPN.before('267',()=>{if(shop===KIND)line++});
  function act(a){const t=now(),o=homes()[0]||null,M=CF.days*DAY;
   if(a==='back'){if(!HELD||!HT.h)return;const d=HT.h.debt;if(GLD<d){sfx('swish');return}GLD-=d;sfx('coin');giveBack();return}
-  if(a==='pay'){if(!o||HELD)return;const k=kind(o.h),c=rate(k);if(GLD<c||HT.u+M-t>CF.ahead*DAY+6e4){sfx('swish');return}GLD-=c;HT.u=Math.max(HT.u,t)+M;HT.k=k;warned=-1;sfx('coin');tell('Paid! Your '+k+' tax is paid until '+day(HT.u)+'.',6);save();return}
-  if(a==='ph'||a==='pc'){if(o||HELD||HT.l>0)return;const k=a==='pc'?'castle':'house',c=rate(k);if(GLD<c){sfx('swish');return}GLD-=c;HT.l=M;HT.k=k;sfx('coin');tell('Paid! You can place your '+k+' now: its tax is paid for '+CF.days+' days.',7);save()}}
+  if(a==='pay'){if(!o||HELD)return;const k=kind(o.h),c=priceOf(o);if(GLD<c||HT.u+M-t>CF.ahead*DAY+6e4){sfx('swish');return}GLD-=c;HT.u=Math.max(HT.u,t)+M;HT.k=k;HT.g=onGuild(o)?1:0;warned=-1;sfx('coin');tell('Paid! Your '+k+' tax is paid until '+day(HT.u)+'.',6);save();return}
+  if(a==='ph'||a==='pc'){if(o||HELD||HT.l>0)return;const k=a==='pc'?'castle':'house',c=rate(k);if(GLD<c){sfx('swish');return}GLD-=c;HT.l=M;HT.k=k;HT.g=0;sfx('coin');tell('Paid! You can place your '+k+' now: its tax is paid for '+CF.days+' days.',7);save()}}
  pbd.addEventListener('click',e=>{if(shop!==KIND||ptab!=2||!pnOpen)return;const b=e.target.closest('[data-bank]');if(!b)return;e.stopPropagation();e.preventDefault();if(b.disabled)return;
   try{act(b.dataset.bank)}catch(err){self.SQERR&&SQERR(err,'267-26')}try{svg()}catch(err){self.SQERR&&SQERR(err,'267-27')}rPn()},true);
  // ---- where to see it: the bag (under your gold) and the map ----
@@ -157,8 +163,8 @@
  SQMAPHTML.wrap('267',_m=>function(){const h=_m.apply(this,arguments);try{const s=status();if(s&&typeof h==='string')return h+'<div class="bk-bag" style="margin-top:6px">'+esc(s)+'</div>'}catch(e){self.SQERR&&SQERR(e,'267-29')}return h});
  const st=document.createElement('style');st.textContent='.bk-bag{text-align:center;font-size:12px;opacity:.85;margin-top:4px;line-height:1.35}.bk-st p{margin:0}';document.head.appendChild(st);
  // ---- words elsewhere ----
- IDESC.house=(IDESC.house||'')+' Homes pay a little tax at the bank in Hollow Village: '+fmt(CF.house)+' gold a month for a house (the first month is free).';
- IDESC.castle=(IDESC.castle||'')+' Castles pay '+fmt(CF.castle)+' gold a month of tax at the bank in Hollow Village.';
+ IDESC.house=(IDESC.house||'')+' Homes pay a little tax at the bank in Hollow Village: '+fmt(CF.house)+' gold a month for a house, half on your guild\'s island (the first month is free).';
+ IDESC.castle=(IDESC.castle||'')+' Castles pay '+fmt(CF.castle)+' gold a month of tax at the bank in Hollow Village (half on your guild\'s island).';
  try{if(typeof WK_ROLE!=='undefined')WK_ROLE[KIND]='Bank: pay the tax on your house or castle'}catch(e){self.SQERR&&SQERR(e,'267-30')}
  window.SQHTAX={CF,get state(){return HT},get held(){return HELD},heldIds:()=>HELD?[String(HELD.h.id)]:[],pubU:()=>HT.u||0,
   gone(u){const t=now();if(u==null||u==='')return t>LEGACY;u=+u;return isFinite(u)&&u>0&&t>u},

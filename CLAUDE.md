@@ -120,6 +120,8 @@
 - New presence fields or listeners on whole database nodes cost download for every player online: keep them small and rare.
 - A transaction that takes something once must return the new value even when handed null (the real SDK calls it with a stale null first).
 - Firebase rules have no `numChildren()`; the real SDK's `ref(db,'')` throws (use `ref(db)` for the root).
+- The checks' rules database (`rulesdb.cjs`) runs rule expressions as plain JavaScript, so a rule Firebase's type checker refuses
+  (Nov 22: `sum + (a || b)`, "Invalid + expression") still passes them. After Publish, look for the red "Error saving rules" banner and reload.
 - When a new context is added to `attack`, `eat` or `talk`, give it a button word in 118. A new raw fish needs the Giant Turtle's `RAW` list
   and its rule regenerated. A new arrow goes in 021's fletch lines and 010's arrow chip. A new pet after 151 needs its pet item.
 - Material lists use `matN(k)` (004); later items must push themselves into `EXTRA_BAG` and give `iconURL` a picture.

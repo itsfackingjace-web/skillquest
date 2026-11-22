@@ -43,7 +43,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   re-applies the island's buildings when `SQGBOSS.key()` differs from the room's `_bk` stamp. A summon also spends 1 rank of the boss's skill
   (`pk`: treant `wood`, turtle `fish`; `prog/<pk>` - 1 in the same update, `prk(k)` reads it): the boss/turt rules require
   `prog/<pk>` >= 1 and exactly one less in the write, and `prog` has a matching branch (leader/officer, qd unchanged, only that skill
-  down by one, the boss record written with by = you and t = now). Ranks above RMAX are kept, so spending one there shows no change. Kinds: `treant` (path `boss`, `gt_`),
+  down by one, the boss record written with by = you and t = now). Ranks above RMAX are kept, so spending one there shows no change.
+  Or (Nov 22, Jace) twice the materials and no rank: `summon(k,true)` (`gtb:sum2:<kind>`, `pay(bank,2)`, no `prog` in the update);
+  the boss/turt rules take either (treant: void logs -50,000 with wood -1, or -100,000 with wood unchanged; turtle: the raw fish sum
+  -5,000 with fish -1, or -10,000 with fish unchanged). Check 83. Kinds: `treant` (path `boss`, `gt_`),
   `turtle` (200, path `turt`, `gu_`).
 - **Giant Turtle** (`combat/200-s208-giant-turtle.js`, `SQTURT`): 5,000 raw fish (`RAW`, 16 kinds incl. 221's moonfin/abeel/akoi since Nov 16, cheapest `SELLP` first; the rules sum the
   16 bank keys' decrease = 5000, none rising; a new raw fish needs both RAW and the turt rule regenerated), whirlpool by the pier, attacks with 100's new `bubble` shots and `water` geysers (100's charge/
