@@ -64,5 +64,5 @@ function rhSign(h){const nm=h._foreign?fname(h._owner):(MP.on?myName():pname());
   if(keepHome&&RH.some(h=>h.id===keepHome))HOMESP=keepHome;try{rhSolidSync()}catch(e){self.SQERR&&SQERR(e,'067-4')}})}
 {SQNEWGAME.before('067',()=>{RH.length=0;})}
 // shared: other players see where your island houses are
-{const _rp=rbPub;rbPub=function(){const o=_rp()||{};if(RH.length)o._h=RH.map(h=>[h.rg,h.x,h.y,h.id,[...h.furn].map(([i,f])=>f.nm?[i,f.t,0,f.nm]:[i,f.t])]);return Object.keys(o).length?o:null}}
+{const _rp=rbPub;rbPub=function(){const o=_rp()||{};if(RH.length)o._h=RH.map(h=>[h.rg,h.x,h.y,h.id,[...h.furn].map(([i,f])=>{/* Nov 21: a card frame carries its card (260), as 061 does for Hollow homes */const cd=f.t==='cardframe'&&window.SQCARDFRAME&&SQCARDFRAME.on[String(h.id||'home')+':'+i];return cd?[i,f.t,0,'',String(cd).slice(0,40)]:f.nm?[i,f.t,0,f.nm]:[i,f.t]})]);return Object.keys(o).length?o:null}}
 window.SQRH=RH;

@@ -107,3 +107,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   kept. Check 79.
 - Not reproduced: Jynx's roll into a wall in No Man's Land (21:28). 855 rolls into the walls around his spot never ended inside one,
   and 40 tried in real time all walked out; his screenshot shows the game asking him to update (021's roll fix went out at midday).
+- 201's cape cloth (every cape since the guild capes) was painted over the kit's long hair from behind (kit styles 2 and 3 hang to row
+  24; the cape starts at 21; FUMP: "a cape showing through Kass's hair"). `sil()` now marks those hair pixels and their outline as
+  covering the cape when `dir===1`, like a hood (`cov`). Check 80.
+- Card frames: 061's `myHousesData` and 067's island-home `_h` rows send a frame's card as the row's 5th entry `[i,'cardframe',0,'',card]`
+  (from 260's `SQCARDFRAME.on`); `buildForeign` keeps it as `f.card` (a `dc_` key), and 260 draws it in someone else's house. Visitors
+  saw an empty stand before. Check 81.
+- Checked and not reproduced: Kass's brewing stopping when the skills screen opens (a Brew ALL goes on behind it: 1 → 5 → 7 potions);
+  Bear's chat emptying after an update (chat loads the last 50 messages of the past day whenever the game starts).

@@ -45,6 +45,13 @@
   const d=grab(draw(ch)),k=grab(draw(body));
   E=[];const cov=new Uint8Array(96*112);
   for(let y=0;y<112;y++){let a=96,b=-1;for(let X=0;X<96;X++){const i=y*96+X,j=i*4;if(k[j+3]>60){if(X<a)a=X;if(X>b)b=X}if(d[j+3]>60){if(k[j+3]<=60||Math.abs(d[j]-k[j])+Math.abs(d[j+1]-k[j+1])+Math.abs(d[j+2]-k[j+2])>24)cov[i]=1}}E.push([a,b])}
+  // Nov 21 (FUMP: a cape showing through Kass's hair): from behind, long hair (kit styles that hang below the collar, row 20 on)
+  // goes over the cape, like a hood does: its pixels and their outline count as covering the cape
+  if(dir===1)try{const o=kitLook(ch),hd=o.head?KIT.head[o.head]:null,H=(KIT.hair[o.hs]||KIT.hair[0]).up||[];
+   if(!hd||hd.clip!==null){const hp=new Set();for(const[r,c0,s2]of H)for(let i=0;i<s2.length;i++)if(/[123]/.test(s2[i])&&r>=20)hp.add(r*16+c0+i);
+    const mark=(X,Y)=>{for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){const cx=2*(16+X)+dx,cy=2*(19+Y)+dy;if(cx>=0&&cx<96&&cy>=0&&cy<112)cov[cy*96+cx]=1}};
+    for(const v of hp){const X=v%16,Y=(v/16)|0;mark(X,Y);for(const[a,b]of[[1,0],[-1,0],[0,1]]){const nx=X+a,ny=Y+b;if(nx<0||nx>15||hp.has(ny*16+nx))continue;
+     const j=((2*(19+ny))*96+2*(16+nx))*4;if(k[j+3]>60&&k[j]+k[j+1]+k[j+2]<120)mark(nx,ny)}}}}catch(e){self.SQERR&&SQERR(e,'201-10')}
   E.cov=cov;if(SIL.size>300)SIL.clear();SIL.set(key,E);return E}
  // ---- the cape as cloth ----
  // Shapes are worked out in kit pixels (16x32, head rows 9-20, neck 21, torso 22-26, legs 27-30) and painted per half pixel:

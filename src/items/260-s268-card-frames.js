@@ -6,7 +6,7 @@
 // - HIT facing it (your own house) opens panel FTAB: the card on it, TAKE IT DOWN, PICK UP THE FRAME, and your cards to put up.
 //   Earned cards only (Starter Deck cards never leave the binder).
 // - Which card is on which frame: save `dcf` {"<house id>:<tile>": item key}, always written. Picking the frame up (here or with
-//   013's pickFurn) gives the card back first. Visitors see an empty stand: furniture rows don't carry the card.
+//   013's pickFurn) gives the card back first. Visitors see the card too (Nov 21: 061's myHousesData sends it as the row's 5th entry).
 (()=>{const D=window.SQDROPCARD,B=window.SQBINDER;if(!D||!B)return;const K='cardframe',FTAB=53;
  const def={k:K,n:'Card frame',c:{wood:4,ibar:1},req:8,xp:40,hp:1};
  BREC.push(def);BK.push(K);BHP[K]=1;if(!INVK.includes(K))INVK.push(K);INAME[K]=def.n;SN[K]='Card frames';SHORT[K]='card frame';SELLP[K]=60;inv[K]=inv[K]|0;
@@ -42,7 +42,7 @@
  {const _dp=drawPiece;drawPiece=function(t,x,y,f,ghost,tm){if(t!==K)return _dp.apply(this,arguments);const x0=x*16,y0=y*16;
   shd(x0+8,y0+15,10);Rg(x0+3,y0+5,2,10,O);Rg(x0+11,y0+5,2,10,O);Rg(x0+4,y0+6,1,8,'#8a5428');Rg(x0+12,y0+6,1,8,'#8a5428');Rg(x0+2,y0+11,12,2,O);Rg(x0+3,y0+11,10,1,'#a87850');
   Rg(x0+2,y0-8,12,16,O);Rg(x0+3,y0-7,10,14,'#c89860');
-  let c=null;try{const h=SCENE&&SCENE.house;if(h&&!h._foreign&&!ghost)c=ON[hk(h,y*SCENE.room.w+x)]}catch(e){/*quiet*/}
+  let c=null;try{const h=SCENE&&SCENE.house;if(h&&!ghost){const i=y*SCENE.room.w+x;if(!h._foreign)c=ON[hk(h,i)];else{const fr=h.furn&&h.furn.get(i),k=(f&&f.card)||(fr&&fr.card);if(k&&D.ITEM[k])c=k}}}catch(e){/*quiet*/}// Nov 21: a visitor sees the card too (061 sends it with the frame's row)
   const m=c&&img(c);if(m){g.save();g.imageSmoothingEnabled=false;g.drawImage(m,x0+1,y0-7,14,14);g.restore()}else Rg(x0+4,y0-6,8,12,'#7a5838')}}
  const st=document.createElement('style');st.textContent='.dcfr-now{display:flex;gap:10px;align-items:center;font-size:14px;line-height:1.4}.dcfr-now img{width:56px;height:56px;image-rendering:pixelated}';document.head.appendChild(st);
  window.SQCARDFRAME={get on(){return ON},putUp,takeDown,openFrame,K,FTAB}})();
