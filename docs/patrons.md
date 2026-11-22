@@ -43,6 +43,15 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   canvas sized by `fit()` (width, and half the screen height on phones) × `A.zoom` in `#arbox` (scrolls when zoomed; two fingers / move tool /
   Space / middle button pan), palette strip + current colour (a colour input over it), frames strip with `+`, preview and speed, then a
   separate `send` view (name, kind, note). `#pn.sqart` widens the panel to 980px; two columns at ≥760px. Keys: B E G I M, Ctrl+Z/Y, +/-.
+  Nov 22 (a patron's list, check 86): the SQRPN hook keeps `#arbox` scrollLeft/Top across `pbd.innerHTML=html()` (every button used to jump
+  the zoomed view to the top left). Wheel zoom (`zoomBy(d,ev)`, anchored on the pixel under the pointer): only notched wheels / Ctrl+wheel /
+  line-mode deltas zoom (`notch`), 70 ms apart, so a trackpad's smooth scroll still scrolls. Select tool (`tool:sel`, key S; `A.selm`
+  rect|free, `A.sel` {m mask, x/y offset, lifted pixels}): drag inside to move, arrows nudge, `sdel` clears, `scrop` crops the canvas to its
+  box (pets/wear: "Keep only this" clears the rest instead), Escape/`snone` stamps it down; undo/redo/frame switch/tool change drop it.
+  Sizes `SIZES` up to `MAXS=96`; `maxF()` = min(8, 56000/(w·h)) frames so `f` stays under the rules' 60000 chars (96x96: 6); the size picker
+  refuses a size whose cap is below the frames you have. Rules: `art/$uid/$id` and `paintings/$id` w,h ≤ 96. Drafts (localStorage
+  `sq_art_proj`, up to `PJMAX=24`, {id,nm,md,w,h,f,ms,...,t}; `A.pid` links the open drawing, `projTouch` saves it every 3 s while
+  linked; `drafts` page: save / save a copy / new / open / delete (tap twice), thumbnails drawn after render from `data-arp`). Not in `A.edit`.
 - **Paintings and the Patron Art Gallery** (`items/213-s221-paintings-and-gallery.js`, `window.SQPAINT`): `paintings/<id>` {n,by,u,w,h,f,ms,p,t,off}
   (devs write via Dev Suite > Art Room "Approve as a painting"; signed-in read, onValue; cached in localStorage `sq_paint`). Items `pt_<id>` (bag/easel)
   and `pw_<id>` (hung): a hung painting is stored on the floor tile under the wall (row 2) because every home loader drops rows 0-1; it isn't

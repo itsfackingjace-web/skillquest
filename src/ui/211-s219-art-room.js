@@ -1,6 +1,6 @@
 // ---- 219. The Art Room: Patrons draw sprites and animations and send them to the developer ----
-// Open to active Patrons who aren't under 13 (Options > PATRON > Open the Art Room; ptab 47). A pixel editor: canvas up to
-// 48x48, palette (slot 0 = clear, the rest editable with a colour picker), pen / eraser / fill / picker, up to 8 frames with
+// Open to active Patrons who aren't under 13 (Options > PATRON > Open the Art Room; ptab 47). A pixel editor: canvas up to 96x96 (Nov 22; was
+// 48x48), palette (slot 0 = clear, the rest editable with a colour picker), pen / eraser / fill / picker / select, up to 8 frames (fewer on big canvases) with
 // onion skin and a live preview at `ms` per frame, undo/redo, a draft kept on the device (localStorage sq_art_draft).
 // SEND writes `art/<uid>/<push id>` {n, k (item|pet|prop|anim|other), w, h, f, ms, note, who, t}; f = JSON {p:[hex...], fr:[one
 // character per pixel, index into p via CH ('.' = clear)]}. Name and note go through SQFILTER. The rules let only active
@@ -8,15 +8,18 @@
 // Dev Suite > Art Room (inbox): every submission animated, Approve / Not this time with a message (st 'ok'/'no', re, a gift
 // message to the artist, and `artcred/<id>` for the credits on approval), "Copy frame to the clipboard" (sq_dev_clip, pasteable
 // in every Dev Suite picture editor), and Patrons: grant or extend patron/<uid> {s,u,c} by player search.
-(()=>{const myNm=()=>{try{const m=window.SQMP;return String((typeof PNAME!=='undefined'&&PNAME)||((m&&m.user&&m.user.displayName)||'').split(' ')[0]||'Adventurer').replace(/[<>]/g,'').slice(0,12)}catch(e){return'Adventurer'}};const ATAB=47,MAXF=8,MAXS=48,CH='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&()*+,-/:;<=>?@[]^_{|}~';
+(()=>{const myNm=()=>{try{const m=window.SQMP;return String((typeof PNAME!=='undefined'&&PNAME)||((m&&m.user&&m.user.displayName)||'').split(' ')[0]||'Adventurer').replace(/[<>]/g,'').slice(0,12)}catch(e){return'Adventurer'}};const ATAB=47,MAXF=8,MAXS=96,CH='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&()*+,-/:;<=>?@[]^_{|}~';
  const mp=()=>window.SQMP,F=()=>window.SQFB,uid=()=>{const m=mp();return m&&m.user?m.user.uid:''};
  const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  const can=()=>!!(window.SQPATRON&&SQPATRON.active(uid())&&!(window.SQAGE&&SQAGE.child()));
  const PAL0=['','#000000','#1d2b53','#7e2553','#008751','#ab5236','#5f574f','#c2c3c7','#fff1e8','#ff004d','#ffa300','#ffec27','#00e436','#29adff','#83769c','#ff77a8','#ffccaa',
   '#2a1a10','#5a3a20','#8a5a30','#c8904a','#3a6a2a','#68a848','#a8d870','#1a3a6a','#3870d8','#88c0f0','#6a1a1a','#c83040','#f8a8a8','#404048','#909098'];
  const KINDS=[['item','Item icon'],['pet','Pet'],['prop','Decoration or object'],['anim','Animation or effect'],['other','Something else']];
- const SIZES=[8,12,16,20,24,32,40,48];
- const blank=(w,h)=>new Uint8Array(w*h);
+ // Nov 22 (a Patron's list: "higher pixel res options for new art"): canvases up to 96 x 96. A sent piece must stay under 60,000
+ // characters (one per pixel per frame), so big canvases get fewer frames: maxF() (96 x 96: 6, 64 x 64 and below: 8).
+ const SIZES=[8,12,16,20,24,32,40,48,64,80,96];
+ const maxF=()=>A?Math.max(1,Math.min(MAXF,Math.floor(56000/(A.w*A.h)))):MAXF;
+ const blank=(w,h)=>new Uint8Array(w*h),ZMAX=8;
  let A=null;
  // wearables: 48x76 pixels of the 96x112 worn layer (origin WO), one frame per facing (front, back, side), drawn over your character
  const WO=[24,28],WSL=[['helm','Hat or helmet'],['body','Top or chestplate'],['legs','Trousers or leg armour']],FACE=['Front','Back','Side'];
@@ -26,13 +29,14 @@
  function freshPet(){return Object.assign(fresh(),{mode:'pet',w:16,h:16,fr:[blank(16,16),blank(16,16),blank(16,16),blank(16,16)],kind:'pet',mirror:false,onion:true,pvm:'idle',scale:1})}
  const DR={pic:null,wear:null,pet:null};
  const mk=m=>m==='wear'?freshWear():m==='pet'?freshPet():fresh();
- function fresh(){return{mode:'pic',w:16,h:16,fr:[blank(16,16)],cur:0,pal:PAL0.slice(),col:1,tool:'pen',ms:200,onion:true,mirror:false,zoom:1,grid:true,name:'',kind:'item',note:'',undo:[],redo:[],view:'draw',mine:null,sent:''}}
+ function fresh(){return{mode:'pic',w:16,h:16,fr:[blank(16,16)],cur:0,pal:PAL0.slice(),col:1,tool:'pen',selm:'rect',sel:null,pid:null,ms:200,onion:true,mirror:false,zoom:1,grid:true,name:'',kind:'item',note:'',undo:[],redo:[],view:'draw',mine:null,sent:''}}
  const LSK=m=>m==='wear'?'sq_art_wear':m==='pet'?'sq_art_pet':'sq_art_draft';
  function loadOne(m){try{const d=JSON.parse(localStorage.getItem(LSK(m))||'null');if(d&&d.w&&d.fr){const o=Object.assign(mk(m),d,{mode:m,fr:d.fr.map(s=>Uint8Array.from(s)),undo:[],redo:[],view:'draw',mine:null,sent:''});if(m==='pic'&&o.kind==='pet')o.kind='item';if(m==='pet'){o.kind='pet';if(o.fr.length!==4||o.w!==o.h||!PSZ.includes(o.w))return mk(m)}if(m!=='wear'||o.fr.length===3&&o.w===48&&o.h===76)return o}}catch(e){self.SQERR&&SQERR(e,'211-1')}return mk(m)}
  function load(){if(A)return;DR.pic=loadOne('pic');DR.wear=loadOne('wear');DR.pet=loadOne('pet');let m='pic';try{const v=localStorage.getItem('sq_art_mode');m=v==='wear'||v==='pet'?v:'pic'}catch(e){self.SQERR&&SQERR(e,'211-2')}A=DR[m]}
  const W=()=>A&&A.mode==='wear',PT=()=>A&&A.mode==='pet';
  let saveT=0;function keep(){clearTimeout(saveT);saveT=setTimeout(keepNow,400)}
- function keepNow(){clearTimeout(saveT);if(!A||A.edit)return;try{localStorage.setItem(LSK(A.mode),JSON.stringify({w:A.w,h:A.h,fr:A.fr.map(f=>Array.from(f)),cur:A.cur,pal:A.pal,col:A.col,tool:A.tool,ms:A.ms,onion:A.onion,mirror:A.mirror,zoom:A.zoom,grid:A.grid,name:A.name,kind:A.kind,note:A.note,sl:A.sl,under:A.under,gear:A.gear,pvm:A.pvm,scale:A.scale}));localStorage.setItem('sq_art_mode',A.mode)}catch(e){self.SQERR&&SQERR(e,'211-3')}}
+ function keepNow(){clearTimeout(saveT);if(!A||A.edit)return;try{localStorage.setItem(LSK(A.mode),JSON.stringify({w:A.w,h:A.h,fr:A.fr.map(f=>Array.from(f)),cur:A.cur,pal:A.pal,col:A.col,tool:A.tool,ms:A.ms,onion:A.onion,mirror:A.mirror,zoom:A.zoom,grid:A.grid,name:A.name,kind:A.kind,note:A.note,sl:A.sl,under:A.under,gear:A.gear,pvm:A.pvm,scale:A.scale,pid:A.pid||null,selm:A.selm}));localStorage.setItem('sq_art_mode',A.mode)}
+  catch(e){self.SQERR&&SQERR(e,'211-31')}try{projTouch()}catch(e){self.SQERR&&SQERR(e,'211-3')}}
  const snapU=()=>{A.undo.push({fr:A.fr.map(f=>f.slice()),cur:A.cur,w:A.w,h:A.h});if(A.undo.length>60)A.undo.shift();A.redo=[]};
  // ---- the panel: tools on top, the canvas, the colours right under it, frames under those; name and sending on their own page ----
  {const st=document.createElement('style');st.textContent=`#pn.sqart .pc{max-width:980px}
@@ -65,7 +69,7 @@
  const IC={pen:'M3 17l1-4 9-9 3 3-9 9zM12 5l3 3',erase:'M8 17h9M4 13l7-7 6 6-5 5H8z',fill:'M4 10l6-6 7 7-6 6zM17 13c0 2 1 3 1 4a1 1 0 01-2 0c0-1 1-2 1-4z',pick:'M10 2c3 4 6 7 6 10a6 6 0 01-12 0c0-3 3-6 6-10zM8 13a2 2 0 002 2',
   move:'M10 2v16M2 10h16M10 2l-2 2M10 2l2 2M10 18l-2-2M10 18l2-2M2 10l2-2M2 10l2 2M18 10l-2-2M18 10l-2 2',mirror:'M10 2v16M7 5L3 10l4 5zM13 5l4 5-4 5z',
   undo:'M7 6L3 10l4 4M3 10h9a5 5 0 010 10h-2',redo:'M13 6l4 4-4 4M17 10H8a5 5 0 000 10h2',zin:'M8 3a5 5 0 100 10A5 5 0 008 3zM12 12l5 5M6 8h4M8 6v4',zout:'M8 3a5 5 0 100 10A5 5 0 008 3zM12 12l5 5M6 8h4',
-  grid:'M3 3h14v14H3zM8 3v14M13 3v14M3 8h14M3 13h14',onion:'M4 6h9v9H4zM7 3h9v9'};
+  grid:'M3 3h14v14H3zM8 3v14M13 3v14M3 8h14M3 13h14',onion:'M4 6h9v9H4zM7 3h9v9',sel:'M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4',crop:'M6 2v12h12M2 6h12v12'};
  const ico=k=>'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="'+IC[k]+'"/></svg>';
  const tb=(act,k,label,on,dis)=>'<button class="arb'+(on?' on':'')+'" data-ar="'+act+'" title="'+label+'" aria-label="'+label+'"'+(dis?' disabled':'')+'>'+ico(k)+'</button>';
  // size of one pixel on screen: fill the width (and on phones, about half the screen height), times the zoom
@@ -73,11 +77,11 @@
   return Math.max(3,Math.floor(Math.min(pw,ph)/Math.max(A.w,A.h)))}
  const cell=()=>fit()*A.zoom;
  function html(){if(!can()&&!(A&&A.edit))return'<div class="tl">ART ROOM</div><p>The Art Room is open to Patrons aged 13 and up.</p><button class="arb" data-ar="back">Back</button>';
-  if(A.view==='mine')return mineHTML();if(A.view==='send')return sendHTML();
+  if(A.view==='mine')return mineHTML();if(A.view==='send')return sendHTML();if(A.view==='drafts')return draftsHTML();
   const c=cell(),f=A.fr.length;
-  const tools='<div class="artb">'+tb('tool:pen','pen','Pen (B)',A.tool==='pen')+tb('tool:erase','erase','Eraser (E)',A.tool==='erase')+tb('tool:fill','fill','Fill (G)',A.tool==='fill')+tb('tool:pick','pick','Pick a colour from the drawing (I)',A.tool==='pick')+
+  const tools='<div class="artb">'+tb('tool:pen','pen','Pen (B)',A.tool==='pen')+tb('tool:erase','erase','Eraser (E)',A.tool==='erase')+tb('tool:fill','fill','Fill (G)',A.tool==='fill')+tb('tool:pick','pick','Pick a colour from the drawing (I)',A.tool==='pick')+tb('tool:sel','sel','Select (S): drag a box, or draw around something; then drag it to move it',A.tool==='sel')+
    (A.zoom>1?tb('tool:move','move','Move around (hold Space)',A.tool==='move'):'')+tb('mirror','mirror','Mirror: draw both sides at once (M)',A.mirror)+'<span class="sp"></span>'+
-   tb('undo','undo','Undo (Ctrl+Z)',0,!A.undo.length)+tb('redo','redo','Redo (Ctrl+Y)',0,!A.redo.length)+tb('zout','zout','Zoom out',0,A.zoom<=1)+tb('zin','zin','Zoom in',0,A.zoom>=6)+tb('grid','grid','Grid lines',A.grid)+'</div>';
+   tb('undo','undo','Undo (Ctrl+Z)',0,!A.undo.length)+tb('redo','redo','Redo (Ctrl+Y)',0,!A.redo.length)+tb('zout','zout','Zoom out',0,A.zoom<=1)+tb('zin','zin','Zoom in',0,A.zoom>=ZMAX)+tb('grid','grid','Grid lines',A.grid)+'</div>'+(A.tool==='sel'?selRow():'');
   const pal='<div class="arpalw"><label class="arcur'+(A.col?'':' clr')+'" style="'+(A.col?'background:'+A.pal[A.col]:'')+'" title="'+(A.col?'Tap to change this colour':'Clear (see-through)')+'">'+(A.col?'<input type="color" id="arcc" value="'+A.pal[A.col]+'" aria-label="Change this colour">':'')+'</label>'+
    '<div class="arpal">'+A.pal.map((h,i)=>'<button class="'+(i===A.col?'on ':'')+(i?'':'clr')+'" data-ar="col:'+i+'" style="'+(i?'background:'+h:'')+'" aria-label="'+(i?'Colour '+i:'See-through')+'"></button>').join('')+'</div></div>';
   const mb=(m,l)=>'<button class="arb'+(A.mode===m?' on':'')+'" data-ar="mode:'+m+'" role="tab" aria-selected="'+(A.mode===m)+'">'+l+'</button>';
@@ -92,13 +96,13 @@
    '<div class="arrow">'+(A.cur>0?'<button class="arb" data-ar="cpi">Copy Idle 1</button>':'')+(A.cur===3?'<button class="arb" data-ar="cpw">Copy Walk 1</button>':'')+tb('onion','onion','Show Idle 1 faintly',A.onion)+'</div>'+
    '<p class="arsm" style="margin:2px 0">Draw your pet facing right; it\'s turned around when it walks left. Idle 1 and 2 take turns while it stands (half a second each), Walk 1 and 2 while it follows you. One square here is one pixel in the game.</p></div>';
   const frames=PT()?petSide:W()?wearSide:'<div class="arfrw"><canvas class="arpv" id="arpv" width="'+A.w+'" height="'+A.h+'" title="Preview"></canvas><div style="flex:1;min-width:0"><div class="arfr">'+A.fr.map((_,i)=>'<canvas width="'+A.w+'" height="'+A.h+'" data-arf="'+i+'" class="'+(i===A.cur?'on':'')+'" aria-label="Frame '+(i+1)+'"></canvas>').join('')+
-    '<button class="add" data-ar="fadd" title="New frame"'+(f<MAXF?'':' disabled')+'>+</button></div>'+
-   '<div class="arrow"><span class="arsm">Frame '+(A.cur+1)+' of '+f+'</span><button class="arb" data-ar="fdup"'+(f<MAXF?'':' disabled')+'>Copy</button><button class="arb" data-ar="fdel"'+(f>1?'':' disabled')+'>Delete</button>'+
+    '<button class="add" data-ar="fadd" title="New frame"'+(f<maxF()?'':' disabled')+'>+</button></div>'+
+   '<div class="arrow"><span class="arsm">Frame '+(A.cur+1)+' of '+f+'</span><button class="arb" data-ar="fdup"'+(f<maxF()?'':' disabled')+'>Copy</button><button class="arb" data-ar="fdel"'+(f>1?'':' disabled')+'>Delete</button>'+
    '<button class="arb" data-ar="fl" aria-label="Move frame left"'+(A.cur>0?'':' disabled')+'>◀</button><button class="arb" data-ar="fr" aria-label="Move frame right"'+(A.cur<f-1?'':' disabled')+'>▶</button>'+(f>1?tb('onion','onion','Show the previous frame faintly',A.onion):'')+'</div>'+
    (f>1?'<label class="arsm" style="display:block">Speed: <span id="arms">'+A.ms+'</span> ms a frame<input type="range" id="arsp" min="60" max="1000" step="20" value="'+A.ms+'" style="width:100%"></label>':'')+'</div></div>';
   const more=PT()?'<div class="arrow"><label class="arsm">Size <select id="arsz" class="arin" style="width:auto;padding:4px;font-size:14px">'+PSZ.map(n=>'<option value="'+n+'"'+(n===A.w?' selected':'')+'>'+n+' x '+n+'</option>').join('')+'</select></label><button class="arb" data-ar="clear">Clear frame</button><button class="arb" data-ar="new">Start over</button></div>':W()?'<div class="arrow"><button class="arb" data-ar="clear">Clear this side</button><button class="arb" data-ar="new">Start over</button></div>':'<div class="arrow"><label class="arsm">Canvas <select id="arsz" class="arin" style="width:auto;padding:4px;font-size:14px">'+SIZES.map(n=>'<option value="'+n+'"'+(n===A.w&&n===A.h?' selected':'')+'>'+n+' x '+n+'</option>').join('')+(A.w!==A.h||!SIZES.includes(A.w)?'<option selected>'+A.w+' x '+A.h+'</option>':'')+'</select></label>'+
    '<button class="arb" data-ar="clear">Clear frame</button><button class="arb" data-ar="new">Start over</button></div>';
-  const ED=A.edit;return '<div class="arw"><div class="arhd"><div class="tl">'+(ED?'EDITING "'+E(A.name)+'" BY '+E(ED.who).toUpperCase():'ART ROOM')+'</div>'+(ED?'':'<button class="arb" data-ar="mine">My art</button>')+'<button class="arb" data-ar="back">'+(ED?'Cancel':'Back')+'</button></div>'+(ED?'<p class="arsm" style="margin:0 0 4px">Fix it before approving: delete a stray frame, tidy pixels, change the speed. Saving replaces the artist\'s version (the first version is kept so you can put it back).</p>':modes)+tools+
+  const ED=A.edit;return '<div class="arw"><div class="arhd"><div class="tl">'+(ED?'EDITING "'+E(A.name)+'" BY '+E(ED.who).toUpperCase():'ART ROOM')+'</div>'+(ED?'':'<button class="arb" data-ar="drafts">Drafts</button><button class="arb" data-ar="mine">My art</button>')+'<button class="arb" data-ar="back">'+(ED?'Cancel':'Back')+'</button></div>'+(ED?'<p class="arsm" style="margin:0 0 4px">Fix it before approving: delete a stray frame, tidy pixels, change the speed. Saving replaces the artist\'s version (the first version is kept so you can put it back).</p>':modes)+tools+
    '<div class="armain"><div class="arbox'+(A.zoom>1?' zm':'')+'" id="arbox"><canvas class="arcv" id="arcv" width="'+A.w*c+'" height="'+A.h*c+'" style="width:'+A.w*c+'px;height:'+A.h*c+'px" aria-label="Drawing canvas"></canvas></div>'+
    '<div class="arside">'+pal+frames+(ED?more.replace(/<button class="arb" data-ar="new">Start over<\/button>/,''):more)+(ED?'<label class="arsm" style="display:block;margin:4px 0">Name <input id="aren" class="arin" maxlength="24" value="'+E(A.name)+'"></label><button class="arb pri wide" data-ar="esave" style="width:100%;min-height:46px;font-size:15px">Save changes</button>'+(ED.msg?'<p class="arsm">'+E(ED.msg)+'</p>':''):'<button class="arb pri wide" data-ar="next" style="width:100%;min-height:46px;font-size:15px">Done? Name it and send</button>')+'</div></div></div>'}
  function sendHTML(){return '<div class="arw"><div class="arhd"><div class="tl">SEND YOUR ART</div><button class="arb" data-ar="draw">Back to drawing</button></div>'+
@@ -109,6 +113,38 @@
    '<label class="arlb" for="arnt">Note for the developer (optional)</label><textarea class="arin" id="arnt" maxlength="300" rows="3" placeholder="Where would you like to see it?">'+E(A.note)+'</textarea>'+
    '<div class="arrow" style="margin-top:12px"><button class="arb pri wide" data-ar="send" style="min-height:46px;font-size:15px">Send to the developer</button></div>'+
    (A.sent?'<p style="font-weight:700">'+E(A.sent)+'</p>':'')+'</div></div></div>'}
+ // ---- drafts (Nov 22, a Patron's list: "a Save Draft and Edit option so I can have multiple projects at once"): drawings kept on this
+ // device under a name, in localStorage sq_art_proj [{id, nm, mode, t, d}] (d = the drawing, its frames one character per pixel). The
+ // drawing you're on stays linked to its draft (A.pid) and keeps it up to date; opening another one first files the current drawing
+ // away (as a new draft when it isn't one yet), so nothing is lost. Up to PJMAX drafts.
+ const PJK='sq_art_proj',PJMAX=24;
+ const encF=f=>Array.from(f,v=>CH[v]||'0').join(''),decF=t=>Uint8Array.from(String(t),c=>Math.max(0,CH.indexOf(c)));
+ function projs(){try{const v=JSON.parse(localStorage.getItem(PJK)||'[]');return Array.isArray(v)?v.filter(q=>q&&q.id&&q.d&&Array.isArray(q.d.fr)):[]}catch(e){return[]}}
+ function projPut(L){try{localStorage.setItem(PJK,JSON.stringify(L));return true}catch(e){return false}}
+ const hasArt=()=>A&&A.fr.some(f=>f.some(v=>v));
+ const projData=()=>({w:A.w,h:A.h,fr:A.fr.map(encF),pal:A.pal.slice(),ms:A.ms,name:A.name,kind:A.kind,note:A.note,sl:A.sl,pvm:A.pvm,scale:A.scale,mirror:A.mirror,onion:A.onion,cur:A.cur,col:A.col});
+ // asNew: a new draft even if this drawing is linked to one
+ function projSave(asNew){if(!A||A.edit)return'';const L=projs();let P=A.pid&&!asNew?L.find(q=>q.id===A.pid):null;
+  if(!P){if(L.length>=PJMAX)return'You have '+PJMAX+' drafts, the most this device keeps. Delete one first.';P={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6)};L.unshift(P)}
+  P.mode=A.mode;P.nm=String(A.name||'').trim().slice(0,24)||P.nm||'Untitled '+new Date().toLocaleDateString(undefined,{month:'short',day:'numeric'});P.t=Date.now();P.d=projData();
+  if(!projPut(L))return'This device is out of room for drafts. Delete an old one and try again.';A.pid=P.id;keepNow();return'Saved as "'+P.nm+'".'}
+ let pjT=0;function projTouch(){if(!A||!A.pid||A.edit)return;const now=Date.now();if(now-pjT<3000)return;pjT=now;const L=projs(),P=L.find(q=>q.id===A.pid);if(!P){A.pid=null;return}P.t=now;P.d=projData();if(A.name)P.nm=String(A.name).slice(0,24);projPut(L)}
+ // file the drawing away before leaving it: its draft brought up to date, or a new draft when it has something on it
+ function projStash(){if(!A||A.edit)return;if(A.pid){pjT=0;projTouch()}else if(hasArt())projSave(true)}
+ function projOpen(id){const P=projs().find(q=>q.id===id);if(!P||!A)return;projStash();keepNow();const m=P.mode==='wear'||P.mode==='pet'?P.mode:'pic',d=P.d;
+  const o=Object.assign(mk(m),d,{mode:m,fr:d.fr.map(decF),pal:Array.isArray(d.pal)&&d.pal.length?d.pal.slice():PAL0.slice(),pid:P.id,view:'draw',undo:[],redo:[],mine:null,sent:'',sel:null,zoom:1,tool:'pen'});
+  o.cur=Math.min(o.cur|0,o.fr.length-1);DR[m]=o;A=o;try{localStorage.setItem('sq_art_mode',m)}catch(e){self.SQERR&&SQERR(e,'211-30')}keepNow();rPn()}
+ function projDel(id){projPut(projs().filter(q=>q.id!==id));for(const k in DR)if(DR[k]&&DR[k].pid===id)DR[k].pid=null;A.pmsg='Draft deleted.'}
+ function projNew(){const m=A.mode;projStash();A=DR[m]=mk(m);keepNow();A.view='draw'}
+ const MODEN={pic:'Picture',wear:'Something to wear',pet:'Pet'};
+ function draftsHTML(){const L=projs();
+  return'<div class="arw"><div class="arhd"><div class="tl">MY DRAFTS</div><button class="arb" data-ar="draw">Back to drawing</button></div>'+
+   '<p class="arsm" style="margin:0 0 6px">Keep several drawings going and come back to any of them. Drafts are kept on this device (up to '+PJMAX+'). The drawing you\'re on is saved to its draft as you go.</p>'+
+   '<div class="arrow"><button class="arb pri" data-ar="psave">'+(A.pid?'Save my drawing now':'Save my drawing as a draft')+'</button>'+(A.pid?'<button class="arb" data-ar="psave2">Save a copy</button>':'')+'<button class="arb" data-ar="pnew">Start a new drawing</button></div>'+
+   (A.pmsg?'<p class="arsm" style="font-weight:700;opacity:1">'+E(A.pmsg)+'</p>':'')+
+   (L.length?L.map(P=>'<div class="arsub"><canvas width="'+(P.d.w|0)+'" height="'+(P.d.h|0)+'" data-arp="'+E(P.id)+'"></canvas><div style="flex:1;min-width:0"><b>'+E(P.nm)+'</b>'+(P.id===A.pid?' <span class="arsm">(open now)</span>':'')+
+     '<br><span class="arsm">'+E(MODEN[P.mode]||'Picture')+' · '+(P.d.w|0)+' x '+(P.d.h|0)+(P.d.fr.length>1?' · '+P.d.fr.length+' frames':'')+' · '+E(new Date(P.t||0).toLocaleDateString(undefined,{month:'short',day:'numeric'}))+'</span></div>'+
+     (P.id===A.pid?'':'<button class="arb" data-ar="popen:'+E(P.id)+'">Open</button>')+'<button class="arb" data-ar="pdel:'+E(P.id)+'">Delete</button></div>').join(''):'<p>No drafts yet. Save the drawing you\'re on, then start another.</p>')+'</div>'}
  function mineHTML(){const L=A.mine;const S={ok:['Approved','ok'],no:['Not this time','no']};
   return '<div class="arw"><div class="arhd"><div class="tl">MY ART</div><button class="arb" data-ar="draw">Back to drawing</button></div>'+(L==null?'<p>Loading...</p>':L.length?L.map(x=>'<div class="arsub"><canvas width="'+x.w+'" height="'+x.h+'" data-arm="'+E(x.id)+'"></canvas><div><b>'+E(x.n)+'</b> <span class="arsm">'+E((KINDS.find(k=>k[0]===x.k)||(x.k==='wear'?['','Something to wear']:['','']))[1])+'</span><br>'+
    '<span class="arst '+((S[x.st]||[])[1]||'')+'">'+((S[x.st]||['Waiting for the developer'])[0])+'</span>'+(x.re?'<div class="arsm">'+E(x.re)+'</div>':'')+'</div></div>').join(''):'<p>You haven\'t sent anything yet.</p>')+'</div>'}
@@ -119,9 +155,10 @@
   if(W()&&A.under){const u=under(A.cur);if(u){x.globalAlpha=.5;x.drawImage(u,0,0,A.w*c,A.h*c);x.globalAlpha=1}}
   if(A.onion&&A.cur>0&&A.fr.length>1){const pf=A.fr[PT()?(A.cur===3?2:0):A.cur-1];x.globalAlpha=.28;for(let k=0;k<pf.length;k++)if(pf[k]){x.fillStyle=hex(pf[k]);x.fillRect((k%A.w)*c,((k/A.w)|0)*c,c,c)}x.globalAlpha=1}
   const f=A.fr[A.cur];for(let k=0;k<f.length;k++)if(f[k]){x.fillStyle=hex(f[k]);x.fillRect((k%A.w)*c,((k/A.w)|0)*c,c,c)}
+  if(selDrag&&selDrag.k==='move'){const D=selDrag;for(let k=0;k<D.lift.length;k++)if(D.lift[k]){const X=k%A.w+D.dx,Y=((k/A.w)|0)+D.dy;if(X<0||Y<0||X>=A.w||Y>=A.h)continue;x.fillStyle=hex(D.lift[k]);x.fillRect(X*c,Y*c,c,c)}}
   if(A.grid&&c>=6){x.strokeStyle='rgba(0,0,0,.1)';x.lineWidth=1;x.beginPath();for(let i=1;i<A.w;i++){x.moveTo(i*c+.5,0);x.lineTo(i*c+.5,A.h*c)}for(let j=1;j<A.h;j++){x.moveTo(0,j*c+.5);x.lineTo(A.w*c,j*c+.5)}x.stroke()}
   if(A.mirror){x.strokeStyle='rgba(56,112,216,.7)';x.setLineDash([4,4]);x.beginPath();x.moveTo(A.w*c/2+.5,0);x.lineTo(A.w*c/2+.5,A.h*c);x.stroke();x.setLineDash([])}
-  thumbs();pv()}
+  selPaint(x,c);thumbs();pv()}
  // the character under a wearable (211 shadows the game's CH, so 213 draws it): the 48x76 part of the 96x112 worn layer
  const UC=new Map();function under(d){const key=d+':'+(A.gear?1:0);if(UC.has(key))return UC.get(key);let c=null;try{const L=window.SQPAINT&&SQPAINT.charLayer(d,!!A.gear);if(L){c=document.createElement('canvas');c.width=48;c.height=76;c.getContext('2d').drawImage(L,WO[0],WO[1],48,76,0,0,48,76)}}catch(e){self.SQERR&&SQERR(e,'211-4')}UC.set(key,c);return c}
  function pv(){const cv=document.getElementById('arpv');if(!cv)return;if(PT())return petPv(cv);const i=W()?pvF%3:pvF%A.fr.length;if(!W())return drawFrame(cv,A.fr[i]||A.fr[0],A.w,A.h,A.pal);
@@ -144,41 +181,91 @@
  function at(e){const cv=document.getElementById('arcv'),r=cv.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/r.width*A.w),y=Math.floor((e.clientY-r.top)/r.height*A.h);return x>=0&&y>=0&&x<A.w&&y<A.h?[x,y]:null}
  function plot(x,y){const f=A.fr[A.cur],v=A.tool==='erase'?0:A.col;f[y*A.w+x]=v;if(A.mirror)f[y*A.w+(A.w-1-x)]=v}
  function line(a,b){let[x0,y0]=a;const[x1,y1]=b;const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let er=dx+dy;for(let n=0;n<200;n++){plot(x0,y0);if(x0===x1&&y0===y1)break;const e2=2*er;if(e2>=dy){er+=dy;x0+=sx}if(e2<=dx){er+=dx;y0+=sy}}}
+
+ // ---- selecting (Nov 22, a Patron's list: "crop, grab and move ... free grab and squared"): the Select tool (S) marks a box, or in free
+ // mode the shape you draw around; dragging inside it lifts those pixels and drops them where you let go (clear pixels don't cover what's
+ // under them). Crop keeps only the selection (a picture's canvas shrinks to it, every frame; a pet or something to wear keeps its size and
+ // clears around it), Delete clears it, Deselect (Esc) lets go. Arrow keys nudge it by one pixel. It's for the frame you're on.
+ let selDrag=null;
+ const atC=e=>{const cv=document.getElementById('arcv'),r=cv.getBoundingClientRect();return[Math.max(0,Math.min(A.w-1,Math.floor((e.clientX-r.left)/r.width*A.w))),Math.max(0,Math.min(A.h-1,Math.floor((e.clientY-r.top)/r.height*A.h)))]};
+ function selBox(m){let x0=A.w,y0=A.h,x1=-1,y1=-1;for(let i=0;i<m.length;i++)if(m[i]){const X=i%A.w,Y=(i/A.w)|0;if(X<x0)x0=X;if(X>x1)x1=X;if(Y<y0)y0=Y;if(Y>y1)y1=Y}return x1<0?null:{x0,y0,x1,y1}}
+ const inPoly=(px,py,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const xi=P[i][0]+.5,yi=P[i][1]+.5,xj=P[j][0]+.5,yj=P[j][1]+.5;if((yi>py)!==(yj>py)&&px<(xj-xi)*(py-yi)/(yj-yi)+xi)c=!c}return c};
+ function selDown(p){const S=A.sel;
+  if(S&&S.m[p[1]*A.w+p[0]]){snapU();const f=A.fr[A.cur],lift=new Uint8Array(f.length);for(let i=0;i<f.length;i++)if(S.m[i]){lift[i]=f[i];f[i]=0}selDrag={k:'move',p0:p,lift,m0:S.m,dx:0,dy:0};paint();return}
+  A.sel=null;selDrag={k:A.selm==='free'?'free':'rect',p0:p,p1:p,pts:[p]};paint()}
+ function selMove(p){const D=selDrag;if(!D)return;if(D.k==='move'){D.dx=p[0]-D.p0[0];D.dy=p[1]-D.p0[1]}else{D.p1=p;const L=D.pts[D.pts.length-1];if(L[0]!==p[0]||L[1]!==p[1])D.pts.push(p)}paint()}
+ function selStamp(D){const f=A.fr[A.cur],m=new Uint8Array(f.length);for(let i=0;i<f.length;i++)if(D.m0[i]){const X=i%A.w+D.dx,Y=((i/A.w)|0)+D.dy;if(X<0||Y<0||X>=A.w||Y>=A.h)continue;const j=Y*A.w+X;m[j]=1;if(D.lift[i])f[j]=D.lift[i]}A.sel=m.some(v=>v)?{m}:null}
+ function selUp(){const D=selDrag;selDrag=null;if(!D)return;if(D.k==='move'){selStamp(D);keep();rPn();return}
+  const m=new Uint8Array(A.w*A.h);
+  if(D.k==='rect'){const x0=Math.min(D.p0[0],D.p1[0]),x1=Math.max(D.p0[0],D.p1[0]),y0=Math.min(D.p0[1],D.p1[1]),y1=Math.max(D.p0[1],D.p1[1]);for(let y=y0;y<=y1;y++)for(let X=x0;X<=x1;X++)m[y*A.w+X]=1}
+  else if(D.pts.length>=3){for(let y=0;y<A.h;y++)for(let X=0;X<A.w;X++)if(inPoly(X+.5,y+.5,D.pts))m[y*A.w+X]=1;for(const[X,y]of D.pts)m[y*A.w+X]=1}
+  A.sel=m.some(v=>v)?{m}:null;rPn()}
+ function selNudge(dx,dy){const S=A.sel;if(!S)return;snapU();const f=A.fr[A.cur],lift=new Uint8Array(f.length);for(let i=0;i<f.length;i++)if(S.m[i]){lift[i]=f[i];f[i]=0}selStamp({lift,m0:S.m,dx,dy});keep();paint();rPnSoft()}
+ function selDel(){const S=A.sel;if(!S)return;snapU();const f=A.fr[A.cur];for(let i=0;i<f.length;i++)if(S.m[i])f[i]=0}
+ function selCrop(){const S=A.sel;if(!S)return;const B=selBox(S.m);if(!B)return;snapU();const f=A.fr[A.cur];for(let i=0;i<f.length;i++)if(!S.m[i])f[i]=0;
+  if(PT()||W()||A.edit&&A.edit.fixed){A.sel=null;return}
+  // a picture: the canvas becomes the selection's box (at least 4 x 4, the smallest a piece can be), every frame cut the same way
+  let w=B.x1-B.x0+1,h=B.y1-B.y0+1,x0=B.x0,y0=B.y0;if(w<4){x0=Math.max(0,Math.min(A.w-4,x0-Math.floor((4-w)/2)));w=Math.min(A.w,4)}if(h<4){y0=Math.max(0,Math.min(A.h-4,y0-Math.floor((4-h)/2)));h=Math.min(A.h,4)}
+  A.fr=A.fr.map(g=>{const o=blank(w,h);for(let y=0;y<h;y++)for(let X=0;X<w;X++)o[y*w+X]=g[(y+y0)*A.w+X+x0];return o});A.w=w;A.h=h;A.sel=null;A.zoom=1}
+ function selPaint(x,c){const D=selDrag;let m=null,dx=0,dy=0;
+  if(D&&D.k==='move'){m=D.m0;dx=D.dx;dy=D.dy}else if(A.sel)m=A.sel.m;
+  x.save();x.lineWidth=2;
+  if(m){x.beginPath();for(let i=0;i<m.length;i++){if(!m[i])continue;const X=i%A.w,Y=(i/A.w)|0,px=(X+dx)*c,py=(Y+dy)*c;
+    if(X===0||!m[i-1]){x.moveTo(px,py);x.lineTo(px,py+c)}if(X===A.w-1||!m[i+1]){x.moveTo(px+c,py);x.lineTo(px+c,py+c)}if(Y===0||!m[i-A.w]){x.moveTo(px,py);x.lineTo(px+c,py)}if(Y===A.h-1||!m[i+A.w]){x.moveTo(px,py+c);x.lineTo(px+c,py+c)}}
+   x.strokeStyle='#ffffff';x.stroke();x.setLineDash([4,3]);x.strokeStyle='#202840';x.stroke()}
+  else if(D&&D.k==='rect'){const x0=Math.min(D.p0[0],D.p1[0]),x1=Math.max(D.p0[0],D.p1[0])+1,y0=Math.min(D.p0[1],D.p1[1]),y1=Math.max(D.p0[1],D.p1[1])+1;x.strokeStyle='#ffffff';x.strokeRect(x0*c,y0*c,(x1-x0)*c,(y1-y0)*c);x.setLineDash([4,3]);x.strokeStyle='#202840';x.strokeRect(x0*c,y0*c,(x1-x0)*c,(y1-y0)*c)}
+  else if(D&&D.k==='free'&&D.pts.length){x.beginPath();D.pts.forEach(([X,Y],i)=>{const px=(X+.5)*c,py=(Y+.5)*c;if(i)x.lineTo(px,py);else x.moveTo(px,py)});x.strokeStyle='#ffffff';x.stroke();x.setLineDash([4,3]);x.strokeStyle='#202840';x.stroke()}
+  x.restore()}
+ function selRow(){const fx=PT()||W();return'<div class="arrow arselr">'+'<button class="arb'+(A.selm!=='free'?' on':'')+'" data-ar="selm:rect">Box</button><button class="arb'+(A.selm==='free'?' on':'')+'" data-ar="selm:free">Free</button>'+
+   (A.sel?'<button class="arb" data-ar="scrop" title="'+(fx?'Clear everything outside the selection':'Shrink the canvas to the selection (every frame)')+'">'+ico('crop')+(fx?'Keep only this':'Crop')+'</button><button class="arb" data-ar="sdel">Delete</button><button class="arb" data-ar="snone">Deselect</button><span class="arsm">Drag inside it to move it. Arrow keys nudge it.</span>':
+    '<span class="arsm">'+(A.selm==='free'?'Draw around what you want to grab.':'Drag a box around what you want to grab.')+'</span>')+'</div>'}
  // two fingers on the canvas = move around (when zoomed) instead of drawing; the first finger's stroke is taken back
  const touches=new Map();
  pbd.addEventListener('pointerdown',e=>{if(ptab!==ATAB||e.target.id!=='arcv')return;e.preventDefault();e.stopPropagation();touches.set(e.pointerId,[e.clientX,e.clientY]);
   const box=document.getElementById('arbox');try{e.target.setPointerCapture(e.pointerId)}catch(_){self.SQERR&&SQERR(_,'211-6')}
-  if(touches.size>=2||A.tool==='move'||space||e.button===1){if(drag&&touches.size>=2&&A.undo.length){const s=A.undo.pop();A.fr=s.fr;paint()}drag=null;pan={x:e.clientX,y:e.clientY,sl:box.scrollLeft,st:box.scrollTop};return}
+  if(touches.size>=2||A.tool==='move'||space||e.button===1){if(drag&&touches.size>=2&&A.undo.length){const s=A.undo.pop();A.fr=s.fr;paint()}if(selDrag&&selDrag.k==='move'&&A.undo.length){const s=A.undo.pop();A.fr=s.fr}selDrag=null;drag=null;pan={x:e.clientX,y:e.clientY,sl:box.scrollLeft,st:box.scrollTop};return}
+  if(A.tool==='sel'){selDown(atC(e));return}
   const p=at(e);if(!p)return;
   if(A.tool==='pick'){A.col=A.fr[A.cur][p[1]*A.w+p[0]];A.tool='pen';keep();rPn();return}
   snapU();if(A.tool==='fill'){fill(A.fr[A.cur],p[1]*A.w+p[0],A.tool==='fill'?A.col:0);if(A.mirror)fill(A.fr[A.cur],p[1]*A.w+(A.w-1-p[0]),A.col);paint();keep();rPnSoft();return}
   drag=p;plot(p[0],p[1]);paint()},true);
  pbd.addEventListener('pointermove',e=>{if(ptab!==ATAB||e.target.id!=='arcv')return;if(touches.has(e.pointerId))touches.set(e.pointerId,[e.clientX,e.clientY]);
   if(pan){e.preventDefault();const box=document.getElementById('arbox');if(box){box.scrollLeft=pan.sl-(e.clientX-pan.x);box.scrollTop=pan.st-(e.clientY-pan.y)}return}
+  if(selDrag){e.preventDefault();selMove(atC(e));return}
   if(!drag)return;e.preventDefault();const p=at(e);if(!p)return;line(drag,p);drag=p;paint()},true);
- const endDrag=e=>{touches.delete(e.pointerId);if(!touches.size)pan=null;if(drag){drag=null;keep();rPnSoft()}};addEventListener('pointerup',endDrag,true);addEventListener('pointercancel',endDrag,true);
- // mouse wheel / trackpad: Ctrl+wheel zooms
- pbd.addEventListener('wheel',e=>{if(ptab!==ATAB||!A||A.view!=='draw'||!e.ctrlKey||!e.target.closest||!e.target.closest('#arbox'))return;e.preventDefault();zoomBy(e.deltaY<0?1:-1)},{passive:false,capture:true});
- function zoomBy(d){const z=Math.max(1,Math.min(6,A.zoom+d));if(z===A.zoom)return;const box=document.getElementById('arbox'),fx=box?(box.scrollLeft+box.clientWidth/2)/Math.max(1,box.scrollWidth):.5,fy=box?(box.scrollTop+box.clientHeight/2)/Math.max(1,box.scrollHeight):.5;
-  A.zoom=z;if(z===1&&A.tool==='move')A.tool='pen';keep();rPn();const b2=document.getElementById('arbox');if(b2){b2.scrollLeft=fx*b2.scrollWidth-b2.clientWidth/2;b2.scrollTop=fy*b2.scrollHeight-b2.clientHeight/2}}
+ const endDrag=e=>{touches.delete(e.pointerId);if(!touches.size)pan=null;if(selDrag&&ptab===ATAB){selUp();return}if(drag){drag=null;keep();rPnSoft()}};addEventListener('pointerup',endDrag,true);addEventListener('pointercancel',endDrag,true);
+ // Nov 22 (a Patron: "zoom with scroll wheel"): a mouse wheel (line steps, or whole notches of 50+ pixels) and Ctrl+wheel / a pinch zoom
+ // in and out around the pointer; a trackpad's smooth two-finger scroll still moves around a zoomed drawing
+ let wheelT=0;pbd.addEventListener('wheel',e=>{if(ptab!==ATAB||!A||A.view!=='draw'||!e.target.closest||!e.target.closest('#arbox'))return;
+  const notch=e.ctrlKey||e.deltaMode===1||(Math.abs(e.deltaY)>=50&&Math.abs(e.deltaX)<1&&Number.isInteger(e.deltaY));if(!notch)return;
+  e.preventDefault();const now=performance.now();if(now-wheelT<70)return;wheelT=now;zoomBy(e.deltaY<0?1:-1,e)},{passive:false,capture:true});
+ // ev (a wheel event): keep the drawing's pixel under the pointer where it is; otherwise keep the middle of the view
+ function zoomBy(d,ev){const z=Math.max(1,Math.min(ZMAX,A.zoom+d));if(z===A.zoom)return;const box=document.getElementById('arbox'),cv=document.getElementById('arcv');let ax=.5,ay=.5,px=null,py=null;
+  if(box&&cv){const br=box.getBoundingClientRect(),cr=cv.getBoundingClientRect();if(ev&&cr.width){px=ev.clientX-br.left;py=ev.clientY-br.top;ax=(ev.clientX-cr.left)/cr.width;ay=(ev.clientY-cr.top)/cr.height}
+   else{ax=(box.scrollLeft+box.clientWidth/2-(cv.offsetLeft||0))/Math.max(1,cv.offsetWidth);ay=(box.scrollTop+box.clientHeight/2-(cv.offsetTop||0))/Math.max(1,cv.offsetHeight)}}
+  ax=Math.max(0,Math.min(1,ax));ay=Math.max(0,Math.min(1,ay));A.zoom=z;if(z===1&&A.tool==='move')A.tool='pen';keep();rPn();const b2=document.getElementById('arbox'),c2=document.getElementById('arcv');
+  if(b2&&c2){const X=(c2.offsetLeft||0)+ax*c2.offsetWidth,Y=(c2.offsetTop||0)+ay*c2.offsetHeight;b2.scrollLeft=X-(px!=null?px:b2.clientWidth/2);b2.scrollTop=Y-(py!=null?py:b2.clientHeight/2)}}
  // redraw buttons (undo state) without rebuilding the canvas mid-stroke
  function rPnSoft(){const u=document.querySelector('#pn [data-ar="undo"]'),r=document.querySelector('#pn [data-ar="redo"]');if(u)u.disabled=!A.undo.length;if(r)r.disabled=!A.redo.length}
  // ---- preview ----
  let pvF=0,pvT=0;setInterval(()=>{if(ptab!==ATAB||!pnOpen||!A||A.view==='mine')return;const now=performance.now();if(PT()){pv();return}if(now-pvT<(W()?900:A.ms))return;pvT=now;pvF=(pvF+1)%(W()?3:A.fr.length);pv()},40);
  // ---- buttons and fields ----
- function act(a,v,b){
-  if(a==='tool')A.tool=v;else if(a==='col'){A.col=+v;if(A.tool==='erase'||A.tool==='pick'||A.tool==='move')A.tool='pen'}
+ function act(a,v,b){if(a==='undo'||a==='redo')A.sel=null;
+  if(a==='tool'){A.tool=v;if(v!=='sel')A.sel=null}else if(a==='col'){A.col=+v;if(A.tool==='erase'||A.tool==='pick'||A.tool==='move'||A.tool==='sel'){A.tool='pen';A.sel=null}}
+  else if(a==='selm')A.selm=v==='free'?'free':'rect';else if(a==='snone')A.sel=null;else if(a==='sdel')selDel();else if(a==='scrop')selCrop();
+  else if(a==='drafts'){keepNow();A.view='drafts';A.pmsg=''}else if(a==='psave'){A.pmsg=projSave(false)}else if(a==='psave2'){A.pmsg=projSave(true)}else if(a==='pnew'){projNew()}
+  else if(a==='popen'){projOpen(v);return}else if(a==='pdel'){if(b&&b.dataset.sure){projDel(v)}else{if(b){b.dataset.sure=1;b.textContent='Sure? Tap again'}return}}
   else if(a==='mirror')A.mirror=!A.mirror;else if(a==='grid')A.grid=!A.grid;else if(a==='zin'){zoomBy(1);return}else if(a==='zout'){zoomBy(-1);return}
   else if(a==='undo'&&A.undo.length){A.redo.push({fr:A.fr.map(f=>f.slice()),cur:A.cur,w:A.w,h:A.h});const s=A.undo.pop();Object.assign(A,s)}
   else if(a==='redo'&&A.redo.length){A.undo.push({fr:A.fr.map(f=>f.slice()),cur:A.cur,w:A.w,h:A.h});const s=A.redo.pop();Object.assign(A,s)}
   else if(a==='clear'){snapU();A.fr[A.cur]=blank(A.w,A.h)}
-  else if(a==='fadd'&&A.fr.length<MAXF){snapU();A.fr.splice(A.cur+1,0,blank(A.w,A.h));A.cur++}
-  else if(a==='fdup'&&A.fr.length<MAXF){snapU();A.fr.splice(A.cur+1,0,A.fr[A.cur].slice());A.cur++}
+  else if(a==='fadd'&&A.fr.length<maxF()){snapU();A.fr.splice(A.cur+1,0,blank(A.w,A.h));A.cur++}
+  else if(a==='fdup'&&A.fr.length<maxF()){snapU();A.fr.splice(A.cur+1,0,A.fr[A.cur].slice());A.cur++}
   else if(a==='fdel'&&A.fr.length>1){snapU();A.fr.splice(A.cur,1);A.cur=Math.min(A.cur,A.fr.length-1)}
   else if(a==='fl'&&A.cur>0){snapU();[A.fr[A.cur-1],A.fr[A.cur]]=[A.fr[A.cur],A.fr[A.cur-1]];A.cur--}
   else if(a==='fr'&&A.cur<A.fr.length-1){snapU();[A.fr[A.cur+1],A.fr[A.cur]]=[A.fr[A.cur],A.fr[A.cur+1]];A.cur++}
   else if(a==='onion')A.onion=!A.onion;
-  else if(a==='mode'){if(A.mode!==v&&(v==='pic'||v==='wear'||v==='pet')){keepNow();A=DR[v]||(DR[v]=mk(v));A.view='draw';try{localStorage.setItem('sq_art_mode',v)}catch(x){self.SQERR&&SQERR(x,'211-7')}}}
+  else if(a==='mode'){if(A.mode!==v&&(v==='pic'||v==='wear'||v==='pet')){if(A.pid)projSave(false);keepNow();A=DR[v]||(DR[v]=mk(v));A.view='draw';try{localStorage.setItem('sq_art_mode',v)}catch(x){self.SQERR&&SQERR(x,'211-7')}}}
   else if(a==='under'){A.under=A.under?0:1}else if(a==='gear'){A.gear=A.gear?0:1;UC.clear()}
   else if(a==='cpf'&&W()&&A.cur>0){snapU();A.fr[A.cur]=A.fr[0].slice()}
   else if(a==='cpi'&&PT()&&A.cur>0){snapU();A.fr[A.cur]=A.fr[0].slice()}else if(a==='cpw'&&PT()&&A.cur===3){snapU();A.fr[3]=A.fr[2].slice()}
@@ -191,7 +278,7 @@
   else if(a==='esave'){saveEdit();return}
   else if(a==='back'){if(A.edit){endEdit();return}ptab=window.SQPATRON&&SQPATRON.PTAB||8;rPn();return}
   keep();rPn()}
- pbd.addEventListener('click',e=>{if(ptab!==ATAB)return;const fc=e.target.closest&&e.target.closest('[data-arf]');if(fc){A.cur=+fc.dataset.arf;keep();rPn();return}
+ pbd.addEventListener('click',e=>{if(ptab!==ATAB)return;const fc=e.target.closest&&e.target.closest('[data-arf]');if(fc){A.cur=+fc.dataset.arf;A.sel=null;keep();rPn();return}
   const b=e.target.closest&&e.target.closest('[data-ar]');if(!b)return;e.stopPropagation();e.preventDefault();const[a,v]=b.dataset.ar.split(':');act(a,v,b)},true);
  pbd.addEventListener('input',e=>{if(ptab!==ATAB||!A)return;const t=e.target;
   if(t.id==='arnm'||t.id==='aren')A.name=t.value.slice(0,24);else if(t.id==='arnt')A.note=t.value.slice(0,300);
@@ -201,12 +288,14 @@
  pbd.addEventListener('change',e=>{if(ptab!==ATAB||!A)return;const t=e.target;
   if(t.id==='arkd'){A.kind=t.value;keep()}
   else if(t.id==='arsl'){A.sl=WSL.some(q=>q[0]===t.value)?t.value:'helm';keep()}
-  else if(t.id==='arsz'){const n=+t.value;if(!n||n===A.w&&n===A.h)return;snapU();const dx=PT()?Math.floor((n-A.w)/2):0,dy=PT()?n-A.h:0;A.fr=A.fr.map(f=>{const g2=blank(n,n);for(let y=0;y<A.h;y++)for(let x=0;x<A.w;x++){const X=x+dx,Y=y+dy;if(X>=0&&Y>=0&&X<n&&Y<n)g2[Y*n+X]=f[y*A.w+x]}return g2});A.w=A.h=n;A.zoom=1;keep();rPn()}},true);
+  else if(t.id==='arsz'){const n=+t.value;if(!n||n===A.w&&n===A.h)return;const cap=Math.max(1,Math.min(MAXF,Math.floor(56000/(n*n))));if(!PT()&&A.fr.length>cap){say('At '+n+' x '+n+' a drawing can have up to '+cap+' frames. Delete some frames first.');rPn();return}snapU();A.sel=null;const dx=PT()?Math.floor((n-A.w)/2):0,dy=PT()?n-A.h:0;A.fr=A.fr.map(f=>{const g2=blank(n,n);for(let y=0;y<A.h;y++)for(let x=0;x<A.w;x++){const X=x+dx,Y=y+dy;if(X>=0&&Y>=0&&X<n&&Y<n)g2[Y*n+X]=f[y*A.w+x]}return g2});A.w=A.h=n;A.zoom=1;keep();rPn()}},true);
  // keyboard on a computer: B/E/G/I tools, M mirror, Ctrl+Z / Ctrl+Y, +/- zoom, hold Space to move around
  addEventListener('keydown',e=>{if(ptab!==ATAB||!pnOpen||!A||A.view!=='draw')return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'))return;
   const k=e.key.toLowerCase(),c=e.ctrlKey||e.metaKey;let a=null,v;
   if(c&&k==='z')a=e.shiftKey?'redo':'undo';else if(c&&k==='y')a='redo';else if(c)return;
-  else if(k==='b'||k==='p'){a='tool';v='pen'}else if(k==='e'){a='tool';v='erase'}else if(k==='g'||k==='f'){a='tool';v='fill'}else if(k==='i'){a='tool';v='pick'}else if(k==='m')a='mirror';
+  else if(k==='b'||k==='p'){a='tool';v='pen'}else if(k==='e'){a='tool';v='erase'}else if(k==='g'||k==='f'){a='tool';v='fill'}else if(k==='i'){a='tool';v='pick'}else if(k==='m')a='mirror';else if(k==='s'){a='tool';v='sel'}
+  else if((k==='delete'||k==='backspace')&&A.sel)a='sdel';else if(k==='escape'&&A.sel)a='snone';
+  else if(A.sel&&k.startsWith('arrow')){e.preventDefault();e.stopPropagation();selNudge(k==='arrowleft'?-1:k==='arrowright'?1:0,k==='arrowup'?-1:k==='arrowdown'?1:0);return}
   else if(k==='+'||k==='=')a='zin';else if(k==='-')a='zout';else if(k===' '){space=true;e.preventDefault();e.stopPropagation();return}
   if(!a)return;e.preventDefault();e.stopPropagation();act(a,v)},true);
  addEventListener('keyup',e=>{if(e.key===' ')space=false},true);
@@ -224,7 +313,7 @@
    A.mine=Object.entries(v).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>(b.t||0)-(a.t||0))}catch(e){A.mine=[]}rPn()}
  const unpack=x=>{try{const d=JSON.parse(x.f);const pal=['',...d.p];return d.fr.map(s=>Uint8Array.from(s,c=>c==='.'?0:CH.indexOf(c)+1)).map(f=>({f,pal}))}catch(e){return[]}};
  // ---- the panel hook ----
- {SQRPN.wrap('211',_r=>function(){if(!(ptab===ATAB&&pnOpen))try{pn.classList.remove('sqart')}catch(e){self.SQERR&&SQERR(e,'211-9')}if(ptab===ATAB&&pnOpen){load();try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'211-10')}pbd.innerHTML=html();try{pn.classList.add('sqart')}catch(e){self.SQERR&&SQERR(e,'211-11')}if(A.view!=='mine')paint();else document.querySelectorAll('#pn [data-arm]').forEach(cv=>{const x=(A.mine||[]).find(m=>m.id===cv.dataset.arm);const fr=x?unpack(x):[];if(fr[0])drawFrame(cv,fr[0].f,x.w,x.h,fr[0].pal)});return}return _r.apply(this,arguments)})}
+ {SQRPN.wrap('211',_r=>function(){if(!(ptab===ATAB&&pnOpen))try{pn.classList.remove('sqart')}catch(e){self.SQERR&&SQERR(e,'211-9')}if(ptab===ATAB&&pnOpen){load();try{panelChrome('')}catch(e){self.SQERR&&SQERR(e,'211-10')}/* Nov 22: the zoomed view stays where it was (it jumped to the top left on every button) */const b0=document.getElementById('arbox'),sv=b0?[b0.scrollLeft,b0.scrollTop]:null;pbd.innerHTML=html();{const b1=document.getElementById('arbox');if(sv&&b1){b1.scrollLeft=sv[0];b1.scrollTop=sv[1]}}try{pn.classList.add('sqart')}catch(e){self.SQERR&&SQERR(e,'211-11')}if(A.view==='drafts'){const L=projs();document.querySelectorAll('#pn [data-arp]').forEach(cv=>{const P=L.find(q=>q.id===cv.dataset.arp);if(P&&P.d.fr[0])drawFrame(cv,decF(P.d.fr[0]),P.d.w,P.d.h,P.d.pal||PAL0)})}else if(A.view!=='mine')paint();else document.querySelectorAll('#pn [data-arm]').forEach(cv=>{const x=(A.mine||[]).find(m=>m.id===cv.dataset.arm);const fr=x?unpack(x):[];if(fr[0])drawFrame(cv,fr[0].f,x.w,x.h,fr[0].pal)});return}return _r.apply(this,arguments)})}
  function open(){if(!can()){say('The Art Room is for Patrons aged 13 and up.');return}load();if(A.view!=='send')A.view='draw';try{if(!pnOpen&&typeof openPanel==='function')openPanel(ATAB)}catch(e){self.SQERR&&SQERR(e,'211-12')}ptab=ATAB;pnOpen=true;try{pn.style.display='block'}catch(e){self.SQERR&&SQERR(e,'211-13')}rPn()}
  // ---- developer editing (Dev Suite > Art Room > Edit before approving): the piece opens in this editor, drafts on the device untouched ----
  let BEFORE=null;

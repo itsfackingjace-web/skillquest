@@ -302,10 +302,50 @@
   for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){const col=c.p[y*c.w+x];if(!col)continue;const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=ed.w||Y>=ed.h)continue;
    let i=ed.pal.findIndex(q=>String(q).toLowerCase()===col.toLowerCase());if(i<0){if(ed.pal.length>=255)continue;ed.pal.push(col);i=ed.pal.length-1}ed.px[Y*ed.w+X]=i;n++}
   if(ed.rcd)ed.rcd=ed.rcd.map(()=>1);ed.dirty=true;drawPal();paint();toast(n?'Pasted'+(c.w!==ed.w||c.h!==ed.h?' (lined up at the bottom middle; this picture is '+ed.w+' × '+ed.h+', the copy '+c.w+' × '+c.h+')':'')+'. Undo takes it back.':'The copy was empty.')}
+ // ---- resolution (Nov 22, Jace: "the turtle looks way different as a pet than it does as an item ... if I paste the turtle's sprite into
+ // its item sprite the resolution is messed up and the turtle looks tiny"): pictures are different sizes in different editors.
+ // Paste to fit: the copy (trimmed to what's drawn) scaled to fill this picture, whole steps when it grows, lined up bottom middle.
+ // Sprites: More pixels x2 / Fewer pixels 1/2 change the picture's own size; "shown at" halves or doubles with it when it can, so
+ // it stays the same size in the game. Pets and props: Bigger x2 / Smaller 1/2 scale the drawing inside the same canvas, every frame.
+ // Shrinking picks, for each new pixel, the colour most of its old pixels had (see-through only when it clearly wins, so outlines last).
+ function resample(src,sw,sh,dw,dh){const out=new Array(dw*dh).fill('');
+  for(let y=0;y<dh;y++)for(let x=0;x<dw;x++){const x0=x*sw/dw,x1=(x+1)*sw/dw,y0=y*sh/dh,y1=(y+1)*sh/dh;
+   if(dw>=sw&&dh>=sh){out[y*dw+x]=src[Math.min(sh-1,Math.floor((y0+y1)/2))*sw+Math.min(sw-1,Math.floor((x0+x1)/2))]||'';continue}
+   const cnt=new Map();let clear=0,n=0;for(let yy=Math.floor(y0);yy<Math.ceil(y1)&&yy<sh;yy++)for(let xx=Math.floor(x0);xx<Math.ceil(x1)&&xx<sw;xx++){const c=src[yy*sw+xx]||'';n++;if(!c)clear++;else cnt.set(c,(cnt.get(c)||0)+1)}
+   let best='',bn=0;for(const[c,k]of cnt)if(k>bn){bn=k;best=c}out[y*dw+x]=bn&&(n-clear)>=clear*.6?best:''}return out}
+ const edCols=(ed,px)=>Array.from(px,v=>v===255?'':ed.pal[v]||'');
+ function colIdx(ed,col){let i=ed.pal.findIndex(q=>String(q).toLowerCase()===String(col).toLowerCase());if(i<0){if(ed.pal.length>=255)return-1;ed.pal.push(col);i=ed.pal.length-1}return i}
+ function putCols(ed,target,cols,cw,ch,dx,dy){let n=0;for(let y=0;y<ch;y++)for(let x=0;x<cw;x++){const col=cols[y*cw+x];if(!col)continue;const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=ed.w||Y>=ed.h)continue;const i=colIdx(ed,col);if(i<0)continue;target[Y*ed.w+X]=i;n++}return n}
+ function pxFit(){const ed=S.ed;if(!ed)return;let c=pxCopy.mem;try{const v=JSON.parse(localStorage.getItem('sq_dev_clip')||'null');if(v)c=v}catch(e){self.SQERR&&SQERR(e,'111b-19')}
+  if(!c||!Array.isArray(c.p)){toast('Nothing copied yet: open a picture and press Copy first.');return}
+  let x0=c.w,y0=c.h,x1=-1,y1=-1;for(let i=0;i<c.p.length;i++)if(c.p[i]){const X=i%c.w,Y=(i/c.w)|0;if(X<x0)x0=X;if(X>x1)x1=X;if(Y<y0)y0=Y;if(Y>y1)y1=Y}
+  if(x1<0){toast('The copy was empty.');return}const bw=x1-x0+1,bh=y1-y0+1,src=[];for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)src.push(c.p[y*c.w+x]||'');
+  let f=Math.min(ed.w/bw,ed.h/bh);if(f>=1)f=Math.floor(f);const dw=Math.max(1,Math.round(bw*f)),dh=Math.max(1,Math.round(bh*f)),cols=resample(src,bw,bh,dw,dh);
+  snapEd();if(LAY(ed.kind))ed.undo[ed.undo.length-1].dir=ed.dir;ed.px.fill(255);const n=putCols(ed,ed.px,cols,dw,dh,Math.floor((ed.w-dw)/2),ed.h-dh);
+  if(ed.rcd)ed.rcd=ed.rcd.map(()=>1);ed.dirty=true;drawPal();paint();
+  toast(n?'Pasted at '+(f>=1?f+'×':Math.round(f*100)+'%')+' to fit ('+bw+' × '+bh+' → '+dw+' × '+dh+' in this '+ed.w+' × '+ed.h+' picture). Undo takes it back.':'The copy was empty.')}
+ // a sprite's own size: x2 (k=2) or half (k=.5)
+ function spRes(k){const ed=S.ed;if(!ed||LAY(ed.kind))return;const nw=k>1?ed.w*2:Math.max(1,Math.ceil(ed.w/2)),nh=k>1?ed.h*2:Math.max(1,Math.ceil(ed.h/2));
+  if(nw>160||nh>160){toast('A sprite can be up to 160 × 160 pixels.');return}if(nw<2||nh<2){toast('That\'s as small as it goes.');return}
+  const cols=resample(edCols(ed,ed.px),ed.w,ed.h,nw,nh);ed.undo.push({px:ed.px.slice(),pal:ed.pal.slice(),w:ed.w,h:ed.h,s:ed.s});if(ed.undo.length>80)ed.undo.shift();ed.redo=[];
+  const s0=ed.s;ed.w=nw;ed.h=nh;ed.px=new Uint8Array(nw*nh).fill(255);putCols(ed,ed.px,cols,nw,nh,0,0);
+  if(k>1&&ed.s%2===0)ed.s=ed.s/2;else if(k<1&&ed.s*2<=8)ed.s=ed.s*2;ed.dirty=true;draw();
+  toast('Now '+nw+' × '+nh+' pixels'+(ed.s!==s0?', shown at '+ed.s+'× so it stays the same size in the game':', shown at '+ed.s+'×: it will look '+(k>1?'bigger':'smaller')+' in the game')+'. Undo takes it back.')}
+ // a pet's or prop's drawing scaled inside its canvas (every frame), lined up bottom middle
+ function layScale(k){const ed=S.ed;if(!ed||!LAY(ed.kind)||ed.kind==='worn')return;
+  ed.undo.push({all:ed.layers.map(L=>L.slice()),pal:ed.pal.slice(),dir:ed.dir});if(ed.undo.length>80)ed.undo.shift();ed.redo=[];
+  for(let d=0;d<ed.layers.length;d++){const L=ed.layers[d];if(!L.some(v=>v!==255))continue;const cols=edCols(ed,L);let x0=ed.w,y0=ed.h,x1=-1,y1=-1;
+   for(let i=0;i<cols.length;i++)if(cols[i]){const X=i%ed.w,Y=(i/ed.w)|0;if(X<x0)x0=X;if(X>x1)x1=X;if(Y<y0)y0=Y;if(Y>y1)y1=Y}
+   const bw=x1-x0+1,bh=y1-y0+1,src=[];for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)src.push(cols[y*ed.w+x]);
+   const dw=Math.max(1,Math.round(bw*k)),dh=Math.max(1,Math.round(bh*k)),out=resample(src,bw,bh,dw,dh),cx=(x0+x1+1)/2;
+   L.fill(255);putCols(ed,L,out,dw,dh,Math.round(cx-dw/2),y1+1-dh)}
+  ed.px=ed.layers[ed.dir];if(ed.rcd)ed.rcd=ed.rcd.map(()=>1);if(ed.rc)ed.rc=ed.rc.map(()=>null);ed.dirty=true;drawPal();paint();toast((k>1?'Twice as big':'Half the size')+', every frame. Undo takes it back.')}
  const snapEd=()=>{const ed=S.ed;ed.undo.push({px:ed.px.slice(),pal:ed.pal.slice(),dir:ed.dir});if(ed.undo.length>80)ed.undo.shift();ed.redo=[];ed.dirty=true;
   // the first change to an empty (automatic) walking step starts from what the game would draw there, so the armour isn't lost
   if(ed.kind==='worn'&&ed.dir>=3&&!ed.px.some(v=>v!==255))autoInto(ed,ed.dir)};
  function undo(r){const ed=S.ed;if(!ed)return;const a=r?ed.redo:ed.undo,b=r?ed.undo:ed.redo,s=a.pop();if(!s)return;
+  if(s.all){b.push({all:ed.layers.map(L=>L.slice()),pal:ed.pal.slice(),dir:ed.dir});ed.layers=s.all.map(L=>L.slice());ed.dir=s.dir;ed.px=ed.layers[ed.dir];ed.pal=s.pal;if(ed.rcd)ed.rcd=ed.rcd.map(()=>1);if(ed.rc)ed.rc=ed.rc.map(()=>null);ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;drawPal();paint();return}
+  if(s.w){b.push({px:ed.px.slice(),pal:ed.pal.slice(),w:ed.w,h:ed.h,s:ed.s});ed.w=s.w;ed.h=s.h;ed.s=s.s;ed.px=s.px;ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;draw();return}
   if(LAY(ed.kind)){b.push({px:ed.layers[s.dir].slice(),pal:ed.pal.slice(),dir:s.dir});ed.layers[s.dir]=s.px;ed.rcd=ed.layers.map(()=>1);const sw=ed.dir!==s.dir;ed.dir=s.dir;ed.px=ed.layers[ed.dir];ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;if(sw){draw();return}drawPal();paint();return}
   b.push({px:ed.px.slice(),pal:ed.pal.slice()});ed.px=s.px;ed.pal=s.pal;ed.dirty=true;if(ed.col>=ed.pal.length)ed.col=ed.pal.length-1;drawPal();paint()}
  function fill(i,to){const ed=S.ed,from=ed.px[i];if(from===to)return;const st=[i];while(st.length){const j=st.pop();if(ed.px[j]!==from)continue;ed.px[j]=to;const X=j%ed.w;
@@ -491,7 +531,9 @@
   const lv=+(root.querySelector('[data-gr="lv"]')||{}).value||1,st=(root.querySelector('[data-gr="st"]')||{}).value;NGST[k]=st;if(Object.keys(c).length){o.sm={c,lv};if(st==='craft')o.sm.st='craft'}else delete o.sm;return ngSave(k,o)}
  function drawTools(){const t=root.querySelector('.dv-tools');if(!t||!S.ed)return;const T=[['pen','Pen'],['erase','Eraser'],['fill','Fill'],['pick','Pick colour']];
   if(LAY(S.ed.kind))T.push(['pan','Move']);
-  t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button><button class="dv-b" data-a="pxcopy" title="Copy this picture (Ctrl+C)">Copy</button><button class="dv-b" data-a="pxpaste" title="Paste a copied picture here (Ctrl+V)">Paste</button><button class="dv-b dv-bad" data-a="eraseall" title="Erase every pixel of this picture (Undo brings it back)">Erase all</button>'+
+  t.innerHTML=T.map(([k,n])=>'<button class="dv-b dv-tl'+(S.ed.tool===k?' dv-on':'')+'" data-tool="'+k+'">'+n+'</button>').join('')+'<button class="dv-b" data-a="undo">Undo</button><button class="dv-b" data-a="redo">Redo</button><button class="dv-b" data-a="pxcopy" title="Copy this picture (Ctrl+C)">Copy</button><button class="dv-b" data-a="pxpaste" title="Paste a copied picture here (Ctrl+V)">Paste</button><button class="dv-b" data-a="pxfit" title="Paste the copied picture scaled to fill this one (for copies from a picture of another size)">Paste to fit</button>'+
+   (LAY(S.ed.kind)?(S.ed.kind!=='worn'?'<button class="dv-b" data-a="lay2" title="Make the drawing twice as big inside this canvas (every frame)">Bigger ×2</button><button class="dv-b" data-a="layh" title="Make the drawing half the size inside this canvas (every frame)">Smaller ½</button>':''):
+    '<button class="dv-b" data-a="res2" title="Twice as many pixels: the same picture with room for finer detail (shown at half the scale when it can, so it keeps its size)">More pixels ×2</button><button class="dv-b" data-a="resh" title="Half as many pixels (shown at twice the scale when it can)">Fewer pixels ½</button>')+'<button class="dv-b dv-bad" data-a="eraseall" title="Erase every pixel of this picture (Undo brings it back)">Erase all</button>'+
    (S.ed.kind==='worn'||S.ed.kind==='pet'?'<button class="dv-b" data-a="zout" title="Zoom out">−</button><button class="dv-b" data-a="zin" title="Zoom in">+</button>':'');
   const cv=root.querySelector('.dv-cvw');if(cv)cv.classList.toggle('dv-pan',S.ed.tool==='pan')}
  function drawPal(){const p=root.querySelector('.dv-pal'),ed=S.ed;if(!p||!ed)return;
@@ -595,7 +637,7 @@
   if(a==='gm'){const m=t.dataset.m;if(m===S.gm)return;if(S.ed&&S.ed.dirty&&!confirmLeave())return;if(S.ed)S.ed.dirty=false;S.gm=m;S.ed=null;openGear(S.sel);return}
   if(a==='grst'){const k=S.sel;return arm('grst',async()=>{delete S.draft.gear[k];try{await dset('draft/gear/'+k,null);toast('Back to how the game made it work (in your draft).')}catch(e2){fail(e2)}if(A.previewing)A.preview(S.draft);draw()})}
   if(a==='back'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;S.sel=null;S.ed=null;draw();return}
-  if(a==='undo')return undo(false);if(a==='redo')return undo(true);if(a==='pxcopy')return pxCopy();if(a==='eraseall'){const ed=S.ed;if(!ed)return;snapEd();if(LAY(ed.kind))ed.undo[ed.undo.length-1].dir=ed.dir;ed.px.fill(255);if(ed.rcd)ed.rcd[ed.dir|0]=1;if(ed.rc)ed.rc[ed.dir|0]=null;paint();return}if(a==='pxpaste')return pxPaste();
+  if(a==='undo')return undo(false);if(a==='redo')return undo(true);if(a==='pxcopy')return pxCopy();if(a==='eraseall'){const ed=S.ed;if(!ed)return;snapEd();if(LAY(ed.kind))ed.undo[ed.undo.length-1].dir=ed.dir;ed.px.fill(255);if(ed.rcd)ed.rcd[ed.dir|0]=1;if(ed.rc)ed.rc[ed.dir|0]=null;paint();return}if(a==='pxpaste')return pxPaste();if(a==='pxfit')return pxFit();if(a==='res2')return spRes(2);if(a==='resh')return spRes(.5);if(a==='lay2')return layScale(2);if(a==='layh')return layScale(.5);
   if(a==='save')return S.ed&&S.ed.kind==='worn'?saveWorn():S.ed&&S.ed.kind==='pet'?savePet():S.ed&&S.ed.kind==='prop'?saveProp():saveSprite();
   if(a==='revert'){S.ed.dirty=false;if(S.ed.kind==='worn')openWorn(S.sel);else if(S.ed.kind==='pet')openPet(S.sel);else if(S.ed.kind==='prop')openProp(S.sel,false,S.ed.night);else openSprite(S.sel);return}
   if(a==='pcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openPet(S.sel,true);return}

@@ -74,6 +74,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   bows to face right. `SQSWING` (other players' swings) is wrapped too. Library `swings` = {all (default on), k:{key:'icon'|'own'}}.
 - **Dev Suite copy/paste** (111b `pxCopy`/`pxPaste`, Copy/Paste buttons, Ctrl+C/V; Erase all = `eraseall`, clears the current picture/layer, undoable): the clipboard is colours per pixel in
   localStorage `sq_dev_clip`, pasted bottom-middle aligned into any editor, colours added to the palette.
+  Nov 22 (Jace: the turtle pet pasted into its item sprite came out tiny; check 87): **Paste to fit** (`pxfit`) trims the clip to its drawn
+  box and scales it (`resample`: nearest when growing, majority colour with an opaque bias when shrinking; whole-number factors when ≥1) to fill
+  the picture, bottom-middle. **More pixels ×2 / Fewer pixels ½** (`res2`/`resh`, item sprites and other single-layer pictures, ≤160 px) change
+  the sprite's own resolution and halve/double its shown-at scale `s` when they can, so it keeps its size in the game. **Bigger ×2 / Smaller ½**
+  (`lay2`/`layh`, pets and props) scale the drawing inside the canvas on every frame. All undo (undo stores `w`/`all` layers).
 - **Bosses made in the Dev Suite** (`combat/146-s152-custom-bosses.js`, `window.SQBOSSES`, Dev Suite > Bosses): `bosses.cb_<id>` =
   {n, base, hp, sz, dmg, spd, cd, rs, atk:{ring,charge,slam,summon}, sk}; each becomes monster kind `cb:<letters>` (`keyOf`) in
   `SQISLIFE.MOBS` (island builder zones, island-dungeon monster lists; in a `cv_` dungeon one boss on the last floor via the
