@@ -2,7 +2,8 @@
 // Mouse: with a bow or a wand in your off-hand, the cursor aims (a crosshair shows where). Right-click shoots or casts
 // (hold to keep firing). Left-click turns you toward the cursor and hits, like Space.
 // Touch: a BOW / CAST button appears above HIT. Tap it to fire at the nearest enemy in range (any direction);
-// press and drag it to aim yourself (a crosshair shows), release to fire; keep holding to keep firing.
+// press and drag it to aim yourself (a crosshair shows), release to fire; keep holding to keep firing. Holding it without
+// dragging keeps firing at the nearest enemy (Nov 21).
 // Keyboard and controller play are unchanged (Space / HIT still auto-shoots at an enemy in front of you).
 (()=>{const AIMX={T:null,mouse:null,mIn:false,rHeld:false,rT:0,touch:null,tHeld:0,lastFire:0};
  const offhand=()=>!!(WAND||TL.bow);
@@ -48,11 +49,17 @@
  const t=e.changedTouches[0];AIMX.touch={id:t.identifier,x:t.clientX,y:t.clientY,drag:false};AIMX.tHeld=0;tb.classList.add('on')},{passive:false});
  tb.addEventListener('touchmove',e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;for(const t of e.changedTouches){if(t.identifier!==T.id)continue;
   const dx=t.clientX-T.x,dy=t.clientY-T.y;if(Math.hypot(dx,dy)>14){T.drag=true;const l=Math.hypot(dx,dy);AIM.v=[dx/l,dy/l];AIM.t=performance.now()}}},{passive:false});
+ // Nov 21 (Jace: "players on mobile should be able to hold Cast or Bow and keep shooting"): a hold that already fired (below)
+ // doesn't fire again on release
  const tEnd=e=>{e.preventDefault();e.stopPropagation();const T=AIMX.touch;if(!T)return;tb.classList.remove('on');AIMX.touch=null;
+  if(!T.drag&&T.n)return;
   if(!T.drag){const n=nearestFoe();if(n)aimAt(n.x,n.y);else AIM.t=-1e9}aimFire(true)};
  tb.addEventListener('touchend',tEnd,{passive:false});tb.addEventListener('touchcancel',e=>{AIMX.touch=null;tb.classList.remove('on')});
  // --- every frame: keep the aim on the cursor, repeat while held ---
- SQUPD.after('082',(dt)=>{if(typeof GPON!=='undefined'&&GPON)return;if(isPC&&AIMX.mIn&&AIMX.mouse&&offhand()){const w=toWorld(AIMX.mouse[0],AIMX.mouse[1]);if(w)aimAt(w.x,w.y)}if(AIMX.rHeld){AIMX.rT+=dt;if(AIMX.rT>.35&&swing<=0)aimFire(false)}if(AIMX.touch){AIMX.tHeld+=dt;if(AIMX.touch.drag){AIM.t=performance.now();if(AIMX.tHeld>.5&&swing<=0&&performance.now()-AIMX.lastFire>420)aimFire(false)}}});
+ SQUPD.after('082',(dt)=>{if(typeof GPON!=='undefined'&&GPON)return;if(isPC&&AIMX.mIn&&AIMX.mouse&&offhand()){const w=toWorld(AIMX.mouse[0],AIMX.mouse[1]);if(w)aimAt(w.x,w.y)}if(AIMX.rHeld){AIMX.rT+=dt;if(AIMX.rT>.35&&swing<=0)aimFire(false)}if(AIMX.touch){AIMX.tHeld+=dt;const T=AIMX.touch;if(T.drag){AIM.t=performance.now();if(AIMX.tHeld>.5&&swing<=0&&performance.now()-AIMX.lastFire>420)aimFire(false)}
+  // held without dragging: after 0.35 s, fire at the nearest enemy whenever the last shot / cast is done, like holding right-click
+  else if(AIMX.tHeld>.35&&swing<=0&&canFire()){const n=nearestFoe();if(n)aimAt(n.x,n.y);else AIM.t=-1e9;T.n=(T.n|0)+1;aimFire(T.n===1)}}});
+ window.SQHOLDAIM={get held(){return!!AIMX.touch},get shots(){return AIMX.touch?AIMX.touch.n|0:0}};
  // cursor: a crosshair over the game while a bow or wand is ready
  setInterval(()=>{cv.style.cursor=isPC&&offhand()&&!(typeof GPON!=='undefined'&&GPON)?'crosshair':''},500);
  // crosshair for mouse and touch aiming (the controller draws its own)
