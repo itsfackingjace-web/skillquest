@@ -27,6 +27,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   Since Nov 15 the same file also makes `WSP[el].cost` an accessor (base - 1, at least 1; 111a2's setCosts and Dev Suite `mp` rules write
   the base), triples mana regen (small per-frame rises in the outermost `upd` get 2x more added; potions untouched), and adds +1 to
   `arrowDmg` and `spellDmg`. Measured after: melee 10/25/36, bow 8/28/35, wand 7/22/31 (mana holds).
+- **Mana pause** (`combat/265-s273-mana-pause.js`, `window.SQMANAPAUSE`, Nov 21): after 202, a mage in mage armour got more back than
+  holding CAST spends (measured 4.8/s at Magic 47, 6.5/s at 99, vs 2.5/s for fire/ice), so mana never ran out. An `SQUPD.wrap` (outside every
+  regen step: 028, 036, 086, 179, 202) starts a 1.5 s pause whenever MANA went down since the last frame or during this one, and while
+  paused takes back small gains (< 1.5 a frame, 202's regen test); bigger ones (Siphon, potions) stay. Setting MANA lower by hand counts as
+  spending. 229's stats row says so. Check 71.
 - **Game feel** (`combat/195-s203-game-feel.js`, `SQFEEL`): end of the outermost `upd` compares nearby monsters' health with last frame:
   hit = sparks, killed (hp<=0 or `_kp` from the outermost `killEnemy`) = smoke puff in `COL` colours; shake = CSS transform on `cv`
   (Options "Screen shake", localStorage `sq_shake`, also gates 015's `shakeScreen`). Monsters inside a solid tile for 0.75 s are moved
