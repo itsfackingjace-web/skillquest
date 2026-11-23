@@ -49,6 +49,9 @@
         "t": {
           ".validate": "newData.val() === now"
         },
+        "r": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160 && root.child('age').child(auth.uid).child('b').val() === 'a'"
+        },
         "$other": {
           ".validate": false
         }
@@ -110,7 +113,10 @@
         ".read": "auth != null && auth.uid === $uid",
         "$id": {
           ".write": "auth != null && ((!data.exists() && newData.child('f').val() === auth.uid && (!root.child('mod').child(auth.uid).child('ba').exists() || root.child('mod').child(auth.uid).child('ba').val() < now) && (!root.child('mod').child(auth.uid).child('mu').exists() || root.child('mod').child(auth.uid).child('mu').val() < now)) || ((auth.uid === $uid || (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a'))) && !newData.exists()))",
-          ".validate": "newData.hasChildren(['f', 'n', 'm', 't']) && newData.child('m').isString() && newData.child('m').val().length > 0 && newData.child('m').val().length <= 168 && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('t').val() === now && (root.child('age').child(auth.uid).child('b').val() !== 'c' || newData.child('m').val().matches(/^(\\[Party\\] )?(Hi!|Hello!|Bye!|See you later!|Thanks!|You.re welcome!|Good game!|Nice!|Well done!|Good luck!|Sorry!|OK|Yes|No|Maybe|LOL|Brb|Want to team up\\?|Want to be friends\\?|Follow me!|Wait for me!|Over here!|Help!|Let.s trade!|Let.s fight the boss!|Let.s go on an adventure!|I.m going fishing\\.|I.m going mining\\.|I.m going to chop trees\\.|I.m cooking\\.|I have to go now\\.|Cool house!|Cute pet!)$/)) && (root.child('age').child($uid).child('b').val() !== 'c' || root.child('friends').child($uid).child(auth.uid).val() === true)"
+          ".validate": "newData.hasChildren(['f', 'n', 'm', 't']) && newData.child('m').isString() && newData.child('m').val().length > 0 && newData.child('m').val().length <= 168 && newData.child('n').isString() && newData.child('n').val().length <= 12 && newData.child('t').val() === now && (root.child('age').child(auth.uid).child('b').val() !== 'c' || newData.child('m').val().matches(/^(\\[Party\\] )?(Hi!|Hello!|Bye!|See you later!|Thanks!|You.re welcome!|Good game!|Nice!|Well done!|Good luck!|Sorry!|OK|Yes|No|Maybe|LOL|Brb|Want to team up\\?|Want to be friends\\?|Follow me!|Wait for me!|Over here!|Help!|Let.s trade!|Let.s fight the boss!|Let.s go on an adventure!|I.m going fishing\\.|I.m going mining\\.|I.m going to chop trees\\.|I.m cooking\\.|I have to go now\\.|Cool house!|Cute pet!)$/)) && (root.child('age').child($uid).child('b').val() !== 'c' || root.child('friends').child($uid).child(auth.uid).val() === true)",
+          "r": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 168 && root.child('age').child(auth.uid).child('b').val() === 'a'"
+          }
         }
       },
       ".read": "auth != null && (root.child('devs').child(auth.uid).val() === true || (root.child('mods').child(auth.uid).val() === true && root.child('age').child(auth.uid).child('b').val() === 'a'))"
@@ -860,6 +866,9 @@
           },
           "t": {
             ".validate": true
+          },
+          "r": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160 && root.child('age').child(auth.uid).child('b').val() === 'a'"
           },
           "$o": {
             ".validate": false

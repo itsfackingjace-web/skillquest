@@ -128,8 +128,9 @@
  let lastSay=0;function partySay(t){const msg=String(t||'').replace(/\s+/g,' ').trim().slice(0,152);if(!msg)return;if(!on())return;
   if(!PT.id||!others().length){try{mpLog('game','You\'re not in a party. Tap a player\'s name to invite them.')}catch(e){self.SQERR&&SQERR(e,'136-13')}return}
   const n=performance.now();if(n-lastSay<1200){try{mpLog('game','Slow down a little!')}catch(e){self.SQERR&&SQERR(e,'136-14')}return}lastSay=n;
-  const db=Fm().db;for(const r of others())db.push(ref('pm/'+r.uid),{f:me(),n:String(pname()).slice(0,12),m:'[Party] '+msg,t:db.serverTimestamp()}).catch(()=>{});
-  try{mpLog('pt',msg,{n:String(pname()).slice(0,12),uid:me(),me:1})}catch(e){self.SQERR&&SQERR(e,'136-15')}}
+  // Nov 22: 208's filter: the filtered text, and what an adult typed (r) for adults who turned the filter off
+  const db=Fm().db,pk=window.SQFILTER?SQFILTER.pack(msg):{m:msg},xr=pk.r?{r:'[Party] '+pk.r}:{};for(const r of others())db.push(ref('pm/'+r.uid),Object.assign({f:me(),n:String(pname()).slice(0,12),m:'[Party] '+pk.m,t:db.serverTimestamp()},xr)).catch(()=>{});
+  try{mpLog('pt',window.SQFILTER?SQFILTER.show(pk.m,pk.r):pk.m,{n:String(pname()).slice(0,12),uid:me(),me:1,m0:pk.m,r:pk.r})}catch(e){self.SQERR&&SQERR(e,'136-15')}}
  window.SQPARTYSAY=partySay;
  // shared gold: when you beat a monster with party members close by (same area, within 20 steps), each of them gets
  // half the gold it gave you (the kill's own 2-6 gold counted as 4, plus what enemyDrop added; at most 100), sent as fx kind 'pg' {g, p: party id, x, y}

@@ -73,7 +73,14 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   rules with `rulesdb.cjs` directly, scratchpad `kidrules.js`).
 - **Chat filter** (`multiplayer/208-s216-chat-filter.js`, `SQFILTER.clean/bad`): lists stored shifted by one letter (`un`); long words match
   anywhere after letters-only + leetspeak + squashed repeats, short ones whole-word; emails, phone numbers and links (not skillquestmmo.com)
-  starred. Wraps window.mpSend, SQGUILDSAY, SQPARTYSAY, window.SQCHNAME (204's rename calls it), refuses names at 061's `#nmf`.
+  starred. window.SQCHNAME (204's rename calls it), refuses names at 061's `#nmf`. Nov 22 (Jace, check 90): squashed whole-word matches need
+  at least the word's length ("as" isn't "ass"); digits are leetspeak only in words with letters; repeats squash inside a word only; a long
+  word built from several words must start at a word's start and leave at most a short ending (`ENDS`); 7+ digit amounts like 1000000 aren't
+  phone numbers; "hoe" left the list. **Adults can turn it off** (Options "Chat filter", `SQAGE.band==='a'`, localStorage
+  `sq_chatfilter_off`): messages carry `m` (filtered, what every game shows) and, from adults only, `r` (as typed, contact details still
+  removed; rules: `r` on chat/pm/gchat only from age band `a`). Senders call `SQFILTER.pack(text)` (061 public/PM, 136 party, 197 guild;
+  the old send wrappers that cleaned are gone), receivers `SQFILTER.show(m, r)` and keep `m0`/`r` on log lines so `setOff` re-filters the
+  chat window. Moderators see "As typed" under a message (219).
 - **Account and privacy** (`ui/209-s217-account-and-privacy.js`, `SQACCOUNT`): Options > ABOUT (links to `terms.html`, `privacy.html`,
   `refund.html` + `legal.css` at the repo root, plain files, not built) and "Delete my account" (type DELETE; stops saveLocal/saveCloud,
   removes the owner-deletable records, deleteUser, sign out, clears sq_* storage, reloads; guild members leave first). Retention promised in
