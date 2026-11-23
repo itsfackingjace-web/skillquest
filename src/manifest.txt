@@ -284,6 +284,7 @@ skills/270-s278-stove-cook-everything.js
 world/271-s279-sunken-treasure.js
 items/272-s280-blacksmiths-bench.js
 items/273-s281-smithing-recipe-moves.js
+items/274-s282-bench-upgrades.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

@@ -84,7 +84,8 @@
   ['Armour',k=>/^eq_(helm|body|legs|r(helm|body|legs)|m(helm|body|legs))\w*$/.test(k)],
   ['Pets',k=>/^pet_/.test(k)]];
  let CATL=null;
- function cats(){if(CATL)return CATL;const used=new Set(),out=[];for(const[n,f]of CATS){const L=[];for(const k in INAME){if(used.has(k)||/^eq_cu_/.test(k))continue;if(f(k)){L.push(k);used.add(k)}}out.push([n,L])}
+ function cats(){if(CATL)return CATL;const used=new Set(),out=[];for(const[n,f]of CATS){const L=[];for(const k in INAME){if(used.has(k)||/^eq_cu_|^u[123]_/.test(k))continue;// upgraded copies (274) aren't collection-log entries
+if(f(k)){L.push(k);used.add(k)}}out.push([n,L])}
   // rare finds first so they're not counted twice
   return CATL=out}
  const inLog=k=>cats().some(([,L])=>L.includes(k));

@@ -237,3 +237,15 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `smithAct` and 039's bonus items (a bonus is a whole batch). The bows are bag items (`eq_bow1`/`eq_bow2`) now. The ranger set moves to
   GOODS (Crafting, same levels). FREC ends up empty; 021's `fletchHTML` then says where things went. 004's REC no longer has tier-3 axes
   and pickaxes (iron ones only from the anvil, 133's `eq_axe3`/`eq_pick3`). 022's `smithRows` uses `matN` for material names.
+- **Upgrades at the Blacksmith's bench** (`items/274-s282-bench-upgrades.js`, `window.SQUPGRADE`, Nov 23, check 98): step 2. `UP` (rebuilt on
+  every library apply) = every upgradable base: SM (Smithing), GOODS (Crafting), REC's iron sword, Brann's steel sword (25/300), and
+  `BOSS` (no recipe; cores, levels 70/80/90, XP base 1000). Not: starter gear, Crystal blade, Bone bow, tools, jewelry. Copies rule:
+  10 of level L-1 -> 1 of L at make level + 10L, XP x2/x10/x50; the worn piece counts (bag first; if it's used, the result is worn).
+  Upgraded copies are items `u<L>_<base>` (INAME/SELLP/INVK/EXTRA_BAG; EQ entries are **non-enumerable** copies so gear lists and
+  214's tree don't grow; 129's collection log skips `^u[123]_`). Worn, they're the base (tiers, occ, looks, rules) and `UPS[slot]`
+  = {b,l,n} keeps the level: the outermost `equipItem`/`unequipSlot` and a SQSETSLOT wrap put the right copy back in the bag; a
+  per-frame `reconcile` (skipped while chests are merged) catches other paths by watching the base's bag count. Saved as `s.upe`
+  (KNOWN49), copies of library gear that haven't loaded yet wait in `PENDV`. Effects: `meleeFlat`/`arrowDmg`/`spellDmg` +5%/level
+  (fraction = chance of +1), daggers +1/+2 at +2/+3, `gSpeed(1|2)` +.05/level, `blockBonus` and `blockCap` +.01/level/piece, ranger
+  pieces `bowRange` +5%; `window.SQPVDMG` sets NOUPG (PvP ignores them; PvP block is capped at 25% anyway). Icons get a gold level
+  badge (`eqIcon`/SQICON, drawn async then `rPn()`). The equipment screen shows the worn level and lists upgraded copies.

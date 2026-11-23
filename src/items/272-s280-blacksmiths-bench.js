@@ -1,6 +1,6 @@
 // ---- 280. The Blacksmith's bench and cores (smithing overhaul, step 1) ----
 // Nov 23 (Jace, #ideas with Kevin; plan in the "SQ Blacksmith's Bench" sheet): a new piece of furniture where repairs, upgrades
-// and cores happen. Step 1 brings the bench itself and the cores; upgrades (step 2) and durability/repairs (step 3) come later.
+// and cores happen. Step 1 brought the bench and the cores; upgrades (step 2) are 274's; durability/repairs (step 3) come later.
 //   bench: a 022 station (STNS/BREC/BK, built at home like the anvil): Iron bar 3, Stone 4, Wood 10, Crafting 12, 90 Crafting XP.
 //     It uses the chests in the house like the furnace, anvil, stove and cauldron (033's STCH).
 //   cores: 100 sigil shards of one island (100's ibs_<island>) -> 1 core, 1,000 Smithing XP, timed like every craft (109's sqDo):
@@ -17,10 +17,10 @@
  const NEED=100,XP=1000;const shardOf=c=>'ibs_'+c.isl;
  // ---- the bench: a station like the anvil ----
  const REC={k:BK2,n:'Blacksmith\'s bench',c:{ibar:3,stone:4,wood:10},req:12,xp:90,hp:4};
- STNS.push(Object.assign({},REC,{d:'Smith cores from sigil shards. Repairs and upgrades are coming here.'}));STN.add(BK2);
+ STNS.push(Object.assign({},REC,{d:'Smith cores from sigil shards and upgrade your gear. Repairs are coming here.'}));STN.add(BK2);
  BREC.push(Object.assign({},REC));BK.push(BK2);BHP[BK2]=4;if(!INVK.includes(BK2))INVK.push(BK2);
  INAME[BK2]=REC.n;SN[BK2]='Blacksmith\'s benches';SHORT[BK2]='blacksmith\'s bench';inv[BK2]=inv[BK2]|0;if(!EXTRA_BAG.includes(BK2))EXTRA_BAG.push(BK2);
- IDESC[BK2]='Smith cores from sigil shards (repairs and upgrades are coming here). Place it in your house or yard, then face it and press HIT.';
+ IDESC[BK2]='Smith cores from sigil shards and upgrade your gear (repairs are coming here). Place it in your house or yard, then face it and press HIT.';
  try{STCH.add(BK2)}catch(e){self.SQERR&&SQERR(e,'272-1')}
  // ---- the cores: items ----
  for(const c of CORES){INVK.push(c.k);if(!EXTRA_BAG.includes(c.k))EXTRA_BAG.push(c.k);INAME[c.k]=c.n;SN[c.k]=c.n+'s';SHORT[c.k]=c.n.toLowerCase();
@@ -41,20 +41,22 @@
   for(const c of CORES){const have=inv[shardOf(c)]|0,okL=lvOf(SMI)>=c.lv,m=can(c),ok=okL&&m>0;
    const sub=have+' / '+NEED+' '+esc(shN(c))+(okL?' · '+XP.toLocaleString('en-US')+' xp · have '+(inv[c.k]|0):' · needs Smithing '+c.lv);
    h+='<div style="display:flex;gap:6px;align-items:stretch"><button class="sb stb" data-a="smc_'+c.k+'" style="flex:1;opacity:'+(ok?1:.45)+'"><img alt="" src="'+iconURL(c.k)+'" style="width:20px;height:20px;image-rendering:pixelated;vertical-align:middle;margin-right:6px">Smith '+an(c.n)+'<br><small>'+sub+'</small></button>'+(ok&&m>1?'<button class="sb stb" data-a="smca_'+c.k+'" style="width:64px">ALL</button>':'')+'</div>'}
-  h+='<div class="qc" style="margin-top:12px"><p>Coming to this bench: repairs and upgrades.</p></div>';
+  try{if(window.SQUPGRADE)h+=SQUPGRADE.html(o)}catch(e){self.SQERR&&SQERR(e,'272-9')}
+  h+='<div class="qc" style="margin-top:12px"><p>Coming to this bench: repairs.</p></div>';
   return h+'<button class="ng stb" data-a="pickup" style="margin-top:16px">Pick up this bench</button>'}
  {const _sh=stationHTML;stationHTML=function(o){if(o&&o.t===BK2)return html(o);return _sh.apply(this,arguments)}}
  {const _sa=stationAct;stationAct=function(a){const o=STATION;if(!(o&&o.t===BK2&&/^smca?_/.test(a||'')))return _sa.apply(this,arguments);
    const all=a.startsWith('smca_'),c=CORES.find(q=>q.k===a.replace(/^smca?_/,''));if(!c)return;
    if(lvOf(SMI)<c.lv){say('You need Smithing '+c.lv+' to smith '+an(c.n)+'.');return}const m=can(c);if(m<1){say('You need '+NEED+' '+shN(c)+'.');return}
-   const n=all?m:1;if(sqDo('smith',n,()=>{make(c)})){try{SQDO.d=5;SQDO.tot=n;SQDO.core=c.k;const[fx,fy]=front(16);WORKAT={tx:Math.floor(fx/16),ty:Math.floor(fy/16)}}catch(e){self.SQERR&&SQERR(e,'272-4')}say('Smithing '+an(c.n)+'...');return}
+   const n=all?m:1;if(sqDo('smith',n,()=>{make(c)})){try{SQDO.d=5;SQDO.tot=n;markWork(c.k)}catch(e){self.SQERR&&SQERR(e,'272-4')}say('Smithing '+an(c.n)+'...');return}
    make(c);saveLocal(true);rPn()}}
  // ---- skill tree and wiki ----
  {const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{
    if(sk===SMI){const L=CORES.filter(c=>c.lv===l);if(L.length)return[...a,'Smith '+L.map(c=>c.n.toLowerCase()+'s').join(' and ')+' at a Blacksmith\'s bench']}}catch(e){self.SQERR&&SQERR(e,'272-5')}return a}}
  (window.SQWKREC=window.SQWKREC||[]).push(R=>{for(const c of CORES)R.push({out:c.k,n:c.n,sk:'Smithing',lv:c.lv,xp:XP,c:{[shardOf(c)]:NEED},at:'Blacksmith\'s bench'})});
  // ---- the look: a heavy oak bench with a vise and a grinding wheel; sparks fly while a core is being smithed on it ----
- let WORKAT=null;const working=(x,y)=>{const D=window.SQDO;return D&&D.core&&WORKAT&&WORKAT.tx===x&&WORKAT.ty===y?CORES.find(c=>c.k===D.core)||null:null};
+ let WORKAT=null;// the bench a job is running at (the one in front of you when it started); SQDO.core picks the glow colour
+ function markWork(ck){SQDO.core=ck;const[fx,fy]=front(16);WORKAT={tx:Math.floor(fx/16),ty:Math.floor(fy/16)}}const working=(x,y)=>{const D=window.SQDO;return D&&D.core&&WORKAT&&WORKAT.tx===x&&WORKAT.ty===y?CORES.find(c=>c.k===D.core)||null:null};
  const BC={K:'#1c1410',w:'#6a4020',W:'#8c5a2c',L:'#b07a40',H:'#d0a060',i:'#3a3e48',I:'#5c626e',m:'#8a909c',M:'#c0c6d0',s:'#7a7268',S:'#a49a8c',T:'#cfc6b4'};
  function benchArt(cx,cy,tm,hot){const P=(x,y,c)=>{g.fillStyle=BC[c]||c;g.fillRect(cx+x,cy+y,1,1)},R=(x,y,w,h,c)=>{g.fillStyle=BC[c]||c;g.fillRect(cx+x,cy+y,w,h)};
   g.globalAlpha=.25;R(-12,0,24,2,'#000');R(-10,-1,20,1,'#000');g.globalAlpha=1;
@@ -97,5 +99,5 @@
     r(1,7,12,2,'#16121c');r(2,7,10,1,'#9aa0ac');r(2,8,10,1,'#5c626e');r(4,7,1,1,'#e0e4ec');r(9,7,1,1,'#e0e4ec');
     r(6,1,3,2,'#16121c');r(7,1,1,1,'#9aa0ac')}
    return ICONC[key]=cv.toDataURL()})}
- window.SQSMITHBENCH={CORES,make,html,NEED,XP};
+ window.SQSMITHBENCH={CORES,make,html,NEED,XP,markWork};
 })();
