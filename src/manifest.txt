@@ -281,6 +281,7 @@ items/267-s275-home-tax.js
 ui/268-s276-drop-card-drag.js
 ui/269-s277-ult-button-check.js
 skills/270-s278-stove-cook-everything.js
+world/271-s279-sunken-treasure.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js
