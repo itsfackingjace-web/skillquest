@@ -9,7 +9,7 @@ module.exports={name:'Blacksmith\'s bench smiths cores; arrows and bows are smit
   XPS[10]=XT[44];const i0=Math.floor(P.y/16)*N+Math.floor(P.x/16)+2;STR.set(i0,{t:'chest',hp:4,items:{ibs_briarwood:150}});const st={t:'smithbench',i:i0+1};
   for(const c of B.CORES)inv['ibs_'+c.isl]=0;inv.ibs_briarwood=60;inv.ibs_ashfall=100;inv.core_briar=0;inv.core_ember=0;
   const open=()=>{STATION=st;shop='station';pnOpen=true;ptab=2;pn.style.display='block';rPn()};open();
-  const txt=pbd.innerText.replace(/\s+/g,' ');out.screen=[/Blacksmith's bench/.test(txt),/Using your bag and 1 chest/.test(txt),B.CORES.every(c=>txt.includes('Smith a '+c.n.toLowerCase())),/210 \/ 100 briar sigil shards/.test(txt),/needs Smithing 50/.test(txt)];
+  const txt=pbd.innerText.replace(/\s+/g,' ');out.screen=[/Blacksmith's bench/.test(txt),/Using your bag and 1 chest/.test(txt),B.CORES.every(c=>txt.includes('Smith '+(/^[aeiou]/i.test(c.n)?'an ':'a ')+c.n.toLowerCase())),/210 \/ 100 briar sigil shards/.test(txt),/needs Smithing 50/.test(txt)];
   out.allBtn=!!pbd.querySelector('[data-a="smca_core_briar"]');
   // Ember needs Smithing 50: refused
   let said='';const _s=say;say=m=>{said=m;_s(m)};pbd.querySelector('[data-a="smc_core_ember"]').click();await W(50);out.lowLevel=[said,inv.core_ember|0,inv.ibs_ashfall|0];say=_s;

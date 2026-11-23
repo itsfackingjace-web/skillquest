@@ -10,13 +10,15 @@ module.exports={name:'another player\'s reef crawler isn\'t pulled onto you when
  await A.evaluate(p=>{const m=rgMake('crab',24,p.x,p.y);m.rg='shattered';m.frozen=1e9;RG_OWN.add(m);en.push(m)},pos);
  let have=false;for(let i=0;i<40&&!have;i++){have=await B.evaluate(()=>en.some(n=>n._rp&&n.type==='crab'&&!n.dead));if(!have)await B.waitForTimeout(250)}
  if(!have)return t(false,'Bob never got a copy of Ann\'s crawler');
- const r=await B.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));const c=en.find(n=>n._rp&&n.type==='crab'&&!n.dead);
+ const r=await B.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));const find=()=>en.find(n=>n._rp&&n.type==='crab'&&!n.dead);
+  // the copy can be swapped for a fresh one when Ann's set is sent again: wait for one, and pick it up again every step
+  let c=null;for(let k=0;k<40&&!(c=find());k++)await W(100);if(!c)return{err:'Bob\'s copy of the crawler went away'};
   // Bob stands about 44 px from where Ann's game has the crawler, on open ground
   const ox=c._ox!=null?c._ox:c.tx,oy=c._oy!=null?c._oy:c.ty;let spot=null;
   for(const[dx,dy]of[[0,44],[0,-44],[44,0],[-44,0],[32,32],[-32,32],[32,-32],[-32,-32]]){const x=ox+dx,y=oy+dy;if(!solid(x-5,y+2)&&!solid(x+5,y+2)&&!solid(x-5,y+6)&&!solid(x+5,y+6)){spot=[x,y];break}}
   if(!spot)return{err:'no open ground near the crawler'};P.x=spot[0];P.y=spot[1];await W(200);const start=Math.round(Math.hypot(ox-P.x,oy-P.y)),hp0=P.hp;let min=1e9;
   // Bob's copy winds up to lunge over and over (its own AI, as on a real island)
-  for(let i=0;i<20;i++){c.frozen=0;if(c.cs!=='lunge'){c.cs='side';c.ct=.01}P.x=spot[0];P.y=spot[1];await W(80);min=Math.min(min,Math.hypot(c.x-P.x,c.y-P.y))}
+  for(let i=0;i<20;i++){c=find()||c;c.frozen=0;if(c.cs!=='lunge'){c.cs='side';c.ct=.01}P.x=spot[0];P.y=spot[1];await W(80);min=Math.min(min,Math.hypot(c.x-P.x,c.y-P.y))}
   return{start,min:Math.round(min),lost:hp0-P.hp}});
  if(r.err)return t(false,r.err);
  t(r.start>=36,'Bob starts '+r.start+' px from the crawler');
