@@ -79,6 +79,14 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   the picture, bottom-middle. **More pixels ×2 / Fewer pixels ½** (`res2`/`resh`, item sprites and other single-layer pictures, ≤160 px) change
   the sprite's own resolution and halve/double its shown-at scale `s` when they can, so it keeps its size in the game. **Bigger ×2 / Smaller ½**
   (`lay2`/`layh`, pets and props) scale the drawing inside the canvas on every frame. All undo (undo stores `w`/`all` layers).
+- **Select and zoom in every picture editor** (111b, Nov 22, Jace: the Art Room's new tools in the Dev Suite; check 89): tool `sel` (S) with
+  Box/Free (`ed.selm`), `ed.sel` {m mask, dir} for the frame you're on (`selOf()` drops it on another frame/size; undo and other tools drop
+  it). Drag inside to move (`selDrag` lifts the pixels, `stampSel` drops them; one undo step), arrows nudge, Delete clears, Crop
+  (`scrop`): a sprite shrinks to the selection's box (undo entry with w/h/s), layered pictures (worn/pet/prop/monster) "Keep only this".
+  Copy with a selection copies only its drawn pixels. Every editor has Move (M) and − / + (`zoomAt(f, ev)`: the pixel under the pointer
+  or the view's middle stays put); sprites zoom too (`ed.fit` cached like the layered editors, reset when the size changes; the sprite
+  and gear-icon editors use `.dv-cvw`). Wheel notches / Ctrl+wheel zoom (a trackpad's smooth scroll still scrolls); the middle button
+  drags the view. Esc lets go of a selection before it closes the suite.
 - **Bosses made in the Dev Suite** (`combat/146-s152-custom-bosses.js`, `window.SQBOSSES`, Dev Suite > Bosses): `bosses.cb_<id>` =
   {n, base, hp, sz, dmg, spd, cd, rs, atk:{ring,charge,slam,summon}, sk}; each becomes monster kind `cb:<letters>` (`keyOf`) in
   `SQISLIFE.MOBS` (island builder zones, island-dungeon monster lists; in a `cv_` dungeon one boss on the last floor via the
