@@ -14,7 +14,7 @@
   return x>-40&&y>-40&&x<cv.width+40&&y<cv.height+40}catch(e){self.SQERR&&SQERR(e,'227-3');return true}};
  {SQPS.before('227',(n,tm)=>{try{if(n&&fin(n)&&onScreen(n))SEEN.set(n,performance.now())}catch(e){self.SQERR&&SQERR(e,'227-1')}})}
  const exempt=n=>n.big||n.boss||n.type==='boss'||n.type==='ib'||n._wb||n.cb||n.under||n._pet;
- function describe(n,why){const o={why,type:n.type,rk:n.rk,x:n.x,y:n.y,hp:n.hp,dead:n.dead};for(const k of['_rp','_owner','_dev','_ev','zc','zi','rg','night','tx','ty','summon'])if(n[k]!=null)o[k]=n[k];
+ function describe(n,why){const o={why,type:n.type,rk:n.rk,x:n.x,y:n.y,hp:n.hp,dead:n.dead};for(const k of['_rp','_owner','_dev','_ev','zc','zi','rg','night','tx','ty','_ox','_oy','summon'])if(n[k]!=null)o[k]=n[k];
   o.keys=Object.keys(n).join(',').slice(0,300);const s=SEEN.get(n);o.seen=s?Math.round(performance.now()-s):-1;return o}
  function report(list){if(reported)return;reported=true;try{const MP=window.SQMP,F=window.SQFB;if(!MP||!MP.user||!F)return;const d=F.db,R=SCENE&&SCENE.room;
    const others=MP.players?[...MP.players.values()].filter(p=>p&&p.loc===(typeof mpLoc==='function'?mpLoc():'')).length:0;
@@ -25,7 +25,7 @@
   const now=performance.now(),moved=[];let bad=null;
   for(let i=en.length-1;i>=0;i--){const n=en[i];if(!n||n.dead)continue;if(!BORN.has(n))BORN.set(n,now);
    if(!fin(n)){bad=bad||[];bad.push(describe(n,'nan'));en.splice(i,1);
-    if(n._rp&&Number.isFinite(n.tx)&&Number.isFinite(n.ty)){n.x=n.tx;n.y=n.ty;n._px=n.tx;n._py=n.ty;n.kx=n.ky=0}else{n.dead=1;n.dropped=1}continue}
+    if(n._rp&&Number.isFinite(n._ox)&&Number.isFinite(n._oy)){n.x=n._ox;n.y=n._oy;n._px=n._ox;n._py=n._oy;n.kx=n.ky=0}else{n.dead=1;n.dropped=1}continue}
    if(exempt(n))continue;const d=Math.hypot(n.x-P.x,n.y-P.y);if(d>=16)continue;
    const s=SEEN.get(n)||0;if(now-BORN.get(n)<600||now-s<400)continue;
    // right next to you and not drawn for 0.4 s: keep it out of reach for this update

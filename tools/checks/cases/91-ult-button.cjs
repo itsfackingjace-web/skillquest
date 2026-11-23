@@ -16,7 +16,9 @@ module.exports={name:'the SLAM button: one cast per tap, works under an invisibl
   await W(400);SQSLAM.cd=0;n=0;const lay=document.createElement('div');lay.id='chk91lay';const R=b();lay.style.cssText='position:fixed;z-index:99;left:'+(R.left-10)+'px;top:'+(R.top-10)+'px;width:'+(R.width+20)+'px;height:'+(R.height+20)+'px';document.body.appendChild(lay);
   touch(lay,cx(),cy());await W(600);lay.remove();out.covered=[n,SQSLAM.cd>16,bugs().some(w=>/^\[auto\] ULT button covered .*#chk91lay/.test(w))];
   // a tap that starts nothing: a message, and one report with what the game saw
-  await W(400);const real=castUlt;castUlt=function(){n++};n=0;touch(ub,cx(),cy());await W(300);const m1=msg;await W(400);touch(ub,cx(),cy());await W(300);castUlt=real;
+  // a tap while Ground Slam recharges says so, and isn't reported (Nov 23: Lincoln's were)
+  await W(400);SQSLAM.cd=12;let said='';const _sy=say;say=function(m){said+=m+'|';return _sy.apply(this,arguments)};touch(ub,cx(),cy());await W(200);say=_sy;out.recharging=[/recharging \(12s\)/.test(said),bugs().filter(w=>/did nothing/.test(w)).length];
+  await W(400);SQSLAM.cd=0;const real=castUlt;castUlt=function(){n++};n=0;touch(ub,cx(),cy());await W(300);const m1=msg;await W(400);touch(ub,cx(),cy());await W(300);castUlt=real;
   const did=bugs().filter(w=>/^\[auto\] ULT button did nothing/.test(w));let st=null;try{st=JSON.parse(did[0].replace(/^\[auto\] ULT button did nothing /,'')).st}catch(e){}
   out.nothing=[n,/didn't start/.test(m1),did.length,st&&st.pick,st&&st.sledge];
   // Nov 22 (Derek is on a laptop): the SLAM box under the quest tracker names its key, and clicking it casts
@@ -29,4 +31,5 @@ module.exports={name:'the SLAM button: one cast per tap, works under an invisibl
  t.eq(r.tap,[1,true,true],'one tap (pointerdown + touchstart) [casts, slam cooldown, the touch kept from the page]');
  t.eq(r.covered,[1,true,true],'a tap on an invisible layer over the button [casts, cooldown, reported]');
  t.eq(r.pc,['SLAM (V)',true,'SLAM 18s'],'on a laptop [the box names V, clicking it slams, then shows the cooldown]');t.eq(r.custom,'SLAM (Q)','the box names a changed key');
+ t.eq(r.recharging,[true,0],'a tap while Ground Slam recharges [says recharging, no report]');
  t.eq(r.nothing,[2,true,1,'slam',true],'a tap that does nothing [tries, says so, one report, picked ultimate, sledgehammer]')}};

@@ -96,6 +96,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   never re-adds one without a finite position. Check 72.
 - **Shattered Expanse sharks** (093, `SQSHK`): they hunt wounded players near the water but only bite when you're on the water
   (`SQRSAIL.on` or standing on a water tile, `onW`); a lunging shark (`s.a>0`) is drawn after the player so it isn't hidden behind you.
+- **Shared monsters keep their owner's spot** (061, Nov 23, Derek: "invisible reef crawlers" on the Shattered Expanse; check 96): a copy
+  of another player's monster (`_rp`) is pulled toward its owner's position every frame (`mobPost`). That position was kept in `tx/ty`,
+  which monster AI also uses (047's reef crawler lunge target, 043's Frostfang wolf): the copy's own AI set it to you, so it was pulled onto
+  your spot, drawn under you, and touch/lunge hits landed every second while its owner saw it elsewhere. The owner's position is now
+  `_ox/_oy` (061 create/update/`mobPost`/takeover, 227's NaN fix); `tx/ty` belong to the AI. Don't store sync data in fields AI uses.
 - **No hits from unseen monsters** (`combat/227-s235-no-invisible-hits.js`, `window.SQGHOSTHIT`): 001's touch damage counts anything in `en`
   within 10 px, and a monster with a NaN position counts as 1 px away (`Math.hypot(NaN)||1`) while being drawn nowhere (Nov 16: two players
   on the Shattered Expanse were hit every second by nothing visible). The outermost `upd` drops monsters without a finite position from `en`

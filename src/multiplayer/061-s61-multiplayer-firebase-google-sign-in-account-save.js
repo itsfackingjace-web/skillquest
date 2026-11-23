@@ -509,20 +509,23 @@ function mobSubscribe(){const l=mpLoc(),key=l?locKey(l):null;if(key===MOB.loc)re
    for(const id in rec.m){const pk=rec.m[id];if(!pk||typeof pk.x!=='number')continue;seen.add(id);let p=MOB.prox.get(id);
     if(!p&&!mobOK(pk))continue;
     if(!p){const li=MOB.limbo.findIndex(q=>q._id===id);if(li>=0){p=MOB.limbo.splice(li,1)[0];delete p._gone;MOB.prox.set(id,p);if(en.indexOf(p)<0)en.push(p)}}
-    if(!p){p=Object.assign({kx:0,ky:0},pk);p._rp=1;p._owner=owner;p._id=id;p._ref=pk.hp;p.tx=pk.x;p.ty=pk.y;MOB.prox.set(id,p);en.push(p)}
+    if(!p){p=Object.assign({kx:0,ky:0},pk);p._rp=1;p._owner=owner;p._id=id;p._ref=pk.hp;p._ox=pk.x;p._oy=pk.y;MOB.prox.set(id,p);en.push(p)}
     else{if(p.dead&&p._deadAt&&performance.now()-p._deadAt>3000){p.dead=0;p._deadAt=0;p.hp=pk.hp;p._ref=pk.hp} // our kill didn't land: it's still alive for its owner
      for(const k in pk)if(k!=='x'&&k!=='y'&&k!=='hp'&&k!=='dead'&&!(CDK.test(k)&&typeof p[k]==='number'))p[k]=pk[k]; // reload timers (tcd, scd, gcd...) stay local: copying the owner's (often long run out) made copies of skeletons throw on every update
-    if(Number.isFinite(pk.x)&&Number.isFinite(pk.y)){p.tx=pk.x;p.ty=pk.y}if(!p.dead&&typeof pk.hp==='number'){p.hp=pk.hp;p._ref=pk.hp}}}}
+    if(Number.isFinite(pk.x)&&Number.isFinite(pk.y)){p._ox=pk.x;p._oy=pk.y}if(!p.dead&&typeof pk.hp==='number'){p.hp=pk.hp;p._ref=pk.hp}}}}
+  // Nov 23 (Derek, Shattered Expanse: "invisible reef crawlers"): the owner's position lives in _ox/_oy. It was tx/ty, which monster AI
+  // also uses (a reef crawler's lunge target, the Frostfang wolf's): the copy's own AI set tx/ty to you, so it was pulled onto your
+  // spot, hidden under you, and hit you every second while the owner saw it elsewhere.
   for(const owner in all){const rec=all[owner];if(MP.user&&owner!==MP.user.uid&&rec&&rec.x&&rec.t>cut&&window.SQMOBRX)try{SQMOBRX(owner,rec.x)}catch(e){console.warn(e)}}
   for(const[id,p]of MOB.prox)if(!seen.has(id)){MOB.prox.delete(id);if(p.dead){const j=en.indexOf(p);if(j>=0)en.splice(j,1);continue}p._gone=performance.now();MOB.limbo.push(p)}})}
 function mobHitsCheck(){if(!MP.user)return;for(const p of MOB.prox.values()){if(typeof p.hp!=='number'||typeof p._ref!=='number')continue;if(p.hp<p._ref){const dmg=Math.min(50,Math.round((p._ref-p.hp)*10)/10);p._ref=p.hp;if(dmg<.5)continue; // slow drains (sunlight, burning) are simulated by the owner
   FB.db.push(FB.db.ref(FB.D,'hits/'+p._owner),{id:p._id,d:dmg}).catch(()=>{})}}}
 function mobPre(){if(!MP.on||!MOB.loc)return;mobHitsCheck();for(const p of MOB.prox.values()){if(p.dead&&!p._deadAt)p._deadAt=performance.now();if(!p.dead&&en.indexOf(p)<0&&Number.isFinite(p.x)&&Number.isFinite(p.y))en.push(p);p._px=p.x;p._py=p.y}}
 function mobPost(dt){if(!MP.on||!FB)return;mobSubscribe();if(!MOB.loc)return;mobHitsCheck();const k=Math.min(1,dt*10);
- for(const p of MOB.prox.values()){if(p.dead)continue;const bx=p._px==null?p.x:p._px,by=p._py==null?p.y:p._py;p.x=bx+(p.tx-bx)*k;p.y=by+(p.ty-by)*k;p.kx=0;p.ky=0}
+ for(const p of MOB.prox.values()){if(p.dead||!Number.isFinite(p._ox)||!Number.isFinite(p._oy))continue;const bx=p._px==null?p.x:p._px,by=p._py==null?p.y:p._py;p.x=bx+(p._ox-bx)*k;p.y=by+(p._oy-by)*k;p.kx=0;p.ky=0}
  // a monster whose owner left: you take it over (it keeps fighting); one that simply vanished (killed) goes away
  const now=performance.now();for(let i=MOB.limbo.length-1;i>=0;i--){const p=MOB.limbo[i],o=MP.players.get(p._owner),left=!o||!live(o)||o.loc!==mpLoc();
-  if(left&&!p.dead&&p.hp>0&&Math.hypot(p.x-P.x,p.y-P.y)<260){for(const k of['_rp','_owner','_id','_ref','_deadAt','_gone','_px','_py','tx','ty'])delete p[k];MOB.limbo.splice(i,1)}
+  if(left&&!p.dead&&p.hp>0&&Math.hypot(p.x-P.x,p.y-P.y)<260){for(const k of['_rp','_owner','_id','_ref','_deadAt','_gone','_px','_py','_ox','_oy'])delete p[k];MOB.limbo.splice(i,1)}
   else if(now-p._gone>2000||p.dead){MOB.limbo.splice(i,1);const j=en.indexOf(p);if(j>=0)en.splice(j,1)}}
  // arriving on a floor someone is already fighting on: use their monsters, not a second copy. Several of you arriving
  // together: the player with the lowest id keeps theirs, everyone else uses those.

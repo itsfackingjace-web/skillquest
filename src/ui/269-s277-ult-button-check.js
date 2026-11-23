@@ -22,8 +22,14 @@
    const what=('[auto] '+kind+' '+JSON.stringify(Object.assign({ver:window.SQVER,scr:innerWidth+'x'+innerHeight+'@'+(window.devicePixelRatio||1),ub:{html:ub.innerText.replace(/\s+/g,' '),r:[r.left,r.top,r.width,r.height].map(Math.round),op:ub.style.opacity,pe:getComputedStyle(ub).pointerEvents,lay:lu||null},st:state()},extra||{}))).slice(0,1500);
    d.push(d.ref(F.D,'bugs'),{what,u:MP.user.uid,n:String(MP.user.displayName||'').split(' ')[0].slice(0,12),t:d.serverTimestamp()}).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'269-1')}}
  const why=()=>{if(pnOpen||menuOpen)return'Close the screen first.';if(BUILD)return'Finish building first (DONE).';if(dead)return'';return null};
+ // the picked ultimate's own recharge time (Nov 23: Lincoln's taps while Ground Slam recharged were reported as "did nothing", because the
+ // game's "recharging" message hadn't shown yet): a tap then just says so, and nothing is reported
+ const cdLeft=()=>{let k=null;try{const c=SQULT.chosen();k=c&&c.k}catch(e){/*quiet*/}
+  if(k==='slam'||(!k&&window.SQSLEDGE&&SQSLEDGE()))return{k:'Ground Slam',s:window.SQSLAM?SQSLAM.cd:0};
+  if(k==='wand'||(!k&&typeof WAND!=='undefined'&&WAND))return{k:'Your ultimate',s:typeof ULTCD!=='undefined'?ULTCD:0};return{k:'',s:0}};
  function fire(src,tgt){const now=performance.now();if(now-last<350)return;last=now;
   const w=why();if(w!==null){if(w)try{say(w);msgT=3}catch(e){self.SQERR&&SQERR(e,'269-2')}return}
+  const cd=cdLeft();if(cd.s>0){try{castUlt()}catch(e){self.SQERR&&SQERR(e,'269-6')}try{say(cd.k+' is recharging ('+Math.ceil(cd.s)+'s).');msgT=2}catch(e){self.SQERR&&SQERR(e,'269-7')}return}
   const a=mark();try{castUlt()}catch(e){self.SQERR&&SQERR(e,'269-3')}const b=mark();
   const moved=a.cd!==b.cd||a.u!==b.u||a.m!==b.m||b.mt>a.mt+.01||a.df!==b.df||a.dc!==b.dc;
   if(!moved){try{say('Your ultimate didn\'t start. A report was sent so we can fix it.');msgT=4}catch(e){self.SQERR&&SQERR(e,'269-4')}report('ULT button did nothing',{src,tgt})}}
