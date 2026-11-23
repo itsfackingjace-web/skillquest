@@ -90,7 +90,7 @@ function prodBoost(sk,o){if(!o.n)return{};const C=PROD[sk],add=(k,v)=>{inv[k]=(i
  for(let u=0;u<o.n;u++){
   if(usedK.length&&Math.random()<ps){const k=pick();back[k]=(back[k]|0)+1}
   let more=0;if(Math.random()<pe)more++;if(Math.random()<pd)more++;if(P39(sk,C.sov)&&++SOV39[sk]>=5){SOV39[sk]=0;more++}
-  if(more){if(o.out)got[o.out]=(got[o.out]|0)+more;else if(usedK.length){const k=pick();back[k]=(back[k]|0)+more}}}
+  if(more){if(o.out)got[o.out]=(got[o.out]|0)+more*(o.q||1);else if(usedK.length){const k=pick();back[k]=(back[k]|0)+more}}}
  if(pf>0)for(const k of usedK){if(o.fewerKeys&&!o.fewerKeys.includes(k))continue;const base=o.used[k]-(back[k]|0);for(let u=0;u<base;u++)if(Math.random()<pf)back[k]=(back[k]|0)+1}
  for(const k in back){const v=Math.min(back[k],o.used[k]);if(v>0){add(k,v);tag('+'+v+' '+iname(k)+' saved')}}
  for(const k in got){add(k,got[k]);tag('Bonus: +'+got[k]+' '+iname(k))}return back}
@@ -117,9 +117,10 @@ const SMMETAL=['sbar','ibar','iron'];
 const _sm39=smithAct;smithAct=function(i,all){const r=SM[i];if(!r)return _sm39(i,all);const m=typeof stUses==='function'&&stUses()?stMerge(STATION):false;
  try{const keys=[...Object.keys(r.c),r.k].filter(Boolean),b0={};for(const k of keys)b0[k]=inv[k]|0;_sm39(i,all);
   const used={};for(const k in r.c){const d=b0[k]-(inv[k]|0);if(d>0)used[k]=d}if(!Object.keys(used).length)return;
-  const n=r.k?(inv[r.k]|0)-b0[r.k]:Math.round((used[Object.keys(r.c)[0]]||0)/r.c[Object.keys(r.c)[0]]);
+  // a recipe that makes a batch (273's arrows: r.q at a time) counts makes, and a bonus is a whole batch
+  const n0=r.k?(inv[r.k]|0)-b0[r.k]:Math.round((used[Object.keys(r.c)[0]]||0)/r.c[Object.keys(r.c)[0]]),n=r.k&&r.q?Math.round(n0/r.q):n0;
   // bonus items: bars and daggers stack; armour is worn straight away, so a bonus there gives a bar back instead
-  const bk0=prodBoost(10,{out:r.k||null,n,used,xp:r.xp*n,prefer:SMMETAL,fewerKeys:r.smelt?[]:['ibar','sbar']});
+  const bk0=prodBoost(10,{out:r.k||null,n,q:r.q||1,used,xp:r.xp*n,prefer:SMMETAL,fewerKeys:r.smelt?[]:['ibar','sbar']});
   if(r.smelt){if(P39(10,'sm_smelt')){let bk=0;for(let u=0;u<(used.iron|0)-((bk0||{}).iron|0);u++)if(Math.random()<.1)bk++;if(bk){inv.iron=(inv.iron|0)+bk;gTxt(P.x,P.y-52,'+'+bk+' iron ore saved',SKC[10])}}
    if(P39(10,'sm_smelter')){let e=0;for(let u=0;u<n;u++)if(Math.random()<.12)e++;if(e){inv[r.k]=(inv[r.k]|0)+e;gTxt(P.x,P.y-58,'Master smelter: +'+e+' '+iname(r.k),SKC[10])}}
    if(P39(5,'fi_gchar')&&used.wood){let w=0;for(let u=0;u<n;u++)if(Math.random()<.2)w++;w=Math.min(w,used.wood-((bk0||{}).wood|0));if(w){inv.wood=(inv.wood|0)+w;gTxt(P.x,P.y-64,'Charcoal: +'+w+' wood saved',SKC[5])}}}

@@ -55,10 +55,10 @@ const SQEAT=sqSteps('eat',eat,f=>{eat=f});window.SQEAT=SQEAT;
 // --- smithing: furnace + anvil next to the smithy ---
 // (the furnace and anvil are inside the smithy now, section 12)
 function smithAct(i,all){const r=SM[i];if(!r)return;if(sqDo(r.smelt?'smelt':'smith',r.arm?1:all?999:1,()=>smithAct(i,false)))return;if(lvOf(10)<r.lv){say('Need Smithing '+r.lv);return}if(r.def&&lvOf(8)<r.def){say('Need Defence '+r.def+' to wear that');return}
- let n=0;const mx=r.arm?1:all?999:1;while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];if(r.k)inv[r.k]=(inv[r.k]|0)+1;n++}
+ let n=0;const mx=r.arm?1:all?999:1;while(n<mx&&Object.entries(r.c).every(([a,b])=>(inv[a]|0)>=b)){for(const a in r.c)inv[a]-=r.c[a];if(r.k)inv[r.k]=(inv[r.k]|0)+(r.q||1);n++}
  if(!n){say('Missing materials');return}
  // Nov 20 (Kass): forged armour went straight onto you; since 028 armour is an item, so it goes into your bag (Equip it from there)
- if(r.arm){const ek='eq_'+r.arm[0]+r.arm[1];if(typeof EQ!=='undefined'&&EQ[ek]){inv[ek]=(inv[ek]|0)+1;say('Forged '+r.n+'! It\'s in your bag.')}else{ARM[r.arm[0]]=Math.max(ARM[r.arm[0]],r.arm[1]);say('Forged and equipped '+r.n+'!')}}else say((r.smelt?'Smelted ':'Forged ')+n+' '+r.n+(n>1?'s':''));
+ if(r.arm){const ek='eq_'+r.arm[0]+r.arm[1];if(typeof EQ!=='undefined'&&EQ[ek]){inv[ek]=(inv[ek]|0)+1;say('Forged '+r.n+'! It\'s in your bag.')}else{ARM[r.arm[0]]=Math.max(ARM[r.arm[0]],r.arm[1]);say('Forged and equipped '+r.n+'!')}}else say((r.smelt?'Smelted ':'Forged ')+(r.q?(n*r.q)+' '+(r.pl||r.n):n+' '+r.n+(n>1?'s':'')));
  addXp(10,r.xp*n);sfx(r.smelt?'smelt':'anvil');saveLocal(true);rPn()}
 function forgeHTML(){let h='<div class="tl" style="margin-top:18px">Furnace &amp; Anvil</div><div class="tl" style="font-size:11px;font-weight:400;opacity:.65;margin-top:-6px">Smithing level '+lvOf(10)+'. Smelt ore into bars, then forge them.</div>';
  SM.forEach((r,i)=>{if(r.arm&&ARM[r.arm[0]]>=r.arm[1])return;const need=Object.entries(r.c),can=lvOf(10)>=r.lv&&!(r.def>lvOf(8))&&need.every(([a,b])=>(inv[a]|0)>=b);

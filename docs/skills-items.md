@@ -50,7 +50,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   Food & potions `buff`/`bs`). `window.SQSTOVE` = multi-ingredient stove meals (Content recipes `sk:'stove'`), listed under "Meals" in
   the outermost `stationHTML` and made by `stationAct('sv_<i>')`. COOKS entries with `st` are stove-only: 007's fire loop, 109, 110 and
   118 skip them (Stats > Recipes "Stove only"). Stats table fields can be `sel` [f,label,'sel',options|()=>options].
-- **Fletching** (021 `makeFletch`): timed through 109's `sqDo('craft',n)` ("All" = as many as the materials allow); the generic
+- **Fletching** (021 `makeFletch`; empty since Nov 23, see "Arrows and bows are smithed"): timed through 109's `sqDo('craft',n)` ("All" = as many as the materials allow); the generic
   "Made ..." line only when the recipe's own `f` didn't say anything (arrows say the arrow count, gear its name).
 - **Pet powers** (`skills/180-s187-pet-powers.js`, `SQPETPOW`, Dev Suite > Pet powers): library `petab.<pet kind>` = {own (0 = its built-in
   ability off: `window.SQPETOFF(k)`, asked by 085's imp aggro, 098's fetchers, 116's treelings/mushling/glowcap), at
@@ -224,3 +224,16 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   monster/pet, drop on a target attacks. The pointer is captured by `#sqdcm` itself (262 only redraws its inside); the click after a
   drag is swallowed until the next press. Styles live in 262's stylesheet. Ace's speech bubble no longer blocks taps (`pointer-events:none`).
 - **Duplicate pets** (Nov 21): 093's `givePet` (`SQGIVEPET`) and 085's `LUX.giveImp` put another `pet_<k>` in the bag when you already have that pet (in the bag or out); only a pet you don't have is equipped. Check 57.
+- **Blacksmith's bench and cores** (`items/272-s280-blacksmiths-bench.js`, `window.SQSMITHBENCH`, Nov 23, check 97): step 1 of the
+  smithing overhaul (plan: Jace's "SQ Blacksmith's Bench" sheet, Future tab). The bench (`smithbench`) is a 022 station (STNS/BREC/BK,
+  Iron bar 3 / Stone 4 / Wood 10, Crafting 12, 90 XP) in 033's `STCH`, so it uses the house's chests. Cores (`core_briar`/`ember`/`frost`/
+  `silver`/`void`): 100 of 100's `ibs_<island>` shards -> 1 core, 1,000 Smithing XP, Smithing 40/50/60/60/70, timed through 109's
+  `sqDo('smith')` (5 s a core, `SQDO.core` marks the job so the bench at `WORKAT` throws sparks). Sell price = 100 x the shard's (no new
+  gold). Button actions are `smc_`/`smca_`: 107's daily shop stock tags every `b...` button on a ptab-2 screen (stations included) as a
+  shop item. Tree lines via a `treeGains` wrap; wiki recipes via 075's new `window.SQWKREC` hook (075's `wkRecipes` is local). A Props
+  look `p:smithbench` replaces the drawn bench. Coming next: upgrades (step 2), durability and repairs (step 3).
+- **Arrows and bows are smithed** (`items/273-s281-smithing-recipe-moves.js`, `window.SQRECMOVE`, Nov 23, check 97): every arrow and bow in
+  021's FREC moves to SM (anvil, Smithing, same level/materials/XP); arrows carry `q` (10/15/25) and `pl` (plural), read by 007's
+  `smithAct` and 039's bonus items (a bonus is a whole batch). The bows are bag items (`eq_bow1`/`eq_bow2`) now. The ranger set moves to
+  GOODS (Crafting, same levels). FREC ends up empty; 021's `fletchHTML` then says where things went. 004's REC no longer has tier-3 axes
+  and pickaxes (iron ones only from the anvil, 133's `eq_axe3`/`eq_pick3`). 022's `smithRows` uses `matN` for material names.

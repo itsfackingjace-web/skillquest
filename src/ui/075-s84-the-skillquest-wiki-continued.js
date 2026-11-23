@@ -6,8 +6,8 @@ const WK_TABS=[['patch','Patch notes'],['start','Home'],['guides','Guides'],['sk
  ['dungeons','Dungeons'],['quests','Quests'],['npcs','People'],['maps','Maps'],['world','Islands & Towns'],['guild','Guilds'],['pets','Pets & Rares']];
 const WK_SKILL={Attack:'Fight with swords and fists. Higher levels hit harder and unlock better swords.',Woodcutting:'Chop trees for logs: plain, oak, maple and yew.',Mining:'Mine rocks for stone and ores: iron, gold, mithril, adamant and gems.',
  Foraging:'Pick berries, herbs and other wild things.',Cooking:'Cook meat and fish at a campfire or stove so they heal more and fill you up.',Firemaking:'Build campfires: they keep monsters away, cook food and light the night.',
- Crafting:'Make goods, building pieces, furniture, stations and gold jewelry.',Tactics:'Earned alongside combat. Unlocks tactical perks.',Defence:'Block hits and wear heavier armor.',Fishing:'Catch fish with a rod, from shrimp up to the rarest catches.',
- Smithing:'Smelt ore into bars at a furnace and forge weapons, armor, bows and wands at an anvil.',Farming:'Till soil, plant seeds, water and harvest crops.',Archery:'Shoot bows and make arrows (fletching).',Magic:'Cast fire, ice and storm spells with wands, and their ultimates.',
+ Crafting:'Make goods, building pieces, furniture, stations, gold jewelry and the ranger set.',Tactics:'Earned alongside combat. Unlocks tactical perks.',Defence:'Block hits and wear heavier armor.',Fishing:'Catch fish with a rod, from shrimp up to the rarest catches.',
+ Smithing:'Smelt ore into bars at a furnace, forge weapons, armor, bows, arrows and wands at an anvil, and smith cores at a Blacksmith\'s bench.',Farming:'Till soil, plant seeds, water and harvest crops.',Archery:'Shoot bows. Bows and arrows are made at an anvil (Smithing).',Magic:'Cast fire, ice and storm spells with wands, and their ultimates.',
  Chess:'Play chess against the village club. Win to climb the ranks.'};
 // monsters, by where you meet them (regional ones are listed from the islands' own spawn tables)
 const WK_MOBS=[
@@ -79,6 +79,8 @@ function wkRecipes(){const R=[];
  for(const r of FREC){if(r.hide&&r.hide())continue;R.push({out:r.k,n:r.n,sk:'Archery',lv:r.lv,xp:r.xp,c:r.c,at:'Craft menu (Fletching)'})}
  for(const r of COOKS)R.push({out:r.ck,n:'Cooked '+r.n,sk:'Cooking',lv:r.lv,xp:r.xp,c:{[r.raw]:1},at:'Campfire or stove'});
  if(window.SQJWL)for(const j of SQJWL)R.push({out:j.k,n:j.n,sk:'Crafting',lv:j.lv,xp:j.xp,c:Object.assign({gbar:j.b},j.g?{[j.g]:1}:{}),at:'Furnace (Jewelry)'});
+ // later sections add their own recipes (272's Blacksmith's bench): window.SQWKREC = [f(R)]
+ for(const f of(window.SQWKREC||[]))try{f(R)}catch(e){self.SQERR&&SQERR(e,'075-12')}
  return R}
 function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab]();const out=[];const card=(t,ic,tx,big)=>out.push({t,h:'<div class="c">'+(ic?ic.startsWith('<')?ic:'<img alt="" src="'+ic+'"'+(big?' class="'+(big==='mob'?'mob':'big')+'"':'')+'>':'')+'<div class="tx">'+tx+'</div></div>'}),head=t=>out.push({t:'',h:'<h3>'+wkE(t)+'</h3>',head:1});
  if(tab==='patch'){const PN=srch||WK.allp?PATCH_NOTES:PATCH_NOTES.slice(0,12);for(const p of PN)card(p.t+' '+p.v+' '+p.n.join(' '),'','<b>'+wkE(p.t)+'</b> <span class="tag">'+wkE(p.d)+'</span><small> version '+wkE(p.v)+'</small><ul style="margin:6px 0 0;padding-left:18px">'+p.n.map(x=>'<li style="margin:3px 0">'+wkE(x)+'</li>').join('')+'</ul>');if(!srch&&!WK.allp&&PATCH_NOTES.length>PN.length)out.push({t:'',h:'<button class="more" data-wkm="p">Show '+(PATCH_NOTES.length-PN.length)+' older updates</button>',head:1});wkMarkSeen()}

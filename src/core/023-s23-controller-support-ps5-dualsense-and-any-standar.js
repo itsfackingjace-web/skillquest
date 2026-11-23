@@ -125,7 +125,7 @@ function aimDir(){let d=aimLive()?AIM.v.slice():null;if(!d){const t=bowTarget&&b
  // gentle aim assist: snap to an enemy within about 14 degrees of where you aim
  let best=null,bc=Math.cos(.25);for(const n of en){if(n.dead)continue;const dx=n.x-P.x,dy=(n.y-4)-(P.y-2),l=Math.hypot(dx,dy);if(l<10||l>bowRange())continue;const c=(dx*d[0]+dy*d[1])/l;if(c>bc){bc=c;best=[dx/l,dy/l,n]}}return best||[d[0],d[1],null]}
 function shootAim(first){if(dead||menuOpen||pnOpen||BUILD||FISH||swing>0)return;if(SCENE&&!SCENE.room.cave){if(first)say('Not indoors!');return}
- if(!TL.bow){if(first){say('You need a bow. Make a shortbow in the Craft tab (Archery).');sfx('swish')}return}
+ if(!TL.bow){if(first){say('You need a bow. Make a shortbow at an anvil (Smithing).');sfx('swish')}return}
  if((inv.arrow|0)+(inv.iarrow|0)<1){if(first){say('Out of arrows! Make more in the Craft tab.');sfx('swish')}return}
  const[dx,dy]=aimDir(),ia=(inv.iarrow|0)>0;if(ia)inv.iarrow--;else inv.arrow--;swing=.35;BOWT=.35;BOWD=[dx,dy];sfx('bow');
  face=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)];
