@@ -36,4 +36,15 @@
   e.preventDefault();e.stopImmediatePropagation();fire(src,desc(t))}
  addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;onDown(e,e.clientX,e.clientY,'pointer')},{capture:true,passive:false});
  addEventListener('touchstart',e=>{const t=e.changedTouches&&e.changedTouches[0];if(!t)return;onDown(e,t.clientX,t.clientY,'touch')},{capture:true,passive:false});
- window.SQULTBTN={fire,state,report}})();
+ // ---- Nov 22 (Derek turned out to be on a laptop, where the ultimate is V and there's no button): the ULT / SLAM box under the
+ // quest tracker looked like a button and did nothing when clicked, was grey even when ready, and nothing said which key casts it.
+ // Clicking (or tapping) that box casts now, and on a keyboard it names the key ("SLAM (V)", the custom key if it was changed).
+ const keyName=()=>{let k='v';try{k=(window.SQKEYS&&SQKEYS.keys&&SQKEYS.keys.ult)||'v'}catch(e){/*quiet*/}k=String(k);return k===' '?'Space':/^mouse\d$/.test(k)?'Mouse '+(+k.slice(5)+1):k.length===1?k.toUpperCase():k.charAt(0).toUpperCase()+k.slice(1)};
+ {const _hl=hudLayout;hudLayout=function(){const L=_hl();try{if(isPC&&!(typeof GPON!=='undefined'&&GPON)){const i=L.chips.findIndex(c=>c[0]==='ult');if(i>=0&&!/\d/.test(L.chips[i][1]))L.chips[i]=['ult',L.chips[i][1]+' ('+keyName()+')']}}catch(e){self.SQERR&&SQERR(e,'269-5')}return L}}
+ const onChip=(x,y)=>{const C=typeof cv!=='undefined'?cv:null;if(!C||!window.SQCHIPS)return false;const r=C.getBoundingClientRect();if(!r.width)return false;
+  const X=(x-r.left)*C.width/r.width,Y=(y-r.top)*C.height/r.height;return SQCHIPS.some(q=>q.k==='ult'&&X>=q.x&&X<=q.x+q.w&&Y>=q.y&&Y<=q.y+q.h)};
+ addEventListener('pointerdown',e=>{if(pnOpen||menuOpen||dead||!e.isPrimary)return;const t=e.target;if(!t||t!==cv)return;if(!onChip(e.clientX,e.clientY))return;
+  e.preventDefault();e.stopImmediatePropagation();fire('chip',e.pointerType||'')},{capture:true,passive:false});
+ // the touch that follows a tap on the box must not move or aim
+ addEventListener('touchstart',e=>{const t=e.changedTouches&&e.changedTouches[0];if(!t||pnOpen||menuOpen||e.target!==cv)return;if(onChip(t.clientX,t.clientY)){e.preventDefault();e.stopImmediatePropagation()}},{capture:true,passive:false});
+ window.SQULTBTN={fire,state,report,onChip,keyName}})();

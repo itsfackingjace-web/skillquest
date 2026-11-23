@@ -15,7 +15,7 @@ function castUlt(){if(dead||menuOpen||pnOpen||BUILD)return;if(!WAND){say('Equip 
   if(!tg.length){const a=Math.random()*6.283;ULTFX.bolts=[[P.x+Math.cos(a)*40,P.y+Math.sin(a)*30]]}for(const n of tg)spellHit({el:'storm',sc},n,dmg*2+2);say('THUNDERSTORM!');sfx('cstorm');setTimeout(()=>sfx('cstorm'),90);setTimeout(()=>sfx('cstorm'),200);if(typeof rumble==='function')rumble(400,1,1)}
  saveLocal()}
 addEventListener('keydown',e=>{if((e.key||'').toLowerCase()==='v'&&!e.repeat){const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'))return;castUlt()}});
-hp.innerHTML=hp.innerHTML.replace('P: equipment (equip tools, weapons, armor)','P: equipment (equip tools, weapons, armor)<br>V: wand ultimate (10 mana)');
+hp.innerHTML=hp.innerHTML.replace('P: equipment (equip tools, weapons, armor)','P: equipment (equip tools, weapons, armor)<br>V: ultimate (wand, Ground Slam, Dragon Form...)');
 SQUPD.wrap('029',_u29=>function(dt){const paused=menuOpen||pnOpen;const fz=paused?null:en.filter(n=>n.frozen>0).map(n=>[n,n.x,n.y]);_u29(dt);if(paused)return;
  ULTCD=Math.max(0,ULTCD-dt);for(const[n,x,y]of fz){n.x=x;n.y=y;n.frozen-=dt;n.kx=n.ky=0}if(ULTFX){ULTFX.t+=dt;if(ULTFX.t>ULTFX.life)ULTFX=null}});
 function drawUlt(tm){const f=ULTFX;if(f&&!SCENE===!SCENE){const p=f.t/f.life,x=Math.round(P.x),y=Math.round(P.y-4);

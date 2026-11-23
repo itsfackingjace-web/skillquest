@@ -21,7 +21,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   but a copy of his save slams fine in the checks): window-capture `pointerdown`/`touchstart` take taps on `#ub` before 030's listeners
   (one cast per 350 ms, whichever arrives first); a tap inside `#ub`'s box on a non-control layer still casts; a tap that changes nothing
   (slam/ult cooldown, message, Dragon Form, dagger) says so and sends one `[auto] ULT button did nothing` report a session (state, button
-  box, touch layout); a covered tap sends `[auto] ULT button covered` with what was on top. Leaves taps alone while a screen is open. Check 91.
+  box, touch layout); a covered tap sends `[auto] ULT button covered` with what was on top. Leaves taps alone while a screen is open.
+  Derek turned out to be on a laptop: 010's HUD chips now record their boxes in `window.SQCHIPS` ({k,x,y,w,h}, canvas pixels) and the ult
+  chip is purple when ready (grey with a countdown); on a keyboard (`isPC && !GPON`) 269 wraps `hudLayout` to add the key (`SQKEYS.keys.ult`,
+  default V) to a ready chip ("SLAM (V)"), and a click or tap on the chip (canvas pointerdown inside an `ult` box) fires like the button.
+  The V / L1+R1 help lines (029, 023, 124) say "ultimate (wand, Ground Slam, Dragon Form...)". Check 91.
 - **Hold CAST / BOW on touch** (`core/082-s63-aiming-...js`, `window.SQHOLDAIM`, Nov 21): holding `#aimb` without dragging fires at
   `nearestFoe()` (or straight ahead) after 0.35 s whenever `swing<=0`; a hold that fired doesn't fire again on release; a tap
   (< 0.35 s) still fires once on release, and dragging still aims. Check 70.

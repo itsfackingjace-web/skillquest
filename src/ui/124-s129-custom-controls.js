@@ -13,7 +13,7 @@
 (()=>{const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||'null');if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
  // ---------- keyboard & mouse ----------
  const KA=[['mvu','Move up','w'],['mvd','Move down','s'],['mvl','Move left','a'],['mvr','Move right','d'],['spr','Sprint (hold)','shift'],
-  ['hit','Hit, chop, mine, fish',' '],['eat','Eat / cook','e'],['fire','Build a campfire','f'],['talk','Talk / use','t'],['roll','Dodge roll','r'],['ult','Wand ultimate','v'],
+  ['hit','Hit, chop, mine, fish',' '],['eat','Eat / cook','e'],['fire','Build a campfire','f'],['talk','Talk / use','t'],['roll','Dodge roll','r'],['ult','Ultimate (wand, Ground Slam, Dragon Form...)','v'],
   ['bag','Bag','b'],['map','Map','m'],['quests','Quests','q'],['skills','Skills','k'],['craft','Craft','c'],['card','Character','p'],['help','Show / hide the help box','h'],['emote','Emotes','g'],['off','Use off-hand (shoot / cast / till)','x']];
  const KDEF={};for(const[id,,k]of KA)KDEF[id]=k;
  let KB=Object.assign({},KDEF,LS('sq_keys')||{}),REV={},MOVED=new Set();
@@ -41,7 +41,7 @@
   const diff={};for(const i in KB)if(KB[i]!==KDEF[i])diff[i]=KB[i];LS('sq_keys',Object.keys(diff).length?diff:null);rebuild();labels();sfx('talk');draw()}
  // ---------- controller ----------
  const PA=[['R2','Hit, chop, mine, fish (hold to repeat)'],['X','Talk / use (hits if nothing is there)'],['O','Dodge roll'],['SQ','Eat / cook'],['TRI','Build a campfire'],
-  ['R1','Off-hand: bow or wand (hold to repeat), hoe or watering can'],['L1','Talk / use on release · with R1: wand ultimate'],['L2','Quests'],['L3','Sprint on / off'],['PAD','Bag'],['R3','Bag (controllers without a touchpad)'],['CREATE','Map']];
+  ['R1','Off-hand: bow or wand (hold to repeat), hoe or watering can'],['L1','Talk / use on release · with R1: ultimate'],['L2','Quests'],['L3','Sprint on / off'],['PAD','Bag'],['R3','Bag (controllers without a touchpad)'],['CREATE','Map']];
  const PDEF={};for(const[n]of PA)PDEF[n]=PADB[n];const OK=new Set(Object.values(PDEF));
  let PM=Object.assign({},PDEF);{const s=LS('sq_pad');if(s)for(const n in s)if(n in PDEF&&OK.has(s[n]))PM[n]=s[n];if(new Set(Object.values(PM)).size!==Object.keys(PM).length)PM=Object.assign({},PDEF)}
  const custom=()=>Object.keys(PDEF).some(n=>PM[n]!==PDEF[n]);
@@ -59,7 +59,7 @@
  // ---------- labels on the on-screen buttons and the help box ----------
  function labels(){try{if(typeof GPON!=='undefined'&&GPON){const L={a:pname(PM.R2),e:BUILD?pname(PM.O):pname(PM.SQ),f:pname(PM.TRI),tk:pname(PM.X),rl:pname(PM.O)};
     for(const id in L){const el=document.getElementById(id);if(!el)continue;const sm=el.querySelector('small');if(sm)sm.textContent=L[id];else el.insertAdjacentHTML('beforeend','<small>'+L[id]+'</small>')}
-    if(custom()&&typeof hp!=='undefined'&&hp){const n=k=>pname(PM[k]);hp.innerHTML='<b>Controller</b> (your layout)<br>Left stick / D-pad: move · '+n('L3')+': sprint on/off<br>'+n('R2')+': sword, chop, mine, fish (hold to repeat)<br>Right stick: aim · '+n('R1')+': bow or wand<br>'+n('L1')+' + '+n('R1')+': wand ultimate<br>'+n('X')+': talk, use, read<br>'+n('O')+': dodge roll · '+n('SQ')+': eat · '+n('TRI')+': campfire · '+n('L2')+': quests<br>Options: menu · '+n('CREATE')+': map · '+n('PAD')+': bag<br>Menus: D-pad moves, ✕ picks, ○ back'}}
+    if(custom()&&typeof hp!=='undefined'&&hp){const n=k=>pname(PM[k]);hp.innerHTML='<b>Controller</b> (your layout)<br>Left stick / D-pad: move · '+n('L3')+': sprint on/off<br>'+n('R2')+': sword, chop, mine, fish (hold to repeat)<br>Right stick: aim · '+n('R1')+': bow or wand<br>'+n('L1')+' + '+n('R1')+': ultimate (wand, Ground Slam, Dragon Form...)<br>'+n('X')+': talk, use, read<br>'+n('O')+': dodge roll · '+n('SQ')+': eat · '+n('TRI')+': campfire · '+n('L2')+': quests<br>Options: menu · '+n('CREATE')+': map · '+n('PAD')+': bag<br>Menus: D-pad moves, ✕ picks, ○ back'}}
    else if(isPC){const L={a:kname(KB.hit),e:kname(KB.eat),f:kname(KB.fire),tk:kname(KB.talk),rl:kname(KB.roll)};for(const id in L){const el=document.getElementById(id);const sm=el&&el.querySelector('small');if(sm)sm.textContent=L[id]}
     if(typeof hp!=='undefined'&&hp&&!(typeof GPON!=='undefined'&&GPON)){const mv=[KB.mvu,KB.mvl,KB.mvd,KB.mvr].map(kname).join('');
      hp.innerHTML='<b>Controls</b><br>'+mv+' / arrows: move · '+kname(KB.spr)+': sprint<br>'+kname(KB.hit)+': hit, chop, mine, fish<br>'+kname(KB.eat)+': eat / cook at fire<br>'+kname(KB.fire)+': build campfire<br>'+kname(KB.talk)+' or Enter: talk<br>Right-click or '+kname(KB.off)+': use off-hand (bow, wand, hoe, can)<br>'+
