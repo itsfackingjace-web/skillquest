@@ -43,16 +43,21 @@
  const lv=s=>!NOUPG&&UPS[s]?UPS[s].l:0;
  const back=(b,l)=>{if((inv[b]|0)>0){inv[b]--;const v=KEY(b,l);inv[v]=(inv[v]|0)+1;return true}return false};
  SQSETSLOT.wrap('274 upgraded items wear as their base',next=>function(slot,k){if(isVar(k)){const b=baseOf(k);SETK=b;const out=next.call(this,slot,b);UPS[slot]={b,l:lvlOf(k),n:inv[b]|0};return out}SETK=k;return next.apply(this,arguments)});
- {const _eq=equipItem;equipItem=function(k){
+ // Nov 23 fix: 028's equipItem/unequipSlot save on the spot, and the save ran reconcile() halfway through a swap: it put the old
+ // piece back as its +L, then the wrapper did it again and turned a plain copy in the bag into a +L. While a wrapper runs
+ // (window.SQGEARBUSY, shared with 275's durability) reconcile waits, and the wrapper saves again once it's done.
+ const busy=f=>{window.SQGEARBUSY=(window.SQGEARBUSY|0)+1;try{return f()}finally{window.SQGEARBUSY--}};
+ const resave=()=>{if(!(window.SQGEARBUSY>0))try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'274-20')}};
+ {const _eq=equipItem;equipItem=function(k){const self_=this,args=arguments;
    if(isVar(k)){const b=baseOf(k),L=lvlOf(k),e=EQ[b];if(!e||(inv[k]|0)<1)return;const s=e.slot,prev=UPS[s]?Object.assign({},UPS[s]):null;
-    inv[k]--;inv[b]=(inv[b]|0)+1;SETK=null;const _s=say;let said='';say=m=>{said=m};try{_eq.call(this,b)}finally{say=_s}
-    if(SETK===b){if(prev)back(prev.b,prev.l);UPS[s]={b,l:L,n:inv[b]|0};say(/^Equipped/.test(said)?'Equipped the '+INAME[k].toLowerCase()+'.':said)}else{inv[b]--;inv[k]++;if(said)say(said)}return}
-   const e=EQ[k],s=e&&e.slot,prev=s&&UPS[s]?Object.assign({},UPS[s]):null;SETK=null;const out=_eq.apply(this,arguments);
-   if(prev&&SETK===k){back(prev.b,prev.l);delete UPS[s]}return out}}
- {const _ue=unequipSlot;unequipSlot=function(slot){const u=UPS[slot]?Object.assign({},UPS[slot]):null;const _s=say;let said='';if(u)say=m=>{said=m};let out;try{out=_ue.apply(this,arguments)}finally{say=_s}
-   if(u){if(occ(slot)!==u.b){back(u.b,u.l);delete UPS[slot];say('Put the '+(INAME[KEY(u.b,u.l)]||'item').toLowerCase()+' in your bag.')}else if(said)say(said)}return out}}
+    inv[k]--;inv[b]=(inv[b]|0)+1;SETK=null;const _s=say;let said='';say=m=>{said=m};try{busy(()=>_eq.call(self_,b))}finally{say=_s}
+    if(SETK===b){if(prev)back(prev.b,prev.l);UPS[s]={b,l:L,n:inv[b]|0};say(/^Equipped/.test(said)?'Equipped the '+INAME[k].toLowerCase()+'.':said)}else{inv[b]--;inv[k]++;if(said)say(said)}resave();return}
+   const e=EQ[k],s=e&&e.slot,prev=s&&UPS[s]?Object.assign({},UPS[s]):null;SETK=null;const out=busy(()=>_eq.apply(self_,args));
+   if(prev&&SETK===k){back(prev.b,prev.l);delete UPS[s];resave()}return out}}
+ {const _ue=unequipSlot;unequipSlot=function(slot){const self_=this,args=arguments;const u=UPS[slot]?Object.assign({},UPS[slot]):null;const _s=say;let said='';if(u)say=m=>{said=m};let out;try{out=busy(()=>_ue.apply(self_,args))}finally{say=_s}
+   if(u){if(occ(slot)!==u.b){back(u.b,u.l);delete UPS[slot];say('Put the '+(INAME[KEY(u.b,u.l)]||'item').toLowerCase()+' in your bag.');resave()}else if(said)say(said)}return out}}
  // anything else that takes an upgraded piece off you (a new bow knocking a dagger out, Brann's steel, ...) puts it in the bag as its base
- function reconcile(){if(typeof BMERGE!=='undefined'&&BMERGE)return;
+ function reconcile(){if(typeof BMERGE!=='undefined'&&BMERGE||window.SQGEARBUSY>0)return;
   for(const s in PUPS){const[b,l]=PUPS[s];if(occ(s)===b){UPS[s]={b,l,n:inv[b]|0};delete PUPS[s]}}
   for(const s in UPS){const u=UPS[s];if(!u)continue;if(occ(s)===u.b){u.n=inv[u.b]|0;continue}if((inv[u.b]|0)>u.n)back(u.b,u.l);delete UPS[s]}}
  SQUPD.after('274 upgraded items keep their level',()=>{try{reconcile()}catch(e){self.SQERR&&SQERR(e,'274-6')}});
@@ -65,6 +70,11 @@
   if(S&&S.inv)for(const k in S.inv)if(isVar(k)&&!REG.has(k)&&+S.inv[k]>0)PENDV[k]=Math.min(1e6,+S.inv[k]|0);
   const U=S&&S.upe;if(U&&typeof U==='object')for(const s in U){const a=U[s];if(!Array.isArray(a)||typeof a[0]!=='string'||!(a[1]>=1&&a[1]<=MAXL))continue;const l=a[1]|0;if(occ(s)===a[0])UPS[s]={b:a[0],l,n:inv[a[0]]|0};else PUPS[s]=[a[0],l]}});
  SQNEWGAME.before('274',()=>{for(const o of[UPS,PUPS,PENDV])for(const k in o)delete o[k]});
+ // Nov 23 fix: upgraded copies in the bag are gear, so they stay with you when you fall (063's grave takes what's in the bag except
+ // EQK gear, and 028's reset keeps only EQK keys): SQKEEPFALL says keep while you're down, and the reset step keeps them.
+ {const _kf=window.SQKEEPFALL;window.SQKEEPFALL=function(k){if(dead&&isVar(k))return true;return typeof _kf==='function'?_kf.apply(this,arguments):false}}
+ {const _rs=reset;reset=function(){let keep=null;if(dead&&!(typeof NEWG!=='undefined'&&NEWG)){keep={};for(const k in inv)if((inv[k]|0)>0&&isVar(k))keep[k]=inv[k]|0}
+   const out=_rs.apply(this,arguments);if(keep)for(const k in keep)inv[k]=keep[k];return out}}
  // ---- what a level does ----
  const bump=(v,L)=>{if(!L||!(v>0))return 0;const x=v*.05*L,f=Math.floor(x);return f+(Math.random()<x-f?1:0)};
  const offKind=()=>{const u=UPS.off;return u&&EQ[u.b]?EQ[u.b].kind:null};

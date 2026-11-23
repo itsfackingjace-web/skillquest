@@ -1,6 +1,6 @@
 // Nov 23 (Jace, smithing overhaul step 2): upgrades at the Blacksmith's bench. 10 of an item make a +1 (10 of the +1 a +2, ...), the
 // worn piece counts, boss gear takes its island's cores; upgraded copies are bag items that wear as their base; each level adds a little.
-module.exports={name:'Blacksmith\'s bench upgrades: 10 copies (worn one counts) or cores make a +1, worn levels survive equip/unequip/saves',async run(p,t){
+module.exports={name:'Blacksmith\'s bench upgrades: 10 copies (worn one counts) or cores make a +1, worn levels survive equip/unequip/saves, swaps don\'t make copies, falls keep them',async run(p,t){
  const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);try{if(pnOpen)closePanel()}catch(e){}const out={};const U=window.SQUPGRADE;if(!U)return{err:'no SQUPGRADE'};
   const UP=U.UP();out.which=[['eq_sword7','eq_rhelm','eq_sword8','eq_axe7','mdag','eq_bow2'].map(k=>!!UP[k]),['eq_sword1','eq_helm1','eq_bow1','eq_sword5','eq_bow3','eq_wfire','eq_mhelm'].map(k=>!!UP[k])];
   out.reqs=[UP.eq_sword7.sk,U.need('eq_sword7',1),U.need('eq_sword7',3),UP.eq_rhelm.sk,U.need('eq_rhelm',1),UP.eq_sword8.core,U.need('eq_sword8',1)];
@@ -34,6 +34,13 @@ module.exports={name:'Blacksmith\'s bench upgrades: 10 copies (worn one counts) 
   const u0=eqIcon('u1_eq_sword7');await W(400);out.badge=eqIcon('u1_eq_sword7')!==eqIcon('eq_sword7');
   // ---- axes swing faster ----
   XPS[1]=XT[98];XPS[2]=XT[98];inv.eq_axe7=1;equipItem('eq_axe7');out.axeOn=occ('axe');const g0=gSpeed(1);inv.u2_eq_axe7=1;equipItem('u2_eq_axe7');out.axe=+(gSpeed(1)-g0).toFixed(2);
+  // ---- Nov 23 fix: swapping an upgraded piece off with plain copies in the bag doesn't turn a plain copy into an upgraded one ----
+  unequipSlot('axe');unequipSlot('main');for(const k of['u1_eq_sword7','u2_eq_sword7','u3_eq_sword7'])inv[k]=0;inv.u1_eq_sword7=1;inv.eq_sword7=3;inv.eq_sword6=1;XPS[0]=XT[80];
+  equipItem('u1_eq_sword7');equipItem('eq_sword6');out.swapOff=[occ('main'),inv.u1_eq_sword7|0,inv.eq_sword7|0];
+  equipItem('u1_eq_sword7');unequipSlot('main');out.putAway=[occ('main'),inv.u1_eq_sword7|0,inv.eq_sword7|0];
+  const S2=JSON.parse(JSON.stringify(snap()));out.savedSwap=[S2.inv.u1_eq_sword7|0,S2.inv.eq_sword7|0,!S2.upe||!S2.upe.main];
+  // ---- Nov 23 fix: upgraded copies in the bag stay with you when you fall, like other gear ----
+  inv.u2_eq_sword7=2;inv.berry=3;dead=true;P.hp=0;reset();await W(600);out.fall=[inv.u2_eq_sword7|0,inv.u1_eq_sword7|0,inv.berry|0];
   STR.delete(i0);return out});
  if(r.err)return t(false,r.err);
  t.eq(r.which,[[true,true,true,true,true,true],[false,false,false,false,false,false,false]],'what can be upgraded [adamant sword, ranger hood, Warlord\'s blade, adamant axe, mithril dagger, longbow] and not [starter gear, crystal blade, bone bow, shop wand, wizard hat]');
@@ -54,4 +61,8 @@ module.exports={name:'Blacksmith\'s bench upgrades: 10 copies (worn one counts) 
  t.eq(r.loaded,[3,1,4,'eq_sword7'],'loading puts them back [worn sword +3, worn helmet +1, bag copies, wearing the sword]');
  t.eq(r.boss,[false,1,0,0],'boss gear: needs Smithing 70, then the blade + 1 ember core make a Warlord\'s blade +1');
  t.eq(r.badge,true,'an upgraded copy\'s icon has a level badge');
- t.eq([r.axeOn,r.axe],['eq_axe7',0.1],'an adamant axe +2 swings 10% faster')}};
+ t.eq([r.axeOn,r.axe],['eq_axe7',0.1],'an adamant axe +2 swings 10% faster');
+ t.eq(r.swapOff,['eq_sword6',1,3],'swapping a +1 off for another sword keeps 1 +1 and 3 plain swords (no plain one turned into a +1)');
+ t.eq(r.putAway,[null,1,3],'putting the +1 away again: still 1 +1 and 3 plain');
+ t.eq(r.savedSwap,[1,3,true],'the save agrees [1 +1, 3 plain, no worn +1]');
+ t.eq(r.fall,[2,1,0],'falling keeps upgraded copies in the bag (2 +2, 1 +1), the berries go to the grave')}};

@@ -249,3 +249,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   (fraction = chance of +1), daggers +1/+2 at +2/+3, `gSpeed(1|2)` +.05/level, `blockBonus` and `blockCap` +.01/level/piece, ranger
   pieces `bowRange` +5%; `window.SQPVDMG` sets NOUPG (PvP ignores them; PvP block is capped at 25% anyway). Icons get a gold level
   badge (`eqIcon`/SQICON, drawn async then `rPn()`). The equipment screen shows the worn level and lists upgraded copies.
+  Nov 23 fixes: 028's `equipItem`/`unequipSlot` save on the spot, and that save's `reconcile` put the old +L back halfway through a
+  swap, then the wrapper did it again (a plain copy became a +L). While a gear wrapper runs, `window.SQGEARBUSY` > 0 makes
+  `reconcile` wait; the wrapper saves again when it's done. Upgraded copies stay with you when you fall (`SQKEEPFALL` while dead +
+  a reset step), like EQK gear.
