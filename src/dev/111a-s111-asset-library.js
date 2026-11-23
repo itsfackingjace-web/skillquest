@@ -108,8 +108,19 @@ var SQA=(()=>{
  const petKinds=()=>[...new Set(INVK)].filter(k=>EQ[k]&&EQ[k].slot==='pet'&&EQ[k].pet);
  function petCan(k,f){const L=PETL[k];if(!L)return null;const sp=L[f]&&valid(L[f])?L[f]:L.a&&valid(L.a)?L.a:L.b;const key=k+'@'+ver+f;let c=pcache.get(key);if(!c){c=render(sp);pcache.set(key,c)}return c}
  function drawPetLook(k,s,lib){const L=lib||PETL[k];if(!L||!s)return false;const ok=f=>L[f]&&valid(L[f]),mv=s.mv>0,f=mv?(Math.floor(s.t)%2?(ok('d')?'d':'a'):'b'):(Math.floor(performance.now()/500)%2&&ok('c')?'c':'a');const c=lib?render(L[f]&&valid(L[f])?L[f]:L.a):petCan(k,f);if(!c)return false;
-  const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2;try{shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){self.SQERR&&SQERR(e,'111a-6')}g.save();g.imageSmoothingEnabled=false;
-  if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,x+L.ox,y+L.oy,w,h);g.restore();return true}
+  const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2,gh=!!L.gh,hv=gh?Math.round(Math.sin(performance.now()/380+(x+y)*.07)*1.2)-2:0;
+  // Nov 22 (Davy, a ghost pirate): a look with gh:1 floats: a faint small shadow, a gentle hover, and a soft glow outdoors at night
+  try{if(gh){g.save();g.globalAlpha=.35;shd(x,y+6,Math.max(6,Math.min(14,w*.5)));g.restore()}else shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){self.SQERR&&SQERR(e,'111a-6')}
+  // the glow is drawn after the night tint (like 018's lit windows), so it's remembered for the HUD step below
+  if(gh)try{const dk=SCENE?0:dark();if(dk>.2){if(GHQ.length>12)GHQ.length=0;GHQ.push({c,x:x+L.ox,y:y+L.oy+hv,w,h,fl:!!s.fl,mx:x,dk,t:performance.now()})}}catch(e){self.SQERR&&SQERR(e,'111a-21')}
+  g.save();g.imageSmoothingEnabled=false;
+  if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,x+L.ox,y+L.oy+hv,w,h);g.restore();return true}
+ const GHQ=[];
+ SQHUD.before('111a ghost pets glow at night',()=>{if(!GHQ.length)return;const now=performance.now(),L=GHQ.filter(q=>now-q.t<80);GHQ.length=0;if(!L.length||SCENE)return;
+  try{g.save();g.setTransform(Z,0,0,Z,-camX()*Z,-camY()*Z);g.globalCompositeOperation='lighter';g.imageSmoothingEnabled=false;
+   for(const q of L){const cx=q.x+q.w/2,cy=q.y+q.h*.45,r=Math.max(q.w,q.h)*.85,G=g.createRadialGradient(cx,cy,1,cx,cy,r);G.addColorStop(0,'rgba(140,255,220,'+(.26*q.dk).toFixed(3)+')');G.addColorStop(1,'rgba(140,255,220,0)');
+    g.globalAlpha=1;g.fillStyle=G;g.fillRect(cx-r,cy-r,r*2,r*2);g.globalAlpha=.4*q.dk;g.save();if(q.fl){g.translate(q.mx*2,0);g.scale(-1,1)}g.drawImage(q.c,q.x,q.y,q.w,q.h);g.restore()}
+   g.restore()}catch(e){try{g.restore()}catch(x){/*quiet*/}self.SQERR&&SQERR(e,'111a-22')}});
  window.SQPETLOOK=(k,s)=>k!=='imp'&&!!PETL[k]&&drawPetLook(k,s);   // 214: pets placed at home
  {SQPP.wrap('111a',_pPL=>function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||k==='imp'||!PETL[k])return _pPL(tm);
    if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on)&&typeof petFollow==='function')drawPetLook(k,petFollow('me',P.x,P.y,face));

@@ -13126,8 +13126,19 @@ var SQA=(()=>{
  const petKinds=()=>[...new Set(INVK)].filter(k=>EQ[k]&&EQ[k].slot==='pet'&&EQ[k].pet);
  function petCan(k,f){const L=PETL[k];if(!L)return null;const sp=L[f]&&valid(L[f])?L[f]:L.a&&valid(L.a)?L.a:L.b;const key=k+'@'+ver+f;let c=pcache.get(key);if(!c){c=render(sp);pcache.set(key,c)}return c}
  function drawPetLook(k,s,lib){const L=lib||PETL[k];if(!L||!s)return false;const ok=f=>L[f]&&valid(L[f]),mv=s.mv>0,f=mv?(Math.floor(s.t)%2?(ok('d')?'d':'a'):'b'):(Math.floor(performance.now()/500)%2&&ok('c')?'c':'a');const c=lib?render(L[f]&&valid(L[f])?L[f]:L.a):petCan(k,f);if(!c)return false;
-  const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2;try{shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){self.SQERR&&SQERR(e,'111a-6')}g.save();g.imageSmoothingEnabled=false;
-  if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,x+L.ox,y+L.oy,w,h);g.restore();return true}
+  const x=Math.round(s.x),y=Math.round(s.y),w=c.width/2,h=c.height/2,gh=!!L.gh,hv=gh?Math.round(Math.sin(performance.now()/380+(x+y)*.07)*1.2)-2:0;
+  // Nov 22 (Davy, a ghost pirate): a look with gh:1 floats: a faint small shadow, a gentle hover, and a soft glow outdoors at night
+  try{if(gh){g.save();g.globalAlpha=.35;shd(x,y+6,Math.max(6,Math.min(14,w*.5)));g.restore()}else shd(x,y+6,Math.max(8,Math.min(18,w*.7)))}catch(e){self.SQERR&&SQERR(e,'111a-6')}
+  // the glow is drawn after the night tint (like 018's lit windows), so it's remembered for the HUD step below
+  if(gh)try{const dk=SCENE?0:dark();if(dk>.2){if(GHQ.length>12)GHQ.length=0;GHQ.push({c,x:x+L.ox,y:y+L.oy+hv,w,h,fl:!!s.fl,mx:x,dk,t:performance.now()})}}catch(e){self.SQERR&&SQERR(e,'111a-21')}
+  g.save();g.imageSmoothingEnabled=false;
+  if(s.fl){g.translate(x*2,0);g.scale(-1,1)}g.drawImage(c,x+L.ox,y+L.oy+hv,w,h);g.restore();return true}
+ const GHQ=[];
+ SQHUD.before('111a ghost pets glow at night',()=>{if(!GHQ.length)return;const now=performance.now(),L=GHQ.filter(q=>now-q.t<80);GHQ.length=0;if(!L.length||SCENE)return;
+  try{g.save();g.setTransform(Z,0,0,Z,-camX()*Z,-camY()*Z);g.globalCompositeOperation='lighter';g.imageSmoothingEnabled=false;
+   for(const q of L){const cx=q.x+q.w/2,cy=q.y+q.h*.45,r=Math.max(q.w,q.h)*.85,G=g.createRadialGradient(cx,cy,1,cx,cy,r);G.addColorStop(0,'rgba(140,255,220,'+(.26*q.dk).toFixed(3)+')');G.addColorStop(1,'rgba(140,255,220,0)');
+    g.globalAlpha=1;g.fillStyle=G;g.fillRect(cx-r,cy-r,r*2,r*2);g.globalAlpha=.4*q.dk;g.save();if(q.fl){g.translate(q.mx*2,0);g.scale(-1,1)}g.drawImage(q.c,q.x,q.y,q.w,q.h);g.restore()}
+   g.restore()}catch(e){try{g.restore()}catch(x){/*quiet*/}self.SQERR&&SQERR(e,'111a-22')}});
  window.SQPETLOOK=(k,s)=>k!=='imp'&&!!PETL[k]&&drawPetLook(k,s);   // 214: pets placed at home
  {SQPP.wrap('111a',_pPL=>function(tm){const C=window.LUX&&LUX.COS,k=C&&C.pet;if(!k||k==='imp'||!PETL[k])return _pPL(tm);
    if(!dead&&!(typeof SAILING!=='undefined'&&SAILING)&&!(window.SQRSAIL&&SQRSAIL.on)&&typeof petFollow==='function')drawPetLook(k,petFollow('me',P.x,P.y,face));
@@ -13526,13 +13537,14 @@ window.SQA=SQA;
     for(let d=0;d<PF.length;d++){const sp=L[PF[d]];if(!sp||!A.valid(sp))continue;const map=String(sp.p).split(',').map(c=>{let i=pal.indexOf(c);if(i<0&&pal.length<MAXC){pal.push(c);i=pal.length-1}return Math.max(0,i)});const dd=A.pix(sp);for(let i=0;i<N;i++){const ch=dd[i];if(ch&&ch!=='.')layers[d][i]=map[PXC.indexOf(ch)]}}
     // an older look (one standing and one walking frame) walked between them: fill the new frames to match
     if(!L.c)layers[1].set(layers[0]);if(!L.d)layers[3].set(layers[0]);
-    ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,pal,layers}}
+    ed={w:L.w,h:L.h,s:L.s,ox:L.ox,oy:L.oy,gh:L.gh?1:0,pal,layers}}
    else{const cap=A.capturePet(k);if(cap){const b=await bake(cap.url);ed={w:b.w,h:b.h,s:b.s,ox:cap.ox,oy:cap.oy,pal:b.pal,layers:[b.px,b.px.slice(),b.px.slice(),b.px.slice(),new Uint8Array(b.px.length).fill(255),new Uint8Array(b.px.length).fill(255)]}}
     else ed={w:16,h:16,s:2,ox:-8,oy:-9,pal:[],layers:PF.map(()=>new Uint8Array(256).fill(255))}}}
   catch(e){console.warn(e);toast('Could not read that pet.');return}
   if(S.sel!==item)return;if(!ed.pal.length)ed.pal.push('#181018','#7a5a3a','#c89858','#f8e8c8');
   S.ed={...ed,kind:'pet',k,item,dir:0,px:ed.layers[0],col:0,tool:'pen',undo:[],redo:[],dirty:!!fresh,zoom:1,rc:PF.map(()=>null),rcd:PF.map(()=>1)};draw()}
- function petOut(ed){const o={w:ed.w,h:ed.h,s:ed.s,ox:ed.ox,oy:ed.oy};let any=false;for(let d=0;d<PF.length;d++){const px=ed.layers[d];if(!px)continue;if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[PF[d]]={w:sp.w,h:sp.h,s:sp.s,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
+ function petOut(ed){const o={w:ed.w,h:ed.h,s:ed.s,ox:ed.ox,oy:ed.oy};if(ed.gh)o.gh=1;// floats like a ghost (111a's drawPetLook)
+ let any=false;for(let d=0;d<PF.length;d++){const px=ed.layers[d];if(!px)continue;if(!px.some(v=>v!==255))continue;any=true;const sp=toSpPx(ed,px);o[PF[d]]={w:sp.w,h:sp.h,s:sp.s,p:sp.p,r:A.pack(sp.d)}}return any?o:null}
  async function savePet(){const ed=S.ed;if(!ed)return;const o=petOut(ed);if(o)S.draft.pets[ed.k]=o;else delete S.draft.pets[ed.k];
   try{await dset('draft/pets/'+ed.k,o);ed.dirty=false;toast(o?'Saved to draft. Publish it from the Publish tab.':'Nothing drawn, so this pet keeps the game\'s own look.')}catch(e){fail(e)}
   if(A.previewing)A.preview(S.draft);paint();const it=root.querySelector('.dv-it[data-k="'+ed.item+'"]');if(it){const bd=it.querySelector('.dv-bd'),s2=pState(ed.k);if(bd)bd.remove();if(s2)it.insertAdjacentHTML('afterbegin','<i class="dv-bd dv-'+s2+'">'+(s2==='draft'?'DRAFT':'LIVE')+'</i>')}}
@@ -13553,6 +13565,7 @@ window.SQA=SQA;
    '<div class="dv-row dv-tools"></div><div class="dv-cv dv-cvw'+(ed.tool==='pan'?' dv-pan':'')+'"><canvas id="dvc"></canvas></div><div class="dv-pal"></div>'+
    '<div class="dv-pvw"><canvas id="dvwalk" width="400" height="112"></canvas><span class="dv-stx dv-st" style="flex:1"></span></div>'+
    '<div class="dv-row"><span class="dv-mut">Canvas</span><input type="number" data-in="pw" min="4" max="96" value="'+ed.w+'" style="width:70px"> × <input type="number" data-in="ph" min="4" max="96" value="'+ed.h+'" style="width:70px"><button class="dv-b" data-a="presize">Resize</button><span class="dv-mut">keeps the feet in place</span></div>'+
+   '<div class="dv-row"><label class="dv-chk"><input type="checkbox" data-a="pgh"'+(ed.gh?' checked':'')+'> Floats like a ghost: a faint shadow, a gentle hover, and a soft glow at night</label></div>'+
    '<div class="dv-row"><button class="dv-b dv-pri" data-a="save">Save to draft</button><button class="dv-b" data-a="revert">Undo unsaved changes</button><button class="dv-b" data-a="pcap">Start again from the game\'s look</button><button class="dv-b dv-bad" data-a="orig">Use the game\'s own look</button></div>'+
    '<p class="dv-mut">'+KEYS+'</p>'}
   return h+'</div></div>'}
@@ -14115,6 +14128,7 @@ window.SQA=SQA;
   if(a==='psy'&&S.ed){S.ed.sy=t.checked;S.ed.dirty=true;draw();return}
   if(a==='rcap'){if(S.ed&&S.ed.dirty&&!confirmLeave())return;openProp(S.sel,true,S.ed&&S.ed.night);return}
   if((a==='pday'||a==='pnight')&&S.ed&&S.ed.kind==='prop'){const nt=a==='pnight';if(nt===S.ed.night)return;if(S.ed.dirty&&!confirmLeave())return;S.ed.dirty=false;openProp(S.sel,false,nt);return}
+  if(a==='pgh'&&S.ed&&S.ed.kind==='pet'){S.ed.gh=S.ed.gh?0:1;S.ed.dirty=true;draw();return}
   if(a==='presize'){petResize(+(root.querySelector('[data-in="pw"]')||{}).value,+(root.querySelector('[data-in="ph"]')||{}).value);return}
   if(a==='under'){S.ed.under=t.checked;paint();return}
   if(a==='hide'){S.ed.hide=t.checked;S.ed.dirty=true;paint();return}

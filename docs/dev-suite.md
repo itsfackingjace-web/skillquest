@@ -36,6 +36,9 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   (`SQGEAR.devItems`). They get loot-chest entries automatically and a recipe if `sm` is set: `sm` = {c (up to 12 materials, any item, up to 9999 each), lv, st}; `st:'craft'` = a `GOODS` entry (`_cu:1`; Craft list and crafting bench, Crafting level), else an anvil `SM` entry (`_cu`, Smithing).
 - **Pet looks** (Dev Suite > Pets): `pets.<kind>` = {w,h,s,ox,oy,a,c,b,d} (standing frames a/c, idling every 0.5 s;
   walking frames b/d, stepping with the pet's own walk clock; older looks with only a/b walk a/b), drawn facing right, mirrored
+  when walking left. `gh:1` = floats like a ghost (Nov 23, Davy; Pets editor checkbox `pgh`, check 94): 111a's `drawPetLook` draws a
+  faint smaller shadow, the look 2 px higher with a ±1 px hover, and outdoors at night (`dark()>.2`) queues it in `GHQ` for an SQHUD.before
+  step that draws a soft glow and a 'lighter' copy after the night tint (like 018's lit windows).
   when walking left. `SQA` draws them in place of the pet's own look through the outermost `pP` wrapper and
   `LUX.drawPeerPet`; `SQA.capturePet` copies the game's current look to start from. The Imp (`pets.imp`) isn't a follower: 111a
   overrides `window.SQIMPSP` (085 keeps every canvas it gets, so 111a hands out canvases it repaints in place on each library change).
