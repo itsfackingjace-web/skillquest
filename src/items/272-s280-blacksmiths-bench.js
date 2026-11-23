@@ -1,6 +1,6 @@
 // ---- 280. The Blacksmith's bench and cores (smithing overhaul, step 1) ----
 // Nov 23 (Jace, #ideas with Kevin; plan in the "SQ Blacksmith's Bench" sheet): a new piece of furniture where repairs, upgrades
-// and cores happen. Step 1 brought the bench and the cores; upgrades (step 2) are 274's; durability/repairs (step 3) come later.
+// and cores happen. Step 1 brought the bench and the cores; upgrades (step 2) are 274's; durability and repairs (step 3) are 275's.
 //   bench: a 022 station (STNS/BREC/BK, built at home like the anvil): Iron bar 3, Stone 4, Wood 10, Crafting 12, 90 Crafting XP.
 //     It uses the chests in the house like the furnace, anvil, stove and cauldron (033's STCH).
 //   cores: 100 sigil shards of one island (100's ibs_<island>) -> 1 core, 1,000 Smithing XP, timed like every craft (109's sqDo):
@@ -20,7 +20,7 @@
  STNS.push(Object.assign({},REC,{d:'Smith cores from sigil shards and upgrade your gear. Repairs are coming here.'}));STN.add(BK2);
  BREC.push(Object.assign({},REC));BK.push(BK2);BHP[BK2]=4;if(!INVK.includes(BK2))INVK.push(BK2);
  INAME[BK2]=REC.n;SN[BK2]='Blacksmith\'s benches';SHORT[BK2]='blacksmith\'s bench';inv[BK2]=inv[BK2]|0;if(!EXTRA_BAG.includes(BK2))EXTRA_BAG.push(BK2);
- IDESC[BK2]='Smith cores from sigil shards and upgrade your gear (repairs are coming here). Place it in your house or yard, then face it and press HIT.';
+ IDESC[BK2]='Repair worn gear, upgrade it and smith cores from sigil shards. Place it in your house or yard, then face it and press HIT.';
  try{STCH.add(BK2)}catch(e){self.SQERR&&SQERR(e,'272-1')}
  // ---- the cores: items ----
  for(const c of CORES){INVK.push(c.k);if(!EXTRA_BAG.includes(c.k))EXTRA_BAG.push(c.k);INAME[c.k]=c.n;SN[c.k]=c.n+'s';SHORT[c.k]=c.n.toLowerCase();
@@ -41,8 +41,8 @@
   for(const c of CORES){const have=inv[shardOf(c)]|0,okL=lvOf(SMI)>=c.lv,m=can(c),ok=okL&&m>0;
    const sub=have+' / '+NEED+' '+esc(shN(c))+(okL?' · '+XP.toLocaleString('en-US')+' xp · have '+(inv[c.k]|0):' · needs Smithing '+c.lv);
    h+='<div style="display:flex;gap:6px;align-items:stretch"><button class="sb stb" data-a="smc_'+c.k+'" style="flex:1;opacity:'+(ok?1:.45)+'"><img alt="" src="'+iconURL(c.k)+'" style="width:20px;height:20px;image-rendering:pixelated;vertical-align:middle;margin-right:6px">Smith '+an(c.n)+'<br><small>'+sub+'</small></button>'+(ok&&m>1?'<button class="sb stb" data-a="smca_'+c.k+'" style="width:64px">ALL</button>':'')+'</div>'}
+  try{if(window.SQREPAIR)h+=SQREPAIR.html(o)}catch(e){self.SQERR&&SQERR(e,'272-10')}
   try{if(window.SQUPGRADE)h+=SQUPGRADE.html(o)}catch(e){self.SQERR&&SQERR(e,'272-9')}
-  h+='<div class="qc" style="margin-top:12px"><p>Coming to this bench: repairs.</p></div>';
   return h+'<button class="ng stb" data-a="pickup" style="margin-top:16px">Pick up this bench</button>'}
  {const _sh=stationHTML;stationHTML=function(o){if(o&&o.t===BK2)return html(o);return _sh.apply(this,arguments)}}
  {const _sa=stationAct;stationAct=function(a){const o=STATION;if(!(o&&o.t===BK2&&/^smca?_/.test(a||'')))return _sa.apply(this,arguments);

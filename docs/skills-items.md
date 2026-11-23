@@ -251,5 +251,26 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   badge (`eqIcon`/SQICON, drawn async then `rPn()`). The equipment screen shows the worn level and lists upgraded copies.
   Nov 23 fixes: 028's `equipItem`/`unequipSlot` save on the spot, and that save's `reconcile` put the old +L back halfway through a
   swap, then the wrapper did it again (a plain copy became a +L). While a gear wrapper runs, `window.SQGEARBUSY` > 0 makes
-  `reconcile` wait; the wrapper saves again when it's done. Upgraded copies stay with you when you fall (`SQKEEPFALL` while dead +
-  a reset step), like EQK gear.
+  `reconcile` (and 275's `sync`) wait; the wrapper saves again when it's done. Upgraded copies stay with you when you fall
+  (`SQKEEPFALL` while dead + a reset step), like EQK gear.
+- **Durability and repairs** (`items/275-s283-durability-repairs.js`, `window.SQREPAIR`, Nov 23, check 99): step 3. `TIER` (by key;
+  library gear falls back to its `base`, unknown gear 1,000) x (1 + .1 x upgrade level); slots main/off/helm/body/legs/axe/pick/rod
+  (hoe and can never wear). `WS[slot]` = {k (full key, with 274's level), d, n}. Wear 1: SQHIT wrap (any `en` hp drop or new `DMGS`;
+  `SQSTABNOW` = the dagger, else the sword and a dagger in the off-hand), the outermost `shootAim` (new own arrow or spell = bow/wand),
+  `hurt` jumping up in a SQUPD step (each armour piece, blocked or not), SQADDXP after (Woodcutting/Mining/Fishing XP up to 3,000 =
+  axe/pick/rod). A used piece taken off becomes the bag item `w<d>_<full key>` (e.g. `w1200_u1_eq_sword7`): the number is in the key,
+  so chests, trades, saves and graves keep it exactly; registered lazily by `wreg` (non-enumerable INAME/SN/SHORT/IDESC getters and EQ
+  copy, SELLP 0 so shops and the market don't take them, INVK/EXTRA_BAG) from 108's `sqBookReg` (trades, graves, market), a
+  `SQLOAD.before` deep scan of the save (chests, yards, island homes, JSON strings too) and when made; zero counts aren't saved.
+  `equipItem`/`unequipSlot` wrappers (count-based, like 274) and a per-frame `sync` (watches the bag count) turn the piece that came off
+  into its used copy; equipping a `w...` key lends it as its full key and restores `d`. At 0 the piece comes off (`unequipSlot`, next
+  frame) and a `w0_` copy can't be equipped; warnings at 20% and 0. Saved as `s.dur` = {slot:[key,d]} (KNOWN49), waiting in `PWS`
+  until that key is worn again (library gear). Used copies stay with you when you fall. Repairs (`rinfo`/`cost`/`repair`, rows in
+  272's bench screen, `smr|<id>` / `smra|` / `smrall`, id `@slot` or the w-key, timed with `sqDo`): level = make level + 5 in the
+  recipe's skill (SM/GOODS/REC, Brann's sword, `FALLBACK` for library gear without a recipe); cost = half the recipe's main material
+  (first bar or turtle fragment, else the biggest count that isn't wood, logs or gems) x the share worn, XP = half the craft XP x the
+  share. Bars and `turtfrag` split into shards (`shd_<bar>`, items; shards are used first, a bar breaks into 10 when needed); 10 fuse
+  back at a furnace (`sdf_` / `sdfa_`). `SPECIAL`: Crystal blade 2 steel bars, Bone bow 20 bones (full repair). Boss gear (274's
+  `BOSS`): 10 `ibs_<island>` sigil shards at level 50. `NOREP` (leather set, wizard set, shop wands): can't be repaired.
+  The equipment screen shows a bar on every slot, the numbers on the tapped one and used copies in the Equip list; used copies' icons
+  get a durability bar. 129's collection log skips `^u[123]_|^w\d+_` keys (also in saved logs).

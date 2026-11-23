@@ -84,6 +84,8 @@
   ['Armour',k=>/^eq_(helm|body|legs|r(helm|body|legs)|m(helm|body|legs))\w*$/.test(k)],
   ['Pets',k=>/^pet_/.test(k)]];
  let CATL=null;
+ // upgraded (274: u1_...) and used (275: w<durability>_...) copies of gear aren't collection-log entries: there'd be one per durability
+ const COPYK=/^u[123]_|^w\d{1,5}_/;
  function cats(){if(CATL)return CATL;const used=new Set(),out=[];for(const[n,f]of CATS){const L=[];for(const k in INAME){if(used.has(k)||/^eq_cu_|^u[123]_/.test(k))continue;// upgraded copies (274) aren't collection-log entries
 if(f(k)){L.push(k);used.add(k)}}out.push([n,L])}
   // rare finds first so they're not counted twice
@@ -91,7 +93,7 @@ if(f(k)){L.push(k);used.add(k)}}out.push([n,L])}
  const inLog=k=>cats().some(([,L])=>L.includes(k));
  const colCount=()=>{let n=0;for(const[,L]of cats())for(const k of L)if(COL.has(k))n++;return n};
  const colTotal=()=>cats().reduce((s,[,L])=>s+L.length,0);
- function seed(){try{for(const k in inv)if((inv[k]|0)>0)COL.add(k);for(const s of['main','off','axe','pick','helm','body','legs','rod','hoe','can']){try{const k=occ(s);if(k)COL.add(k)}catch(e){self.SQERR&&SQERR(e,'129-1')}}for(const p of pets())COL.add('pet_'+p)}catch(e){self.SQERR&&SQERR(e,'129-2')}}
+ function seed(){try{for(const k in inv)if((inv[k]|0)>0&&!COPYK.test(k))COL.add(k);for(const s of['main','off','axe','pick','helm','body','legs','rod','hoe','can']){try{const k=occ(s);if(k)COL.add(k)}catch(e){self.SQERR&&SQERR(e,'129-1')}}for(const p of pets())COL.add('pet_'+p)}catch(e){self.SQERR&&SQERR(e,'129-2')}}
  function note(k){if(COL.has(k)||!INAME[k]||!inLog(k))return;COL.add(k);const rare=cats().find(([n])=>n==='Rare finds')[1].includes(k)||/^pet_/.test(k);if(rare&&READY){say('New in your collection log: '+INAME[k].replace(/ \(pet\)$/,'')+'!');msgT=4}}
  // ---- counting ----
  const WHICH={1:'wc',2:'mine',3:'forage',9:'fish',4:'cook',11:'farm',6:'craft',10:'smith'},MIN1={craft:1,smith:1};
@@ -112,7 +114,7 @@ if(f(k)){L.push(k);used.add(k)}}out.push([n,L])}
  SQSAVE.after('129:ach',s=>{s.ach={c:Object.assign({},C),d:Object.assign({},D),col:[...COL],rg:[...RG]};});
  SQLOAD.after('129',(S)=>{try{const v=S&&S.ach;C={};D={};COL=new Set();RG=new Set();
    if(v&&typeof v==='object'){for(const k in v.c||{}){const n=+v.c[k];if(isFinite(n)&&n>0)C[k]=Math.floor(n)}for(const k in v.d||{})if(A.some(a=>a.id===k))D[k]=+v.d[k]||1;
-    for(const k of Array.isArray(v.col)?v.col:[])if(typeof k==='string'&&INAME[k])COL.add(k);for(const r of Array.isArray(v.rg)?v.rg:[])if(typeof r==='string')RG.add(r)}
+    for(const k of Array.isArray(v.col)?v.col:[])if(typeof k==='string'&&INAME[k]&&!COPYK.test(k))COL.add(k);for(const r of Array.isArray(v.rg)?v.rg:[])if(typeof r==='string')RG.add(r)}
    seed();LAST=null;LK=typeof kills==='number'?kills:null;READY=true}catch(e){console.warn(e)}});
  SQNEWGAME.after('129',()=>{C={};D={};COL=new Set();RG=new Set();LAST=null;LK=typeof kills==='number'?kills:null;READY=true;});
  // ---- the screen ----

@@ -7,7 +7,7 @@ const WK_TABS=[['patch','Patch notes'],['start','Home'],['guides','Guides'],['sk
 const WK_SKILL={Attack:'Fight with swords and fists. Higher levels hit harder and unlock better swords.',Woodcutting:'Chop trees for logs: plain, oak, maple and yew.',Mining:'Mine rocks for stone and ores: iron, gold, mithril, adamant and gems.',
  Foraging:'Pick berries, herbs and other wild things.',Cooking:'Cook meat and fish at a campfire or stove so they heal more and fill you up.',Firemaking:'Build campfires: they keep monsters away, cook food and light the night.',
  Crafting:'Make goods, building pieces, furniture, stations, gold jewelry and the ranger set.',Tactics:'Earned alongside combat. Unlocks tactical perks.',Defence:'Block hits and wear heavier armor.',Fishing:'Catch fish with a rod, from shrimp up to the rarest catches.',
- Smithing:'Smelt ore into bars at a furnace, forge weapons, armor, bows, arrows and wands at an anvil, and smith cores at a Blacksmith\'s bench.',Farming:'Till soil, plant seeds, water and harvest crops.',Archery:'Shoot bows. Bows and arrows are made at an anvil (Smithing).',Magic:'Cast fire, ice and storm spells with wands, and their ultimates.',
+ Smithing:'Smelt ore into bars at a furnace, forge weapons, armor, bows, arrows and wands at an anvil, and repair gear, upgrade it and smith cores at a Blacksmith\'s bench.',Farming:'Till soil, plant seeds, water and harvest crops.',Archery:'Shoot bows. Bows and arrows are made at an anvil (Smithing).',Magic:'Cast fire, ice and storm spells with wands, and their ultimates.',
  Chess:'Play chess against the village club. Win to climb the ranks.'};
 // monsters, by where you meet them (regional ones are listed from the islands' own spawn tables)
 const WK_MOBS=[
