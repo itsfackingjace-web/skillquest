@@ -11,12 +11,13 @@
 //   rises and Davy floats up out of it (the published look of np_newpet, or a plain ghost if there's none), says his two lines in speech
 //   bubbles, then swoops into you. Then pet_np_newpet goes into the bag (a second one if you already have him), a card says so, everyone
 //   online is told in chat (not for young players' accounts) and the game saves. Any key / tap after the skeleton lands skips to the swoop.
-// - Developer accounts: /davy or /treasure in chat makes the next bite Davy's skeleton or a chest (OPEN=false: only devs roll at all, and nothing is announced).
+// - Developer accounts: /davy or /treasure in chat makes the next bite Davy's skeleton or a chest (with OPEN=false only devs would roll at all,
+//   and nothing would be announced).
 // - window.SQTREASURE: force('chest'|'skel') makes the next bite one of those, speed scales the scene's clock (tests), state() = the scene.
 (()=>{const CHEST=1/500,SKEL=1/100000,DAVY='np_newpet',DAVYI='pet_'+DAVY;
- // OPEN: the rolls are on for everyone. Until Jace OKs the release they're on for developer accounts only (window.SQDEV), who can also
- // type /davy or /treasure while fishing to make the next bite Davy's skeleton or a chest.
- const OPEN=false,dev=()=>!!(window.SQDEV&&SQDEV());
+ // OPEN: the rolls are on for everyone (released Nov 23; false would keep them to developer accounts, window.SQDEV, and announce nothing).
+ // Developers can type /davy or /treasure while fishing to make the next bite Davy's skeleton or a chest.
+ const OPEN=true,dev=()=>!!(window.SQDEV&&SQDEV());
  const T={force:null,speed:1};let CS=null;
  const davyOK=()=>!!(typeof INAME!=='undefined'&&INAME[DAVYI]&&typeof EQ!=='undefined'&&EQ[DAVYI]);
  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
