@@ -124,6 +124,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   right above the day box, drawn in the outermost `drawHUD` while online.
 - **HERE map players** (`ui/238-s246-online-list-on-here-map.js`): the outermost mapHTML adds 061's "Players online" list (class `sqonl`)
   on the HERE view, players on your island marked (here).
+  Nov 22 (Jace: other players didn't show on the HERE map): a `SQDRAWMAP` step draws everyone online in your area (`curRegion()`, at
+  their `ax/ay` outdoor spot; party members left to 136) as 061's dots (friends green, others blue, 5x5 with a dark edge) with the canvas's
+  own `fillRect` (113 doubles 3-7 px squares on Hollow), names in a `.sqmpn` layer in 225's `.sqmpw` (greedy no-overlap, friends first,
+  rebuilt only on change), legend "Players"/"Friends" (`window.SQHEREDOTS`). Check 24.
 - **Player stats** (`ui/171-s177-player-stats.js`, `SQSTATS`, Dev Suite > Player stats): `stats/d/<UTC day>/<uid>` minutes played (sent
   every 5 min), `stats/f/<uid>` first day, `stats/dz/<day>/<where~monster>` deaths (+1 transactions). The tab shows players per
   day, new players and next-day / week returns, deaths, and (reading saves) the quest/guide step/total level of players who

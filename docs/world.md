@@ -126,7 +126,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   the outermost `mapHTML` wraps `#mpc` in `.sqmpw` with a `.sqmpl` label layer (towns/dungeons/harbors on Hollow, pier + found landmarks on
   islands, greedy no-overlap) and drops legend spans naming only labelled places. Guild quests: an `SQQEXTRA` entry `gq:<guild>:<t>`, no arrow (102
   exposes `SQTRKSET`, `SQTRKID`, `SQNEAROBJ`, `SQCURAREA`); towns no longer `say` a welcome on entry (020/041/044/046); 197's quest card shows `SQGQTRKBTN()` (`data-gqtrk`).
-- **Houses on maps** (`ui/132`), **tool smithing / craft prices** (`items/133`: iron/steel axe and pickaxe SM recipes, fishing
+- **Houses on maps** (`ui/132`; Nov 22: one map pixel per glyph pixel on the map screen, `SQHOUSEMAP.mapS`, drawn with the canvas's own
+  `fillRect` because 113 doubles every 3-7 px square on Hollow, which had made the outline 12 px; check 24), **tool smithing / craft prices** (`items/133`: iron/steel axe and pickaxe SM recipes, fishing
   rod in REC, every BREC/GOODS/SM output gets a SELLP of 60% of its materials when it has none).
 - **Talking to sleepers** (`world/194-s202-talk-to-sleepers.js`, `SQSLEEPTALK`): folk asleep (`n.scene` = room+'#bed') are found by bed
   position; the outermost `talk` puts the sleeper in the room's scene at the bed for that call (005's `nearNpc` then finds them), TALK
