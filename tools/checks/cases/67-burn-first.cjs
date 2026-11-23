@@ -10,5 +10,5 @@ module.exports={name:'BURN FIRST for logs; one XP number and the right logs back
   let saved=false;for(let i=0;i<80;i++){await W(100);if(!saved&&window.SQDO){inv.wood++;saved=true}if(fires.some(f=>f.lg===1))break}
   await W(400);const f=fires.find(f=>f.lg===1);const tag=' '+AB[FM];
   return{pin:!!pin,lit:!!f,oak:inv.oaklog|0,wood:inv.wood|0,xpNums:drops.filter(d=>typeof d.tx==='string'&&d.tx.endsWith(tag)).length,saveKey:(()=>{saveLocal(true);return JSON.parse(localStorage.getItem(LS)).firep})()}});
- t(r.pin,'no BURN FIRST button on oak logs');t(r.lit,'FIRE didn\'t build an oak fire');t.eq([r.oak,r.wood],[1,2],'oak logs and wood after (the saved fuel comes back as oak)');
+ t(r.pin,'no BURN FIRST button on oak logs');t(r.lit,'FIRE didn\'t build an oak fire');t(r.oak>=1&&r.oak<=2&&r.wood===2,'oak logs and wood after (the saved fuel comes back as oak, never as wood): '+r.oak+' oak, '+r.wood+' wood');/* Nov 22: a real Fuel Saver roll can save a second log now and then (2 oak back): that's fine, wood must stay 2 */
  t.eq(r.xpNums,1,'XP numbers shown for the fire');t.eq(r.saveKey,'oaklog','pinned log in the save')}};
