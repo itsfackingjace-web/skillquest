@@ -63,6 +63,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `FOODS` for the call (pinned `eatp` in the save, else smallest heal that covers what's missing, else least healing; potions and
   `SQFOODBUFF` meals left for USE; "You're full." at full health + food 95). At a fire with 2+ cookable kinds it opens a picker
   (`ptab` 41); a picked kind runs as 109's `sqDo('cook')` whose steps call `eat()` (BYPASS) with that COOKS entry moved first.
+- **Cook everything at the stove** (`skills/270-s278-stove-cook-everything.js`, `window.SQCOOKALL`, Nov 22, Jace, check 92): the outermost
+  `stationHTML` puts a `ckall` row before the stove's first `ck_` row when 2+ raw kinds (first COOKS entry per raw, level allowed) are
+  in the bag/chests; `stationAct('ckall')` starts one `sqDo('cook', total)` whose steps call `stationAct('ck_<first kind left>')` (022's
+  one-per-step cook, 039's burn saves and perks, chests lent by 033/109) and reset `SQDO.n`/`tot` from what's left (a level-up can
+  unlock another kind). Meals (`sv_`) aren't included.
 - **"N left" for make-all** (`skills/192-s200-make-all-count.js`): the outermost smithAct/makeGood/makeBuild work out how many the
   materials allow when `all`; the wrapped `sqDo` keeps it as `SQDO.tot` and 109 shows `min(n, tot-done)` (display only).
 - **Jewelry make-all** (086, edited in place): `data-jw="all"` → `jwMake(k,true)` = `sqDo('craft',jwCan(j),...)` and `SQDO.tot` for 109's "N left".
