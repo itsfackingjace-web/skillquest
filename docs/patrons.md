@@ -42,7 +42,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Art Room editor** (211, rebuilt Nov 15): sticky icon toolbar (pen/erase/fill/pick, move when zoomed, mirror, undo/redo, zoom 1-6, grid),
   canvas sized by `fit()` (width, and half the screen height on phones) × `A.zoom` in `#arbox` (scrolls when zoomed; two fingers / move tool /
   Space / middle button pan), palette strip + current colour (a colour input over it), frames strip with `+`, preview and speed, then a
-  separate `send` view (name, kind, note). `#pn.sqart` widens the panel to 980px; two columns at ≥760px. Keys: B E G I M, Ctrl+Z/Y, +/-.
+  separate `send` view (name, kind, note). Nov 22: an Opacity slider (`#aral`) under the palette makes the chosen colour `#rrggbbaa` (see dev-suite.md, See-through colours). `#pn.sqart` widens the panel to 980px; two columns at ≥760px. Keys: B E G I M, Ctrl+Z/Y, +/-.
   Nov 22 (a patron's list, check 86): the SQRPN hook keeps `#arbox` scrollLeft/Top across `pbd.innerHTML=html()` (every button used to jump
   the zoomed view to the top left). Wheel zoom (`zoomBy(d,ev)`, anchored on the pixel under the pointer): only notched wheels / Ctrl+wheel /
   line-mode deltas zoom (`notch`), 70 ms apart, so a trackpad's smooth scroll still scrolls. Select tool (`tool:sel`, key S; `A.selm`

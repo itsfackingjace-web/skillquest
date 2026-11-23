@@ -94,7 +94,7 @@
   else{try{const im=new Image();im.src=typeof eqIcon==='function'?eqIcon(k):iconURL(k);await im.decode();const c=document.createElement('canvas');c.width=14;c.height=14;const t=c.getContext('2d');t.imageSmoothingEnabled=false;t.drawImage(im,0,0,14,14);const d=t.getImageData(0,0,14,14).data;
     const HX=[33,59,48];for(let dd=0;dd<3;dd++)for(let y=0;y<14;y++)for(let x=0;x<14;x++){const i=(y*14+x)*4;if(d[i+3]<128)continue;out[dd][(82+y)*A.WW+HX[dd]+x]=d[i]<<16|d[i+1]<<8|d[i+2];any=true}}catch(e){console.warn(e)}}
   if(any)out.dy=dyed;return any?out:null}
- function fillFromGame(ed,L){const pal=ed.pal,idx=new Map(pal.map((c,i)=>[c,i]));const near=v=>{let bi=0,bd=1e9;pal.forEach((c,i)=>{const n=parseInt(c.slice(1),16),dd=((n>>16)-(v>>16))**2+((n>>8&255)-(v>>8&255))**2+((n&255)-(v&255))**2;if(dd<bd){bd=dd;bi=i}});return bi};
+ function fillFromGame(ed,L){const pal=ed.pal,idx=new Map(pal.map((c,i)=>[c,i]));const near=v=>{let bi=0,bd=1e9;pal.forEach((c,i)=>{const n=parseInt(c.slice(1,7),16),dd=((n>>16)-(v>>16))**2+((n>>8&255)-(v>>8&255))**2+((n&255)-(v&255))**2;if(dd<bd){bd=dd;bi=i}});return bi};
   for(let d=0;d<3;d++){const lay=ed.layers[d];lay.fill(255);for(let i=0;i<L[d].length;i++){const v=L[d][i];if(v<0)continue;const h=hex(v>>16,v>>8&255,v&255);let j=idx.get(h);if(j==null){if(pal.length<MAXC){pal.push(h);j=pal.length-1;idx.set(h,j)}else j=near(v)}lay[i]=j}}
   ed.dyi=new Set();if(L.dy)for(const h of L.dy){const j=idx.get(h);if(j!=null)ed.dyi.add(j)}
   ed.px=ed.layers[ed.dir];ed.rcd=ed.layers.map(()=>1);ed.undo=[];ed.redo=[]}
@@ -287,7 +287,7 @@
    if(z>=8){x.strokeStyle='rgba(255,255,255,.07)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
    selOver(x,z);const n=new Set(ed.layers.flatMap(L=>[...L].filter(v=>v!==255))).size,st=document.querySelector('#dvs .dv-st');
    if(st)st.textContent=(ed.kind==='prop'?'Frame '+(ed.dir+1)+' of '+ed.layers.length:ed.kind==='pet'?PFN[ed.dir]+' frame':WDN[ed.dir%3]+(ed.dir>=3?' · '+STN[Math.floor(ed.dir/3)]+(ed.px.some(v=>v!==255)?' (own frame)':' (automatic, shown faded: draw to make it your own)'):'')+' layer')+' · '+ed.w+' × '+ed.h+' · '+n+' colours'+(ed.dirty?'  ·  unsaved changes':'');return}
-  for(let y=0;y<ed.h;y++)for(let X=0;X<ed.w;X++){const v=ed.px[y*ed.w+X];x.fillStyle=v===255?((X+y)%2?'#3a4150':'#2c323e'):ed.pal[v];x.fillRect(X*z,y*z,z,z)}
+  for(let y=0;y<ed.h;y++)for(let X=0;X<ed.w;X++){const v=ed.px[y*ed.w+X],c=v===255?null:ed.pal[v];if(v===255||A.alpha.a(c)<255){x.fillStyle=(X+y)%2?'#3a4150':'#2c323e';x.fillRect(X*z,y*z,z,z)}if(c){x.fillStyle=c;x.fillRect(X*z,y*z,z,z)}}
   if(z>=8){x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=1;x.beginPath();for(let i=1;i<ed.w;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=1;i<ed.h;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke()}
   selOver(x,z);const sp=toSp(ed),u=A.render(sp).toDataURL();for(const im of document.querySelectorAll('#dvs .dv-pv img')){im.src=u;const k=im.dataset.x2?2:1;im.style.width=Math.min(220,sp.w*sp.s*k)+'px';im.style.height=Math.min(220,sp.h*sp.s*k)+'px'}
   const st=document.querySelector('#dvs .dv-st');if(st)st.textContent=ed.w+' × '+ed.h+' pixels, shown at '+ed.s+'×  ·  '+sp.p.split(',').filter(Boolean).length+' colours'+(ed.dirty?'  ·  unsaved changes':'')}
@@ -591,18 +591,20 @@
      '<span class="dv-mut">'+(S.ed.selm==='free'?'Draw around what you want to grab.':'Drag a box around what you want to grab.')+'</span>')+'</span>':'');
   const cv=root.querySelector('.dv-cvw');if(cv)cv.classList.toggle('dv-pan',S.ed.tool==='pan')}
  function drawPal(){const p=root.querySelector('.dv-pal'),ed=S.ed;if(!p||!ed)return;
-  p.innerHTML=ed.pal.map((c,i)=>'<button class="dv-sw'+(i===ed.col?' dv-on':'')+(ed.dyi&&ed.dyi.has(i)?' dv-dy':'')+'" data-col="'+i+'" style="background:'+c+'" title="'+c+(ed.dyi&&ed.dyi.has(i)?' (dyeable)':'')+'"></button>').join('')+
-   '<label class="dv-mut" style="margin-left:8px">Change this colour <input type="color" data-in="recol" value="'+(ed.pal[ed.col]||'#000000')+'"></label>'+
+  p.innerHTML=ed.pal.map((c,i)=>'<button class="dv-sw'+(i===ed.col?' dv-on':'')+(ed.dyi&&ed.dyi.has(i)?' dv-dy':'')+'" data-col="'+i+'" style="background:'+A.alpha.bg(c)+'" title="'+c+(A.alpha.a(c)<255?' ('+Math.round(A.alpha.a(c)/2.55)+'% solid)':'')+(ed.dyi&&ed.dyi.has(i)?' (dyeable)':'')+'"></button>').join('')+
+   '<label class="dv-mut" style="margin-left:8px">Change this colour <input type="color" data-in="recol" value="'+A.alpha.rgb(ed.pal[ed.col]||'#000000')+'"></label>'+
+   (ed.pal[ed.col]!=null?'<label class="dv-mut" style="margin-left:8px" title="Lower it to make this colour see-through (ghosts, glass, water, glows)">Opacity <input type="range" data-in="alpha" min="10" max="100" step="5" value="'+pct(ed.pal[ed.col])+'" style="width:110px;vertical-align:middle"> <b class="dv-apc">'+pct(ed.pal[ed.col])+'%</b></label>':'')+
    (ed.pal.length<MAXC?'<label class="dv-mut" style="margin-left:8px">Add a colour <input type="color" data-in="addcol" value="#ffffff"></label>':'')+palExtra(ed)}
  // ---- palette tools: hex codes, copy / paste a whole palette, saved palettes (localStorage sq_dev_pals {name:[hex...]}) ----
- const HEXRE=/#?\b([0-9a-f]{6}|[0-9a-f]{3})\b/gi,normHex=h=>{h=String(h).replace('#','').toLowerCase();if(h.length===3)h=h.split('').map(c=>c+c).join('');return/^[0-9a-f]{6}$/.test(h)?'#'+h:null};
+ const HEXRE=/#?\b([0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3})\b/gi,normHex=h=>{h=String(h).replace('#','').toLowerCase();if(h.length===3)h=h.split('').map(c=>c+c).join('');if(/^[0-9a-f]{8}$/.test(h))return A.alpha.set('#'+h.slice(0,6),parseInt(h.slice(6),16));return/^[0-9a-f]{6}$/.test(h)?'#'+h:null};
+ const pct=c=>Math.round(A.alpha.a(c)/2.55);
  const hexesIn=t=>{const out=[];for(const m of String(t||'').matchAll(HEXRE)){const h=normHex(m[1]);if(h&&!out.includes(h))out.push(h)}return out};
  const PALS=()=>{try{return JSON.parse(localStorage.getItem('sq_dev_pals')||'{}')||{}}catch(e){return{}}},setPALS=o=>{try{localStorage.setItem('sq_dev_pals',JSON.stringify(o))}catch(e){self.SQERR&&SQERR(e,'111b-5')}};
  let PALUI=null;// null | 'paste' | 'save'
  function palExtra(ed){const cur=ed.pal[ed.col]||'',sv=Object.keys(PALS());
   return'<div class="dv-row" style="flex-basis:100%;flex-wrap:wrap;gap:6px;margin-top:6px">'+
-   '<label class="dv-mut">Hex <input data-hex="cur" value="'+E(cur)+'" maxlength="7" spellcheck="false" style="width:86px;font-family:monospace" title="Type a hex code (like #c89858) to change this colour"></label>'+
-   (ed.pal.length<MAXC?'<label class="dv-mut">Add hex <input data-hex="add" placeholder="#rrggbb" maxlength="7" spellcheck="false" style="width:86px;font-family:monospace"></label>':'')+
+   '<label class="dv-mut">Hex <input data-hex="cur" value="'+E(cur)+'" maxlength="9" spellcheck="false" style="width:96px;font-family:monospace" title="Type a hex code (like #c89858, or #c8985880 for see-through) to change this colour"></label>'+
+   (ed.pal.length<MAXC?'<label class="dv-mut">Add hex <input data-hex="add" placeholder="#rrggbb" maxlength="9" spellcheck="false" style="width:96px;font-family:monospace"></label>':'')+
    '<button class="dv-b" data-pa="copy" title="Copies every colour as hex codes">Copy palette</button><button class="dv-b" data-pa="paste">Paste palette…</button><button class="dv-b" data-pa="save">Save palette…</button>'+
    (sv.length?'<select data-hex="saved" style="max-width:170px"><option value="">Saved palettes…</option>'+sv.map(n=>'<option value="'+E(n)+'">'+E(n)+' ('+PALS()[n].length+')</option>').join('')+'</select>':'')+'</div>'+
    (PALUI==='paste'?'<div class="dv-row" style="flex-basis:100%;flex-wrap:wrap;gap:6px"><textarea data-hex="ptext" rows="2" style="flex:1;min-width:220px;font-family:monospace" placeholder="Paste hex codes here (any text with #rrggbb codes works: a list, a palette from a website…)"></textarea><button class="dv-b dv-pri" data-pa="pasteok">Add these colours</button><button class="dv-b" data-pa="x">Cancel</button></div>':'')+
@@ -732,11 +734,13 @@
  root.addEventListener('input',e=>{const t=e.target,n=t.dataset.in;
   if(n==='q'){S.q=t.value;const pos=t.selectionStart;draw();const i=root.querySelector('[data-in="q"]');if(i){i.focus();i.setSelectionRange(pos,pos)}return}
   if(n==='sq'){S.statQ=t.value;const pos=t.selectionStart;draw();const i=root.querySelector('[data-in="sq"]');if(i){i.focus();i.setSelectionRange(pos,pos)}return}
-  if(n==='recol'&&S.ed&&S.ed.pal[S.ed.col]!=null){if(!t._snap){snapEd();t._snap=1}S.ed.pal[S.ed.col]=t.value;const sw=root.querySelector('.dv-sw.dv-on');if(sw)sw.style.background=t.value;paint()}});
+  if(n==='recol'&&S.ed&&S.ed.pal[S.ed.col]!=null){if(!t._snap){snapEd();t._snap=1}const c=A.alpha.set(t.value,A.alpha.a(S.ed.pal[S.ed.col]));S.ed.pal[S.ed.col]=c;const sw=root.querySelector('.dv-sw.dv-on');if(sw)sw.style.background=A.alpha.bg(c);paint()}
+  if(n==='alpha'&&S.ed&&S.ed.pal[S.ed.col]!=null){if(!t._snap){snapEd();t._snap=1}const v=Math.max(10,Math.min(100,+t.value||100)),c=A.alpha.set(S.ed.pal[S.ed.col],v*255/100);S.ed.pal[S.ed.col]=c;S.ed.dirty=true;
+   const sw=root.querySelector('.dv-sw.dv-on');if(sw){sw.style.background=A.alpha.bg(c);sw.title=c}const b=t.parentNode&&t.parentNode.querySelector('.dv-apc');if(b)b.textContent=v+'%';const h=root.querySelector('[data-hex="cur"]');if(h)h.value=c;paint()}});
  root.addEventListener('change',async e=>{const t=e.target;
   if(t.dataset.in==='paf'&&S.ed){S.ed.af=Math.max(0,Math.min(S.ed.layers.length-1,t.value|0));S.ed.ak=S.ed.af>0;S.ed.dirty=true;draw();return}
   if(t.dataset.in==='addcol'&&S.ed){snapEd();S.ed.pal.push(t.value);S.ed.col=S.ed.pal.length-1;S.ed.tool='pen';drawPal();drawTools();paint();return}
-  if(t.dataset.in==='recol'){t._snap=0;drawPal();return}
+  if(t.dataset.in==='recol'||t.dataset.in==='alpha'){t._snap=0;drawPal();return}
   if(t.dataset.in==='pname'&&S.ed&&S.ed.kind==='prop'){const k=S.ed.base,v=t.value.trim().slice(0,40),nv=v&&v!==gameName(k)?v:null;if(nv)S.draft.pnames[k]=nv;else delete S.draft.pnames[k];
    try{await dset('draft/pnames/'+key(k),nv);toast(nv?'Renamed.':'Back to its own name.')}catch(e2){fail(e2)}const sp=root.querySelector('.dv-it[data-k="'+k+'"] span');if(sp)sp.textContent=propName(k);return}
   if(t.dataset.in==='pms'&&S.ed){S.ed.ms=Math.max(60,Math.min(5000,t.value|0||250));S.ed.dirty=true;draw();return}

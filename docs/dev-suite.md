@@ -145,6 +145,14 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Live publishes** (`ui/174-s180-live-updates.js`, `SQLIVEUPD`): the game watches `assets/live/v` (realtime listener once `SQFB` is up,
   plus a fetch of `assets/live/v.json` every 30 s and on returning to the tab); a new `v` runs `SQA.refresh()` (full library, applied
   in place) and `SQBETA.check()`. Anything a library section sets must therefore be safe to re-apply mid-game (`SQA.onApply` hooks).
+- **See-through colours** (Nov 22, Jace: "I want to be able to make ghosts"; check 93): a palette colour is `#rrggbb` (solid) or `#rrggbbaa`
+  (`SQA.alpha` in 111a: `a(c)` 0-255, `rgb(c)`, `set(c,a)` writes `#rrggbb` at 255, `bg(c)` = a swatch background over a checker, `ok(c)`).
+  Canvas `fillStyle` takes both, so `render()` and everything drawn from it (icons, worn looks, pets, props, paintings, patron art) needs
+  nothing else; `dyeMap` keeps a dyeable colour's alpha, 253's shiny inversion keeps it, 111b's `near()` reads only the rgb. Every 111b
+  picture editor: an Opacity slider (`data-in="alpha"`, 10-100% in 5s, one undo step per drag) next to "Change this colour" (whose
+  `<input type=color>` gets/keeps `rgb` + the colour's alpha); swatches and the hex box show it; hex boxes, Add hex and Paste palette take
+  `#rrggbbaa`; the sprite canvas draws the checker under see-through pixels (it isn't cleared between paints). The Art Room (211) has the same
+  slider (`#aral`, under the palette, not for the clear slot), via `SQA.alpha`. The island builder's ground tiles stay solid (no slider).
 - **Palette tools** (111b `palExtra`, every picture editor): hex box for the selected colour, "Add hex", Copy palette (clipboard +
   localStorage `sq_dev_palclip`), Paste palette (any text: every #rrggbb / #rgb code in it), saved palettes in localStorage `sq_dev_pals`.
 - **More Stats tables** (`dev/161b-s181-data-tables.js`, `SQDATA`, before 162 so its snapshots hold only the game's own entries):

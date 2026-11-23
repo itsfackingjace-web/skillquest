@@ -84,7 +84,7 @@
  for(const[k,n,g,d,x]of CARDS)define(k,n,g,d,Array.isArray(x)?{w:14,h:14,s:2,p:x[0],d:x[1]}:null);
  const ORIG={};for(const k in BY)ORIG[k]=Object.assign({},BY[k]);
  // a shiny card (Jace, Nov 20): the whole card in inverted colours
- const inv255=c=>{const m=/^#?([0-9a-f]{6})$/i.exec(String(c).trim());if(!m)return c;return'#'+(0xffffff^parseInt(m[1],16)).toString(16).padStart(6,'0')};
+ const inv255=c=>{const m=/^#?([0-9a-f]{6})([0-9a-f]{2})?$/i.exec(String(c).trim());if(!m)return c;return'#'+(0xffffff^parseInt(m[1],16)).toString(16).padStart(6,'0')+(m[2]||'')};// see-through colours keep their strength
  const shinySpr=sp=>Object.assign({},sp,{p:sp.p.split(',').map(inv255).join(',')});
  const invertURL=(src,k)=>{const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.drawImage(im,0,0);
    const d=x.getImageData(0,0,c.width,c.height);for(let i=0;i<d.data.length;i+=4){d.data[i]=255-d.data[i];d.data[i+1]=255-d.data[i+1];d.data[i+2]=255-d.data[i+2]}x.putImageData(d,0,0);ICC[k]=c.toDataURL();if(pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'253-8')}};im.src=src};

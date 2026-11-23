@@ -12,6 +12,8 @@
  const mp=()=>window.SQMP,F=()=>window.SQFB,uid=()=>{const m=mp();return m&&m.user?m.user.uid:''};
  const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  const can=()=>!!(window.SQPATRON&&SQPATRON.active(uid())&&!(window.SQAGE&&SQAGE.child()));
+ // see-through colours are #rrggbbaa (111a's SQA.alpha)
+ const AL=window.SQA&&SQA.alpha||{a:()=>255,rgb:c=>String(c||'').slice(0,7),set:c=>String(c||'').slice(0,7),bg:c=>c},apc=c=>Math.round(AL.a(c)/2.55);
  const PAL0=['','#000000','#1d2b53','#7e2553','#008751','#ab5236','#5f574f','#c2c3c7','#fff1e8','#ff004d','#ffa300','#ffec27','#00e436','#29adff','#83769c','#ff77a8','#ffccaa',
   '#2a1a10','#5a3a20','#8a5a30','#c8904a','#3a6a2a','#68a848','#a8d870','#1a3a6a','#3870d8','#88c0f0','#6a1a1a','#c83040','#f8a8a8','#404048','#909098'];
  const KINDS=[['item','Item icon'],['pet','Pet'],['prop','Decoration or object'],['anim','Animation or effect'],['other','Something else']];
@@ -82,8 +84,10 @@
   const tools='<div class="artb">'+tb('tool:pen','pen','Pen (B)',A.tool==='pen')+tb('tool:erase','erase','Eraser (E)',A.tool==='erase')+tb('tool:fill','fill','Fill (G)',A.tool==='fill')+tb('tool:pick','pick','Pick a colour from the drawing (I)',A.tool==='pick')+tb('tool:sel','sel','Select (S): drag a box, or draw around something; then drag it to move it',A.tool==='sel')+
    (A.zoom>1?tb('tool:move','move','Move around (hold Space)',A.tool==='move'):'')+tb('mirror','mirror','Mirror: draw both sides at once (M)',A.mirror)+'<span class="sp"></span>'+
    tb('undo','undo','Undo (Ctrl+Z)',0,!A.undo.length)+tb('redo','redo','Redo (Ctrl+Y)',0,!A.redo.length)+tb('zout','zout','Zoom out',0,A.zoom<=1)+tb('zin','zin','Zoom in',0,A.zoom>=ZMAX)+tb('grid','grid','Grid lines',A.grid)+'</div>'+(A.tool==='sel'?selRow():'');
-  const pal='<div class="arpalw"><label class="arcur'+(A.col?'':' clr')+'" style="'+(A.col?'background:'+A.pal[A.col]:'')+'" title="'+(A.col?'Tap to change this colour':'Clear (see-through)')+'">'+(A.col?'<input type="color" id="arcc" value="'+A.pal[A.col]+'" aria-label="Change this colour">':'')+'</label>'+
-   '<div class="arpal">'+A.pal.map((h,i)=>'<button class="'+(i===A.col?'on ':'')+(i?'':'clr')+'" data-ar="col:'+i+'" style="'+(i?'background:'+h:'')+'" aria-label="'+(i?'Colour '+i:'See-through')+'"></button>').join('')+'</div></div>';
+  const pal='<div class="arpalw"><label class="arcur'+(A.col?'':' clr')+'" style="'+(A.col?'background:'+AL.bg(A.pal[A.col]):'')+'" title="'+(A.col?'Tap to change this colour':'Clear (see-through)')+'">'+(A.col?'<input type="color" id="arcc" value="'+AL.rgb(A.pal[A.col])+'" aria-label="Change this colour">':'')+'</label>'+
+   '<div class="arpal">'+A.pal.map((h,i)=>'<button class="'+(i===A.col?'on ':'')+(i?'':'clr')+'" data-ar="col:'+i+'" style="'+(i?'background:'+AL.bg(h):'')+'" aria-label="'+(i?'Colour '+i+(AL.a(h)<255?', '+apc(h)+'% solid':''):'See-through')+'"></button>').join('')+'</div></div>'+
+   // Nov 22 (Jace: "I want to be able to make ghosts"): how solid the chosen colour is; lower = see-through
+   (A.col?'<label class="arsm" style="display:flex;align-items:center;gap:8px;margin:2px 0 4px" title="Lower it to make this colour see-through: ghosts, glass, water, glows">Opacity <input type="range" id="aral" min="10" max="100" step="5" value="'+apc(A.pal[A.col])+'" style="flex:1;max-width:220px"> <b id="aralv" style="min-width:3.2em">'+apc(A.pal[A.col])+'%</b></label>':'');
   const mb=(m,l)=>'<button class="arb'+(A.mode===m?' on':'')+'" data-ar="mode:'+m+'" role="tab" aria-selected="'+(A.mode===m)+'">'+l+'</button>';
   const modes='<div class="arrow" role="tablist" style="margin:0 0 4px">'+mb('pic','Picture or sprite')+mb('wear','Something to wear')+mb('pet','A pet')+'</div>';
   const wearSide='<div class="arfrw"><canvas class="arpv" id="arpv" width="'+A.w+'" height="'+A.h+'" title="Preview" style="width:48px;height:76px"></canvas><div style="flex:1;min-width:0"><div class="arfr">'+A.fr.map((_,i)=>'<button class="arb'+(i===A.cur?' on':'')+'" data-arf="'+i+'" style="flex:none">'+FACE[i]+'</button>').join('')+'</div>'+
@@ -283,7 +287,8 @@
  pbd.addEventListener('input',e=>{if(ptab!==ATAB||!A)return;const t=e.target;
   if(t.id==='arnm'||t.id==='aren')A.name=t.value.slice(0,24);else if(t.id==='arnt')A.note=t.value.slice(0,300);
   else if(t.id==='arsp'){A.ms=+t.value;const s=document.getElementById('arms');if(s)s.textContent=A.ms}
-  else if(t.id==='arcc'&&A.col){A.pal[A.col]=t.value;paint();const sw=document.querySelector('#pn [data-ar="col:'+A.col+'"]');if(sw)sw.style.background=t.value;const cu=t.parentNode;if(cu)cu.style.background=t.value}
+  else if((t.id==='arcc'||t.id==='aral')&&A.col){const o=A.pal[A.col],c=t.id==='arcc'?AL.set(t.value,AL.a(o)):AL.set(o,Math.max(10,Math.min(100,+t.value||100))*255/100);A.pal[A.col]=c;paint();
+   const sw=document.querySelector('#pn [data-ar="col:'+A.col+'"]');if(sw)sw.style.background=AL.bg(c);const cu=document.querySelector('#pn .arcur');if(cu)cu.style.background=AL.bg(c);const v=document.getElementById('aralv');if(v)v.textContent=apc(c)+'%';try{thumbs();pv()}catch(x){self.SQERR&&SQERR(x,'211-27')}}
   keep()},true);
  pbd.addEventListener('change',e=>{if(ptab!==ATAB||!A)return;const t=e.target;
   if(t.id==='arkd'){A.kind=t.value;keep()}

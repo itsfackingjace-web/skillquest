@@ -57,9 +57,16 @@ var SQA=(()=>{
  const wornKeys=()=>itemKeys().filter(k=>EQ[k]&&WSLOTS.includes(EQ[k].slot));
  const validWorn=w=>w&&typeof w==='object'&&WDIR.some(d=>w[d]&&w[d].w===WW&&w[d].h===WH&&w[d].s===1&&valid(w[d]));
  // dyes: the colours a look marks as dyeable (w.dy) take the wearer's dye for that slot, keeping the drawn light and dark shades
- const DYK={helm:'dyh',body:'dyb',legs:'dyl'},lum=h=>{const n=parseInt(String(h).slice(1),16);return .299*(n>>16)+.587*(n>>8&255)+.114*(n&255)};
- function dyeMap(dy,col){const out={};if(Array.isArray(dy))dy=dy.filter(h=>/^#[0-9a-f]{6}$/i.test(h)).slice(0,64);if(!Array.isArray(dy)||!dy.length||!/^#[0-9a-f]{6}$/i.test(col))return out;const L=dy.map(lum),avg=L.reduce((a,b)=>a+b,0)/L.length||1,d=parseInt(col.slice(1),16),D=[d>>16,d>>8&255,d&255];
-  dy.forEach((h,i)=>{const f=L[i]/avg;out[String(h).toLowerCase()]='#'+D.map(v=>Math.round(Math.max(0,Math.min(255,f<=1?v*f:v+(255-v)*Math.min(1,f-1))))).map(v=>v.toString(16).padStart(2,'0')).join('')});return out}
+ // see-through colours (Nov 22, Jace: "I want to be able to make ghosts"): a palette colour is #rrggbb (solid) or #rrggbbaa (aa = how
+ // solid, 00-ff). Canvas fillStyle takes both, so render() and everything drawn from it needs nothing more; these helpers are for
+ // editors and anything that does sums on a colour. A colour at full strength is always written as #rrggbb.
+ const HEX8=/^#[0-9a-f]{6}([0-9a-f]{2})?$/i,alpha={
+  ok:c=>HEX8.test(String(c||'')),a:c=>{const m=/^#[0-9a-f]{6}([0-9a-f]{2})$/i.exec(String(c||''));return m?parseInt(m[1],16):255},rgb:c=>String(c||'').slice(0,7),
+  set:(c,a)=>{a=Math.max(0,Math.min(255,Math.round(a)));const r=String(c||'#000000').slice(0,7).toLowerCase();return a>=255?r:r+a.toString(16).padStart(2,'0')},
+  bg:c=>{c=String(c||'');return/^#[0-9a-f]{8}$/i.test(c)?'linear-gradient('+c+','+c+'),repeating-conic-gradient(#a8a8a8 0 25%,#e8e8e8 0 50%) 0 0/8px 8px':c}};
+ const DYK={helm:'dyh',body:'dyb',legs:'dyl'},lum=h=>{const n=parseInt(String(h).slice(1,7),16);return .299*(n>>16)+.587*(n>>8&255)+.114*(n&255)};
+ function dyeMap(dy,col){const out={};if(Array.isArray(dy))dy=dy.filter(h=>HEX8.test(h)).slice(0,64);if(!Array.isArray(dy)||!dy.length||!/^#[0-9a-f]{6}$/i.test(col))return out;const L=dy.map(lum),avg=L.reduce((a,b)=>a+b,0)/L.length||1,d=parseInt(col.slice(1),16),D=[d>>16,d>>8&255,d&255];
+  dy.forEach((h,i)=>{const f=L[i]/avg;out[String(h).toLowerCase()]=alpha.set('#'+D.map(v=>Math.round(Math.max(0,Math.min(255,f<=1?v*f:v+(255-v)*Math.min(1,f-1))))).map(v=>v.toString(16).padStart(2,'0')).join(''),alpha.a(h))});return out}
  const dyeOf=(ch,k)=>{const sl=EQ[k]&&EQ[k].slot,f=DYK[sl],i=ch&&f?ch[f]|0:0,D=window.LUX&&LUX.EMP&&LUX.EMP.DYES;return i&&D&&D[i-1]?D[i-1].c:null};
  const recol=(sp,M)=>({...sp,p:String(sp.p).split(',').map(c=>M[c.toLowerCase()]||c).join(',')});
  // walking: st 1/2 (the character's two steps) use the look's own step frames (w.f1 b1 s1 f2 b2 s2, drawn over the stepping
@@ -235,7 +242,7 @@ var SQA=(()=>{
  setTimeout(refresh,400);
  return{PXC,TABLES,ORIG,origIcon,render,valid,merged,itemKeys,refresh,pack,unpack,pix,WSLOTS,WDIR,WW,WH,wornKeys,validWorn,drawWorn,dyeMap,autoStep,frameOf,
   ISL_TILES,ISL_OBJ,ISL_LM,ISL_DIR,ISL_POS,CAVE_ST,caveKind,npcLook,petKinds,validPet,drawPetLook,capturePet,ISL_PAD,islandValid,islandGen,get islands(){return ISL},
-  get live(){return live},hasIcon:k=>!!ICO[k],hideFor,
+  get live(){return live},hasIcon:k=>!!ICO[k],hideFor,alpha,
   // a section that reads its own part of the library: called now with the current library and after every change
   onApply(f){HOOKS.push(f);try{f(preview||live||{})}catch(e){console.warn(e)}},
   // the Dev Suite can show unpublished edits in the developer's own game
