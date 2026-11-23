@@ -41,7 +41,9 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
   // brewing a potion (forced roll)
   window.SQDROPCARDALWAYS=true;const pkey=D.CARDS.pot_heal.key,p0=inv[pkey]|0;for(const f of SQBREWED)f('pot_heal');out.potion=(inv[pkey]|0)-p0;// foraging berries (forced roll)
   closePanel();await W(100);const bk=D.CARDS.berry.key,b0=inv[bk]|0;face=[1,0];const[fx,fy]=front(16),tx=Math.floor(fx/16),ty=Math.floor(fy/16),ti=ty*N+tx;obj[ti]={t:'bush',hp:1};STR.delete(ti);BS.delete(ti);
-  const be0=inv.berry|0;for(let k=0;k<40&&(inv.berry|0)===be0;k++){swing=0;attack();await W(400)}out.berries=(inv.berry|0)-be0;out.forage=(inv[bk]|0)-b0;window.SQDROPCARDALWAYS=false;
+  // swing until the bush itself is picked (Nov 23: stopping at the first berry from anywhere, a pet's fetch say, made this flaky)
+  for(const n of en)if(!n._pet&&!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<80){n.dead=1;n.dropped=1}
+  const be0=inv.berry|0;for(let k=0;k<40&&obj[ti]&&obj[ti].t==='bush';k++){swing=0;attack();await W(400)}out.berries=(inv.berry|0)-be0;out.forage=(inv[bk]|0)-b0;window.SQDROPCARDALWAYS=false;
   // Wiki > Drop Card
   SQWK.open('dropcard');await W(80);const wt=(document.getElementById('wkb')||{}).textContent||'';out.wiki=['Drop Card for Dummies','Moss slime','Healing potion','Pet cards','Nine lives'].filter(x=>!wt.includes(x));
   const ln=document.querySelector('#wkb [data-wkp="item:dc_slime_moss"]');if(ln)ln.click();await W(50);out.wikiPage=((document.getElementById('wkb')||{}).textContent||'').includes('2HP 1ATK');try{SQWK.close&&SQWK.close()}catch(e){}
