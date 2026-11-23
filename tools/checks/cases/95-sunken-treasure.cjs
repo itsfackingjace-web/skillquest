@@ -3,6 +3,9 @@
 module.exports={name:'fishing: sunken treasure chests, and Davy\'s skeleton scene puts him in your bag',async run(p,t){
  const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(500);const out={},TR=window.SQTREASURE;if(!TR)return{err:'no SQTREASURE'};
   out.odds=[TR.CHEST,TR.SKEL];
+  // /davy and /treasure are for developer accounts only
+  const dv=window.SQDEV;window.SQDEV=()=>false;let leaked='';const _m0=TR.forced;try{mpSend('/davy')}catch(e){leaked=String(e)}out.notDev=TR.forced===null;
+  window.SQDEV=()=>true;mpSend('/treasure');out.cmd=[TR.forced];mpSend('/davy');out.cmd.push(TR.forced);TR.force(null);window.SQDEV=dv;
   const fish=()=>{const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:999,bite:0}};
   // without Davy in the library, a skeleton roll is a chest
   fish();const g0=GLD;TR.force('skel');catchFish();for(let k=0;k<40&&GLD===g0;k++)await W(100);out.noDavy=[GLD>g0,!TR.state(),!!FISH];
@@ -24,6 +27,7 @@ module.exports={name:'fishing: sunken treasure chests, and Davy\'s skeleton scen
   return out});
  if(r.err)return t(false,r.err);
  t.eq(r.odds,[1/500,1/100000],'the odds: a chest 1 in 500 catches, the skeleton 1 in 100,000');
+ t.eq([r.notDev,r.cmd],[true,['chest','skel']],'/treasure and /davy set the next bite, for developers only');
  t.eq(r.noDavy,[true,true,true],'with no Davy in the library a skeleton roll gives a chest [gold, no scene, still fishing]');
  t.eq(r.chest,[true,true,true,true],'a chest [gold, one or two finds, fishing carries on, the card shows]');
  t.eq(r.started,true,'the skeleton scene starts');

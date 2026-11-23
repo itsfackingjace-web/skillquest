@@ -11,8 +11,12 @@
 //   rises and Davy floats up out of it (the published look of np_newpet, or a plain ghost if there's none), says his two lines in speech
 //   bubbles, then swoops into you. Then pet_np_newpet goes into the bag (a second one if you already have him), a card says so, everyone
 //   online is told in chat (not for young players' accounts) and the game saves. Any key / tap after the skeleton lands skips to the swoop.
+// - Developer accounts: /davy or /treasure in chat makes the next bite Davy's skeleton or a chest (OPEN=false: only devs roll at all, and nothing is announced).
 // - window.SQTREASURE: force('chest'|'skel') makes the next bite one of those, speed scales the scene's clock (tests), state() = the scene.
 (()=>{const CHEST=1/500,SKEL=1/100000,DAVY='np_newpet',DAVYI='pet_'+DAVY;
+ // OPEN: the rolls are on for everyone. Until Jace OKs the release they're on for developer accounts only (window.SQDEV), who can also
+ // type /davy or /treasure while fishing to make the next bite Davy's skeleton or a chest.
+ const OPEN=false,dev=()=>!!(window.SQDEV&&SQDEV());
  const T={force:null,speed:1};let CS=null;
  const davyOK=()=>!!(typeof INAME!=='undefined'&&INAME[DAVYI]&&typeof EQ!=='undefined'&&EQ[DAVYI]);
  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -48,7 +52,7 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
  // ---- the roll ----
  const resetFish=()=>{if(FISH){FISH.t=0;FISH.bite=0;FISH.wait=(2+Math.random()*3)*Math.max(.6,1-lvOf(9)*.006)}};
  {const _cf=catchFish;catchFish=function(){if(!FISH||window.SQDO_STEP||CS)return _cf.apply(this,arguments);
-   let k=T.force;T.force=null;if(!k){const r=Math.random();k=r<SKEL?'skel':r<SKEL+CHEST?'chest':null}
+   let k=T.force;T.force=null;if(!k&&(OPEN||dev())){const r=Math.random();k=r<SKEL?'skel':r<SKEL+CHEST?'chest':null}
    if(k==='skel'&&!davyOK())k='chest';if(!k)return _cf.apply(this,arguments);
    FISH.t=-999;FISH.bite=0;const land=()=>{if(!FISH)return;try{if(k==='skel')skeleton();else chest()}catch(e){self.SQERR&&SQERR(e,'271-2')}};
    if(typeof sqDo==='function'&&sqDo('reel',1,land))return;land()}}
@@ -81,7 +85,7 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
  function finish(){if(!CS)return;CS=null;inv[DAVYI]=(inv[DAVYI]|0)+1;const nm=(INAME[DAVYI]||'Davy').replace(/ \(pet\)$/i,'');
   try{sfx('level')}catch(e){self.SQERR&&SQERR(e,'271-9')}say(nm+' is in your bag. Put him in your PET slot (Equip) and he\'ll follow you.');msgT=7;
   card(true,iconURL(DAVYI),nm.toUpperCase()+' JOINED YOU!','The ghost of a pirate captain, freed from the depths. He\'s in your bag: put him in your PET slot (Equip).'.split('. ').map((s,i,a)=>s+(i<a.length-1?'.':'')),6000);
-  try{const M=window.SQMP;if(M&&M.on&&M.user&&typeof window.mpSend==='function'&&!(window.SQAGE&&SQAGE.child&&SQAGE.child()))setTimeout(()=>{try{mpSend('★ fished up '+nm+', the ghost pirate!')}catch(e){self.SQERR&&SQERR(e,'271-10')}},1200)}catch(e){self.SQERR&&SQERR(e,'271-11')}
+  try{const M=window.SQMP;if(OPEN&&M&&M.on&&M.user&&typeof window.mpSend==='function'&&!(window.SQAGE&&SQAGE.child&&SQAGE.child()))setTimeout(()=>{try{mpSend('★ fished up '+nm+', the ghost pirate!')}catch(e){self.SQERR&&SQERR(e,'271-10')}},1200)}catch(e){self.SQERR&&SQERR(e,'271-11')}
   try{saveLocal(true);saveCloud(true)}catch(e){self.SQERR&&SQERR(e,'271-12')}}
  // the world holds still: every frame runs with a tiny dt, and you stay where you are
  SQUPD.wrap('271 Davy scene holds the world still',next=>function(dt){if(!CS)return next.apply(this,arguments);CS.t+=Math.min(.1,dt||0)*T.speed;try{step()}catch(e){self.SQERR&&SQERR(e,'271-13');CS=null}
@@ -141,6 +145,10 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
     g.fillStyle='#e8fff9';g.textAlign='left';g.textBaseline='top';let left=txt.length;lines.forEach((s,i)=>{const part=s.slice(0,Math.max(0,left));left-=s.length+1;g.fillText(part,bx+8*U,by+5*U+i*lh)})}
    if(t>PH.rattle+.4&&t<PH.fly){g.font='600 '+Math.round(9*U)+'px '+PF;g.textAlign='right';g.textBaseline='bottom';g.fillStyle='rgba(255,255,255,.55)';g.fillText(isPC?'Any key: skip':'Tap: skip',W-10*U,H-6*U)}
    g.restore()}catch(e){self.SQERR&&SQERR(e,'271-16');try{g.restore()}catch(x){/*quiet*/}}});
+ // ---- developer commands: /davy, /treasure (the next bite) ----
+ {const _ms=mpSend;mpSend=function(t){const m=/^\/(davy|treasure)\s*$/i.exec(String(t||'').trim());if(!m||!dev())return _ms.apply(this,arguments);
+   const k=m[1].toLowerCase()==='davy'?'skel':'chest';if(k==='skel'&&!davyOK()){say('Davy isn\'t in the published library, so a skeleton would be a chest.');msgT=5}
+   T.force=k;say((k==='skel'?'Davy\'s bones are':'A sunken chest is')+' on your line: '+(FISH?'wait for the next bite.':'cast your line, and the next bite brings '+(k==='skel'?'them':'it')+' up.'));msgT=5;return}}
  // Davy's bag description says where he comes from, unless the Dev Suite gives him one
  try{SQA.onApply(lib=>{const r=lib&&lib.newpets&&lib.newpets[DAVY];if(r&&!String(r.d||'').trim()&&typeof IDESC!=='undefined')IDESC[DAVYI]='Davy, the ghost of a pirate captain who went down with his ship. His bones lie somewhere in the deep: keep fishing and you might haul them up. Put him in your PET slot (Equip) and he follows you everywhere; other players see him too.'})}catch(e){self.SQERR&&SQERR(e,'271-17')}
- window.SQTREASURE={force:k=>{T.force=k},set speed(v){T.speed=+v||1},get speed(){return T.speed},state:()=>CS,LOOT,CHEST,SKEL,chestURL}})();
+ window.SQTREASURE={force:k=>{T.force=k},get forced(){return T.force},OPEN,set speed(v){T.speed=+v||1},get speed(){return T.speed},state:()=>CS,LOOT,CHEST,SKEL,chestURL}})();

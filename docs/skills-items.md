@@ -121,6 +121,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   SQHUD.after step (letterbox, typed speech bubbles); an SQUPD wrap runs each frame with dt 1e-4 and holds you in place; HIT/EAT/TALK wraps do
   nothing; a key/tap after the rattle skips to the swoop. Then `inv.pet_np_newpet++` (bag), a card, chat "★ fished up Davy, the ghost pirate!"
   (not young players), save. Sounds `SFX.ghostwail`/`rattle`. Davy's bag description is filled in when the library's `d` is empty.
+  `OPEN` (false until Jace OKs the release): random rolls only for developer accounts (`SQDEV()`); devs type /davy or /treasure (an `mpSend` wrap)
+  to make the next bite the skeleton or a chest. Releasing = `OPEN=true` + the patch note.
 - **Fishing 70/80/90** (`skills/221-s229-deep-fishing.js`, `window.SQDEEPFISH`): moonfin (70, night: `dark()>.25`), abyssal eel (80, shattered/
   ironcrest), ancient koi (90, anywhere, 6%) through `window.SQFISHX`, which 093b's catch hook checks before the Dev Suite's `SQGFISH`
   (entries may have `ok()`). Raw `k` + cooked `c<k>`, COOKS/FOODS/icons/tree lines. Not in 200's turtle `RAW` (fixed by the rules).
