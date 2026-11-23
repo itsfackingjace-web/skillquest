@@ -17,6 +17,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   "Controller connected!" message is dropped once. 023's A-button clicks are synthetic (not trusted), so they don't count. Check 43.
 - **Hold HIT on touch** (`ui/248-s256-hold-hit-on-touch.js`, `window.SQHOLDHIT`): a touch on `#a` (004's HIT) that stays on the button
   repeats `attack()` after 0.35 s whenever `swing<=0` (not fishing/building/with a screen open), like 023's R2. Check 37.
+- **The touch ULT / SLAM button** (`ui/269-s277-ult-button-check.js`, `window.SQULTBTN`, Nov 22, Derek on an iPhone: SLAM did nothing,
+  but a copy of his save slams fine in the checks): window-capture `pointerdown`/`touchstart` take taps on `#ub` before 030's listeners
+  (one cast per 350 ms, whichever arrives first); a tap inside `#ub`'s box on a non-control layer still casts; a tap that changes nothing
+  (slam/ult cooldown, message, Dragon Form, dagger) says so and sends one `[auto] ULT button did nothing` report a session (state, button
+  box, touch layout); a covered tap sends `[auto] ULT button covered` with what was on top. Leaves taps alone while a screen is open. Check 91.
 - **Hold CAST / BOW on touch** (`core/082-s63-aiming-...js`, `window.SQHOLDAIM`, Nov 21): holding `#aimb` without dragging fires at
   `nearestFoe()` (or straight ahead) after 0.35 s whenever `swing<=0`; a hold that fired doesn't fire again on release; a tap
   (< 0.35 s) still fires once on release, and dragging still aims. Check 70.
