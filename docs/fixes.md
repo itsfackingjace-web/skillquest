@@ -147,3 +147,6 @@ Firebase had no new bug reports (`bugs` newest Nov 10) and no new code errors (`
   written for iron and steel only, so "save one metal bar" could save the gem or log on mithril+ recipes and "fewer bars" skipped
   mithril/adamant/meteorite bars. Both now list every bar (and smelting ore) (check 103). "Metal items" in the perks = whatever the
   furnace or anvil makes: bars when smelting, gear (arrows: a whole batch) when forging.
+  Jace's starsteel dagger (late Nov 23): it was nowhere in his save, chests or graves, and already gone in the 1:17 PM daily backup.
+  One way a dagger vanishes, closed: 218's loader set `DAG=null` when the save also had a bow, wand, hoe or can in the off-hand; it
+  now puts that dagger in the bag (check 104).

@@ -122,7 +122,9 @@
  // a bow/wand/hoe/can that got into the hand some other way pushes the dagger to the bag
  {SQUPD.after('218',(dt)=>{if(DAG&&(TL.bow||WAND||TL.hoe||TL.can)){inv[DAG]=(inv[DAG]|0)+1;DAG=null;try{snapEq()}catch(e){self.SQERR&&SQERR(e,'218-6')}}if(DCD>0)DCD=Math.max(0,DCD-(dt||0));if(COATK&&performance.now()>COATU){COATK=null;try{say('Your dagger\'s coating wore off.')}catch(e){self.SQERR&&SQERR(e,'218-7')}}})}
  {SQSAVE.after('218:dag,dpin',s=>{s.dag=DAG||'';s.dpin=DPIN||'';})}
- {SQLOAD.after('218',(S)=>{try{const d=S&&S.dag;DAG=d&&DAGS[d]&&!TL.bow&&!WAND&&!TL.hoe&&!TL.can?d:null;DPIN=S&&typeof S.dpin==='string'?S.dpin:'';COATK=null;try{snapEq()}catch(e){self.SQERR&&SQERR(e,'218-8')}}catch(e){self.SQERR&&SQERR(e,'218-9')}})}
+ // Nov 23 (Jace's starsteel dagger went missing): a saved dagger that can't go back in the off-hand (a bow, wand, hoe or can is there
+ // too) used to vanish; it goes in the bag instead.
+ {SQLOAD.after('218',(S)=>{try{const d=S&&S.dag;DAG=d&&DAGS[d]&&!TL.bow&&!WAND&&!TL.hoe&&!TL.can?d:null;if(d&&DAGS[d]&&!DAG)inv[d]=(inv[d]|0)+1;DPIN=S&&typeof S.dpin==='string'?S.dpin:'';COATK=null;try{snapEq()}catch(e){self.SQERR&&SQERR(e,'218-8')}}catch(e){self.SQERR&&SQERR(e,'218-9')}})}
  {SQNEWGAME.before('218',()=>{DAG=null;DPIN='';COATK=null;})}
  // ---- pinning a potion for the dagger ult ----
  {const _b=bagGridHTML;bagGridHTML=function(){let h=_b.apply(this,arguments);try{const k=invSel;if(k&&(inv[k]|0)>0&&isPotion(k)){const on=DPIN===k;
