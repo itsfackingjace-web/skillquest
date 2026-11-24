@@ -14,8 +14,8 @@ module.exports={name:'upgrades say what level they need, last 10x longer a level
   XPS[0]=XT[60];inv.eq_sword7=1;equipItem('eq_sword7');EQSEL='main';o.card=/Upgrades at a Blacksmith's bench: 10 of these make a \+1 \(Smithing 75\)/.test(strip(equipHTML()));
   // wear: a +1 loses 1 a hit from 40,000; a +3 has nothing to lose
   const hit=()=>{en=[{x:P.x,y:P.y+14,hp:999,mhp:999,t:'slime',dead:false,vx:0,vy:0,kb:0}];face=[0,1];swing=0;attack()};
-  inv.u1_eq_sword7=1;equipItem('u1_eq_sword7');hit();o.w1=R.WS.main?R.WS.main.d:null;
-  inv.u3_eq_sword7=1;equipItem('u3_eq_sword7');hit();hit();o.w3=[R.WS.main||null,U.UPS.main&&U.UPS.main.l,occ('main')];
+  inv.u1_eq_sword7=1;equipItem('u1_eq_sword7');R.wear('main');/* one landed hit (check 99 covers HIT -> wear; here a villager or tree in front can take the swing) */o.w1=R.WS.main?R.WS.main.d:null;
+  inv.u3_eq_sword7=1;equipItem('u3_eq_sword7');hit();R.wear('main');R.wear('main');o.w3=[R.WS.main||null,U.UPS.main&&U.UPS.main.l,occ('main')];
   // a used +3 that turns up in the bag becomes a plain +3
   const n3=inv.u3_eq_sword7|0;R.wreg('w4400_u3_eq_sword7');inv.w4400_u3_eq_sword7=1;await W(2600);o.plain=[inv.w4400_u3_eq_sword7|0,(inv.u3_eq_sword7|0)-n3];
   unequipSlot('main');en=[];
