@@ -134,7 +134,12 @@ Firebase had no new bug reports (`bugs` newest Nov 10) and no new code errors (`
   a record (e.g. 213-4, still showing v 2026.11.20-6) players' later reports of it never arrived. `send` now writes with
   `update({m, n: increment(1), v, t})` (no read needed) and keeps the transaction as the fallback. The fake database got `increment` and
   `window.__noRead` (a transaction over an unreadable, existing record fails); check 26 seeds a record and expects it to count up.
-- **Nov 23 error reports** (edits in place, check 100): errs `248-1`/`uncaught` "R.useItems is not iterable": 145's yard HIT picks the
+- **Nov 23 bug reports** (edits in place, checks 100, 102 and 14): errs `248-1`/`uncaught` "R.useItems is not iterable": 145's yard HIT picks the
   tree 16 px ahead (`frontTile`) and lends `R.region='_yard'` for the call, but 050's island HIT looked 13 px ahead, found nothing and
   read `R.useItems`, which yards don't have. 050 now also looks 16 px ahead in a yard, and 049's `nearFurn`, 050's look loop and 093's
   cave-door step read `R.useItems||[]`.
+  Amethyst (#bugs): 010's ✕ (`backScreen`, bound to `#px` before any wrapper) hides the panel without `closePanel`, so `shop` stayed
+  'wmkt' and 079's `pbd.onclick` returned early on every click (bag, EQUIP, player menu) until a relog: it only handles clicks while
+  `ptab===2`, and a `closeScreenOnly` wrapper forgets the market. The chest item card ran off the bottom on iPhone: where `#pn` is the
+  box for its `position:fixed` children (iOS Safari, a transform), top/left count from its scrolled content, so 231's `fit` now measures
+  where the backdrop landed and shifts it by the difference.

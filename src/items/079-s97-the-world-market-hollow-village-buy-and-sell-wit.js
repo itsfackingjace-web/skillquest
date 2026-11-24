@@ -187,7 +187,9 @@
  function wmTotal(){const F=WMK.form,b=pbd.querySelector('[data-w="go"]');if(!F||!b)return;const w=document.getElementById('wmwarn');if(w)w.textContent=warnTxt(F);const tot=F.q*F.p,ok=F.s==='s'?(inv[F.k]|0)>=F.q:GLD>=tot;b.style.opacity=ok?1:.45;const t=b.querySelector('b');if(t)t.textContent=(F.s==='s'?'SELL ':'BUY ')+F.q+' for '+fmt(tot)+' gold';const sb=document.getElementById('wmsub');if(sb&&F.s==='s')sb.textContent=subTxt(F)}
  // other players' offers changing shouldn't redraw the panel under your fingers while you type
  const typing=()=>{const a=document.activeElement;return!!(a&&(a.id==='wmq'||a.id==='wmp'||a.id==='wmf'))};
- {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='wmkt'){const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w,F=WMK.form;
+ // Nov 23 fix (Amethyst): the ✕ hides the panel without closePanel, so shop stayed 'wmkt' and this swallowed every later click in
+ // the bag, equipment and player screens. It only takes clicks while the market screen itself is showing.
+ {const _oc=pbd.onclick;pbd.onclick=e=>{if(shop==='wmkt'&&ptab===2){const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w,F=WMK.form;
    if(F)delete F.err;
    if(a.startsWith('tab:')){WMK.tab=a.slice(4)}
    else if(a.startsWith('cat:')){WMK.cat=a.slice(4)}
@@ -200,6 +202,7 @@
    else if(F&&a==='go'){if(WMK.busy)return;const q=document.getElementById('wmq'),p=document.getElementById('wmp');if(q)F.q=Math.max(1,Math.floor(+q.value||1));if(p)F.p=Math.max(1,Math.floor(+p.value||1));if(!inBand(F.k,F.p)){rPn();sfx('swish');return}if(odd(F)&&F.ok!==F.p+':'+F.q){F.ok=F.p+':'+F.q;rPn();sfx('swish');return}place(F.s,F.k,F.q,F.p);return}
    rPn();return}return _oc(e)}}
  {SQCLOSEPN.before('079',()=>{if(shop==='wmkt'){shop=null;WMK.form=null}})}
+ {const _cso=closeScreenOnly;closeScreenOnly=function(){if(shop==='wmkt'){shop=null;WMK.form=null}return _cso.apply(this,arguments)}}// the ✕ (010's backScreen) too
  // talking to the clerk (T / TALK / ✕) or hitting the stalls opens it
  {SQTALK.wrap('079',_t=>function(){if(!pnOpen&&!menuOpen&&!dead&&nearClerk()){wmOpen();return}return _t()})}
  tk.addEventListener('touchstart',e=>{if(pnOpen||menuOpen||dead||!nearClerk())return;e.preventDefault();e.stopImmediatePropagation();wmOpen()},{passive:false,capture:true});

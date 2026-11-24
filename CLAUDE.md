@@ -155,6 +155,6 @@ Each area has its own notes file in `docs/`. Read the one for the area you're ch
 - **`docs/discord.md`** — Discord: the patch notes feed (webhook) and the SQ Bot's roles (Link Discord, public leaderboard fields, sync job).
   Covers: Patch notes feed, Roles (SQ Bot).
 - **`docs/fixes.md`** — Dated fix collections: Batches of small fixes, by day. Each names the file it lives in.
-  Covers: Quality fixes, Audit fixes, Player-report fixes, Bug sweep Nov 15, Bug fixes Nov 15 (afternoon), Nov 16 report fixes, Nov 18 evening fixes, Nov 20 harbor posts, Nov 20 report fixes, Nov 21 report fixes, Nov 21 night bug reports, Nov 22 bug reports, Nov 23 error reports.
+  Covers: Quality fixes, Audit fixes, Player-report fixes, Bug sweep Nov 15, Bug fixes Nov 15 (afternoon), Nov 16 report fixes, Nov 18 evening fixes, Nov 20 harbor posts, Nov 20 report fixes, Nov 21 report fixes, Nov 21 night bug reports, Nov 22 bug reports, Nov 23 bug reports.
 
 When you add something, put its note in the right `docs/` file (or a new one listed here), not in this file. Keep this file to rules and the index.

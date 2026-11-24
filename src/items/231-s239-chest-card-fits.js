@@ -8,6 +8,10 @@
   const r=pn.getBoundingClientRect(),vh=window.innerHeight,vw=window.innerWidth;
   const top=Math.max(0,r.top),bot=Math.min(vh,r.bottom),left=Math.max(0,r.left),right=Math.min(vw,r.right);if(bot-top<120||right-left<120)return;
   Object.assign(bg.style,{top:top+'px',left:left+'px',width:(right-left)+'px',height:(bot-top)+'px',right:'auto',bottom:'auto',padding:'10px'});
+  // Nov 23 (Amethyst again: the card ran off the bottom when a bag item in a lower row was tapped): where the panel is its
+  // "fixed" children's box (iOS Safari, a transform), top/left count from the panel's scrolled content, not the screen. Measure
+  // where the backdrop really landed and move it by the difference.
+  const g=bg.getBoundingClientRect(),dy=top-g.top,dx=left-g.left;if(Math.abs(dy)>1||Math.abs(dx)>1){bg.style.top=(top+dy)+'px';bg.style.left=(left+dx)+'px'}
   const c=bg.querySelector('.chc');if(c){c.style.maxHeight=Math.max(100,bot-top-20)+'px';c.style.overflow='auto'}
  }catch(e){self.SQERR&&SQERR(e,'231-1')}}
  window.SQCHFIT=fit;
