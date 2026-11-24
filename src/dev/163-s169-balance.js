@@ -28,7 +28,7 @@
  const pc=v=>Math.round(v*1000)/10;
  let XPM={};
  SQA.onApply(lib=>{const B=lib&&lib.balance||{};XPM={};for(const k in B.xp||{}){const v=num(B.xp[k],0,1000,100);if(v!==100&&SKN[k])XPM[k]=v}
-  const A=B.act||{};for(const a of ACTS()){const o=OA[a.id];if(o==null)continue;a.r.xp=A[a.id]!=null?num(A[a.id],0,100000,o)|0:o}
+  const A=B.act||{};for(const a of ACTS()){const o=OA[a.id];if(o==null||a.r._mx)continue;/* 284 sets these from their materials */a.r.xp=A[a.id]!=null?num(A[a.id],0,100000,o)|0:o}
   const P=B.perk||{},DS={};for(const p of PERKL()){const id=p.e[0],k=pk(p),o=OP[k];if(o==null)continue;const v=P[k]!=null?num(P[k],0,100,pc(o))/100:o;p.e[1]=v;
    if(OD[id]!=null){if(DS[id]==null)DS[id]=OD[id];if(v!==o)DS[id]=DS[id].replace(new RegExp('(^|[^0-9.])'+String(pc(o)).replace('.','\\.')+'%'),'$1'+pc(v)+'%')}}
   for(const id in DS){const ob=perkObj(id);if(ob)ob.c.d=DS[id]}});
@@ -47,8 +47,8 @@
  const fmtH=h=>h<1?Math.round(h*60)+' min':h<48?(Math.round(h*10)/10)+' h':(Math.round(h/24*10)/10)+' days';
  function xpView(){const X=part('xp');return'<div class="dv-card"><b>XP per skill</b><p class="dv-mut">100% = the game\'s own amounts. Every XP gain in that skill is scaled (XP events still multiply on top).</p><table>'+
    SKN.map((n,i)=>'<tr><td style="padding:3px 10px 3px 0">'+E(n)+'</td><td><input type="number" data-bx="xp.'+i+'" min="0" max="1000" value="'+(X[i]!=null?X[i]:100)+'" style="width:80px"> %</td></tr>').join('')+'</table></div>'}
- function actView(){const A=part('act'),q=ST.q.toLowerCase();const L=ACTS().filter(a=>!q||a.lab.toLowerCase().includes(q)||String(a.sn).toLowerCase().includes(q));
-  return'<div class="dv-card"><b>XP per action</b><p class="dv-mut">One cook, bar, craft, catch or harvest. Changed numbers are highlighted.</p><input type="search" data-bq="1" placeholder="Search actions" value="'+E(ST.q)+'" style="width:100%;margin-bottom:6px"><table>'+
+ function actView(){const A=part('act'),q=ST.q.toLowerCase();const L=ACTS().filter(a=>!a.r._mx&&(!q||a.lab.toLowerCase().includes(q)||String(a.sn).toLowerCase().includes(q)));
+  return'<div class="dv-card"><b>XP per action</b><p class="dv-mut">One cook, bar, craft, catch or harvest. Changed numbers are highlighted. Furnace and anvil recipes get their XP from their materials (Material XP).</p><input type="search" data-bq="1" placeholder="Search actions" value="'+E(ST.q)+'" style="width:100%;margin-bottom:6px"><table>'+
    L.slice(0,300).map(a=>{const v=A[a.id];return'<tr><td style="padding:3px 10px 3px 0">'+E(a.lab)+' <small class="dv-mut">'+E(a.sn||'')+' · level '+(a.r.lv||a.r.req||'?')+'</small></td><td><input type="number" data-bx="act.'+a.id+'" min="0" max="100000" value="'+(v!=null?v:OA[a.id])+'" style="width:90px'+(v!=null&&v!==OA[a.id]?';outline:2px solid #e8b030':'')+'"></td><td class="dv-mut" style="padding-left:6px">game: '+OA[a.id]+'</td></tr>'}).join('')+'</table></div>'}
  function perkView(){const Pv=part('perk'),q=ST.q.toLowerCase();const L=PERKL().map(p=>({...p,o:perkObj(p.e[0])})).filter(p=>p.o&&(!q||(p.o.c.n+' '+SKN[p.sk]).toLowerCase().includes(q)));
   return'<div class="dv-card"><b>Perk values</b><p class="dv-mut">The numbers behind the skill-tree perks that use a table. Their description in the skill tree changes with them. Other perks are written into the game\'s code.</p><input type="search" data-bq="1" placeholder="Search perks" value="'+E(ST.q)+'" style="width:100%;margin-bottom:6px"><table>'+
@@ -59,7 +59,7 @@
    '<label class="dv-mut">Skill<br><select data-bs="sk">'+SKN.map((n,i)=>'<option value="'+i+'"'+(+s.sk===i?' selected':'')+'>'+E(n)+'</option>').join('')+'</select></label>'+
    '<label class="dv-mut">From level<br><input type="number" data-bs="from" min="1" max="98" value="'+s.from+'" style="width:70px"></label><label class="dv-mut">To level<br><input type="number" data-bs="to" min="2" max="99" value="'+s.to+'" style="width:70px"></label>'+
    '<label class="dv-mut">Doing<br><select data-bs="a">'+(all.length?all.map(x=>'<option value="'+E(x.id)+'"'+(a&&x.id===a.id?' selected':'')+'>'+E(x.lab)+' ('+x.r.xp+' XP)</option>').join(''):'<option value="">(type XP below)</option>')+'</select></label></div>';
-  const xpA=a?a.r.xp:10,draftXp=a&&!/^cu:/.test(a.id)&&part('act')[a.id]!=null?+part('act')[a.id]:xpA,mult=s.mult!==''?+s.mult:(part('xp')[s.sk]!=null?+part('xp')[s.sk]:100),sec2=s.sec!==''?+s.sec:SECS[a&&a.kind]||3;
+  const xpA=a?a.r.xp:10,draftXp=a&&!/^cu:/.test(a.id)&&part('act')[a.id]!=null?+part('act')[a.id]:xpA,mult=s.mult!==''?+s.mult:(part('xp')[s.sk]!=null?+part('xp')[s.sk]:100),sec2=s.sec!==''?+s.sec:(a&&a.r&&a.r._mx&&a.r._mt>0?Math.round(a.r._mt*10)/10:SECS[a&&a.kind]||3);
   const outK=a&&(a.out||a.r.ck||a.r.k),val=outK&&SELLP[outK]?SELLP[outK]:0;
   h+='<div class="dv-row" style="flex-wrap:wrap"><label class="dv-mut">XP each<br><input type="number" data-bs="xpv" value="'+draftXp+'" style="width:80px" disabled></label><label class="dv-mut">Seconds each<br><input type="number" data-bs="sec" min="0.2" max="600" step="0.1" value="'+sec2+'" style="width:80px"></label>'+
    '<label class="dv-mut">Skill XP %<br><input type="number" data-bs="mult" min="0" max="1000" value="'+mult+'" style="width:80px"></label></div>';
@@ -68,18 +68,22 @@
    '<p class="dv-mut" style="font-size:12px">Seconds each is a guess you can change: production actions take about this long at level 1 (faster with level and perks); gathering depends on the tool and the tree or rock.</p>'+
    '<table><tr class="dv-mut"><td style="padding-right:12px">Level</td><td style="padding-right:12px">Actions</td><td>Time</td></tr>'+R.steps.map(t=>'<tr><td>'+t.l+'</td><td>'+t.n.toLocaleString()+'</td><td>'+fmtH(t.h)+'</td></tr>').join('')+'</table></div>';
   return h}
- function render(){const tabs=[['xp','XP per skill'],['act','XP per action'],['perk','Perk values'],['sim','Simulator']];
-  const ch=Object.keys(part('xp')).length+Object.keys(part('act')).length+Object.keys(part('perk')).length;
+ function render(){const tabs=[['xp','XP per skill'],['act','XP per action'],['mat','Material XP'],['perk','Perk values'],['sim','Simulator']];
+  const ch=Object.keys(part('xp')).length+Object.keys(part('act')).length+Object.keys(part('perk')).length+Object.keys(part('mat')).length;
   return'<div class="dv-row" style="flex-wrap:wrap;margin-bottom:8px">'+tabs.map(([k,n])=>'<button class="dv-b'+(ST.v===k?' dv-tl dv-on':'')+'" data-bv="'+k+'">'+n+'</button>').join('')+
-   '<button class="dv-b dv-pri" data-bv="save">Save to draft'+(ch?' ('+ch+' changed)':'')+'</button><button class="dv-b dv-bad" data-bv="reset">Back to the game\'s numbers</button></div>'+(ST.v==='xp'?xpView():ST.v==='act'?actView():ST.v==='perk'?perkView():simView())}
- const setV=(path,val)=>{const[p,...rest]=path.split('.');const k=rest.join('.');const P2=part(p);const base=p==='xp'?100:p==='act'?OA[k]:pc(OP[k]);if(val===''||+val===base)delete P2[k];else P2[k]=+val};
+   '<button class="dv-b dv-pri" data-bv="save">Save to draft'+(ch?' ('+ch+' changed)':'')+'</button><button class="dv-b dv-bad" data-bv="reset">Back to the game\'s numbers</button></div>'+(ST.v==='xp'?xpView():ST.v==='act'?actView():ST.v==='mat'?(window.SQMATXP?SQMATXP.view(part('mat')):''):ST.v==='perk'?perkView():simView())}
+ const setV=(path,val)=>{const[p,...rest]=path.split('.');const k=rest.join('.');
+  if(p==='mat'){const[key,f]=rest,M=part('mat'),o={...(M[key]||{})},D0=window.SQMATXP&&SQMATXP.DEF[key],b=D0?D0[f]:null;if(val===''||(b!=null&&+val===b))delete o[f];else o[f]=+val;if(Object.keys(o).length)M[key]=o;else delete M[key];return}const P2=part(p);const base=p==='xp'?100:p==='act'?OA[k]:pc(OP[k]);if(val===''||+val===base)delete P2[k];else P2[k]=+val};
  document.addEventListener('change',e=>{if(S.tab!=='balance')return;const t=e.target;if(!document.getElementById('dvs').contains(t))return;
   if(t.dataset.bx){setV(t.dataset.bx,t.value);ST.dirty=1;API.draw()}else if(t.dataset.bs){ST.sim[t.dataset.bs]=t.value;if(t.dataset.bs==='sk'){ST.sim.a='';ST.sim.sec='';ST.sim.mult=''}if(t.dataset.bs==='a')ST.sim.sec='';API.draw()}},true);
  document.addEventListener('input',e=>{if(S.tab!=='balance')return;const t=e.target;if(t.dataset&&t.dataset.bq){ST.q=t.value;const pos=t.selectionStart;API.draw();const n=document.querySelector('#dvs [data-bq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){self.SQERR&&SQERR(_,'163-1')}}}},true);
  document.addEventListener('click',async e=>{if(S.tab!=='balance')return;const t=e.target.closest('[data-bv]');if(!t||!document.getElementById('dvs').contains(t))return;const v=t.dataset.bv;
   if(v==='save'){try{await dset('draft/balance',sec());ST.dirty=0;toast('Saved to draft. Publish it from the Publish tab.')}catch(e2){fail(e2)}if(SQA.previewing)SQA.preview(S.draft);API.draw();return}
   if(v==='reset'){S.draft.balance={};ST.dirty=1;API.draw();toast('Cleared. Save to draft to keep it.');return}
+  if(v==='matadd'){const m=window.SQMATXP?SQMATXP.add(part('mat')):'';if(m){toast(m);return}ST.dirty=1;API.draw();return}
+  if(v.startsWith('matdel:')){delete part('mat')[v.slice(7)];ST.dirty=1;API.draw();return}
   ST.v=v;ST.q='';API.draw()},true);
  SQSUITE.addTab('balance','Balance',{render,dirty:()=>!!ST.dirty,leave:()=>{ST.dirty=0},changes(L,D){const a=L&&L.balance||{},b=D&&D.balance||{},out=[];
+   {const x=a.mat||{},y=b.mat||{};for(const k of new Set([...Object.keys(x),...Object.keys(y)]))if(JSON.stringify(x[k])!==JSON.stringify(y[k])){const v=y[k]||{};out.push({kind:'ext',html:'⚖️ '+E((INAME[k]||k))+' (material): '+(y[k]?[v.x!=null?v.x+' xp':'',v.t!=null?v.t+' s':''].filter(Boolean).join(', '):'back to the game\'s numbers')})}}
    for(const p of['xp','act','perk']){const x=a[p]||{},y=b[p]||{};for(const k of new Set([...Object.keys(x),...Object.keys(y)]))if(x[k]!==y[k]){const lab=p==='xp'?SKN[k]+' XP':p==='act'?((ACTS().find(q=>q.id===k)||{}).lab||k)+' XP':((perkObj(k.split(':')[1])||{c:{n:k}}).c.n)+' value';
     out.push({kind:'ext',html:'⚖️ '+E(lab)+': '+(y[k]==null?'back to the game\'s number':y[k]+(p==='act'?'':'%'))})}}return out}})})();

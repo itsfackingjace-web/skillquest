@@ -277,3 +277,14 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   get a durability bar (worn-out ones are greyed with a red bar), and their names start with the state ("Used adamant sword (62%)",
   "Worn-out iron axe") so a cut-off bag label still tells them from the new stack (Aztu, Nov 23). Fishing rods (004's Craft tab, check 101) are always listed: with a rod in hand the new one goes in the bag
   as a spare (`craft` puts `eq_rod` in `inv` instead of setting `TL.rod`). 129's collection log skips `^u[123]_|^w\d+_` keys (also in saved logs).
+- **XP and time per material** (`skills/276-s284-material-xp.js`, `window.SQMATXP`, Jace Nov 24; checks 105, 106): every furnace and
+  anvil recipe in `SM` (the game's, Content `r_` smith/smelt recipes, new gear made at the anvil) gets `xp` = Σ count × the material's
+  XP and `_mt` = Σ count × its seconds, strictly proportional (no minimum, maximum or rounding). Values: `DEF` (the "Material XP" tab
+  of the SQ Blacksmith's Bench sheet) with the library's `balance.mat` {key:{x,t}} on top (Dev Suite > Balance > Material XP; a key not
+  in `DEF` needs both). Covered recipes get `_mx=1` (163 skips them, 183 shows their XP read-only) and keep their own XP in `_xp0`;
+  a recipe with a material that has no values keeps its own XP and 109's flat 2.6 s / 2.4 s (the Ancient helmet: an adamant helmet
+  and coins). Time: the outermost `smithAct` remembers its recipe and the outermost `sqDo` scales the new job's `d` by `_mt / 2.6`
+  (or 2.4), so 039's level/perk speed-up still divides it (205 wraps the job's fn, so a new job is told by a new `SQDO` object).
+  Station rows (007 `forgeHTML`, 022 `smithRows`) show `SQMATXP.tag(r)` ("1.4 s · 340 xp", time at your level). Upgrades (274
+  `SQUPGRADE.reg` is rerun) and repairs (275) take their XP from the recipe, so they follow. Perks that save a bar or make a bonus item
+  never change XP (039's `prodBoost`), so bonus items give no XP.

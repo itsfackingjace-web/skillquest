@@ -126,7 +126,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   and 169 warns about two items with one name. 176's item lists label same-named items with their id and icon state, and show
   the picked item's icon.
 - **Balance** (`dev/163-s169-balance.js`, `window.SQBAL`, Dev Suite > Balance): library `balance` = {xp:{skill:%}, act:{'<TABLE>:<key>':xp},
-  perk:{'<TABLE>:<perk id>':%}}. `act` edits the xp field of COOKS/SM/GOODS/BREC/FREC/FISH_T/SQTIER entries in place (not `_cu`);
+  perk:{'<TABLE>:<perk id>':%}, mat:{'<item key>':{x,t}}}. `act` edits the xp field of COOKS/SM/GOODS/BREC/FREC/FISH_T/SQTIER entries in place (not `_cu`,
+  not furnace/anvil recipes the Material XP table covers: `_mx`, see 276 in skills-items.md); the Material XP view edits `mat` and lists what each recipe comes to;
   `perk` edits the [id,value] pairs of 038/039's GSPD/GEXT/GRAR/GDBL/STAYP/FOODP/PSPD (one id can sit in two tables, hence the
   table in the key) and swaps the % in the perk's description. Originals captured at load. Perks written into code have no
   table and aren't editable. `sim()` = actions/time between two levels from XT.
