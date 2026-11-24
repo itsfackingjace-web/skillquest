@@ -143,3 +143,7 @@ Firebase had no new bug reports (`bugs` newest Nov 10) and no new code errors (`
   `ptab===2`, and a `closeScreenOnly` wrapper forgets the market. The chest item card ran off the bottom on iPhone: where `#pn` is the
   box for its `position:fixed` children (iOS Safari, a transform), top/left count from its scrolled content, so 231's `fit` now measures
   where the backdrop landed and shifts it by the difference.
+  Kevin (#ideas question): 039's Smithing perks read `SMMETAL` (bars/ores to save first) and `fewerKeys` (bars "fewer" refunds), both
+  written for iron and steel only, so "save one metal bar" could save the gem or log on mithril+ recipes and "fewer bars" skipped
+  mithril/adamant/meteorite bars. Both now list every bar (and smelting ore) (check 103). "Metal items" in the perks = whatever the
+  furnace or anvil makes: bars when smelting, gear (arrows: a whole batch) when forging.

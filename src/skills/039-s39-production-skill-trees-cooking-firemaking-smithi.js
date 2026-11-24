@@ -113,14 +113,17 @@ const _sa39=stationAct;stationAct=function(a){if(typeof a!=='string'||!a.startsW
   if(saved){inv[c.ck]=(inv[c.ck]|0)+saved;addXp(4,saved*Math.max(0,c.xp-5));if(Q.on&&QS[Q.i]&&QS[Q.i].type==='cook')Q.k+=saved;gTxt(P.x,P.y-40,'Saved '+saved+' from burning',SKC[4]);ok+=saved}
   prodBoost(4,{out:c.ck,n:ok,used:{[c.raw]:used},xp:ok*c.xp});saveLocal(true);if(pnOpen)rPn()}finally{if(m)benchSplit()}};
 // --- smithing (furnace + anvil) ---
-const SMMETAL=['sbar','ibar','iron'];
+// Nov 23 (Kevin asked what "metal" means in the Smithing perks): every bar and smelting ore counts. This list was written when there
+// were only iron and steel bars, so "save one metal bar" could save a gem or a log instead on mithril, adamant and meteorite recipes,
+// and "uses fewer bars" (Efficient Forge and friends) never gave mithril, adamant or meteorite bars back.
+const SMMETAL=['metbar','abar','mbar','gbar','sbar','ibar','meteorore','adamore','mithore','goldore','iron'],SMBARS=['ibar','sbar','gbar','mbar','abar','metbar'];
 const _sm39=smithAct;smithAct=function(i,all){const r=SM[i];if(!r)return _sm39(i,all);const m=typeof stUses==='function'&&stUses()?stMerge(STATION):false;
  try{const keys=[...Object.keys(r.c),r.k].filter(Boolean),b0={};for(const k of keys)b0[k]=inv[k]|0;_sm39(i,all);
   const used={};for(const k in r.c){const d=b0[k]-(inv[k]|0);if(d>0)used[k]=d}if(!Object.keys(used).length)return;
   // a recipe that makes a batch (273's arrows: r.q at a time) counts makes, and a bonus is a whole batch
   const n0=r.k?(inv[r.k]|0)-b0[r.k]:Math.round((used[Object.keys(r.c)[0]]||0)/r.c[Object.keys(r.c)[0]]),n=r.k&&r.q?Math.round(n0/r.q):n0;
   // bonus items: bars and daggers stack; armour is worn straight away, so a bonus there gives a bar back instead
-  const bk0=prodBoost(10,{out:r.k||null,n,q:r.q||1,used,xp:r.xp*n,prefer:SMMETAL,fewerKeys:r.smelt?[]:['ibar','sbar']});
+  const bk0=prodBoost(10,{out:r.k||null,n,q:r.q||1,used,xp:r.xp*n,prefer:SMMETAL,fewerKeys:r.smelt?[]:SMBARS});
   if(r.smelt){if(P39(10,'sm_smelt')){let bk=0;for(let u=0;u<(used.iron|0)-((bk0||{}).iron|0);u++)if(Math.random()<.1)bk++;if(bk){inv.iron=(inv.iron|0)+bk;gTxt(P.x,P.y-52,'+'+bk+' iron ore saved',SKC[10])}}
    if(P39(10,'sm_smelter')){let e=0;for(let u=0;u<n;u++)if(Math.random()<.12)e++;if(e){inv[r.k]=(inv[r.k]|0)+e;gTxt(P.x,P.y-58,'Master smelter: +'+e+' '+iname(r.k),SKC[10])}}
    if(P39(5,'fi_gchar')&&used.wood){let w=0;for(let u=0;u<n;u++)if(Math.random()<.2)w++;w=Math.min(w,used.wood-((bk0||{}).wood|0));if(w){inv.wood=(inv.wood|0)+w;gTxt(P.x,P.y-64,'Charcoal: +'+w+' wood saved',SKC[5])}}}
