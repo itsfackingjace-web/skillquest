@@ -1,6 +1,6 @@
 // Nov 24 (Jace): trees were far too easy (every tree fell in under a second, an adamant axe felled most in one swing) and void
-// trees needed no level or axe. Now an axe has a chopping power (wooden 1 ... meteorite 3) and a tree a toughness (tree 8, oak 26,
-// yew 175, void 320); void trees need Woodcutting 75 and an adamant axe and give 400 XP (285).
+// trees needed no level or axe. Now an axe has a chopping power (wooden 1 ... meteorite 3) and a tree a toughness (tree 3, oak 9,
+// yew 42, void 66) with slower 0.6 s chopping swings (later on Nov 24: chops slower and heavier, maple/yew/void quicker); void trees need Woodcutting 75 and an adamant axe and give 400 XP (285).
 module.exports={name:'trees take longer by tier, and void trees need Woodcutting 75 and an adamant axe',async run(p,t){
  const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);try{if(pnOpen)closePanel()}catch(e){}const out={};
   if(!window.SQCHOP)return{err:'no SQCHOP'};en=[];
@@ -8,6 +8,8 @@ module.exports={name:'trees take longer by tier, and void trees need Woodcutting
   const fell=(o,axe,lvl)=>{TL.axe=axe;XPS[1]=lvl>1?XT[lvl-1]:0;/* XT[n] = the XP of level n+1 */face=[0,1];const[fx,fy]=front(13),i=Math.floor(fy/16)*N+Math.floor(fx/16);obj[i]={...o};
    let n=0;for(;n<500&&obj[i];n++){swing=0;attack()}return n};
   out.tree=[fell({t:'tree',hp:OHP.tree},1,1),fell({t:'tree',hp:OHP.tree},9,75)];
+  // a chop at Woodcutting 1 is a 0.6 s swing; a swing at nothing stays 0.25 s
+  {TL.axe=1;XPS[1]=0;face=[0,1];const[fx,fy]=front(13),i=Math.floor(fy/16)*N+Math.floor(fx/16);obj[i]={t:'tree',hp:OHP.tree};swing=0;attack();const s1=swing;obj[i]=null;swing=0;attack();out.swing=[Math.round(s1*1000)/1000,Math.round(swing*1000)/1000]}
   out.yew=[fell({t:'yew',hp:OHP.yew},7,60),fell({t:'yew',hp:OHP.yew},3,60)];
   out.oak=fell({t:'oak',hp:OHP.oak},3,15);
   out.skill=(treeGains(1,75)||[]).some(x=>/void trees/i.test(String(x)));
@@ -19,16 +21,17 @@ module.exports={name:'trees take longer by tier, and void trees need Woodcutting
   // too low a level, then too weak an axe: refused, nothing taken off
   stand();TL.axe=9;XPS[1]=XT[60];const hp0=tr.o.hp;swing=0;attack();out.lowLv=[tr.o.hp===hp0,/Woodcutting 75/.test(typeof sayT!=='undefined'?sayT:'')||true];
   XPS[1]=XT[74];TL.axe=6;swing=0;attack();out.lowAxe=tr.o.hp===hp0;
-  // level 75 and an adamant axe: ceil(320 / 2.5) = 128 swings, void logs and 400 xp
+  // level 75 and an adamant axe: ceil(66 / 2.5) = 27 swings, void logs and 400 xp
   TL.axe=7;const v0=inv.voidlog|0,w0=inv.wood|0;let xp=0;const ax=addXp;addXp=function(s,x){if(s===1&&!/gBoost/.test(new Error().stack))xp+=x;return ax.apply(this,arguments)};/* the tree's XP, before boosts and random gathering bonuses (038's gBoost) */
   let n=0;try{for(;n<600&&!tr.gone;n++){stand();swing=0;attack();if(tr.gone)break}}finally{addXp=ax}
   out.void=[n+1,(inv.voidlog|0)-v0>=2,(inv.wood|0)-w0,xp];
   routeGo('hollow');return out});
  if(r.err)return t(false,r.err);
- t.eq(r.tree,[8,3],'a plain tree: 8 swings with a wooden axe, 3 with a meteorite axe');
- t.eq(r.yew,[70,117],'a yew at Woodcutting 60: 70 swings with an adamant axe, 117 with an iron one');
- t.eq(r.oak,18,'an oak with an iron axe: 18 swings');
+ t.eq(r.tree,[3,1],'a plain tree: 3 swings with a wooden axe, 1 with a meteorite axe');
+ t.eq(r.swing,[.6,.25],'a chopping swing takes 0.6 s at Woodcutting 1, other swings 0.25 s');
+ t.eq(r.yew,[17,28],'a yew at Woodcutting 60: 17 swings with an adamant axe, 28 with an iron one');
+ t.eq(r.oak,6,'an oak with an iron axe: 6 swings');
  t(r.skill,'the Woodcutting tree lists void trees at 75');
  t.eq(r.there,'shattered','sailed to the Shattered Expanse');
  t.eq(r.lowLv[0],true,'Woodcutting 61 can\'t chop a void tree');t.eq(r.lowAxe,true,'nor can a mithril axe at Woodcutting 75');
- t.eq(r.void,[128,true,0,400],'level 75 with an adamant axe: 128 swings, void logs (no plain wood) and 400 xp')}};
+ t.eq(r.void,[27,true,0,400],'level 75 with an adamant axe: 27 swings, void logs (no plain wood) and 400 xp')}};
