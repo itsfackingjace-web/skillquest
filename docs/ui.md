@@ -123,6 +123,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `clean()` strips "Your block chance now" from wiki text, the Controls tab and four more guides. Skill rows: `SQWKACT` (array of
   `(skill, rows)=>{}` hooks, rows `{n,xp,lv,t?,k?}`) fills Woodcutting times and the void tree row; WK2.skills shows a time column (`t`, seconds)
   and Unlocks from `treeGains`. Check 108.
+  Fishing (Nov 24, check 111): 278's `fishList()` (on `SQWIKI2`) reads every catch source (FISH_T, the rainbow fish, `SQRFISH`,
+  `SQDEEPFISH`, `SQPONDS.FISHOF`, `SQGFISH`) into Fishing's Training rows with `w` (where) and `ck`/`h` (Cooking level, hearts), which 075's
+  table shows as Where and Cooking columns for any skill whose rows carry them; 278 also sets `WK_SKILL.Fishing` and adds the island fish
+  to Fishing's `treeGains`. **A new fish shows up there by itself if it's in one of those lists.**
   **`.wc` needs `min-height:0`**: in the phone layout (`.wm` is a column) it otherwise grows to the page's full height and `.wb` can't
   scroll (Nov 24, live for 4 hours). Check 109 swipes and wheels Home and Items on a 390×844 touch phone; a case can now pass `context`
   (browser context options) to run.cjs.

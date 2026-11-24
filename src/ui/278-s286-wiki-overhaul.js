@@ -174,5 +174,30 @@
  {const el=document.getElementById('sqwk');if(el)el.addEventListener('click',e=>{const b=e.target.closest('[data-wkic],[data-wksk]');if(!b)return;const S=st();
    if(b.dataset.wkic){S.icat=b.dataset.wkic;if(S.tab!=='items'){S.tab='items';S.pg=null;S.q='';const q=document.getElementById('wkq');if(q)q.value=''}W.render();const bd=document.getElementById('wkb');if(bd)bd.scrollTop=0;return}
    if(b.dataset.wksk!=null){S.sk=+b.dataset.wksk;S.tab='skills';S.pg=null;S.q='';const q=document.getElementById('wkq');if(q)q.value='';W.render();const bd=document.getElementById('wkb');if(bd)bd.scrollTop=0}},true)}
- window.SQWIKI2={catOf,listed,nextUnlocks,gearCard,fixDescs};
+ // ---- Fishing: every fish, where it bites and what it needs (Nov 24, Jace: "the fishing portion of the wiki doesn't have all of the
+ // fish and their requirements"). Before, Training listed only FISH_T (shrimp, trout, salmon, swordfish). fishList() reads every place
+ // the game catches from: FISH_T (any water), the rainbow fish (026 Gull Rock, 038's rare bonus), 093's island fish (SQRFISH), 221's
+ // deep fish (SQDEEPFISH), 222's guild ponds (SQPONDS.FISHOF) and Dev Suite fish (SQGFISH). Rows carry w (where) and ck/h (cooking
+ // level, hearts healed), which 075's Training table shows as Where and Cooked columns.
+ const isleN0=id=>{let n=id;try{n=(WORLD_REGIONS[id]&&WORLD_REGIONS[id].name)||id}catch(e){/*quiet*/}return n},isleN=id=>{const n=isleN0(id);return/ (Isle|Island)$/.test(n)?n:'the '+n};// "the Ashfall Coast", "Briarwood Isle"
+ const cookOf=k=>{const c=(typeof COOKS!=='undefined'?COOKS:[]).find(q=>q.raw===k),f=c&&(typeof FOODS!=='undefined'?FOODS:[]).find(q=>q.k===c.ck);return{ck:c?c.lv:0,h:f?f.heal:0}};
+ const pctT=p=>Math.round(p*100)+'% of bites';
+ function fishList(){const L=[],seen=new Set(),ponds=new Set();try{const F=window.SQPONDS&&SQPONDS.FISHOF;if(F)for(const key in F)ponds.add(F[key][0])}catch(e){self.SQERR&&SQERR(e,'278-30')}
+  const add=(k,n,lv,xp,w)=>{if(!k||seen.has(k))return;seen.add(k);const c=cookOf(k);L.push({k,n,lv:lv||1,xp:xp||0,w:w+(ponds.has(k)?'; guild ponds':''),...c})};
+  for(const f of(typeof FISH_T!=='undefined'?FISH_T:[]))add(f.k,f.n,f.lv,f.xp,'Any water');
+  if(INAME.rainbow)add('rainbow','Rainbow fish',1,150,'Gull Rock (3 in 10 bites); rarely in any water from Fishing 15');
+  const R=window.SQRFISH||{};for(const id in R)for(const f of R[id])add(f.k,f.n,f.lv,f.xp,isleN0(id)+' only');
+  for(const f of(window.SQDEEPFISH||[])){const w=String(f.w||'any water').replace(/^in the /,'').replace(/, in /,', ');add(f.k,f.n,f.lv,f.xp,w.charAt(0).toUpperCase()+w.slice(1)+(f.p<.2?' ('+pctT(f.p)+')':''))}
+  for(const f of(window.SQGFISH||[]))add(f.k,f.n,f.lv,f.xp,(f.where&&f.where.length?f.where.map(isleN0).join(', ')+' only':'Any water')+' ('+pctT(f.p)+')');
+  return L.sort((a,b)=>a.lv-b.lv||a.xp-b.xp)}
+ (window.SQWKACT=window.SQWKACT||[]).push((skill,A)=>{if(skill!=='Fishing')return;const L=fishList(),names=new Set(L.map(f=>f.n));
+  for(let i=A.length-1;i>=0;i--)if(names.has(A[i].n))A.splice(i,1);// 075's own FISH_T rows
+  for(const f of L)A.push({n:f.n,k:f.k,lv:f.lv,xp:f.xp,w:f.w,ck:f.ck,h:f.h})});
+ try{if(typeof WK_SKILL!=='undefined')WK_SKILL.Fishing='Catch fish with a fishing rod: make one in the Craft tab (4 wood and 1 iron ore, Crafting 3) or buy one for 10 gold at the general store, Saltmere or Tidewatch. Face water, press HIT to cast and wait for a bite. '+
+  'A fish\'s level is the Fishing level it needs, and you cook it at the same Cooking level (the rainbow fish at 25). Shrimp, trout, salmon and swordfish bite in any water; '+
+  'each island\'s own fish bite only in its waters (about half your bites there, once you have the level). '+
+  'Bait (Saltmere and Tidewatch, 10 for 15 gold) makes fish bite much faster and sometimes gives a double catch. Now and then you reel in sunken treasure instead.'}catch(e){self.SQERR&&SQERR(e,'278-31')}
+ // the Skills screen's Fishing tree names the island fish too (221 already lists the deep fish)
+ try{const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if(sk===9){const R=window.SQRFISH||{},add=[];for(const id in R)for(const f of R[id])if(f.lv===l)add.push('Catch the '+f.n.toLowerCase()+' in the waters of '+isleN(id)+' ('+f.xp+' XP)');if(add.length)return[...a,...add]}}catch(e){self.SQERR&&SQERR(e,'278-32')}return a}}catch(e){self.SQERR&&SQERR(e,'278-33')}
+ window.SQWIKI2={catOf,listed,nextUnlocks,gearCard,fixDescs,fishList};
 })();
