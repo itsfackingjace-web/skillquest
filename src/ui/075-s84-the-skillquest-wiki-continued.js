@@ -2,9 +2,23 @@ window.SQPATCH=PATCH_NOTES;
 const WK={open:false,tab:'start',q:'',pg:null,hist:[]},WKPAGES={},wk$=id=>document.getElementById(id);
 const wkSeen=()=>{try{return localStorage.getItem('sq_seenv')||''}catch(e){return''}},wkNew=()=>wkSeen()!==PATCH_NOTES[0].v;
 function wkMarkSeen(){try{localStorage.setItem('sq_seenv',PATCH_NOTES[0].v)}catch(e){self.SQERR&&SQERR(e,'075-1')}const b=document.querySelector('#tsmn [data-a="wk"]');if(b)b.textContent='WIKI'}
+// Nov 24: the tabs are grouped into sections (a list on the left; a row with the section's pages under it on phones). A tab that
+// isn't in any section (added later) shows under "More". Every tab button keeps data-wkt="<tab>", so links and checks still work.
+const WK_SECT=[{k:'home',n:'Home',i:'🏠',t:['start']},{k:'begin',n:'Getting started',i:'🧭',t:['guides','controls']},{k:'skills',n:'Skills',i:'⭐',t:['skills','xp']},
+ {k:'items',n:'Items',i:'🎒',t:['items','shops']},{k:'make',n:'Making things',i:'🔨',t:['craft','brew']},{k:'fight',n:'Monsters',i:'👾',t:['mobs','bosses','dungeons','pets']},
+ {k:'world',n:'World',i:'🗺️',t:['world','maps','npcs']},{k:'quests',n:'Quests',i:'📜',t:['quests','ach']},{k:'together',n:'Together',i:'🤝',t:['social','guild','dropcard','patron']},
+ {k:'news',n:"What's new",i:'📰',t:['patch']}];
+// one line under each tab's title
+const WK_TDESC={patch:'What changed in each update.',guides:'How to get started, get a boat, unlock the islands and earn gold.',controls:'Keys, touch buttons and controller buttons, and a few tips.',
+ skills:'Every skill: how to train it, its perks and what each level unlocks.',xp:'How much XP every level takes, and a calculator.',items:'Every item in the game. Pick a group, or tap an item for its page.',
+ craft:'Every recipe: furnace, anvil, crafting, cooking, farming and fishing.',shops:'What every shop sells, and for how much.',mobs:'Every monster and where you meet it.',
+ bosses:'World bosses and island bosses: where they appear and what they drop.',dungeons:'Every dungeon and its boss.',quests:'Every quest and its reward.',npcs:'Who lives where.',
+ maps:'A map of every island, with its landmarks.',world:'Every island and town, and how to get there.',guild:'Guilds: the guild island, quests, the bank, bosses, capes and sails.',
+ pets:'Rare drops, and pets you can buy.',brew:'Potions from the cauldron, and dagger coatings.',dropcard:'The card game played with cards you find all over SkillQuest.',
+ social:'Chat, parties, trading, the World Market, duels and chess.',patron:'What Patrons get, the Art Room and the Song Studio.',ach:'Every achievement and your progress.'};
 const WK_TABS=[['patch','Patch notes'],['start','Home'],['guides','Guides'],['skills','Skills'],['xp','XP'],['items','Items'],['craft','Crafting'],['shops','Shops'],['mobs','Monsters'],['bosses','Bosses'],
  ['dungeons','Dungeons'],['quests','Quests'],['npcs','People'],['maps','Maps'],['world','Islands & Towns'],['guild','Guilds'],['pets','Pets & Rares']];
-const WK_SKILL={Attack:'Fight with swords and fists. Higher levels hit harder and unlock better swords.',Woodcutting:'Chop trees for logs: plain, oak, maple and yew.',Mining:'Mine rocks for stone and ores: iron, gold, mithril, adamant and gems.',
+const WK_SKILL={Attack:'Fight with swords and fists. Higher levels hit harder and unlock better swords.',Woodcutting:'Chop trees for logs: plain trees and pines, oak, willow, maple, yew and void trees. Higher trees take longer to fell, and a better axe chops faster.',Mining:'Mine rocks for stone and ores: iron, gold, mithril, adamant and gems.',
  Foraging:'Pick berries, herbs and other wild things.',Cooking:'Cook meat and fish at a campfire or stove so they heal more and fill you up.',Firemaking:'Build campfires: they keep monsters away, cook food and light the night.',
  Crafting:'Make goods, building pieces, furniture, stations, gold jewelry and the ranger set.',Tactics:'Earned alongside combat. Unlocks tactical perks.',Defence:'Block hits and wear heavier armor.',Fishing:'Catch fish with a rod, from shrimp up to the rarest catches.',
  Smithing:'Smelt ore into bars at a furnace, forge weapons, armor, bows, arrows and wands at an anvil, and repair gear, upgrade it and smith cores at a Blacksmith\'s bench.',Farming:'Till soil, plant seeds, water and harvest crops.',Archery:'Shoot bows. Bows and arrows are made at an anvil (Smithing).',Magic:'Cast fire, ice and storm spells with wands, and their ultimates.',
@@ -38,31 +52,65 @@ const WK_RARE=[['Dragonsoul amulet','ja_dsoul','Ancient Dragon','Your ultimate b
  ['Pet wolf',null,'Wolf','A wolf with a red collar that follows you everywhere. Each kind of wolf drops its own: Wolf (Hollow), Briar wolf (Briarwood), Snow wolf (snow wolves) and Void wolf (Shattered Expanse).','1 in 1,000 from each wolf you defeat.'],
  ['Treeling (pet)',null,'Trees','A little walking tree that follows you around.','1 in 5,000 from every tree you chop down.']];
 const WK_PAT={rain:'Fire rain: burning circles fall around it',ring:'Shockwave: a ring that spreads out from it (jump through by rolling)',rocks:'Falling rocks',meteors:'Meteors crash down all around',beams:'Beams of dark fire sweep out',pools:'Pools of fire on the ground',breath:'Breathes a cone of fire'};
-{const st=document.createElement('style');st.textContent=`#sqwk{position:fixed;inset:0;z-index:96;display:none;flex-direction:column;align-items:center;background:rgba(10,20,40,.86);padding:calc(env(safe-area-inset-top,0px) + 10px) 10px calc(env(safe-area-inset-bottom,0px) + 10px);box-sizing:border-box;font-family:${PF}}
-#sqwk .ww{width:100%;max-width:1100px;height:100%;display:flex;flex-direction:column;background:#f8f8f8;color:#404040;border:4px solid #485870;box-shadow:inset 0 0 0 3px #a8c0e0,0 6px 0 rgba(0,0,0,.35);box-sizing:border-box;overflow:hidden}
-#sqwk .wh{display:flex;align-items:center;gap:10px;padding:10px 12px 8px;background:linear-gradient(#5878b8,#3c5898);color:#f8f8f8;border-bottom:4px solid #283c68;flex:none}
-#sqwk .wh b{font-size:clamp(17px,4.4vw,23px);letter-spacing:.12em;text-shadow:2px 2px 0 #1c2848;white-space:nowrap}
-#sqwk .wh input{flex:1;min-width:0;font:500 15px ${PF};padding:6px 8px;border:3px solid #283c68;border-radius:0;background:#fff;color:#303030}
-#sqwk .wh button{font:700 14px ${PF};padding:6px 10px;border:3px solid #f8f8f8;background:#283c68;color:#f8f8f8;cursor:pointer}
-#sqwk .wt{display:flex;gap:6px;overflow-x:auto;padding:8px 10px;border-bottom:3px solid #d8e0f0;flex:none;scrollbar-width:thin}
-#sqwk .wt button{flex:none;font:700 13px ${PF};padding:6px 10px;border:3px solid #485870;background:#f8f8f8;color:#404040;cursor:pointer;white-space:nowrap}
-#sqwk .wt button.on{background:#485870;color:#fff}#sqwk .wt button.gpf,#sqwk .wh button.gpf{box-shadow:inset 0 0 0 3px #f8a020}
-#sqwk .wb{flex:1;overflow-y:auto;padding:10px 12px;line-height:1.45}
-#sqwk h3{margin:14px 0 6px;font-size:16px;letter-spacing:.06em;color:#3c5898;border-bottom:2px solid #d8e0f0;padding-bottom:3px}#sqwk h3:first-child{margin-top:2px}
-#sqwk .c{display:flex;gap:10px;align-items:flex-start;padding:8px;border:2px solid #e0e6f0;background:#fff;margin:6px 0}
+{const st=document.createElement('style');st.textContent=`#sqwk{position:fixed;inset:0;z-index:96;display:none;flex-direction:column;align-items:center;background:rgba(8,14,30,.88);padding:calc(env(safe-area-inset-top,0px) + 10px) 10px calc(env(safe-area-inset-bottom,0px) + 10px);box-sizing:border-box;font-family:${PF}}
+#sqwk *{box-sizing:border-box}
+#sqwk .ww{width:100%;max-width:1180px;height:100%;display:flex;flex-direction:column;background:#f3f5f9;color:#2c3444;border:4px solid #26324e;box-shadow:inset 0 0 0 2px #8aa4d0,0 6px 0 rgba(0,0,0,.4);overflow:hidden}
+#sqwk .wh{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#26324e;color:#fff;flex:none;border-bottom:3px solid #141c32}
+#sqwk .wh b{font-size:clamp(16px,4vw,21px);letter-spacing:.1em;white-space:nowrap;color:#ffd86a;text-shadow:2px 2px 0 #10182c;cursor:pointer}
+#sqwk .wh b small{color:#c8d8f8;font-size:.62em;letter-spacing:.04em;margin-left:6px;text-shadow:none}
+#sqwk .wh input{flex:1;min-width:0;font:500 15px ${PF};padding:8px 10px;border:3px solid #10182c;border-radius:0;background:#fff;color:#222}
+#sqwk .wh button{font:700 13px ${PF};padding:7px 12px;border:3px solid #fff;background:#3c5898;color:#fff;cursor:pointer}
+#sqwk .wm{flex:1;display:flex;min-height:0}
+#sqwk .wnav{flex:none;width:212px;overflow-y:auto;background:#e3e9f3;border-right:3px solid #c9d3e4;padding:8px 0 16px;scrollbar-width:thin}
+#sqwk .wnav .wsec{display:flex;align-items:center;gap:9px;width:100%;text-align:left;font:700 14px ${PF};padding:9px 12px;border:0;border-left:5px solid transparent;background:none;color:#2c3a5c;cursor:pointer}
+#sqwk .wnav .wsec i{font-style:normal;width:20px;text-align:center;flex:none}
+#sqwk .wnav .wsec:hover{background:#d4dcec}
+#sqwk .wnav .wg.on>.wsec{background:#fff;border-left-color:#3c5898;color:#141c32}
+#sqwk .wnav .wsub{display:none;padding:0 0 8px;background:#fff}
+#sqwk .wnav .wg.on>.wsub{display:block}
+#sqwk .wnav .wsub button{display:block;width:100%;text-align:left;font:600 13px ${PF};padding:6px 12px 6px 46px;border:0;background:none;color:#4a5878;cursor:pointer}
+#sqwk .wnav .wsub button:hover{color:#141c32;background:#f1f4fa}
+#sqwk .wnav .wsub button.on{color:#141c32;background:#e8eefb;box-shadow:inset 4px 0 0 #8aa4d0}
+#sqwk button.gpf{box-shadow:inset 0 0 0 3px #f8a020!important}
+#sqwk .wc{flex:1;min-width:0;display:flex;flex-direction:column}
+#sqwk .wsr{display:none}
+#sqwk .wb{flex:1;overflow-y:auto;padding:16px 20px 28px;line-height:1.5}
+#sqwk .wph{margin:0 0 14px;padding:0 0 10px;border-bottom:3px solid #d9e0ec}#sqwk .wph h2{margin:0;font-size:23px;color:#141c32;letter-spacing:.02em}#sqwk .wph p{margin:4px 0 0;color:#5a6680;font-size:14px}
+#sqwk h2{color:#141c32}
+#sqwk h3{margin:20px 0 8px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:#3c5898;border:0;padding:0}#sqwk h3:first-child{margin-top:2px}
+#sqwk .wt{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 10px}
+#sqwk .wt button{flex:none;font:700 13px ${PF};padding:6px 10px;border:2px solid #b8c4da;background:#fff;color:#2c3a5c;cursor:pointer;white-space:nowrap}
+#sqwk .wt button:hover{border-color:#3c5898}#sqwk .wt button.on{background:#26324e;color:#fff;border-color:#26324e}
+#sqwk .c{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:2px solid #d9e0ec;background:#fff;margin:8px 0;box-shadow:0 2px 0 #d9e0ec}
 #sqwk .c img,#sqwk .c canvas{width:32px;height:32px;image-rendering:pixelated;flex:none;background:#eef2f8;border:2px solid #d0d8e8}
-#sqwk .c img.mob{width:52px;height:52px;object-fit:contain}#sqwk .c .big{width:64px;height:auto;min-height:64px;background:#2a3048}
-#sqwk .c .tx{flex:1;min-width:0;font-size:14px}#sqwk .c .tx b{font-size:15px;color:#283c68}#sqwk .c .tx small{color:#707888}
-#sqwk .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;margin:2px 4px 0 0;border:2px solid #485870;color:#485870;background:#f0f4fa}
-#sqwk table{width:100%;border-collapse:collapse;font-size:13px;margin:4px 0 8px}#sqwk td,#sqwk th{padding:4px 6px;border-bottom:1px solid #e2e6ee;text-align:left;vertical-align:top}#sqwk th{background:#eef2f8;color:#485870}
-#sqwk .lk{color:#3c5898;text-decoration:underline;cursor:pointer}#sqwk .emp{text-align:center;color:#707888;padding:30px 10px}
-#sqwk select,#sqwk input[type=number]{font:600 14px ${PF};padding:3px 4px;border:2px solid #485870;border-radius:0;background:#fff;color:#303030}#sqwk p{margin:6px 0}#sqwk .cg{display:block}@media(min-width:900px){#sqwk .cg{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}#sqwk .cg>.c{margin:5px 0}}
-#sqwk .wt{position:relative;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);padding-right:28px}
-#sqwk .hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:6px 0 10px}#sqwk .hub button{text-align:left;font:600 13px ${PF};padding:9px 10px;border:3px solid #485870;background:#fff;color:#404040;cursor:pointer;line-height:1.3}
-#sqwk .hub button b{display:block;font-size:15px;color:#283c68;margin-bottom:2px}#sqwk .hub button:hover{background:#eef2f8}
-#sqwk .nx{border:3px solid #3c5898;background:#eef4ff;padding:8px 10px;margin:6px 0}#sqwk .nx p{margin:4px 0}
-#sqwk .more{display:block;width:100%;margin:8px 0;font:700 14px ${PF};padding:8px;border:3px solid #485870;background:#eef2f8;color:#283c68;cursor:pointer}#sqwk .wf{padding:6px 12px;font-size:11px;color:#808898;border-top:3px solid #d8e0f0;flex:none}`;document.head.appendChild(st)}
-const wkEl=document.createElement('div');wkEl.id='sqwk';wkEl.innerHTML='<div class="ww"><div class="wh"><b>WIKI</b><input id="wkq" type="search" placeholder="Search everything..." aria-label="Search the wiki" autocomplete="off"><button data-wk="x">CLOSE</button></div><div class="wt" id="wkt"></div><div class="wb" id="wkb"></div><div class="wf">Item, recipe, skill, quest and boss details are read from the game itself, so they stay up to date.</div></div>';
+#sqwk .c img.mob{width:56px;height:56px;object-fit:contain}#sqwk .c .big{width:72px;height:auto;min-height:72px;background:#26324e;border-color:#141c32}
+#sqwk .c .tx{flex:1;min-width:0;font-size:14px}#sqwk .c .tx>b:first-child{font-size:15px;color:#1c2848}#sqwk .c .tx small{color:#69748a}
+#sqwk .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;margin:2px 4px 0 0;border:0;color:#fff;background:#5878b8;vertical-align:1px}
+#sqwk table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 12px;background:#fff;border:2px solid #d9e0ec}
+#sqwk td,#sqwk th{padding:5px 8px;border-bottom:1px solid #e6ebf3;text-align:left;vertical-align:top}
+#sqwk th{background:#e8edf6;color:#2c3a5c;font-size:12px;letter-spacing:.03em}#sqwk tr:nth-child(even)>td{background:#f8fafd}
+#sqwk .lk{color:#2f55b0;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;cursor:pointer}#sqwk .lk:hover{color:#141c32}
+#sqwk .emp{text-align:center;color:#69748a;padding:30px 10px}
+#sqwk select,#sqwk input[type=number]{font:600 14px ${PF};padding:4px 6px;border:2px solid #8a98b4;border-radius:0;background:#fff;color:#222}#sqwk p{margin:6px 0}
+#sqwk .cg{display:block}@media(min-width:1000px){#sqwk .cg{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}#sqwk .cg>.c{margin:6px 0}}
+#sqwk .hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin:6px 0 12px}
+#sqwk .hub button{text-align:left;font:600 12px ${PF};padding:10px 12px;border:2px solid #c9d3e4;background:#fff;color:#5a6680;cursor:pointer;line-height:1.35;box-shadow:0 2px 0 #d9e0ec}
+#sqwk .hub button b{display:block;font-size:15px;color:#1c2848;margin-bottom:3px}#sqwk .hub button b i{font-style:normal;margin-right:6px}#sqwk .hub button:hover{border-color:#3c5898;background:#f6f8fd}
+#sqwk .nx{border:2px solid #3c5898;background:#eef3ff;padding:10px 12px;margin:8px 0;box-shadow:0 2px 0 #c9d6f2}#sqwk .nx p{margin:4px 0}
+#sqwk .more{display:block;width:100%;margin:8px 0;font:700 14px ${PF};padding:9px;border:2px solid #8a98b4;background:#fff;color:#1c2848;cursor:pointer}
+#sqwk .wf{padding:6px 12px;font-size:11px;color:#7a869c;border-top:2px solid #d9e0ec;flex:none;background:#f3f5f9}
+@media(max-width:760px){#sqwk{padding:calc(env(safe-area-inset-top,0px) + 4px) 4px calc(env(safe-area-inset-bottom,0px) + 4px)}
+ #sqwk .wh{padding:6px 8px;gap:8px}#sqwk .wh b small{display:none}#sqwk .wh button{padding:6px 9px}
+ #sqwk .wm{flex-direction:column}
+ #sqwk .wnav{width:auto;display:flex;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:2px solid #c9d3e4;padding:6px;gap:6px;flex:none}
+ #sqwk .wnav .wg{flex:none}#sqwk .wnav .wsub,#sqwk .wnav .wg.on>.wsub{display:none}
+ #sqwk .wnav .wsec{width:auto;padding:7px 10px;border:2px solid #b8c4da;background:#fff;white-space:nowrap;font-size:13px;gap:6px}
+ #sqwk .wnav .wg.on>.wsec{background:#26324e;color:#fff;border-color:#26324e}
+ #sqwk .wsr{display:flex;gap:6px;overflow-x:auto;padding:6px 8px;background:#fff;border-bottom:2px solid #d9e0ec;flex:none}
+ #sqwk .wsr button{flex:none;font:700 12px ${PF};padding:5px 10px;border:2px solid #b8c4da;background:#f3f5f9;color:#2c3a5c;white-space:nowrap;cursor:pointer}
+ #sqwk .wsr button.on{background:#3c5898;color:#fff;border-color:#3c5898}
+ #sqwk .wb{padding:10px 10px 20px}#sqwk .wph h2{font-size:19px}#sqwk .c{padding:9px 10px}}`;document.head.appendChild(st)}
+const wkEl=document.createElement('div');wkEl.id='sqwk';wkEl.innerHTML='<div class="ww"><div class="wh"><b data-wkt="start" title="Wiki home">WIKI<small>SkillQuest</small></b><input id="wkq" type="search" placeholder="Search items, monsters, skills, places..." aria-label="Search the wiki" autocomplete="off"><button data-wk="x">CLOSE</button></div><div class="wm"><nav class="wnav" id="wkt" aria-label="Wiki sections"></nav><div class="wc"><div class="wsr" id="wks"></div><div class="wb" id="wkb"></div></div></div><div class="wf">Item, recipe, skill, quest and boss details are read from the game itself, so they stay up to date.</div></div>';
 document.body.appendChild(wkEl);for(const ev of['touchstart','pointerdown','mousedown'])wkEl.addEventListener(ev,e=>e.stopPropagation());
 wkEl.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();wkClose()}});wkEl.addEventListener('keyup',e=>e.stopPropagation());
 const wkE=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -73,7 +121,7 @@ const wkCost=c=>Object.entries(c||{}).map(([a,b])=>b+' × '+wkLink(a)).join(', '
 const sk=n=>SKN.indexOf(n);
 // every recipe in the game, in one shape: {out, n, sk, lv, xp, c, at}
 function wkRecipes(){const R=[];
- for(const r of SM){const out=r.k||(r.arm?'eq_'+r.arm[0]+r.arm[1]:null);R.push({out,n:r.n,sk:'Smithing',lv:r.lv,xp:r.xp,c:r.c,at:r.smelt?'Furnace':'Anvil'})}
+ for(const r of SM){const out=r.k||(r.arm?'eq_'+r.arm[0]+r.arm[1]:null);R.push({out,n:r.n,sk:'Smithing',lv:r.lv,xp:r.xp,c:r.c,at:r.smelt?'Furnace':'Anvil',t:r._mx&&r._mt!=null?r._mt:(r.smelt?2.4:2.6)})}
  for(const r of GOODS)R.push({out:r.k,n:r.n,sk:'Crafting',lv:r.req,xp:r.xp,c:r.c,at:'Crafting bench / Craft menu'});
  for(const r of BREC)R.push({out:r.k,n:r.n,sk:'Crafting',lv:r.req,xp:r.xp,c:r.c,at:'Craft menu (Building)'});
  for(const r of FREC){if(r.hide&&r.hide())continue;R.push({out:r.k,n:r.n,sk:'Archery',lv:r.lv,xp:r.xp,c:r.c,at:'Craft menu (Fletching)'})}
@@ -82,7 +130,7 @@ function wkRecipes(){const R=[];
  // later sections add their own recipes (272's Blacksmith's bench): window.SQWKREC = [f(R)]
  for(const f of(window.SQWKREC||[]))try{f(R)}catch(e){self.SQERR&&SQERR(e,'075-12')}
  return R}
-function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab]();const out=[];const card=(t,ic,tx,big)=>out.push({t,h:'<div class="c">'+(ic?ic.startsWith('<')?ic:'<img alt="" src="'+ic+'"'+(big?' class="'+(big==='mob'?'mob':'big')+'"':'')+'>':'')+'<div class="tx">'+tx+'</div></div>'}),head=t=>out.push({t:'',h:'<h3>'+wkE(t)+'</h3>',head:1});
+function wkCards(tab,srch){if(WK2[tab]&&!(srch&&tab==='skills'))return WK2[tab](srch);const out=[];const card=(t,ic,tx,big)=>out.push({t,h:'<div class="c">'+(ic?ic.startsWith('<')?ic:'<img alt="" src="'+ic+'"'+(big?' class="'+(big==='mob'?'mob':'big')+'"':'')+'>':'')+'<div class="tx">'+tx+'</div></div>'}),head=t=>out.push({t:'',h:'<h3>'+wkE(t)+'</h3>',head:1});
  if(tab==='patch'){const PN=srch||WK.allp?PATCH_NOTES:PATCH_NOTES.slice(0,12);for(const p of PN)card(p.t+' '+p.v+' '+p.n.join(' '),'','<b>'+wkE(p.t)+'</b> <span class="tag">'+wkE(p.d)+'</span><small> version '+wkE(p.v)+'</small><ul style="margin:6px 0 0;padding-left:18px">'+p.n.map(x=>'<li style="margin:3px 0">'+wkE(x)+'</li>').join('')+'</ul>');if(!srch&&!WK.allp&&PATCH_NOTES.length>PN.length)out.push({t:'',h:'<button class="more" data-wkm="p">Show '+(PATCH_NOTES.length-PN.length)+' older updates</button>',head:1});wkMarkSeen()}
  else if(tab==='start'){
   const D={guides:'How to get started, boats, voyages, gold',skills:'Every skill, its perks and unlocks',xp:'XP table and calculator',items:'Every item: price, recipe, uses',craft:'Furnace, anvil, cooking and crafting recipes',
@@ -145,24 +193,32 @@ function wkGrid(hs){let out='',run=[];const flush=()=>{if(run.length)out+=run.le
 function wkRoute(id){try{const R=WORLD_REGIONS[id];if(id==='hollow')return'Home: where every voyage starts.';if(R.custom)return'Open to everyone: sail there from any harbor post.';
   if(routeOpen(id))return'✓ Charted: sail there from any harbor post.';const v=VOYS.find(q=>(q.unlock||[]).includes(R.unlock));
   return v?'How to get there: the voyage "'+v.name+'" from Sera, the Navigator in Tidewatch'+(v.needs.some(n=>n[0]==='@')?' (needs a boat upgrade she fits)':'')+'.':'How to get there: ask Sera, the Navigator in Tidewatch.'}catch(e){return''}}
+function wkSects(){const have=new Set(WK_TABS.map(x=>x[0])),used=new Set(),S=[];
+ for(const g of WK_SECT){const t=g.t.filter(k=>have.has(k));t.forEach(k=>used.add(k));if(t.length)S.push({...g,t})}
+ const rest=WK_TABS.map(x=>x[0]).filter(k=>!used.has(k));if(rest.length)S.push({k:'more',n:'More',i:'➕',t:rest});return S}
+function wkSectOf(tab){return wkSects().find(g=>g.t.includes(tab))||null}
+const wkTabName=k=>{const x=WK_TABS.find(t=>t[0]===k);return x?x[1]:k};
 function wkRender(){const t=wk$('wkt'),b=wk$('wkb'),q=WK.q.trim().toLowerCase();
- t.innerHTML=WK_TABS.map(([k,n])=>'<button data-wkt="'+k+'" class="'+(k===WK.tab&&!q?'on':'')+'">'+wkE(n)+'</button>').join('');
+ const S=wkSects(),cur=!q&&!WK.pg?wkSectOf(WK.tab):null,sb=k=>'<button data-wkt="'+k+'" class="'+(k===WK.tab&&!q&&!WK.pg?'on':'')+'">'+wkE(wkTabName(k))+'</button>';
+ t.innerHTML=S.map(g=>'<div class="wg'+(cur&&cur.k===g.k?' on':'')+'">'+(g.t.length===1?'<button class="wsec" data-wkt="'+g.t[0]+'"><i>'+g.i+'</i>'+wkE(g.n)+'</button>':'<button class="wsec" data-wkg="'+g.k+'"><i>'+g.i+'</i>'+wkE(g.n)+'</button><div class="wsub">'+g.t.map(sb).join('')+'</div>')+'</div>').join('');
+ {const r=wk$('wks');if(r){r.innerHTML=cur&&cur.t.length>1?cur.t.map(sb).join(''):'';r.style.display=cur&&cur.t.length>1?'':'none'}}
  let h='';if(!q&&WK.pg&&WKPAGES[WK.pg.k]){t.querySelectorAll('.on').forEach(x=>x.classList.remove('on'));let pg='';try{pg=WKPAGES[WK.pg.k](WK.pg.id)}catch(e){pg='<div class="emp">This page could not be shown.</div>';console.warn(e)}
-  h='<div class="wkbar"><button class="more" data-wkb="1" style="margin:0 0 8px">◀ Back</button></div>'+pg}
- else if(!q){const cs=wkCards(WK.tab);h=wkGrid(cs.map(c=>c.h))}
- else{for(const[k,n]of WK_TABS){if(k==='start'||k==='patch')continue;const cs=wkCards(k,1).filter(c=>!c.head&&(c.t+' '+c.h.replace(/<[^>]+>/g,' ')).toLowerCase().includes(q));if(cs.length)h+='<h3>'+wkE(n)+' ('+cs.length+')</h3>'+wkGrid(cs.slice(0,40).map(c=>c.h)).concat('')}
-  if(!h)h='<div class="emp">Nothing matches "'+wkE(WK.q)+'".</div>'}
+  h='<div class="wkbar"><button class="more" data-wkb="1" style="margin:0 0 10px;width:auto;display:inline-block;padding:7px 14px">◀ Back</button></div>'+pg}
+ else if(!q){const cs=wkCards(WK.tab);h=(WK.tab==='start'?'':'<div class="wph"><h2>'+wkE(wkTabName(WK.tab))+'</h2>'+(WK_TDESC[WK.tab]?'<p>'+wkE(WK_TDESC[WK.tab])+'</p>':'')+'</div>')+wkGrid(cs.map(c=>c.h))}
+ else{h='<div class="wph"><h2>Search: '+wkE(WK.q.trim())+'</h2></div>';for(const[k,n]of WK_TABS){if(k==='start'||k==='patch'||k==='controls')continue;const cs=wkCards(k,1).filter(c=>!c.head&&(c.t+' '+c.h.replace(/<[^>]+>/g,' ')).toLowerCase().includes(q));if(cs.length)h+='<h3>'+wkE(n)+' ('+cs.length+')</h3>'+wkGrid(cs.slice(0,40).map(c=>c.h)).concat('')}
+  if(!/<h3>/.test(h))h+='<div class="emp">Nothing matches "'+wkE(WK.q)+'".</div>'}
  b.innerHTML=h||'<div class="emp">Nothing here yet.</div>';if(wk$('wkxr'))wkXpCalc()}
 function wkOpen(tab,q){WK.open=true;for(const k in WKPIC)delete WKPIC[k];   // monster pictures are drawn again (the Dev Suite may have changed a look)
  if(tab)WK.tab=tab;else if(wkNew())WK.tab='patch';WK.q=q||'';wk$('wkq').value=WK.q;wkEl.style.display='flex';wkRender();wk$('wkb').scrollTop=0;try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'075-6')}
- setTimeout(()=>{const f=wkEl.querySelector('.wt button.on');if(f&&typeof GPON!=='undefined'&&(GPON||TS.kb))setFocus(f)},30)}
+ setTimeout(()=>{const f=wkEl.querySelector('#wkt .on>.wsec')||wkEl.querySelector('#wkt button.on');if(f&&typeof GPON!=='undefined'&&(GPON||TS.kb))setFocus(f)},30)}
 function wkClose(){WK.open=false;wkEl.style.display='none';try{setFocus(null)}catch(e){self.SQERR&&SQERR(e,'075-7')}try{sfx('talk')}catch(e){self.SQERR&&SQERR(e,'075-8')}if(TS.open&&TS.stage){const b=tsMn.querySelector('[data-a="wk"]');if(b&&(GPON||TS.kb))setFocus(b)}}
-wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt],[data-wki],[data-wks],[data-wkm],[data-wkp],[data-wkb]');if(!b)return;if(b.dataset.wk==='x'){wkClose();return}
+wkEl.addEventListener('click',e=>{const b=e.target.closest('[data-wk],[data-wkt],[data-wkg],[data-wki],[data-wks],[data-wkm],[data-wkp],[data-wkb]');if(!b)return;if(b.dataset.wk==='x'){wkClose();return}
+ if(b.dataset.wkg){const g=wkSects().find(x=>x.k===b.dataset.wkg);if(g){WK.tab=g.t[0];WK.q='';WK.pg=null;WK.hist.length=0;wk$('wkq').value='';wkRender();wk$('wkb').scrollTop=0}return}
  if(b.dataset.wkb){const h=WK.hist.pop();if(h){WK.tab=h.tab;WK.q=h.q;WK.pg=h.pg}else WK.pg=null;wk$('wkq').value=WK.q;wkRender();wk$('wkb').scrollTop=h?h.y||0:0;return}
  if(b.dataset.wkp||(b.dataset.wki&&WKPAGES.item)){const v=b.dataset.wkp||'item:'+b.dataset.wki,i=v.indexOf(':');wkGo(v.slice(0,i),v.slice(i+1));return}
  if(b.dataset.wkm){WK.allp=1;const y=wk$('wkb').scrollTop;wkRender();wk$('wkb').scrollTop=y;return}
  if(b.dataset.wks){WK.sk=+b.dataset.wks;wkRender();return}
- if(b.dataset.wkt){WK.tab=b.dataset.wkt;WK.q='';WK.pg=null;WK.hist.length=0;wk$('wkq').value='';wkRender();wk$('wkb').scrollTop=0;const tb=wk$('wkt').querySelector('[data-wkt="'+WK.tab+'"]');if(tb)tb.scrollIntoView({block:'nearest',inline:'center'});return}
+ if(b.dataset.wkt){WK.tab=b.dataset.wkt;WK.q='';WK.pg=null;WK.hist.length=0;wk$('wkq').value='';wkRender();wk$('wkb').scrollTop=0;const tb=wk$('wkt').querySelector('.wg.on>.wsec');if(tb&&wk$('wkt').scrollWidth>wk$('wkt').clientWidth+4)tb.scrollIntoView({block:'nearest',inline:'center'});return}
  if(b.dataset.wki){const k=b.dataset.wki;WK.q=String(INAME[k]||k);wk$('wkq').value=WK.q;wkRender();wk$('wkb').scrollTop=0}});
 wkEl.addEventListener('input',e=>{if(e.target&&/^wkx/.test(e.target.id))wkXpCalc()});wkEl.addEventListener('change',e=>{if(e.target&&/^wkx/.test(e.target.id))wkXpCalc()});
 wk$('wkq').addEventListener('input',()=>{WK.q=wk$('wkq').value;WK.pg=null;wkRender();wk$('wkb').scrollTop=0});
@@ -182,9 +238,10 @@ const WK_TRAIN={Attack:[['Defeat monsters','12 XP each'],['Hit a training dummy 
 function wkActions(skill){const A=[];const add=(n,xp,lv,c)=>{if(xp>0)A.push({n,xp,lv:lv||1,c})};
  for(const[n,x]of(WK_TRAIN[skill]||[])){const m=/^(\d+) XP/.exec(x);if(m)add(n,+m[1],1)}
  const T=window.SQTIER||{};for(const k in T){const t=T[k];if(SKN[t.sk]===skill)add((INAME[t.item]||k).replace(/ (logs|ore)$/,'')+(t.base==='tree'?' tree':' rock'),t.xp,t.lv)}
- for(const r of wkRecipes())if(r.sk===skill)add(r.n,r.xp,r.lv,r.c);
+ for(const r of wkRecipes())if(r.sk===skill){const n0=A.length;add(r.n,r.xp,r.lv,r.c);const L=A[A.length-1];if(A.length>n0&&L){if(r.t!=null)L.t=r.t;if(r.out)L.k=r.out}}
  if(skill==='Fishing')for(const f of FISH_T)add(f.n,f.xp,f.lv);
  if(skill==='Farming')for(const k in CROPS){const c=CROPS[k];add(c.n,c.xp,c.lv)}
+ for(const f of(window.SQWKACT||[]))try{f(skill,A)}catch(e){self.SQERR&&SQERR(e,'075-13')}
  return A.sort((a,b)=>a.lv-b.lv||a.xp-b.xp)}
 const xpAt=l=>XT[Math.max(0,Math.min(98,l-1))]|0;
 // a picture of a monster: drawn by the game's own code onto the screen for an instant, then copied
@@ -231,7 +288,7 @@ WK2.guild=()=>{const out=[],G=(t,h,ic)=>out.push({t:t+' '+h.replace(/<[^>]+>/g,'
  G('Guild chat and Top guilds','<br>Talk to your guild in the Guild tab of the chat, or type <b>/g</b> and your message. START &gt; Guild &gt; Top guilds ranks every guild by level.');
  H('The guild island');
  G('Your own island','<br>Every guild gets its own island that only its members can sail to, from any harbor post. It starts empty, with a guild board, the bank chest and your banner. Members can build homes there.');
- G('Planting','<br>Leaders and officers plant the saplings, ore veins, bushes, cactus seeds and mushroom spores the guild earns from quests. Every member can chop, mine and forage them, and everything grows back in a minute instead of four. Void saplings grow void trees, whose void logs summon the Void Treant.');
+ G('Planting','<br>Leaders and officers plant the saplings, ore veins, bushes, cactus seeds and mushroom spores the guild earns from quests. Every member can chop, mine and forage them, and everything grows back in a minute instead of four. Void saplings grow void trees (Woodcutting 75 and an adamant axe or better to chop), whose void logs summon the Void Treant.');
  G('The guild bank','<br>The bank chest on the island holds items for the whole guild. The leader sets how many withdrawals officers and members get each day, and the leader and officers can read a log of every deposit and withdrawal. Buttons put in all your void logs, raw fish, logs or ores at once, or everything in your bag (tap twice).');
  H('Guild Quests, levels and ranks');
  G('Guild Quests','<br>The leader or an officer starts one quest at a time, and everything members gather anywhere in the world counts toward it:<br>Woodcutting: cut <b>100,000</b> trees<br>Mining: mine <b>100,000</b> rocks and ores<br>Foraging: forage <b>100,000</b> berries, nuts, mushrooms and cactus fruit<br>Fishing: catch <b>50,000</b> fish<br>Those are the first quests. Every quest of a skill the guild finishes doubles the next one of that skill (200,000 trees, then 400,000, and so on).<br>When it\'s done, the leader or an officer picks one reward for the bank: tree saplings (up to Void saplings), ore veins, berry and nut bushes, cactus seeds, mushroom spores, fishing ponds or a mountain of bait.');
@@ -299,15 +356,27 @@ WK2.maps=()=>{const out=[];let pending=false;for(const id in WORLD_REGIONS){cons
  return[{t:'',h:'<p style="font-size:13px"><span style="color:#c8a020">●</span> towns · <span style="color:#d03838">●</span> dungeons · <span style="color:#3898c8">●</span> islands and docks · <span style="color:#888">●</span> landmarks</p>'}].concat(out)};
 // skills: pick one at a time
 WK2.skills=()=>{const i=Math.min(SKN.length-1,WK.sk|0),n=SKN[i],T=typeof TREES!=='undefined'&&TREES[i],col=(typeof SKC!=='undefined'&&SKC[i])||'#485870';
- let h='<div class="wt" style="flex-wrap:wrap;border:0;padding:0 0 8px">'+SKN.map((s,j)=>'<button data-wks="'+j+'" class="'+(j===i?'on':'')+'" style="'+(j===i?'background:'+(SKC[j]||'#485870')+';border-color:#202838':'')+'">'+wkE(s)+'</button>').join('')+'</div>';
- h+='<div class="c" style="border-color:'+col+'"><div class="tx"><b style="font-size:18px">'+wkE(n)+'</b> <span class="tag">your level '+lvOf(i)+'</span><p>'+wkE(WK_SKILL[n]||'')+'</p>';
- const A=wkActions(n);if(A.length)h+='<b>Training</b><table><tr><th>Do</th><th>Level</th><th>XP</th></tr>'+A.slice(0,40).map(x=>'<tr><td>'+wkE(x.n)+'</td><td>'+x.lv+'</td><td>'+x.xp+'</td></tr>').join('')+'</table>';
+ let h='<div class="wt">'+SKN.map((s,j)=>'<button data-wks="'+j+'" class="'+(j===i?'on':'')+'" style="'+(j===i?'background:'+(SKC[j]||'#485870')+';border-color:#202838':'')+'">'+wkE(s)+'</button>').join('')+'</div>';
+ h+='<div class="c" style="border-color:'+col+';box-shadow:0 2px 0 '+col+'"><div class="tx"><b style="font-size:20px">'+wkE(n)+'</b> <span class="tag" style="background:'+col+'">your level '+lvOf(i)+'</span><p>'+wkE(WK_SKILL[n]||'')+'</p>';
+ // Nov 24: a time column where the game knows it (smithing recipes, trees), more than 40 rows, and XP shown with separators
+ const A=wkActions(n),hasT=A.some(x=>x.t!=null),fx=v=>(Math.round(v*10)/10).toLocaleString('en-US'),ft=v=>v==null?'':(Math.round(v*10)/10)+' s';
+ if(A.length)h+='<b>Training</b>'+(hasT?' <small>(time: at that level, before your perks and upgrades'+(n==='Woodcutting'?', with the axe you\'d have by then':'')+')</small>':'')+'<table><tr><th>Do</th><th>Level</th><th>XP</th>'+(hasT?'<th>Time</th>':'')+'</tr>'+A.slice(0,120).map(x=>'<tr><td>'+(x.k&&INAME[x.k]?wkLink(x.k):wkE(x.n))+'</td><td>'+x.lv+'</td><td>'+fx(x.xp)+'</td>'+(hasT?'<td>'+ft(x.t)+'</td>':'')+'</tr>').join('')+'</table>';
  else if(WK_TRAIN[n])h+='<b>Training</b><table>'+WK_TRAIN[n].map(([a,b])=>'<tr><td>'+wkE(a)+'</td><td>'+wkE(b)+'</td></tr>').join('')+'</table>';
  if(T&&T.choices){h+='<b>Perks</b> <small>(at each level you pick one; change them in the Skills screen)</small><table>';for(const lv of Object.keys(T.choices).sort((a,b)=>a-b))h+='<tr><td><b>'+lv+'</b></td><td>'+T.choices[lv].map(p=>'<b>'+wkE(p.n)+'</b>: '+wkE(p.d)).join('<br>')+'</td></tr>';h+='</table>'}
- if(T&&T.extra){const ex=Object.entries(T.extra);if(ex.length)h+='<b>Unlocks</b><table>'+ex.map(([l,t])=>'<tr><td><b>'+l+'</b></td><td>'+wkE(t)+'</td></tr>').join('')+'</table>'}
+ // unlocks: what the Skills screen's tree says at each level (treeGains: written lines, gear, trees and veins), without the small
+ // bonuses every level gives (those are summed up in one line) and without recipes (they're in Training above)
+ {let U=[];const every={};try{if(typeof treeGains==='function')for(let l=1;l<=99;l++){const a=treeGains(i,l)||[];for(const t of a){const s0=String(t);if(/^(Forge|Smelt|Make:|Cook) /.test(s0))continue;
+    if(/^\+[\d.]+% /.test(s0)||/^Base /.test(s0)){const key=s0.replace(/^\+[\d.]+% /,'');(every[key]=every[key]||[]).push([l,s0]);continue}U.push([l,s0])}}}catch(e){self.SQERR&&SQERR(e,'075-14')}
+  if(!U.length&&T&&T.extra)U=Object.entries(T.extra).map(([l,t])=>[+l,t]);
+  // a bonus that jumps at one level (e.g. +5.5% chopping speed at 35) is an unlock too
+  const ev=[];for(const key in every){const L=every[key],cnt={};for(const[,t]of L)cnt[t]=(cnt[t]||0)+1;const com=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];if(!com||/^Base /.test(com))continue;
+   ev.push(com.replace(/^(\+[\d.]+%) /,'$1 ')+' '+(cnt[com]>=40?'every level':cnt[com]>=15?'every 5 levels':'at some levels'));for(const[l,t]of L)if(t!==com)U.push([l,t])}
+  U.sort((a,b)=>a[0]-b[0]);
+  if(U.length)h+='<b>Unlocks</b><table>'+U.map(([l,t])=>'<tr><td style="width:44px"><b>'+l+'</b></td><td>'+wkE(t)+'</td></tr>').join('')+'</table>';
+  if(ev.length)h+='<p><small>Also: '+ev.map(wkE).join(' · ')+'.</small></p>'}
  return[{t:SKN.join(' '),h:h+'</div></div>'}]};
 // pages (item/monster/... registered by later sections in SQWK.pages): the current view goes on WK.hist, ◀ Back returns to it
 function wkGo(k,id){WK.hist.push({tab:WK.tab,q:WK.q,pg:WK.pg,y:wk$('wkb').scrollTop});if(WK.hist.length>40)WK.hist.shift();WK.pg={k,id};WK.q='';wk$('wkq').value='';wkRender();wk$('wkb').scrollTop=0}
-window.SQWK={open:wkOpen,close:wkClose,cards:wkCards,pages:WKPAGES,go:(k,id)=>{if(!WK.open)wkOpen();wkGo(k,id)},render:()=>{if(WK.open)wkRender()},get state(){return WK},
+window.SQWK={open:wkOpen,close:wkClose,cards:wkCards,pages:WKPAGES,sections:wkSects,go:(k,id)=>{if(!WK.open)wkOpen();wkGo(k,id)},render:()=>{if(WK.open)wkRender()},get state(){return WK},
  h:{E:wkE,name:wkName,icon:wkIcon,link:wkLink,cost:wkCost,recipes:wkRecipes,shops:wkShops,pic:wkPic,grid:wkGrid,hp:typeof wkHp==='function'?wkHp:null,tabs:WK_TABS,WK2}};
 addEventListener('keydown',e=>{if(WK.open&&e.key==='Escape'&&!TS.open){e.preventDefault();e.stopImmediatePropagation();wkClose()}},true);

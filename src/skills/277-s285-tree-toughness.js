@@ -42,5 +42,5 @@
   chopped=false;return out});
  // ---- the Woodcutting tree and the wiki say so ----
  {const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if(sk===1&&l===VOID.lv)return[...a,'Chop void trees (with an adamant axe or better)']}catch(e){self.SQERR&&SQERR(e,'277-4')}return a}}
- try{if(typeof WK_SKILL!=='undefined'&&WK_SKILL.Woodcutting)WK_SKILL.Woodcutting+=' Higher trees take longer to fell, and a better axe chops faster. Void trees need Woodcutting 75 and an adamant axe or better.'}catch(e){self.SQERR&&SQERR(e,'277-5')}
+ try{if(typeof WK_SKILL!=='undefined'&&WK_SKILL.Woodcutting)WK_SKILL.Woodcutting+=' Void trees need Woodcutting 75 and an adamant axe or better.'}catch(e){self.SQERR&&SQERR(e,'277-5')}
 })();

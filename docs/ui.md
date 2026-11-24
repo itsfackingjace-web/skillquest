@@ -111,6 +111,18 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `place`, the tabs Brewing/Playing together/Patrons/Achievements, and Home's extra cards (calls the built-in `start` cards with `WK2.start` removed).
   Drops come from `src/data/239a-wiki-drops.js` (`SQWKDROPS`, generated: **rerun `node tools/wiki/drops.cjs` after changing monster drops in code**)
   plus live Dev Suite monster rules and Content loot tables. New recipe kinds go in 239's `recipes()`, new gathering in `gathered()`.
+- **Wiki overhaul** (075 edited in place + `ui/278-s286-wiki-overhaul.js`, `window.SQWIKI2`, Nov 24): the tab row is now a left `.wnav`
+  sidebar of sections (075's `WK_SECT`: Home, Getting started, Skills, Items, Making things, Monsters, World, Quests, Together, What's new;
+  tabs no section lists fall under "More"); a one-tab section is a `data-wkt` button, a bigger one `data-wkg` (opens its first tab) with its
+  tabs as `.wsub` buttons; on phones (≤760px) the sections become a row along the top and the section's tabs a `.wsr` row over the page.
+  Every tab gets a `.wph` header from `WK_TDESC`; `SQWK.sections()` lists them. **A new tab must be added to a section in `WK_SECT`** (or it
+  lands in More). 278: a new `WK2.start` Home (next steps, `nextUnlocks()` = "Coming up next" with `.wkpbar` bars, unlocked lately, skills not
+  tried (`data-wksk`), latest patch note via `window.SQPATCH`, Browse hub), Items in groups (`catOf(k)`, `listed()` drops `u1-3_`/`w#_`
+  copies; chips `data-wkic`, `SQWK.state.icat`; search ignores the group), `gearCard(k)` on item pages (slot, `SQGEAR.statLine`, needs,
+  `SQREPAIR.maxD` uses, axe chopping power and time per tree, +1/+2/+3), `fixDescs()` (axe text from `SQCHOP`, furnace/anvil/iron/bars/cores),
+  `clean()` strips "Your block chance now" from wiki text, the Controls tab and four more guides. Skill rows: `SQWKACT` (array of
+  `(skill, rows)=>{}` hooks, rows `{n,xp,lv,t?,k?}`) fills Woodcutting times and the void tree row; WK2.skills shows a time column (`t`, seconds)
+  and Unlocks from `treeGains`. Check 108.
 - **Town names** (`ui/245-s253-town-names.js`, `SQTOWNNAME`, Nov 20): `here()` from the towns' own box tests (VX/VY, inTownBox, inFHBox,
   inDHBox, inTWBox, SQBW.town, SQAF.town, the dustwater landmark); drawn at the top of the minimap (wrapped `drawMini52`) and as a wooden sign
   sliding in at y 96*U for 3 s when the town changes (SQHUD step). Check 33.

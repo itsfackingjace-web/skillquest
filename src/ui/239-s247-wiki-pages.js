@@ -89,7 +89,7 @@
    const its=Object.keys(INAME).filter(k=>INAME[k]&&String(INAME[k]).toLowerCase().includes(q)).slice(0,12),mbs=allMobKeys().filter(k=>mobName(k).toLowerCase().includes(q)).slice(0,8);
    if(!its.length&&!mbs.length)return;const em=b.querySelector('.emp');if(em)em.remove();
    const d=document.createElement('div');d.className='sqwkqp';d.innerHTML='<h3>Pages</h3><p>'+its.map(k=>'<span class="lk" data-wkp="item:'+E(k)+'" style="margin-right:12px;white-space:nowrap"><img alt="" src="'+ico(k)+'" style="width:18px;height:18px;vertical-align:middle;image-rendering:pixelated"> '+E(nm(k))+'</span>').join('')+
-    mbs.map(k=>'<span class="lk" data-wkp="mob:'+E(k)+'" style="margin-right:12px;white-space:nowrap">👾 '+E(mobName(k))+'</span>').join('')+'</p>';b.prepend(d)},0))}
+    mbs.map(k=>'<span class="lk" data-wkp="mob:'+E(k)+'" style="margin-right:12px;white-space:nowrap">👾 '+E(mobName(k))+'</span>').join('')+'</p>';const ph=b.querySelector('.wph');if(ph)ph.after(d);else b.prepend(d)},0))}
  // ---- new tabs ----
  const TABS=H.tabs,addTab=(k,n,after)=>{if(TABS.some(t=>t[0]===k))return;const i=TABS.findIndex(t=>t[0]===after);TABS.splice(i<0?TABS.length:i+1,0,[k,n])};
  const C=(t,h)=>({t:t+' '+h.replace(/<[^>]+>/g,' '),h:card(E(t),h)}),HD=t=>({t:'',h:'<h3>'+E(t)+'</h3>',head:1});
