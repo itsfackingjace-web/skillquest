@@ -41,7 +41,7 @@ module.exports={name:'Blacksmith\'s bench smiths cores; arrows and bows are smit
  t(/briar cores/.test(r.tree),'the Smithing tree lists briar cores at 40: '+r.tree);
  t.eq(r.wiki,['Blacksmith\'s bench:40','Blacksmith\'s bench:50','Blacksmith\'s bench:60','Blacksmith\'s bench:60','Blacksmith\'s bench:70'],'the wiki lists the core recipes');
  t.eq(r.frec,[],'nothing is left in fletching');t.eq(r.wikiArrow,['Anvil:Smithing'],'the wiki says arrows are made at the anvil with Smithing');
- t.eq([r.smArrow,r.smKeys],[[10,1,12],[true,true,true,true,true,true]],'arrows and bows are anvil recipes [10 arrows at level 1 for 12 xp; both bows and every arrow]');
+ t.eq([r.smArrow,r.smKeys],[[10,1,10],[true,true,true,true,true,true]],'arrows and bows are anvil recipes [10 arrows at level 1 for 10 xp (1 wood, 1 stone, 284); both bows and every arrow]');
  t.eq(r.goods,[10,12,15],'the ranger set is crafted at Crafting 10, 12, 15');
  t.eq([r.forged[0]>=10,r.forgedOK,r.forged[1],r.forged[2]],[true,true,true,true],'forging arrows gives a batch of 10 (a bonus is another whole batch) and Smithing XP, not Archery XP: '+r.forged[0]);
  t.eq(r.craft,[false,false,true,true],'the Craft tab [no iron axe, no iron pickaxe, iron sword still there, says where bows went]');

@@ -47,9 +47,9 @@ module.exports={name:'Blacksmith\'s bench upgrades: 10 copies (worn one counts) 
  t.eq(r.reqs,[10,75,95,6,20,'core_ember',70],'levels [Smithing; adamant sword +1 at 75, +3 at 95; ranger hood with Crafting at 20; Warlord\'s blade takes ember cores at 70]');
  t.eq(r.item,[true,false,'Adamant sword +1',true,true],'an upgraded copy is an item [EQ entry, not in the gear list, name, sells for 10 swords, saved]');
  t(/Upgrade to adamant sword \+1/.test(r.row||'')&&/12 \/ 10/.test(r.row||''),'the bench lists it: '+r.row);
- t.eq(r.made,[2,1,760],'upgrading uses 10 of 12 swords and gives 760 Smithing XP (2x 380)');
+ t.eq(r.made,[2,1,680],'upgrading uses 10 of 12 swords and gives 680 Smithing XP (2x the sword\'s 340: 2 adamant bars, 284)');
  t.eq(r.worn0,['eq_sword7',9],'wearing one, 9 in the bag');
- t.eq(r.wornUp,['eq_sword7',1,0,0,760],'the worn sword counts: 9 + the one you wear make a +1 you\'re wearing');
+ t.eq(r.wornUp,['eq_sword7',1,0,0,680],'the worn sword counts: 9 + the one you wear make a +1 you\'re wearing');
  t.eq(r.slotName,true,'the equipment screen says Adamant sword +1');
  t.eq(r.unequip,[null,1,0,true],'putting it away puts the +1 (not a plain sword) in the bag');
  t.eq(r.reequip,['eq_sword7',1,0],'equipping the +1 wears it as a +1');

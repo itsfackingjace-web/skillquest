@@ -58,8 +58,8 @@ module.exports={name:'Durability: gear wears with use, used copies keep their nu
  t.eq(r.refused,[null,true],'a worn-out copy can\'t be worn');
  t(/10 adamant bar shards/.test(r.row||'')&&/needs Smithing 70/.test(r.row||''),'the bench lists the repair: '+r.row);
  t.eq(r.low,[false,1],'Smithing 69 is too low (adamant sword is made at 65)');
- t.eq(r.full,[true,0,2,1,0,190],'a full repair: 10 shards (1 of 2 bars), the sword is new again (2 in the bag), half its 380 craft XP');
- t.eq(r.part,[4000,0,7,57],'repairing the worn sword at 30%: 3 shards, a bar breaks into 10 and 7 stay in the bag, 57 XP');
+ t.eq(r.full,[true,0,2,1,0,170],'a full repair: 10 shards (1 of 2 bars), the sword is new again (2 in the bag), half its 340 craft XP (2 adamant bars, 284)');
+ t.eq(r.part,[4000,0,7,51],'repairing the worn sword at 30%: 3 shards, a bar breaks into 10 and 7 stay in the bag, 51 XP');
  t.eq(r.next,[0,6],'the next repair (10%) uses a shard from the bag first');
  t.eq(r.bought,[false,1],'bought gear (leather helmet) can\'t be repaired');
  t.eq(r.boss,[true,2,1],'a worn-out Warlord\'s blade: 10 ember sigil shards at Smithing 50');
