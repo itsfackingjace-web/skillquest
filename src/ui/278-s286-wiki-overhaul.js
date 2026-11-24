@@ -32,7 +32,7 @@
 #sqwk .wkgear td:first-child{width:120px;color:#5a6680;font-weight:700}`;document.head.appendChild(css);
  const addTab=(k,n,after)=>{if(TABS.some(t=>t[0]===k))return;const i=TABS.findIndex(t=>t[0]===after);TABS.splice(i<0?TABS.length:i+1,0,[k,n])};
  // ---------------- descriptions that no longer match the game ----------------
- const setDesc=(k,v)=>{try{Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,writable:true,value:v})}catch(e){self.SQERR&&SQERR(e,'278-2')}};
+ const setDesc=(k,v)=>{try{Object.defineProperty(IDESC,k,{configurable:true,enumerable:true,writable:true,value:v});if(window.SQUPGRADE&&SQUPGRADE.rewrap)SQUPGRADE.rewrap(k)/* keeps 274's upgrade levels at the end */}catch(e){self.SQERR&&SQERR(e,'278-2')}};
  function fixDescs(){try{const C=window.SQCHOP;if(C){const AX={eq_axe1:1,eq_axe2:2,eq_axe3:3,eq_axe4:4,eq_axe6:6,eq_axe7:7,eq_axe9:9};
     for(const k in AX){if(!EQ[k])continue;const p=C.POW[AX[k]]||1,yew=Math.ceil(C.TOUGH.yew/p),tree=Math.ceil(C.TOUGH.tree/p);const q=EQ[k].rq2||EQ[k].req;
      setDesc(k,'Chopping power '+p+': every chop takes '+p+' off a tree\'s toughness, so a plain tree falls in '+tree+' chop'+(tree>1?'s':'')+' and a yew in '+yew+'. '+(q&&q.l?'Needs '+SKN[q.s]+' '+q.l+'. ':'')+'A tool for your tool belt: equip it from your Bag or the equipment screen.')}}
@@ -45,7 +45,7 @@
    for(const k in CO)if(INAME[k]){const d=String(IDESC[k]||'');setDesc(k,d.replace(/ Boss gear from that island will be upgraded with cores at the Blacksmith's bench\.?/,'')+' Upgrade '+CO[k]+' with these at a Blacksmith\'s bench: 1 core makes a +1, 10 a +2 and 100 a +3.')}
   }catch(e){self.SQERR&&SQERR(e,'278-3')}}
  fixDescs();
- const clean=d=>String(d||'').replace(/ · Your block chance now: [\d.]+%?/g,'').replace(/Your block chance now: [\d.]+%?( · )?/g,'');
+ const clean=d=>String(d||'').replace(/ ?Upgrades at a Blacksmith's bench[,:][^.]*\./g,'').replace(/ · Your block chance now: [\d.]+%?/g,'').replace(/Your block chance now: [\d.]+%?( · )?/g,'');
  // ---------------- Getting started > Controls ----------------
  addTab('controls','Controls','guides');
  WK2.controls=()=>[{t:'controls keys touch controller',h:'<table><tr><th>Do this</th><th>PC</th><th>Phone</th><th>Controller</th></tr>'+
@@ -61,8 +61,9 @@
    G('Gear wears out','Swords, daggers, bows, wands, armour, axes, pickaxes and fishing rods wear a little with every use: a hit, an arrow, a spell, a hit you take, a log, an ore or a fish. '+
     'Better gear lasts longer (an item\'s page says how long). When it runs out the piece comes off and is <b>worn out</b>; worn and used pieces show a bar on their icon. '+
     'Repair them at a <b>Blacksmith\'s bench</b> (Craft menu, then place it at home): it costs about half the bars it was made from for a full repair, gives Smithing or Crafting XP, and leaves bar shards you can use next time or fuse back into a bar at a furnace.');
-   G('Upgrading gear','At a Blacksmith\'s bench, 10 of the same item make a +1, 10 of those a +2 and 10 of those a +3. Swords, bows and wands hit 5% harder for each level, axes and pickaxes work 5% faster, armour blocks more, and upgraded gear lasts longer. '+
-    'Boss gear (the Warlord\'s blade, the Stone sledgehammer, the Flame crown, the Void wand, the Outlaw\'s hat) is upgraded with its island\'s <b>cores</b> instead: 1, 10 and 100. Cores are smithed at the bench from 100 sigil shards.');
+   G('Upgrading gear','At a Blacksmith\'s bench, 10 of the same item make a +1, 10 of those a +2 and 10 of those a +3. Swords, bows and wands hit 5% harder for each level, axes and pickaxes work 5% faster, armour blocks more. A +1 lasts 10 times as long as the plain item, a +2 100 times, and a +3 <b>never wears out</b>. '+
+    'Each level needs the level that makes the item + 10 (+1), + 20 (+2) and + 30 (+3), in Smithing for anvil gear or Crafting for crafted gear; every item\'s description and wiki page lists them. '+
+    'Boss gear (the Warlord\'s blade, the Stone sledgehammer, the Flame crown, the Void wand, the Outlaw\'s hat) is upgraded with its island\'s <b>cores</b> instead: 1, 10 and 100, at level 70, 80 and 90. Cores are smithed at the bench from 100 sigil shards.');
    G('Trees and axes','Every tree has a toughness and every axe a chopping power, so higher trees take longer and a better axe is quicker: a plain tree takes 3 chops with a wooden axe, a yew 17 with an adamant axe. '+
     'Oak needs Woodcutting 15, willow 30, maple 45 and yew 60. <b>Void trees</b> (the purple-leaved trees of the Shattered Expanse and guild void saplings) need Woodcutting 75 and an adamant axe or better. '+
     'Skills → Woodcutting lists how long each tree takes.');
@@ -110,7 +111,7 @@
   return[{t:'start',h:h+'</div>'}]};
  // ---------------- Items: groups ----------------
  const CATS=[['all','All'],['weapon','Weapons'],['armour','Armour'],['tool','Tools'],['jewel','Jewelry'],['ammo','Arrows'],['mat','Materials'],['food','Food & fish'],['potion','Potions'],['farm','Farming'],['home','Home & building'],['pet','Pets'],['card','Cards'],['other','Other']];
- const isCopy=k=>/^u[123]_|^w\d{1,5}_/.test(k);
+ const isCopy=k=>/^u[123]_|^w\d+_/.test(k);
  const set=a=>new Set(a);
  function catOf(k){const e=EQ[k];
   if(/^(dc_|pc_)/.test(k))return'card';
@@ -154,11 +155,14 @@
    rows.push(['Time per tree',L.map(([t,n,l])=>{const lv=Math.max(l,lmin);return n+' '+fmt(secs(C.TOUGH[t],lv))+' s'}).join(' · ')+(a>=C.VOID.axe?' · Void '+fmt(secs(C.VOID.t,Math.max(75,lmin)))+' s':'')+' <small>(at each tree\'s level, before perks)</small>'])}
   // the upgrades made from it (274)
   const ups=[1,2,3].map(L=>'u'+L+'_'+k).filter(u=>INAME[u]);
-  if(ups.length)rows.push(['Upgrades',ups.map(u=>{const L=+u[1];let d='';try{d=String(IDESC[u]||'').match(/^Upgraded to \+\d at a Blacksmith's bench: ([^.]*)\./);d=d?d[1]:''}catch(e2){self.SQERR&&SQERR(e2,'278-12')}
-    return'<b>+'+L+'</b> '+E(d)+(SELLP[u]?' <small>(sells for '+Number(SELLP[u]).toLocaleString('en-US')+')</small>':'')}).join('<br>')+'<br><small>At a Blacksmith\'s bench: 10 of the same make a +1, 10 of those a +2 (boss gear uses cores instead).</small>']);
+  if(ups.length){const UG=window.SQUPGRADE,info=UG&&UG.UP()[k];
+   rows.push(['Upgrades',ups.map(u=>{const L=+u[1];let d='',lv='';try{d=UG?UG.eff(k,L):(String(IDESC[u]||'').match(/^Upgraded to \+\d at a Blacksmith's bench: ([^.]*)\./)||[])[1]||''}catch(e2){self.SQERR&&SQERR(e2,'278-12')}
+     try{if(info)lv=SKN[info.sk]+' '+UG.need(k,L)}catch(e2){self.SQERR&&SQERR(e2,'278-15')}
+     return'<b>+'+L+'</b>'+(lv?' <small>('+E(lv)+')</small>':'')+' '+E(d)+(SELLP[u]?' <small>(sells for '+Number(SELLP[u]).toLocaleString('en-US')+')</small>':'')}).join('<br>')+
+    '<br><small>At a Blacksmith\'s bench: '+(info&&info.core?'this and 1 '+E(String(INAME[info.core]||'core').toLowerCase())+' make a +1, 10 cores a +2 and 100 a +3.':'10 of the same make a +1, 10 of those a +2 and 10 of those a +3.')+'</small>'])}
   return'<div class="c"><div class="tx"><b>Gear</b><table class="wkgear" style="margin:6px 0 0">'+rows.map(([a,b])=>'<tr><td>'+a+'</td><td>'+b+'</td></tr>').join('')+'</table></div></div>'}
- {const _it=PG.item;PG.item=k=>{let h=_it(k);try{h=h.replace(/ · Your block chance now: \d+%/g,'').replace(/Your block chance now: \d+%( · )?/g,'');
-   const base=String(k).replace(/^u[123]_/,'').replace(/^w\d{1,5}_/,''),g=gearCard(EQ[k]?k:base);
+ {const _it=PG.item;PG.item=k=>{let h=_it(k);try{h=h.replace(/ · Your block chance now: [\d.]+%?/g,'').replace(/Your block chance now: [\d.]+%?( · )?/g,'');if(EQ[k])h=h.replace(/ ?Upgrades at a Blacksmith(?:'|&#39;|&#x27;)s bench[,:][^.<]*\./g,'');/* the gear card lists them */
+   const base=String(k).replace(/^u[123]_/,'').replace(/^w\d+_/,''),g=gearCard(EQ[k]?k:base);
    if(g){const i=h.indexOf('<div class="c"><div class="tx"><b>How to get it');h=i>0?h.slice(0,i)+g+h.slice(i):h+g}}catch(e){self.SQERR&&SQERR(e,'278-13')}return h}}
  // ---------------- training lists: void trees, and how long each tree takes ----------------
  (window.SQWKACT=window.SQWKACT||[]).push((skill,A)=>{if(skill!=='Woodcutting'||!window.SQCHOP)return;const C=SQCHOP;

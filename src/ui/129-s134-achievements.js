@@ -85,7 +85,7 @@
   ['Pets',k=>/^pet_/.test(k)]];
  let CATL=null;
  // upgraded (274: u1_...) and used (275: w<durability>_...) copies of gear aren't collection-log entries: there'd be one per durability
- const COPYK=/^u[123]_|^w\d{1,5}_/;
+ const COPYK=/^u[123]_|^w\d+_/;
  function cats(){if(CATL)return CATL;const used=new Set(),out=[];for(const[n,f]of CATS){const L=[];for(const k in INAME){if(used.has(k)||/^eq_cu_|^u[123]_/.test(k))continue;// upgraded copies (274) aren't collection-log entries
 if(f(k)){L.push(k);used.add(k)}}out.push([n,L])}
   // rare finds first so they're not counted twice

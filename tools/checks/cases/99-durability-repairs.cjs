@@ -45,7 +45,7 @@ module.exports={name:'Durability: gear wears with use, used copies keep their nu
   R.addW('eq_sword6',2000);inv.berry=2;dead=true;P.hp=0;reset();await W(600);out.fall=[inv.w2000_eq_sword6|0,inv.berry|0];
   return out});
  if(r.err)return t(false,r.err);
- t.eq(r.max,[250,500,1000,4000,4800,5000,12000,6000,2000,0],'durability by tier [wood, bought starter, iron, adamant, adamant +2 (+20%), turtle (boss), meteorite bow (x2), adamant wand (x1.5), rod 2,000, hoe never wears]');
+ t.eq(r.max,[250,500,1000,4000,400000,5000,12000,6000,2000,0],'durability by tier [wood, bought starter, iron, adamant, adamant +2 (x100, Nov 24), turtle (boss), meteorite bow (x2), adamant wand (x1.5), rod 2,000, hoe never wears]');
  t.eq(r.hit,[3999,3999,1],'a hit that lands wears the sword by 1, a miss doesn\'t, the spare in the bag stays new');
  t.eq([r.shot,r.taken,r.log],[7999,[995,995],999],'a bow shot and a log wear 1, a hit you take wears each armour piece by 5');
  t.eq(r.off,[['w1200_eq_sword7'],1,'Used adamant sword (30%)',0],'taking off a used sword: its own item, named with what\'s left, can\'t be sold; the spare is still new');

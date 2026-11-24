@@ -4,7 +4,10 @@
 //     use: the sword (and a dagger in the off-hand) per swing that lands, a bow or wand per shot, an axe or pickaxe per log or ore,
 //     the rod per catch (woodcutting / mining / fishing XP); each armour piece loses 5 per hit you take (blocked or not).
 //   durability by tier (TIER below): wood 250, starter 500, iron 1,000, steel 1,500, mithril 2,500, adamant 4,000, boss 5,000,
-//     meteorite 6,000; bows x2 and wands x1.5; the rod 2,000; +10% per upgrade level (274).
+//     meteorite 6,000; bows x2 and wands x1.5; the rod 2,000. Upgrades (274, Nov 24, Jace): a +1 lasts 10 times as long, a +2 100
+//     times, and a +3 never wears out (maxD 0, like the hoe). Saves from before that (no s.durv) have their used +1/+2 copies scaled
+//     up so they keep the share they had, and used +3 copies become plain +3s (migrate() below); a used +3 that turns up later from a
+//     trade or a chest becomes a plain +3 in the bag.
 //   only the piece you wear wears down. Take a used piece off and it's a separate bag item, 'w<durability>_<item key>' (the key
 //     carries the number, so chests, trades and saves keep it exactly; spares stay new). Equipping a used copy wears it with its
 //     durability. At 0 it isn't destroyed: it comes off into your bag (no stats) and can't be worn until it's repaired.
@@ -37,22 +40,24 @@
  const baseD=b=>{const e=EQ[b];let v=TIER[b];if(!v){if(!e||!WSL.has(e.slot)||e.kind==='hoe'||e.kind==='can'||b==='eq_hoe'||b==='eq_can')return 0;
    v=e.base&&TIER[e.base]?TIER[e.base]:TV.iron}// library gear: its base item's tier
   const k=e&&(e.kind||(e.base&&EQ[e.base]&&EQ[e.base].kind));return Math.round(v*(KMUL[k]||1))};
- const maxD=k=>{if(!k)return 0;return Math.round(baseD(U.baseOf(k))*(1+.1*U.lvlOf(k)))};
+ const UPX=L=>Math.pow(10,L),NEVER=k=>U.lvlOf(k)>=3;// 274's +1 x10, +2 x100, +3 never wears
+ const maxD=k=>{if(!k||NEVER(k))return 0;return Math.round(baseD(U.baseOf(k))*UPX(U.lvlOf(k)))};
+ const OLDX=L=>1+.1*L;// before Nov 24: +10% a level
  const pct=(d,mx)=>mx?Math.max(d>0?1:0,Math.floor(100*d/mx)):0;
  const nm=k=>String(INAME[k]||(EQ[k]&&EQ[k].n)||k).toLowerCase();
  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
  // ---- worn copies: 'w<d>_<key>' ----
- const WRE=/^w(\d{1,5})_((?:u[123]_)?[a-z0-9_]{3,60})$/;
+ const WRE=/^w(\d{1,7})_((?:u[123]_)?[a-z0-9_]{3,60})$/;// up to 7 digits: a +2 meteorite bow has 1,200,000
  const parseW=k=>{const m=typeof k==='string'&&k[0]==='w'?WRE.exec(k):null;return m?{d:+m[1],k:m[2]}:null};
  const WK=(k,d)=>'w'+Math.max(0,Math.round(d))+'_'+k;
  const WREG=new Set();
  // the word goes first so a cut-off bag label still tells it from the new ones (Aztu, Nov 23: "Iron axe (wo..." looked like the stack)
- function wname(k,d){const mx=maxD(k),n=String(INAME[k]||(EQ[k]&&EQ[k].n)||'Gear'),l=n.charAt(0).toLowerCase()+n.slice(1);return d<=0?'Worn-out '+l:'Used '+l+' ('+pct(d,mx)+'%)'}
+ function wname(k,d){const mx=maxD(k),n=String(INAME[k]||(EQ[k]&&EQ[k].n)||'Gear'),l=n.charAt(0).toLowerCase()+n.slice(1);if(NEVER(k))return n;return d<=0?'Worn-out '+l:'Used '+l+' ('+pct(d,mx)+'%)'}
  function wreg(w){if(WREG.has(w))return true;const p=parseW(w);if(!p)return false;const inner=p.k;
   if(!(EQ[inner]||/^(u[123]_)?(eq_[a-z0-9_]+|[a-z]{1,4}dag)$/.test(inner)))return false;WREG.add(w);
   const def=(o,v)=>{try{Object.defineProperty(o,w,Object.assign({configurable:true,enumerable:false},typeof v==='function'?{get:v,set(){}}:{value:v,writable:true}))}catch(e){self.SQERR&&SQERR(e,'275-1')}};
   def(INAME,()=>wname(inner,p.d));def(SN,()=>wname(inner,p.d));def(SHORT,()=>wname(inner,p.d).toLowerCase());def(SELLP,0);
-  def(IDESC,()=>{const mx=maxD(inner),r=rinfo(inner);return(p.d>0?'A used '+nm(inner)+': '+p.d.toLocaleString('en-US')+' / '+mx.toLocaleString('en-US')+' durability left. Wear it again, or repair it':'A worn-out '+nm(inner)+'. It can\'t be worn until it\'s repaired')+
+  def(IDESC,()=>{const mx=maxD(inner),r=rinfo(inner);if(NEVER(inner))return String(IDESC[inner]||'');return(p.d>0?'A used '+nm(inner)+': '+p.d.toLocaleString('en-US')+' / '+mx.toLocaleString('en-US')+' durability left. Wear it again, or repair it':'A worn-out '+nm(inner)+'. It can\'t be worn until it\'s repaired')+
    (r&&r.no?'. Bought gear can\'t be repaired: buy a new one.':r?' at a Blacksmith\'s bench ('+SKN[r.sk]+' '+r.rl+').':'.')});
   let ce=null,co=null;def(EQ,()=>{const e=EQ[inner];if(!e)return undefined;if(ce!==e){ce=e;co=Object.assign({},e,{wornOf:inner,wd:p.d})}co.n=wname(inner,p.d);return co});
   if(!INVK.includes(w))INVK.push(w);if(!EXTRA_BAG.includes(w))EXTRA_BAG.push(w);if(!(w in inv))inv[w]=0;return true}
@@ -126,9 +131,9 @@
    if(maxD(k))WS[s]={k,d:d==null?maxD(k):Math.min(maxD(k),d),n:inv[k]|0};else delete WS[s];return{ok:true,s}}
   equipItem=function(k){const p=parseW(k);
    if(p){if((inv[k]|0)<1||!wreg(k))return;const e=EQ[p.k];if(!e)return;
-    if(p.d<=0){const r=rinfo(p.k);say('That '+nm(p.k)+' is worn out. '+(r&&r.no?'Bought gear can\'t be repaired: buy a new one.':'Repair it at a Blacksmith\'s bench first.'));try{sfx('swish')}catch(e2){self.SQERR&&SQERR(e2,'275-11')}return}
+    if(p.d<=0&&!NEVER(p.k)){const r=rinfo(p.k);say('That '+nm(p.k)+' is worn out. '+(r&&r.no?'Bought gear can\'t be repaired: buy a new one.':'Repair it at a Blacksmith\'s bench first.'));try{sfx('swish')}catch(e2){self.SQERR&&SQERR(e2,'275-11')}return}
     inv[k]--;inv[p.k]=(inv[p.k]|0)+1;let r={ok:false};try{r=doEquip(this,p.k,p.d)}finally{if(!r.ok){inv[p.k]--;inv[k]++}}
-    if(r.ok)say('Equipped the '+nm(p.k)+' ('+pct(p.d,maxD(p.k))+'% left).');resave();return}
+    if(r.ok)say('Equipped the '+nm(p.k)+(NEVER(p.k)?'.':' ('+pct(p.d,maxD(p.k))+'% left).'));resave();return}
    doEquip(this,k,null);resave()}}
  {const _ue=unequipSlot;unequipSlot=function(s){const self_=this,args=arguments,w=WS[s]?Object.assign({},WS[s]):null,n0=w&&w.k?inv[w.k]|0:0;const out=busy(()=>_ue.apply(self_,args));
    try{if(w&&fullKey(s)!==w.k){if(w.d<maxD(w.k)&&(inv[w.k]|0)>n0){inv[w.k]--;addW(w.k,w.d)}delete WS[s]}}catch(e){self.SQERR&&SQERR(e,'275-12')}resave();return out}}
@@ -142,23 +147,40 @@
    try{if(PROJ.slice(n0).some(p=>p&&p.k==='arrow'&&!p.hostile)||SPELLS.length>s0){const k=offKind();if(k==='bow'||k==='wand')wear('off')}}catch(e){self.SQERR&&SQERR(e,'275-15')}return out}}
  SQADDXP.after('275 tools wear per log, ore and catch',(i,x)=>{if(!(x>0&&x<=3000))return;if(i===1)wear('axe');else if(i===2)wear('pick');else if(i===9)wear('rod')});
  let LH=0,T2=0;
+ // a used +3 (from before +3s stopped wearing) that reaches the bag becomes a plain +3
+ function plain3(){if(typeof BMERGE!=='undefined'&&BMERGE||window.SQGEARBUSY>0)return;for(const k of WREG){const c=inv[k]|0;if(c<1)continue;const p=parseW(k);if(p&&NEVER(p.k)){inv[k]=0;inv[p.k]=(inv[p.k]|0)+c}}}
  // used copies in the guild bank (loaded from the database, 197) get known too, so the bank screen can show them
  const scanLive=()=>{try{const g=window.SQGUILD&&SQGUILD.state,b=g&&g.bank&&g.bank.i;if(b&&typeof b==='object')for(const k in b)if(k[0]==='w'&&!WREG.has(k))wreg(k)}catch(e){self.SQERR&&SQERR(e,'275-31')}};
- SQUPD.after('275 gear wears and comes off worn out',(dt)=>{try{if((T2+=(+dt||0))>2){T2=0;scanLive()}
+ SQUPD.after('275 gear wears and comes off worn out',(dt)=>{try{if((T2+=(+dt||0))>2){T2=0;scanLive();plain3()}
    if(!dead){const h=+hurt||0;if(h>LH+1e-4&&h>=.3)for(const s of ARMS)wear(s,ARMW);LH=h}else LH=0;
    sync();if(BROKE.size&&!dead&&!(typeof BMERGE!=='undefined'&&BMERGE)){const L=[...BROKE];BROKE.clear();for(const s of L)takeOff(s)}}catch(e){self.SQERR&&SQERR(e,'275-16')}});
  // ---- saves ----
- try{KNOWN49.add('dur')}catch(e){self.SQERR&&SQERR(e,'275-17')}
+ try{KNOWN49.add('dur');KNOWN49.add('durv')}catch(e){self.SQERR&&SQERR(e,'275-17')}
  SQSAVE.wrap('275 settle durability first',next=>function(){try{U.reconcile();sync()}catch(e){self.SQERR&&SQERR(e,'275-18')}return next.apply(this,arguments)});
  SQSAVE.after('275:dur',s=>{if(s.inv)for(const k in s.inv)if(k[0]==='w'&&WREG.has(k)&&!(s.inv[k]>0))delete s.inv[k];
-  const o={};for(const sl in WS){const w=WS[sl];if(w&&w.k&&w.d<maxD(w.k))o[sl]=[w.k,w.d]}for(const sl in PWS)if(!o[sl])o[sl]=PWS[sl];if(Object.keys(o).length)s.dur=o});
+  const o={};for(const sl in WS){const w=WS[sl];if(w&&w.k&&w.d<maxD(w.k))o[sl]=[w.k,w.d]}for(const sl in PWS)if(!o[sl])o[sl]=PWS[sl];if(Object.keys(o).length)s.dur=o;s.durv=DURV});
  // register every worn copy in the save (bag, house chests, yards, island homes) before the loaders keep only known items
- const scanS=(o,dep)=>{if(!o||dep>10)return;if(typeof o==='string'){if(o.length<4e6&&o.indexOf('"w')>=0){const re=/"(w\d{1,5}_(?:u[123]_)?[a-z0-9_]{3,60})"/g;let m;while((m=re.exec(o)))wreg(m[1])}return}
+ const scanS=(o,dep)=>{if(!o||dep>10)return;if(typeof o==='string'){if(o.length<4e6&&o.indexOf('"w')>=0){const re=/"(w\d{1,7}_(?:u[123]_)?[a-z0-9_]{3,60})"/g;let m;while((m=re.exec(o)))wreg(m[1])}return}
   if(typeof o!=='object')return;if(Array.isArray(o)){for(const v of o)if(v&&(typeof v==='object'||typeof v==='string'))scanS(v,dep+1);return}
   for(const k in o){if(k[0]==='w'&&WRE.test(k))wreg(k);const v=o[k];if(v&&(typeof v==='object'||typeof v==='string'))scanS(v,dep+1)}};
- SQLOAD.before('275 worn copies',S=>{try{scanS(S,0)}catch(e){self.SQERR&&SQERR(e,'275-19')}});
+ // saves from before Nov 24 (no durv): used +1/+2 copies keep the share they had (their number x 10 / 1.1 or x 100 / 1.2), used +3s
+ // become plain +3s; in JSON strings (island homes) +3s stay as they are (a plain key could clash) and plain3() turns them over later
+ const DURV=2;
+ function migK(k,keep3){const p=parseW(k);if(!p)return null;const L=U.lvlOf(p.k);if(!L)return null;if(L>=3)return keep3?null:p.k;
+  return WK(p.k,Math.round(p.d*UPX(L)/OLDX(L)))}
+ function migrate(o,dep){if(!o||typeof o!=='object'||dep>10)return;const isA=Array.isArray(o);
+  for(const k of isA?o.keys():Object.keys(o)){let v=o[k];
+   if(typeof v==='string'){if(v.length<4e6&&v.indexOf('"w')>=0)o[k]=v.replace(/"(w\d{1,5}_u[123]_[a-z0-9_]{3,60})"/g,(m,w)=>'"'+(migK(w,true)||w)+'"');continue}
+   if(v&&typeof v==='object')migrate(v,dep+1)}
+  if(isA)return;// renames last, all at once, so a new key is never migrated twice
+  const mv=[];for(const k of Object.keys(o))if(k[0]==='w'&&WRE.test(k)){const nk=migK(k,false);if(nk&&nk!==k)mv.push([k,nk,o[k]])}
+  for(const[k]of mv)delete o[k];
+  for(const[,nk,v]of mv){if(typeof v==='number'||typeof v==='string'&&/^\d+$/.test(v))o[nk]=(+o[nk]||0)+(+v||0);else if(!(nk in o))o[nk]=v}}
+ SQLOAD.before('275 worn copies',S=>{try{if(S&&typeof S==='object'&&!(+S.durv>=DURV)){migrate(S,0);
+    const D=S.dur;if(D&&typeof D==='object')for(const sl in D){const a=D[sl];if(!Array.isArray(a)||typeof a[0]!=='string')continue;const L=U.lvlOf(a[0]);if(L>=3)delete D[sl];else if(L>=1)a[1]=Math.round((+a[1]||0)*UPX(L)/OLDX(L))}}}catch(e){self.SQERR&&SQERR(e,'275-32')}
+  try{scanS(S,0)}catch(e){self.SQERR&&SQERR(e,'275-19')}});
  SQLOAD.after('275',S=>{for(const k in WS)delete WS[k];for(const k in PWS)delete PWS[k];BROKE.clear();
-  const D=S&&S.dur;if(D&&typeof D==='object')for(const s in D){const a=D[s];if(!WSL.has(s)||!Array.isArray(a)||typeof a[0]!=='string'||!(a[1]>=0&&a[1]<=1e5))continue;PWS[s]=[a[0],a[1]|0]}
+  const D=S&&S.dur;if(D&&typeof D==='object')for(const s in D){const a=D[s];if(!WSL.has(s)||!Array.isArray(a)||typeof a[0]!=='string'||!(a[1]>=0&&a[1]<=1e7))continue;PWS[s]=[a[0],a[1]|0]}
   try{sync()}catch(e){self.SQERR&&SQERR(e,'275-20')}});
  SQNEWGAME.before('275',()=>{for(const o of[WS,PWS])for(const k in o)delete o[k];BROKE.clear()});
  // ---- falling: used copies in the bag are gear, so they stay with you like the gear you wear (274 does the same for upgraded copies) ----
@@ -174,7 +196,7 @@
      const z=Math.max(1,Math.round(W0/14));x.fillStyle=f>0?'#1c1410':'#e05040';x.fillRect(z,H0-3*z,W0-2*z,2*z);x.fillStyle=barCol(f);x.fillRect(z,H0-3*z,Math.max(f>0?z:0,Math.round((W0-2*z)*f)),2*z);
      if(ICO[w]&&ICO[w].src===url){ICO[w].url=c.toDataURL();try{if(pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'275-21')}}}catch(e){self.SQERR&&SQERR(e,'275-22')}};im.src=url}catch(e){self.SQERR&&SQERR(e,'275-23')}return url}
  SQICON.wrap('275',_ic=>function(k,col){
-  if(typeof k==='string'&&k[0]==='w'&&WREG.has(k)){const p=parseW(k),mx=maxD(p.k);const base=EQ[p.k]?eqIcon(p.k):_ic.call(this,p.k,col);return barred(k,base,mx?p.d/mx:0)}
+  if(typeof k==='string'&&k[0]==='w'&&WREG.has(k)){const p=parseW(k),mx=maxD(p.k);if(NEVER(p.k))return EQ[p.k]?eqIcon(p.k):_ic.call(this,p.k,col);const base=EQ[p.k]?eqIcon(p.k):_ic.call(this,p.k,col);return barred(k,base,mx?p.d/mx:0)}
   if(typeof k==='string'&&k.slice(0,4)==='shd_'&&SHC[k.slice(4)]){const key='g283'+k;if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,ww,hh,cl)=>{x.fillStyle=cl;x.fillRect(a,b,ww,hh)};
    const[a,b,d]=SHC[k.slice(4)];r(6,3,2,1,a);r(5,4,4,1,a);r(4,5,3,1,a);r(7,5,3,1,b);r(4,6,6,1,b);r(3,7,7,1,b);r(3,8,8,1,d);r(4,9,6,1,d);r(5,10,4,1,d);r(6,4,1,1,'#ffffff');
    return ICONC[key]=c.toDataURL()}
@@ -234,5 +256,5 @@
    if(c<1){say('You need 10 '+shN(m,10)+'.');return}inv[SHK(m)]-=10*c;inv[m]=(inv[m]|0)+c;say('You fuse '+10*c+' '+shN(m,10*c)+' into '+c+' '+(c>1?SN[m]||INAME[m]:INAME[m]).toLowerCase()+'.');try{sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'275-28')}saveLocal(true);rPn()}}
  // ---- skill trees ----
  {const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if((sk===SMI||sk===CRI)&&l===6)return[...a,'Repair worn gear at a Blacksmith\'s bench (5 levels above the level that makes it)']}catch(e){self.SQERR&&SQERR(e,'275-29')}return a}}
- window.SQREPAIR={TIER,WS,PWS,WREG,maxD,parseW,WK,wreg,addW,wear,sync,rinfo,cost,items,state,repair,html,fullKey,recipes,mainMat,SHM,SHK};
+ window.SQREPAIR={TIER,WS,PWS,WREG,maxD,NEVER,migrate,plain3,DURV,parseW,WK,wreg,addW,wear,sync,rinfo,cost,items,state,repair,html,fullKey,recipes,mainMat,SHM,SHK};
 })();

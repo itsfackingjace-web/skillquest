@@ -253,6 +253,16 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   swap, then the wrapper did it again (a plain copy became a +L). While a gear wrapper runs, `window.SQGEARBUSY` > 0 makes
   `reconcile` (and 275's `sync`) wait; the wrapper saves again when it's done. Upgraded copies stay with you when you fall
   (`SQKEEPFALL` while dead + a reset step), like EQK gear.
+- **Upgrade levels and durability** (274 + 275 edited in place, Nov 24, Jace; check 110): `eff(b,L)` = 274's effect (`eff0`) + `durT(L)`
+  ("lasts 10 times as long" / 100 / "never wears out"). Every upgradable base's IDESC ends with `upLine(b)` (+1/+2/+3 levels, or cores):
+  `wrapD` puts a getter over whatever was there (084's stats getter), `RAWD[b]()` reads it without the line (upgraded copies use it, plus
+  `nextT(b,L)`), the setter strips the line (Dev Suite saves what it shows). **Code that replaces IDESC[b] with `defineProperty` must call
+  `SQUPGRADE.rewrap(b)`** (278's `setDesc` does). Bench rows always show the level; 274's equipHTML shows `upLine` for a plain worn piece
+  and `nextT` for an upgraded one. 275: `maxD` = base x 10^L, 0 for a +3 (`NEVER`, like the hoe, so it's never in `WS`); used-copy keys
+  take up to 7 digits (`w1200000_u2_eq_bow6`; 278's/129's copy filters use `\d+`), `s.dur` up to 1e7. Saves without `s.durv` (2) are
+  migrated in 275's `SQLOAD.before`: used +1/+2 keys and `s.dur` numbers x 10^L / (1 + .1L), used +3 keys become plain `u3_` (merged
+  counts; renames applied after the walk; in JSON strings only +1/+2). `plain3()` (every 2 s, not while chests are merged) turns any used
+  +3 reaching the bag into a plain +3. Used copies that come from the database later (guild bank, trades) aren't scaled.
 - **Durability and repairs** (`items/275-s283-durability-repairs.js`, `window.SQREPAIR`, Nov 23, check 99): step 3. `TIER` (by key;
   library gear falls back to its `base`, unknown gear 1,000) x `KMUL` (bows 2, wands 1.5; tuning from the sheet's estimates) x (1 + .1 x upgrade level),
   the rod 2,000; slots main/off/helm/body/legs/axe/pick/rod

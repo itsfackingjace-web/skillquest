@@ -6,6 +6,10 @@
 //   not upgradable: starter gear (wood, stone, leather, shortbow, shop wands, wizard set), the Crystal blade, the Bone bow, jewelry, tools.
 //   what a level gives: swords, bows and wands hit 5% harder (the fraction is a chance of +1), axes and pickaxes swing 5% faster,
 //     daggers +1 damage at +2 and +3, armour +1% block and +1% block limit a piece, ranger pieces 5% more bow range. PvP ignores it.
+//     Durability (275, Nov 24, Jace): a +1 lasts 10 times as long as the plain item, a +2 100 times, and a +3 never wears out.
+//   the levels (Nov 24, Jace: "the game doesn't tell you the level requirements of upgrades"): every upgradable item's description
+//     ends with what its upgrades need (upLine), an upgraded copy's says what the next one needs, the bench lists the level on every
+//     row, and the equipment screen says what's next for the piece you wear.
 // Upgraded copies are their own items in the bag: 'u<L>_<base>' (EQ entries are non-enumerable copies, so lists of gear don't grow;
 // INAME stays enumerable so the market and the wiki know them). Worn, the game sees the base item (TL/ARM tiers, occ(), looks), and UPS
 // remembers the level per slot; equipItem/unequipSlot/setSlot put the right copy back in the bag, and a per-frame check catches the
@@ -26,17 +30,37 @@
  const need=(b,L)=>Math.min(99,UP[b].lv+10*L),xpFor=(b,L)=>UP[b].xp*XPM[L];
  // ---- the upgraded items ----
  const REG=new Set(),PENDV={},ICO={};
- const eff=(b,L)=>{const e=EQ[b]||{};if(e.kind==='dagger')return L>=2?'+'+(L-1)+' damage':'no extra damage yet (+1 damage at +2)';
+ const eff0=(b,L)=>{const e=EQ[b]||{};if(e.kind==='dagger')return L>=2?'+'+(L-1)+' damage':'no extra damage yet (+1 damage at +2)';
   if(ARMS.includes(e.slot))return'+'+L+'% block chance and +'+L+'% to your block limit'+(e.cls==='r'?', and '+5*L+'% more bow range':'');
   if(e.slot==='axe')return'chops '+5*L+'% faster';if(e.slot==='pick')return'mines '+5*L+'% faster';
   return(e.kind==='bow'?'arrows hit ':e.kind==='wand'?'spells hit ':'hits ')+5*L+'% harder'};
+ // and how long it lasts (275): 10 times as long a level, and a +3 never wears out
+ const durT=L=>L>=MAXL?'never wears out':'lasts '+Math.pow(10,L)+' times as long';
+ const eff=(b,L)=>eff0(b,L)+'; '+durT(L);
+ // what an upgrade needs: 10 of the level below (or the island's cores) and a level in the item's skill
+ const needT=(b,L)=>{const U=UP[b];if(!U)return'';return SKN[U.sk]+' '+need(b,L)};
+ const coreN=(c,n)=>n+' '+String(n>1?SN[c]||INAME[c]||c:INAME[c]||c).toLowerCase();
+ function nextT(b,L){const U=UP[b];if(!U||L>=MAXL)return'';const nm=String(INAME[KEY(b,L+1)]||'').toLowerCase();
+  return U.core?'Next: this and '+coreN(U.core,CORESN[L+1])+' make '+(/^[aeiou]/.test(nm)?'an ':'a ')+nm+' at '+needT(b,L+1)+'.':'Next: '+COPIES+' of these make '+(/^[aeiou]/.test(nm)?'an ':'a ')+nm+' at '+needT(b,L+1)+'.'}
+ function upLine(b){const U=UP[b];if(!U)return'';const n=[1,2,3].map(L=>need(b,L));
+  if(U.core)return'Upgrades at a Blacksmith\'s bench, with '+String(SN[U.core]||INAME[U.core]||'cores').toLowerCase()+': 1 makes a +1 ('+SKN[U.sk]+' '+n[0]+'), '+CORESN[2]+' a +2 ('+n[1]+') and '+CORESN[3]+' a +3 ('+n[2]+').';
+  return'Upgrades at a Blacksmith\'s bench: '+COPIES+' of these make a +1 ('+SKN[U.sk]+' '+n[0]+'), '+COPIES+' of the +1 a +2 ('+n[1]+') and '+COPIES+' of the +2 a +3 ('+n[2]+').'}
+ const UPRE=/ ?Upgrades at a Blacksmith's bench[,:][^.]*\./g;
+ // the plain item's description ends with upLine; RAWD[b] reads it without (the upgraded copies use that)
+ const RAWD={};
+ function wrapD(b){if(RAWD[b])return;const d0=Object.getOwnPropertyDescriptor(IDESC,b);let val=d0&&!d0.get?String(d0.value==null?'':d0.value):'';
+  const get0=d0&&d0.get?()=>String(d0.get.call(IDESC)||''):()=>val,set0=d0&&d0.set?v=>d0.set.call(IDESC,v):v=>{val=String(v==null?'':v)};
+  RAWD[b]=()=>get0().replace(UPRE,'');
+  try{Object.defineProperty(IDESC,b,{configurable:true,enumerable:true,get(){const r=RAWD[b]();let u='';try{u=upLine(b)}catch(e){self.SQERR&&SQERR(e,'274-21')}return u?(r?r.replace(/\s*$/,'')+(/[.!?]$/.test(r.trim())?' ':'. '):'')+u:r},set(v){set0(String(v==null?'':v).replace(UPRE,''))}})}catch(e){self.SQERR&&SQERR(e,'274-22')}}
+ const rawD=b=>RAWD[b]?RAWD[b]():String(IDESC[b]||'');
  function reg(){UP=scan();for(const b in UP){const e=EQ[b];if(!e)continue;for(let L=1;L<=MAXL;L++){const v=KEY(b,L),nm=(INAME[b]||e.n)+' +'+L;
    Object.defineProperty(EQ,v,{value:Object.assign({},e,{n:e.n+' +'+L,upOf:b,upL:L}),enumerable:false,configurable:true,writable:true});
    INAME[v]=nm;SN[v]=(SN[b]||nm)+' +'+L;SHORT[v]=nm.toLowerCase();
    const U=UP[b];SELLP[v]=U.core?(SELLP[b]|0)+[0,1,11,111][L]*(SELLP[U.core]|0):(SELLP[b]|0)*Math.pow(COPIES,L);
    if(!REG.has(v)){REG.add(v);if(!INVK.includes(v))INVK.push(v);if(!EXTRA_BAG.includes(v))EXTRA_BAG.push(v);inv[v]=inv[v]|0;
-    Object.defineProperty(IDESC,v,{configurable:true,enumerable:true,get(){return'Upgraded to +'+L+' at a Blacksmith\'s bench: '+eff(b,L)+'. '+(IDESC[b]||'')},set(){}})}
-   if(PENDV[v]){inv[v]=(inv[v]|0)+PENDV[v];delete PENDV[v]}}}}
+    Object.defineProperty(IDESC,v,{configurable:true,enumerable:true,get(){const nx=nextT(b,L);return'Upgraded to +'+L+' at a Blacksmith\'s bench: '+eff(b,L)+'. '+(nx?nx+' ':'')+rawD(b)},set(){}})}
+   if(PENDV[v]){inv[v]=(inv[v]|0)+PENDV[v];delete PENDV[v]}}
+  wrapD(b)}}
  reg();try{if(window.SQA&&SQA.onApply)SQA.onApply(()=>setTimeout(()=>{try{reg()}catch(e){self.SQERR&&SQERR(e,'274-4')}},0))}catch(e){self.SQERR&&SQERR(e,'274-5')}
  // ---- worn upgrades: UPS[slot] = {b, l, n (plain copies of b in the bag, to see one come back)} ----
  const UPS={},PUPS={};let NOUPG=false,SETK=null;
@@ -103,7 +127,9 @@
     let seg=h.slice(i,j);const v=KEY(u.b,u.l);seg=seg.replace(esc(EQ[u.b].n),esc(EQ[u.b].n+' +'+u.l)).replace(/src="[^"]*"/,'src="'+eqIcon(v)+'"');h=h.slice(0,i)+seg+h.slice(j)}
    const sel=typeof EQSEL!=='undefined'&&EQSEL;
    // the tapped slot's card: say it's upgraded
-   if(sel&&UPS[sel]&&occ(sel)===UPS[sel].b){const u=UPS[sel],a=h.indexOf('<div class="qc" style="margin-top:10px"><b>'),c=a<0?-1:h.indexOf('</b>',a);if(c>=0)h=h.slice(0,c+4)+'<p style="margin:4px 0 6px;font-size:12px;color:#8a5a10">You\'re wearing the '+esc((INAME[KEY(u.b,u.l)]||'').toLowerCase())+': '+esc(eff(u.b,u.l))+'.</p>'+h.slice(c+4)}
+   if(sel&&UPS[sel]&&occ(sel)===UPS[sel].b){const u=UPS[sel],a=h.indexOf('<div class="qc" style="margin-top:10px"><b>'),c=a<0?-1:h.indexOf('</b>',a);if(c>=0)h=h.slice(0,c+4)+'<p style="margin:4px 0 6px;font-size:12px;color:#8a5a10">You\'re wearing the '+esc((INAME[KEY(u.b,u.l)]||'').toLowerCase())+': '+esc(eff(u.b,u.l))+'.'+(u.l<MAXL?' '+esc(nextT(u.b,u.l)):'')+'</p>'+h.slice(c+4)}
+   // a plain upgradable piece: what its upgrades need
+   else if(sel){let b=null;try{b=occ(sel)}catch(e){self.SQERR&&SQERR(e,'274-23')}if(b&&UP[b]&&!UPS[sel]){const a=h.indexOf('<div class="qc" style="margin-top:10px"><b>'),c=a<0?-1:h.indexOf('</b>',a);if(c>=0)h=h.slice(0,c+4)+'<p style="margin:4px 0 6px;font-size:12px;color:#8a5a10">'+esc(upLine(b))+'</p>'+h.slice(c+4)}}
    if(sel){const vs=[...REG].filter(v=>(inv[v]|0)>0&&EQ[v]&&EQ[v].slot===sel);if(vs.length){
      const btn=vs.map(v=>'<button class="sb eqo" data-k="'+v+'" style="margin:6px 0">Equip '+esc(EQ[v].n)+((inv[v]|0)>1?' (×'+inv[v]+')':'')+'</button>').join('');
      h=h.replace('<p style="opacity:.7">Nothing in your bag for this slot.</p>','');const a=h.indexOf('<button class="sb equ"');h=a>=0?h.slice(0,a)+btn+h.slice(a):h.replace(/(<div class="qc" style="margin-top:10px"><b>[^<]*<\/b>)/,'$1'+btn)}}}catch(e){self.SQERR&&SQERR(e,'274-16')}return h}}
@@ -123,11 +149,11 @@
   try{sfx('anvil')}catch(e){self.SQERR&&SQERR(e,'274-17')}return true}
  function rows(){const L0=[];for(const b in UP)for(let L=1;L<=MAXL;L++){const o=state(b,L);if(o&&o.have>0)L0.push([b,o])}
   L0.sort((a,c)=>(c[1].ok-a[1].ok)||(a[1].sk-c[1].sk)||(a[1].lvl-c[1].lvl));return L0}
- function html(o0){let h='<div class="tl" style="margin-top:14px">Upgrades</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75">'+COPIES+' of the same item make a +1, '+COPIES+' of the +1 make a +2, '+COPIES+' of the +2 make a +3. Boss gear takes cores instead. The piece you\'re wearing counts. Each level: weapons hit 5% harder, axes and pickaxes work 5% faster, armour blocks 1% more.</div>';
+ function html(o0){let h='<div class="tl" style="margin-top:14px">Upgrades</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75">'+COPIES+' of the same item make a +1, '+COPIES+' of the +1 make a +2, '+COPIES+' of the +2 make a +3, at the level that makes the item + 10, + 20 and + 30 (boss gear: 70, 80 and 90, with cores instead of copies). The piece you\'re wearing counts. Each level: weapons hit 5% harder, axes and pickaxes work 5% faster, armour blocks 1% more. A +1 lasts 10 times as long, a +2 100 times, and a +3 never wears out.</div>';
   const R=rows();if(!R.length)return h+'<div class="qc"><p>Bring 10 of the same weapon, armour piece, bow, wand, axe or pickaxe (or boss gear and its cores) to upgrade it.</p></div>';
   for(const[b,o]of R){const nmF=INAME[o.from]||b,nmT=INAME[o.to]||b,sk=SKN[o.sk];
    const cost=o.U.core?o.have+' / 1 '+esc(nmF.toLowerCase())+' + '+o.coreHave+' / '+o.cores+' '+esc((o.cores>1?SN[o.U.core]:INAME[o.U.core]||'').toLowerCase()):o.have+' / '+COPIES+' '+esc((SN[o.from]||nmF).toLowerCase())+(o.worn?' (1 worn)':'');
-   const sub=cost+' · '+(o.okL?o.xp.toLocaleString('en-US')+' xp':'needs '+sk+' '+o.lvl)+' · '+esc(eff(b,o.L));
+   const sub=cost+' · '+(o.okL?sk+' '+o.lvl+' · '+o.xp.toLocaleString('en-US')+' xp':'<b>needs '+sk+' '+o.lvl+'</b> (you\'re '+lvOf(o.sk)+')')+' · '+esc(eff(b,o.L));
    h+='<div style="display:flex;gap:6px;align-items:stretch"><button class="sb stb" data-a="smu|'+b+'|'+o.L+'" style="flex:1;opacity:'+(o.ok?1:.45)+'"><img alt="" src="'+eqIcon(o.to)+'" style="width:20px;height:20px;image-rendering:pixelated;vertical-align:middle;margin-right:6px">Upgrade to '+esc(nmT.toLowerCase())+'<br><small>'+sub+'</small></button>'+(o.ok&&o.max>1?'<button class="sb stb" data-a="smua|'+b+'|'+o.L+'" style="width:64px">ALL</button>':'')+'</div>'}
   return h}
  {const _sa=stationAct;stationAct=function(a){const st=STATION;if(!(st&&st.t==='smithbench'&&/^smua?\|/.test(a||'')))return _sa.apply(this,arguments);
@@ -136,5 +162,5 @@
    upgrade(b,L);saveLocal(true);rPn()}}
  // ---- skill trees ----
  {const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if((sk===SMI||sk===CRI)&&l===11)return[...a,'Upgrade gear to +1 at a Blacksmith\'s bench (10 levels above the level that makes it; +2 at 20, +3 at 30)']}catch(e){self.SQERR&&SQERR(e,'274-19')}return a}}
- window.SQUPGRADE={UP:()=>UP,UPS,KEY,isVar,baseOf,lvlOf,state,upgrade,html,reg,reconcile,need,xpFor,eff};
+ window.SQUPGRADE={UP:()=>UP,UPS,KEY,isVar,baseOf,lvlOf,state,upgrade,html,reg,reconcile,need,xpFor,eff,eff0,durT,upLine,nextT,rawD,MAXL,rewrap:b=>{delete RAWD[b];if(UP[b])wrapD(b)}};/* rewrap: after something replaces IDESC[b] outright (278) */
 })();
