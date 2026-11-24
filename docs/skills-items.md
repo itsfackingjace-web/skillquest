@@ -254,10 +254,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `reconcile` (and 275's `sync`) wait; the wrapper saves again when it's done. Upgraded copies stay with you when you fall
   (`SQKEEPFALL` while dead + a reset step), like EQK gear.
 - **Durability and repairs** (`items/275-s283-durability-repairs.js`, `window.SQREPAIR`, Nov 23, check 99): step 3. `TIER` (by key;
-  library gear falls back to its `base`, unknown gear 1,000) x (1 + .1 x upgrade level); slots main/off/helm/body/legs/axe/pick/rod
+  library gear falls back to its `base`, unknown gear 1,000) x `KMUL` (bows 2, wands 1.5; tuning from the sheet's estimates) x (1 + .1 x upgrade level),
+  the rod 2,000; slots main/off/helm/body/legs/axe/pick/rod
   (hoe and can never wear). `WS[slot]` = {k (full key, with 274's level), d, n}. Wear 1: SQHIT wrap (any `en` hp drop or new `DMGS`;
   `SQSTABNOW` = the dagger, else the sword and a dagger in the off-hand), the outermost `shootAim` (new own arrow or spell = bow/wand),
-  `hurt` jumping up in a SQUPD step (each armour piece, blocked or not), SQADDXP after (Woodcutting/Mining/Fishing XP up to 3,000 =
+  `hurt` jumping up in a SQUPD step (each armour piece loses `ARMW` = 5, blocked or not), SQADDXP after (Woodcutting/Mining/Fishing XP up to 3,000 =
   axe/pick/rod). A used piece taken off becomes the bag item `w<d>_<full key>` (e.g. `w1200_u1_eq_sword7`): the number is in the key,
   so chests, trades, saves and graves keep it exactly; registered lazily by `wreg` (non-enumerable INAME/SN/SHORT/IDESC getters and EQ
   copy, SELLP 0 so shops and the market don't take them, INVK/EXTRA_BAG) from 108's `sqBookReg` (trades, graves, market), a

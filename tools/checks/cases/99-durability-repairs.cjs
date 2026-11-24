@@ -5,7 +5,7 @@
 module.exports={name:'Durability: gear wears with use, used copies keep their number, worn-out gear comes off, repairs at the bench cost shards',async run(p,t){
  const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);try{if(pnOpen)closePanel()}catch(e){}const out={};const R=window.SQREPAIR;if(!R)return{err:'no SQREPAIR'};
   for(const i of[0,1,2,8,12,13])XPS[i]=XT[85];XPS[10]=XT[68];
-  out.max=['eq_sword1','eq_helm1','eq_helm2','eq_sword7','u2_eq_sword7','eq_thelm','eq_bow6','eq_rod','eq_hoe'].map(R.maxD);
+  out.max=['eq_sword1','eq_helm1','eq_helm2','eq_sword7','u2_eq_sword7','eq_thelm','eq_bow6','eq_wfire_a','eq_rod','eq_hoe'].map(R.maxD);
   const ws=k=>Object.keys(inv).filter(x=>/^w\d+_/.test(x)&&(inv[x]|0)>0&&(!k||x.endsWith('_'+k))).sort();
   // ---- a hit that lands wears the sword, a miss doesn't ----
   inv.eq_sword7=2;equipItem('eq_sword7');const[fx,fy]=front(13);const m={x:fx,y:fy,hp:500,kx:0,ky:0};en.push(m);swing=0;attack();const d1=R.WS.main.d;m.x=P.x+300;swing=0;attack();out.hit=[d1,R.WS.main.d,inv.eq_sword7];m.dead=1;
@@ -45,9 +45,9 @@ module.exports={name:'Durability: gear wears with use, used copies keep their nu
   R.addW('eq_sword6',2000);inv.berry=2;dead=true;P.hp=0;reset();await W(600);out.fall=[inv.w2000_eq_sword6|0,inv.berry|0];
   return out});
  if(r.err)return t(false,r.err);
- t.eq(r.max,[250,500,1000,4000,4800,5000,6000,500,0],'durability by tier [wood, bought starter, iron, adamant, adamant +2 (+20%), turtle (boss), meteorite, rod, hoe never wears]');
+ t.eq(r.max,[250,500,1000,4000,4800,5000,12000,6000,2000,0],'durability by tier [wood, bought starter, iron, adamant, adamant +2 (+20%), turtle (boss), meteorite bow (x2), adamant wand (x1.5), rod 2,000, hoe never wears]');
  t.eq(r.hit,[3999,3999,1],'a hit that lands wears the sword by 1, a miss doesn\'t, the spare in the bag stays new');
- t.eq([r.shot,r.taken,r.log],[3999,[999,999],999],'a bow shot, a hit you take (each armour piece) and a log each wear 1');
+ t.eq([r.shot,r.taken,r.log],[7999,[995,995],999],'a bow shot and a log wear 1, a hit you take wears each armour piece by 5');
  t.eq(r.off,[['w1200_eq_sword7'],1,'Adamant sword (30%)',0],'taking off a used sword: its own item, named with what\'s left, can\'t be sold; the spare is still new');
  t.eq(r.on,['eq_sword7',1200,1,0],'wearing the used copy again brings back its 1,200 (the new one goes back in the bag)');
  t.eq(r.screen,true,'the equipment screen shows the durability');

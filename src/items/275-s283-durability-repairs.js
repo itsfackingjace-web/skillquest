@@ -1,10 +1,10 @@
 // ---- 283. Durability and repairs at the Blacksmith's bench (smithing overhaul, step 3) ----
 // Nov 23 (Jace + Kevin, plan in the "SQ Blacksmith's Bench" sheet):
 //   what wears: weapons, armour, bows, wands, daggers, axes, pickaxes and the fishing rod (never the hoe or watering can), 1 point per
-//     use: the sword (and a dagger in the off-hand) per swing that lands, a bow or wand per shot, each armour piece per hit you take
-//     (blocked or not), an axe or pickaxe per log or ore, the rod per catch (woodcutting / mining / fishing XP).
+//     use: the sword (and a dagger in the off-hand) per swing that lands, a bow or wand per shot, an axe or pickaxe per log or ore,
+//     the rod per catch (woodcutting / mining / fishing XP); each armour piece loses 5 per hit you take (blocked or not).
 //   durability by tier (TIER below): wood 250, starter 500, iron 1,000, steel 1,500, mithril 2,500, adamant 4,000, boss 5,000,
-//     meteorite 6,000; +10% per upgrade level (274).
+//     meteorite 6,000; bows x2 and wands x1.5; the rod 2,000; +10% per upgrade level (274).
 //   only the piece you wear wears down. Take a used piece off and it's a separate bag item, 'w<durability>_<item key>' (the key
 //     carries the number, so chests, trades and saves keep it exactly; spares stay new). Equipping a used copy wears it with its
 //     durability. At 0 it isn't destroyed: it comes off into your bag (no stats) and can't be worn until it's repaired.
@@ -23,15 +23,20 @@
  const TV={wood:250,start:500,iron:1000,steel:1500,mith:2500,adam:4000,boss:5000,met:6000},TIER={};
  const put=(t,ks)=>{for(const k of ks.split(' '))TIER[k]=TV[t]};
  put('wood','eq_axe1 eq_pick1 eq_sword1');
- put('start','eq_axe2 eq_pick2 eq_sword2 eq_helm1 eq_body1 eq_legs1 eq_bow1 eq_wfire eq_wice eq_wstorm eq_mhelm eq_mbody eq_mlegs eq_rod');
+ put('start','eq_axe2 eq_pick2 eq_sword2 eq_helm1 eq_body1 eq_legs1 eq_bow1 eq_wfire eq_wice eq_wstorm eq_mhelm eq_mbody eq_mlegs');
+ TIER.eq_rod=2000;// the only rod there is: it lasts about 4 hours of fishing (tuning, Nov 23)
  put('iron','eq_helm2 eq_body2 eq_legs2 eq_sword3 eq_axe3 eq_pick3 idag eq_bow2 eq_rhelm eq_rbody eq_rlegs');
  put('steel','eq_helm3 eq_body3 eq_legs3 eq_sword4 eq_axe4 eq_pick4 sdag');
  put('mith','eq_sword6 eq_helm4 eq_body4 eq_legs4 eq_bow4 eq_wfire_m eq_wice_m eq_wstorm_m eq_axe6 eq_pick6 mdag eq_cu_dark_wizard_s_hat eq_cu_mushroom_leggings eq_cu_mushroom_robe');
  put('adam','eq_sword7 eq_helm5 eq_body5 eq_legs5 eq_bow5 eq_wfire_a eq_wice_a eq_wstorm_a eq_axe7 eq_pick7 adag stdag');
  put('boss','eq_thelm eq_tbody eq_tlegs eq_cu_ancient_helmet eq_sword5 eq_bow3 eq_sword8 eq_ohat eq_cu_spider_hood eq_cu_spider_weaver_robe eq_fcrown eq_sledge eq_wvoid');
  put('met','eq_axe9 eq_pick9 eq_mhelm9 eq_mbody9 eq_mlegs9 eq_bow6 eq_wmeteor metdag');
- const baseD=b=>{if(TIER[b])return TIER[b];const e=EQ[b];if(!e||!WSL.has(e.slot)||e.kind==='hoe'||e.kind==='can'||b==='eq_hoe'||b==='eq_can')return 0;
-  return e.base&&TIER[e.base]?TIER[e.base]:TV.iron};// library gear: its base item's tier
+ // tuning (Nov 23, estimates in the sheet): bows fire about twice as many shots as a sword lands hits and wands 1.5 times, so they
+ // get that much more durability; armour loses ARMW points per hit taken (monsters you fight land only 0.05-0.2 hits a second)
+ const ARMW=5,KMUL={bow:2,wand:1.5};
+ const baseD=b=>{const e=EQ[b];let v=TIER[b];if(!v){if(!e||!WSL.has(e.slot)||e.kind==='hoe'||e.kind==='can'||b==='eq_hoe'||b==='eq_can')return 0;
+   v=e.base&&TIER[e.base]?TIER[e.base]:TV.iron}// library gear: its base item's tier
+  const k=e&&(e.kind||(e.base&&EQ[e.base]&&EQ[e.base].kind));return Math.round(v*(KMUL[k]||1))};
  const maxD=k=>{if(!k)return 0;return Math.round(baseD(U.baseOf(k))*(1+.1*U.lvlOf(k)))};
  const pct=(d,mx)=>mx?Math.max(d>0?1:0,Math.floor(100*d/mx)):0;
  const nm=k=>String(INAME[k]||(EQ[k]&&EQ[k].n)||k).toLowerCase();
@@ -139,7 +144,7 @@
  // used copies in the guild bank (loaded from the database, 197) get known too, so the bank screen can show them
  const scanLive=()=>{try{const g=window.SQGUILD&&SQGUILD.state,b=g&&g.bank&&g.bank.i;if(b&&typeof b==='object')for(const k in b)if(k[0]==='w'&&!WREG.has(k))wreg(k)}catch(e){self.SQERR&&SQERR(e,'275-31')}};
  SQUPD.after('275 gear wears and comes off worn out',(dt)=>{try{if((T2+=(+dt||0))>2){T2=0;scanLive()}
-   if(!dead){const h=+hurt||0;if(h>LH+1e-4&&h>=.3)for(const s of ARMS)wear(s);LH=h}else LH=0;
+   if(!dead){const h=+hurt||0;if(h>LH+1e-4&&h>=.3)for(const s of ARMS)wear(s,ARMW);LH=h}else LH=0;
    sync();if(BROKE.size&&!dead&&!(typeof BMERGE!=='undefined'&&BMERGE)){const L=[...BROKE];BROKE.clear();for(const s of L)takeOff(s)}}catch(e){self.SQERR&&SQERR(e,'275-16')}});
  // ---- saves ----
  try{KNOWN49.add('dur')}catch(e){self.SQERR&&SQERR(e,'275-17')}
