@@ -274,5 +274,6 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   back at a furnace (`sdf_` / `sdfa_`). `SPECIAL`: Crystal blade 2 steel bars, Bone bow 20 bones (full repair). Boss gear (274's
   `BOSS`): 10 `ibs_<island>` sigil shards at level 50. `NOREP` (leather set, wizard set, shop wands): can't be repaired.
   The equipment screen shows a bar on every slot, the numbers on the tapped one and used copies in the Equip list; used copies' icons
-  get a durability bar. Fishing rods (004's Craft tab, check 101) are always listed: with a rod in hand the new one goes in the bag
+  get a durability bar (worn-out ones are greyed with a red bar), and their names start with the state ("Used adamant sword (62%)",
+  "Worn-out iron axe") so a cut-off bag label still tells them from the new stack (Aztu, Nov 23). Fishing rods (004's Craft tab, check 101) are always listed: with a rod in hand the new one goes in the bag
   as a spare (`craft` puts `eq_rod` in `inv` instead of setting `TL.rod`). 129's collection log skips `^u[123]_|^w\d+_` keys (also in saved logs).

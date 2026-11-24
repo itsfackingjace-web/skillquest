@@ -48,7 +48,7 @@ module.exports={name:'Durability: gear wears with use, used copies keep their nu
  t.eq(r.max,[250,500,1000,4000,4800,5000,12000,6000,2000,0],'durability by tier [wood, bought starter, iron, adamant, adamant +2 (+20%), turtle (boss), meteorite bow (x2), adamant wand (x1.5), rod 2,000, hoe never wears]');
  t.eq(r.hit,[3999,3999,1],'a hit that lands wears the sword by 1, a miss doesn\'t, the spare in the bag stays new');
  t.eq([r.shot,r.taken,r.log],[7999,[995,995],999],'a bow shot and a log wear 1, a hit you take wears each armour piece by 5');
- t.eq(r.off,[['w1200_eq_sword7'],1,'Adamant sword (30%)',0],'taking off a used sword: its own item, named with what\'s left, can\'t be sold; the spare is still new');
+ t.eq(r.off,[['w1200_eq_sword7'],1,'Used adamant sword (30%)',0],'taking off a used sword: its own item, named with what\'s left, can\'t be sold; the spare is still new');
  t.eq(r.on,['eq_sword7',1200,1,0],'wearing the used copy again brings back its 1,200 (the new one goes back in the bag)');
  t.eq(r.screen,true,'the equipment screen shows the durability');
  t.eq(r.saved,[['eq_sword7',1200],0,0],'the save keeps the worn number and writes no empty used copies');
@@ -64,5 +64,5 @@ module.exports={name:'Durability: gear wears with use, used copies keep their nu
  t.eq(r.bought,[false,1],'bought gear (leather helmet) can\'t be repaired');
  t.eq(r.boss,[true,2,1],'a worn-out Warlord\'s blade: 10 ember sigil shards at Smithing 50');
  t.eq([r.fuseBtn,r.fused],[true,[7,2]],'the furnace fuses 27 shards into 2 bars, 7 left');
- t.eq(r.trade,[true,'Mithril sword (80%)'],'a used copy from a trade is known right away');
+ t.eq(r.trade,[true,'Used mithril sword (80%)'],'a used copy from a trade is known right away');
  t.eq(r.fall,[1,0],'falling keeps used copies, berries go to the grave')}};

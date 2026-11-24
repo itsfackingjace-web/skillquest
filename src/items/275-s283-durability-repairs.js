@@ -46,7 +46,8 @@
  const parseW=k=>{const m=typeof k==='string'&&k[0]==='w'?WRE.exec(k):null;return m?{d:+m[1],k:m[2]}:null};
  const WK=(k,d)=>'w'+Math.max(0,Math.round(d))+'_'+k;
  const WREG=new Set();
- function wname(k,d){const mx=maxD(k),n=INAME[k]||(EQ[k]&&EQ[k].n)||'Gear';return n+(d<=0?' (worn out)':' ('+pct(d,mx)+'%)')}
+ // the word goes first so a cut-off bag label still tells it from the new ones (Aztu, Nov 23: "Iron axe (wo..." looked like the stack)
+ function wname(k,d){const mx=maxD(k),n=String(INAME[k]||(EQ[k]&&EQ[k].n)||'Gear'),l=n.charAt(0).toLowerCase()+n.slice(1);return d<=0?'Worn-out '+l:'Used '+l+' ('+pct(d,mx)+'%)'}
  function wreg(w){if(WREG.has(w))return true;const p=parseW(w);if(!p)return false;const inner=p.k;
   if(!(EQ[inner]||/^(u[123]_)?(eq_[a-z0-9_]+|[a-z]{1,4}dag)$/.test(inner)))return false;WREG.add(w);
   const def=(o,v)=>{try{Object.defineProperty(o,w,Object.assign({configurable:true,enumerable:false},typeof v==='function'?{get:v,set(){}}:{value:v,writable:true}))}catch(e){self.SQERR&&SQERR(e,'275-1')}};
@@ -169,7 +170,8 @@
  const ICO={};const barCol=f=>f>.5?'#58c058':f>.2?'#e0c040':'#e05040';
  function barred(w,url,f){const c0=ICO[w];if(c0&&c0.src===url)return c0.url||url;ICO[w]={src:url,url:null};
   try{const im=new Image();im.onload=()=>{try{const W0=im.naturalWidth||14,H0=im.naturalHeight||14,c=document.createElement('canvas');c.width=W0;c.height=H0;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(im,0,0);
-     const z=Math.max(1,Math.round(W0/14));x.fillStyle='#1c1410';x.fillRect(z,H0-3*z,W0-2*z,2*z);x.fillStyle=barCol(f);x.fillRect(z,H0-3*z,Math.max(f>0?z:0,Math.round((W0-2*z)*f)),2*z);
+     if(!(f>0)){x.globalCompositeOperation='source-atop';x.fillStyle='rgba(120,120,120,.55)';x.fillRect(0,0,W0,H0);x.globalCompositeOperation='source-over'}// worn out: greyed
+     const z=Math.max(1,Math.round(W0/14));x.fillStyle=f>0?'#1c1410':'#e05040';x.fillRect(z,H0-3*z,W0-2*z,2*z);x.fillStyle=barCol(f);x.fillRect(z,H0-3*z,Math.max(f>0?z:0,Math.round((W0-2*z)*f)),2*z);
      if(ICO[w]&&ICO[w].src===url){ICO[w].url=c.toDataURL();try{if(pnOpen)rPn()}catch(e){self.SQERR&&SQERR(e,'275-21')}}}catch(e){self.SQERR&&SQERR(e,'275-22')}};im.src=url}catch(e){self.SQERR&&SQERR(e,'275-23')}return url}
  SQICON.wrap('275',_ic=>function(k,col){
   if(typeof k==='string'&&k[0]==='w'&&WREG.has(k)){const p=parseW(k),mx=maxD(p.k);const base=EQ[p.k]?eqIcon(p.k):_ic.call(this,p.k,col);return barred(k,base,mx?p.d/mx:0)}
@@ -186,7 +188,7 @@
     const w=WS[sel],ok=w&&fullKey(sel)===w.k;let line='';
     if(ok){const mx=maxD(w.k),r=rinfo(w.k);line='<p style="margin:4px 0 6px;font-size:12px;color:#5a4a30">Durability '+w.d.toLocaleString('en-US')+' / '+mx.toLocaleString('en-US')+' ('+pct(w.d,mx)+'%). '+(r&&r.no?'Bought gear can\'t be repaired: buy a new one when it wears out.':r?'Repair it at a Blacksmith\'s bench ('+SKN[r.sk]+' '+r.rl+').':'')+'</p>'}
     const used=[...WREG].filter(k=>(inv[k]|0)>0&&EQ[k]&&EQ[k].slot===sel).sort((x,y)=>parseW(y).d-parseW(x).d);
-    let btn='';for(const k of used){const p=parseW(k);if(p.d>0)btn+='<button class="sb eqo" data-k="'+k+'" style="margin:6px 0">Equip '+esc(INAME[k])+((inv[k]|0)>1?' (×'+inv[k]+')':'')+'</button>';
+    let btn='';for(const k of used){const p=parseW(k);if(p.d>0)btn+='<button class="sb eqo" data-k="'+k+'" style="margin:6px 0">Equip the '+esc(String(INAME[k]).toLowerCase())+((inv[k]|0)>1?' (×'+inv[k]+')':'')+'</button>';
      else btn+='<p style="margin:4px 0;font-size:12px;opacity:.75">'+esc(INAME[k])+((inv[k]|0)>1?' ×'+inv[k]:'')+': repair it at a Blacksmith\'s bench before you wear it.</p>'}
     if(c>=0&&line)h=h.slice(0,c+4)+line+h.slice(c+4);
     if(btn){if(used.some(k=>parseW(k).d>0))h=h.replace('<p style="opacity:.7">Nothing in your bag for this slot.</p>','');const b=h.indexOf('<button class="sb equ"');
