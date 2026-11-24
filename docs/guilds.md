@@ -28,7 +28,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `RENAME` after the first, gname moved in one update. Tag: `retag` (leader, free) writes `info/tag` (rules: 2-4 A-Z0-9). Panel messages: `tell()` = say + a note card on top of the guild screen (8 s).
   Rules: `gchat`, `glb`, `guilds.prog`, `guilds.info.rn`, `gname` (publish them).
 - **Void Treant** (`combat/199-s207-void-treant.js`, `window.SQGTREANT`): a weekly guild boss. Void trees (`o.v==='dark'`) give `voidlog`
-  instead of plain logs (outermost `attack`, log deltas converted). The leader/an officer spends 50,000 void logs (`SUM`; the rules check the same number) from the bank (197's
+  instead of plain logs (outermost `attack`, log deltas converted). The leader/an officer spends 10,000 void logs (`SUM`, 50,000 before Nov 24's slower void trees; the rules check the same number) from the bank (197's
   `bankUpdate`, log `w:'boss'`) and writes `guilds/<g>/boss` {w: week = floor((now-4 days)/7 days), t, by}; any member writes `k` when it
   falls (sqEvent 'islandboss' with a `gt_` id is swallowed there: no chapter-two `ibk`, achievements' `ibw` +1). While `w` is this week
   and no `k`, 197's applyBuildings adds a `gportal` lm item (use `gtreant`) on the guild island; the fight is 100's island-boss arena
@@ -45,7 +45,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `prog/<pk>` >= 1 and exactly one less in the write, and `prog` has a matching branch (leader/officer, qd unchanged, only that skill
   down by one, the boss record written with by = you and t = now). Ranks above RMAX are kept, so spending one there shows no change.
   Or (Nov 22, Jace) twice the materials and no rank: `summon(k,true)` (`gtb:sum2:<kind>`, `pay(bank,2)`, no `prog` in the update);
-  the boss/turt rules take either (treant: void logs -50,000 with wood -1, or -100,000 with wood unchanged; turtle: the raw fish sum
+  the boss/turt rules take either (treant: void logs -10,000 with wood -1, or -20,000 with wood unchanged; turtle: the raw fish sum
   -5,000 with fish -1, or -10,000 with fish unchanged). Check 83. Kinds: `treant` (path `boss`, `gt_`),
   `turtle` (200, path `turt`, `gu_`).
 - **Giant Turtle** (`combat/200-s208-giant-turtle.js`, `SQTURT`): 5,000 raw fish (`RAW`, 16 kinds incl. 221's moonfin/abeel/akoi since Nov 16, cheapest `SELLP` first; the rules sum the

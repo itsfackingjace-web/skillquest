@@ -1,5 +1,5 @@
 // ---- 207. The Void Treant (a weekly guild boss), void logs and the Void wand ----
-// Void trees (o.v 'dark') give Void logs instead of plain logs. A guild's leader or an officer spends 50,000 void logs from the
+// Void trees (o.v 'dark') give Void logs instead of plain logs. A guild's leader or an officer spends 10,000 void logs (50,000 before Nov 24's slower void trees) from the
 // guild bank (197's bankUpdate, with guilds/<g>/boss {w: week number (Monday 00:00 UTC, like 143), t, by, k: killed at}) to wake
 // the Void Treant once a week; a void portal (197's applyBuildings, use 'gtreant') stays on the guild island until it falls.
 // The fight is 100's island-boss arena under the id gt_<guild id>; every fighter gets a Void wand (eq_wvoid, element 'void',
@@ -11,7 +11,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  const VL='voidlog';INVK.push(VL);INAME[VL]='Void logs';SN[VL]='Void logs';SHORT[VL]='void logs';SELLP[VL]=30;inv[VL]=inv[VL]|0;
  // the bag lists BAG_ORDER (011) = ... + EXTRA_BAG, which 086 filled with every item known then; later items must add themselves
  {const j=EXTRA_BAG.indexOf('yewlog');if(!EXTRA_BAG.includes(VL))EXTRA_BAG.splice(j>=0?j+1:EXTRA_BAG.length,0,VL)}
- IDESC[VL]='Dark wood that hums faintly, from void trees. A guild spends '+(50000).toLocaleString()+' of them from the guild bank to summon the Void Treant.';
+ IDESC[VL]='Dark wood that hums faintly, from void trees. A guild spends '+(10000).toLocaleString()+' of them from the guild bank to summon the Void Treant.';
  {SQICON.wrap('199',_ic=>function(k,col){if(k!==VL)return _ic(k,col);const key='g207vlog';if(ICONC[key])return ICONC[key];const c=document.createElement('canvas');c.width=14;c.height=14;const x=c.getContext('2d'),r=(a,b,w,h,cl)=>{x.fillStyle=cl;x.fillRect(a+1,b+1,w,h)};
    r(1,4,10,5,'#3c2a3c');r(1,4,10,1,'#56404e');r(9,4,2,5,'#a890d0');r(10,5,1,3,'#7a40c8');r(3,6,1,1,'#9a6ae0');r(6,7,1,1,'#9a6ae0');return ICONC[key]=c.toDataURL()})}
  const isLog=k=>k==='wood'||/log$/.test(k);
@@ -104,7 +104,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  function act(x,y){if(x==='sum')summon(y||'treant');else if(x==='sum2')summon(y||'treant',true)}
  function add(k,B){B.k=k;K[k]=B;if(!ORDER.includes(k))ORDER.push(k)}
  // ---- the Void Treant ----
- const SUM=50000;
+ const SUM=10000;// Nov 24: was 50,000; void trees now take about 18 s each (285). The rules check the same number.
  add('treant',{path:'boss',pre:'gt_',logK:VL,need:SUM,unit:'void logs',costTxt:SUM.toLocaleString()+' void logs',have:b=>b[VL]|0,pay:(b,m=1)=>(b[VL]|0)>=SUM*m?{[VL]:-SUM*m}:null,
   DEF:{n:'The Void Treant',door:'',lm:'the void portal',hp:6000,col:'#9a5af0',shard:'',sc:['#c8a0ff','#5a3a8a'],
    floor:['#2a2236','#30283e'],wall:'#1c1626',trim:'#0a0810',gold:[1500,2500],loot:[[WV,1],[VL,150],['yewlog',25]],xp:6000,rare:['ptvoid','Void treeling (pet)'],
