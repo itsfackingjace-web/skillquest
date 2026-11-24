@@ -97,7 +97,7 @@ function icvPlace(R){if(R._icv||!R.region)return;R._icv=1;const W=R.w,walk=(x,y)
   for(const[a,b]of[[-1,0],[1,0],[-1,-1],[0,-1],[1,-1]])R.solid.add((y+b)*W+x+a)}}
 {SQLOADRG.wrap('093',_lr=>function(id,want,ret){const ok=_lr(id,want,ret);try{const R=SCENE&&SCENE.room;if(ok&&R&&R.region)icvPlace(R)}catch(e){console.warn(e)}return ok})}
 {SQUSEFURN.wrap('093',_uf=>function(it){if(it&&it.use==='icv'){icvEnter(it);return}return _uf(it)})}
-{SQUPD.after('093',(dt)=>{if(dead||menuOpen||pnOpen||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;for(const it of R.useItems)if(it.use==='icv'&&Math.abs(P.x-(it.x*16+8))<8&&P.y<(it.y+1)*16+2&&P.y>it.y*16){icvEnter(it);return}})}
+{SQUPD.after('093',(dt)=>{if(dead||menuOpen||pnOpen||TRAVEL49)return;const R=SCENE&&SCENE.room;if(!R||!R.region||face[1]>=0||(window.SQRSAIL&&SQRSAIL.on))return;for(const it of R.useItems||[])if(it.use==='icv'&&Math.abs(P.x-(it.x*16+8))<8&&P.y<(it.y+1)*16+2&&P.y>it.y*16){icvEnter(it);return}})}
 // campfires in the caves: lit, drawn, cooking and keeping monsters away like outside
 {SQPP.before('093',(tm)=>{const R=SCENE&&SCENE.room;if(R&&R.icv)for(const f of fires)if(!f._glow)try{pF(f,tm)}catch(e){self.SQERR&&SQERR(e,'093-3')}})}
 window.SQICV=ICV;

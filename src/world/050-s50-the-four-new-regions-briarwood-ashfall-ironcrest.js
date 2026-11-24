@@ -333,8 +333,10 @@ function rgGather(R,it){const o=it.o,t=o.t,sk=SKOF[t];if(!sk){swing=.25;return}
  else{it.gone=true;rgCellDel(R,it);R.solid.delete(it.y*R.w+it.x);R.gone.push({it,at:CLK})}
  setTimeout(()=>sfx('pickup'),90);saveLocal()}
 SQHIT.wrap('050 the four new regions briarwood ashfall',next=>function(){const R=SCENE&&SCENE.room;if(R&&R.region&&!dead&&!menuOpen&&!pnOpen&&!BUILD&&!FISH&&swing<=0){const[fx,fy]=front(13);
-  if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){const tx=Math.floor(fx/16),ty=Math.floor(fy/16),it=rgObjAt(R,tx,ty);if(it){rgGather(R,it);return}
-   for(const l of R.useItems)if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1)){swing=.25;rgLook(l);return}}}
+  if(!en.some(n=>!n.dead&&Math.hypot(n.x-fx,n.y-fy)<(n.big?24:16))){const tx=Math.floor(fx/16),ty=Math.floor(fy/16);let it=rgObjAt(R,tx,ty);
+   // Nov 23 fix: 145's yards pick the tree 16 px ahead (frontTile) and lend R.region for this call; yards have no useItems
+   if(!it&&R.region==='_yard'){const[gx,gy]=front(16);it=rgObjAt(R,Math.floor(gx/16),Math.floor(gy/16))}if(it){rgGather(R,it);return}
+   for(const l of R.useItems||[])if(l.use==='look'&&tx>=l.x&&ty>=l.y&&tx<l.x+(l.w||1)&&ty<l.y+(l.h||1)){swing=.25;rgLook(l);return}}}
  return next.apply(this,arguments)});
 
 // --- region life: resources grow back, landmarks are discovered, spawns stay away from quiet places ---

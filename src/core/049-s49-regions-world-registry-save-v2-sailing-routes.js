@@ -146,7 +146,7 @@ tk.addEventListener('touchstart',e=>{if(!pnOpen&&!menuOpen&&!dead&&nearPost49()&
 const _fn49=facingNpc;facingNpc=function(){const n=_fn49();if(n)return n;return nearPost49()&&!en.some(e=>!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)<40)?{routes49:1}:null};   // monsters next to you still get hit
 const _cb49=canBoard;canBoard=function(){return nearPost49()?false:_cb49()};
 // things you can USE in a region (the pier post, landmarks): measured to the edge of their footprint
-const _nfu49=nearFurn;nearFurn=function(){const R=SCENE&&SCENE.room;if(R&&R.region){let best=null,bd=14;for(const it of R.useItems){const x0=it.x*16,y0=it.y*16,x1=x0+(it.w||1)*16,y1=y0+(it.h||1)*16,
+const _nfu49=nearFurn;nearFurn=function(){const R=SCENE&&SCENE.room;if(R&&R.region){let best=null,bd=14;for(const it of R.useItems||[]){const x0=it.x*16,y0=it.y*16,x1=x0+(it.w||1)*16,y1=y0+(it.h||1)*16,
   d=Math.hypot(Math.max(x0-P.x,0,P.x-x1),Math.max(y0-P.y,0,P.y-y1));if(d<bd){bd=d;best=it}}return best}return _nfu49()};
 SQUSEFURN.wrap('049',_uf49=>function(it){if(it&&it.use==='regdock'){openRoutes();return}if(it&&it.use==='look'){rgLook(it);return}_uf49(it)});
 const _nf49=nearFire;nearFire=function(x,y,r){return curRegion()!=='hollow'?false:_nf49(x,y,r)};   // Hollow campfires don't burn in other lands
