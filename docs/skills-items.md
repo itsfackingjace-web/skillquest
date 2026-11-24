@@ -288,3 +288,13 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   Station rows (007 `forgeHTML`, 022 `smithRows`) show `SQMATXP.tag(r)` ("1.4 s · 340 xp", time at your level). Upgrades (274
   `SQUPGRADE.reg` is rerun) and repairs (275) take their XP from the recipe, so they follow. Perks that save a bar or make a bonus item
   never change XP (039's `prodBoost`), so bonus items give no XP.
+- **Tree toughness and void trees** (`skills/277-s285-tree-toughness.js`, `window.SQCHOP`, Jace Nov 24; check 107): an axe has a
+  chopping power by tier (`POW`: wooden 1, stone 1.25, iron 1.5, steel 1.75, mithril 2.25, adamant 2.5, meteorite 3) and a tree a
+  toughness (`TOUGH`: tree/pine 8, oak 26, willow 48, maple 100, yew 175; Dev Suite trees use their hp; void 320). It falls after
+  ceil(toughness / power) swings; the swing time is unchanged (0.25 s, quicker with level, perks and axe upgrades). The chop sites
+  (004 Hollow trees, 014 pines, 050 island trees, 083 tiers and Dev Suite trees) take `SQCHOP.dmg(o)` = power × OHP / toughness
+  (+1e-9) off, so objects keep their old hit points (obj, island items, regrowth and the "stays standing" perks are untouched).
+  Cacti, houses and building pieces keep 1 + tier. Void trees (`o.v 'dark'` on an island: Shattered Expanse, guild void saplings,
+  also dark oaks/willows there) need Woodcutting 75 and an adamant axe (a HIT wrap refuses first) and give 400 XP a tree in all
+  (199 adds `SQCHOP.voidXp(o)` = 400 minus what the plain tree gave). A dark tree on Hollow is still a plain tree. Numbers come
+  from the "Trees" tab of the SQ Blacksmith's Bench sheet; the Woodcutting tree lists void trees at 75 and the wiki says so.

@@ -16,7 +16,7 @@ function attack(){
  const tx=Math.floor(fx/T),ty=Math.floor(fy/T);
  if(tx>=0&&ty>=0&&tx<N&&ty<N){const o=obj[ty*N+tx];if(o){
   if(o.t=='rock'&&TL.pick<1)say('Need a pickaxe - craft one!');
-  else{o.hp-=o.t=='tree'?1+TL.axe:o.t=='rock'?1+TL.pick:1;o.shake=.15;
+  else{o.hp-=o.t=='tree'?(window.SQCHOP?SQCHOP.dmg(o):1+TL.axe):o.t=='rock'?1+TL.pick:1;o.shake=.15;
    if(o.hp<=0){obj[ty*N+tx]=null;
     if(o.t=='tree'){const n=2+(Math.random()<lvOf(1)*.01?1:0);inv.wood+=n;say('+'+n+' wood');gx[1]+=25}
     else if(o.t=='rock'){if(lvOf(2)>=15&&TL.pick>=2&&Math.random()<.3){inv.iron++;say('+1 iron ore');gx[2]+=35}else{const n=2+(Math.random()<lvOf(2)*.01?1:0);inv.stone+=n;say('+'+n+' stone');gx[2]+=18}}

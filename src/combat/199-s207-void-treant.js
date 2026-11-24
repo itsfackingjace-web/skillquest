@@ -19,7 +19,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
  {SQHIT.wrap('199 void treant',_a=>function(){let o=null;try{o=treeAt()}catch(e){self.SQERR&&SQERR(e,'199-2')}if(!o||o.v!=='dark'||SKOF[o.t]!==1)return _a.apply(this,arguments);
    const b={};for(const k in inv)if(isLog(k))b[k]=inv[k]|0;const out=_a.apply(this,arguments);
    try{let n=0;for(const k in inv){if(!isLog(k)||k===VL)continue;const d=(inv[k]|0)-(b[k]|0);if(d>0){inv[k]-=d;n+=d}}
-    if(n>0){inv[VL]=(inv[VL]|0)+n;addXp(1,15*n);say('+'+n+' void log'+(n>1?'s':''));try{gTxt(P.x,P.y-30,'+'+n+' void log'+(n>1?'s':''),'#c8a0ff')}catch(e){self.SQERR&&SQERR(e,'199-3')}}}catch(e){console.warn('voidlog',e)}return out})}
+    if(n>0){inv[VL]=(inv[VL]|0)+n;addXp(1,window.SQCHOP?SQCHOP.voidXp(o):15*n);/* 285: 400 xp a void tree in all */say('+'+n+' void log'+(n>1?'s':''));try{gTxt(P.x,P.y-30,'+'+n+' void log'+(n>1?'s':''),'#c8a0ff')}catch(e){self.SQERR&&SQERR(e,'199-3')}}}catch(e){console.warn('voidlog',e)}return out})}
  // ---- the Void wand: element 'void', the strongest wand; every 4th hit heals you one heart ----
  const WV='eq_wvoid',VB=4;
  WSP.void={cost:3,col:'#9a5af0',c2:'#e8d0ff',sfx:'cvoid'};
@@ -114,7 +114,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
   about:'An ancient tree swallowed by the void. Once a week the guild can feed it '+SUM.toLocaleString()+' void logs from the guild bank to wake it. A void portal opens on your guild island: go through together.',
   awakeTxt:'The void portal is in the middle of your guild island.',picW:75,
   rewardTxt:'a <b>Void wand</b> (Magic 50: its void bolts hit harder than adamant wands and every fourth hit heals you a heart), 1,500-2,500 gold, 150 void logs, 25 yew logs. 5%: a Void treeling (pet).',
-  tip:'Chop it! Your axe and Woodcutting level add damage to every melee hit. It gets 60% tougher for each extra fighter. Void logs come from void trees: on the Shattered Expanse, and void saplings planted on your guild island.',
+  tip:'Chop it! Your axe and Woodcutting level add damage to every melee hit. It gets 60% tougher for each extra fighter. Void logs come from void trees (Woodcutting 75, an adamant axe or better): on the Shattered Expanse, and void saplings planted on your guild island.',
   spots:R=>{const bx=Math.round(R.w/2)-1,by=Math.round(R.h/2)-5;return[[bx+3,by+3],[bx-3,by+3],[bx,by+6],[bx+3,by+6],[bx-3,by+6],[bx,by+8]]},
   spr:()=>K.treant._s||(K.treant._s=mkSprite(TP,TR)),
   draw(b,tm){const S=1.5,sp=K.treant.spr(),c=sp.c,w=c.width*S,h=c.height*S,x=Math.round(b.x),y=Math.round(b.y),pose=window.SQIBPOSE?SQIBPOSE(b):['idle',''],wind=pose[0]==='wind'||pose[0]==='strike',hit=Math.abs(b.kx||0)+Math.abs(b.ky||0)>.3;

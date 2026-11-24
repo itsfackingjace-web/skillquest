@@ -175,6 +175,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `gather.crops.gc_<id>` = {n, item, seed, lv, gm (watered minutes), y0,y1, xp, sh, col[3], buy, ck, clv, cxp} -> `CROPS[item]` (keyed by
   the crop item: 016's harvest adds `inv[p.c]`; `_g`), `SEED2CROP[seed]`, a `GEN` seed pack (`_gc`) and `COOKS` (`_gc`). A removed crop
   keeps its CROPS entry (plots/saves name it), only its seed stops planting. Ripe look from the wrapped `hdCropS` (shapes in `SHAPES`).
+  Trees made here use their Toughness against the axe's chopping power (277: 1 to 3), up to 400; rocks and veins keep 1-40 and 1 + tier.
 - **Worn looks for new gear** (111a apply): `WORN` takes every valid `worn.<eq_...>` without checking `EQ` (newgear items are registered
   by 111a2's onApply hook *after* the worn loop, so their looks used to be dropped on every normal load; drawWorn/hideFor check slots).
 - **Recipes tab** (`dev/183-s191-recipes.js`, `SQRECIPES`, Dev Suite > Recipes): one list of every recipe (161b's `SQDATA.RREF` game

@@ -15,7 +15,7 @@ Object.assign(SELLP,{pelt:15,bone:5});Object.assign(SN,{pelt:'Wolf pelts',bone:'
 function hitSpecial(i,o){
  if(o.t==='ore'){if(TL.pick<2){say('This iron vein needs a stone pickaxe or better.');sfx('swish');return}if(lvOf(2)<5){say('You need Mining 5 to mine iron.');sfx('swish');return}
   o.hp-=TL.pick;o.shake=.15;sfx('mine');if(o.hp>0)return;obj[i]=null;REM.push({i,t:'ore',at:CLK});const n=1+(Math.random()<lvOf(2)*.008?1:0);inv.iron=(inv.iron|0)+n;say('+'+n+' iron ore');addXp(2,40);setTimeout(()=>sfx('pickup'),90)}
- else{o.hp-=1+TL.axe;o.shake=.15;sfx(o.t==='pine'?'chop':'rustle');if(o.hp>0)return;obj[i]=null;REM.push({i,t:o.t,at:CLK});
+ else{o.hp-=o.t==='pine'?(window.SQCHOP?SQCHOP.dmg(o):1+TL.axe):1+TL.axe;o.shake=.15;sfx(o.t==='pine'?'chop':'rustle');if(o.hp>0)return;obj[i]=null;REM.push({i,t:o.t,at:CLK});
   if(o.t==='pine'){const n=2+(Math.random()<lvOf(1)*.01?1:0);inv.wood+=n;say('+'+n+' wood');addXp(1,28)}else{inv.cfruit=(inv.cfruit|0)+2;inv.wood+=1;say('+2 cactus fruit and +1 wood');addXp(3,14)}setTimeout(()=>sfx('pickup'),90)}
  saveLocal()}
 // --- enemies: wolves in the snow, skeletons in the desert ---

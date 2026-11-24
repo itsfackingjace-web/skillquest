@@ -63,7 +63,7 @@
    if(lvOf(T.sk)<T.lv){say('You need '+SKN[T.sk]+' '+T.lv+' for this.');sfx('swish');swing=.25;return}}
   else if(o.t==='rock'&&TL.pick<1){say('Need a pickaxe - craft one!');swing=.25;sfx('swish');return}
   else if(o.t==='ore'&&(TL.pick<2||lvOf(2)<5)){say(TL.pick<2?'This vein needs a stone pickaxe or better.':'You need Mining 5 to mine iron.');swing=.25;sfx('swish');return}
-  const sk=T?T.sk:o.t==='rock'||o.t==='ore'?2:1;swing=.25/(1+(typeof gSpeed==='function'?gSpeed(sk):0));o.hp-=sk===1?1+TL.axe:Math.max(1,TL.pick);o.shake=.15;sfx(sk===1?'chop':'mine');if(o.hp>0)return;
+  const sk=T?T.sk:o.t==='rock'||o.t==='ore'?2:1;swing=.25/(1+(typeof gSpeed==='function'?gSpeed(sk):0));o.hp-=sk===1?(window.SQCHOP?SQCHOP.dmg(o):1+TL.axe):Math.max(1,TL.pick);o.shake=.15;sfx(sk===1?'chop':'mine');if(o.hp>0)return;
   if(T){const n=1+(Math.random()<lvOf(sk)*.006?1:0);inv[T.item]=(inv[T.item]|0)+n;if(sk===1)inv.wood=(inv.wood|0)+1;say('+'+n+' '+INAME[T.item].toLowerCase()+(sk===1?' and +1 wood':''));addXp(sk,T.xp)}
   else if(o.t==='rock'){const n=2;inv.stone=(inv.stone|0)+n;say('+2 stone');addXp(2,18)}else{inv.iron=(inv.iron|0)+1;say('+1 iron ore');addXp(2,40)}
   // the Woodcutting/Mining "stays standing" perks (038's STAYP) work on these too

@@ -317,7 +317,7 @@ function rgGather(R,it){const o=it.o,t=o.t,sk=SKOF[t];if(!sk){swing=.25;return}
  if(t==='rock'&&TL.pick<1){say('Need a pickaxe - craft one!');swing=.25;sfx('swish');return}
  if(t==='ore'){if(TL.pick<2){say('This vein needs a stone pickaxe or better.');swing=.25;sfx('swish');return}if(lvOf(2)<5){say('You need Mining 5 to mine iron.');swing=.25;sfx('swish');return}}
  swing=.25/(1+gSpeed(sk));if(P_(sk,RECP[sk]))swing*=.8;ACTW[sk]=10;
- o.hp-=t==='tree'||t==='pine'?1+TL.axe:t==='rock'?1+TL.pick:t==='ore'?TL.pick:1;o.shake=.15;sfx(sk===1?'chop':sk===2?'mine':'rustle');if(o.hp>0)return;
+ o.hp-=t==='tree'||t==='pine'?(window.SQCHOP?SQCHOP.dmg(o):1+TL.axe):t==='rock'?1+TL.pick:t==='ore'?TL.pick:1;o.shake=.15;sfx(sk===1?'chop':sk===2?'mine':'rustle');if(o.hp>0)return;
  const gains={},add=(k,n)=>{inv[k]=(inv[k]|0)+n;gains[k]=(gains[k]||0)+n};
  if(t==='tree'||t==='pine'){const n=2+(Math.random()<lvOf(1)*.01?1:0);add('wood',n);say('+'+n+' wood');addXp(1,t==='pine'?28:25)}
  else if(t==='rock'){if(lvOf(2)>=15&&TL.pick>=2&&Math.random()<.3){add('iron',1);say('+1 iron ore');addXp(2,35)}else{const n=2+(Math.random()<lvOf(2)*.01?1:0);add('stone',n);say('+'+n+' stone');addXp(2,18)}}

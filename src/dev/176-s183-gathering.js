@@ -23,7 +23,7 @@
  const txt=(v,n)=>String(v==null?'':v).replace(/[<>]/g,'').trim().slice(0,n);
  const kindOf=id=>'g_'+id.slice(3);
  function cleanNode(o){if(!o||typeof o!=='object')return null;const rep=['tree','rock','ore'].includes(o.rep)?o.rep:'tree';
-  const col=Array.isArray(o.col)?o.col.map(hex):[];const r={n:txt(o.n,30)||'New tree',rep,lv:num(o.lv,1,99,1),hp:num(o.hp,1,40,6),tool:[1,2,3,4,6,7].includes(+o.tool)?+o.tool:1,
+  const col=Array.isArray(o.col)?o.col.map(hex):[];const r={n:txt(o.n,30)||'New tree',rep,lv:num(o.lv,1,99,1),hp:num(o.hp,1,rep==='tree'?400:40,6),/* 285: trees use toughness against axe power (oak 26, yew 175) */tool:[1,2,3,4,6,7].includes(+o.tool)?+o.tool:1,
    item:txt(o.item,40),xp:num(o.xp,0,5000,30),where:(Array.isArray(o.where)?o.where:[]).filter(k=>k==='hollow'||WORLD_REGIONS[k]).slice(0,20),pct:num(o.pct,0,100,10)};
   if(rep==='tree')r.col=[0,1,2,3].map(i=>col[i]||['#3f8a2c','#5aa83a','#7cc650','#2a6420'][i]);else r.ore=hex(o.ore)||'#e05878';return r}
  function cleanFish(o){if(!o||typeof o!=='object')return null;return{n:txt(o.n,30)||'New fish',item:txt(o.item,40),lv:num(o.lv,1,99,1),xp:num(o.xp,0,5000,30),
@@ -124,7 +124,7 @@
     fld('Replaces','<select data-gw="rep">'+[['tree','Trees (Woodcutting)'],['rock','Plain rocks (Mining)'],['ore','Iron ore veins (Mining)']].map(([k,l])=>'<option value="'+k+'"'+(r.rep===k?' selected':'')+'>'+l+'</option>').join('')+'</select>')+
     fld(sk+' level','<input type="number" min="1" max="99" data-gw="lv" value="'+r.lv+'">')+
     fld('Needs at least','<select data-gw="tool">'+Object.entries(TOOLS).map(([t,n])=>'<option value="'+t+'"'+(+t===r.tool?' selected':'')+'>'+n+(tree?' axe':' pickaxe')+'</option>').join('')+'</select>')+
-    fld('Toughness','<input type="number" min="1" max="40" data-gw="hp" value="'+r.hp+'" title="Hit points: each hit takes 1 + the tool\'s tier">')+
+    fld('Toughness',(r.rep==='tree'?'<input type="number" min="1" max="400" data-gw="hp" value="'+r.hp+'" title="Each swing takes the axe\'s power off it: wooden 1, iron 1.5, mithril 2.25, adamant 2.5, meteorite 3. Oak 26, willow 48, maple 100, yew 175, void 320.">':'<input type="number" min="1" max="40" data-gw="hp" value="'+r.hp+'" title="Hit points: each hit takes 1 + the tool\'s tier">'))+
     fld('Gives','<span>'+itemSel('item',r.item,'— pick an item —')+' <button class="dv-b" data-gx="mkitem">Make its item</button></span>')+(tree?'<p class="dv-mut" style="margin:0">Trees also give 1 wood.</p>':'')+
     fld('XP','<input type="number" min="0" max="5000" data-gw="xp" value="'+r.xp+'">')+
     (tree?fld('Leaf colours','<span>'+r.col.map((c,i)=>'<input type="color" data-gwc="'+i+'" value="'+c+'"> <input data-gwh="'+i+'" value="'+c+'" maxlength="7" style="width:72px;font-family:monospace">').join(' ')+'</span>')
