@@ -123,6 +123,9 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `clean()` strips "Your block chance now" from wiki text, the Controls tab and four more guides. Skill rows: `SQWKACT` (array of
   `(skill, rows)=>{}` hooks, rows `{n,xp,lv,t?,k?}`) fills Woodcutting times and the void tree row; WK2.skills shows a time column (`t`, seconds)
   and Unlocks from `treeGains`. Check 108.
+  **`.wc` needs `min-height:0`**: in the phone layout (`.wm` is a column) it otherwise grows to the page's full height and `.wb` can't
+  scroll (Nov 24, live for 4 hours). Check 109 swipes and wheels Home and Items on a 390×844 touch phone; a case can now pass `context`
+  (browser context options) to run.cjs.
 - **Town names** (`ui/245-s253-town-names.js`, `SQTOWNNAME`, Nov 20): `here()` from the towns' own box tests (VX/VY, inTownBox, inFHBox,
   inDHBox, inTWBox, SQBW.town, SQAF.town, the dustwater landmark); drawn at the top of the minimap (wrapped `drawMini52`) and as a wooden sign
   sliding in at y 96*U for 3 s when the town changes (SQHUD step). Check 33.

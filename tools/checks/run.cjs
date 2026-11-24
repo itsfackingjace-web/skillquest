@@ -9,7 +9,7 @@ const fs=require('fs'),path=require('path');const {world,expect}=require('./lib.
  // source rules first (lint.cjs: bare blocks, panel numbers, shared CSS classes, prompt(), untagged catches)
  let nLint=0;if(!only||'source rules'.includes(only)){nLint=1;const P=require('./lint.cjs').lint();if(P.length){bad++;console.log('FAIL source rules');for(const m of P)console.log('     - '+m)}else console.log('ok   source rules')}
  for(const f of files){const c=require(path.join(dir,f));const s=Date.now();let W=null,fails=[];
-  try{W=await world(c.players||1);const t=expect();await c.run(W.pages.length>1?W.pages:W.pages[0],t);fails=t.fails.concat(W.errors.map(e=>'script error: '+e))}
+  try{W=await world(c.players||1,c.context);/* c.context: browser context options, e.g. a phone with touch */const t=expect();await c.run(W.pages.length>1?W.pages:W.pages[0],t);fails=t.fails.concat(W.errors.map(e=>'script error: '+e))}
   catch(e){fails=[String(e&&e.stack||e).split('\n').slice(0,3).join(' | ')].concat(W?W.errors.map(e=>'script error: '+e):[])}
   finally{if(W){for(const p of W.pages){try{for(const l of await p.evaluate(()=>window.SQERR?SQERR.list():[])){const k=l.split(' ')[0];const o=ERRS.get(k)||{l,cases:new Set()};o.cases.add(c.name);ERRS.set(k,o)}}catch(_){}}await W.close().catch(()=>{})}}
   const ms=((Date.now()-s)/1000).toFixed(1);if(fails.length){bad++;console.log('FAIL '+c.name+' ('+ms+'s)');for(const m of fails)console.log('     - '+m)}else console.log('ok   '+c.name+' ('+ms+'s)')}

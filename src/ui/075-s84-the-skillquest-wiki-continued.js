@@ -72,7 +72,7 @@ const WK_PAT={rain:'Fire rain: burning circles fall around it',ring:'Shockwave: 
 #sqwk .wnav .wsub button:hover{color:#141c32;background:#f1f4fa}
 #sqwk .wnav .wsub button.on{color:#141c32;background:#e8eefb;box-shadow:inset 4px 0 0 #8aa4d0}
 #sqwk button.gpf{box-shadow:inset 0 0 0 3px #f8a020!important}
-#sqwk .wc{flex:1;min-width:0;display:flex;flex-direction:column}
+#sqwk .wc{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 #sqwk .wsr{display:none}
 #sqwk .wb{flex:1;overflow-y:auto;padding:16px 20px 28px;line-height:1.5}
 #sqwk .wph{margin:0 0 14px;padding:0 0 10px;border-bottom:3px solid #d9e0ec}#sqwk .wph h2{margin:0;font-size:23px;color:#141c32;letter-spacing:.02em}#sqwk .wph p{margin:4px 0 0;color:#5a6680;font-size:14px}
