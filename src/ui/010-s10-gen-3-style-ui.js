@@ -203,7 +203,7 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
  if(dk>.4){g.fillStyle='#f8e070';g.beginPath();g.arc(dx+18*U,top+14*U,6*U,0,6.283);g.fill();g.fillStyle='#f8f8f8';g.beginPath();g.arc(dx+21*U,top+12*U,5.5*U,0,6.283);g.fill()}
  else{g.fillStyle='#f8a020';g.beginPath();g.arc(dx+18*U,top+14*U,6*U,0,6.283);g.fill();g.fillStyle='#f8d848';g.beginPath();g.arc(dx+18*U,top+14*U,4*U,0,6.283);g.fill()}
  g3text('DAY '+(1+Math.floor(time/DAYLEN)),dx+dw-12*U,top+14.5*U,13,U,'#404040','right',700);
- {const bx=dx+8*U,by=top+dh-10*U,bw2=dw-16*U,f=(time%DAYLEN)/DAYLEN,dl=DAYLIGHT/DAYLEN;g.fillStyle='#485870';g.fillRect(bx-U,by-U,bw2+2*U,5*U);g.fillStyle='#f8c840';g.fillRect(bx,by,bw2*dl,3*U);g.fillStyle='#384890';g.fillRect(bx+bw2*dl,by,bw2*(1-dl),3*U);
+ {const bx=dx+8*U,by=top+dh-10*U,bw2=dw-16*U,f=(time%DAYLEN)/DAYLEN,dl=DAYLIGHT/DAYLEN;g.fillStyle=(window.SQTHEME&&SQTHEME.bd)||'#485870';g.fillRect(bx-U,by-U,bw2+2*U,5*U);g.fillStyle='#f8c840';g.fillRect(bx,by,bw2*dl,3*U);g.fillStyle='#384890';g.fillRect(bx+bw2*dl,by,bw2*(1-dl),3*U);
   g.fillStyle='#ffffff';g.fillRect(bx+bw2*f-U,by-2*U,2*U,7*U)}
  const sa=performance.now()/1000-cloudOk;if(sa<2.5){g.globalAlpha=Math.min(1,2.5-sa);g3text('SAVED',dx-8*U,top+17*U,10,U,'#f8f8f8','right',700);g.globalAlpha=1}
  // text box: pages of two lines; tap it to skip ahead

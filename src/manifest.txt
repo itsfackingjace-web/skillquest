@@ -291,6 +291,7 @@ skills/277-s285-tree-toughness.js
 ui/278-s286-wiki-overhaul.js
 skills/279-s287-woodcutting-quarters.js
 combat/280-s288-others-see-tool-swings.js
+ui/281-s289-hud-colours.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

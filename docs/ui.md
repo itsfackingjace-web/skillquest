@@ -136,3 +136,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 - **Wiki > Drop Card** (`ui/255-s263-wiki-drop-card.js`, Nov 20): tab `dropcard` after Brewing: an intro, the guide's pages (254's `SQBINDER.GP`,
   one source for both), your collection count, every card by group (picture, stats, where it drops, link to its item page) and every pet card's
   Companion power. Check 49 opens it.
+- **HUD colours** (`ui/281-s289-hud-colours.js`, `window.SQTHEME`, Nov 25, Jace; check 119): bg `#FFECA6`, text `#69411B`, border `#35611D`
+  (+ shades: ring, sh, lite, tan, tab, tabOn, dark). Reassigns 059's `g3box`/`g3bar` and `g3text` (light fills → bg; `#404040` → text;
+  the old blue accents `#3058c8`/`#3878b8`/`#5878b8` → border green); frames the minimap (wraps `drawMini52`); 010's day bar outline
+  reads `SQTHEME.bd`. Every game `<style>` (now and added later) and every inline `style` has the old palette swapped (`MAP`: slate
+  `#485870`, ring `#a8c0e0`, `#404040`, `#f8f8f8`, the blue tabs and light blues; `background:#fff` → light cream) by a
+  MutationObserver; style-attribute changes re-check only that element (`SQTHEME.n` counts: 0 while walking). `#sqtheme` (its own
+  rules) is moved back to the end of `<head>` when a stylesheet is added. Dark screens' navy (Dev Suite, card binder) is left alone.
+  A new screen that uses the old palette is themed automatically; a new colour meant as a UI colour goes in `MAP`.
