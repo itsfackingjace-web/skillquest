@@ -145,7 +145,7 @@
    if(hit){if(stab)wear('off');else{wear('main');if(offKind()==='dagger')wear('off')}}}catch(e){self.SQERR&&SQERR(e,'275-14')}return out});
  {const _sa=shootAim;shootAim=function(){const n0=PROJ.length,s0=SPELLS.length;const out=_sa.apply(this,arguments);
    try{if(PROJ.slice(n0).some(p=>p&&p.k==='arrow'&&!p.hostile)||SPELLS.length>s0){const k=offKind();if(k==='bow'||k==='wand')wear('off')}}catch(e){self.SQERR&&SQERR(e,'275-15')}return out}}
- SQADDXP.after('275 tools wear per log, ore and catch',(i,x)=>{if(!(x>0&&x<=3000))return;if(i===1)wear('axe');else if(i===2)wear('pick');else if(i===9)wear('rod')});
+ SQADDXP.after('275 tools wear per log, ore and catch',(i,x)=>{if(!(x>0&&x<=3000)||window.SQNOWEAR)return;/* SQNOWEAR: 287's quarter payouts (an axe wears once a felled tree) */if(i===1)wear('axe');else if(i===2)wear('pick');else if(i===9)wear('rod')});
  let LH=0,T2=0;
  // a used +3 (from before +3s stopped wearing) that reaches the bag becomes a plain +3
  function plain3(){if(typeof BMERGE!=='undefined'&&BMERGE||window.SQGEARBUSY>0)return;for(const k of WREG){const c=inv[k]|0;if(c<1)continue;const p=parseW(k);if(p&&NEVER(p.k)){inv[k]=0;inv[p.k]=(inv[p.k]|0)+c}}}

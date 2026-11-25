@@ -12,34 +12,33 @@
 // swings never misses by a rounding hair). Dev Suite trees (176's g_<id>, toughness = their hp) just use the new power.
 // Void trees: Woodcutting 75 and an adamant axe or better (a HIT wrap refuses before 096/199 run), toughness 66, 400 XP a tree
 // (199 adds what the plain tree didn't give). Only on islands, where 199 makes void logs; a dark tree on Hollow stays a plain tree.
+// Nov 24 evening (Jace's "all chop, no recovery" model, 287): every chop takes 1 s (the Dev Suite's base chop time, less 0.05 s for each
+// Quick Chop perk), so the toughness numbers are about 0.6 of the ones above (1.67x the damage a chop): tree 2, oak 5, willow 10, maple 17,
+// yew 24, void 39, chosen so each axe lands on whole chops close to the old times. Dev Suite trees use 0.6 x their hit points. 287 sets the
+// chop's swing (this file no longer scales it) and pays logs and XP every quarter of a tree; dmg() notes the tree it hit (SQCHOP.last).
 (()=>{
  const POW={1:1,2:1.25,3:1.5,4:1.75,5:2,6:2.25,7:2.5,8:2.75,9:3};// by axe tier (TL.axe): wooden 1, stone 2, iron 3, steel 4, mithril 6, adamant 7, meteorite 9
- const TOUGH={tree:3,pine:3,oak:9,willow:16,maple:28,yew:42};// with a 0.6 s swing: tree 3 swings with a wooden axe, yew 17 with adamant
- const VOID={lv:75,axe:7,t:66,xp:400};// 22 swings with a meteorite axe, 27 with adamant
- const CHOPSW=.6,BASESW=.25;// a chopping swing at Woodcutting 1, and the swing the chop sites set
- let chopped=false;
+ const TOUGH={tree:2,pine:2,oak:5,willow:10,maple:17,yew:24};// with a 1 s chop (287): tree 2 chops with a wooden axe, yew 10 with adamant (Dev Suite > Balance > Woodcutting changes them)
+ const VOID={lv:75,axe:7,t:39,xp:400};// 13 chops with a meteorite axe, 16 with adamant
  const pow=()=>{const a=TL.axe|0;return a<=0?1:POW[a]||(a>9?3+.25*(a-9):1)};
  const inIsland=()=>!!(typeof SCENE!=='undefined'&&SCENE&&SCENE.room&&SCENE.room.region);
  const isVoid=o=>!!(o&&o.v==='dark'&&typeof SKOF!=='undefined'&&SKOF[o.t]===1&&inIsland());
  // a tree's toughness, or null for anything that isn't a tree (cacti keep their old damage)
  function tough(o){if(!o)return null;if(isVoid(o))return VOID.t;if(TOUGH[o.t]!=null)return TOUGH[o.t];
-  const T=window.SQTIER&&SQTIER[o.t];if(T&&(T.sk===1||T.base==='tree'))return T.hp||OHP[o.t]||3;return null}
- // what one swing takes off this object's hit points
- function dmg(o){const t=tough(o);if(t==null||!(t>0))return 1+(TL.axe|0);chopped=true;const hp=(typeof OHP!=='undefined'&&OHP[o.t])||3;return pow()*hp/t*(1+1e-9)}
+  const T=window.SQTIER&&SQTIER[o.t];if(T&&(T.sk===1||T.base==='tree'))return(T.hp||OHP[o.t]||3)*.6;return null}
+ // what one swing takes off this object's hit points; notes the tree and its hit points before the chop for 287
+ function dmg(o){const t=tough(o);if(t==null||!(t>0))return 1+(TL.axe|0);const hp=(typeof OHP!=='undefined'&&OHP[o.t])||3;SQCHOP.last={o,hp0:+o.hp,max:hp};return pow()*hp/t*(1+1e-9)}
  // 199 gives a void tree's extra XP: everything above what the plain tree it stands on already gave
  function voidXp(o){const t=o&&o.t,base=t==='pine'?28:t==='tree'?25:(window.SQTIER&&SQTIER[t]&&SQTIER[t].xp)||25;return Math.max(0,VOID.xp-base)}
- window.SQCHOP={POW,TOUGH,VOID,CHOPSW,pow,tough,dmg,voidXp,isVoid};
+ window.SQCHOP={POW,TOUGH,VOID,pow,tough,dmg,voidXp,isVoid,last:null};
  // ---- void trees: Woodcutting 75 and an adamant axe ----
  const voidAhead=()=>{try{if(!inIsland()||dead||menuOpen||pnOpen||BUILD||swing>0)return null;const R=SCENE.room,[fx,fy]=front(13);let it=rgObjAt(R,Math.floor(fx/16),Math.floor(fy/16));
    if(!it&&R.region==='_yard'){const[gx,gy]=front(16);it=rgObjAt(R,Math.floor(gx/16),Math.floor(gy/16))}return it&&isVoid(it.o)?it:null}catch(e){self.SQERR&&SQERR(e,'277-1')}return null};
- SQHIT.wrap('277 trees: void trees need Woodcutting 75, slower chops',next=>function(){const it=voidAhead();
+ SQHIT.wrap('277 trees: void trees need Woodcutting 75',next=>function(){const it=voidAhead();
   if(it&&!(typeof facingNpc==='function'&&facingNpc())){const lv=lvOf(1)<VOID.lv,ax=(TL.axe|0)<VOID.axe;
    if(lv||ax){say(lv?'You need Woodcutting '+VOID.lv+' to chop void trees.':'You need an adamant axe or better for void trees.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'277-2')}swing=.25;
     try{gTxt(it.x*16+8,it.y*16-34,'Void Tree','#c8a0ff')}catch(e){self.SQERR&&SQERR(e,'277-3')}return}}
-  // a chop: the swing the chop site set (0.25 s with the level/perk speed-ups) becomes a slower, heavier one
-  chopped=false;const out=next.apply(this,arguments);
-  try{if(chopped&&swing>0){swing*=CHOPSW/BASESW;if(typeof ACTN!=='undefined'&&ACTN&&ACTN.type==='chop'&&ACTN.t<.05)ACTN.dur=Math.min(.5,swing*.8)}}catch(e){self.SQERR&&SQERR(e,'277-6')}
-  chopped=false;return out});
+  return next.apply(this,arguments)});// the chop's time and what it pays: 287
  // ---- the Woodcutting tree and the wiki say so ----
  {const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if(sk===1&&l===VOID.lv)return[...a,'Chop void trees (with an adamant axe or better)']}catch(e){self.SQERR&&SQERR(e,'277-4')}return a}}
  try{if(typeof WK_SKILL!=='undefined'&&WK_SKILL.Woodcutting)WK_SKILL.Woodcutting+=' Void trees need Woodcutting 75 and an adamant axe or better.'}catch(e){self.SQERR&&SQERR(e,'277-5')}

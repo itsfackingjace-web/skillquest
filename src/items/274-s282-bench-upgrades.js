@@ -4,7 +4,8 @@
 //     (in its skill: Smithing for anvil gear, Crafting for crafted gear), for 2x/10x/50x its craft XP. The piece you're wearing counts.
 //   boss gear (no recipe): its island's cores (272) instead of copies: 1 / 10 / 100 cores, Smithing or Crafting 70/80/90.
 //   not upgradable: starter gear (wood, stone, leather, shortbow, shop wands, wizard set), the Crystal blade, the Bone bow, jewelry, tools.
-//   what a level gives: swords, bows and wands hit 5% harder (the fraction is a chance of +1), axes and pickaxes swing 5% faster,
+//   what a level gives: swords, bows and wands hit 5% harder (the fraction is a chance of +1), pickaxes swing 5% faster, axes +1 extra
+//     log limit (287; they chopped 5% faster before Nov 24 evening),
 //     daggers +1 damage at +2 and +3, armour +1% block and +1% block limit a piece, ranger pieces 5% more bow range. PvP ignores it.
 //     Durability (275, Nov 24, Jace): a +1 lasts 10 times as long as the plain item, a +2 100 times, and a +3 never wears out.
 //   the levels (Nov 24, Jace: "the game doesn't tell you the level requirements of upgrades"): every upgradable item's description
@@ -32,7 +33,7 @@
  const REG=new Set(),PENDV={},ICO={};
  const eff0=(b,L)=>{const e=EQ[b]||{};if(e.kind==='dagger')return L>=2?'+'+(L-1)+' damage':'no extra damage yet (+1 damage at +2)';
   if(ARMS.includes(e.slot))return'+'+L+'% block chance and +'+L+'% to your block limit'+(e.cls==='r'?', and '+5*L+'% more bow range':'');
-  if(e.slot==='axe')return'chops '+5*L+'% faster';if(e.slot==='pick')return'mines '+5*L+'% faster';
+  if(e.slot==='axe')return'+'+L+' extra log limit';// Nov 24 (287): was 5% faster chops a levelif(e.slot==='pick')return'mines '+5*L+'% faster';
   return(e.kind==='bow'?'arrows hit ':e.kind==='wand'?'spells hit ':'hits ')+5*L+'% harder'};
  // and how long it lasts (275): 10 times as long a level, and a +3 never wears out
  const durT=L=>L>=MAXL?'never wears out':'lasts '+Math.pow(10,L)+' times as long';
@@ -110,7 +111,7 @@
  const armUp=()=>{let t=0;for(const s of ARMS)t+=lv(s);return t*.01};
  {const _bb=blockBonus;blockBonus=function(){return _bb.apply(this,arguments)+armUp()}}
  {const _bc=blockCap;blockCap=function(){return _bc.apply(this,arguments)+armUp()}}
- {const _gs=gSpeed;gSpeed=function(sk){const v=_gs.apply(this,arguments);if(sk===1)return v+.05*lv('axe');if(sk===2)return v+.05*lv('pick');return v}}
+ {const _gs=gSpeed;gSpeed=function(sk){const v=_gs.apply(this,arguments);if(sk===2)return v+.05*lv('pick');return v}}// axes: +1 extra log limit a level instead (287)
  {const _pd=window.SQPVDMG;if(typeof _pd==='function')window.SQPVDMG=function(){NOUPG=true;try{return _pd.apply(this,arguments)}finally{NOUPG=false}}}
  // ---- icons: the base item's picture with a gold level badge ----
  const DIG={1:['.#.','##.','.#.','.#.','###'],2:['##.','..#','.#.','#..','###'],3:['##.','..#','.#.','..#','##.']};
@@ -149,7 +150,7 @@
   try{sfx('anvil')}catch(e){self.SQERR&&SQERR(e,'274-17')}return true}
  function rows(){const L0=[];for(const b in UP)for(let L=1;L<=MAXL;L++){const o=state(b,L);if(o&&o.have>0)L0.push([b,o])}
   L0.sort((a,c)=>(c[1].ok-a[1].ok)||(a[1].sk-c[1].sk)||(a[1].lvl-c[1].lvl));return L0}
- function html(o0){let h='<div class="tl" style="margin-top:14px">Upgrades</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75">'+COPIES+' of the same item make a +1, '+COPIES+' of the +1 make a +2, '+COPIES+' of the +2 make a +3, at the level that makes the item + 10, + 20 and + 30 (boss gear: 70, 80 and 90, with cores instead of copies). The piece you\'re wearing counts. Each level: weapons hit 5% harder, axes and pickaxes work 5% faster, armour blocks 1% more. A +1 lasts 10 times as long, a +2 100 times, and a +3 never wears out.</div>';
+ function html(o0){let h='<div class="tl" style="margin-top:14px">Upgrades</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75">'+COPIES+' of the same item make a +1, '+COPIES+' of the +1 make a +2, '+COPIES+' of the +2 make a +3, at the level that makes the item + 10, + 20 and + 30 (boss gear: 70, 80 and 90, with cores instead of copies). The piece you\'re wearing counts. Each level: weapons hit 5% harder, pickaxes mine 5% faster, axes give +1 extra log limit, armour blocks 1% more. A +1 lasts 10 times as long, a +2 100 times, and a +3 never wears out.</div>';
   const R=rows();if(!R.length)return h+'<div class="qc"><p>Bring 10 of the same weapon, armour piece, bow, wand, axe or pickaxe (or boss gear and its cores) to upgrade it.</p></div>';
   for(const[b,o]of R){const nmF=INAME[o.from]||b,nmT=INAME[o.to]||b,sk=SKN[o.sk];
    const cost=o.U.core?o.have+' / 1 '+esc(nmF.toLowerCase())+' + '+o.coreHave+' / '+o.cores+' '+esc((o.cores>1?SN[o.U.core]:INAME[o.U.core]||'').toLowerCase()):o.have+' / '+COPIES+' '+esc((SN[o.from]||nmF).toLowerCase())+(o.worn?' (1 worn)':'');
@@ -162,5 +163,5 @@
    upgrade(b,L);saveLocal(true);rPn()}}
  // ---- skill trees ----
  {const _tg=treeGains;treeGains=function(sk,l){const a=_tg.apply(this,arguments);try{if((sk===SMI||sk===CRI)&&l===11)return[...a,'Upgrade gear to +1 at a Blacksmith\'s bench (10 levels above the level that makes it; +2 at 20, +3 at 30)']}catch(e){self.SQERR&&SQERR(e,'274-19')}return a}}
- window.SQUPGRADE={UP:()=>UP,UPS,KEY,isVar,baseOf,lvlOf,state,upgrade,html,reg,reconcile,need,xpFor,eff,eff0,durT,upLine,nextT,rawD,MAXL,rewrap:b=>{delete RAWD[b];if(UP[b])wrapD(b)}};/* rewrap: after something replaces IDESC[b] outright (278) */
+ window.SQUPGRADE={UP:()=>UP,UPS,KEY,isVar,baseOf,lvlOf,state,upgrade,html,reg,reconcile,need,xpFor,eff,eff0,durT,upLine,nextT,rawD,MAXL,lv,rewrap:b=>{delete RAWD[b];if(UP[b])wrapD(b)}};/* rewrap: after something replaces IDESC[b] outright (278) */
 })();

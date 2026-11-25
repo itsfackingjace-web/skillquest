@@ -68,11 +68,12 @@
    '<p class="dv-mut" style="font-size:12px">Seconds each is a guess you can change: production actions take about this long at level 1 (faster with level and perks); gathering depends on the tool and the tree or rock.</p>'+
    '<table><tr class="dv-mut"><td style="padding-right:12px">Level</td><td style="padding-right:12px">Actions</td><td>Time</td></tr>'+R.steps.map(t=>'<tr><td>'+t.l+'</td><td>'+t.n.toLocaleString()+'</td><td>'+fmtH(t.h)+'</td></tr>').join('')+'</table></div>';
   return h}
- function render(){const tabs=[['xp','XP per skill'],['act','XP per action'],['mat','Material XP'],['perk','Perk values'],['sim','Simulator']];
-  const ch=Object.keys(part('xp')).length+Object.keys(part('act')).length+Object.keys(part('perk')).length+Object.keys(part('mat')).length;
+ function render(){const tabs=[['xp','XP per skill'],['act','XP per action'],['mat','Material XP'],['wc','Woodcutting'],['perk','Perk values'],['sim','Simulator']];
+  const ch=Object.keys(part('xp')).length+Object.keys(part('act')).length+Object.keys(part('perk')).length+Object.keys(part('mat')).length+(window.SQWC?SQWC.changes({},part('wc')).length:0);
   return'<div class="dv-row" style="flex-wrap:wrap;margin-bottom:8px">'+tabs.map(([k,n])=>'<button class="dv-b'+(ST.v===k?' dv-tl dv-on':'')+'" data-bv="'+k+'">'+n+'</button>').join('')+
-   '<button class="dv-b dv-pri" data-bv="save">Save to draft'+(ch?' ('+ch+' changed)':'')+'</button><button class="dv-b dv-bad" data-bv="reset">Back to the game\'s numbers</button></div>'+(ST.v==='xp'?xpView():ST.v==='act'?actView():ST.v==='mat'?(window.SQMATXP?SQMATXP.view(part('mat')):''):ST.v==='perk'?perkView():simView())}
+   '<button class="dv-b dv-pri" data-bv="save">Save to draft'+(ch?' ('+ch+' changed)':'')+'</button><button class="dv-b dv-bad" data-bv="reset">Back to the game\'s numbers</button></div>'+(ST.v==='xp'?xpView():ST.v==='act'?actView():ST.v==='mat'?(window.SQMATXP?SQMATXP.view(part('mat')):''):ST.v==='wc'?(window.SQWC?SQWC.view(part('wc')):''):ST.v==='perk'?perkView():simView())}
  const setV=(path,val)=>{const[p,...rest]=path.split('.');const k=rest.join('.');
+  if(p==='wc'){if(window.SQWC)SQWC.setV(part('wc'),rest,val);return}// 287: Dev Suite > Balance > Woodcutting
   if(p==='mat'){const[key,f]=rest,M=part('mat'),o={...(M[key]||{})},D0=window.SQMATXP&&SQMATXP.DEF[key],b=D0?D0[f]:null;if(val===''||(b!=null&&+val===b))delete o[f];else o[f]=+val;if(Object.keys(o).length)M[key]=o;else delete M[key];return}const P2=part(p);const base=p==='xp'?100:p==='act'?OA[k]:pc(OP[k]);if(val===''||+val===base)delete P2[k];else P2[k]=+val};
  document.addEventListener('change',e=>{if(S.tab!=='balance')return;const t=e.target;if(!document.getElementById('dvs').contains(t))return;
   if(t.dataset.bx){setV(t.dataset.bx,t.value);ST.dirty=1;API.draw()}else if(t.dataset.bs){ST.sim[t.dataset.bs]=t.value;if(t.dataset.bs==='sk'){ST.sim.a='';ST.sim.sec='';ST.sim.mult=''}if(t.dataset.bs==='a')ST.sim.sec='';API.draw()}},true);
@@ -85,5 +86,6 @@
   ST.v=v;ST.q='';API.draw()},true);
  SQSUITE.addTab('balance','Balance',{render,dirty:()=>!!ST.dirty,leave:()=>{ST.dirty=0},changes(L,D){const a=L&&L.balance||{},b=D&&D.balance||{},out=[];
    {const x=a.mat||{},y=b.mat||{};for(const k of new Set([...Object.keys(x),...Object.keys(y)]))if(JSON.stringify(x[k])!==JSON.stringify(y[k])){const v=y[k]||{};out.push({kind:'ext',html:'⚖️ '+E((INAME[k]||k))+' (material): '+(y[k]?[v.x!=null?v.x+' xp':'',v.t!=null?v.t+' s':''].filter(Boolean).join(', '):'back to the game\'s numbers')})}}
+   if(window.SQWC)for(const t of SQWC.changes(a.wc,b.wc))out.push({kind:'ext',html:'⚖️ '+E(t)});
    for(const p of['xp','act','perk']){const x=a[p]||{},y=b[p]||{};for(const k of new Set([...Object.keys(x),...Object.keys(y)]))if(x[k]!==y[k]){const lab=p==='xp'?SKN[k]+' XP':p==='act'?((ACTS().find(q=>q.id===k)||{}).lab||k)+' XP':((perkObj(k.split(':')[1])||{c:{n:k}}).c.n)+' value';
     out.push({kind:'ext',html:'⚖️ '+E(lab)+': '+(y[k]==null?'back to the game\'s number':y[k]+(p==='act'?'':'%'))})}}return out}})})();

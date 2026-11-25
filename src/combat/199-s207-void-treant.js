@@ -16,7 +16,7 @@ const TP={"a": "#0c0814", "b": "#7a64a0", "c": "#58447a", "d": "#a890d0", "e": "
    r(1,4,10,5,'#3c2a3c');r(1,4,10,1,'#56404e');r(9,4,2,5,'#a890d0');r(10,5,1,3,'#7a40c8');r(3,6,1,1,'#9a6ae0');r(6,7,1,1,'#9a6ae0');return ICONC[key]=c.toDataURL()})}
  const isLog=k=>k==='wood'||/log$/.test(k);
  const treeAt=()=>{try{const[fx,fy]=front(13),tx=Math.floor(fx/16),ty=Math.floor(fy/16),R=SCENE&&SCENE.room;if(R&&R.region){const it=rgObjAt(R,tx,ty);return it&&it.o}}catch(e){self.SQERR&&SQERR(e,'199-1')}return null};
- {SQHIT.wrap('199 void treant',_a=>function(){let o=null;try{o=treeAt()}catch(e){self.SQERR&&SQERR(e,'199-2')}if(!o||o.v!=='dark'||SKOF[o.t]!==1)return _a.apply(this,arguments);
+ {SQHIT.wrap('199 void treant',_a=>function(){if(window.SQWC&&SQWC.busy)return _a.apply(this,arguments);/* 287 pays void logs and XP every quarter of the tree */let o=null;try{o=treeAt()}catch(e){self.SQERR&&SQERR(e,'199-2')}if(!o||o.v!=='dark'||SKOF[o.t]!==1)return _a.apply(this,arguments);
    const b={};for(const k in inv)if(isLog(k))b[k]=inv[k]|0;const out=_a.apply(this,arguments);
    try{let n=0;for(const k in inv){if(!isLog(k)||k===VL)continue;const d=(inv[k]|0)-(b[k]|0);if(d>0){inv[k]-=d;n+=d}}
     if(n>0){inv[VL]=(inv[VL]|0)+n;addXp(1,window.SQCHOP?SQCHOP.voidXp(o):15*n);/* 285: 400 xp a void tree in all */say('+'+n+' void log'+(n>1?'s':''));try{gTxt(P.x,P.y-30,'+'+n+' void log'+(n>1?'s':''),'#c8a0ff')}catch(e){self.SQERR&&SQERR(e,'199-3')}}}catch(e){console.warn('voidlog',e)}return out})}

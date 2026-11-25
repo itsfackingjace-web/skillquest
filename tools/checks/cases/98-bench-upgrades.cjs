@@ -33,7 +33,7 @@ module.exports={name:'Blacksmith\'s bench upgrades: 10 copies (worn one counts) 
   // ---- the collection log and the gear list don't count copies; the icon gets a badge ----
   const u0=eqIcon('u1_eq_sword7');await W(400);out.badge=eqIcon('u1_eq_sword7')!==eqIcon('eq_sword7');
   // ---- axes swing faster ----
-  XPS[1]=XT[98];XPS[2]=XT[98];inv.eq_axe7=1;equipItem('eq_axe7');out.axeOn=occ('axe');const g0=gSpeed(1);inv.u2_eq_axe7=1;equipItem('u2_eq_axe7');out.axe=+(gSpeed(1)-g0).toFixed(2);
+  XPS[1]=XT[98];XPS[2]=XT[98];inv.eq_axe7=1;equipItem('eq_axe7');out.axeOn=occ('axe');const g0=SQWC.limit();inv.u2_eq_axe7=1;equipItem('u2_eq_axe7');out.axe=SQWC.limit()-g0;/* Nov 24 evening (287): axe upgrades give extra log limit, not speed */
   // ---- Nov 23 fix: swapping an upgraded piece off with plain copies in the bag doesn't turn a plain copy into an upgraded one ----
   unequipSlot('axe');unequipSlot('main');for(const k of['u1_eq_sword7','u2_eq_sword7','u3_eq_sword7'])inv[k]=0;inv.u1_eq_sword7=1;inv.eq_sword7=3;inv.eq_sword6=1;XPS[0]=XT[80];
   equipItem('u1_eq_sword7');equipItem('eq_sword6');out.swapOff=[occ('main'),inv.u1_eq_sword7|0,inv.eq_sword7|0];
@@ -61,7 +61,7 @@ module.exports={name:'Blacksmith\'s bench upgrades: 10 copies (worn one counts) 
  t.eq(r.loaded,[3,1,4,'eq_sword7'],'loading puts them back [worn sword +3, worn helmet +1, bag copies, wearing the sword]');
  t.eq(r.boss,[false,1,0,0],'boss gear: needs Smithing 70, then the blade + 1 ember core make a Warlord\'s blade +1');
  t.eq(r.badge,true,'an upgraded copy\'s icon has a level badge');
- t.eq([r.axeOn,r.axe],['eq_axe7',0.1],'an adamant axe +2 swings 10% faster');
+ t.eq([r.axeOn,r.axe],['eq_axe7',2],'an adamant axe +2 gives +2 extra log limit');
  t.eq(r.swapOff,['eq_sword6',1,3],'swapping a +1 off for another sword keeps 1 +1 and 3 plain swords (no plain one turned into a +1)');
  t.eq(r.putAway,[null,1,3],'putting the +1 away again: still 1 +1 and 3 plain');
  t.eq(r.savedSwap,[1,3,true],'the save agrees [1 +1, 3 plain, no worn +1]');
