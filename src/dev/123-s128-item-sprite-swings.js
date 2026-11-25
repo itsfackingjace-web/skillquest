@@ -24,7 +24,11 @@
   for(let v=0;v<W;v++)for(let u=0;u<W;u++){const dx=u+.5-(R+.5),dy=v+.5-(R+.5),sx=Math.floor((dx*co+dy*si)/sc+px),sy=Math.floor((-dx*si+dy*co)/sc+py);
    if(sx<0||sy<0||sx>=s.w||sy>=s.h)continue;const i=(sy*s.w+sx)*4;if(s.d[i+3]<=40)continue;const j=(v*W+u)*4;o[j]=s.d[i];o[j+1]=s.d[i+1];o[j+2]=s.d[i+2];o[j+3]=255}
   x.putImageData(img,0,0);return s.rot[key]={c,R}}
- function put(ctx,s,kind,ang,hx,hy){const t=turned(s,kind,ang);ctx.drawImage(t.c,Math.round(hx)-t.R,Math.round(hy)-t.R)}
+ // flip: facing left the sprite is the mirror image of facing right (Nov 24, Jace: "when chopping to the left, my tool is held backwards").
+ // Turning alone puts an axe's blade, a pickaxe's point or a sword's guard on the wrong side; so turn it to the mirrored angle and
+ // mirror it about the grip column.
+ function put(ctx,s,kind,ang,hx,hy,flip){if(!flip||kind==='bow'){const t=turned(s,kind,ang);ctx.drawImage(t.c,Math.round(hx)-t.R,Math.round(hy)-t.R);return}
+  const t=turned(s,kind,Math.PI-ang),X=Math.round(hx);ctx.save();ctx.translate(2*X+1,0);ctx.scale(-1,1);ctx.drawImage(t.c,X-t.R,Math.round(hy)-t.R);ctx.restore()}
  // ---- where the weapon is during each action (same timing and hand spots as the game's own drawings) ----
  const swingAng=(fx,fy,pr)=>Math.atan2(fy,fx)+(Math.max(0,Math.min(1,pr))-.5)*2.3;
  function toolAng(a){const p=Math.min(1,a.t/(a.sd||a.dur)),f=a.face,a0=Math.atan2(f[1],f[0]),sg=f[0]<0?1:-1,ch=a.type==='chop',st=a0+sg*(ch?1.9:2.7),en2=a0-sg*(ch?.25:.1),e=p<.6?Math.pow(p/.6,2):1;return st+(en2-st)*e}
@@ -47,14 +51,15 @@
   else if(mode==='wand'){const[dx,dy]=CASTD;ang=Math.atan2(dy,dx);hx=P.x+dx*4;hy=P.y-5+dy*4}
   else{const[dx,dy]=BOWD;kind='bow';ang=Math.atan2(dy,dx);hx=P.x+dx*8;hy=P.y-5+dy*6}
   const behind=kind==='diag'&&Math.sin(ang)<-.5,flick=hurt>0&&Math.floor(tm*20)%2;
-  if(behind&&!flick)put(g,s,kind,ang,hx,hy);
+  const flip=mode==='tool'?ACTN.face[0]<0:mode==='wand'?CASTD[0]<0:mode==='swing'?fx<0:false;
+  if(behind&&!flick)put(g,s,kind,ang,hx,hy,flip);
   const sv=[swing,typeof CASTT!=='undefined'?CASTT:0,typeof BOWT!=='undefined'?BOWT:0,ACTN];
   swing=0;if(mode==='wand')CASTT=0;if(mode==='bow')BOWT=0;if(mode==='tool')ACTN=null;
   try{_pp.apply(this,arguments)}finally{swing=sv[0];if(mode==='wand')CASTT=sv[1];if(mode==='bow')BOWT=sv[2];if(mode==='tool')ACTN=sv[3]}
-  if(!behind&&!flick)put(g,s,kind,ang,hx,hy)});
+  if(!behind&&!flick)put(g,s,kind,ang,hx,hy,flip)});
  // ---- other players' swings (sword tier, 9 = sledgehammer) ----
  if(window.SQSWING){const _sw=SQSWING;window.SQSWING=function(x,y,fx,fy,pr,t,tm){const key=t===9?'eq_sledge':t?'eq_sword'+t:null,s=key&&use(key)?srcFor(key):null;
-   if(!s)return _sw.apply(this,arguments);put(g,s,'diag',swingAng(fx,fy,pr),Math.round(x)+fx*5,Math.round(y)-4+fy*5)}}
+   if(!s)return _sw.apply(this,arguments);put(g,s,'diag',swingAng(fx,fy,pr),Math.round(x)+fx*5,Math.round(y)-4+fy*5,fx<0)}}
  // have the pictures ready before the first swing
  {let t=0;SQUPD.after('123',(dt)=>{if((t-=dt)<=0){t=.5;try{for(const sl of['main','off','axe','pick'])srcFor(occ(sl));if(window.SQSLEDGE&&SQSLEDGE())srcFor('eq_sledge')}catch(e){self.SQERR&&SQERR(e,'123-1')}}})}
  window.SQISW={use,srcFor,turned,put,isBow,swingAng,toolAng,get cfg(){return CFG}};

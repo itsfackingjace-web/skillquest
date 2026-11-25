@@ -88,7 +88,7 @@ SQHIT.wrap('028 gear equip unequip ranger and mage',_atk28=>function(){
  if(type){ACTN={type,t:0,dur:type==='water'?.6:type==='harvest'?.35:.32,face:[face[0],face[1]],tx,ty,hit:false,crop:plC,tree:o&&o.t};if(type==='water')swing=Math.max(swing,.45)}});
 SQPLACEB.wrap('028',_pb28=>function(){if(!BUILD||SCENE||typeof isSeed!=='function'||!isSeed(BUILD.k))return _pb28();const[x,y]=frontTile(),i=y*N+x,b=FARM.get(i),before=b?b.c:null;_pb28();const a=FARM.get(i);
  if(a&&a.c&&!before)ACTN={type:'plant',t:0,dur:.45,face:[face[0],face[1]],tx:x,ty:y,hit:false}});
-function drawToolLine(kind,ang,hx,hy,tier){const dx=Math.cos(ang),dy=Math.sin(ang),px=-dy,py=dx,pts=[],head=[],hc=TCOL[tier]||'#c8d0d8';
+function drawToolLine(kind,ang,hx,hy,tier,side){const dx=Math.cos(ang),dy=Math.sin(ang),sd=side<0?-1:1,px=-dy*sd,py=dx*sd,/* side -1 facing left: the head on the mirrored side (Nov 24) */pts=[],head=[],hc=TCOL[tier]||'#c8d0d8';
  for(let i=1;i<=10;i++)pts.push([hx+dx*i,hy+dy*i]);
  if(kind==='axe')for(let i=7;i<=10;i++)for(let k=1;k<=3;k++)head.push([hx+dx*i+px*k,hy+dy*i+py*k]);
  else if(kind==='pick')for(let k=-4;k<=4;k++)head.push([hx+dx*(10-k*k/7)+px*k,hy+dy*(10-k*k/7)+py*k]);
@@ -98,7 +98,7 @@ function drawToolLine(kind,ang,hx,hy,tier){const dx=Math.cos(ang),dy=Math.sin(an
 function drawCan(hx,hy,fx,tilt){const sx=fx<0?-1:1,x=Math.round(hx+sx*2),y=Math.round(hy-2);Rg(x-4,y-1,10,8,O);Rg(x-3,y,8,6,'#5a8ab8');Rg(x-3,y,8,1,'#88b0d8');Rg(x-2,y-3,4,3,O);Rg(x-1,y-2,2,2,'#5a8ab8');
  const lx=sx>0?x+4:x-4;for(let k=0;k<5;k++){const ex=Math.round(lx+sx*k),ey=Math.round(y+1+k*tilt);Rg(ex-1,ey-1,3,3,O);Rg(ex,ey,1,1,'#88b0d8')}}
 function drawAct(tm){const a=ACTN;if(!a||!a.face)return;const p=Math.min(1,a.t/(a.sd||a.dur)),/* sd: the strike's own time when the action lasts longer (122/287: a tool action covers the whole swing) */f=a.face,a0=Math.atan2(f[1],f[0]),sg=f[0]<0?1:-1,hx=P.x+f[0]*3,hy=P.y-6+f[1]*2;
- if(a.type==='chop'||a.type==='mine'||a.type==='till'){const st=a0+sg*(a.type==='chop'?1.9:2.7),en2=a0-sg*(a.type==='chop'?.25:.1),e=p<.6?Math.pow(p/.6,2):1;drawToolLine(a.type==='chop'?'axe':a.type==='mine'?'pick':'hoe',st+(en2-st)*e,hx,hy,a.type==='chop'?TL.axe:TL.pick)}
+ if(a.type==='chop'||a.type==='mine'||a.type==='till'){const st=a0+sg*(a.type==='chop'?1.9:2.7),en2=a0-sg*(a.type==='chop'?.25:.1),e=p<.6?Math.pow(p/.6,2):1;drawToolLine(a.type==='chop'?'axe':a.type==='mine'?'pick':'hoe',st+(en2-st)*e,hx,hy,a.type==='chop'?TL.axe:TL.pick,f[0]<0?-1:1)}
  else if(a.type==='water')drawCan(hx+f[0]*4,hy+(f[1]>0?4:0),f[0]||1,p<.15?0:.8)}
 function actFx(dt){const a=ACTN;if(!a)return;a.t+=dt;const p=a.t/(a.sd||a.dur),cx=a.tx*16+8,cy=a.ty*16+8,sc=curScene();
  if(a.type==='water'&&p>.15&&p<.95&&Math.random()<.8){const sx=P.x+(a.face[0]||1)*12,sy=P.y-6+(a.face[1]>0?6:0);PARTS.push({x:sx,y:sy,vx:(cx-sx)/.35+(Math.random()-.5)*20,vy:(cy-sy)/.35-60,t:0,life:.38,c:Math.random()<.5?'#68b8f8':'#c8e8ff',g:330,sz:1,sc})}

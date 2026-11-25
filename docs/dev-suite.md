@@ -75,6 +75,9 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   sledge swings, chop/mine (`ACTN`), casts (`CASTT`, `CASTD`) and shots (`BOWT`, `BOWD`), hiding swing/CASTT/BOWT/ACTN from
   the inner drawers for that call; pointing up it's drawn behind you. Icons are assumed to point up-right (grip bottom-left),
   bows to face right. `SQSWING` (other players' swings) is wrapped too. Library `swings` = {all (default on), k:{key:'icon'|'own'}}.
+  Facing left (tool `ACTN.face[0]<0`, a swing's `fx<0`, a cast's `CASTD[0]<0`, peers' swings) `put(...,flip)` draws the sprite turned to
+  π − angle and mirrored about the grip column, so left is the mirror image of right (turning alone put an axe's blade on the trailing
+  side; Nov 24, check 114). Bows aren't mirrored. 028's own `drawToolLine(...,side)` puts the head on the mirrored side too.
 - **Dev Suite copy/paste** (111b `pxCopy`/`pxPaste`, Copy/Paste buttons, Ctrl+C/V; Erase all = `eraseall`, clears the current picture/layer, undoable): the clipboard is colours per pixel in
   localStorage `sq_dev_clip`, pasted bottom-middle aligned into any editor, colours added to the palette.
   Nov 22 (Jace: the turtle pet pasted into its item sprite came out tiny; check 87): **Paste to fit** (`pxfit`) trims the clip to its drawn
