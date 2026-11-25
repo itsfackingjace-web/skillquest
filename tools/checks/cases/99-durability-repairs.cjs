@@ -3,7 +3,7 @@
 // 0 it comes off and can't be worn until it's repaired at the Blacksmith's bench (level that makes it + 5, half its main material, bars
 // split into 10 shards that fuse back at a furnace). Bought gear can't be repaired; boss gear takes 10 sigil shards.
 module.exports={name:'Durability: gear wears with use, used copies keep their number, worn-out gear comes off, repairs at the bench cost shards',async run(p,t){
- const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);try{if(pnOpen)closePanel()}catch(e){}const out={};const R=window.SQREPAIR;if(!R)return{err:'no SQREPAIR'};
+ const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);try{if(pnOpen)closePanel()}catch(e){}/* Nov 25: away from the villagers, with nothing in front (one wandering into reach made HIT talk and open a screen, in full runs) */{const x0=P.x,y0=P.y,free=(x,y)=>{const i=Math.floor(y/16)*N+Math.floor(x/16);return(tile[i]===2||tile[i]===1)&&!BS.has(i)&&!obj[i]},ok=(x,y)=>free(x,y)&&free(x,y+13)&&free(x,y+29)&&!NPCS.some(n=>!n.scene&&Math.hypot(n.x-x,n.y-y)<220);let done=false;for(let rr=14;rr<70&&!done;rr+=4)for(let a=0;a<16&&!done;a++){const x=x0+Math.cos(a/16*6.283)*rr*16,y=y0+Math.sin(a/16*6.283)*rr*16;if(ok(x,y)){P.x=x;P.y=y;face=[0,1];done=true}}try{if(pnOpen)closePanel()}catch(e){}}const out={};const R=window.SQREPAIR;if(!R)return{err:'no SQREPAIR'};
   for(const i of[0,1,2,8,12,13])XPS[i]=XT[85];XPS[10]=XT[68];
   out.max=['eq_sword1','eq_helm1','eq_helm2','eq_sword7','u2_eq_sword7','eq_thelm','eq_bow6','eq_wfire_a','eq_rod','eq_hoe'].map(R.maxD);
   const ws=k=>Object.keys(inv).filter(x=>/^w\d+_/.test(x)&&(inv[x]|0)>0&&(!k||x.endsWith('_'+k))).sort();

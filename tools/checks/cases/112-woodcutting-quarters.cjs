@@ -2,10 +2,10 @@
 // Chop perk; each quarter of a tree gives 1 log and a quarter of its XP, the fall 1 up to the extra log limit (1 + Bigger Haul perks + the
 // axe's upgrade level). The perks replace all the old Woodcutting ones (old picks are given back on load); the axe wears once a tree.
 module.exports={name:'woodcutting: logs and XP every quarter of a tree, Quick Chop or Bigger Haul every 10 levels',async run(p,t){
- const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);try{if(pnOpen)closePanel()}catch(e){}const o={},X=window.SQWC;if(!X)return{err:'no SQWC'};en=[];
-  const tile=()=>{face=[0,1];const[fx,fy]=front(13);return Math.floor(fy/16)*N+Math.floor(fx/16)};
+ const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);try{if(pnOpen)closePanel()}catch(e){}/* Nov 25: away from the villagers, with nothing in front (one wandering into reach made HIT talk and open a screen, in full runs) */{const x0=P.x,y0=P.y,free=(x,y)=>{const i=Math.floor(y/16)*N+Math.floor(x/16);return(tile[i]===2||tile[i]===1)&&!BS.has(i)&&!obj[i]},ok=(x,y)=>free(x,y)&&free(x,y+13)&&free(x,y+29)&&!NPCS.some(n=>!n.scene&&Math.hypot(n.x-x,n.y-y)<220);let done=false;for(let rr=14;rr<70&&!done;rr+=4)for(let a=0;a<16&&!done;a++){const x=x0+Math.cos(a/16*6.283)*rr*16,y=y0+Math.sin(a/16*6.283)*rr*16;if(ok(x,y)){P.x=x;P.y=y;face=[0,1];done=true}}try{if(pnOpen)closePanel()}catch(e){}}const o={},X=window.SQWC;if(!X)return{err:'no SQWC'};en=[];
+  const ftile=()=>{face=[0,1];const[fx,fy]=front(13);return Math.floor(fy/16)*N+Math.floor(fx/16)};
   // chops a fresh tree in front; [swing, logs, xp] for each chop
-  const chop=(t,axe,lvl)=>{TL.axe=axe;XPS[1]=lvl>1?XT[lvl-1]:0;const i=tile();obj[i]={t,hp:OHP[t]};const log=t==='tree'||t==='pine'?'wood':SQTIER[t].item,rows=[];
+  const chop=(t,axe,lvl)=>{TL.axe=axe;XPS[1]=lvl>1?XT[lvl-1]:0;const i=ftile();obj[i]={t,hp:OHP[t]};const log=t==='tree'||t==='pine'?'wood':SQTIER[t].item,rows=[];
    for(let n=0;n<60&&obj[i]&&obj[i].t===t&&obj[i].hp>0;n++){swing=0;const a=inv[log]|0,b=XPS[1];attack();rows.push([Math.round(swing*100)/100,(inv[log]|0)-a,Math.round(XPS[1]-b)])}return rows};
   PERKS[1]={};o.tree=chop('tree',1,1);const w0=inv.wood|0;o.oak=chop('oak',3,15);o.oakWood=(inv.wood|0)-w0;
   // two Quick Chops: 0.9 s; three Bigger Hauls and a +2 axe: up to 6 logs from a fall
