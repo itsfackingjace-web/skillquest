@@ -23,10 +23,10 @@ module.exports={name:'Drop Cards drop from monsters, trees and bosses',async run
   face=[1,0];const[fx,fy]=front(16),tx=Math.floor(fx/16),ty=Math.floor(fy/16),i=ty*N+tx;obj[i]={t:'tree',hp:3};STR.delete(i);BS.delete(i);
   // Nov 21: a villager wandering into reach made HIT talk instead of chop (a shop screen opened and blocked every later swing)
   const clear=()=>{try{if(pnOpen)closePanel()}catch(e){}for(const n of NPCS)if(!n.scene&&Math.hypot(n.x-P.x,n.y-P.y)<90)n.x+=300};
-  const w0=inv.wood|0;for(let k=0;k<25&&(inv.wood|0)===w0;k++){clear();swing=0;attack();await W(450)}out.tree=cnt(tk)-before;out.w=[w0,inv.wood|0];
+  const w0=inv.wood|0;for(let k=0;k<25&&obj[i]&&obj[i].t==='tree';k++){clear();swing=0;attack();await W(450)}out.tree=cnt(tk)-before;out.w=[w0,inv.wood|0];/* Nov 24 evening (287): logs come every quarter, the card once a tree (when it falls) */
   // Nov 21 (Jace): a pine gives the Pine card, a cactus the Cactus fruit card (never the Tree card); yews, dead and void trees their own
   const chop=async(o,ck)=>{const c=D.CARDS[ck].key,tc=D.CARDS.tree.key,b0=cnt(c),t0=cnt(tc);obj[i]=o;STR.delete(i);BS.delete(i);const s0=JSON.stringify(inv);
-   for(let k=0;k<40&&JSON.stringify(inv)===s0;k++){clear();swing=0;attack();await W(450)}return[cnt(c)-b0,ck==='tree'?0:cnt(tc)-t0]};
+   for(let k=0;k<40&&obj[i]&&obj[i].t===o.t;k++){clear();swing=0;attack();await W(450)}return[cnt(c)-b0,ck==='tree'?0:cnt(tc)-t0]};/* chop until it falls */
   out.pine=await chop({t:'pine',hp:3},'pine');out.cactus=await chop({t:'cactus',hp:3},'cfruit');
   out.kinds=[{t:'yew'},{t:'tree',v:'dead'},{t:'tree',v:'dark'},{t:'cactus'},{t:'oak'},{t:'tree'}].map(SQTREECARD);
   out.demon=[INAME[D.CARDS['wb:demon'].key],IDESC[D.CARDS['wb:demon'].key]];
