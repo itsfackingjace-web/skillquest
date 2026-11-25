@@ -7,7 +7,7 @@
 // fight. Hollow Village, houses and buildings are safe zones (dungeons and the wilds are not). Hits go to
 // pvp/<victim>; the victim's game checks them, rolls their own block and dodge, and loses hearts as usual.
 // A PvP death drops your things in a grave like any death, so whoever wins can loot it.
-const PV={on:false,fight:0,fxSeq:0,seen:{},ghosts:[],unsubFx:null,unsubHit:null,lastBy:null,lastByAt:0,lastSafe:null,koSent:0};
+const PV={on:false,fight:0,fxSeq:Date.now(),seen:{},ghosts:[],unsubFx:null,unsubHit:null,lastBy:null,lastByAt:0,lastSafe:null,koSent:0};
 const PVLOCK=30000,PVSAFE=14;
 // hooks for sections outside this block: SQFXH[kind](player,event) for new event kinds, SQPEERFX drawers run with each
 // other player (in world space), SQPVSEND(event) to send one, and SQPVQUIET (true) to keep the next attack()s from being sent as swings
@@ -28,7 +28,12 @@ const r2=v=>Math.round(v*100)/100;
   const tool=ACTN&&(ACTN.type==='chop'||ACTN.type==='mine'||ACTN.type==='till'||ACTN.type==='water');
   if(s0<=0&&swing>0&&PROJ.length===p0&&SPELLS.length===c0&&!tool&&!FISH&&!window.SQPVQUIET){pvSend({k:'sw',d:[face[0],face[1]],w:window.SQSWINGW?SQSWINGW():(window.SQSLEDGE&&SQSLEDGE())?9:(TL.sword|0)});pvMelee()}})}
 // ---- what the others do ----
-function pvFx(u,v){if(!v||typeof v!=='object'||!MP.user||u===MP.user.uid)return;const s=+v.s||0;if(PV.seen[u]&&s<=PV.seen[u])return;PV.seen[u]=s;
+// Nov 24 (Jace: "I'm still not seeing my son actually swing his axe"): every session counted its events from 1 and the others kept the
+// highest number they had seen, so after a reload (an update) someone's swings, arrows, spells and chops were ignored until the new count
+// passed the old one. Now the count starts at the clock (a reload always starts higher), and an event is new when its number or time differs
+// from the last one seen from that player (fx/<uid> holds only the latest event; the listener sees the whole node on every change).
+function pvNew(u,v){const k=(+v.s||0)+'|'+(+v.t||0);if(PV.seen[u]===k)return false;PV.seen[u]=k;return true}
+function pvFx(u,v){if(!v||typeof v!=='object'||!MP.user||u===MP.user.uid)return;if(!pvNew(u,v))return;
  if(typeof v.t==='number'&&mpNow()-v.t>2500)return;if(v.loc!==mpLoc())return;const AR=x=>Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]):null);v.d=AR(v.d);v.a=AR(v.a);const r=MP.players.get(u);if(!r)return;const sc=curScene();
  if(v.k==='sw'&&Array.isArray(v.d)){r.swAt=performance.now();r.swD=[Math.sign(+v.d[0]||0),Math.sign(+v.d[1]||0)];r.swW=v.w==null?3:(+v.w|0);try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'064-1')}}
  else if((v.k==='ar'||v.k==='sp')&&Array.isArray(v.a))for(const q0 of v.a.slice(0,8)){const q=AR(q0);if(!q)continue;const[x,y,vx,vy,life,ex]=q;if(![x,y,vx,vy].every(isFinite))continue;

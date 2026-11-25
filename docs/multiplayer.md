@@ -153,5 +153,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   287 set its time) sends `{k:'tl', m:'c'|'m', d:[face], i:<tool key>, u:<swing s>, sd:<strike s>}` through `SQPVSEND` (the same
   `fx/<uid>` record as sword swings). `SQFXH.tl` puts `r.tool` on the player record (and plays chop/mine within 160 px); an `SQPEERFX`
   drawer draws the tool in their hands for `u` seconds with 123's sprite (`SQISW.put`, mirrored facing left) or 028's `drawToolLine`.
+- **fx events after a reload** (064 `pvNew`, 066, Nov 24, check 117): `PV.fxSeq` starts at `Date.now()` (it started at 0 every session),
+  and a receiver takes an event when its `s|t` differs from the last one seen from that player (it used to drop any `s` at or below the
+  highest seen, so a reloaded player's swings, arrows, spells, ultimates and chops were ignored until their count caught up).
 - **Shared resources on guild islands** (061 `resSubRegion`/`resTick`, Nov 24, check 115): `gi_` regions are no longer skipped; see
   docs/guilds.md (60 s regrowth, rules `world/res/$loc/$cell` let `r_gi_` entries be removed after 55 s instead of 230 s).

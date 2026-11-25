@@ -147,7 +147,7 @@ function upd(dt){
  time+=dt;msgT-=dt;if(dead)return;
  let ix=jx+(K.d||K.arrowright?1:0)-(K.a||K.arrowleft?1:0),iy=jy+(K.s||K.arrowdown?1:0)-(K.w||K.arrowup?1:0);
  const l=Math.hypot(ix,iy);if(l>.05){if(l>1){ix/=l;iy/=l}
-  const sp=(swing>0?35:55)*(isSprint()?1.7:1)*dt;
+  const sp=(swing>0&&!(window.SQWALKFREE&&SQWALKFREE())?35:55)*(isSprint()?1.7:1)*dt;/* Nov 24: a chop slows you only for its first 0.25 s (279) */
   if(Math.abs(ix)>Math.abs(iy))face=[Math.sign(ix),0];else face=[0,Math.sign(iy)];
   const nx=P.x+ix*sp,ny=P.y+iy*sp;
   const ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));

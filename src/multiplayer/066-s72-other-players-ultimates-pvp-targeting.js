@@ -15,7 +15,7 @@ const pvFront=(maxAl,minAl,wide)=>{let best=null,bd=1e9;for(const r of MP.player
 // pvDmg: an ultimate does 2
 {const _pd=pvDmg;pvDmg=function(kind,p){return kind==='ul'?2:_pd(kind,p)}}
 // seeing theirs
-{const _fx=pvFx;pvFx=function(u,v){if(v&&v.k==='ul'){if(!MP.user||u===MP.user.uid)return;const s=+v.s||0;if(PV.seen[u]&&s<=PV.seen[u])return;PV.seen[u]=s;if(typeof v.t==='number'&&mpNow()-v.t>2500)return;if(v.loc!==mpLoc())return;
+{const _fx=pvFx;pvFx=function(u,v){if(v&&v.k==='ul'){if(!MP.user||u===MP.user.uid)return;if(!pvNew(u,v))return;if(typeof v.t==='number'&&mpNow()-v.t>2500)return;if(v.loc!==mpLoc())return;
    const r=MP.players.get(u),el=v.el;if(!r||!WSP[el])return;const x=isFinite(+v.x)?+v.x:r.x,y=isFinite(+v.y)?+v.y:r.y,AR=q=>Array.isArray(q)?q:(q&&typeof q==='object'?Object.keys(q).sort((a,b)=>a-b).map(k=>q[k]):[]);
    const bolts=AR(v.b).map(AR).filter(q=>isFinite(+q[0])&&isFinite(+q[1])).map(q=>[+q[0],+q[1]]).slice(0,8);
    PVU.list.push({el,t:0,life:el==='fire'?.7:el==='ice'?.8:.6,x,y,bolts:el==='storm'?(bolts.length?bolts:[[x+30,y]]):null,flash:el==='storm'&&Math.hypot(x-P.x,y-P.y)<200?.2:0});r.castAt=performance.now();r.castEl=el;

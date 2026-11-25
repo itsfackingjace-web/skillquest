@@ -328,3 +328,5 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `calc()` reads, `apply()` applies on `SQA.onApply` and re-runs 278's axe descriptions). The wiki's chop times use `SQWC.secs(t,axe,picks)`.
   The fall's message spells out the limit (`limTxt()`: "1-2: +1 from your +1 axe").
   Drop Cards (253) still roll once a tree: 253 sits inside this step and sees the chop sites' own fell logs, which only come on the fall.
+  Walking (Nov 24, check 116): 001 walks at 35 instead of 55 while `swing>0`; a chop's swing is the whole chop, so 001 now asks
+  `window.SQWALKFREE()`: true once the chop's own action (`slowA`, the ACTN `pay()` timed) is 0.25 s in and `swing` still matches it. HIT still waits.

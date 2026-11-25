@@ -15,7 +15,11 @@
 (()=>{
  const C=window.SQCHOP;if(!C)return;
  const DEF={base:1,step:.05,lvl:.0025,qlog:1,start:1},TDEF={...C.TOUGH,void:C.VOID.t},LV=[10,20,30,40,50,60,70,80,90];
- let WC={...DEF},busy=false,hold=false,held=0;
+ let WC={...DEF},busy=false,hold=false,held=0,slowA=null;
+ // Nov 24 (Jace): you walk slower while swinging (001: 35 instead of 55), and a chop's swing lasts the whole chop (up to 1 s), so
+ // walking away from a fallen tree crawled for a second. Now a chop slows you only for its first 0.25 s, like a sword swing and like
+ // chops before 287; the next HIT still waits for the whole chop.
+ const SLOWT=.25;window.SQWALKFREE=()=>{const a=typeof ACTN!=='undefined'&&ACTN;return!!a&&a===slowA&&a.t>=SLOWT&&Math.abs(swing-(a.dur-a.t))<.03/* the chop's own swing, not a later one */};
  const fmt=v=>String(Math.round(v*100)/100),fmt4=v=>String(+(+v).toFixed(4));
  const isLog=k=>k==='wood'||/log$/.test(k);
  const num=(v,lo,hi,d)=>{if(v===''||v==null)return d;v=+v;return isFinite(v)&&v>=lo&&v<=hi?v:d};
@@ -50,7 +54,7 @@
  // ---- the chop ----
  function pay(L,snap,hw0){const o=L.o,K=kind(o),max=L.max||3,f=h=>Math.min(1,Math.max(0,1-Math.max(0,+h||0)/max));
   for(const k in inv)if((isLog(k)||k===K.log)&&(inv[k]|0)!==(snap[k]|0))inv[k]=snap[k]|0;// what the old code gave goes back
-  swing=chopTime();try{if(typeof ACTN!=='undefined'&&ACTN&&ACTN.type==='chop'&&ACTN.t<.05){ACTN.sd=Math.min(.5,swing*.8);ACTN.dur=swing}/* the strike, then the axe held for the rest of the chop */}catch(e){self.SQERR&&SQERR(e,'287-6')}
+  swing=chopTime();try{if(typeof ACTN!=='undefined'&&ACTN&&ACTN.type==='chop'&&ACTN.t<.05){ACTN.sd=Math.min(.5,swing*.8);ACTN.dur=swing;slowA=ACTN}/* the strike, then the axe held for the rest of the chop */}catch(e){self.SQERR&&SQERR(e,'287-6')}
   const fell=!(o.hp>0),q0=Math.min(4,Math.floor(f(L.hp0)*4+1e-6)),q1=fell?4:Math.min(3,Math.floor(f(o.hp)*4+1e-6));
   const qx=j=>j<4?Math.floor(K.xp/4):K.xp-3*Math.floor(K.xp/4);let logs=0,xp=0,fellN=0;
   for(let j=q0+1;j<=q1;j++){xp+=qx(j);if(j<4)logs+=WC.qlog;else{fellN=1+Math.floor(Math.random()*Math.max(1,limit()));logs+=fellN}}
