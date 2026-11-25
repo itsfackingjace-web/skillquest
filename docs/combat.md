@@ -9,6 +9,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   Hollow) and sets `SQPVQUIET` for that call so peers don't get a sword swing. The outermost `pP` hides `swing` while a tool
   swing or a cast (plus its tail) runs, and draws `drawAct` in scenes. `wandTarget()` returns null during HIT, so HIT never
   casts (028's old auto-cast); casting is the CAST button / mouse / controller aim.
+  Nov 24 (Jace; check 113): the sledgehammer (`SQSLEDGE()`) only skips the tool swing for boulders (`SQBOUL`), so trees show the axe and
+  rocks the pickaxe even with it in hand. A tool action covers its whole swing: `ACTN.sd` is the strike's own time (028's `drawAct`/`actFx`
+  and 123's `toolAng` use `a.sd||a.dur`), `ACTN.dur` = the swing (122 stretches mining/other chops, 287 sets chops: strike 0.5 s, dur
+  = the chop), so 123 never falls through to the main weapon's (or the sledgehammer's) swing at the end of a long chop.
 - **PvP balance** (`combat/154-s160-pvp-balance.js`, hooks called from 064's `pvHit`/`pvIncoming`, which can't be wrapped from outside
   the MP block): `SQPVDMG(kind,el)` = hearts from the monster damage numbers (melee `1+TL.sword+lv/15+meleeFlat`, `arrowDmg`,
   `spellDmg`; <7 = 1, 7-13 = 2, 14+ = 3; `ul` +4), receivers accept up to 3; `SQPVARM` (12+ armour points: -1 on hits of 2+);

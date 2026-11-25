@@ -27,7 +27,7 @@
  function put(ctx,s,kind,ang,hx,hy){const t=turned(s,kind,ang);ctx.drawImage(t.c,Math.round(hx)-t.R,Math.round(hy)-t.R)}
  // ---- where the weapon is during each action (same timing and hand spots as the game's own drawings) ----
  const swingAng=(fx,fy,pr)=>Math.atan2(fy,fx)+(Math.max(0,Math.min(1,pr))-.5)*2.3;
- function toolAng(a){const p=Math.min(1,a.t/a.dur),f=a.face,a0=Math.atan2(f[1],f[0]),sg=f[0]<0?1:-1,ch=a.type==='chop',st=a0+sg*(ch?1.9:2.7),en2=a0-sg*(ch?.25:.1),e=p<.6?Math.pow(p/.6,2):1;return st+(en2-st)*e}
+ function toolAng(a){const p=Math.min(1,a.t/(a.sd||a.dur)),f=a.face,a0=Math.atan2(f[1],f[0]),sg=f[0]<0?1:-1,ch=a.type==='chop',st=a0+sg*(ch?1.9:2.7),en2=a0-sg*(ch?.25:.1),e=p<.6?Math.pow(p/.6,2):1;return st+(en2-st)*e}
  // ---- your own character ----
  let castUntil=0,bowUntil=0;
  SQPP.wrap('123',_pp=>function(tm){const now=performance.now();
