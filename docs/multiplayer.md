@@ -153,6 +153,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   287 set its time) sends `{k:'tl', m:'c'|'m', d:[face], i:<tool key>, u:<swing s>, sd:<strike s>}` through `SQPVSEND` (the same
   `fx/<uid>` record as sword swings). `SQFXH.tl` puts `r.tool` on the player record (and plays chop/mine within 160 px); an `SQPEERFX`
   drawer draws the tool in their hands for `u` seconds with 123's sprite (`SQISW.put`, mirrored facing left) or 028's `drawToolLine`.
+- **Total level after names** (061 `mpLvTxt`/`mpTagW`, 010, 210, Nov 25, check 118): presence `tl` = `lvTot()` (sent only when it changes,
+  like every field); over heads `<name>` then a small gap and `[<total>]` in gold (`LVCOL`), centred as a whole; the OG crown, PvP skull
+  and 210's patron flame are placed around `mpTagW(name,lv,sz).tw`. No `tl` (an older version) = just the name. 010's status box draws
+  `Lv.<total>` after your name and shortens the name first when gold is long.
 - **fx events after a reload** (064 `pvNew`, 066, Nov 24, check 117): `PV.fxSeq` starts at `Date.now()` (it started at 0 every session),
   and a receiver takes an event when its `s|t` differs from the last one seen from that player (it used to drop any `s` at or below the
   highest seen, so a reloaded player's swings, arrows, spells, ultimates and chops were ignored until their count caught up).

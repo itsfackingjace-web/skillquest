@@ -30,7 +30,7 @@
  {SQHUD.wrap('210',_dh=>function(){const out=_dh.apply(this,arguments);try{const m=mp();if(!m||!m.on||!m.T||performance.now()-m.Tat>120||pnOpen||menuOpen||typeof mpVis!=='function')return out;
     const u=Math.max(2,Math.round(Math.min(W,H)/160)),sz=Math.round(5*u),cs=Math.max(1,Math.round(u*.7)),fc=Math.max(1,Math.round(cs*.85)),T=m.T,fr=FL[Math.floor(performance.now()/260)%2];
     g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;g.font='700 '+sz+'px '+PF;
-    const one=(x,y,name,uidx,lv)=>{if(!name||!active(uidx))return;const p=T.transformPoint({x,y:y-27});const lt=window.mpLvTxt?mpLvTxt(lv):'',tw=g.measureText(name).width+(lt?g.measureText(lt).width:0);/* the name and its total level (061) */const og=!!(m.og&&m.og[uidx]);
+    const one=(x,y,name,uidx,lv)=>{if(!name||!active(uidx))return;const p=T.transformPoint({x,y:y-27});const tw=window.mpTagW?mpTagW(name,lv,sz).tw:g.measureText(name).width;/* the name and its total level (061) */const og=!!(m.og&&m.og[uidx]);
      const left=p.x-tw/2-u-(og?9*cs+u:0)-9*fc;g.drawImage(fr,Math.round(left),Math.round(p.y-sz*.75-(11*fc-7*cs)),9*fc,11*fc)};
     for(const r of mpVis())one(r.x,r.y,r.n,r.uid,r.tl);
     if(m.selfName&&!dead&&m.user)one(P.x,P.y,myNm(),m.user.uid,typeof lvTot==='function'?lvTot():0);
