@@ -33,6 +33,9 @@
  // a chop: the base, less Quick Chop perks, less a little for every Woodcutting level (L defaults to yours)
  const chopTime=(s,L)=>Math.max(.1,WC.base-WC.step*(s==null?picks().s:s)-WC.lvl*(L==null?lvOf(1):L));
  const limit=()=>WC.start+picks().y+axeUp();
+ // "1-2: +1 from your +1 axe" (Nov 24, Jace saw "up to 2" with no Bigger Haul and didn't know where it came from)
+ function limTxt(){const y=picks().y,u=axeUp(),L=Math.max(1,limit()),why=[];if(y)why.push('+'+y+' from Bigger Haul');if(u)why.push('+'+u+' from your +'+u+' axe');
+  return(L>1?'1-'+L:'1')+(why.length?': '+why.join(', '):'')}
  // seconds to fell a tree of this toughness with this axe tier (no walking), with s Quick Chop perks at Woodcutting L (default 1)
  const secs=(t,ax,s,L)=>Math.ceil(t/(C.POW[ax]||1)-1e-9)*chopTime(s||0,L==null?1:L);
  // what a tree gives: its log, its XP, and whether a tier tree's fall also gives 1 plain wood (as before)
@@ -56,7 +59,7 @@
   if(xp>0){if(!fell)window.SQNOWEAR=1;try{addXp(1,xp)}finally{window.SQNOWEAR=0}}// the axe wears once a tree, on the chop that fells it (275)
   if(logs>0||wood){const[fx,fy]=front(13),rare=(inv.heartwood|0)>hw0;
    try{gTxt(fx,fy-22,'+'+logs+' '+lname(K.log,logs),'#7cd060')}catch(e){self.SQERR&&SQERR(e,'287-8')}
-   say('+'+logs+' '+lname(K.log,logs)+(wood?' and +1 wood':'')+(fell?' (felled: '+fellN+' of up to '+Math.max(1,limit())+')':'')+(rare?'. Rare find: '+INAME.heartwood+'!':''))}}
+   say('+'+logs+' '+lname(K.log,logs)+(wood?' and +1 wood':'')+(fell?' (felled: '+fellN+' of '+limTxt()+')':'')+(rare?'. Rare find: '+INAME.heartwood+'!':''))}}
  SQHIT.wrap('287 woodcutting: every chop takes the same time; logs and XP every quarter of a tree',next=>function(){
   C.last=null;busy=true;hold=true;held=0;const snap={};for(const k in inv)if(isLog(k))snap[k]=inv[k]|0;const hw0=inv.heartwood|0;let out;
   try{out=next.apply(this,arguments)}finally{busy=false;hold=false}
@@ -106,5 +109,5 @@
   if(val===''||+val===DEF[a])delete M[a];else M[a]=+val}
  function changes(x,y){x=x||{};y=y||{};const out=[];for(const k of['base','step','lvl','qlog','start'])if(x[k]!==y[k])out.push('Woodcutting '+({base:'base chop time',step:'Quick Chop seconds',lvl:'seconds off per level',qlog:'logs a quarter',start:'starting extra log limit'})[k]+': '+(y[k]==null?'back to '+DEF[k]:y[k]));
   const a=x.t||{},b=y.t||{};for(const k of new Set([...Object.keys(a),...Object.keys(b)]))if(a[k]!==b[k])out.push(TN[k]+' toughness: '+(b[k]==null?'back to '+TDEF[k]:b[k]));return out}
- window.SQWC={DEF,TDEF,LV,calc,apply,picks,limit,chopTime,secs,kind,view,setV,changes,get WC(){return WC},get busy(){return busy}};
+ window.SQWC={DEF,TDEF,LV,calc,apply,limTxt,picks,limit,chopTime,secs,kind,view,setV,changes,get WC(){return WC},get busy(){return busy}};
 })();

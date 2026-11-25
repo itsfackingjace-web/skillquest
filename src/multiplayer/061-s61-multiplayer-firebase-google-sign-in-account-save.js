@@ -472,7 +472,11 @@ function resSubHollow(){if(RES.unsubH)return;const d=FB.db,ref=d.ref(FB.D,'world
  const add=s=>{const i=+s.key,v=s.val();if(!v||!(i>=0&&i<N*N))return;RES.h[i]=v;if(obj[i]&&obj[i].t===v.t)obj[i]=null;for(let j=REM.length-1;j>=0;j--)if(REM[j].i===i)REM.splice(j,1)};
  const u1=d.onChildAdded(ref,add),u2=d.onChildChanged(ref,add),u3=d.onChildRemoved(ref,s=>{const i=+s.key,v=s.val()||RES.h[i];delete RES.h[i];if(v&&!obj[i]&&OHP[v.t])obj[i]={t:v.t,hp:OHP[v.t]}});
  RES.unsubH=()=>{u1();u2();u3()};MP.unsub.push(()=>{if(RES.unsubH){RES.unsubH();RES.unsubH=null}})}
-function resSubRegion(){const R=SCENE&&SCENE.room,loc=R&&R.region&&!/^gi_/.test(R.region)?'r_'+R.region:null;if(loc===RES.rloc)return;if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.r={};RES.rloc=loc;if(!loc||!MP.on)return;
+// Nov 24 (Jace: "trees on the guild isle seem to be per device ... they're able to chop the same tree immediately after i've already cut
+// it"): guild islands (gi_) are shared too now, so a planted tree, rock or bush a member uses up is gone for every member; it grows back
+// after 60 s there (the guild's fast regrowth; the rules let r_gi_ entries go after 55 s), 4 minutes everywhere else.
+const resRegrow=loc=>/^r_gi_/.test(String(loc||''))?60000:240000;RES.regrow=resRegrow;
+function resSubRegion(){const R=SCENE&&SCENE.room,loc=R&&R.region?'r_'+R.region:null;if(loc===RES.rloc)return;if(RES.unsubR){RES.unsubR();RES.unsubR=null}RES.r={};RES.rloc=loc;if(!loc||!MP.on)return;
  const d=FB.db,ref=d.ref(FB.D,'world/res/'+loc);
  const add=s=>{const R2=SCENE&&SCENE.room;if(!R2||'r_'+R2.region!==loc)return;const idx=+s.key,v=s.val();if(!v)return;RES.r[idx]=v;const x=idx%R2.w,y=Math.floor(idx/R2.w),it=rgObjAt(R2,x,y);
   if(it&&it.o&&it.o.t===v.t){it.gone=true;rgCellDel(R2,it);R2.solid.delete(idx);RES.stash[loc+':'+idx]=it}for(let j=R2.gone.length-1;j>=0;j--){const g2=R2.gone[j].it;if(g2.y*R2.w+g2.x===idx){RES.stash[loc+':'+idx]=g2;R2.gone.splice(j,1)}}};
@@ -486,10 +490,10 @@ function resTick(){if(!MP.on||!FB)return;const d=FB.db;resSubHollow();resSubRegi
  for(let j=REM.length-1;j>=0;j--)if(REM[j]._s&&RES.h[REM[j].i])REM.splice(j,1);
  const R=SCENE&&SCENE.room;if(R&&R.region&&R.gone&&RES.rloc){for(let j=R.gone.length-1;j>=0;j--){const g2=R.gone[j];if(g2._s)continue;g2._s=1;const idx=g2.it.y*R.w+g2.it.x;
    RES.stash[RES.rloc+':'+idx]=g2.it;if(!RES.r[idx])d.set(d.ref(FB.D,'world/res/'+RES.rloc+'/'+idx),{t:g2.it.o.t,at:d.serverTimestamp()}).catch(()=>{});R.gone.splice(j,1)}}
- // growing back: anyone online clears entries older than 4 minutes
+ // growing back: anyone online clears entries older than 4 minutes (60 s on guild islands)
  const now=performance.now();if(now-resSweepAt<5000)return;resSweepAt=now;const cut=mpNow()-240000;
  for(const i in RES.h){const v=RES.h[i];if(typeof v.at==='number'&&v.at<cut)d.remove(d.ref(FB.D,'world/res/hollow2/'+i)).catch(()=>{})}
- if(RES.rloc)for(const i in RES.r){const v=RES.r[i];if(typeof v.at==='number'&&v.at<cut)d.remove(d.ref(FB.D,'world/res/'+RES.rloc+'/'+i)).catch(()=>{})}}
+ if(RES.rloc){const cutR=mpNow()-resRegrow(RES.rloc);for(const i in RES.r){const v=RES.r[i];if(typeof v.at==='number'&&v.at<cutR)d.remove(d.ref(FB.D,'world/res/'+RES.rloc+'/'+i)).catch(()=>{})}}}
 // ---- shared monsters ----
 const MOB={n:0,prox:new Map(),limbo:[],loc:null,unsub:null,pubAt:0,pubbed:false,arrAt:0,inbox:null};window.SQMOB=MOB;
 // Nov 21 ("taking 1 damage quickly on repeat" on the Shattered Expanse, Derek and Korey fell to it): when a connection drops, the server

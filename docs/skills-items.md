@@ -326,4 +326,5 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   paid with `window.SQNOWEAR` set so 275 wears the axe once a tree (on the fall). Settings: library `balance.wc` =
   {base, step, lvl, qlog, start, t:{tree,pine,oak,willow,maple,yew,void}} from Dev Suite > Balance > Woodcutting (`SQWC.view/setV/changes`;
   `calc()` reads, `apply()` applies on `SQA.onApply` and re-runs 278's axe descriptions). The wiki's chop times use `SQWC.secs(t,axe,picks)`.
+  The fall's message spells out the limit (`limTxt()`: "1-2: +1 from your +1 axe").
   Drop Cards (253) still roll once a tree: 253 sits inside this step and sees the chop sites' own fell logs, which only come on the fall.

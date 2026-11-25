@@ -22,7 +22,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   per rank (max `RMAX` 5). Buildings `BLD` by guild level, placed at runtime by `applyBuildings` (`_gb` lm items in `spots(R)`, kept free of
   planting by `reserved`): horn (`routeGo(REG)`, 3 min cooldown in localStorage `sq_ghorn`), forge (`gstation` items drawn with
   `drawStation`, TALK = `openStation`), shrine (`LUX.BUFF` wis+regen 20 min, once a day `sq_gshrine`), hall (`maxM` 40, +5% XP).
-  Planted nodes regrow after 60 s (`g2.at-=180` in upd); 061's `resSubRegion` skips `gi_` regions (not shared world-wide).
+  Planted nodes regrow after 60 s (`g2.at-=180` in upd, offline); online, 061 shares `gi_` islands like every region since Nov 24
+  (`world/res/r_gi_<g>/<cell>`, `SQRES.regrow(loc)` = 60 s for `r_gi_`, 4 min elsewhere; the rules let `r_gi_` entries go after 55 s).
   Guild chat: `gchat/<g>/<id>` {u,n,m,t}, 061 has chat tab `gd`, `/g`, `.gld` lines, `window.SQMPLOG(k,m,extra)` = the block's `mpLog`,
   `window.SQGUILDSAY`. Leaderboard `glb/<g>` {n,tag,col,lv,m} (members write when it changes, `pubLB`). Rename: `info.rn`, cost
   `RENAME` after the first, gname moved in one update. Tag: `retag` (leader, free) writes `info/tag` (rules: 2-4 A-Z0-9). Panel messages: `tell()` = say + a note card on top of the guild screen (8 s).

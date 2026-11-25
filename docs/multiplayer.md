@@ -149,3 +149,9 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   cleared by `begin()`, so during the next setup each game sent its deck plus the last match's moves; the other game replayed them on the
   first turn and stopped the match ("out of step"; the other screen saw "left the match"). `cancel()` (130's `end()`) now clears `S.mv`/`S.th`,
   and the head is `<deck>|<pet>|r4|<code>` with the request's `D.s`: `theirs()` ignores a head with another match's code. Check 73.
+- **Tool swings online** (`combat/280-s288-others-see-tool-swings.js`, Nov 24, check 115): a HIT that starts a chop or a mine (after
+  287 set its time) sends `{k:'tl', m:'c'|'m', d:[face], i:<tool key>, u:<swing s>, sd:<strike s>}` through `SQPVSEND` (the same
+  `fx/<uid>` record as sword swings). `SQFXH.tl` puts `r.tool` on the player record (and plays chop/mine within 160 px); an `SQPEERFX`
+  drawer draws the tool in their hands for `u` seconds with 123's sprite (`SQISW.put`, mirrored facing left) or 028's `drawToolLine`.
+- **Shared resources on guild islands** (061 `resSubRegion`/`resTick`, Nov 24, check 115): `gi_` regions are no longer skipped; see
+  docs/guilds.md (60 s regrowth, rules `world/res/$loc/$cell` let `r_gi_` entries be removed after 55 s instead of 230 s).

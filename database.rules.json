@@ -69,7 +69,7 @@
         ".read": "auth != null",
         "$loc": {
           "$cell": {
-            ".write": "auth != null && ((!data.exists() && newData.child('at').val() === now) || (data.exists() && !newData.exists() && data.child('at').val() < now - 230000))",
+            ".write": "auth != null && ((!data.exists() && newData.child('at').val() === now) || (data.exists() && !newData.exists() && (data.child('at').val() < now - 230000 || ($loc.beginsWith('r_gi_') && data.child('at').val() < now - 55000))))",
             ".validate": "newData.hasChildren(['t', 'at']) && newData.child('t').isString() && newData.child('t').val().length < 16"
           }
         }
