@@ -183,7 +183,10 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
  // status box: name and gold, HP, FOOD
  const hpf=Math.max(0,P.hp)/6;g3box(ins,top,bw,bh,U,'#f8f8e0');
  g.font='700 '+13*U+'px '+PF;const gs=String(GLD),gw=g.measureText(gs).width;
- g.font='700 '+14*U+'px '+PF;g3text(fitText(pname().toUpperCase(),bw-gw-52*U),ins+12*U,top+16*U,14,U,'#404040','left',700);
+ /* Nov 25 (Jace): the total level after the name (the name is shortened first when gold is long) */
+ g.font='700 '+11*U+'px '+PF;const lvt=typeof lvTot==='function'?'Lv.'+lvTot():'',lvw=lvt?g.measureText(lvt).width+5*U:0;
+ g.font='700 '+14*U+'px '+PF;const nmt=fitText(pname().toUpperCase(),Math.max(24*U,bw-gw-52*U-lvw));g3text(nmt,ins+12*U,top+16*U,14,U,'#404040','left',700);
+ if(lvt){const nw=g.measureText(nmt).width;g3text(lvt,ins+12*U+nw+5*U,top+16.5*U,11,U,'#3878b8','left',700)}
  const gx=ins+bw-12*U-gw;g.fillStyle='#a87818';g.beginPath();g.arc(gx-9*U,top+16*U,5.5*U,0,6.283);g.fill();g.fillStyle='#f8d030';g.beginPath();g.arc(gx-9*U,top+16*U,4*U,0,6.283);g.fill();
  g3text(gs,ins+bw-12*U,top+16.5*U,13,U,'#404040','right',700);
  g3bar('HP',ins+12*U,top+32*U,U,hpf,hpf>.5?'#48c878':hpf>.2?'#f8c030':'#f05030',Math.max(0,P.hp)+'/6',ins+bw-10*U);
