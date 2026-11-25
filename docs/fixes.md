@@ -150,3 +150,7 @@ Firebase had no new bug reports (`bugs` newest Nov 10) and no new code errors (`
   Jace's starsteel dagger (late Nov 23): it was nowhere in his save, chests or graves, and already gone in the 1:17 PM daily backup.
   One way a dagger vanishes, closed: 218's loader set `DAG=null` when the save also had a bow, wand, hoe or can in the off-hand; it
   now puts that dagger in the bag (check 104).
+- **Nov 25 bug reports** (check 120): Firebase `bugs` had nothing new (newest Nov 10); #bugs' newest (World Market freezing screens, the
+  chest deposit button cut off, a worn-out axe joining a stack) were fixed Nov 23-24. errs `uncaught` (6×, 2026.11.24-11) "Cannot read
+  properties of null (reading 'id')": 248's touchmove cleared `HOLD` for the HIT finger sliding off and went on to the next moving finger
+  (the joystick thumb), reading `HOLD.id`; it stops at the first match now.

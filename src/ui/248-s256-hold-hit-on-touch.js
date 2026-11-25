@@ -7,7 +7,7 @@
  addEventListener('touchstart',e=>{const el=e.target&&e.target.closest&&e.target.closest('#a');if(!el)return;const t=e.changedTouches&&e.changedTouches[0];if(t)HOLD={id:t.identifier,t:0}},{capture:true,passive:true});
  const end=e=>{if(!HOLD)return;for(const t of e.changedTouches||[])if(t.identifier===HOLD.id){HOLD=null;return}};
  addEventListener('touchend',end,{capture:true,passive:true});addEventListener('touchcancel',end,{capture:true,passive:true});
- addEventListener('touchmove',e=>{if(!HOLD)return;for(const t of e.changedTouches||[])if(t.identifier===HOLD.id&&!onA(t))HOLD=null},{capture:true,passive:true});
+ addEventListener('touchmove',e=>{if(!HOLD)return;for(const t of e.changedTouches||[])if(t.identifier===HOLD.id&&!onA(t)){HOLD=null;break}},{capture:true,passive:true});/* Nov 25 (errs 'uncaught' "reading 'id'"): with two fingers moving, the loop went on to the next one after HOLD was cleared */
  let N=0;
  SQUPD.after('248 hold HIT on touch',dt=>{if(!HOLD)return;if(dead||pnOpen||menuOpen){HOLD=null;return}HOLD.t+=dt;
   if(HOLD.t>.35&&swing<=0&&!FISH&&!BUILD){N++;try{attack()}catch(e){self.SQERR&&SQERR(e,'248-1')}}});
