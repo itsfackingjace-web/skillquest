@@ -28093,7 +28093,7 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
  const RX=new RegExp(MAP.map(([a])=>a.replace(/[()|.,]/g,'\\$&')).join('|'),'gi'),TO=Object.fromEntries(MAP.map(([a,b])=>[a.toLowerCase(),b]));
  // plain white box backgrounds become a light cream (only backgrounds: white text stays white)
  const WBG=/(background(?:-color)?\s*:\s*)#fff(?:fff)?\b/gi;
- const RX0=new RegExp(RX.source+'|#fff','i'),N=TH.n={a:0,s:0};// a quick test before swapping; N counts the work (checks)
+ const RX0=new RegExp(RX.source+'|#fff','i'),N=TH.n={a:0,s:0,ms:0};// a quick test before swapping; N counts the work (checks)
  const swap=s=>s.replace(RX,m=>TO[m.toLowerCase()]||m).replace(WBG,'$1'+TH.lite);
  const OWN=document.createElement('style');OWN.id='sqtheme';
  function fixStyle(el){if(!el||el===OWN||el.tagName!=='STYLE')return;N.s++;try{const t=el.textContent,n=swap(t);if(n!==t)el.textContent=n}catch(e){self.SQERR&&SQERR(e,'289-1')}}
@@ -28110,10 +28110,11 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
 #hp,#hpc{background:${hexA(TH.bg)}.94)!important;color:${TH.tx}!important}`;
  document.head.appendChild(OWN);
  const keepLast=()=>{if(document.head.lastElementChild!==OWN)document.head.appendChild(OWN)};
- new MutationObserver(ms=>{let moved=false;for(const m of ms){if(m.type==='characterData'){fixStyle(m.target.parentNode);continue}
+ new MutationObserver(ms=>{const t0=performance.now();try{obs(ms)}finally{N.ms+=performance.now()-t0}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['style']});
+ function obs(ms){let moved=false;for(const m of ms){if(m.type==='characterData'){fixStyle(m.target.parentNode);continue}
    if(m.type==='attributes'){try{fixEl(m.target)}catch(e){self.SQERR&&SQERR(e,'289-4')}N.a++;continue}
    for(const n of m.addedNodes){if(n===OWN)continue;if(n.nodeType===3){fixStyle(n.parentNode);continue}if(n.tagName==='STYLE'){fixStyle(n);moved=true}else fixInline(n)}}
-  if(moved)keepLast()}).observe(document.documentElement,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['style']});
+  if(moved)keepLast()}
  for(const id of['pn','sm','cm','chs','hp'])fixInline(document.getElementById(id));
 })();
 // ---------------------------------------------------------------- Fullscreen (Options)
