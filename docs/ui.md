@@ -138,7 +138,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   Companion power. Check 49 opens it.
 - **HUD colours** (`ui/281-s289-hud-colours.js`, `window.SQTHEME`, Nov 25, Jace; check 119): first cream `#FFECA6` / `#69411B` / green
   `#35611D`; that night (Jace with 2GirlsOne50Cal: "too vibrant") a scroll: bg `#D8B898` with a gradient `top` `#E6CDAE` → `bot` `#CBA882`
-  (g3box and the main frames' CSS), text `#3A2412`, border `#7A5A3A` (+ shades: ring, sh, lite, tan, tab, tabOn, dark, trough). Reassigns 059's `g3box`/`g3bar` and `g3text` (light fills → bg; `#404040` → text;
+  (g3box and the main frames' CSS), text `#3A2412`, border `#7A5A3A` (+ shades: ring, sh, lite, tan, tab, tabOn, dark, trough).
+  Then (Jace: "how could it look better"): g3box draws a carved edge (`hi` top/left, `lo` bottom/right) instead of one ring, a fixed
+  parchment grain (`grain(p)`, a 24×24 speckle pattern per pixel size) and 1-px `stud`s in the corners of bigger boxes; g3bar's troughs are a
+  recessed `well` and the bar colours are mapped to earthier ones (`BARC`); an SQHUD step draws rolled scroll ends on `MSGBOX`; the main
+  frames' CSS gets the same grain (`GRAIN`, a data URL) and an inset carved edge. Reassigns 059's `g3box`/`g3bar` and `g3text` (light fills → bg; `#404040` → text;
   the old blue accents `#3058c8`/`#3878b8`/`#5878b8` → border green); frames the minimap (wraps `drawMini52`); 010's day bar outline
   reads `SQTHEME.bd`. Every game `<style>` (now and added later) and every inline `style` has the old palette swapped (`MAP`: slate
   `#485870`, ring `#a8c0e0`, `#404040`, `#f8f8f8`, the blue tabs and light blues; `background:#fff` → light cream) by a
