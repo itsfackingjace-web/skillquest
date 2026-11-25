@@ -313,16 +313,17 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   **Superseded the same evening by 287 below**: toughness tree/pine 2, oak 5, willow 10, maple 17, yew 24, void 39 (Dev Suite trees
   0.6 x hp), no `CHOPSW` (287 sets the chop's swing), `dmg()` records `SQCHOP.last={o,hp0,max}` for 287.
 - **Woodcutting quarters and perks** (`skills/279-s287-woodcutting-quarters.js`, `window.SQWC`, Jace Nov 24 evening; check 112):
-  every chop takes `WC.base` (1 s) − `WC.step` (0.05) × Quick Chop picks; no level speed-up, recovery perk or axe-upgrade speed. The HIT
+  every chop takes `WC.base` (1 s) − `WC.step` (0.05) × Quick Chop picks − `WC.lvl` (0.0025) × Woodcutting level (`chopTime(s,L)`;
+  later that evening, Jace: 0.2475 s at 99, and the tree lists it at every level); no recovery perk or axe-upgrade speed. The HIT
   step runs around the chop sites: it snapshots every log key (`wood`, `*log`, the tree's item), holds back Woodcutting XP (`SQADDXP`
   wrap, `held` is given back if no tree was chopped), lets the sites run, then puts the logs back and pays the quarters the chop crossed
   (from `SQCHOP.last` hp before/after over OHP): each of the first three quarters `WC.qlog` logs + XP/4, the fall 1..`limit()` logs
-  (+1 wood for a tier tree, as before) + the rest of the XP. `limit()` = `WC.start` (1) + Bigger Haul picks + the worn axe's upgrade
+  (no plain wood for a tier tree since that evening: 083's old +1 wood is taken back with the rest) + the rest of the XP. `limit()` = `WC.start` (1) + Bigger Haul picks + the worn axe's upgrade
   level (274's `SQUPGRADE.lv('axe')`; axe upgrades say "+L extra log limit"). Picks are counted from `PERKS[1][lv]` 'a'/'b' at 10..90
   (`TREES[1].choices` replaced: `wc_quick` / `wc_haul`, nothing at 99; `TREES[1].step` drops the old speed/extra-log lines). Saves
   without `s.wcv` (2) have `PERKS[1]` cleared to choose again, free. While `SQWC.busy`: 199's void-log swap and 116's treeling stand
   aside (287 calls `SQTREELING.roll(o,log)` once a payout), 038's `gBoost` keeps only the Heartwood roll for Woodcutting. Quarter XP is
   paid with `window.SQNOWEAR` set so 275 wears the axe once a tree (on the fall). Settings: library `balance.wc` =
-  {base, step, qlog, start, t:{tree,pine,oak,willow,maple,yew,void}} from Dev Suite > Balance > Woodcutting (`SQWC.view/setV/changes`;
+  {base, step, lvl, qlog, start, t:{tree,pine,oak,willow,maple,yew,void}} from Dev Suite > Balance > Woodcutting (`SQWC.view/setV/changes`;
   `calc()` reads, `apply()` applies on `SQA.onApply` and re-runs 278's axe descriptions). The wiki's chop times use `SQWC.secs(t,axe,picks)`.
   Drop Cards (253) still roll once a tree: 253 sits inside this step and sees the chop sites' own fell logs, which only come on the fall.

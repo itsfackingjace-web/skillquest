@@ -65,7 +65,7 @@
     'Each level needs the level that makes the item + 10 (+1), + 20 (+2) and + 30 (+3), in Smithing for anvil gear or Crafting for crafted gear; every item\'s description and wiki page lists them. '+
     'Boss gear (the Warlord\'s blade, the Stone sledgehammer, the Flame crown, the Void wand, the Outlaw\'s hat) is upgraded with its island\'s <b>cores</b> instead: 1, 10 and 100, at level 70, 80 and 90. Cores are smithed at the bench from 100 sigil shards.');
    G('Trees and axes','Every tree has a toughness and every axe a chopping power, so higher trees take longer and a better axe is quicker: a plain tree takes 2 chops with a wooden axe, a yew 10 with an adamant axe. '+
-    'Every chop takes 1 second; each <b>Quick Chop</b> perk (one can be picked every 10 levels) takes 0.05 s off. A tree pays as it goes down: each quarter gives 1 log and a quarter of its XP, '+
+    'Every chop takes 1 second at level 1 and 0.0025 s less for every level; each <b>Quick Chop</b> perk (one can be picked every 10 levels) takes 0.05 s more off. A tree pays as it goes down: each quarter gives 1 log and a quarter of its XP, '+
     'and when it falls you get 1 log up to your <b>extra log limit</b>: 1 to start, +1 for each <b>Bigger Haul</b> perk and +1, +2 or +3 for a +1, +2 or +3 axe. '+
     'Oak needs Woodcutting 15, willow 30, maple 45 and yew 60. <b>Void trees</b> (the purple-leaved trees of the Shattered Expanse and guild void saplings) need Woodcutting 75 and an adamant axe or better. '+
     'Skills → Woodcutting lists how long each tree takes.');
@@ -151,10 +151,10 @@
   const q=reqOf(k);rows.push(['Needs',q?E(SKN[q.s]+' '+q.l):'Nothing: anyone can use it']);
   try{const d=window.SQREPAIR?SQREPAIR.maxD(k):0;if(d>0)rows.push(['Lasts',d.toLocaleString('en-US')+' uses, then it wears out. Repair it at a Blacksmith\'s bench.'])}catch(e2){self.SQERR&&SQERR(e2,'278-11')}
   if(e.slot==='axe'&&window.SQCHOP){const C=SQCHOP,a=e.tier|0,p=C.POW[a]||1,L=[['tree','Tree',1],['oak','Oak',15],['willow','Willow',30],['maple','Maple',45],['yew','Yew',60]];
-   const secs=t=>window.SQWC?SQWC.secs(t,a,0):Math.ceil(t/p);// 287: every chop the same time
+   const secs=(t,l)=>window.SQWC?SQWC.secs(t,a,0,l):Math.ceil(t/p);// 287: chop time by level, before Quick Chop
    const q2=reqOf(k),lmin=q2?q2.l:1;
    rows.push(['Chopping power',p+' <small>(wooden 1 · iron 1.5 · adamant 2.5 · meteorite 3)</small>']);
-   rows.push(['Time per tree',L.map(([t,n])=>n+' '+fmt(secs(C.TOUGH[t]))+' s').join(' · ')+(a>=C.VOID.axe?' · Void '+fmt(secs(C.VOID.t))+' s':'')+' <small>(before Quick Chop perks)</small>'])}
+   rows.push(['Time per tree',L.map(([t,n,l])=>{const lv=Math.max(l,lmin);return n+' '+fmt(secs(C.TOUGH[t],lv))+' s'}).join(' · ')+(a>=C.VOID.axe?' · Void '+fmt(secs(C.VOID.t,Math.max(75,lmin)))+' s':'')+' <small>(at each tree\'s level, before Quick Chop perks)</small>'])}
   // the upgrades made from it (274)
   const ups=[1,2,3].map(L=>'u'+L+'_'+k).filter(u=>INAME[u]);
   if(ups.length){const UG=window.SQUPGRADE,info=UG&&UG.UP()[k];
@@ -168,10 +168,10 @@
    if(g){const i=h.indexOf('<div class="c"><div class="tx"><b>How to get it');h=i>0?h.slice(0,i)+g+h.slice(i):h+g}}catch(e){self.SQERR&&SQERR(e,'278-13')}return h}}
  // ---------------- training lists: void trees, and how long each tree takes ----------------
  (window.SQWKACT=window.SQWKACT||[]).push((skill,A)=>{if(skill!=='Woodcutting'||!window.SQCHOP)return;const C=SQCHOP;
-  const HAVE={tree:1,pine:1,oak:3,willow:4,maple:6,yew:7,void:7}/* the axe you'd have by then (void trees: the adamant axe they need) */,secs=(t,ax)=>window.SQWC?SQWC.secs(t,ax,0):Math.ceil(t/(C.POW[ax]||1));
+  const HAVE={tree:1,pine:1,oak:3,willow:4,maple:6,yew:7,void:7}/* the axe you'd have by then (void trees: the adamant axe they need) */,secs=(t,ax,l)=>window.SQWC?SQWC.secs(t,ax,0,l):Math.ceil(t/(C.POW[ax]||1));
   const KN={Tree:'tree',Pine:'pine','Oak tree':'oak','Willow tree':'willow','Maple tree':'maple','Yew tree':'yew'};
-  for(const a of A){const t=KN[a.n];if(t&&C.TOUGH[t]!=null)a.t=secs(C.TOUGH[t],HAVE[t]);else{const T=window.SQTIER&&Object.values(SQTIER).find(q=>q.sk===1&&q.xp===a.xp&&q.lv===a.lv);if(T&&T.hp)a.t=secs(T.hp*.6,Math.max(1,T.axe|0))}}
-  A.push({n:'Void tree (Shattered Expanse, guild void saplings; adamant axe or better)',xp:C.VOID.xp,lv:C.VOID.lv,t:secs(C.VOID.t,HAVE.void)})});
+  for(const a of A){const t=KN[a.n];if(t&&C.TOUGH[t]!=null)a.t=secs(C.TOUGH[t],HAVE[t],a.lv);else{const T=window.SQTIER&&Object.values(SQTIER).find(q=>q.sk===1&&q.xp===a.xp&&q.lv===a.lv);if(T&&T.hp)a.t=secs(T.hp*.6,Math.max(1,T.axe|0),a.lv)}}
+  A.push({n:'Void tree (Shattered Expanse, guild void saplings; adamant axe or better)',xp:C.VOID.xp,lv:C.VOID.lv,t:secs(C.VOID.t,HAVE.void,C.VOID.lv)})});
  // ---------------- clicks: item groups, a skill from Home ----------------
  {const el=document.getElementById('sqwk');if(el)el.addEventListener('click',e=>{const b=e.target.closest('[data-wkic],[data-wksk]');if(!b)return;const S=st();
    if(b.dataset.wkic){S.icat=b.dataset.wkic;if(S.tab!=='items'){S.tab='items';S.pg=null;S.q='';const q=document.getElementById('wkq');if(q)q.value=''}W.render();const bd=document.getElementById('wkb');if(bd)bd.scrollTop=0;return}

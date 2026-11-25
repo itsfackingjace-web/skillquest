@@ -129,8 +129,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   and 169 warns about two items with one name. 176's item lists label same-named items with their id and icon state, and show
   the picked item's icon.
 - **Balance** (`dev/163-s169-balance.js`, `window.SQBAL`, Dev Suite > Balance): library `balance` = {xp:{skill:%}, act:{'<TABLE>:<key>':xp},
-  perk:{'<TABLE>:<perk id>':%}, mat:{'<item key>':{x,t}}, wc:{base,step,qlog,start,t:{...}}} (wc: the Woodcutting sub-tab, 287 in skills-items.md: base chop time, Quick Chop
-  seconds, logs a quarter, starting extra log limit, toughness per tree, and a table of chops and seconds per tree with each axe). `act` edits the xp field of COOKS/SM/GOODS/BREC/FREC/FISH_T/SQTIER entries in place (not `_cu`,
+  perk:{'<TABLE>:<perk id>':%}, mat:{'<item key>':{x,t}}, wc:{base,step,lvl,qlog,start,t:{...}}} (wc: the Woodcutting sub-tab, 287 in skills-items.md: base chop time, Quick Chop
+  seconds, seconds off per level, logs a quarter, starting extra log limit, toughness per tree, and a table of chops and seconds per tree with each axe). `act` edits the xp field of COOKS/SM/GOODS/BREC/FREC/FISH_T/SQTIER entries in place (not `_cu`,
   not furnace/anvil recipes the Material XP table covers: `_mx`, see 276 in skills-items.md); the Material XP view edits `mat` and lists what each recipe comes to;
   `perk` edits the [id,value] pairs of 038/039's GSPD/GEXT/GRAR/GDBL/STAYP/FOODP/PSPD (one id can sit in two tables, hence the
   table in the key) and swaps the % in the perk's description. Originals captured at load. Perks written into code have no

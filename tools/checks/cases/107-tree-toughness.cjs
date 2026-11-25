@@ -29,7 +29,7 @@ module.exports={name:'trees take longer by tier, and void trees need Woodcutting
   routeGo('hollow');return out});
  if(r.err)return t(false,r.err);
  t.eq(r.tree,[2,1],'a plain tree: 2 chops with a wooden axe, 1 with a meteorite axe');
- t.eq(r.swing,[1,.25],'a chop takes 1 s, other swings 0.25 s');
+ t.eq(r.swing,[.998,.25],'a chop at Woodcutting 1 takes 0.9975 s (1 s less 0.0025 a level), other swings 0.25 s');
  t.eq(r.yew,[10,16],'a yew: 10 chops with an adamant axe, 16 with an iron one');
  t.eq(r.oak,4,'an oak with an iron axe: 4 chops');
  t(r.skill,'the Woodcutting tree lists void trees at 75');

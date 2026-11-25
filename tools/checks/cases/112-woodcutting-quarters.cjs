@@ -7,7 +7,7 @@ module.exports={name:'woodcutting: logs and XP every quarter of a tree, Quick Ch
   // chops a fresh tree in front; [swing, logs, xp] for each chop
   const chop=(t,axe,lvl)=>{TL.axe=axe;XPS[1]=lvl>1?XT[lvl-1]:0;const i=tile();obj[i]={t,hp:OHP[t]};const log=t==='tree'||t==='pine'?'wood':SQTIER[t].item,rows=[];
    for(let n=0;n<60&&obj[i]&&obj[i].t===t&&obj[i].hp>0;n++){swing=0;const a=inv[log]|0,b=XPS[1];attack();rows.push([Math.round(swing*100)/100,(inv[log]|0)-a,Math.round(XPS[1]-b)])}return rows};
-  PERKS[1]={};o.tree=chop('tree',1,1);o.oak=chop('oak',3,15);
+  PERKS[1]={};o.tree=chop('tree',1,1);const w0=inv.wood|0;o.oak=chop('oak',3,15);o.oakWood=(inv.wood|0)-w0;
   // two Quick Chops: 0.9 s; three Bigger Hauls and a +2 axe: up to 6 logs from a fall
   PERKS[1]={10:'a',20:'a',30:'b',40:'b',50:'b'};XPS[1]=XT[59];inv.u2_eq_axe7=1;equipItem('u2_eq_axe7');/* needs Woodcutting 60 */o.lim=[X.picks().s,X.picks().y,X.limit()];
   const falls=[];for(let k=0;k<40;k++){const rows=chop('yew',7,60);falls.push(rows[rows.length-1][1])}/* the last chop pays only the fall (the 75% quarter came at chop 8 of 10) */
@@ -27,9 +27,9 @@ module.exports={name:'woodcutting: logs and XP every quarter of a tree, Quick Ch
   return o});
  if(r.err)return t(false,r.err);
  t.eq(r.tree,[[1,2,12],[1,2,13]],'a plain tree, wooden axe: 2 chops of 1 s; the first takes half (2 logs, 12 xp), the second a quarter and the fall (1 log + 1)');
- t.eq(r.oak,[[1,1,15],[1,1,15],[1,1,15],[1,1,15]],'an oak, iron axe: 4 chops, 1 oak log and 15 xp each');
+ t.eq(r.oak,[[.96,1,15],[.96,1,15],[.96,1,15],[.96,1,15]],'an oak at Woodcutting 15, iron axe: 4 chops of 0.9625 s, 1 oak log and 15 xp each');t.eq(r.oakWood,0,'an oak gives no plain wood on top of its logs');
  t.eq(r.lim,[2,3,6],'2 Quick Chops, 3 Bigger Hauls, and a +2 axe: an extra log limit of 6');
- t.eq(r.yew,[.9,.9,.9,.9,.9,.9,.9,.9,.9,.9],'with 2 Quick Chops every chop takes 0.9 s (a yew, adamant axe: 10 chops)');
+ t.eq(r.yew,[.75,.75,.75,.75,.75,.75,.75,.75,.75,.75],'at Woodcutting 60 with 2 Quick Chops every chop takes 0.75 s (1 - 0.1 - 0.15; a yew, adamant axe: 10 chops)');
  t(r.falls[0]>=1&&r.falls[1]<=6&&r.falls[1]>r.falls[0],'a fall gives 1 to 6 logs ('+r.falls+')');
  t.eq(r.wear,1,'the axe wears once for the whole tree');t.eq(r.rolls,4,'a treeling rolls once for each payout (4 for an oak)');
  t.eq([r.dev,r.back],[.8,1],'the Dev Suite\'s base chop time sets the chop (0.8 s), and back to 1 s');
