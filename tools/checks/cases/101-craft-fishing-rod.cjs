@@ -4,7 +4,7 @@ module.exports={name:'fishing rods can always be crafted: the first is equipped,
  const r=await p.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms));await W(400);try{if(pnOpen)closePanel()}catch(e){}const out={};
   XPS[6]=XT[10];inv.wood=20;inv.iron=5;TL.rod=0;inv.eq_rod=0;
   const btn=()=>{pnOpen=true;ptab=1;pn.style.display='block';rPn();return[...pbd.querySelectorAll('.rc')].find(b=>/Fishing rod/.test(b.innerText))||null};
-  const make=async()=>{const b=btn();if(!b)return false;b.click();for(let k=0;k<60&&window.SQDO;k++){SQDO.d=.1;await W(100)}await W(50);closePanel();return true};
+  /* Nov 26: no random perk refunds (a full run once got 13 wood back instead of 12) */const make=async()=>{const b=btn();if(!b)return false;const _r=Math.random;Math.random=()=>.995;try{b.click();for(let k=0;k<60&&window.SQDO;k++){SQDO.d=.1;await W(100)}await W(50)}finally{Math.random=_r}closePanel();return true};
   out.first=[await make(),TL.rod|0,inv.eq_rod|0,inv.wood|0,inv.iron|0];
   const b=btn();out.listed=b?b.innerText.replace(/\s+/g,' '):null;closePanel();
   out.spare=[await make(),TL.rod|0,inv.eq_rod|0,inv.wood|0,inv.iron|0];
