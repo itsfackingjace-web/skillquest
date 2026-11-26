@@ -6,15 +6,19 @@
 // (095's SQBW.town) and Emberwatch (096's SQAF.town) on their islands, Dustwater (No Man's Land's landmark), or null.
 (()=>{const T=n=>{try{return typeof n==='function'?n:null}catch(e){return null}};
  const box=(o,tx,ty)=>o&&tx>=o.x0-1&&ty>=o.y0-1&&tx<o.x0+o.w+1&&ty<o.y0+o.h+1;
- function here(){try{if(dead)return null;const tx=Math.floor(P.x/16),ty=Math.floor(P.y/16);
-   if(!SCENE){if(typeof SAILING!=='undefined'&&SAILING)return null;
+ function here(){try{if(dead)return null;let S=SCENE,px=P.x,py=P.y;
+   // Nov 26: inside a building you're still in the town its door is in (going in and out of Dustwater's buildings, or a shop, showed the
+   // town's sign again every time you came out)
+   if(S&&!(S.room&&S.room.region)&&S.ret&&isFinite(S.ret.x)){px=S.ret.x;py=S.ret.y;S=S.prev||null}
+   const tx=Math.floor(px/16),ty=Math.floor(py/16);
+   if(!S){if(typeof SAILING!=='undefined'&&SAILING)return null;
     if(typeof VX!=='undefined'&&tx>VX-11&&tx<VX+12&&ty>VY-8&&ty<VY+9)return'Hollow Village';
     if(typeof inTownBox==='function'&&inTownBox(tx,ty))return'Saltmere';
     if(typeof FHON!=='undefined'&&FHON&&typeof inFHBox==='function'&&inFHBox(tx,ty))return'Frosthollow';
     if(typeof DHON!=='undefined'&&DHON&&typeof inDHBox==='function'&&inDHBox(tx,ty))return'Dusthaven';
     if(typeof TWON!=='undefined'&&TWON&&typeof inTWBox==='function'&&inTWBox(tx,ty))return'Tidewatch';
     return null}
-   const R=SCENE.room;if(!R||!R.region)return null;
+   const R=S.room;if(!R||!R.region)return null;
    if(R.region==='briarwood'&&window.SQBW&&box(SQBW.town,tx,ty))return'Thornbrook';
    if(R.region==='ashfall'&&window.SQAF&&box(SQAF.town,tx,ty))return'Emberwatch';
    if(R.region==='nomans'&&R.lms){const l=R.lms.find(q=>q.id==='dustwater');if(l&&Math.hypot(tx-l.x,ty-l.y)<11)return'Dustwater'}

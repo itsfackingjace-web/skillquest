@@ -14,7 +14,7 @@ const PVLOCK=30000,PVSAFE=14;
 const SQFXH=window.SQFXH=window.SQFXH||{},SQPEERFX=window.SQPEERFX=window.SQPEERFX||[];window.SQPVSEND=ev=>pvSend(ev);
 // where fighting is allowed
 function pvSafeAt(loc,x,y){if(!loc)return true;if(loc.startsWith('h:'))return true;
- if(loc.startsWith('in:')&&!(loc.startsWith('in:dun')||loc.startsWith('in:cave')||loc.startsWith('in:tomb')))return true;
+ if(loc.startsWith('in:')&&!(loc.startsWith('in:dun')||loc.startsWith('in:cave')||loc.startsWith('in:tomb')||loc.startsWith('in:nm')))return true;/* in:nm...: No Man's Land's buildings (296) */
  if(loc==='hollow'&&Math.hypot(x/16-VX,y/16-VY)<PVSAFE)return true;return false}
 const pvMeSafe=()=>pvSafeAt(mpLoc(),P.x,P.y);
 const pvDuel=u=>!!(window.SQDUEL&&SQDUEL.fighting&&u&&SQDUEL.foe===u);// a duel: the two can fight anywhere, PvP on or off

@@ -146,3 +146,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   counts progress only there). New sqEvent types: `nmlm` (landmarks, once each, `SQ_SIDE.nomans.seen`), `nmdeliver` (`nmsatchel` item to the
   `dustwater` landmark; Mira gives a new one if it's lost), `nmmine` (Mining XP there), `nmpvp` (064's ko branch calls `SQPVKO(uid)`), plus
   kill 'bandit' and islandboss 'nomans'. Check 31.
+- **Enterable buildings** (`world/288-s296-enterable-buildings.js`, `window.SQROOMS296` {MSG, doors}, Nov 26, Jace / iPrint3D, check 139): the Old
+  Hermit's hut (026's `HRM`) is one of 012's `entrances()` (its open doorway tile `HRM.y-1`) → `ROOMS.hermithut`. Dustwater in No Man's
+  Land (099's `nmsaloon` and `nmshack` landmarks, in the generator's order: saloon, the sheriff's office (`name` /Sheriff/), three shacks)
+  → `nmsaloon`, `nmsheriff`, `nmshack1-3`: an SQUPD step enters when you walk up into the door (centre `x*16+w*8`, bottom edge, like 096's
+  village doors); 067 keeps the island as `SCENE.prev`, so leaving returns to the door and 099's forced PvP stays on. 064's `pvSafeAt`
+  (edited in place) treats `in:nm...` like dungeons: not a safe zone (melee only: bows and spells say "Not indoors!"). 012 clears monsters
+  in rooms. "look" items say their text (an SQUSEFURN step); new room items drawn by an SQFURN step: nmbar, nmshelf, nmpiano, nmcell,
+  nmposter, nmstool, nmweb, hmrods. 245's town sign uses the door of the building you're in (no new sign each time you come out).
