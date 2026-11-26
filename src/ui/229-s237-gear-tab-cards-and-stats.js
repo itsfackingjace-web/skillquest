@@ -13,7 +13,7 @@
  function card(k){const e=EQ[k],J=window.SQJK&&SQJK[k],n=(e&&e.n)||(J&&J.n)||INAME[k]||k,d=IDESC[k]||(J&&J.d)||'';
   return'<div class="sqgcard"><img alt="" src="'+icon(k)+'"><div><b>'+esc(n)+'</b>'+(d?'<div class="sqgcd">'+esc(d)+'</div>':'')+'<small>'+esc(valueLine(k))+'</small></div></div>'}
  function extraRows(){const R=[];const row=(a,b)=>R.push('<div class="tc-r"><span>'+a+'</span><b>'+b+'</b></div>');
-  try{row('Health',Math.max(0,P.hp)+' / 6 hearts')}catch(e){self.SQERR&&SQERR(e,'229-2')}
+  try{row('Health',Math.round(Math.max(0,+P.hp||0)*10)/10+' / 6 hearts')}catch(e){self.SQERR&&SQERR(e,'229-2')}
   try{if(typeof armorPts==='function')row('Armour',armorPts()+' points')}catch(e){self.SQERR&&SQERR(e,'229-3')}
   try{if(typeof blockCap==='function')row('Block limit',pc(blockCap()))}catch(e){self.SQERR&&SQERR(e,'229-4')}
   try{if(typeof critCh==='function'){const c=critCh(null);if(c>0)row('Critical hits',pc(Math.min(1,c))+' of hits')}}catch(e){self.SQERR&&SQERR(e,'229-5')}

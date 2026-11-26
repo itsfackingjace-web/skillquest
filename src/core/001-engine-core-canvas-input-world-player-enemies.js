@@ -153,7 +153,7 @@ function upd(dt){
   const ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));
   if(ok(nx,P.y))P.x=nx;if(ok(P.x,ny))P.y=ny}
  swing=Math.max(0,swing-dt);hurt=Math.max(0,hurt-dt);
- hunger-=dt*.9*FOOD_RATE;if(hunger<=0){hunger=0;if(Math.random()<dt*.6){P.hp--;hurt=.4;say('Starving!')}}
+ hunger-=dt*.9*FOOD_RATE;if(hunger<=0){hunger=0;if(Math.random()<dt*.6){P.hp--;hurt=.4;window.SQSTARVEAT=1;say('Starving!')}}
  if(nearFire(P.x,P.y,50)&&hunger>0&&Math.random()<dt*.25)P.hp=Math.min(6,P.hp+1);
  for(const f of fires)f.life-=dt;fires=fires.filter(f=>f.life>0);
  const dk=dark();

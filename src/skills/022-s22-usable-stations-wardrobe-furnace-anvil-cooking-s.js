@@ -68,7 +68,8 @@ function stationAct(a){const o=STATION;if(!o)return;
  if(a==='pick'){const k=plantKey(o.inside,o.i);if(PLANTD[k]===today())return;PLANTD[k]=today();const n=3+Math.floor(lvOf(11)/10);inv.berry=(inv.berry|0)+n;addXp(11,15);say('Picked '+n+' berries.');sfx('pickup')}
  else if(a.startsWith('ck_')){const c=COOKS.find(q=>q.raw===a.slice(3));if(!c||lvOf(4)<c.lv)return;if((inv[c.raw]|0)>0&&sqDo('cook',inv[c.raw]|0,()=>stationAct(a)))return;let ok=0,burnt=0;
   for(let n1=0;(inv[c.raw]|0)>0&&!(window.SQDO_STEP&&n1>=1);n1++){inv[c.raw]--;const cl=lvOf(4);if(Math.random()<Math.max(.02,(.4-(cl-c.lv)*.02-cl*.004)*.55)){burnt++;addXp(4,5)}else{ok++;inv[c.ck]=(inv[c.ck]|0)+1;addXp(4,c.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='cook')Q.k++}}
-  say('Cooked '+ok+(burnt?', burnt '+burnt:'')+'.');sfx('sizzle')}
+  /* Nov 26 (sniffynose): the stove said only "Cooked 1.": it names the food now */const nm=(ok>1?SN[c.ck]||INAME[c.ck]:INAME[c.ck])||c.n,raw=(burnt>1?SN[c.raw]||INAME[c.raw]:INAME[c.raw])||c.n;
+  say(ok?'Cooked '+ok+' '+String(nm).toLowerCase().replace(/^cooked /,'')+(burnt?', burnt '+burnt:'')+'.':'Burnt '+burnt+' '+String(raw).toLowerCase()+'.');sfx('sizzle')}
  saveLocal(true);rPn()}
 const _oc22=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.stb');if(b){stationAct(b.dataset.a);return}_oc22(e)};
 SQCLOSEPN.after('022',()=>{if(shop==='station'){STATION=null;shop=null}});

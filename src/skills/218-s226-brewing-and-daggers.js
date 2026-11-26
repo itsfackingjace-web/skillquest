@@ -60,7 +60,11 @@
   const kept={};for(const[a,b]of Object.entries(r.c))for(let i=0;i<b;i++){if(!(Math.random()<save))inv[a]--;else kept[a]=(kept[a]|0)+1}
   const n=1+(Math.random()<extra?1:0);inv[r.k]=(inv[r.k]|0)+n;addXp(BR,r.xp*n);try{sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'218-2')}
   const kt=Object.entries(kept).map(([a,c])=>c+' '+matN(a)).join(' and ');
-  say('You brew '+(n>1?n+' ':'a ')+INAME[r.k].toLowerCase()+(n>1?'s':'')+(n>1?' (double batch!)':'')+(kt?'. You kept '+kt:'')+'.');try{for(const f of window.SQBREWED||[])f(r.k)}catch(e){self.SQERR&&SQERR(e,'218-90')}return true}
+  // Nov 26 (Kevin: "Every 4 or 5 brews, the tool tip pops up on the top instead of near my character"): short messages float by your
+  // character (131) and longer ones go to the message box, so a brew that kept ingredients or made a double batch jumped to the box.
+  // Those now float as two short lines.
+  const main='You brew '+(n>1?n+' ':'a ')+INAME[r.k].toLowerCase()+(n>1?'s':'')+(n>1?' (double batch!)':'')+'.';
+  if(kt&&(main.length+kt.length+10)>56){say(main);say('You kept '+kt+'.')}else say(main.slice(0,-1)+(kt?'. You kept '+kt:'')+'.');try{for(const f of window.SQBREWED||[])f(r.k)}catch(e){self.SQERR&&SQERR(e,'218-90')}return true}
  {const _sa=stationAct;stationAct=function(a){const o=STATION;if(!(o&&o.t==='cauldron'&&/^cwa?_/.test(a||'')))return _sa.apply(this,arguments);
    const all=a.startsWith('cwa_'),r=RECIPES.find(q=>q.k===a.replace(/^cwa?_/,''));if(!r)return;
    if(lvOf(BR)<r.lv){say('You need Brewing '+r.lv+' to brew that.');return}const m=canMake(r);if(m<1){say('You need '+Object.entries(r.c).map(([k,b])=>b+' '+matN(k)).join(', ')+'.');return}

@@ -97,7 +97,10 @@
   return{r,need,xp:Math.max(1,Math.round(r.xp*f)),f}}
  const have=(m,sh)=>sh?(inv[SHK(m)]|0)+10*(inv[m]|0):inv[m]|0;
  const canPay=c=>c.need.every(([m,n,sh])=>have(m,sh)>=n);
- function pay(c){for(const[m,n,sh]of c.need){if(!sh){inv[m]-=n;continue}let left=n;const s=inv[SHK(m)]|0;if(s>=left){inv[SHK(m)]=s-left;continue}left-=s;const bars=Math.ceil(left/10);inv[m]-=bars;inv[SHK(m)]=bars*10-left}}
+ function pay(c){const broke=[];for(const[m,n,sh]of c.need){if(!sh){inv[m]-=n;continue}let left=n;const s=inv[SHK(m)]|0;if(s>=left){inv[SHK(m)]=s-left;continue}left-=s;const bars=Math.ceil(left/10);inv[m]-=bars;inv[SHK(m)]=bars*10-left;broke.push([m,bars])}return broke}
+ // Nov 26 (Kevin: "Blacksmith table says shards but is using the full item"): a whole bar breaks into 10 shards when you have too few;
+ // the repair message now says so and how many shards are left over in the bag
+ const brokeTxt=L=>L.length?' ('+L.map(([m,b])=>b+' '+String(b===1?INAME[m]||m:SN[m]||INAME[m]||m).toLowerCase()+' broke into shards: '+(inv[SHK(m)]|0)+' '+shN(m,inv[SHK(m)]|0)+' left in your bag)').join(', ')+'.':'';
  const costTxt=c=>c.need.map(([m,n,sh])=>n+' '+esc(sh?shN(m,n):(n===1?INAME[m]||m:SN[m]||INAME[m]||m).toLowerCase())+' (have '+have(m,sh)+')').join(' + ');
  // ---- what you're wearing: WS[slot] = {k (full key, with its upgrade level), d, n (copies of k in the bag, to see it come back)} ----
  const WS={},PWS={},BROKE=new Set();let SETC=0;
@@ -152,8 +155,13 @@
  // used copies in the guild bank (loaded from the database, 197) get known too, so the bank screen can show them
  const scanLive=()=>{try{const g=window.SQGUILD&&SQGUILD.state,b=g&&g.bank&&g.bank.i;if(b&&typeof b==='object')for(const k in b)if(k[0]==='w'&&!WREG.has(k))wreg(k)}catch(e){self.SQERR&&SQERR(e,'275-31')}};
  SQUPD.after('275 gear wears and comes off worn out',(dt)=>{try{if((T2+=(+dt||0))>2){T2=0;scanLive();plain3()}
-   if(!dead){const h=+hurt||0;if(h>LH+1e-4&&h>=.3)for(const s of ARMS)wear(s,ARMW);LH=h}else LH=0;
-   sync();if(BROKE.size&&!dead&&!(typeof BMERGE!=='undefined'&&BMERGE)){const L=[...BROKE];BROKE.clear();for(const s of L)takeOff(s)}}catch(e){self.SQERR&&SQERR(e,'275-16')}});
+   // Nov 26 (Kevin: "took a hit of hunger damage, durability went down by 5 on everything"): armour wears per hit you take, not when you
+   // starve (001 sets SQSTARVEAT on a starving hit; read and cleared here, the same frame)
+   if(!dead){const h=+hurt||0;if(h>LH+1e-4&&h>=.3&&!window.SQSTARVEAT)for(const s of ARMS)wear(s,ARMW);LH=h}else LH=0;window.SQSTARVEAT=0;
+   sync();if(BROKE.size&&!dead&&!(typeof BMERGE!=='undefined'&&BMERGE)){const L=[...BROKE];BROKE.clear();for(const s of L)takeOff(s)}
+   // Nov 26 (Kevin: "When fishing rod breaks, I've been able to keep fishing anyways"): a cast line kept catching after the worn-out rod
+   // came off (007's loop never looks at the rod again); no rod in hand now ends the fishing (the worn-out message says why)
+   if(typeof FISH!=='undefined'&&FISH&&!TL.rod){FISH=null;try{if(window.SQDO&&SQDO.kind==='reel')SQDO=null}catch(e){self.SQERR&&SQERR(e,'275-33')}}}catch(e){self.SQERR&&SQERR(e,'275-16')}});
  // ---- saves ----
  try{KNOWN49.add('dur');KNOWN49.add('durv')}catch(e){self.SQERR&&SQERR(e,'275-17')}
  SQSAVE.wrap('275 settle durability first',next=>function(){try{U.reconcile();sync()}catch(e){self.SQERR&&SQERR(e,'275-18')}return next.apply(this,arguments)});
@@ -226,8 +234,8 @@
   if(o.no){say('Bought gear can\'t be repaired: buy a new '+n+'.');return false}if(!o.c){say('That can\'t be repaired here.');return false}
   if(!o.okL){say('You need '+SKN[o.c.r.sk]+' '+o.c.r.rl+' to repair '+(/^[aeiou]/i.test(n)?'an ':'a ')+n+'.');return false}
   if(!o.pay){say('You need '+o.c.need.map(([m,q,sh])=>q+' '+(sh?shN(m,q):(q===1?INAME[m]||m:SN[m]||INAME[m]||m).toLowerCase())).join(' and ')+' to repair it.');return false}
-  pay(o.c);if(it.on){const w=WS[it.id.slice(1)];if(w)w.d=maxD(w.k)}else{inv[it.id]--;inv[it.k]=(inv[it.k]|0)+1}
-  addXp(o.c.r.sk,o.c.xp);say('You repair '+(it.on?'your ':'the ')+n+'. Good as new!');try{sfx('anvil')}catch(e){self.SQERR&&SQERR(e,'275-25')}return true}
+  const broke=pay(o.c);if(it.on){const w=WS[it.id.slice(1)];if(w)w.d=maxD(w.k)}else{inv[it.id]--;inv[it.k]=(inv[it.k]|0)+1}
+  addXp(o.c.r.sk,o.c.xp);say('You repair '+(it.on?'your ':'the ')+n+'. Good as new!'+brokeTxt(broke));try{sfx('anvil')}catch(e){self.SQERR&&SQERR(e,'275-25')}return true}
  function html(){let h='<div class="tl" style="margin-top:14px">Repairs</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75">Gear wears down as you use it. A full repair costs half of the item\'s main material (bars split into 10 shards; spare shards fuse back into a bar at a furnace) at the level that makes it + 5. Bought gear can\'t be repaired.</div>';
   const L=items().map(state);if(!L.length)return h+'<div class="qc"><p>Nothing needs repairing. Weapons wear per hit, bows and wands per shot, armour per hit you take, and axes, pickaxes and rods per log, ore or fish.</p></div>';
   L.sort((a,b)=>(b.it.on-a.it.on)||((b.ok|0)-(a.ok|0))||(a.it.d/maxD(a.it.k)-b.it.d/maxD(b.it.k)));

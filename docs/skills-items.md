@@ -287,6 +287,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   get a durability bar (worn-out ones are greyed with a red bar), and their names start with the state ("Used adamant sword (62%)",
   "Worn-out iron axe") so a cut-off bag label still tells them from the new stack (Aztu, Nov 23). Fishing rods (004's Craft tab, check 101) are always listed: with a rod in hand the new one goes in the bag
   as a spare (`craft` puts `eq_rod` in `inv` instead of setting `TL.rod`). 129's collection log skips `^u[123]_|^w\d+_` keys (also in saved logs).
+  Nov 26 (Kevin): the frame step ends fishing (`FISH=null`, a `reel` job too) when no rod is in hand, so a cast line stops when the
+  worn-out rod comes off (check 131); `pay` returns the bars it broke and the repair message says how many shards are left (check 132).
 - **XP and time per material** (`skills/276-s284-material-xp.js`, `window.SQMATXP`, Jace Nov 24; checks 105, 106): every furnace and
   anvil recipe in `SM` (the game's, Content `r_` smith/smelt recipes, new gear made at the anvil) gets `xp` = Σ count × the material's
   XP and `_mt` = Σ count × its seconds, strictly proportional (no minimum, maximum or rounding). Values: `DEF` (the "Material XP" tab

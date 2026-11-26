@@ -292,6 +292,11 @@ ui/278-s286-wiki-overhaul.js
 skills/279-s287-woodcutting-quarters.js
 combat/280-s288-others-see-tool-swings.js
 ui/281-s289-hud-colours.js
+core/282-s290-saves-behind-screens.js
+items/283-s291-buffs-kept.js
+items/284-s292-pet-watch.js
+ui/285-s293-bag-without-lent-chests.js
+ui/286-s294-pvp-chip.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

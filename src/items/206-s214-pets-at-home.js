@@ -12,7 +12,9 @@
 (()=>{const isPet=t=>typeof t==='string'&&t.startsWith('pet_')&&EQ[t]&&EQ[t].slot==='pet';
  const TXT=' Tap PLACE in your bag while you\'re in your house, castle or backyard: it lives there, and visitors can meet it.';
  function addKeys(){for(const k in EQ)if(isPet(k)&&!BK.includes(k)){BK.push(k);if(typeof IDESC[k]==='string'&&IDESC[k].indexOf(TXT)<0)IDESC[k]+=TXT}}
- addKeys();if(window.SQA&&SQA.onApply)SQA.onApply(addKeys);
+ // Nov 26 (Jerica: "Won't let me place pupper in my house"): 234 registers the Dev Suite's new pets in its own onApply, which runs after
+ // this one, so they never became placeable. Look again once every apply step has run.
+ addKeys();if(window.SQA&&SQA.onApply)SQA.onApply(()=>{addKeys();setTimeout(addKeys,0)});
  const home=()=>SCENE&&SCENE.id==='home'&&SCENE.house&&SCENE.house.furn?SCENE.house:null;
  const mine=h=>!!h&&!h._foreign&&!h.ro&&!(h.base&&h.base._foreign);
  const hid=h=>(h&&(h._oid||h.id))||'?';

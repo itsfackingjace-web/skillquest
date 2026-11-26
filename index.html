@@ -199,7 +199,7 @@ function upd(dt){
   const ok=(x,y)=>!(solid(x-5,y-3)||solid(x+5,y-3)||solid(x-5,y+6)||solid(x+5,y+6));
   if(ok(nx,P.y))P.x=nx;if(ok(P.x,ny))P.y=ny}
  swing=Math.max(0,swing-dt);hurt=Math.max(0,hurt-dt);
- hunger-=dt*.9*FOOD_RATE;if(hunger<=0){hunger=0;if(Math.random()<dt*.6){P.hp--;hurt=.4;say('Starving!')}}
+ hunger-=dt*.9*FOOD_RATE;if(hunger<=0){hunger=0;if(Math.random()<dt*.6){P.hp--;hurt=.4;window.SQSTARVEAT=1;say('Starving!')}}
  if(nearFire(P.x,P.y,50)&&hunger>0&&Math.random()<dt*.25)P.hp=Math.min(6,P.hp+1);
  for(const f of fires)f.life-=dt;fires=fires.filter(f=>f.life>0);
  const dk=dark();
@@ -1174,15 +1174,15 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
  if(lvt){const nw=g.measureText(nmt).width;g3text(lvt,ins+12*U+nw+5*U,top+16.5*U,11,U,'#3878b8','left',700)}
  const gx=ins+bw-12*U-gw;g.fillStyle='#a87818';g.beginPath();g.arc(gx-9*U,top+16*U,5.5*U,0,6.283);g.fill();g.fillStyle='#f8d030';g.beginPath();g.arc(gx-9*U,top+16*U,4*U,0,6.283);g.fill();
  g3text(gs,ins+bw-12*U,top+16.5*U,13,U,'#404040','right',700);
- g3bar('HP',ins+12*U,top+32*U,U,hpf,hpf>.5?'#48c878':hpf>.2?'#f8c030':'#f05030',Math.max(0,P.hp)+'/6',ins+bw-10*U);
+ g3bar('HP',ins+12*U,top+32*U,U,hpf,hpf>.5?'#48c878':hpf>.2?'#f8c030':'#f05030',Math.round(Math.max(0,+P.hp||0)*10)/10+'/6',ins+bw-10*U);/* Nov 26 (Bear: "Maybe cap the decimals"): one decimal at most */
  g3bar('FOOD',ins+12*U,top+46*U,U,hunger/100,'#40a8f0',Math.round(hunger)+'%',ins+bw-10*U);
  if(typeof maxMP==='function')g3bar('MANA',ins+12*U,top+60*U,U,MANA/maxMP(),'#a070f0',Math.floor(MANA)+'/'+maxMP(),ins+bw-10*U);
  // quest tracker
  const q=QS[Q.i];let qt=q?(Q.on?q.n+'  '+qProg(q)+(qDone(q)?'  ✓':''):'! New quest - see the Elder'):'All quests complete!';
  if(!(window.SQTRKOFF&&SQTRKOFF())){g3box(ins,qy,qw,26*U,U,'#f8f0d8');g.font='600 '+12*U+'px '+PF;g3text(fitText(qt,qw-22*U),ins+11*U,qy+13.5*U,12,U,Q.on&&q&&qDone(q)?'#2f8a3a':'#404040','left',600);}
  // small chips: arrows, bait, sprint
- let cx=ins;g.imageSmoothingEnabled=false;window.SQCHIPS=[];for(const[k,t]of L.chips){g.font='700 '+11*U+'px '+PF;const w=(k==='run'||k==='ult'?14:30)*U+g.measureText(t).width;g3box(cx,L.cy,w,22*U,U);window.SQCHIPS.push({k,x:cx,y:L.cy,w,h:22*U});/* Nov 22: 269 makes the ULT chip clickable */
-  if(k==='ult'){g3text(t,cx+7*U,L.cy+11.5*U,11,U,/\d/.test(t)?'#a0a0b0':'#8a50e0','left',700)}else if(k!=='run'){const im=hudIcon(k);if(im.complete)g.drawImage(im,cx+5*U,L.cy+4*U,14*U,14*U);g3text(t,cx+23*U,L.cy+11.5*U,11,U,'#404040','left',700)}else g3text(t,cx+7*U,L.cy+11.5*U,11,U,'#d05030','left',700);cx+=w+4*U}
+ let cx=ins;g.imageSmoothingEnabled=false;window.SQCHIPS=[];for(const[k,t]of L.chips){g.font='700 '+11*U+'px '+PF;const w=(k==='run'||k==='ult'||k==='pvp'?14:30)*U+g.measureText(t).width;g3box(cx,L.cy,w,22*U,U);window.SQCHIPS.push({k,x:cx,y:L.cy,w,h:22*U});/* Nov 22: 269 makes the ULT chip clickable */
+  if(k==='ult'){g3text(t,cx+7*U,L.cy+11.5*U,11,U,/\d/.test(t)?'#a0a0b0':'#8a50e0','left',700)}else if(k==='pvp'){g3text(t,cx+7*U,L.cy+11.5*U,11,U,'#b03828','left',700)}else if(k!=='run'){const im=hudIcon(k);if(im.complete)g.drawImage(im,cx+5*U,L.cy+4*U,14*U,14*U);g3text(t,cx+23*U,L.cy+11.5*U,11,U,'#404040','left',700)}else g3text(t,cx+7*U,L.cy+11.5*U,11,U,'#d05030','left',700);cx+=w+4*U}
  // day box with a daylight bar
  const dk=dark();g3box(dx,top,dw,dh,U);
  if(dk>.4){g.fillStyle='#f8e070';g.beginPath();g.arc(dx+18*U,top+14*U,6*U,0,6.283);g.fill();g.fillStyle='#f8f8f8';g.beginPath();g.arc(dx+21*U,top+12*U,5.5*U,0,6.283);g.fill()}
@@ -2462,7 +2462,8 @@ function stationAct(a){const o=STATION;if(!o)return;
  if(a==='pick'){const k=plantKey(o.inside,o.i);if(PLANTD[k]===today())return;PLANTD[k]=today();const n=3+Math.floor(lvOf(11)/10);inv.berry=(inv.berry|0)+n;addXp(11,15);say('Picked '+n+' berries.');sfx('pickup')}
  else if(a.startsWith('ck_')){const c=COOKS.find(q=>q.raw===a.slice(3));if(!c||lvOf(4)<c.lv)return;if((inv[c.raw]|0)>0&&sqDo('cook',inv[c.raw]|0,()=>stationAct(a)))return;let ok=0,burnt=0;
   for(let n1=0;(inv[c.raw]|0)>0&&!(window.SQDO_STEP&&n1>=1);n1++){inv[c.raw]--;const cl=lvOf(4);if(Math.random()<Math.max(.02,(.4-(cl-c.lv)*.02-cl*.004)*.55)){burnt++;addXp(4,5)}else{ok++;inv[c.ck]=(inv[c.ck]|0)+1;addXp(4,c.xp);if(Q.on&&QS[Q.i]&&QS[Q.i].type==='cook')Q.k++}}
-  say('Cooked '+ok+(burnt?', burnt '+burnt:'')+'.');sfx('sizzle')}
+  /* Nov 26 (sniffynose): the stove said only "Cooked 1.": it names the food now */const nm=(ok>1?SN[c.ck]||INAME[c.ck]:INAME[c.ck])||c.n,raw=(burnt>1?SN[c.raw]||INAME[c.raw]:INAME[c.raw])||c.n;
+  say(ok?'Cooked '+ok+' '+String(nm).toLowerCase().replace(/^cooked /,'')+(burnt?', burnt '+burnt:'')+'.':'Burnt '+burnt+' '+String(raw).toLowerCase()+'.');sfx('sizzle')}
  saveLocal(true);rPn()}
 const _oc22=pbd.onclick;pbd.onclick=e=>{const b=e.target.closest('.stb');if(b){stationAct(b.dataset.a);return}_oc22(e)};
 SQCLOSEPN.after('022',()=>{if(shop==='station'){STATION=null;shop=null}});
@@ -4146,7 +4147,9 @@ const _sa37=shootAim;shootAim=function(first){const n0=PROJ.length;_sa37(first);
 function arrowHit(p,n){if(p.crit)drops.push({x:n.x,y:n.y-26,t:0,tx:'CRIT',c:'#ff70a0'});const l=Math.hypot(p.vx,p.vy)||1;
  if((perk(FL,'pierce')&&!p.pierced)||p.ghost)PROJ.push({...p,x:n.x+p.vx/l*14,y:n.y-4+p.vy/l*14,dead:0,pierced:1,t:p.t});
  if(perk(FL,'cripple'))n.slow=Math.max(n.slow||0,2);if(perk(FL,'poison'))n.poison=4;
- if(perk(FL,'hunter')&&n.type==='wolf')hitE(n,2,'#ffffff','arrow');
+ // Nov 26 (Kevin: the Hunter +2 "does a separate 2 damage, it does not add to total bow damage"): the +2 still lands as its own hit
+ // (kills, XP), but its number joins the arrow's own (021's DMGS entry for this hit) so the wolf shows one hit of arrow damage + 2.
+ if(perk(FL,'hunter')&&n.type==='wolf'){const k0=DMGS.length;hitE(n,2,'#ffffff','arrow');try{const mine=DMGS.splice(k0);let e=null;for(let j=DMGS.length-1;j>=0&&j>=DMGS.length-6;j--){const q=DMGS[j];if(q&&q.t<.05&&String(q.v)===String(p.dmg)&&Math.abs(q.x-n.x)<2){e=q;break}}if(e)e.v=String((+e.v||0)+2);else DMGS.push(...mine)}catch(e2){self.SQERR&&SQERR(e2,'037-9')}}
  if(perk(FL,'explosive')&&p.iron){for(const o of en)if(o!==n&&!o.dead&&Math.hypot(o.x-n.x,o.y-n.y)<24)hitE(o,Math.ceil(p.dmg/2),'#f8a040','arrow');for(let k=0;k<12;k++){const a=k/12*6.283;part(n.x,n.y-6,Math.cos(a)*90,Math.sin(a)*70,.3,k%2?'#f88830':'#f8e060',0)}}
  if(perk(FL,'ricochet')&&!p.ric){let b=null,bd=72;for(const o of en){if(o===n||o.dead)continue;const d=Math.hypot(o.x-n.x,o.y-n.y);if(d<bd){bd=d;b=o}}
   if(b){const dx=b.x-n.x,dy=(b.y-4)-(n.y-4),d=Math.hypot(dx,dy)||1;PROJ.push({...p,x:n.x+dx/d*10,y:n.y-4+dy/d*10,vx:dx/d*270,vy:dy/d*270,t:0,life:1,dmg:Math.max(1,Math.ceil(p.dmg/2)),ric:1,extra:1,dead:0,crit:0,ghost:0,pierced:1})}}}
@@ -8548,7 +8551,9 @@ setInterval(()=>{if(pnOpen&&ptab===PTAB&&PV.on&&PV.fight)rPn()},1000);
 // a small badge while PvP is on
 {const st=document.createElement('style');st.textContent=`#pvb{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0px) + 236px);z-index:9;display:none;padding:4px 9px;font:700 12px ${PF};pointer-events:none;color:#f8f8f8;background:#b03828!important;border-color:#702018!important;box-shadow:inset 0 0 0 2px #e87060!important}`;document.head.appendChild(st)}
 const pvB=el('div','pvb','g3','');document.body.appendChild(pvB);
-setInterval(()=>{const show=PV.on&&MP.on&&!dead&&!pnOpen&&!menuOpen&&!TS.open;pvB.style.display=show?'block':'none';if(show){const l=pvLock();pvB.textContent='☠ PvP ON'+(pvMeSafe()?' · safe zone':PV.fight&&l>0?' · in a fight '+Math.ceil(l/1000)+'s':'')}},250);
+// Nov 26 (Amethyst: "PVP on covers whatever active quest you're doing"): the badge was a fixed box at 236 px, over the quest box on
+// some phones. It's a chip in the HUD's chip row under the quest box now (294 adds it, 010 draws it): this keeps its words in SQPVBADGE.
+setInterval(()=>{const show=PV.on&&MP.on&&!dead;pvB.style.display='none';if(show){const l=pvLock();window.SQPVBADGE='☠ PvP ON'+(pvMeSafe()?' · safe zone':PV.fight&&l>0?' · in a fight '+Math.ceil(l/1000)+'s':'')}else window.SQPVBADGE=''},250);
 window.SQPVP=PV;window.SQMPON=()=>!!(MP.on&&MP.user);
 // ---------------------------------------------------------------- 70. Building and cooking on the other islands
 // Fences, walls, gates, chests, beds and stations (furnace, anvil, stove, bench, planter, dummy...) can be built on
@@ -9553,6 +9558,7 @@ window.SQRF={RF,rbR,rfCanTill,rfMap,rbK};
 // from the game's own data, so it stays correct as things are added; monsters and dungeons are described here.
 // ---- Patch notes (newest first). Every update to the game adds an entry here and bumps SQ_VERSION. ----
 const PATCH_NOTES=[
+ {v:'2026.11.26-1',d:'Nov 26, 2026',t:"Buffs that last through a refresh, saves behind screens and bug fixes",n:["Potion, meal and shrine buffs now last through a refresh or logging out: the time left is saved, and it waits for you while you're away.","PvP ON is now a small red chip in the row under your quest, so it never covers the quest you're doing.","Caves without a boss now say so when you enter them.","Fixed: progress made while a screen or the menu was open (fishing, brewing, cooking and smithing go on behind screens) could miss the save to your account, so switching devices soon after could take you back. The game now keeps saving behind screens.","Fixed: a new character made on a device that had been used for another account started with that account's pets, capes and dyes.","Fixed: a fishing rod that wore out kept catching fish. Fishing now stops when the worn-out rod comes off.","Fixed: while cooking at a stove (or smelting or forging) in a house, the bag showed everything in your chests too and jumped around. It shows only your bag now.","Fixed: the stove said only \"Cooked 1.\" for every piece. It now says what you cooked: \"Cooked 1 trout.\"","Fixed: brewing messages jumped to the message box every few brews (when you kept ingredients or made a double batch) instead of showing by your character.","Fixed: repairs say when a bar breaks into shards and how many shards are left in your bag (10 shards fuse back into a bar at a furnace).","Fixed: the Hunter perk's +2 against wolves showed as a separate number; it's now part of the arrow's damage.","Fixed: the last seeds of the day at the General Store couldn't be bought (pumpkin seeds come 3 to a pack, so the last 2 were stuck). The last pack now sells what's left for that share of the price.","Fixed: starving no longer wears down your armour (only hits you take do).","Fixed: your health could show long decimals (like 4.333333/6). It shows one decimal at most.","Fixed: chopping on Shattered Expanse announced logs and wood that never reached your bag. Every \"+N logs\" message now matches what you get.","Fixed: the newest pets (like the pupper) couldn't be placed in your home. Now they can."]},
  {v:'2026.11.25-5',d:'Nov 25, 2026',t:"New HUD colours and total level next to every name",n:["The HUD has a new look, like an old scroll instead of the old blue and white: parchment-tan boxes with a soft gradient and a faint grain, carved brown edges with little corner studs, and dark-brown text. Messages unroll between scroll ends, and the HP, FOOD and MANA bars sit in grooves in softer colours. Your status box, quest tracker, minimap, START menu, buttons and screens all match.","Everyone's total level now shows next to their name. Over their head you'll see their name and their total level in gold, like Jace [987], and your own HP and FOOD box shows yours after your name (Lv.987). A player's level appears over their head once they've updated their game.","Fixed: on phones, sliding your finger off the HIT button while your other thumb was moving caused an error in the background."]},
  {v:'2026.11.24-14',d:'Nov 24, 2026',t:"Smithing XP from materials, new Woodcutting, longer-lasting upgrades and a new wiki",n:["Smithing now works out the XP and the time of every furnace and anvil recipe from what goes into it. Every bar, ore, log, gem and other material has its own XP and time, and a recipe gives the XP and takes the time of all its materials added up. Bigger gear takes longer and gives more: an adamant chestplate (4 adamant bars) takes twice as long as an adamant sword (2 bars) and gives twice the XP.","Each furnace and anvil recipe shows how long it takes at your level and how much XP it gives, like 1.4 s · 340 xp.","What changed: most iron, steel, mithril and adamant recipes give about the same XP as before. Meteorite bars and meteorite gear give a lot more (a meteorite chestplate went from 2,000 to 6,000 XP), the starsteel dagger and bows give more, and arrows give about half as much. Small things like arrows and iron daggers are quicker to make, and a meteorite bar takes much longer to smelt. Repairs and upgrades follow the new XP.","Woodcutting has a new rhythm. Every chop takes 1 second at Woodcutting 1 and 0.0025 seconds less for every level (0.75 seconds at 99), every axe has a chopping power (wooden 1, stone 1.25, iron 1.5, steel 1.75, mithril 2.25, adamant 2.5, meteorite 3) and every tree a toughness (tree and pine 2, oak 5, willow 10, maple 17, yew 24, void 39), so higher trees take longer and a better axe always helps. A yew takes 10 chops with an adamant axe, about 8.5 seconds at Woodcutting 60.","Trees now pay as they go down: each quarter of a tree gives 1 log and a quarter of its XP, and when it falls you get 1 log up to your extra log limit, so every tree is a bit of a dice roll. Your limit starts at 1. Oak, willow, maple and yew trees give only their own logs (no plain wood on top).","New Woodcutting perks: every 10 levels, choose Quick Chop (every chop takes 0.05 seconds less: with all nine, a chop takes about 0.3 seconds at level 99) or Bigger Haul (+1 extra log limit, up to 10 with all nine). Quick Chop levels you fastest; Bigger Haul gets you more logs. They replace the old Woodcutting perks and the old speed-ups and extra-log chances. If you had Woodcutting perks, pick them again in Skills: it's free this time.","Axe upgrades now give +1, +2 or +3 extra log limit instead of faster chops. Rare Heartwood can still turn up when a tree falls, and treeling pets can shake loose an extra log with every payout.","Void trees now need Woodcutting 75 and an adamant axe or better, on the Shattered Expanse and on guild islands, and give 400 Woodcutting XP each.","The Void Treant now takes 10,000 void logs to summon (20,000 to keep your Woodcutting rank) instead of 50,000, since void trees take longer to chop.","The wiki (START > Wiki) has a new look and a new layout. Its pages are grouped into sections down the left side (Getting started, Skills, Items, Making things, Monsters, World, Quests, Together and What's new), and every page says what it covers at the top. On phones the sections sit in a row along the top.","The wiki's Home page is new: your next steps, the skills that unlock something soon (with a bar for how close you are), what you unlocked lately, skills you haven't tried yet, the latest update and buttons into every section. New players also get a short guide to the basics.","Wiki > Items is split into groups (weapons, armour, tools, food, ores and bars, logs, fish and more) and no longer lists the +1, +2, +3 and worn copies of every item. Search still finds everything.","Gear pages in the wiki now show a card with the item's slot, stats, what it needs, how long it lasts before it wears out and what its upgrades do. Axe pages show their chopping power and how long each tree takes.","Wiki > Skills shows how long each thing takes and links every item. Woodcutting lists every tree, void trees included, and about how long each one takes to fell with the axe you'd have by then.","New wiki pages: Controls (under Getting started) and guides to gear wearing out, upgrading gear, trees and axes, and smithing XP and time.","Upgraded gear lasts much longer: a +1 lasts 10 times as long as the plain item, a +2 100 times, and a +3 never wears out. Used upgraded gear you already have keeps the share of durability it had (a +1 at 25% is still at 25%, of a much bigger number), and used +3s become plain +3s.","The game now tells you what level each upgrade needs. Every item you can upgrade lists it at the end of its description (for example, an adamant sword: +1 at Smithing 75, +2 at 85, +3 at 95), an upgraded item says what the next level needs, the equipment screen shows it for the piece you're wearing, and the Blacksmith's bench lists the level on every upgrade, not only the ones you can't make yet.","Wiki > Skills > Fishing now lists every fish: all 16, including the island fish, the moonfin, the abyssal eel, the ancient koi and the rainbow fish, with the Fishing level each needs, where it bites, the Cooking level to cook it and how much it heals. It also says how to get a rod and what bait does. The Fishing tree in the Skills screen now names the island fish too.","When a tree falls, the message now says where your extra log limit comes from, for example \"(felled: 2 of 1-2: +1 from your +1 axe)\".","Fixed: the wiki's axe descriptions still said how much an axe \"hits for\" from before trees changed today, and a few other descriptions (the furnace, anvil, iron ore, iron bars and boss cores) were out of date.","Fixed: since this morning's wiki update, the wiki couldn't be scrolled on phones held upright. It scrolls again.","Fixed: with the sledgehammer in your hand, chopping trees and mining rocks showed the sledgehammer swing instead of your axe or pickaxe. Now trees always show the axe and rocks the pickaxe (the sledgehammer still smashes small rocks in one hit, and boulders still show the sledgehammer). Your axe also stays in your hands for the whole chop instead of your weapon swinging at the end.","Fixed: facing left, your axe, pickaxe, sword and wand were held backwards (an axe's blade faced away from the tree). Facing left is now the mirror image of facing right.","Fixed: other players couldn't see you chopping trees or mining rocks. Now they see your axe or pickaxe swing in your hands, and hear it when they're close.","Fixed: trees, rocks and bushes on guild islands weren't shared between members, so a tree you chopped down was still standing for everyone else. Now they're shared like on every other island: once one member uses something up, it's gone for everyone until it grows back 60 seconds later.","Fixed: right after a chop you walked slowly for as long as the chop took (up to a second), so walking away from a fallen tree felt sluggish. Now a chop slows you for only a quarter of a second, like a sword swing. Your next chop still waits for the whole chop time.","Fixed: after another player reloaded the game (for example to get an update), you stopped seeing their sword swings, arrows, spells, ultimates and chops until you reloaded too. Now you see them right away."]},
  {v:'2026.11.23-11',d:'Nov 23, 2026',t:"The Blacksmith's bench: repairs, upgrades and cores, sunken treasure and fixes",n:["Gear now wears out as you use it. Swords and daggers wear a little with every hit that lands, bows and wands with every shot, each armour piece with every hit you take, and axes, pickaxes and fishing rods with every log, ore or fish. The hoe and watering can never wear out. Better gear lasts longer: wooden tools 250 uses, stone tools and bought gear 500, iron 1,000, steel 1,500, mithril 2,500, adamant 4,000, boss gear 5,000 and meteorite 6,000, and 10% more for each upgrade level. Bows last twice as many shots and wands 1.5 times as many casts, armour loses 5 points for every hit you take, and the fishing rod lasts 2,000 catches.","Only the piece you're wearing wears down: spare copies stay brand new. Take a used piece off and it shows in your bag with what's left, like Used adamant sword (62%), and keeps that number in chests and trades. The equipment screen shows a durability bar on every slot.","You get a warning at 20%. At 0 the piece comes off into your bag as a greyed-out Worn-out copy, separate from your new ones. It isn't destroyed, but you can't wear it again until it's repaired.","Repair your gear at the Blacksmith's bench, at the level that makes the item plus 5 (Smithing or Crafting). A full repair costs half of the item's main material and gives half its crafting XP; a smaller repair costs and gives less. Bars split into 10 shards for small repairs, and spare shards fuse back into a bar at a furnace. Boss gear takes 10 sigil shards from its island. Bought gear (the leather set, the wizard set and shop wands) can't be repaired: buy a new one.","Can't repair something yourself? Trade it to a smith: they repair it at their bench and trade it back. Used gear can't be sold until it's repaired, and it stays with you when you fall like the rest of your gear.","Fishing rods can always be crafted now (Craft > Tools, Crafting 3: 4 wood and 1 iron ore). If you already have one, the new rod goes in your bag as a spare for when yours wears out.","Upgrade your gear at the Blacksmith's bench, up to +3. 10 of the same item make a +1, 10 of the +1 make a +2, and 10 of the +2 make a +3. The piece you're wearing counts toward the 10. You need the level that makes the item plus 10 for a +1 (plus 20 for a +2, plus 30 for a +3), in the skill that makes it, and you get a big chunk of XP. Boss gear like the Warlord's blade, the Flame crown or the Spider set takes cores from its island instead: 1 core for a +1, 10 for a +2, 100 for a +3, at level 70, 80 and 90.","What each level gives: swords, bows and wands hit 5% harder, axes and pickaxes chop and mine 5% faster, each armour piece blocks 1% more and raises your block limit by 1%, ranger pieces also make your arrows fly 5% further, and daggers do 1 more damage at +2 and 2 more at +3. Upgrades don't count in PvP. Upgraded items show their level on their icon and name, and you can trade and sell them.","New furniture: the Blacksmith's bench (Craft > Building, Crafting 12: 3 iron bars, 4 stone, 10 wood). Place it at home and smith cores from sigil shards: 100 shards from one island make one core and give 1,000 Smithing XP. Briar cores need Smithing 40, Ember 50, Frost and Silver 60, Void 70. Boss gear is upgraded with them. The bench uses the shards in your house's chests too.","Arrows and bows are now made at an anvil and train Smithing instead of Archery, at the same levels and for the same XP. The shortbow and longbow go into your bag like other bows; equip them from there. The ranger hood, chaps and vest are now made in the Craft menu (and at a crafting bench) with Crafting, at the same levels. Archery now trains by shooting.","Iron axes and pickaxes now come only from an anvil (Smithing 5, 2 iron bars and 1 wood). The Craft menu no longer makes them from ore.","Fishing: every so often you'll reel in a sunken treasure chest instead of a fish. It opens on the spot: gold (more at higher Fishing levels) and a find or two, like gold bars, healing potions, arrows or even a gem. Sailors say something stranger lies at the bottom of the sea...","Art Room: an Opacity slider for the colour you're using. Lower it to make that colour see-through, for ghosts, glass, water or glowing things. The checkered squares behind a colour show how see-through it is, and see-through colours stay see-through when your art is in the game.","Fixed: on islands you share with other players, like the Shattered Expanse, a reef crawler could end up hidden right under you and keep hurting you while nobody could see it. Other players' monsters now stay where they really are.","Fixed: tapping SLAM (or ULT) while it's recharging now tells you how long is left, instead of saying it didn't start.","Fixed: the anvil showed some materials by their code names (like \"2 abar\" or \"2 maplelog\"). It now says adamant bar, maple logs and so on.","Fixed: the Mushroom Hat now gives 300 Crafting XP like the rest of the mushroom set, the Mushroom Robe needs 45 cotton instead of 1, and the Ancient Helmet gives 900 Smithing XP.","Fixed: swapping an upgraded piece for another one while you had plain copies of it in your bag turned one of the plain copies into an upgraded one.","Fixed: upgraded copies in your bag went into your grave when you fell. They're gear, so they stay with you now.","Fixed: hitting a tree in your backyard from the very edge of your reach did nothing and caused an error.","Fixed: after you closed the World Market with ✕, tapping items in your bag, equipping and the player screen did nothing until you logged in again.","Fixed: on iPhone, a chest's item card could run off the bottom of the screen when you tapped an item lower down in your bag, hiding its buttons.","Fixed: the Smithing perks that give metal back (Metal Saver, Metal Fortune, Precious Metal, and the ones that use fewer bars) now work with mithril, adamant and meteorite bars. Before, they only knew iron and steel bars, so on higher recipes they could save a gem or a log instead, or nothing at all.","Fixed: a dagger in your off-hand could vanish when you loaded the game if your save also had a bow, wand, hoe or watering can in that hand. The dagger now goes in your bag instead."]},
@@ -10699,6 +10705,9 @@ var LUX={};
   for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength wore off.',iron:'Your iron skin wore off.',swift:'Your swiftness wore off.',wis:'Your wisdom wore off.',regen:'Your regeneration wore off.'}[k]||'')}},500);
  // ---- saves ----
  SQSAVE.after('085:cos',s=>{s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};});
+ // Nov 26 (Saphia: a new account for her daughter came with the glowcap pet from Heather's account): signing out keeps the page, and a
+ // new account with no save starts newGame(), which reset everything but these. A new character starts with no pets, capes or dyes.
+ SQNEWGAME.after('085',()=>{COS.pets=[];COS.capes=[];COS.dyes=[];COS.pet=null;COS.cape=0;COS.db=COS.dl=COS.dh=0;try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'085-9')}});
  SQLOAD.after('085',(S)=>{const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);COS.pet=COS.pets.includes(c.pet)?c.pet:null;COS.cape=COS.capes.includes(+c.cape)?+c.cape:0;for(const k of['db','dl','dh'])COS[k]=COS.dyes.includes(+c[k])?+c[k]:0;KITC.clear()});
  // ---- looks: capes and dyes are part of the character sprite, so other players see them too ----
  SQGEARCH.wrap('085',_gc=>function(){const c=_gc();if(COS.cape)c.cape=COS.cape;if(COS.db)c.dyb=COS.db;if(COS.dl)c.dyl=COS.dl;if(COS.dh)c.dyh=COS.dh;return c});
@@ -11259,7 +11268,7 @@ window.fireKey64=()=>SCENE&&SCENE.room&&SCENE.room.icv?'icv:'+SCENE.id:curRegion
 {SQENTER.wrap('093',_es=>function(id,house,ret){const carry=SCENE&&SCENE.prev&&SCENE.room&&SCENE.room.icv?SCENE.prev:null;_es(id,house,ret);if(carry&&SCENE&&!SCENE.prev&&SCENE.room&&SCENE.room.icv)SCENE.prev=carry})}
 {const _ls=leaveScene;leaveScene=function(){const R=SCENE&&SCENE.room;if(R&&R.icv&&R.dun&&R.dun.f>1){dGo(R.dun.kind,R.dun.f-1,'below');return}return _ls()}}
 function icvEnter(it){if(dead||TRAVEL49)return;const kind=it.kind,R=dFloor(kind,1);enterScene(dKey(kind,1),null,{x:it.x*16+8,y:(it.y+1)*16+8});dArrive(R,null);
- const nf=+ICV[kind].floors||6,NW=['','One floor','Two floors','Three floors','Four floors','Five floors','Six floors'];say('You enter '+ICV[kind].name+'. '+(NW[nf]||nf+' floors')+(nf>1?' deep':'')+(ICV[kind].noboss?', rich in ore':', and something old waits at the bottom')+'. Campfires work down here.');msgT=5}window.icvEnter=icvEnter;
+ const nf=+ICV[kind].floors||6,NW=['','One floor','Two floors','Three floors','Four floors','Five floors','Six floors'];say('You enter '+ICV[kind].name+'. '+(NW[nf]||nf+' floors')+(nf>1?' deep':'')+(ICV[kind].noboss?', rich in ore, with no boss at the bottom':', and something old waits at the bottom')/* Nov 26 (Kass: "no boss to fight at the end of the dungeon on bat cove"): caves without one say so */+'. Campfires work down here.');msgT=5}window.icvEnter=icvEnter;
 // the entrances on Ironcrest
 function icvPlace(R){if(R._icv||!R.region)return;R._icv=1;const W=R.w,walk=(x,y)=>x>1&&y>1&&x<W-2&&y<R.h-2&&RG_WALK[R.tiles[y*W+x]]&&!R.solid.has(y*W+x);
  const fit=(x,y)=>{for(let dy=-1;dy<=2;dy++)for(let dx=-1;dx<=1;dx++)if(!walk(x+dx,y+dy))return false;return true};
@@ -13033,7 +13042,13 @@ try{WK_RGN['slime:magma']='Magma slime'}catch(e){self.SQERR&&SQERR(e,'096-30')}
   const bk=/^b/.test(b.dataset.a||'')?keyOf((b.innerText||'').replace(/\n.*left today|\n.*restocks.*/,'')):null;if(bk&&!left(bk)){ev.stopImmediatePropagation();ev.preventDefault();say('Sold out of '+(SN[bk]||INAME[bk]||bk).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'107-1')}return}
   setTimeout(()=>{if(GLD>=g0)return;const got={};for(const k in inv){const d=(inv[k]|0)-(inv0[k]|0);if(d>0)got[k]=d}const ks=Object.keys(got);if(!ks.length){if(bk){cur().n[bk]=(cur().n[bk]|0)+1;try{if(isShop())rPn()}catch(e){self.SQERR&&SQERR(e,'107-2')}}return}
    const over=ks.find(k=>got[k]>left(k));
-   if(over){for(const k of ks)inv[k]=inv0[k]|0;GLD=g0;const L=left(over);say(L?'Only '+L+' '+(SN[over]||INAME[over]||over).toLowerCase()+' left in stock today. More arrive in the morning.':'Sold out of '+(SN[over]||INAME[over]||over).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish');svg();saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'107-3')}}
+   // Nov 26 (Spencer: "i cant purchase all available seeds ... it shows it as purchase but it doesnt add into my bag"): stock counts single
+   // items, but some things come in packs (3 pumpkin seeds), so the last 2 of 20 could never be bought and the pack was silently undone.
+   // A pack of one kind bigger than what's left now sells what's left, for that share of the price.
+   const L0=over&&ks.length===1?left(over):0;
+   if(over&&L0>0){const k=over,paid=g0-GLD,cost=Math.max(1,Math.ceil(paid*L0/got[k]));inv[k]=(inv0[k]|0)+L0;GLD=g0-cost;cur().n[k]=(cur().n[k]|0)+L0;
+    say('Only '+L0+' '+(SN[k]||INAME[k]||k).toLowerCase()+' were left today: you got them for '+cost+' gold. More arrive in the morning.');try{svg();saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'107-6')}}
+   else if(over){for(const k of ks)inv[k]=inv0[k]|0;GLD=g0;const L=left(over);say(L?'Only '+L+' '+(SN[over]||INAME[over]||over).toLowerCase()+' left in stock today. More arrive in the morning.':'Sold out of '+(SN[over]||INAME[over]||over).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish');svg();saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'107-3')}}
    else{for(const k of ks)cur().n[k]=(cur().n[k]|0)+got[k];if(bk&&!got[bk])cur().n[bk]=(cur().n[bk]|0)+1}
    try{if(isShop())rPn()}catch(e){self.SQERR&&SQERR(e,'107-4')}},0)},true);
  // show what's left on every shop button: match the button's words to an item
@@ -21765,7 +21780,9 @@ const TTP={"a": "#0c1418", "b": "#2c5a46", "c": "#16302a", "d": "#3c7658", "e": 
 (()=>{const isPet=t=>typeof t==='string'&&t.startsWith('pet_')&&EQ[t]&&EQ[t].slot==='pet';
  const TXT=' Tap PLACE in your bag while you\'re in your house, castle or backyard: it lives there, and visitors can meet it.';
  function addKeys(){for(const k in EQ)if(isPet(k)&&!BK.includes(k)){BK.push(k);if(typeof IDESC[k]==='string'&&IDESC[k].indexOf(TXT)<0)IDESC[k]+=TXT}}
- addKeys();if(window.SQA&&SQA.onApply)SQA.onApply(addKeys);
+ // Nov 26 (Jerica: "Won't let me place pupper in my house"): 234 registers the Dev Suite's new pets in its own onApply, which runs after
+ // this one, so they never became placeable. Look again once every apply step has run.
+ addKeys();if(window.SQA&&SQA.onApply)SQA.onApply(()=>{addKeys();setTimeout(addKeys,0)});
  const home=()=>SCENE&&SCENE.id==='home'&&SCENE.house&&SCENE.house.furn?SCENE.house:null;
  const mine=h=>!!h&&!h._foreign&&!h.ro&&!(h.base&&h.base._foreign);
  const hid=h=>(h&&(h._oid||h.id))||'?';
@@ -23348,7 +23365,11 @@ function where(tx,ty){if(CUR&&CUR.loc&&CUR.loc!=='hollow')return'on '+RNAME(CUR.
   const kept={};for(const[a,b]of Object.entries(r.c))for(let i=0;i<b;i++){if(!(Math.random()<save))inv[a]--;else kept[a]=(kept[a]|0)+1}
   const n=1+(Math.random()<extra?1:0);inv[r.k]=(inv[r.k]|0)+n;addXp(BR,r.xp*n);try{sfx('pickup')}catch(e){self.SQERR&&SQERR(e,'218-2')}
   const kt=Object.entries(kept).map(([a,c])=>c+' '+matN(a)).join(' and ');
-  say('You brew '+(n>1?n+' ':'a ')+INAME[r.k].toLowerCase()+(n>1?'s':'')+(n>1?' (double batch!)':'')+(kt?'. You kept '+kt:'')+'.');try{for(const f of window.SQBREWED||[])f(r.k)}catch(e){self.SQERR&&SQERR(e,'218-90')}return true}
+  // Nov 26 (Kevin: "Every 4 or 5 brews, the tool tip pops up on the top instead of near my character"): short messages float by your
+  // character (131) and longer ones go to the message box, so a brew that kept ingredients or made a double batch jumped to the box.
+  // Those now float as two short lines.
+  const main='You brew '+(n>1?n+' ':'a ')+INAME[r.k].toLowerCase()+(n>1?'s':'')+(n>1?' (double batch!)':'')+'.';
+  if(kt&&(main.length+kt.length+10)>56){say(main);say('You kept '+kt+'.')}else say(main.slice(0,-1)+(kt?'. You kept '+kt:'')+'.');try{for(const f of window.SQBREWED||[])f(r.k)}catch(e){self.SQERR&&SQERR(e,'218-90')}return true}
  {const _sa=stationAct;stationAct=function(a){const o=STATION;if(!(o&&o.t==='cauldron'&&/^cwa?_/.test(a||'')))return _sa.apply(this,arguments);
    const all=a.startsWith('cwa_'),r=RECIPES.find(q=>q.k===a.replace(/^cwa?_/,''));if(!r)return;
    if(lvOf(BR)<r.lv){say('You need Brewing '+r.lv+' to brew that.');return}const m=canMake(r);if(m<1){say('You need '+Object.entries(r.c).map(([k,b])=>b+' '+matN(k)).join(', ')+'.');return}
@@ -24128,7 +24149,7 @@ text-shadow:1px 0 #1a1420,-1px 0 #1a1420,0 1px #1a1420,0 -1px #1a1420,1px 1px #1
  function card(k){const e=EQ[k],J=window.SQJK&&SQJK[k],n=(e&&e.n)||(J&&J.n)||INAME[k]||k,d=IDESC[k]||(J&&J.d)||'';
   return'<div class="sqgcard"><img alt="" src="'+icon(k)+'"><div><b>'+esc(n)+'</b>'+(d?'<div class="sqgcd">'+esc(d)+'</div>':'')+'<small>'+esc(valueLine(k))+'</small></div></div>'}
  function extraRows(){const R=[];const row=(a,b)=>R.push('<div class="tc-r"><span>'+a+'</span><b>'+b+'</b></div>');
-  try{row('Health',Math.max(0,P.hp)+' / 6 hearts')}catch(e){self.SQERR&&SQERR(e,'229-2')}
+  try{row('Health',Math.round(Math.max(0,+P.hp||0)*10)/10+' / 6 hearts')}catch(e){self.SQERR&&SQERR(e,'229-2')}
   try{if(typeof armorPts==='function')row('Armour',armorPts()+' points')}catch(e){self.SQERR&&SQERR(e,'229-3')}
   try{if(typeof blockCap==='function')row('Block limit',pc(blockCap()))}catch(e){self.SQERR&&SQERR(e,'229-4')}
   try{if(typeof critCh==='function'){const c=critCh(null);if(c>0)row('Critical hits',pc(Math.min(1,c))+' of hits')}}catch(e){self.SQERR&&SQERR(e,'229-5')}
@@ -27428,7 +27449,10 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
   return{r,need,xp:Math.max(1,Math.round(r.xp*f)),f}}
  const have=(m,sh)=>sh?(inv[SHK(m)]|0)+10*(inv[m]|0):inv[m]|0;
  const canPay=c=>c.need.every(([m,n,sh])=>have(m,sh)>=n);
- function pay(c){for(const[m,n,sh]of c.need){if(!sh){inv[m]-=n;continue}let left=n;const s=inv[SHK(m)]|0;if(s>=left){inv[SHK(m)]=s-left;continue}left-=s;const bars=Math.ceil(left/10);inv[m]-=bars;inv[SHK(m)]=bars*10-left}}
+ function pay(c){const broke=[];for(const[m,n,sh]of c.need){if(!sh){inv[m]-=n;continue}let left=n;const s=inv[SHK(m)]|0;if(s>=left){inv[SHK(m)]=s-left;continue}left-=s;const bars=Math.ceil(left/10);inv[m]-=bars;inv[SHK(m)]=bars*10-left;broke.push([m,bars])}return broke}
+ // Nov 26 (Kevin: "Blacksmith table says shards but is using the full item"): a whole bar breaks into 10 shards when you have too few;
+ // the repair message now says so and how many shards are left over in the bag
+ const brokeTxt=L=>L.length?' ('+L.map(([m,b])=>b+' '+String(b===1?INAME[m]||m:SN[m]||INAME[m]||m).toLowerCase()+' broke into shards: '+(inv[SHK(m)]|0)+' '+shN(m,inv[SHK(m)]|0)+' left in your bag)').join(', ')+'.':'';
  const costTxt=c=>c.need.map(([m,n,sh])=>n+' '+esc(sh?shN(m,n):(n===1?INAME[m]||m:SN[m]||INAME[m]||m).toLowerCase())+' (have '+have(m,sh)+')').join(' + ');
  // ---- what you're wearing: WS[slot] = {k (full key, with its upgrade level), d, n (copies of k in the bag, to see it come back)} ----
  const WS={},PWS={},BROKE=new Set();let SETC=0;
@@ -27483,8 +27507,13 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
  // used copies in the guild bank (loaded from the database, 197) get known too, so the bank screen can show them
  const scanLive=()=>{try{const g=window.SQGUILD&&SQGUILD.state,b=g&&g.bank&&g.bank.i;if(b&&typeof b==='object')for(const k in b)if(k[0]==='w'&&!WREG.has(k))wreg(k)}catch(e){self.SQERR&&SQERR(e,'275-31')}};
  SQUPD.after('275 gear wears and comes off worn out',(dt)=>{try{if((T2+=(+dt||0))>2){T2=0;scanLive();plain3()}
-   if(!dead){const h=+hurt||0;if(h>LH+1e-4&&h>=.3)for(const s of ARMS)wear(s,ARMW);LH=h}else LH=0;
-   sync();if(BROKE.size&&!dead&&!(typeof BMERGE!=='undefined'&&BMERGE)){const L=[...BROKE];BROKE.clear();for(const s of L)takeOff(s)}}catch(e){self.SQERR&&SQERR(e,'275-16')}});
+   // Nov 26 (Kevin: "took a hit of hunger damage, durability went down by 5 on everything"): armour wears per hit you take, not when you
+   // starve (001 sets SQSTARVEAT on a starving hit; read and cleared here, the same frame)
+   if(!dead){const h=+hurt||0;if(h>LH+1e-4&&h>=.3&&!window.SQSTARVEAT)for(const s of ARMS)wear(s,ARMW);LH=h}else LH=0;window.SQSTARVEAT=0;
+   sync();if(BROKE.size&&!dead&&!(typeof BMERGE!=='undefined'&&BMERGE)){const L=[...BROKE];BROKE.clear();for(const s of L)takeOff(s)}
+   // Nov 26 (Kevin: "When fishing rod breaks, I've been able to keep fishing anyways"): a cast line kept catching after the worn-out rod
+   // came off (007's loop never looks at the rod again); no rod in hand now ends the fishing (the worn-out message says why)
+   if(typeof FISH!=='undefined'&&FISH&&!TL.rod){FISH=null;try{if(window.SQDO&&SQDO.kind==='reel')SQDO=null}catch(e){self.SQERR&&SQERR(e,'275-33')}}}catch(e){self.SQERR&&SQERR(e,'275-16')}});
  // ---- saves ----
  try{KNOWN49.add('dur');KNOWN49.add('durv')}catch(e){self.SQERR&&SQERR(e,'275-17')}
  SQSAVE.wrap('275 settle durability first',next=>function(){try{U.reconcile();sync()}catch(e){self.SQERR&&SQERR(e,'275-18')}return next.apply(this,arguments)});
@@ -27557,8 +27586,8 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
   if(o.no){say('Bought gear can\'t be repaired: buy a new '+n+'.');return false}if(!o.c){say('That can\'t be repaired here.');return false}
   if(!o.okL){say('You need '+SKN[o.c.r.sk]+' '+o.c.r.rl+' to repair '+(/^[aeiou]/i.test(n)?'an ':'a ')+n+'.');return false}
   if(!o.pay){say('You need '+o.c.need.map(([m,q,sh])=>q+' '+(sh?shN(m,q):(q===1?INAME[m]||m:SN[m]||INAME[m]||m).toLowerCase())).join(' and ')+' to repair it.');return false}
-  pay(o.c);if(it.on){const w=WS[it.id.slice(1)];if(w)w.d=maxD(w.k)}else{inv[it.id]--;inv[it.k]=(inv[it.k]|0)+1}
-  addXp(o.c.r.sk,o.c.xp);say('You repair '+(it.on?'your ':'the ')+n+'. Good as new!');try{sfx('anvil')}catch(e){self.SQERR&&SQERR(e,'275-25')}return true}
+  const broke=pay(o.c);if(it.on){const w=WS[it.id.slice(1)];if(w)w.d=maxD(w.k)}else{inv[it.id]--;inv[it.k]=(inv[it.k]|0)+1}
+  addXp(o.c.r.sk,o.c.xp);say('You repair '+(it.on?'your ':'the ')+n+'. Good as new!'+brokeTxt(broke));try{sfx('anvil')}catch(e){self.SQERR&&SQERR(e,'275-25')}return true}
  function html(){let h='<div class="tl" style="margin-top:14px">Repairs</div><div class="tl" style="font-size:12px;font-weight:400;opacity:.75">Gear wears down as you use it. A full repair costs half of the item\'s main material (bars split into 10 shards; spare shards fuse back into a bar at a furnace) at the level that makes it + 5. Bought gear can\'t be repaired.</div>';
   const L=items().map(state);if(!L.length)return h+'<div class="qc"><p>Nothing needs repairing. Weapons wear per hit, bows and wands per shot, armour per hit you take, and axes, pickaxes and rods per log, ore or fish.</p></div>';
   L.sort((a,b)=>(b.it.on-a.it.on)||((b.ok|0)-(a.ok|0))||(a.it.d/maxD(a.it.k)-b.it.d/maxD(b.it.k)));
@@ -27976,8 +28005,13 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
    say('+'+logs+' '+lname(K.log,logs)+(wood?' and +1 wood':'')+(fell?' (felled: '+fellN+' of '+limTxt()+')':'')+(rare?'. Rare find: '+INAME.heartwood+'!':''))}}
  SQHIT.wrap('287 woodcutting: every chop takes the same time; logs and XP every quarter of a tree',next=>function(){
   C.last=null;busy=true;hold=true;held=0;const snap={};for(const k in inv)if(isLog(k))snap[k]=inv[k]|0;const hw0=inv.heartwood|0;let out;
-  try{out=next.apply(this,arguments)}finally{busy=false;hold=false}
+  // Nov 26 (Kass: "The other ones that pop up saying I got, don't show up in the bag"): the inner chop code (083's tier trees, 004) still says
+  // what it paid ("+1 oak logs and +1 wood"), and pay() below takes those logs back and pays by quarters. Its gain messages wait here and are
+  // dropped when a tree was hit (pay() tells what you really got); anything else it says still shows.
+  const said=[],_say=say;say=function(){said.push(arguments)};
+  try{out=next.apply(this,arguments)}finally{busy=false;hold=false;say=_say}
   const L=C.last;C.last=null;
+  for(const a of said){if(L&&/^\+\d+ [^.!]*\b(logs?|wood)\b/i.test(String(a[0])))continue;try{say.apply(null,a)}catch(e){self.SQERR&&SQERR(e,'287-12')}}
   if(!L){// not a tree: give back any Woodcutting XP held, and the treeling's chance on other logs (a cactus's wood)
    try{if(held>0)addXp(1,held)}catch(e){self.SQERR&&SQERR(e,'287-9')}
    try{if(window.SQTREELING)for(const k in inv)if(isLog(k)&&(inv[k]|0)>(snap[k]|0)){SQTREELING.roll(null,k);break}}catch(e){self.SQERR&&SQERR(e,'287-10')}
@@ -28139,6 +28173,79 @@ box-shadow:0 0 0 3px #f2c14e,0 10px 30px rgba(0,0,0,.45);font:600 14px var(--pf)
   if(moved)keepLast()}
  for(const id of['pn','sm','cm','chs','hp'])fixInline(document.getElementById(id));
 })();
+// ---- 290. Saves keep going behind screens (Nov 26, Joe: "I saved and quit [on my phone] and got on my PC within 2 minutes ... everything
+// reverted back at least 1 hour") ----
+// 006 saves this device every 3 s and the account every 15 s from a step on the frame (UPD), and the frame stops while a screen or the
+// START menu is open. Fishing, brewing and make-alls go on behind screens, so an hour of that could reach neither save; anything that then
+// closed the game without the page-hide save (an iPhone dropping the app, a crash) lost it all, and another device loaded the old save.
+// When 006's timer hasn't moved for 5 s, this does its saves instead (the same unforced saves: nothing is written when nothing changed).
+(()=>{let last=null,seen=performance.now(),cloudAt=0;
+ setInterval(()=>{try{if(typeof cloudT==='undefined')return;const now=performance.now();
+   if(cloudT!==last){last=cloudT;seen=now;return}// the frame's own timer is running
+   if(now-seen<5000||dead)return;seen=now;saveLocal();if(now-cloudAt>=15000){cloudAt=now;saveCloud()}
+   window.SQBGSAVE.n++}catch(e){self.SQERR&&SQERR(e,'290-1')}},1000);
+ window.SQBGSAVE={n:0}})();
+// ---- Section 291: buffs survive a refresh or logout (Nov 26, Aztu's report) ----
+// Potion, meal and guild-shrine buffs live in 085's LUX.BUFF as end times on performance.now(), which restarts with
+// every page load, so a refresh or a logout wiped them. The save now keeps the seconds left of each buff (`bf`,
+// written every time, even empty) and a load starts them again with that time left: the clock pauses while you're away.
+// A new character starts with none.
+(()=>{const B=()=>window.LUX&&LUX.BUFF,MAX=3600;
+ SQSAVE.after('291:bf',s=>{const b=B(),o={};if(b){const now=performance.now();for(const k in b){const r=(+b[k]||0)-now;if(r>=1000)o[k]=Math.min(MAX,Math.round(r/1000))}}s.bf=o});
+ SQLOAD.after('291',S=>{const b=B();if(!b)return;for(const k in b)b[k]=0;
+  const o=S&&S.bf;if(!o||typeof o!=='object')return;const now=performance.now();
+  for(const k in o){const v=+o[k];if(/^[a-z]{2,10}$/.test(k)&&v>0)b[k]=now+Math.min(MAX,v)*1000}});
+ SQNEWGAME.after('291',()=>{const b=B();if(b)for(const k in b)b[k]=0});
+})();
+// ---- Section 292: report lost progress and vanished pets (Nov 26, Kevin's adamant golem, Joe's revert) ----
+// Report only: changes nothing in the game. Kevin's equipped golem disappeared on Nov 25 and no replay lost it: his backups show it
+// equipped on one device, then a save from another device without it; Joe lost an hour moving from phone to PC. Both look like progress
+// that never reached the account before another device took over (290 now saves behind screens, the likely cause). Two reports, once
+// a session each, to `bugs` as "[auto] ...":
+// - "Another device took over before this one saved": when this game stops because the account opened elsewhere (SQSTRICT.lost) and
+//   its pets differ from what the last account save (006/040's `lastCloud`) held, or its gold, XP or item count do and that save is over
+//   30 s old (saves go out every 15 s): what was lost, and how long ago that save was.
+// - "Pet vanished": a load (signed in) replaced your save with one that doesn't have the pet in your PET slot: the loaded save's device
+//   and time. (While playing, 104 always moves a pet that leaves the slot into the bag, and selling, trading and releasing work only from
+//   the bag, so the slot itself can't lose one.)
+// The last 12 messages go with each report.
+(()=>{const C=()=>window.LUX&&LUX.COS,LOG=[],sent={};let lc=null,at=0,sum=null,wasLost=false;
+ const _s=say;say=function(t){try{LOG.push(String(t==null?'':typeof t==='string'?t:JSON.stringify(t)).slice(0,80));if(LOG.length>12)LOG.shift()}catch(e){/*quiet*/}return _s.apply(this,arguments)};
+ const has=k=>{const c=C();return!!k&&(!!(c&&c.pet===k)||(inv['pet_'+k]|0)>0)};
+ const pets=()=>{const c=C(),o=Object.keys(inv).filter(q=>/^pet_/.test(q)&&inv[q]>0).map(q=>q.slice(4));if(c&&c.pet&&!o.includes(c.pet))o.push(c.pet);return o.sort()};
+ function summary(){let it=0,xp=0;for(const k in inv)it+=Math.max(0,+inv[k]||0);for(const v of XPS)xp+=+v||0;return{gold:Math.round(+GLD||0),xp:Math.round(xp),items:Math.round(it),pets:pets()}}
+ function report(kind,extra){if(sent[kind])return;sent[kind]=1;window.SQPETWATCH.n++;window.SQPETWATCH.last=kind;
+  try{const MP=window.SQMP,F=window.SQFB;if(!MP||!MP.user||!F)return;const d=F.db;
+   const what=('[auto] '+kind+' '+JSON.stringify(Object.assign({ver:window.SQVER,scene:(typeof SCENE!=='undefined'&&SCENE&&SCENE.id)||'',screen:!!pnOpen,said:LOG.slice()},extra||{}))).slice(0,1500);
+   d.push(d.ref(F.D,'bugs'),{what,u:MP.user.uid,n:String(MP.user.displayName||'').split(' ')[0].slice(0,12),t:d.serverTimestamp()}).catch(()=>{})}catch(e){self.SQERR&&SQERR(e,'292-1')}}
+ setInterval(()=>{try{if(typeof lastCloud==='undefined')return;
+  if(lastCloud!==lc){lc=lastCloud;if(lc){at=Date.now();sum=summary()}}// the account just got this game's save
+  const lost=!!(window.SQSTRICT&&SQSTRICT.lost);
+  if(lost&&!wasLost&&sum){const now=summary(),diff={};for(const k of['gold','xp','items'])if(now[k]!==sum[k])diff[k]=now[k]-sum[k];
+   const gone=sum.pets.filter(p=>!now.pets.includes(p)),got=now.pets.filter(p=>!sum.pets.includes(p));if(gone.length)diff.petsGone=gone;if(got.length)diff.petsNew=got;
+   if(Object.keys(diff).length&&(gone.length||got.length||Date.now()-at>30000))report('Another device took over before this one saved',{lost:diff,savedAgo:Math.round((Date.now()-at)/1000)})}
+  wasLost=lost}catch(e){self.SQERR&&SQERR(e,'292-2')}},1000);
+ SQLOAD.wrap('292 pet watch',next=>function(S){const c0=C(),k=c0&&c0.pet||null,MP=window.SQMP,on=!!(MP&&MP.user&&MP.on);
+  try{return next.apply(this,arguments)}finally{try{if(k&&on&&!has(k))report('Pet vanished: '+k,{save:{at:S&&S.savedAt||0,dev:S&&S.dev||'',pet:S&&S.cos&&S.cos.pet||null}})}catch(e){self.SQERR&&SQERR(e,'292-3')}}});
+ window.SQPETWATCH={n:0,last:'',get log(){return LOG.slice()}};
+})();
+// ---- Section 293: screens drawn during a step never show lent chest items (Nov 26, sniffynose's report) ----
+// "when i go bag in house when cooking an scroll down it shows all items in chest an not in my bag": a stove, furnace or anvil job
+// (109) lends the house chests to the bag for each step (BMERGE), and the step's own rPn() (022's stationAct, 039's wrapper) drew the
+// open bag with them, jumping its scroll every step. Like 230 does for saves, every screen draw now puts the lent items back first
+// and lends them again afterwards; the workstation screens still count your chests (033/027 lend them for their own draw).
+(()=>{if(typeof benchSplit!=='function')return;
+ const merge=chests=>{const tot={};for(const c of chests)for(const k in c)if(c[k]>0)tot[k]=(tot[k]||0)+c[k];
+  const bag={};for(const k in tot){bag[k]=inv[k]|0;inv[k]=bag[k]+tot[k]}BMERGE={chests,tot,bag}};
+ SQRPN.wrap('293 no lent chest items on screens',next=>function(){const M=typeof BMERGE!=='undefined'?BMERGE:null;if(!M)return next.apply(this,arguments);
+  benchSplit();try{return next.apply(this,arguments)}finally{try{if(!BMERGE)merge(M.chests)}catch(e){self.SQERR&&SQERR(e,'293-1')}}});
+})();
+// ---- Section 294: the PvP ON badge is a HUD chip (Nov 26, Amethyst's report) ----
+// "PVP on covers whatever active quest you're doing": 064's badge was a fixed box at 236 px from the top, which landed on the quest box
+// on some phones. It's now the last chip in 010's chip row under the quest box (arrows, bait, RUN, ULT), so it never covers the quest
+// and whatever 010's stackBottom places below the stack (party list, boss bar) moves down with it. 064 keeps the words in SQPVBADGE.
+(()=>{const _hl=hudLayout;hudLayout=function(){const L=_hl.apply(this,arguments);try{const t=window.SQPVBADGE;
+  if(t&&L&&L.chips&&!L.chips.some(c=>c[0]==='pvp')){if(!L.chips.length)L.stackBottom=L.cy+22*L.U;L.chips.push(['pvp',t])}}catch(e){self.SQERR&&SQERR(e,'294-1')}return L}})();
 // ---------------------------------------------------------------- Fullscreen (Options)
 // A Fullscreen button in Options where the browser allows it (Chrome / Edge / Firefox on PC, Android). iPhone Safari
 // can't make a web page fullscreen, so there it explains Add to Home Screen instead, which opens the game without

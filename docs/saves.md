@@ -36,3 +36,21 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   A pet added by a section after 151 needs the same.
 - **Unknown items are kept** (`core/264-s272-keep-unknown-items.js`, `window.SQUNKNOWN`, Nov 21): 006 loads only `INVK` keys, so a game that didn't know an item (an older copy on another device, or an item registered late) dropped it and its next save erased it. 264 keeps every unknown `S.inv` key aside, writes it into every save (`s.inv[k]=max(...)`), and moves it into the bag (max, never add) once it's in `INVK` (every 3 s). Check 56.
 - **Old games can't save** (Nov 21, Jace's and Kevin's cards): a tab open since before Drop Cards ran old code; PLAY HERE INSTEAD loaded the account save into it (006 loads only known `INVK` keys) and its next save erased every card. `saves/$uid` now requires the save JSON to contain `"dc_voidtree":` (every game since 2026.11.21-1 writes all `INVK` keys), and 061's `sqTakeBack` reloads the page (`?r=`) instead of loading the save in place. When a later item must be protected the same way, move the rule's key forward (games since 2026.11.21-8 keep unknown items anyway, 264). Check 58.
+- **Saving behind screens** (`core/282-s290-saves-behind-screens.js`, `window.SQBGSAVE`, Nov 26, Joe's report, check 123): 006's 3 s local
+  and 15 s account saves run in the frame's step, which doesn't run while a screen or the START menu is open, though fishing, brewing and
+  make-alls go on behind them. A 1 s timer watches 006's `cloudT`: when it hasn't moved for 5 s it saves locally, and to the account at
+  most every 15 s (`SQBGSAVE.n` counts).
+- **Buffs kept** (`items/283-s291-buffs-kept.js`, Nov 26, Aztu, check 128): 085's `LUX.BUFF` holds end times on `performance.now()`, which
+  restarts with the page. The save keeps the seconds left as `bf` {kind: s} (written every time, even empty; at most 3,600 s each) and a
+  load starts them again with that time left, so the clock pauses while you're away. `SQNEWGAME` clears them. 218's dagger coating
+  (20 s) isn't kept.
+- **Lost progress reports** (`items/284-s292-pet-watch.js`, `window.SQPETWATCH` {n, last, log}, Nov 26, Kevin's golem and Joe's revert,
+  check 129): report only. "[auto] Another device took over before this one saved": on the rising edge of `SQSTRICT.lost`, compares
+  gold, XP total, item count and pets with what they were when 006/040's `lastCloud` last changed; reports when the pets differ, or the
+  rest differ and that save is over 30 s old (`lost` diff, `savedAgo`). "[auto] Pet vanished: <kind>": a load while signed in that drops
+  the pet in the PET slot (the loaded save's `savedAt`/`dev`/`cos.pet`). Both carry the last 12 `say` messages, once a session each.
+  (While playing, 104's `sync` always moves a pet that leaves the slot into the bag, so there's no in-play check.)
+- **Screens without lent chest items** (`ui/285-s293-bag-without-lent-chests.js`, Nov 26, sniffynose, check 133): 109's job steps lend
+  the chests (`BMERGE`) and the step's own `rPn()` (022's `stationAct`, 039's wrapper) drew the open bag with them. The outermost `rPn`
+  runs `benchSplit()`, draws, and merges the same chests again (like 230 does for `snap`); 033/027 still lend chests for their own
+  workstation screens.

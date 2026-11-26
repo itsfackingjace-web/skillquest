@@ -66,8 +66,13 @@
    say('+'+logs+' '+lname(K.log,logs)+(wood?' and +1 wood':'')+(fell?' (felled: '+fellN+' of '+limTxt()+')':'')+(rare?'. Rare find: '+INAME.heartwood+'!':''))}}
  SQHIT.wrap('287 woodcutting: every chop takes the same time; logs and XP every quarter of a tree',next=>function(){
   C.last=null;busy=true;hold=true;held=0;const snap={};for(const k in inv)if(isLog(k))snap[k]=inv[k]|0;const hw0=inv.heartwood|0;let out;
-  try{out=next.apply(this,arguments)}finally{busy=false;hold=false}
+  // Nov 26 (Kass: "The other ones that pop up saying I got, don't show up in the bag"): the inner chop code (083's tier trees, 004) still says
+  // what it paid ("+1 oak logs and +1 wood"), and pay() below takes those logs back and pays by quarters. Its gain messages wait here and are
+  // dropped when a tree was hit (pay() tells what you really got); anything else it says still shows.
+  const said=[],_say=say;say=function(){said.push(arguments)};
+  try{out=next.apply(this,arguments)}finally{busy=false;hold=false;say=_say}
   const L=C.last;C.last=null;
+  for(const a of said){if(L&&/^\+\d+ [^.!]*\b(logs?|wood)\b/i.test(String(a[0])))continue;try{say.apply(null,a)}catch(e){self.SQERR&&SQERR(e,'287-12')}}
   if(!L){// not a tree: give back any Woodcutting XP held, and the treeling's chance on other logs (a cactus's wood)
    try{if(held>0)addXp(1,held)}catch(e){self.SQERR&&SQERR(e,'287-9')}
    try{if(window.SQTREELING)for(const k in inv)if(isLog(k)&&(inv[k]|0)>(snap[k]|0)){SQTREELING.roll(null,k);break}}catch(e){self.SQERR&&SQERR(e,'287-10')}

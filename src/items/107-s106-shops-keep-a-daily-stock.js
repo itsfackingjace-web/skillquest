@@ -14,7 +14,13 @@
   const bk=/^b/.test(b.dataset.a||'')?keyOf((b.innerText||'').replace(/\n.*left today|\n.*restocks.*/,'')):null;if(bk&&!left(bk)){ev.stopImmediatePropagation();ev.preventDefault();say('Sold out of '+(SN[bk]||INAME[bk]||bk).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish')}catch(e){self.SQERR&&SQERR(e,'107-1')}return}
   setTimeout(()=>{if(GLD>=g0)return;const got={};for(const k in inv){const d=(inv[k]|0)-(inv0[k]|0);if(d>0)got[k]=d}const ks=Object.keys(got);if(!ks.length){if(bk){cur().n[bk]=(cur().n[bk]|0)+1;try{if(isShop())rPn()}catch(e){self.SQERR&&SQERR(e,'107-2')}}return}
    const over=ks.find(k=>got[k]>left(k));
-   if(over){for(const k of ks)inv[k]=inv0[k]|0;GLD=g0;const L=left(over);say(L?'Only '+L+' '+(SN[over]||INAME[over]||over).toLowerCase()+' left in stock today. More arrive in the morning.':'Sold out of '+(SN[over]||INAME[over]||over).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish');svg();saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'107-3')}}
+   // Nov 26 (Spencer: "i cant purchase all available seeds ... it shows it as purchase but it doesnt add into my bag"): stock counts single
+   // items, but some things come in packs (3 pumpkin seeds), so the last 2 of 20 could never be bought and the pack was silently undone.
+   // A pack of one kind bigger than what's left now sells what's left, for that share of the price.
+   const L0=over&&ks.length===1?left(over):0;
+   if(over&&L0>0){const k=over,paid=g0-GLD,cost=Math.max(1,Math.ceil(paid*L0/got[k]));inv[k]=(inv0[k]|0)+L0;GLD=g0-cost;cur().n[k]=(cur().n[k]|0)+L0;
+    say('Only '+L0+' '+(SN[k]||INAME[k]||k).toLowerCase()+' were left today: you got them for '+cost+' gold. More arrive in the morning.');try{svg();saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'107-6')}}
+   else if(over){for(const k of ks)inv[k]=inv0[k]|0;GLD=g0;const L=left(over);say(L?'Only '+L+' '+(SN[over]||INAME[over]||over).toLowerCase()+' left in stock today. More arrive in the morning.':'Sold out of '+(SN[over]||INAME[over]||over).toLowerCase()+' today. More arrive in the morning.');try{sfx('swish');svg();saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'107-3')}}
    else{for(const k of ks)cur().n[k]=(cur().n[k]|0)+got[k];if(bk&&!got[bk])cur().n[bk]=(cur().n[bk]|0)+1}
    try{if(isShop())rPn()}catch(e){self.SQERR&&SQERR(e,'107-4')}},0)},true);
  // show what's left on every shop button: match the button's words to an item

@@ -189,15 +189,15 @@ function drawHUD(){if(menuOpen)return;const L=hudLayout(),{U,ins,top,bw,bh,qy,qw
  if(lvt){const nw=g.measureText(nmt).width;g3text(lvt,ins+12*U+nw+5*U,top+16.5*U,11,U,'#3878b8','left',700)}
  const gx=ins+bw-12*U-gw;g.fillStyle='#a87818';g.beginPath();g.arc(gx-9*U,top+16*U,5.5*U,0,6.283);g.fill();g.fillStyle='#f8d030';g.beginPath();g.arc(gx-9*U,top+16*U,4*U,0,6.283);g.fill();
  g3text(gs,ins+bw-12*U,top+16.5*U,13,U,'#404040','right',700);
- g3bar('HP',ins+12*U,top+32*U,U,hpf,hpf>.5?'#48c878':hpf>.2?'#f8c030':'#f05030',Math.max(0,P.hp)+'/6',ins+bw-10*U);
+ g3bar('HP',ins+12*U,top+32*U,U,hpf,hpf>.5?'#48c878':hpf>.2?'#f8c030':'#f05030',Math.round(Math.max(0,+P.hp||0)*10)/10+'/6',ins+bw-10*U);/* Nov 26 (Bear: "Maybe cap the decimals"): one decimal at most */
  g3bar('FOOD',ins+12*U,top+46*U,U,hunger/100,'#40a8f0',Math.round(hunger)+'%',ins+bw-10*U);
  if(typeof maxMP==='function')g3bar('MANA',ins+12*U,top+60*U,U,MANA/maxMP(),'#a070f0',Math.floor(MANA)+'/'+maxMP(),ins+bw-10*U);
  // quest tracker
  const q=QS[Q.i];let qt=q?(Q.on?q.n+'  '+qProg(q)+(qDone(q)?'  ✓':''):'! New quest - see the Elder'):'All quests complete!';
  if(!(window.SQTRKOFF&&SQTRKOFF())){g3box(ins,qy,qw,26*U,U,'#f8f0d8');g.font='600 '+12*U+'px '+PF;g3text(fitText(qt,qw-22*U),ins+11*U,qy+13.5*U,12,U,Q.on&&q&&qDone(q)?'#2f8a3a':'#404040','left',600);}
  // small chips: arrows, bait, sprint
- let cx=ins;g.imageSmoothingEnabled=false;window.SQCHIPS=[];for(const[k,t]of L.chips){g.font='700 '+11*U+'px '+PF;const w=(k==='run'||k==='ult'?14:30)*U+g.measureText(t).width;g3box(cx,L.cy,w,22*U,U);window.SQCHIPS.push({k,x:cx,y:L.cy,w,h:22*U});/* Nov 22: 269 makes the ULT chip clickable */
-  if(k==='ult'){g3text(t,cx+7*U,L.cy+11.5*U,11,U,/\d/.test(t)?'#a0a0b0':'#8a50e0','left',700)}else if(k!=='run'){const im=hudIcon(k);if(im.complete)g.drawImage(im,cx+5*U,L.cy+4*U,14*U,14*U);g3text(t,cx+23*U,L.cy+11.5*U,11,U,'#404040','left',700)}else g3text(t,cx+7*U,L.cy+11.5*U,11,U,'#d05030','left',700);cx+=w+4*U}
+ let cx=ins;g.imageSmoothingEnabled=false;window.SQCHIPS=[];for(const[k,t]of L.chips){g.font='700 '+11*U+'px '+PF;const w=(k==='run'||k==='ult'||k==='pvp'?14:30)*U+g.measureText(t).width;g3box(cx,L.cy,w,22*U,U);window.SQCHIPS.push({k,x:cx,y:L.cy,w,h:22*U});/* Nov 22: 269 makes the ULT chip clickable */
+  if(k==='ult'){g3text(t,cx+7*U,L.cy+11.5*U,11,U,/\d/.test(t)?'#a0a0b0':'#8a50e0','left',700)}else if(k==='pvp'){g3text(t,cx+7*U,L.cy+11.5*U,11,U,'#b03828','left',700)}else if(k!=='run'){const im=hudIcon(k);if(im.complete)g.drawImage(im,cx+5*U,L.cy+4*U,14*U,14*U);g3text(t,cx+23*U,L.cy+11.5*U,11,U,'#404040','left',700)}else g3text(t,cx+7*U,L.cy+11.5*U,11,U,'#d05030','left',700);cx+=w+4*U}
  // day box with a daylight bar
  const dk=dark();g3box(dx,top,dw,dh,U);
  if(dk>.4){g.fillStyle='#f8e070';g.beginPath();g.arc(dx+18*U,top+14*U,6*U,0,6.283);g.fill();g.fillStyle='#f8f8f8';g.beginPath();g.arc(dx+21*U,top+12*U,5.5*U,0,6.283);g.fill()}

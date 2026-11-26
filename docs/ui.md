@@ -149,3 +149,6 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   MutationObserver; style-attribute changes re-check only that element (`SQTHEME.n` counts: 0 while walking). `#sqtheme` (its own
   rules) is moved back to the end of `<head>` when a stylesheet is added. Dark screens' navy (Dev Suite, card binder) is left alone.
   A new screen that uses the old palette is themed automatically; a new colour meant as a UI colour goes in `MAP`.
+- **PvP chip** (`ui/286-s294-pvp-chip.js`, Nov 26, Amethyst, check 134): 064's `#pvb` badge (fixed, 236 px from the top) covered the
+  quest box on some phones. 064 now keeps it hidden and writes its words to `window.SQPVBADGE`; the outermost `hudLayout` adds a `pvp`
+  chip at the end of 010's chip row (under the quest box, `stackBottom` below it), drawn by 010 in red without an icon.

@@ -118,7 +118,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
 
 ## Nov 22: bug reports (Firebase + #bugs)
 
-Firebase had no new bug reports (`bugs` newest Nov 10) and no new code errors (`errs`: the three old Nov 20 sites).
+Firebase showed no new bug reports (`bugs` "newest Nov 10": wrong, the console's background tab only drew the first 24 records; the
+reports from Nov 11-22 were handled on Nov 26) and no new code errors (`errs`: the three old Nov 20 sites).
 - Guild sails on privacy browsers (Aztu, Android/Brave: a speckled sail): Brave (and Firefox's resistFingerprinting, Safari's private
   mode) nudge some pixels a page reads back with `getImageData` by a step or two. 226's `recolor` matched the plain sail colours exactly,
   so about half the cloth stayed cream and the trim test saw holes everywhere. Colours now match within `TOL` (6) of `SA`/`RD`. Check 84
@@ -150,7 +151,25 @@ Firebase had no new bug reports (`bugs` newest Nov 10) and no new code errors (`
   Jace's starsteel dagger (late Nov 23): it was nowhere in his save, chests or graves, and already gone in the 1:17 PM daily backup.
   One way a dagger vanishes, closed: 218's loader set `DAG=null` when the save also had a bow, wand, hoe or can in the off-hand; it
   now puts that dagger in the bag (check 104).
-- **Nov 25 bug reports** (check 120): Firebase `bugs` had nothing new (newest Nov 10); #bugs' newest (World Market freezing screens, the
+- **Nov 25 bug reports** (check 120): Firebase `bugs` looked empty since Nov 10 (wrong: see Nov 26); #bugs' newest (World Market freezing screens, the
   chest deposit button cut off, a worn-out axe joining a stack) were fixed Nov 23-24. errs `uncaught` (6×, 2026.11.24-11) "Cannot read
   properties of null (reading 'id')": 248's touchmove cleared `HOLD` for the HIT finger sliding off and went on to the next moving finger
   (the joystick thumb), reading `HOLD.id`; it stops at the first match now.
+- **Nov 26 bug reports** (checks 121-135). Reading Firebase `bugs`: the console draws its tree in a virtual scroll that only updates in a
+  foreground tab, so a background tab shows the first (oldest) 24 records. Open a new tab, collapse all, scroll to collect the keys, then
+  visit each `/bugs/<key>` (in-page: `history.pushState` + a `popstate` event) and read `n`, `t`, `what` and `info.last`; 179 player
+  reports since Nov 10 were read this way. Fixed: Spencer's last seeds (107: a 3-seed pack with 2 left was undone; it now sells the 2 for
+  that share, check 121), Saphia's daughter's new character with Heather's glow cap pet (085: `SQNEWGAME` clears pets, capes and dyes,
+  check 122), Joe's revert (290, see saves.md, check 123), Kass's Shattered Expanse logs (287 kept the inner chop's "+N" messages, check
+  124), Kevin's armour wearing on a starving hit (001 sets `SQSTARVEAT`, 275 skips that hit, check 125), Jerica's pupper (206 adds keys
+  again after 234 registers new pets, check 126), Kevin's Hunter +2 as its own number (037 adds it to the arrow's number, check 127),
+  Aztu's buffs (291, check 128), sniffynose's "Cooked 1." (022 names the food, check 130) and her bag showing chests while cooking (293,
+  check 133), Kevin's rod (275 ends fishing without a rod, check 131), Kevin's shards question (repair message, check 132), Amethyst's PvP
+  badge over the quest (294, check 134), Kevin's brew message in the box every few brews (218 splits a long brew message so 131 floats
+  both, check 135), Bear's health decimals (010's HP bar and 229's Health row round to one decimal, check 136). Kass's Bat Cove has no boss by design (island-builder caves are `noboss`; 093's entry message now says so). Report
+  only: 292 (see saves.md) for Kevin's vanished golem (not reproduced: his backups show it equipped on one device, then a save from another
+  device without it). Not reproduced / already working: Jerica's Patron tab opening crafting, Heather's wand (every wand, upgraded and used
+  copies equip), Jace's worn gear missing from the chest screen (listed, also after a load), Kass's brewing behind the skills screen and
+  menu (keeps going). Kevin's Gluttony on health loss is the approved design. Left for Jace (need details or a design call): Kass's mushroom hat XP (20 vs 300 for
+  the other mushroom clothes), Heather's "Why is this sign here" (Nov 21), iPrint3D's magic house you can hide in, Jerica's friend shown in
+  the wrong place on the map, Girth's red pixel in front of the Spider Hood facing sideways. `errs`: nothing since 2026.11.24-11.

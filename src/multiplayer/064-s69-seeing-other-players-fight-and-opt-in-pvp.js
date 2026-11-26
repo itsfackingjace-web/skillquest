@@ -106,5 +106,7 @@ setInterval(()=>{if(pnOpen&&ptab===PTAB&&PV.on&&PV.fight)rPn()},1000);
 // a small badge while PvP is on
 {const st=document.createElement('style');st.textContent=`#pvb{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0px) + 236px);z-index:9;display:none;padding:4px 9px;font:700 12px ${PF};pointer-events:none;color:#f8f8f8;background:#b03828!important;border-color:#702018!important;box-shadow:inset 0 0 0 2px #e87060!important}`;document.head.appendChild(st)}
 const pvB=el('div','pvb','g3','');document.body.appendChild(pvB);
-setInterval(()=>{const show=PV.on&&MP.on&&!dead&&!pnOpen&&!menuOpen&&!TS.open;pvB.style.display=show?'block':'none';if(show){const l=pvLock();pvB.textContent='☠ PvP ON'+(pvMeSafe()?' · safe zone':PV.fight&&l>0?' · in a fight '+Math.ceil(l/1000)+'s':'')}},250);
+// Nov 26 (Amethyst: "PVP on covers whatever active quest you're doing"): the badge was a fixed box at 236 px, over the quest box on
+// some phones. It's a chip in the HUD's chip row under the quest box now (294 adds it, 010 draws it): this keeps its words in SQPVBADGE.
+setInterval(()=>{const show=PV.on&&MP.on&&!dead;pvB.style.display='none';if(show){const l=pvLock();window.SQPVBADGE='☠ PvP ON'+(pvMeSafe()?' · safe zone':PV.fight&&l>0?' · in a fight '+Math.ceil(l/1000)+'s':'')}else window.SQPVBADGE=''},250);
 window.SQPVP=PV;window.SQMPON=()=>!!(MP.on&&MP.user);

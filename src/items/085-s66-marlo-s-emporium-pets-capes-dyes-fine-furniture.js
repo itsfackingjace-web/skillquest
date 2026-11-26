@@ -38,6 +38,9 @@ var LUX={};
   for(const k in BUFF)if(BUFF[k]&&BUFF[k]<=now){BUFF[k]=0;say({str:'Your strength wore off.',iron:'Your iron skin wore off.',swift:'Your swiftness wore off.',wis:'Your wisdom wore off.',regen:'Your regeneration wore off.'}[k]||'')}},500);
  // ---- saves ----
  SQSAVE.after('085:cos',s=>{s.cos={pets:COS.pets.slice(),capes:COS.capes.slice(),dyes:COS.dyes.slice(),pet:COS.pet,cape:COS.cape,db:COS.db,dl:COS.dl,dh:COS.dh};});
+ // Nov 26 (Saphia: a new account for her daughter came with the glowcap pet from Heather's account): signing out keeps the page, and a
+ // new account with no save starts newGame(), which reset everything but these. A new character starts with no pets, capes or dyes.
+ SQNEWGAME.after('085',()=>{COS.pets=[];COS.capes=[];COS.dyes=[];COS.pet=null;COS.cape=0;COS.db=COS.dl=COS.dh=0;try{KITC.clear()}catch(e){self.SQERR&&SQERR(e,'085-9')}});
  SQLOAD.after('085',(S)=>{const c=S.cos||{},arr=a=>Array.isArray(a)?a:[];COS.pets=arr(c.pets).filter(k=>PETS.some(p=>p.k===k));COS.capes=arr(c.capes).map(Number).filter(i=>i>=1&&i<=CAPES.length);COS.dyes=arr(c.dyes).map(Number).filter(i=>i>=1&&i<=DYES.length);COS.pet=COS.pets.includes(c.pet)?c.pet:null;COS.cape=COS.capes.includes(+c.cape)?+c.cape:0;for(const k of['db','dl','dh'])COS[k]=COS.dyes.includes(+c[k])?+c[k]:0;KITC.clear()});
  // ---- looks: capes and dyes are part of the character sprite, so other players see them too ----
  SQGEARCH.wrap('085',_gc=>function(){const c=_gc();if(COS.cape)c.cape=COS.cape;if(COS.db)c.dyb=COS.db;if(COS.dl)c.dyl=COS.dl;if(COS.dh)c.dyh=COS.dh;return c});

@@ -103,7 +103,9 @@ const _sa37=shootAim;shootAim=function(first){const n0=PROJ.length;_sa37(first);
 function arrowHit(p,n){if(p.crit)drops.push({x:n.x,y:n.y-26,t:0,tx:'CRIT',c:'#ff70a0'});const l=Math.hypot(p.vx,p.vy)||1;
  if((perk(FL,'pierce')&&!p.pierced)||p.ghost)PROJ.push({...p,x:n.x+p.vx/l*14,y:n.y-4+p.vy/l*14,dead:0,pierced:1,t:p.t});
  if(perk(FL,'cripple'))n.slow=Math.max(n.slow||0,2);if(perk(FL,'poison'))n.poison=4;
- if(perk(FL,'hunter')&&n.type==='wolf')hitE(n,2,'#ffffff','arrow');
+ // Nov 26 (Kevin: the Hunter +2 "does a separate 2 damage, it does not add to total bow damage"): the +2 still lands as its own hit
+ // (kills, XP), but its number joins the arrow's own (021's DMGS entry for this hit) so the wolf shows one hit of arrow damage + 2.
+ if(perk(FL,'hunter')&&n.type==='wolf'){const k0=DMGS.length;hitE(n,2,'#ffffff','arrow');try{const mine=DMGS.splice(k0);let e=null;for(let j=DMGS.length-1;j>=0&&j>=DMGS.length-6;j--){const q=DMGS[j];if(q&&q.t<.05&&String(q.v)===String(p.dmg)&&Math.abs(q.x-n.x)<2){e=q;break}}if(e)e.v=String((+e.v||0)+2);else DMGS.push(...mine)}catch(e2){self.SQERR&&SQERR(e2,'037-9')}}
  if(perk(FL,'explosive')&&p.iron){for(const o of en)if(o!==n&&!o.dead&&Math.hypot(o.x-n.x,o.y-n.y)<24)hitE(o,Math.ceil(p.dmg/2),'#f8a040','arrow');for(let k=0;k<12;k++){const a=k/12*6.283;part(n.x,n.y-6,Math.cos(a)*90,Math.sin(a)*70,.3,k%2?'#f88830':'#f8e060',0)}}
  if(perk(FL,'ricochet')&&!p.ric){let b=null,bd=72;for(const o of en){if(o===n||o.dead)continue;const d=Math.hypot(o.x-n.x,o.y-n.y);if(d<bd){bd=d;b=o}}
   if(b){const dx=b.x-n.x,dy=(b.y-4)-(n.y-4),d=Math.hypot(dx,dy)||1;PROJ.push({...p,x:n.x+dx/d*10,y:n.y-4+dy/d*10,vx:dx/d*270,vy:dy/d*270,t:0,life:1,dmg:Math.max(1,Math.ceil(p.dmg/2)),ric:1,extra:1,dead:0,crit:0,ghost:0,pierced:1})}}}
