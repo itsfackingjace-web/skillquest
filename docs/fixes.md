@@ -174,8 +174,9 @@ reports from Nov 11-22 were handled on Nov 26) and no new code errors (`errs`: t
   inside a building showed on Hollow): 061's presence `ar` was curRegion(), 'hollow' in every room; it's 295's `SQOUTREGION()` now, the
   island the building stands on (via `SCENE.prev`), check 138. Already fixed: Kass's mushroom hat (the library recipe gives 300 XP) and
   Heather's "sign" (Ace's card table on a Briarwood tree, Nov 21, check 78). Check 95 now holds a rod (fishing ends without one).
-  Still open: Girth's red pixel in front of the Spider Hood facing sideways; iPrint3D's hermit house doorway (Jace: make it and the No
-  Man's Land buildings enterable). `errs`: nothing since 2026.11.24-11. Auto reports since 2026.11.24: "Fell to an unseen monster" next to a world boss (Kevin at Ashfall,
+  iPrint3D's hermit hut doorway: the hut and Dustwater's buildings can be entered now (296, see world.md, check 139). Still open: Girth's
+  red pixel in front of the Spider Hood facing sideways. Checks 101 and 121 were hardened after full-run flakes (random perk refunds;
+  a game-day rollover and a gold reward during the purchases). `errs`: nothing since 2026.11.24-11. Auto reports since 2026.11.24: "Fell to an unseen monster" next to a world boss (Kevin at Ashfall,
   Bowen at Briarwood) were false: bosses are drawn by their own code, so 227 never had a SEEN time for them; `logHit` marks exempt
   monsters (`ex`) and `unseen` counts one within 40 px as seen (check 137). "ULT button covered/did nothing" (24, mostly SLAM, taps landing on
   `#c`, which 269 still turns into the ULT) are left alone with the SLAM report, on hold.
