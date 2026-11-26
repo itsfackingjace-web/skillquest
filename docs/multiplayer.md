@@ -162,3 +162,7 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   highest seen, so a reloaded player's swings, arrows, spells, ultimates and chops were ignored until their count caught up).
 - **Shared resources on guild islands** (061 `resSubRegion`/`resTick`, Nov 24, check 115): `gi_` regions are no longer skipped; see
   docs/guilds.md (60 s regrowth, rules `world/res/$loc/$cell` let `r_gi_` entries be removed after 55 s instead of 230 s).
+- **Area inside buildings** (`multiplayer/287-s295-area-inside-houses.js`, `window.SQOUTREGION`, Nov 26, Jerica, check 138): presence
+  `ar` (061's `mpTick`, edited in place) is the outdoor region you're in or the island the building you're in stands on (walks
+  `SCENE.prev`, which 067 sets when you go in from an island and 145's yards keep), so maps and the online list put you on that island
+  at `ax/ay` (the door). `curRegion()` is unchanged ('hollow' in any room).

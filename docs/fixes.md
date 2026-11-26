@@ -170,9 +170,12 @@ reports from Nov 11-22 were handled on Nov 26) and no new code errors (`errs`: t
   only: 292 (see saves.md) for Kevin's vanished golem (not reproduced: his backups show it equipped on one device, then a save from another
   device without it). Not reproduced / already working: Jerica's Patron tab opening crafting, Heather's wand (every wand, upgraded and used
   copies equip), Jace's worn gear missing from the chest screen (listed, also after a load), Kass's brewing behind the skills screen and
-  menu (keeps going). Kevin's Gluttony on health loss is the approved design. Left for Jace (need details or a design call): Kass's mushroom hat XP (20 vs 300 for
-  the other mushroom clothes), Heather's "Why is this sign here" (Nov 21), iPrint3D's magic house you can hide in, Jerica's friend shown in
-  the wrong place on the map, Girth's red pixel in front of the Spider Hood facing sideways. `errs`: nothing since 2026.11.24-11. Auto reports since 2026.11.24: "Fell to an unseen monster" next to a world boss (Kevin at Ashfall,
+  menu (keeps going). Kevin's Gluttony on health loss is the approved design. Jerica's friend in the wrong place on the map (Nov 19; Jace: anyone
+  inside a building showed on Hollow): 061's presence `ar` was curRegion(), 'hollow' in every room; it's 295's `SQOUTREGION()` now, the
+  island the building stands on (via `SCENE.prev`), check 138. Already fixed: Kass's mushroom hat (the library recipe gives 300 XP) and
+  Heather's "sign" (Ace's card table on a Briarwood tree, Nov 21, check 78). Check 95 now holds a rod (fishing ends without one).
+  Still open: Girth's red pixel in front of the Spider Hood facing sideways; iPrint3D's hermit house doorway (Jace: make it and the No
+  Man's Land buildings enterable). `errs`: nothing since 2026.11.24-11. Auto reports since 2026.11.24: "Fell to an unseen monster" next to a world boss (Kevin at Ashfall,
   Bowen at Briarwood) were false: bosses are drawn by their own code, so 227 never had a SEEN time for them; `logHit` marks exempt
   monsters (`ex`) and `unseen` counts one within 40 px as seen (check 137). "ULT button covered/did nothing" (24, mostly SLAM, taps landing on
   `#c`, which 269 still turns into the ULT) are left alone with the SLAM report, on hold.

@@ -6,7 +6,8 @@ module.exports={name:'fishing: sunken treasure chests, and Davy\'s skeleton scen
   // /davy and /treasure are for developer accounts only
   const dv=window.SQDEV;window.SQDEV=()=>false;let leaked='';const _m0=TR.forced;try{mpSend('/davy')}catch(e){leaked=String(e)}out.notDev=TR.forced===null;
   window.SQDEV=()=>true;mpSend('/treasure');out.cmd=[TR.forced];mpSend('/davy');out.cmd.push(TR.forced);TR.force(null);window.SQDEV=dv;
-  const fish=()=>{const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:999,bite:0}};
+  // Nov 26: fishing ends without a rod in hand (275, Kevin's worn-out rod), so hold one
+  TL.rod=Math.max(TL.rod||0,1);const fish=()=>{const[bx,by]=front(24);FISH={px:P.x,py:P.y,bx,by,t:0,wait:999,bite:0}};
   // without Davy in the library, a skeleton roll is a chest
   fish();const g0=GLD;TR.force('skel');catchFish();for(let k=0;k<40&&GLD===g0;k++)await W(100);out.noDavy=[GLD>g0,!TR.state(),!!FISH];
   await W(300);
