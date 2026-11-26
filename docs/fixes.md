@@ -172,4 +172,7 @@ reports from Nov 11-22 were handled on Nov 26) and no new code errors (`errs`: t
   copies equip), Jace's worn gear missing from the chest screen (listed, also after a load), Kass's brewing behind the skills screen and
   menu (keeps going). Kevin's Gluttony on health loss is the approved design. Left for Jace (need details or a design call): Kass's mushroom hat XP (20 vs 300 for
   the other mushroom clothes), Heather's "Why is this sign here" (Nov 21), iPrint3D's magic house you can hide in, Jerica's friend shown in
-  the wrong place on the map, Girth's red pixel in front of the Spider Hood facing sideways. `errs`: nothing since 2026.11.24-11.
+  the wrong place on the map, Girth's red pixel in front of the Spider Hood facing sideways. `errs`: nothing since 2026.11.24-11. Auto reports since 2026.11.24: "Fell to an unseen monster" next to a world boss (Kevin at Ashfall,
+  Bowen at Briarwood) were false: bosses are drawn by their own code, so 227 never had a SEEN time for them; `logHit` marks exempt
+  monsters (`ex`) and `unseen` counts one within 40 px as seen (check 137). "ULT button covered/did nothing" (24, mostly SLAM, taps landing on
+  `#c`, which 269 still turns into the ULT) are left alone with the SLAM report, on hold.

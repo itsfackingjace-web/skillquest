@@ -39,10 +39,12 @@
  function logHit(d,pre){const now=performance.now(),near=[];for(const n of new Set(en.concat(pre||[]))){if(!n||!fin(n))continue;/* Nov 21: a monster that hit you and died in the same moment (dawn, a fire) is listed too (Stormie's report listed nothing) */const dd=Math.hypot(n.x-P.x,n.y-P.y);if(dd<40)near.push([dd,n])}
   near.sort((a,b)=>a[0]-b[0]);const R=SCENE&&SCENE.room;
   HITS.push({at:now,d,msg:now-sayAt<200?lastSay:'',where:R&&R.region||(SCENE&&SCENE.id)||'hollow',px:Math.round(P.x),py:Math.round(P.y),pn:!!pnOpen,
-   m:near.slice(0,3).map(([dd,n])=>{const o=Object.assign(describe(n,'near'),{d:Math.round(dd),seen:SEEN.has(n)?Math.round(now-SEEN.get(n)):-1});delete o.why;if(n.dead)o.dead=1;o.keys=o.keys.slice(0,80);o.x=Math.round(o.x);o.y=Math.round(o.y);return o})});
+   m:near.slice(0,3).map(([dd,n])=>{const o=Object.assign(describe(n,'near'),{d:Math.round(dd),seen:SEEN.has(n)?Math.round(now-SEEN.get(n)):-1});delete o.why;if(n.dead)o.dead=1;if(exempt(n))o.ex=1;o.keys=o.keys.slice(0,80);o.x=Math.round(o.x);o.y=Math.round(o.y);return o})});
   if(HITS.length>8)HITS.shift()}
  // a touch hit ("Ouch!") with no monster you could see right next to you
- const unseen=h=>h.msg==='Ouch!'&&!h.m.some(o=>o.d<16&&o.seen>=0&&o.seen<400);
+ // Nov 26: bosses and other exempt monsters (world bosses, island bosses, burrowed beetles) are drawn by their own code, not 002's pS, so
+ // they never got a SEEN time: Kevin's and Bowen's falls next to a world boss were reported as unseen. One within reach counts as seen.
+ const unseen=h=>h.msg==='Ouch!'&&!h.m.some(o=>o.ex&&o.d<40||o.d<16&&o.seen>=0&&o.seen<400);
  function fell(){const now=performance.now(),last=HITS.filter(h=>now-h.at<15000);
   if(fellReported||!last.length||!last.some(unseen))return;fellReported=true;const MP=window.SQMP,F=window.SQFB;if(!MP||!MP.user||!F)return;const d=F.db;
   const what=('[auto] Fell to an unseen monster. '+JSON.stringify({ver:window.SQVER,dark:+dark().toFixed(2),hits:last.slice(-4).map(h=>Object.assign({},h,{at:Math.round(h.at-now)}))})).slice(0,1500);
