@@ -11,11 +11,11 @@ module.exports={name:'the guild hall is a building in the guild\'s colours',asyn
   // drawn: the canvas has the guild's blue in the roof, and drawing it throws nothing
   const c=SQGHALL.canvas('#3870d8'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let blue=0;for(let i=0;i<d.length;i+=4)if(d[i+3]===255&&d[i+2]>d[i]+60)blue++;out.blue=blue>500;
   let err='';try{g.save();SQGHALL.draw(h,1.5);g.restore()}catch(e){err=String(e)}out.err=err;
-  // at its door, TALK (USE) opens the guild's perks screen, as before
-  P.x=(h.x+2)*16+8;P.y=(h.y+2)*16+8;face=[0,-1];en.length=0;await W(300);talk();await W(300);out.opened=[pnOpen,/perk|Perk|PERK/.test(pbd.innerText||'')];try{closePanel()}catch(e){/*quiet*/}
+  // at its door, TALK (USE) goes in (298)
+  P.x=(h.x+2)*16+8;P.y=(h.y+2)*16+8;face=[0,-1];en.length=0;await W(300);talk();await W(300);out.opened=[!!(SCENE&&SCENE.room&&SCENE.room._gh),!pnOpen];try{leaveScene()}catch(e){/*quiet*/}
   routeGo('hollow');return out});
  if(r.err)return t(false,r.err);
  t.eq(r.item,['ghall',5,2,'Guild hall'],'the hall [drawn as the guild hall building, 5 tiles wide, 2 deep, its name]');
  t.eq(r.solid,10,'all 10 tiles of the building are solid');t.eq(r.free,[false,false,false],'the ground beside and in front of it is free');
  t(r.blue,'its roof and banners take the guild\'s colour');t.eq(r.err,'','drawing it threw');
- t.eq(r.opened,[true,true],'USE at its door opens the guild\'s perks [screen open, perks shown]')}};
+ t.eq(r.opened,[true,true],'USE at its door goes into the hall [inside, no screen]')}};

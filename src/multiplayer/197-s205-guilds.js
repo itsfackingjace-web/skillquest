@@ -66,7 +66,7 @@
  const BLD=[{k:'horn',lv:2,n:'Guild horn',d:'Travel to the guild island from anywhere outdoors (once every 3 minutes).'},
   {k:'forge',lv:3,n:'Guild forge',d:'A furnace and an anvil on the island. Smithing there gives +20% XP.'},
   {k:'shrine',lv:4,n:'Guild shrine',d:'Pray once a day for a 20-minute blessing: +20% XP (wisdom) and regeneration.'},
-  {k:'hall',lv:5,n:'Guild hall',d:'Room for 10 more members, and +5% XP in every skill for all members, anywhere.'}];
+  {k:'hall',lv:5,n:'Guild hall',d:'Room for 10 more members, and +5% XP in every skill for all members, anywhere. Walk inside to rest by the hearth, use the guild bank, see the guild\'s banners and trophies, and play guildmates at Drop Card or chess.'}];
  const has=k=>{const b=BLD.find(x=>x.k===k);return!!(b&&G.ready&&glv(G.prog&&G.prog.qd)>=b.lv)};
  const rewTxt=r=>Object.entries(r).map(([k,n])=>n.toLocaleString()+' × '+nm(k)).join(', ');
  const hash=s=>{let h=7;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h};
@@ -142,7 +142,7 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
   if(has('forge'))for(const f of S.forge)add({t:'lm',k:'gstation',st:f.st,x:f.x,y:f.y,w:1,h:1,use:'gstation',name:f.st==='furnace'?'Guild furnace':'Guild anvil'});
   if(has('shrine'))add({t:'lm',k:'shrine',x:S.shrine[0].x,y:S.shrine[0].y,w:1,h:1,use:'gshrine',name:'Guild shrine'});
   // Nov 28 (Jace: the island ruins' vault didn't fit): 297 draws the hall as a building over the spot and the free ground beside it
-  if(has('hall'))add({t:'ghall',x:S.hall[0].x-1,y:S.hall[0].y,w:5,h:2,use:'ghall',name:'Guild hall'});
+  if(has('hall'))add({t:'ghall',x:S.hall[0].x-1,y:S.hall[0].y,w:5,h:2,use:'ghall',word:'ENTER',name:'Guild hall'});
   // guild boss portals (199/200), while this week's summoned boss is still standing
   if(window.SQGBOSS)for(const p of SQGBOSS.portals(R))add(p)}
  let BLV='';const bkey=()=>glv(G.prog&&G.prog.qd)+':'+(window.SQGBOSS?SQGBOSS.key():'');
@@ -160,7 +160,7 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
  function listen(gid){stopAll();G.ready=false;if(!gid)return;const d=DB();
   OFF.push(d.onValue(ref('guilds/'+gid),s=>{const v=s.val();
    if(!v||!v.m||!v.m[me()]){if(G.id===gid){const was=G.info&&G.info.n;leftGuild(was?'You are no longer in '+was+'.':'')}return}
-   G.info=v.info||G.info;G.m=v.m||{};G.q=v.q||null;G.prog=v.prog||{qd:0};G.perm=Object.assign({o:-1,m:20},v.perm||{});G.bank=Object.assign({i:{},v:0},v.bank||{});G.bank.i=G.bank.i||{};G.isl=v.isl||{};G.wd=v.wd||{};G.boss=v.boss||null;G.turt=v.turt||null;G.ready=true;keep();register();
+   G.info=v.info||G.info;G.m=v.m||{};G.q=v.q||null;G.prog=v.prog||{qd:0};G.perm=Object.assign({o:-1,m:20},v.perm||{});G.bank=Object.assign({i:{},v:0},v.bank||{});G.bank.i=G.bank.i||{};G.isl=v.isl||{};G.wd=v.wd||{};G.boss=v.boss||null;G.turt=v.turt||null;G.tro=v.tro||{};/* tro: 298's hall trophies */G.ready=true;keep();register();
    try{const R=SCENE&&SCENE.room;if(R&&R.region===REG){applyNodes(R);if(BLV!==bkey()){BLV=bkey();applyBuildings(R)}}}catch(e){self.SQERR&&SQERR(e,'197-17')}
    if(JOINCHK===gid){JOINCHK='';const cap=maxM(),L=Object.entries(G.m).map(([u,x])=>({u,j:x&&typeof x.j==='number'?x.j:Infinity})).sort((a,b)=>(a.j===b.j?0:a.j<b.j?-1:1)||(a.u<b.u?-1:1));
     if(L.length>cap&&L.findIndex(x=>x.u===me())>=cap){const n=G.info&&G.info.n,up={};up['guilds/'+gid+'/m/'+me()]=null;up['gmem/'+me()]=null;

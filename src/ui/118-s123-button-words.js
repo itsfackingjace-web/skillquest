@@ -31,7 +31,7 @@
  function eatWord(){if(BUILD)return'DONE';
   try{if(nearFire(P.x,P.y,45)&&((inv.meat|0)>0||typeof COOKS!=='undefined'&&COOKS.some(c=>(inv[c.raw]|0)>0&&lvOf(4)>=c.lv&&!c.st)))return'COOK'}catch(e){self.SQERR&&SQERR(e,'118-7')}
   return'EAT'}
- function useWord(){try{if(typeof nearFurn==='function'){const it=nearFurn();if(it){if(it.use&&USEW[it.use])return USEW[it.use];const f=it.f;if(f)return f.t==='bed'?(typeof bedPick!=='undefined'&&bedPick&&bedPick.home&&bedPick.i===it.i&&performance.now()-bedPick.at<3000?'PICK UP':'SLEEP'):f.t==='chest'?'OPEN':STW[f.t]||null}}}catch(e){self.SQERR&&SQERR(e,'118-8')}
+ function useWord(){try{if(typeof nearFurn==='function'){const it=nearFurn();if(it){if(it.word)return it.word;/* an item can name its own word (298's guild hall) */if(it.use&&USEW[it.use])return USEW[it.use];const f=it.f;if(f)return f.t==='bed'?(typeof bedPick!=='undefined'&&bedPick&&bedPick.home&&bedPick.i===it.i&&performance.now()-bedPick.at<3000?'PICK UP':'SLEEP'):f.t==='chest'?'OPEN':STW[f.t]||null}}}catch(e){self.SQERR&&SQERR(e,'118-8')}
   try{if(typeof nearStruct==='function'){const i=nearStruct();if(i!=null){const s=STR.get(i);if(s)return s.t==='bed'?'SLEEP':s.t==='chest'?'OPEN':STW[s.t]||null}}}catch(e){self.SQERR&&SQERR(e,'118-9')}return null}
  // set a button's word, keeping whatever hint is under it
  function put(el,w){if(!el||!w)return;const h=el.innerHTML,i=h.indexOf('<small'),word=i<0?h:h.slice(0,i);if(word===w)return;el.innerHTML=w+(i<0?'':h.slice(i))}

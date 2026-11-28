@@ -300,6 +300,7 @@ ui/286-s294-pvp-chip.js
 multiplayer/287-s295-area-inside-houses.js
 world/288-s296-enterable-buildings.js
 world/289-s297-guild-hall.js
+world/290-s298-guild-hall-inside.js
 core/112-fullscreen-options.js
 core/113-s93-hollow-island-doubled-220-x-220-old-saves-move-w.js
 core/114-boot-load.js

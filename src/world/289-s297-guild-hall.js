@@ -6,11 +6,11 @@
 // and a plaque with the guild's tag over the door. 197's applyBuildings adds it as {t:'ghall'} over the hall spot and the ring of
 // free ground beside it (5 x 2 tiles; the spot's ring was always kept free of planting). Drawing only, plus that footprint.
 // window.SQGHALL = {draw(it, tm), canvas(col)}.
-(()=>{const COLS=['#d83a30','#e8862a','#e8c830','#48a848','#30a0a0','#3870d8','#8048c8','#d058a0','#e8e8e8','#404048'];// 197's guild colours
+(()=>{const COLS=(window.SQGUILD&&SQGUILD.COLS)||['#d83a30','#e8862a','#e8c830','#48a848','#30a0a0','#3870d8','#8048c8','#d058a0','#e8e8e8','#404048'];// 197's guild colours
  const mix=hdMix,OL='#24181c',ST=['#2a2a36','#5e5e70','#7c7c90','#9a9aae','#c4c4d4'],WD=['#3a2210','#5a3418','#7a4a24','#9a6434','#b88048'];
  const ramp5=c=>[mix(c,'#000000',.5),mix(c,'#000000',.3),mix(c,'#000000',.13),c,mix(c,'#ffffff',.25)];
  const info=()=>{try{return(window.SQGUILD&&SQGUILD.state&&SQGUILD.state.info)||{}}catch(e){return{}}};
- const gcol=()=>COLS[(info().col|0)]||COLS[0];
+ const gcol=()=>COLS[(info().col|0)]||COLS[0];window.SQGHCOL=gcol;
  // the canvas covers x -8..88 and y -96..2 around the footprint's bottom-left corner (base = bottom of the 2 rows)
  const OX=-8,OY=-96,CW=96,CH=98,CACHE=new Map();
  function outline(c,col){const x=c.getContext('2d'),W=c.width,H=c.height,im=x.getImageData(0,0,W,H),d=new Uint32Array(im.data.buffer),o=new Uint32Array(d),oc=hdC(col),op=i=>(d[i]>>>24)===255;

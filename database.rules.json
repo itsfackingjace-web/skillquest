@@ -764,6 +764,12 @@
             ".validate": false
           }
         },
+        "tro": {
+          "$k": {
+            ".write": "auth != null && root.child('guilds').child($g).child('m').child(auth.uid).exists() && !data.exists() && ($k==='boss' || $k==='turt') && root.child('guilds').child($g).child($k).child('k').exists()",
+            ".validate": "newData.isNumber() && newData.val()===now"
+          }
+        },
         "bd": {
           "$k": {
             "$u": {
