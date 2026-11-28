@@ -145,7 +145,7 @@ Each area has its own notes file in `docs/`. Read the one for the area you're ch
 - **`docs/homes.md`** — Homes and building: Houses, castles, yards, pets at home, chests, building only at home, homes on guild islands.
   Covers: Visiting island castles, Castle hall symmetry, One home, Backyards / courtyards, Home comforts, Deposit bag, Building only at home, Yards count as outdoors for weather and fighting, Pets at home, Chest tools, Homes on guild islands, Home tax.
 - **`docs/guilds.md`** — Guilds: Guild founding, island, quests, perks, bank, bosses (Void Treant, Giant Turtle), capes, sails, ponds.
-  Covers: Guilds, Guild perks, Void Treant, Guild bosses framework, Giant Turtle, Guild bank deposit buttons, Capes, Guild member limit, Wiki > Guilds, Guild ponds and one angler per spot, Guild sails.
+  Covers: Guilds, Guild perks, Void Treant, Guild bosses framework, Giant Turtle, Guild bank deposit buttons, Capes, Guild member limit, Wiki > Guilds, Guild ponds and one angler per spot, Guild sails, Guild hall building.
 - **`docs/patrons.md`** — Patrons, art and paintings: Patreon link, patron perks, the Art Room (and editing submissions), paintings and the gallery, wearables and pets from art, capes.
   Covers: Patrons, Art Room, Patreon link, One cape picker, Art Room editor, Paintings and the Patron Art Gallery, Art Room wearables, Art Room pets, Editing patron art.
 - **`docs/ui.md`** — Screens, controls and HUD: Controllers, custom controls, touch layout, camera, HUD layout on phones, the update check, the wiki.

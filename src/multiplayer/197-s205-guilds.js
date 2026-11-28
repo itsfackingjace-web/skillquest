@@ -141,7 +141,8 @@ const onIsle=()=>{try{const R=SCENE&&SCENE.room;return!!(R&&R.region&&R.region==
   const S=spots(R),add=it=>{it._gb=1;it.sh=it.h;R.items.push(it);(R.useItems=R.useItems||[]).push(it);for(let b=0;b<it.h;b++)for(let a=0;a<it.w;a++)R.solid.add((it.y+b)*W+it.x+a);try{rgCellAdd(R,it)}catch(e){self.SQERR&&SQERR(e,'197-13')}};
   if(has('forge'))for(const f of S.forge)add({t:'lm',k:'gstation',st:f.st,x:f.x,y:f.y,w:1,h:1,use:'gstation',name:f.st==='furnace'?'Guild furnace':'Guild anvil'});
   if(has('shrine'))add({t:'lm',k:'shrine',x:S.shrine[0].x,y:S.shrine[0].y,w:1,h:1,use:'gshrine',name:'Guild shrine'});
-  if(has('hall'))add({t:'lm',k:'vault',x:S.hall[0].x,y:S.hall[0].y,w:3,h:2,use:'ghall',name:'Guild hall'});
+  // Nov 28 (Jace: the island ruins' vault didn't fit): 297 draws the hall as a building over the spot and the free ground beside it
+  if(has('hall'))add({t:'ghall',x:S.hall[0].x-1,y:S.hall[0].y,w:5,h:2,use:'ghall',name:'Guild hall'});
   // guild boss portals (199/200), while this week's summoned boss is still standing
   if(window.SQGBOSS)for(const p of SQGBOSS.portals(R))add(p)}
  let BLV='';const bkey=()=>glv(G.prog&&G.prog.qd)+':'+(window.SQGBOSS?SQGBOSS.key():'');

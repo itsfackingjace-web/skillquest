@@ -101,3 +101,9 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `mir`/`inv` ride on SQMOBX/SQMOBRX. Knockback/pull never move you into the arena's bottom rows (its exit). 035 drops far dungeon monsters from
   `en`; 241 puts the guild boss back. Damage board: each fighter's own damage = boss hp drop during their own frame; `guilds/<g>/bd/<boss|turt>/<uid>`
   {n,d,w,t} written at the kill, the Bosses tab shows this week's top 5. Check 29.
+- **Guild hall building** (`world/289-s297-guild-hall.js`, `window.SQGHALL` {draw, canvas}, Nov 28, Jace: "looks completely like AI"; check
+  146): 197's `applyBuildings` adds the hall as `{t:'ghall', x: spot.x-1, w:5, h:2}` (the 3-wide spot plus the ring beside it, which
+  `reserved()` always kept free of planting) instead of the island ruins' HD `vault` landmark. 297 draws it in 057's town style
+  (cached canvas per guild colour from 197's `COLS`, copied there; 1px `#24181c` outline): stone ground floor, arched double door,
+  half-timbered upper floor with three windows, guild-coloured shingle roof, two banners, lanterns; every frame the ridge pennant
+  and the guild's tag on the plaque. USE at the door (TALK, 049's region `nearFurn`) still opens the perks screen.
