@@ -40,10 +40,13 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
   const rel=()=>{const b=pbd.querySelector('.petrel');if(b)b.click();return!!b};const pc='pc_'+pk,c0=inv[pc]|0;rel();await W(50);rel();await W(150);out.petCard=(inv[pc]|0)-c0;out.petName=INAME[pc];
   // brewing a potion (forced roll)
   window.SQDROPCARDALWAYS=true;const pkey=D.CARDS.pot_heal.key,p0=inv[pkey]|0;for(const f of SQBREWED)f('pot_heal');out.potion=(inv[pkey]|0)-p0;// foraging berries (forced roll)
-  closePanel();await W(100);const bk=D.CARDS.berry.key,b0=inv[bk]|0;face=[1,0];const[fx,fy]=front(16),tx=Math.floor(fx/16),ty=Math.floor(fy/16),ti=ty*N+tx;obj[ti]={t:'bush',hp:1};STR.delete(ti);BS.delete(ti);
+  closePanel();await W(100);const bk=D.CARDS.berry.key,b0=inv[bk]|0;face=[1,0];const[fx,fy]=front(16),tx=Math.floor(fx/16),ty=Math.floor(fy/16),ti=ty*N+tx;
   // swing until the bush itself is picked (Nov 23: stopping at the first berry from anywhere, a pet's fetch say, made this flaky)
-  for(const n of en)if(!n._pet&&!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<80){n.dead=1;n.dropped=1}
-  const be0=inv.berry|0;for(let k=0;k<40&&obj[ti]&&obj[ti].t==='bush';k++){swing=0;attack();await W(400)}out.berries=(inv.berry|0)-be0;out.forage=(inv[bk]|0)-b0;window.SQDROPCARDALWAYS=false;
+  // Nov 28: it failed once in a full run (berries but no card) and never in 19 runs alone; a second bush is tried, and the tries say what happened
+  const be0=inv.berry|0;out.tries=[];for(let a=0;a<2&&!((inv[bk]|0)>b0);a++){obj[ti]={t:'bush',hp:1};STR.delete(ti);BS.delete(ti);face=[1,0];
+   for(const n of en)if(!n._pet&&!n.dead&&Math.hypot(n.x-P.x,n.y-P.y)<80){n.dead=1;n.dropped=1}
+   const e0=inv.berry|0;let k=0;for(;k<40&&obj[ti]&&obj[ti].t==='bush';k++){swing=0;attack();await W(400)}out.tries.push({swings:k,berries:(inv.berry|0)-e0,card:(inv[bk]|0)-b0,left:obj[ti]?obj[ti].t:null,always:!!window.SQDROPCARDALWAYS})}
+  out.berries=(inv.berry|0)-be0;out.forage=(inv[bk]|0)-b0;window.SQDROPCARDALWAYS=false;
   // Wiki > Drop Card
   SQWK.open('dropcard');await W(80);const wt=(document.getElementById('wkb')||{}).textContent||'';out.wiki=['Drop Card for Dummies','Moss slime','Healing potion','Pet cards','Nine lives'].filter(x=>!wt.includes(x));
   const ln=document.querySelector('#wkb [data-wkp="item:dc_slime_moss"]');if(ln)ln.click();await W(50);out.wikiPage=((document.getElementById('wkb')||{}).textContent||'').includes('2HP 1ATK');try{SQWK.close&&SQWK.close()}catch(e){}
@@ -58,4 +61,4 @@ module.exports={name:'Card Binder, the guide, pet and potion cards, with control
  t.eq(r.savedDeck,r.deck,'deck in the save');t.eq(r.loadedDeck,r.deck,'deck after loading');
  t.eq(r.guideTab,'guide','READ opens the guide');t.eq(r.title,'Drop Card for Dummies','guide title');t.eq(r.page,2,'guide page after NEXT twice');t(r.pages>=8,'guide pages');
  t(r.overflow<=1,'the binder is wider than the panel by '+r.overflow+'px');
- t.eq(r.petCard,1,'pet card from releasing a pet');t(/^Pet Card: /.test(r.petName||''),'pet card name '+r.petName);t.eq(r.potion,1,'potion card from brewing');t(r.berries>0,'no berries from the bush');t.eq(r.forage,1,'forage card from picking berries');t.eq(r.wiki,[],'missing from Wiki > Drop Card');t(r.wikiPage,'a card\'s wiki page')}};
+ t.eq(r.petCard,1,'pet card from releasing a pet');t(/^Pet Card: /.test(r.petName||''),'pet card name '+r.petName);t.eq(r.potion,1,'potion card from brewing');t(r.berries>0,'no berries from the bush');t.eq(r.forage,1,'forage card from picking berries '+JSON.stringify(r.tries));t.eq(r.wiki,[],'missing from Wiki > Drop Card');t(r.wikiPage,'a card\'s wiki page')}};
