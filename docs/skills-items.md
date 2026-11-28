@@ -153,6 +153,10 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   tracker (102's `refresh` asks `SQGUIDE()` first), with hints, glowing buttons (`.sqglow`) and small rewards. Saved as `gd`
   (99 = done or skipped); a save without `gd`, or a game started without a save, is judged once play starts. Tapping the
   quest box opens the quest log (with "Skip the guide").
+- **Shared farm soil** (077, in the MP block, edited in place; Nov 28, check 141): Hollow's plots are `farm/<area>/<x_y>` {c,g,t,w,e} (Hollow's
+  area is `hollow2`). `c` is the crop's item key, up to 40 letters (rules `c < 41`; Dev Suite crops from `gather.crops` are `it_...` keys,
+  registered by 176 into `CROPS`/`SEED2CROP`). `sfCrop(c)` (`window.SQSFCROP`) maps a stored name to a crop, including names cut to 10
+  letters before Nov 28. A new field on a plot needs the rules and `sfClean`.
 - **Farming seeds** (`skills/152-s158-farming-seeds.js`, `SQSEEDS(L)`): 016's harvest asks it for the seed count: 45% + 0.5%/level
   (cap 95%), second seed 5% per 10 levels (max 45%); perks (third choices, like 087's) `fm_pouch` (20, +15%), `fm_twin` (40,
   each seed 25% ×2), `fm_heir` (70, at least one). `TREES[11].step` lists the seed numbers. 038's `fm_seed` still adds its own.

@@ -81,7 +81,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `gp_trout/salmon/sword/moon/koi` (+ bait); `NODE` has them (`PONDK`), `canPlant(k)` checks a 3x3 patch in front (middle = front cell +
   facing) plus a ring of land around it, `plant` stores `isl/<middle>`, `dig`/`spotOK` find a pond by any of its cells (`pondAt`).
   197's `applyNodes` calls `SQPONDS.apply(R,want,pondCells)`: those cells become water (`R.tiles` 0, originals in `R._pondO`, put back when
-  dug), `R._ponds`, and the island's `RGCK` chunks are dropped so the ground is rebaked. Pond fishing = entries at the front of
+  dug), `R._ponds`, and the island's `RGCK` chunks are dropped so the ground is rebaked. Pond cells are added to `R.solid` (rooms walk by it;
+  Nov 28, Applez walked on a koi pond, check 145), and the ones it added (`R._pondS`) are freed when the pond is dug up. Pond fishing = entries at the front of
   `window.SQFISHX` (093b, which now calls an entry's `got()` after a catch) whose `ok()` checks the bobber is in a pond of that kind with
   stock left (per player, localStorage `sq_pond`, 30, +1 per 120 s); chances trout/salmon/sword .6, moon .4 any time, koi .15. Library
   `ponds` {p,stock,refill} overrides. The rules needed no change (isl values are any short string, rewards aren't checked).

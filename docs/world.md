@@ -51,6 +51,11 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   `voyAct(a,true)`. Harbor posts (`routesHTML`) are fast travel only: charted routes, locked ones say "Not charted yet" + a line
   pointing to Sera. `post` on VOYS/UPGRADES is no longer shown anywhere. `navSpot()` = the Navigator's House door (102's tracker,
   also for upgrades).
+- **World boss lairs** (071 `wbLair`, in the MP block, edited in place): Hollow lairs avoid the village, `PROT`, `BS` and Saltmere's
+  `TOWNZ` (Nov 28); island lairs (within 22-95 tiles of the pier, a reachable 9x7 patch) first try 6,000 spots clear of every reserved
+  site except `resource` (towns, dungeon doors, boss lairs, hubs: Applez's Flame Wisp over the Sleepy Fern), then the old 800-spot
+  search. The search is the same in every game (terrain and reserved sites only): change it and older games put the boss elsewhere
+  until they update. Check 144.
 - **World boss on maps** (`ui/138`, `window.SQWBMAP`): world map, area map (with a line saying where it is) and minimap mark
   the boss at `wbPos(b, lair)` (071's block functions, global through Annex B); the lair is known on Hollow or once you're on its island.
 - **Graves outside entrances** (063 `grvPos`, `SQGRV.pos`): a grave whose `loc` is `in:` (dungeon, island boss lair, building; not houses) is shown, looted and mapped at its `ar/ax/ay` (the spot you come out at, +8 px) in that outdoor area. Display only, the database record is unchanged, so older graves move too. Kept inside when that spot is water on Hollow (Drowned Grotto).
@@ -75,6 +80,8 @@ Part of the SkillQuest notes: start at `CLAUDE.md` (the rules every change follo
   asks `window.SQHITWORD` first. Streak/flash/smoke in the outermost `drawHUD`, banner `#mtb`, minimap/area map markers. Items
   `meteorore`, `stardust`, `metbar` (SM smelt: 15 + 15 adamant ore + 3 stardust, Smithing 80). Library `meteor` overrides CFG.
   Test: `SQMETEOR.test(ms, tile)` starts a local strike (where you stand: Hollow or an island).
+  Listening (Nov 28, Kass, check 143): `subscribe(s)` needs `SQFB` and a signed-in uid; `tick` subscribes again while `ST.subs` is
+  empty, so a game that signs in after the strike began still follows everyone's mining.
   Islands (Nov 16): scheduled windows pick a place from `LOCS` (Hollow 3/7, ashfall/briarwood/ironcrest/shattered); island strikes
   have ids `i<k>`, tile = y*R.w+x, picked only by games standing on that island (`okR`: crater cells may hold `_obj` items, which
   `flatten()` hides (gone + rgCellDel + R.solid) while the strike lasts and puts back after) and agreed through the same `mts` slot;

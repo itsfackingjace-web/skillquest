@@ -180,3 +180,23 @@ reports from Nov 11-22 were handled on Nov 26) and no new code errors (`errs`: t
   Bowen at Briarwood) were false: bosses are drawn by their own code, so 227 never had a SEEN time for them; `logHit` marks exempt
   monsters (`ex`) and `unseen` counts one within 40 px as seen (check 137). "ULT button covered/did nothing" (24, mostly SLAM, taps landing on
   `#c`, which 269 still turns into the ULT) are left alone with the SLAM report, on hold.
+- **Nov 28 bug reports** (checks 140-145). Reading the console as on Nov 26; push ids are matched with `/^-[A-Za-z0-9_-]{19}$/` (they start
+  with `-P7` now, not `-O`), and a report's `shot` can be shown by putting the data URL in a fixed `<img>` and zooming a screenshot.
+  `errs` 'uncaught' "a[0]" (8 on 2026.11.26-1): 005's panel click handler sent every `.sb` button to `shopAct`, but many later screens use
+  `.sb` without `data-a`; those pass through to the next handler now (check 140). Spencer's cotton (a Dev Suite crop, `it_new_item_2`)
+  on Hollow's shared soil: 077's `sfClean` cut `c` to 10 letters and the rules allowed 11, so plots held `it_new_ite` and showed as tilled
+  soil; plots keep 40 letters (rules `c < 41`), and `sfCrop` (`window.SQSFCROP`) finds a crop from a cut name (check 141). Kevin's doubled
+  arrows: 244 gave each bonus *item* a make's XP, so a bonus batch of 25 got 25 makes' XP; it divides by `o.q` now, and its own "+N XP"
+  text (the amount before boosts, beside addXp's real "+N SMITH") is gone (check 142). Kass's meteor bar: 215 subscribed once when the
+  strike began, and a game not signed in yet never listened; `tick` subscribes once it can (check 143). Applez's Flame Wisp over the
+  Sleepy Fern: 071's island lair search (in the MP block, edited in place) first looks (6,000 tries) for a patch clear of non-`resource`
+  reserved sites (towns, dungeon doors, boss lairs, hubs), then falls back to the old search; 395 of 399 Briarwood slots used to touch one,
+  3 of 399 Shattered slots still fall back (check 144). Applez's walk on the koi pond: 222's `apply` set water tiles but rooms walk by
+  `R.solid`; pond cells are added to it (only the ones it added are freed when dug, `R._pondS`) (check 145). Not reproduced, asked for
+  details: Kevin's adamant storm wand +2 becoming plain (equips, shots, swaps, saves and loads and slam ULTs keep the level; his save has
+  only a used plain one), his mushroom robe +2 he never made (his save wears `u2_eq_cu_mushroom_robe`), his guild island trees not growing
+  back on his phone only, Kass's iron ore near Saltmere, Jace's worn gear into a house chest (used copies deposit; asked whether he meant
+  gear he's wearing). Kevin's meteorite wand vs his adamant storm wand +2 is balance, not a bug: per hit the meteorite wand is ahead
+  (+6 vs +2 and 3 base for storm), but storm bolts jump to another monster (up to 3 with the Chain perk) and his storm wand is +2 (+10%).
+  Ethan's "[auto] Another device took over" (116 s since the last account save, during a make-all) and Cason's "unseen" fall (16 px,
+  seen 11 ms before) are left as reports. Jace's guild hall art (the island ruins' vault) is a design change: preview first.
