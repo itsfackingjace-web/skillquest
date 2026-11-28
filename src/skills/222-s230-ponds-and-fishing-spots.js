@@ -18,8 +18,11 @@
  // ---- the water ----
  function apply(R,want,cellsOf){const O=R._pondO||(R._pondO=new Map()),D=new Map();R._ponds=[];
   for(const k in want){const key=want[k];if(!FISHOF[key])continue;R._ponds.push({i:+k,key});for(const c of cellsOf(R,+k))if(c>=0&&c<R.tiles.length)D.set(c,key)}
-  let ch=false;for(const[c,t]of[...O]){if(!D.has(c)){R.tiles[c]=t;O.delete(c);ch=true}}
-  for(const[c]of D){if(!O.has(c)){O.set(c,R.tiles[c]);R.tiles[c]=0;ch=true}}
+  // Nov 28 (Applez: "can walk on water" in a new koi pond): rooms walk by R.solid, so pond water is solid too (and only the cells
+  // the pond made solid open up again when it's dug up)
+  const S=R._pondS||(R._pondS=new Set());
+  let ch=false;for(const[c,t]of[...O]){if(!D.has(c)){R.tiles[c]=t;O.delete(c);if(S.has(c)){S.delete(c);R.solid.delete(c)}ch=true}}
+  for(const[c]of D){if(!O.has(c)){O.set(c,R.tiles[c]);R.tiles[c]=0;ch=true}if(!R.solid.has(c)){R.solid.add(c);S.add(c)}}
   if(ch){try{for(const k of[...RGCK.keys()])if(k.startsWith(R.key+':'))RGCK.delete(k)}catch(e){self.SQERR&&SQERR(e,'222-2')}}}
  function pondHere(){const R=SCENE&&SCENE.room;if(!FISH||!R||!R._ponds||!R._ponds.length)return null;const W=R.w,tx=Math.floor(FISH.bx/16),ty=Math.floor(FISH.by/16);
   for(const p of R._ponds){const x=p.i%W,y=(p.i/W)|0;if(Math.abs(tx-x)<=1&&Math.abs(ty-y)<=1)return{id:R.region+':'+p.i,key:p.key}}return null}
