@@ -34,7 +34,7 @@ function shopAct(a){if(a[0]=='b'){const it=(shop=='smith'?smItems():genItems())[
  else{const k=a.slice(1),n=inv[k]|0;if(n>0){const v=n*sellP(k);GLD+=v;inv[k]=0;say('Sold for '+v+' gold');drops.push({x:P.x,y:P.y-16,t:0,tx:'+'+v+' gold',c:'#f8d848'})}}
  svg();rPn()}
 SQRPN.wrap('005',_r=>function(){if(ptab==2){document.getElementById('t0').className='';document.getElementById('t1').className='';rShop()}else _r()});
-const _oc=pbd.onclick;pbd.onclick=e=>{const s=e.target.closest('.sb');if(s)shopAct(s.dataset.a);else _oc(e)};
+const _oc=pbd.onclick;pbd.onclick=e=>{const s=e.target.closest('.sb');if(s&&s.dataset.a!=null)shopAct(s.dataset.a);else _oc(e)};// Nov 28: many later screens use .sb buttons without data-a (errs 'uncaught' a[0], 8 on 2026.11.26-1)
 const st5=document.createElement('style');st5.textContent='.sb{display:block;width:100%;margin:8px 0;padding:12px;text-align:left;border-radius:8px;border:2px solid #f4f0d8;background:#2a6a22;color:#fff;font:700 14px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace}.sb small{font-weight:400;opacity:.85}';document.head.appendChild(st5);
 const nearNpc=()=>NPCS.find(n=>(n.scene||null)===curScene()&&Math.hypot(n.x-P.x,n.y-P.y)<(n.scene?58:28));
 const tk=document.createElement('div');tk.className='b';tk.id='tk';tk.textContent='TALK';tk.style.cssText='width:64px;height:64px;right:34px;bottom:calc(env(safe-area-inset-bottom,0px) + 140px);display:none;font-size:13px';document.body.appendChild(tk);

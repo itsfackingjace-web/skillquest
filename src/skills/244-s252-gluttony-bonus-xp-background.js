@@ -24,12 +24,13 @@
  pbd.addEventListener('click',e=>{if(!e.target.closest('.sqglut'))return;e.stopPropagation();glut=!glut;try{localStorage.setItem('sq_glut',glut?'1':'0')}catch(err){self.SQERR&&SQERR(err,'244-4')}try{sfx('talk');rPn()}catch(err){self.SQERR&&SQERR(err,'244-5')}},true);
  // ---------- XP for bonus items ----------
  let BONUS=0;const LAST={};SQADDXP.after('244 last xp',(i,x)=>{if(x>0&&!BONUS)LAST[i]={x,t:performance.now()}});
- const give=(sk,xp,x,y)=>{xp=Math.round(xp);if(xp<1)return;BONUS++;try{addXp(sk,xp)}finally{BONUS--}try{drops.push({x,y:y-48,t:0,tx:'+'+xp+' XP',c:SKC[sk]||'#fff'})}catch(e){self.SQERR&&SQERR(e,'244-6')}};
+ // Nov 28 (Kevin): addXp shows its own "+N SMITH" with every boost counted; a second "+N XP" here showed the amount before boosts
+ const give=(sk,xp,x,y)=>{xp=Math.round(xp);if(xp<1)return;BONUS++;try{addXp(sk,xp)}finally{BONUS--}};
  if(typeof gBoost==='function'){const _g=gBoost;gBoost=function(sk,gains,x,y){const keys=Object.keys(gains||{}).filter(k=>gains[k]>0),b0=keys.map(k=>inv[k]|0);const out=_g.apply(this,arguments);
    try{const extra=keys.reduce((s,k,j)=>s+Math.max(0,(inv[k]|0)-b0[j]),0),base=keys.reduce((s,k)=>s+gains[k],0),L=LAST[sk];
     if(extra>0&&base>0&&L&&performance.now()-L.t<1500)give(sk,L.x*extra/base,x,y)}catch(e){self.SQERR&&SQERR(e,'244-7')}return out}}
  if(typeof prodBoost==='function'){const _p=prodBoost;prodBoost=function(sk,o){const k=o&&o.out,b0=k?inv[k]|0:0;const out=_p.apply(this,arguments);
-   try{if(k&&o.n>0&&o.xp>0){const extra=(inv[k]|0)-b0;if(extra>0)give(sk,o.xp/o.n*extra,P.x,P.y)}}catch(e){self.SQERR&&SQERR(e,'244-8')}return out}}
+   try{if(k&&o.n>0&&o.xp>0){const extra=(inv[k]|0)-b0;if(extra>0)give(sk,o.xp/o.n/(o.q||1)*extra,P.x,P.y)/* Nov 28 (Kevin): a bonus batch of 25 arrows got 25 makes' XP */}}catch(e){self.SQERR&&SQERR(e,'244-8')}return out}}
  // ---------- keep playing in a background tab ----------
  let lastTick=performance.now(),W=null,TICKS=0;
  try{const src='let t=null;onmessage=e=>{if(e.data==="on"&&!t)t=setInterval(()=>postMessage(1),200);else if(e.data==="off"&&t){clearInterval(t);t=null}}';

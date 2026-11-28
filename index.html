@@ -490,7 +490,7 @@ function shopAct(a){if(a[0]=='b'){const it=(shop=='smith'?smItems():genItems())[
  else{const k=a.slice(1),n=inv[k]|0;if(n>0){const v=n*sellP(k);GLD+=v;inv[k]=0;say('Sold for '+v+' gold');drops.push({x:P.x,y:P.y-16,t:0,tx:'+'+v+' gold',c:'#f8d848'})}}
  svg();rPn()}
 SQRPN.wrap('005',_r=>function(){if(ptab==2){document.getElementById('t0').className='';document.getElementById('t1').className='';rShop()}else _r()});
-const _oc=pbd.onclick;pbd.onclick=e=>{const s=e.target.closest('.sb');if(s)shopAct(s.dataset.a);else _oc(e)};
+const _oc=pbd.onclick;pbd.onclick=e=>{const s=e.target.closest('.sb');if(s&&s.dataset.a!=null)shopAct(s.dataset.a);else _oc(e)};// Nov 28: many later screens use .sb buttons without data-a (errs 'uncaught' a[0], 8 on 2026.11.26-1)
 const st5=document.createElement('style');st5.textContent='.sb{display:block;width:100%;margin:8px 0;padding:12px;text-align:left;border-radius:8px;border:2px solid #f4f0d8;background:#2a6a22;color:#fff;font:700 14px "SQ Digits","Pixelify Sans",ui-monospace,Menlo,monospace}.sb small{font-weight:400;opacity:.85}';document.head.appendChild(st5);
 const nearNpc=()=>NPCS.find(n=>(n.scene||null)===curScene()&&Math.hypot(n.x-P.x,n.y-P.y)<(n.scene?58:28));
 const tk=document.createElement('div');tk.className='b';tk.id='tk';tk.textContent='TALK';tk.style.cssText='width:64px;height:64px;right:34px;bottom:calc(env(safe-area-inset-bottom,0px) + 140px);display:none;font-size:13px';document.body.appendChild(tk);
@@ -10015,9 +10015,15 @@ const sfArea=()=>{const R=SCENE&&SCENE.room;if(R&&R.region)return R.region;if(!S
 const sfK=(x,y)=>x+'_'+y,sfXY=k=>k.split('_').map(Number);
 const sfStore=()=>sfOnline()?SF.data:SF.local;
 const sfRecs=a=>sfStore()[a]||{};
-function sfGrowth(r,now){if(!r||!r.c||!CROPS[r.c])return 0;const C=CROPS[r.c],max=C.max*C.st;let g=+r.g||0;const end=Math.min(now,+r.w||0);if(end>(+r.t||0))g+=(end-(+r.t||0))/1000;return Math.max(0,Math.min(max,g))}
-function sfView(r,now){return{c:CROPS[r.c]?r.c:null,g:sfGrowth(r,now),w:CLK+Math.max(0,((+r.w||0)-now)/1000),e:Math.floor((+r.e||now)/1000)}}
-const sfClean=r=>({c:String(r.c||'').slice(0,10),g:Math.round((+r.g||0)*10)/10,t:Math.round(+r.t||0),w:Math.round(+r.w||0),e:Math.round(+r.e||0)});
+// Nov 28 (Spencer: cotton seeds eaten, XP given, nothing grows, the soil stays forever): sfClean cut the crop to 10 letters and the rules
+// allowed 11, so a Dev Suite crop (Cotton is it_new_item_2) was stored as 'it_new_ite': no crop by that name, so the plot looked empty
+// (plant again, lose another seed) yet had a crop, so it never turned back into grass. Crops keep 40 letters now (rules: < 41), and a
+// stored name cut at 10 letters finds its crop again, growth and all.
+function sfCrop(c){c=String(c||'');if(!c)return null;if(CROPS[c])return c;if(c.length===10)for(const k in CROPS)if(k.length>10&&k.startsWith(c))return k;return null}
+window.SQSFCROP=sfCrop;
+function sfGrowth(r,now){const ck=r&&sfCrop(r.c);if(!ck)return 0;const C=CROPS[ck],max=C.max*C.st;let g=+r.g||0;const end=Math.min(now,+r.w||0);if(end>(+r.t||0))g+=(end-(+r.t||0))/1000;return Math.max(0,Math.min(max,g))}
+function sfView(r,now){return{c:sfCrop(r.c),g:sfGrowth(r,now),w:CLK+Math.max(0,((+r.w||0)-now)/1000),e:Math.floor((+r.e||now)/1000)}}
+const sfClean=r=>({c:String(r.c||'').slice(0,40),g:Math.round((+r.g||0)*10)/10,t:Math.round(+r.t||0),w:Math.round(+r.w||0),e:Math.round(+r.e||0)});
 function sfWrite(area,k,r){const S=sfStore();if(!S[area])S[area]={};if(r)S[area][k]=sfClean(r);else delete S[area][k];
  if(sfOnline()){const ref=FB.db.ref(FB.D,'farm/'+(area==='hollow'?'hollow2':area)+'/'+k);(r?FB.db.set(ref,sfClean(r)):FB.db.remove(ref)).catch(e=>{try{mpErr(e)}catch(_){self.SQERR&&SQERR(_,'077-1')}})}else try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'077-2')}}
 // views: FARM (Hollow, by tile index) and rfMap(region) (by 'x,y') are rebuilt from the shared plots every frame,
@@ -10045,7 +10051,7 @@ rfForeign=function(){return new Map()};
 setInterval(()=>{const now=sfNow(),S=sfStore();
  for(const a in S)for(const k in S[a]){const r=S[a][k];if(!r.c&&now-(+r.e||now)>TILL_LIFE*1000)sfWrite(a,k,null)}
  const area=sfArea();if(!area||!rainingNow()||dark()>.95)return;let bm='grass';try{bm=biomeHere()}catch(e){self.SQERR&&SQERR(e,'077-4')}if(bm==='desert'||bm==='in')return;
- const A=S[area]||{};for(const k in A){const r=A[k];if(r.c&&(+r.w||0)-now<60000)sfWrite(area,k,{c:r.c,g:sfGrowth(r,now),t:now,w:now+WATER_FOR*1000,e:0})}},5000);
+ const A=S[area]||{};for(const k in A){const r=A[k];if(r.c&&(+r.w||0)-now<60000)sfWrite(area,k,{c:sfCrop(r.c)||r.c,g:sfGrowth(r,now),t:now,w:now+WATER_FOR*1000,e:0})}},5000);
 // online: the shared fields, plus moving your old plots in
 function sfStart(){const d=FB.db;SF.unsub=d.onValue(d.ref(FB.D,'farm'),s=>{const v=Object.assign({},s.val()||{});const oldH=v.hollow;v.hollow=v.hollow2||{};delete v.hollow2;try{sfMigrateHollow(oldH,v.hollow)}catch(e){console.warn(e)}SF.data={};for(const a in v){if(!WORLD_REGIONS[a]||!v[a]||typeof v[a]!=='object')continue;SF.data[a]={};
    for(const k in v[a]){const r=v[a][k];if(r&&typeof r==='object'&&/^\d+_\d+$/.test(k))SF.data[a][k]=r}}
@@ -25056,12 +25062,13 @@ window.SQWKDROPS={"rg:slime":{"n":"Slime","g":3.9,"d":{"meat":[0.64,1]}},"rg:wol
  pbd.addEventListener('click',e=>{if(!e.target.closest('.sqglut'))return;e.stopPropagation();glut=!glut;try{localStorage.setItem('sq_glut',glut?'1':'0')}catch(err){self.SQERR&&SQERR(err,'244-4')}try{sfx('talk');rPn()}catch(err){self.SQERR&&SQERR(err,'244-5')}},true);
  // ---------- XP for bonus items ----------
  let BONUS=0;const LAST={};SQADDXP.after('244 last xp',(i,x)=>{if(x>0&&!BONUS)LAST[i]={x,t:performance.now()}});
- const give=(sk,xp,x,y)=>{xp=Math.round(xp);if(xp<1)return;BONUS++;try{addXp(sk,xp)}finally{BONUS--}try{drops.push({x,y:y-48,t:0,tx:'+'+xp+' XP',c:SKC[sk]||'#fff'})}catch(e){self.SQERR&&SQERR(e,'244-6')}};
+ // Nov 28 (Kevin): addXp shows its own "+N SMITH" with every boost counted; a second "+N XP" here showed the amount before boosts
+ const give=(sk,xp,x,y)=>{xp=Math.round(xp);if(xp<1)return;BONUS++;try{addXp(sk,xp)}finally{BONUS--}};
  if(typeof gBoost==='function'){const _g=gBoost;gBoost=function(sk,gains,x,y){const keys=Object.keys(gains||{}).filter(k=>gains[k]>0),b0=keys.map(k=>inv[k]|0);const out=_g.apply(this,arguments);
    try{const extra=keys.reduce((s,k,j)=>s+Math.max(0,(inv[k]|0)-b0[j]),0),base=keys.reduce((s,k)=>s+gains[k],0),L=LAST[sk];
     if(extra>0&&base>0&&L&&performance.now()-L.t<1500)give(sk,L.x*extra/base,x,y)}catch(e){self.SQERR&&SQERR(e,'244-7')}return out}}
  if(typeof prodBoost==='function'){const _p=prodBoost;prodBoost=function(sk,o){const k=o&&o.out,b0=k?inv[k]|0:0;const out=_p.apply(this,arguments);
-   try{if(k&&o.n>0&&o.xp>0){const extra=(inv[k]|0)-b0;if(extra>0)give(sk,o.xp/o.n*extra,P.x,P.y)}}catch(e){self.SQERR&&SQERR(e,'244-8')}return out}}
+   try{if(k&&o.n>0&&o.xp>0){const extra=(inv[k]|0)-b0;if(extra>0)give(sk,o.xp/o.n/(o.q||1)*extra,P.x,P.y)/* Nov 28 (Kevin): a bonus batch of 25 arrows got 25 makes' XP */}}catch(e){self.SQERR&&SQERR(e,'244-8')}return out}}
  // ---------- keep playing in a background tab ----------
  let lastTick=performance.now(),W=null,TICKS=0;
  try{const src='let t=null;onmessage=e=>{if(e.data==="on"&&!t)t=setInterval(()=>postMessage(1),200);else if(e.data==="off"&&t){clearInterval(t);t=null}}';

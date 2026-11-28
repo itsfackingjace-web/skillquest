@@ -12,9 +12,15 @@ const sfArea=()=>{const R=SCENE&&SCENE.room;if(R&&R.region)return R.region;if(!S
 const sfK=(x,y)=>x+'_'+y,sfXY=k=>k.split('_').map(Number);
 const sfStore=()=>sfOnline()?SF.data:SF.local;
 const sfRecs=a=>sfStore()[a]||{};
-function sfGrowth(r,now){if(!r||!r.c||!CROPS[r.c])return 0;const C=CROPS[r.c],max=C.max*C.st;let g=+r.g||0;const end=Math.min(now,+r.w||0);if(end>(+r.t||0))g+=(end-(+r.t||0))/1000;return Math.max(0,Math.min(max,g))}
-function sfView(r,now){return{c:CROPS[r.c]?r.c:null,g:sfGrowth(r,now),w:CLK+Math.max(0,((+r.w||0)-now)/1000),e:Math.floor((+r.e||now)/1000)}}
-const sfClean=r=>({c:String(r.c||'').slice(0,10),g:Math.round((+r.g||0)*10)/10,t:Math.round(+r.t||0),w:Math.round(+r.w||0),e:Math.round(+r.e||0)});
+// Nov 28 (Spencer: cotton seeds eaten, XP given, nothing grows, the soil stays forever): sfClean cut the crop to 10 letters and the rules
+// allowed 11, so a Dev Suite crop (Cotton is it_new_item_2) was stored as 'it_new_ite': no crop by that name, so the plot looked empty
+// (plant again, lose another seed) yet had a crop, so it never turned back into grass. Crops keep 40 letters now (rules: < 41), and a
+// stored name cut at 10 letters finds its crop again, growth and all.
+function sfCrop(c){c=String(c||'');if(!c)return null;if(CROPS[c])return c;if(c.length===10)for(const k in CROPS)if(k.length>10&&k.startsWith(c))return k;return null}
+window.SQSFCROP=sfCrop;
+function sfGrowth(r,now){const ck=r&&sfCrop(r.c);if(!ck)return 0;const C=CROPS[ck],max=C.max*C.st;let g=+r.g||0;const end=Math.min(now,+r.w||0);if(end>(+r.t||0))g+=(end-(+r.t||0))/1000;return Math.max(0,Math.min(max,g))}
+function sfView(r,now){return{c:sfCrop(r.c),g:sfGrowth(r,now),w:CLK+Math.max(0,((+r.w||0)-now)/1000),e:Math.floor((+r.e||now)/1000)}}
+const sfClean=r=>({c:String(r.c||'').slice(0,40),g:Math.round((+r.g||0)*10)/10,t:Math.round(+r.t||0),w:Math.round(+r.w||0),e:Math.round(+r.e||0)});
 function sfWrite(area,k,r){const S=sfStore();if(!S[area])S[area]={};if(r)S[area][k]=sfClean(r);else delete S[area][k];
  if(sfOnline()){const ref=FB.db.ref(FB.D,'farm/'+(area==='hollow'?'hollow2':area)+'/'+k);(r?FB.db.set(ref,sfClean(r)):FB.db.remove(ref)).catch(e=>{try{mpErr(e)}catch(_){self.SQERR&&SQERR(_,'077-1')}})}else try{saveLocal(true)}catch(e){self.SQERR&&SQERR(e,'077-2')}}
 // views: FARM (Hollow, by tile index) and rfMap(region) (by 'x,y') are rebuilt from the shared plots every frame,
@@ -42,7 +48,7 @@ rfForeign=function(){return new Map()};
 setInterval(()=>{const now=sfNow(),S=sfStore();
  for(const a in S)for(const k in S[a]){const r=S[a][k];if(!r.c&&now-(+r.e||now)>TILL_LIFE*1000)sfWrite(a,k,null)}
  const area=sfArea();if(!area||!rainingNow()||dark()>.95)return;let bm='grass';try{bm=biomeHere()}catch(e){self.SQERR&&SQERR(e,'077-4')}if(bm==='desert'||bm==='in')return;
- const A=S[area]||{};for(const k in A){const r=A[k];if(r.c&&(+r.w||0)-now<60000)sfWrite(area,k,{c:r.c,g:sfGrowth(r,now),t:now,w:now+WATER_FOR*1000,e:0})}},5000);
+ const A=S[area]||{};for(const k in A){const r=A[k];if(r.c&&(+r.w||0)-now<60000)sfWrite(area,k,{c:sfCrop(r.c)||r.c,g:sfGrowth(r,now),t:now,w:now+WATER_FOR*1000,e:0})}},5000);
 // online: the shared fields, plus moving your old plots in
 function sfStart(){const d=FB.db;SF.unsub=d.onValue(d.ref(FB.D,'farm'),s=>{const v=Object.assign({},s.val()||{});const oldH=v.hollow;v.hollow=v.hollow2||{};delete v.hollow2;try{sfMigrateHollow(oldH,v.hollow)}catch(e){console.warn(e)}SF.data={};for(const a in v){if(!WORLD_REGIONS[a]||!v[a]||typeof v[a]!=='object')continue;SF.data[a]={};
    for(const k in v[a]){const r=v[a][k];if(r&&typeof r==='object'&&/^\d+_\d+$/.test(k))SF.data[a][k]=r}}
