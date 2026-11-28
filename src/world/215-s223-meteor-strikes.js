@@ -113,6 +113,8 @@
  let CUR=null;// {s, x, y (world px of the centre), phase 'warn'|'hot'|'cold', at}
  function tick(){try{flatten()}catch(e){self.SQERR&&SQERR(e,'215-12')}const s=current();if(!s){if(ST.id){reset('');CUR=null;hideBanner()}return}
   if(ST.id!==s.id){reset(s.id);subscribe(s)}
+  // Nov 28 (Kass: the bar stayed full while others mined it): a game not signed in yet when the strike began never listened
+  else if(!ST.subs.length&&Fb()&&me())subscribe(s);
   const sp=spotOf(s),n=now();if(!sp&&s.loc==='hollow'){CUR=null;return}const tx=sp?sp[0]:-1,ty=sp?sp[1]:-1;
   CUR={s,loc:s.loc,known:!!sp,x:tx*16+8,y:ty*16+8,tx,ty,phase:n<s.t?'warn':(coreLeft()<=0?'cold':'hot'),left:n<s.t?s.t-n:s.t+HOT-n,since:n-s.t};
   // chat once per strike
